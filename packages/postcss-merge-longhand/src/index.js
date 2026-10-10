@@ -1,3 +1,4 @@
+import cssnanoUtils from 'cssnano-utils';
 import { withoutVendorPrefix } from './lib/vendorPrefix.js';
 import {
   allColumnProps,
@@ -33,6 +34,8 @@ import {
   foldableShorthands,
   foldShorthandDeclaration,
 } from './lib/minifyShorthand.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import browserslist from 'browserslist' */
@@ -254,7 +257,7 @@ function processContainer(container, context) {
 
     classifyDeclaration(
       child,
-      child.prop.toLowerCase(),
+      asciiLowerCase(child.prop),
       laneIndex,
       state,
       context

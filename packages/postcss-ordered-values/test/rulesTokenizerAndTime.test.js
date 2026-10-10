@@ -102,6 +102,20 @@ describe('Time classification', () => {
     }
   });
 
+  test('keeps a unit that differs only by a Kelvin sign distinct from its ASCII lowercase', () => {
+    assert.notEqual(
+      classifyTime(tokenizeValue('1\\212Ahz').terms[0]).dimension,
+      classifyTime(tokenizeValue('1khz').terms[0]).dimension
+    );
+  });
+
+  test('does not add calc() terms whose units differ only by a Kelvin sign', () => {
+    assert.equal(
+      classifyTime(tokenizeValue('calc(1khz + 1\\212Ahz)').terms[0]).dimension,
+      null
+    );
+  });
+
   for (const value of ['1s', '1ms']) {
     test(`${value} is a time`, () => {
       assert.equal(

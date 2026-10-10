@@ -1,9 +1,12 @@
+import cssnanoUtils from 'cssnano-utils';
 import stylehacks from 'stylehacks';
 import { detach } from '../deferredChildEdits.js';
 import { isFallback, needsUnmetSupport } from '../isFallback.js';
 import { boxProperties, writingModes } from './boxGroups.js';
 import { isAll } from './importanceLanes.js';
 import { candidateLimit } from './overriddenDeclarations.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Declaration} from 'postcss'; */
 /** @import {BoxProperty} from './boxGroups.js'; */
@@ -70,7 +73,7 @@ export function discardDeadDeclarations(lane, support) {
       others = [];
       continue;
     }
-    const property = boxProperties.get(declaration.prop.toLowerCase());
+    const property = boxProperties.get(asciiLowerCase(declaration.prop));
     if (property === undefined || stylehacks.detect(declaration)) continue;
     const { cells } = property;
     const isCovered = coversEveryCell(

@@ -1,3 +1,4 @@
+import cssnanoUtils from 'cssnano-utils';
 import minifyTrbl from '../minifyTrbl.js';
 import minifyWidthStyleColor from '../minifyWsc.js';
 import { toLower } from '../parseWsc.js';
@@ -11,6 +12,8 @@ import {
   widthStyleColor as components,
 } from './borderData.js';
 import { declCost } from './slotVector.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 /** @import {Declaration} from 'postcss'; */
 
 /* Builds the reset shorthands, component shorthands, side shorthands and
@@ -68,14 +71,14 @@ function addResetCandidates(cells, lane, rawCandidates) {
       for (let c = 0; c < 3; c++) {
         if (t[c] !== base[c]) {
           const val =
-            t[c].toLowerCase() === 'currentcolor' ? 'currentcolor' : t[c];
+            asciiLowerCase(t[c]) === 'currentcolor' ? 'currentcolor' : t[c];
           asLeaves.push(leaf(s, c, val));
         }
       }
       if (
         asLeaves.length === 1 &&
         asLeaves[0].prop.endsWith('-color') &&
-        asLeaves[0].value.toLowerCase() === 'currentcolor'
+        asciiLowerCase(asLeaves[0].value) === 'currentcolor'
       ) {
         corrections.push(...asLeaves);
       } else {
@@ -131,7 +134,7 @@ function isSynthesizableSide(cellHistory, fallbacks, s) {
   const decls = declarationsOfCells(cellHistory, sideCells[s]);
   if (decls.size === 1) {
     const [only] = decls;
-    const p = only.prop.toLowerCase();
+    const p = asciiLowerCase(only.prop);
     if (p === `border-${sides[s]}` || p === 'border') return true;
   }
   for (const d of decls) {
@@ -310,14 +313,14 @@ function createResetCandidates(
   const allDecls = declarationsOfCells(cellHistory, touched);
   for (const d of allDecls) {
     if (
-      !allBorderShorthands.has(d.prop.toLowerCase()) &&
+      !allBorderShorthands.has(asciiLowerCase(d.prop)) &&
       needsUnmetSupport(d)
     ) {
       return [];
     }
   }
   for (const d of fallbacks) {
-    if (d.prop.toLowerCase() !== 'border') return [];
+    if (asciiLowerCase(d.prop) !== 'border') return [];
   }
 
   if (!hasConsistentSupport(allDecls)) return [];

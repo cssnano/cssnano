@@ -1,9 +1,12 @@
+import cssnanoUtils from 'cssnano-utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { cssWideKeywords } from '../spec.js';
 import { detach } from '../deferredChildEdits.js';
 import insertCloned from '../insertCloned.js';
 import isCustomProp from '../isCustomProp.js';
 import { isFallback, mergeBlockingSupport } from '../isFallback.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 /** @typedef {({ value: string, decl: Declaration } | null)[]} SlotVector */
@@ -81,10 +84,10 @@ export function flushableSlots(slots) {
   const full = slotVectorReady(slots);
   if (!full) return null;
 
-  const v0 = full[0].value.toLowerCase();
+  const v0 = asciiLowerCase(full[0].value);
   const kw = cssWideKeywords.has(v0);
   for (const s of full) {
-    const sv = s.value.toLowerCase();
+    const sv = asciiLowerCase(s.value);
     if (kw ? sv !== v0 : cssWideKeywords.has(sv)) return null;
   }
   if (!supportProvenanceMatches(full)) return null;
@@ -221,7 +224,7 @@ export function commitShorthand(rule, full, contributing, fallbacks, target) {
   const toRemove = Array.from(contributing).filter((d) => !fallbacks.has(d));
   if (toRemove.length === 0) return;
 
-  if (toRemove.length === 1 && toRemove[0].prop.toLowerCase() === prop) {
+  if (toRemove.length === 1 && asciiLowerCase(toRemove[0].prop) === prop) {
     toRemove[0].prop = prop;
     toRemove[0].value = shorthandVal;
     delete toRemove[0].raws?.value;

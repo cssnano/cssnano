@@ -1,4 +1,7 @@
+import cssnanoUtils from 'cssnano-utils';
 import spec from '../spec.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 export const widthStyleColor = spec.borderComponents;
 export const sides = spec.sides;
@@ -95,5 +98,5 @@ for (let i = 0; i < precedence.length; i++) {
  * @return {number | undefined}
  */
 export function getLevel(prop) {
-  return levelMap.get(prop.toLowerCase());
+  return levelMap.get(asciiLowerCase(prop));
 }

@@ -1,8 +1,15 @@
 import cssnanoUtils from 'cssnano-utils';
 import cssWideKeywords from '../rules/cssWideKeywords.json' with { type: 'json' };
 
-const { TokenType, closeForOpening, decoded, tokenEnd, tokenStart, tokens } =
-  cssnanoUtils;
+const {
+  TokenType,
+  asciiLowerCase,
+  closeForOpening,
+  decoded,
+  tokenEnd,
+  tokenStart,
+  tokens,
+} = cssnanoUtils;
 
 /**
  * A raw top-level component. Its source is intentionally never reserialized:
@@ -20,7 +27,7 @@ function name(term) {
   ) {
     return '';
   }
-  return decoded(token)?.toLowerCase() ?? '';
+  return asciiLowerCase(decoded(token) ?? '');
 }
 
 /** @param {string} value @param {string} expected */

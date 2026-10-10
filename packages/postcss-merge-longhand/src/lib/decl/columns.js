@@ -1,3 +1,4 @@
+import cssnanoUtils from 'cssnano-utils';
 import {
   discardOverriddenInLanes,
   discardOverriddenInList,
@@ -18,6 +19,8 @@ import {
   parseColumns,
   parsedValue,
 } from './columnsValue.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 
@@ -44,7 +47,7 @@ function processLane(rule, laneDecls, important) {
   });
 
   for (const decl of laneDecls) {
-    const p = decl.prop.toLowerCase();
+    const p = asciiLowerCase(decl.prop);
     const isShort = p === columns;
 
     if (
@@ -97,8 +100,8 @@ function processLane(rule, laneDecls, important) {
  */
 const columnsPrecedence = {
   overrides: (node, lastNode) =>
-    lastNode.prop.toLowerCase() === columns &&
-    node.prop.toLowerCase() !== columns &&
+    asciiLowerCase(lastNode.prop) === columns &&
+    asciiLowerCase(node.prop) !== columns &&
     isValidColumns(lastNode) &&
     !isFallback(node, lastNode),
 };
@@ -107,7 +110,7 @@ const columnsPrecedence = {
 function normalizeSingleton(s) {
   if (
     !s ||
-    s.prop.toLowerCase() !== columns ||
+    asciiLowerCase(s.prop) !== columns ||
     stylehacks.detect(s) ||
     !canExplode(s)
   ) {

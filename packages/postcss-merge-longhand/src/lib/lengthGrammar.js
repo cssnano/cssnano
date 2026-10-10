@@ -1,7 +1,7 @@
 import cssnanoUtils from 'cssnano-utils';
 import { isAsciiDigit } from './asciiCharacters.js';
 
-const { lengthUnits } = cssnanoUtils;
+const { asciiLowerCase, lengthUnits } = cssnanoUtils;
 
 /**
  * @param {string} text
@@ -68,5 +68,5 @@ export function isLengthValue(number, unit, percentage, nonNegative) {
   if (nonNegative && (number < 0 || Object.is(number, -0))) return false;
   if (unit === '') return number === 0;
   if (unit === '%') return percentage;
-  return lengthUnits.has(unit.toLowerCase());
+  return lengthUnits.has(asciiLowerCase(unit));
 }

@@ -3,7 +3,7 @@ import vendorUnprefixed from './vendorUnprefixed.js';
 import { parseMath } from './isTime.js';
 import { isDimension, isFunction, isNumber, name } from './tokenize.js';
 
-const { lengthUnits, mathFunctions } = cssnanoUtils;
+const { asciiLowerCase, lengthUnits, mathFunctions } = cssnanoUtils;
 
 /**
  * The lowercased CSS length unit of a single-token dimension, or null when
@@ -15,9 +15,9 @@ const { lengthUnits, mathFunctions } = cssnanoUtils;
 export function lengthUnit(term) {
   if (!isDimension(term)) return null;
   const unit = /** @type {{unit: string}} */ (term.tokens[0][4])?.unit;
-  return typeof unit === 'string' && lengthUnits.has(unit.toLowerCase())
-    ? unit.toLowerCase()
-    : null;
+  if (typeof unit !== 'string') return null;
+  const lowered = asciiLowerCase(unit);
+  return lengthUnits.has(lowered) ? lowered : null;
 }
 
 /**

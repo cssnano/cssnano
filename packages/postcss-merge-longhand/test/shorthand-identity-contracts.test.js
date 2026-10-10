@@ -58,6 +58,45 @@ describe('shorthand identity fail-closed contracts', () => {
     passthroughCSS('a{gap:round(up,up,2px) round(up,up,2px)}')
   );
   test(
+    'rejects a round() whose rounding strategy shares its argument with a value, because only a lone keyword is not counted as a calculation',
+    passthroughCSS('a{gap:round(up 1px,2px) round(up 1px,2px)}')
+  );
+  test(
+    'rejects a round() whose rounding strategy shares its argument with a nested function, because only a lone keyword is not counted as a calculation',
+    passthroughCSS('a{gap:round(up calc(1px),2px) round(up calc(1px),2px)}')
+  );
+  test(
+    'rejects a round() whose rounding strategy is an operand, because only a lone keyword is not counted as a calculation',
+    passthroughCSS('a{gap:round(up * 2,1px) round(up * 2,1px)}')
+  );
+  test(
+    'rejects a linear() easing whose argument ends with an operator, because the easing function grammar has no operators',
+    passthroughCSS('a{transition:all 0s linear(0, 1 +) 0s}')
+  );
+  test(
+    'rejects a round() argument of two juxtaposed values, because a calculation joins its values with operators',
+    passthroughCSS('a{gap:round(1px 2px) round(1px 2px)}')
+  );
+  test(
+    'rejects a calc() of two juxtaposed values, because a calculation joins its values with operators',
+    passthroughCSS('a{gap:calc(1px 2px) calc(1px 2px)}')
+  );
+  test(
+    'rejects a calc() that starts with an operator, because calculations have no unary operators',
+    passthroughCSS('a{gap:calc(* 1px) calc(* 1px)}')
+  );
+  test(
+    'rejects a round() argument that ends with an operator, because the operator lacks its right operand',
+    passthroughCSS('a{gap:round(1px +,2px) round(1px +,2px)}')
+  );
+  test(
+    'folds repeated round() values that combine a rounding strategy with an operator expression',
+    processCSS(
+      'a{gap:round(up, 1px * 2, 2px) round(up, 1px * 2, 2px)}',
+      'a{gap:round(up, 1px * 2, 2px)}'
+    )
+  );
+  test(
     'rejects comma lists outside transitions',
     passthroughCSS('a{gap:1px,1px}')
   );

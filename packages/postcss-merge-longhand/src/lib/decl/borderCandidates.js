@@ -1,3 +1,4 @@
+import cssnanoUtils from 'cssnano-utils';
 import { detach } from '../deferredChildEdits.js';
 import insertCloned from '../insertCloned.js';
 import { setsLonghands } from '../spec.js';
@@ -21,6 +22,8 @@ import {
   getAvailableComponents,
   getAvailableSides,
 } from './borderCandidateBuilders.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 /** @import {Container, Declaration} from 'postcss'; */
 
 /* Selection and application for the border reducer: given the candidates the
@@ -31,7 +34,7 @@ import {
 /** @param {{prop: string, value: string}[]} candDecls @param {Set<number>} touched @param {boolean} hasReset */
 function footprintValid(candDecls, touched, hasReset) {
   for (const { prop } of candDecls) {
-    for (const p of setsLonghands(prop.toLowerCase())) {
+    for (const p of setsLonghands(asciiLowerCase(prop))) {
       if (borderImageProperties.has(p) && !hasReset) return false;
       const cellIndex = borderPropertyToCellIndex.get(p);
       if (cellIndex !== undefined && !touched.has(cellIndex)) return false;
@@ -116,8 +119,8 @@ export function generateCandidates(
     [...touched].filter((idx) => {
       return [...cellHistory[idx]].some(
         (d) =>
-          d.prop.toLowerCase() === cellProperties[idx] &&
-          d.value.toLowerCase() === cells[idx].toLowerCase()
+          asciiLowerCase(d.prop) === cellProperties[idx] &&
+          asciiLowerCase(d.value) === asciiLowerCase(cells[idx])
       );
     })
   );
@@ -207,7 +210,7 @@ export function selectBestCandidate(
      * drop those values. Synthetic leaves normally complete the footprint;
      * barriers and preserved fallbacks deliberately prevent that completion. */
     const removesOutsideFootprint = removable.some((d) =>
-      [...setsLonghands(d.prop.toLowerCase())].some((p) => {
+      [...setsLonghands(asciiLowerCase(d.prop))].some((p) => {
         const cellIndex = borderPropertyToCellIndex.get(p);
         return cellIndex !== undefined && !cand.coveredCells.has(cellIndex);
       })
@@ -271,15 +274,15 @@ export function applyBestCandidate(rule, best, segment, lane) {
   /** @type {{prop: string, value: string}[]} */
   const toInsert = [];
   for (const candDecl of bestCand.decls) {
-    const p = candDecl.prop.toLowerCase();
+    const p = asciiLowerCase(candDecl.prop);
     if (allBorderShorthands.has(p)) {
       toInsert.push(candDecl);
     } else {
       const alreadyPresent = segment.find(
         (d) =>
           !representedDecls.has(d) &&
-          d.prop.toLowerCase() === p &&
-          d.value.toLowerCase() === candDecl.value.toLowerCase()
+          asciiLowerCase(d.prop) === p &&
+          asciiLowerCase(d.value) === asciiLowerCase(candDecl.value)
       );
       if (!alreadyPresent) {
         toInsert.push(candDecl);

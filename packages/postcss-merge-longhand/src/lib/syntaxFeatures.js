@@ -230,7 +230,7 @@ function mayNeedSupport(value) {
 function featureOf(token, inMath) {
   switch (token[0]) {
     case TokenType.Function: {
-      const name = decoded(token).toLowerCase();
+      const name = asciiLowerCase(decoded(token));
       if (supportDependentFunctions.has(name) || name.startsWith('-')) {
         return name;
       }

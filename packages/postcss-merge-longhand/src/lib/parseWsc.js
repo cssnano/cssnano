@@ -21,13 +21,13 @@ const toLower = (v) => {
   varRE.lastIndex = 0;
   while ((match = varRE.exec(v)) !== null) {
     if (match.index > lastIndex) {
-      result += v.substring(lastIndex, match.index).toLowerCase();
+      result += asciiLowerCase(v.substring(lastIndex, match.index));
     }
     result += match[0];
     lastIndex = match.index + match[0].length;
   }
   if (lastIndex < v.length) {
-    result += v.substring(lastIndex).toLowerCase();
+    result += asciiLowerCase(v.substring(lastIndex));
   }
   if (result === '') {
     return v;

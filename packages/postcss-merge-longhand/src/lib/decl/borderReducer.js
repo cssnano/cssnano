@@ -1,3 +1,4 @@
+import cssnanoUtils from 'cssnano-utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { discardOverriddenInList } from './overriddenDeclarations.js';
 import { list } from 'postcss';
@@ -29,6 +30,8 @@ import {
   generateCandidates,
   selectBestCandidate,
 } from './borderCandidates.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 /** @import {Container, Declaration} from 'postcss'; */
 
 /**
@@ -39,7 +42,7 @@ function borderBrowserKeeps(declaration) {
   if (isCssWideKeyword(declaration.value)) {
     return true;
   }
-  const prop = declaration.prop.toLowerCase();
+  const prop = asciiLowerCase(declaration.prop);
   if (borderAndSideShorthands.has(prop)) {
     return parseWidthStyleColor(declaration.value) !== null;
   }
@@ -56,7 +59,7 @@ function borderBrowserKeeps(declaration) {
 /** @param {Declaration} d */
 function normalizeBorderSingleton(d) {
   if (stylehacks.detect(d) || !canExplode(d)) return;
-  const p = d.prop.toLowerCase();
+  const p = asciiLowerCase(d.prop);
   if (borderAndSideShorthands.has(p)) {
     d.prop = p;
     d.value = minifyWidthStyleColor(d.value);
@@ -73,7 +76,7 @@ function normalizeBorderSingleton(d) {
  * @return {boolean}
  */
 function isDeclarationFallback(prev, d) {
-  if (prev.prop.toLowerCase() === d.prop.toLowerCase()) {
+  if (asciiLowerCase(prev.prop) === asciiLowerCase(d.prop)) {
     return isFallback(prev, d);
   }
   return mergeBlockingSupport(d).size > 0 && isFallback(prev, d);
@@ -103,7 +106,7 @@ function updateCell(idx, d, value, isBarrier, state) {
  * @param {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
  */
 function applySegmentDeclaration(d, state) {
-  const prop = d.prop.toLowerCase();
+  const prop = asciiLowerCase(d.prop);
   // Segment members passed the family guard: no global keyword, explodable.
   const isBarrier = hasSubstitution(d.value);
 
@@ -167,7 +170,7 @@ function reduceSegment(rule, segment, lane) {
   if (segment.length === 0) return;
   if (segment.length === 1) {
     const d = segment[0];
-    if (allSidesBorderShorthands.includes(d.prop.toLowerCase())) {
+    if (allSidesBorderShorthands.includes(asciiLowerCase(d.prop))) {
       d.value = minifyTrbl(d.value);
     }
     return;
@@ -249,7 +252,7 @@ function isOverriddenByShorthand(node, lastNode) {
 /** @type {import('./overriddenDeclarations.js').CrossPropertyRule} */
 const borderPrecedence = {
   overrides: isOverriddenByShorthand,
-  footprint: (node) => setsLonghands(node.prop.toLowerCase()),
+  footprint: (node) => setsLonghands(asciiLowerCase(node.prop)),
 };
 
 /**
@@ -264,7 +267,7 @@ export function reduceBorder(rule, decls, hasForeignBorder) {
   if (
     decls.length === 0 ||
     decls.some((d) => {
-      const p = d.prop.toLowerCase();
+      const p = asciiLowerCase(d.prop);
       const isCustomShorthand =
         allBorderShorthands.has(p) && hasSubstitution(d.value);
       return (

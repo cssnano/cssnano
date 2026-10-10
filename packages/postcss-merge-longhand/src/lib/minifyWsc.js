@@ -1,6 +1,9 @@
+import cssnanoUtils from 'cssnano-utils';
 import parseWidthStyleColor from './parseWsc.js';
 import minifyTopBottomRightLeft from './minifyTrbl.js';
 import { isValidWidthStyleColor } from './validateWsc.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 const defaultBorderValue = ['medium', 'none', 'currentcolor'];
 /** @param {string} cssPropertyValue */
@@ -27,10 +30,10 @@ export default (cssPropertyValue) => {
     const cur = valuesWithSentinel[i];
     if (
       cur === undefined ||
-      (cur.toLowerCase() === defaultBorderValue[i] &&
+      (asciiLowerCase(cur) === defaultBorderValue[i] &&
         (!i ||
-          (valuesWithSentinel[i - 1] || '').toLowerCase() !==
-            cur.toLowerCase()))
+          asciiLowerCase(valuesWithSentinel[i - 1] || '') !==
+            asciiLowerCase(cur)))
     ) {
       continue;
     }

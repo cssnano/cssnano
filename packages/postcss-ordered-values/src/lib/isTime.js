@@ -52,43 +52,49 @@ function finish(frame) {
   return frame.values[0];
 }
 
-/** @param {Frame} frame @return {string[]} */
-function calculationArguments(frame) {
-  return frame.name === 'round' && frame.args[0] === ROUNDING_STRATEGY
-    ? frame.args.slice(1)
-    : frame.args;
+/**
+ * @param {number} count
+ * @param {string} first
+ * @param {string} second
+ */
+function roundResult(count, first, second) {
+  if (count === 1) {
+    return first === 'number' ? 'number' : null;
+  }
+  return first === second ? first : null;
 }
 
 /** @param {Frame} frame */
 function functionResult(frame) {
   const fn = frame.name;
   if (!fn) return null;
-  const values = calculationArguments(frame);
+  // A leading <rounding-strategy> is a keyword, so it is skipped by offset
+  // rather than copied out of the argument list.
+  const offset = fn === 'round' && frame.args[0] === ROUNDING_STRATEGY ? 1 : 0;
+  const count = frame.args.length - offset;
   const range = mathFunctions.get(fn);
-  if (!range || values.length < range[0] || values.length > range[1])
-    return null;
+  if (!range || count < range[0] || count > range[1]) return null;
+  const first = frame.args[offset];
+  const second = frame.args[offset + 1];
   if (trigFunctions.has(fn)) {
-    return values[0] === 'number' || values[0] === 'angle' ? 'number' : null;
+    return first === 'number' || first === 'angle' ? 'number' : null;
   }
   if (inverseTrigFunctions.has(fn)) {
-    return values[0] === 'number' ? 'angle' : null;
+    return first === 'number' ? 'angle' : null;
   }
   if (fn === 'atan2') {
-    return values[0] === values[1] ? 'angle' : null;
+    return first === second ? 'angle' : null;
   }
   if (numberToNumberFunctions.has(fn)) {
-    return values.every((value) => value === 'number') ? 'number' : null;
+    return frame.args.every((value) => value === 'number') ? 'number' : null;
   }
   if (fn === 'sign') {
     return 'number';
   }
   if (fn === 'round') {
-    if (values.length === 1) {
-      return values[0] === 'number' ? 'number' : null;
-    }
-    return values[0] === values[1] ? values[0] : null;
+    return roundResult(count, first, second);
   }
-  return values.every((value) => value === values[0]) ? values[0] : null;
+  return frame.args.every((value) => value === first) ? first : null;
 }
 
 /** @param {Frame[]} frames @param {string | null} value */
@@ -102,7 +108,7 @@ function addValue(frames, value) {
 
 /** @param {ParserState} state @param {Frame} frame @param {import('@csstools/css-tokenizer').CSSToken} token */
 function consumeFunction(state, frame, token) {
-  const functionName = (decoded(token) ?? '').toLowerCase();
+  const functionName = asciiLowerCase(decoded(token) ?? '');
   if (!mathFunctions.has(functionName) || !frame.expectOperand) return false;
   state.frames.push({
     name: functionName,
@@ -199,7 +205,7 @@ function consumeToken(state, index) {
   if (!frame) return false;
   if (type === TokenType.Number) return addValue(state.frames, 'number');
   if (type === TokenType.Dimension) {
-    const unit = /** @type {{unit: string}} */ (token[4]).unit.toLowerCase();
+    const unit = asciiLowerCase(/** @type {{unit: string}} */ (token[4]).unit);
     if (timeUnits.has(unit)) return addValue(state.frames, 'time');
     if (angleUnits.has(unit)) return addValue(state.frames, 'angle');
     // Length units collapse to one kind before arithmetic so mixed-unit
@@ -248,7 +254,7 @@ export function parseMath(input) {
 function directDimension(node) {
   if (isDimension(node)) {
     const { unit } = /** @type {{unit: string}} */ (node.tokens[0][4]);
-    const normalizedUnit = unit.toLowerCase();
+    const normalizedUnit = asciiLowerCase(unit);
     if (timeUnits.has(normalizedUnit)) return 'time';
     if (angleUnits.has(normalizedUnit)) return 'angle';
     return `dimension:${normalizedUnit}`;

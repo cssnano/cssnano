@@ -36,7 +36,13 @@ const nonLengthResultFunctions = new Set([
  * math function arity table does not count. */
 const roundingStrategies = new Set(['nearest', 'up', 'down', 'to-zero']);
 
-/** @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean, roundingStrategy: boolean}} FunctionFrame */
+/**
+ * firstArgument is 'keyword' only while the first argument of round() is a
+ * lone <rounding-strategy>, which the arity table does not count. In a
+ * calculation, operand records whether the argument so far ends with a value.
+ *
+ * @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean, firstArgument: 'empty' | 'keyword' | 'value', calculation: boolean, operand: boolean}} FunctionFrame
+ */
 
 /**
  * @typedef {{raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}}
@@ -45,7 +51,7 @@ const roundingStrategies = new Set(['nearest', 'up', 'down', 'to-zero']);
 
 /** @param {import('@csstools/css-tokenizer').CSSToken} token @return {string} */
 export function tokenName(token) {
-  return decoded(token).toLowerCase();
+  return asciiLowerCase(decoded(token));
 }
 
 /** @param {Component} component @return {string} */
@@ -70,7 +76,7 @@ export function componentKey(component) {
     .map((token) => {
       const value = numeric(token);
       if (value) {
-        return `numeric:${token[0]}:${value.number}:${value.unit.toLowerCase()}`;
+        return `numeric:${token[0]}:${value.number}:${asciiLowerCase(value.unit)}`;
       }
       if (token[0] === TokenType.Whitespace) return 'whitespace';
       if (token[0] === TokenType.Ident || token[0] === TokenType.Function) {
@@ -119,28 +125,29 @@ export function hasAllowedFunctions(component, allowed) {
           expected,
           commas: 0,
           hasValue: false,
-          roundingStrategy: false,
+          firstArgument: 'empty',
+          // Parentheses inside a calculation group a nested calculation.
+          calculation:
+            expected === TokenType.CloseParen &&
+            stack.at(-1)?.calculation === true,
+          operand: false,
         });
       } else {
         const frame = stack.at(-1);
         if (!frame) return false;
+        if (frame.calculation && !consumeCalculationToken(frame, token)) {
+          return false;
+        }
         const isStrategy =
           frame.name === 'round' &&
           token[0] === TokenType.Ident &&
           roundingStrategies.has(asciiLowerCase(decoded(token)));
-        if (frame.commas === 0) {
-          frame.roundingStrategy = isStrategy && !frame.hasValue;
-        } else if (isStrategy) {
-          // Only the first argument may be a strategy; later ones are not
-          // counted, so a repeated keyword would pass the arity check.
-          return false;
-        }
-        frame.hasValue = true;
+        if (!consumeFunctionValue(frame, isStrategy)) return false;
       }
     }
   }
   if (stack.length) return false;
-  return hasValidFunctionSyntax(component.tokens);
+  return operatorsHaveRightOperands(component.tokens);
 }
 
 /** @param {FunctionFrame[]} stack @param {string} name @param {Set<string>} allowed @return {boolean} */
@@ -151,8 +158,46 @@ function pushFunctionFrame(stack, name, allowed) {
     expected: TokenType.CloseParen,
     commas: 0,
     hasValue: false,
-    roundingStrategy: false,
+    firstArgument: 'empty',
+    calculation: mathFunctions.has(name),
+    operand: false,
   });
+  return true;
+}
+
+/**
+ * A calculation alternates values and operators, starting and ending with a
+ * value: CSS math has no unary operators and no implicit juxtaposition.
+ *
+ * @param {FunctionFrame} frame
+ * @param {import('@csstools/css-tokenizer').CSSToken} token
+ * @return {boolean}
+ */
+function consumeCalculationToken(frame, token) {
+  if (token[0] === TokenType.Delim) {
+    if (!isMathOperator(token[1]) || !frame.operand) return false;
+    frame.operand = false;
+    return true;
+  }
+  if (frame.operand) return false;
+  frame.operand = true;
+  return true;
+}
+
+/** @param {FunctionFrame} frame @param {boolean} isStrategy @return {boolean} */
+function consumeFunctionValue(frame, isStrategy) {
+  if (frame.commas > 0) {
+    // Only the first argument may be a strategy; later ones are not
+    // counted, so a repeated keyword would pass the arity check.
+    if (isStrategy) return false;
+  } else if (frame.firstArgument === 'keyword') {
+    // The keyword must stand alone, or the rest of the argument would be
+    // counted as a calculation.
+    return false;
+  } else if (frame.firstArgument === 'empty') {
+    frame.firstArgument = isStrategy ? 'keyword' : 'value';
+  }
+  frame.hasValue = true;
   return true;
 }
 
@@ -160,8 +205,10 @@ function pushFunctionFrame(stack, name, allowed) {
 function consumeFunctionComma(stack) {
   const frame = stack.at(-1);
   if (!frame?.name || !frame.hasValue) return false;
+  if (frame.calculation && !frame.operand) return false;
   frame.commas++;
   frame.hasValue = false;
+  frame.operand = false;
   return true;
 }
 
@@ -169,26 +216,34 @@ function consumeFunctionComma(stack) {
 function consumeFunctionCloser(stack, type) {
   const frame = stack.pop();
   if (!frame || frame.expected !== type || !frame.hasValue) return false;
-  const argumentCount = frame.commas + (frame.roundingStrategy ? 0 : 1);
+  if (frame.calculation && !frame.operand) return false;
+  const argumentCount =
+    frame.commas + (frame.firstArgument === 'keyword' ? 0 : 1);
   if (!functionArityIsValid(frame.name, argumentCount)) return false;
   const parent = stack.at(-1);
   if (parent) {
     // A nested value makes a leading keyword part of a larger argument.
-    if (parent.commas === 0) parent.roundingStrategy = false;
+    if (parent.commas === 0) {
+      if (parent.firstArgument === 'keyword') return false;
+      parent.firstArgument = 'value';
+    }
+    if (parent.calculation) {
+      if (parent.operand) return false;
+      parent.operand = true;
+    }
     parent.hasValue = true;
   }
   return true;
 }
 
 /** @param {import('@csstools/css-tokenizer').CSSToken[]} input @return {boolean} */
-function hasValidFunctionSyntax(input) {
+function operatorsHaveRightOperands(input) {
   for (let index = 0; index < input.length; index++) {
     const token = input[index];
-    if (token[0] === TokenType.Delim && isMathOperator(token[1])) {
-      if (operatorHasNoOperand(input, index)) return false;
-    } else if (
-      token[0] === TokenType.Comma &&
-      commaHasNoOperand(input, index)
+    if (
+      token[0] === TokenType.Delim &&
+      isMathOperator(token[1]) &&
+      operatorHasNoOperand(input, index)
     ) {
       return false;
     }
@@ -206,21 +261,6 @@ function operatorHasNoOperand(input, index) {
   let next = index + 1;
   while (input[next]?.[0] === TokenType.Whitespace) next++;
   return !input[next] || closingTokens.has(input[next][0]);
-}
-
-/** @param {import('@csstools/css-tokenizer').CSSToken[]} input @param {number} index @return {boolean} */
-function commaHasNoOperand(input, index) {
-  let previous = index - 1;
-  let next = index + 1;
-  while (input[previous]?.[0] === TokenType.Whitespace) previous--;
-  while (input[next]?.[0] === TokenType.Whitespace) next++;
-  return (
-    previous < 0 ||
-    next >= input.length ||
-    input[previous][0] === TokenType.Comma ||
-    input[next][0] === TokenType.Comma ||
-    closingTokens.has(input[next][0])
-  );
 }
 
 /** @param {string | null} name @param {number} argumentCount @return {boolean} */
