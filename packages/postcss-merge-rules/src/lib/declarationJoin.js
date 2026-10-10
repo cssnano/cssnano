@@ -1,20 +1,10 @@
-import cssnanoUtils from 'cssnano-utils';
 import LastWriteIndex from './lastWriteIndex.js';
-import { filterRuleIntersections, propertyNameKey } from './declarations.js';
+import RepeatScan from './repeatScan.js';
+import { filterRuleIntersections } from './declarations.js';
+import { isKeyframes } from './sameContainer.js';
 
-const { asciiLowerCase } = cssnanoUtils;
-
-/** @import {AtRule, ChildNode, Container, Declaration, Rule} from 'postcss' */
+/** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
-
-/**
- * Identifies a declaration by what it sets, so equal declarations share an id.
- *
- * @param {Declaration} declaration
- * @return {string}
- */
-const declarationId = (declaration) =>
-  `${propertyNameKey(declaration.prop)}:${declaration.value}:${declaration.important}`;
 
 /**
  * A rule made only of declarations. Comments and nested rules would be
@@ -73,7 +63,7 @@ function detach(parent, rules) {
  * @property {Rule} rule
  * @property {number} position
  * @property {Declaration[]} declarations
- * @property {string[]} ids
+ * @property {number[]} keys declaration keys, in order
  * @property {Set<string> | null} selectors listed selectors, built on demand
  * @property {number} bytes declaration bytes, each with its separator, or -1
  */
@@ -123,37 +113,24 @@ function joinGain(group, later, mergeState) {
  * @return {boolean}
  */
 export default function joinByDeclarations(parent, mergeState) {
-  // Keyframe selectors are cascaded by position.
-  if (
-    parent.type === 'atrule' &&
-    asciiLowerCase(/** @type {AtRule} */ (parent).name).includes('keyframes')
-  ) {
-    return false;
-  }
+  if (isKeyframes(parent)) return false;
   const nodes = /** @type {ChildNode[]} */ (parent.nodes).slice();
-  const ids = nodes.map((node) =>
-    isDeclarationRule(node)
-      ? /** @type {Declaration[]} */ (node.nodes).map(declarationId)
-      : null
+  const keyLists = nodes.map((node) =>
+    isDeclarationRule(node) ? mergeState.declarationKeysOf(node) : null
   );
-  // Recording writes is the costly part, so it starts at the first rule that
-  // shares a declaration with an earlier one, and is skipped where none does.
-  /** @type {Map<string, number>} */
-  const firstIndex = new Map();
-  let start = nodes.length;
-  for (const [i, list] of ids.entries()) {
-    for (const id of new Set(list)) {
-      const first = firstIndex.get(id);
-      if (first === undefined) firstIndex.set(id, i);
-      else start = Math.min(start, first);
-    }
+  // Rules can only join where they share a declaration.
+  const scan = new RepeatScan();
+  for (const [i, own] of keyLists.entries()) {
+    if (!own) continue;
+    for (const key of own.keySet) scan.see(key, i);
   }
-  if (start === nodes.length) return false;
+  if (scan.start === Infinity) return false;
 
   const index = new LastWriteIndex();
+  const keysOf = mergeState.elementKeysOf;
   // Groups by their first declaration, in document order: a rule that
   // repeats a group's declarations repeats that one too.
-  /** @type {Map<string, Group[]>} */
+  /** @type {Map<number, Group[]>} */
   const groups = new Map();
   // Rules whose selector lists grew; their text is written once at the end,
   // since rewriting a long list on every join would cost quadratic time.
@@ -163,24 +140,16 @@ export default function joinByDeclarations(parent, mergeState) {
   // removing each one splices the parent's array, which takes quadratic time.
   /** @type {Set<Rule>} */
   const emptied = new Set();
-  for (let position = start; position < nodes.length; position++) {
+  for (let position = scan.start; position < nodes.length; position++) {
     const node = nodes[position];
-    const list = ids[position];
-    if (list) {
+    if (keyLists[position]) {
       const rule = /** @type {Rule} */ (node);
-      const outcome = joinIntoGroup(rule, list);
+      const outcome = joinIntoGroup(rule);
       if (outcome === 'emptied') continue;
-      if (outcome === 'trimmed') {
-        register(
-          rule,
-          position,
-          /** @type {Declaration[]} */ (rule.nodes).map(declarationId)
-        );
-      } else {
-        register(rule, position, list);
-      }
+      // A trimmed rule was forgotten, so its keys are derived anew.
+      register(rule, position, mergeState.declarationKeysOf(rule).keys);
     }
-    index.recordNode(node, position);
+    index.recordNode(node, position, keysOf);
   }
   for (const rule of grown) {
     rule.selector = mergeState.meta(rule).selectorText();
@@ -191,32 +160,33 @@ export default function joinByDeclarations(parent, mergeState) {
   /**
    * @param {Rule} rule
    * @param {number} position
-   * @param {string[]} list
+   * @param {number[]} keys
    */
-  function register(rule, position, list) {
+  function register(rule, position, keys) {
     /** @type {Group} */
     const group = {
       rule,
       position,
       declarations: /** @type {Declaration[]} */ (rule.nodes),
-      ids: list,
+      keys,
       selectors: null,
       bytes: -1,
     };
-    const same = groups.get(list[0]);
+    const same = groups.get(keys[0]);
     if (same) same.push(group);
-    else groups.set(list[0], [group]);
+    else groups.set(keys[0], [group]);
   }
 
   /**
    * @param {Rule} later
-   * @param {string[]} laterIds
    * @return {'emptied' | 'trimmed' | null} whether the rule gave up all its
    * declarations, some of them, or joined no group
    */
-  function joinIntoGroup(later, laterIds) {
+  function joinIntoGroup(later) {
     const laterDeclarations = /** @type {Declaration[]} */ (later.nodes);
-    const laterSet = new Set(laterIds);
+    const laterSet = mergeState.declarationKeysOf(later).keySet;
+    // Every declaration of `later`, claimed or not, is written by `later`.
+    const laterKeys = keysOf(later);
     /** @type {{group: Group, claimed: Set<number>, added: string[], gain: number} | null} */
     let best = null;
     for (const id of laterSet) {
@@ -226,12 +196,16 @@ export default function joinByDeclarations(parent, mergeState) {
         // A write since a group to the property of its first declaration
         // rules out that group and every earlier one, which only cross more.
         if (
-          index.conflictsSince(group.declarations.slice(0, 1), group.position)
+          index.conflictsSince(
+            group.declarations.slice(0, 1),
+            group.position,
+            laterKeys
+          )
         )
           break;
         if (
           group.declarations.length > laterDeclarations.length ||
-          !group.ids.every((groupId) => laterSet.has(groupId))
+          !group.keys.every((key) => laterSet.has(key))
         ) {
           continue;
         }
@@ -251,20 +225,37 @@ export default function joinByDeclarations(parent, mergeState) {
         );
         if (!claimedIndices) continue;
         const claimed = [...claimedIndices].map((j) => laterDeclarations[j]);
-        if (index.conflictsSince(claimed, group.position)) continue;
+        if (index.conflictsSince(claimed, group.position, laterKeys)) continue;
         if (!mergeState.canMerge(group.rule, later)) continue;
         best = { group, claimed: claimedIndices, added, gain };
       }
     }
     if (!best) return null;
     const { group, claimed, added } = best;
-    mergeState.addSelectors(group.rule, added);
+    const listed = keysOf(group.rule) !== null;
+    const gained = mergeState.addSelectors(group.rule, added);
     for (const selector of added) group.selectors?.add(selector);
+    if (listed) recordGained(group, gained);
     grown.add(group.rule);
     const outcome = withdraw(later, laterDeclarations, claimed);
     mergeState.forget(later);
     mergeState.markCompatible(group.rule);
     return outcome;
+  }
+
+  /**
+   * The group's declarations already stand at its position for the elements it
+   * listed, so only the elements its new selectors bring are recorded. Writes
+   * to unknown elements are recorded already, so only a listed group calls it.
+   *
+   * @param {Group} group
+   * @param {readonly string[] | null} gained null when the group's elements
+   * became unknown
+   */
+  function recordGained(group, gained) {
+    if (gained?.length === 0) return;
+    for (const declaration of group.declarations)
+      index.record(declaration, group.position, gained);
   }
 
   /**

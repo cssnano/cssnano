@@ -4,6 +4,16 @@ export type RuleDeclarationKeys = {
     keys: number[];
     keySet: Set<number>;
 };
+export type RuleElementKeys = {
+    /**
+     * the distinct keys, in order of first appearance
+     */
+    list: string[];
+    /**
+     * the same keys, for membership tests
+     */
+    seen: Set<string>;
+};
 export type SelectorLookup = (selector: string) => import('./ensureCompatibility.js').SelectorInfo;
 /**
  * The selector list of a rule with what is derived from it. Every field is
@@ -36,6 +46,16 @@ export declare class RuleMeta {
      * @return {VendorPrefixSummary}
      */
     vendorProfile(lookup: SelectorLookup): VendorPrefixSummary;
+    /**
+     * The elements the selector list can match, as `elementKeyOf` in
+     * `elementKeys.js` describes them, or null when any selector has no key or
+     * there are none, which must not read as a rule that writes to no element.
+     * A caller must not hold the list across a change to the rule.
+     *
+     * @param {(selector: string) => string | null} [keyOf] the key of one selector
+     * @return {string[] | null}
+     */
+    elementKeys(keyOf?: (selector: string) => string | null): string[] | null;
     /** @return {string} */
     selectorText(): string;
     /**
@@ -49,8 +69,11 @@ export declare class RuleMeta {
     /**
      * @param {string[]} selectors appended to the rule's selector list
      * @param {SelectorLookup} lookup
+     * @param {(selector: string) => string | null} [keyOf]
+     * @return {readonly string[] | null} the element keys the selectors add to
+     * those listed, or null when the rule's elements are not listed
      */
-    addSelectors(selectors: string[], lookup: SelectorLookup): void;
+    addSelectors(selectors: string[], lookup: SelectorLookup, keyOf?: (selector: string) => string | null): readonly string[] | null;
     /**
      * @param {string[]} selectors replaces the rule's selector list
      * @param {VendorPrefixSummary} [vendor] the profile of `selectors` when the caller
@@ -66,8 +89,9 @@ export declare class RuleMeta {
      *
      * @param {RuleMeta} earlier left unusable
      * @param {SelectorLookup} lookup
+     * @param {(selector: string) => string | null} [keyOf]
      */
-    absorbEarlier(earlier: RuleMeta, lookup: SelectorLookup): void;
+    absorbEarlier(earlier: RuleMeta, lookup: SelectorLookup, keyOf?: (selector: string) => string | null): void;
 }
 /**
  * @param {Rule} rule

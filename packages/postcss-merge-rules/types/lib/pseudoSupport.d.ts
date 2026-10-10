@@ -59,6 +59,15 @@ export declare const pseudoElements: {
     ':visited': string;
 };
 /**
+ * Whether a pseudo-class or pseudo-element name is a vendor-specific
+ * extension. CSS reserves every name starting with a dash for them, including
+ * prefixes no browser is known to use.
+ *
+ * @param {string} name unescaped
+ * @return {boolean}
+ */
+export declare function isVendorExtension(name: string): boolean;
+/**
  * The vendor prefix of a pseudo-class or pseudo-element name, such as
  * `-moz-` for `-moz-selection`; a prefix is meaningful only at the start of
  * an identifier, so `x-moz-y` has none.

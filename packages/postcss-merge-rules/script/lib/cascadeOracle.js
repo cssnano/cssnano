@@ -4,7 +4,7 @@ import postcss from 'postcss';
 
 /**
  * @typedef {{print?: boolean, direction?: 'ltr' | 'rtl'}} Environment
- * @typedef {{tag: string, classes: string[], id: boolean, name: string}} Element
+ * @typedef {{tag: string, classes: string[], id: boolean, inDiv: boolean, pseudo: boolean, name: string}} Element
  * @typedef {{matches: (element: Element) => boolean, specificity: number}} CompiledSelector
  * @typedef {{selectors: CompiledSelector[], prop: string, value: string, important: boolean, layer: string | null, order: number}} CascadedDeclaration
  */
@@ -49,30 +49,47 @@ const classSets = [
   ['b', 'c'],
   ['a', 'b', 'c'],
 ];
-/** @type {Element[]} */
-const elements = ['div', 'span'].flatMap((tag) =>
-  classSets.flatMap((classes) =>
-    [false, true].map((id) => ({
-      tag,
-      classes,
-      id,
-      name: `${tag}${classes.map((name) => `.${name}`).join('')}${id ? '#i' : ''}`,
-    }))
+// Each element has the id `i` or not, occurs inside a `div` ancestor or not,
+// and as its `::before` pseudo-element or not: every combination of the three.
+/** @type {{id: boolean, inDiv: boolean, pseudo: boolean}[]} */
+const flagSets = [false, true].flatMap((id) =>
+  [false, true].flatMap((inDiv) =>
+    [false, true].map((pseudo) => ({ id, inDiv, pseudo }))
   )
 );
+/** @type {Element[]} */
+const elements = [];
+for (const tag of ['div', 'span', 'p']) {
+  for (const classes of classSets) {
+    for (const { id, inDiv, pseudo } of flagSets) {
+      const name = [
+        inDiv ? 'div>' : '',
+        tag,
+        ...classes.map((className) => `.${className}`),
+        id ? '#i' : '',
+        pseudo ? '::before' : '',
+      ].join('');
+      elements.push({ tag, classes, id, inDiv, pseudo, name });
+    }
+  }
+}
 
 /**
- * A compound selector of an optional type, classes and the id `i`.
+ * An optional `div` ancestor, then a compound selector of an optional type,
+ * classes and the id `i`, then an optional `::before`.
  *
  * @param {string} selector
  * @return {CompiledSelector}
  */
 function compileSelector(selector) {
-  const match = /^(?<tag>[a-z]+)?(?<rest>(?:[.#][a-z]+)*)$/v.exec(selector);
+  const match =
+    /^(?:(?<ancestor>div) )?(?<tag>[a-z]+)?(?<rest>(?:[.#][a-z]+)*)(?<pseudo>::before)?$/v.exec(
+      selector
+    );
   if (!match?.groups) {
     throw new Error(`selector outside the generated grammar: ${selector}`);
   }
-  const tag = match.groups.tag;
+  const { ancestor, tag, pseudo } = match.groups;
   const parts = [...match.groups.rest.matchAll(/[.#][a-z]+/gv)].map(
     ([part]) => part
   );
@@ -85,9 +102,16 @@ function compileSelector(selector) {
   return {
     matches: (element) =>
       (!tag || element.tag === tag) &&
+      (!ancestor || element.inDiv) &&
+      element.pseudo === Boolean(pseudo) &&
       classes.every((name) => element.classes.includes(name)) &&
       ids.every((name) => element.id && name === 'i'),
-    specificity: ids.length * 10000 + classes.length * 100 + (tag ? 1 : 0),
+    specificity:
+      ids.length * 10000 +
+      classes.length * 100 +
+      (tag ? 1 : 0) +
+      (ancestor ? 1 : 0) +
+      (pseudo ? 1 : 0),
   };
 }
 

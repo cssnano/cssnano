@@ -244,3 +244,13 @@ test(
     'a:-MS-INPUT-PLACEHOLDER{color:red}b::-ms-input-placeholder{color:red}'
   )
 );
+
+// The print placeholder rule stays after the vendor-prefixed rule: browsers
+// alias ::-moz-placeholder to ::placeholder, so the later write must not move
+// before it.
+test(
+  'should keep a write to a standard placeholder after a vendor-prefixed placeholder write',
+  passthroughCSS(
+    '@media print{input::placeholder{color:red}}input::-moz-placeholder{color:blue}@media print{input::placeholder{color:green}}'
+  )
+);

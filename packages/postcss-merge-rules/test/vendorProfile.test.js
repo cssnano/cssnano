@@ -194,6 +194,10 @@ test('createSelectorLookup should report the prefix of a pseudo name whose hyphe
   assert.equal(lookup('a::\\2d moz-x').prefix, '-moz-');
 });
 
+test('createSelectorLookup should report the BlackBerry -rim- prefix of a pseudo name', () => {
+  assert.equal(lookup('a::-rim-x').prefix, '-rim-');
+});
+
 test('createSelectorLookup should leave the prefix unknown when one selector mixes two vendor prefixes', () => {
   assert.equal(lookup('a::-moz-x::-webkit-y').prefix, undefined);
 });

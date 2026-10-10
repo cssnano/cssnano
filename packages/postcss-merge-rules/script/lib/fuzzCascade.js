@@ -46,6 +46,12 @@ const selectors = [
   'span',
   'span.a',
   'div.c',
+  'p',
+  'p.a',
+  'div::before',
+  'span::before',
+  'div span',
+  'div p.b',
 ];
 // Rule-less at-rules: a `@layer` statement fixes layer order, so nothing may
 // move across it; `@font-face` sets no element style.
@@ -68,6 +74,8 @@ const branchesToCover = [
   'compound',
   'id',
   'type',
+  'pseudo-element',
+  'descendant',
   'important',
   'important-case',
   'invalid-value',
@@ -163,6 +171,8 @@ function generateSelectorList(rng, branches) {
     if (selector.includes('#')) branches.add('id');
     if (/^[a-z]/v.test(selector)) branches.add('type');
     if (/.[.#]/v.test(selector)) branches.add('compound');
+    if (selector.includes('::')) branches.add('pseudo-element');
+    if (selector.includes(' ')) branches.add('descendant');
   }
   return list.join(',');
 }

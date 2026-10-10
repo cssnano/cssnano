@@ -115,3 +115,22 @@ test('should try many pairs of rules with long selectors whose shared declaratio
   );
   assert.equal(result.status, 0);
 });
+
+test('should resume a scan after many joins that each repeat a shared declaration without quadratic slowdown', () => {
+  // Each join gives the rule the shared `color`, so the search for a pair the
+  // rewrite can change must stop at the window rather than walk every rule.
+  const script = `
+    import postcss from 'postcss';
+    import plugin from ${JSON.stringify(pluginUrl)};
+    const rules = Array.from({ length: 64000 }, (_, index) =>
+      '.a' + index + '{color:red}.a' + index + '{top:' + index + 'px}'
+    ).join('');
+    postcss([plugin]).process(rules, { from: undefined }).css;
+  `;
+  const result = spawnSync(
+    process.execPath,
+    ['--input-type=module', '-e', script],
+    { timeout: 15_000, cwd: new URL('..', import.meta.url) }
+  );
+  assert.equal(result.status, 0);
+});

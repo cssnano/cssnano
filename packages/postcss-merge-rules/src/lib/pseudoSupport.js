@@ -79,13 +79,25 @@ const vendorPrefixes = new Set([
   '-moz-',
   '-ms-',
   '-o-',
-  '-rim',
+  '-rim-',
   '-ro-',
   '-tc-',
   '-wap-',
   '-webkit-',
   '-xv-',
 ]);
+
+/**
+ * Whether a pseudo-class or pseudo-element name is a vendor-specific
+ * extension. CSS reserves every name starting with a dash for them, including
+ * prefixes no browser is known to use.
+ *
+ * @param {string} name unescaped
+ * @return {boolean}
+ */
+export function isVendorExtension(name) {
+  return name[0] === '-';
+}
 
 /**
  * The vendor prefix of a pseudo-class or pseudo-element name, such as
@@ -96,7 +108,7 @@ const vendorPrefixes = new Set([
  * @return {string} the prefix, or the empty string when there is none
  */
 export function vendorPrefixOf(name) {
-  if (name[0] !== '-') return '';
+  if (!isVendorExtension(name)) return '';
   const prefix = name.slice(0, name.indexOf('-', 1) + 1);
   return vendorPrefixes.has(prefix) ? prefix : '';
 }

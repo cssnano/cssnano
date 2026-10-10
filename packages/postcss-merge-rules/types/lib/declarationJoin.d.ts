@@ -1,5 +1,7 @@
 import type { ChildNode, Container, Declaration, Rule } from 'postcss';
 import type MergeState from './mergeState.js';
+/** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
+/** @import MergeState from './mergeState.js' */
 /**
  * A rule made only of declarations. Comments and nested rules would be
  * stranded or reordered by moving declarations out of the rule.
@@ -22,7 +24,10 @@ export type Group = {
     rule: Rule;
     position: number;
     declarations: Declaration[];
-    ids: string[];
+    /**
+     * declaration keys, in order
+     */
+    keys: number[];
     /**
      * listed selectors, built on demand
      */
