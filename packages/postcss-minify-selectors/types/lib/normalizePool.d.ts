@@ -58,6 +58,10 @@ export declare class OutputPool {
 export declare function offset(arena: SelectorArena, tokenIndex: number): number;
 /** @param {SelectorArena} arena @param {number} start @param {number} end */
 export declare function sourceText(arena: SelectorArena, start: number, end: number): string;
+/** @param {OutputPool} pool @param {Output} output */
+export declare function outputText(pool: OutputPool, output: Output): string;
+/** @param {OutputPool} pool @param {Output} left @param {Output} right */
+export declare function compareOutputs(pool: OutputPool, left: Output, right: Output): -1 | 0 | 1;
 /**
  * Source spelling of a class (`.` and ident tokens) or ID (hash token).
  * @param {SelectorArena} arena @param {ArenaNode} node

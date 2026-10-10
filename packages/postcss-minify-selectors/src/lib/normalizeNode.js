@@ -4,19 +4,19 @@ import {
   attributeOutput,
   childrenOf,
   classOrIdText,
+  compareOutputs,
   descendantCombinator,
+  outputText,
   qualifiedNameOutput,
   rawOutput,
 } from './normalizePool.js';
 import {
   canReuseSourceNode,
   normalizedPayload,
-  outputText,
   unchangedNodeOutput,
   sourceNodeOutput,
 } from './normalizeOutput.js';
 import {
-  compareOutputs,
   complexOutput,
   compoundOutput,
   pseudoOutput,

@@ -31,8 +31,6 @@ export type Part = Normalized | {
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {Output & {node:number,parts?:Part[],foldEligible?:boolean,specificity?:Specificity,specificityId?:number,facts:number,entries?:Normalized[],valid:boolean,hasPseudoElement:boolean,trailing?:Output}} Normalized */
 /** @typedef {Normalized | {kind:'combinator',id:number,emit?:import('./outputOverlay.js').Emit,text:string,length:number}} Part */
-/** @param {OutputPool} pool @param {Output} output */
-export declare function outputText(pool: OutputPool, output: Output): string;
 /** @param {number} nodeIndex @param {Output} output */
 export declare function sourceNodeOutput(nodeIndex: number, output: Output): {
     id: number;

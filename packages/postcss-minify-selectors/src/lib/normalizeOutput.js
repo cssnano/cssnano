@@ -6,7 +6,6 @@ import {
   sourceText,
 } from './normalizePool.js';
 import { formatPseudoPrefixAndName } from './normalizePseudo.js';
-import { serializeNormalized } from './serializeArena.js';
 
 /** @typedef {import('./normalizePool.js').Output} Output */
 /** @typedef {import('./normalizePool.js').OutputPool} OutputPool */
@@ -16,17 +15,6 @@ import { serializeNormalized } from './serializeArena.js';
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {Output & {node:number,parts?:Part[],foldEligible?:boolean,specificity?:Specificity,specificityId?:number,facts:number,entries?:Normalized[],valid:boolean,hasPseudoElement:boolean,trailing?:Output}} Normalized */
 /** @typedef {Normalized | {kind:'combinator',id:number,emit?:import('./outputOverlay.js').Emit,text:string,length:number}} Part */
-
-/** @param {OutputPool} pool @param {Output} output */
-export function outputText(pool, output) {
-  if (output.text === undefined) {
-    if (output.sourceNode !== undefined) {
-      const node = pool.arena.nodes[output.sourceNode];
-      output.text = sourceText(pool.arena, node.startToken, node.endToken);
-    } else output.text = serializeNormalized(pool.arena, pool.emit(output));
-  }
-  return output.text;
-}
 
 /** @param {number} nodeIndex @param {Output} output */
 export function sourceNodeOutput(nodeIndex, output) {
