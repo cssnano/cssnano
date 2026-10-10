@@ -1,14 +1,5 @@
 import { random } from '../../../../util/fuzzRng.js';
 
-export const BRANCHES = [
-  'valid-svg-unencoded',
-  'valid-svg-encoded',
-  'valid-svg-base64',
-  'invalid-or-malformed',
-  'passthrough',
-  'syntax-edge-cases',
-];
-
 const QUOTES = ['', '"', "'"];
 
 const SVG_SHAPES = [
