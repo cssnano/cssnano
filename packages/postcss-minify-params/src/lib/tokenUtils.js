@@ -55,7 +55,7 @@ export const aspectRatioFeatures = new Set([
  * @param {string} source
  * @return {[bigint, bigint] | undefined}
  */
-function rational(source) {
+export function rational(source) {
   const match = source.match(
     /^[+]?((?:\d+(?:\.\d*)?)|(?:\.\d+))(?:[eE]([+\-]?\d+))?$/v
   );
@@ -97,17 +97,41 @@ export function aspectRatio(left, right) {
     : undefined;
 }
 
+/**
+ * Whether the token at `index` is whitespace or a comment, which a query may
+ * place between any two significant tokens.
+ *
+ * @param {Tokens} input
+ * @param {number} index
+ * @return {boolean}
+ */
+export function isWhitespaceOrComment(input, index) {
+  const type = input[index]?.[0];
+  return type === TokenType.Whitespace || type === TokenType.Comment;
+}
+
 /** @param {Tokens} input @param {number} index @param {number} step @return {number} */
 export function significantIndex(input, index, step) {
   let cursor = index;
-  while (
-    input[cursor] &&
-    (input[cursor][0] === TokenType.Whitespace ||
-      input[cursor][0] === TokenType.Comment)
-  ) {
-    cursor += step;
-  }
+  while (isWhitespaceOrComment(input, cursor)) cursor += step;
   return cursor;
+}
+
+/**
+ * Where the value of a `(name: value)` feature starts, for the `(` at `open`;
+ * the name is the first significant token after it. Returns -1 unless an
+ * identifier and a colon open the feature.
+ *
+ * @param {Tokens} input
+ * @param {number} open
+ * @return {number} the index of the first significant token after the colon
+ */
+export function featureValueIndex(input, open) {
+  const name = significantIndex(input, open + 1, 1);
+  if (input[name]?.[0] !== TokenType.Ident) return -1;
+  const colon = significantIndex(input, name + 1, 1);
+  if (input[colon]?.[0] !== TokenType.Colon) return -1;
+  return significantIndex(input, colon + 1, 1);
 }
 
 /**

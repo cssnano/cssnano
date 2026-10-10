@@ -6,6 +6,7 @@ import {
   calcProductStartTypes,
   closingTypes,
   decoded,
+  featureValueIndex,
   mathFunctions,
   openingTypes,
   significantIndex,
@@ -87,24 +88,13 @@ function isRequiredMathOperatorWhitespace(input, index, parents) {
   );
 }
 
-/** @param {Tokens} input @param {number} name @param {number} colon @param {number} left @param {number} slash @param {number} right @param {number} after @param {number} close @return {boolean} */
-function isAspectRatioFeature(
-  input,
-  name,
-  colon,
-  left,
-  slash,
-  right,
-  after,
-  close
-) {
-  if (name >= close || input[name]?.[0] !== TokenType.Ident) return false;
+/** @param {Tokens} input @param {number} name @param {number} left @param {number} slash @param {number} right @param {number} after @param {number} close @return {boolean} */
+function isAspectRatioFeature(input, name, left, slash, right, after, close) {
   const a = input[left] ? numeric(input[left]) : false;
   const b = input[right] ? numeric(input[right]) : false;
   const lowerName = String(decoded(input[name])).toLowerCase();
   return (
     aspectRatioFeatures.has(lowerName) &&
-    input[colon]?.[0] === TokenType.Colon &&
     input[slash]?.[0] === TokenType.Delim &&
     input[slash][1] === '/' &&
     input[left]?.[0] === TokenType.Number &&
@@ -124,16 +114,11 @@ function whitespaceEdit(structure, index, parents) {
   const next = input[index + 1];
   const tight = isTightWhitespace(input, index);
   const open = parents[index];
-  const first = open === undefined ? -1 : significantIndex(input, open + 1, 1);
-  const colon = significantIndex(input, first + 1, 1);
-  const close = open === undefined ? -1 : (structure.endForOpening(open) ?? -1);
   const emptyCustomProperty =
     next?.[0] === TokenType.CloseParen &&
-    first >= 0 &&
-    input[first][0] === TokenType.Ident &&
-    decoded(input[first]).startsWith('--') &&
-    input[colon]?.[0] === TokenType.Colon &&
-    significantIndex(input, colon + 1, 1) === close;
+    open !== undefined &&
+    featureValueIndex(input, open) === structure.endForOpening(open) &&
+    decoded(input[significantIndex(input, open + 1, 1)]).startsWith('--');
   return {
     start: token[2],
     end: tokenEnd(token),
@@ -185,26 +170,14 @@ export function minifyAspectRatios(supports, structure, parents, changes) {
         : parents[open] !== undefined)
     )
       continue;
-    const close = structure.endForOpening(open);
-    if (close === undefined) continue;
+    const close = /** @type {number} */ (structure.endForOpening(open));
+    const left = featureValueIndex(input, open);
+    if (left < 0) continue;
     const name = significantIndex(input, open + 1, 1);
-    const colon = significantIndex(input, name + 1, 1);
-    const left = significantIndex(input, colon + 1, 1);
     const slash = significantIndex(input, left + 1, 1);
     const right = significantIndex(input, slash + 1, 1);
     const after = significantIndex(input, right + 1, 1);
-    if (
-      !isAspectRatioFeature(
-        input,
-        name,
-        colon,
-        left,
-        slash,
-        right,
-        after,
-        close
-      )
-    )
+    if (!isAspectRatioFeature(input, name, left, slash, right, after, close))
       continue;
     const a = numeric(input[left]);
     const b = numeric(input[right]);
