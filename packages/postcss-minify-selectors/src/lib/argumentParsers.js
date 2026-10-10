@@ -1,5 +1,5 @@
 import cssnanoUtils from 'cssnano-utils';
-import { unquote } from './tokenUtils.js';
+import { dropHexEscapeTerminator, unquote } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
 
@@ -27,11 +27,6 @@ function isPtNameStart(token) {
 /** @param {CSSToken} token */
 function isPtClassSeparator(token) {
   return token[0] === TokenType.Delim && token[1] === '.';
-}
-
-/** @param {CSSToken} token */
-function compactTokenValue(token) {
-  return token[1].endsWith(' ') ? token[1].trimEnd() : token[1];
 }
 
 /**
@@ -70,7 +65,7 @@ export function normalizePtNameArgument(tokens, start, end) {
     if (!foundName && isPtNameStart(token)) {
       foundName = true;
       isWildcard = token[0] === TokenType.Delim && token[1] === '*';
-      pieces.push(compactTokenValue(token));
+      pieces.push(dropHexEscapeTerminator(token[1]));
       continue;
     }
     if (!expectsClass && isPtClassSeparator(token)) {
@@ -80,7 +75,7 @@ export function normalizePtNameArgument(tokens, start, end) {
       continue;
     }
     if (expectsClass && type === TokenType.Ident) {
-      pieces.push(compactTokenValue(token));
+      pieces.push(dropHexEscapeTerminator(token[1]));
       expectsClass = false;
       hasClass = true;
       continue;
@@ -109,6 +104,7 @@ export function normalizeIdentListArgument(tokens, start, end) {
   /** @type {string[]} */
   const pieces = [];
   let count = 0;
+  let lastNameIndex = 0;
 
   for (let i = start; i < end; i++) {
     const token = tokens[i];
@@ -127,9 +123,8 @@ export function normalizeIdentListArgument(tokens, start, end) {
       if (count > 0) {
         pieces.push(' ');
       }
-      let val = token[1];
-      if (val.endsWith(' ')) val = val.trimEnd();
-      pieces.push(val);
+      lastNameIndex = pieces.length;
+      pieces.push(token[1]);
       count++;
       continue;
     }
@@ -139,6 +134,9 @@ export function normalizeIdentListArgument(tokens, start, end) {
   if (count === 0) {
     return { valid: false };
   }
+
+  // Only the last name is followed by the closing parenthesis.
+  pieces[lastNameIndex] = dropHexEscapeTerminator(pieces[lastNameIndex]);
 
   return { pieces, valid: true };
 }
@@ -169,9 +167,7 @@ export function normalizeIdentArgument(tokens, start, end) {
     }
     if (type === TokenType.Ident && !foundIdent) {
       foundIdent = true;
-      let val = token[1];
-      if (val.endsWith(' ')) val = val.trimEnd();
-      pieces.push(val);
+      pieces.push(dropHexEscapeTerminator(token[1]));
       continue;
     }
     return { valid: false };
@@ -245,8 +241,10 @@ export function normalizeIdentOrStringList(tokens, start, end) {
       continue;
     }
     if (expectItem && isLanguageValue(token)) {
-      let val = type === TokenType.String ? unquote(token[1]) : token[1];
-      if (val.endsWith(' ')) val = val.trimEnd();
+      const val =
+        type === TokenType.String
+          ? unquote(token[1])
+          : dropHexEscapeTerminator(token[1]);
       recordLanguageItem(items, seen, val, currentTrivia);
       currentTrivia = [];
       expectItem = false;

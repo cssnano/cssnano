@@ -54,7 +54,12 @@ export declare function offset(arena: SelectorArena, tokenIndex: number): number
 export declare function sourceText(arena: SelectorArena, start: number, end: number): string;
 /** @param {import('./tokenUtils.js').CSSToken | undefined} token */
 export declare function compactIdent(token: import('./tokenUtils.js').CSSToken | undefined): string;
-/** @param {SelectorArena} arena @param {ArenaNode} node @param {number} tokenIndex */
+/**
+ * A hex escape terminator may go unless the next output character is
+ * whitespace, which a descendant combinator or comment separator would
+ * otherwise be absorbed into, or a hex digit.
+ * @param {SelectorArena} arena @param {ArenaNode} node @param {number} tokenIndex
+ */
 export declare function compactTerminalIdent(arena: SelectorArena, node: ArenaNode, tokenIndex: number): string;
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {number} start @param {number} end */
 export declare function importantTrivia(arena: SelectorArena, pool: OutputPool, start: number, end: number): Output;

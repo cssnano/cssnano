@@ -8,6 +8,7 @@ import {
 import { hasSemanticFact, semanticFacts } from './arena.js';
 import { legacyPseudoElements } from './grammar.js';
 import { normalizeAnPlusB } from './normalizeAnPlusB.js';
+import { dropHexEscapeTerminator } from './tokenUtils.js';
 import { trailingListTrivia } from './normalizeListTrivia.js';
 import {
   compactIdent,
@@ -88,11 +89,16 @@ function structuralPseudoOutput(arena, pool, node, normalized, prefix, name) {
     arena.nodes[payload.argumentNode].startToken - 1
   );
   if (!formula) return;
+  // A trailing hex escape needs its own terminator before the separator, or `of` joins it.
+  const separator =
+    dropHexEscapeTerminator(`${formula.text} `) === formula.text
+      ? '  of '
+      : ' of ';
   return wrapPseudo(
     pool,
     prefix,
     name,
-    pool.sequence([pool.text(formula.text), pool.text(' of '), argument])
+    pool.sequence([pool.text(formula.text), pool.text(separator), argument])
   );
 }
 
