@@ -2,7 +2,6 @@ import { tokenize, TokenType } from '@csstools/css-tokenizer';
 
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 /** @typedef {{start: number, end: number, text: string}} SourceEdit */
-/** @typedef {{index: number, start: number, end: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
 
 /** @param {CSSToken} token @return {string} */
 function decoded(token) {
@@ -15,9 +14,10 @@ function decoded(token) {
  * @return {CSSToken[]}
  */
 function tokens(value, options) {
-  return [...tokenize({ css: value, ...options })].filter(
-    (token) => token[0] !== TokenType.EOF
-  );
+  // The tokenizer returns a fresh array that always ends with one EOF token.
+  const result = tokenize({ css: value, ...options });
+  result.pop();
+  return result;
 }
 
 /** @param {CSSToken} token @return {number} */
@@ -96,53 +96,6 @@ function numeric(token) {
 }
 
 /**
- * Capture one numeric source spelling, including PostCSS's historic `1.em`
- * token shape. Its `end` is a character offset exclusive of the source.
- *
- * @param {CSSToken[]} input
- * @param {number} index
- * @return {NumericSource | false}
- */
-function numericSource(input, index) {
-  const token = input[index];
-  const value = token && numeric(token);
-  if (!token || !value) return false;
-  let endIndex = index;
-  let end = tokenEnd(token);
-  let raw = token[1];
-  let unit = value.unit;
-  let hasDecimal = raw.includes('.');
-  const dot = input[endIndex + 1];
-  if (
-    token[0] === TokenType.Number &&
-    dot?.[0] === TokenType.Delim &&
-    dot[1] === '.' &&
-    tokenStart(dot) === end
-  ) {
-    raw += dot[1];
-    endIndex++;
-    end = tokenEnd(dot);
-    hasDecimal = true;
-    const ident = input[endIndex + 1];
-    if (ident?.[0] === TokenType.Ident && tokenStart(ident) === end) {
-      unit = ident[1];
-      raw += ident[1];
-      endIndex++;
-      end = tokenEnd(ident);
-    }
-  }
-  return {
-    index: endIndex,
-    start: tokenStart(token),
-    end,
-    raw,
-    ...value,
-    unit,
-    hasDecimal,
-  };
-}
-
-/**
  * @param {TokenType} type
  * @return {TokenType | undefined}
  */
@@ -161,8 +114,9 @@ function closeForOpening(type) {
 }
 
 /**
- * Reports whether a value ends in a backslash that begins an escape
- * sequence, as opposed to a backslash that is itself escaped.
+ * Reports whether a value, or its prefix before `end`, ends in a backslash
+ * that begins an escape sequence, as opposed to a backslash that is itself
+ * escaped.
  * @param {string} value
  * @return {boolean}
  */
@@ -235,14 +189,12 @@ class BalancedTokens {
  */
 function balancedTokens(source, options) {
   try {
-    const input = [];
+    const input = tokens(source, options);
     /** @type {[number, TokenType][]} */
     const stack = [];
     const ends = new Map();
-    for (const token of tokenize({ css: source, ...options })) {
-      if (token[0] === TokenType.EOF) continue;
-      const index = input.length;
-      input.push(token);
+    for (let index = 0; index < input.length; index++) {
+      const token = input[index];
       const expected = closeForOpening(token[0]);
       if (expected !== undefined) stack.push([index, expected]);
       else if (
@@ -269,7 +221,6 @@ export {
   decoded,
   endsWithEscapingBackslash,
   numeric,
-  numericSource,
   tokenEnd,
   tokenStart,
   tokens,

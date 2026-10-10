@@ -3,9 +3,9 @@ import {
   pieceArgumentParsers,
 } from './argumentParsers.js';
 import { hasSemanticFact, semanticFacts } from './arena.js';
+import { dropHexEscapeTerminator, joinPieces } from './hexEscape.js';
 import { legacyPseudoElements } from './grammar.js';
 import { normalizeAnPlusB } from './normalizeAnPlusB.js';
-import { dropHexEscapeTerminator, joinPieces } from './tokenUtils.js';
 import { trailingListTrivia } from './normalizeListTrivia.js';
 import {
   descendantCombinator,

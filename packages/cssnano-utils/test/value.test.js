@@ -14,7 +14,6 @@ import {
   decoded,
   endsWithEscapingBackslash,
   numeric,
-  numericSource,
   tokenEnd,
   tokens,
 } from '../src/value.js';
@@ -25,23 +24,9 @@ test('keeps raw spellings separate from decoded token values', () => {
   assert.equal(decoded(identifier), 'var');
 });
 
-test('reports numeric facts with exclusive source bounds', () => {
-  const input = tokens('  -0.5PX 25% 1.em');
-  const first = numericSource(input, 1);
-  const percentage = numeric(input[3]);
-  const malformed = numericSource(input, 5);
-  assert.deepEqual(first, {
-    index: 1,
-    start: 2,
-    end: 8,
-    raw: '-0.5PX',
-    number: -0.5,
-    unit: 'PX',
-    hasDecimal: true,
-  });
-  assert.deepEqual(percentage, { number: 25, unit: '%' });
-  assert.equal(malformed?.raw, '1.em');
-  assert.equal(malformed?.end, 17);
+test('numeric reports the number and unit of a percentage token', () => {
+  const [percentage] = tokens('25%');
+  assert.deepEqual(numeric(percentage), { number: 25, unit: '%' });
 });
 
 test('applies unordered disjoint edits', () => {

@@ -1,5 +1,5 @@
 import cssnanoUtils from 'cssnano-utils';
-import { needsHexEscapeTerminator } from './tokenUtils.js';
+import { needsHexEscapeTerminator } from './hexEscape.js';
 
 const { tokenStart } = cssnanoUtils;
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */

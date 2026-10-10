@@ -5,8 +5,9 @@ import {
 } from './ensureCompatibility.js';
 import { propertyNameKey } from './declarations.js';
 import { getMeta } from './ruleMeta.js';
+import { sameContainer } from './sameContainer.js';
 
-const { asciiLowerCase, sameContainer } = cssnanoUtils;
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {RuleMeta} from './ruleMeta.js' */

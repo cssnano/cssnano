@@ -9,7 +9,6 @@ Utility methods and plugins for cssnano projects.
 | Utility | Description |
 | --- | --- |
 | `rawCache` | PostCSS plugin that sets default formatting for generated AST nodes on `result.root.rawCache`. |
-| `sameParent` | Recursively check whether two PostCSS nodes share the same parent ancestry. |
 
 ### CSS Tokenizer and Value Utilities
 
@@ -21,7 +20,9 @@ Utility methods and plugins for cssnano projects.
 | `tokenEnd` | Return the exclusive end character offset of a token (`token[3] + 1`) for string slicing. |
 | `decoded` | Return the decoded string value of a token, falling back to its raw representation. |
 | `numeric` | Parse a single token into `{ number, unit }`, or `false` if not a numeric token. |
-| `numericSource` | Capture a numeric token or multi-token sequence (e.g. `1.em`) with exclusive source bounds. |
+| `endsWithEscapingBackslash` | Whether a string ends in an odd run of backslashes, so the last one escapes whatever follows. |
+| `isHexDigitCode` | Whether a UTF-16 code unit is an ASCII hex digit (`0-9`, `a-f`, `A-F`). |
+| `mathFunctions` | Read-only `Map` from each CSS Values 4 math function name to its `[min, max]` inclusive argument count (`max` may be `Infinity`). Iterating yields `[name, range]` pairs; use `.keys()` for names. |
 | `balancedTokens` | Parse CSS into a `BalancedTokens` index of matching delimiters (`()`, `[]`, `{}`), or `undefined` if unbalanced. |
 | `applyEdits` | Apply validated, non-overlapping string edits. Invalid bounds or overlaps fail closed by returning the complete original source. |
 

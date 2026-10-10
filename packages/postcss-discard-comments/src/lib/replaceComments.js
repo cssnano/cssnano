@@ -15,7 +15,7 @@ const { asciiLowerCase, calcSumFunctions, decoded, mathFunctions } =
 // Functions whose argument grammar is <calc-sum>, requiring whitespace
 // around '+' and '-' operators.
 const calcSumArgumentFunctions = new Set([
-  ...mathFunctions,
+  ...mathFunctions.keys(),
   ...calcSumFunctions,
 ]);
 

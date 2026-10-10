@@ -1,4 +1,6 @@
-import isAnonymousLayer from './isAnonymousLayer.js';
+import cssnanoUtils from 'cssnano-utils';
+
+const { isAnonymousLayer } = cssnanoUtils;
 
 /**
  * @param {import('postcss').AnyNode} nodeA
@@ -60,16 +62,3 @@ export function sameContainer(containerA, containerB) {
     )
   );
 }
-
-/**
- * @param {Child} nodeA
- * @param {Child} nodeB
- * @return {boolean}
- */
-function sameParent(nodeA, nodeB) {
-  return sameContainer(
-    /** @type {import('postcss').Container | undefined} */ (nodeA.parent),
-    /** @type {import('postcss').Container | undefined} */ (nodeB.parent)
-  );
-}
-export default sameParent;

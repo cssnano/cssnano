@@ -89,9 +89,9 @@ describe('mathFunctions specification contract', () => {
     );
 
     assert.deepEqual(
-      [...cssnanoUtils.mathFunctions].toSorted(),
+      [...cssnanoUtils.mathFunctions.keys()].toSorted(),
       ALL_EXPECTED_W3C_MATH_FUNCTIONS,
-      'exported mathFunctions set must be mathematically equal to the canonical W3C math functions'
+      'exported mathFunctions names must be mathematically equal to the canonical W3C math functions'
     );
   });
 
@@ -111,7 +111,7 @@ describe('mathFunctions specification contract', () => {
   });
 
   test('satisfies syntactic invariants for CSS function names', () => {
-    for (const name of cssnanoUtils.mathFunctions) {
+    for (const name of cssnanoUtils.mathFunctions.keys()) {
       assert.match(
         name,
         /^[a-z][a-z0-9]*$/v,
@@ -156,7 +156,7 @@ describe('mathFunctions specification contract', () => {
     ]);
 
     assert.deepEqual(
-      [...cssnanoUtils.mathFunctionArgumentRanges].toSorted(),
+      [...cssnanoUtils.mathFunctions].toSorted(),
       [...expected].toSorted()
     );
   });

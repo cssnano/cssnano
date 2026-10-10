@@ -1,13 +1,7 @@
 import cssnanoUtils from 'cssnano-utils';
 import { isDimension, isFunction, isNumber, name } from './tokenize.js';
 
-const {
-  TokenType,
-  decoded,
-  lengthUnits,
-  mathFunctions,
-  mathFunctionArgumentRanges,
-} = cssnanoUtils;
+const { TokenType, decoded, lengthUnits, mathFunctions } = cssnanoUtils;
 const timeUnits = new Set(['ms', 's']);
 const angleUnits = new Set(['deg', 'grad', 'rad', 'turn']);
 const trigFunctions = new Set(['sin', 'cos', 'tan']);
@@ -58,7 +52,7 @@ function functionResult(frame) {
   const values = frame.args;
   const fn = frame.name;
   if (!fn) return null;
-  const range = mathFunctionArgumentRanges.get(fn);
+  const range = mathFunctions.get(fn);
   if (!range || values.length < range[0] || values.length > range[1])
     return null;
   if (trigFunctions.has(fn)) {
