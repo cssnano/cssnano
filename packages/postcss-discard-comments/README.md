@@ -25,7 +25,7 @@ h1/* heading */{
 ### Output
 
 ```css
-h1 {
+h1{
     margin: 0 auto
 }
 ```
@@ -38,7 +38,7 @@ Note that this module does not handle source map comments because they are not
 available to it; PostCSS handles this internally, so if they are removed then
 you will have to [configure source maps in PostCSS][maps].
 
-[maps]: https://github.com/postcss/postcss/blob/master/docs/source-maps.md
+[maps]: https://github.com/postcss/postcss/blob/main/docs/source-maps.md
 
 
 ## API

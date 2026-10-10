@@ -83,7 +83,7 @@ module.exports = {
 };
 ```
 
-For options with customisable function parameters, use a `cssnano.config.js` at the same location as your `package.json`. You can then load a preset and export it with your custom parameters:
+For options with customisable function parameters, use a `cssnano.config.js` in the directory where you run the build, since cssnano looks up its configuration from the current working directory. You can then load a preset and export it with your custom parameters:
 
 ```js
 const advancedPreset = require('cssnano-preset-advanced');
@@ -119,7 +119,7 @@ This plugin is loaded with the following configuration:
 
 ```js
 {
-  exclude: true;
+  keepOverrides: true;
 }
 ```
 
@@ -318,11 +318,6 @@ This plugin is loaded with the following configuration:
   plugins: [
     {
       name: 'preset-default',
-      params: {
-        overrides: {
-          removeViewBox: false,
-        },
-      },
     },
   ],
 }

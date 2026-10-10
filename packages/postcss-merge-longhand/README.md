@@ -13,8 +13,9 @@ npm install postcss-merge-longhand --save
 ## Example
 
 Merge longhand properties into shorthand; works with `margin`, `padding`,
-`inset`, `scroll-margin`, `scroll-padding`, `border`, `columns` and the box
-alignment `place-*` shorthands. For more examples see the [tests](test).
+`inset`, `scroll-margin`, `scroll-padding`, `border`, `columns`, `column-rule`,
+`gap`, `flex-flow`, `overflow`, `overscroll-behavior` and the box alignment
+`place-*` shorthands. For more examples see the [tests](test).
 
 ### Input
 

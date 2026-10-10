@@ -20,11 +20,11 @@ p {
 
 ```css
 h1 {
-  font:700 2.2rem/.9 Open Sans Condensed,sans-serif
+  font:700 2.2rem/.9 Open Sans Condensed,sans-serif;
 }
 
 p {
-  font-family: Helvetica Neue,Arial,sans-serif;
+  font-family: Helvetica Neue,Arial,sans-serif,Helvetica;
   font-weight: 400;
 }
 ```

@@ -24,7 +24,7 @@ h1 + p, h2, h3, h2{color:blue}
 h1+p,h2,h3{color:blue}
 ```
 
-For more examples see the [tests](test/index.js).
+For more examples see the [tests](test).
 
 ## Options
 
@@ -56,7 +56,7 @@ section h1, article h1, aside h1, nav h1 { font-size: 25px }
 #### Output
 
 ```css
-:is(article,aside,nav,section) h1{font-size:25px}
+:is(article,aside,nav,section) h1 { font-size: 25px }
 ```
 
 ### Browserslist

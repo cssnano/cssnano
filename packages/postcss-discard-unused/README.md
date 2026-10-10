@@ -15,8 +15,8 @@ npm install postcss-discard-unused --save
 ## Example
 
 This module will discard unused at rules in your CSS file, if it cannot find
-any selectors that make use of them. It works on `@counter-style`, `@keyframes`
-and `@font-face`.
+any selectors that make use of them. It works on `@counter-style`, `@keyframes`,
+`@font-face` and `@namespace`.
 
 ### Input
 
@@ -124,4 +124,4 @@ MIT © [Ben Briggs](https://beneb.info)
 
 
 [postcss]: https://github.com/postcss/postcss
-[mfv]:     https://github.com/trysound/postcss-minify-font-values
+[mfv]:     https://github.com/cssnano/cssnano/tree/main/packages/postcss-minify-font-values

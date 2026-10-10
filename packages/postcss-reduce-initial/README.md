@@ -45,7 +45,7 @@ be converted:
 
 ```css
 h1 {
-  transform-box: border-box;
+  background-clip: border-box;
 }
 ```
 
@@ -53,7 +53,7 @@ h1 {
 
 ```css
 h1 {
-  transform-box: initial;
+  background-clip: initial;
 }
 ```
 

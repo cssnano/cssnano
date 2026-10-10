@@ -47,11 +47,12 @@ h1 {
 For more examples, see the [tests](test).
 
 * `animation`, `-webkit-animation`
-* `border(border-left|right|top|bottom)`
+* `border` and its physical and flow-relative side shorthands (`border-top`, `border-block-start`, ...)
 * `box-shadow`
+* `column-rule`
 * `columns`
 * `flex-flow`
-* `grid`
+* `grid-auto-flow`, `grid-row`, `grid-column` and their `-start`/`-end` longhands
 * `list-style`
 * `outline`
 * `transition`, `-webkit-transition`

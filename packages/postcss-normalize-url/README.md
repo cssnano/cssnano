@@ -1,6 +1,6 @@
 # [postcss][postcss]-normalize-url
 
-> [Normalize URLs](https://github.com/sindresorhus/normalize-url) with PostCSS.
+> Normalize URLs with PostCSS.
 
 ## Install
 
@@ -29,7 +29,7 @@ h1 {
 ```
 
 Note that this module will also try to normalize relative URLs, and is capable
-of stripping unnecessary quotes. For more examples, see the [tests](test/index.js).
+of stripping unnecessary quotes. For more examples, see the [tests](test).
 
 ## Security
 
@@ -52,5 +52,4 @@ See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/main/CONTRIBUTORS.
 
 MIT © [Ben Briggs](https://beneb.info)
 
-[docs]: https://github.com/sindresorhus/normalize-url#options
 [postcss]: https://github.com/postcss/postcss
