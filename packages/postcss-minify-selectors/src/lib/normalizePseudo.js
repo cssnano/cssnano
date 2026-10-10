@@ -11,10 +11,10 @@ import {
   descendantCombinator,
   importantTrivia,
   normalizedAt,
+  outputText,
   qualifiedNameOutput,
   rawOutput,
 } from './normalizePool.js';
-import { outputText } from './normalizeOutput.js';
 
 /** @typedef {import('./normalizePool.js').Output} Output */
 /** @typedef {import('./normalizePool.js').OutputPool} OutputPool */
@@ -22,15 +22,6 @@ import { outputText } from './normalizeOutput.js';
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./normalizeOutput.js').Normalized} Normalized */
 /** @typedef {import('./normalizeOutput.js').Part} Part */
-
-/** @param {OutputPool} pool @param {Output} left @param {Output} right */
-export function compareOutputs(pool, left, right) {
-  const a = outputText(pool, left);
-  const b = outputText(pool, right);
-  if (a < b) return -1;
-  if (a > b) return 1;
-  return 0;
-}
 
 /** @param {OutputPool} pool @param {string} prefix @param {string} name @param {Output} inner */
 function wrapPseudo(pool, prefix, name, inner) {

@@ -50,6 +50,7 @@
     "promise/no-nesting": "error",
     "require-unicode-regexp": ["error", { "requireFlag": "v" }],
     "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "import/no-cycle": "error",
     "import/no-duplicates": "error",
     "import/no-self-import": "error",
     "no-self-compare": "error",

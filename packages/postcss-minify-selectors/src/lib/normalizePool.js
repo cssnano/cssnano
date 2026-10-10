@@ -4,6 +4,7 @@ import {
   hexEscapeDigitCount,
   needsTerminatorAfterDigits,
 } from './hexEscape.js';
+import { serializeNormalized } from './serializeArena.js';
 import { isImportantCommentToken, skipTrivia, unquote } from './tokenUtils.js';
 
 const { TokenType, tokenStart } = cssnanoUtils;
@@ -171,6 +172,26 @@ export function offset(arena, tokenIndex) {
 /** @param {SelectorArena} arena @param {number} start @param {number} end */
 export function sourceText(arena, start, end) {
   return arena.source.slice(offset(arena, start), offset(arena, end));
+}
+
+/** @param {OutputPool} pool @param {Output} output */
+export function outputText(pool, output) {
+  if (output.text === undefined) {
+    if (output.sourceNode !== undefined) {
+      const node = pool.arena.nodes[output.sourceNode];
+      output.text = sourceText(pool.arena, node.startToken, node.endToken);
+    } else output.text = serializeNormalized(pool.arena, pool.emit(output));
+  }
+  return output.text;
+}
+
+/** @param {OutputPool} pool @param {Output} left @param {Output} right */
+export function compareOutputs(pool, left, right) {
+  const a = outputText(pool, left);
+  const b = outputText(pool, right);
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
 }
 
 /**

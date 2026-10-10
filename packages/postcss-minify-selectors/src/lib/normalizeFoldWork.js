@@ -1,6 +1,5 @@
 import { semanticFacts } from './arena.js';
-import { outputText } from './normalizeOutput.js';
-import { compareOutputs } from './normalizePseudo.js';
+import { compareOutputs, outputText } from './normalizePool.js';
 import { joinEntries } from './normalizeList.js';
 import {
   activeOccurrences,

@@ -1,8 +1,11 @@
 import { hasSemanticFact, semanticFacts } from './arena.js';
-import { normalizedAt, rawOutput } from './normalizePool.js';
 import { scanListGap } from './normalizeListTrivia.js';
-import { outputText } from './normalizeOutput.js';
-import { compareOutputs } from './normalizePseudo.js';
+import {
+  compareOutputs,
+  normalizedAt,
+  outputText,
+  rawOutput,
+} from './normalizePool.js';
 
 /** @typedef {import('./normalizePool.js').Output} Output */
 /** @typedef {import('./normalizePool.js').OutputPool} OutputPool */

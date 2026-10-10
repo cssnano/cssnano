@@ -4,14 +4,6 @@ export type SelectorArena = import('./arena.js').SelectorArena;
 export type ArenaNode = import('./arena.js').ArenaNode;
 export type Normalized = import('./normalizeOutput.js').Normalized;
 export type Part = import('./normalizeOutput.js').Part;
-/** @typedef {import('./normalizePool.js').Output} Output */
-/** @typedef {import('./normalizePool.js').OutputPool} OutputPool */
-/** @typedef {import('./arena.js').SelectorArena} SelectorArena */
-/** @typedef {import('./arena.js').ArenaNode} ArenaNode */
-/** @typedef {import('./normalizeOutput.js').Normalized} Normalized */
-/** @typedef {import('./normalizeOutput.js').Part} Part */
-/** @param {OutputPool} pool @param {Output} left @param {Output} right */
-export declare function compareOutputs(pool: OutputPool, left: Output, right: Output): -1 | 0 | 1;
 /** @param {SelectorArena} arena @param {import('./arena.js').PseudoPayload} payload */
 export declare function formatPseudoPrefixAndName(arena: SelectorArena, payload: import('./arena.js').PseudoPayload): {
     name: string;
