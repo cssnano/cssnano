@@ -44,7 +44,6 @@
   "dependencies": {
     "browserslist": "catalog:",
     "caniuse-api": "^4.0.0",
-    "cssesc": "^3.0.0",
     "cssnano-utils": "workspace:^"
   },
   "bugs": {
@@ -54,7 +53,6 @@
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
-    "@types/cssesc": "^3.0.2",
     "jsdom": "^30.1.2",
     "postcss": "catalog:",
     "postcss-font-magician": "^4.0.0",

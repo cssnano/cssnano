@@ -1,5 +1,3 @@
-import cssesc from 'cssesc';
-
 /** @typedef {ReturnType<typeof import('cssnano-utils').default.balancedTokens> extends infer Structure ? Structure extends {tokens: readonly (infer Token)[]} ? Token : never : never} CSSToken */
 
 /**
@@ -13,13 +11,32 @@ export function decodedIdent(token) {
   return (metadata?.value ?? token[1]).toLowerCase();
 }
 
-/** @param {string} value */
+/**
+ * ASCII letters and underscore. Non-ASCII is excluded because CSS 2.1 and
+ * CSS Syntax 3 disagree on its range.
+ * @param {number} code
+ */
+function isNameStart(code) {
+  return (
+    (code >= 0x41 && code <= 0x5a) ||
+    (code >= 0x61 && code <= 0x7a) ||
+    code === 0x5f
+  );
+}
+
+/**
+ * Unquotes a string body only when it is an ASCII identifier without escapes.
+ * Any other body is returned quoted.
+ * @param {string} value
+ */
 export function unquote(value) {
   const raw = value.slice(1, -1);
-  if (!raw || raw === '-' || /[ \t\n\r\f"'\(\)\[\]\{\}=~\|^$*]/v.test(raw))
-    return value;
-  const unescaped = raw.replaceAll(/\\([\\"'])/gv, '$1');
-  return cssesc(unescaped, { isIdentifier: true }) === unescaped
-    ? unescaped
-    : value;
+  let index = raw.charCodeAt(0) === 0x2d ? 1 : 0;
+  if (index === raw.length || !isNameStart(raw.charCodeAt(index))) return value;
+  for (index++; index < raw.length; index++) {
+    const code = raw.charCodeAt(index);
+    if (!isNameStart(code) && !(code >= 0x30 && code <= 0x39) && code !== 0x2d)
+      return value;
+  }
+  return raw;
 }
