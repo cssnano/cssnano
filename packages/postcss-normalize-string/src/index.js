@@ -1,4 +1,7 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import cssnanoUtils from 'cssnano-utils';
+
+const { isHexDigitCode } = cssnanoUtils;
 
 const SINGLE_QUOTE = "'".charCodeAt(0);
 const DOUBLE_QUOTE = '"'.charCodeAt(0);
@@ -8,18 +11,6 @@ const FEED = '\f'.charCodeAt(0);
 const CR = '\r'.charCodeAt(0);
 const SPACE = ' '.charCodeAt(0);
 const TAB = '\t'.charCodeAt(0);
-
-/**
- * @param {number} code
- * @return {boolean}
- */
-function isHexDigit(code) {
-  return (
-    (code >= 0x30 && code <= 0x39) ||
-    (code >= 0x41 && code <= 0x46) ||
-    (code >= 0x61 && code <= 0x66)
-  );
-}
 
 /**
  * Return the index just past the hex digits of the escape whose backslash is at `pos`.
@@ -32,7 +23,7 @@ function isHexDigit(code) {
 function getHexDigitsEnd(inner, pos) {
   const limit = Math.min(pos + 7, inner.length);
   let end = pos + 2;
-  while (end < limit && isHexDigit(inner.charCodeAt(end))) {
+  while (end < limit && isHexDigitCode(inner.charCodeAt(end))) {
     end++;
   }
   return end;
@@ -65,7 +56,7 @@ function getWhitespaceLength(inner, pos) {
  */
 function getHexEscapeDelimiter(inner, pos, acceptsMoreDigits) {
   return getWhitespaceLength(inner, pos) > 0 ||
-    (acceptsMoreDigits && isHexDigit(inner.charCodeAt(pos)))
+    (acceptsMoreDigits && isHexDigitCode(inner.charCodeAt(pos)))
     ? ' '
     : '';
 }
@@ -236,7 +227,7 @@ function reconstructString(inner, targetQuote) {
         continue;
       }
 
-      if (isHexDigit(next)) {
+      if (isHexDigitCode(next)) {
         const digitsEnd = getHexDigitsEnd(inner, pos);
         const terminatorLen = getWhitespaceLength(inner, digitsEnd);
         if (terminatorLen === 0) {

@@ -4,6 +4,7 @@ import mathFunctions from './mathFunctions.js';
 import mathFunctionArgumentRanges from './mathFunctionArgumentRanges.js';
 import rawCache from './rawCache.js';
 import isAnonymousLayer from './isAnonymousLayer.js';
+import isHexDigitCode from './isHexDigitCode.js';
 import isImportantComment from './isImportantComment.js';
 import sameParent, { sameContainer } from './sameParent.js';
 import { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, numericSource, tokenEnd, tokenStart, tokens } from './value.js';
@@ -14,6 +15,7 @@ declare const moduleExports: {
     sameParent: typeof sameParent;
     sameContainer: typeof sameContainer;
     isAnonymousLayer: typeof isAnonymousLayer;
+    isHexDigitCode: typeof isHexDigitCode;
     isImportantComment: typeof isImportantComment;
     TokenType: typeof TokenType;
     applyEdits: typeof applyEdits;

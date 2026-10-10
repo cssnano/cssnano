@@ -1,7 +1,7 @@
-/** @typedef {ReturnType<typeof import('cssnano-utils').default.balancedTokens> extends infer Structure ? Structure extends {tokens: readonly (infer Token)[]} ? Token : never : never} CSSToken */
 export type CSSToken = ReturnType<typeof import('cssnano-utils').default.balancedTokens> extends infer Structure ? Structure extends {
     tokens: readonly (infer Token)[];
 } ? Token : never : never;
+/** @typedef {ReturnType<typeof import('cssnano-utils').default.balancedTokens> extends infer Structure ? Structure extends {tokens: readonly (infer Token)[]} ? Token : never : never} CSSToken */
 /**
  * Decoded (escape-resolved) spelling of an ident token, lowercased for
  * ASCII-case-insensitive keyword matching. Prefer the raw token spelling
@@ -9,8 +9,6 @@ export type CSSToken = ReturnType<typeof import('cssnano-utils').default.balance
  * @param {CSSToken} token @return {string}
  */
 export declare function decodedIdent(token: CSSToken): string;
-/** @param {number} code */
-export declare function isHexDigitCode(code: number): boolean;
 /**
  * A hex escape (`\\61 `) consumes one trailing whitespace (CSS Syntax 3
  * §4.3.7), which is redundant when a delimiter follows. An escaped whitespace

@@ -1,11 +1,7 @@
 import cssnanoUtils from 'cssnano-utils';
-import {
-  dropHexEscapeTerminator,
-  isHexDigitCode,
-  unquote,
-} from './tokenUtils.js';
+import { dropHexEscapeTerminator, unquote } from './tokenUtils.js';
 
-const { TokenType, tokenStart } = cssnanoUtils;
+const { TokenType, isHexDigitCode, tokenStart } = cssnanoUtils;
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
