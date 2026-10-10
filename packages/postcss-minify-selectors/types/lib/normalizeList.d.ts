@@ -18,6 +18,8 @@ export declare function listOutput(arena: SelectorArena, pool: OutputPool, nodeI
     text?: string;
     sourceNode?: number;
     changed?: boolean;
+    hexDigits?: number;
+    head?: number;
     entries: import("./normalizeOutput.js").Normalized[];
 };
 //# sourceMappingURL=normalizeList.d.ts.map

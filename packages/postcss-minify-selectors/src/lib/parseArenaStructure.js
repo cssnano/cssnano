@@ -13,6 +13,7 @@ import {
   explicitCombinator,
   violatesComplexMode,
 } from './parseArenaCombinators.js';
+import { isImportantCommentToken, isTrivia, skipTrivia } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
 /** @typedef {import('./arena.js').ListMode} ListMode */
@@ -21,25 +22,12 @@ const { TokenType } = cssnanoUtils;
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {Parameters<Parameters<typeof import('./arena.js').buildSelectorArena>[2]>[0]} Builder */
 /** @typedef {NonNullable<ReturnType<typeof cssnanoUtils.balancedTokens>>} Structure */
-/** @typedef {{kind:'list',start:number,end:number,mode:ListMode,argumentPayload?:number,insideHas:boolean}} ListWork */
-/** @typedef {{kind:'complex',start:number,end:number,mode:ListMode,status?:ParseStatus,insideHas:boolean}} ComplexWork */
-/** @typedef {{kind:'compound',start:number,end:number,mode:ListMode,insideHas:boolean}} CompoundWork */
-/** @typedef {{kind:'pseudo',start:number,end:number,mode:ListMode,insideHas:boolean}} PseudoWork */
-/** @typedef {{kind:'close',node:number,role:'list'|'complex'|'compound'|'pseudo',mode?:ListMode,status?:ParseStatus,facts?:SemanticFacts,specificity?:Specificity}} CloseWork */
-/** @typedef {ListWork|ComplexWork|CompoundWork|PseudoWork|CloseWork} ParseWork */
-
-/** @param {import('./tokenUtils.js').CSSToken | undefined} token */
-export function isTrivia(token) {
-  return (
-    token?.[0] === TokenType.Whitespace || token?.[0] === TokenType.Comment
-  );
-}
+/** @typedef {import('./parseArenaCore.js').ParseWork} ParseWork */
 
 /** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} start @param {number} end */
 function trimTrivia(input, start, end) {
-  let first = start;
+  const first = skipTrivia(input, start, end);
   let last = end;
-  while (first < last && isTrivia(input[first])) first++;
   while (last > first && isTrivia(input[last - 1])) last--;
   return { start: first, end: last };
 }
@@ -58,7 +46,7 @@ function scanComplexTrivia(input, start, end) {
   while (index < end && isTrivia(input[index])) {
     const token = input[index];
     if (token[0] === TokenType.Whitespace) hasWhitespace = true;
-    if (token[0] === TokenType.Comment && !token[1].startsWith('/*!'))
+    if (token[0] === TokenType.Comment && !isImportantCommentToken(token))
       hasOrdinaryComment = true;
     index++;
   }
@@ -126,7 +114,7 @@ export function complexParts(structure, start, end, mode) {
       value: combinator.value,
     });
     index = combinator.end;
-    while (index < trimmed.end && isTrivia(input[index])) index++;
+    index = skipTrivia(input, index, trimmed.end);
     compoundStart = index;
   }
   if (compoundStart < trimmed.end)

@@ -1,6 +1,6 @@
 import cssnanoUtils from 'cssnano-utils';
-import { isTrivia, mergeStatus } from './parseArenaStructure.js';
-import { decodedIdent } from './tokenUtils.js';
+import { mergeStatus } from './parseArenaStructure.js';
+import { decodedIdent, skipTrivia } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
 /** @typedef {import('./arena.js').ParseStatus} ParseStatus */
@@ -51,13 +51,6 @@ function isQualifiedNameToken(token) {
     token?.[0] === TokenType.Ident ||
     (token?.[0] === TokenType.Delim && token[1] === '*')
   );
-}
-
-/** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} index @param {number} end */
-function skipTrivia(input, index, end) {
-  let cursor = index;
-  while (cursor < end && isTrivia(input[cursor])) cursor++;
-  return cursor;
 }
 
 /** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} index */

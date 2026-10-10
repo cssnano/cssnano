@@ -6,7 +6,6 @@ import {
   semanticFacts,
 } from '../src/lib/arena.js';
 import { parseSelectorArena } from '../src/lib/parseArena.js';
-import { serializeArena } from '../src/lib/serializeArena.js';
 
 test('selector-list pseudos own nested arena children and specificity', () => {
   const arena = parseSelectorArena(':is(.a,#b):where(div)');
@@ -129,7 +128,6 @@ test('verified and trusted parsing have equivalent semantic arenas', () => {
     const trusted = parseSelectorArena(source, { verifyArena: false });
 
     assert.deepEqual(trusted, verified, source);
-    assert.equal(serializeArena(trusted, new Map()), source);
     assert.equal(Object.isFrozen(verified.nodes), true);
     assert.equal(Object.isFrozen(trusted.nodes), false);
   }

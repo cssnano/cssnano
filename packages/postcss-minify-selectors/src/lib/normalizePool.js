@@ -1,12 +1,19 @@
 import cssnanoUtils from 'cssnano-utils';
-import { dropHexEscapeTerminator, unquote } from './tokenUtils.js';
+import {
+  dropHexEscapeTerminator,
+  hexEscapeDigitCount,
+  isImportantCommentToken,
+  needsTerminatorAfterDigits,
+  skipTrivia,
+  unquote,
+} from './tokenUtils.js';
 
-const { TokenType, isHexDigitCode, tokenStart } = cssnanoUtils;
+const { TokenType, tokenStart } = cssnanoUtils;
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
-/** @typedef {{emit?:Emit,id:number,length:number,text?:string,sourceNode?:number,changed?:boolean}} Output */
+/** @typedef {{emit?:Emit,id:number,length:number,text?:string,sourceNode?:number,changed?:boolean,hexDigits?:number,head?:number}} Output */
 
 export class OutputPool {
   /** @param {SelectorArena} arena */
@@ -30,6 +37,8 @@ export class OutputPool {
       id: this.nextId++,
       length: value.length,
       text: value,
+      hexDigits: hexEscapeDigitCount(value, value.length),
+      head: value.charCodeAt(0),
       changed: true,
     };
     this.texts.set(value, output);
@@ -112,15 +121,45 @@ export class OutputPool {
     if (items.length === 1) return items[0];
     let id = 0;
     let length = 0;
+    let digits = 0;
     for (const item of items) {
       id = this.pairId(id, item.id);
       length += item.length;
+      // serializeNormalized inserts a terminator space between these pieces.
+      if (needsTerminatorAfterDigits(digits, this.headCode(item))) length++;
+      digits = this.trailingHexDigits(item);
     }
     const emit = {
       kind: /** @type {const} */ ('sequence'),
       items: items.map((item) => this.emit(item)),
     };
-    return { emit, id, length, changed: true };
+    return {
+      emit,
+      id,
+      length,
+      changed: true,
+      hexDigits: digits,
+      head: this.headCode(items[0]),
+    };
+  }
+
+  /** @param {Output} output */
+  headCode(output) {
+    return output.sourceNode === undefined
+      ? /** @type {number} */ (output.head)
+      : this.arena.source.charCodeAt(
+          offset(this.arena, this.arena.nodes[output.sourceNode].startToken)
+        );
+  }
+
+  /** @param {Output} output */
+  trailingHexDigits(output) {
+    return output.sourceNode === undefined
+      ? /** @type {number} */ (output.hexDigits)
+      : hexEscapeDigitCount(
+          this.arena.source,
+          offset(this.arena, this.arena.nodes[output.sourceNode].endToken)
+        );
   }
 }
 
@@ -136,40 +175,27 @@ export function sourceText(arena, start, end) {
   return arena.source.slice(offset(arena, start), offset(arena, end));
 }
 
-/** @param {import('./tokenUtils.js').CSSToken | undefined} token */
-export function compactIdent(token) {
-  if (!token) return '';
-  return token[1];
+/**
+ * Source spelling of a class (`.` and ident tokens) or ID (hash token).
+ * @param {SelectorArena} arena @param {ArenaNode} node
+ */
+export function classOrIdSource(arena, node) {
+  const { tokens } = arena;
+  return node.kind === 'class'
+    ? `${tokens[node.startToken][1]}${tokens[node.startToken + 1][1]}`
+    : tokens[node.startToken][1];
 }
 
 /**
- * A hex escape terminator may go unless the next output character is
- * whitespace, which a descendant combinator or comment separator would
- * otherwise be absorbed into, or a hex digit.
- * @param {SelectorArena} arena @param {ArenaNode} node @param {number} tokenIndex
+ * Serialized class or ID: an ident's hex escape terminator is restored by
+ * the joiners, so it is dropped here.
+ * @param {SelectorArena} arena @param {ArenaNode} node
  */
-export function compactTerminalIdent(arena, node, tokenIndex) {
-  const value = compactIdent(arena.tokens[tokenIndex]);
-  let next = arena.tokens[node.endToken];
-  if (next?.[0] === TokenType.Comment) return value;
-  if (next?.[0] === TokenType.Whitespace) {
-    // Whitespace followed by a combinator or separator is not a descendant combinator.
-    next = arena.tokens[node.endToken + 1];
-    if (
-      next &&
-      next[0] !== TokenType.Comma &&
-      next[0] !== TokenType.CloseParen &&
-      !(
-        next[0] === TokenType.Delim &&
-        (next[1] === '>' || next[1] === '+' || next[1] === '~')
-      )
-    )
-      return value;
-  }
-  return dropHexEscapeTerminator(
-    value,
-    next !== undefined && isHexDigitCode(next[1].charCodeAt(0))
-  );
+export function classOrIdText(arena, node) {
+  const { tokens } = arena;
+  return node.kind === 'class'
+    ? `${tokens[node.startToken][1]}${dropHexEscapeTerminator(tokens[node.startToken + 1][1])}`
+    : dropHexEscapeTerminator(tokens[node.startToken][1]);
 }
 
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {number} start @param {number} end */
@@ -177,8 +203,7 @@ export function importantTrivia(arena, pool, start, end) {
   /** @type {Output[]} */ const output = [];
   for (let index = start; index < end; index++) {
     const token = arena.tokens[index];
-    if (token[0] === TokenType.Comment && token[1].startsWith('/*!'))
-      output.push(pool.text(token[1]));
+    if (isImportantCommentToken(token)) output.push(pool.text(token[1]));
   }
   return pool.sequence(output);
 }
@@ -192,7 +217,7 @@ export function descendantCombinator(arena, pool, node) {
     if (token[0] === TokenType.Whitespace) {
       if (!lastWasSpace) output.push(pool.text(' '));
       lastWasSpace = true;
-    } else if (token[0] === TokenType.Comment && token[1].startsWith('/*!')) {
+    } else if (isImportantCommentToken(token)) {
       output.push(pool.text(token[1]));
       lastWasSpace = false;
     }
@@ -239,10 +264,10 @@ export function qualifiedNameOutput(arena, pool, node, removable) {
   else if (payload.namespace.kind === 'wildcard') prefix = '*|';
   else if (payload.namespace.kind === 'named')
     prefix = `${dropHexEscapeTerminator(
-      compactIdent(arena.tokens[payload.namespace.token])
+      arena.tokens[payload.namespace.token][1]
     )}|`;
   return pool.text(
-    `${prefix}${compactTerminalIdent(arena, node, payload.subject.token)}`
+    `${prefix}${dropHexEscapeTerminator(arena.tokens[payload.subject.token][1])}`
   );
 }
 
@@ -252,9 +277,7 @@ export function attributeOutput(arena, pool, node) {
   const payload = arena.payloads.attributes[node.payload];
   const close = node.endToken - 1;
   let nameStart = payload.nameToken;
-  let name = dropHexEscapeTerminator(
-    compactIdent(arena.tokens[payload.nameToken])
-  );
+  let name = dropHexEscapeTerminator(arena.tokens[payload.nameToken][1]);
   if (payload.namespace.kind === 'empty') {
     nameStart--;
     name = `|${name}`;
@@ -264,7 +287,7 @@ export function attributeOutput(arena, pool, node) {
   } else if (payload.namespace.kind === 'named') {
     nameStart = payload.namespace.token;
     name = `${dropHexEscapeTerminator(
-      compactIdent(arena.tokens[payload.namespace.token])
+      arena.tokens[payload.namespace.token][1]
     )}|${name}`;
   }
   /** @type {Output[]} */ const values = [pool.text('[')];
@@ -276,24 +299,16 @@ export function attributeOutput(arena, pool, node) {
     values.push(pool.text(']'));
     return pool.sequence(values);
   }
-  let matcherStart = cursor;
-  while (
-    matcherStart < close &&
-    (arena.tokens[matcherStart][0] === TokenType.Whitespace ||
-      arena.tokens[matcherStart][0] === TokenType.Comment)
-  )
-    matcherStart++;
+  const matcherStart = skipTrivia(arena.tokens, cursor, close);
   const matcherEnd = matcherStart + payload.matcher.length;
   values.push(importantTrivia(arena, pool, cursor, matcherStart));
   values.push(pool.text(payload.matcher));
   if (payload.valueToken === undefined) return rawOutput(arena, pool, node);
   const valueToken = arena.tokens[payload.valueToken];
-  let value = compactIdent(valueToken);
+  let value = valueToken[1];
   if (valueToken[0] === TokenType.String)
     value = unquote(value).replaceAll('\\\n', '');
-  // A modifier is serialized after a space that the escape would otherwise consume.
-  else if (payload.modifierToken === undefined)
-    value = dropHexEscapeTerminator(value);
+  else value = dropHexEscapeTerminator(value);
   values.push(
     importantTrivia(arena, pool, matcherEnd, payload.valueToken),
     pool.text(value)
@@ -302,7 +317,9 @@ export function attributeOutput(arena, pool, node) {
   if (payload.modifierToken !== undefined) {
     values.push(
       importantTrivia(arena, pool, cursor, payload.modifierToken),
-      pool.text(` ${compactIdent(arena.tokens[payload.modifierToken])}`)
+      pool.text(
+        ` ${dropHexEscapeTerminator(arena.tokens[payload.modifierToken][1])}`
+      )
     );
     cursor = payload.modifierToken + 1;
   }

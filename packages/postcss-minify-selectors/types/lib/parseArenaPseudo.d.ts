@@ -2,32 +2,9 @@ import cssnanoUtils from 'cssnano-utils';
 export type ListMode = import('./arena.js').ListMode;
 export type ParseStatus = import('./arena.js').ParseStatus;
 export type Specificity = import('./arena.js').Specificity;
+export type ParseWork = import('./parseArenaCore.js').ParseWork;
 export type Structure = NonNullable<ReturnType<typeof cssnanoUtils.balancedTokens>>;
 export type Builder = Parameters<Parameters<typeof import('./arena.js').buildSelectorArena>[2]>[0];
-export type ListWork = {
-    kind: 'list';
-    start: number;
-    end: number;
-    mode: ListMode;
-    argumentPayload?: number;
-    insideHas: boolean;
-};
-export type PseudoWork = {
-    kind: 'pseudo';
-    start: number;
-    end: number;
-    mode: ListMode;
-    insideHas: boolean;
-};
-export type CloseWork = {
-    kind: 'close';
-    node: number;
-    role: 'pseudo';
-    status?: ParseStatus;
-    facts?: import('./arena.js').SemanticFacts;
-    specificity?: Specificity;
-};
-export type ParseWork = PseudoWork | ListWork | CloseWork;
 /** @param {Structure} structure @param {number} start */
 export declare function pseudoDetails(structure: Structure, start: number): {
     nameIndex: number;

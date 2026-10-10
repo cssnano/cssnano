@@ -1,5 +1,7 @@
 import cssnanoUtils from 'cssnano-utils';
 
+import { isImportantCommentToken } from './tokenUtils.js';
+
 const { TokenType } = cssnanoUtils;
 
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
@@ -31,13 +33,13 @@ export function scanListGap(arena, pool, start, end) {
     } else if (!afterComma) {
       if (type === TokenType.Whitespace) {
         pendingSpace = true;
-      } else if (type === TokenType.Comment && token[1].startsWith('/*!')) {
+      } else if (isImportantCommentToken(token)) {
         if (pendingSpace) trailing.push(pool.text(' '));
         trailing.push(pool.text(token[1]));
         pendingSpace = false;
       }
     } else {
-      if (type === TokenType.Comment && token[1].startsWith('/*!')) {
+      if (isImportantCommentToken(token)) {
         leading.push(pool.text(token[1]));
       }
     }

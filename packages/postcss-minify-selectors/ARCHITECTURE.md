@@ -90,8 +90,10 @@ Recovery depends on context:
 When adding or extending selector transformations:
 1. **Never use regex for CSS token microsyntaxes**: Token boundaries, escapes, and
    delimiters must respect CSS Syntax 3 and Selectors 4 algorithms.
-2. **Preserve token boundaries and short hex escapes**: Hex escapes require trailing
-   whitespace when followed by hex digits (`\61 0` vs `\610`).
+2. **Preserve token boundaries and short hex escapes**: Text emits may omit hex-escape
+   terminators; the join step (`needsHexEscapeTerminator`) restores them where the next
+   piece starts with whitespace or a hex digit (`\61 0` vs `\610`). Producers must not
+   guess what follows.
 3. **Use grammar descriptors for functional pseudos**: Register the grammar family, delegate
    to an exact micro-parser, classify the payload in the parser, and emit output in the
    normalizer.

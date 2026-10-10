@@ -19,6 +19,7 @@ const balancedTokens = cssnanoUtils.balancedTokens;
 /** @typedef {import('./arena.js').ListMode} ListMode */
 /** @typedef {import('./arena.js').ParseStatus} ParseStatus */
 /** @typedef {import('./arena.js').SemanticFacts} SemanticFacts */
+/** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {NonNullable<ReturnType<typeof balancedTokens>>} Structure */
 /** @typedef {{mode?:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean,verifyArena?:boolean}} ParseContext */
 /** @typedef {{kind:'list',start:number,end:number,mode:ListMode,argumentPayload?:number,insideHas:boolean}} ListWork */
@@ -30,7 +31,7 @@ const balancedTokens = cssnanoUtils.balancedTokens;
 /** @typedef {{kind:'qualified-name',start:number,end:number,payload:import('./arena.js').QualifiedNamePayload}} QualifiedNameWork */
 /** @typedef {{kind:'raw',start:number,end:number,status:ParseStatus}} RawWork */
 /** @typedef {{kind:'pseudo',start:number,end:number,mode:ListMode,insideHas:boolean}} PseudoWork */
-/** @typedef {{kind:'close',node:number,role:'list'|'complex'|'compound'|'pseudo',mode?:ListMode,status?:ParseStatus,facts?:SemanticFacts}} CloseWork */
+/** @typedef {{kind:'close',node:number,role:'list'|'complex'|'compound'|'pseudo',mode?:ListMode,status?:ParseStatus,facts?:SemanticFacts,specificity?:Specificity}} CloseWork */
 /** @typedef {ListWork|ComplexWork|CompoundWork|CombinatorWork|AttributeWork|NamedSimpleWork|QualifiedNameWork|RawWork|PseudoWork|CloseWork} ParseWork */
 
 /** @param {string} source @param {ParseContext} [context] */

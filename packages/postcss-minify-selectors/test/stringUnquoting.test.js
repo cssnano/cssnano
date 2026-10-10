@@ -53,6 +53,8 @@ suite('string unquoting', () => {
     passthroughCSS('[title="\\66oo"]{color:blue}')
   );
 
+  // An escaped backslash is an escape, which unquote() does not accept, so
+  // the value stays quoted.
   test(
     'should keep an attribute value with an escaped backslash quoted',
     passthroughCSS('[title="a\\\\b"]{color:blue}')

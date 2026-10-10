@@ -31,7 +31,7 @@ export function isDefaultNamespace(params) {
     }
     if (
       type === cssnanoUtils.TokenType.Function &&
-      cssnanoUtils.decoded(token).toLowerCase() === 'url'
+      cssnanoUtils.asciiLowerCase(cssnanoUtils.decoded(token)) === 'url'
     ) {
       return true;
     }

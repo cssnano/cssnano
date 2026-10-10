@@ -4,6 +4,7 @@ declare const balancedTokens: typeof cssnanoUtils.balancedTokens;
 export type ListMode = import('./arena.js').ListMode;
 export type ParseStatus = import('./arena.js').ParseStatus;
 export type SemanticFacts = import('./arena.js').SemanticFacts;
+export type Specificity = import('./arena.js').Specificity;
 export type Structure = NonNullable<ReturnType<typeof balancedTokens>>;
 export type ParseContext = {
     mode?: ListMode;
@@ -75,11 +76,13 @@ export type CloseWork = {
     mode?: ListMode;
     status?: ParseStatus;
     facts?: SemanticFacts;
+    specificity?: Specificity;
 };
 export type ParseWork = ListWork | ComplexWork | CompoundWork | CombinatorWork | AttributeWork | NamedSimpleWork | QualifiedNameWork | RawWork | PseudoWork | CloseWork;
 /** @typedef {import('./arena.js').ListMode} ListMode */
 /** @typedef {import('./arena.js').ParseStatus} ParseStatus */
 /** @typedef {import('./arena.js').SemanticFacts} SemanticFacts */
+/** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {NonNullable<ReturnType<typeof balancedTokens>>} Structure */
 /** @typedef {{mode?:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean,verifyArena?:boolean}} ParseContext */
 /** @typedef {{kind:'list',start:number,end:number,mode:ListMode,argumentPayload?:number,insideHas:boolean}} ListWork */
@@ -91,7 +94,7 @@ export type ParseWork = ListWork | ComplexWork | CompoundWork | CombinatorWork |
 /** @typedef {{kind:'qualified-name',start:number,end:number,payload:import('./arena.js').QualifiedNamePayload}} QualifiedNameWork */
 /** @typedef {{kind:'raw',start:number,end:number,status:ParseStatus}} RawWork */
 /** @typedef {{kind:'pseudo',start:number,end:number,mode:ListMode,insideHas:boolean}} PseudoWork */
-/** @typedef {{kind:'close',node:number,role:'list'|'complex'|'compound'|'pseudo',mode?:ListMode,status?:ParseStatus,facts?:SemanticFacts}} CloseWork */
+/** @typedef {{kind:'close',node:number,role:'list'|'complex'|'compound'|'pseudo',mode?:ListMode,status?:ParseStatus,facts?:SemanticFacts,specificity?:Specificity}} CloseWork */
 /** @typedef {ListWork|ComplexWork|CompoundWork|CombinatorWork|AttributeWork|NamedSimpleWork|QualifiedNameWork|RawWork|PseudoWork|CloseWork} ParseWork */
 /** @param {string} source @param {ParseContext} [context] */
 export declare function parseSelectorArena(source: string, context?: ParseContext): import("./arena.js").SelectorArena;

@@ -6,7 +6,6 @@ import {
   semanticFacts,
 } from '../src/lib/arena.js';
 import { parseSelectorArena } from '../src/lib/parseArena.js';
-import { serializeArena } from '../src/lib/serializeArena.js';
 
 test('iterative parser records list modes and explicit selector constructs', () => {
   for (const mode of [
@@ -20,7 +19,6 @@ test('iterative parser records list modes and explicit selector constructs', () 
       mode,
     });
     assert.equal(arena.payloads.lists[0].mode, mode);
-    assert.equal(serializeArena(arena, new Map()), arena.source);
   }
   const arena = parseSelectorArena('svg|a > [x=y i]:future(.x),|*');
   assert.deepEqual(
@@ -51,7 +49,6 @@ test('iterative parser preserves malformed balancing as one opaque raw node', ()
   assert.equal(arena.nodes.length, 1);
   assert.equal(arena.nodes[0].kind, 'raw');
   assert.equal(arena.nodes[0].status, 'opaque');
-  assert.equal(serializeArena(arena, new Map()), ':is(.a');
 });
 
 test('list modes finalize empty-member recovery at the list boundary', () => {

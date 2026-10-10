@@ -5,25 +5,16 @@ import {
   semanticFacts,
 } from './arena.js';
 import { pseudoElements, safePseudos, selectorGrammar } from './grammar.js';
-import {
-  normalizeIdentArgument,
-  normalizeIdentListArgument,
-  normalizeIdentOrStringList,
-  normalizePtNameArgument,
-  parseAnPlusB,
-} from './argumentParsers.js';
+import { parseAnPlusB, pieceArgumentParsers } from './argumentParsers.js';
 import { decodedIdent } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
 /** @typedef {import('./arena.js').ListMode} ListMode */
 /** @typedef {import('./arena.js').ParseStatus} ParseStatus */
 /** @typedef {import('./arena.js').Specificity} Specificity */
+/** @typedef {import('./parseArenaCore.js').ParseWork} ParseWork */
 /** @typedef {NonNullable<ReturnType<typeof cssnanoUtils.balancedTokens>>} Structure */
 /** @typedef {Parameters<Parameters<typeof import('./arena.js').buildSelectorArena>[2]>[0]} Builder */
-/** @typedef {{kind:'list',start:number,end:number,mode:ListMode,argumentPayload?:number,insideHas:boolean}} ListWork */
-/** @typedef {{kind:'pseudo',start:number,end:number,mode:ListMode,insideHas:boolean}} PseudoWork */
-/** @typedef {{kind:'close',node:number,role:'pseudo',status?:ParseStatus,facts?:import('./arena.js').SemanticFacts,specificity?:Specificity}} CloseWork */
-/** @typedef {PseudoWork|ListWork|CloseWork} ParseWork */
 
 /** @param {string | undefined} grammar */
 function listModeForGrammar(grammar) {
@@ -59,24 +50,23 @@ function findNthOf(structure, start, end) {
   return -1;
 }
 
+/** @param {boolean} isElement @return {Specificity} */
+function defaultSpecificity(isElement) {
+  return isElement ? [0, 0, 1] : [0, 1, 0];
+}
+
 /** @param {string | undefined} grammar @param {Structure} structure @param {number} start @param {number} end @param {boolean} isElement */
 function microArgumentSummary(grammar, structure, start, end, isElement) {
   const input = structure.tokens;
   let result;
   if (grammar === 'an-plus-b') result = parseAnPlusB(input, start, end);
-  else if (grammar === 'ident')
-    result = normalizeIdentArgument(input, start, end);
-  else if (grammar === 'ident-list')
-    result = normalizeIdentListArgument(input, start, end);
-  else if (grammar === 'ident-or-string-list')
-    result = normalizeIdentOrStringList(input, start, end);
-  else if (grammar === 'pt-name-selector')
-    result = normalizePtNameArgument(input, start, end);
-  else return;
+  else {
+    const parsePieces = grammar && pieceArgumentParsers.get(grammar);
+    if (!parsePieces) return;
+    result = parsePieces(input, start, end);
+  }
   const valid = result !== undefined && !('valid' in result && !result.valid);
-  let specificity = /** @type {Specificity} */ (
-    isElement ? [0, 0, 1] : [0, 1, 0]
-  );
+  let specificity = defaultSpecificity(isElement);
   if (grammar === 'pt-name-selector' && result && 'specificity' in result)
     specificity =
       /** @type {Specificity | undefined} */ (result.specificity) ??
@@ -192,9 +182,7 @@ export function openPseudo(builder, structure, item, work) {
     argumentNode: undefined,
   });
   const facts = pseudoFacts(name, isFunction, isElement, item.insideHas);
-  const specificity =
-    argument.specificity ??
-    /** @type {Specificity} */ (isElement ? [0, 0, 1] : [0, 1, 0]);
+  const specificity = argument.specificity ?? defaultSpecificity(isElement);
   const node = builder.open('pseudo', item.start, item.end, {
     status: argument.status ?? 'valid',
     payload: payloadIndex,

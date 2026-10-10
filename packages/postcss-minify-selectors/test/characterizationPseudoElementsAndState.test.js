@@ -175,10 +175,11 @@ test('calculates specificity for ::slotted() without double-counting pseudo-clas
   assert.equal(specificityOf('slot::slotted(div.card)'), '0,1,3');
 });
 
-test('drops a hex escape terminator before a colon, bracket, combinator or comma and keeps it before a comment', () => {
+test('drops a hex escape terminator before a colon, bracket, combinator or comma', () => {
   for (const [input, expected] of [
     ['.\\61 :hover', '.\\61:hover'],
     ['.\\61 [data-x]', '.\\61[data-x]'],
+    // The comment is removed; the descendant combinator after it still needs the terminator.
     ['.\\61 /**/ .b', '.\\61  .b'],
     // The second space is a descendant combinator, so the terminator stays.
     ['.\\61  :hover', '.\\61  :hover'],
@@ -193,4 +194,30 @@ test('drops a hex escape terminator before a colon, bracket, combinator or comma
 test('preserves an invalid qualified name after a simple selector', () => {
   const input = '.item\\e0000\\e001 |name';
   assert.equal(normalizeList(input, false, false), input);
+});
+
+test('drops the hex escape terminator from a pseudo-class name', () => {
+  assert.equal(normalizeList(':hove\\72 .a', false, false), ':hove\\72.a');
+});
+
+test('drops the hex escape terminator from a pseudo-element name', () => {
+  assert.equal(
+    normalizeList('::befor\\65 :hover', false, false),
+    ':befor\\65:hover'
+  );
+});
+
+test('drops the hex escape terminator from an attribute modifier', () => {
+  assert.equal(normalizeList('[a=b \\69 ]', false, false), '[a=b \\69]');
+});
+
+test('drops hex escape terminators inside an identifier when the next character is not a hex digit', () => {
+  assert.equal(
+    normalizeList('.\\61 \\62 \\63 ', false, false),
+    '.\\61\\62\\63'
+  );
+});
+
+test('keeps a hex escape terminator inside an identifier when a hex digit follows', () => {
+  assert.equal(normalizeList('.\\61 b', false, false), '.\\61 b');
 });

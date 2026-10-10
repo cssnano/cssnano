@@ -1,5 +1,9 @@
 import cssnanoUtils from 'cssnano-utils';
-import { dropHexEscapeTerminator, unquote } from './tokenUtils.js';
+import {
+  consumeTrivia,
+  dropHexEscapeTerminator,
+  unquote,
+} from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
 
@@ -56,12 +60,7 @@ export function normalizePtNameArgument(tokens, start, end) {
     if (sawTrailingWhitespace && type !== TokenType.Comment) {
       return { valid: false };
     }
-    if (type === TokenType.Comment) {
-      if (token[1].startsWith('/*!')) {
-        pieces.push(token[1]);
-      }
-      continue;
-    }
+    if (consumeTrivia(token, pieces)) continue;
     if (!foundName && isPtNameStart(token)) {
       foundName = true;
       isWildcard = token[0] === TokenType.Delim && token[1] === '*';
@@ -104,27 +103,19 @@ export function normalizeIdentListArgument(tokens, start, end) {
   /** @type {string[]} */
   const pieces = [];
   let count = 0;
-  let lastNameIndex = 0;
 
   for (let i = start; i < end; i++) {
     const token = tokens[i];
     const type = token[0];
 
-    if (type === TokenType.Whitespace) {
-      continue;
-    }
-    if (type === TokenType.Comment) {
-      if (token[1].startsWith('/*!')) {
-        pieces.push(token[1]);
-      }
+    if (consumeTrivia(token, pieces)) {
       continue;
     }
     if (type === TokenType.Ident) {
       if (count > 0) {
         pieces.push(' ');
       }
-      lastNameIndex = pieces.length;
-      pieces.push(token[1]);
+      pieces.push(dropHexEscapeTerminator(token[1]));
       count++;
       continue;
     }
@@ -134,9 +125,6 @@ export function normalizeIdentListArgument(tokens, start, end) {
   if (count === 0) {
     return { valid: false };
   }
-
-  // Only the last name is followed by the closing parenthesis.
-  pieces[lastNameIndex] = dropHexEscapeTerminator(pieces[lastNameIndex]);
 
   return { pieces, valid: true };
 }
@@ -156,13 +144,7 @@ export function normalizeIdentArgument(tokens, start, end) {
     const token = tokens[i];
     const type = token[0];
 
-    if (type === TokenType.Whitespace) {
-      continue;
-    }
-    if (type === TokenType.Comment) {
-      if (token[1].startsWith('/*!')) {
-        pieces.push(token[1]);
-      }
+    if (consumeTrivia(token, pieces)) {
       continue;
     }
     if (type === TokenType.Ident && !foundIdent) {
@@ -223,13 +205,7 @@ export function normalizeIdentOrStringList(tokens, start, end) {
     const token = tokens[i];
     const type = token[0];
 
-    if (type === TokenType.Whitespace) {
-      continue;
-    }
-    if (type === TokenType.Comment) {
-      if (token[1].startsWith('/*!')) {
-        currentTrivia.push(token[1]);
-      }
+    if (consumeTrivia(token, currentTrivia)) {
       continue;
     }
     if (type === TokenType.Comma) {
@@ -270,3 +246,15 @@ export function normalizeIdentOrStringList(tokens, start, end) {
 
   return { pieces, valid: true };
 }
+
+/**
+ * Parsers of the pseudo-class and pseudo-element arguments that are
+ * normalized as token pieces, keyed by the grammar name in `selectorGrammar`.
+ * @type {ReadonlyMap<string, (tokens: readonly CSSToken[], start: number, end: number) => { pieces?: string[], specificity?: Specificity, valid: boolean }>}
+ */
+export const pieceArgumentParsers = new Map([
+  ['ident', normalizeIdentArgument],
+  ['ident-list', normalizeIdentListArgument],
+  ['ident-or-string-list', normalizeIdentOrStringList],
+  ['pt-name-selector', normalizePtNameArgument],
+]);
