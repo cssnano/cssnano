@@ -1,5 +1,14 @@
 # Change Log
 
+## 9.0.9
+
+### Patch Changes
+
+- fix: accept the optional leading rounding strategy of `round()`, such as `round(up, 1s, 1s)`, when postcss-ordered-values orders animations and transitions and when postcss-merge-longhand folds shorthands. The rounding strategy must be separated by a comma, so `round(up 1px, 2px)` is no longer treated as valid. postcss-merge-longhand no longer folds math functions with missing operators, such as `calc(1px 2px)`. postcss-merge-longhand, postcss-ordered-values and postcss-merge-rules now compare property names, keywords and units ASCII-case-insensitively.
+
+- Updated dependencies:
+  - cssnano-utils@9.0.0
+
 ## 9.0.8
 
 ### Patch Changes

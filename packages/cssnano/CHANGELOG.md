@@ -1,5 +1,23 @@
 # Change Log
 
+## 9.6.0
+
+### Minor Changes
+
+- feat(postcss-merge-longhand): merge `row-gap`/`column-gap`, `overscroll-behavior-x`/`-y`, `flex-direction`/`flex-wrap`, `column-rule-*` and equal `overflow-x`/`-y` into their shorthands when every target supports them
+
+### Patch Changes
+
+- refactor: remove cssesc dependency
+
+- fix: improve escape handling in selectors
+
+- fix: update postcss-calc
+
+- fix(postcss-minify-selectors): match escaped pseudo-class and pseudo-element names ASCII-case-insensitively, so U+212A KELVIN SIGN no longer folds to `k`. This covers escaped pseudo names, `:nth-*` keywords such as `of`, `odd` and `even`, `from` in keyframe selectors, and `url()` in namespace rules
+
+- fix: accept the optional leading rounding strategy of `round()`, such as `round(up, 1s, 1s)`, when postcss-ordered-values orders animations and transitions and when postcss-merge-longhand folds shorthands. The rounding strategy must be separated by a comma, so `round(up 1px, 2px)` is no longer treated as valid. postcss-merge-longhand no longer folds math functions with missing operators, such as `calc(1px 2px)`. postcss-merge-longhand, postcss-ordered-values and postcss-merge-rules now compare property names, keywords and units ASCII-case-insensitively.
+
 ## 9.5.0
 
 ### Minor Changes
