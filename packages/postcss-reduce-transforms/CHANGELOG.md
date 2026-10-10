@@ -1,5 +1,12 @@
 # Change Log
 
+## 9.0.6
+
+### Patch Changes
+
+- Updated dependencies:
+  - cssnano-utils@9.0.0
+
 ## 9.0.5
 
 ### Patch Changes

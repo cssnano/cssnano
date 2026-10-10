@@ -1,5 +1,21 @@
 # Change Log
 
+## 9.0.8
+
+### Patch Changes
+
+- refactor: remove cssesc dependency
+
+- fix: improve escape handling in selectors
+
+
+- fix(postcss-minify-selectors): match escaped pseudo-class and pseudo-element names ASCII-case-insensitively, so U+212A KELVIN SIGN no longer folds to `k`. This covers escaped pseudo names, `:nth-*` keywords such as `of`, `odd` and `even`, `from` in keyframe selectors, and `url()` in namespace rules
+
+
+
+- Updated dependencies:
+  - cssnano-utils@9.0.0
+
 ## 9.0.7
 
 ### Patch Changes

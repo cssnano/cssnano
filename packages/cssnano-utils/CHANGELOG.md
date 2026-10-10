@@ -1,5 +1,15 @@
 # Change Log
 
+## 9.0.0
+
+### Major Changes
+
+- feat!: remove the unused `sameParent` export, and `sameContainer`, `numericSource` and `mathFunctionArgumentRanges` from `cssnano-utils`. `mathFunctions` is now a `Map` from each math function name to the inclusive range of its argument count.
+
+### Minor Changes
+
+- feat: export `isHexDigitCode` to test for ASCII hex digit code points
+
 ## 8.2.1
 
 ### Patch Changes
