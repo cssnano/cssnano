@@ -62,23 +62,25 @@ export function lookup(root, path) {
 }
 
 /**
- * The earliest version with standard support, or undefined. A ranged
- * version such as "≤79" only bounds support from above, so its bound is used.
+ * The earliest plain version of the statements that `counts` accepts, or
+ * undefined. A ranged version such as "≤79" only bounds support from above,
+ * so its bound is used.
  *
  * @param {SupportStatement | SupportStatement[]} support
+ * @param {(statement: SupportStatement, statements: SupportStatement[]) => boolean} counts
  * @return {string | undefined}
  */
-export function standardSupportSince(support) {
+export function earliestVersion(support, counts) {
+  const statements = [support].flat();
   /** @type {string | undefined} */
   let earliest;
-  for (const statement of [support].flat()) {
+  for (const statement of statements) {
     if (
       statement.flags ||
       statement.prefix ||
       statement.alternative_name ||
-      statement.partial_implementation ||
-      statement.version_removed ||
-      typeof statement.version_added !== 'string'
+      typeof statement.version_added !== 'string' ||
+      !counts(statement, statements)
     ) {
       continue;
     }
@@ -89,4 +91,41 @@ export function standardSupportSince(support) {
     }
   }
   return earliest;
+}
+
+/**
+ * The earliest version with standard support, or undefined.
+ *
+ * @param {SupportStatement | SupportStatement[]} support
+ * @return {string | undefined}
+ */
+export function standardSupportSince(support) {
+  return earliestVersion(
+    support,
+    (statement) =>
+      !statement.partial_implementation && !statement.version_removed
+  );
+}
+
+/**
+ * The first version by which every entry has the support `sinceOf` finds, or
+ * undefined when one entry has none.
+ *
+ * @param {(CompatEntry | undefined)[]} entries
+ * @param {string} bcdName
+ * @param {(support: SupportStatement | SupportStatement[]) => string | undefined} sinceOf
+ * @return {string | undefined}
+ */
+export function latestSupport(entries, bcdName, sinceOf) {
+  /** @type {string | undefined} */
+  let required;
+  for (const entry of entries) {
+    const support = supportOf(entry)?.[bcdName];
+    const since = support && sinceOf(support);
+    if (since === undefined) return undefined;
+    if (required === undefined || compareVersions(since, required) > 0) {
+      required = since;
+    }
+  }
+  return required;
 }

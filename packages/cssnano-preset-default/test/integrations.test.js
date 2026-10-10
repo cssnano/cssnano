@@ -244,6 +244,29 @@ describe('CSS processing', () => {
       '.error-banner .field-errors.filled,.has-errors .checkbox-inline,.has-errors .checkbox-label,.has-errors .input{background-color:#fcebea;border-color:#cc1f1a}.error-banner .field-errors.filled{width:100%;padding:1.5rem 1.5rem 1rem;border-bottom-width:1px;border-style:solid}.error-banner .field-errors.filled .field-error{width:100%;font-size:.875rem;color:#22292f;line-height:1.5;margin-bottom:.5rem}'
     )
   );
+
+  test(
+    'should merge column-rule longhands around a column-rule-break that the shorthand does not reset',
+    withDefaults.processCSS(
+      'a{column-rule-width:1px;column-rule-break:intersection;column-rule-style:solid;column-rule-color:red}',
+      'a{column-rule-break:intersection;column-rule:1px solid red}'
+    )
+  );
+
+  test(
+    'should keep column-rule longhands around a rule shorthand that resets them',
+    withDefaults.passthroughCSS(
+      'a{column-rule-width:1px;rule:2px dotted blue;column-rule-style:solid;column-rule-color:red}'
+    )
+  );
+
+  test(
+    'should merge equal overflow axes into the overflow shorthand',
+    withDefaults.processCSS(
+      'a{overflow-x:hidden;overflow-y:hidden}',
+      'a{overflow:hidden}'
+    )
+  );
 });
 
 describe('framework tests', () => {

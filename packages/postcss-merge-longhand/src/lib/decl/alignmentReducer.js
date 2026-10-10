@@ -1,10 +1,10 @@
 import cssnanoUtils from 'cssnano-utils';
-import { isCssWideKeyword } from '../isCssWideKeyword.js';
+import { sharesShorthandKeyword } from '../isCssWideKeyword.js';
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
 import isCustomProp from '../isCustomProp.js';
 import { commitShorthand } from './slotVector.js';
-import { hasNonAll, isAll } from './importanceLanes.js';
+import { hasNonAll, repeatsProperty } from './importanceLanes.js';
 import {
   normalizeAlignment,
   parseAlignmentDeclaration,
@@ -47,9 +47,7 @@ function mergeSegment(rule, family, segment, important, parsedDecls) {
   if (segment.some(isCustomProp)) return;
 
   // A CSS-wide keyword cannot share a shorthand with another value.
-  const isGlobal = isCssWideKeyword(align);
-  if (isGlobal !== isCssWideKeyword(justify)) return;
-  if (isGlobal && asciiLowerCase(align) !== asciiLowerCase(justify)) return;
+  if (!sharesShorthandKeyword([align, justify])) return;
 
   const values = segment.map((decl) =>
     /** @type {[string | null, string | null]} */ (parsedDecls.get(decl))
@@ -88,26 +86,6 @@ function processLane(rule, family, laneDecls, important, parsedDecls) {
     segment = [];
   }
   mergeSegment(rule, family, segment, important, parsedDecls);
-}
-
-/**
- * Whether a property occurs twice without an `all` reset in between.
- *
- * @param {Declaration[]} laneDecls
- * @return {boolean}
- */
-function repeatsProperty(laneDecls) {
-  const seen = new Set();
-  for (const decl of laneDecls) {
-    if (isAll(decl)) {
-      seen.clear();
-      continue;
-    }
-    const prop = asciiLowerCase(decl.prop);
-    if (seen.has(prop)) return true;
-    seen.add(prop);
-  }
-  return false;
 }
 
 /**

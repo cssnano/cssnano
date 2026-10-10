@@ -31,6 +31,26 @@ export function isAll(declaration) {
 }
 
 /**
+ * Whether a property occurs twice without an `all` reset in between.
+ *
+ * @param {Declaration[]} laneDecls
+ * @return {boolean}
+ */
+export function repeatsProperty(laneDecls) {
+  const seen = new Set();
+  for (const decl of laneDecls) {
+    if (isAll(decl)) {
+      seen.clear();
+      continue;
+    }
+    const prop = asciiLowerCase(decl.prop);
+    if (seen.has(prop)) return true;
+    seen.add(prop);
+  }
+  return false;
+}
+
+/**
  * @param {Declaration[]} declarations
  * @return {boolean} whether a declaration other than `all` is present, so that
  * a lane of only `all` declarations can be skipped

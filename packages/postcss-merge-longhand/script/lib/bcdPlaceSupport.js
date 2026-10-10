@@ -5,11 +5,10 @@
  * synthesizes place-* when all browserslist targets reach that version.
  */
 import { serializeJson } from '../../../../util/webref/webref.js';
-import { compareVersions } from '../../src/lib/compareVersions.js';
 import {
   browserslistNames,
+  latestSupport,
   standardSupportSince,
-  supportOf,
 } from './bcdSupport.js';
 
 /** @typedef {import('./bcdSupport.js').CompatData} CompatData */
@@ -74,8 +73,6 @@ export function buildPlaceSupport(bcd) {
   /** @type {Map<string, string>} */
   const minimums = new Map();
   for (const [bcdName, browserslistName] of browserslistNames) {
-    /** @type {string | undefined} */
-    let required;
     const entries = [
       ...placeShorthands.flatMap((shorthand) => {
         const property = bcd.css.properties[shorthand];
@@ -85,18 +82,8 @@ export function buildPlaceSupport(bcd) {
       }),
       ...keywordEntries(bcd),
     ];
-    for (const entry of entries) {
-      const support = supportOf(entry)?.[bcdName];
-      const since = support && standardSupportSince(support);
-      if (since === undefined) {
-        required = undefined;
-        break;
-      }
-      if (required === undefined || compareVersions(since, required) > 0) {
-        required = since;
-      }
-    }
-    if (required !== undefined) minimums.set(browserslistName, required);
+    const since = latestSupport(entries, bcdName, standardSupportSince);
+    if (since !== undefined) minimums.set(browserslistName, since);
   }
   return minimums;
 }
