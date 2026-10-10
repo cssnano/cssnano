@@ -1,5 +1,6 @@
 import cssnanoUtils from 'cssnano-utils';
 import { parseAnPlusB } from './argumentParsers.js';
+import { dropHexEscapeTerminator, isHexDigitCode } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
 
@@ -9,23 +10,6 @@ function decoded(token) {
     (/** @type {{value?:string}|undefined} */
     (token?.[4])?.value ?? token?.[1] ?? '').toLowerCase()
   );
-}
-
-/** @param {string | undefined} character */
-function isHexDigit(character) {
-  return character !== undefined && /^[\dA-Fa-f]$/v.test(character);
-}
-
-/** @param {string} value */
-function endsInShortHexEscape(value) {
-  let index = value.length;
-  while (index > 0 && value[index - 1] === ' ') index--;
-  let digits = 0;
-  while (index > 0 && digits < 6 && isHexDigit(value[index - 1])) {
-    index--;
-    digits++;
-  }
-  return digits > 0 && digits < 6 && value[index - 1] === '\\';
 }
 
 /** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} start @param {number} end */
@@ -53,13 +37,12 @@ function hasImportantComment(input, start, end) {
 function normalizedFormulaToken(input, index, end, important, foundSyntax) {
   const token = input[index];
   let value = token[1];
-  if (value.endsWith(' ')) {
-    const next = nextSerializedToken(input, index + 1, end);
-    value =
-      endsInShortHexEscape(value) && isHexDigit(next?.[1][0])
-        ? `${value.trimEnd()} `
-        : value.trimEnd();
-  }
+  // A terminator before a hex digit must stay, otherwise the digit joins the escape.
+  const next = nextSerializedToken(input, index + 1, end);
+  value = dropHexEscapeTerminator(
+    value,
+    next !== undefined && isHexDigitCode(next[1].charCodeAt(0))
+  );
   if (important) return value;
   if (
     !foundSyntax &&

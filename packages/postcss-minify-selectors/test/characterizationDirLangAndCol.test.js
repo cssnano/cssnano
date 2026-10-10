@@ -57,6 +57,19 @@ test('normalizes :lang() arguments with whitespace trimming, unquoting, and dedu
   );
 });
 
+test('keeps an escaped trailing space in a :lang() identifier so the escape does not swallow the closing parenthesis', () => {
+  // `en\ ` is the identifier "en " and must stay escaped; trimming it would leave `\)` in the output.
+  assert.equal(normalizeList(':lang(en\\ )', false, false), ':lang(en\\ )');
+});
+
+test('keeps an escaped trailing space in a :lang() identifier so the escape does not merge it with the next item', () => {
+  // Trimming the escaped space would turn `en\ ,fr` into `en\,fr`, a single identifier "en,fr".
+  assert.equal(
+    normalizeList(':lang(en\\ , fr)', false, false),
+    ':lang(en\\ ,fr)'
+  );
+});
+
 test('preserves invalid :lang() argument lists without modification', () => {
   for (const input of [
     ':lang()',

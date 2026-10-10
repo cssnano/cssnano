@@ -1,5 +1,9 @@
 import cssnanoUtils from 'cssnano-utils';
-import { unquote } from './tokenUtils.js';
+import {
+  dropHexEscapeTerminator,
+  isHexDigitCode,
+  unquote,
+} from './tokenUtils.js';
 
 const { TokenType, tokenStart } = cssnanoUtils;
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
@@ -142,16 +146,34 @@ export function compactIdent(token) {
   return token[1];
 }
 
-/** @param {SelectorArena} arena @param {ArenaNode} node @param {number} tokenIndex */
+/**
+ * A hex escape terminator may go unless the next output character is
+ * whitespace, which a descendant combinator or comment separator would
+ * otherwise be absorbed into, or a hex digit.
+ * @param {SelectorArena} arena @param {ArenaNode} node @param {number} tokenIndex
+ */
 export function compactTerminalIdent(arena, node, tokenIndex) {
   const value = compactIdent(arena.tokens[tokenIndex]);
-  const next = arena.tokens[node.endToken];
-  return !next ||
-    next[0] === TokenType.Whitespace ||
-    next[0] === TokenType.Comma ||
-    next[0] === TokenType.CloseParen
-    ? value.trimEnd()
-    : value;
+  let next = arena.tokens[node.endToken];
+  if (next?.[0] === TokenType.Comment) return value;
+  if (next?.[0] === TokenType.Whitespace) {
+    // Whitespace followed by a combinator or separator is not a descendant combinator.
+    next = arena.tokens[node.endToken + 1];
+    if (
+      next &&
+      next[0] !== TokenType.Comma &&
+      next[0] !== TokenType.CloseParen &&
+      !(
+        next[0] === TokenType.Delim &&
+        (next[1] === '>' || next[1] === '+' || next[1] === '~')
+      )
+    )
+      return value;
+  }
+  return dropHexEscapeTerminator(
+    value,
+    next !== undefined && isHexDigitCode(next[1].charCodeAt(0))
+  );
 }
 
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {number} start @param {number} end */
@@ -220,7 +242,9 @@ export function qualifiedNameOutput(arena, pool, node, removable) {
   if (payload.namespace.kind === 'empty') prefix = '|';
   else if (payload.namespace.kind === 'wildcard') prefix = '*|';
   else if (payload.namespace.kind === 'named')
-    prefix = `${compactIdent(arena.tokens[payload.namespace.token])}|`;
+    prefix = `${dropHexEscapeTerminator(
+      compactIdent(arena.tokens[payload.namespace.token])
+    )}|`;
   return pool.text(
     `${prefix}${compactTerminalIdent(arena, node, payload.subject.token)}`
   );
@@ -232,7 +256,9 @@ export function attributeOutput(arena, pool, node) {
   const payload = arena.payloads.attributes[node.payload];
   const close = node.endToken - 1;
   let nameStart = payload.nameToken;
-  let name = compactIdent(arena.tokens[payload.nameToken]);
+  let name = dropHexEscapeTerminator(
+    compactIdent(arena.tokens[payload.nameToken])
+  );
   if (payload.namespace.kind === 'empty') {
     nameStart--;
     name = `|${name}`;
@@ -241,7 +267,9 @@ export function attributeOutput(arena, pool, node) {
     name = `*|${name}`;
   } else if (payload.namespace.kind === 'named') {
     nameStart = payload.namespace.token;
-    name = `${compactIdent(arena.tokens[payload.namespace.token])}|${name}`;
+    name = `${dropHexEscapeTerminator(
+      compactIdent(arena.tokens[payload.namespace.token])
+    )}|${name}`;
   }
   /** @type {Output[]} */ const values = [pool.text('[')];
   values.push(importantTrivia(arena, pool, node.startToken + 1, nameStart));
@@ -263,13 +291,16 @@ export function attributeOutput(arena, pool, node) {
   values.push(importantTrivia(arena, pool, cursor, matcherStart));
   values.push(pool.text(payload.matcher));
   if (payload.valueToken === undefined) return rawOutput(arena, pool, node);
+  const valueToken = arena.tokens[payload.valueToken];
+  let value = compactIdent(valueToken);
+  if (valueToken[0] === TokenType.String)
+    value = unquote(value).replaceAll('\\\n', '');
+  // A modifier is serialized after a space that the escape would otherwise consume.
+  else if (payload.modifierToken === undefined)
+    value = dropHexEscapeTerminator(value);
   values.push(
     importantTrivia(arena, pool, matcherEnd, payload.valueToken),
-    pool.text(
-      arena.tokens[payload.valueToken][0] === TokenType.String
-        ? unquote(arena.tokens[payload.valueToken][1]).replaceAll('\\\n', '')
-        : compactIdent(arena.tokens[payload.valueToken])
-    )
+    pool.text(value)
   );
   cursor = payload.valueToken + 1;
   if (payload.modifierToken !== undefined) {

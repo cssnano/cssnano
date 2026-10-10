@@ -175,11 +175,15 @@ test('calculates specificity for ::slotted() without double-counting pseudo-clas
   assert.equal(specificityOf('slot::slotted(div.card)'), '0,1,3');
 });
 
-test('preserves escape terminators when legacy output requires them', () => {
+test('drops a hex escape terminator before a colon, bracket, combinator or comma and keeps it before a comment', () => {
   for (const [input, expected] of [
-    ['.\\61 :hover', '.\\61 :hover'],
-    ['.\\61 [data-x]', '.\\61 [data-x]'],
-    ['.\\61 > .item', '.\\61 >.item'],
+    ['.\\61 :hover', '.\\61:hover'],
+    ['.\\61 [data-x]', '.\\61[data-x]'],
+    ['.\\61 /**/ .b', '.\\61  .b'],
+    // The second space is a descendant combinator, so the terminator stays.
+    ['.\\61  :hover', '.\\61  :hover'],
+    ['.\\61   [data-x]', '.\\61  [data-x]'],
+    ['.\\61 > .item', '.\\61>.item'],
     ['.\\61  > .item', '.\\61>.item'],
     ['.\\61 , .item', '.\\61,.item'],
   ])
