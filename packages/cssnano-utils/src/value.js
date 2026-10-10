@@ -114,9 +114,8 @@ function closeForOpening(type) {
 }
 
 /**
- * Reports whether a value, or its prefix before `end`, ends in a backslash
- * that begins an escape sequence, as opposed to a backslash that is itself
- * escaped.
+ * Reports whether a value ends in a backslash that begins an escape
+ * sequence, as opposed to a backslash that is itself escaped.
  * @param {string} value
  * @return {boolean}
  */

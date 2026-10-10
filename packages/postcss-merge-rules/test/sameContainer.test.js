@@ -242,3 +242,9 @@ test('sameContainer should not hold when the outer blocks differ and the inner o
   const second = root.nodes[1].nodes[0];
   assert.strictEqual(sameContainer(first, second), false);
 });
+
+test('sameContainer does not fold the Kelvin sign in at-rule names, because CSS matches names ASCII-case-insensitively', () => {
+  const kelvin = postcss.atRule({ name: 'Keyframes', params: 'a' });
+  const ascii = postcss.atRule({ name: 'keyframes', params: 'a' });
+  assert.strictEqual(sameContainer(kelvin, ascii), false);
+});

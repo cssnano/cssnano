@@ -1,5 +1,6 @@
 /* CSS Values 4 math functions, mapped to the inclusive range of how many
- * arguments each accepts. */
+ * calculation arguments each accepts. The optional leading <rounding-strategy>
+ * keyword of round() is not a calculation and is not counted. */
 /** @type {ReadonlyMap<string, readonly [number, number]>} */
 const mathFunctions = new Map([
   // Type of the arguments: can yield a length, angle, time, number or

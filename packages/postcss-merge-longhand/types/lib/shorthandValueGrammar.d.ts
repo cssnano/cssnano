@@ -3,12 +3,13 @@ export type FunctionFrame = {
     expected: import('@csstools/css-tokenizer').TokenType;
     commas: number;
     hasValue: boolean;
+    roundingStrategy: boolean;
 };
 export type Component = {
     raw: string;
     tokens: import('@csstools/css-tokenizer').CSSToken[];
 };
-/** @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean}} FunctionFrame */
+/** @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean, roundingStrategy: boolean}} FunctionFrame */
 /**
  * @typedef {{raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}}
  *   Component

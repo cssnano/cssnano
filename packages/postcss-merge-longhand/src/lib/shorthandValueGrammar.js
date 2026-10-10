@@ -3,8 +3,14 @@ import cssnanoUtils from 'cssnano-utils';
 import { isLengthValue } from './lengthGrammar.js';
 import { closingTokens } from './valueComponents.js';
 
-const { TokenType, closeForOpening, decoded, mathFunctions, numeric } =
-  cssnanoUtils;
+const {
+  TokenType,
+  asciiLowerCase,
+  closeForOpening,
+  decoded,
+  mathFunctions,
+  numeric,
+} = cssnanoUtils;
 
 /* Math functions resolve to a value the grammar can accept positionally, and
  * anchor-size() always resolves to a length. */
@@ -26,7 +32,11 @@ const nonLengthResultFunctions = new Set([
   'tan',
 ]);
 
-/** @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean}} FunctionFrame */
+/* round() may lead with a <rounding-strategy> keyword, an argument that the
+ * math function arity table does not count. */
+const roundingStrategies = new Set(['nearest', 'up', 'down', 'to-zero']);
+
+/** @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean, roundingStrategy: boolean}} FunctionFrame */
 
 /**
  * @typedef {{raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}}
@@ -104,10 +114,27 @@ export function hasAllowedFunctions(component, allowed) {
     } else {
       const expected = closeForOpening(token[0]);
       if (expected !== undefined) {
-        stack.push({ name: null, expected, commas: 0, hasValue: false });
+        stack.push({
+          name: null,
+          expected,
+          commas: 0,
+          hasValue: false,
+          roundingStrategy: false,
+        });
       } else {
         const frame = stack.at(-1);
         if (!frame) return false;
+        const isStrategy =
+          frame.name === 'round' &&
+          token[0] === TokenType.Ident &&
+          roundingStrategies.has(asciiLowerCase(decoded(token)));
+        if (frame.commas === 0) {
+          frame.roundingStrategy = isStrategy && !frame.hasValue;
+        } else if (isStrategy) {
+          // Only the first argument may be a strategy; later ones are not
+          // counted, so a repeated keyword would pass the arity check.
+          return false;
+        }
         frame.hasValue = true;
       }
     }
@@ -124,6 +151,7 @@ function pushFunctionFrame(stack, name, allowed) {
     expected: TokenType.CloseParen,
     commas: 0,
     hasValue: false,
+    roundingStrategy: false,
   });
   return true;
 }
@@ -141,9 +169,14 @@ function consumeFunctionComma(stack) {
 function consumeFunctionCloser(stack, type) {
   const frame = stack.pop();
   if (!frame || frame.expected !== type || !frame.hasValue) return false;
-  if (!functionArityIsValid(frame.name, frame.commas + 1)) return false;
+  const argumentCount = frame.commas + (frame.roundingStrategy ? 0 : 1);
+  if (!functionArityIsValid(frame.name, argumentCount)) return false;
   const parent = stack.at(-1);
-  if (parent) parent.hasValue = true;
+  if (parent) {
+    // A nested value makes a leading keyword part of a larger argument.
+    if (parent.commas === 0) parent.roundingStrategy = false;
+    parent.hasValue = true;
+  }
   return true;
 }
 

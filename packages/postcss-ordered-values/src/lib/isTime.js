@@ -1,12 +1,17 @@
 import cssnanoUtils from 'cssnano-utils';
 import { isDimension, isFunction, isNumber, name } from './tokenize.js';
 
-const { TokenType, decoded, lengthUnits, mathFunctions } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, lengthUnits, mathFunctions } =
+  cssnanoUtils;
 const timeUnits = new Set(['ms', 's']);
 const angleUnits = new Set(['deg', 'grad', 'rad', 'turn']);
 const trigFunctions = new Set(['sin', 'cos', 'tan']);
 const inverseTrigFunctions = new Set(['asin', 'acos', 'atan']);
 const numberToNumberFunctions = new Set(['pow', 'sqrt', 'log', 'exp']);
+/* round() may lead with a <rounding-strategy> keyword, an argument that the
+ * math function arity table does not count. */
+const roundingStrategies = new Set(['nearest', 'up', 'down', 'to-zero']);
+const ROUNDING_STRATEGY = 'rounding-strategy';
 const closers = new Set([
   TokenType.CloseParen,
   TokenType.CloseSquare,
@@ -47,11 +52,18 @@ function finish(frame) {
   return frame.values[0];
 }
 
+/** @param {Frame} frame @return {string[]} */
+function calculationArguments(frame) {
+  return frame.name === 'round' && frame.args[0] === ROUNDING_STRATEGY
+    ? frame.args.slice(1)
+    : frame.args;
+}
+
 /** @param {Frame} frame */
 function functionResult(frame) {
-  const values = frame.args;
   const fn = frame.name;
   if (!fn) return null;
+  const values = calculationArguments(frame);
   const range = mathFunctions.get(fn);
   if (!range || values.length < range[0] || values.length > range[1])
     return null;
@@ -128,9 +140,25 @@ function consumeComma(frame) {
   return true;
 }
 
+/**
+ * A rounding strategy is accepted only as the whole first argument of round().
+ * @param {Frame[]} frames @param {Frame} frame @param {import('@csstools/css-tokenizer').CSSToken} token
+ */
+function consumeRoundingStrategy(frames, frame, token) {
+  if (
+    frame.name !== 'round' ||
+    frame.args.length > 0 ||
+    frame.values.length > 0 ||
+    !roundingStrategies.has(asciiLowerCase(decoded(token)))
+  )
+    return false;
+  return addValue(frames, ROUNDING_STRATEGY);
+}
+
 /** @param {ParserState} state @param {Frame} frame @param {number} index @param {string} operator */
 function consumeOperator(state, frame, index, operator) {
-  if (frame.expectOperand) return false;
+  if (frame.expectOperand || frame.values.at(-1) === ROUNDING_STRATEGY)
+    return false;
   if (
     (operator === '+' || operator === '-') &&
     (state.input[index - 1]?.[0] !== TokenType.Whitespace ||
@@ -180,6 +208,8 @@ function consumeToken(state, index) {
     return addValue(state.frames, `dimension:${unit}`);
   }
   if (type === TokenType.Function) return consumeFunction(state, frame, token);
+  if (type === TokenType.Ident)
+    return consumeRoundingStrategy(state.frames, frame, token);
   if (type === TokenType.OpenParen) return consumeOpenParen(state, frame);
   if (type === TokenType.Comma) return consumeComma(frame);
   if (
