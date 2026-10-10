@@ -1,8 +1,11 @@
+import cssnanoUtils from 'cssnano-utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { cssWideKeywords } from '../spec.js';
 import isCustomProp from '../isCustomProp.js';
 import { splitValue } from '../valueComponents.js';
 import shorthandData from '../../data/shorthandIdentities.json' with { type: 'json' };
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Declaration} from 'postcss'; */
 
@@ -82,7 +85,7 @@ for (const family of Object.values(alignmentFamilies)) {
  */
 function parseAlignmentShorthand(family, value) {
   const trimmed = value.trim();
-  const lower = trimmed.toLowerCase();
+  const lower = asciiLowerCase(trimmed);
   if (!/[\s\\]/v.test(lower)) {
     if (cssWideKeywords.has(lower) || family.symmetricForms.has(lower)) {
       return [trimmed, trimmed];
@@ -95,7 +98,7 @@ function parseAlignmentShorthand(family, value) {
   if (components.length < 1 || components.length > 4) return null;
 
   if (components.length <= 2) {
-    const fullNorm = components.map((c) => c.raw.toLowerCase()).join(' ');
+    const fullNorm = components.map((c) => asciiLowerCase(c.raw)).join(' ');
     if (cssWideKeywords.has(fullNorm) || family.symmetricForms.has(fullNorm)) {
       const fullRaw = components.map((c) => c.raw).join(' ');
       return [fullRaw, fullRaw];
@@ -109,8 +112,8 @@ function parseAlignmentShorthand(family, value) {
     const firstStr = first.map((c) => c.raw).join(' ');
     const secondStr = second.map((c) => c.raw).join(' ');
     if (
-      family.alignForms.has(firstStr.toLowerCase()) &&
-      family.justifyForms.has(secondStr.toLowerCase())
+      family.alignForms.has(asciiLowerCase(firstStr)) &&
+      family.justifyForms.has(asciiLowerCase(secondStr))
     ) {
       return [firstStr, secondStr];
     }
@@ -131,7 +134,7 @@ function parseAlignmentShorthand(family, value) {
 export function parseAlignmentDeclaration(family, decl) {
   const value = decl.value?.trim();
   if (!value) return null;
-  const prop = decl.prop.toLowerCase();
+  const prop = asciiLowerCase(decl.prop);
   if (prop === family.shorthand) return parseAlignmentShorthand(family, value);
   const slot = family.slots.get(prop);
   if (slot === undefined) return null;
@@ -146,7 +149,7 @@ export function parseAlignmentDeclaration(family, decl) {
       normalized = components.map((c) => c.raw).join(' ');
     }
     const forms = slot === 0 ? family.alignForms : family.justifyForms;
-    if (!forms.has(normalized.toLowerCase())) return null;
+    if (!forms.has(asciiLowerCase(normalized))) return null;
   }
   return slot === 0 ? [normalized, null] : [null, normalized];
 }
@@ -182,7 +185,7 @@ export const widelySupported = new Set([
  * @return {Set<string>}
  */
 function supportFeatures(value) {
-  const keywords = value.toLowerCase().split(' ');
+  const keywords = asciiLowerCase(value).split(' ');
   /** @type {Set<string>} */
   const features = new Set();
   for (const [index, keyword] of keywords.entries()) {
@@ -218,8 +221,8 @@ export function sharesKeywordSupport(values) {
  * @return {string}
  */
 export function normalizeAlignment(family, [val0, val1]) {
-  const v0 = val0.toLowerCase();
-  const v1 = val1.toLowerCase();
+  const v0 = asciiLowerCase(val0);
+  const v1 = asciiLowerCase(val1);
   if (v0 === v1 && (family.symmetricForms.has(v0) || cssWideKeywords.has(v0))) {
     return val0;
   }

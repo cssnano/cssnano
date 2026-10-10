@@ -1,3 +1,4 @@
+import cssnanoUtils from 'cssnano-utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
@@ -9,6 +10,8 @@ import parseTrbl from '../parseTrbl.js';
 import { boxProperties, shorthandSlot } from './boxGroups.js';
 import { isAll } from './importanceLanes.js';
 import { SlotLane, commitShorthand, flushableSlots } from './slotVector.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {BoxFamily} from './boxGroups.js'; */
@@ -114,7 +117,7 @@ export function shortestWithFreeSlots(values, free, minify) {
 function lastPlainSetters(family, laneDecls) {
   const last = family.longhands.map(() => -1);
   for (const [index, declaration] of laneDecls.entries()) {
-    const property = boxProperties.get(declaration.prop.toLowerCase());
+    const property = boxProperties.get(asciiLowerCase(declaration.prop));
     if (
       declaration.parent === undefined ||
       property?.family !== family ||
@@ -155,7 +158,7 @@ function freeOverriddenSlots(family, laneDecls, inserted) {
     const anchor = laneDecls[index];
     const target = inserted?.get(anchor) ?? anchor;
     if (target.parent === undefined) continue;
-    const property = boxProperties.get(target.prop.toLowerCase());
+    const property = boxProperties.get(asciiLowerCase(target.prop));
     if (
       property?.family !== family ||
       property.slot !== shorthandSlot ||
@@ -267,7 +270,7 @@ export function reduceFamilyLane(
     const decl = laneDecls[position];
     const property = isAll(decl)
       ? undefined
-      : boxProperties.get(decl.prop.toLowerCase());
+      : boxProperties.get(asciiLowerCase(decl.prop));
     if (property === undefined) {
       lane.reset();
       continue;

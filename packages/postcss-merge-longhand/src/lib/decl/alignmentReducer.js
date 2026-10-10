@@ -1,3 +1,4 @@
+import cssnanoUtils from 'cssnano-utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
@@ -9,6 +10,8 @@ import {
   parseAlignmentDeclaration,
   sharesKeywordSupport,
 } from './alignmentForms.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {AlignmentFamilyConfig} from './alignmentForms.js'; */
@@ -46,7 +49,7 @@ function mergeSegment(rule, family, segment, important, parsedDecls) {
   // A CSS-wide keyword cannot share a shorthand with another value.
   const isGlobal = isCssWideKeyword(align);
   if (isGlobal !== isCssWideKeyword(justify)) return;
-  if (isGlobal && align.toLowerCase() !== justify.toLowerCase()) return;
+  if (isGlobal && asciiLowerCase(align) !== asciiLowerCase(justify)) return;
 
   const values = segment.map((decl) =>
     /** @type {[string | null, string | null]} */ (parsedDecls.get(decl))
@@ -100,7 +103,7 @@ function repeatsProperty(laneDecls) {
       seen.clear();
       continue;
     }
-    const prop = decl.prop.toLowerCase();
+    const prop = asciiLowerCase(decl.prop);
     if (seen.has(prop)) return true;
     seen.add(prop);
   }
@@ -115,7 +118,7 @@ function repeatsProperty(laneDecls) {
  * @return {boolean}
  */
 function hasMergeableProperties(declarations) {
-  return new Set(declarations.map((d) => d.prop.toLowerCase())).size > 1;
+  return new Set(declarations.map((d) => asciiLowerCase(d.prop))).size > 1;
 }
 
 /**
@@ -131,7 +134,7 @@ function hasMergeableProperties(declarations) {
  */
 export function reduceAlignmentFamily(rule, family, declarations, lanes) {
   if (
-    declarations.some((d) => !family.allProps.has(d.prop.toLowerCase())) ||
+    declarations.some((d) => !family.allProps.has(asciiLowerCase(d.prop))) ||
     !hasMergeableProperties(declarations)
   ) {
     return;
@@ -144,7 +147,7 @@ export function reduceAlignmentFamily(rule, family, declarations, lanes) {
   /** @type {ParsedDeclarations} */
   const parsedDecls = new Map();
   for (const decl of declarations) {
-    const isShort = decl.prop.toLowerCase() === family.shorthand;
+    const isShort = asciiLowerCase(decl.prop) === family.shorthand;
     // Hacks and substitution-backed shorthands only bound a segment.
     if (stylehacks.detect(decl) || (isShort && !canExplode(decl))) continue;
     const parsed = parseAlignmentDeclaration(family, decl);

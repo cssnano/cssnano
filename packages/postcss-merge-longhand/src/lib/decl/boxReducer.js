@@ -1,3 +1,4 @@
+import cssnanoUtils from 'cssnano-utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import stylehacks from 'stylehacks';
 import { boxBrowserKeeps } from '../validateBox.js';
@@ -6,6 +7,8 @@ import { discardDeadDeclarations } from './crossKindCoverage.js';
 import { discardOverriddenInLanes } from './overriddenDeclarations.js';
 import { formsOf, isExplodable, reduceFamilyLane } from './slotSolver.js';
 import { hasNonAll } from './importanceLanes.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {BoxFamily} from './boxGroups.js'; */
@@ -66,7 +69,7 @@ export function addBoxDeclaration(
 const isInvalid = (d) =>
   !stylehacks.detect(d) &&
   !isCssWideKeyword(d.value) &&
-  !boxBrowserKeeps(d.prop.toLowerCase(), d.value);
+  !boxBrowserKeeps(asciiLowerCase(d.prop), d.value);
 
 /**
  * @param {Container} rule
@@ -88,7 +91,7 @@ export function reduceBox(rule, box, support) {
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
     const s = live[0];
-    const property = s && boxProperties.get(s.prop.toLowerCase());
+    const property = s && boxProperties.get(asciiLowerCase(s.prop));
     if (
       property?.slot === shorthandSlot &&
       !stylehacks.detect(s) &&
