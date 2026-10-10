@@ -101,3 +101,16 @@ test(
     '.a,.b,.c{color:red}.x{height:1px}.c,.d{top:0}'
   )
 );
+
+test(
+  'should let a rule that gave up declarations take later rules by the declarations it kept, because its keys describe what it holds now',
+  processCSS(
+    '.a{color:red}.x{margin:0}.b{color:red;top:0}.y{margin:1px}.c{top:0}',
+    '.a,.b{color:red}.x{margin:0}.b,.c{top:0}.y{margin:1px}'
+  )
+);
+
+test(
+  'should keep a rule apart from a group when a rule between them sets a shared property other than the first, because joining would let it override the moved declaration',
+  passthroughCSS('.a{color:red;top:0}.x{top:1px}.b{color:red;top:0}')
+);

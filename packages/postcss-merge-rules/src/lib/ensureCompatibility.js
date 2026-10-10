@@ -7,7 +7,10 @@ import { scanCompatibility } from './selectorScan.js';
 // must be a valid <ident-token>, so `#1a` and `.1a` take the full check.
 const ident = String.raw`(?:-?[_A-Za-z]|--)[\-\w]*`;
 const compound = String.raw`[#.]?${ident}(?:[#.]${ident})*`;
-const simpleSelectorRe = new RegExp(`^${compound}(?: +${compound})*$`, 'v');
+export const simpleSelectorRe = new RegExp(
+  `^${compound}(?: +${compound})*$`,
+  'v'
+);
 
 /**
  * @param {string} selector

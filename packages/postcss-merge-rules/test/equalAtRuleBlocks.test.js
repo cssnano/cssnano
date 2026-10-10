@@ -1,4 +1,6 @@
+import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import postcss from 'postcss';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
@@ -203,3 +205,102 @@ test(
     '@media print{.a{color:red}.c{width:1px}}@media print{@layer x{.b{top:0}}}'
   )
 );
+
+// Down joins: the earlier block cannot move up past `.x`'s `top` conflict with
+// the later block, but it can move down past `.x`, since `.x` shares no
+// property with the earlier block.
+
+test(
+  'should move an earlier equal @supports block down when the rule between sets a property only the later block sets',
+  processCSS(
+    '@supports (display:grid){.a{color:red}}.x{top:0}@supports (display:grid){.b{top:2px}}',
+    '.x{top:0}@supports (display:grid){.a{color:red}.b{top:2px}}'
+  )
+);
+
+test(
+  'should move an earlier equal @container block down when the rule between sets a property only the later block sets',
+  processCSS(
+    '@container (min-width:1px){.a{color:red}}.x{top:0}@container (min-width:1px){.b{top:2px}}',
+    '.x{top:0}@container (min-width:1px){.a{color:red}.b{top:2px}}'
+  )
+);
+
+test(
+  // After the first down join the block stands at the second position, so the
+  // third block must be compared against writes between that position and its own.
+  'should join a chain of three equal @media blocks downward into the last position',
+  processCSS(
+    '@media print{.a{color:red}}.x{top:0}@media print{.b{top:1px}}.y{height:3px}@media print{.c{height:2px}}',
+    '.x{top:0}.y{height:3px}@media print{.a{color:red}.b{top:1px}.c{height:2px}}'
+  )
+);
+
+test(
+  'should join a third equal @media block upward into the block that an earlier down join placed',
+  processCSS(
+    '@media print{.a{color:red}}.x{top:0}@media print{.b{top:1px}}.y{color:blue}@media print{.c{top:2px}}',
+    '.x{top:0}@media print{.a{color:red}.b{top:1px}.c{top:2px}}.y{color:blue}'
+  )
+);
+
+test(
+  // `.x` nests `top`, which the later block sets, and `color`, which the
+  // earlier block sets, so neither block can move past it.
+  'should not join equal @media blocks when a nested rule between them sets a property from each block',
+  passthroughCSS(
+    '@media print{.a{color:red}}.x{top:0;.y{color:blue}}@media print{.b{top:2px}}'
+  )
+);
+
+test(
+  'should not join equal @media blocks when a rule inside an at-rule between them sets a conflicting property',
+  passthroughCSS(
+    '@media print{.a{color:red}}@supports (display:grid){.x{color:blue;top:0}}@media print{.b{top:2px}}'
+  )
+);
+
+test(
+  'should move an earlier equal @media block down when it holds a nested @supports block',
+  processCSS(
+    '@media print{.a{color:red}@supports (display:grid){.c{width:1px}}}.x{top:0}@media print{.b{top:2px}}',
+    '.x{top:0}@media print{.a{color:red}@supports (display:grid){.c{width:1px}}.b{top:2px}}'
+  )
+);
+
+test(
+  'should not move an earlier equal @media block down past a rule that conflicts with its nested @supports block',
+  passthroughCSS(
+    '@media print{@supports (display:grid){.c{width:1px}}}.x{width:2px;top:0}@media print{.b{top:2px}}'
+  )
+);
+
+test(
+  // The later block takes the earlier block's place, so the comment and
+  // indentation that preceded it must stay in front of it. The whitespace
+  // before the first rule is incidental and is not asserted.
+  'should keep the later block comment and indentation when an equal @media block moves down',
+  async () => {
+    const { css } = await postcss([plugin]).process(
+      '@media print{.a{color:red}}\n.x{top:0}\n  /* later */\n  @media print{.b{top:2px}}',
+      { from: undefined }
+    );
+    assert.ok(
+      css.endsWith(
+        '.x{top:0}\n  /* later */\n  @media print{.a{color:red}.b{top:2px}}'
+      ),
+      css
+    );
+  }
+);
+
+test('should produce the same output when equal @media blocks joined downward are processed again', async () => {
+  const once = await postcss([plugin]).process(
+    '@media print{.a{color:red}}.x{top:0}@media print{.b{top:2px}}',
+    { from: undefined }
+  );
+  const twice = await postcss([plugin]).process(once.css, {
+    from: undefined,
+  });
+  assert.equal(twice.css, once.css);
+});

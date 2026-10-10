@@ -12,8 +12,15 @@ export function selectorsLength(selectors) {
 }
 
 // How many rules after the pair may join the shared rule. A constant bound
-// keeps the search linear in the stylesheet.
-const SHARING_WINDOW = 10;
+// keeps the search linear in the stylesheet. `findGroup` reads it forward and
+// `earliestPairReaching` backward through `PAIR_REACH`, so a change to the
+// window or to which rules may join needs both.
+export const SHARING_WINDOW = 10;
+
+// How many links back from the last rule that can join a group its pair's
+// first rule stands: the pair's second rule and the whole window lie between.
+// `earliestPairReaching` walks this far to find every group a rewrite changes.
+const PAIR_REACH = SHARING_WINDOW + 1;
 
 /**
  * Whether a declaration among `nodes`, other than the `claimed` ones, sets a
@@ -209,4 +216,76 @@ export function findGroup(
     followers: followers.slice(0, size),
     added: [...listed].slice(listedBefore, listedAtBest),
   };
+}
+
+/**
+ * Keeps in `scratch` only the keys that `keySet` holds, compacting in place.
+ *
+ * @param {number[]} scratch
+ * @param {Set<number>} keySet
+ * @return {void}
+ */
+function keepKeysIn(scratch, keySet) {
+  let kept = 0;
+  for (const key of scratch) {
+    if (keySet.has(key)) scratch[kept++] = key;
+  }
+  scratch.length = kept;
+}
+
+/**
+ * Records in `earliest` the farthest pair before `resume` that a rewrite at
+ * `link` can change, if it is farther than the recorded pair. A later rule
+ * joins a group only by repeating the shared declarations, so the walk stops
+ * at the first rule that breaks that run or after `PAIR_REACH` links.
+ *
+ * @param {RuleLink} link a rule that a rewrite placed
+ * @param {RuleLink} resume the sweep's resume point; only pairs before it count
+ * @param {number} offset how many links `link` stands after the first new rule
+ * @param {number[]} scratch the declaration keys still shared by the walk
+ * @param {import('./mergeState.js').default} mergeState
+ * @param {{link: RuleLink | null, distance: number}} earliest the best pair so
+ * far, and its distance in links from the first new rule
+ * @return {void}
+ */
+export function earliestPairReaching(
+  link,
+  resume,
+  offset,
+  scratch,
+  mergeState,
+  earliest
+) {
+  const parent = link.slot.parent;
+  const own = mergeState.declarationKeysOf(link.rule);
+  let passed = false;
+  let member = link;
+  for (let depth = 1; ; depth++) {
+    const prev = /** @type {RuleLink} */ (member.prev);
+    if (!prev.rule) break;
+    const other = mergeState.declarationKeysOf(prev.rule);
+    if (depth === 1) {
+      // Seed from the smaller key list, which bounds the first intersection.
+      const [from, to] =
+        own.keys.length <= other.keys.length ? [own, other] : [other, own];
+      scratch.length = 0;
+      for (const key of from.keys) {
+        if (to.keySet.has(key)) scratch.push(key);
+      }
+    } else {
+      keepKeysIn(scratch, other.keySet);
+    }
+    if (scratch.length === 0) break;
+    // Walking back, the links past `resume` are earlier than it.
+    if (passed) {
+      const distance = depth - offset;
+      if (!earliest.link || distance > earliest.distance) {
+        earliest.link = prev;
+        earliest.distance = distance;
+      }
+    }
+    if (prev === resume) passed = true;
+    if (depth >= PAIR_REACH || prev.slot.parent !== parent) break;
+    member = prev;
+  }
 }

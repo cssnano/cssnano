@@ -5,11 +5,15 @@ import data from '../src/data/propertyGroups.json' with { type: 'json' };
 import LastWriteIndex, {
   collectDeclarations,
   isOpaque,
+  PropertyWrites,
 } from '../src/lib/lastWriteIndex.js';
 import { isConflictingProp } from '../src/lib/propertyRelations.js';
 
 /** @param {string} prop */
 const decl = (prop) => ({ prop });
+
+// Element keys for writes that may reach any element.
+const unknownElements = () => null;
 
 /** @param {string} css */
 const firstNode = (css) => /** @type {any} */ (postcss.parse(css).first);
@@ -158,7 +162,7 @@ test('last-write index: place-* acts as a wildcard for unknown vendor properties
 test('last-write index: moveWrites makes the moved declarations count from the new position', () => {
   const index = new LastWriteIndex();
   index.record(decl('color'), 1);
-  index.moveWrites([decl('width')], 5);
+  index.moveWrites([decl('width')], 5, unknownElements);
   assert.equal(index.conflictsSince([decl('width')], 4), true);
   assert.equal(index.conflictsSince([decl('width')], 5), false);
 });
@@ -166,17 +170,17 @@ test('last-write index: moveWrites makes the moved declarations count from the n
 test('last-write index: moveWrites keeps a later write to the same property', () => {
   const index = new LastWriteIndex();
   index.record(decl('color'), 7);
-  index.moveWrites([decl('color')], 3);
+  index.moveWrites([decl('color')], 3, unknownElements);
   assert.equal(index.conflictsSince([decl('color')], 6), true);
 });
 
-test('last-write index: lastConflict returns the position of the newest conflicting write', () => {
-  const index = new LastWriteIndex();
-  index.record(decl('margin-top'), 1);
-  index.record(decl('margin'), 2);
-  index.record(decl('color'), 3);
-  assert.equal(index.lastConflict(decl('margin-left')), 2);
-  assert.equal(index.lastConflict(decl('width')), -1);
+test('property writes: lastConflict returns the position of the newest conflicting write', () => {
+  const writes = new PropertyWrites();
+  writes.record(decl('margin-top'), 1);
+  writes.record(decl('margin'), 2);
+  writes.record(decl('color'), 3);
+  assert.equal(writes.lastConflict(decl('margin-left')), 2);
+  assert.equal(writes.lastConflict(decl('width')), -1);
 });
 
 test('last-write index: recordNode records declarations inside @media, @supports and @container', () => {
@@ -186,7 +190,7 @@ test('last-write index: recordNode records declarations inside @media, @supports
     '@container (min-width:1px){.a{color:red}}',
   ]) {
     const index = new LastWriteIndex();
-    index.recordNode(firstNode(css), 1);
+    index.recordNode(firstNode(css), 1, unknownElements);
     assert.equal(index.conflictsSince([decl('color')], 0), true, css);
     assert.equal(index.conflictsSince([decl('width')], 0), false, css);
   }
@@ -194,7 +198,11 @@ test('last-write index: recordNode records declarations inside @media, @supports
 
 test('last-write index: recordNode records declarations of nested rules', () => {
   const index = new LastWriteIndex();
-  index.recordNode(firstNode('.a{width:1px;& .b{color:red}}'), 1);
+  index.recordNode(
+    firstNode('.a{width:1px;& .b{color:red}}'),
+    1,
+    unknownElements
+  );
   assert.equal(index.conflictsSince([decl('color')], 0), true);
 });
 
@@ -207,14 +215,14 @@ test('last-write index: recordNode treats an at-rule it cannot analyse as a barr
     '@import "x.css";',
   ]) {
     const index = new LastWriteIndex();
-    index.recordNode(firstNode(css), 1);
+    index.recordNode(firstNode(css), 1, unknownElements);
     assert.equal(index.conflictsSince([decl('width')], 0), true, css);
   }
 });
 
 test('last-write index: recordNode ignores comments', () => {
   const index = new LastWriteIndex();
-  index.recordNode(firstNode('/* note */'), 1);
+  index.recordNode(firstNode('/* note */'), 1, unknownElements);
   assert.equal(index.conflictsSince([decl('color')], 0), false);
 });
 

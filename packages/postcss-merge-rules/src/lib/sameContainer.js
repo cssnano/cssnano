@@ -37,6 +37,22 @@ function checkMatch(nodeA, nodeB) {
   return nodeA.type === nodeB.type;
 }
 
+/**
+ * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
+ * cascaded by position.
+ *
+ * @param {import('postcss').Container | undefined} container
+ * @return {boolean}
+ */
+export function isKeyframes(container) {
+  return (
+    container?.type === 'atrule' &&
+    asciiLowerCase(
+      /** @type {import('postcss').AtRule} */ (container).name
+    ).includes('keyframes')
+  );
+}
+
 /** @typedef {import('postcss').AnyNode & {parent?: Child}} Child */
 
 /**

@@ -27,6 +27,14 @@ export default class MergeState {
      */
     forget(rule: Rule): void;
     /**
+     * The elements the rule can match. An arrow function, so it passes as a
+     * callback without a closure per call.
+     *
+     * @param {Rule} rule
+     * @return {string[] | null}
+     */
+    elementKeysOf: (rule: Rule) => string[] | null;
+    /**
      * Numbers declarations so equal ones, with the same property, value and
      * importance, share a key for the whole stylesheet. An arrow function, so
      * it passes as a callback without a closure per call.
@@ -55,8 +63,10 @@ export default class MergeState {
      *
      * @param {Rule} rule
      * @param {string[]} selectors
+     * @return {readonly string[] | null} the element keys the selectors add, or
+     * null when the rule's elements are not listed
      */
-    addSelectors(rule: Rule, selectors: string[]): void;
+    addSelectors(rule: Rule, selectors: string[]): readonly string[] | null;
     /**
      * Gives `later` the selectors of `earlier`, which stands before it and is
      * dropped by the caller.

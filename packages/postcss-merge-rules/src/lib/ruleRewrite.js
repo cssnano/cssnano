@@ -1,5 +1,5 @@
 import { declarationIsEqual } from './declarations.js';
-import LastWriteIndex from './lastWriteIndex.js';
+import { PropertyWrites } from './lastWriteIndex.js';
 import { getDecls } from './ruleMeta.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 
@@ -19,7 +19,9 @@ import { findGroup, selectorsLength } from './sharedRuleGroup.js';
  */
 export function appendDeclarations(receiving, incoming) {
   const kept = getDecls(receiving);
-  const index = new LastWriteIndex();
+  // Rewrites compare whole rules and never ask about one element, so a plain
+  // property table is enough.
+  const index = new PropertyWrites();
   for (const [position, declaration] of kept.entries()) {
     index.record(declaration, position);
   }

@@ -8,7 +8,7 @@ import {
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {AtRule, ChildNode, Declaration} from 'postcss' */
+/** @import {AtRule, ChildNode, Declaration, Rule} from 'postcss' */
 
 /**
  * @typedef {{custom: true, key: string}
@@ -137,7 +137,7 @@ class SegmentIndex {
 const keysCache = new Map();
 
 /** @param {string} prop @return {PropertyKeys} */
-function keysOf(prop) {
+function propertyKeys(prop) {
   if (prop.startsWith('--')) return { custom: true, key: prop };
   const cached = keysCache.get(prop);
   if (cached) return cached;
@@ -176,16 +176,11 @@ function keysOf(prop) {
 }
 
 /**
- * A table of the latest position at which each property was declared among
- * the children of one parent, visited in document order. It tells whether a
- * conflicting declaration appears after a given position, in time linear in
- * the number of longhands the property expands to. The answers match
- * `isConflictingProp`; the table only computes them faster.
- *
- * Positions are chosen by the caller and increase in document order. A
- * declaration at position p does not count as appearing after p.
+ * The latest position at which each property was declared, for one property
+ * table: the answers match `isConflictingProp`, in time linear in the number
+ * of longhands the property expands to.
  */
-export default class LastWriteIndex {
+export class PropertyWrites {
   /** @type {Map<string | number, number>} */
   #lastCustom = new Map();
   /** @type {Map<string | number, number>} */
@@ -203,13 +198,12 @@ export default class LastWriteIndex {
   // Newest write that `all` resets: #everything except `direction`,
   // `unicode-bidi` and custom properties.
   #lastResettable = -1;
-  #lastBarrier = -1;
   /**
    * @param {{prop: string}} declaration
    * @param {number} position
    */
   record(declaration, position) {
-    const keys = keysOf(declaration.prop);
+    const keys = propertyKeys(declaration.prop);
     if (keys.custom) {
       raise(this.#lastCustom, keys.key, position);
       return;
@@ -232,31 +226,13 @@ export default class LastWriteIndex {
   }
 
   /**
-   * Record every write a child of the parent makes. An at-rule that is not a
-   * conditional group rule is a barrier, since moving anything across it is
-   * not known to preserve the cascade.
-   *
-   * @param {ChildNode} node
-   * @param {number} position
-   * @return {void}
-   */
-  recordNode(node, position) {
-    if (node.type === 'decl') {
-      this.record(node, position);
-    } else if (node.type === 'atrule' && !isConditionalGroupRule(node)) {
-      this.#lastBarrier = Math.max(this.#lastBarrier, position);
-    } else if ('nodes' in node && node.nodes) {
-      for (const child of node.nodes) this.recordNode(child, position);
-    }
-  }
-  /**
    * Position of the newest write that conflicts with `declaration`, or -1.
    *
    * @param {{prop: string}} declaration
    * @return {number}
    */
   lastConflict(declaration) {
-    const keys = keysOf(declaration.prop);
+    const keys = propertyKeys(declaration.prop);
     if (keys.custom) return this.#lastCustom.get(keys.key) ?? -1;
     if (keys.all) return this.#lastResettable;
     let newest = Math.max(
@@ -271,19 +247,137 @@ export default class LastWriteIndex {
     }
     return Math.max(newest, this.#unknownSegments.newest(keys));
   }
+}
+
+/**
+ * A table of the latest position at which each property was declared among
+ * the children of one parent, visited in document order. It tells whether a
+ * conflicting declaration appears after a given position, in time linear in
+ * the number of longhands the property expands to. The answers match
+ * `isConflictingProp`; the table only computes them faster.
+ *
+ * Writes are also grouped by the element they set, so a move to known
+ * elements ignores writes to other elements: a writer whose element is
+ * unknown counts for every move.
+ *
+ * Positions are chosen by the caller and increase in document order. A
+ * declaration at position p does not count as appearing after p.
+ */
+export default class LastWriteIndex {
+  /** @type {PropertyWrites} */
+  #all = new PropertyWrites();
+  /** @type {PropertyWrites} */
+  #unknownElement = new PropertyWrites();
+  /** @type {Map<string, PropertyWrites>} */
+  #byElement = new Map();
+  #lastBarrier = -1;
+  // Reused by conflictsSinceIn, so a check allocates no set of its own.
+  #elementScratch = /** @type {Set<string>} */ (new Set());
 
   /**
+   * @param {{prop: string}} declaration
+   * @param {number} position
+   * @param {readonly string[] | null} [keys] element keys of the writing rule,
+   * or null when they are unknown
+   */
+  record(declaration, position, keys = null) {
+    this.#all.record(declaration, position);
+    if (keys === null) {
+      this.#unknownElement.record(declaration, position);
+      return;
+    }
+    for (const key of keys) {
+      let writes = this.#byElement.get(key);
+      if (!writes) {
+        writes = new PropertyWrites();
+        this.#byElement.set(key, writes);
+      }
+      writes.record(declaration, position);
+    }
+  }
+
+  /**
+   * Record every write a child of the parent makes, under the element keys
+   * `keysOf` gives its rule. An at-rule that is not a conditional group rule is
+   * a barrier, since moving anything across it is not known to preserve the
+   * cascade.
+   *
+   * @param {ChildNode} node
+   * @param {number} position
+   * @param {(rule: Rule) => string[] | null} keysOf
+   * @return {void}
+   */
+  recordNode(node, position, keysOf) {
+    this.#recordNode(node, position, null, keysOf);
+  }
+
+  /**
+   * @param {ChildNode} node
+   * @param {number} position
+   * @param {string[] | null} keys
+   * @param {(rule: Rule) => string[] | null} keysOf
+   */
+  #recordNode(node, position, keys, keysOf) {
+    if (node.type === 'decl') {
+      this.record(node, position, keys);
+    } else if (node.type === 'atrule' && !isConditionalGroupRule(node)) {
+      this.#lastBarrier = Math.max(this.#lastBarrier, position);
+    } else if ('nodes' in node && node.nodes) {
+      const own =
+        node.type === 'rule' ? keysOf(/** @type {Rule} */ (node)) : keys;
+      for (const child of node.nodes)
+        this.#recordNode(child, position, own, keysOf);
+    }
+  }
+
+  /**
+   * Whether a write after `position` conflicts with one of `declarations`,
+   * counting only writes that can set an element in `elements`, the non-empty
+   * element keys of the rules moving to `position`. Null counts every write.
+   *
    * @param {{prop: string}[]} declarations
    * @param {number} position
+   * @param {Iterable<string> | null} [elements]
    * @return {boolean}
    */
-  conflictsSince(declarations, position) {
-    return (
-      this.#lastBarrier > position ||
-      declarations.some(
-        (declaration) => this.lastConflict(declaration) > position
-      )
-    );
+  conflictsSince(declarations, position, elements = null) {
+    if (this.#lastBarrier > position) return true;
+    // Plain loops, so the check allocates nothing per call.
+    const anyElement = elements === null;
+    for (const declaration of declarations) {
+      if (anyElement) {
+        if (this.#all.lastConflict(declaration) > position) return true;
+        continue;
+      }
+      if (this.#unknownElement.lastConflict(declaration) > position)
+        return true;
+      for (const key of elements) {
+        const writes = this.#byElement.get(key);
+        if (writes && writes.lastConflict(declaration) > position) return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * `conflictsSince` for declarations that move with their rules, whose
+   * elements are the union of the keys `keysOf` gives their rules. A
+   * declaration with unknown elements counts every write.
+   *
+   * @param {Declaration[]} declarations
+   * @param {number} position
+   * @param {(rule: Rule) => string[] | null} keysOf
+   * @return {boolean}
+   */
+  conflictsSinceIn(declarations, position, keysOf) {
+    const elements = this.#elementScratch;
+    elements.clear();
+    for (const { parent } of declarations) {
+      const own = parent?.type === 'rule' ? keysOf(parent) : null;
+      if (own === null) return this.conflictsSince(declarations, position);
+      for (const key of own) elements.add(key);
+    }
+    return this.conflictsSince(declarations, position, elements);
   }
 
   /**
@@ -291,10 +385,16 @@ export default class LastWriteIndex {
    * entry only ever moves forward, so a later write to the same property
    * is kept.
    *
-   * @param {{prop: string}[]} declarations
+   * @param {Declaration[]} declarations
    * @param {number} position
+   * @param {(rule: Rule) => string[] | null} keysOf
    */
-  moveWrites(declarations, position) {
-    for (const declaration of declarations) this.record(declaration, position);
+  moveWrites(declarations, position, keysOf) {
+    for (const declaration of declarations) {
+      const parent = declaration.parent;
+      // `record` only reads the keys, so the rule's own list is passed as is.
+      const keys = parent?.type === 'rule' ? keysOf(parent) : null;
+      this.record(declaration, position, keys?.length ? keys : null);
+    }
   }
 }

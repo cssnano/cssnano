@@ -1,3 +1,4 @@
+export declare const simpleSelectorRe: RegExp;
 export type SelectorInfo = {
     compatible: boolean;
     prefix: string | undefined;

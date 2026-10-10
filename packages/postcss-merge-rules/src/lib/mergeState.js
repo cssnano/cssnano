@@ -1,13 +1,11 @@
-import cssnanoUtils from 'cssnano-utils';
 import {
   createSelectorLookup,
   selectorsCompatible,
 } from './ensureCompatibility.js';
+import { createElementKeyLookup } from './elementKeys.js';
 import { propertyNameKey } from './declarations.js';
 import { getMeta } from './ruleMeta.js';
-import { sameContainer } from './sameContainer.js';
-
-const { asciiLowerCase } = cssnanoUtils;
+import { isKeyframes, sameContainer } from './sameContainer.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {RuleMeta} from './ruleMeta.js' */
@@ -30,6 +28,8 @@ export default class MergeState {
   #ruleMeta;
   /** @type {Map<string, number>} */
   #declarationKeys = new Map();
+  /** @type {(selector: string) => string | null} */
+  #elementKeyOf = createElementKeyLookup();
 
   /**
    * @param {string[]} browsers
@@ -61,6 +61,15 @@ export default class MergeState {
   forget(rule) {
     this.#ruleMeta.delete(rule);
   }
+
+  /**
+   * The elements the rule can match. An arrow function, so it passes as a
+   * callback without a closure per call.
+   *
+   * @param {Rule} rule
+   * @return {string[] | null}
+   */
+  elementKeysOf = (rule) => this.meta(rule).elementKeys(this.#elementKeyOf);
 
   /**
    * Numbers declarations so equal ones, with the same property, value and
@@ -106,9 +115,15 @@ export default class MergeState {
    *
    * @param {Rule} rule
    * @param {string[]} selectors
+   * @return {readonly string[] | null} the element keys the selectors add, or
+   * null when the rule's elements are not listed
    */
   addSelectors(rule, selectors) {
-    this.meta(rule).addSelectors(selectors, this.#lookup);
+    return this.meta(rule).addSelectors(
+      selectors,
+      this.#lookup,
+      this.#elementKeyOf
+    );
   }
 
   /**
@@ -119,7 +134,11 @@ export default class MergeState {
    * @param {Rule} earlier
    */
   absorbEarlier(later, earlier) {
-    this.meta(later).absorbEarlier(this.meta(earlier), this.#lookup);
+    this.meta(later).absorbEarlier(
+      this.meta(earlier),
+      this.#lookup,
+      this.#elementKeyOf
+    );
   }
 
   /**
@@ -135,14 +154,7 @@ export default class MergeState {
    */
   canMerge(ruleA, ruleB, parentA = ruleA.parent, parentB = ruleB.parent) {
     if (!sameContainer(parentA, parentB)) return false;
-    // Keyframe selectors are cascaded by position.
-    if (
-      parentA?.type === 'atrule' &&
-      asciiLowerCase(
-        /** @type {import('postcss').AtRule} */ (parentA).name
-      ).includes('keyframes')
-    )
-      return false;
+    if (isKeyframes(parentA)) return false;
     if (ruleA.some(isRuleOrAtRule) || ruleB.some(isRuleOrAtRule)) return false;
 
     const metaA = this.meta(ruleA);

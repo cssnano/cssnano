@@ -22,3 +22,10 @@ test('cascade fuzzer with long class names, which make rules share declarations 
     undefined
   );
 });
+
+test('cascade fuzzer with class names that make groups pay only sometimes preserves every computed style and is idempotent', () => {
+  assert.equal(
+    firstCascadeFailure(generateCascadeCases(3, 2000), 100, 'qqqq'),
+    undefined
+  );
+});

@@ -141,6 +141,24 @@ test('computed styles skip @media print on screen and apply it in print', () => 
   );
 });
 
+test('computed styles apply a pseudo-element rule to the pseudo-element and not to its originating element', () => {
+  const css = 'div::before{color:red}';
+  assert.equal(styleOf(css, 'div::before').color, 'red');
+  assert.equal(styleOf(css, 'div').color, undefined);
+});
+
+test('computed styles apply a descendant rule only to an element inside a div', () => {
+  const css = 'div span{color:red}';
+  assert.equal(styleOf(css, 'div>span').color, 'red');
+  assert.equal(styleOf(css, 'span').color, undefined);
+});
+
+test('computed styles tell a p element from div and span', () => {
+  const css = 'p{color:red}';
+  assert.equal(styleOf(css, 'p').color, 'red');
+  assert.equal(styleOf(css, 'div').color, undefined);
+});
+
 test('computed styles reject a selector outside the generated grammar', () => {
   assert.throws(() => computedStyles('.a .b{color:red}'), /selector/v);
 });

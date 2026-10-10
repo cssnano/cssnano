@@ -1,3 +1,11 @@
+/**
+ * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
+ * cascaded by position.
+ *
+ * @param {import('postcss').Container | undefined} container
+ * @return {boolean}
+ */
+export declare function isKeyframes(container: import('postcss').Container | undefined): boolean;
 export type Child = import('postcss').AnyNode & {
     parent?: Child;
 };

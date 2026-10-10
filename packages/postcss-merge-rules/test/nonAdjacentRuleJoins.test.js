@@ -30,6 +30,15 @@ for (const [input, expected] of shorterOutputFixtures) {
   );
 }
 
+// The duplicate `color` removed from `a` must not block the join into `b`.
+test(
+  'should join a later b rule across a duplicate declaration removed from a',
+  processCSS(
+    'b{color:blue}a{color:red}c{margin:0}a{color:red;top:0}b{color:green}',
+    'b{color:blue;color:green}a{color:red;top:0}c{margin:0}'
+  )
+);
+
 test(
   // The second rule repeats the first, so keeping both would only lengthen the output.
   'should keep one of two adjacent rules with the same selector and the same declarations that repeat a property',

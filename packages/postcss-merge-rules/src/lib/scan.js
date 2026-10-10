@@ -3,10 +3,21 @@ import {
   mergeMatchingSelectors,
   mergeSharedDeclarations,
 } from './merge.js';
+import { earliestPairReaching } from './sharedRuleGroup.js';
 import RuleSequence from './ruleSequence.js';
 import { sameContainer } from './sameContainer.js';
 
 const NO_BENEFIT = -1;
+
+/**
+ * @param {Placement} placement
+ * @return {number} the rules the placement puts in place of the pair
+ */
+function linkCount(placement) {
+  let count = placement.first.length + placement.second.length;
+  for (const rules of placement.following ?? []) count += rules.length;
+  return count;
+}
 
 /** @import {Container, Root, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
@@ -112,6 +123,43 @@ export default function runScan(root, mergeState) {
       : null;
   };
 
+  /** @type {number[]} */
+  const scratch = [];
+  /** @type {{link: RuleLink | null, distance: number}} */
+  const earliest = { link: null, distance: 0 };
+
+  /**
+   * The link where the sweep resumes after a rewrite. The normal resume point
+   * is the lookahead, the rule before the new rules, or the first new rule.
+   * The rewrite can also change a pair before it, up to the reach of a group
+   * (see `earliestPairReaching`), so the sweep resumes at the earliest such pair.
+   *
+   * @param {RuleLink} replacement the first link of the new rules
+   * @param {Placement} placement
+   * @param {RuleLink | null} lookaheadStart a link before the replaced pair,
+   * since the lookahead moves past it
+   * @return {RuleLink}
+   */
+  const resumeAfter = (replacement, placement, lookaheadStart) => {
+    const before = /** @type {RuleLink} */ (replacement.prev);
+    let resume = replacement;
+    if (lookaheadStart) {
+      resume = lookaheadStart;
+    } else if (before.rule) {
+      resume = before;
+    }
+    earliest.link = null;
+    let link = replacement;
+    const count = linkCount(placement);
+    for (let index = 0; index < count; index++) {
+      // The walk from the `index`th new rule starts `index` links after the
+      // first one, so its distance is measured from the first.
+      earliestPairReaching(link, resume, index, scratch, mergeState, earliest);
+      link = /** @type {RuleLink} */ (link.next);
+    }
+    return earliest.link ?? resume;
+  };
+
   let moved;
   do {
     moved = false;
@@ -147,12 +195,7 @@ export default function runScan(root, mergeState) {
       moved ||= merged.moved;
       unmergeablePairs.clear();
       const replacement = sequence.replacePair(current, merged.placement);
-      const before = /** @type {RuleLink} */ (replacement.prev);
-      if (lookaheadStart) {
-        current = lookaheadStart === current ? replacement : lookaheadStart;
-      } else {
-        current = before.rule ? before : replacement;
-      }
+      current = resumeAfter(replacement, merged.placement, lookaheadStart);
       lookaheadStart = null;
     }
     sequence.write();
