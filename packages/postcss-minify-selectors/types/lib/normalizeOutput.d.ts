@@ -23,12 +23,22 @@ export type Part = Normalized | {
     text: string;
     length: number;
 };
+/** @typedef {import('./normalizePool.js').Output} Output */
+/** @typedef {import('./normalizePool.js').OutputPool} OutputPool */
+/** @typedef {import('./outputOverlay.js').Emit} Emit */
+/** @typedef {import('./arena.js').SelectorArena} SelectorArena */
+/** @typedef {import('./arena.js').ArenaNode} ArenaNode */
+/** @typedef {import('./arena.js').Specificity} Specificity */
+/** @typedef {Output & {node:number,parts?:Part[],foldEligible?:boolean,specificity?:Specificity,specificityId?:number,facts:number,entries?:Normalized[],valid:boolean,hasPseudoElement:boolean,trailing?:Output}} Normalized */
+/** @typedef {Normalized | {kind:'combinator',id:number,emit?:import('./outputOverlay.js').Emit,text:string,length:number}} Part */
 /** @param {OutputPool} pool @param {Output} output */
 export declare function outputText(pool: OutputPool, output: Output): string;
 /** @param {number} nodeIndex @param {Output} output */
 export declare function sourceNodeOutput(nodeIndex: number, output: Output): {
     id: number;
     length: number;
+    hexDigits?: number;
+    head?: number;
     emit: undefined;
     sourceNode: number;
     text: undefined;

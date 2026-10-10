@@ -212,3 +212,90 @@ test('drops a 6-digit hex escape terminator before a hex digit in an An+B formul
     ':nth-child(\\00006e\\00002d1)'
   );
 });
+
+test('keeps a 6-digit hex escape terminator before the of keyword in an An+B formula because the separator would become the terminator', () => {
+  assert.equal(
+    normalizeList(':nth-child(2\\00006e  of .a)', false, false),
+    ':nth-child(2\\00006e  of .a)'
+  );
+});
+
+// The terminator is chosen from the serialized neighbor, so source trivia that
+// is dropped from the output cannot keep a terminator alive.
+for (const [input, expected] of [
+  ['.a\\61 /**/,.b', '.a\\61,.b'],
+  ['.a\\61 /**/>.b', '.a\\61>.b'],
+  ['.a\\61 /**/', '.a\\61'],
+  ['.a\\61  || .b', '.a\\61||.b'],
+])
+  test(`drops the hex escape terminator in ${JSON.stringify(input)} because the serialized neighbor cannot continue the escape`, () => {
+    assert.equal(normalizeList(input, false, false), expected);
+  });
+
+test('drops the hex escape terminator of a compound folded into :is() before a comma because the fold moves the compound next to a comma', () => {
+  assert.equal(
+    normalizeList('.a\\61  .x,.b .x,.c .x', true, true),
+    ':is(.a\\61,.b,.c) .x'
+  );
+});
+
+test('drops the hex escape terminator of a compound folded into a trailing :is() because only a comma follows', () => {
+  assert.equal(
+    normalizeList('.x .a\\61 ,.x .b,.x .c', true, true),
+    '.x :is(.a\\61,.b,.c)'
+  );
+});
+
+test('keeps the hex escape terminator of a common prefix before the folded :is() so the descendant combinator survives', () => {
+  assert.equal(
+    normalizeList('.a\\61  .x,.a\\61  .y', true, true),
+    '.a\\61  :is(.x,.y)'
+  );
+});
+
+test('keeps a hex escape terminator before a comment and hex digit in an An+B formula because the removed comment no longer separates the digit', () => {
+  assert.equal(
+    normalizeList(':nth-child(\\6e\\2d /**/1)', false, false),
+    ':nth-child(\\6e\\2d 1)'
+  );
+});
+
+test('leaves an escaped backslash followed by hex digits alone because it is not a hex escape and needs no terminator', () => {
+  assert.equal(normalizeList('.a\\\\61 .b', false, false), '.a\\\\61 .b');
+});
+
+test('adds no terminator after an escaped backslash in a ::part() argument because the digits are literal', () => {
+  assert.equal(
+    normalizeList('::part(a\\\\61 b)', false, false),
+    '::part(a\\\\61 b)'
+  );
+});
+
+test('keeps the terminator after an escaped backslash that precedes a real hex escape', () => {
+  assert.equal(normalizeList('.a\\\\\\61  .b', false, false), '.a\\\\\\61  .b');
+});
+
+for (const [name, terminator] of [
+  ['CRLF', '\r\n'],
+  ['form feed', '\f'],
+  ['tab', '\t'],
+])
+  test(`keeps a six-digit hex escape terminated by ${name} before a descendant combinator so the combinator is not absorbed`, () => {
+    assert.equal(
+      normalizeList(`.a\\10ffff${terminator} .b`, false, false),
+      '.a\\10ffff  .b'
+    );
+  });
+
+for (const input of [
+  '.a\\61  .b',
+  '.a\\61 /**/,.b',
+  '[a=\\61  i]',
+  '::part(a\\61 /**/b\\62 )',
+  ':nth-child(2\\6e  of .a\\62 )',
+  '.a\\61  .x,.b .x,.c .x',
+])
+  test(`normalizes ${JSON.stringify(input)} to a fixed point so the chosen terminators are stable`, () => {
+    const once = normalizeList(input, true, true);
+    assert.equal(normalizeList(once, true, true), once);
+  });

@@ -30,6 +30,9 @@ const escapedNames = [
   '.\\31 23',
   '.private-\\e000',
   '.\\e0000\\e001',
+  '.\\\\61 ',
+  '.\\10ffff',
+  '.\\10ffff\\31 ',
 ];
 const pseudoClasses = [
   ':hover',

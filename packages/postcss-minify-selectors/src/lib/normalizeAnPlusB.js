@@ -1,48 +1,26 @@
 import cssnanoUtils from 'cssnano-utils';
 import { parseAnPlusB } from './argumentParsers.js';
-import { dropHexEscapeTerminator } from './tokenUtils.js';
+import {
+  consumeTrivia,
+  decodedIdent,
+  dropHexEscapeTerminator,
+  isImportantCommentToken,
+  joinPieces,
+} from './tokenUtils.js';
 
-const { TokenType, isHexDigitCode } = cssnanoUtils;
-
-/** @param {import('./tokenUtils.js').CSSToken | undefined} token */
-function decoded(token) {
-  return (
-    (/** @type {{value?:string}|undefined} */
-    (token?.[4])?.value ?? token?.[1] ?? '').toLowerCase()
-  );
-}
-
-/** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} start @param {number} end */
-function nextSerializedToken(input, start, end) {
-  for (let index = start; index < end; index++) {
-    const token = input[index];
-    if (token[0] === TokenType.Whitespace) continue;
-    if (token[0] !== TokenType.Comment || token[1].startsWith('/*!'))
-      return token;
-  }
-}
+const { TokenType } = cssnanoUtils;
 
 /** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} start @param {number} end */
 function hasImportantComment(input, start, end) {
   for (let index = start; index < end; index++)
-    if (
-      input[index][0] === TokenType.Comment &&
-      input[index][1].startsWith('/*!')
-    )
-      return true;
+    if (isImportantCommentToken(input[index])) return true;
   return false;
 }
 
-/** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} index @param {number} end @param {boolean} important @param {boolean} foundSyntax */
-function normalizedFormulaToken(input, index, end, important, foundSyntax) {
+/** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} index @param {boolean} important @param {boolean} foundSyntax */
+function normalizedFormulaToken(input, index, important, foundSyntax) {
   const token = input[index];
-  let value = token[1];
-  // A terminator before a hex digit must stay, otherwise the digit joins the escape.
-  const next = nextSerializedToken(input, index + 1, end);
-  value = dropHexEscapeTerminator(
-    value,
-    next !== undefined && isHexDigitCode(next[1].charCodeAt(0))
-  );
+  let value = dropHexEscapeTerminator(token[1]);
   if (important) return value;
   if (
     !foundSyntax &&
@@ -76,19 +54,13 @@ export function normalizeAnPlusB(input, start, end) {
   let singleIdent = '';
   for (let index = start; index < end; index++) {
     const token = input[index];
-    if (token[0] === TokenType.Whitespace) continue;
-    if (token[0] === TokenType.Comment) {
-      if (token[1].startsWith('/*!')) pieces.push(token[1]);
-      continue;
-    }
+    if (consumeTrivia(token, pieces)) continue;
     significantCount++;
-    if (token[0] === TokenType.Ident) singleIdent = decoded(token);
-    pieces.push(
-      normalizedFormulaToken(input, index, end, important, foundSyntax)
-    );
+    if (token[0] === TokenType.Ident) singleIdent = decodedIdent(token);
+    pieces.push(normalizedFormulaToken(input, index, important, foundSyntax));
     foundSyntax = true;
   }
-  let text = pieces.join('');
+  let text = joinPieces(pieces);
   if (!important && significantCount === 1) {
     if (singleIdent === 'even') text = '2n';
     else if (singleIdent === 'odd') text = 'odd';

@@ -9,12 +9,14 @@ export type Output = {
     text?: string;
     sourceNode?: number;
     changed?: boolean;
+    hexDigits?: number;
+    head?: number;
 };
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
-/** @typedef {{emit?:Emit,id:number,length:number,text?:string,sourceNode?:number,changed?:boolean}} Output */
+/** @typedef {{emit?:Emit,id:number,length:number,text?:string,sourceNode?:number,changed?:boolean,hexDigits?:number,head?:number}} Output */
 export declare class OutputPool {
     arena: import("./arena.js").SelectorArena;
     /** @type {Map<string,Output>} */ texts: Map<string, Output>;
@@ -47,20 +49,26 @@ export declare class OutputPool {
     emit(output: Output): Emit;
     /** @param {readonly Output[]} values @return {Output} */
     sequence(values: readonly Output[]): Output;
+    /** @param {Output} output */
+    headCode(output: Output): number;
+    /** @param {Output} output */
+    trailingHexDigits(output: Output): number;
 }
 /** @param {SelectorArena} arena @param {number} tokenIndex */
 export declare function offset(arena: SelectorArena, tokenIndex: number): number;
 /** @param {SelectorArena} arena @param {number} start @param {number} end */
 export declare function sourceText(arena: SelectorArena, start: number, end: number): string;
-/** @param {import('./tokenUtils.js').CSSToken | undefined} token */
-export declare function compactIdent(token: import('./tokenUtils.js').CSSToken | undefined): string;
 /**
- * A hex escape terminator may go unless the next output character is
- * whitespace, which a descendant combinator or comment separator would
- * otherwise be absorbed into, or a hex digit.
- * @param {SelectorArena} arena @param {ArenaNode} node @param {number} tokenIndex
+ * Source spelling of a class (`.` and ident tokens) or ID (hash token).
+ * @param {SelectorArena} arena @param {ArenaNode} node
  */
-export declare function compactTerminalIdent(arena: SelectorArena, node: ArenaNode, tokenIndex: number): string;
+export declare function classOrIdSource(arena: SelectorArena, node: ArenaNode): string;
+/**
+ * Serialized class or ID: an ident's hex escape terminator is restored by
+ * the joiners, so it is dropped here.
+ * @param {SelectorArena} arena @param {ArenaNode} node
+ */
+export declare function classOrIdText(arena: SelectorArena, node: ArenaNode): string;
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {number} start @param {number} end */
 export declare function importantTrivia(arena: SelectorArena, pool: OutputPool, start: number, end: number): Output;
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node */

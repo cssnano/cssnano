@@ -46,4 +46,14 @@ export declare function normalizeIdentOrStringList(tokens: readonly CSSToken[], 
     pieces?: string[];
     valid: boolean;
 };
+/**
+ * Parsers of the pseudo-class and pseudo-element arguments that are
+ * normalized as token pieces, keyed by the grammar name in `selectorGrammar`.
+ * @type {ReadonlyMap<string, (tokens: readonly CSSToken[], start: number, end: number) => { pieces?: string[], specificity?: Specificity, valid: boolean }>}
+ */
+export declare const pieceArgumentParsers: ReadonlyMap<string, (tokens: readonly CSSToken[], start: number, end: number) => {
+    pieces?: string[];
+    specificity?: Specificity;
+    valid: boolean;
+}>;
 //# sourceMappingURL=argumentParsers.d.ts.map

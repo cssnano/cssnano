@@ -1,6 +1,6 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const { isHexDigitCode } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, isHexDigitCode } = cssnanoUtils;
 
 /** @typedef {ReturnType<typeof import('cssnano-utils').default.balancedTokens> extends infer Structure ? Structure extends {tokens: readonly (infer Token)[]} ? Token : never : never} CSSToken */
 
@@ -11,8 +11,51 @@ const { isHexDigitCode } = cssnanoUtils;
  * @param {CSSToken} token @return {string}
  */
 export function decodedIdent(token) {
-  const metadata = /** @type {{value?:string} | undefined} */ (token[4]);
-  return (metadata?.value ?? token[1]).toLowerCase();
+  return asciiLowerCase(decoded(token));
+}
+
+/**
+ * Whitespace and comments separate tokens without contributing to a selector.
+ * @param {CSSToken | undefined} token
+ */
+export function isTrivia(token) {
+  return (
+    token?.[0] === TokenType.Whitespace || token?.[0] === TokenType.Comment
+  );
+}
+
+/**
+ * Index of the first token in `[index, end)` that is not trivia, or `end`.
+ * @param {readonly CSSToken[]} input
+ * @param {number} index
+ * @param {number} end
+ */
+export function skipTrivia(input, index, end) {
+  let cursor = index;
+  while (cursor < end && isTrivia(input[cursor])) cursor++;
+  return cursor;
+}
+
+/**
+ * Minifiers keep `/*!` comments, such as license notices.
+ * @param {CSSToken} token
+ */
+export function isImportantCommentToken(token) {
+  return token[0] === TokenType.Comment && token[1].startsWith('/*!');
+}
+
+/**
+ * Whitespace and ordinary comments vanish from minified arguments, while
+ * important comments (`/*!`) survive into the output.
+ * @param {CSSToken} token
+ * @param {string[]} pieces
+ * @return {boolean} whether the token was trivia
+ */
+export function consumeTrivia(token, pieces) {
+  if (token[0] === TokenType.Whitespace) return true;
+  if (token[0] !== TokenType.Comment) return false;
+  if (isImportantCommentToken(token)) pieces.push(token[1]);
+  return true;
 }
 
 /**
@@ -29,38 +72,121 @@ function isNameStart(code) {
 }
 
 /**
- * A hex escape (`\\61 `) consumes one trailing whitespace (CSS Syntax 3
- * §4.3.7), which is redundant when a delimiter follows. An escaped whitespace
- * (`\\ `) is the escaped character itself and must stay. Callers must ensure
- * the next output character is not whitespace. A following hex digit keeps
- * the terminator unless the escape already has six digits.
- * @param {string} value
- * @param {boolean} [beforeHexDigit]
+ * CSS whitespace before preprocessing, which folds CR and FF into LF.
+ * @param {number} code
  */
-export function dropHexEscapeTerminator(value, beforeHexDigit = false) {
-  const last = value.length - 1;
-  const code = value.charCodeAt(last);
-  if (
-    code !== 0x20 &&
-    code !== 0x09 &&
-    code !== 0x0a &&
-    code !== 0x0c &&
-    code !== 0x0d
-  )
-    return value;
-  const terminatorLength =
-    code === 0x0a && value.charCodeAt(last - 1) === 0x0d ? 2 : 1;
-  let index = last - terminatorLength;
+function isWhitespaceCode(code) {
+  return (
+    code === 0x20 ||
+    code === 0x09 ||
+    code === 0x0a ||
+    code === 0x0c ||
+    code === 0x0d
+  );
+}
+
+/**
+ * Digit count of the hex escape that ends just before `end`, or 0 when no
+ * hex escape ends there.
+ * @param {string} value
+ * @param {number} end
+ */
+export function hexEscapeDigitCount(value, end) {
+  let index = end - 1;
   let digits = 0;
   while (digits < 6 && index >= 0 && isHexDigitCode(value.charCodeAt(index))) {
     index--;
     digits++;
   }
-  return digits > 0 &&
-    (digits === 6 || !beforeHexDigit) &&
-    value.charCodeAt(index) === 0x5c
-    ? value.slice(0, -terminatorLength)
-    : value;
+  if (value.charCodeAt(index) !== 0x5c) return 0;
+  // An odd run of backslashes ends in an unescaped one; an even run is
+  // escaped backslashes and the digits are literal.
+  let backslashes = 1;
+  while (
+    index - backslashes >= 0 &&
+    value.charCodeAt(index - backslashes) === 0x5c
+  )
+    backslashes++;
+  return backslashes % 2 === 1 ? digits : 0;
+}
+
+/**
+ * A hex escape (`\61 `) consumes one trailing whitespace (CSS Syntax 3
+ * §4.3.7), so serializers keep idents without that terminator and let
+ * `needsHexEscapeTerminator` restore it where the neighbor requires one. An
+ * escaped whitespace (`\ `) is the escaped character itself and must stay.
+ * Within an ident, a terminator is only kept before a hex digit or another
+ * whitespace.
+ * @param {string} value
+ */
+export function dropHexEscapeTerminator(value) {
+  if (!value.includes('\\')) return value;
+  let result = '';
+  let copied = 0;
+  for (let index = 0; index < value.length; index++) {
+    const code = value.charCodeAt(index);
+    if (!isWhitespaceCode(code)) continue;
+    const length =
+      code === 0x0d && value.charCodeAt(index + 1) === 0x0a ? 2 : 1;
+    const end = index + length;
+    if (
+      hexEscapeDigitCount(value, index) > 0 &&
+      (end === value.length ||
+        !(
+          isHexDigitCode(value.charCodeAt(end)) ||
+          isWhitespaceCode(value.charCodeAt(end))
+        ))
+    ) {
+      result += value.slice(copied, index);
+      copied = end;
+    }
+    index = end - 1;
+  }
+  return copied === 0 ? value : result + value.slice(copied);
+}
+
+/**
+ * The single rule for restoring hex escape terminators: every joiner calls it
+ * between adjacent pieces. Whether `before` ends in a hex escape that `after`
+ * would extend: a leading whitespace is absorbed as its terminator, and a
+ * leading hex digit becomes part of the escape unless it already has six
+ * digits.
+ * @param {string} before
+ * @param {string} after
+ */
+export function needsHexEscapeTerminator(before, after) {
+  return needsTerminatorAfterDigits(
+    hexEscapeDigitCount(before, before.length),
+    after.charCodeAt(0)
+  );
+}
+
+/**
+ * `needsHexEscapeTerminator` for a caller that already knows the digit count
+ * of the escape ending the preceding piece and the first code of the next.
+ * @param {number} digits
+ * @param {number} next
+ */
+export function needsTerminatorAfterDigits(digits, next) {
+  if (!isWhitespaceCode(next) && !isHexDigitCode(next)) return false;
+  return digits > 0 && (digits < 6 || isWhitespaceCode(next));
+}
+
+/**
+ * Concatenates serialized pieces, adding the hex escape terminators that
+ * `dropHexEscapeTerminator` removed.
+ * @param {readonly string[]} pieces
+ */
+export function joinPieces(pieces) {
+  let text = '';
+  let previous = '';
+  for (const piece of pieces) {
+    if (piece === '') continue;
+    if (needsHexEscapeTerminator(previous, piece)) text += ' ';
+    text += piece;
+    previous = piece;
+  }
+  return text;
 }
 
 /**

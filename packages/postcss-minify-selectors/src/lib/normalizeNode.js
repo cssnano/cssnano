@@ -1,8 +1,9 @@
+import cssnanoUtils from 'cssnano-utils';
 import { hasSemanticFact, isFoldEligible, semanticFacts } from './arena.js';
 import {
   attributeOutput,
   childrenOf,
-  compactTerminalIdent,
+  classOrIdText,
   descendantCombinator,
   qualifiedNameOutput,
   rawOutput,
@@ -22,6 +23,8 @@ import {
 } from './normalizePseudo.js';
 import { joinEntries, listOutput } from './normalizeList.js';
 import { foldSelectors } from './normalizeFoldWork.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @type {readonly number[]} */
 const emptyChildren = Object.freeze([]);
@@ -63,16 +66,8 @@ function normalizedNodeOutput(
   if (node.kind === 'attribute') return attributeOutput(arena, pool, node);
   if (node.kind === 'pseudo')
     return pseudoOutput(arena, pool, node, normalized);
-  if (node.kind === 'class')
-    return pool.text(
-      `${arena.tokens[node.startToken][1]}${compactTerminalIdent(
-        arena,
-        node,
-        node.startToken + 1
-      )}`
-    );
-  if (node.kind === 'id')
-    return pool.text(compactTerminalIdent(arena, node, node.startToken));
+  if (node.kind === 'class' || node.kind === 'id')
+    return pool.text(classOrIdText(arena, node));
   if (node.kind === 'combinator') {
     const value = arena.payloads.combinators[node.payload].value;
     if (value === ' ') return descendantCombinator(arena, pool, node);
@@ -186,7 +181,7 @@ export function finalizeEntries(arena, pool, entries, options) {
   if (options.keyframe) {
     for (let index = 0; index < entries.length; index++) {
       const value = outputText(pool, entries[index]);
-      if (value.toLowerCase() === 'from')
+      if (asciiLowerCase(value) === 'from')
         entries[index] = { ...entries[index], ...pool.text('0%'), node: -1 };
       else if (value === '100%')
         entries[index] = { ...entries[index], ...pool.text('to'), node: -1 };

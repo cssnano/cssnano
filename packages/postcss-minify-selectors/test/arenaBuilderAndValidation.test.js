@@ -10,7 +10,7 @@ import {
   semanticFacts,
 } from '../src/lib/arena.js';
 import { parseSelectorArena } from '../src/lib/parseArena.js';
-import { serializeArena } from '../src/lib/serializeArena.js';
+import { serializeNormalized } from '../src/lib/serializeArena.js';
 
 const { tokens } = cssnanoUtils;
 
@@ -61,14 +61,14 @@ test('completed arenas use exclusive spans and immutable preorder nodes', () => 
   assert.throws(() => arena.nodes.push(arena.nodes[0]), TypeError);
 });
 
-test('empty list spans are valid and serialize exactly', () => {
+test('an empty list over an empty token stream builds and spans no source text', () => {
   const arena = buildSelectorArena('', [], (builder) => {
     const root = builder.open('list', 0, 0, {
       payload: builder.payload('lists', { mode: 'forgiving' }),
     });
     builder.closeSummary(root);
   });
-  assert.equal(serializeArena(arena, new Map()), '');
+  assert.equal(serializeNormalized(arena, { kind: 'node', node: 0 }), '');
 });
 
 test('arena validates bounds and close order', () => {

@@ -1,17 +1,13 @@
 import {
   firstPseudoReplacement,
-  normalizeIdentArgument,
-  normalizeIdentListArgument,
-  normalizeIdentOrStringList,
-  normalizePtNameArgument,
+  pieceArgumentParsers,
 } from './argumentParsers.js';
 import { hasSemanticFact, semanticFacts } from './arena.js';
 import { legacyPseudoElements } from './grammar.js';
 import { normalizeAnPlusB } from './normalizeAnPlusB.js';
-import { dropHexEscapeTerminator } from './tokenUtils.js';
+import { dropHexEscapeTerminator, joinPieces } from './tokenUtils.js';
 import { trailingListTrivia } from './normalizeListTrivia.js';
 import {
-  compactIdent,
   descendantCombinator,
   importantTrivia,
   normalizedAt,
@@ -34,18 +30,6 @@ export function compareOutputs(pool, left, right) {
   if (a < b) return -1;
   if (a > b) return 1;
   return 0;
-}
-
-/** @param {SelectorArena} arena @param {number} start @param {number} end @param {string} grammar */
-function microPseudoArgument(arena, start, end, grammar) {
-  if (grammar === 'ident')
-    return normalizeIdentArgument(arena.tokens, start, end);
-  if (grammar === 'ident-list')
-    return normalizeIdentListArgument(arena.tokens, start, end);
-  if (grammar === 'ident-or-string-list')
-    return normalizeIdentOrStringList(arena.tokens, start, end);
-  if (grammar === 'pt-name-selector')
-    return normalizePtNameArgument(arena.tokens, start, end);
 }
 
 /** @param {OutputPool} pool @param {string} prefix @param {string} name @param {Output} inner */
@@ -89,23 +73,20 @@ function structuralPseudoOutput(arena, pool, node, normalized, prefix, name) {
     arena.nodes[payload.argumentNode].startToken - 1
   );
   if (!formula) return;
-  // A trailing hex escape needs its own terminator before the separator, or `of` joins it.
-  const separator =
-    dropHexEscapeTerminator(`${formula.text} `) === formula.text
-      ? '  of '
-      : ' of ';
   return wrapPseudo(
     pool,
     prefix,
     name,
-    pool.sequence([pool.text(formula.text), pool.text(separator), argument])
+    pool.sequence([pool.text(formula.text), pool.text(' of '), argument])
   );
 }
 
 /** @param {SelectorArena} arena @param {import('./arena.js').PseudoPayload} payload */
 export function formatPseudoPrefixAndName(arena, payload) {
-  const raw = compactIdent(arena.tokens[payload.nameToken]);
-  const name = raw.endsWith('(') ? raw.slice(0, -1) : raw;
+  const raw = arena.tokens[payload.nameToken][1];
+  const name = dropHexEscapeTerminator(
+    raw.endsWith('(') ? raw.slice(0, -1) : raw
+  );
   const prefix =
     payload.colonCount === 2 && !legacyPseudoElements.has(payload.name)
       ? '::'
@@ -135,18 +116,17 @@ export function pseudoOutput(arena, pool, node, normalized) {
   )
     output = nthPseudoOutput(arena, pool, node, prefix, name);
   else {
-    const result = microPseudoArgument(
-      arena,
+    const result = pieceArgumentParsers.get(payload.argumentGrammar)?.(
+      arena.tokens,
       payload.nameToken + 1,
-      node.endToken - 1,
-      payload.argumentGrammar
+      node.endToken - 1
     );
     if (result?.valid)
       output = wrapPseudo(
         pool,
         prefix,
         name,
-        pool.text(result.pieces?.join('') ?? '')
+        pool.text(joinPieces(result.pieces ?? []))
       );
   }
   return output ?? rawOutput(arena, pool, node);

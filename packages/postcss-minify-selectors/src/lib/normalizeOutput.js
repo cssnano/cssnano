@@ -1,10 +1,12 @@
 import {
-  compactTerminalIdent,
+  classOrIdSource,
+  classOrIdText,
   normalizedAt,
   offset,
   sourceText,
 } from './normalizePool.js';
 import { formatPseudoPrefixAndName } from './normalizePseudo.js';
+import { serializeNormalized } from './serializeArena.js';
 
 /** @typedef {import('./normalizePool.js').Output} Output */
 /** @typedef {import('./normalizePool.js').OutputPool} OutputPool */
@@ -15,35 +17,13 @@ import { formatPseudoPrefixAndName } from './normalizePseudo.js';
 /** @typedef {Output & {node:number,parts?:Part[],foldEligible?:boolean,specificity?:Specificity,specificityId?:number,facts:number,entries?:Normalized[],valid:boolean,hasPseudoElement:boolean,trailing?:Output}} Normalized */
 /** @typedef {Normalized | {kind:'combinator',id:number,emit?:import('./outputOverlay.js').Emit,text:string,length:number}} Part */
 
-/** @param {Emit} root @param {SelectorArena | undefined} arena */
-function flatten(root, arena) {
-  /** @type {Emit[]} */ const work = [root];
-  /** @type {string[]} */ const output = [];
-  while (work.length > 0) {
-    const item = work.pop();
-    if (!item) break;
-    if (item.kind === 'text') output.push(item.value);
-    else if (item.kind === 'sequence')
-      for (let index = item.items.length - 1; index >= 0; index--)
-        work.push(item.items[index]);
-    else if (item.kind === 'node' && arena) {
-      const node = arena.nodes[item.node];
-      output.push(sourceText(arena, node.startToken, node.endToken));
-    } else if (item.kind === 'source' && arena)
-      output.push(arena.source.slice(item.start, item.end));
-    else
-      throw new Error('arena normalization emitted an unresolved source node');
-  }
-  return output.join('');
-}
-
 /** @param {OutputPool} pool @param {Output} output */
 export function outputText(pool, output) {
   if (output.text === undefined) {
     if (output.sourceNode !== undefined) {
       const node = pool.arena.nodes[output.sourceNode];
       output.text = sourceText(pool.arena, node.startToken, node.endToken);
-    } else output.text = flatten(pool.emit(output), pool.arena);
+    } else output.text = serializeNormalized(pool.arena, pool.emit(output));
   }
   return output.text;
 }
@@ -122,22 +102,9 @@ export function unchangedNodeOutput(
       nodeIndex,
       pool.text(sourceText(arena, node.startToken, node.endToken)).id
     );
-  if (node.kind === 'class') {
-    const text = `${arena.tokens[node.startToken][1]}${compactTerminalIdent(
-      arena,
-      node,
-      node.startToken + 1
-    )}`;
-    if (
-      text ===
-      `${arena.tokens[node.startToken][1]}${arena.tokens[node.startToken + 1][1]}`
-    )
-      return unchangedOutput(arena, nodeIndex, pool.text(text).id);
-    return;
-  }
-  if (node.kind === 'id') {
-    const text = compactTerminalIdent(arena, node, node.startToken);
-    if (text === arena.tokens[node.startToken][1])
+  if (node.kind === 'class' || node.kind === 'id') {
+    const text = classOrIdText(arena, node);
+    if (text === classOrIdSource(arena, node))
       return unchangedOutput(arena, nodeIndex, pool.text(text).id);
     return;
   }
@@ -244,13 +211,8 @@ export function canReuseSourceNode(
     offset(arena, node.endToken) - offset(arena, node.startToken)
   )
     return false;
-  if (node.kind === 'class')
-    return (
-      output.text ===
-      `${arena.tokens[node.startToken][1]}${arena.tokens[node.startToken + 1][1]}`
-    );
-  if (node.kind === 'id')
-    return output.text === arena.tokens[node.startToken][1];
+  if (node.kind === 'class' || node.kind === 'id')
+    return output.text === classOrIdSource(arena, node);
   if (node.kind === 'raw') return true;
   if (node.kind === 'qualified-name')
     return output.text === sourceText(arena, node.startToken, node.endToken);

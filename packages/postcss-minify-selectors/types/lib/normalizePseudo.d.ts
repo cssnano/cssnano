@@ -29,6 +29,8 @@ export declare function complexOutput(arena: SelectorArena, pool: OutputPool, no
     text?: string;
     sourceNode?: number;
     changed?: boolean;
+    hexDigits?: number;
+    head?: number;
     node: number;
     parts: import("./normalizeOutput.js").Part[];
     trailing: import("./normalizePool.js").Output | undefined;

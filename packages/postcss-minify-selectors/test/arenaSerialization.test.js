@@ -3,12 +3,9 @@ import { test } from 'node:test';
 import cssnanoUtils from 'cssnano-utils';
 import { buildSelectorArena } from '../src/lib/arena.js';
 import { normalizeArena } from '../src/lib/normalizeArena.js';
+import { OutputPool } from '../src/lib/normalizePool.js';
 import { parseSelectorArena } from '../src/lib/parseArena.js';
-import {
-  serializeArena,
-  serializeEmit,
-  serializeNormalized,
-} from '../src/lib/serializeArena.js';
+import { serializeNormalized } from '../src/lib/serializeArena.js';
 
 const { tokens } = cssnanoUtils;
 
@@ -46,18 +43,10 @@ function nestedArena(source) {
   return { arena, compound, pseudo, tokenList };
 }
 
-test('serialization weaves punctuation and gaps around changed children', () => {
+test('serializeNormalized splices a node reference between synthetic text', () => {
   const { arena } = nestedArena('.card:is(.active)');
   assert.equal(
-    serializeArena(arena, new Map([[6, { kind: 'text', value: '.on' }]])),
-    '.card:is(.on)'
-  );
-});
-
-test('Emit.node and synthetic sequences share the iterative serializer', () => {
-  const { arena } = nestedArena('.card:is(.active)');
-  assert.equal(
-    serializeEmit(arena, new Map(), {
+    serializeNormalized(arena, {
       kind: 'sequence',
       items: [
         { kind: 'text', value: ':is(' },
@@ -67,97 +56,78 @@ test('Emit.node and synthetic sequences share the iterative serializer', () => {
     }),
     ':is(.card)'
   );
+});
+
+test('serializeNormalized slices a source emit by offsets', () => {
+  const { arena } = nestedArena('.card:is(.active)');
   assert.equal(
-    serializeEmit(arena, new Map(), {
-      kind: 'source',
-      start: 6,
-      end: 9,
-    }),
+    serializeNormalized(arena, { kind: 'source', start: 6, end: 9 }),
     'is('
   );
 });
 
-test('opaque parents suppress descendant rewrites', () => {
-  const source = ':future(.old)';
-  const tokenList = tokens(source);
-  const arena = buildSelectorArena(source, tokenList, (builder) => {
-    const list = builder.open('list', 0, tokenList.length, {
-      payload: builder.payload('lists', { mode: 'outer-unforgiving' }),
-    });
-    const root = builder.open('pseudo', 0, tokenList.length, {
-      status: 'opaque',
-      payload: builder.payload('pseudos', {
-        name: 'future',
-        nameToken: 1,
-        colonCount: 1,
-        pseudoKind: 'class',
-        specificityPolicy: 'normal',
-        argumentGrammar: undefined,
-      }),
-    });
-    builder.leaf('class', 2, tokenList.length - 1);
-    builder.closeSummary(root);
-    builder.closeSummary(list);
-  });
+test('serializeNormalized returns the source when there is no output tree', () => {
+  const { arena } = nestedArena('.card:is(.active)');
+  assert.equal(serializeNormalized(arena, undefined), '.card:is(.active)');
+});
+
+test('serializeNormalized restores the hex escape terminator before a descendant combinator', () => {
+  const arena = parseSelectorArena('.a\\61  .b', {});
   assert.equal(
-    serializeArena(arena, new Map([[2, { kind: 'text', value: '.new' }]])),
-    source
+    serializeNormalized(arena, {
+      kind: 'sequence',
+      items: [
+        { kind: 'text', value: '.a\\61' },
+        { kind: 'text', value: ' ' },
+        { kind: 'text', value: '.b' },
+      ],
+    }),
+    '.a\\61  .b'
   );
 });
 
-test('serialization completes at depth 12,000 without recursion', () => {
+test('serializeNormalized completes at depth 12,000 without recursion', () => {
   const depth = 12_000;
-  const source = `${':is('.repeat(depth)}.a${')'.repeat(depth)}`;
-  const tokenList = tokens(source);
-  const arena = buildSelectorArena(source, tokenList, (builder) => {
-    const list = builder.open('list', 0, tokenList.length, {
-      payload: builder.payload('lists', { mode: 'outer-unforgiving' }),
-    });
-    const open = [];
-    for (let index = 0; index < depth; index++)
-      open.push(
-        builder.open('pseudo', index * 2, tokenList.length - index, {
-          payload: builder.payload('pseudos', {
-            name: 'is',
-            nameToken: index * 2,
-            colonCount: 1,
-            pseudoKind: 'class',
-            specificityPolicy: 'maximum-argument',
-            argumentGrammar: 'forgiving-selector-list',
-          }),
-        })
-      );
-    builder.leaf('class', depth * 2, depth * 2 + 2);
-    while (open.length > 0) builder.closeSummary(open.pop());
-    builder.closeSummary(list);
-  });
-  assert.equal(serializeArena(arena, new Map()), source);
+  // Only text emits are serialized, so any small arena works.
+  const arena = parseSelectorArena('.a', { verifyArena: false });
+  /** @type {import('../src/lib/outputOverlay.js').Emit} */
+  let emit = { kind: 'text', value: '.b' };
+  for (let index = 0; index < depth; index++)
+    emit = {
+      kind: 'sequence',
+      items: [
+        { kind: 'text', value: ':is(' },
+        emit,
+        { kind: 'text', value: ')' },
+      ],
+    };
   assert.equal(
-    serializeArena(
-      arena,
-      new Map([[depth + 1, { kind: 'text', value: '.b' }]])
-    ),
+    serializeNormalized(arena, emit),
     `${':is('.repeat(depth)}.b${')'.repeat(depth)}`
   );
 });
 
-test('direct normalized serialization matches the general serializer', () => {
+test('direct normalized serialization yields the expected minified selectors', () => {
   const deep = `${':is('.repeat(1_000)}.a${')'.repeat(1_000)}`;
-  for (const [source, options] of [
-    ['.a', {}],
-    ['.card:is(.active,.pending)', {}],
-    ['.a x,.b x', { convertToIs: true }],
-    ['.b/*!keep*/,.a', {}],
-    [deep, {}],
-    [':future(.x)', {}],
+  for (const [source, options, expected] of [
+    // Already minimal: nothing to rewrite.
+    ['.a', {}, '.a'],
+    // Already sorted and minimal.
+    ['.card:is(.active,.pending)', {}, '.card:is(.active,.pending)'],
+    [
+      '.alpha .x .y .z,.beta .x .y .z',
+      { convertToIs: true },
+      ':is(.alpha,.beta) .x .y .z',
+    ],
+    ['.b/*!keep*/,.a', {}, '.a,.b/*!keep*/'],
+    // Already minimal: nesting depth alone changes nothing.
+    [deep, {}, deep],
+    // Unknown pseudo-class: left as written.
+    [':future(.x)', {}, ':future(.x)'],
   ]) {
     const arena = parseSelectorArena(source, { verifyArena: false });
     const emit = normalizeArena(arena, options);
-    assert.equal(
-      serializeNormalized(arena, emit),
-      emit === undefined ? source : serializeEmit(arena, new Map(), emit),
-      source
-    );
+    assert.equal(serializeNormalized(arena, emit), expected, source);
   }
 });
 
@@ -180,4 +150,36 @@ test('a changed container materializes an unchanged child reference', () => {
   const emit = normalizeArena(arena, { sort: false, convertToIs: false });
   assert.notEqual(emit, undefined);
   assert.equal(serializeNormalized(arena, emit), '.a');
+});
+
+test('OutputPool sequence length counts the restored hex escape terminator', () => {
+  const arena = parseSelectorArena('.a\\61  .x', {});
+  const pool = new OutputPool(arena);
+  const output = pool.sequence([
+    pool.text('.a\\61'),
+    pool.text(' '),
+    pool.text('.x'),
+  ]);
+  assert.equal(
+    output.length,
+    serializeNormalized(arena, pool.emit(output)).length
+  );
+});
+
+test('trusted arena spans reproduce the source byte for byte', () => {
+  for (const source of [
+    '.a,.b',
+    'svg|a > [x=y i]:future(.x),|*',
+    ':is(.a,#b):where(div)',
+    '.a\\61  .x',
+    ':nth-child(odd of .a,#b)',
+  ])
+    assert.equal(
+      serializeNormalized(parseSelectorArena(source, { verifyArena: false }), {
+        kind: 'node',
+        node: 0,
+      }),
+      source,
+      source
+    );
 });

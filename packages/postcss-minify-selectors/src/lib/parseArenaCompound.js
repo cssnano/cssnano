@@ -11,10 +11,9 @@ const { TokenType } = cssnanoUtils;
 /** @typedef {import('./arena.js').ParseStatus} ParseStatus */
 /** @typedef {{work: ParseWork, end: number, status?: ParseStatus, hasQualifiedName?: boolean}} CompoundChild */
 /** @typedef {NonNullable<ReturnType<typeof cssnanoUtils.balancedTokens>>} Structure */
-/** @typedef {import('./arena.js').QualifiedNamePayload} QualifiedNamePayload */
+/** @typedef {import('./parseArenaCore.js').ParseWork} ParseWork */
+/** @typedef {import('./parseArenaCore.js').RawWork} RawWork */
 /** @typedef {Parameters<Parameters<typeof import('./arena.js').buildSelectorArena>[2]>[0]} Builder */
-/** @typedef {{kind:'raw',start:number,end:number,status:ParseStatus}} RawWork */
-/** @typedef {{kind:'attribute',start:number}|{kind:'pseudo',start:number,end:number,mode:ListMode,insideHas:boolean}|{kind:'class'|'id'|'nesting',start:number,end:number}|{kind:'qualified-name',start:number,end:number,payload:QualifiedNamePayload}|RawWork} ParseWork */
 
 /** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} index */
 function opaqueNumericClass(input, index) {
@@ -28,6 +27,11 @@ function opaqueNumericClass(input, index) {
     return index + 2;
   if (token[0] === TokenType.Dimension && token[1].startsWith('.'))
     return index + 1;
+}
+
+/** @param {number} start @param {number} end @param {ParseStatus} status @return {CompoundChild} */
+function rawChild(start, end, status) {
+  return { work: { kind: 'raw', start, end, status }, end, status };
 }
 
 /**
@@ -47,16 +51,7 @@ function hashChildAt(token, index) {
       }),
       end: index + 1,
     };
-  return {
-    work: /** @type {ParseWork} */ ({
-      kind: 'raw',
-      start: index,
-      end: index + 1,
-      status: 'invalid',
-    }),
-    end: index + 1,
-    status: /** @type {ParseStatus} */ ('invalid'),
-  };
+  return rawChild(index, index + 1, 'invalid');
 }
 
 /** @param {Structure} structure @param {number} index @param {number} end @param {boolean} hasQualifiedName @return {CompoundChild} */
@@ -100,27 +95,10 @@ function compoundChildAt(
     };
   const opaqueClassEnd = opaqueNumericClass(input, index);
   if (opaqueClassEnd !== undefined)
-    return {
-      work: /** @type {ParseWork} */ ({
-        kind: 'raw',
-        start: index,
-        end: opaqueClassEnd,
-        status: 'opaque',
-      }),
-      end: opaqueClassEnd,
-      status: /** @type {ParseStatus} */ ('opaque'),
-    };
+    return rawChild(index, opaqueClassEnd, 'opaque');
   if (token[0] === TokenType.Hash) return hashChildAt(token, index);
   if (keyframe && token[0] === TokenType.Percentage)
-    return {
-      work: /** @type {ParseWork} */ ({
-        kind: 'raw',
-        start: index,
-        end: index + 1,
-        status: 'valid',
-      }),
-      end: index + 1,
-    };
+    return rawChild(index, index + 1, 'valid');
   if (token[0] === TokenType.Delim && token[1] === '&')
     return {
       work: /** @type {ParseWork} */ ({
@@ -143,16 +121,7 @@ function compoundChildAt(
       end: qualified.end,
       hasQualifiedName: true,
     };
-  return {
-    work: /** @type {ParseWork} */ ({
-      kind: 'raw',
-      start: index,
-      end: index + 1,
-      status: 'invalid',
-    }),
-    end: index + 1,
-    status: /** @type {ParseStatus} */ ('invalid'),
-  };
+  return rawChild(index, index + 1, 'invalid');
 }
 
 /** @param {string} kind */

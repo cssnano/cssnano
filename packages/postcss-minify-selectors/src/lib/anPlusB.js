@@ -1,21 +1,9 @@
 import cssnanoUtils from 'cssnano-utils';
+import { decodedIdent, isTrivia } from './tokenUtils.js';
 
 /** @typedef {import('./tokenUtils.js').CSSToken} CSSToken */
 
-const { TokenType } = cssnanoUtils;
-
-/** @param {string} value */
-function asciiLowercase(value) {
-  let result = '';
-  for (const character of value) {
-    const code = character.codePointAt(0) ?? 0;
-    result +=
-      code >= 0x41 && code <= 0x5a
-        ? String.fromCodePoint(code + 0x20)
-        : character;
-  }
-  return result;
-}
+const { TokenType, asciiLowerCase } = cssnanoUtils;
 
 /** @param {string} character */
 function isDigit(character) {
@@ -61,15 +49,8 @@ function integerTokenValue(token) {
 }
 
 /** @param {CSSToken} token */
-function decodedIdent(token) {
-  return asciiLowercase(
-    /** @type {{value?: string}} */ (token[4])?.value ?? token[1]
-  );
-}
-
-/** @param {CSSToken} token */
 function decodedUnit(token) {
-  return asciiLowercase(/** @type {{unit?: string}} */ (token[4])?.unit ?? '');
+  return asciiLowerCase(/** @type {{unit?: string}} */ (token[4])?.unit ?? '');
 }
 
 /** @param {string} value @param {number} start */
@@ -209,10 +190,7 @@ export function parseAnPlusB(tokens, start, end) {
   /** @type {number[]} */
   const significant = [];
   for (let index = start; index < end; index++) {
-    const type = tokens[index][0];
-    if (type !== TokenType.Whitespace && type !== TokenType.Comment) {
-      significant.push(index);
-    }
+    if (!isTrivia(tokens[index])) significant.push(index);
   }
   if (significant.length === 0) return undefined;
 
