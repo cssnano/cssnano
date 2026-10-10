@@ -1,5 +1,5 @@
 import cssnanoUtils from 'cssnano-utils';
-import minifyMediaAll from './media.js';
+import minifyMediaAll, { dropRedundantRangeFeatures } from './media.js';
 import {
   minifyAspectRatios,
   minifyWhitespace,
@@ -40,24 +40,26 @@ export default function transform(legacy, rule) {
   /** @type {{start:number,end:number,text:string}[]} */
   const changes = [];
   const parents = parentIndexes(structure);
+  // One walk over the top-level queries, shared by every pass below.
+  const queries = structure.topLevelSegments();
   const mediaIsUnconditional =
-    ruleName === 'media' && minifyMediaAll(legacy, structure, changes);
+    ruleName === 'media' && minifyMediaAll(legacy, structure, queries, changes);
   if (mediaIsUnconditional) {
     rule.params = '';
     if (rule.raws.params?.raw) rule.raws.params = { raw: '', value: '' };
     updateAfterName(rule);
     return;
   }
+  if (ruleName === 'media')
+    dropRedundantRangeFeatures(structure, queries, changes);
   minifyWhitespace(structure, parents, changes);
   minifyAspectRatios(ruleName === 'supports', structure, parents, changes);
   const { tokens: input } = structure;
-  const segmentRanges = structure
-    .topLevelSegments()
-    .map(({ startIndex, endIndex }) => {
-      const start = input[startIndex]?.[2] ?? source.length;
-      const end = endIndex > startIndex ? tokenEnd(input[endIndex - 1]) : start;
-      return { start, end };
-    });
+  const segmentRanges = queries.map(({ startIndex, endIndex }) => {
+    const start = input[startIndex]?.[2] ?? source.length;
+    const end = endIndex > startIndex ? tokenEnd(input[endIndex - 1]) : start;
+    return { start, end };
+  });
   changes.sort((a, b) => a.start - b.start);
   const segments = serializeSegments(source, segmentRanges, changes);
   rule.params = [...new Set(segments)].toSorted().join();
