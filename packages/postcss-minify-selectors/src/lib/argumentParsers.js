@@ -36,7 +36,7 @@ function isPtClassSeparator(token) {
  * @param {number} end
  * @return {{ pieces?: string[], specificity?: Specificity, valid: boolean }}
  */
-export function normalizePtNameArgument(tokens, start, end) {
+function normalizePtNameArgument(tokens, start, end) {
   /** @type {string[]} */
   const pieces = [];
   let foundName = false;
@@ -96,7 +96,7 @@ export function normalizePtNameArgument(tokens, start, end) {
  * @param {number} end
  * @return {{ pieces?: string[], valid: boolean }}
  */
-export function normalizeIdentListArgument(tokens, start, end) {
+function normalizeIdentListArgument(tokens, start, end) {
   /** @type {string[]} */
   const pieces = [];
   let count = 0;
@@ -132,7 +132,7 @@ export function normalizeIdentListArgument(tokens, start, end) {
  * @param {number} end
  * @return {{ pieces?: string[], valid: boolean }}
  */
-export function normalizeIdentArgument(tokens, start, end) {
+function normalizeIdentArgument(tokens, start, end) {
   /** @type {string[]} */
   const pieces = [];
   let foundIdent = false;
@@ -188,7 +188,7 @@ function recordLanguageItem(items, seen, value, trivia) {
  * @param {number} end
  * @return {{ pieces?: string[], valid: boolean }}
  */
-export function normalizeIdentOrStringList(tokens, start, end) {
+function normalizeIdentOrStringList(tokens, start, end) {
   /** @type {{ value: string, trivia: string[], trailingTrivia: string[] }[]} */
   const items = [];
   /** @type {string[]} */
