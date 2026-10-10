@@ -42,9 +42,9 @@ function joinKey(node, joinRules, mergeState) {
  * always shrinks the output because the selector is not repeated.
  *
  * Sibling `@media`, `@supports` or `@container` blocks with identical
- * conditions apply their content under the same circumstances, so a later
- * block joins an earlier one when nothing between them, at any depth, sets a
- * property that its declarations also set. Named `@layer` blocks are left
+ * conditions apply their content under the same circumstances, so one block
+ * joins the other when nothing between them, at any depth, sets a property
+ * that its declarations also set. Named `@layer` blocks are left
  * out: their order comes from where each layer first appears.
  *
  * Rules that set the same declarations in the same order also share one
@@ -113,7 +113,8 @@ function joinInParent(parent, mergeState) {
           : joinBlock(
               /** @type {AtRule} */ (earlier.node),
               /** @type {AtRule} */ (node),
-              earlier.position
+              earlier.position,
+              position
             );
       if (direction === 'down') {
         latest.set(/** @type {string} */ (key), {
@@ -172,15 +173,32 @@ function joinInParent(parent, mergeState) {
    * @param {AtRule} earlier
    * @param {AtRule} later
    * @param {number} earlierPosition
-   * @return {'up' | null} where the joined block stands
+   * @param {number} laterPosition
+   * @return {'up' | 'down' | null} where the joined block stands
    */
-  function joinBlock(earlier, later, earlierPosition) {
+  function joinBlock(earlier, later, earlierPosition, laterPosition) {
     if (isOpaque(later)) return null;
     const declarations = collectDeclarations(later);
-    if (index.conflictsSince(declarations, earlierPosition)) return null;
-    earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());
-    later.remove();
-    index.moveWrites(declarations, earlierPosition);
-    return 'up';
+    if (!index.conflictsSince(declarations, earlierPosition)) {
+      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());
+      later.remove();
+      index.moveWrites(declarations, earlierPosition);
+      return 'up';
+    }
+    // The earlier block's content stays first, so source order is kept.
+    if (isOpaque(earlier)) return null;
+    const earlierDeclarations = collectDeclarations(earlier);
+    if (!index.conflictsSince(earlierDeclarations, earlierPosition)) {
+      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());
+      earlier.raws.before = later.raws.before;
+      earlier.remove();
+      later.replaceWith(earlier);
+      index.moveWrites(
+        [...earlierDeclarations, ...declarations],
+        laterPosition
+      );
+      return 'down';
+    }
+    return null;
   }
 }
