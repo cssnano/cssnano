@@ -3,13 +3,21 @@ export type FunctionFrame = {
     expected: import('@csstools/css-tokenizer').TokenType;
     commas: number;
     hasValue: boolean;
-    roundingStrategy: boolean;
+    firstArgument: 'empty' | 'keyword' | 'value';
+    calculation: boolean;
+    operand: boolean;
 };
 export type Component = {
     raw: string;
     tokens: import('@csstools/css-tokenizer').CSSToken[];
 };
-/** @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean, roundingStrategy: boolean}} FunctionFrame */
+/**
+ * firstArgument is 'keyword' only while the first argument of round() is a
+ * lone <rounding-strategy>, which the arity table does not count. In a
+ * calculation, operand records whether the argument so far ends with a value.
+ *
+ * @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean, firstArgument: 'empty' | 'keyword' | 'value', calculation: boolean, operand: boolean}} FunctionFrame
+ */
 /**
  * @typedef {{raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}}
  *   Component

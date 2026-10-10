@@ -2,7 +2,7 @@ import cssnanoUtils from 'cssnano-utils';
 
 /** @import {Declaration} from 'postcss'; */
 
-const { TokenType, decoded, tokens } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, tokens } = cssnanoUtils;
 
 /**
  * Property names are CSS identifiers, so engines match their decoded
@@ -17,7 +17,7 @@ export function decodedPropertyName(prop) {
   if (propertyTokens.length !== 1 || property?.[0] !== TokenType.Ident) {
     return undefined;
   }
-  return decoded(property).toLowerCase();
+  return asciiLowerCase(decoded(property));
 }
 
 /**
@@ -26,8 +26,28 @@ export function decodedPropertyName(prop) {
  */
 export function isAll(declaration) {
   const prop = declaration.prop;
-  if (prop.length === 3 && prop.toLowerCase() === 'all') return true;
+  if (prop.length === 3 && asciiLowerCase(prop) === 'all') return true;
   return prop.includes('\\') && decodedPropertyName(prop) === 'all';
+}
+
+/**
+ * Whether a property occurs twice without an `all` reset in between.
+ *
+ * @param {Declaration[]} laneDecls
+ * @return {boolean}
+ */
+export function repeatsProperty(laneDecls) {
+  const seen = new Set();
+  for (const decl of laneDecls) {
+    if (isAll(decl)) {
+      seen.clear();
+      continue;
+    }
+    const prop = asciiLowerCase(decl.prop);
+    if (seen.has(prop)) return true;
+    seen.add(prop);
+  }
+  return false;
 }
 
 /**

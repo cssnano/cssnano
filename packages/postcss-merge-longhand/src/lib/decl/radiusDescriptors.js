@@ -1,3 +1,4 @@
+import cssnanoUtils from 'cssnano-utils';
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
 import { isAll } from './importanceLanes.js';
@@ -10,6 +11,8 @@ import {
   physicalRadiusLonghands,
   physicalRadiusProperties,
 } from './borderData.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 
@@ -104,7 +107,7 @@ function appendRadiusNode(node, lanes, radiusDescriptors) {
     lanes[laneIndex].push({ decl: node, isBarrier: true });
     return true;
   }
-  const prop = node.prop.toLowerCase();
+  const prop = asciiLowerCase(node.prop);
   const isHacked = Boolean(stylehacks.detect(node));
   const desc = createRadiusDescriptor(node, prop, isHacked);
   if (!desc) return false;

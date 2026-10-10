@@ -1,3 +1,4 @@
+import cssnanoUtils from 'cssnano-utils';
 import { withoutVendorPrefix } from './lib/vendorPrefix.js';
 import {
   allColumnProps,
@@ -13,17 +14,17 @@ import {
   allRadiusProperties,
 } from './lib/decl/borderData.js';
 import getBrowsersList from '#getBrowsersList';
-import {
-  alignmentFamilies,
-  alignmentProperties,
-} from './lib/decl/alignmentForms.js';
+import { alignmentProperties } from './lib/decl/alignmentForms.js';
 import { reduceAlignmentFamily } from './lib/decl/alignmentReducer.js';
+import { pairFamilyOf } from './lib/decl/pairForms.js';
+import { reducePairFamily } from './lib/decl/pairReducer.js';
 import { withTargetSupport } from './lib/isFallback.js';
 import { clearSupportCache } from './lib/syntaxFeatures.js';
 import {
   featuresSupportedByAll,
   BoxSupport,
   supportsPlaceShorthands,
+  supportedPairShorthands,
 } from './lib/targetSupport.js';
 import { endsDeclarationRun } from './lib/decl/declarationRuns.js';
 import { applyChildEdits } from './lib/deferredChildEdits.js';
@@ -33,6 +34,8 @@ import {
   foldableShorthands,
   foldShorthandDeclaration,
 } from './lib/minifyShorthand.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import browserslist from 'browserslist' */
@@ -64,17 +67,27 @@ function alignmentFamilyOf(prop) {
     : alignmentProperties.get(withoutVendorPrefix(name));
 }
 
+/** @import {PairFamily} from './lib/decl/pairForms.js'; */
+/** @import {AlignmentFamilyConfig} from './lib/decl/alignmentForms.js'; */
+
 /**
  * @typedef {{
  *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
  *   setsOtherColumn: boolean,
  *   shorthandMemoTable: Map<string, string | null>,
  *   placeShorthands: boolean,
- *   boxSupport: BoxSupport
+ *   boxSupport: BoxSupport,
+ *   pairShorthands: ReadonlySet<string>
  * }} MergeContext
  */
 
-/** @typedef {{ decls: Declaration[], lanes: [Declaration[], Declaration[]] }} AlignmentDeclarations */
+/**
+ * @typedef {{
+ *   family: PairFamily | AlignmentFamilyConfig,
+ *   decls: Declaration[],
+ *   lanes: [Declaration[], Declaration[]]
+ * }} FamilyDeclarations
+ */
 
 /**
  * Folds immediate shorthand declarations within a container (e.g. root or at-rule).
@@ -102,7 +115,7 @@ function foldContainerDeclarations(container, shorthandMemoTable) {
  *   columnLanes: [Declaration[], Declaration[]],
  *   borderDeclarations: Declaration[],
  *   hasForeignBorder: boolean,
- *   alignmentFamilies: Map<string, AlignmentDeclarations> | null,
+ *   families: Map<FamilyDeclarations['family'], FamilyDeclarations> | null,
  * }} state
  * @param {MergeContext} context
  * @return {void}
@@ -123,19 +136,38 @@ function reduceClassifiedContainer(container, state, context) {
   if (state.borderDeclarations.length) {
     reduceBorder(container, state.borderDeclarations, state.hasForeignBorder);
   }
-  if (state.alignmentFamilies) {
-    for (const [shorthand, { decls, lanes }] of state.alignmentFamilies) {
-      reduceAlignmentFamily(
-        container,
-        alignmentFamilies[shorthand],
-        decls,
-        lanes
-      );
+  if (state.families) {
+    for (const { family, decls, lanes } of state.families.values()) {
+      if ('longhands' in family) {
+        reducePairFamily(container, family, decls, lanes);
+      } else {
+        reduceAlignmentFamily(container, family, decls, lanes);
+      }
     }
   }
   if (state.columnDecls.length) {
     context.columnRules.push([container, state.columnDecls, state.columnLanes]);
   }
+}
+
+/**
+ * Adds a declaration to its shorthand family, creating the family on first use.
+ *
+ * @param {Parameters<typeof reduceClassifiedContainer>[1]} state
+ * @param {FamilyDeclarations['family']} family
+ * @param {Declaration} child
+ * @param {number} laneIndex
+ * @return {void}
+ */
+function addFamilyDeclaration(state, family, child, laneIndex) {
+  state.families ??= new Map();
+  let entry = state.families.get(family);
+  if (!entry) {
+    entry = { family, decls: [], lanes: [[], []] };
+    state.families.set(family, entry);
+  }
+  entry.decls.push(child);
+  entry.lanes[laneIndex].push(child);
 }
 
 /**
@@ -149,6 +181,11 @@ function reduceClassifiedContainer(container, state, context) {
  * @return {void}
  */
 function classifyDeclaration(child, prop, laneIndex, state, context) {
+  // Families the targets cannot parse are not collected, so they stay as written.
+  const pair = pairFamilyOf(prop);
+  if (pair && context.pairShorthands.has(pair.shorthand)) {
+    addFamilyDeclaration(state, pair, child, laneIndex);
+  }
   if (prop.startsWith('border')) {
     if (allRadiusProperties.has(prop)) {
       state.borderRadiusDecls.push(child);
@@ -183,14 +220,7 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
     : undefined;
   foldShorthandDeclaration(child, context.shorthandMemoTable, prop);
   if (alignmentFamily) {
-    state.alignmentFamilies ??= new Map();
-    let family = state.alignmentFamilies.get(alignmentFamily.shorthand);
-    if (!family) {
-      family = { decls: [], lanes: [[], []] };
-      state.alignmentFamilies.set(alignmentFamily.shorthand, family);
-    }
-    family.decls.push(child);
-    family.lanes[laneIndex].push(child);
+    addFamilyDeclaration(state, alignmentFamily, child, laneIndex);
   }
 }
 
@@ -206,7 +236,7 @@ function createContainerState() {
     columnLanes: [[], []],
     borderDeclarations: [],
     hasForeignBorder: false,
-    alignmentFamilies: null,
+    families: null,
   };
 }
 
@@ -246,7 +276,7 @@ function processContainer(container, context) {
       }
       state.borderRadiusLanes[laneIndex].push(child);
       state.columnLanes[laneIndex].push(child);
-      for (const family of state.alignmentFamilies?.values() ?? []) {
+      for (const family of state.families?.values() ?? []) {
         family.lanes[laneIndex].push(child);
       }
       continue;
@@ -254,7 +284,7 @@ function processContainer(container, context) {
 
     classifyDeclaration(
       child,
-      child.prop.toLowerCase(),
+      asciiLowerCase(child.prop),
       laneIndex,
       state,
       context
@@ -270,9 +300,10 @@ function processContainer(container, context) {
  * @param {import('postcss').Root} css
  * @param {boolean} placeShorthands
  * @param {BoxSupport} boxSupport
+ * @param {ReadonlySet<string>} pairShorthands
  * @return {void}
  */
-function mergeLonghands(css, placeShorthands, boxSupport) {
+function mergeLonghands(css, placeShorthands, boxSupport, pairShorthands) {
   const context = {
     /** @type {[Container, Declaration[], [Declaration[], Declaration[]]][]} */
     columnRules: [],
@@ -281,6 +312,7 @@ function mergeLonghands(css, placeShorthands, boxSupport) {
     shorthandMemoTable: new Map(),
     placeShorthands,
     boxSupport,
+    pairShorthands,
   };
 
   foldContainerDeclarations(css, context.shorthandMemoTable);
@@ -317,6 +349,7 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
       const browsers = getBrowsersList(opts, stats, from, file, env);
       const placeShorthands = supportsPlaceShorthands(browsers);
       const boxSupport = new BoxSupport(browsers);
+      const pairShorthands = supportedPairShorthands(browsers);
       const supportedFeatures = featuresSupportedByAll(browsers);
       return {
         /**
@@ -325,7 +358,7 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
         OnceExit(css) {
           try {
             withTargetSupport(supportedFeatures, () =>
-              mergeLonghands(css, placeShorthands, boxSupport)
+              mergeLonghands(css, placeShorthands, boxSupport, pairShorthands)
             );
           } finally {
             clearSupportCache();

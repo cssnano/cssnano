@@ -1,14 +1,17 @@
-import { isCssWideKeyword } from '../isCssWideKeyword.js';
+import cssnanoUtils from 'cssnano-utils';
+import { sharesShorthandKeyword } from '../isCssWideKeyword.js';
 import stylehacks from 'stylehacks';
 import canExplode from '../canExplode.js';
 import isCustomProp from '../isCustomProp.js';
 import { commitShorthand } from './slotVector.js';
-import { hasNonAll, isAll } from './importanceLanes.js';
+import { hasNonAll, repeatsProperty } from './importanceLanes.js';
 import {
   normalizeAlignment,
   parseAlignmentDeclaration,
   sharesKeywordSupport,
 } from './alignmentForms.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {AlignmentFamilyConfig} from './alignmentForms.js'; */
@@ -44,9 +47,7 @@ function mergeSegment(rule, family, segment, important, parsedDecls) {
   if (segment.some(isCustomProp)) return;
 
   // A CSS-wide keyword cannot share a shorthand with another value.
-  const isGlobal = isCssWideKeyword(align);
-  if (isGlobal !== isCssWideKeyword(justify)) return;
-  if (isGlobal && align.toLowerCase() !== justify.toLowerCase()) return;
+  if (!sharesShorthandKeyword([align, justify])) return;
 
   const values = segment.map((decl) =>
     /** @type {[string | null, string | null]} */ (parsedDecls.get(decl))
@@ -88,26 +89,6 @@ function processLane(rule, family, laneDecls, important, parsedDecls) {
 }
 
 /**
- * Whether a property occurs twice without an `all` reset in between.
- *
- * @param {Declaration[]} laneDecls
- * @return {boolean}
- */
-function repeatsProperty(laneDecls) {
-  const seen = new Set();
-  for (const decl of laneDecls) {
-    if (isAll(decl)) {
-      seen.clear();
-      continue;
-    }
-    const prop = decl.prop.toLowerCase();
-    if (seen.has(prop)) return true;
-    seen.add(prop);
-  }
-  return false;
-}
-
-/**
  * Whether the declarations can be reduced at all: both longhands, or a
  * shorthand and a longhand.
  *
@@ -115,7 +96,7 @@ function repeatsProperty(laneDecls) {
  * @return {boolean}
  */
 function hasMergeableProperties(declarations) {
-  return new Set(declarations.map((d) => d.prop.toLowerCase())).size > 1;
+  return new Set(declarations.map((d) => asciiLowerCase(d.prop))).size > 1;
 }
 
 /**
@@ -131,7 +112,7 @@ function hasMergeableProperties(declarations) {
  */
 export function reduceAlignmentFamily(rule, family, declarations, lanes) {
   if (
-    declarations.some((d) => !family.allProps.has(d.prop.toLowerCase())) ||
+    declarations.some((d) => !family.allProps.has(asciiLowerCase(d.prop))) ||
     !hasMergeableProperties(declarations)
   ) {
     return;
@@ -144,7 +125,7 @@ export function reduceAlignmentFamily(rule, family, declarations, lanes) {
   /** @type {ParsedDeclarations} */
   const parsedDecls = new Map();
   for (const decl of declarations) {
-    const isShort = decl.prop.toLowerCase() === family.shorthand;
+    const isShort = asciiLowerCase(decl.prop) === family.shorthand;
     // Hacks and substitution-backed shorthands only bound a segment.
     if (stylehacks.detect(decl) || (isShort && !canExplode(decl))) continue;
     const parsed = parseAlignmentDeclaration(family, decl);

@@ -7,7 +7,7 @@ import { closingTokens } from '../valueComponents.js';
 
 /** @import {Declaration} from 'postcss'; */
 
-const { TokenType, closeForOpening, tokens } = cssnanoUtils;
+const { TokenType, asciiLowerCase, closeForOpening, tokens } = cssnanoUtils;
 
 export const columns = 'columns';
 const columnProperties = ['column-width', 'column-count'];
@@ -100,8 +100,8 @@ export function parsedValue(d) {
  * @return {string}
  */
 export function normalize([w, c]) {
-  const lw = w.toLowerCase();
-  const lc = c.toLowerCase();
+  const lw = asciiLowerCase(w);
+  const lc = asciiLowerCase(c);
   if (lw === auto) return c;
   if (lc === auto) return w;
   return lw === lc && cssWideKeywords.has(lw) ? lw : `${w} ${c}`;
@@ -141,7 +141,7 @@ function componentRole(term) {
   if (
     term.type === TokenType.Ident &&
     typeof d?.value === 'string' &&
-    d.value.toLowerCase() === auto
+    asciiLowerCase(d.value) === auto
   ) {
     return 'initial';
   }
@@ -218,8 +218,8 @@ export function parseColumns(parsed, roles = termRoles(parsed)) {
  * @return {boolean}
  */
 export const setsOtherColumnProperty = (declaration) =>
-  otherColumnProperties.has(declaration.prop.toLowerCase()) ||
-  (declaration.prop.toLowerCase() === columns &&
+  otherColumnProperties.has(asciiLowerCase(declaration.prop)) ||
+  (asciiLowerCase(declaration.prop) === columns &&
     parsedValue(declaration).hasTopLevelSlash);
 
 /** @param {string} v @return {boolean} */
@@ -235,9 +235,9 @@ export function isValidColumns(d) {
   if (parsed.hasTopLevelSlash) return true;
 
   if (parsed.terms.length === 1) {
-    const val = parsed.value
-      .slice(parsed.terms[0].start, parsed.terms[0].end)
-      .toLowerCase();
+    const val = asciiLowerCase(
+      parsed.value.slice(parsed.terms[0].start, parsed.terms[0].end)
+    );
     return isKeywordOrUnresolved(val) || roles[0] !== undefined;
   }
 
@@ -249,7 +249,7 @@ export function isValidColumns(d) {
       if (role !== undefined) {
         pairRoles.push(role);
       } else {
-        const val = parsed.value.slice(term.start, term.end).toLowerCase();
+        const val = asciiLowerCase(parsed.value.slice(term.start, term.end));
         // CSS-wide keywords cannot combine with other tokens (CSS Cascading 4
         // § 7.2); only unresolved functions keep a two-term value valid.
         if (isUnresolved(val)) {
@@ -269,20 +269,20 @@ export function isValidColumns(d) {
 
 /** @param {Declaration} d @return {boolean} */
 function isValidColumnProperty(d) {
-  const value = d.value?.toLowerCase();
+  const value = asciiLowerCase(d.value);
   if (!value) return false;
   if (isKeywordOrUnresolved(value)) return true;
   const parsed = parsedValue(d);
   return (
     parsed.terms.length === 1 &&
     componentRole(parsed.terms[0]) ===
-      (d.prop.toLowerCase() === 'column-width' ? 'width' : 'count')
+      (asciiLowerCase(d.prop) === 'column-width' ? 'width' : 'count')
   );
 }
 
 /** @param {Declaration} d @return {boolean} */
 export const isInvalid = (d) =>
   !stylehacks.detect(d) &&
-  (d.prop.toLowerCase() === columns
+  (asciiLowerCase(d.prop) === columns
     ? !isValidColumns(d)
     : !isValidColumnProperty(d));

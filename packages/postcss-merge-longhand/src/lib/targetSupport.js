@@ -1,9 +1,14 @@
 import placeMinimums from '../data/placeSupport.json' with { type: 'json' };
+import pairMinimums from '../data/pairSupport.json' with { type: 'json' };
 import boxSupport from '../data/boxPropertySupport.json' with { type: 'json' };
 import featureMinimums from '../data/featureSupport.json' with { type: 'json' };
 import { compareVersions } from './compareVersions.js';
 import { boxProperties } from './decl/boxGroups.js';
+import { pairFamilies } from './decl/pairForms.js';
 import { longstandingFeatures } from './syntaxFeatures.js';
+
+const pairMinimumsByShorthand =
+  /** @type {Record<string, Record<string, string>>} */ (pairMinimums);
 
 /**
  * @param {string} entry - a browserslist entry such as "safari 10.1"
@@ -33,6 +38,32 @@ function reaches(entry, minimums) {
  */
 export function supportsPlaceShorthands(browsers) {
   return browsers.every((entry) => reaches(entry, placeMinimums));
+}
+
+/**
+ * The pair families whose shorthand every target parses, and the families
+ * that need no support check. An engine without a gated shorthand drops the
+ * whole declaration, losing both axes that separate longhands would have kept.
+ * A gated family without minimums is taken as unsupported.
+ *
+ * @param {string[]} browsers - browserslist entries such as "safari 10.1"
+ * @param {Record<string, Record<string, string>>} [minimumsByShorthand] - first
+ * supporting version by shorthand and browserslist name
+ * @return {ReadonlySet<string>} the shorthand names
+ */
+export function supportedPairShorthands(
+  browsers,
+  minimumsByShorthand = pairMinimumsByShorthand
+) {
+  return new Set(
+    pairFamilies
+      .filter(({ supportKey }) => {
+        if (supportKey === null) return true;
+        const minimums = minimumsByShorthand[supportKey] ?? {};
+        return browsers.every((entry) => reaches(entry, minimums));
+      })
+      .map(({ shorthand }) => shorthand)
+  );
 }
 
 /**

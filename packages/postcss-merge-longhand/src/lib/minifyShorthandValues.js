@@ -14,7 +14,8 @@ import {
   tokenName,
 } from './shorthandValueGrammar.js';
 
-const { TokenType, numeric, tokenEnd, tokenStart } = cssnanoUtils;
+const { TokenType, asciiLowerCase, numeric, tokenEnd, tokenStart } =
+  cssnanoUtils;
 
 const overflowKeywords = new Set([
   'visible',
@@ -197,7 +198,7 @@ function reduceAspectRatio(value) {
 function transitionTime(component) {
   const value = directNumeric(component);
   return value &&
-    transitionTimeUnits.has(value.unit.toLowerCase()) &&
+    transitionTimeUnits.has(asciiLowerCase(value.unit)) &&
     Number.isFinite(value.number)
     ? value
     : null;

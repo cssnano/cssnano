@@ -1,5 +1,8 @@
+import cssnanoUtils from 'cssnano-utils';
 import stylehacks from 'stylehacks';
 import { normalizeValue } from './minifyShorthandValues.js';
+
+const { asciiLowerCase } = cssnanoUtils;
 
 /**
  * Shorthand properties whose redundant axes, sides, or default components can be
@@ -33,7 +36,7 @@ export const foldableShorthands = new Set([
 export function foldShorthandDeclaration(
   decl,
   memoTable,
-  property = decl.prop.toLowerCase()
+  property = asciiLowerCase(decl.prop)
 ) {
   if (!foldableShorthands.has(property) || stylehacks.detect(decl)) return;
   const sourceValue =

@@ -1,6 +1,6 @@
 {
   "name": "postcss-minify-selectors",
-  "version": "9.0.7",
+  "version": "9.0.8",
   "description": "Minify selectors with PostCSS.",
   "exports": {
     ".": {

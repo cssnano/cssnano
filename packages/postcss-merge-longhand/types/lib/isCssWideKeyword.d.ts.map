@@ -1,1 +1,1 @@
-{"version":3,"file":"isCssWideKeyword.d.ts","sourceRoot":"","sources":["../../src/lib/isCssWideKeyword.js"],"names":[],"mappings":"AAEA;;;GAGG;AACH,wBAAgB,gBAAgB,CAAC,KAAK,EAH3B,MAG2B,GAF1B,OAAO,CAIlB"}
+{"version":3,"file":"isCssWideKeyword.d.ts","sourceRoot":"","sources":["../../src/lib/isCssWideKeyword.js"],"names":[],"mappings":"AAKA;;;GAGG;AACH,wBAAgB,gBAAgB,CAAC,KAAK,EAH3B,MAG2B,GAF1B,OAAO,CAIlB;AAED;;;;;GAKG;AACH,wBAAgB,sBAAsB,CAAC,MAAM,EAHlC,MAAM,EAG4B,GAFjC,OAAO,CAUlB"}
