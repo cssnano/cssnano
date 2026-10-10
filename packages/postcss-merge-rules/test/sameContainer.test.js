@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import sameParent, { sameContainer } from '../src/sameParent.js';
+import { sameContainer } from '../src/lib/sameContainer.js';
 
 /**
  * Parses `css` and returns the two nodes found by following each child-index
@@ -39,82 +39,82 @@ const nestedSupports = (outerFirst, outerSecond, firstQuery, secondQuery) => `
         }
     `;
 
-test('should calculate same parent', async () => {
+test('sameContainer holds for the parents of sibling rules', async () => {
   const [h1, h2] = await parseNodePair('h1 {} h2 {}', [0], [1]);
 
-  assert.strictEqual(sameParent(h1, h2), true);
+  assert.strictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate same parent (detached nodes)', async () => {
+test('sameContainer holds for the missing parents of two detached rules', async () => {
   const [h1, h2] = await parseNodePair('h1 {} h2 {}', [0], [1]);
 
   h1.remove();
   h2.remove();
 
-  assert.strictEqual(sameParent(h1, h2), true);
+  assert.strictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate same parent (at rules)', async () => {
+test('sameContainer holds for siblings inside one @media block', async () => {
   const [h1, h2] = await parseNodePair(
     '@media screen{h1 {} h2 {}}',
     [0, 0],
     [0, 1]
   );
 
-  assert.strictEqual(sameParent(h1, h2), true);
+  assert.strictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate same parent (multiple at rules)', async () => {
+test('sameContainer holds for rules in equal @media blocks', async () => {
   const [h1, h2] = await parseNodePair(
     '@media screen{h1 {}} @media screen{h2 {}}',
     [0, 0],
     [1, 0]
   );
 
-  assert.strictEqual(sameParent(h1, h2), true);
+  assert.strictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate same parent (multiple at rules (uppercase))', async () => {
+test('sameContainer compares at-rule names case-insensitively', async () => {
   const [h1, h2] = await parseNodePair(
     '@media screen{h1 {}} @MEDIA screen{h2 {}}',
     [0, 0],
     [1, 0]
   );
 
-  assert.strictEqual(sameParent(h1, h2), true);
+  assert.strictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate same parent (nested at rules)', async () => {
+test('sameContainer holds for rules in equal nested at-rule blocks', async () => {
   const [h1, h2] = await parseNodePair(
     nestedSupports('@media screen', '@media screen', 'course', 'course'),
     [0, 0, 0],
     [1, 0, 0]
   );
 
-  assert.strictEqual(sameParent(h1, h2), true);
+  assert.strictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate not same parent (nested at rules)', async () => {
+test('sameContainer does not hold when nested @supports conditions differ', async () => {
   const [h1, h2] = await parseNodePair(
     nestedSupports('@media screen', '@media screen', 'fine', 'course'),
     [0, 0, 0],
     [1, 0, 0]
   );
 
-  assert.notStrictEqual(sameParent(h1, h2), true);
+  assert.notStrictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate not same parent (nested at rules) (2)', async () => {
+test('sameContainer does not hold when outer @media queries differ', async () => {
   const [h1, h2] = await parseNodePair(
     nestedSupports('@media print', '@media screen', 'course', 'course'),
     [0, 0, 0],
     [1, 0, 0]
   );
 
-  assert.notStrictEqual(sameParent(h1, h2), true);
+  assert.notStrictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate not same parent (nested at rules) (3)', async () => {
+test('sameContainer does not hold when only one side is inside an outer @media block', async () => {
   const [h1, h2] = await parseNodePair(
     `
         @supports(pointer: course) {
@@ -130,10 +130,10 @@ test('should calculate not same parent (nested at rules) (3)', async () => {
     [1, 0, 0]
   );
 
-  assert.notStrictEqual(sameParent(h1, h2), true);
+  assert.notStrictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate not same parent (nested at rules) (4)', async () => {
+test('sameContainer does not hold when only one side is inside a nested @supports block', async () => {
   const [h1, h2] = await parseNodePair(
     `
         @media screen {
@@ -149,40 +149,40 @@ test('should calculate not same parent (nested at rules) (4)', async () => {
     [1, 0, 0]
   );
 
-  assert.notStrictEqual(sameParent(h1, h2), true);
+  assert.notStrictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate not same parent for anonymous @layer rules', async () => {
+test('sameContainer does not hold for two anonymous @layer blocks', async () => {
   const [h1, h2] = await parseNodePair(
     '@layer { h1 {} } @layer { h2 {} }',
     [0, 0],
     [1, 0]
   );
 
-  assert.notStrictEqual(sameParent(h1, h2), true);
+  assert.notStrictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate not same parent for rules nested in different parent rules', async () => {
+test('sameContainer does not hold for rules nested in parent rules with different selectors', async () => {
   const [h1, h2] = await parseNodePair(
     '.card { h1 {} } .hero { h2 {} }',
     [0, 0],
     [1, 0]
   );
 
-  assert.notStrictEqual(sameParent(h1, h2), true);
+  assert.notStrictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate same parent for rules nested in identical selector parent rules', async () => {
+test('sameContainer holds for rules nested in parent rules with identical selectors', async () => {
   const [h1, h2] = await parseNodePair(
     '.card { h1 {} } .card { h2 {} }',
     [0, 0],
     [1, 0]
   );
 
-  assert.strictEqual(sameParent(h1, h2), true);
+  assert.strictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate not same parent for anonymous @layer rules with comments in params', () => {
+test('sameContainer does not hold for anonymous @layer blocks whose params are only comments', () => {
   const layer1 = postcss.atRule({ name: 'layer', params: '/*! important */' });
   const layer2 = postcss.atRule({ name: 'layer', params: '/*! important */' });
   const h1 = postcss.rule({ selector: 'h1' });
@@ -190,10 +190,10 @@ test('should calculate not same parent for anonymous @layer rules with comments 
   layer1.append(h1);
   layer2.append(h2);
 
-  assert.notStrictEqual(sameParent(h1, h2), true);
+  assert.notStrictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
-test('should calculate same parent for named @layer rules with identical comments and name', () => {
+test('sameContainer holds for named @layer blocks with identical comments and name', () => {
   const layer1 = postcss.atRule({
     name: 'layer',
     params: '/* comment */ foo',
@@ -207,7 +207,7 @@ test('should calculate same parent for named @layer rules with identical comment
   layer1.append(h1);
   layer2.append(h2);
 
-  assert.strictEqual(sameParent(h1, h2), true);
+  assert.strictEqual(sameContainer(h1.parent, h2.parent), true);
 });
 
 test('sameContainer should hold for equal conditional blocks that are different nodes', () => {

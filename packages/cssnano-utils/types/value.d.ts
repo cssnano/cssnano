@@ -5,18 +5,8 @@ export type SourceEdit = {
     end: number;
     text: string;
 };
-export type NumericSource = {
-    index: number;
-    start: number;
-    end: number;
-    raw: string;
-    number: number;
-    unit: string;
-    hasDecimal: boolean;
-};
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 /** @typedef {{start: number, end: number, text: string}} SourceEdit */
-/** @typedef {{index: number, start: number, end: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
 /** @param {CSSToken} token @return {string} */
 declare function decoded(token: CSSToken): string;
 /**
@@ -46,22 +36,14 @@ declare function numeric(token: CSSToken): {
     unit: string;
 } | false;
 /**
- * Capture one numeric source spelling, including PostCSS's historic `1.em`
- * token shape. Its `end` is a character offset exclusive of the source.
- *
- * @param {CSSToken[]} input
- * @param {number} index
- * @return {NumericSource | false}
- */
-declare function numericSource(input: CSSToken[], index: number): NumericSource | false;
-/**
  * @param {TokenType} type
  * @return {TokenType | undefined}
  */
 declare function closeForOpening(type: TokenType): TokenType | undefined;
 /**
- * Reports whether a value ends in a backslash that begins an escape
- * sequence, as opposed to a backslash that is itself escaped.
+ * Reports whether a value, or its prefix before `end`, ends in a backslash
+ * that begins an escape sequence, as opposed to a backslash that is itself
+ * escaped.
  * @param {string} value
  * @return {boolean}
  */
@@ -100,5 +82,5 @@ declare class BalancedTokens {
 declare function balancedTokens(source: string, options?: {
     unicodeRangesAllowed?: boolean;
 }): BalancedTokens | undefined;
-export { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, numericSource, tokenEnd, tokenStart, tokens, };
+export { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens, };
 //# sourceMappingURL=value.d.ts.map

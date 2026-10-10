@@ -1,0 +1,1 @@
+{"version":3,"file":"sameContainer.d.ts","sourceRoot":"","sources":["../../src/lib/sameContainer.js"],"names":[],"mappings":"AAuCI,YAAwD,KAAK,GAAnD,OAAO,SAAS,EAAE,OAAO,GAAG;IAAC,MAAM,CAAC,EAAE,KAAK,CAAA;CAAC,CAAO;AAAjE,oEAAoE;AAEpE;;;;;;;;GAQG;AACH,wBAAgB,aAAa,CAAC,UAAU,EAJ7B,OAAO,SAAS,EAAE,SAAS,GAAG,SAID,EAAE,UAAU,EAHzC,OAAO,SAAS,EAAE,SAAS,GAAG,SAGW,GAFxC,OAAO,CAelB"}

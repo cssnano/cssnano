@@ -6,6 +6,7 @@ import convert, {
   angleConv,
   freqConv,
 } from './convert.js';
+import { numericSource } from './numericSource.js';
 
 const {
   TokenType,
@@ -14,7 +15,6 @@ const {
   decoded,
   lengthUnits,
   mathFunctions,
-  numericSource,
   tokens,
 } = cssnanoUtils;
 
@@ -24,7 +24,7 @@ const {
  * unitless zero represents, while linear-gradient stops take a
  * <length-percentage>, which it does. */
 const functionsPreservingZeroUnits = new Set([
-  ...mathFunctions,
+  ...mathFunctions.keys(),
   ...calcSumFunctions,
   'anchor',
   'anchor-size',

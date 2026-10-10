@@ -2,11 +2,9 @@ import cssnanoUtils from 'cssnano-utils';
 import {
   dropHexEscapeTerminator,
   hexEscapeDigitCount,
-  isImportantCommentToken,
   needsTerminatorAfterDigits,
-  skipTrivia,
-  unquote,
-} from './tokenUtils.js';
+} from './hexEscape.js';
+import { isImportantCommentToken, skipTrivia, unquote } from './tokenUtils.js';
 
 const { TokenType, tokenStart } = cssnanoUtils;
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */

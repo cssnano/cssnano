@@ -1,9 +1,6 @@
 import cssnanoUtils from 'cssnano-utils';
-import {
-  consumeTrivia,
-  dropHexEscapeTerminator,
-  unquote,
-} from './tokenUtils.js';
+import { dropHexEscapeTerminator } from './hexEscape.js';
+import { consumeTrivia, unquote } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
 

@@ -1,1 +1,1 @@
-{"version":3,"file":"mathFunctions.d.ts","sourceRoot":"","sources":["../src/mathFunctions.js"],"names":[],"mappings":"AACA,QAAA,MAAM,aAAa,aA0BjB,CAAC;eAEY,aAAa"}
+{"version":3,"file":"mathFunctions.d.ts","sourceRoot":"","sources":["../src/mathFunctions.js"],"names":[],"mappings":"AAEA,6DAA6D;AAC7D,QAAA,MAAM,aAAa,EADR,WAAW,CAAC,MAAM,EAAE,SAAS,CAAC,MAAM,EAAE,MAAM,CAAC,CA2BtD,CAAC;eAEY,aAAa"}

@@ -9,7 +9,7 @@ export declare const openingTypes: Set<import("@csstools/css-tokenizer").TokenTy
 export declare const closingTypes: Set<import("@csstools/css-tokenizer").TokenType>;
 export declare const calcProductEndTypes: Set<import("@csstools/css-tokenizer").TokenType>;
 export declare const calcProductStartTypes: Set<import("@csstools/css-tokenizer").TokenType>;
-export declare const mathFunctions: Set<string>;
+export declare const mathFunctions: ReadonlyMap<string, readonly [number, number]>;
 export declare const whitespaceInsensitiveFunctions: Set<string>;
 export declare const aspectRatioFeatures: Set<string>;
 /**

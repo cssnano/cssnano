@@ -1,12 +1,10 @@
-import cssnanoUtils from 'cssnano-utils';
 import {
   mergeMatchingDeclarations,
   mergeMatchingSelectors,
   mergeSharedDeclarations,
 } from './merge.js';
 import RuleSequence from './ruleSequence.js';
-
-const { sameContainer } = cssnanoUtils;
+import { sameContainer } from './sameContainer.js';
 
 const NO_BENEFIT = -1;
 

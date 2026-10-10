@@ -3,18 +3,12 @@ import cssnanoUtils from 'cssnano-utils';
 import { isLengthValue } from './lengthGrammar.js';
 import { closingTokens } from './valueComponents.js';
 
-const {
-  TokenType,
-  closeForOpening,
-  decoded,
-  mathFunctions,
-  mathFunctionArgumentRanges,
-  numeric,
-} = cssnanoUtils;
+const { TokenType, closeForOpening, decoded, mathFunctions, numeric } =
+  cssnanoUtils;
 
 /* Math functions resolve to a value the grammar can accept positionally, and
  * anchor-size() always resolves to a length. */
-const valueFunctions = new Set([...mathFunctions, 'anchor-size']);
+const valueFunctions = new Set([...mathFunctions.keys(), 'anchor-size']);
 /* These functions have a fixed result type that cannot be a length. They
  * remain in valueFunctions so valid uses nested in calc() are accepted. */
 const nonLengthResultFunctions = new Set([
@@ -199,7 +193,7 @@ function commaHasNoOperand(input, index) {
 /** @param {string | null} name @param {number} argumentCount @return {boolean} */
 function functionArityIsValid(name, argumentCount) {
   if (!name) return true;
-  const range = mathFunctionArgumentRanges.get(name);
+  const range = mathFunctions.get(name);
   if (range) {
     return argumentCount >= range[0] && argumentCount <= range[1];
   }

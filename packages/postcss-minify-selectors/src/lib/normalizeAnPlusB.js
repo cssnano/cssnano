@@ -1,11 +1,10 @@
 import cssnanoUtils from 'cssnano-utils';
 import { parseAnPlusB } from './argumentParsers.js';
+import { dropHexEscapeTerminator, joinPieces } from './hexEscape.js';
 import {
   consumeTrivia,
   decodedIdent,
-  dropHexEscapeTerminator,
   isImportantCommentToken,
-  joinPieces,
 } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;

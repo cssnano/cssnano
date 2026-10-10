@@ -1,19 +1,15 @@
 import calcSumFunctions from './calcSumFunctions.js';
 import lengthUnits from './lengthUnits.js';
 import mathFunctions from './mathFunctions.js';
-import mathFunctionArgumentRanges from './mathFunctionArgumentRanges.js';
 import rawCache from './rawCache.js';
 import isAnonymousLayer from './isAnonymousLayer.js';
 import isHexDigitCode from './isHexDigitCode.js';
 import isImportantComment from './isImportantComment.js';
-import sameParent, { sameContainer } from './sameParent.js';
-import { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, numericSource, tokenEnd, tokenStart, tokens } from './value.js';
+import { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens } from './value.js';
 /** @param {string} value @return {string} */
 declare function asciiLowerCase(value: string): string;
 declare const moduleExports: {
     rawCache: typeof rawCache;
-    sameParent: typeof sameParent;
-    sameContainer: typeof sameContainer;
     isAnonymousLayer: typeof isAnonymousLayer;
     isHexDigitCode: typeof isHexDigitCode;
     isImportantComment: typeof isImportantComment;
@@ -27,9 +23,7 @@ declare const moduleExports: {
     endsWithEscapingBackslash: typeof endsWithEscapingBackslash;
     lengthUnits: typeof lengthUnits;
     mathFunctions: typeof mathFunctions;
-    mathFunctionArgumentRanges: typeof mathFunctionArgumentRanges;
     numeric: typeof numeric;
-    numericSource: typeof numericSource;
     tokenEnd: typeof tokenEnd;
     tokenStart: typeof tokenStart;
     tokens: typeof tokens;

@@ -12,11 +12,4 @@ export type Child = import('postcss').AnyNode & {
  * @return {boolean}
  */
 export declare function sameContainer(containerA: import('postcss').Container | undefined, containerB: import('postcss').Container | undefined): boolean;
-/**
- * @param {Child} nodeA
- * @param {Child} nodeB
- * @return {boolean}
- */
-declare function sameParent(nodeA: Child, nodeB: Child): boolean;
-export default sameParent;
-//# sourceMappingURL=sameParent.d.ts.map
+//# sourceMappingURL=sameContainer.d.ts.map
