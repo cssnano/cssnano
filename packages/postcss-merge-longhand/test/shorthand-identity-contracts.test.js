@@ -46,6 +46,18 @@ describe('shorthand identity fail-closed contracts', () => {
     passthroughCSS('a{gap:calc(1px,2px) calc(1px,2px)}')
   );
   test(
+    'rejects a round() with three calculations, because only a leading rounding strategy adds an argument',
+    passthroughCSS('a{gap:round(1px,2px,3px) round(1px,2px,3px)}')
+  );
+  test(
+    'rejects a round() whose rounding strategy is not its first argument, because only a leading keyword is not counted as a calculation',
+    passthroughCSS('a{gap:round(1px,up,2px) round(1px,up,2px)}')
+  );
+  test(
+    'rejects a round() whose later argument repeats the rounding strategy, because that keyword is a calculation that the arity check must not skip',
+    passthroughCSS('a{gap:round(up,up,2px) round(up,up,2px)}')
+  );
+  test(
     'rejects comma lists outside transitions',
     passthroughCSS('a{gap:1px,1px}')
   );
@@ -85,6 +97,13 @@ describe('shorthand identity rule integration contracts', () => {
   test(
     'normalizes the surviving repeated shorthand declaration after discarding the overridden one',
     processCSS('a{gap:2rem 2rem;gap:1rem 1rem}', 'a{gap:1rem}')
+  );
+  test(
+    'folds a round() that leads with a rounding strategy',
+    processCSS(
+      'a{gap:round(up,1px,2px) round(up,1px,2px)}',
+      'a{gap:round(up,1px,2px)}'
+    )
   );
 
   test(

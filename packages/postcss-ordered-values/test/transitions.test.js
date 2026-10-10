@@ -76,6 +76,34 @@ test(
 );
 
 test(
+  'orders animation with a round() that leads with a rounding strategy',
+  processCSS(
+    'a{animation:round(up, 1s, 1s) fade ease 1s}',
+    'a{animation:fade round(up, 1s, 1s) ease 1s}'
+  )
+);
+
+test(
+  'preserves animation with round() of three times, because only a leading rounding strategy adds an argument',
+  passthroughCSS('a{animation:round(1s, 1s, 1s) fade ease 1s}')
+);
+
+test(
+  'preserves animation with a rounding strategy after the first round() argument, because only a leading keyword is a strategy',
+  passthroughCSS('a{animation:round(1s, up, 1s) fade ease 1s}')
+);
+
+test(
+  'preserves animation with a round() strategy inside a calculation, because it must be a whole argument',
+  passthroughCSS('a{animation:round(up * 2, 1s) fade ease 1s}')
+);
+
+test(
+  'preserves animation with an unknown round() strategy keyword, because sideways is not a <rounding-strategy> value',
+  passthroughCSS('a{animation:round(sideways, 1s, 1s) fade ease 1s}')
+);
+
+test(
   'should pass through important comments (transition)',
   passthroughCSS('transition: ease-out width /*!wow*/ .5s 2s')
 );

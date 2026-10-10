@@ -80,6 +80,51 @@ const NOT_MATH_FUNCTIONS = [
   'format',
 ];
 
+// Argument grammars as written in CSS Values 4 §10, so arities are derived
+// from the specification rather than copied from the table under test.
+const W3C_MATH_FUNCTION_GRAMMARS = new Map([
+  ['calc', '<calc-sum>'],
+  ['min', '<calc-sum>#'],
+  ['max', '<calc-sum>#'],
+  ['clamp', '[ <calc-sum> | none ], <calc-sum>, [ <calc-sum> | none ]'],
+  ['round', '<rounding-strategy>?, <calc-sum>, <calc-sum>?'],
+  ['mod', '<calc-sum>, <calc-sum>'],
+  ['rem', '<calc-sum>, <calc-sum>'],
+  ['sin', '<calc-sum>'],
+  ['cos', '<calc-sum>'],
+  ['tan', '<calc-sum>'],
+  ['asin', '<calc-sum>'],
+  ['acos', '<calc-sum>'],
+  ['atan', '<calc-sum>'],
+  ['atan2', '<calc-sum>, <calc-sum>'],
+  ['pow', '<calc-sum>, <calc-sum>'],
+  ['sqrt', '<calc-sum>'],
+  ['hypot', '<calc-sum>#'],
+  ['log', '<calc-sum>, <calc-sum>?'],
+  ['exp', '<calc-sum>'],
+  ['abs', '<calc-sum>'],
+  ['sign', '<calc-sum>'],
+]);
+
+/**
+ * The inclusive range of calculation arguments a grammar production accepts.
+ * Keyword arguments such as <rounding-strategy> are not calculations.
+ * @param {string} production
+ * @return {[number, number]}
+ */
+function calculationArity(production) {
+  let least = 0;
+  let most = 0;
+  for (const argument of production.split(',')) {
+    const term = argument.trim();
+    if (!term.includes('<calc-sum>')) continue;
+    if (term.endsWith('#')) return [least + 1, Infinity];
+    if (!term.endsWith('?')) least++;
+    most++;
+  }
+  return [least, most];
+}
+
 describe('mathFunctions specification contract', () => {
   test('matches the canonical W3C CSS Values 4 math function set exactly', () => {
     assert.equal(
@@ -130,34 +175,20 @@ describe('mathFunctions specification contract', () => {
     }
   });
 
-  test('uses the specification arity for every math function', () => {
-    const expected = new Map([
-      ['abs', [1, 1]],
-      ['acos', [1, 1]],
-      ['asin', [1, 1]],
-      ['atan', [1, 1]],
-      ['atan2', [2, 2]],
-      ['calc', [1, 1]],
-      ['clamp', [3, 3]],
-      ['cos', [1, 1]],
-      ['exp', [1, 1]],
-      ['hypot', [1, Infinity]],
-      ['log', [1, 2]],
-      ['max', [1, Infinity]],
-      ['min', [1, Infinity]],
-      ['mod', [2, 2]],
-      ['pow', [2, 2]],
-      ['rem', [2, 2]],
-      ['round', [1, 2]],
-      ['sign', [1, 1]],
-      ['sin', [1, 1]],
-      ['sqrt', [1, 1]],
-      ['tan', [1, 1]],
-    ]);
+  test('accepts the number of calculations each CSS Values 4 grammar allows', () => {
+    for (const [name, production] of W3C_MATH_FUNCTION_GRAMMARS) {
+      assert.deepEqual(
+        cssnanoUtils.mathFunctions.get(name),
+        calculationArity(production),
+        `${name}(${production})`
+      );
+    }
+  });
 
+  test('has a grammar production for every math function', () => {
     assert.deepEqual(
-      [...cssnanoUtils.mathFunctions].toSorted(),
-      [...expected].toSorted()
+      [...W3C_MATH_FUNCTION_GRAMMARS.keys()].toSorted(),
+      ALL_EXPECTED_W3C_MATH_FUNCTIONS
     );
   });
 });

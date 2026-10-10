@@ -1,6 +1,6 @@
 import cssnanoUtils from 'cssnano-utils';
 
-const { isAnonymousLayer } = cssnanoUtils;
+const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /**
  * @param {import('postcss').AnyNode} nodeA
@@ -9,8 +9,8 @@ const { isAnonymousLayer } = cssnanoUtils;
  */
 function checkMatch(nodeA, nodeB) {
   if (nodeA.type === 'atrule' && nodeB.type === 'atrule') {
-    const nameA = nodeA.name.toLowerCase();
-    const nameB = nodeB.name.toLowerCase();
+    const nameA = asciiLowerCase(nodeA.name);
+    const nameB = asciiLowerCase(nodeB.name);
     if (nameA !== nameB) {
       return false;
     }
