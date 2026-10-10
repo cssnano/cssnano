@@ -1,7 +1,7 @@
 /**
  * Regenerates src/data/longhands.json, shorthandIdentities.json,
  * numericRanges.json and knownProperties.json from @webref/css,
- * placeSupport.json and boxPropertySupport.json from
+ * placeSupport.json, pairSupport.json and boxPropertySupport.json from
  * @mdn/browser-compat-data, featureSupport.json from
  * @mdn/browser-compat-data tightened by caniuse-lite, and
  * flowRelativeSides.json from the writing mode mappings.
@@ -29,6 +29,11 @@ import {
   serializePlaceSupport,
   validatePlaceSupport,
 } from './lib/bcdPlaceSupport.js';
+import {
+  buildPairSupport,
+  serializePairSupport,
+  validatePairSupport,
+} from './lib/bcdPairSupport.js';
 import {
   buildBoxPropertySupport,
   serializeBoxPropertySupport,
@@ -68,6 +73,12 @@ validatePlaceSupport(placeSupport);
 writeFileSync(
   new URL('../src/data/placeSupport.json', import.meta.url),
   serializePlaceSupport(placeSupport)
+);
+const pairSupport = buildPairSupport(bcd);
+validatePairSupport(pairSupport);
+writeFileSync(
+  new URL('../src/data/pairSupport.json', import.meta.url),
+  serializePairSupport(pairSupport)
 );
 const boxShorthandLonghands = new Map(
   [...data.boxGroups].flatMap(([group, { axisShorthands }]) =>

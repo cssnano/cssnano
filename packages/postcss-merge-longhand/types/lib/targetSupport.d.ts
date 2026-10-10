@@ -8,6 +8,18 @@
  */
 export declare function supportsPlaceShorthands(browsers: string[]): boolean;
 /**
+ * The pair families whose shorthand every target parses, and the families
+ * that need no support check. An engine without a gated shorthand drops the
+ * whole declaration, losing both axes that separate longhands would have kept.
+ * A gated family without minimums is taken as unsupported.
+ *
+ * @param {string[]} browsers - browserslist entries such as "safari 10.1"
+ * @param {Record<string, Record<string, string>>} [minimumsByShorthand] - first
+ * supporting version by shorthand and browserslist name
+ * @return {ReadonlySet<string>} the shorthand names
+ */
+export declare function supportedPairShorthands(browsers: string[], minimumsByShorthand?: Record<string, Record<string, string>>): ReadonlySet<string>;
+/**
  * The oldest release of each engine that parses every longstanding unit and
  * function `isFallback` lists, by browserslist name. An engine left out, such
  * as Opera Mini, is assumed to reach it; its gaps are tracked as features.

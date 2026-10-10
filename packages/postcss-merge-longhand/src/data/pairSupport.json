@@ -1,0 +1,42 @@
+{
+  "gap": {
+    "and_chr": "84",
+    "and_ff": "63",
+    "android": "84",
+    "chrome": "84",
+    "edge": "84",
+    "firefox": "63",
+    "ios_saf": "14.5",
+    "op_mob": "60",
+    "opera": "70",
+    "safari": "14.1",
+    "samsung": "14.0"
+  },
+  "overscroll-behavior": {
+    "and_chr": "63",
+    "and_ff": "59",
+    "android": "63",
+    "chrome": "63",
+    "edge": "18",
+    "firefox": "59",
+    "ios_saf": "16",
+    "op_mob": "46",
+    "opera": "50",
+    "safari": "16",
+    "samsung": "8.0"
+  },
+  "flex-flow": {
+    "and_chr": "29",
+    "and_ff": "28",
+    "android": "4.4",
+    "chrome": "29",
+    "edge": "12",
+    "firefox": "28",
+    "ie": "11",
+    "ios_saf": "9",
+    "op_mob": "16",
+    "opera": "16",
+    "safari": "9",
+    "samsung": "2.0"
+  }
+}

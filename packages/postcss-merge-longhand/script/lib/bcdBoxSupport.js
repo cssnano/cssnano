@@ -10,9 +10,9 @@
  * the engines it covers.
  */
 import { serializeJson } from '../../../../util/webref/webref.js';
-import { compareVersions } from '../../src/lib/compareVersions.js';
 import {
   browserslistNames,
+  latestSupport,
   standardSupportSince,
   supportOf,
 } from './bcdSupport.js';
@@ -43,17 +43,11 @@ const css2Properties = new Set([
  * @return {string | undefined} the first version supporting all of them
  */
 function supportedSince(bcd, bcdName, properties) {
-  /** @type {string | undefined} */
-  let required;
-  for (const property of properties) {
-    const support = supportOf(bcd.css.properties[property])?.[bcdName];
-    const since = support && standardSupportSince(support);
-    if (since === undefined) return undefined;
-    if (required === undefined || compareVersions(since, required) > 0) {
-      required = since;
-    }
-  }
-  return required;
+  return latestSupport(
+    properties.map((property) => bcd.css.properties[property]),
+    bcdName,
+    standardSupportSince
+  );
 }
 
 /**

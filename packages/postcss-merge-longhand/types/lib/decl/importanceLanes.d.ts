@@ -13,6 +13,13 @@ export declare function decodedPropertyName(prop: string): string | undefined;
  */
 export declare function isAll(declaration: Declaration): boolean;
 /**
+ * Whether a property occurs twice without an `all` reset in between.
+ *
+ * @param {Declaration[]} laneDecls
+ * @return {boolean}
+ */
+export declare function repeatsProperty(laneDecls: Declaration[]): boolean;
+/**
  * @param {Declaration[]} declarations
  * @return {boolean} whether a declaration other than `all` is present, so that
  * a lane of only `all` declarations can be skipped

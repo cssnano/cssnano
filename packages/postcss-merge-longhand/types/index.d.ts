@@ -6,14 +6,18 @@ export type AutoprefixerOptions = {
 };
 export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
 export type Options = AutoprefixerOptions & BrowserslistOptions;
+import type { PairFamily } from './lib/decl/pairForms.js';
+import type { AlignmentFamilyConfig } from './lib/decl/alignmentForms.js';
 export type MergeContext = {
     columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][];
     setsOtherColumn: boolean;
     shorthandMemoTable: Map<string, string | null>;
     placeShorthands: boolean;
     boxSupport: BoxSupport;
+    pairShorthands: ReadonlySet<string>;
 };
-export type AlignmentDeclarations = {
+export type FamilyDeclarations = {
+    family: PairFamily | AlignmentFamilyConfig;
     decls: Declaration[];
     lanes: [Declaration[], Declaration[]];
 };
