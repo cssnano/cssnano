@@ -1,3 +1,7 @@
+import cssnanoUtils from 'cssnano-utils';
+
+const { isHexDigitCode } = cssnanoUtils;
+
 /** @typedef {ReturnType<typeof import('cssnano-utils').default.balancedTokens> extends infer Structure ? Structure extends {tokens: readonly (infer Token)[]} ? Token : never : never} CSSToken */
 
 /**
@@ -21,15 +25,6 @@ function isNameStart(code) {
     (code >= 0x41 && code <= 0x5a) ||
     (code >= 0x61 && code <= 0x7a) ||
     code === 0x5f
-  );
-}
-
-/** @param {number} code */
-export function isHexDigitCode(code) {
-  return (
-    (code >= 0x30 && code <= 0x39) ||
-    (code >= 0x41 && code <= 0x46) ||
-    (code >= 0x61 && code <= 0x66)
   );
 }
 

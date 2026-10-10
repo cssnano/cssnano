@@ -1,8 +1,8 @@
 import cssnanoUtils from 'cssnano-utils';
 import { parseAnPlusB } from './argumentParsers.js';
-import { dropHexEscapeTerminator, isHexDigitCode } from './tokenUtils.js';
+import { dropHexEscapeTerminator } from './tokenUtils.js';
 
-const { TokenType } = cssnanoUtils;
+const { TokenType, isHexDigitCode } = cssnanoUtils;
 
 /** @param {import('./tokenUtils.js').CSSToken | undefined} token */
 function decoded(token) {

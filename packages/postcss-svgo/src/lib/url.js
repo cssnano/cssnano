@@ -1,3 +1,7 @@
+import cssnanoUtils from 'cssnano-utils';
+
+const { isHexDigitCode } = cssnanoUtils;
+
 /*
  * Encoding is identical to encodeURIComponent, per the WHATWG URL Standard,
  * since it can produce standard input.
@@ -6,20 +10,6 @@ const encode = encodeURIComponent;
 
 const utf8Decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
 const utf8Encoder = new TextEncoder();
-
-/**
- * Checks whether a byte is an ASCII hex digit:
- * 0-9 (0x30-0x39), A-F (0x41-0x46), a-f (0x61-0x66)
- * @param {number} byte
- * @return {boolean}
- */
-function isHexDigit(byte) {
-  return (
-    (byte >= 0x30 && byte <= 0x39) ||
-    (byte >= 0x41 && byte <= 0x46) ||
-    (byte >= 0x61 && byte <= 0x66)
-  );
-}
 
 /**
  * Decodes a hex character byte to its integer value (0-15).
@@ -53,8 +43,8 @@ function decode(input) {
     if (
       byte === 0x25 &&
       i + 2 < len &&
-      isHexDigit(bytes[i + 1]) &&
-      isHexDigit(bytes[i + 2])
+      isHexDigitCode(bytes[i + 1]) &&
+      isHexDigitCode(bytes[i + 2])
     ) {
       bytes[outIdx++] = hexVal(bytes[i + 1]) * 16 + hexVal(bytes[i + 2]);
       i += 2;
