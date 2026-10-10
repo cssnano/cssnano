@@ -97,6 +97,34 @@ test(
 );
 
 test(
+  // `.b{top}` cannot move up past `.x{top}`, but `.a{color}` can move down past
+  // `.x` into the later block, which keeps `.a` before `.b`.
+  'should move an earlier equal @media block down when the rule between sets a property only the earlier block sets',
+  processCSS(
+    '@media (min-width:640px){.a{color:red}}.x{top:0}@media (min-width:640px){.b{top:2px}}',
+    '.x{top:0}@media (min-width:640px){.a{color:red}.b{top:2px}}'
+  )
+);
+
+test(
+  // `.x` sets `color`, which the earlier block sets, and `top`, which the later
+  // block sets, so neither block can move past it.
+  'should not join equal @media blocks in either direction when the rule between sets a property from each block',
+  passthroughCSS(
+    '@media (min-width:640px){.a{color:red}}.x{color:blue;top:0}@media (min-width:640px){.b{top:2px}}'
+  )
+);
+
+test(
+  // The @layer inside the earlier block is not modelled, so the block stays put
+  // even though nothing between the blocks sets a property the block sets.
+  'should not move an equal @media block that holds an @layer down past a rule',
+  passthroughCSS(
+    '@media print{.a{color:red}@layer x{.y{top:0}}}.x{top:0}@media print{.b{top:2px}}'
+  )
+);
+
+test(
   'should not merge equal @media blocks across a rule that sets the same property',
   passthroughCSS(
     '@media print{.a{color:red}}.b{color:blue}@media print{.c{color:green}}'
@@ -116,7 +144,7 @@ test(
 test(
   // Every rule between the two (min-width:640px) blocks sets `width`, so an
   // element with classes foo and bar needs the later block to stay last.
-  'should not merge equal @media blocks when every rule in between sets width (#111)',
+  'should not join equal @media blocks because one element can match both .foo and .bar, so the blocks keep their order (#111)',
   passthroughCSS(
     '.foo{width:10px}@media (min-width:640px){.foo{width:150px}}.bar{width:20px}@media (min-width:320px){.bar{width:200px}}@media (min-width:640px){.bar{width:300px}}'
   )

@@ -11,9 +11,9 @@ import type MergeState from './mergeState.js';
  * always shrinks the output because the selector is not repeated.
  *
  * Sibling `@media`, `@supports` or `@container` blocks with identical
- * conditions apply their content under the same circumstances, so a later
- * block joins an earlier one when nothing between them, at any depth, sets a
- * property that its declarations also set. Named `@layer` blocks are left
+ * conditions apply their content under the same circumstances, so one block
+ * joins the other when nothing between them, at any depth, sets a property
+ * that its declarations also set. Named `@layer` blocks are left
  * out: their order comes from where each layer first appears.
  *
  * Rules that set the same declarations in the same order also share one
