@@ -257,9 +257,9 @@ export const editorialOptimisations =
       shortName: 'normalizeUrl',
       shortDescription: 'Normalize URLs with PostCSS',
       longDescription:
-        'Normalizes URL strings. It can remove default ports, resolve unnecessary\ndirectory traversal & unquote the value.\n',
-      inputExample: '.box {\n    background: url("./css/../img/cat.jpg");\n}\n',
-      outputExample: '.box {\n    background: url(img/cat.jpg);\n}\n',
+        'Unquotes `url()` values and trims surrounding whitespace. The URL itself is left untouched.\n',
+      inputExample: '.box {\n    background: url("./img/cat.jpg");\n}\n',
+      outputExample: '.box {\n    background: url(./img/cat.jpg);\n}\n',
     },
     {
       plugin: 'postcss-normalize-whitespace',
@@ -313,17 +313,6 @@ export const editorialOptimisations =
         'Converts between transform functions when there is a shorthand equivalent.\n',
       inputExample: '.box {\n    transform: translate3d(0, 0, 0);\n}\n',
       outputExample: '.box {\n    transform: translateZ(0);\n}\n',
-    },
-    {
-      plugin: 'postcss-svgo',
-      shortName: 'svgo',
-      shortDescription: 'Optimise inline SVG with PostCSS.',
-      longDescription:
-        'Compresses inline SVG definitions with [SVGO](https://github.com/svg/svgo).\n',
-      inputExample:
-        ".box {\n    background:url('data:image/svg+xml;utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20xml%3Aspace%3D%22preserve%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20fill%3D%22yellow%22%20%2F%3E%3C!--test%20comment--%3E%3C%2Fsvg%3E');\n}\n",
-      outputExample:
-        ".box {\n    background:url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23ff0'/%3E%3C/svg%3E\");\n}\n",
     },
     {
       plugin: 'postcss-unique-selectors',

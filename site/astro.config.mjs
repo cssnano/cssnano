@@ -6,10 +6,6 @@ import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const siteDirectory = path.dirname(fileURLToPath(import.meta.url));
-const postcssSvgoDirectory = path.resolve(
-  siteDirectory,
-  '../packages/postcss-svgo'
-);
 const base = '/cssnano/';
 
 export default defineConfig({
@@ -21,14 +17,6 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        // svgo's exports map hides package.json and gives `./browser` only an
-        // import condition, so locate the browser build beside the CJS entry.
-        svgo: path.join(
-          path.dirname(
-            require.resolve('svgo', { paths: [postcssSvgoDirectory] })
-          ),
-          'svgo.browser.js'
-        ),
         'css-declaration-sorter': require.resolve('css-declaration-sorter', {
           paths: [
             path.resolve(siteDirectory, '../packages/cssnano-preset-advanced'),

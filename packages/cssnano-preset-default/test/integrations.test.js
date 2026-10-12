@@ -200,22 +200,6 @@ describe('CSS processing', () => {
   );
 
   test(
-    'should keep viewBox attribute in SVG from removing',
-    withDefaults.processCSS(
-      `a { background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100"><rect width="100" height="100" /></svg>'); }`,
-      `a{background-image:url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 200 100"><path d="M0 0h100v100H0z"/></svg>')}`
-    )
-  );
-
-  test(
-    'should optimize SVG data URI containing CSS percentages through preset pipeline',
-    withDefaults.processCSS(
-      `a { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' style='background: rgb(0 0 0 / 80%);'%3e%3c/svg%3e"); }`,
-      `a{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20style%3D%22background%3Argb(0%200%200%2F80%25)%22%20viewBox%3D%220%200%20100%20100%22%2F%3E")}`
-    )
-  );
-
-  test(
     "should merge rules sharing identical declarations without dropping the trailing rule's unique ones",
     withDefaults.processCSS(
       `.has-errors .input {

@@ -115,12 +115,12 @@ test(
 );
 
 test(
-  'should normalize urls',
+  'should unquote urls without rewriting their path',
   processCss(
     `body {
 				background: url("http://somewebsite.com/assets/css/../images/test.jpg");
 		}`,
-    `body{background:url(http://somewebsite.com/assets/images/test.jpg)}`
+    `body{background:url(http://somewebsite.com/assets/css/../images/test.jpg)}`
   )
 );
 

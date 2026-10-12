@@ -54,7 +54,8 @@
     "cssnano-preset-advanced": "workspace:^",
     "cssnano-preset-lite": "workspace:^",
     "postcss": "catalog:",
-    "postcss-font-magician": "^4.0.0"
+    "postcss-font-magician": "^4.0.0",
+    "postcss-svgo": "workspace:^"
   },
   "peerDependencies": {
     "postcss": "^8.5.29"

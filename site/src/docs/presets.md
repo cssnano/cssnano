@@ -109,22 +109,15 @@ You can read more about this in
 
 The options follow a simple pattern - the optional `postcss-` prefix is removed
 and then the rest should be converted into `camelCase`. So, if you need to set
-an option for `postcss-svgo`, you can do:
+an option for `postcss-colormin`, you can do:
 
 ```js
 module.exports = {
     plugins: [
         require('cssnano')({
             preset: ['default', {
-                svgo: {
-                    plugins: [{
-                        name: 'preset-default',
-                        params: {
-                            overrides: {
-                                removeDoctype: false,
-                            },
-                        },
-                    }],
+                colormin: {
+                    // plugin options
                 },
             }],
         }),
@@ -144,7 +137,7 @@ module.exports = {
     plugins: [
         require('cssnano')({
             preset: ['default', {
-                svgo: false,
+                colormin: false,
             }],
         }),
     ],
@@ -159,7 +152,7 @@ module.exports = {
     plugins: [
         require('cssnano')({
             preset: ['default', {
-                svgo: {
+                colormin: {
                     exclude: true,
                 },
             }],

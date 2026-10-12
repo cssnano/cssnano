@@ -39,7 +39,6 @@
   - [postcss-ordered-values](#postcss-ordered-values)
   - [postcss-reduce-initial](#postcss-reduce-initial)
   - [postcss-reduce-transforms](#postcss-reduce-transforms)
-  - [postcss-svgo](#postcss-svgo)
   - [postcss-unique-selectors](#postcss-unique-selectors)
 
 - [Contributors](#contributors)
@@ -233,7 +232,8 @@ This plugin is loaded with its default configuration.
 
 > Normalize URLs with PostCSS
 
-This plugin is loaded with its default configuration.
+This plugin is loaded with its default configuration. It unquotes and escapes
+`url()` tokens but leaves the URL itself untouched.
 
 ### [`postcss-normalize-whitespace`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-whitespace)
 
@@ -258,22 +258,6 @@ This plugin is loaded with its default configuration.
 > Reduce transform functions with PostCSS.
 
 This plugin is loaded with its default configuration.
-
-### [`postcss-svgo`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-svgo)
-
-> Optimise inline SVG with PostCSS.
-
-This plugin is loaded with the following configuration:
-
-```js
-{
-  plugins: [
-    {
-      name: 'preset-default',
-    },
-  ],
-}
-```
 
 ### [`postcss-unique-selectors`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-unique-selectors)
 

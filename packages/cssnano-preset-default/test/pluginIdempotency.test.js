@@ -10,10 +10,9 @@ const testDir = dirname(fileURLToPath(import.meta.url));
 // framework corpora in parallel.
 describe('framework tests', () => {
   test(
-    'should be idempotent for each default plugin except merge rules and svgo',
+    'should be idempotent for each default plugin except merge rules',
     pluginIdempotencyTests(preset, `${testDir}/integrations`, [
       'postcss-merge-rules',
-      'postcss-svgo',
     ])
   );
 });
