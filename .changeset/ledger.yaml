@@ -176,6 +176,11 @@ cssnano-preset-advanced@9.5.0:
     - olive-knives-divide
     - plain-kelvin-keywords
     - round-strategy-arity
+cssnano-preset-advanced@9.6.0:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - calm-blocks-descend
+    - quick-ranges-drop
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -376,6 +381,11 @@ cssnano-preset-default@9.6.0:
     - olive-knives-divide
     - plain-kelvin-keywords
     - round-strategy-arity
+cssnano-preset-default@9.7.0:
+  dir: packages/cssnano-preset-default
+  intents:
+    - calm-blocks-descend
+    - quick-ranges-drop
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -719,6 +729,11 @@ cssnano@9.6.0:
     - olive-knives-divide
     - plain-kelvin-keywords
     - round-strategy-arity
+cssnano@9.7.0:
+  dir: packages/cssnano
+  intents:
+    - calm-blocks-descend
+    - quick-ranges-drop
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -1342,6 +1357,10 @@ postcss-merge-rules@9.1.4:
   intents:
     - lean-utils-exports
     - round-strategy-arity
+postcss-merge-rules@9.1.5:
+  dir: packages/postcss-merge-rules
+  intents:
+    - calm-blocks-descend
 postcss-minify-font-values@8.0.2:
   dir: packages/postcss-minify-font-values
   intents:
@@ -1531,6 +1550,10 @@ postcss-minify-params@9.0.8:
   dir: packages/postcss-minify-params
   intents:
     - lean-utils-exports
+postcss-minify-params@9.1.0:
+  dir: packages/postcss-minify-params
+  intents:
+    - quick-ranges-drop
 postcss-minify-selectors@8.0.3:
   dir: packages/postcss-minify-selectors
   intents:

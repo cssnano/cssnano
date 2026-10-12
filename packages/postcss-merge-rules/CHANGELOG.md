@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.1.5
+
+### Patch Changes
+
+- fix(postcss-merge-rules): merge at-rules separated by unrelated rules
+
 ## 9.1.4
 
 ### Patch Changes
