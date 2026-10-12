@@ -19,7 +19,7 @@ const optimizedWithConfigFile = `h1{background:url('data:image/svg+xml;charset=u
 const optimized = `h1{background:url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg"><circle r="4" fill="%23ff0"/></svg>')}`;
 
 test(
-  'should read the svgo configuration from a configFile path',
+  'should read the SVGO configuration from a configFile path',
   processCSS(input, optimizedWithConfigFile, { configFile })
 );
 
