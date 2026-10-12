@@ -1,4 +1,7 @@
 :root {
+  /* Follows the desktop light/dark preference; light-dark() picks each token's pair. */
+  color-scheme: light dark;
+
   --measure: 75ch;
   --font-fallback: -apple-system, blinkmacsystemfont, segoe ui, helvetica, arial,
     sans-serif, apple color emoji, segoe ui emoji;
@@ -16,29 +19,37 @@
   --brand-hue: 150;
   --brand-sat: 65%;
   --color-black: hsl(0deg 0 0);
+  --color-brand-15: hsl(var(--brand-hue) 30% 18%);
   --color-brand-20: hsl(var(--brand-hue) var(--brand-sat) 26%);
   --color-brand-30: hsl(var(--brand-hue) var(--brand-sat) 20%);
+  --color-brand-60: hsl(var(--brand-hue) 55% 62%);
+  --color-brand-70: hsl(var(--brand-hue) 55% 72%);
   --color-brand-95: hsl(var(--brand-hue) 30% 94%);
   --slate-hue: 218;
+  --color-slate-950: hsl(var(--slate-hue) 45% 9%);
   --color-slate-900: hsl(var(--slate-hue) 40% 14%);
   --color-slate-800: hsl(var(--slate-hue) 40% 20%);
+  --color-slate-700: hsl(var(--slate-hue) 20% 30%);
   --color-slate-200: hsl(var(--slate-hue) 20% 57%);
   --color-slate-100: hsl(var(--slate-hue) 20% 85%);
   --color-slate-50: hsl(var(--slate-hue) 20% 98%);
   --color-white: hsl(0deg 0% 100%);
 
-  /* Theme Tokens */
-  --theme-accent: var(--color-brand-20);
-  --theme-accent-hover: var(--color-brand-30);
-  --theme-accent-light: var(--color-brand-95);
-  --theme-text: var(--color-slate-900);
-  --theme-bg: var(--color-white);
-  --theme-bg-hover: var(--color-slate-50);
-  --theme-bg-offset: var(--color-slate-100);
-  --theme-card-bg: var(--color-white);
-  --theme-hero-bg: var(--color-slate-800);
+  /* Theme Tokens: light-dark(light value, dark value) */
+  --theme-accent: light-dark(var(--color-brand-20), var(--color-brand-60));
+  --theme-accent-hover: light-dark(var(--color-brand-30), var(--color-brand-70));
+  --theme-accent-light: light-dark(var(--color-brand-95), var(--color-brand-15));
+  --theme-on-accent: light-dark(var(--color-white), var(--color-slate-900));
+  --theme-text: light-dark(var(--color-slate-900), var(--color-slate-50));
+  --theme-bg: light-dark(var(--color-white), var(--color-slate-900));
+  --theme-bg-hover: light-dark(var(--color-slate-50), var(--color-slate-800));
+  --theme-bg-offset: light-dark(var(--color-slate-100), var(--color-slate-800));
+  --theme-card-bg: light-dark(var(--color-white), var(--color-slate-800));
+  --theme-hero-bg: light-dark(var(--color-slate-800), var(--color-slate-950));
   --theme-hero-text: var(--color-white);
-  --theme-border: var(--color-slate-200);
+  --theme-border: light-dark(var(--color-slate-200), var(--color-slate-700));
+  --theme-table-border: light-dark(rgb(218 221 225), var(--color-slate-700));
+  --theme-error: light-dark(hsl(0deg 72% 51%), hsl(0deg 80% 72%));
   --theme-border-width: 1px;
   --theme-active-bar-width: 3px;
   --border-radius: 0.5rem;
@@ -49,7 +60,7 @@
   --checkmark-size: 2em;
   --checkmark-weight: 700;
   --checkmark-pad-inline-start: 0.125rem;
-  --opt-disabled-color: hsl(0deg 55% 40%);
+  --opt-disabled-color: light-dark(hsl(0deg 55% 40%), hsl(0deg 70% 72%));
 }
 
 
@@ -187,7 +198,7 @@ td,
 th {
   padding: calc(1em / 2);
   text-align: left;
-  border: 1px solid rgb(218 221 225);
+  border: 1px solid var(--theme-table-border);
 }
 
 .checkmark {
@@ -200,7 +211,7 @@ th {
 }
 
 .opt-enabled {
-  color: var(--color-brand-20);
+  color: var(--theme-accent);
 }
 
 .opt-disabled {
@@ -308,8 +319,8 @@ nav ul {
   display: block;
   text-align: center;
   background-color: var(--theme-accent);
-  color: var(--color-white);
-  outline: var(--color-white) solid 1px;
+  color: var(--theme-on-accent);
+  outline: var(--theme-on-accent) solid 1px;
   outline-offset: 0;
 }
 
@@ -387,7 +398,7 @@ nav ul {
 .button {
   padding: var(--space-sm) var(--space-md);
   cursor: pointer;
-  color: var(--color-white);
+  color: var(--theme-on-accent);
   background-color: var(--theme-accent);
   font-weight: var(--font-weight-strong);
   min-inline-size: 14ch;
@@ -534,7 +545,7 @@ nav ul {
 }
 
 .editor-textarea[data-has-error] {
-  color: hsl(0deg 72% 51%);
+  color: var(--theme-error);
 }
 
 .with-sidebar {
