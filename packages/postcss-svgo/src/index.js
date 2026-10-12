@@ -1,5 +1,5 @@
 import { TokenType } from '@csstools/css-tokenizer';
-import { optimize } from 'svgo';
+import { loadConfig, optimize } from 'svgo';
 import cssnanoUtils from 'cssnano-utils';
 import { encode, decode } from './lib/url.js';
 
@@ -277,34 +277,89 @@ function minify(decl, opts, postcssResult) {
     decl.raws.value = { raw: decl.value, value: decl.value };
   }
 }
-/** @typedef {{encode?: boolean} & import('svgo').Config} Options */
 /**
+ * @param {import('postcss').Root} css
+ * @param {import('postcss').Result} result
  * @param {Options} opts
+ * @return {void}
+ */
+function minifyDeclarations(css, result, opts) {
+  css.walkDecls((decl) => {
+    if (
+      !decl.value.includes('svg') &&
+      !decl.value.includes('SVG') &&
+      !decl.value.includes('\\')
+    ) {
+      return;
+    }
+
+    if (!svgDataURI.test(decl.value)) {
+      return;
+    }
+
+    minify(decl, opts, result);
+  });
+}
+/**
+ * The `datauri` setting only suits the svgo command line, and an undefined
+ * value must not erase a configuration file's setting, so both are dropped.
+ * @param {Options} opts
+ * @return {Options}
+ */
+function withoutIgnoredOptions(opts) {
+  return Object.fromEntries(
+    Object.entries(opts).filter(
+      ([key, value]) => key !== 'datauri' && value !== undefined
+    )
+  );
+}
+/**
+ * `configFile` is a path to a svgo configuration, or `true` to discover
+ * svgo.config.js (or .mjs, .cjs) from `cwd` and its ancestor directories.
+ * Inline svgo options take precedence over it.
+ * @typedef {{encode?: boolean, configFile?: string | boolean, cwd?: string} & import('svgo').Config} Options
+ */
+/**
+ * @param {Options} options
  * @return {import('postcss').Plugin}
  */
-function pluginCreator(opts = {}) {
+function pluginCreator(options = {}) {
+  const { configFile, cwd, ...inlineOptions } = options;
+  const svgoInlineOptions = withoutIgnoredOptions(inlineOptions);
+
+  /** @type {Promise<Options> | undefined} */
+  let fileOptions;
+  /** @return {Promise<Options>} */
+  async function loadFileOptions() {
+    const config =
+      (await loadConfig(
+        typeof configFile === 'string' ? configFile : null,
+        cwd
+      )) ?? {};
+    return { ...withoutIgnoredOptions(config), ...svgoInlineOptions };
+  }
+
   return {
     postcssPlugin: PLUGIN,
     /**
+     * Stays synchronous unless a configuration file has to be loaded.
      * @param {import('postcss').Root} css
      * @param {import('postcss').Helpers}  helpers
+     * @return {void | Promise<void>}
      */
     OnceExit(css, { result }) {
-      css.walkDecls((decl) => {
-        if (
-          !decl.value.includes('svg') &&
-          !decl.value.includes('SVG') &&
-          !decl.value.includes('\\')
-        ) {
-          return;
+      if (!configFile)
+        return minifyDeclarations(css, result, svgoInlineOptions);
+      fileOptions ??= loadFileOptions();
+      return fileOptions.then(
+        (opts) => minifyDeclarations(css, result, opts),
+        (error) => {
+          // Forget the failed load so a later run reads the file again. Node
+          // keeps a module that threw while evaluating, so only syntax errors are retried.
+          fileOptions = undefined;
+          throw error;
         }
-
-        if (!svgDataURI.test(decl.value)) {
-          return;
-        }
-
-        minify(decl, opts, result);
-      });
+      );
     },
   };
 }
