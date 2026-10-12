@@ -34,6 +34,7 @@ Every change should make the intended CSS transformation clearer while preservin
 - A test that expects unchanged output must say in its name or a comment why the value cannot be shortened.
 - Before handoff, validate the applicable repository contract: run the focused tests for changed packages, type checking (`./node_modules/.bin/tsc -b` or `pnpm run types`), and lint/format checks for every change. Add full tests or regenerated artifacts when the change affects them. For generated-data changes, regenerate first, then lint/format and test the consuming package; do not rely on inspection alone. Use the commands under Durable conventions and the current package scripts and runbooks. If a required check cannot be run, report that explicitly and do not claim full verification.
 - A change should preserve or improve performance and asymptotic complexity. Avoid quadratic time in tests, scripts and algorithms; look for linear time. Performance refactors must preserve byte output unless an intentional output change is documented. Compare matched production benchmarks and measure independent hypotheses separately; use the performance runbook for commands and evidence requirements.
+- A refactor must not add parses, closures, callback arguments, temporary arrays or objects, or new key strings on any path the replaced code did not take. A wrapper must forward to the same underlying operation. Pin the contract with a test where it is observable.
 
 ## Durable conventions
 
