@@ -1,5 +1,15 @@
 # Change Log
 
+## 9.7.0
+
+### Minor Changes
+
+- feat(postcss-minify-params): drop a `min-*` or `max-*` already implied in another range in the same media query
+
+### Patch Changes
+
+- fix(postcss-merge-rules): merge at-rules separated by unrelated rules
+
 ## 9.6.0
 
 ### Minor Changes

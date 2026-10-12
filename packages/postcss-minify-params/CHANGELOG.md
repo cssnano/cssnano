@@ -1,5 +1,11 @@
 # Change Log
 
+## 9.1.0
+
+### Minor Changes
+
+- feat(postcss-minify-params): drop a `min-*` or `max-*` already implied in another range in the same media query
+
 ## 9.0.8
 
 ### Patch Changes
