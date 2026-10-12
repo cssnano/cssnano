@@ -34,7 +34,7 @@ cssnano({ configFile: './config/cssnano.config.js' });
 ```
 cssnano uses Node's built-in type stripping for TypeScript files.
 
-To define presets in an ESM module, import the module directly in your configuration:
+To define presets in an ESM (ECMAScript module), import the module directly in your configuration:
 
 ```js
 import cssnano from 'cssnano';

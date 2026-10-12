@@ -1,14 +1,70 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
+import PresetCell from '../../components/PresetCell.astro';
 import optimisations from '../../_data/optimisations.js';
 import presets from '../../_data/presets.js';
+import { page } from '../../_data/navigation.js';
+import { optimisationSlug } from '../../utils/navigation.js';
+import { getLastModified } from '../../utils/lastModified.js';
+
+const date = getLastModified('src/pages/docs/what-are-optimisations.astro');
 ---
-<MainLayout title="Optimisations">
+<MainLayout
+  title="Optimisations"
+  sidebar
+  date={date}
+  description="The optimisations that each cssnano preset enables."
+>
   <h2>What are optimisations?</h2>
-  <p>An optimisation is a module that performs a transform on some CSS code in order to reduce its size, or failing this, the final gzip size of the CSS. Each optimisation is performed by either one module or a few modules working together.</p>
-  <h2>Supported optimisations</h2>
-  <table><thead><tr><th>Optimisation</th>{presets.map((preset) => <th>{preset}</th>)}</tr></thead><tbody>
-    {optimisations.map((opt) => <tr><td><a href={`${import.meta.env.BASE_URL}docs/optimisations/${opt.shortName.toLowerCase()}/`}>{opt.shortName}</a></td>{presets.map((preset) => <td>{opt.presets.includes(preset) ? <span class="checkmark opt-enabled" aria-label="enabled" title="enabled">&#10003;</span> : <span class="checkmark opt-disabled" aria-label="disabled" title="disabled">&#10007;</span>}</td>)}</tr>)}
-  </tbody></table>
-  <p>You can read more about presets in our <a href={`${import.meta.env.BASE_URL}docs/presets/`}>presets guide</a>.</p>
+  <p>An optimisation is a module that performs a transform on some CSS (Cascading Style Sheets) code in order to reduce its size, or failing this, the final gzip (GNU zip) size of the CSS. Each optimisation is performed by either one module or a few modules working together.</p>
+  <h2 id="supported-optimisations">Supported optimisations</h2>
+  <div class="table-scroll" role="region" aria-labelledby="supported-optimisations" tabindex="0">
+    <table>
+      <caption class="sr-only">Optimisations enabled in each preset</caption>
+      <thead>
+        <tr>
+          <th scope="col">Optimisation</th>
+          {presets.map((preset) => <th scope="col">{preset.id}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {
+          optimisations.map((opt) => (
+            <tr>
+              <th scope="row">
+                <a href={page(`docs/optimisations/${optimisationSlug(opt.shortName)}/`)}>{opt.shortName}</a>
+              </th>
+              {presets.map((preset) => (
+                <td>
+                  <PresetCell enabled={opt.presets.includes(preset.id)} />
+                </td>
+              ))}
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <p>You can read more about presets in our <a href={page('docs/presets/')}>presets guide</a>.</p>
 </MainLayout>
+
+<style>
+  @layer components {
+    /* Camel-case optimisation names have no break points, so row headers may break anywhere to keep the table in the viewport. */
+    th[scope='row'] {
+      overflow-wrap: anywhere;
+    }
+
+    th a {
+      font-weight: var(--font-weight-normal);
+    }
+
+    /* The table scrolls inside its own region so the page itself stays within the viewport at narrow widths.
+       Positioned so the sr-only status spans clip to the region instead of the page. */
+    .table-scroll {
+      position: relative;
+      max-inline-size: 100%;
+      overflow-x: auto;
+    }
+  }
+</style>

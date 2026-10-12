@@ -1,4 +1,4 @@
-export type PresetName = 'cssnano-preset-default' | 'cssnano-preset-lite' | 'cssnano-preset-advanced';
+export type PresetName = import('./_data/presets.js').PresetName;
 
 export interface MinificationSuccess {
   ok: true;
@@ -7,7 +7,8 @@ export interface MinificationSuccess {
 
 export interface MinificationError {
   ok: false;
-  error: { message: string };
+  /** `input` is true only when the submitted CSS is the cause. */
+  error: { message: string; input: boolean };
 }
 
 export interface CssNanoWorker {
@@ -19,7 +20,7 @@ export interface CssNanoWorker {
 
 export interface MinificationRequest {
   input: string;
-  config: PresetName;
+  preset: PresetName;
 }
 
 export type MinificationResult = MinificationSuccess | MinificationError;

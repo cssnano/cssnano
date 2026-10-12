@@ -1,39 +1,147 @@
 ---
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
-import Head from '../../components/Head.astro';
-import cssnanoPackage from '../../../../packages/cssnano/package.json';
-import '../../styles/index.css';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import presets from '../../_data/presets.js';
+import { page } from '../../_data/navigation.js';
 ---
-<!doctype html>
-<html lang="en">
-  <head><Head title="CSSNANO Playground" pathname={Astro.url.pathname} /></head>
-  <body>
-    <Header />
-    <main id="article">
-      <div class="playground-toolbar box">
-        <div class="preset-picker">
-          <label for="presetSelector">Choose a preset</label>
-          <select id="presetSelector" class="select">
-            <option value="cssnano-preset-default">Preset Default</option>
-            <option value="cssnano-preset-lite">Preset Lite</option>
-            <option value="cssnano-preset-advanced">Preset Advanced</option>
-          </select>
-        </div>
-        <button id="runButton" class="button" disabled>Minimize</button>
+<BaseLayout
+  title="Playground"
+  wide
+  description="Minify CSS in your browser with each cssnano preset and see the size saving."
+>
+  <div class="stack">
+    <h1>Playground</h1>
+    <div class="playground-toolbar">
+      <div class="preset-picker">
+        <label for="presetSelector">Choose a preset</label>
+        <select id="presetSelector" aria-describedby="presetDescription">
+          {presets.map((preset) => <option value={preset.packageName}>{preset.label}</option>)}
+        </select>
       </div>
-      <div id="editors" class="editors box">
-        <div class="editor">
-          <label class="editor-label" for="input">Write or paste your CSS below</label>
-          <textarea id="input" class="editor-textarea" spellcheck="false"></textarea>
-        </div>
-        <div class="editor">
-          <label class="editor-label" for="output">Optimised output appears here</label>
-          <textarea id="output" class="editor-textarea" aria-live="polite" readonly spellcheck="false"></textarea>
-        </div>
+      <button id="runButton" class="button" disabled>Minify</button>
+      <p id="playgroundStatus" role="status" class="playground-status"></p>
+    </div>
+    <p id="presetDescription" class="preset-description">
+      {presets.map((preset, index) => (<>{index > 0 && ' '}<strong>{preset.label}</strong> {preset.description}</>))}
+      <a href={page('docs/presets/')}>Read about presets</a>.
+    </p>
+    <div id="editors" class="grid editors">
+      <div class="editor">
+        <label class="editor-label" for="input">Write or paste your CSS (Cascading Style Sheets) below</label>
+        <textarea id="input" class="editor-textarea" spellcheck="false"></textarea>
       </div>
-      <script src="../../playground.js"></script>
-    </main>
-    <Footer version={cssnanoPackage.version} />
-  </body>
-</html>
+      <div class="editor">
+        <label class="editor-label" for="output">Minified output appears here</label>
+        <textarea id="output" class="editor-textarea" readonly spellcheck="false"></textarea>
+      </div>
+    </div>
+  </div>
+  <script src="../../playground.js"></script>
+</BaseLayout>
+
+<style>
+  @layer components {
+    /* Sits beside the Minify button, sharing its text baseline, so the result reads as the outcome of pressing it. */
+    .playground-status {
+      flex: 1 1 30ch;
+      align-self: last baseline;
+      margin-block: 0;
+      font-weight: var(--font-weight-strong);
+    }
+
+    .playground-status[data-has-error] {
+      color: var(--theme-error);
+    }
+
+    .playground-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      row-gap: var(--space-md);
+      column-gap: var(--space-sm);
+      align-items: end;
+      inline-size: 100%;
+    }
+
+    .preset-picker {
+      flex: 0 1 min(37.5ch, 100%);
+      min-inline-size: 0;
+    }
+
+    .preset-picker label {
+      display: block;
+      margin-block-end: var(--space-xs);
+    }
+
+    /* Sits below the toolbar at full width so it neither narrows the picker nor lifts the button. */
+    .preset-description {
+      margin-block: 0;
+      max-inline-size: 70ch;
+    }
+
+    /* A 44px control height meets the WCAG 2.5.5 target size. */
+    .preset-picker select {
+      inline-size: 100%;
+      min-block-size: 2.75rem;
+    }
+
+    .button {
+      align-self: last baseline;
+      min-block-size: 2.75rem;
+      padding: var(--space-sm) var(--space-md);
+      cursor: pointer;
+      color: var(--theme-on-accent);
+      background-color: var(--theme-accent);
+      font-weight: var(--font-weight-strong);
+      min-inline-size: min(14ch, 100%);
+      max-inline-size: 100%;
+      overflow-wrap: anywhere;
+      border-radius: var(--border-radius);
+      border: var(--theme-border-width) solid transparent;
+      transition: background-color var(--transition-fast);
+    }
+
+    .button:hover {
+      background-color: var(--theme-accent-hover);
+    }
+
+    .button:disabled,
+    .button[aria-disabled='true'] {
+      pointer-events: none;
+      opacity: 0.65;
+    }
+
+    /* The shared auto-fit grid places the editors; each needs at least 37.5ch. */
+    .editors {
+      --card-min: 37.5ch;
+      --grid-gap: var(--space-md);
+    }
+
+    .editor {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .editor-label {
+      font-weight: var(--font-weight-strong);
+      overflow-wrap: anywhere;
+    }
+
+    .editor-textarea {
+      flex: 1;
+      inline-size: 100%;
+      min-inline-size: 0;
+      min-block-size: 20em;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      resize: vertical;
+    }
+
+    .editor-textarea[readonly]:not([data-has-output]) {
+      caret-color: transparent;
+    }
+
+    .editor-textarea[data-has-error] {
+      color: var(--theme-error);
+    }
+  }
+</style>

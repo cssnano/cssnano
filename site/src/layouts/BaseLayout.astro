@@ -1,0 +1,47 @@
+---
+import '../styles/index.css';
+import Head from '../components/Head.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  home?: boolean;
+  /** Lets the main column use the full page width, for tools that need room. */
+  wide?: boolean;
+  description?: string;
+  type?: 'website' | 'article';
+}
+
+const { title, home, wide, description, type } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head title={title} home={home} description={description} type={type} />
+  </head>
+  <body>
+    <Header />
+    <div class="page-body full-bleed">
+      {/* The skip link targets this id. On the home page the hero is the first content, so main wraps it too. */}
+      {home ? (
+        <main id="main" class="full-bleed" tabindex="-1">
+          <slot name="hero" />
+          <div class="layout">
+            <div class="stack main-column">
+              <slot />
+            </div>
+          </div>
+        </main>
+      ) : (
+        <div class:list={['layout', wide && 'wide']}>
+          <slot name="sidebar" />
+          <main id="main" class="stack" tabindex="-1">
+            <slot />
+          </main>
+        </div>
+      )}
+    </div>
+    <Footer />
+  </body>
+</html>

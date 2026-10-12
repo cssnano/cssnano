@@ -1,604 +1,399 @@
-:root {
-  /* Follows the desktop light/dark preference; light-dark() picks each token's pair. */
-  color-scheme: light dark;
-
-  --measure: 75ch;
-  --font-fallback: -apple-system, blinkmacsystemfont, segoe ui, helvetica, arial,
-    sans-serif, apple color emoji, segoe ui emoji;
-  --font-body: system-ui, var(--font-fallback);
-  --font-mono: consolas, monaco, monospace;
-  --font-size-small: 0.875rem;
-
-  --space-xs: 0.25rem;   /* 4px */
-  --space-sm: 0.5rem;    /* 8px */
-  --space-md: 1rem;      /* 16px */
-  --space-lg: 1.5rem;    /* 24px */
-  --space-xl: 2rem;      /* 32px */
-
-  /* Color Scale derived from cssnano logo */
-  --brand-hue: 150;
-  --brand-sat: 65%;
-  --color-black: hsl(0deg 0 0);
-  --color-brand-15: hsl(var(--brand-hue) 30% 18%);
-  --color-brand-20: hsl(var(--brand-hue) var(--brand-sat) 26%);
-  --color-brand-30: hsl(var(--brand-hue) var(--brand-sat) 20%);
-  --color-brand-60: hsl(var(--brand-hue) 55% 62%);
-  --color-brand-70: hsl(var(--brand-hue) 55% 72%);
-  --color-brand-95: hsl(var(--brand-hue) 30% 94%);
-  --slate-hue: 218;
-  --color-slate-950: hsl(var(--slate-hue) 45% 9%);
-  --color-slate-900: hsl(var(--slate-hue) 40% 14%);
-  --color-slate-800: hsl(var(--slate-hue) 40% 20%);
-  --color-slate-700: hsl(var(--slate-hue) 20% 30%);
-  --color-slate-200: hsl(var(--slate-hue) 20% 57%);
-  --color-slate-100: hsl(var(--slate-hue) 20% 85%);
-  --color-slate-50: hsl(var(--slate-hue) 20% 98%);
-  --color-white: hsl(0deg 0% 100%);
-
-  /* Theme Tokens: light-dark(light value, dark value) */
-  --theme-accent: light-dark(var(--color-brand-20), var(--color-brand-60));
-  --theme-accent-hover: light-dark(var(--color-brand-30), var(--color-brand-70));
-  --theme-accent-light: light-dark(var(--color-brand-95), var(--color-brand-15));
-  --theme-on-accent: light-dark(var(--color-white), var(--color-slate-900));
-  --theme-text: light-dark(var(--color-slate-900), var(--color-slate-50));
-  --theme-bg: light-dark(var(--color-white), var(--color-slate-900));
-  --theme-bg-hover: light-dark(var(--color-slate-50), var(--color-slate-800));
-  --theme-bg-offset: light-dark(var(--color-slate-100), var(--color-slate-800));
-  --theme-card-bg: light-dark(var(--color-white), var(--color-slate-800));
-  --theme-hero-bg: light-dark(var(--color-slate-800), var(--color-slate-950));
-  --theme-hero-text: var(--color-white);
-  --theme-border: light-dark(var(--color-slate-200), var(--color-slate-700));
-  --theme-table-border: light-dark(rgb(218 221 225), var(--color-slate-700));
-  --theme-error: light-dark(hsl(0deg 72% 51%), hsl(0deg 80% 72%));
-  --theme-border-width: 1px;
-  --theme-active-bar-width: 3px;
-  --border-radius: 0.5rem;
-  --transition-fast: 0.15s ease;
-
-  --font-weight-strong: 700;
-
-  --checkmark-size: 2em;
-  --checkmark-weight: 700;
-  --checkmark-pad-inline-start: 0.125rem;
-  --opt-disabled-color: light-dark(hsl(0deg 55% 40%), hsl(0deg 70% 72%));
-}
-
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-}
-
-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 1fr auto;
-  min-block-size: 100dvh;
-  font-family: var(--font-body);
-  line-height: 1.5;
-}
-
-body>* {
-  min-inline-size: 0;
-}
-
-
-/* Typography */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: var(--font-weight-strong);
-  line-height: 1.2;
-}
-
-h1,
-h2 {
-  max-inline-size: 40ch;
-}
-
-/* Fluid type scale */
-h1 {
-  font-size: clamp(1.75rem, 1.25rem + 1.5vw, 3.5rem);
-}
-
-h2 {
-  font-size: clamp(1.5rem, 1rem + 1.5vw, 3rem);
-}
-
-h3 {
-  font-size: clamp(1.25rem, 0.75rem + 1.5vw, 2.5rem);
-}
-
-.f3 {
-  font-size: clamp(1.125rem, 0.875rem + 1vw, 1.625rem);
-  line-height: 1.6;
-}
-
-.f4 {
-  font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
-}
-
-small {
-  font-size: var(--font-size-small);
-}
-
-a {
-  color: var(--theme-accent);
-  font-weight: 400;
-  text-decoration: none;
-}
-
-:is(h2, h3)>a {
-  color: inherit;
-  font-weight: inherit;
-}
-
-a:hover,
-a:focus {
-  text-decoration: underline;
-}
-
-a:focus {
-  outline: 2px solid currentcolor;
-  outline-offset: 0.25em;
-}
-
-strong {
-  font-weight: var(--font-weight-strong);
-}
-
-/* Supporting Content */
-code {
-  font-family: var(--font-mono);
-}
-
-pre>code {
-  font-size: 1em;
-}
-
-table,
-pre {
-  inline-size: 100%;
-  position: relative;
-
-  --padding-block: 1rem;
-  --padding-inline: 2rem;
-
-  padding: var(--padding-block) var(--padding-inline);
-  padding-inline-end: calc(var(--padding-inline) * 2);
-  line-height: 1.5;
-  overflow: auto hidden;
-}
-
-pre {
-  font-family: var(--font-mono);
-  font-size: 0.875em;
-  border-radius: var(--border-radius);
-}
-
-pre:focus-visible {
-  box-shadow: 0 0 0 var(--border-radius) var(--theme-accent);
-  outline: none;
-}
-
-table {
-  padding: var(--padding-block) 0;
-  margin: 0;
-  border-collapse: collapse;
-}
-
-th {
-  font-weight: var(--font-weight-strong);
-}
-
-td,
-th {
-  padding: calc(1em / 2);
-  text-align: left;
-  border: 1px solid var(--theme-table-border);
-}
-
-.checkmark {
-  display: inline-block;
-  font-size: var(--checkmark-size);
-  font-weight: var(--checkmark-weight);
-  line-height: 1;
-  padding-inline-start: var(--checkmark-pad-inline-start);
-  vertical-align: middle;
-}
-
-.opt-enabled {
-  color: var(--theme-accent);
-}
-
-.opt-disabled {
-  color: var(--opt-disabled-color);
-}
-
-td:has(.checkmark) {
-  text-align: start;
-}
-blockquote {
-  margin: 2rem 0;
-  padding: 1.25em 1.5rem;
-  background-color: var(--theme-bg-offset);
-  border-radius: 0 var(--border-radius) var(--border-radius) 0;
-  line-height: 1.7;
-}
-
-ul,
-ol {
-  padding: 0;
-}
-
-img {
-  max-inline-size: 100%;
-}
-
-/* Screenreader Only Text */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-:target {
-  scroll-margin: calc(var(--theme-sidebar-offset, 5rem) + 2rem) 0 2rem;
-}
-
-nav {
-  margin-inline-end: 1rem;
-  min-inline-size: 0;
-
-  --align: center;
-}
-
-nav ul {
-  list-style: none;
-  padding: 0;
-}
-
-.nav-link a {
-  font-size: 1rem;
-  padding: var(--space-xs) var(--space-md);
-  color: inherit;
-  text-decoration: none;
-  display: block;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
-}
-
-.nav-link a:hover,
-.nav-link a:focus {
-  background-color: var(--theme-bg-hover);
-}
-
-.nav-link a[aria-current='page'] {
-  color: var(--theme-accent);
-  background-color: var(--theme-accent-light);
-  border-inline-start: var(--theme-active-bar-width) solid var(--theme-accent);
-  font-weight: var(--font-weight-strong);
-}
-
-.navbar {
-  --space: var(--space-md);
-  --s1: 1em;
-
-  inline-size: 100%;
-  background-color: var(--theme-bg);
-  border-block-end: var(--theme-border-width) solid var(--theme-border);
-}
-
-.navbar a {
-  color: inherit;
-}
-
-.navbar a:hover,
-.navbar a:active {
-  color: var(--theme-accent);
-}
-
-.skiplink,
-.skiplink:focus,
-.skiplink:focus-visible {
-  position: absolute;
-  padding: var(--space-xs);
-  font-size: larger;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 9;
-  display: block;
-  text-align: center;
-  background-color: var(--theme-accent);
-  color: var(--theme-on-accent);
-  outline: var(--theme-on-accent) solid 1px;
-  outline-offset: 0;
-}
-
-.stack>* {
-  margin-block: 0;
-}
-
-.stack>*+* {
-  margin-block-start: var(--s1, var(--space-md));
-}
-
-.stack {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-
-.center {
-  margin-inline: auto;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  max-inline-size: 100%;
-  min-inline-size: 0;
-}
-
-.center>* {
-  max-inline-size: min(var(--measure), 100%);
-}
-
-.center>.stack {
-  min-inline-size: 0;
-}
-
-.stack>pre {
-  min-inline-size: 0;
-}
-
-.cluster {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space, var(--space-xl));
-  justify-content: var(--justify, center);
-  align-items: var(--align, flex-start);
-}
-
-.box {
-  --s2: var(--space-xl);
-
-  padding: var(--s2, var(--space-md));
-}
-
-/* Hero Section */
-.hero {
-  padding-block: var(--space-xl) var(--space-xl);
-  background-color: var(--theme-hero-bg);
-  color: var(--theme-hero-text);
-  border-block-end: var(--theme-border-width) solid var(--theme-border);
-}
-
-.hero-link {
-  --s2: var(--space-sm) var(--space-lg);
-
-  font-weight: var(--font-weight-strong);
-  inline-size: max-content;
-  border-radius: var(--border-radius);
-  color: var(--color-black);
-  background-color: var(--color-white);
-}
-
-.hero-link:focus {
-  outline-color: var(--color-white);
-}
-
-.button {
-  padding: var(--space-sm) var(--space-md);
-  cursor: pointer;
-  color: var(--theme-on-accent);
-  background-color: var(--theme-accent);
-  font-weight: var(--font-weight-strong);
-  min-inline-size: 14ch;
-  border-radius: var(--border-radius);
-  border: var(--theme-border-width) solid transparent;
-  transition: background-color var(--transition-fast);
-}
-
-.button:hover {
-  background-color: var(--theme-accent-hover);
-}
-
-.button:disabled,
-.button[aria-disabled='true'] {
-  pointer-events: none;
-  opacity: 0.65;
-}
-
-.select {
-  padding: var(--space-sm);
-  color: var(--theme-text);
-  background-color: var(--theme-bg);
-  border: var(--theme-border-width) solid var(--theme-border);
-  border-radius: var(--border-radius);
-}
-
-.playground-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  row-gap: var(--space-md);
-  column-gap: var(--space-sm);
-  align-items: end;
-  inline-size: 100%;
-  max-width: 160ch;
-  margin-inline: auto;
-}
-
-.preset-picker {
-  flex: 0 1 min(37.5ch, 100%);
-  min-inline-size: 0;
-}
-
-.preset-picker label {
-  display: block;
-  margin-block-end: var(--space-xs);
-}
-
-.preset-picker .select {
-  inline-size: 100%;
-}
-
-.playground-toolbar .button {
-  min-inline-size: min(14ch, 100%);
-  max-inline-size: 100%;
-  overflow-wrap: anywhere;
-}
-
-/* Features Grid */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-lg);
-  inline-size: 100%;
-}
-
-.feature-card {
-  background-color: var(--theme-card-bg);
-  padding: var(--space-lg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-/* Compression Stats Cards */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: var(--space-md);
-  margin-block: var(--space-md);
-  inline-size: 100%;
-}
-
-.stat-card {
-  background-color: var(--theme-bg);
-  border-radius: var(--border-radius);
-  padding: var(--space-md);
-  text-align: center;
-}
-
-.stat-value {
-  font-size: clamp(1.25rem, 1rem + 1vw, 2rem);
-  font-weight: var(--font-weight-strong);
-  color: var(--theme-accent);
-}
-
-.stat-label {
-  font-size: var(--font-size-small);
-}
-
-.editors {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  inline-size: 100%;
-  max-width: 160ch;
-  margin-inline: auto;
-}
-
-.editors>* {
-  flex: 1 1 37.5ch;
-  min-inline-size: min(37.5ch, 100%);
-  max-inline-size: 80ch;
-}
-
-.editor {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-
-.editor-label {
-  font-weight: var(--font-weight-strong);
-  overflow-wrap: anywhere;
-}
-
-.editor-textarea {
-  flex: 1;
-  inline-size: 100%;
-  min-inline-size: 0;
-  min-block-size: 20em;
-  padding: var(--space-sm);
-  color: var(--theme-text);
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  background-color: var(--theme-bg);
-  border: var(--theme-border-width) solid var(--theme-border);
-  border-radius: var(--border-radius);
-  resize: vertical;
-}
-
-.editor-textarea[readonly]:not([data-has-output]) {
-  caret-color: transparent;
-}
-
-.editor-textarea[data-has-error] {
-  color: var(--theme-error);
-}
-
-.with-sidebar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-xl);
-  max-width: 60em;
-  margin-inline: auto;
-}
-
-.sidebar {
-  flex-basis: max-content;
-  flex-grow: 1;
-  max-inline-size: 25dvw;
-}
-
-.not-sidebar {
-  flex-basis: 0;
-  flex-grow: 999;
-  min-inline-size: 50%;
-  max-inline-size: min(80dvw, var(--measure));
-}
-
-.bg-dark {
-  background-color: var(--theme-hero-bg);
-  color: var(--theme-hero-text);
-}
-
-.bg-dark a {
-  color: var(--theme-hero-text);
-  text-decoration: none;
-}
-
-.bg-dark a:hover {
-  text-decoration: underline;
-}
-
-ul[class] {
-  list-style: none;
-
-  --s1: var(--space-sm);
-}
-
-.fr {
-  float: right;
-}
-
-.text-center {
-  align-self: center;
-  text-align: center;
-}
-
-.annotation {
-  font-style: italic;
-  font-size: var(--font-size-small);
+/* Later layers win over earlier ones. Component <style> blocks are wrapped in the components layer, so utilities can override them. */
+@layer reset, tokens, base, layout, components, utilities;
+
+/* Each stack sets its own gap; a nested stack falls back to the default instead of inheriting its parent's. */
+@property --stack-space {
+  syntax: '*';
+  inherits: false;
+}
+
+@layer tokens {
+  :root {
+    /* Follows the desktop light/dark preference; light-dark() picks each token's pair. */
+    color-scheme: light dark;
+
+    --measure: 65ch;
+    --sidebar: 14rem;
+    --font-body: system-ui, sans-serif;
+    --font-mono: consolas, monaco, monospace;
+    --font-size-small: 0.875rem;
+
+    --space-xs: 0.25rem;   /* 4px */
+    --space-sm: 0.5rem;    /* 8px */
+    --space-md: 1rem;      /* 16px */
+    --space-lg: 1.5rem;    /* 24px */
+    --space-xl: 2rem;      /* 32px */
+
+    /* Colour scale derived from the cssnano logo; each name is its HSL lightness. Saturation steps are shared by the brand names. */
+    --brand-hue: 150;
+    --brand-sat: 65%;
+    --brand-sat-muted: 55%;
+    --brand-sat-tint: 30%;
+    --color-brand-12: hsl(var(--brand-hue) var(--brand-sat) 12%);
+    --color-brand-17: hsl(var(--brand-hue) var(--brand-sat) 17%);
+    --color-brand-tint-14: hsl(var(--brand-hue) var(--brand-sat-tint) 14%);
+    --color-brand-62: hsl(var(--brand-hue) var(--brand-sat-muted) 62%);
+    --color-brand-72: hsl(var(--brand-hue) var(--brand-sat-muted) 72%);
+    --color-brand-tint-94: hsl(var(--brand-hue) var(--brand-sat-tint) 94%);
+    --slate-hue: 218;
+    --color-slate-14: hsl(var(--slate-hue) 40% 14%);
+    --color-slate-20: hsl(var(--slate-hue) 40% 20%);
+    --color-slate-57: hsl(var(--slate-hue) 20% 57%);
+    --color-slate-85: hsl(var(--slate-hue) 20% 85%);
+    --color-slate-98: hsl(var(--slate-hue) 20% 98%);
+    --color-red-27: hsl(0deg 72% 27%);
+    --color-red-82: hsl(0deg 80% 82%);
+    /* Untinted greys for dark-mode surfaces, so they do not compete with the green accent. */
+    --color-neutral-9: hsl(0deg 0% 9%);
+    --color-neutral-14: hsl(0deg 0% 14%);
+    --color-neutral-20: hsl(0deg 0% 20%);
+    --color-neutral-24: hsl(0deg 0% 24%);
+    --color-neutral-50: hsl(0deg 0% 50%);
+    --color-white: hsl(0deg 0% 100%);
+    --color-black: hsl(0deg 0% 0%);
+
+    /* Theme tokens: light-dark(light value, dark value) */
+    --theme-accent: light-dark(var(--color-brand-17), var(--color-brand-62));
+    --theme-accent-hover: light-dark(var(--color-brand-12), var(--color-brand-72));
+    --theme-accent-light: light-dark(var(--color-brand-tint-94), var(--color-brand-tint-14));
+    --theme-on-accent: light-dark(var(--color-white), var(--color-neutral-14));
+    --theme-text: light-dark(var(--color-slate-14), var(--color-slate-98));
+    --theme-bg: light-dark(var(--color-white), var(--color-neutral-14));
+    --theme-bg-offset: light-dark(var(--color-slate-85), var(--color-neutral-20));
+    /* Form fields sit above the page in dark mode, so their fill marks them, not only the border. */
+    --theme-field-bg: light-dark(var(--color-white), var(--color-neutral-24));
+    --theme-panel-bg: light-dark(var(--color-slate-20), var(--color-neutral-9));
+    --theme-panel-text: var(--color-white);
+    --theme-border: light-dark(var(--color-slate-57), var(--color-neutral-50));
+    --theme-error: light-dark(var(--color-red-27), var(--color-red-82));
+    --theme-border-subtle: light-dark(var(--color-slate-85), var(--color-neutral-24));
+    --theme-border-width: 1px;
+    --theme-active-bar-width: 0.1875rem;
+    --border-radius: 0.5rem;
+    --transition-fast: 0.15s ease;
+
+    --font-weight-normal: 400;
+    --font-weight-strong: 700;
+
+    /* Modular type scale: ratio 1.2 at the 20rem viewport, 1.25 at 77.5rem, with each step interpolated linearly between them (Utopia). */
+    --step-1: clamp(1.2rem, 1.128rem + 0.3587vw, 1.406rem);
+    --step-2: clamp(1.44rem, 1.329rem + 0.5527vw, 1.758rem);
+    --step-3: clamp(1.728rem, 1.565rem + 0.8161vw, 2.197rem);
+    --step-4: clamp(2.074rem, 1.84rem + 1.1704vw, 2.747rem);
+    --step-5: clamp(2.488rem, 2.16rem + 1.6433vw, 3.433rem);
+
+    --z-header: 9;
+  }
+}
+
+@layer reset {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  /* Replaced elements and inline SVGs shrink with their container and keep their aspect ratio. */
+  img,
+  svg,
+  object,
+  embed,
+  iframe {
+    max-inline-size: 100%;
+    block-size: auto;
+  }
+
+  /* Form controls use the page font instead of the UA's small system font. */
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer base {
+  /* The page grid is set on body in the layout layer. */
+  body {
+    font-family: var(--font-body);
+    line-height: 1.5;
+    /* Long identifiers such as error codes and selectors need a break point at narrow widths (WCAG 1.4.10). */
+    overflow-wrap: break-word;
+    color: var(--theme-text);
+    background-color: var(--theme-bg);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: var(--font-weight-strong);
+    line-height: 1.2;
+    /* Balanced lines read better than a long line over a short one; body overflow-wrap still breaks a word that cannot fit. */
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-size: var(--step-5);
+  }
+
+  h2 {
+    font-size: var(--step-4);
+  }
+
+  h3 {
+    font-size: var(--step-3);
+  }
+
+  small {
+    font-size: var(--font-size-small);
+  }
+
+  /* Links are underlined so they stand out from body text without relying on colour alone. Navigation components turn the underline off. */
+  a {
+    color: var(--theme-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  :is(h2, h3) > a {
+    color: inherit;
+    font-weight: inherit;
+  }
+
+  /* One focus indicator for every element. Dark panels and controls override --focus-color. */
+  :focus-visible {
+    outline: 0.125rem solid var(--focus-color, currentcolor);
+    outline-offset: 0.25em;
+  }
+
+  /* Controls use the accent, since their text is on-accent and would not contrast with the page. */
+  :is(button, select, textarea) {
+    --focus-color: var(--theme-accent);
+  }
+
+  strong {
+    font-weight: var(--font-weight-strong);
+  }
+
+  code {
+    font-family: var(--font-mono);
+  }
+
+  pre > code {
+    font-size: 1em;
+  }
+
+  /* Tables get no padding or overflow: border-collapse ignores padding, and overflow does not apply to tables. */
+  table {
+    inline-size: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    font-weight: var(--font-weight-strong);
+  }
+
+  td,
+  th {
+    padding: var(--space-sm);
+    text-align: start;
+    border: var(--theme-border-width) solid var(--theme-border);
+  }
+
+  pre {
+    inline-size: 100%;
+    line-height: 1.5;
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    border: var(--theme-border-width) solid light-dark(var(--theme-border), transparent);
+    border-radius: var(--border-radius);
+    padding: var(--space-md) var(--space-xl);
+    overflow: auto hidden;
+  }
+
+  /* Text fields share one surface, so their edge reads as a control in both themes. */
+  select,
+  textarea {
+    padding: var(--space-sm);
+    color: var(--theme-text);
+    background-color: var(--theme-field-bg);
+    border: var(--theme-border-width) solid var(--theme-border);
+    border-radius: var(--border-radius);
+  }
+
+  blockquote {
+    margin: var(--space-xl) 0;
+    padding: var(--space-md) var(--space-lg);
+    background-color: var(--theme-bg-offset);
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    line-height: 1.7;
+  }
+
+  /* Keeps an anchored heading clear of the viewport edges. */
+  :target {
+    scroll-margin-block: var(--space-xl);
+  }
+
+}
+
+@layer layout {
+  /* One page grid: full-width bands and the content column share named lines. */
+  body {
+    --gutter: var(--space-lg);
+    /* Exactly a sidebar and a measure of text, so documentation pages fill the column the header spans. */
+    --content: calc(var(--sidebar) + var(--space-xl) + var(--measure));
+
+    display: grid;
+    grid-template-columns:
+      [full-start] minmax(var(--gutter), 1fr)
+      [content-start] min(var(--content), 100% - 2 * var(--gutter)) [content-end]
+      minmax(var(--gutter), 1fr) [full-end];
+    grid-template-rows: auto 1fr auto;
+    min-block-size: 100dvh;
+  }
+
+  /* Bands span the page and pass the page grid on to their children. */
+  .full-bleed {
+    grid-column: full;
+    display: grid;
+    grid-template-columns: subgrid;
+  }
+
+  /* Band children sit on the content column. :where keeps this at zero specificity, so a child can override it. */
+  :where(.full-bleed) > * {
+    grid-column: content;
+  }
+
+  .page-body {
+    align-content: start;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-xl);
+    padding-block: var(--space-xl);
+    min-inline-size: 0;
+  }
+
+  /* Wide tools take the full page width, keeping the gutters so their edges still clear the viewport. */
+  .layout.wide {
+    grid-column: full;
+    padding-inline: var(--gutter);
+  }
+
+  .layout > :is(main, .main-column) {
+    --stack-space: var(--space-xl);
+
+    min-inline-size: 0;
+  }
+
+  /* Running text keeps a readable measure; code, tables, card grids and other children use the full column. */
+  .prose > :is(p, ul, ol, blockquote, h3, h4, h5, h6) {
+    max-inline-size: var(--measure);
+  }
+
+  /* Large headings read best on shorter lines than body text. */
+  .prose > :is(h1, h2) {
+    max-inline-size: 40ch;
+  }
+
+  /* Each stack computes the heading margin from its own gap, so the space above a heading is one line in any stack. */
+  .stack > * + :is(h2, h3, h4, h5, h6) {
+    margin-block-start: var(--heading-space);
+  }
+
+  /* WCAG 1.4.8: paragraphs are separated by 1.5 times the line spacing; the stack gap supplies part of it. */
+  .prose > p + p {
+    margin-block-start: var(--paragraph-space);
+  }
+
+  /* Custom properties cannot be used in media queries, so this breakpoint is written out. */
+  @media (width > 48rem) {
+    .layout:has(> .sidebar) {
+      grid-template-columns: var(--sidebar) minmax(0, 1fr);
+    }
+  }
+
+  .stack {
+    --heading-space: calc(1lh - var(--stack-space, var(--space-md)));
+    --paragraph-space: calc(1.5lh - var(--stack-space, var(--space-md)));
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack-space, var(--space-md));
+  }
+
+  /* Auto-fit columns that shrink below their minimum on narrow viewports. */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--card-min, 15rem), 100%), 1fr));
+    gap: var(--grid-gap, var(--space-lg));
+    inline-size: 100%;
+  }
+
+  .cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--cluster-gap, var(--space-xl));
+    align-items: flex-start;
+  }
+}
+
+@layer components {
+  /* Date and author lines under a page or post title. */
+  .annotation {
+    font-style: italic;
+    font-size: var(--font-size-small);
+  }
+
+  /* Dark surfaces for the hero and footer; text, links and focus rings inherit the light token. */
+  .dark-panel {
+    --focus-color: var(--theme-panel-text);
+
+    background-color: var(--theme-panel-bg);
+    color: var(--theme-panel-text);
+  }
+
+  /* North-east arrow marks links that leave the site; the variation selector keeps it from rendering as emoji, and the empty alt text leaves the announcement to the sr-only label. */
+  .external-link::after {
+    content: '\2197\FE0E' / '';
+    margin-inline-start: 0.25em;
+  }
+}
+
+@layer utilities {
+  .text-lead {
+    font-size: var(--step-2);
+    line-height: 1.6;
+  }
+
+  .text-large {
+    font-size: var(--step-1);
+  }
+
+  /* Opt-in class for UI lists. Markdown lists keep their indent and bullets. */
+  .list-reset {
+    list-style: none;
+    padding: 0;
+  }
+
+  /* Text stays in the accessibility tree while clipped from view; focus releases the clip for skip links. */
+  .sr-only:not(:focus) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .text-center {
+    text-align: center;
+  }
 }

@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
 import { minimize } from '../src/playground-minifier.js';
-import { PlaygroundRunner } from '../src/playground-runner.js';
+import { CssInputError, PlaygroundRunner } from '../src/playground-runner.js';
 
 function createMinifierWorker() {
   const worker = {
-    postMessage({ input, config }) {
+    postMessage({ input, preset }) {
       void (async () => {
-        const result = await minimize(input, config);
+        const result = await minimize(input, preset);
         worker.onmessage?.({ data: result });
       })();
     },
@@ -21,7 +21,7 @@ function createMinifierWorker() {
   return worker;
 }
 
-test('CSS minifier client returns the worker minification result', async () => {
+test('PlaygroundRunner returns the worker minification result', async () => {
   const minifierWorker = createMinifierWorker();
   const playgroundRunner = new PlaygroundRunner(minifierWorker);
 
@@ -34,7 +34,7 @@ test('CSS minifier client returns the worker minification result', async () => {
   );
 });
 
-test('CSS minifier client rejects overlapping minification requests', async () => {
+test('PlaygroundRunner rejects overlapping minification requests', async () => {
   const minifierWorker = createMinifierWorker();
   const playgroundRunner = new PlaygroundRunner(minifierWorker);
   const pending = playgroundRunner.minimizeCss(
@@ -53,7 +53,7 @@ test('CSS minifier client rejects overlapping minification requests', async () =
   await pending;
 });
 
-test('CSS minifier client reports worker failures', async () => {
+test('PlaygroundRunner reports worker failures', async () => {
   const minifierWorker = createMinifierWorker();
   const playgroundRunner = new PlaygroundRunner(minifierWorker);
   const minification = playgroundRunner.minimizeCss(
@@ -63,4 +63,29 @@ test('CSS minifier client reports worker failures', async () => {
 
   minifierWorker.emitError('Worker crashed');
   await assert.rejects(minification, /Worker crashed/v);
+});
+
+test('PlaygroundRunner rejects unparsable CSS with an input error', async () => {
+  const minifierWorker = createMinifierWorker();
+  const playgroundRunner = new PlaygroundRunner(minifierWorker);
+
+  await assert.rejects(
+    playgroundRunner.minimizeCss('a { color: red', 'cssnano-preset-default'),
+    CssInputError
+  );
+});
+
+test('PlaygroundRunner does not report worker failures as input errors', async () => {
+  const minifierWorker = createMinifierWorker();
+  const playgroundRunner = new PlaygroundRunner(minifierWorker);
+  const minification = playgroundRunner.minimizeCss(
+    'a { color: red; }',
+    'cssnano-preset-default'
+  );
+
+  minifierWorker.emitError('Worker crashed');
+  await assert.rejects(
+    minification,
+    (err) => err instanceof Error && !(err instanceof CssInputError)
+  );
 });

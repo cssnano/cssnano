@@ -1,6 +1,7 @@
 ---
 id: advanced-transforms
 title: Advanced transforms
+description: Advanced transforms make assumptions about your CSS. Check them before you enable one.
 ---
 
 ## What are advanced transforms?
@@ -8,7 +9,7 @@ title: Advanced transforms
 Certain optimizations are not suitable for all use cases; unlike those that
 we bundle by default, advanced transforms all carry a certain amount of risk.
 For each type of transform, we've documented the assumptions that it must make
-about your CSS in order for the transform to be safe. Most of these transforms
+about your CSS (Cascading Style Sheets) in order for the transform to be safe. Most of these transforms
 fall into either or both of categories.
 
 ### Assumes concatenation

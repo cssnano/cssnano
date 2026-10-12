@@ -1,0 +1,14 @@
+---
+import { Code } from 'astro:components';
+import { shikiOptions } from '../utils/shikiOptions.js';
+
+interface Props {
+  code: string;
+  lang: string;
+  /** ID of the heading that names this sample. */
+  labelledBy?: string;
+}
+
+const { code, lang, labelledBy } = Astro.props;
+---
+<Code code={code} lang={lang} {...shikiOptions} aria-labelledby={labelledBy} />

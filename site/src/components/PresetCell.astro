@@ -1,0 +1,31 @@
+---
+interface Props {
+  enabled: boolean;
+}
+
+const { enabled } = Astro.props;
+---
+<span class:list={['checkmark', enabled ? 'opt-enabled' : 'opt-disabled']} aria-hidden="true">{enabled ? '✓' : '✗'}</span>
+{/* The symbol is hidden from assistive tech, so the state is read from this span. */}
+<span class="sr-only">{enabled ? 'enabled' : 'disabled'}</span>
+
+<style>
+  @layer components {
+    .checkmark {
+      display: inline-block;
+      font-size: 2em;
+      font-weight: var(--font-weight-strong);
+      line-height: 1;
+      padding-inline-start: 0.125rem;
+      vertical-align: middle;
+    }
+
+    .opt-enabled {
+      color: var(--theme-accent);
+    }
+
+    .opt-disabled {
+      color: var(--theme-error);
+    }
+  }
+</style>

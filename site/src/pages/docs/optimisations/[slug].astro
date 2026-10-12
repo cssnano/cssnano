@@ -1,15 +1,23 @@
 ---
-import { Code } from 'astro:components';
-import NoSidebar from '../../../layouts/NoSidebar.astro';
+import CodeSample from '../../../components/CodeSample.astro';
+import MainLayout from '../../../layouts/MainLayout.astro';
 import optimisations from '../../../_data/optimisations.js';
-export function getStaticPaths() { return optimisations.map((optimisation) => ({ params: { slug: optimisation.shortName.toLowerCase() }, props: { optimisation } })); }
+import { optimisationSlug } from '../../../utils/navigation.js';
+
+export function getStaticPaths() {
+  return optimisations.map((optimisation) => ({
+    params: { slug: optimisationSlug(optimisation.shortName) },
+    props: { optimisation },
+  }));
+}
+
 const { optimisation } = Astro.props;
 ---
-<NoSidebar title={optimisation.shortName}>
+<MainLayout title={optimisation.shortName} description={optimisation.shortDescription}>
   <p>{optimisation.longDescription}</p>
   <h2>Example</h2>
-  <h3>Input</h3>
-  <Code code={optimisation.inputExample} lang="css" theme="github-dark-high-contrast" />
-  <h3>Output</h3>
-  <Code code={optimisation.outputExample} lang="css" theme="github-dark-high-contrast" />
-</NoSidebar>
+  <h3 id="example-input">Input</h3>
+  <CodeSample code={optimisation.inputExample} lang="css" labelledBy="example-input" />
+  <h3 id="example-output">Output</h3>
+  <CodeSample code={optimisation.outputExample} lang="css" labelledBy="example-output" />
+</MainLayout>

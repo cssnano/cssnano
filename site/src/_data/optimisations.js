@@ -1,9 +1,10 @@
-/** @typedef {'default' | 'advanced' | 'lite'} Preset */
+/** @import {PresetId} from './presets.js' */
 
 import advancedPreset from 'cssnano-preset-advanced';
 import defaultPreset from 'cssnano-preset-default';
 import litePreset from 'cssnano-preset-lite';
 import pluginName from '../../util/pluginName.js';
+import { enabledPlugins } from '../utils/enabledPlugins.js';
 import { editorialOptimisations } from './editorialOptimisations.js';
 
 /**
@@ -15,7 +16,7 @@ import { editorialOptimisations } from './editorialOptimisations.js';
  * @property {string} inputExample
  * @property {string} outputExample
  * @property {string} [safe] Reason this optimisation may be unsafe.
- * @property {Preset[]} presets
+ * @property {PresetId[]} presets
  */
 
 /** @typedef {Omit<Optimisation, 'presets'>} EditorialOptimisation */
@@ -23,22 +24,15 @@ import { editorialOptimisations } from './editorialOptimisations.js';
 function matchPluginsWithPresets() {
   const presetModules = {
     default: defaultPreset,
-    advanced: advancedPreset,
     lite: litePreset,
+    advanced: advancedPreset,
   };
   const internalPlugins = new Set(['cssnano-util-raw-cache']);
   const presetPlugins = Object.fromEntries(
     Object.entries(presetModules).map(([preset, presetModule]) => [
       preset,
       new Set(
-        presetModule()
-          .plugins.filter(
-            ([, options]) =>
-              options != null &&
-              options !== false &&
-              !('exclude' in options && options.exclude)
-          )
-          .map(([plugin]) => pluginName(plugin))
+        enabledPlugins(presetModule).map(([plugin]) => pluginName(plugin))
       ),
     ])
   );
