@@ -118,3 +118,6 @@ jobs:
 
       - name: Test site
         run: pnpm --dir site test
+
+      - name: Check built site
+        run: pnpm --dir site check:astro
