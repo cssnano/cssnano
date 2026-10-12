@@ -280,13 +280,8 @@ const convert = function (number, unit, options = {}) {
   const lowerCaseUnit = unit.toLowerCase();
   const group = unitGroupByUnit.get(lowerCaseUnit);
   if (group?.option !== undefined && options[group.option] === false) {
-    // Disabling unit conversion must not disable number formatting of
-    // <length> dimensions such as 1e-6px.
-    return (
-      (group.option === 'length'
-        ? formatNumber(number)
-        : dropLeadingZero(number)) + (unit ? unit : '')
-    );
+    // Disabling conversion must not disable exponent formatting, so 1e-6s stays short.
+    return formatNumber(number) + (unit ? unit : '');
   }
 
   const converted = findConverted(number, lowerCaseUnit, group);

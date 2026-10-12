@@ -344,11 +344,14 @@ describe('Angle units and options', () => {
     processCSS('h1{voice-pitch:0khz}', 'h1{voice-pitch:0hz}')
   );
 
+  // 1000Hz keeps its unit but takes the shorter exponent form, as an unconverted unit does.
   test(
     'should not convert frequency units when frequency option is false',
-    passthroughCSS('h1{voice-pitch:1000Hz;voice-pitch:0khz}', {
-      frequency: false,
-    })
+    processCSS(
+      'h1{voice-pitch:1000Hz;voice-pitch:0khz}',
+      'h1{voice-pitch:1e3Hz;voice-pitch:0khz}',
+      { frequency: false }
+    )
   );
 
   test('should preserve 0Hz unit', passthroughCSS('h1{voice-pitch:0Hz}'));
