@@ -905,7 +905,7 @@
 - Updated dependencies
   - cssnano-preset-default@5.1.8
 
-# 5.0.11 (2021-11-16)
+## 5.0.11 (2021-11-16)
 
 ### Bug fixes
 
@@ -916,13 +916,13 @@
 - 31d5c07dc07a4: refactor: drop one-liner dependencies
 - 07172825ffbb4f4: **postcss-merge-longhand**: drop css-color-names dependency
 
-# 5.0.10 (2021-11-05)
+## 5.0.10 (2021-11-05)
 
 ### Bug fixes
 
 - **postcss-merge-longhand:** prevent crash in some situations ([#1222](https://github.com/cssnano/cssnano/pull/1222)) ([83009a](https://github.com/cssnano/cssnano/commit/83009a04e7200c80d4dfc478881eb1b231d2548f))
 
-# 5.0.9 (2021-11-01)
+## 5.0.9 (2021-11-01)
 
 ### Bug fixes
 
@@ -938,20 +938,20 @@
 
 - **postcss-colormin:** use colord plugin for color minification ([#1207](https://github.com/cssnano/cssnano/pull/1207)) ([3dbaa04](https://github.com/cssnano/cssnano/commit/3dbaa04addfa2f18375262377e172b03819dc2c0))
 
-# 5.0.8 (2021-08-18)
+## 5.0.8 (2021-08-18)
 
 ## Chore
 
 - **postcss-minify-gradients:** remove extra dependencies ([#1181](https://github.com/cssnano/cssnano/pull/1181)) ([50eb53](https://github.com/cssnano/cssnano/commit/50eb53e63b6eaae598ae4e51d02255ec8dcc9c8f))
 
-# 5.0.7 (2021-07-21)
+## 5.0.7 (2021-07-21)
 
 ### Bug fixes
 
 - **cssnano**: reduce dependencies by moving from cosmiconfig to lilconfig (#1168)
   ([506a8232](https://github.com/cssnano/cssnano/commit/506a823284191a41752939276f50dbdf75cc8e79))
 
-# 5.0.6 (2021-06-09)
+## 5.0.6 (2021-06-09)
 
 ### Bug Fixes
 
@@ -961,7 +961,7 @@
 **postcss-ordered-values**: preserve columns count (#1144)
 ([9acd6a2fe3e](https://github.com/cssnano/cssnano/commit/9acd6a2fe3e188a5f29fef91cf406495fa74a877))
 
-# 5.0.5 (2021-05-28)
+## 5.0.5 (2021-05-28)
 
 ### Bug fixes
 
@@ -969,7 +969,7 @@
 - Check overlaps more exhaustively when merging rules
 - Do not crash when the input CSS contains relative URLs
 
-# 5.0.4 (2021-05-21)
+## 5.0.4 (2021-05-21)
 
 ### Bug Fixes
 
@@ -994,21 +994,21 @@
 
 - **cssnano:** replace opencollective with funding field. ([#1047](https://github.com/cssnano/cssnano/issues/1047)) ([3dee7c5](https://github.com/cssnano/cssnano/commit/3dee7c553350e43ad0750a9478a63cf897e5510f)), closes [#1046](https://github.com/cssnano/cssnano/issues/1046)
 
-# [5.0.0](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.2...cssnano@5.0.0) (2021-04-06)
+## [5.0.0](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.2...cssnano@5.0.0) (2021-04-06)
 
 **Note:** Version bump only for package cssnano
 
-# [5.0.0-rc.2](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.1...cssnano@5.0.0-rc.2) (2021-03-15)
+## [5.0.0-rc.2](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.1...cssnano@5.0.0-rc.2) (2021-03-15)
 
 ### Bug Fixes
 
 - update SVGO ([aa07cfd](https://github.com/cssnano/cssnano/commit/aa07cfd62c82ed4b1e87219eea8d0ed99635e4ca))
 
-# [5.0.0-rc.1](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.0...cssnano@5.0.0-rc.1) (2021-03-04)
+## [5.0.0-rc.1](https://github.com/cssnano/cssnano/compare/cssnano@5.0.0-rc.0...cssnano@5.0.0-rc.1) (2021-03-04)
 
 **Note:** Version bump only for package cssnano
 
-# 5.0.0-rc.0 (2021-02-19)
+## 5.0.0-rc.0 (2021-02-19)
 
 ### Bug Fixes
 
@@ -1060,7 +1060,7 @@
 
 - parse error with iPhone X feature ([#614](https://github.com/cssnano/cssnano/issues/614)) ([a3704a7](https://github.com/cssnano/cssnano/commit/a3704a76a631b1cd907ab0c0a8637a622769676d))
 
-# 4.1.0 (2018-08-24)
+## 4.1.0 (2018-08-24)
 
 ## 4.0.5 (2018-07-30)
 
@@ -1072,13 +1072,13 @@
 
 - **postcss-merge-longhand:** not mangle border output ([#555](https://github.com/cssnano/cssnano/issues/555)) ([9a70605](https://github.com/cssnano/cssnano/commit/9a706050b621e7795a9bf74eb7110b5c81804ffe)), closes [#553](https://github.com/cssnano/cssnano/issues/553) [#554](https://github.com/cssnano/cssnano/issues/554)
 
-# 4.1.10
+## 4.1.10
 
 ## Bug Fixes
 
 - `stylehacks` does not throw error on `[attr]` selector
 
-# 4.1.9
+## 4.1.9
 
 ## Performance Improvements
 
@@ -1107,7 +1107,7 @@
 - `postcss-reduce-initial` handle uppercase value when you convert to initial
 - `stylehacks` handle uppercase properties and values
 
-# 4.1.8
+## 4.1.8
 
 ## Performance Improvements
 
@@ -1117,19 +1117,19 @@
 
 - `postcss-merge-longhand` correctly merging border properties with custom properties.
 
-# 4.1.7
+## 4.1.7
 
 ## Bug Fixes
 
 - republish `cssnano` due broken release.
 
-# 4.1.6
+## 4.1.6
 
 ## Bug Fixes
 
 - `postcss-merge-longhand` doesn't throw error when merge a border property.
 
-# 4.1.5
+## 4.1.5
 
 ## Bug Fixes
 
@@ -1142,27 +1142,27 @@
 
 - `postcss-calc` updated to `7.0.0` version.
 
-# 4.1.4
+## 4.1.4
 
 ## Other changes
 
 - `css-declaration-sorter` now use PostCSS 7.
 - `postcss-calc` now use PostCSS 7.
 
-# 4.1.3
+## 4.1.3
 
 ## Other changes
 
 - `postcss-minify-font-values` now use PostCSS 7.
 - `postcss-discard-duplicates` now use PostCSS 7.
 
-# 4.1.2
+## 4.1.2
 
 ## Bug Fixes
 
 - `postcss-svgo` now handle DataURI with uppercase `data` value (`DATA:image/*;...`).
 
-# 4.1.1
+## 4.1.1
 
 ## Bug Fixes
 
@@ -1182,7 +1182,7 @@
 - `cssnano-preset-advanced` use Autoprefixer 9.
 - use PostCSS 7 in all plugins.
 
-# 4.1.0
+## 4.1.0
 
 ## Bug Fixes
 
@@ -1192,14 +1192,14 @@
 
 - `postcss-ordered-values` support ordering animation values.
 
-# 4.0.5
+## 4.0.5
 
 ## Bug Fixes
 
 - `postcss-merge-longhand` now correctly merges borders with custom properties.
 - `postcss-merge-longhand` doesn't throw error in some `border` merge cases.
 
-# 4.0.4
+## 4.0.4
 
 ## Bug Fixes
 
@@ -1207,26 +1207,26 @@
 - `postcss-merge-longhand` doesn't convert `currentColor`.
 - `postcss-merge-longhand` doesn't merge border properties if there is a shorthand property between them.
 
-# 4.0.3
+## 4.0.3
 
 ## Bug Fixes
 
 - `postcss-merge-longhand` incorrect minification of `border` (`border-*`) declarations.
 
-# 4.0.2
+## 4.0.2
 
 ## Bug Fixes
 
 - `postcss-merge-longhand` don't explode declarations with custom properties.
 - `postcss-colormin` now better transform to `hsl`.
 
-# 4.0.1
+## 4.0.1
 
 ## Bug Fixes
 
 - `browserslist` version incompatibility with `caniuse-api`.
 
-# 4.0.0
+## 4.0.0
 
 ## Breaking changes
 
@@ -1254,7 +1254,7 @@
 - update all dependencies to latest.
 - better handles uppercase selectors/properties/values/units.
 
-# 4.0.0-rc.2
+## 4.0.0-rc.2
 
 ## Features
 
@@ -1277,7 +1277,7 @@
 - stylehacks now properly accounts for vendor prefixes
   (thanks to @evilebottnawi).
 
-# 4.0.0-rc.1
+## 4.0.0-rc.1
 
 ## Bug Fixes
 
@@ -1286,7 +1286,7 @@
 - postcss-minify-params: Resolved an issue with cssnano's handling of the
   `@value` syntax from css-modules to better integrate with css-loader.
 
-# 4.0.0-rc.0
+## 4.0.0-rc.0
 
 Since version 4 has been in-development for some time, we thought it would be
 best to release an alpha version so that we could catch any issues before
@@ -1360,7 +1360,7 @@ the actual release.
   dependency is much smaller thanks to `caniuse-lite` - 7 times smaller as
   of this writing. This makes cssnano much faster to download from npm!
 
-# 3.10.0
+## 3.10.0
 
 - cssnano will no longer `console.warn` any messages when using deprecated
   options; these are now sent to PostCSS. You will be able to see them if you
@@ -1373,69 +1373,69 @@ the actual release.
   of the range. So, `u+2000-2fff` can be converted to `u+2???`, but
   `u+2100-2fff` will be left as it is.
 
-# 3.9.1
+## 3.9.1
 
 - Resolves an integration issue with `v3.9.0`, where `undefined` values
   would attempt to be parsed.
 
-# 3.9.0
+## 3.9.0
 
 - Adds a new option to normalize wrapping quotes for strings & joining
   multiple-line strings into a single line. This optimisation can potentially
   reduce the final gzipped size of your CSS file.
 
-# 3.8.2
+## 3.8.2
 
 - Resolves an issue where `display: list-item inline flow` would be normalized
   to `inline list-item` rather than `inline-list-item` (thanks to @mattbasta).
 
-# 3.8.1
+## 3.8.1
 
 - Adds a quick start file for easy integration with Runkit. Try cssnano online
   at https://runkit.com/npm/cssnano.
 
-# 3.8.0
+## 3.8.0
 
 - Adds support for normalizing multiple values for the `display` property. For
   example `block flow` can be simplified to `block`.
 
-# 3.7.7
+## 3.7.7
 
 - Further improves CSS mixin handling; semicolons will no longer be stripped
   from _rules_ as well as declarations.
 
-# 3.7.6
+## 3.7.6
 
 - Resolves an issue where the semicolon was being incorrectly stripped
   from CSS mixins.
 
-# 3.7.5
+## 3.7.5
 
 - Resolves an issue where the `safe` flag was not being persisted across
   multiple files (thanks to @techmatt101).
 
-# 3.7.4
+## 3.7.4
 
 - Improves performance of the reducePositions transform by testing
   against `hasOwnProperty` instead of using an array of object keys.
 - Removes the redundant `indexes-of` dependency.
 
-# 3.7.3
+## 3.7.3
 
 - Unpins postcss-filter-plugins from `2.0.0` as a fix has landed in the new
   version of uniqid.
 
-# 3.7.2
+## 3.7.2
 
 - Temporarily pins postcss-filter-plugins to version `2.0.0` in order to
   mitigate an issue with uniqid `3.0.0`.
 
-# 3.7.1
+## 3.7.1
 
 - Enabling safe mode now turns off both postcss-merge-idents &
   postcss-normalize-url's `stripWWW` option.
 
-# 3.7.0
+## 3.7.0
 
 - Added: Reduce `background-repeat` definitions; works with both this property
   & the `background` shorthand, and aims to compress the extended two value
@@ -1443,16 +1443,16 @@ the actual release.
 - Added: Reduce `initial` values for properties when the _actual_ initial value
   is shorter; for example, `min-width: initial` becomes `min-width: 0`.
 
-# 3.6.2
+## 3.6.2
 
 - Fixed an issue where cssnano would crash on `steps(1)`.
 
-# 3.6.1
+## 3.6.1
 
 - Fixed an issue where cssnano would crash on `steps` functions with a
   single argument.
 
-# 3.6.0
+## 3.6.0
 
 - Added `postcss-discard-overridden` to safely discard overridden rules with
   the same identifier (thanks to @Justineo).
@@ -1462,46 +1462,46 @@ the actual release.
 - Added the `perspective-origin` property to the list of supported properties
   transformed by the `reduce-positions` transform.
 
-# 3.5.2
+## 3.5.2
 
 - Resolves an issue where the 3 or 4 value syntax for `background-position`
   were being incorrectly converted.
 
-# 3.5.1
+## 3.5.1
 
 - Improves checking for `background-position` values in the `background`
   shorthand property.
 
-# 3.5.0
+## 3.5.0
 
 - Adds a new optimisation path which can minimise keyword values for
   `background-position` and the `background` shorthand.
 - Tweaks to performance in the `core` module, now performs less AST passes.
 - Now compiled with Babel 6.
 
-# 3.4.0
+## 3.4.0
 
 - Adds a new optimisation path which can minimise gradient parameters
   automatically.
 
-# 3.3.2
+## 3.3.2
 
 - Fixes an issue where using `options.safe` threw an error when cssnano was
   not used as part of a PostCSS instance, but standalone (such as in modules
   like gulp-cssnano). cssnano now renames `safe` internally to `isSafe`.
 
-# 3.3.1
+## 3.3.1
 
 - Unpins postcss-colormin from `2.1.2`, as the `2.1.3` & `2.1.4` patches had
   optimization regressions that are now resolved in `2.1.5`.
 
-# 3.3.0
+## 3.3.0
 
 - Updated modules to use postcss-value-parser version 3 (thanks to @TrySound).
 - Now converts between transform functions with postcss-reduce-transforms.
   e.g. `translate3d(0, 0, 0)` becomes `translateZ(0)`.
 
-# 3.2.0
+## 3.2.0
 
 - cssnano no longer converts `outline: none` to `outline: 0`, as there are
   some cases where the values are not equivalent (thanks to @TrySound).
@@ -1509,7 +1509,7 @@ the actual release.
   optimisations can be turned on via `{convertValues: {length: true}}`.
 - Improved minimization of css functions (thanks to @TrySound).
 
-# 3.1.0
+## 3.1.0
 
 - This release swaps postcss-single-charset for postcss-normalize-charset,
   which can detect encoding to determine whether a charset is necessary.
@@ -1520,22 +1520,22 @@ the actual release.
 - Added an option to convert from `deg` to `turn` & vice versa, & improved
   minification performance in functions (thanks to @TrySound).
 
-# 3.0.3
+## 3.0.3
 
 - Fixes an issue where cssnano was removing spaces around forward slashes in
   string literals (thanks to @TrySound).
 
-# 3.0.2
+## 3.0.2
 
 - Fixes an issue where cssnano was removing spaces around forward slashes in
   calc functions.
 
-# 3.0.1
+## 3.0.1
 
 - Replaced css-list & balanced-match with postcss-value-parser, reducing the
   module's overall size (thanks to @TrySound).
 
-# 3.0.0
+## 3.0.0
 
 - All cssnano plugins and cssnano itself have migrated to PostCSS 5.x. Please
   make sure that when using the 3.x releases that you use a 5.x compatible
@@ -1560,33 +1560,33 @@ the actual release.
 - The cssnano CLI was extracted into a separate module, so that dependent
   modules such as gulp-cssnano don't download unnecessary extras.
 
-# 2.6.1
+## 2.6.1
 
 - Improved performance of the core module `functionOptimiser`.
 
-# 2.6.0
+## 2.6.0
 
 - Adds a new optimisation which re-orders properties that accept values in
   an arbitrary order. This can lead to improved merging behaviour in certain
   cases.
 
-# 2.5.0
+## 2.5.0
 
 - Adds support for disabling modules of the user's choosing, with new option
   names. The old options (such as `merge` & `fonts`) will be removed in `3.0`.
 
-# 2.4.0
+## 2.4.0
 
 - postcss-minify-selectors was extended to add support for conversion of
   `::before` to `:before`; this release removes the dedicated
   postcss-pseudoelements module.
 
-# 2.3.0
+## 2.3.0
 
 - Consolidated postcss-minify-trbl & two integrated modules into
   postcss-merge-longhand.
 
-# 2.2.0
+## 2.2.0
 
 - Replaced integrated plugin filter with postcss-filter-plugins.
 - Improved rule merging logic.
@@ -1595,22 +1595,22 @@ the actual release.
 - cssnano will now perform better whitespace compression when used with other
   PostCSS plugins.
 
-# 2.1.1
+## 2.1.1
 
 - Fixes an issue where options were not passed to normalize-url.
 
-# 2.1.0
+## 2.1.0
 
 - Allow `postcss-font-family` to be disabled.
 
-# 2.0.3
+## 2.0.3
 
 - cssnano can now be consumed with the parentheses-less method in PostCSS; e.g.
   `postcss([ cssnano ])`.
 - Fixes an issue where 'Din' was being picked up by the logic as a numeric
   value, causing the full font name to be incorrectly rearranged.
 
-# 2.0.2
+## 2.0.2
 
 - Extract trbl value reducing into a separate module.
 - Refactor core longhand optimiser to not rely on trbl cache.
@@ -1619,12 +1619,12 @@ the actual release.
 - Fixes an issue where embedded base 64 data was being converted as if it were
   a URL.
 
-# 2.0.1
+## 2.0.1
 
 - Add `postcss-plugin` keyword to package.json.
 - Wraps all core processors with the PostCSS 4.1 plugin API.
 
-# 2.0.0
+## 2.0.0
 
 - Adds removal of outdated vendor prefixes based on browser support.
 - Addresses an issue where relative path separators were converted to
@@ -1636,20 +1636,20 @@ the actual release.
 - Improved URL detection when using two or more in the same declaration.
 - node 0.10 is no longer officially supported.
 
-# 1.4.3
+## 1.4.3
 
 - Fixes incorrect minification of `background:none` to `background:0 0`.
 
-# 1.4.2
+## 1.4.2
 
 - Fixes an issue with nested URLs inside `url()` functions.
 
-# 1.4.1
+## 1.4.1
 
 - Addresses an issue where whitespace removal after a CSS function would cause
   rendering issues in Internet Explorer.
 
-# 1.4.0
+## 1.4.0
 
 - Adds support for removal of unused `@keyframes` and `@counter-style` at-rules.
 - comments: adds support for user-directed removal of comments, with the
@@ -1657,30 +1657,30 @@ the actual release.
 - comments: `removeAllButFirst` now operates on each CSS tree, rather than the
   first one passed to cssnano.
 
-# 1.3.3
+## 1.3.3
 
 - Fixes incorrect minification of `border:none` to `border:0 0`.
 
-# 1.3.2
+## 1.3.2
 
 - Improved selector minifying logic, leading to better compression of attribute
   selectors.
 - Improved comment discarding logic.
 
-# 1.3.1
+## 1.3.1
 
 - Fixes crash on undefined `decl.before` from prior AST.
 
-# 1.3.0
+## 1.3.0
 
 - Added support for bundling cssnano using webpack (thanks to @MoOx).
 
-# 1.2.1
+## 1.2.1
 
 - Fixed a bug where a CSS function keyword inside its value would throw
   an error.
 
-# 1.2.0
+## 1.2.0
 
 - Better support for merging properties without the existance of a shorthand
   override.
@@ -1689,14 +1689,14 @@ the actual release.
 - Selector re-ordering now happens last in the chain of plugins, to help clean
   up merged selectors.
 
-# 1.1.0
+## 1.1.0
 
 - Now can merge identifiers such as `@keyframes` and `@counter-style` if they
   have duplicated properties but are named differently.
 - Fixes an issue where duplicated keyframes with the same name would cause
   an infinite loop.
 
-# 1.0.2
+## 1.0.2
 
 - Improve module loading logic (thanks to @tunnckoCore).
 - Improve minification of numeric values, with better support for `rem`,
@@ -1707,10 +1707,10 @@ the actual release.
 - Added support for viewport units (thanks to @TrySound).
 - Add MIT license file.
 
-# 1.0.1
+## 1.0.1
 
 - Add repository/author links to package.json.
 
-# 1.0.0
+## 1.0.0
 
 - Initial release.

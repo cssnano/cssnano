@@ -1,19 +1,63 @@
 ---
 import {getCollection} from 'astro:content';
-import NoSidebar from '../../layouts/NoSidebar.astro';
-import {formatDate} from '../../utils/date';
+import MainLayout from '../../layouts/MainLayout.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import { page } from '../../_data/navigation.js';
 
 const posts = (await getCollection('blog')).toSorted(
   (a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf(),
 );
 ---
-<NoSidebar title="Blog">
-  <ul class="list stack">
+<MainLayout title="Blog" description="News and migration notes from the cssnano team.">
+  <ul class="stack list-reset blog-list">
     {posts.map((post) =>
-      <li class="stack">
-        <h2><a href={`${import.meta.env.BASE_URL}blog/${post.data.slug}/`}>{post.data.title}</a></h2>
-        <time datetime={post.data.publishedAt.toISOString()}>{formatDate(post.data.publishedAt)}</time>
+      <li>
+        <h2><a href={page(`blog/${post.id}/`)}>{post.data.title}</a></h2>
+        <FormattedDate date={post.data.publishedAt} />
         <p>{post.data.excerpt}</p>
       </li>)}
   </ul>
-</NoSidebar>
+</MainLayout>
+
+<style>
+  @layer components {
+    /* Posts are separated by a wide stack gap; the parts of one post stay close. Only excerpts keep a readable measure. */
+    .blog-list {
+      --stack-space: var(--space-xl);
+      max-inline-size: none;
+      container-type: inline-size;
+    }
+
+    .blog-list > li {
+      display: grid;
+      gap: var(--space-sm) var(--space-xl);
+      grid-template-areas: "date" "title" "excerpt";
+    }
+
+    /* A post title is a list entry, not a section heading. */
+    .blog-list h2 {
+      grid-area: title;
+      font-size: var(--step-2);
+    }
+
+    /* FormattedDate writes the time element, so Astro's scoping cannot reach it without :global. */
+    .blog-list :global(time) {
+      grid-area: date;
+      font-size: var(--font-size-small);
+    }
+
+    .blog-list p {
+      grid-area: excerpt;
+      max-inline-size: var(--measure);
+    }
+
+    /* The date column matches the documentation sidebar column. The list switches on its own width, not the viewport. */
+    @container (width > 48rem) {
+      .blog-list > li {
+        grid-template-columns: var(--sidebar) minmax(0, 1fr);
+        grid-template-areas: "date title" "date excerpt";
+        align-items: start;
+      }
+    }
+  }
+</style>

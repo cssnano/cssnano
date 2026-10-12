@@ -1,11 +1,27 @@
-import { PlaygroundRunner } from './playground-runner.js';
+import { StatusAnnouncer } from './playground-announcer.js';
+import { CssInputError, PlaygroundRunner } from './playground-runner.js';
 
-const input = /** @type {HTMLTextAreaElement} */ (
-  document.getElementById('input')
-);
-const output = /** @type {HTMLTextAreaElement} */ (
-  document.getElementById('output')
-);
+/**
+ * @template {HTMLElement} T
+ * @param {string} id
+ * @param {{ new (): T }} elementType the expected element class
+ * @returns {T}
+ */
+function getElement(id, elementType) {
+  const element = document.getElementById(id);
+  if (!(element instanceof elementType)) {
+    throw new TypeError(
+      `Playground element #${id} is missing or not a ${elementType.name}`
+    );
+  }
+  return element;
+}
+
+const input = getElement('input', HTMLTextAreaElement);
+const output = getElement('output', HTMLTextAreaElement);
+const status = getElement('playgroundStatus', HTMLElement);
+const presetSelector = getElement('presetSelector', HTMLSelectElement);
+const runButton = getElement('runButton', HTMLButtonElement);
 
 /** @param {string} message
  * @param {boolean} isError
@@ -16,13 +32,28 @@ function setOutput(message, isError) {
   output.toggleAttribute('data-has-error', isError);
 }
 
-const presetSelector = /** @type {HTMLSelectElement} */ (
-  document.getElementById('presetSelector')
-);
+// Screen readers do not announce textarea value changes, so results and
+// errors are mirrored into a status region.
+const announcer = new StatusAnnouncer(status);
 
-const runButton = /** @type {HTMLButtonElement} */ (
-  document.getElementById('runButton')
-);
+/** @param {number} bytes */
+function formatBytes(bytes) {
+  return bytes < 1000
+    ? `${bytes} bytes`
+    : `${(bytes / 1000).toFixed(1)} kilobytes`;
+}
+
+// aria-disabled (not disabled) keeps the button focusable while busy, so a
+// keyboard user doesn't lose focus the moment they activate it. The label
+// stays "Minify"; the result is the only announcement.
+/** @param {boolean} busy */
+function setBusy(busy) {
+  if (busy) {
+    runButton.setAttribute('aria-disabled', 'true');
+  } else {
+    runButton.removeAttribute('aria-disabled');
+  }
+}
 
 /** @type {PlaygroundRunner | undefined} */
 let cssMinifier;
@@ -35,35 +66,53 @@ try {
   runButton.disabled = false;
 } catch {
   runButton.disabled = true;
-  setOutput('Minify unavailable in this browser', true);
+  const message = 'This browser cannot run the minifier';
+  setOutput(message, true);
+  status.toggleAttribute('data-has-error', true);
+  announcer.announce(message);
 }
 
 let running = false;
 if (cssMinifier) {
   runButton.addEventListener('click', async () => {
-    // aria-disabled (not disabled) keeps the button focusable while busy, so
-    // a keyboard user doesn't lose focus the moment they activate it; guard
-    // re-entrancy explicitly since aria-disabled doesn't block activation.
+    // aria-disabled does not block activation, so the guard against re-entry is explicit.
     if (running) return;
     running = true;
-    runButton.setAttribute('aria-disabled', 'true');
-    runButton.setAttribute('aria-busy', 'true');
-    runButton.innerText = 'Working…';
+    setBusy(true);
     output.removeAttribute('data-has-error');
+    status.removeAttribute('data-has-error');
+    input.removeAttribute('aria-invalid');
+    input.removeAttribute('aria-describedby');
     const userInput = input.value;
+    const presetLabel = presetSelector.selectedOptions[0]?.text ?? '';
     try {
       const css = await cssMinifier.minimizeCss(
         userInput,
         /** @type {import('./types.js').PresetName} */ (presetSelector.value)
       );
       setOutput(css, false);
+      announcer.announce(
+        `${presetLabel} minified your CSS from ${formatBytes(new Blob([userInput]).size)} to ${formatBytes(new Blob([css]).size)}`
+      );
     } catch (/** @type {unknown} */ err) {
-      if (err instanceof Error) setOutput(err.message, true);
+      const reason = err instanceof Error ? err.message : String(err);
+      // Name the culprit: a syntax error points at the user's CSS, anything else at the minifier.
+      const message =
+        err instanceof CssInputError
+          ? `Could not minify your CSS: ${reason}`
+          : `The minifier failed: ${reason}`;
+      setOutput(message, true);
+      status.toggleAttribute('data-has-error', true);
+      // Only bad CSS makes the input invalid; a worker failure leaves it as written.
+      if (err instanceof CssInputError) {
+        input.setAttribute('aria-invalid', 'true');
+        // The status region carries the error text, so the field is read with its message.
+        input.setAttribute('aria-describedby', 'playgroundStatus');
+      }
+      announcer.announce(message);
     } finally {
       running = false;
-      runButton.removeAttribute('aria-disabled');
-      runButton.removeAttribute('aria-busy');
-      runButton.innerText = 'Minimize';
+      setBusy(false);
     }
   });
 }

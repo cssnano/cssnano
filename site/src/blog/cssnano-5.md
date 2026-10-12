@@ -11,8 +11,8 @@ We have released a new major version of cssnano.
 ## Major changes in cssnano 5
 
 * cssnano 5 requires Node.js >= 10.13
-* PostCSS 8 API, so cssnano 5 does not emit warnings when running under PostCSS 8 
-* updates to SVGO 2, fixing many SVG minification bugs
+* PostCSS 8 API (application programming interface), so cssnano 5 does not emit warnings when running under PostCSS 8 
+* updates to SVGO (SVG Optimizer) 2, fixing many SVG (Scalable Vector Graphics) minification bugs
 * updates css-value-parser and css-selector-parser, fixing many bugs
 
 ## How to upgrade

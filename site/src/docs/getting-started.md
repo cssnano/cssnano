@@ -1,15 +1,16 @@
 ---
 id: getting-started
 title: Getting started
+description: Add cssnano to your build process to produce compressed CSS for production.
 ---
 
 ## What is a build process?
 
 A build process is a sequence of tasks, usually automated, that you run each
 time that you want to deploy a new release of your application. cssnano fits
-into this build process as a tool that should be run on your development CSS,
+into this build process as a tool that should be run on your development CSS (Cascading Style Sheets),
 and in turn will create compressed production assets. These are then uploaded
-to your production server or CDN.
+to your production server or content delivery network (CDN).
 
 There are a number of different ways that you can compose a build process; we
 recommend using the command line, but you might also want to consider an

@@ -1,5 +1,8 @@
 /** @import {PresetName, CssNanoWorker, MinificationResult, MinificationSuccess} from './types.js'*/
 
+/** Rejection for CSS the minifier cannot parse, as opposed to a worker failure. */
+export class CssInputError extends Error {}
+
 export class PlaygroundRunner {
   #cssnanoWorker;
   /** @type {PromiseWithResolvers<MinificationSuccess> | undefined} */
@@ -28,7 +31,7 @@ export class PlaygroundRunner {
     const pendingMinification = Promise.withResolvers();
     this.#pendingMinification = pendingMinification;
     try {
-      this.#cssnanoWorker.postMessage({ input, config: preset });
+      this.#cssnanoWorker.postMessage({ input, preset });
     } catch (err) {
       this.#rejectPendingMinification(
         err instanceof Error ? err : new Error(String(err))
@@ -56,7 +59,11 @@ export class PlaygroundRunner {
     if (result.ok) {
       pendingMinification.resolve(result);
     } else {
-      pendingMinification.reject(new Error(result.error.message));
+      pendingMinification.reject(
+        result.error.input
+          ? new CssInputError(result.error.message)
+          : new Error(result.error.message)
+      );
     }
   }
 

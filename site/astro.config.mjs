@@ -1,27 +1,27 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { createRequire } from 'node:module';
-import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { shikiOptions } from './src/utils/shikiOptions.js';
 
-const require = createRequire(import.meta.url);
-const siteDirectory = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(
+  new URL('../packages/cssnano-preset-advanced/package.json', import.meta.url)
+);
 const base = '/cssnano/';
 
 export default defineConfig({
   site: 'https://cssnano.github.io/cssnano',
   base,
   trailingSlash: 'always',
-  outDir: path.resolve(siteDirectory, '_astro-site/'),
+  outDir: fileURLToPath(new URL('./_astro-site/', import.meta.url)),
   integrations: [sitemap()],
+  markdown: {
+    shikiConfig: shikiOptions,
+  },
   vite: {
     resolve: {
       alias: {
-        'css-declaration-sorter': require.resolve('css-declaration-sorter', {
-          paths: [
-            path.resolve(siteDirectory, '../packages/cssnano-preset-advanced'),
-          ],
-        }),
+        'css-declaration-sorter': require.resolve('css-declaration-sorter'),
       },
     },
     build: {

@@ -1,13 +1,14 @@
 ---
 id: Introduction
 title: Introduction
+description: What minification is, and how cssnano reduces the size of your CSS.
 ---
 
 ## What is minification?
 
 Minification is the process of taking some code and using various methods to
-reduce its size on disk. Unlike techniques such as gzip, which preserve the
-original semantics of the CSS file, and are therefore lossless, minification
+reduce its size on disk. Unlike techniques such as gzip (GNU zip), which preserve the
+original semantics of the CSS (Cascading Style Sheets) file, and are therefore lossless, minification
 is an inherently lossy process, where values can be replaced with smaller
 equivalents, or selectors merged together, for example.
 

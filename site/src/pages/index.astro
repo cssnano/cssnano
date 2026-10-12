@@ -1,10 +1,11 @@
 ---
-import { Code } from 'astro:components';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import Head from '../components/Head.astro';
-import cssnanoPackage from '../../../packages/cssnano/package.json';
-import '../styles/index.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CodeSample from '../components/CodeSample.astro';
+import { page } from '../_data/navigation.js';
+import Logo from '../assets/logo.svg';
+import PostcssLogo from '../assets/postcss.svg';
+import UndrawSettings from '../assets/undraw_settings.svg';
+import UndrawConfig from '../assets/undraw_config.svg';
 
 const inputExample = `/* normalize selectors */
 h1::before, h1:before {
@@ -29,49 +30,119 @@ h1::before, h1:before {
 
 const outputExample = '@charset "utf-8";h1:before{margin:10px 20px;color:red;font-weight:400;background-position:100% 100%;quotes:"«" "»";background:linear-gradient(180deg,#ffe500,#ffe500 50%,#121 0,#121);min-width:0}';
 ---
-<!doctype html>
-<html lang="en">
-  <head><Head title="CSSNANO" pathname={Astro.url.pathname} /></head>
-  <body>
-    <Header />
-    <header class="hero" id="article">
-      <div class="center stack">
-        <img width="400" height="280" alt="CSSNANO" src={`${import.meta.env.BASE_URL}img/logo.svg`} />
-        <p class="text-center f3">Deliver your website's styles, faster.</p>
-        <p class="text-center">Plug in cssnano into your build for modern CSS compression.</p>
-        <a class="f4 hero-link box text-center" href={`${import.meta.env.BASE_URL}docs/introduction/`}>Get Started</a>
+<BaseLayout
+  title="cssnano"
+  home
+  description="Plug cssnano into your build for modern CSS compression."
+>
+    <section slot="hero" class="hero full-bleed dark-panel" aria-labelledby="hero-title">
+      <div class="stack">
+        <h1 id="hero-title"><Logo width={400} role="img" aria-label="cssnano" /></h1>
+        <p class="text-lead">Deliver your website's styles, faster.</p>
+        <p>Plug in cssnano into your build for modern CSS (Cascading Style Sheets) compression.</p>
+        <a class="text-large hero-link" href={page('docs/introduction/')}>Get Started</a>
       </div>
-    </header>
-    <main class="center">
-      <section class="box stack">
+    </section>
+    <section class="stack prose">
         <h2>What it does</h2>
         <p>cssnano takes your nicely formatted CSS and runs it through many focused optimisations, to ensure that the final result is as small as possible for a production environment.</p>
-        <h3>Input</h3>
-        <Code code={inputExample} lang="css" theme="github-dark-high-contrast" />
-        <h3>Output</h3>
-        <Code code={outputExample} lang="css" theme="github-dark-high-contrast" />
+        <h3 id="what-it-does-input">Input</h3>
+        <CodeSample code={inputExample} lang="css" labelledBy="what-it-does-input" />
+        <h3 id="what-it-does-output">Output</h3>
+        <CodeSample code={outputExample} lang="css" labelledBy="what-it-does-output" />
         <p>cssnano has preserved the semantics of this CSS, but has removed the extraneous whitespace, compressed the identifiers, and purged unnecessary definitions. This gives you a much smaller CSS file for a production environment.</p>
-        <p>By default, cssnano performs safe optimisations on your CSS file, but also offers an advanced preset with techniques that you can use to maximise compression. For more details, see our <a href={`${import.meta.env.BASE_URL}docs/what-are-optimisations/`}>optimisations</a> guide.</p>
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-value">325 B</div><div class="stat-label">Original (gzip)</div></div>
-          <div class="stat-card"><div class="stat-value">177 B</div><div class="stat-label">Minified (gzip)</div></div>
-          <div class="stat-card"><div class="stat-value">148 B</div><div class="stat-label">Difference</div></div>
-          <div class="stat-card"><div class="stat-value">54.46%</div><div class="stat-label">Size Saved</div></div>
-        </div>
+        <p>By default, cssnano performs safe optimisations on your CSS file, but also offers an advanced preset with techniques that you can use to maximise compression. For more details, see our <a href={page('docs/what-are-optimisations/')}>optimisations</a> guide.</p>
+        <dl class="grid stats-grid">
+          <div class="card stat-card"><dt class="stat-label">Original (gzip, GNU zip)</dt><dd class="stat-value">325 bytes</dd></div>
+          <div class="card stat-card"><dt class="stat-label">Minified (gzip, GNU zip)</dt><dd class="stat-value">177 bytes</dd></div>
+          <div class="card stat-card"><dt class="stat-label">Difference</dt><dd class="stat-value">148 bytes</dd></div>
+          <div class="card stat-card"><dt class="stat-label">Size Saved</dt><dd class="stat-value">54.46%</dd></div>
+        </dl>
       </section>
-      <section class="box stack">
+      <section class="stack prose">
         <h2>Features</h2>
-        <div class="features-grid">
-          <div class="feature-card"><img src={`${import.meta.env.BASE_URL}img/postcss.svg`} alt="" width="120" height="120" /><h3>PostCSS Based</h3><p>CSSNANO is built upon PostCSS plugins and environments</p></div>
-          <div class="feature-card"><img src={`${import.meta.env.BASE_URL}img/undraw_settings.svg`} alt="" width="140" height="120" /><h3>30+ Plugins</h3><p>CSSNANO has more than 30 plugins for optimizing your CSS</p></div>
-          <div class="feature-card"><img src={`${import.meta.env.BASE_URL}img/undraw_config.svg`} alt="" width="140" height="120" /><h3>Configurable</h3><p>CSSNANO supports custom configs using presets which control the optimization level</p></div>
+        <div class="grid">
+          <div class="card feature-card"><PostcssLogo width={120} aria-hidden="true" /><h3>PostCSS Based</h3><p>cssnano is built upon PostCSS plugins and environments</p></div>
+          <div class="card feature-card"><UndrawSettings width={140} aria-hidden="true" /><h3>30+ Plugins</h3><p>cssnano has more than 30 plugins for optimising your CSS</p></div>
+          <div class="card feature-card"><UndrawConfig width={140} aria-hidden="true" /><h3>Configurable</h3><p>cssnano supports custom configs using presets which control the optimisation level</p></div>
         </div>
       </section>
-      <section class="box stack">
+      <section class="stack prose">
         <h2>Technology</h2>
-        <p>cssnano is powered by <a href="https://postcss.org">PostCSS</a>, a tool for transforming styles with JavaScript. Its plugin architecture allows us to compose cssnano out of small modules with limited responsibilities. <img class="fr" alt="" src={`${import.meta.env.BASE_URL}img/postcss.svg`} width="80" height="100" /></p>
+        <p>cssnano is powered by <a href="https://postcss.org">PostCSS</a>, a tool for transforming styles with JavaScript. Its plugin architecture allows us to compose cssnano out of small modules with limited responsibilities. <PostcssLogo class="postcss-logo" width={80} aria-hidden="true" /></p>
       </section>
-    </main>
-    <Footer version={cssnanoPackage.version} />
-  </body>
-</html>
+</BaseLayout>
+
+<style>
+  @layer components {
+    /* The hero stays centred, unlike the left-aligned text below it. */
+    .hero {
+      padding-block: var(--space-xl);
+      text-align: center;
+    }
+
+    .hero > .stack {
+      align-items: center;
+    }
+
+    /* The button-like link is not underlined at rest, so it reads as a button. */
+    .hero-link {
+      padding: var(--space-sm) var(--space-lg);
+      font-weight: var(--font-weight-strong);
+      inline-size: max-content;
+      border-radius: var(--border-radius);
+      color: var(--color-black);
+      background-color: var(--color-white);
+      text-decoration: none;
+    }
+
+    .hero-link:hover,
+    .hero-link:focus-visible {
+      text-decoration: underline;
+    }
+
+    .postcss-logo {
+      float: inline-end;
+    }
+
+    /* Bordered surface shared by the feature and stat cards; a grid sets --card-padding to tighten them. */
+    .card {
+      border: var(--theme-border-width) solid var(--theme-border-subtle);
+      border-radius: var(--border-radius);
+      padding: var(--card-padding, var(--space-lg));
+    }
+
+    .feature-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .stats-grid {
+      --card-min: 8rem;
+      --grid-gap: var(--space-md);
+      --card-padding: var(--space-md);
+
+      margin-block-end: var(--space-md);
+    }
+
+    .stat-card {
+      display: flex;
+      flex-direction: column-reverse;
+      text-align: center;
+    }
+
+    .stat-value {
+      margin: 0;
+      font-size: var(--step-3);
+      font-weight: var(--font-weight-strong);
+      white-space: nowrap;
+      color: var(--theme-accent);
+    }
+
+    .stat-label {
+      font-size: var(--font-size-small);
+    }
+  }
+</style>

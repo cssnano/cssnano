@@ -1,4 +1,5 @@
 import postcss from 'postcss';
+import { enabledPlugins } from './utils/enabledPlugins.js';
 
 /** @import {PresetName, MinificationResult} from './types.js'*/
 
@@ -19,25 +20,16 @@ async function loadPlugins(presetName) {
       throw new Error('Invalid configuration preset');
   }
 
-  const postcssPlugins = [];
-  for (const plugin of preset().plugins) {
-    const [processor, opts] = plugin;
-    const optsAsRecord = /** @type {Record<string, any>} */ (opts);
-    const shouldInclude = !(typeof opts === 'object' && optsAsRecord.exclude);
-    if (shouldInclude) {
-      postcssPlugins.push(processor(opts));
-    }
-  }
-  return postcssPlugins;
+  return enabledPlugins(preset).map(([processor, opts]) => processor(opts));
 }
 
 /** @param {string} input
-    @param {PresetName} config
+    @param {PresetName} preset
     @returns {Promise<MinificationResult>}
  */
-export async function minimize(input, config) {
+export async function minimize(input, preset) {
   try {
-    const postcssPlugins = await loadPlugins(config);
+    const postcssPlugins = await loadPlugins(preset);
     const result = await postcss(postcssPlugins).process(input, {
       from: undefined,
     });
@@ -47,13 +39,17 @@ export async function minimize(input, config) {
       return {
         ok: false,
         error: {
-          message: `CssSyntaxError: ${err.reason} (${err.line}:${err.column})`,
+          message: `${err.reason} at line ${err.line}, column ${err.column}`,
+          input: true,
         },
       };
     }
     return {
       ok: false,
-      error: { message: err instanceof Error ? err.message : String(err) },
+      error: {
+        message: err instanceof Error ? err.message : String(err),
+        input: false,
+      },
     };
   }
 }

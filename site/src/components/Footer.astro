@@ -1,32 +1,49 @@
 ---
-import ExternalIcon from './ExternalIcon.astro';
-const { version } = Astro.props;
+import { footerColumns } from '../_data/navigation.js';
+import cssnanoPackage from '../../../packages/cssnano/package.json';
 ---
-<footer class="box stack bg-dark">
-  <div class="cluster justify-center">
-    <div class="stack">
-      <h2 class="f4">Docs</h2>
-      <ul class="stack">
-        <li><a href={`${import.meta.env.BASE_URL}docs/introduction/`}>Guide</a></li>
-        <li><a href={`${import.meta.env.BASE_URL}docs/what-are-optimisations/`}>Optimizations</a></li>
-        <li><a href={`${import.meta.env.BASE_URL}playground/`}>Playground</a></li>
-        <li><a href={`${import.meta.env.BASE_URL}docs/support-us/`}>Support</a></li>
-      </ul>
-    </div>
-    <div class="stack">
-      <h2 class="f4">Community</h2>
-      <ul class="stack">
-        <li><a href="https://stackoverflow.com/questions/tagged/cssnano" target="_blank" rel="noopener noreferrer">Stack Overflow <ExternalIcon /></a></li>
-        <li><a href="https://opencollective.com/cssnano" target="_blank" rel="noopener noreferrer">Donate <ExternalIcon /></a></li>
-      </ul>
-    </div>
-    <div class="stack">
-      <h2 class="f4">Social</h2>
-      <ul class="stack">
-        <li><a href={`${import.meta.env.BASE_URL}blog/`}>Blog</a></li>
-        <li><a href="https://github.com/cssnano/cssnano" target="_blank" rel="noopener noreferrer">GitHub <ExternalIcon /></a></li>
-      </ul>
-    </div>
+<footer class="dark-panel full-bleed">
+  <div class="cluster">
+    {footerColumns.map(({ heading, links }) => (
+      <div class="stack">
+        <h2 class="text-large">{heading}</h2>
+        <ul class="stack list-reset footer-links">
+          {links.map((link) => (
+            <li>
+              <a href={link.href} class:list={{ 'external-link': link.external }}>{link.label}{link.external && <span class="sr-only"> (external)</span>}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
   </div>
-  <p class="text-center">Latest release {version} · Distributed under the MIT License.</p>
+  <p class="text-center">Latest release {cssnanoPackage.version} · Distributed under the MIT License.</p>
 </footer>
+
+<style>
+  @layer components {
+    /* Padding and row gap space the footer without changing its subgrid layout. */
+    footer {
+      padding-block: var(--space-xl);
+      row-gap: var(--space-md);
+    }
+
+    /* Inline-block lets the padding enlarge the target to 44px (WCAG 2.5.5) without altering the line box. */
+    footer a {
+      display: inline-block;
+      padding-block: 0.625rem;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    footer a:hover,
+    footer a:focus-visible {
+      text-decoration: underline;
+    }
+
+    /* Link groups use a tighter stack than the default. */
+    .footer-links {
+      --stack-space: var(--space-sm);
+    }
+  }
+</style>

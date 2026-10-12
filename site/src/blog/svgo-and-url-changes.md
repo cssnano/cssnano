@@ -1,12 +1,12 @@
 ---
 title: SVG and URL changes in cssnano 9.8
 author: cssnano team
-excerpt: cssnano 9.8 no longer optimises inline SVG and rewrites URLs. Here's what's changed and how to update your build.
+excerpt: cssnano 9.8 no longer optimises inline SVG (Scalable Vector Graphics) and rewrites URLs (Uniform Resource Locators). Here's what's changed and how to update your build.
 publishedAt: 2026-10-12
 slug: svgo-and-url-changes
 ---
 
-cssnano 9 changes how it handles SVG and URLs. Rendered output stays the same for valid CSS, but the minified text for inline SVG and URLs can differ, because cssnano no longer rewrites them.
+cssnano 9 changes how it handles SVG (Scalable Vector Graphics) and URLs (Uniform Resource Locators). Rendered output stays the same for valid CSS (Cascading Style Sheets), but the minified text for inline SVG and URLs can differ, because cssnano no longer rewrites them.
 
 The URL change makes URL handling more conservative, so cssnano doesn't alter how web servers and bundlers interpret your URLs.
 
@@ -26,7 +26,7 @@ module.exports = {
 };
 ```
 
-To keep optimising SVG data URIs in your CSS, install `postcss-svgo` and run it before cssnano. With `configFile: true`, it finds an [SVGO](https://svgo.dev/) config file the same way the SVGO CLI does. Options passed to the plugin override the file's top-level options.
+To keep optimising SVG data URIs (Uniform Resource Identifiers) in your CSS, install `postcss-svgo` and run it before cssnano. With `configFile: true`, it finds an [SVGO (SVG Optimizer)](https://svgo.dev/) config file the same way the SVGO command-line interface (CLI) does. Options passed to the plugin override the file's top-level options.
 
 ```sh
 npm install -D postcss-svgo

@@ -1,6 +1,7 @@
 ---
 id: Support-Us
 title: Support cssnano development
+description: Support cssnano development through Patreon or PayPal.
 ---
 
 cssnano is a MIT licensed open source project and therefore completely free
@@ -13,9 +14,7 @@ ongoing commitment, or one-time through [PayPal](https://www.paypal.me/benebinfo
 
 ## Support the team
 
-<a href="https://opencollective.com/cssnano">
-<img src="/cssnano/img/opencollective-button@2x.png" alt="Donate to our collective" width="300"/>
-</a>
+[Donate to our collective on Open Collective](https://opencollective.com/cssnano).
 
 ## Backers
 
@@ -30,4 +29,4 @@ A huge THANK YOU to our recurring backers!
 
 A huge THANK YOU to our backers!
 
-<object type="image/svg+xml" data="https://opencollective.com/cssnano/backers.svg?avatarHeight=36&width=600"></object>
+<object type="image/svg+xml" data="https://opencollective.com/cssnano/backers.svg?avatarHeight=36&width=600"><a href="https://opencollective.com/cssnano#backers">See the Open Collective backers</a></object>

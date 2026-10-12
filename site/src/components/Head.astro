@@ -1,19 +1,35 @@
 ---
-const { title, pathname = '/' } = Astro.props;
-const canonicalPathValue = pathname.startsWith(import.meta.env.BASE_URL) ? pathname : `${import.meta.env.BASE_URL}${pathname.replace(/^\/+/v, '')}`;
-const canonicalPath = canonicalPathValue.endsWith('/') ? canonicalPathValue : `${canonicalPathValue}/`;
+import { page } from '../_data/navigation.js';
+import { pageMeta } from '../utils/pageMeta.js';
+
+interface Props {
+  title: string;
+  home?: boolean;
+  description?: string;
+  type?: 'website' | 'article';
+}
+
+const { title, home = false, description, type } = Astro.props;
+const { pageTitle, description: pageDescription, type: pageType } = pageMeta({
+  title,
+  home,
+  description,
+  type,
+});
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
 ---
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
-<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}img/favicon.svg`} />
-<link rel="alternate icon" type="image/x-icon" href={`${import.meta.env.BASE_URL}img/favicon.ico`} />
-<link rel="sitemap" href={`${import.meta.env.BASE_URL}sitemap-index.xml`} />
-<link rel="canonical" href={new URL(canonicalPath, Astro.site).href} />
-<title>{title}</title>
-<meta property="og:title" content={title} />
-<meta property="og:type" content="article" />
-<meta property="og:url" content={new URL(canonicalPath, Astro.site).href} />
+<link rel="icon" type="image/svg+xml" href={page('img/favicon.svg')} />
+<link rel="alternate icon" type="image/x-icon" href={page('img/favicon.ico')} />
+<link rel="sitemap" href={page('sitemap-index.xml')} />
+<link rel="canonical" href={canonical} />
+<title>{pageTitle}</title>
+<meta name="description" content={pageDescription} />
+<meta property="og:title" content={pageTitle} />
+<meta property="og:description" content={pageDescription} />
+<meta property="og:type" content={pageType} />
+<meta property="og:url" content={canonical} />
 <meta property="og:locale" content="en" />
-<meta name="description" property="og:description" content="CSSNANO - postcss based css optimizer" />
-<meta property="og:site_name" content="CSSNANO documentation" />
+<meta property="og:site_name" content="cssnano documentation" />

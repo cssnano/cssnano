@@ -1,6 +1,7 @@
 ---
 id: config-file
 title: Configuration
+description: Configure cssnano in your PostCSS configuration or in a dedicated cssnano configuration file.
 ---
 
 You can configure cssnano either in the PostCSS configuration or in a dedicated cssnano configuration. The PostCSS configuration takes precedence over the dedicated cssnano configuration.
@@ -26,14 +27,14 @@ postcss([cssnano({ preset, plugins: [autoprefixer] })])
 
 You can configure cssnano with a dedicated configuration, for example if you cannot access the PostCSS configuration file. The cssnano configuration can be in different formats:
 
-* a JSON file named `.cssnanorc.json`
+* a JSON (JavaScript Object Notation) file named `.cssnanorc.json`
 * a JavaScript file named `cssnano.config.js`
 
 cssnano checks these files in the order listed, in the current working
 directory only.  Only `.cssnanorc.json` and `cssnano.config.js` are
 discovered automatically: use the `configFile` option
 to select a configuration file in another directory. The path may be relative
-to the current working directory or absolute, and you may use ESM and TypeScript configuration files.
+to the current working directory or absolute, and you may use ESM (ECMAScript modules) and TypeScript configuration files.
 
 ESM configuration files and TypeScript files loaded as ESM must use a default
 export. A `.ts` file follows the nearest `package.json` module type. In a

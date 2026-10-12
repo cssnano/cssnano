@@ -19,7 +19,7 @@ export const editorialOptimisations =
       shortName: 'cssDeclarationSorter',
       shortDescription: 'Sorts CSS declarations',
       longDescription:
-        'Sorts CSS declarations based on their property names, sorted CSS is smaller when gzipped because there will be more similar strings.',
+        'Sorts CSS (Cascading Style Sheets) declarations based on their property names, sorted CSS is smaller when compressed with gzip (GNU zip) because there will be more similar strings.',
       inputExample:
         'body {\n    animation: none;\n    color: #C55;\n    border: 0;\n}\n',
       outputExample:
@@ -30,7 +30,7 @@ export const editorialOptimisations =
       shortName: 'calc',
       shortDescription: 'Reduces CSS calc expressions',
       longDescription:
-        'Reduces CSS `calc` expressions wherever possible, ensuring both browser compatibility and compression.',
+        'Reduces CSS (Cascading Style Sheets) `calc` expressions wherever possible, ensuring both browser compatibility and compression.',
       inputExample: '.box {\n    width: calc(2 * 100px);\n}\n',
       outputExample: '.box {\n    width: 200px;\n}\n',
     },
@@ -39,7 +39,7 @@ export const editorialOptimisations =
       shortName: 'colormin',
       shortDescription: 'Minify colors in your CSS files with PostCSS.',
       longDescription:
-        'Converts between hex, hsl, rgb and CSS keywords, in order to produce the\nsmallest equivalent color value.\n',
+        'Converts between hexadecimal (hex), hue-saturation-lightness (hsl), red-green-blue (rgb) and CSS (Cascading Style Sheets) keywords, in order to produce the\nsmallest equivalent color value.\n',
       inputExample: '.box {\n    background: hsl(134, 50%, 50%);\n}\n',
       outputExample: '.box {\n    background: #40bf5e;\n}\n',
     },
@@ -100,7 +100,7 @@ export const editorialOptimisations =
       shortDescription: 'Discard unused counter styles, keyframes and fonts.',
       safe: 'Assumes concatenation & changes semantics',
       longDescription:
-        'Removes at-rules that do not have any bearing on the CSS file. This is unsafe\nif you have other stylesheets which pair up to these rules.\n',
+        'Removes at-rules that do not have any bearing on the CSS (Cascading Style Sheets) file. This is unsafe\nif you have other stylesheets which pair up to these rules.\n',
       inputExample:
         '@keyframes fadeOut {\n    from {\n        opacity: 1;\n    }\n    to {\n        opacity: 0;\n    }\n}\n',
       outputExample: '/* (removed) */',
@@ -185,7 +185,7 @@ export const editorialOptimisations =
       shortName: 'normalizeCharset',
       shortDescription: 'Add necessary or remove extra charset with PostCSS',
       longDescription:
-        'Ensures that only a single `@charset` is present in the CSS file, and moves it\nto the top of the document. This prevents multiple, invalid declarations\noccurring through naïve CSS concatenation. Note that *by default*, new\n`@charset` rules will not be added to the CSS.\n',
+        'Ensures that only a single `@charset` is present in the CSS (Cascading Style Sheets) file, and moves it\nto the top of the document. This prevents multiple, invalid declarations\noccurring through naïve CSS concatenation. Note that *by default*, new\n`@charset` rules will not be added to the CSS.\n',
       inputExample:
         '.box {\n    content: "©";\n}\n@charset "utf-8";\n@charset "utf-8";\n',
       outputExample: '@charset "utf-8";\n.box {\n    content: "©";\n}\n',
@@ -225,7 +225,7 @@ export const editorialOptimisations =
       shortName: 'normalizeString',
       shortDescription: 'Normalize wrapping quotes for CSS string literals.',
       longDescription:
-        "Standardises the usage of double (by default) or single quoted strings, for\nbetter gzip compression. Can also remove linebreaks which are inserted for\naesthetic purposes. If you prefer single quotes, you can set\n`preferredQuote: 'single'` instead.\n",
+        "Standardises the usage of double (by default) or single quoted strings, for\nbetter gzip (GNU zip) compression. Can also remove linebreaks which are inserted for\naesthetic purposes. If you prefer single quotes, you can set\n`preferredQuote: 'single'` instead.\n",
       inputExample:
         ".box {\n    quotes: '«' \"»\";\n    content: 'This is a string which is \\\nbroken over multiple lines.';\n}\n",
       outputExample:
@@ -257,7 +257,7 @@ export const editorialOptimisations =
       shortName: 'normalizeUrl',
       shortDescription: 'Normalize URLs with PostCSS',
       longDescription:
-        'Unquotes `url()` values and trims surrounding whitespace. The URL itself is left untouched.\n',
+        'Unquotes `url()` values and trims surrounding whitespace. The URL (Uniform Resource Locator) itself is left untouched.\n',
       inputExample: '.box {\n    background: url("./img/cat.jpg");\n}\n',
       outputExample: '.box {\n    background: url(./img/cat.jpg);\n}\n',
     },
@@ -289,7 +289,7 @@ export const editorialOptimisations =
       shortDescription: 'Reduce custom identifiers with PostCSS.',
       safe: 'Changes semantics',
       longDescription:
-        'Renames at-rules such as `@keyframes`. This can be potentially unsafe if other\nJS/CSS files need to read this definition.\n',
+        'Renames at-rules such as `@keyframes`. This can be potentially unsafe if other\nJavaScript (JS) and CSS (Cascading Style Sheets) files need to read this definition.\n',
       inputExample:
         '@keyframes fadeOut {\n    from {\n        opacity: 1;\n    }\n    to {\n        opacity: 0;\n    }\n}\n.box {\n    animation-name: fadeOut;\n}\n',
       outputExample:
@@ -301,7 +301,7 @@ export const editorialOptimisations =
       shortDescription:
         'Reduce initial definitions to the actual initial value, where possible.',
       longDescription:
-        'Replaces the CSS `initial` keyword with the *actual* value, when the\nresulting output is smaller\n',
+        'Replaces the CSS (Cascading Style Sheets) `initial` keyword with the *actual* value, when the\nresulting output is smaller\n',
       inputExample: '.box {\n    min-width: initial;\n}\n',
       outputExample: '.box {\n    min-width: 0;\n}\n',
     },

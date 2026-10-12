@@ -1,6 +1,7 @@
 ---
 id: presets
 title: Presets
+description: Choose the default, lite or advanced preset to control which optimisations cssnano runs.
 ---
 
 ## What are presets?

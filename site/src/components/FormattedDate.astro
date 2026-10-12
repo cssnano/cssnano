@@ -1,0 +1,10 @@
+---
+interface Props {
+  date: Date;
+}
+
+const { date } = Astro.props;
+// Dates are publication or update days, so they are formatted in UTC to match the stored value.
+const dateFormatter = new Intl.DateTimeFormat('en-IE', { dateStyle: 'long', timeZone: 'UTC' });
+---
+<time datetime={date.toISOString()}>{dateFormatter.format(date)}</time>
