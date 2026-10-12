@@ -1,5 +1,15 @@
 # Change Log
 
+## 9.1.0
+
+### Minor Changes
+
+- Always convert between `cm` and `mm`, and convert `q` to `cm` or `mm`, since metric units relate by exact decimal factors. `q` is never the output unit.
+
+### Patch Changes
+
+- Disabling the `time`, `angle` or `frequency` option no longer turns off exponent formatting, so `1e-6s` stays short instead of becoming `.000001s`. This matches the existing behavior for `length: false`.
+
 ## 9.0.9
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "postcss-normalize-url",
-  "version": "9.0.7",
+  "version": "10.0.0",
   "description": "Normalize URLs with PostCSS",
   "exports": {
     ".": {

@@ -1,5 +1,24 @@
 # Change Log
 
+## 9.8.0
+
+### Minor Changes
+
+- feat(postcss-normalize-url): stop rewriting URLs
+
+  The plugin only changes the `url()` token (unquoting, whitespace, escaping) and keeps the URL byte-identical. It no longer removes dot segments or duplicate slashes, decodes percent-escapes, removes default ports or strips the trailing dot of host names, because these are not equivalent for every server or bundler. It keeps whitespace inside a quoted `@namespace` URL as well, because the namespace name is an identifier compared character by character rather than a URL that gets fetched.
+
+- feat(cssnano-preset-default): remove postcss-svgo from the preset
+
+  The presets no longer run `postcss-svgo`; run it before cssnano or optimize SVG assets with the SVGO cli instead. A `svgo` option is now ignored. The output changes for CSS with inline SVG data URIs, and for CSS with URLs that `postcss-normalize-url` used to rewrite (see the `postcss-normalize-url` changeset).
+
+### Patch Changes
+
+- Always convert between `cm` and `mm`, and convert `q` to `cm` or `mm`, since metric units relate by exact decimal factors. `q` is never the output unit.
+
+- Updated dependencies:
+  - postcss-normalize-url@10.0.0
+
 ## 9.7.0
 
 ### Minor Changes
