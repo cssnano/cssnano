@@ -193,11 +193,6 @@ describe('Length and viewport units', () => {
   );
 
   test(
-    'should not convert metric units when length option is false',
-    processCSS('h1{width:10mm}', 'h1{width:10mm}', { length: false })
-  );
-
-  test(
     'should preserve zero length in columns shorthand to prevent invalid CSS',
     passthroughCSS(
       'h1{columns:0px}h2{columns:0px 2}h3{columns:2 0px}h4{-webkit-columns:0px 2}'

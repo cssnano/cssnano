@@ -21,6 +21,14 @@ const withBrowserslist = processCSSWithPresetFactory(
 
 describe('CSS processing', () => {
   test(
+    'should convert metric lengths to a shorter exact unit although px/in/pt/pc stay unconverted',
+    withDefaults.processCSS(
+      'a{margin:100mm -100mm;width:96px}',
+      'a{margin:10cm -10cm;width:96px}'
+    )
+  );
+
+  test(
     'should discard a declaration overridden in a later rule with the same selector',
     withDefaults.processCSS(
       'body{padding:50px}body{padding:0}',
