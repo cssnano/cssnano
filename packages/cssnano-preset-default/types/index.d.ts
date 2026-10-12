@@ -5,7 +5,10 @@ export type Options = {
     discardComments?: SimpleOptions<import('postcss-discard-comments').Options>;
     reduceInitial?: SimpleOptions<import('postcss-reduce-initial').Options>;
     minifyGradients?: SimpleOptions;
-    svgo?: SimpleOptions<import('postcss-svgo').Options>;
+    /**
+     * Ignored; run postcss-svgo before cssnano.
+     */
+    svgo?: false | Record<string, unknown>;
     reduceTransforms?: SimpleOptions;
     convertValues?: SimpleOptions<import('postcss-convert-values').Options>;
     calc?: SimpleOptions<import('postcss-calc').PostCssCalcOptions>;

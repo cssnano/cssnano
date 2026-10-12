@@ -236,6 +236,9 @@ importers:
       postcss-font-magician:
         specifier: ^4.0.0
         version: 4.0.0(postcss@8.5.29)
+      postcss-svgo:
+        specifier: workspace:^
+        version: link:../postcss-svgo
 
   packages/cssnano-preset-advanced:
     dependencies:
@@ -348,9 +351,6 @@ importers:
       postcss-reduce-transforms:
         specifier: workspace:^
         version: link:../postcss-reduce-transforms
-      postcss-svgo:
-        specifier: workspace:^
-        version: link:../postcss-svgo
       postcss-unique-selectors:
         specifier: workspace:^
         version: link:../postcss-unique-selectors

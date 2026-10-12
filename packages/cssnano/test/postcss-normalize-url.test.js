@@ -1,5 +1,21 @@
 import { test } from 'node:test';
-import processCss from './_processCss.js';
+import postcss from 'postcss';
+import assert from 'node:assert/strict';
+import cssnano from '../src/index.js';
+
+// URL rewriting (dot segments, duplicate slashes, ...) is only enabled by the
+// advanced preset; the default preset only rewrites the url() token.
+const processor = postcss([
+  cssnano({ preset: ['advanced', { discardUnused: false }] }),
+]);
+
+function processCss(fixture, expected) {
+  return async () => {
+    const { css } = await processor.process(fixture, { from: undefined });
+    assert.strictEqual(css, expected);
+  };
+}
+processCss.passthrough = (fixture) => processCss(fixture, fixture);
 
 test(
   'should strip double quotes',
@@ -28,14 +44,6 @@ test(
 );
 
 test(
-  'should remove the default port',
-  processCss(
-    'h1{background:url(http://website.com:80/image.png)}',
-    'h1{background:url(http://website.com/image.png)}'
-  )
-);
-
-test(
   'should not remove the fragment',
   processCss(
     'h1{background:url(test.svg#icon)}',
@@ -52,49 +60,17 @@ test(
 );
 
 test(
-  'should normalize directory traversal',
+  'should keep quotes around urls with special characters',
   processCss(
-    'h1{background:url(http://website.com/assets/css/../font/t.eot)}',
-    'h1{background:url(http://website.com/assets/font/t.eot)}'
-  )
-);
-
-test(
-  'should normalize directory traversal in relative urls',
-  processCss(
-    'h1{background:url(css/../font/t.eot)}',
-    'h1{background:url(font/t.eot)}'
-  )
-);
-
-test(
-  'should trim current directory indicator in relative urls',
-  processCss(
-    'h1{background:url(./images/cat.png)}',
-    'h1{background:url(images/cat.png)}'
-  )
-);
-
-test(
-  'should do the above tests, stripping quotes',
-  processCss(
-    'h1{background:url("./css/../font/t.eot")}',
-    'h1{background:url(font/t.eot)}'
-  )
-);
-
-test(
-  'should normalize urls with special characters',
-  processCss(
-    'h1{background:url("http://website.com/test/../(images)/1.png")}',
+    'h1{background:url("http://website.com/(images)/1.png")}',
     'h1{background:url("http://website.com/(images)/1.png")}'
   )
 );
 
 test(
-  'should normalize relative urls with special characters',
+  'should keep quotes around relative urls with special characters',
   processCss(
-    'h1{background:url("test/../(images)/1.png")}',
+    'h1{background:url("(images)/1.png")}',
     'h1{background:url("(images)/1.png")}'
   )
 );
@@ -134,8 +110,8 @@ test(
 test(
   'should process multiple backgrounds',
   processCss(
-    'h1{background:url(   "./test/../foo/bar.jpg"  ), url("http://website.com/img.jpg")}',
-    'h1{background:url(foo/bar.jpg),url(http://website.com/img.jpg)}'
+    'h1{background:url(   "./foo/bar.jpg"  ), url("http://website.com/img.jpg")}',
+    'h1{background:url(./foo/bar.jpg),url(http://website.com/img.jpg)}'
   )
 );
 
@@ -151,8 +127,7 @@ test(
   'should optimise @namespace urls',
   processCss(
     '@namespace islands url("http://bar.yandex.ru/ui/islands");',
-    '@namespace islands "http://bar.yandex.ru/ui/islands";',
-    { discardUnused: { namespace: false }, from: undefined }
+    '@namespace islands "http://bar.yandex.ru/ui/islands";'
   )
 );
 

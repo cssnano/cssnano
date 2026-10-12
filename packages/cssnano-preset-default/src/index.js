@@ -1,7 +1,6 @@
 import postcssDiscardComments from 'postcss-discard-comments';
 import postcssReduceInitial from 'postcss-reduce-initial';
 import postcssMinifyGradients from 'postcss-minify-gradients';
-import postcssSvgo from 'postcss-svgo';
 import postcssReduceTransforms from 'postcss-reduce-transforms';
 import postcssConvertValues from 'postcss-convert-values';
 import postcssCalc from 'postcss-calc';
@@ -38,7 +37,7 @@ const { rawCache } = cssnanoUtils;
  * @property {SimpleOptions<import('postcss-discard-comments').Options>} [discardComments]
  * @property {SimpleOptions<import('postcss-reduce-initial').Options>} [reduceInitial]
  * @property {SimpleOptions} [minifyGradients]
- * @property {SimpleOptions<import('postcss-svgo').Options>} [svgo]
+ * @property {false | Record<string, unknown>} [svgo] Ignored; run postcss-svgo before cssnano.
  * @property {SimpleOptions} [reduceTransforms]
  * @property {SimpleOptions<import('postcss-convert-values').Options>} [convertValues]
  * @property {SimpleOptions<import('postcss-calc').PostCssCalcOptions>} [calc]
@@ -119,13 +118,6 @@ function configurePlugins(plugins, opts = {}) {
       sort: true,
       ...sharedProps,
     },
-    svgo: {
-      plugins: [
-        {
-          name: 'preset-default',
-        },
-      ],
-    },
   };
 
   // Merge option properties for each plugin
@@ -155,7 +147,6 @@ function defaultPreset(opts = {}) {
         [postcssDiscardComments, 'discardComments'],
         [postcssMinifyGradients, 'minifyGradients'],
         [postcssReduceInitial, 'reduceInitial'],
-        [postcssSvgo, 'svgo'],
         [postcssNormalizeDisplayValues, 'normalizeDisplayValues'],
         [postcssReduceTransforms, 'reduceTransforms'],
         [postcssColormin, 'colormin'],

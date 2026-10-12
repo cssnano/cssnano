@@ -45,7 +45,6 @@
     "postcss-ordered-values": "workspace:^",
     "postcss-reduce-initial": "workspace:^",
     "postcss-reduce-transforms": "workspace:^",
-    "postcss-svgo": "workspace:^",
     "postcss-unique-selectors": "workspace:^"
   },
   "author": {
