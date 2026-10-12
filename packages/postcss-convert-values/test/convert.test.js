@@ -112,4 +112,16 @@ describe('Standalone convert() contracts', () => {
     assert.equal(dropLeadingZero(0.5), '.5');
     assert.equal(dropLeadingZero(-0.5), '-.5');
   });
+
+  test('should keep exponent notation for a time unit whose conversion is disabled', () => {
+    assert.equal(convert(1e-6, 's', { time: false }), '1e-6s');
+  });
+
+  test('should keep exponent notation for an angle unit whose conversion is disabled', () => {
+    assert.equal(convert(1e-6, 'deg', { angle: false }), '1e-6deg');
+  });
+
+  test('should keep exponent notation for a frequency unit whose conversion is disabled', () => {
+    assert.equal(convert(2e6, 'hz', { frequency: false }), '2e6hz');
+  });
 });
