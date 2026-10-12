@@ -181,6 +181,12 @@ cssnano-preset-advanced@9.6.0:
   intents:
     - calm-blocks-descend
     - quick-ranges-drop
+cssnano-preset-advanced@9.7.0:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - metric-units-in-preset
+    - plain-urls-wait
+    - quiet-svgo-leaves
 cssnano-preset-default@8.0.10:
   dir: packages/cssnano-preset-default
   intents:
@@ -386,6 +392,12 @@ cssnano-preset-default@9.7.0:
   intents:
     - calm-blocks-descend
     - quick-ranges-drop
+cssnano-preset-default@9.8.0:
+  dir: packages/cssnano-preset-default
+  intents:
+    - metric-units-in-preset
+    - plain-urls-wait
+    - quiet-svgo-leaves
 cssnano-preset-lite@5.0.2:
   dir: packages/cssnano-preset-lite
   intents:
@@ -734,6 +746,12 @@ cssnano@9.7.0:
   intents:
     - calm-blocks-descend
     - quick-ranges-drop
+cssnano@9.8.0:
+  dir: packages/cssnano
+  intents:
+    - metric-units-in-preset
+    - plain-urls-wait
+    - quiet-svgo-leaves
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
@@ -863,6 +881,11 @@ postcss-convert-values@9.0.9:
   dir: packages/postcss-convert-values
   intents:
     - lean-utils-exports
+postcss-convert-values@9.1.0:
+  dir: packages/postcss-convert-values
+  intents:
+    - disabled-units-keep-exponent
+    - metric-units-in-preset
 postcss-discard-comments@8.0.2:
   dir: packages/postcss-discard-comments
   intents:
@@ -1982,6 +2005,10 @@ postcss-normalize-unicode@9.1.1:
   dir: packages/postcss-normalize-unicode
   intents:
     - lean-utils-exports
+postcss-normalize-url@10.0.0:
+  dir: packages/postcss-normalize-url
+  intents:
+    - plain-urls-wait
 postcss-normalize-url@8.0.2:
   dir: packages/postcss-normalize-url
   intents:
@@ -2391,6 +2418,10 @@ postcss-svgo@9.0.6:
   intents:
     - lean-utils-exports
     - quiet-hex-digits
+postcss-svgo@9.1.0:
+  dir: packages/postcss-svgo
+  intents:
+    - svgo-reads-config
 postcss-unique-selectors@8.0.2:
   dir: packages/postcss-unique-selectors
   intents:
