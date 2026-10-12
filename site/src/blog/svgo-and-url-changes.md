@@ -1,5 +1,5 @@
 ---
-title: SVG and URL changes in cssnano 9
+title: SVG and URL changes in cssnano 9.8
 author: cssnano team
 excerpt: cssnano 9.8 no longer optimises inline SVG and rewrites URLs. Here's what's changed and how to update your build.
 publishedAt: 2026-10-12
