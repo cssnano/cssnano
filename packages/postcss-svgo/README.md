@@ -55,6 +55,34 @@ If `true`, it will encode URL-unsafe characters such as `<`, `>` and `&`;
 decode the original input. Note that regardless of this setting, `#` will
 always be URL-encoded.
 
+##### configFile
+
+Type: `string | boolean`
+Default: `undefined`
+
+Path to a svgo configuration file, relative to the `cwd` option, or `true` to
+find one the same way the SVGO CLI does: in `cwd` and then each parent
+directory. The `datauri` option in the file is ignored, because it only makes
+sense for the SVGO command line.
+
+The file is read the first time the plugin runs and reused by later runs of the
+same plugin instance. Reading a file is asynchronous, so when `configFile` is
+set, use the async PostCSS API (`process(css).then()` or `await`). The
+synchronous API throws.
+
+Inline options override the file's options key by key. Passing `js2svg` inline
+replaces the file's whole `js2svg` object, and an inline option set to
+`undefined` does not replace the file's setting.
+
+##### cwd
+
+Type: `string`
+Default: `process.cwd()`
+
+The directory that a relative `configFile` path is resolved against, and where
+`configFile: true` starts its search. It does not depend on the location of the
+CSS file.
+
 ##### plugins
 
 Optionally, you can customise the output by specifying the `plugins` option. You
