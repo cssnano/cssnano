@@ -18,8 +18,16 @@ describe('Optimise', () => {
   test(
     'should optimise @namespace urls',
     processCSS(
-      '@namespace islands url(" http://bar.yandex.ru/ui/islands");',
+      '@namespace islands url("http://bar.yandex.ru/ui/islands");',
       '@namespace islands "http://bar.yandex.ru/ui/islands";'
+    )
+  );
+
+  test(
+    'should keep whitespace inside a url() @namespace value, since namespace names are compared literally',
+    processCSS(
+      '@namespace islands url(" http://bar.yandex.ru/ui/islands");',
+      '@namespace islands " http://bar.yandex.ru/ui/islands";'
     )
   );
 
@@ -32,26 +40,20 @@ describe('Optimise', () => {
   );
 
   test(
-    'should optimise @namespace urls (3)',
-    processCSS(
-      '@namespace islands " http://bar.yandex.ru/ui/islands ";',
-      '@namespace islands "http://bar.yandex.ru/ui/islands";'
-    )
+    'should keep whitespace inside a @namespace string, since namespace names are compared literally',
+    passthroughCSS('@namespace islands " http://bar.yandex.ru/ui/islands ";')
   );
 
   test(
-    'should optimise @namespace urls (4)',
-    processCSS(
-      '@NAMESPACE islands " http://bar.yandex.ru/ui/islands ";',
-      '@NAMESPACE islands "http://bar.yandex.ru/ui/islands";'
-    )
+    'should keep whitespace inside a @NAMESPACE string, since namespace names are compared literally',
+    passthroughCSS('@NAMESPACE islands " http://bar.yandex.ru/ui/islands ";')
   );
 
   test(
-    'should preserve text following a @namespace url',
+    'should preserve text following a @namespace url and keep its whitespace',
     processCSS(
       '@namespace islands url("  http://bar.yandex.ru/ui/islands  ") tail;',
-      '@namespace islands "http://bar.yandex.ru/ui/islands" tail;'
+      '@namespace islands "  http://bar.yandex.ru/ui/islands  " tail;'
     )
   );
 
@@ -75,7 +77,7 @@ describe('Optimise', () => {
     'should optimise multiple @namespace urls without overlap',
     processCSS(
       '@namespace a url("  http://example.com/x  "), url("  http://example.com/y  ");',
-      '@namespace a "http://example.com/x", "http://example.com/y";'
+      '@namespace a "  http://example.com/x  ", "  http://example.com/y  ";'
     )
   );
 
@@ -225,14 +227,9 @@ describe('@import', () => {
   );
 
   test(
-    'should normalize relative path with dot segments in @import string',
-    processCSS('@import "sub/../main.css";', '@import "main.css";')
-  );
-
-  test(
-    'should normalize absolute URL and preserve trailing conditions in @import',
+    'should rewrite url() to a string and preserve trailing conditions in @import',
     processCSS(
-      '@import url("https://example.com:443/font.css") layer(base);',
+      '@import url("https://example.com/font.css") layer(base);',
       '@import "https://example.com/font.css" layer(base);'
     )
   );
@@ -263,7 +260,7 @@ describe('@import', () => {
   test(
     'should not transform conditions containing url() into string',
     processCSS(
-      '@import url("main.css") supports(background: url("sub/../bg.png"));',
+      '@import url("main.css") supports(background: url("bg.png"));',
       '@import "main.css" supports(background: url(bg.png));'
     )
   );
@@ -271,7 +268,7 @@ describe('@import', () => {
   test(
     'should normalize multiple url expressions across conditions in @import',
     processCSS(
-      '@import url("main.css") layer(layer1) supports(background: url("sub/../bg.png")) and supports(border-image: url("other/../icon.png"));',
+      '@import url("main.css") layer(layer1) supports(background: url("bg.png")) and supports(border-image: url("icon.png"));',
       '@import "main.css" layer(layer1) supports(background: url(bg.png)) and supports(border-image: url(icon.png));'
     )
   );
@@ -331,7 +328,7 @@ describe('@import', () => {
 test(
   'should normalize URLs nested within image-set()',
   processCSS(
-    'h1{background-image:image-set(url("sub/../cat.png") 1x, url("sub/../cat-2x.png") 2x)}',
+    'h1{background-image:image-set(url("cat.png") 1x, url("cat-2x.png") 2x)}',
     'h1{background-image:image-set(url(cat.png) 1x, url(cat-2x.png) 2x)}'
   )
 );
@@ -340,7 +337,7 @@ describe('@supports', () => {
   test(
     'should normalize url() inside @supports condition parameters',
     processCSS(
-      '@supports (background: url("sub/../bg.png")) { h1 { color: red; } }',
+      '@supports (background: url("bg.png")) { h1 { color: red; } }',
       '@supports (background: url(bg.png)) { h1 { color: red; } }'
     )
   );
@@ -348,7 +345,7 @@ describe('@supports', () => {
   test(
     'should normalize src() inside @supports condition parameters',
     processCSS(
-      '@supports (src: src("fonts/../font.woff2")) { h1 { color: blue; } }',
+      '@supports (src: src("font.woff2")) { h1 { color: blue; } }',
       '@supports (src: src("font.woff2")) { h1 { color: blue; } }'
     )
   );
@@ -360,7 +357,7 @@ describe('@supports', () => {
         { from: undefined }
       )
     ).root.first;
-    atRule.params = '(background: url("http://example.com/dir/../fresh.png"))';
+    atRule.params = '(background: url("http://example.com/fresh.png"))';
     atRule.raws = {
       params: {
         raw: '(background: url("http://stale.com/old.png"))',

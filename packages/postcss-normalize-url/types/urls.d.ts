@@ -1,9 +1,3 @@
-export declare const dataUrlRegex: RegExp;
-/**
- * @param {string} url
- * @return {string}
- */
-export declare function convert(url: string): string;
 /**
  * Escape characters for a CSS string token in the given quote context.
  * @param {string} value
@@ -13,7 +7,9 @@ export declare function convert(url: string): string;
 export declare function escapeForString(value: string, quote: string): string;
 /**
  * Normalize and format a url() or src() token value (unquoted or quoted).
- * Returns undefined when the URL is a data URL.
+ * Returns undefined when the URL is a data URL. It keeps the URL itself
+ * byte-identical, because dot segments, duplicate slashes, host name dots and
+ * percent-escapes are not guaranteed equivalent for every server or bundler.
  * @param {string} decoded
  * @param {string} quote
  * @param {string} name

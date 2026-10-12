@@ -24,12 +24,14 @@ h1 {
 
 ```css
 h1 {
-    background: url(http://site.com/image.jpg)
+    background: url(http://site.com:80/image.jpg)
 }
 ```
 
-Note that this module will also try to normalize relative URLs, and is capable
-of stripping unnecessary quotes. For more examples, see the [tests](test).
+This module strips unnecessary quotes and whitespace from `url()` tokens. It
+keeps the URL itself byte-identical: removing dot segments or duplicate slashes,
+decoding percent-escapes or stripping a host's trailing dot are not equivalences
+for every server. For more examples, see the [tests](test).
 
 ## Security
 

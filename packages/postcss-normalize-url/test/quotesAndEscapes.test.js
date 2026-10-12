@@ -1,5 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
+import postcss from 'postcss';
 import { processCSSFactory } from '../../../util/testHelpers.js';
 import plugin from '../src/index.js';
 
@@ -34,8 +35,8 @@ describe('Strip', () => {
   test(
     'should normalize empty and quoted URLs',
     processCSS(
-      'h1{background:url(   ),url(" ./images/../cat.png ")}',
-      'h1{background:url(),url(cat.png)}'
+      'h1{background:url(   ),url(" ./images/cat.png ")}',
+      'h1{background:url(),url(./images/cat.png)}'
     )
   );
 
@@ -340,4 +341,51 @@ test('should pass through unclosed url function before EOF', async () => {
     .default([plugin()])
     .process(root, { from: undefined });
   assert.strictEqual(decl.value, 'url("unclosed');
+});
+
+test(
+  'should keep the quotes of a url() string followed by modifiers, since unquoting would change the token',
+  passthroughCSS('h1{background:url("a.png" type("image/png"))}')
+);
+
+test(
+  'should keep single quotes around a src() string, since src() does not accept an unquoted url',
+  passthroughCSS("h1{background:src('a.png')}")
+);
+
+test(
+  'should trim whitespace inside src() parentheses around a string',
+  processCSS('h1{background:src(  "a.png"  )}', 'h1{background:src("a.png")}')
+);
+
+test(
+  'should trim an escaped tab around a quoted url',
+  processCSS(
+    String.raw`h1{background:url("\9 a.png\9 ")}`,
+    'h1{background:url(a.png)}'
+  )
+);
+
+test(
+  'should trim an escaped form feed around a quoted url',
+  processCSS(
+    String.raw`h1{background:url("\c a.png\c ")}`,
+    'h1{background:url(a.png)}'
+  )
+);
+
+test(
+  'should trim an escaped carriage return around a quoted url',
+  processCSS(
+    String.raw`h1{background:url("\d a.png\d ")}`,
+    'h1{background:url(a.png)}'
+  )
+);
+
+test('should pass through a lone quote in @namespace params, since it is too short to be a closed string', async () => {
+  const root = postcss.root({
+    nodes: [postcss.atRule({ name: 'namespace', params: '"' })],
+  });
+  await postcss([plugin()]).process(root, { from: undefined });
+  assert.strictEqual(root.first.params, '"');
 });

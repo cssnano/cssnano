@@ -1,25 +1,21 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from 'cssnano-utils';
-import {
-  convert,
-  dataUrlRegex,
-  escapeForString,
-  normalizeUrlTokenValue,
-} from './urls.js';
+import { escapeForString, normalizeUrlTokenValue } from './urls.js';
 
-/** @import {CSSToken, TokenString, TokenURL} from '@csstools/css-tokenizer' */
+/** @import {CSSToken, TokenString} from '@csstools/css-tokenizer' */
 
 const { applyEdits, asciiLowerCase } = cssnanoUtils;
 const URL_CANDIDATE_REGEX = /url|src|\\/iv;
 
 /**
+ * Whether a String token ends with its opening quote, not with an escaped one.
+ * The tokenizer only starts a String token at a quote.
  * @param {string} value
  * @return {boolean}
  */
 function isClosedString(value) {
   if (value.length < 2) return false;
   const quote = value[0];
-  if (quote !== '"' && quote !== "'") return false;
 
   let backslashes = 0;
   for (
@@ -85,41 +81,24 @@ function scanFunction(tokens, index, close) {
 }
 
 /**
- * Forward an unquoted URL token to callback.
- * @param {TokenURL} token
- * @param {(start: number, end: number, decoded: string, quote: string, name: string, isTarget?: boolean) => void} callback
- * @param {boolean} [isTarget]
- * @return {void}
- */
-function callbackUrlToken(token, callback, isTarget = false) {
-  callback(
-    token[2],
-    token[3] + 1,
-    token[4].value,
-    '',
-    token[1].slice(0, token[1].indexOf('(')),
-    isTarget
-  );
-}
-
-/**
  * Extracts the target of an import declaration,
- * returning the next token index and validity.
+ * returning the next token index and validity. The target is reported
+ * without a function name, so that it is written as a string.
  *
  * @param {CSSToken[]} tokens
  * @param {number} index
- * @param {(start: number, end: number, decoded: string, quote: string, name: string, isTarget?: boolean) => void} callback
+ * @param {(start: number, end: number, decoded: string, quote: string, name: string) => void} callback
  * @return {{ nextIndex: number, valid: boolean }}
  */
 function processImportTarget(tokens, index, callback) {
   const token = tokens[index];
   const type = token[0];
   if (type === TokenType.String && isClosedString(token[1])) {
-    callback(token[2], token[3] + 1, token[4].value, token[1][0], '', true);
+    callback(token[2], token[3] + 1, token[4].value, token[1][0], '');
     return { nextIndex: index, valid: true };
   }
   if (type === TokenType.URL) {
-    callbackUrlToken(/** @type {TokenURL} */ (token), callback, true);
+    callback(token[2], token[3] + 1, token[4].value, '', '');
     return { nextIndex: index, valid: true };
   }
   if (type === TokenType.Function && asciiLowerCase(token[4].value) === 'url') {
@@ -136,8 +115,7 @@ function processImportTarget(tokens, index, callback) {
           tokens[close][3] + 1,
           stringToken[4].value,
           stringToken[1][0],
-          token[1].slice(0, -1),
-          true
+          ''
         );
         return { nextIndex: close, valid: true };
       }
@@ -149,7 +127,7 @@ function processImportTarget(tokens, index, callback) {
 /**
  * @param {CSSToken[]} tokens
  * @param {number} index
- * @param {(start: number, end: number, decoded: string, quote: string, name: string, isTarget?: boolean) => void} callback
+ * @param {(start: number, end: number, decoded: string, quote: string, name: string) => void} callback
  * @return {number} close index or -1
  */
 function processFunctionToken(tokens, index, callback) {
@@ -187,7 +165,7 @@ function processFunctionToken(tokens, index, callback) {
 /**
  * Visit complete url() and src() ranges, top-level strings, or modifier string tokens.
  * @param {string} value
- * @param {(start: number, end: number, decoded: string, quote: string, name: string, isTarget?: boolean) => void} callback
+ * @param {(start: number, end: number, decoded: string, quote: string, name: string) => void} callback
  * @param {{ includeStrings?: boolean, isImport?: boolean }} [options]
  * @return {void}
  */
@@ -212,7 +190,13 @@ function forEachUrl(value, callback, options = {}) {
     }
 
     if (type === TokenType.URL) {
-      callbackUrlToken(/** @type {TokenURL} */ (token), callback);
+      callback(
+        token[2],
+        token[3] + 1,
+        token[4].value,
+        '',
+        token[1].slice(0, token[1].indexOf('('))
+      );
       continue;
     }
 
@@ -260,6 +244,37 @@ function updateNodeValue(node, prop, updater) {
 }
 
 /**
+ * @param {string} value
+ * @param {{ isImport?: boolean }} [options]
+ * @return {string | undefined}
+ */
+function normalizeUrls(value, options) {
+  /** @type {{start: number, end: number, text: string}[]} */
+  const edits = [];
+  forEachUrl(
+    value,
+    (start, end, decoded, quote, name) => {
+      const text = normalizeUrlTokenValue(decoded, quote, name);
+      if (text !== undefined && text !== value.slice(start, end)) {
+        edits.push({ start, end, text });
+      }
+    },
+    options
+  );
+  return edits.length > 0 ? applyEdits(value, edits) : undefined;
+}
+
+/**
+ * Normalize the first url or string import source in import at-rules (CSS Cascading 4 §2),
+ * and normalize any inner url() expressions inside conditions.
+ * @param {string} value
+ * @return {string | undefined}
+ */
+function normalizeImportUrls(value) {
+  return normalizeUrls(value, { isImport: true });
+}
+
+/**
  * @param {import('postcss').Declaration | import('postcss').AtRule} node
  * @param {'value' | 'params'} prop
  * @return {void}
@@ -269,18 +284,7 @@ function transformNodeUrls(node, prop) {
     /** @type {unknown} */ (node)
   )[prop];
   if (!URL_CANDIDATE_REGEX.test(current)) return;
-
-  updateNodeValue(node, prop, (value) => {
-    /** @type {{start: number, end: number, text: string}[]} */
-    const edits = [];
-    forEachUrl(value, (start, end, decoded, quote, name) => {
-      const text = normalizeUrlTokenValue(decoded, quote, name);
-      if (text !== undefined && text !== value.slice(start, end)) {
-        edits.push({ start, end, text });
-      }
-    });
-    return edits.length > 0 ? applyEdits(value, edits) : undefined;
-  });
+  updateNodeValue(node, prop, normalizeUrls);
 }
 
 /**
@@ -294,50 +298,15 @@ function transformNamespace(rule) {
     forEachUrl(
       value,
       (start, end, decoded, quote, name) => {
-        const trimmed = decoded.trim();
+        // A namespace name is compared literally, so its whitespace is kept.
         const text = name
-          ? `"${escapeForString(trimmed, '"')}"`
-          : `${quote}${escapeForString(trimmed, quote)}${quote}`;
+          ? `"${escapeForString(decoded, '"')}"`
+          : `${quote}${escapeForString(decoded, quote)}${quote}`;
         if (text !== value.slice(start, end)) {
           edits.push({ start, end, text });
         }
       },
       { includeStrings: true }
-    );
-    return edits.length > 0 ? applyEdits(value, edits) : undefined;
-  });
-}
-
-/**
- * Normalize the first url or string import source in import at-rules (CSS Cascading 4 §2),
- * and normalize any inner url() expressions inside conditions.
- * @param {import('postcss').AtRule} rule
- * @return {void}
- */
-function transformImport(rule) {
-  updateNodeValue(rule, 'params', (value) => {
-    /** @type {{start: number, end: number, text: string}[]} */
-    const edits = [];
-    forEachUrl(
-      value,
-      (start, end, decoded, quote, name, isTarget) => {
-        if (isTarget) {
-          const trimmed = decoded.trim();
-          if (!trimmed || dataUrlRegex.test(trimmed)) return;
-          const url = convert(trimmed);
-          const outputQuote = quote || '"';
-          const text = `${outputQuote}${escapeForString(url, outputQuote)}${outputQuote}`;
-          if (text !== value.slice(start, end)) {
-            edits.push({ start, end, text });
-          }
-        } else {
-          const text = normalizeUrlTokenValue(decoded, quote, name);
-          if (text !== undefined && text !== value.slice(start, end)) {
-            edits.push({ start, end, text });
-          }
-        }
-      },
-      { isImport: true }
     );
     return edits.length > 0 ? applyEdits(value, edits) : undefined;
   });
@@ -359,7 +328,7 @@ function pluginCreator() {
         } else if (node.type === 'atrule') {
           const name = asciiLowerCase(node.name);
           if (name === 'import') {
-            transformImport(node);
+            updateNodeValue(node, 'params', normalizeImportUrls);
           } else if (name === 'namespace') {
             transformNamespace(node);
           } else if (name === 'supports') {
