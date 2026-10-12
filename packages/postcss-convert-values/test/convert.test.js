@@ -60,7 +60,7 @@ describe('Standalone convert() contracts', () => {
   test('should convert metric units when shorter', () => {
     assert.equal(convert(10, 'mm', {}), '1cm');
     assert.equal(convert(1000, 'q', {}), '25cm');
-    assert.equal(convert(0.1, 'cm', {}), '4q');
+    assert.equal(convert(0.1, 'cm', {}), '1mm');
     assert.equal(convert(5, 'mm', {}), '5mm');
   });
 

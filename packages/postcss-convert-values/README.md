@@ -48,8 +48,9 @@ and absolute length values. For color conversions, use [postcss-colormin][colorm
 Type: `boolean`
 Default: `true`
 
-Pass `false` to disable conversion from `px` to other absolute length units,
-such as `pc` & `pt` & vice versa.
+Pass `false` to disable conversion among `px`, `pt`, `pc` & `in`.
+`cm` & `mm` always convert, and `q` is converted from but never to,
+because it has lower browser support than `cm` and `mm`.
 
 ##### time
 

@@ -1,10 +1,8 @@
 import cssnanoUtils from 'cssnano-utils';
 import convert, {
   formatNumber,
+  requiresZeroUnit,
   roundToPrecision,
-  timeConv,
-  angleConv,
-  freqConv,
 } from './convert.js';
 import { numericSource } from './numericSource.js';
 
@@ -48,13 +46,6 @@ const functionsPreservingZeroUnits = new Set([
   'palette-mix',
 ]);
 
-const convertibleUnits = new Set([
-  ...timeConv.keys(),
-  ...angleConv.keys(),
-  ...freqConv.keys(),
-  'rad',
-]);
-
 /** @typedef {Parameters<typeof convert>[2]} ConvertOptions */
 /** @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions & { overrideBrowserslist?: string | string[] } & import('browserslist').Options} Options */
 /** @typedef {{keepZeroPercent: boolean, keepZeroLength: boolean, clampAlpha: boolean, isAlpha: boolean, isFont: boolean}} ReplacementFlags */
@@ -74,7 +65,7 @@ function formatZero(
   keepZeroPercent,
   keepZeroLength
 ) {
-  if (convertibleUnits.has(lowerCasedUnit)) {
+  if (requiresZeroUnit(lowerCasedUnit)) {
     return convert(0, unit, opts);
   }
   if (unit === '%') {
@@ -102,7 +93,7 @@ function parseNumber(
     unit !== '' &&
     unit !== '%' &&
     !lengthUnits.has(lowerCasedUnit) &&
-    !convertibleUnits.has(lowerCasedUnit)
+    !requiresZeroUnit(lowerCasedUnit)
   )
     return raw;
   let num = number;
@@ -125,9 +116,12 @@ function parseNumber(
   // An exponent is never a valid <integer>, so a bare number written as an
   // integer may sit where only <integer> is allowed. Dimensions and numbers
   // already written as non-integers cannot.
-  const writtenAsInteger =
-    unit === '' && !raw.includes('.') && !raw.toLowerCase().includes('e');
-  return convert(num, unit, opts, !writtenAsInteger);
+  if (unit === '') {
+    const writtenAsInteger =
+      !raw.includes('.') && !raw.toLowerCase().includes('e');
+    return formatNumber(num, !writtenAsInteger);
+  }
+  return convert(num, unit, opts);
 }
 
 /** @param {string} value @param {number} number @param {string} unit @param {Options} opts @param {boolean} [clamp] @return {string} */
@@ -289,7 +283,7 @@ function processNumericToken(source, isLineHeight, frames, opts, flags) {
       )
     : converted;
   const isConvertibleZero =
-    source.number === 0 && convertibleUnits.has(source.unit.toLowerCase());
+    source.number === 0 && requiresZeroUnit(source.unit.toLowerCase());
 
   if (shouldReplace(replacement, source.raw, isAlpha, isConvertibleZero)) {
     return {

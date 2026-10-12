@@ -1,13 +1,33 @@
-export declare const timeConv: Map<string, number>;
-export declare const angleConv: Map<string, number>;
-export declare const freqConv: Map<string, number>;
+/**
+ * @typedef {'length' | 'time' | 'angle' | 'frequency'} ConvertOption
+ * @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean}} ConvertOptions
+ * @typedef {{
+ *   option?: ConvertOption,
+ *   factors: Map<string, number>,
+ *   sourceOnly?: Set<string>,
+ *   zeroOnly?: Map<string, string>,
+ *   requiresZeroUnit?: boolean
+ * }} UnitGroup
+ */
+export type ConvertOption = 'length' | 'time' | 'angle' | 'frequency';
 export type ConvertOptions = {
     time?: boolean;
     length?: boolean;
     angle?: boolean;
     frequency?: boolean;
 };
-/** @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean}} ConvertOptions */
+export type UnitGroup = {
+    option?: ConvertOption;
+    factors: Map<string, number>;
+    sourceOnly?: Set<string>;
+    zeroOnly?: Map<string, string>;
+    requiresZeroUnit?: boolean;
+};
+/**
+ * @param {string} lowerCaseUnit
+ * @return {boolean}
+ */
+export declare function requiresZeroUnit(lowerCaseUnit: string): boolean;
 /**
  * Accurately round a number to a fixed decimal precision without IEEE-754 binary
  * floating point multiplication errors.
@@ -41,9 +61,8 @@ export declare function formatNumber(number: number, allowExponent?: boolean): s
  * @param {number} number
  * @param {string} unit
  * @param {ConvertOptions} [options]
- * @param {boolean} [allowExponent=true] false where only an `<integer>` is valid
  * @return {string}
  */
-declare const convert: (number: number, unit: string, options?: ConvertOptions, allowExponent?: boolean) => string;
+declare const convert: (number: number, unit: string, options?: ConvertOptions) => string;
 export default convert;
 //# sourceMappingURL=convert.d.ts.map

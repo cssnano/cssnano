@@ -1,33 +1,95 @@
-const lengthConv = new Map([
-  ['in', 288],
-  ['px', 3],
-  ['pt', 4],
-  ['pc', 48],
-]);
+/**
+ * @typedef {'length' | 'time' | 'angle' | 'frequency'} ConvertOption
+ * @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean}} ConvertOptions
+ * @typedef {{
+ *   option?: ConvertOption,
+ *   factors: Map<string, number>,
+ *   sourceOnly?: Set<string>,
+ *   zeroOnly?: Map<string, string>,
+ *   requiresZeroUnit?: boolean
+ * }} UnitGroup
+ */
 
-const metricConv = new Map([
-  ['cm', 40],
-  ['mm', 4],
-  ['q', 1],
-]);
+/**
+ * Each group converts only among its own units. `option` is the ConvertOptions
+ * key that disables the group; a group without one always converts. Metric
+ * units relate by exact decimal factors, so `length: false` leaves them
+ * converting. `q` is newer than the CSS 1 lengths and is never a target.
+ * `requiresZeroUnit` marks types where a unitless 0 is invalid.
+ *
+ * @type {UnitGroup[]}
+ */
+const unitGroups = [
+  {
+    option: 'length',
+    factors: new Map([
+      ['in', 288],
+      ['px', 3],
+      ['pt', 4],
+      ['pc', 48],
+    ]),
+  },
+  {
+    factors: new Map([
+      ['cm', 40],
+      ['mm', 4],
+      ['q', 1],
+    ]),
+    sourceOnly: new Set(['q']),
+  },
+  {
+    option: 'time',
+    factors: new Map([
+      ['s', 1000],
+      ['ms', 1],
+    ]),
+    requiresZeroUnit: true,
+  },
+  {
+    option: 'angle',
+    factors: new Map([
+      ['deg', 10],
+      ['turn', 3600],
+      ['grad', 9],
+    ]),
+    // `rad` converts only at zero, since no exact decimal factor exists.
+    zeroOnly: new Map([['rad', '0deg']]),
+    requiresZeroUnit: true,
+  },
+  {
+    option: 'frequency',
+    factors: new Map([
+      ['khz', 1000],
+      ['hz', 1],
+    ]),
+    requiresZeroUnit: true,
+  },
+];
 
-export const timeConv = new Map([
-  ['s', 1000],
-  ['ms', 1],
-]);
+// A unit in two groups would have two conversion tables, so building the map throws instead.
+/** @type {Map<string, UnitGroup>} */
+const unitGroupByUnit = new Map();
+for (const group of unitGroups) {
+  for (const unit of [
+    ...group.factors.keys(),
+    ...(group.zeroOnly?.keys() ?? []),
+  ]) {
+    if (unitGroupByUnit.has(unit)) {
+      throw new Error(
+        `Unit "${unit}" belongs to more than one conversion group`
+      );
+    }
+    unitGroupByUnit.set(unit, group);
+  }
+}
 
-export const angleConv = new Map([
-  ['deg', 10],
-  ['turn', 3600],
-  ['grad', 9],
-]);
-
-export const freqConv = new Map([
-  ['khz', 1000],
-  ['hz', 1],
-]);
-
-/** @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean}} ConvertOptions */
+/**
+ * @param {string} lowerCaseUnit
+ * @return {boolean}
+ */
+export function requiresZeroUnit(lowerCaseUnit) {
+  return unitGroupByUnit.get(lowerCaseUnit)?.requiresZeroUnit === true;
+}
 
 /**
  * Accurately round a number to a fixed decimal precision without IEEE-754 binary
@@ -145,25 +207,19 @@ export function formatNumber(number, allowExponent = true) {
 /**
  * @param {number} number
  * @param {string} originalUnit
- * @param {typeof lengthConv | typeof timeConv | typeof angleConv | typeof freqConv | typeof metricConv} conversions
- * @param {boolean} [allowExponent=true]
+ * @param {UnitGroup} group
  * @return {string}
  */
-function findShortestConversion(
-  number,
-  originalUnit,
-  conversions,
-  allowExponent = true
-) {
-  const base = number * /** @type {number} */ (conversions.get(originalUnit));
+function findShortestConversion(number, originalUnit, group) {
+  const base = number * /** @type {number} */ (group.factors.get(originalUnit));
 
   let shortest = '';
-  for (const [u, factor] of conversions) {
-    if (u === originalUnit) {
+  for (const [u, factor] of group.factors) {
+    if (u === originalUnit || group.sourceOnly?.has(u)) {
       continue;
     }
     const convertedNumber = Number((base / factor).toPrecision(15));
-    const value = formatNumber(convertedNumber, allowExponent) + u;
+    const value = formatNumber(convertedNumber) + u;
 
     if (!shortest || value.length < shortest.length) {
       shortest = value;
@@ -174,92 +230,22 @@ function findShortestConversion(
 }
 
 /**
- * @param {number} number
- * @param {string} unit
- * @return {string | undefined}
- */
-function convertAngle(number, unit) {
-  if (unit === 'rad') {
-    return number === 0 ? '0deg' : undefined;
-  }
-  if (angleConv.has(unit)) {
-    return findShortestConversion(number, unit, angleConv);
-  }
-  return undefined;
-}
-
-/**
- * @param {string} unit
- * @param {ConvertOptions} options
- * @return {boolean}
- */
-function isConversionDisabled(unit, options) {
-  const { time, length, angle, frequency } = options;
-  if (length === false && (lengthConv.has(unit) || metricConv.has(unit))) {
-    return true;
-  }
-  if (time === false && timeConv.has(unit)) {
-    return true;
-  }
-  if (angle === false && (angleConv.has(unit) || unit === 'rad')) {
-    return true;
-  }
-  if (frequency === false && freqConv.has(unit)) {
-    return true;
-  }
-  return false;
-}
-
-/**
+ * Called only for units whose conversion is enabled by the options.
+ *
  * @param {number} number
  * @param {string} lowerCaseUnit
- * @param {ConvertOptions} options
- * @param {boolean} allowExponent
+ * @param {UnitGroup | undefined} group
  * @return {string | undefined}
  */
-function findConverted(number, lowerCaseUnit, options, allowExponent) {
-  const { time, length, angle, frequency } = options;
-  if (length !== false) {
-    if (lengthConv.has(lowerCaseUnit)) {
-      return findShortestConversion(
-        number,
-        lowerCaseUnit,
-        lengthConv,
-        allowExponent
-      );
-    }
-    if (metricConv.has(lowerCaseUnit)) {
-      return findShortestConversion(
-        number,
-        lowerCaseUnit,
-        metricConv,
-        allowExponent
-      );
-    }
+function findConverted(number, lowerCaseUnit, group) {
+  if (!group) {
+    return undefined;
   }
-  if (time !== false && timeConv.has(lowerCaseUnit)) {
-    return findShortestConversion(
-      number,
-      lowerCaseUnit,
-      timeConv,
-      allowExponent
-    );
+  const zeroText = group.zeroOnly?.get(lowerCaseUnit);
+  if (zeroText !== undefined) {
+    return number === 0 ? zeroText : undefined;
   }
-  if (angle !== false) {
-    const convertedAngle = convertAngle(number, lowerCaseUnit);
-    if (convertedAngle) {
-      return convertedAngle;
-    }
-  }
-  if (frequency !== false && freqConv.has(lowerCaseUnit)) {
-    return findShortestConversion(
-      number,
-      lowerCaseUnit,
-      freqConv,
-      allowExponent
-    );
-  }
-  return undefined;
+  return findShortestConversion(number, lowerCaseUnit, group);
 }
 
 /**
@@ -288,31 +274,24 @@ function shouldUseConverted(converted, value, decimalValue, lowerCaseUnit) {
  * @param {number} number
  * @param {string} unit
  * @param {ConvertOptions} [options]
- * @param {boolean} [allowExponent=true] false where only an `<integer>` is valid
  * @return {string}
  */
-const convert = function (number, unit, options = {}, allowExponent = true) {
+const convert = function (number, unit, options = {}) {
   const lowerCaseUnit = unit.toLowerCase();
-  if (isConversionDisabled(lowerCaseUnit, options)) {
+  const group = unitGroupByUnit.get(lowerCaseUnit);
+  if (group?.option !== undefined && options[group.option] === false) {
     // Disabling unit conversion must not disable number formatting of
     // <length> dimensions such as 1e-6px.
-    const isLength =
-      lengthConv.has(lowerCaseUnit) || metricConv.has(lowerCaseUnit);
     return (
-      (isLength
-        ? formatNumber(number, allowExponent)
+      (group.option === 'length'
+        ? formatNumber(number)
         : dropLeadingZero(number)) + (unit ? unit : '')
     );
   }
 
-  const converted = findConverted(
-    number,
-    lowerCaseUnit,
-    options,
-    allowExponent
-  );
+  const converted = findConverted(number, lowerCaseUnit, group);
   const decimalValue = dropLeadingZero(number) + (unit ? unit : '');
-  const value = formatNumber(number, allowExponent) + (unit ? unit : '');
+  const value = formatNumber(number) + (unit ? unit : '');
 
   if (
     converted &&
