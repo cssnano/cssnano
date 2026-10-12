@@ -6,30 +6,6 @@ const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 describe('Remove', () => {
   test(
-    'should remove the default port',
-    processCSS(
-      'h1{background:url(http://website.com:80/image.png)}',
-      'h1{background:url(http://website.com/image.png)}'
-    )
-  );
-
-  test(
-    'should remove the HTTPS default port',
-    processCSS(
-      'h1{background:url(https://website.com:443/image.png)}',
-      'h1{background:url(https://website.com/image.png)}'
-    )
-  );
-
-  test(
-    'should remove default port on IPv6 URLs and preserve non-default port',
-    processCSS(
-      'h1{background:url(http://[::1]:80/image.png)}h2{background:url(https://[::1]:443/image.png)}h3{background:url(http://[::1]:8080/image.png)}',
-      'h1{background:url(http://[::1]/image.png)}h2{background:url(https://[::1]/image.png)}h3{background:url(http://[::1]:8080/image.png)}'
-    )
-  );
-
-  test(
     'should not remove the fragment',
     passthroughCSS('h1{background:url(test.svg#icon)}')
   );
@@ -144,22 +120,6 @@ test(
 test(
   'should normalize file URLs without mangling root',
   processCSS('h1{background:url("file:///")}', 'h1{background:url(file:///)}')
-);
-
-test(
-  'should normalize relative paths in file URLs',
-  processCSS(
-    'h1{background:url("file:///foo/../bar.png")}',
-    'h1{background:url(file:///bar.png)}'
-  )
-);
-
-test(
-  'should strip trailing dot from hostname in absolute URLs',
-  processCSS(
-    'h1{background:url("http://example.com./foo.png")}',
-    'h1{background:url(http://example.com/foo.png)}'
-  )
 );
 
 test(

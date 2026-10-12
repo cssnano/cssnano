@@ -1,4 +1,5 @@
 import postcss from 'postcss';
+import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import plugin from '../../src/index.js';
 
 const processor = postcss([plugin()]);
@@ -44,55 +45,12 @@ function checkIdempotence(css, branch, output) {
 }
 
 /**
- * @param {string} branch
- * @param {string} css
- * @param {string} output
- * @return {FuzzFailure | undefined}
- */
-function checkColonRetention(branch, css, output) {
-  if (branch !== 'relative-path') return undefined;
-  const inMatch = css.match(URL_PATTERN);
-  const outMatch = output.match(URL_PATTERN);
-  if (!inMatch || !outMatch) return undefined;
-
-  const inUrl = inMatch[2];
-  const outUrl = outMatch[2];
-  const inDelimiter = inUrl.search(/[?#]/v);
-  const inPath = inDelimiter === -1 ? inUrl : inUrl.slice(0, inDelimiter);
-  if (
-    !inPath.startsWith('./') &&
-    !inPath.startsWith('../') &&
-    !inPath.includes('/../')
-  ) {
-    return undefined;
-  }
-  const outDelimiter = outUrl.search(/[?#]/v);
-  const outPath = outDelimiter === -1 ? outUrl : outUrl.slice(0, outDelimiter);
-  const firstSegment = outPath.split('/')[0];
-  if (
-    !outPath.startsWith('/') &&
-    !outPath.startsWith('../') &&
-    /^[a-zA-Z][a-zA-Z\d+\-.]*?:/v.test(firstSegment) &&
-    !outPath.startsWith('./')
-  ) {
-    return {
-      type: 'domain-invariant',
-      css,
-      branch,
-      output,
-      message: `Relative URL "${outUrl}" first segment contains a colon but lacks leading "./"`,
-    };
-  }
-  return undefined;
-}
-
-/**
  * Check invariants for one fuzz test case.
  * @param {import('./fuzzGenerate.js').FuzzCase} testCase
  * @return {FuzzFailure | undefined}
  */
 export function check(testCase) {
-  const { css, branch, isPassthrough, hasDrive } = testCase;
+  const { css, branch, isPassthrough } = testCase;
   let output;
 
   try {
@@ -134,19 +92,18 @@ export function check(testCase) {
     };
   }
 
-  // 4. Windows drive retention
-  if (hasDrive) {
-    const lowerOutput = output.toLowerCase();
-    const drivePrefix = `${hasDrive}/`;
-    if (!lowerOutput.includes(drivePrefix)) {
-      return {
-        type: 'domain-invariant',
-        css,
-        branch,
-        output,
-        message: `Windows drive letter ${hasDrive} was lost in output`,
-      };
-    }
+  // 4. Decoded url() and string values must be byte-identical. This keeps
+  // Windows drive letters, dot segments and non-empty URLs as written.
+  const inputValues = decodedUrlValues(css);
+  const outputValues = decodedUrlValues(output);
+  if (!sameValues(inputValues, outputValues)) {
+    return {
+      type: 'domain-invariant',
+      css,
+      branch,
+      output,
+      message: `Decoded URL values changed from ${JSON.stringify(inputValues)} to ${JSON.stringify(outputValues)}`,
+    };
   }
 
   // 5. Non-printable control characters in URLs must retain or receive quotes
@@ -163,29 +120,38 @@ export function check(testCase) {
     }
   }
 
-  // 6. Dot segments must not collapse to empty url() unless input was empty url()
-  if (!css.includes('url()') && output.includes('url()')) {
-    return {
-      type: 'domain-invariant',
-      css,
-      branch,
-      output,
-      message: 'Non-empty URL was collapsed to empty url()',
-    };
-  }
-
-  // 7. Relative URLs whose first segment contains a colon must retain or prepend ./ (RFC 3986 §4.2)
-  const colonFailure = checkColonRetention(branch, css, output);
-  if (colonFailure) return colonFailure;
-
-  // 8. Semantic validation against WHATWG reference resolver
+  // 6. Semantic validation against WHATWG reference resolver
   return checkReferenceResolver(branch, css, output);
 }
 
+const CSS_WHITESPACE_AT_ENDS = /^[ \t\n\r\f]+|[ \t\n\r\f]+$/gv;
+
+/**
+ * Decoded values of every url token and string token. The CSS whitespace at
+ * their ends is dropped, since the plugin may trim it.
+ * @param {string} css
+ * @return {string[]}
+ */
+function decodedUrlValues(css) {
+  const values = [];
+  for (const token of tokenize({ css })) {
+    if (token[0] === TokenType.URL || token[0] === TokenType.String) {
+      values.push(token[4].value.replace(CSS_WHITESPACE_AT_ENDS, ''));
+    }
+  }
+  return values;
+}
+
+/**
+ * @param {string[]} a
+ * @param {string[]} b
+ * @return {boolean}
+ */
+function sameValues(a, b) {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
 const URL_PATTERN = /url\((["']?)([\s\S]*?)\1\)/v;
-const DUPLICATE_SLASH_NORM_REGEX = /([^:])\/{2,}/gv;
-const UNRESERVED_NORM_REGEX =
-  /%(?:2[dD]|3[0-9]|[46][1-9a-fA-F]|[57][0-9aA]|5[fF]|7[eE])/gv;
 const REFERENCE_BASE = 'http://localhost/d0/d1/d2/d3/d4/d5/d6/d7/d8/d9/';
 
 /**
@@ -209,14 +175,8 @@ function checkReferenceResolver(branch, css, output) {
   const inUrl = inMatch[2];
   const outUrl = outMatch[2];
   try {
-    const inNorm = inUrl
-      .replace(DUPLICATE_SLASH_NORM_REGEX, '$1/')
-      .replace(UNRESERVED_NORM_REGEX, decodeURIComponent);
-    const outNorm = outUrl
-      .replace(DUPLICATE_SLASH_NORM_REGEX, '$1/')
-      .replace(UNRESERVED_NORM_REGEX, decodeURIComponent);
-    const inResolved = new URL(inNorm, REFERENCE_BASE).href;
-    const outResolved = new URL(outNorm, REFERENCE_BASE).href;
+    const inResolved = new URL(inUrl, REFERENCE_BASE).href;
+    const outResolved = new URL(outUrl, REFERENCE_BASE).href;
     if (inResolved !== outResolved) {
       return {
         type: 'domain-invariant',

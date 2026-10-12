@@ -65,8 +65,7 @@ const PASSTHROUGH_DECLS = [
  *   css: string,
  *   branch: string,
  *   isPassthrough?: boolean,
- *   hasDrive?: string,
- *   hasNonPrintable?: boolean
+ *   hasNonPrintableQuotes?: boolean
  * }} FuzzCase
  */
 
@@ -118,7 +117,6 @@ function generateWindowsPathCase(rng, quote) {
   }
   return {
     branch: 'windows-path',
-    hasDrive: drive.toLowerCase(),
     css: `h1{background:url(${quote}${path}${quote})}`,
   };
 }
