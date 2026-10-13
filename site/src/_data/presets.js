@@ -24,7 +24,7 @@ const presets = /** @satisfies {Preset[]} */ ([
     packageName: 'cssnano-preset-advanced',
     label: 'Preset Advanced',
     description:
-      'adds more aggressive optimisations that assume your CSS follows common conventions.',
+      'adds optimisations that might change the way a website renders, unless the CSS follows common conventions.',
   },
 ]);
 

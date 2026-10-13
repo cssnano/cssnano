@@ -22,11 +22,11 @@ import { page } from '../../_data/navigation.js';
     </div>
     <p id="presetDescription" class="preset-description">
       {presets.map((preset, index) => (<>{index > 0 && ' '}<strong>{preset.label}</strong> {preset.description}</>))}
-      <a href={page('docs/presets/')}>Read about presets</a>.
+      <a href={page('docs/presets/')}> Read about presets</a>.
     </p>
     <div id="editors" class="grid editors">
       <div class="editor">
-        <label class="editor-label" for="input">Write or paste your CSS (Cascading Style Sheets) below</label>
+        <label class="editor-label" for="input">Write or paste your CSS (Cascading Style Sheet) below</label>
         <textarea id="input" class="editor-textarea" spellcheck="false"></textarea>
       </div>
       <div class="editor">
