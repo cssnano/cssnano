@@ -23,7 +23,7 @@ This command starts a local development server and opens a browser window. Most 
 $ pnpm build
 ```
 
-This command generates static content into `_astro-site/` and can be served using any static content hosting service.
+This command generates static content into `dist/` and can be served using any static content hosting service.
 
 ### Check
 
