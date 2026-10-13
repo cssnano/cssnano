@@ -6,13 +6,14 @@ publishedAt: 2026-10-12
 slug: svgo-and-url-changes
 ---
 
-cssnano 9 changes how it handles SVG (Scalable Vector Graphics) and URLs (Uniform Resource Locators). Rendered output stays the same for valid CSS (Cascading Style Sheets), but the minified text for inline SVG and URLs can differ, because cssnano no longer rewrites them.
+cssnano 9.8 changes how it handles [SVG (Scalable Vector Graphics)](https://developer.mozilla.org/en-US/docs/Web/SVG) and URLs (Uniform Resource Locators). Rendered output stays the same for valid CSS (Cascading Style Sheets), but the minified text for inline SVG and URLs can differ.
 
 The URL change makes URL handling more conservative, so cssnano doesn't alter how web servers and bundlers interpret your URLs.
 
 ## SVG optimisation is no longer in the default preset
 
-The SVG optimiser pulls in large dependencies that the rest of cssnano doesn't need. Its benefit can also be small: in our tests on the repository's CSS fixtures, it sometimes saved no bytes at all.
+In previous releases, cssnano used by default the [SVGO](https://svgo.dev/) optimiser to minimise SVG images inserted in the stylesheet through so-called data URLs.
+The SVGO optimiser pulls in large dependencies that the rest of cssnano doesn't need, but its benefit can be small: in our tests on the repository's CSS fixtures, it sometimes saved no bytes at all, even on stylesheets containing inline SVG images.
 
 cssnano-preset-default no longer includes SVG optimisation, and it ignores the `svgo` option whatever value you pass. Remove the option:
 
@@ -26,7 +27,7 @@ module.exports = {
 };
 ```
 
-To keep optimising SVG data URIs (Uniform Resource Identifiers) in your CSS, install `postcss-svgo` and run it before cssnano. With `configFile: true`, it finds an [SVGO (SVG Optimizer)](https://svgo.dev/) config file the same way the SVGO command-line interface (CLI) does. Options passed to the plugin override the file's top-level options.
+To keep optimising SVG data URIs (Uniform Resource Identifiers) in your CSS, install `postcss-svgo` and run it before cssnano. With `configFile: true`, it looks for an [SVGO config file](https://github.com/svg/svgo) the same way the SVGO command-line interface (CLI) does. Options passed to the plugin override the file's top-level options.
 
 ```sh
 npm install -D postcss-svgo
@@ -57,7 +58,7 @@ It no longer changes how a URL resolves, to avoid breaking the URLs in the style
 
 On some servers and bundlers, these changes can point to a different resource, so cssnano leaves them alone.
 
-cssnano also keeps whitespace inside an `@namespace` string, because a namespace URI matches only its exact string.
+cssnano also keeps whitespace inside [a `@namespace` string](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@namespace), because a namespace URI matches only its exact string.
 
 ## Check your URLs after upgrading
 
