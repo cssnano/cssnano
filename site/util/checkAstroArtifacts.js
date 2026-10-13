@@ -7,7 +7,7 @@ const siteDirectory = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..'
 );
-const outputDirectory = path.join(siteDirectory, '_astro-site');
+const outputDirectory = path.join(siteDirectory, 'dist');
 const assetDirectory = path.join(outputDirectory, '_astro');
 
 async function findHtmlFiles(directory) {
