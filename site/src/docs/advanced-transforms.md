@@ -42,14 +42,8 @@ may set `z-index` values that must stack against the rewritten ones.
 
 ## Using advanced transforms
 
-Advanced transforms are not bundled with cssnano by default, so you'll need
-to install the preset alongside cssnano:
-
-```shell
-npm install cssnano-preset-advanced --save-dev
-```
-
-You can then load it using any of the techniques mentioned in
+Advanced transforms are not applied by default. The `advanced` preset is built
+into cssnano, so you can load it using any of the techniques mentioned in
 [our presets guide](../presets/). For example, using `cssnano.config.js`:
 
 ```js

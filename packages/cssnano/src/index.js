@@ -2,9 +2,33 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 import postcss from 'postcss';
-import defaultPreset from 'cssnano-preset-default';
+import defaultPreset from '#presets/default';
+import litePreset from '#presets/lite';
 
 const require = createRequire(import.meta.url);
+
+/**
+ * Built-in presets, used when no installed package matches the name. The
+ * advanced preset loads on first use, so the default path stays small.
+ *
+ * @param {unknown} name
+ * @param {any} options
+ * @returns {PresetPlugin[] | undefined}
+ */
+function builtInPresetPlugins(name, options) {
+  switch (name) {
+    case 'cssnano-preset-default':
+      return defaultPreset(options).plugins;
+    case 'cssnano-preset-lite':
+    case 'lite':
+      return litePreset(options).plugins;
+    case 'cssnano-preset-advanced':
+    case 'advanced':
+      return require('#presets/advanced')(options).plugins;
+    default:
+      return undefined;
+  }
+}
 
 const configFileNames = ['.cssnanorc.json', 'cssnano.config.js'];
 
@@ -76,6 +100,12 @@ function resolvePreset(preset) {
     if (isResolvable(sugar)) {
       return require(sugar)(options).plugins;
     }
+  }
+
+  // An installed preset wins above; the built-in only fills in when none exists.
+  const builtIn = builtInPresetPlugins(fn, options);
+  if (builtIn) {
+    return builtIn;
   }
 
   // If all else fails, we probably have a typo in the config somewhere

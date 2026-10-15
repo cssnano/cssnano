@@ -4,7 +4,9 @@ import postcss from 'postcss';
 const require = createRequire(import.meta.url);
 
 function pluginProcessor(packageName, options) {
-  const plugin = require(`../../packages/${packageName}/src/index.js`);
+  const plugin = require(
+    `../../packages/cssnano/src/plugins/${packageName}/index.js`
+  );
   return postcss([options === undefined ? plugin : plugin(options)]);
 }
 

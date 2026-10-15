@@ -1,9 +1,9 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import advancedPreset from 'cssnano-preset-advanced';
-import defaultPreset from 'cssnano-preset-default';
-import litePreset from 'cssnano-preset-lite';
+import advancedPreset from '#presets/advanced';
+import defaultPreset from '#presets/default';
+import litePreset from '#presets/lite';
 import cssnano from '../src/index.js';
 
 describe('preset resolution', () => {

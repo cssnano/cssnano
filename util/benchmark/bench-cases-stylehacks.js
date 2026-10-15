@@ -7,7 +7,9 @@ export const stylehacksCases = {
   'stylehacks-detect': {
     plugin: 'stylehacks',
     createProcessor() {
-      const { detect } = require('../../packages/stylehacks/src/index.js');
+      const {
+        detect,
+      } = require('../../packages/cssnano/src/plugins/stylehacks/index.js');
       return postcss([
         {
           postcssPlugin: 'stylehacks-detect-benchmark',
@@ -26,7 +28,9 @@ export const stylehacksCases = {
   'stylehacks-selector-detect': {
     plugin: 'stylehacks',
     createProcessor() {
-      const { detect } = require('../../packages/stylehacks/src/index.js');
+      const {
+        detect,
+      } = require('../../packages/cssnano/src/plugins/stylehacks/index.js');
       return postcss([
         {
           postcssPlugin: 'stylehacks-selector-detect-benchmark',

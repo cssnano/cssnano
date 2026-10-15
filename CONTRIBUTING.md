@@ -113,20 +113,17 @@ To create a changeset run
 pnpm change
 ```
 
-It's best to select the affected packages by hand rather than rely on the tools automatically
-discovering dependencies. For example, if a change affects a plugin `cssnano-preset-default`,
-select the plugin and `cssnano-preset-default` by hand (as well as any other dependent presets).
+Presets and plugins ship in the `cssnano` package, so a change to either selects `cssnano`.
+Select `postcss-svgo` only for changes to that package.
 To tag a release and generate the changelog, run:
 
 ```shell
 pnpm version -r
 ```
 
-To publish release to npm, run:
-
-```shell
-pnpm all-publish
-```
+To publish a release, run the publish workflow. It stages every workspace package with a
+new version (`cssnano` and `postcss-svgo`) using `pnpm stage publish -r`; approve the
+staged versions on npm.
 
 ## Are there other ways of contributing?
 

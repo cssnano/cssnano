@@ -83,5 +83,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Publish
-        run: pnpm all-publish
+      - name: Stage packages
+        run: pnpm stage publish -r

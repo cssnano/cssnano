@@ -1,0 +1,1 @@
+{"version":3,"file":"transition.d.ts","sourceRoot":"","sources":["../../../../src/plugins/postcss-ordered-values/rules/transition.js"],"names":[],"mappings":"AAmIA;;;GAGG;AACH,iBAAS,mBAAmB,CAAC,MAAM,EAHxB;IAAE,SAAS,EAAE,OAAO,oBAAoB,EAAE,IAAI,EAAE,EAAE,CAAA;CAG1B,GAFvB,MAAM,GAAG,IAAI,CAKxB;eAEc,mBAAmB"}

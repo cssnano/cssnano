@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import preset from 'cssnano-preset-default';
+import preset from '#presets/default';
 import nano from '../src/index.js';
 
 const fixture = `

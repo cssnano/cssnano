@@ -5,6 +5,10 @@
  * --experimental-test-coverage` and an lcov reporter, then renders every
  * 0-hit BRDA entry with its block/branch indices and a source snippet.
  *
+ * A plugin directory (`packages/postcss-<name>`, `packages/stylehacks` or
+ * `packages/cssnano/src/plugins/<name>`) runs only that plugin's tests in
+ * `packages/cssnano/test/<name>` and reports only its sources.
+ *
  * Usage:
  *   node util/uncoveredBranches.js packages/<pkg> [node --test args...]
  *
@@ -17,7 +21,7 @@
 import { spawn } from 'node:child_process';
 import { copyFile, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import process from 'node:process';
 import { once } from 'node:events';
 
@@ -45,6 +49,21 @@ function parseArgs(argv) {
     }
   }
   return { extra, packageArg, saveLcov };
+}
+
+/**
+ * @param {string} dir
+ * @param {string} repoRoot
+ * @returns {string | undefined} the plugin name when `dir` is a folded plugin
+ */
+function foldedPluginName(dir, repoRoot) {
+  const rel = relative(repoRoot, dir).split(sep).join('/');
+  const match =
+    /^(?:packages\/cssnano\/src\/plugins\/|packages\/)(postcss-[a-z\-]+|stylehacks)$/v.exec(
+      rel
+    );
+  if (!match || match[1] === 'postcss-svgo') return undefined;
+  return match[1];
 }
 
 async function runCoverageTests(packageDir, extraArgs, lcovPath) {
@@ -212,7 +231,12 @@ async function main() {
     usage();
     process.exit(1);
   }
-  const packageDir = resolve(packageArg);
+  const requestedDir = resolve(packageArg);
+  const plugin = foldedPluginName(requestedDir, repoRoot);
+  const packageDir = plugin
+    ? join(repoRoot, 'packages', 'cssnano')
+    : requestedDir;
+  const testArgs = plugin ? [`test/${plugin}/**/*.js`, ...extra] : extra;
 
   const tempDir = await mkdtemp(join(tmpdir(), 'uncovered-branches-'));
   const lcovPath = join(tempDir, 'lcov.info');
@@ -220,7 +244,7 @@ async function main() {
     console.log(
       `Running: node --test --experimental-test-coverage --test-reporter=lcov (cwd: ${packageDir})`
     );
-    const testExit = await runCoverageTests(packageDir, extra, lcovPath);
+    const testExit = await runCoverageTests(packageDir, testArgs, lcovPath);
 
     let text;
     try {
@@ -236,7 +260,12 @@ async function main() {
       console.log(`Raw lcov report saved to ${saveLcov}`);
     }
 
-    const files = parseLcov(text);
+    const parsed = parseLcov(text);
+    const files = plugin
+      ? parsed.filter((record) =>
+          record.path.startsWith(`src/plugins/${plugin}/`)
+        )
+      : parsed;
     await attachSnippets(files, packageDir);
     printReport(files, packageDir, repoRoot, testExit);
     process.exitCode = testExit;

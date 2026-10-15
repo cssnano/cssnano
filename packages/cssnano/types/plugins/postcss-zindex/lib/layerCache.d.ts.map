@@ -1,0 +1,1 @@
+{"version":3,"file":"layerCache.d.ts","sourceRoot":"","sources":["../../../../src/plugins/postcss-zindex/lib/layerCache.js"],"names":[],"mappings":"AAAA,mBAAmB;AACnB,cAAM,UAAU;;IAEd,cAEC;IACD;;;OAGG;IACH,cAAc,CAAC,UAAU,EAHd,MAGc,GAFb,IAAI,CAOf;IACD;;;OAGG;IACH,QAAQ,CAAC,KAAK,EAHH,MAGG,GAFF,IAAI,CAWf;IACD;;;OAGG;IACH,QAAQ,CAAC,KAAK,EAHH,MAGG,GAFF,MAAM,CAMjB;CACF;eAUc,UAAU"}

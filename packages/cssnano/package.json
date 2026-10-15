@@ -11,6 +11,46 @@
   },
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
+  "imports": {
+    "#getBrowsersList": {
+      "node": "./src/utils/browsersList/computeBrowsersToSupport.js",
+      "default": "./src/utils/browsersList/getBrowsersForWebBuild.js"
+    },
+    "#postcss-colormin": "./src/plugins/postcss-colormin/index.js",
+    "#postcss-convert-values": "./src/plugins/postcss-convert-values/index.js",
+    "#postcss-discard-comments": "./src/plugins/postcss-discard-comments/index.js",
+    "#postcss-discard-duplicates": "./src/plugins/postcss-discard-duplicates/index.js",
+    "#postcss-discard-empty": "./src/plugins/postcss-discard-empty/index.js",
+    "#postcss-discard-overridden": "./src/plugins/postcss-discard-overridden/index.js",
+    "#postcss-discard-unused": "./src/plugins/postcss-discard-unused/index.js",
+    "#postcss-merge-idents": "./src/plugins/postcss-merge-idents/index.js",
+    "#postcss-merge-longhand": "./src/plugins/postcss-merge-longhand/index.js",
+    "#postcss-merge-rules": "./src/plugins/postcss-merge-rules/index.js",
+    "#postcss-minify-font-values": "./src/plugins/postcss-minify-font-values/index.js",
+    "#postcss-minify-gradients": "./src/plugins/postcss-minify-gradients/index.js",
+    "#postcss-minify-params": "./src/plugins/postcss-minify-params/index.js",
+    "#postcss-minify-selectors": "./src/plugins/postcss-minify-selectors/index.js",
+    "#postcss-normalize-charset": "./src/plugins/postcss-normalize-charset/index.js",
+    "#postcss-normalize-display-values": "./src/plugins/postcss-normalize-display-values/index.js",
+    "#postcss-normalize-positions": "./src/plugins/postcss-normalize-positions/index.js",
+    "#postcss-normalize-repeat-style": "./src/plugins/postcss-normalize-repeat-style/index.js",
+    "#postcss-normalize-string": "./src/plugins/postcss-normalize-string/index.js",
+    "#postcss-normalize-timing-functions": "./src/plugins/postcss-normalize-timing-functions/index.js",
+    "#postcss-normalize-unicode": "./src/plugins/postcss-normalize-unicode/index.js",
+    "#postcss-normalize-url": "./src/plugins/postcss-normalize-url/index.js",
+    "#postcss-normalize-whitespace": "./src/plugins/postcss-normalize-whitespace/index.js",
+    "#postcss-ordered-values": "./src/plugins/postcss-ordered-values/index.js",
+    "#postcss-reduce-idents": "./src/plugins/postcss-reduce-idents/index.js",
+    "#postcss-reduce-initial": "./src/plugins/postcss-reduce-initial/index.js",
+    "#postcss-reduce-transforms": "./src/plugins/postcss-reduce-transforms/index.js",
+    "#postcss-unique-selectors": "./src/plugins/postcss-unique-selectors/index.js",
+    "#postcss-zindex": "./src/plugins/postcss-zindex/index.js",
+    "#presets/advanced": "./src/presets/advanced.js",
+    "#presets/default": "./src/presets/default.js",
+    "#presets/lite": "./src/presets/lite.js",
+    "#stylehacks": "./src/plugins/stylehacks/index.js",
+    "#utils": "./src/utils/index.js"
+  },
   "funding": {
     "type": "opencollective",
     "url": "https://opencollective.com/cssnano"
@@ -26,7 +66,11 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "cssnano-preset-default": "workspace:^"
+    "@colordx/core": "catalog:",
+    "@csstools/css-tokenizer": "catalog:",
+    "browserslist": "catalog:",
+    "caniuse-api": "^4.0.0",
+    "postcss-calc": "^11.2.2"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
@@ -50,11 +94,16 @@
     "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "devDependencies": {
+    "@mdn/browser-compat-data": "catalog:",
+    "@webref/css": "catalog:",
     "autoprefixer": "catalog:",
-    "cssnano-preset-advanced": "workspace:^",
-    "cssnano-preset-lite": "workspace:^",
+    "jsdom": "^30.1.2",
+    "mdn-data": "catalog:",
     "postcss": "catalog:",
     "postcss-font-magician": "^4.0.0",
+    "postcss-scss": "^4.0.9",
+    "postcss-selector-parser": "^7.1.5",
+    "postcss-simple-vars": "^7.0.1",
     "postcss-svgo": "workspace:^"
   },
   "peerDependencies": {

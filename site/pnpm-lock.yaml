@@ -166,15 +166,6 @@ importers:
 
   .:
     dependencies:
-      cssnano-preset-advanced:
-        specifier: link:../packages/cssnano-preset-advanced
-        version: link:../packages/cssnano-preset-advanced
-      cssnano-preset-default:
-        specifier: link:../packages/cssnano-preset-default
-        version: link:../packages/cssnano-preset-default
-      cssnano-preset-lite:
-        specifier: link:../packages/cssnano-preset-lite
-        version: link:../packages/cssnano-preset-lite
       postcss:
         specifier: ^8.5.29
         version: 8.5.29

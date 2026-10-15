@@ -6,18 +6,23 @@ Guidance for coding agents working in this repository.
 
 cssnano is a modular CSS minifier built on PostCSS and pnpm workspaces:
 
-- `packages/cssnano` orchestrates presets.
-- `packages/cssnano-preset-default` provides conservative semantic
-  optimizations, `cssnano-preset-advanced` adds assumption-making transforms,
-  and `cssnano-preset-lite` is limited to comments, whitespace, and empty-node
-  cleanup.
-- `packages/postcss-*` are independent optimization plugins.
-- `packages/cssnano-utils` contains shared CSS parsing and manipulation utilities.
+- `packages/cssnano` is the only published package except `postcss-svgo`. It
+  contains the presets, every optimization plugin, and the shared CSS utilities:
+  - `src/presets/{default,lite,advanced}.js` provide conservative semantic
+    optimizations (`default`), assumption-making transforms (`advanced`), and
+    comment, whitespace, and empty-node cleanup only (`lite`).
+  - `src/plugins/<postcss-plugin-name>/` holds each plugin, including
+    `stylehacks`. Plugin tests, perf files, scripts, and mutation catalogs
+    mirror that name under `test/`, `perf/`, `script/`, and `mutation/`.
+  - `src/utils/` holds the shared CSS parsing and manipulation utilities.
+  - Code in `packages/cssnano` imports its own modules through private `#`
+    specifiers declared in its `package.json` `imports`, such as `#utils`.
+- `packages/postcss-svgo` is a separate package with its own helper copies.
 - `util` contains shared test, integration, fuzzing, build, and benchmark support;
   benchmarking utilities live under `util/benchmark/`.
 - `site` contains the Astro documentation site.
 
-Most package source is in `src`, generated declarations are in `types`, and tests are in `test`. Plugins compose through the PostCSS AST.
+Package source is in `src`, generated declarations are in `types`, and tests are in `test`. Plugins compose through the PostCSS AST.
 
 ## Goals and evaluation
 
@@ -39,7 +44,7 @@ Every change should make the intended CSS transformation clearer while preservin
 ## Durable conventions
 
 - Use Node’s built-in `test` module for repository package tests and the shared helpers. Plugin tests use `processCSSFactory()` from `util/testHelpers.js`; preset tests use `processCSSWithPresetFactory()` or `createCssnanoProcessor()` from `util/integrationTestHelpers.js`.
-- Tests that assert wall-clock time or asymptotic scaling, and fuzz or exhaustive sweeps that take about a second or more, go in `packages/<pkg>/perf/` (plain `.js`, not `*.test.js`), so `node --test` and the coverage run skip them; run them with the `test:performance` script. Keep correctness assertions in `test/`.
+- Tests that assert wall-clock time or asymptotic scaling, and fuzz or exhaustive sweeps that take about a second or more, go in `packages/<pkg>/perf/` (plain `.js`, not `*.test.js`; plugin perf files live in `packages/cssnano/perf/<name>/`), so `node --test` and the coverage run skip them; run them with the `test:performance` script. Keep correctness assertions in `test/`.
 - Keep package tests under `test/` and follow the existing filename convention for the package or subsystem (`*.js` and `*.test.js` are both present). Use `describe()` when it improves source readability without disturbing unrelated test order.
 - Keep test-suite nesting shallow; avoid wrapping descriptive suites in redundant package- or preset-level suites.
 - Apply the rule of three before extracting test helpers: tolerate small duplication until a third consumer needs the same setup or assertion contract.
@@ -47,13 +52,13 @@ Every change should make the intended CSS transformation clearer while preservin
 - Use pnpm for dependency and lockfile changes; never edit lockfiles by hand. If dependencies or workspace links are missing, use an approved `pnpm install` to repair them; never manually
   create, remove, move, or retarget files or symlinks under `node_modules`.
   To validate changes directly without requiring elevated permissions or invoking pnpm:
-  - Focused package unit tests: `node --test packages/<pkg>/test/*.js`
-  - Uncovered branches in a package: `node util/uncoveredBranches.js packages/<pkg>`
+  - Focused package unit tests: `node --test packages/<pkg>/test/*.js` (plugin tests run from `packages/cssnano/test/<name>/`)
+  - Uncovered branches in a package or plugin: `node util/uncoveredBranches.js packages/<pkg>` (a plugin name such as `packages/postcss-colormin` runs its tests and reports its sources)
     (runs the package tests under coverage and prints the exact line numbers,
     block/branch indices, and source snippets of every 0-hit branch; arguments
     after the package path forward to `node --test`, and `--save-lcov=<path>`
     keeps the raw lcov report)
-  - Preset integration tests: `node --test packages/cssnano-preset-*/test/integrations.test.js packages/cssnano-preset-default/test/pluginIdempotency.test.js`
+  - Preset integration tests: `node --test packages/cssnano/test/presets/*/integrations.test.js packages/cssnano/test/presets/default/pluginIdempotency.test.js`
   - Type checking: `./node_modules/.bin/tsc -b`
   - Linting: `./node_modules/.bin/oxlint packages/<pkg>` (or `.` for the entire workspace)
   - Formatting: `./node_modules/.bin/oxfmt packages/<pkg>` (verify with `--check`)

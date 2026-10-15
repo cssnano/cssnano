@@ -13,8 +13,8 @@ import {
 } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import litePreset from 'cssnano-preset-lite';
-import defaultPreset from 'cssnano-preset-default';
+import litePreset from '#presets/lite';
+import defaultPreset from '#presets/default';
 import autoprefixer from 'autoprefixer';
 import cssnano from '../../src/index.js';
 
