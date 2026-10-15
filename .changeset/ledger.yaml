@@ -1,3 +1,7 @@
+cssnano-preset-advanced@10.0.0:
+  dir: packages/cssnano-preset-advanced
+  intents:
+    - plain-prefixes-stay
 cssnano-preset-advanced@8.0.10:
   dir: packages/cssnano-preset-advanced
   intents:
