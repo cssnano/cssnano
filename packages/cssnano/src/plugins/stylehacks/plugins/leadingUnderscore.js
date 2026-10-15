@@ -1,5 +1,4 @@
 import BasePlugin from '../plugin.js';
-import { IE_6 } from '../dictionary/browsers.js';
 import { PROPERTY } from '../dictionary/identifiers.js';
 import { DECL } from '../dictionary/postcss.js';
 
@@ -19,7 +18,7 @@ function vendorPrefix(prop) {
 export default (class LeadingUnderscore extends BasePlugin {
   /** @param {import('postcss').Result=} result */
   constructor(result) {
-    super([IE_6], [DECL], result);
+    super('stylehacks-leading-underscore-ie6', [DECL], result);
   }
 
   /**

@@ -1,10 +1,11 @@
 declare const plugins: ({
     new (result?: import('postcss').Result | undefined): {
-        nodes: import("../plugin.js").NodeWithInfo[];
-        targets: Set<string>;
         detect(rule: import('postcss').Rule): void;
+        nodes: import("../plugin.js").NodeWithInfo[];
         nodeTypes: Set<string>;
+        bug: "ie-zero-unit-retention" | "media-all-ie10-11" | "stylehacks-body-empty-firefox2" | "stylehacks-html-combinator-comment-body-ie5.5-7" | "stylehacks-html-first-child-opera9" | "stylehacks-important-ie5.5-7" | "stylehacks-leading-star-ie5.5-7" | "stylehacks-leading-underscore-ie6" | "stylehacks-media-slash0-ie8" | "stylehacks-media-slash0-slash9-ie5.5-8" | "stylehacks-media-slash9-ie5.5-7" | "stylehacks-slash9-ie6-8" | "stylehacks-star-html-ie5.5-6" | "stylehacks-trailing-slash-comma-ie5.5-7" | "transparent-click-ie8-9" | "unicode-range-lowercase-u";
         result: import("postcss").Result<import("postcss").Document | import("postcss").Root> | undefined;
+        browsers: readonly string[];
         push(node: import('postcss').Node, metadata: {
             identifier: string;
             hack: string;
@@ -19,9 +20,10 @@ declare const plugins: ({
     new (result?: import('postcss').Result | undefined): {
         detect(decl: import('postcss').Declaration): void;
         nodes: import("../plugin.js").NodeWithInfo[];
-        targets: Set<string>;
         nodeTypes: Set<string>;
+        bug: "ie-zero-unit-retention" | "media-all-ie10-11" | "stylehacks-body-empty-firefox2" | "stylehacks-html-combinator-comment-body-ie5.5-7" | "stylehacks-html-first-child-opera9" | "stylehacks-important-ie5.5-7" | "stylehacks-leading-star-ie5.5-7" | "stylehacks-leading-underscore-ie6" | "stylehacks-media-slash0-ie8" | "stylehacks-media-slash0-slash9-ie5.5-8" | "stylehacks-media-slash9-ie5.5-7" | "stylehacks-slash9-ie6-8" | "stylehacks-star-html-ie5.5-6" | "stylehacks-trailing-slash-comma-ie5.5-7" | "transparent-click-ie8-9" | "unicode-range-lowercase-u";
         result: import("postcss").Result<import("postcss").Document | import("postcss").Root> | undefined;
+        browsers: readonly string[];
         push(node: import('postcss').Node, metadata: {
             identifier: string;
             hack: string;

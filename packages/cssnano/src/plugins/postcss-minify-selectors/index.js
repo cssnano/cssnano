@@ -1,13 +1,12 @@
-import getBrowsersList from '#getBrowsersList';
-import caniuseApi from 'caniuse-api';
+import { resolveTargets } from '#utils/browser-targets';
+import { supportsAll } from '#utils/browser-support';
 import { isFixedPointSelector } from './lib/fixedPointSelector.js';
 import { isInvalidSelector } from './lib/isInvalidSelector.js';
 import { isDefaultNamespace } from './lib/isDefaultNamespace.js';
 import { normalizeList } from './lib/selectorScanner.js';
 
-/** @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions */
-/** @typedef {Pick<import('browserslist').Options, 'stats' | 'path' | 'env'>} BrowserslistOptions */
-/** @typedef {{ sort?: boolean, convertToIs?: boolean } & AutoprefixerOptions & BrowserslistOptions} Options */
+/** @import {TargetOptions} from '#utils' */
+/** @typedef {{ sort?: boolean, convertToIs?: boolean } & TargetOptions} Options */
 
 /**
  * These vendor spellings were used by browsers before unprefixed keyframes
@@ -59,13 +58,9 @@ function pluginCreator(opts = {}) {
     prepare(result) {
       let fold = resolved.convertToIs !== false;
       if (fold) {
-        const { stats, env, from, file } =
-          /** @type {BrowserslistOptions & {from?: string, file?: string}} */ (
-            result.opts || {}
-          );
-        fold = caniuseApi.isSupported(
-          'css-matches-pseudo',
-          getBrowsersList(resolved, stats, from, file, env)
+        fold = supportsAll(
+          resolveTargets(resolved, result),
+          'css-matches-pseudo'
         );
       }
       return {

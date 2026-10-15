@@ -7,7 +7,7 @@ import runScan from './scan.js';
 
 /**
  * @param {import('postcss').Root} root
- * @param {string[]} browsers
+ * @param {readonly string[]} browsers
  * @param {Map<string, import('./ensureCompatibility.js').SelectorInfo>} compatibilityCache
  * @param {WeakSet<Rule>} ruleCache
  * @param {WeakMap<Rule, RuleMeta>} ruleMeta

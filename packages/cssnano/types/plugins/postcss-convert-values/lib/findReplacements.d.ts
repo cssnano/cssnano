@@ -3,9 +3,7 @@ export type ConvertOptions = Parameters<typeof convert>[2];
 export type Options = {
     precision?: false | number;
     transformCustomProperties?: boolean;
-} & ConvertOptions & {
-    overrideBrowserslist?: string | string[];
-} & import('browserslist').Options;
+} & ConvertOptions;
 export type ReplacementFlags = {
     keepZeroPercent: boolean;
     keepZeroLength: boolean;

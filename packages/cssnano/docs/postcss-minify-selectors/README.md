@@ -62,8 +62,9 @@ section h1, article h1, aside h1, nav h1 { font-size: 25px }
 ### Browserslist
 
 The plugin reads the `browserslist` configuration from the host project by
-default. You can override with `overrideBrowserslist`, `stats`, `env`, or
-`path` — the same options accepted by `postcss-merge-rules` and other Browserslist-aware plugins.
+default, and targets `baseline widely available with downstream` when the
+project has none. The cssnano preset options `overrideBrowserslist`, `stats`,
+`env` and `path` override it for every plugin at once.
 
 ## Usage
 

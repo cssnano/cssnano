@@ -1,35 +1,36 @@
 export type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
     exclude?: true;
 });
+export type TargetDependentOptions<PluginOptions extends object> = SimpleOptions<Omit<PluginOptions, keyof import('#utils').TargetOptions>>;
 export type Options = {
     discardComments?: SimpleOptions<import('#postcss-discard-comments').Options>;
-    reduceInitial?: SimpleOptions<import('#postcss-reduce-initial').Options>;
+    reduceInitial?: TargetDependentOptions<import('#postcss-reduce-initial').Options>;
     minifyGradients?: SimpleOptions;
     /**
      * Ignored; run postcss-svgo before cssnano.
      */
     svgo?: false | Record<string, unknown>;
     reduceTransforms?: SimpleOptions;
-    convertValues?: SimpleOptions<import('#postcss-convert-values').Options>;
+    convertValues?: TargetDependentOptions<import('#postcss-convert-values').Options>;
     calc?: SimpleOptions<import('postcss-calc').PostCssCalcOptions>;
-    colormin?: SimpleOptions<import('#postcss-colormin').Options>;
+    colormin?: TargetDependentOptions<import('#postcss-colormin').Options>;
     orderedValues?: SimpleOptions;
-    minifySelectors?: SimpleOptions<import('#postcss-minify-selectors').Options>;
-    minifyParams?: SimpleOptions<import('#postcss-minify-params').Options>;
+    minifySelectors?: TargetDependentOptions<import('#postcss-minify-selectors').Options>;
+    minifyParams?: TargetDependentOptions<import('#postcss-minify-params').Options>;
     normalizeCharset?: SimpleOptions<import('#postcss-normalize-charset').Options>;
     minifyFontValues?: SimpleOptions<import('#postcss-minify-font-values').Options>;
     normalizeUrl?: SimpleOptions;
-    mergeLonghand?: SimpleOptions<import('#postcss-merge-longhand').Options>;
+    mergeLonghand?: TargetDependentOptions<import('#postcss-merge-longhand').Options>;
     discardDuplicates?: SimpleOptions;
     discardOverridden?: SimpleOptions;
     normalizeRepeatStyle?: SimpleOptions;
-    mergeRules?: SimpleOptions<import('#postcss-merge-rules').Options>;
+    mergeRules?: TargetDependentOptions<import('#postcss-merge-rules').Options>;
     discardEmpty?: SimpleOptions;
     uniqueSelectors?: SimpleOptions;
     normalizeString?: SimpleOptions<import('#postcss-normalize-string').Options>;
     normalizePositions?: SimpleOptions;
     normalizeWhitespace?: SimpleOptions;
-    normalizeUnicode?: SimpleOptions<import('#postcss-normalize-unicode').Options>;
+    normalizeUnicode?: TargetDependentOptions<import('#postcss-normalize-unicode').Options>;
     normalizeDisplayValues?: SimpleOptions;
     normalizeTimingFunctions?: SimpleOptions;
     rawCache?: SimpleOptions;
@@ -37,7 +38,7 @@ export type Options = {
 export type AutoprefixerOptions = {
     overrideBrowserslist?: string | string[];
 };
-export type BrowserslistOptions = Pick<import('browserslist').Options, 'stats' | 'path' | 'env'>;
+export type BrowserslistOptions = Pick<import('#utils').TargetOptions, 'stats' | 'path' | 'env'>;
 /**
  * Safe defaults for cssnano which require minimal configuration
  *

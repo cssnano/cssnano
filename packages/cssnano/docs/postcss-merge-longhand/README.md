@@ -57,12 +57,12 @@ ignores the whole declaration and loses both axes. The plugin therefore merges
 alignment longhands into these shorthands only when every browser in your
 [Browserslist](https://github.com/browserslist/browserslist) targets is known to
 support all three. A target without compatibility data, such as Opera Mini,
-counts as unsupported, so the Browserslist `defaults` query keeps the longhands.
+counts as unsupported, so a query that includes it keeps the longhands. A
+query that matches no browser keeps them too.
 
-The plugin accepts the Browserslist options `overrideBrowserslist`, `stats`,
-`path` and `env`. The browser build for the web has no access to your targets
-and assumes a fixed list that includes KaiOS, UC Browser and QQ Browser for
-Android, so it keeps the longhands.
+The targets come from the cssnano preset options `overrideBrowserslist`,
+`stats`, `path` and `env`, shared by every plugin. Without them or a project
+config, cssnano targets `baseline widely available with downstream`.
 
 Values that a target may not parse, such as `safe`, `unsafe`, `last baseline`,
 `left`, `right`, `legacy`, `anchor-center` and `safe normal`, merge only with a

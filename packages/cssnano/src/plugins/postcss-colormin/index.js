@@ -1,11 +1,11 @@
-import getBrowsersList from '#getBrowsersList';
-import caniuseApi from 'caniuse-api';
+import { resolveTargets } from '#utils/browser-targets';
 import { tryMinifyColor } from './minifyColor.js';
 import cssnanoUtils from '#utils';
+import { supportsAll } from '#utils/browser-support';
+import { anyAffected } from '#utils/browser-bugs';
 import colorPropertiesData from './data/colorProperties.json' with { type: 'json' };
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-const { isSupported } = caniuseApi;
 const {
   applyEdits,
   asciiLowerCase,
@@ -16,17 +16,10 @@ const {
   tokenEnd,
   tokenStart,
 } = cssnanoUtils;
-/** @import browserslist from 'browserslist' */
+/** @import {TargetOptions} from '#utils' */
 
 const colorProperties = new Set(colorPropertiesData);
 const colorFunctionRegex = /^(?:rgb|hsl)a?$|^hwb$/v;
-/*
- * IE 8 & 9 do not properly handle clicks on elements
- * with a `transparent` `background-color`.
- *
- * https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer
- */
-const browsersWithTransparentBug = new Set(['ie 8', 'ie 9']);
 const tokensRequiringSeparator = new Set([
   TokenType.Ident,
   TokenType.Function,
@@ -129,15 +122,16 @@ function transform(value, options) {
 
 /**
  * @param {Options} options
- * @param {string[]} browsers
+ * @param {readonly string[]} browsers
  * @return {Options}
  */
 function addPluginDefaults(options, browsers) {
   const defaults = {
-    // Does the browser support "transparent" value properly
-    transparent: new Set(browsers).isDisjointFrom(browsersWithTransparentBug),
+    // IE 8 & 9 do not properly handle clicks on elements with a `transparent`
+    // `background-color`, so the keyword is kept for them.
+    transparent: !anyAffected(browsers, 'transparent-click-ie8-9'),
     // Does the browser support 4 & 8 character hex notation
-    alphaHex: isSupported('css-rrggbbaa', browsers),
+    alphaHex: supportsAll(browsers, 'css-rrggbbaa'),
     name: true,
   };
   return { ...defaults, ...options };
@@ -155,9 +149,7 @@ function addPluginDefaults(options, browsers) {
  */
 
 /**
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {MinifyColorOptions & AutoprefixerOptions & BrowserslistOptions} Options
+ * @typedef {MinifyColorOptions & TargetOptions} Options
  */
 
 /**
@@ -169,11 +161,10 @@ function pluginCreator(config = {}) {
     postcssPlugin: 'postcss-colormin',
 
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     * @param {import('postcss').Result} result
      */
     prepare(result) {
-      const { stats, env, from, file } = result.opts || {};
-      const browsers = getBrowsersList(config, stats, from, file, env);
+      const browsers = resolveTargets(config, result);
       const cache = new Map();
       const options = addPluginDefaults(config, browsers);
 

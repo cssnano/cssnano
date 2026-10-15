@@ -1,14 +1,11 @@
-import getBrowsersList from '#getBrowsersList';
+import { resolveTargets } from '#utils/browser-targets';
+import { anyAffected } from '#utils/browser-bugs';
 import transform from './lib/transform.js';
 
-/** @import browserslist from 'browserslist' */
-
-const allBugBrowsers = new Set(['ie 10', 'ie 11']);
+/** @import {TargetOptions} from '#utils' */
 
 /**
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
+ * @typedef {TargetOptions} Options
  */
 
 /**
@@ -21,12 +18,11 @@ function pluginCreator(options = {}) {
     postcssPlugin: 'postcss-minify-params',
 
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     * @param {import('postcss').Result} result
      */
     prepare(result) {
-      const { stats, env, from, file } = result.opts || {};
-      const browsers = getBrowsersList(options, stats, from, file, env);
-      const hasAllBug = !new Set(browsers).isDisjointFrom(allBugBrowsers);
+      const browsers = resolveTargets(options, result);
+      const hasAllBug = anyAffected(browsers, 'media-all-ie10-11');
 
       return {
         /** @param {import('postcss').Root} css */

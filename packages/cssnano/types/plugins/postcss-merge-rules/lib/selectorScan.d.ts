@@ -11,9 +11,9 @@ export type ScanState = AttributeScanState & {
  * deliberately not a selector parser.
  *
  * @param {string} selector
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @param {ScanState} state
  * @return {boolean}
  */
-export declare function scanCompatibility(selector: string, browsers: string[] | undefined, state: ScanState): boolean;
+export declare function scanCompatibility(selector: string, browsers: readonly string[], state: ScanState): boolean;
 //# sourceMappingURL=selectorScan.d.ts.map

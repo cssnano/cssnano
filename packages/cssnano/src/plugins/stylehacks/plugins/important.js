@@ -1,11 +1,10 @@
 import BasePlugin from '../plugin.js';
-import { IE_5_5, IE_6, IE_7 } from '../dictionary/browsers.js';
 import { DECL } from '../dictionary/postcss.js';
 
 export default (class Important extends BasePlugin {
   /** @param {import('postcss').Result=} result */
   constructor(result) {
-    super([IE_5_5, IE_6, IE_7], [DECL], result);
+    super('stylehacks-important-ie5.5-7', [DECL], result);
   }
   /**
    * @param {import('postcss').Declaration} decl

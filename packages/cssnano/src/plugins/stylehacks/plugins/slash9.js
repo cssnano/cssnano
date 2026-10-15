@@ -1,12 +1,11 @@
 import BasePlugin from '../plugin.js';
-import { IE_6, IE_7, IE_8 } from '../dictionary/browsers.js';
 import { VALUE } from '../dictionary/identifiers.js';
 import { DECL } from '../dictionary/postcss.js';
 
 export default (class Slash9 extends BasePlugin {
   /** @param {import('postcss').Result=} result */
   constructor(result) {
-    super([IE_6, IE_7, IE_8], [DECL], result);
+    super('stylehacks-slash9-ie6-8', [DECL], result);
   }
 
   /**

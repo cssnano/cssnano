@@ -1,13 +1,12 @@
 import BasePlugin from '../plugin.js';
 import isMixin from '../isMixin.js';
-import { IE_5_5, IE_6, IE_7 } from '../dictionary/browsers.js';
 import { SELECTOR } from '../dictionary/identifiers.js';
 import { RULE } from '../dictionary/postcss.js';
 
 export default (class TrailingSlashComma extends BasePlugin {
   /** @param {import('postcss').Result=} result */
   constructor(result) {
-    super([IE_5_5, IE_6, IE_7], [RULE], result);
+    super('stylehacks-trailing-slash-comma-ie5.5-7', [RULE], result);
   }
 
   /**

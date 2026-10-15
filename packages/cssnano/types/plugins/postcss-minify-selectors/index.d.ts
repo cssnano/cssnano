@@ -1,12 +1,9 @@
 import { isInvalidSelector } from './lib/isInvalidSelector.js';
-export type AutoprefixerOptions = {
-    overrideBrowserslist?: string | string[];
-};
-export type BrowserslistOptions = Pick<import('browserslist').Options, 'stats' | 'path' | 'env'>;
+import type { TargetOptions } from '#utils';
 export type Options = {
     sort?: boolean;
     convertToIs?: boolean;
-} & AutoprefixerOptions & BrowserslistOptions;
+} & TargetOptions;
 /**
  * Minify selectors from tokenizer spans. Function arguments are normalized
  * bottom-up without recursive descent.

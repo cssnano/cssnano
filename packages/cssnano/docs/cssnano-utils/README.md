@@ -32,6 +32,59 @@ Utility methods and plugins for cssnano projects.
 | `balancedTokens` | Parse CSS into a `BalancedTokens` index of matching delimiters (`()`, `[]`, `{}`), or `undefined` if unbalanced. |
 | `applyEdits` | Apply validated, non-overlapping string edits. Invalid bounds or overlaps fail closed by returning the complete original source. |
 
+### Browser Targets
+
+Every plugin that depends on browser support reads its targets from one
+resolver, so all plugins of a preset judge a file against the same browsers.
+The preset passes its own target options to each of these plugins and ignores
+target options given to a single plugin.
+The checks take the resolved targets unchanged and never resolve queries
+themselves.
+
+| Export | Description |
+| --- | --- |
+| `#utils/browser-targets` `resolveTargets` | Resolves a plugin's browserslist targets once per file. |
+| `#utils/browser-targets` `defaultTargetsQuery` | The query used when the user states no preference: `baseline widely available with downstream`. |
+| `#utils/browser-support` `supportsAll(targets, feature)` | Whether every target supports a caniuse feature. |
+| `#utils/browser-bugs` `anyAffected(targets, bug)` | Whether at least one target has a browser bug listed in `bugs.json`. |
+| `#utils/browser-bugs` `browsersAffectedBy(bug)` | The shared, read-only set of browser entries that a bug affects. |
+| `#utils/versions` `compareVersions(left, right)` | Orders dotted release numbers numerically per component, so `10.1` follows `9.3`. |
+| `#utils/versions` `isDottedVersion(version)` | Whether a string is a dotted numeric release, rejecting words such as `TP` and ranges. |
+
+The targets come from the first of these that is set:
+
+1. the `overrideBrowserslist` option;
+2. the project's browserslist config, or the `BROWSERSLIST` environment
+   variable, found as browserslist finds it;
+3. `defaultTargetsQuery`, instead of browserslist's own `defaults`.
+
+A query that matches no browser resolves to an empty list and adds a PostCSS
+warning, so the optimizations that depend on browser support stay off.
+
+Unknown engines follow one policy in each check:
+
+- **Feature checks:** an entry that caniuse-lite does not list counts as
+  unsupported, so newer syntax is not emitted for it. An empty list is
+  unsupported too.
+- **Bug checks:** an entry is affected only when `bugs.json` lists it, so an
+  unknown engine counts as unaffected. An empty list counts as affected by
+  every bug, because its targets are unknown.
+
+Support follows caniuse's status: `y` is supported, and so are notes such as
+`y #2`. `y x` (needs a vendor prefix), `a` (partial), `u` and `n` are not.
+Only the caniuse features that the plugins check are imported, rather than
+the whole caniuse database. The same code runs in Node and in the browser.
+
+The resolved target lists are the arrays that browserslist caches and shares
+between plugins and other tools, so a plugin must copy a list before it
+changes it. A `stats` object is cached by
+identity, so pass a new object instead of changing one between runs.
+
+The search for a browserslist config starts at `path`, then at `from` or
+`file`, and at the working directory when none is set. The directory of the
+plugin package has no influence. In a browser there is no config to find, so
+the targets are the override or the default.
+
 ### `BalancedTokens` Methods
 
 Instances returned by `balancedTokens(source)` provide:

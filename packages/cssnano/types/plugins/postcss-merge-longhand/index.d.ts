@@ -1,11 +1,7 @@
 import { BoxSupport } from './lib/targetSupport.js';
 import type { Container, Declaration } from 'postcss';
-import type browserslist from 'browserslist';
-export type AutoprefixerOptions = {
-    overrideBrowserslist?: string | string[];
-};
-export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
-export type Options = AutoprefixerOptions & BrowserslistOptions;
+import type { TargetOptions } from '#utils';
+export type Options = TargetOptions;
 import type { PairFamily } from './lib/decl/pairForms.js';
 import type { AlignmentFamilyConfig } from './lib/decl/alignmentForms.js';
 export type MergeContext = {

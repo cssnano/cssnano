@@ -47,7 +47,7 @@ const incompatibleInfo = {
 
 /**
  * @param {string} selector
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @return {SelectorInfo}
  */
 function computeSelectorInfo(selector, browsers) {
@@ -77,7 +77,7 @@ function computeSelectorInfo(selector, browsers) {
  * Looks up selectors in a cache that is shared by every check, so each
  * distinct selector is scanned once per stylesheet.
  *
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @param {Map<string, SelectorInfo>} [cache]
  * @return {(selector: string) => SelectorInfo}
  */

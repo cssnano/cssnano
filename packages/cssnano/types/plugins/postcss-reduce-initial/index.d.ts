@@ -1,16 +1,10 @@
-import type browserslist from 'browserslist';
-export type AutoprefixerOptions = {
-    overrideBrowserslist?: string | string[];
-};
-export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
+import type { TargetOptions } from '#utils';
 export type Options = {
     ignore?: string[];
-} & AutoprefixerOptions & BrowserslistOptions;
+} & TargetOptions;
 /**
- * @import browserslist from 'browserslist'
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {{ignore?: string[]} & AutoprefixerOptions & BrowserslistOptions} Options
+ * @import {TargetOptions} from '#utils'
+ * @typedef {{ignore?: string[]} & TargetOptions} Options
  */
 /**
  * @param {Options} options

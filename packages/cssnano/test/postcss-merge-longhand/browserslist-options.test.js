@@ -4,9 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import computeBrowsersToSupport from '../../src/utils/browsersList/computeBrowsersToSupport.js';
-import getBrowsersForWebBuild from '../../src/utils/browsersList/getBrowsersForWebBuild.js';
-import { supportsPlaceShorthands } from '../../src/plugins/postcss-merge-longhand/lib/targetSupport.js';
+import { resolveTargets } from '../../src/utils/browserTargets.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 
 const longhands = 'a{align-items:center;justify-items:start}';
@@ -80,20 +78,10 @@ describe('Browserslist options of the place-* gate', () => {
     );
   });
 
-  test('computes the targets from the options of the Node build', () => {
+  test('resolves the targets from the overrideBrowserslist option', () => {
     assert.deepEqual(
-      computeBrowsersToSupport(
-        { overrideBrowserslist: 'chrome 120' },
-        undefined,
-        undefined
-      ),
+      resolveTargets({ overrideBrowserslist: 'chrome 120' }, undefined),
       ['chrome 120']
     );
-  });
-});
-
-describe('browser list of the web build', () => {
-  test('includes targets without place-* data, so the web build never merges', () => {
-    assert.equal(supportsPlaceShorthands(getBrowsersForWebBuild()), false);
   });
 });

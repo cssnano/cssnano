@@ -9,7 +9,7 @@ import {
   serializePlaceSupport,
 } from '../lib/bcdPlaceSupport.js';
 import { browserslistNames } from '../lib/bcdSupport.js';
-import { compareVersions } from '../../../src/plugins/postcss-merge-longhand/lib/compareVersions.js';
+import { compareVersions } from '../../../src/utils/versions.js';
 import { widelySupported } from '../../../src/plugins/postcss-merge-longhand/lib/decl/alignmentForms.js';
 
 /**

@@ -10,9 +10,9 @@ export type AttributeScanState = {
  * @param {AttributeScanState} state
  * @param {TokenType} type
  * @param {string} value
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @return {boolean}
  */
-declare function advanceAttribute(state: AttributeScanState, type: TokenType, value: string, browsers: string[] | undefined): boolean;
+declare function advanceAttribute(state: AttributeScanState, type: TokenType, value: string, browsers: readonly string[]): boolean;
 export { advanceAttribute };
 //# sourceMappingURL=attributeSelector.d.ts.map

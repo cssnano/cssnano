@@ -7,12 +7,12 @@ import type { RuleDeclarationKeys } from './ruleMeta.js';
 export default class MergeState {
     #private;
     /**
-     * @param {string[]} browsers
+     * @param {readonly string[]} browsers
      * @param {Map<string, import('./ensureCompatibility.js').SelectorInfo>} compatibilityCache
      * @param {WeakSet<Rule>} ruleCache rules whose selectors are known to be compatible
      * @param {WeakMap<Rule, RuleMeta>} ruleMeta
      */
-    constructor(browsers: string[], compatibilityCache: Map<string, import('./ensureCompatibility.js').SelectorInfo>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, RuleMeta>);
+    constructor(browsers: readonly string[], compatibilityCache: Map<string, import('./ensureCompatibility.js').SelectorInfo>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, RuleMeta>);
     /**
      * @param {Rule} rule
      * @return {RuleMeta}

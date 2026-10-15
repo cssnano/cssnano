@@ -33,32 +33,39 @@ const { rawCache } = cssnanoUtils;
  */
 
 /**
+ * Browser targets are preset options, shared by every plugin, so a plugin's
+ * own options leave them out.
+ * @template {object} PluginOptions
+ * @typedef {SimpleOptions<Omit<PluginOptions, keyof import('#utils').TargetOptions>>} TargetDependentOptions
+ */
+
+/**
  * @typedef {object} Options
  * @property {SimpleOptions<import('#postcss-discard-comments').Options>} [discardComments]
- * @property {SimpleOptions<import('#postcss-reduce-initial').Options>} [reduceInitial]
+ * @property {TargetDependentOptions<import('#postcss-reduce-initial').Options>} [reduceInitial]
  * @property {SimpleOptions} [minifyGradients]
  * @property {false | Record<string, unknown>} [svgo] Ignored; run postcss-svgo before cssnano.
  * @property {SimpleOptions} [reduceTransforms]
- * @property {SimpleOptions<import('#postcss-convert-values').Options>} [convertValues]
+ * @property {TargetDependentOptions<import('#postcss-convert-values').Options>} [convertValues]
  * @property {SimpleOptions<import('postcss-calc').PostCssCalcOptions>} [calc]
- * @property {SimpleOptions<import('#postcss-colormin').Options>} [colormin]
+ * @property {TargetDependentOptions<import('#postcss-colormin').Options>} [colormin]
  * @property {SimpleOptions} [orderedValues]
- * @property {SimpleOptions<import('#postcss-minify-selectors').Options>} [minifySelectors]
- * @property {SimpleOptions<import('#postcss-minify-params').Options>} [minifyParams]
+ * @property {TargetDependentOptions<import('#postcss-minify-selectors').Options>} [minifySelectors]
+ * @property {TargetDependentOptions<import('#postcss-minify-params').Options>} [minifyParams]
  * @property {SimpleOptions<import('#postcss-normalize-charset').Options>} [normalizeCharset]
  * @property {SimpleOptions<import('#postcss-minify-font-values').Options>} [minifyFontValues]
  * @property {SimpleOptions} [normalizeUrl]
- * @property {SimpleOptions<import('#postcss-merge-longhand').Options>} [mergeLonghand]
+ * @property {TargetDependentOptions<import('#postcss-merge-longhand').Options>} [mergeLonghand]
  * @property {SimpleOptions} [discardDuplicates]
  * @property {SimpleOptions} [discardOverridden]
  * @property {SimpleOptions} [normalizeRepeatStyle]
- * @property {SimpleOptions<import('#postcss-merge-rules').Options>} [mergeRules]
+ * @property {TargetDependentOptions<import('#postcss-merge-rules').Options>} [mergeRules]
  * @property {SimpleOptions} [discardEmpty]
  * @property {SimpleOptions} [uniqueSelectors]
  * @property {SimpleOptions<import('#postcss-normalize-string').Options>} [normalizeString]
  * @property {SimpleOptions} [normalizePositions]
  * @property {SimpleOptions} [normalizeWhitespace]
- * @property {SimpleOptions<import('#postcss-normalize-unicode').Options>} [normalizeUnicode]
+ * @property {TargetDependentOptions<import('#postcss-normalize-unicode').Options>} [normalizeUnicode]
  * @property {SimpleOptions} [normalizeDisplayValues]
  * @property {SimpleOptions} [normalizeTimingFunctions]
  * @property {SimpleOptions} [rawCache]
@@ -66,7 +73,7 @@ const { rawCache } = cssnanoUtils;
 
 /**
  * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<import('browserslist').Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
+ * @typedef {Pick<import('#utils').TargetOptions, 'stats' | 'path' | 'env'>} BrowserslistOptions
  */
 
 /**
@@ -77,8 +84,9 @@ const { rawCache } = cssnanoUtils;
 function configurePlugins(plugins, opts = {}) {
   const { overrideBrowserslist, stats, env, path } = opts;
 
-  // Browserslist options shared by plugins that depend on target browsers
-  const sharedProps = {
+  // One set of browser targets for the whole preset, so every plugin judges
+  // a file against the same browsers
+  const targets = {
     overrideBrowserslist,
     stats,
     env,
@@ -89,38 +97,31 @@ function configurePlugins(plugins, opts = {}) {
    * @type {Options}
    */
   const defaults = {
-    colormin: {
-      ...sharedProps,
-    },
     convertValues: {
       length: false,
-      ...sharedProps,
-    },
-    mergeLonghand: {
-      ...sharedProps,
-    },
-    mergeRules: {
-      ...sharedProps,
-    },
-    minifyParams: {
-      ...sharedProps,
     },
     normalizeCharset: {
       add: false,
     },
-    normalizeUnicode: {
-      ...sharedProps,
-    },
-    reduceInitial: {
-      ...sharedProps,
-    },
     minifySelectors: {
       sort: true,
-      ...sharedProps,
     },
   };
 
-  // Merge option properties for each plugin
+  /** @type {ReadonlySet<keyof Options>} */
+  const targetDependent = new Set([
+    'colormin',
+    'convertValues',
+    'mergeLonghand',
+    'mergeRules',
+    'minifyParams',
+    'normalizeUnicode',
+    'reduceInitial',
+    'minifySelectors',
+  ]);
+
+  // Merge option properties for each plugin; the preset targets come last,
+  // so a plugin's own options cannot replace them
   return plugins.map(([plugin, opt]) => {
     const defaultProps = defaults[opt] ?? {};
     const presetProps = opts[opt] ?? {};
@@ -128,7 +129,11 @@ function configurePlugins(plugins, opts = {}) {
     return [
       plugin,
       presetProps !== false
-        ? { ...defaultProps, ...presetProps }
+        ? {
+            ...defaultProps,
+            ...presetProps,
+            ...(targetDependent.has(opt) ? targets : undefined),
+          }
         : { exclude: true },
     ];
   });

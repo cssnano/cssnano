@@ -6,7 +6,7 @@ import MergeState from '../../src/plugins/postcss-merge-rules/lib/mergeState.js'
 const createState = () => {
   const ruleMeta = new WeakMap();
   const state = new MergeState(
-    ['Chrome 120'],
+    ['chrome 120'],
     new Map(),
     new WeakSet(),
     ruleMeta
@@ -66,7 +66,7 @@ test('canMerge should still reject a pair with different vendor prefixes after o
 
 test('canMerge should still reject a rule with an unsupported selector after it is marked compatible', () => {
   const state = new MergeState(
-    ['IE 9'],
+    ['ie 9'],
     new Map(),
     new WeakSet(),
     new WeakMap()

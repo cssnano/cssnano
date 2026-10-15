@@ -50,6 +50,15 @@ const cssnanoUtils = {
   tokens,
 };
 
+/** @typedef {import('./featureKeys.js').FeatureKey} FeatureKey */
+/** @typedef {import('./browserBugs.js').BugKey} BugKey */
+
+/**
+ * Options that select browser targets. They match browserslist's options, so
+ * the shared resolver can pass them on unchanged.
+ * @typedef {{overrideBrowserslist?: string | string[] | undefined, stats?: string | Record<string, Record<string, number>> | undefined, path?: string | undefined, env?: string | undefined}} TargetOptions
+ */
+
 const moduleExports = cssnanoUtils;
 
 export { moduleExports as default, moduleExports as 'module.exports' };

@@ -1,11 +1,7 @@
-import type browserslist from 'browserslist';
-export type AutoprefixerOptions = {
-    overrideBrowserslist?: string | string[];
-};
-export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
+import type { TargetOptions } from '#utils';
 export type Options = {
     lint?: boolean;
-} & AutoprefixerOptions & BrowserslistOptions;
+} & TargetOptions;
 declare const moduleExports: import('postcss').PluginCreator<Options> & {
     detect: (node: import('postcss').Node) => boolean;
 };

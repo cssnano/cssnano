@@ -3,22 +3,22 @@
  * them drops the whole declaration, losing both axes that separate longhands
  * would have kept.
  *
- * @param {string[]} browsers - browserslist entries such as "safari 10.1"
+ * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
  * @return {boolean}
  */
-export declare function supportsPlaceShorthands(browsers: string[]): boolean;
+export declare function supportsPlaceShorthands(browsers: readonly string[]): boolean;
 /**
  * The pair families whose shorthand every target parses, and the families
  * that need no support check. An engine without a gated shorthand drops the
  * whole declaration, losing both axes that separate longhands would have kept.
  * A gated family without minimums is taken as unsupported.
  *
- * @param {string[]} browsers - browserslist entries such as "safari 10.1"
+ * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
  * @param {Record<string, Record<string, string>>} [minimumsByShorthand] - first
  * supporting version by shorthand and browserslist name
  * @return {ReadonlySet<string>} the shorthand names
  */
-export declare function supportedPairShorthands(browsers: string[], minimumsByShorthand?: Record<string, Record<string, string>>): ReadonlySet<string>;
+export declare function supportedPairShorthands(browsers: readonly string[], minimumsByShorthand?: Record<string, Record<string, string>>): ReadonlySet<string>;
 /**
  * The oldest release of each engine that parses every longstanding unit and
  * function `isFallback` lists, by browserslist name. An engine left out, such
@@ -32,20 +32,22 @@ export declare const longstandingFloor: Readonly<Record<string, string>>;
  * fallback for it. Features without compatibility data are never included,
  * and longstanding syntax only when every target reaches the floor.
  *
- * @param {string[]} browsers - browserslist entries such as "safari 10.1"
+ * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
  * @return {ReadonlySet<string>}
  */
-export declare function featuresSupportedByAll(browsers: string[]): ReadonlySet<string>;
+export declare function featuresSupportedByAll(browsers: readonly string[]): ReadonlySet<string>;
 import type { BoxProperty } from './decl/boxGroups.js';
 /**
  * What the targets support of the box groups. The newer shorthands arrived
  * long after their longhands, so which of two declarations applies in a
- * target depends on which of them it understands.
+ * target depends on which of them it understands. An empty list means the
+ * targets are unknown, and they are judged as an engine the data does not
+ * cover.
  */
 export declare class BoxSupport {
     #private;
-    /** @param {string[]} browsers */
-    constructor(browsers: string[]);
+    /** @param {readonly string[]} browsers */
+    constructor(browsers: readonly string[]);
     /**
      * @param {string} property
      * @return {boolean} whether every target understands the property
