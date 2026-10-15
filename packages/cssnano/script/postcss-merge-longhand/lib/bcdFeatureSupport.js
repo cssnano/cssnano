@@ -9,7 +9,7 @@
  * version wins.
  */
 import { serializeJson } from '../../../../../util/webref/webref.js';
-import { compareVersions } from '../../../src/plugins/postcss-merge-longhand/lib/compareVersions.js';
+import { compareVersions } from '../../../src/utils/versions.js';
 import { longstandingFloor as floorByBrowserslistName } from '../../../src/plugins/postcss-merge-longhand/lib/targetSupport.js';
 import {
   browserslistNames,

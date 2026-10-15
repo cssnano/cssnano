@@ -1,8 +1,9 @@
-import getBrowsersList from './lib/computeBrowsersToSupport.js';
+import { resolveTargets } from '#utils/browser-targets';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import { anyAffected } from '#utils/browser-bugs';
 
-/** @import browserslist from 'browserslist' */
+/** @import {TargetOptions} from '#utils' */
 /** @import { TokenUnicodeRange } from '@csstools/css-tokenizer' */
 
 const { asciiLowerCase } = cssnanoUtils;
@@ -158,9 +159,7 @@ function assignValue(decl, value) {
 }
 
 /**
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
+ * @typedef {TargetOptions} Options
  */
 
 /**
@@ -173,25 +172,14 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
     postcssPlugin: 'postcss-normalize-unicode',
 
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     * @param {import('postcss').Result} result
      */
     prepare(result) {
-      const { stats, env, from, file } = result.opts || {};
-      const browsers = getBrowsersList(null, opts, stats, from, file, env);
+      const browsers = resolveTargets(opts, result);
 
       const cache = new Map();
-      /**
-       * IE and Edge before 16 version ignore the unicode-range if the 'U' is
-       * lowercase
-       *
-       * https://caniuse.com/#search=unicode-range
-       */
-      const lowerCaseUPrefixBugBrowsers = new Set(
-        getBrowsersList('ie <=11, edge <= 15')
-      );
-      const isLegacy = !new Set(browsers).isDisjointFrom(
-        lowerCaseUPrefixBugBrowsers
-      );
+      // IE and Edge before 16 ignore a unicode-range with a lowercase U.
+      const isLegacy = anyAffected(browsers, 'unicode-range-lowercase-u');
 
       return {
         /**

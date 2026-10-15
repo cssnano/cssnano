@@ -6,7 +6,7 @@ import { VendorPrefixSummary } from '../../src/plugins/postcss-merge-rules/lib/v
 import { getMeta } from '../../src/plugins/postcss-merge-rules/lib/ruleMeta.js';
 import { createSelectorLookup } from '../../src/plugins/postcss-merge-rules/lib/ensureCompatibility.js';
 
-const lookup = createSelectorLookup(['Chrome 120']);
+const lookup = createSelectorLookup(['chrome 120']);
 const profileOf = (selectors) => VendorPrefixSummary.of(selectors.map(lookup));
 
 // Reference verdict: merging two selector lists keeps the same vendor
@@ -216,7 +216,7 @@ test('createSelectorLookup should flag :-ms-input-placeholder in any letter case
 
 test('createSelectorLookup should scan a selector only once when it repeats', () => {
   const cache = new Map();
-  const cached = createSelectorLookup(['Chrome 120'], cache);
+  const cached = createSelectorLookup(['chrome 120'], cache);
   const get = cache.get.bind(cache);
   let scans = 0;
   cache.get = (key) => {

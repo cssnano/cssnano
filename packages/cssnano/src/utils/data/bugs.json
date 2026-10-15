@@ -1,0 +1,78 @@
+{
+  "transparent-click-ie8-9": {
+    "browsers": ["ie 8", "ie 9"],
+    "source": "https://developer.mozilla.org/en-US/docs/Web/Events/click#Internet_Explorer"
+  },
+  "media-all-ie10-11": {
+    "browsers": ["ie 10", "ie 11"],
+    "source": "https://github.com/cssnano/cssnano/commit/cd92638e14760025ab348239a3a216047a904d5c"
+  },
+  "ie-zero-unit-retention": {
+    "browsers": ["ie 5.5", "ie 6", "ie 7", "ie 8", "ie 9", "ie 10", "ie 11"],
+    "source": "https://codepen.io/nex3/full/XWVqJrJ"
+  },
+  "unicode-range-lowercase-u": {
+    "browsers": [
+      "edge 12",
+      "edge 13",
+      "edge 14",
+      "edge 15",
+      "ie 5.5",
+      "ie 6",
+      "ie 7",
+      "ie 8",
+      "ie 9",
+      "ie 10",
+      "ie 11"
+    ],
+    "source": "https://caniuse.com/#search=unicode-range"
+  },
+  "stylehacks-important-ie5.5-7": {
+    "browsers": ["ie 5.5", "ie 6", "ie 7"],
+    "source": "https://perishablepress.com/css-hackz-series-targeting-and-filtering-internet-explorer-7"
+  },
+  "stylehacks-leading-star-ie5.5-7": {
+    "browsers": ["ie 5.5", "ie 6", "ie 7"],
+    "source": "https://mathiasbynens.be/notes/safe-css-hacks"
+  },
+  "stylehacks-leading-underscore-ie6": {
+    "browsers": ["ie 6"],
+    "source": "https://mathiasbynens.be/notes/safe-css-hacks"
+  },
+  "stylehacks-slash9-ie6-8": {
+    "browsers": ["ie 6", "ie 7", "ie 8"],
+    "source": "https://mathiasbynens.be/notes/safe-css-hacks"
+  },
+  "stylehacks-media-slash0-ie8": {
+    "browsers": ["ie 8"],
+    "source": "https://keithclark.co.uk/articles/moving-ie-specific-css-into-media-blocks/"
+  },
+  "stylehacks-media-slash0-slash9-ie5.5-8": {
+    "browsers": ["ie 5.5", "ie 6", "ie 7", "ie 8"],
+    "source": "https://keithclark.co.uk/articles/moving-ie-specific-css-into-media-blocks/"
+  },
+  "stylehacks-media-slash9-ie5.5-7": {
+    "browsers": ["ie 5.5", "ie 6", "ie 7"],
+    "source": "https://keithclark.co.uk/articles/moving-ie-specific-css-into-media-blocks/"
+  },
+  "stylehacks-body-empty-firefox2": {
+    "browsers": ["firefox 2"],
+    "source": "https://perishablepress.com/css-hack-dumpster"
+  },
+  "stylehacks-html-combinator-comment-body-ie5.5-7": {
+    "browsers": ["ie 5.5", "ie 6", "ie 7"],
+    "source": "https://perishablepress.com/css-hackz-series-targeting-and-filtering-internet-explorer-7"
+  },
+  "stylehacks-html-first-child-opera9": {
+    "browsers": ["opera 9"],
+    "source": "https://css-tricks.com/?p=3702"
+  },
+  "stylehacks-star-html-ie5.5-6": {
+    "browsers": ["ie 5.5", "ie 6"],
+    "source": "https://css-tricks.com/?p=3702"
+  },
+  "stylehacks-trailing-slash-comma-ie5.5-7": {
+    "browsers": ["ie 5.5", "ie 6", "ie 7"],
+    "source": "https://hicks.design/journal/providing-css-for-just-internet-explorer"
+  }
+}

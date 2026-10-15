@@ -1,4 +1,4 @@
-import type browserslist from 'browserslist';
+import type { TargetOptions } from '#utils';
 export type MinifyColorOptions = {
     hex?: boolean;
     alphaHex?: boolean;
@@ -11,11 +11,7 @@ export type MinifyColorOptions = {
      */
     transformCustomProperties?: boolean;
 };
-export type AutoprefixerOptions = {
-    overrideBrowserslist?: string | string[];
-};
-export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
-export type Options = MinifyColorOptions & AutoprefixerOptions & BrowserslistOptions;
+export type Options = MinifyColorOptions & TargetOptions;
 /**
  * @typedef {object} MinifyColorOptions
  * @property {boolean} [hex]
@@ -27,9 +23,7 @@ export type Options = MinifyColorOptions & AutoprefixerOptions & BrowserslistOpt
  * @property {boolean} [transformCustomProperties] Whether to minify colors inside custom property values (default: true)
  */
 /**
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {MinifyColorOptions & AutoprefixerOptions & BrowserslistOptions} Options
+ * @typedef {MinifyColorOptions & TargetOptions} Options
  */
 /**
  * @param {Options} config

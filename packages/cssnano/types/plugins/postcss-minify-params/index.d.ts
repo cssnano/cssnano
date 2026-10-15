@@ -1,13 +1,8 @@
-import type browserslist from 'browserslist';
-export type AutoprefixerOptions = {
-    overrideBrowserslist?: string | string[];
-};
-export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
-export type Options = AutoprefixerOptions & BrowserslistOptions;
+import type { TargetOptions } from '#utils';
+export type Options = TargetOptions;
+/** @import {TargetOptions} from '#utils' */
 /**
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
+ * @typedef {TargetOptions} Options
  */
 /**
  * @type {import('postcss').PluginCreator<Options>}
@@ -17,13 +12,9 @@ export type Options = AutoprefixerOptions & BrowserslistOptions;
 declare function pluginCreator(options?: {}): {
     postcssPlugin: string;
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     * @param {import('postcss').Result} result
      */
-    prepare(result: import('postcss').Result & {
-        opts: BrowserslistOptions & {
-            file?: string;
-        };
-    }): {
+    prepare(result: import('postcss').Result): {
         /** @param {import('postcss').Root} css */
         OnceExit(css: import('postcss').Root): void;
     };

@@ -3,7 +3,7 @@
  * support records and the rule for what counts as standard, unprefixed,
  * unflagged support.
  */
-import { compareVersions } from '../../../src/plugins/postcss-merge-longhand/lib/compareVersions.js';
+import { compareVersions } from '../../../src/utils/versions.js';
 
 /**
  * @typedef {{

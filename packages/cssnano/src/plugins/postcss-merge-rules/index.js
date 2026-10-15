@@ -1,7 +1,7 @@
-import getBrowsersList from '#getBrowsersList';
+import { resolveTargets } from '#utils/browser-targets';
 import runMerge from './lib/selectorMerger.js';
 
-/** @import browserslist from 'browserslist' */
+/** @import {TargetOptions} from '#utils' */
 
 /**
  * @typedef {Object} RuleMeta
@@ -10,9 +10,7 @@ import runMerge from './lib/selectorMerger.js';
  */
 
 /**
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
+ * @typedef {TargetOptions} Options
  */
 
 /** @param {Options} opts @return {import('postcss').Plugin} */
@@ -20,10 +18,9 @@ function pluginCreator(opts = {}) {
   return {
     postcssPlugin: 'postcss-merge-rules',
 
-    /** @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result */
+    /** @param {import('postcss').Result} result */
     prepare(result) {
-      const { stats, env, from, file } = result.opts || {};
-      const browsers = getBrowsersList(opts, stats, from, file, env);
+      const browsers = resolveTargets(opts, result);
       const compatibilityCache = new Map();
       // Use WeakSet and WeakMap to avoid memory leaks because the keys are objects.
       const ruleCache = new WeakSet();

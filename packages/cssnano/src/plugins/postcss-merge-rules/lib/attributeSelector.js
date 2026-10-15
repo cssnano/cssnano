@@ -1,6 +1,7 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
-import { cssSel2, cssSel3, isSupportedCached } from './supportCache.js';
+import { supportsAll } from '#utils/browser-support';
+import { cssSel2, cssSel3 } from './pseudoSupport.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -30,7 +31,7 @@ const attributeOperatorCharacters = new Set(['~', '|', '^', '$', '*']);
  * was already checked. Returns false when the selector is incomplete.
  *
  * @param {AttributeScanState} state
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @return {boolean}
  */
 function closeAttribute(state, browsers) {
@@ -40,7 +41,7 @@ function closeAttribute(state, browsers) {
     if (stage !== 'prefix' && stage !== 'localName' && stage !== 'matcher') {
       return false;
     }
-    if (!isSupportedCached(cssSel2, browsers)) return false;
+    if (!supportsAll(browsers, cssSel2)) return false;
   }
   state.delimiters.pop();
   state.attributeStage = 'none';
@@ -71,18 +72,18 @@ function skipAttributeTrivia(state) {
  *
  * @param {AttributeScanState} state
  * @param {string} character
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @return {boolean}
  */
 function startMatcher(state, character, browsers) {
   if (character === '=') {
     state.attributeStage = 'value';
-    return isSupportedCached(cssSel2, browsers);
+    return supportsAll(browsers, cssSel2);
   }
   if (!attributeOperatorCharacters.has(character)) return false;
   state.attributeStage = 'equals';
   const feature = level2Sel.has(`${character}=`) ? cssSel2 : cssSel3;
-  return isSupportedCached(feature, browsers);
+  return supportsAll(browsers, feature);
 }
 
 /**
@@ -110,7 +111,7 @@ function startAttributeName(state, type, value) {
  * @param {AttributeScanState} state
  * @param {TokenType} type
  * @param {string} value
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @return {boolean}
  */
 function afterSeparator(state, type, value, browsers) {
@@ -128,7 +129,7 @@ function afterSeparator(state, type, value, browsers) {
  * @param {AttributeScanState} state
  * @param {boolean} isDelim
  * @param {string} value
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @return {boolean}
  */
 function afterPrefix(state, isDelim, value, browsers) {
@@ -145,14 +146,14 @@ function afterPrefix(state, isDelim, value, browsers) {
  *
  * @param {AttributeScanState} state
  * @param {string} value
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @return {boolean}
  */
 function readModifier(state, value, browsers) {
   state.attributeStage = 'done';
   return (
     asciiLowerCase(value) === 'i' &&
-    isSupportedCached('css-case-insensitive', browsers)
+    supportsAll(browsers, 'css-case-insensitive')
   );
 }
 
@@ -162,7 +163,7 @@ function readModifier(state, value, browsers) {
  * @param {AttributeScanState} state
  * @param {TokenType} type
  * @param {string} value
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @return {boolean}
  */
 function advanceAttribute(state, type, value, browsers) {

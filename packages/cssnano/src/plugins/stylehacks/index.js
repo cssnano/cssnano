@@ -1,13 +1,12 @@
-import getBrowsersList from '#getBrowsersList';
+import { resolveTargets } from '#utils/browser-targets';
+import { anyAffected } from '#utils/browser-bugs';
 import plugins, { pluginsByNodeType } from './plugins/index.js';
 
 /** @import {Declaration} from 'postcss'; */
 
 /**
- * @import browserslist from 'browserslist'
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {{lint?: boolean} & AutoprefixerOptions & BrowserslistOptions} Options
+ * @import {TargetOptions} from '#utils'
+ * @typedef {{lint?: boolean} & TargetOptions} Options
  */
 
 /**
@@ -19,12 +18,10 @@ function pluginCreator(opts = {}) {
     postcssPlugin: 'stylehacks',
 
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     * @param {import('postcss').Result} result
      */
     prepare(result) {
-      const { stats, env, from, file } = result.opts || {};
-      const browsers = getBrowsersList(opts, stats, from, file, env);
-      const browserSet = new Set(browsers);
+      const browsers = resolveTargets(opts, result);
 
       return /** import('postcss').Plugin */ {
         /**
@@ -35,7 +32,7 @@ function pluginCreator(opts = {}) {
           const processors = [];
           for (const Plugin of plugins) {
             const hack = new Plugin(result);
-            if (browserSet.isDisjointFrom(hack.targets)) {
+            if (!anyAffected(browsers, hack.bug)) {
               processors.push(hack);
             }
           }

@@ -1,5 +1,4 @@
 import BasePlugin from '../plugin.js';
-import { IE_5_5, IE_6, IE_7 } from '../dictionary/browsers.js';
 import { PROPERTY } from '../dictionary/identifiers.js';
 import { ATRULE, DECL } from '../dictionary/postcss.js';
 
@@ -9,7 +8,7 @@ const hacks = '!_$_&_*_)_=_%_+_,_._/_`_]_#_~_?_:_|'.split('_');
 export default (class LeadingStar extends BasePlugin {
   /** @param {import('postcss').Result=} result */
   constructor(result) {
-    super([IE_5_5, IE_6, IE_7], [ATRULE, DECL], result);
+    super('stylehacks-leading-star-ie5.5-7', [ATRULE, DECL], result);
   }
 
   /**

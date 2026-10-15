@@ -1,20 +1,17 @@
-import getBrowsersList from '#getBrowsersList';
-import caniuseApi from 'caniuse-api';
+import { resolveTargets } from '#utils/browser-targets';
+import { supportsAll } from '#utils/browser-support';
 import fromInitial from './data/fromInitial.json' with { type: 'json' };
 import toInitial from './data/toInitial.json' with { type: 'json' };
 import ignoreProps from './lib/ignoreProps.js';
 
-const { isSupported } = caniuseApi;
 const initial = 'initial';
 
 // In most of the browser including chrome the initial for `writing-mode` is not `horizontal-tb`. Ref https://github.com/cssnano/cssnano/pull/905
 const defaultIgnoreProps = ignoreProps;
 
 /**
- * @import browserslist from 'browserslist'
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {{ignore?: string[]} & AutoprefixerOptions & BrowserslistOptions} Options
+ * @import {TargetOptions} from '#utils'
+ * @typedef {{ignore?: string[]} & TargetOptions} Options
  */
 
 /**
@@ -26,13 +23,12 @@ function pluginCreator(options = {}) {
     postcssPlugin: 'postcss-reduce-initial',
 
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     * @param {import('postcss').Result} result
      */
     prepare(result) {
-      const { stats, env, from, file } = result.opts || {};
-      const browsers = getBrowsersList(options, stats, from, file, env);
+      const browsers = resolveTargets(options, result);
 
-      const initialSupport = isSupported('css-initial-value', browsers);
+      const initialSupport = supportsAll(browsers, 'css-initial-value');
       return {
         /**
          * @param {import('postcss').Root} css

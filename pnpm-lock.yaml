@@ -182,6 +182,9 @@ catalogs:
     browserslist:
       specifier: ^4.29.3
       version: 4.29.3
+    caniuse-lite:
+      specifier: ^1.0.30001816
+      version: 1.0.30001816
     mdn-data:
       specifier: 2.37.2
       version: 2.37.2
@@ -226,9 +229,9 @@ importers:
       browserslist:
         specifier: 'catalog:'
         version: 4.29.3
-      caniuse-api:
-        specifier: ^4.0.0
-        version: 4.0.0
+      caniuse-lite:
+        specifier: 'catalog:'
+        version: 1.0.30001816
       postcss-calc:
         specifier: ^11.2.3
         version: 11.2.3(postcss@8.5.30)
@@ -242,6 +245,9 @@ importers:
       autoprefixer:
         specifier: 'catalog:'
         version: 10.6.1(postcss@8.5.30)
+      caniuse-api:
+        specifier: ^4.0.0
+        version: 4.0.0
       jsdom:
         specifier: ^30.1.3
         version: 30.1.3

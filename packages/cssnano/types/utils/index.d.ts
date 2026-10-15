@@ -8,6 +8,21 @@ import isImportantComment from './isImportantComment.js';
 import { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens } from './value.js';
 /** @param {string} value @return {string} */
 declare function asciiLowerCase(value: string): string;
+export type FeatureKey = import('./featureKeys.js').FeatureKey;
+export type BugKey = import('./browserBugs.js').BugKey;
+export type TargetOptions = {
+    overrideBrowserslist?: string | string[] | undefined;
+    stats?: string | Record<string, Record<string, number>> | undefined;
+    path?: string | undefined;
+    env?: string | undefined;
+};
+/** @typedef {import('./featureKeys.js').FeatureKey} FeatureKey */
+/** @typedef {import('./browserBugs.js').BugKey} BugKey */
+/**
+ * Options that select browser targets. They match browserslist's options, so
+ * the shared resolver can pass them on unchanged.
+ * @typedef {{overrideBrowserslist?: string | string[] | undefined, stats?: string | Record<string, Record<string, number>> | undefined, path?: string | undefined, env?: string | undefined}} TargetOptions
+ */
 declare const moduleExports: {
     rawCache: typeof rawCache;
     isAnonymousLayer: typeof isAnonymousLayer;

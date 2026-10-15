@@ -13,7 +13,7 @@ import {
   allPhysicalBorderProperties,
   allRadiusProperties,
 } from './lib/decl/borderData.js';
-import getBrowsersList from '#getBrowsersList';
+import { resolveTargets } from '#utils/browser-targets';
 import { alignmentProperties } from './lib/decl/alignmentForms.js';
 import { reduceAlignmentFamily } from './lib/decl/alignmentReducer.js';
 import { pairFamilyOf } from './lib/decl/pairForms.js';
@@ -38,14 +38,12 @@ import {
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
-/** @import browserslist from 'browserslist' */
+/** @import {TargetOptions} from '#utils' */
 /** @import {BoxDeclarations} from './lib/decl/boxReducer.js'; */
 /** @import {BoxGroup} from './lib/decl/boxGroups.js'; */
 
 /**
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {AutoprefixerOptions & BrowserslistOptions} Options
+ * @typedef {TargetOptions} Options
  */
 
 /**
@@ -342,11 +340,10 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
   return {
     postcssPlugin: 'postcss-merge-longhand',
     /**
-     * @param {import('postcss').Result & {opts: BrowserslistOptions & {file?: string}}} result
+     * @param {import('postcss').Result} result
      */
     prepare(result) {
-      const { stats, env, from, file } = result.opts || {};
-      const browsers = getBrowsersList(opts, stats, from, file, env);
+      const browsers = resolveTargets(opts, result);
       const placeShorthands = supportsPlaceShorthands(browsers);
       const boxSupport = new BoxSupport(browsers);
       const pairShorthands = supportedPairShorthands(browsers);

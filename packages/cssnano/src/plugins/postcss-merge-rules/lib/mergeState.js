@@ -32,7 +32,7 @@ export default class MergeState {
   #elementKeyOf = createElementKeyLookup();
 
   /**
-   * @param {string[]} browsers
+   * @param {readonly string[]} browsers
    * @param {Map<string, import('./ensureCompatibility.js').SelectorInfo>} compatibilityCache
    * @param {WeakSet<Rule>} ruleCache rules whose selectors are known to be compatible
    * @param {WeakMap<Rule, RuleMeta>} ruleMeta

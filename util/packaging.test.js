@@ -137,7 +137,7 @@ describe('published package', () => {
       '@colordx/core',
       '@csstools/css-tokenizer',
       'browserslist',
-      'caniuse-api',
+      'caniuse-lite',
       'postcss-calc',
     ]);
     assert.deepEqual(Object.keys(manifest.peerDependencies), ['postcss']);

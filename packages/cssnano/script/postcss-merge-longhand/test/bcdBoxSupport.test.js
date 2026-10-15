@@ -15,7 +15,7 @@ import {
   standardSupportSince,
   supportOf,
 } from '../lib/bcdSupport.js';
-import { compareVersions } from '../../../src/plugins/postcss-merge-longhand/lib/compareVersions.js';
+import { compareVersions } from '../../../src/utils/versions.js';
 
 /**
  * @param {Record<string, Record<string, object>>} properties

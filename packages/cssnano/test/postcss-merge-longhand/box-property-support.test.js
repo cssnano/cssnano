@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import boxSupportData from '../../src/plugins/postcss-merge-longhand/data/boxPropertySupport.json' with { type: 'json' };
-import { compareVersions } from '../../src/plugins/postcss-merge-longhand/lib/compareVersions.js';
+import { compareVersions } from '../../src/utils/versions.js';
 import { boxProperties } from '../../src/plugins/postcss-merge-longhand/lib/decl/boxGroups.js';
 import { BoxSupport } from '../../src/plugins/postcss-merge-longhand/lib/targetSupport.js';
 

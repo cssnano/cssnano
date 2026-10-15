@@ -18,7 +18,7 @@ import {
   tightenWithCaniuse,
 } from '../lib/bcdFeatureSupport.js';
 import { lookup, standardSupportSince, supportOf } from '../lib/bcdSupport.js';
-import { compareVersions } from '../../../src/plugins/postcss-merge-longhand/lib/compareVersions.js';
+import { compareVersions } from '../../../src/utils/versions.js';
 import {
   longstandingFunctions,
   longstandingUnits,

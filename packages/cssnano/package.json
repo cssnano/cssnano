@@ -12,10 +12,6 @@
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
   "imports": {
-    "#getBrowsersList": {
-      "node": "./src/utils/browsersList/computeBrowsersToSupport.js",
-      "default": "./src/utils/browsersList/getBrowsersForWebBuild.js"
-    },
     "#postcss-colormin": "./src/plugins/postcss-colormin/index.js",
     "#postcss-convert-values": "./src/plugins/postcss-convert-values/index.js",
     "#postcss-discard-comments": "./src/plugins/postcss-discard-comments/index.js",
@@ -49,7 +45,11 @@
     "#presets/default": "./src/presets/default.js",
     "#presets/lite": "./src/presets/lite.js",
     "#stylehacks": "./src/plugins/stylehacks/index.js",
-    "#utils": "./src/utils/index.js"
+    "#utils": "./src/utils/index.js",
+    "#utils/browser-bugs": "./src/utils/browserBugs.js",
+    "#utils/browser-support": "./src/utils/browserSupport.js",
+    "#utils/browser-targets": "./src/utils/browserTargets.js",
+    "#utils/versions": "./src/utils/versions.js"
   },
   "funding": {
     "type": "opencollective",
@@ -69,7 +69,7 @@
     "@colordx/core": "catalog:",
     "@csstools/css-tokenizer": "catalog:",
     "browserslist": "catalog:",
-    "caniuse-api": "^4.0.0",
+    "caniuse-lite": "catalog:",
     "postcss-calc": "^11.2.3"
   },
   "homepage": "https://github.com/cssnano/cssnano",
@@ -97,6 +97,7 @@
     "@mdn/browser-compat-data": "catalog:",
     "@webref/css": "catalog:",
     "autoprefixer": "catalog:",
+    "caniuse-api": "^4.0.0",
     "jsdom": "^30.1.3",
     "mdn-data": "catalog:",
     "postcss": "catalog:",

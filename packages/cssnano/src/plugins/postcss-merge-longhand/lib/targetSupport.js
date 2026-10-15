@@ -2,10 +2,11 @@ import placeMinimums from '../data/placeSupport.json' with { type: 'json' };
 import pairMinimums from '../data/pairSupport.json' with { type: 'json' };
 import boxSupport from '../data/boxPropertySupport.json' with { type: 'json' };
 import featureMinimums from '../data/featureSupport.json' with { type: 'json' };
-import { compareVersions } from './compareVersions.js';
 import { boxProperties } from './decl/boxGroups.js';
 import { pairFamilies } from './decl/pairForms.js';
 import { longstandingFeatures } from './syntaxFeatures.js';
+import { everyTarget } from '#utils/browser-support';
+import { compareVersions, isDottedVersion } from '#utils/versions';
 
 const pairMinimumsByShorthand =
   /** @type {Record<string, Record<string, string>>} */ (pairMinimums);
@@ -23,9 +24,7 @@ function reaches(entry, minimums) {
   if (minimum === undefined) return false;
   if (version === 'TP') return true;
   const lowest = version.split('-')[0];
-  return (
-    /^\d+(?:\.\d+)*$/v.test(lowest) && compareVersions(lowest, minimum) >= 0
-  );
+  return isDottedVersion(lowest) && compareVersions(lowest, minimum) >= 0;
 }
 
 /**
@@ -33,11 +32,11 @@ function reaches(entry, minimums) {
  * them drops the whole declaration, losing both axes that separate longhands
  * would have kept.
  *
- * @param {string[]} browsers - browserslist entries such as "safari 10.1"
+ * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
  * @return {boolean}
  */
 export function supportsPlaceShorthands(browsers) {
-  return browsers.every((entry) => reaches(entry, placeMinimums));
+  return everyTarget(browsers, (entry) => reaches(entry, placeMinimums));
 }
 
 /**
@@ -46,7 +45,7 @@ export function supportsPlaceShorthands(browsers) {
  * whole declaration, losing both axes that separate longhands would have kept.
  * A gated family without minimums is taken as unsupported.
  *
- * @param {string[]} browsers - browserslist entries such as "safari 10.1"
+ * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
  * @param {Record<string, Record<string, string>>} [minimumsByShorthand] - first
  * supporting version by shorthand and browserslist name
  * @return {ReadonlySet<string>} the shorthand names
@@ -60,7 +59,7 @@ export function supportedPairShorthands(
       .filter(({ supportKey }) => {
         if (supportKey === null) return true;
         const minimums = minimumsByShorthand[supportKey] ?? {};
-        return browsers.every((entry) => reaches(entry, minimums));
+        return everyTarget(browsers, (entry) => reaches(entry, minimums));
       })
       .map(({ shorthand }) => shorthand)
   );
@@ -102,16 +101,16 @@ function reachesLongstandingFloor(entry) {
  * fallback for it. Features without compatibility data are never included,
  * and longstanding syntax only when every target reaches the floor.
  *
- * @param {string[]} browsers - browserslist entries such as "safari 10.1"
+ * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
  * @return {ReadonlySet<string>}
  */
 export function featuresSupportedByAll(browsers) {
   /** @type {Set<string>} */
   const supported = new Set(
-    browsers.every(reachesLongstandingFloor) ? longstandingFeatures : []
+    everyTarget(browsers, reachesLongstandingFloor) ? longstandingFeatures : []
   );
   for (const [feature, minimums] of Object.entries(featureMinimums)) {
-    if (browsers.every((entry) => reaches(entry, minimums))) {
+    if (everyTarget(browsers, (entry) => reaches(entry, minimums))) {
       supported.add(feature);
     }
   }
@@ -142,8 +141,21 @@ function reachesBoxProperty(entry, property) {
 }
 
 /**
+ * Whether every engine parses the property, as for the CSS 1 and CSS 2 box
+ * properties. Only these are safe for targets that are unknown.
+ *
+ * @param {string} property - a property of the box groups
+ * @return {boolean}
+ */
+function isUniversalBoxProperty(property) {
+  return typeof boxMinimums[property] === 'string';
+}
+
+/**
  * The compatibility data says nothing about some engines, such as UC Browser,
- * so they may understand any property.
+ * so they may understand any property. This answers "may this browser parse
+ * it?" to keep a fallback, which is safer to assume than to deny, unlike the
+ * shared feature checks in utils/browserSupport.js.
  *
  * @param {string} entry - a browserslist entry such as "safari 10.1"
  * @param {string} property - a property of the box groups
@@ -159,10 +171,12 @@ function mayUnderstandBoxProperty(entry, property) {
 /**
  * What the targets support of the box groups. The newer shorthands arrived
  * long after their longhands, so which of two declarations applies in a
- * target depends on which of them it understands.
+ * target depends on which of them it understands. An empty list means the
+ * targets are unknown, and they are judged as an engine the data does not
+ * cover.
  */
 export class BoxSupport {
-  /** @type {string[]} */
+  /** @type {readonly string[]} */
   #browsers;
   #targetCount;
   /** @type {Map<string, ReadonlySet<string>>} */
@@ -173,7 +187,7 @@ export class BoxSupport {
    * the same few pairs for every side it sets. */
   #answers = new Uint8Array(boxProperties.size ** 2);
 
-  /** @param {string[]} browsers */
+  /** @param {readonly string[]} browsers */
   constructor(browsers) {
     this.#browsers = browsers;
     this.#targetCount = new Set(browsers).size;
@@ -206,7 +220,23 @@ export class BoxSupport {
    * @return {boolean} whether every target understands the property
    */
   supportsAll(property) {
+    if (this.#targetCount === 0) return isUniversalBoxProperty(property);
     return this.#targetsSupporting(property).size === this.#targetCount;
+  }
+
+  /**
+   * @param {BoxProperty} earlier
+   * @param {BoxProperty} later
+   * @return {boolean}
+   */
+  #covers(earlier, later) {
+    if (earlier === later) return true;
+    if (this.#targetCount === 0) return isUniversalBoxProperty(later.name);
+    return this.#targetsWhere(
+      this.#understanding,
+      mayUnderstandBoxProperty,
+      earlier.name
+    ).isSubsetOf(this.#targetsSupporting(later.name));
   }
 
   /**
@@ -220,15 +250,7 @@ export class BoxSupport {
     const slot = earlier.index * boxProperties.size + later.index;
     let answer = this.#answers[slot];
     if (answer === unknown) {
-      answer =
-        earlier === later ||
-        this.#targetsWhere(
-          this.#understanding,
-          mayUnderstandBoxProperty,
-          earlier.name
-        ).isSubsetOf(this.#targetsSupporting(later.name))
-          ? yes
-          : no;
+      answer = this.#covers(earlier, later) ? yes : no;
       this.#answers[slot] = answer;
     }
     return answer === yes;

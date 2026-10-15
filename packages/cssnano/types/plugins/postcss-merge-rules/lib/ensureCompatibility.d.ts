@@ -8,11 +8,11 @@ export type SelectorInfo = {
  * Looks up selectors in a cache that is shared by every check, so each
  * distinct selector is scanned once per stylesheet.
  *
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @param {Map<string, SelectorInfo>} [cache]
  * @return {(selector: string) => SelectorInfo}
  */
-export declare function createSelectorLookup(browsers: string[] | undefined, cache?: Map<string, SelectorInfo>): (selector: string) => SelectorInfo;
+export declare function createSelectorLookup(browsers: readonly string[], cache?: Map<string, SelectorInfo>): (selector: string) => SelectorInfo;
 /**
  * @param {string[]} selectors
  * @param {(selector: string) => SelectorInfo} lookup

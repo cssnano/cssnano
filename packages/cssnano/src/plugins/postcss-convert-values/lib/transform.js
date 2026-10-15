@@ -92,14 +92,6 @@ function skipsTransformation(property, opts) {
   );
 }
 
-/** @param {boolean | string[]} supportsIE @return {boolean} */
-function hasIESupportTarget(supportsIE) {
-  if (typeof supportsIE === 'boolean') {
-    return supportsIE;
-  }
-  return supportsIE.some((b) => b.startsWith('ie '));
-}
-
 /** @param {import('postcss').Declaration} decl @param {string} lowerCasedProp @return {boolean} */
 function isAtPropertyInitialValue(decl, lowerCasedProp) {
   if (lowerCasedProp !== 'initial-value') return false;
@@ -168,7 +160,7 @@ function shouldKeepZeroLength(
  * @param {import('postcss').Declaration} decl
  * @param {string} lowerCasedProp
  * @param {string} strippedProp
- * @param {boolean | string[]} supportsIE
+ * @param {boolean} supportsIE
  * @return {import('./findReplacements.js').ReplacementFlags & { hasParentContext: boolean }}
  */
 function getDeclarationFlags(decl, lowerCasedProp, strippedProp, supportsIE) {
@@ -186,12 +178,11 @@ function getDeclarationFlags(decl, lowerCasedProp, strippedProp, supportsIE) {
       /** @type {import('postcss').AtRule} */ (decl.parent)
     );
 
-  const hasIESupport = hasIESupportTarget(supportsIE);
   const keepZeroPercent = shouldKeepZeroPercent(
     strippedProp,
     isLineHeight,
     isFlexBasis,
-    hasIESupport,
+    supportsIE,
     inKeyframes,
     isKeyframeProp,
     allowsAtPropertyPercentage
@@ -247,7 +238,7 @@ function syncDeclValue(decl, newValue, originalValue) {
   }
 }
 
-/** @param {Options} opts @param {boolean | string[]} supportsIE @param {import('postcss').Declaration} decl @param {Map<string, string>} [cache] @return {void} */
+/** @param {Options} opts @param {boolean} supportsIE @param {import('postcss').Declaration} decl @param {Map<string, string>} [cache] @return {void} */
 export default function transform(opts, supportsIE, decl, cache) {
   const lowerCasedProp = decl.prop.toLowerCase();
   const strippedProp = stripVendorPrefix(lowerCasedProp);

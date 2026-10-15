@@ -111,10 +111,10 @@ test('reports and removes multiple selector hacks independently', async () => {
   assert.deepEqual(
     lint.warnings().map((warning) => warning.text),
     [
-      'Bad selector:  body:empty h4{"browsers":{},"identifier":"selector","hack":" body:empty h4"}',
-      'Bad selector:  html > /**/ body h3{"browsers":{},"identifier":"selector","hack":" html > /**/ body h3"}',
-      'Bad selector:  html:first-child h2{"browsers":{},"identifier":"selector","hack":" html:first-child h2"}',
-      'Bad selector: * html h1{"browsers":{},"identifier":"selector","hack":"* html h1"}',
+      'Bad selector:  body:empty h4{"browsers":["firefox 2"],"identifier":"selector","hack":" body:empty h4"}',
+      'Bad selector:  html > /**/ body h3{"browsers":["ie 5.5","ie 6","ie 7"],"identifier":"selector","hack":" html > /**/ body h3"}',
+      'Bad selector:  html:first-child h2{"browsers":["opera 9"],"identifier":"selector","hack":" html:first-child h2"}',
+      'Bad selector: * html h1{"browsers":["ie 5.5","ie 6"],"identifier":"selector","hack":"* html h1"}',
     ]
   );
 

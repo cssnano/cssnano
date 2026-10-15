@@ -1,19 +1,7 @@
-import type browserslist from 'browserslist';
-import type convert from './lib/convert.js';
-export type ConvertOptions = Parameters<typeof convert>[2];
-export type AutoprefixerOptions = {
-    overrideBrowserslist?: string | string[];
-};
-export type BrowserslistOptions = Pick<browserslist.Options, 'stats' | 'path' | 'env'>;
-export type Options = {
-    precision?: false | number;
-    transformCustomProperties?: boolean;
-} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions;
+import type { TargetOptions } from '#utils';
+export type Options = import('./lib/findReplacements.js').Options & TargetOptions;
 /**
- * @typedef {Parameters<typeof convert>[2]} ConvertOptions
- * @typedef {{ overrideBrowserslist?: string | string[] }} AutoprefixerOptions
- * @typedef {Pick<browserslist.Options, 'stats' | 'path' | 'env'>} BrowserslistOptions
- * @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions & AutoprefixerOptions & BrowserslistOptions} Options
+ * @typedef {import('./lib/findReplacements.js').Options & TargetOptions} Options
  */
 /** @param {Options} opts @return {import('postcss').Plugin} */
 declare function pluginCreator(opts?: Options): import('postcss').Plugin;

@@ -1,13 +1,18 @@
-import { cssSel2, cssSel3 } from './supportCache.js';
-
+const cssSel2 = 'css-sel2';
+const cssSel3 = 'css-sel3';
 const cssGencontent = 'css-gencontent';
 const cssFirstLetter = 'css-first-letter';
 const cssFirstLine = 'css-first-line';
 const cssInOutOfRange = 'css-in-out-of-range';
 const formValidation = 'form-validation';
 
+/** @import {FeatureKey} from '#utils' */
+
+export { cssSel2, cssSel3 };
+
 // Each value is a caniuse feature key verified to describe exactly that
 // pseudo; pseudos without a verified key stay gated below.
+/** @type {Record<string, FeatureKey>} */
 export const pseudoElements = {
   ':active': cssSel2,
   ':after': cssGencontent,

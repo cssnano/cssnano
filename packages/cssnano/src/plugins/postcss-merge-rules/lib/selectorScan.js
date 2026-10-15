@@ -1,15 +1,20 @@
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import { advanceAttribute } from './attributeSelector.js';
 import {
+  cssSel2,
+  cssSel3,
   isMsInputPlaceholder,
   pseudoElements,
   vendorPrefixOf,
 } from './pseudoSupport.js';
-import { cssSel2, cssSel3, isSupportedCached } from './supportCache.js';
 import cssnanoUtils from '#utils';
+import { supportsAll } from '#utils/browser-support';
+
+/** @import {FeatureKey} from '#utils' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
+/** @type {Map<string, FeatureKey>} */
 const combinatorFeatures = new Map([
   ['~', cssSel3],
   ['>', cssSel2],
@@ -71,7 +76,7 @@ function trackVendor(state, vendor) {
  * @param {TokenType} type
  * @param {string} value
  * @param {string} name the unescaped identifier or function name
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @return {boolean}
  */
 function isPseudoSupported(state, type, value, name, browsers) {
@@ -95,7 +100,7 @@ function isPseudoSupported(state, type, value, name, browsers) {
   const pseudo = `${pseudoPrefix}${rawName}`;
   const entry =
     pseudoElements[/** @type {keyof typeof pseudoElements} */ (pseudo)];
-  if (entry) return isSupportedCached(entry, browsers);
+  if (entry) return supportsAll(browsers, entry);
   // Pseudo names are ASCII case-insensitive and may be written with escapes.
   const unescaped = asciiLowerCase(name);
   const vendor = vendorPrefixOf(unescaped);
@@ -112,7 +117,7 @@ function isPseudoSupported(state, type, value, name, browsers) {
  * @param {TokenType} type
  * @param {string} value
  * @param {string} name the unescaped identifier or function name
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @return {boolean}
  */
 function isSelectorTokenSupported(state, type, value, name, browsers) {
@@ -124,7 +129,7 @@ function isSelectorTokenSupported(state, type, value, name, browsers) {
   if (value === '|' && previousDelim === '|') return false;
   if (type === TokenType.Delim) {
     const feature = combinatorFeatures.get(value);
-    if (feature && !isSupportedCached(feature, browsers)) return false;
+    if (feature && !supportsAll(browsers, feature)) return false;
   }
   return isPseudoSupported(state, type, value, name, browsers);
 }
@@ -135,7 +140,7 @@ function isSelectorTokenSupported(state, type, value, name, browsers) {
  * deliberately not a selector parser.
  *
  * @param {string} selector
- * @param {string[] | undefined} browsers
+ * @param {readonly string[]} browsers
  * @param {ScanState} state
  * @return {boolean}
  */

@@ -9,7 +9,7 @@ import {
   parsingSupportSince,
   serializePairSupport,
 } from '../lib/bcdPairSupport.js';
-import { compareVersions } from '../../../src/plugins/postcss-merge-longhand/lib/compareVersions.js';
+import { compareVersions } from '../../../src/utils/versions.js';
 
 /** @param {Record<string, object>} support */
 const entry = (support) => ({ __compat: { support } });

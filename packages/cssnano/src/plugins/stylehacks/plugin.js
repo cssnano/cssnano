@@ -1,8 +1,12 @@
+import { browsersAffectedBy } from '#utils/browser-bugs';
+
+/** @import {BugKey} from '#utils/browser-bugs' */
+
 /**
  * @typedef {import('postcss').Node & {
  *   _stylehacks: {
  *     message: string,
- *     browsers: Set<string>,
+ *     browsers: readonly string[],
  *     identifier: string,
  *     hack: string
  *   }
@@ -12,22 +16,23 @@
 export default (class BasePlugin {
   /**
    * @typedef {object} Plugin
-   * @prop {Set<string>} targets
    * @prop {Set<string>} nodeTypes
    * @prop {(node: import('postcss').Node) => void} detectAndResolve
    * @prop {(node: import('postcss').Node) => void} detectAndWarn
    */
   /**
-   * @param {string[]} targets
+   * @param {BugKey} bug A browser bug key from utils/data/bugs.json.
    * @param {string[]} nodeTypes
    * @param {import('postcss').Result=} result
    */
-  constructor(targets, nodeTypes, result) {
+  constructor(bug, nodeTypes, result) {
     /** @type {NodeWithInfo[]} */
     this.nodes = [];
-    this.targets = new Set(targets);
     this.nodeTypes = new Set(nodeTypes);
+    this.bug = bug;
     this.result = result;
+    // Every matched node shares the bug's frozen browser list.
+    this.browsers = browsersAffectedBy(bug);
   }
 
   /**
@@ -39,7 +44,7 @@ export default (class BasePlugin {
     /** @type {NodeWithInfo} */ (node)._stylehacks = {
       ...metadata,
       message: `Bad ${metadata.identifier}: ${metadata.hack}`,
-      browsers: this.targets,
+      browsers: this.browsers,
     };
 
     this.nodes.push(/** @type {NodeWithInfo} */ (node));

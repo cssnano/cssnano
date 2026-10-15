@@ -47,7 +47,7 @@ const functionsPreservingZeroUnits = new Set([
 ]);
 
 /** @typedef {Parameters<typeof convert>[2]} ConvertOptions */
-/** @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions & { overrideBrowserslist?: string | string[] } & import('browserslist').Options} Options */
+/** @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions} Options */
 /** @typedef {{keepZeroPercent: boolean, keepZeroLength: boolean, clampAlpha: boolean, isAlpha: boolean, isFont: boolean}} ReplacementFlags */
 
 /**
