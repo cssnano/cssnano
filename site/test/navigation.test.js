@@ -36,10 +36,7 @@ test('current link falls back to the href when a link has no match list', () => 
 });
 
 test('optimisation slug is the lower-cased short name', () => {
-  assert.strictEqual(
-    optimisationSlug('cssDeclarationSorter'),
-    'cssdeclarationsorter'
-  );
+  assert.strictEqual(optimisationSlug('mergeLonghand'), 'mergelonghand');
 });
 
 test('optimisation slug leaves a name that is already lower-case unchanged', () => {

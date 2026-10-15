@@ -18,8 +18,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "autoprefixer": "catalog:",
-    "css-declaration-sorter": "^7.4.0",
     "cssnano-preset-default": "workspace:^",
     "postcss-discard-unused": "workspace:^",
     "postcss-merge-idents": "workspace:^",

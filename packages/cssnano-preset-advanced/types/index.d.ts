@@ -1,11 +1,7 @@
-import cssDeclarationSorter from 'css-declaration-sorter';
-import autoprefixer from 'autoprefixer';
 export type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
     exclude?: true;
 });
 export type AdvancedOptions = {
-    cssDeclarationSorter?: SimpleOptions<Parameters<typeof cssDeclarationSorter>[0]>;
-    autoprefixer?: autoprefixer.Options;
     discardUnused?: SimpleOptions<import('postcss-discard-unused').Options>;
     mergeIdents?: SimpleOptions;
     reduceIdents?: SimpleOptions<import('postcss-reduce-idents').Options>;

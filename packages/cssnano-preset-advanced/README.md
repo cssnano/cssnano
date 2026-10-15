@@ -11,8 +11,6 @@
 
 - [Plugins](#plugins)
 
-  - [autoprefixer (external)](#autoprefixer-external)
-  - [css-declaration-sorter (external)](#css-declaration-sorter-external)
   - [cssnano-utils](#cssnano-utils)
   - [postcss-calc (external)](#postcss-calc-external)
   - [postcss-colormin](#postcss-colormin)
@@ -97,30 +95,6 @@ module.exports = advancedPreset({
 Note that you may wish to publish your own preset to npm for reusability, should it differ a lot from this one. This is highly encouraged!
 
 ## Plugins
-
-### [`autoprefixer`](https://github.com/postcss/autoprefixer) (external)
-
-> Parse CSS and add vendor prefixes to CSS rules using values from the Can I Use website
-
-This plugin is loaded with the following configuration:
-
-```js
-{
-  add: false;
-}
-```
-
-### [`css-declaration-sorter`](https://github.com/Siilwyn/css-declaration-sorter) (external)
-
-> Sorts CSS declarations fast and automatically in a certain order.
-
-This plugin is loaded with the following configuration:
-
-```js
-{
-  keepOverrides: true;
-}
-```
 
 ### [`cssnano-utils`](https://github.com/cssnano/cssnano/tree/main/packages/cssnano-utils)
 

@@ -19,8 +19,8 @@ export function currentLink(pathname, links) {
 }
 
 /**
- * @param {string} shortName optimisation display name, such as `cssDeclarationSorter`
- * @returns {string} the slug of its docs page, such as `cssdeclarationsorter`
+ * @param {string} shortName optimisation display name, such as `mergeLonghand`
+ * @returns {string} the slug of its docs page, such as `mergelonghand`
  */
 export function optimisationSlug(shortName) {
   return shortName.toLowerCase();
