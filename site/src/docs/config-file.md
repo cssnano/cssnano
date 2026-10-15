@@ -10,7 +10,7 @@ Without configuration, cssnano runs with the `default` preset.
 ## Configuration files
 ### Configure through the PostCSS configuration
 
-In the [PostCSS configuration](https://github.com/postcss/postcss#usage), you can pass both the `preset` and `plugins` options when you add `cssnano` to the PostCSS plugins. For example, if you use PostCSS programmatically, the following uses cssnano with the `lite` preset and adds the autoprefixer plugin.
+In the [PostCSS configuration](https://github.com/postcss/postcss#usage), you can pass both the `preset` and `plugins` options when you add `cssnano` to the PostCSS plugins. For example, if you use PostCSS programmatically, the following uses cssnano with the `lite` preset and adds the autoprefixer plugin. No cssnano preset includes autoprefixer, so install it yourself if you need it.
 
 ```js
 import postcss from 'postcss';

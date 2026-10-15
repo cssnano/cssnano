@@ -77,7 +77,7 @@ const { rawCache } = cssnanoUtils;
 function configurePlugins(plugins, opts = {}) {
   const { overrideBrowserslist, stats, env, path } = opts;
 
-  // Shared Autoprefixer + Browserslist options
+  // Browserslist options shared by plugins that depend on target browsers
   const sharedProps = {
     overrideBrowserslist,
     stats,

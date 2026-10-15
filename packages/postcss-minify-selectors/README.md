@@ -63,7 +63,7 @@ section h1, article h1, aside h1, nav h1 { font-size: 25px }
 
 The plugin reads the `browserslist` configuration from the host project by
 default. You can override with `overrideBrowserslist`, `stats`, `env`, or
-`path` — the same options accepted by `autoprefixer` and `postcss-merge-rules`.
+`path` — the same options accepted by `postcss-merge-rules` and other Browserslist-aware plugins.
 
 ## Usage
 
