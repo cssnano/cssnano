@@ -1,0 +1,89 @@
+import cssnanoUtils from '#utils';
+
+const { TokenType, closeForOpening, tokenEnd, tokenStart, tokens } =
+  cssnanoUtils;
+
+export const closingTokens = new Set([
+  TokenType.CloseParen,
+  TokenType.CloseSquare,
+  TokenType.CloseCurly,
+]);
+
+/**
+ * @typedef {{raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}}
+ *   Component
+ */
+
+/**
+ * Split raw CSS into top-level components and comma-separated parts. This is
+ * deliberately lexical: property grammar is applied by the caller after
+ * brackets and source ranges have been preserved.
+ *
+ * @param {string} value
+ * @param {',' | '/'} [separator] - the top-level token that divides the value
+ * into parts; a comma is otherwise a failure, and a slash an ordinary token
+ * @return {{components: Component[], raw: string}[] | null}
+ */
+export function splitValue(value, separator) {
+  /** @type {{components: Component[], start: number, end: number}[]} */
+  const parts = [{ components: [], start: 0, end: value.length }];
+  /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
+  let current = [];
+  /** @type {import('@csstools/css-tokenizer').TokenType[]} */
+  const stack = [];
+
+  const push = () => {
+    if (!current.length) return;
+    const first = current[0];
+    const last = current.at(-1);
+    const part = parts.at(-1);
+    if (!first || !last || !part) return;
+    part.components.push({
+      raw: value.slice(tokenStart(first), tokenEnd(last)),
+      tokens: current,
+    });
+    current = [];
+  };
+
+  for (const token of tokens(value)) {
+    const type = token[0];
+    if (type === TokenType.Comment) return null;
+
+    if (!stack.length && type === TokenType.Whitespace) {
+      push();
+      continue;
+    }
+    if (!stack.length && type === TokenType.Comma && separator !== ',') {
+      return null;
+    }
+    if (
+      !stack.length &&
+      (type === TokenType.Comma ||
+        (separator === '/' && type === TokenType.Delim && token[1] === '/'))
+    ) {
+      push();
+      const part = parts.at(-1);
+      if (!part) return null;
+      part.end = tokenStart(token);
+      parts.push({ components: [], start: tokenEnd(token), end: value.length });
+      continue;
+    }
+
+    current.push(token);
+    const expected = closeForOpening(type);
+    if (expected !== undefined) {
+      stack.push(expected);
+    } else if (closingTokens.has(type) && stack.pop() !== type) {
+      return null;
+    }
+  }
+
+  if (stack.length) return null;
+  push();
+  if (parts.some((part) => !part.components.length)) return null;
+
+  return parts.map((part) => ({
+    components: part.components,
+    raw: value.slice(part.start, part.end).trim(),
+  }));
+}

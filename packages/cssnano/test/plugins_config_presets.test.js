@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import autoprefixer from 'autoprefixer';
-import litePreset from 'cssnano-preset-lite';
+import litePreset from '#presets/lite';
 import postcss from 'postcss';
 import cssnano from '../src/index.js';
 

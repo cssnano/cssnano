@@ -1,10 +1,10 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import { loadConfig, optimize } from 'svgo';
-import cssnanoUtils from 'cssnano-utils';
+import asciiLowerCase from './lib/asciiLowerCase.js';
+import { applyEdits, balancedTokens, decoded } from './lib/value.js';
 import { encode, decode } from './lib/url.js';
 
 const PLUGIN = 'postcss-svgo';
-const { applyEdits, asciiLowerCase, balancedTokens, decoded } = cssnanoUtils;
 const dataURIPattern =
   /^data:image\/svg\+xml(?:\s*;\s*(?:charset\s*=\s*(?:"utf-?8"|'utf-?8'|utf-?8)|utf-?8|base64))*\s*$/v;
 // eslint-disable-next-line no-control-regex

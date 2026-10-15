@@ -1,6 +1,4 @@
-import cssnanoUtils from 'cssnano-utils';
-
-const { isHexDigitCode } = cssnanoUtils;
+import isHexDigitCode from './isHexDigitCode.js';
 
 /*
  * Encoding is identical to encodeURIComponent, per the WHATWG URL Standard,

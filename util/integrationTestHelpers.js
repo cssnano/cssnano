@@ -38,7 +38,7 @@ function mismatchMessage(framework, actual, expected) {
 }
 
 export function integrationTests(preset, integrations) {
-  const presetName = path.basename(path.resolve(integrations, '../..'));
+  const presetName = path.basename(path.resolve(integrations, '..'));
   const frameworks = new Map();
   for (const framework of fs.readdirSync(
     path.join(import.meta.dirname, '../frameworks')
@@ -72,7 +72,7 @@ export function integrationTests(preset, integrations) {
 }
 
 export function idempotencyTests(preset, integrations) {
-  const presetName = path.basename(path.resolve(integrations, '../..'));
+  const presetName = path.basename(path.resolve(integrations, '..'));
   const integrationsByFramework = new Map();
   for (const integration of fs.readdirSync(integrations)) {
     if (path.extname(integration) === '.css') {
@@ -103,7 +103,7 @@ export function pluginIdempotencyTests(
   integrations,
   excludedPlugins = []
 ) {
-  const presetName = path.basename(path.resolve(integrations, '../..'));
+  const presetName = path.basename(path.resolve(integrations, '..'));
   const frameworks = [];
   for (const file of fs.readdirSync(integrations)) {
     if (path.extname(file) === '.css') {

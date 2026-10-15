@@ -1,9 +1,0 @@
-{
-  "extends": "../../tsconfig.json",
-  "include": ["src/*", "src/lib/*", "src/data/identSlots.json"],
-  "compilerOptions": {
-    "composite": true,
-    "rootDir": "src/",
-    "declarationDir": "types"
-  }
-}

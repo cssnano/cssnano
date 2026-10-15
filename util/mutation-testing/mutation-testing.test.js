@@ -4,14 +4,14 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { applyMutation } from './mutation-testing.js';
 const catalogPromises = [
-  import('../../packages/postcss-discard-empty/mutation-catalog.js'),
-  import('../../packages/postcss-discard-comments/mutation-catalog.js'),
-  import('../../packages/postcss-normalize-whitespace/mutation-catalog.js'),
-  import('../../packages/postcss-normalize-positions/mutation-catalog.js'),
-  import('../../packages/postcss-merge-longhand/mutation-catalog.js'),
-  import('../../packages/postcss-merge-longhand/mutation-catalog-validity.js'),
-  import('../../packages/postcss-merge-longhand/mutation-catalog-candidates.js'),
-  import('../../packages/postcss-merge-longhand/mutation-catalog-reset-gates.js'),
+  import('../../packages/cssnano/mutation/postcss-discard-empty/mutation-catalog.js'),
+  import('../../packages/cssnano/mutation/postcss-discard-comments/mutation-catalog.js'),
+  import('../../packages/cssnano/mutation/postcss-normalize-whitespace/mutation-catalog.js'),
+  import('../../packages/cssnano/mutation/postcss-normalize-positions/mutation-catalog.js'),
+  import('../../packages/cssnano/mutation/postcss-merge-longhand/mutation-catalog.js'),
+  import('../../packages/cssnano/mutation/postcss-merge-longhand/mutation-catalog-validity.js'),
+  import('../../packages/cssnano/mutation/postcss-merge-longhand/mutation-catalog-candidates.js'),
+  import('../../packages/cssnano/mutation/postcss-merge-longhand/mutation-catalog-reset-gates.js'),
 ];
 
 test('applies a mutation exactly once', () => {

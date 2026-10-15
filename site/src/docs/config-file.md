@@ -15,11 +15,9 @@ In the [PostCSS configuration](https://github.com/postcss/postcss#usage), you ca
 ```js
 import postcss from 'postcss';
 import cssnano from 'cssnano';
-import litePreset from 'cssnano-preset-lite';
 import autoprefixer from 'autoprefixer';
-const preset = litePreset({ discardComments: false });
 
-postcss([cssnano({ preset, plugins: [autoprefixer] })])
+postcss([cssnano({ preset: ['lite', { discardComments: false }], plugins: [autoprefixer] })])
   .process("/* Your CSS here */");
 ```
 
@@ -61,9 +59,9 @@ TypeScript files only support the TypeScript language features usable with Node.
 - **option:** `preset` 
 -  **type:** `string` | `function` | `[string, Objects<preset options here>]` | `[function(preset options here)]`
 
-Pass a preset to choose a pre-configured set of optimizations. You can specify a preset with the preset name as a string or by passing the result of importing the preset package.
+Pass a preset to choose a pre-configured set of optimizations. You can specify a preset with its name as a string, or pass a preset object from a preset package you have installed.
 
-With the preset as import:
+With the preset as import, the `cssnano-preset-default` package must be installed in your project:
 
 ```js
 cssnano({ preset: require('cssnano-preset-default') })

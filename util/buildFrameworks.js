@@ -27,8 +27,8 @@ for (const framework of readdirSync(base())) {
 /** @type {string[]} */
 const changed = [];
 
-async function rebuild(pkg) {
-  const presetModule = await import(join(pkg, 'src', 'index.js'));
+async function rebuild(name) {
+  const presetModule = await import(join(presetsDir, `${name}.js`));
   const preset = presetModule.default();
 
   for (const framework of Object.keys(frameworks)) {
@@ -37,7 +37,13 @@ async function rebuild(pkg) {
       { from: undefined }
     );
 
-    const fixturePath = join(pkg, 'test', 'integrations', `${framework}.css`);
+    const fixturePath = join(
+      testDir,
+      'presets',
+      name,
+      'integrations',
+      `${framework}.css`
+    );
     const label = relative(process.cwd(), fixturePath);
 
     let current;
@@ -62,11 +68,14 @@ async function rebuild(pkg) {
   }
 }
 
-const pkgDir = join(dirname(fileURLToPath(import.meta.url)), '../packages');
-for (const pkg of await fs.readdir(pkgDir)) {
-  if (pkg.startsWith('cssnano-preset-')) {
-    await rebuild(join(pkgDir, pkg));
-  }
+const cssnanoDir = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../packages/cssnano'
+);
+const presetsDir = join(cssnanoDir, 'src', 'presets');
+const testDir = join(cssnanoDir, 'test');
+for (const file of await fs.readdir(presetsDir)) {
+  await rebuild(basename(file, '.js'));
 }
 
 if (changed.length === 0) {

@@ -32,9 +32,10 @@ module.exports = {
 };
 ```
 
-_The special preset names `default`, `lite`, and `advanced` are shorthand for
-the corresponding `cssnano-preset-*` packages. For other presets, pass the
-complete resolvable package name, such as `cssnano-preset-default`._
+_The preset names `default`, `lite`, and `advanced` select the presets built
+into cssnano, so they need no separate install. If a `cssnano-preset-*` package
+with the same name is installed in your project, cssnano uses that package
+instead. For other presets, pass the complete resolvable package name._
 
 If you need to pass any options to a preset, you must specify them using the
 array syntax instead. For example, you can remove all comments with the
@@ -71,7 +72,8 @@ identically to the above:
 }
 ```
 
-And the `cssnano.config.js`:
+And the `cssnano.config.js`, which requires the `cssnano-preset-default`
+package to be installed in your project:
 
 ```js
 const defaultPreset = require('cssnano-preset-default');

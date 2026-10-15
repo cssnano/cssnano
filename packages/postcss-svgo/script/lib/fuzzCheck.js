@@ -1,9 +1,8 @@
 import postcss from 'postcss';
 import { TokenType, tokenize } from '@csstools/css-tokenizer';
-import cssnanoUtils from 'cssnano-utils';
+import { balancedTokens } from '../../src/lib/value.js';
 import plugin from '../../src/index.js';
 
-const { balancedTokens } = cssnanoUtils;
 const processor = postcss([plugin()]);
 
 /**

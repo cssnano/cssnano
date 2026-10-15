@@ -1,8 +1,8 @@
 /** @import {PresetId} from './presets.js' */
 
-import advancedPreset from 'cssnano-preset-advanced';
-import defaultPreset from 'cssnano-preset-default';
-import litePreset from 'cssnano-preset-lite';
+import advancedPreset from '../../../packages/cssnano/src/presets/advanced.js';
+import defaultPreset from '../../../packages/cssnano/src/presets/default.js';
+import litePreset from '../../../packages/cssnano/src/presets/lite.js';
 import pluginName from '../../util/pluginName.js';
 import { enabledPlugins } from '../utils/enabledPlugins.js';
 import { editorialOptimisations } from './editorialOptimisations.js';

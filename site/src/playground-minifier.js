@@ -8,13 +8,16 @@ async function loadPlugins(presetName) {
   let preset;
   switch (presetName) {
     case 'cssnano-preset-lite':
-      preset = (await import('cssnano-preset-lite')).default;
+      preset = (await import('../../packages/cssnano/src/presets/lite.js'))
+        .default;
       break;
     case 'cssnano-preset-default':
-      preset = (await import('cssnano-preset-default')).default;
+      preset = (await import('../../packages/cssnano/src/presets/default.js'))
+        .default;
       break;
     case 'cssnano-preset-advanced':
-      preset = (await import('cssnano-preset-advanced')).default;
+      preset = (await import('../../packages/cssnano/src/presets/advanced.js'))
+        .default;
       break;
     default:
       throw new Error('Invalid configuration preset');
