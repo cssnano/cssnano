@@ -242,12 +242,6 @@ importers:
 
   packages/cssnano-preset-advanced:
     dependencies:
-      autoprefixer:
-        specifier: 'catalog:'
-        version: 10.6.1(postcss@8.5.29)
-      css-declaration-sorter:
-        specifier: ^7.4.0
-        version: 7.4.0(postcss@8.5.29)
       cssnano-preset-default:
         specifier: workspace:^
         version: link:../cssnano-preset-default
@@ -1574,12 +1568,6 @@ packages:
     resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
     engines: {node: '>=16'}
 
-  css-declaration-sorter@7.4.0:
-    resolution: {integrity: sha512-LTuzjPoyA2vMGKKcaOqKSp7Ub2eGrNfKiZH4LpezxpNrsICGCSFvsQOI29psISxNZtaXibkC2CXzrQ5enMeGGw==}
-    engines: {node: ^14 || ^16 || >=18}
-    peerDependencies:
-      postcss: ^8.0.9
-
   css-select@6.0.0:
     resolution: {integrity: sha512-rZZVSLle8v0+EY8QAkDWrKhpgt6SA5OtHsgBnsj6ZaLb5dmDVOWUDtQitd9ydxxvEjhewNudS6eTVU7uOyzvXw==}
 
@@ -2392,10 +2380,6 @@ snapshots:
   caniuse-lite@1.0.30001814: {}
 
   commander@11.1.0: {}
-
-  css-declaration-sorter@7.4.0(postcss@8.5.29):
-    dependencies:
-      postcss: 8.5.29
 
   css-select@6.0.0:
     dependencies:

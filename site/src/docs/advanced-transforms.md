@@ -32,14 +32,12 @@ characteristics of the CSS, or it might update values to make the CSS smaller
 overall. Depending on exactly what the transform does, this _may_ be undesirable
 because it might change the appearance of your website in certain use cases.
 
-A good example is [autoprefixer]; this transform changes CSS semantics by
-removing out of date vendor prefixes. In order for this transform to be safe,
-your [browserslist] configuration must reflect the browsers that your site
-chooses to support.
+A good example is [postcss-zindex]; this transform changes CSS semantics by
+rewriting `z-index` values to smaller integers that keep their relative
+order. In order for this transform to be safe, no other stylesheet or script
+may set `z-index` values that must stack against the rewritten ones.
 
-[autoprefixer]: https://github.com/postcss/autoprefixer
-
-[browserslist]: https://github.com/ai/browserslist
+[postcss-zindex]: https://github.com/cssnano/cssnano/tree/master/packages/postcss-zindex
 
 
 ## Using advanced transforms

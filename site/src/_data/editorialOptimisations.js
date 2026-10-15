@@ -4,28 +4,6 @@
 export const editorialOptimisations =
   /** @satisfies {EditorialOptimisation[]} */ ([
     {
-      plugin: 'autoprefixer',
-      shortName: 'autoprefixer',
-      shortDescription: 'Removes outdated vendor prefixes',
-      longDescription:
-        'Removes unnecessary prefixes based on the `browsers` option. Note that *by default*, **it will not add new prefixes** to the CSS file.',
-      inputExample:
-        '.box {\n    -moz-border-radius: 10px;\n    border-radius: 10px;\n    display: flex;\n}\n',
-      outputExample:
-        '.box {\n    border-radius: 10px;\n    display: flex;\n}\n',
-    },
-    {
-      plugin: 'css-declaration-sorter',
-      shortName: 'cssDeclarationSorter',
-      shortDescription: 'Sorts CSS declarations',
-      longDescription:
-        'Sorts CSS (Cascading Style Sheets) declarations based on their property names, sorted CSS is smaller when compressed with gzip (GNU zip) because there will be more similar strings.',
-      inputExample:
-        'body {\n    animation: none;\n    color: #C55;\n    border: 0;\n}\n',
-      outputExample:
-        'body {\n    animation: none;\n    border: 0;\n    color: #C55;\n}\n',
-    },
-    {
       plugin: 'postcss-calc',
       shortName: 'calc',
       shortDescription: 'Reduces CSS calc expressions',

@@ -15,12 +15,6 @@ const withBrowserslist = processCSSWithPresetFactory(
   preset({
     path: join(testDir, 'browserslist/example.css'),
     env: 'modern',
-
-    // Add Autoprefix vendor prefixes to confirm output
-    // changes based on Browserslist options
-    autoprefixer: {
-      add: true,
-    },
   })
 );
 
@@ -37,9 +31,8 @@ describe('CSS processing', () => {
 
   test(
     'should keep alignment longhands for default targets because Opera Mini lacks place-*',
-    withDefaults.processCSS(
-      '.a{justify-content:center;align-items:center;align-content:center}',
-      '.a{align-content:center;align-items:center;justify-content:center}'
+    withDefaults.passthroughCSS(
+      '.a{justify-content:center;align-items:center;align-content:center}'
     )
   );
 
@@ -47,7 +40,7 @@ describe('CSS processing', () => {
     'should process CSS with default options',
     withDefaults.processCSS(
       'button { color: hsla(0 100% 50% / 40%); appearance: none }',
-      'button{appearance:none;color:rgba(255,0,0,.4)}'
+      'button{color:rgba(255,0,0,.4);appearance:none}'
     )
   );
 
@@ -55,7 +48,7 @@ describe('CSS processing', () => {
     'should process CSS with Browserslist options',
     withBrowserslist.processCSS(
       'button { color: hsla(0 100% 50% / 40%); appearance: none }',
-      'button{-webkit-appearance:none;-moz-appearance:none;appearance:none;color:#f006}'
+      'button{color:#f006;appearance:none}'
     )
   );
 });
