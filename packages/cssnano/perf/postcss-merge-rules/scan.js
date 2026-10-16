@@ -7,6 +7,23 @@ const pluginUrl = new URL(
   import.meta.url
 ).href;
 
+/**
+ * Runs `script` in a child process, which must exit within `timeout`
+ * milliseconds; the stylesheets are too large for argv, so each script builds
+ * its own.
+ *
+ * @param {string} script
+ * @param {number} timeout
+ */
+function assertCompletes(script, timeout) {
+  const result = spawnSync(
+    process.execPath,
+    ['--input-type=module', '-e', script],
+    { timeout, cwd: new URL('../..', import.meta.url) }
+  );
+  assert.equal(result.status, 0);
+}
+
 test('should merge many equivalent @media blocks nested in one style rule without quadratic slowdown', () => {
   // Each candidate pair has different parents, so the check for a declaration
   // of the enclosing rule between them must not rescan the rule from its start.
@@ -19,12 +36,7 @@ test('should merge many equivalent @media blocks nested in one style rule withou
     ).join('');
     postcss([plugin]).process('.p{' + blocks + '}', { from: undefined }).css;
   `;
-  const result = spawnSync(
-    process.execPath,
-    ['--input-type=module', '-e', script],
-    { timeout: 20_000, cwd: new URL('../..', import.meta.url) }
-  );
-  assert.equal(result.status, 0);
+  assertCompletes(script, 20_000);
 });
 
 test('should merge many equivalent @media blocks nested in one style rule when the enclosing rule declares a property without quadratic slowdown', () => {
@@ -39,12 +51,7 @@ test('should merge many equivalent @media blocks nested in one style rule when t
     ).join('');
     postcss([plugin]).process('.p{color:blue;' + blocks + '}', { from: undefined }).css;
   `;
-  const result = spawnSync(
-    process.execPath,
-    ['--input-type=module', '-e', script],
-    { timeout: 20_000, cwd: new URL('../..', import.meta.url) }
-  );
-  assert.equal(result.status, 0);
+  assertCompletes(script, 20_000);
 });
 
 test('should merge many equal rules nested in a style rule that declares a property without quadratic slowdown', () => {
@@ -56,31 +63,21 @@ test('should merge many equal rules nested in a style rule that declares a prope
     const rules = '.a{top:0}'.repeat(64000);
     postcss([plugin]).process('.r{color:red;' + rules + '}', { from: undefined }).css;
   `;
-  const result = spawnSync(
-    process.execPath,
-    ['--input-type=module', '-e', script],
-    { timeout: 20_000, cwd: new URL('../..', import.meta.url) }
-  );
-  assert.equal(result.status, 0);
+  assertCompletes(script, 20_000);
 });
 
 test('should remove many emptied @media blocks of one parent without quadratic slowdown', () => {
   // Removing each emptied block from its parent one at a time searches the
-  // child list every time; the write rebuilds the parent once instead.
+  // child list every time; the write rebuilds the parent once instead. The
+  // quadratic version takes about 25 s; the margin keeps a loaded machine from
+  // failing the test.
   const script = `
     import postcss from 'postcss';
     import plugin from ${JSON.stringify(pluginUrl)};
     const blocks = '@media print{.a{top:0}}'.repeat(160000);
     postcss([plugin]).process(blocks, { from: undefined }).css;
   `;
-  const result = spawnSync(
-    process.execPath,
-    ['--input-type=module', '-e', script],
-    // The quadratic version takes about 25 s; the margin keeps a loaded
-    // machine from failing the test.
-    { timeout: 15_000, cwd: new URL('../..', import.meta.url) }
-  );
-  assert.equal(result.status, 0);
+  assertCompletes(script, 15_000);
 });
 
 test('should merge many equal @media blocks each separated by a declaration of the enclosing rule without quadratic slowdown', () => {
@@ -92,12 +89,7 @@ test('should merge many equal @media blocks each separated by a declaration of t
     const blocks = '@media print{.a{top:0}}color:red;'.repeat(256000);
     postcss([plugin]).process('.r{' + blocks + '}', { from: undefined }).css;
   `;
-  const result = spawnSync(
-    process.execPath,
-    ['--input-type=module', '-e', script],
-    { timeout: 12_000, cwd: new URL('../..', import.meta.url) }
-  );
-  assert.equal(result.status, 0);
+  assertCompletes(script, 12_000);
 });
 
 test('should try many pairs of rules with long selectors whose shared declaration is too short to pay without quadratic slowdown', () => {
@@ -111,12 +103,7 @@ test('should try many pairs of rules with long selectors whose shared declaratio
     ).join('');
     postcss([plugin]).process(rules, { from: undefined }).css;
   `;
-  const result = spawnSync(
-    process.execPath,
-    ['--input-type=module', '-e', script],
-    { timeout: 20_000, cwd: new URL('../..', import.meta.url) }
-  );
-  assert.equal(result.status, 0);
+  assertCompletes(script, 20_000);
 });
 
 test('should resume a scan after many joins that each repeat a shared declaration without quadratic slowdown', () => {
@@ -130,10 +117,5 @@ test('should resume a scan after many joins that each repeat a shared declaratio
     ).join('');
     postcss([plugin]).process(rules, { from: undefined }).css;
   `;
-  const result = spawnSync(
-    process.execPath,
-    ['--input-type=module', '-e', script],
-    { timeout: 15_000, cwd: new URL('../..', import.meta.url) }
-  );
-  assert.equal(result.status, 0);
+  assertCompletes(script, 15_000);
 });

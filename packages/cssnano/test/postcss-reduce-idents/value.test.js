@@ -19,6 +19,24 @@ test('rewrite serializes supplied tokenizer edits in source order', () => {
   assert.equal(result, 'A B');
 });
 
+/**
+ * The `[ident, position]` pair `rewrite()` reports for every ident token.
+ *
+ * @param {string} value
+ * @param {Parameters<typeof rewrite>[2]} functions
+ */
+function identPositions(value, functions) {
+  const seen = [];
+  rewrite(
+    value,
+    (token, position) => {
+      if (token[0] === TokenType.Ident) seen.push([token[4].value, position]);
+    },
+    functions
+  );
+  return seen;
+}
+
 describe('rewrite()', () => {
   test('returns the input untouched when the callback edits nothing', () => {
     const value = 'a  counter(b, c) [d]';
@@ -45,14 +63,7 @@ describe('rewrite()', () => {
   });
 
   test('marks only the argument slots the function map names', () => {
-    const seen = [];
-    rewrite(
-      'counter(item, decimal)',
-      (token, position) => {
-        if (token[0] === TokenType.Ident) seen.push([token[4].value, position]);
-      },
-      counter.functions
-    );
+    const seen = identPositions('counter(item, decimal)', counter.functions);
     assert.deepEqual(seen, [
       ['item', 'argument'],
       ['decimal', 'nested'],
@@ -60,12 +71,8 @@ describe('rewrite()', () => {
   });
 
   test('marks an ident against the function it is written in', () => {
-    const seen = [];
-    rewrite(
+    const seen = identPositions(
       'target-counter(attr(href), section)',
-      (token, position) => {
-        if (token[0] === TokenType.Ident) seen.push([token[4].value, position]);
-      },
       counter.functions
     );
     assert.deepEqual(seen, [
@@ -75,12 +82,8 @@ describe('rewrite()', () => {
   });
 
   test('counts commas per function frame', () => {
-    const seen = [];
-    rewrite(
+    const seen = identPositions(
       'counters(item, ".", counter(page))',
-      (token, position) => {
-        if (token[0] === TokenType.Ident) seen.push([token[4].value, position]);
-      },
       counter.functions
     );
     assert.deepEqual(seen, [
@@ -90,12 +93,8 @@ describe('rewrite()', () => {
   });
 
   test('marks idents inside substitution functions nested', () => {
-    const seen = [];
-    rewrite(
+    const seen = identPositions(
       'var(--item) env(--section) attr(data-label)',
-      (token, position) => {
-        if (token[0] === TokenType.Ident) seen.push([token[4].value, position]);
-      },
       counter.functions
     );
     assert.deepEqual(seen, [
@@ -106,12 +105,8 @@ describe('rewrite()', () => {
   });
 
   test('marks idents nested in a substitution function through other frames', () => {
-    const seen = [];
-    rewrite(
+    const seen = identPositions(
       'counter(var(--counter, section))',
-      (token, position) => {
-        if (token[0] === TokenType.Ident) seen.push([token[4].value, position]);
-      },
       counter.functions
     );
     assert.deepEqual(seen, [
@@ -121,26 +116,12 @@ describe('rewrite()', () => {
   });
 
   test('marks idents inside an unmapped function nested', () => {
-    const seen = [];
-    rewrite(
-      'steps(3, jump-none)',
-      (token, position) => {
-        if (token[0] === TokenType.Ident) seen.push([token[4].value, position]);
-      },
-      counter.functions
-    );
+    const seen = identPositions('steps(3, jump-none)', counter.functions);
     assert.deepEqual(seen, [['jump-none', 'nested']]);
   });
 
   test('marks an argument of a function the map knows by its slots', () => {
-    const seen = [];
-    rewrite(
-      'reversed(item)',
-      (token, position) => {
-        if (token[0] === TokenType.Ident) seen.push([token[4].value, position]);
-      },
-      new Map([['reversed', [0]]])
-    );
+    const seen = identPositions('reversed(item)', new Map([['reversed', [0]]]));
     assert.deepEqual(seen, [['item', 'argument']]);
   });
 
@@ -153,12 +134,8 @@ describe('rewrite()', () => {
   });
 
   test('marks idents between square brackets bracketed, also inside a function', () => {
-    const seen = [];
-    rewrite(
+    const seen = identPositions(
       'repeat(2, [head tail] 1fr)',
-      (token, position) => {
-        if (token[0] === TokenType.Ident) seen.push([token[4].value, position]);
-      },
       counter.functions
     );
     assert.deepEqual(seen, [
@@ -198,14 +175,7 @@ describe('rewrite()', () => {
   });
 
   test('marks bracketed idents nested inside a substitution function', () => {
-    const seen = [];
-    rewrite(
-      'var(--cols, [head] 1fr)',
-      (token, position) => {
-        if (token[0] === TokenType.Ident) seen.push([token[4].value, position]);
-      },
-      counter.functions
-    );
+    const seen = identPositions('var(--cols, [head] 1fr)', counter.functions);
     assert.deepEqual(seen, [
       ['--cols', 'nested'],
       ['head', 'nested'],

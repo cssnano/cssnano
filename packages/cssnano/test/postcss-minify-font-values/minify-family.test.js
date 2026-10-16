@@ -3,6 +3,23 @@ import assert from 'node:assert/strict';
 import minifyFamily from '../../src/plugins/postcss-minify-font-values/lib/minify-family.js';
 import cssWideKeywords from '../../src/plugins/postcss-minify-font-values/data/cssWideKeywords.json' with { type: 'json' };
 
+// Fixture fragments shared by the cases below.
+const timesNewRomanAndComma = [
+  { type: 'space', value: ' ' },
+  { type: 'word', value: 'Times' },
+  { type: 'space', value: ' ' },
+  { type: 'word', value: 'new' },
+  { type: 'space', value: ' ' },
+  { type: 'word', value: 'Roman' },
+  { type: 'div', value: ',', before: '', after: ' ' },
+];
+const robotoPlusAndGeorgia = [
+  { type: 'string', quote: '"', value: 'Roboto Plus' },
+  { type: 'div', value: ',', before: ' ', after: ' ' },
+  { type: 'word', value: 'Georgia' },
+  { type: 'space', value: ' ' },
+];
+
 const tests = [
   {
     // Should strip quotes for names without keywords
@@ -10,21 +27,12 @@ const tests = [
       removeQuotes: true,
     },
     fixture: [
-      { type: 'space', value: ' ' },
-      { type: 'word', value: 'Times' },
-      { type: 'space', value: ' ' },
-      { type: 'word', value: 'new' },
-      { type: 'space', value: ' ' },
-      { type: 'word', value: 'Roman' },
-      { type: 'div', value: ',', before: '', after: ' ' },
+      ...timesNewRomanAndComma,
       { type: 'word', value: 'sans-serif' },
       { type: 'div', value: ',', before: '', after: ' ' },
       { type: 'string', quote: '"', value: 'serif' },
       { type: 'div', value: ',', before: '', after: ' ' },
-      { type: 'string', quote: '"', value: 'Roboto Plus' },
-      { type: 'div', value: ',', before: ' ', after: ' ' },
-      { type: 'word', value: 'Georgia' },
-      { type: 'space', value: ' ' },
+      ...robotoPlusAndGeorgia,
     ],
     expected: [
       {
@@ -39,21 +47,12 @@ const tests = [
       removeAfterKeyword: true,
     },
     fixture: [
-      { type: 'space', value: ' ' },
-      { type: 'word', value: 'Times' },
-      { type: 'space', value: ' ' },
-      { type: 'word', value: 'new' },
-      { type: 'space', value: ' ' },
-      { type: 'word', value: 'Roman' },
-      { type: 'div', value: ',', before: '', after: ' ' },
+      ...timesNewRomanAndComma,
       { type: 'string', quote: '"', value: 'serif' },
       { type: 'div', value: ',', before: '', after: ' ' },
       { type: 'word', value: 'sans-serif' },
       { type: 'div', value: ',', before: '', after: ' ' },
-      { type: 'string', quote: '"', value: 'Roboto Plus' },
-      { type: 'div', value: ',', before: ' ', after: ' ' },
-      { type: 'word', value: 'Georgia' },
-      { type: 'space', value: ' ' },
+      ...robotoPlusAndGeorgia,
     ],
     expected: [
       {
