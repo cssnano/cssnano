@@ -2,11 +2,11 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { after, before, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const cssnanoEntry = fileURLToPath(new URL('../src/index.js', import.meta.url));
+// A file URL, because import() rejects Windows drive-letter paths.
+const cssnanoEntry = new URL('../src/index.js', import.meta.url).href;
 const warningCode = 'CSSNANO_INSTALLED_PRESET';
 
 /**
