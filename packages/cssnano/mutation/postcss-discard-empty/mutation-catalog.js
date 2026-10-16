@@ -61,23 +61,23 @@ export const mutations = [
   },
   {
     name: 'invert repeated empty layer detection',
-    find: '(isEmptyLayer && nonEmptyLayers.has(layerKey))',
-    replace: '(isEmptyLayer && !nonEmptyLayers.has(layerKey))',
+    find: 'name !== undefined && sub?.length === 0 && isDeclared(layerKey)',
+    replace: 'name !== undefined && sub?.length === 0 && !isDeclared(layerKey)',
   },
   {
     name: 'drop non-empty layer bookkeeping',
-    find: '      nonEmptyLayers.add(layerKey);',
-    replace: '      void layerKey;',
+    find: '      (scopes[scopes.length - 1] ??= new Set()).add(key);',
+    replace: '      void key;',
   },
   {
     name: 'split escaped layer names',
-    find: "else if (character === '.' && !escaped)",
-    replace: "else if (character === '.' && escaped)",
+    find: 'for (const segment of name.split(SEPARATOR)) {',
+    replace: 'for (const segment of name.split(/[\\0.]/v)) {',
   },
   {
     name: 'drop nested layer path components',
-    find: '[...layerPath, ...getLayerPath(layerName)]',
-    replace: 'getLayerPath(layerName)',
+    find: '      key = joinKey(key, segment);',
+    replace: '      key = joinKey(parentKey, segment);',
   },
   {
     name: 'record removals at the front',
