@@ -756,6 +756,10 @@ cssnano@9.8.0:
     - metric-units-in-preset
     - plain-urls-wait
     - quiet-svgo-leaves
+cssnano@9.9.0:
+  dir: packages/cssnano
+  intents:
+    - breezy-onions-sniff
 postcss-colormin@8.0.2:
   dir: packages/postcss-colormin
   intents:
