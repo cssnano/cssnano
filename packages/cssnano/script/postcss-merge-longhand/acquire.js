@@ -1,5 +1,5 @@
 /**
- * Regenerates src/data/longhands.json, shorthandIdentities.json,
+ * Regenerates data/longhands.json, shorthandIdentities.json,
  * numericRanges.json and knownProperties.json from @webref/css,
  * placeSupport.json, pairSupport.json and boxPropertySupport.json from
  * @mdn/browser-compat-data, featureSupport.json from

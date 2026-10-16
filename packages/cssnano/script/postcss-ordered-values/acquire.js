@@ -1,7 +1,7 @@
 /**
  * Regenerates webref-derived rule data from @webref/css.
  *
- * Run with `npm run acquire` after bumping the pinned @webref/css version, then
+ * Run with `pnpm run acquire` after bumping the pinned @webref/css version, then
  * `pnpm fixlint` to reformat the generated file. Commit the result because
  * a data refresh has to go through the test suite.
  */

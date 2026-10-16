@@ -341,6 +341,7 @@
     "fill-rule",
     "fill-size",
     "filter",
+    "fit-tolerance",
     "flex",
     "flex-basis",
     "flex-direction",
@@ -357,7 +358,6 @@
     "flood-opacity",
     "flow-from",
     "flow-into",
-    "flow-tolerance",
     "font",
     "font-family",
     "font-feature-settings",
@@ -764,6 +764,7 @@
     "timeline-trigger-active-range-end",
     "timeline-trigger-active-range-start",
     "timeline-trigger-name",
+    "timeline-trigger-range",
     "timeline-trigger-source",
     "top",
     "touch-action",
@@ -1572,6 +1573,12 @@
       "timeline-trigger-activation-range-start"
     ],
     "timeline-trigger-active-range": [
+      "timeline-trigger-active-range-end",
+      "timeline-trigger-active-range-start"
+    ],
+    "timeline-trigger-range": [
+      "timeline-trigger-activation-range-end",
+      "timeline-trigger-activation-range-start",
       "timeline-trigger-active-range-end",
       "timeline-trigger-active-range-start"
     ],

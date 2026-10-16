@@ -10,10 +10,10 @@ catalog:
   browserslist: ^4.29.3
   '@csstools/css-tokenizer': ^4.0.2
   postcss: ^8.5.30
-  '@webref/css': 8.7.6
+  '@webref/css': 8.7.7
   mdn-data: 2.37.2
   '@colordx/core': ^7.3.0
-  '@mdn/browser-compat-data': ^8.1.5
+  '@mdn/browser-compat-data': ^8.1.6
 
 minimumReleaseAgeExclude:
   - postcss-calc

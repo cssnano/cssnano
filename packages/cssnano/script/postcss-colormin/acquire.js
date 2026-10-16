@@ -1,5 +1,5 @@
 /**
- * Regenerates src/data/colorProperties.json from @webref/css.
+ * Regenerates data/colorProperties.json from @webref/css.
  *
  * Run with `pnpm run acquire` after bumping the pinned @webref/css version, then
  * `pnpm fixlint`, to reformat the generated file. Commit the
