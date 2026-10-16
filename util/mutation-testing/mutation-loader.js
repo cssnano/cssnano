@@ -26,12 +26,17 @@ registerHooks({
     }
 
     try {
-      if (typeof loaded.source !== 'string') {
+      // ES module sources arrive as bytes; decode them before mutating.
+      const source =
+        typeof loaded.source === 'string' || loaded.source == null
+          ? loaded.source
+          : Buffer.from(loaded.source).toString('utf8');
+      if (typeof source !== 'string') {
         throw new TypeError(
           `Mutation target did not provide string source: ${url}`
         );
       }
-      return { ...loaded, source: applyMutation(loaded.source, mutation) };
+      return { ...loaded, source: applyMutation(source, mutation) };
     } catch (error) {
       throw new Error(`Mutation loader error: ${error.message}`, {
         cause: error,

@@ -86,6 +86,32 @@ describe('Discard', () => {
     'should discard empty rules and at-rules',
     processCSS(removalFixture, '')
   );
+
+  test(
+    'should discard an empty layer block whose order an earlier block fixed',
+    processCSS('@layer a{h1{color:red}}@layer a{}', '@layer a{h1{color:red}}')
+  );
+
+  test(
+    'should discard an empty dotted layer block after its earlier declaration',
+    processCSS(
+      '@layer a.b{h1{color:red}}@layer a.b{}',
+      '@layer a.b{h1{color:red}}'
+    )
+  );
+
+  test(
+    'should discard an empty parent layer block once a nested layer named it',
+    processCSS(
+      '@layer a.b{h1{color:red}}@layer a{}',
+      '@layer a.b{h1{color:red}}'
+    )
+  );
+
+  test(
+    'should keep an empty layer block whose name only equals an escaped dot name segment',
+    passthroughCSS('@layer a\\.b{h1{color:red}}@layer a{}@layer b{}')
+  );
 });
 
 test('should identify removal messages by plugin', async () => {

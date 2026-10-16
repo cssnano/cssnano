@@ -23,7 +23,7 @@ export const mutations = [
   },
   {
     name: 'skip declaration trimming',
-    find: 'trimDeclaration(node, declarationCache);',
+    find: 'trimDeclaration(node, declarationCache, gridRowsCache);',
     replace: 'void node;',
   },
   {

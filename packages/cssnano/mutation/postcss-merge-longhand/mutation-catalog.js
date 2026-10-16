@@ -20,8 +20,8 @@ export const mutations = [
   },
   {
     name: 'let substituted values fill border cells without a barrier',
-    find: '    hasSubstitution(d.value) ||',
-    replace: '    false ||',
+    find: '  const isBarrier = hasSubstitution(d.value);',
+    replace: '  const isBarrier = false;',
   },
   {
     name: 'reduce segments containing style hacks',
@@ -30,7 +30,7 @@ export const mutations = [
   },
   {
     name: 'drop declarations a later one needs as a fallback',
-    find: '        !strandsFallback(node, lastNode) &&',
-    replace: '        true &&',
+    find: '    !strandsFallback(node, lastNode)\n  );',
+    replace: '    true\n  );',
   },
 ];

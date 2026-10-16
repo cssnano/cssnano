@@ -49,7 +49,10 @@ function printFailure(label, result) {
 function mutationStatus(result) {
   if (result.timedOut) return 'timed out';
   if (result.code === 0) return 'survived';
-  if (result.stderr.includes('Mutation loader error')) return 'errored';
+  // The test runner reports a subtest's load failure on stdout, not stderr.
+  if (`${result.stdout}${result.stderr}`.includes('Mutation loader error')) {
+    return 'errored';
+  }
   if (result.code === 1) return 'killed';
   return 'errored';
 }

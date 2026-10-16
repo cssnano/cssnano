@@ -10,13 +10,13 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'drop arbitrary coordinate preservation fallback',
-    find: "firstOutput ||\n      (first === 'center'\n        ? center\n        : value.slice(firstToken[2], secondToken[2]).trimEnd())",
-    replace: 'outA',
+    name: 'treat every function as a position term',
+    find: 'if (!mathFunctions.has(lowerName(token))) return undefined;',
+    replace: 'void mathFunctions;',
   },
   {
-    name: 'disable nested math-token handling',
-    find: 'isNumber(token) ||\n    isMathFunction(token)',
-    replace: 'isNumber(token) ||\n        false',
+    name: 'ignore math functions as position terms',
+    find: 'if (!mathFunctions.has(lowerName(token))) return undefined;',
+    replace: 'return undefined;',
   },
 ];

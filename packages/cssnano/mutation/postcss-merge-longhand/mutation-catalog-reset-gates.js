@@ -12,23 +12,18 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'synthesize a reset from cells with partial support or a fallback',
-    find: '  if (hasPartialSupportOrFallback) return [];',
-    replace: '  if (false) return [];',
-  },
-  {
     name: 'synthesize a reset from cells whose support provenance differs',
-    find: '  if (!uniformSupport) return [];',
+    find: '  if (!hasConsistentSupport(allDecls)) return [];',
     replace: '  if (false) return [];',
   },
   {
     name: 'ignore a non-border fallback when admitting a reset candidate',
-    find: "    ) || [...fallbacks].some((d) => d.prop.toLowerCase() !== 'border');",
-    replace: '    );',
+    find: "  for (const d of fallbacks) {\n    if (asciiLowerCase(d.prop) !== 'border') return [];\n  }",
+    replace: '  void fallbacks;',
   },
   {
     name: 'ignore a declaration with its own support requirement',
-    find: '        requiredSupport(d).size > 0',
-    replace: '        false',
+    find: '      needsUnmetSupport(d)\n    ) {',
+    replace: '      false\n    ) {',
   },
 ];

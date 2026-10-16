@@ -10,16 +10,27 @@ export const test = new URL(
   import.meta.url
 ).href;
 
+const parseWsc = new URL(
+  '../../src/plugins/postcss-merge-longhand/lib/parseWsc.js',
+  import.meta.url
+).href;
+const lengthGrammar = new URL(
+  '../../src/plugins/postcss-merge-longhand/lib/lengthGrammar.js',
+  import.meta.url
+).href;
+
 export const mutations = [
   {
     name: 'accept a border value that specifies a component twice',
-    find: '    if (specified.has(component)) {',
-    replace: '    if (false) {',
+    target: parseWsc,
+    find: 'if (width !== undefined) return null;',
+    replace: 'if (false) return null;',
   },
   {
     name: 'accept tokens that are no border component',
-    find: '      if (!isSubstitution(token)) {',
-    replace: '      if (false) {',
+    target: parseWsc,
+    find: '    } else {\n      return null;\n    }\n  }\n\n  if (tokens > 3)',
+    replace: '    }\n  }\n\n  if (tokens > 3)',
   },
   {
     name: 'accept multi-token values for a single-component border property',
@@ -28,17 +39,26 @@ export const mutations = [
   },
   {
     name: 'accept negative border widths',
-    find: "  if (number.startsWith('-')) {",
-    replace: '  if (false) {',
+    target: lengthGrammar,
+    find: '(number < 0 || Object.is(number, -0))',
+    replace: 'Object.is(number, -0)',
+  },
+  {
+    name: 'accept negative zero border widths',
+    target: lengthGrammar,
+    find: '(number < 0 || Object.is(number, -0))',
+    replace: 'number < 0',
   },
   {
     name: 'accept unitless non-zero border widths',
-    find: '    return Number(number) === 0;',
-    replace: '    return true;',
+    target: lengthGrammar,
+    find: "if (unit === '') return number === 0;",
+    replace: "if (unit === '') return true;",
   },
   {
     name: 'accept border widths with unrecognized units',
-    find: '  return lengthUnits.has(unit);',
-    replace: '  return true;',
+    target: lengthGrammar,
+    find: 'return lengthUnits.has(asciiLowerCase(unit));',
+    replace: 'return true;',
   },
 ];
