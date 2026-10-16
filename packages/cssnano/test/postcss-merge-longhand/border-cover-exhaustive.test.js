@@ -86,6 +86,10 @@ function uncoveredLeaves(touched, covered, important) {
  * subset of columns, or the leaf cover. Every remaining touched cell is an
  * explicitly serialized leaf; rows and columns are never mixed.
  *
+ * It models plain longhands only. Fallbacks and restated longhands, where a
+ * smaller subset can win, are covered by `borders-fallbacks.test.js` and
+ * `script/postcss-merge-longhand/compareSize.js`.
+ *
  * @param {'side' | 'component'} mode
  * @param {number} inputMask
  * @param {boolean} important

@@ -42,14 +42,20 @@ export function describeOutcome({ status, signal }) {
  *
  * @param {string} pkg Package directory name, e.g. `postcss-convert-values`
  * @param {string} rev Any git revision, e.g. `HEAD~1`
- * @param {string[]} fuzzArgs Forwarded to the package's `script/fuzz.js`
+ * @param {string[]} fuzzArgs Forwarded to the package's script
+ * @param {string} [entry] Script under `script/<pkg>` to run, `fuzz.js` by default
  * @return {{ status: number | null, signal: NodeJS.Signals | null }}
  */
-function fuzzAgainstRevision(pkg, rev, fuzzArgs = []) {
+export function fuzzAgainstRevision(
+  pkg,
+  rev,
+  fuzzArgs = [],
+  entry = 'fuzz.js'
+) {
   const packageDir = join(root, 'packages', 'cssnano');
   const scriptDir = join(packageDir, 'script', pkg);
-  if (!existsSync(join(scriptDir, 'fuzz.js'))) {
-    throw new Error(`packages/cssnano/script/${pkg} has no fuzz.js`);
+  if (!existsSync(join(scriptDir, entry))) {
+    throw new Error(`packages/cssnano/script/${pkg} has no ${entry}`);
   }
 
   // A sibling of the real package keeps `../../src` and `#` imports resolving
@@ -73,7 +79,7 @@ function fuzzAgainstRevision(pkg, rev, fuzzArgs = []) {
     // A fresh process keeps module caching from mixing implementations.
     const run = spawnSync(
       process.execPath,
-      [join(sandbox, 'script', pkg, 'fuzz.js'), ...fuzzArgs],
+      [join(sandbox, 'script', pkg, entry), ...fuzzArgs],
       { stdio: 'inherit' }
     );
     return { status: run.status, signal: run.signal };

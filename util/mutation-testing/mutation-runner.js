@@ -1,8 +1,14 @@
 import { spawn } from 'node:child_process';
+import { availableParallelism } from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { mapWithConcurrency } from './mutation-testing.js';
 
 const loader = fileURLToPath(new URL('./mutation-loader.js', import.meta.url));
+
+// One process per test file is the dominant cost; in-process runs keep each
+// mutant on a single core so the pool below can keep every core busy.
+const testFlags = ['--test-isolation=none', '--test'];
 
 function argumentsFor(name, args) {
   const values = [];
@@ -57,6 +63,41 @@ function mutationStatus(result) {
   return 'errored';
 }
 
+async function runMutation({ mutation, target, testPath, timeout }) {
+  const environment = {
+    ...process.env,
+    CSSNANO_MUTATION_TARGET: mutation.target ?? target,
+    CSSNANO_MUTATION: JSON.stringify(mutation),
+  };
+
+  // Importing the mutated module alone separates a module that fails to load
+  // (syntax or top-level errors) from a behavior change that tests should catch.
+  const load = await runNode(
+    [
+      '--import',
+      loader,
+      '--input-type=module',
+      '--eval',
+      'await import(process.env.CSSNANO_MUTATION_TARGET);',
+    ],
+    environment,
+    timeout
+  );
+  if (load.timedOut || load.code !== 0) {
+    return {
+      mutation,
+      result: load,
+      status: load.timedOut ? 'timed out' : 'errored',
+    };
+  }
+  const result = await runNode(
+    ['--import', loader, ...testFlags, testPath],
+    environment,
+    timeout
+  );
+  return { mutation, result, status: mutationStatus(result) };
+}
+
 const args = process.argv.slice(2);
 try {
   if (process.versions.node.split('.')[0] !== '24') {
@@ -74,7 +115,10 @@ try {
     throw new Error('Only one legacy --test argument is supported');
   }
   const timeoutIndex = args.indexOf('--timeout');
-  const timeout = Number(timeoutIndex === -1 ? 10000 : args[timeoutIndex + 1]);
+  // Parallel runs share cores, so a single run can take several times its solo time.
+  const timeout = Number(timeoutIndex === -1 ? 30000 : args[timeoutIndex + 1]);
+
+  const entries = [];
   for (const catalogPath of catalogPaths) {
     const catalog = await import(pathToFileURL(catalogPath));
     const mutations = catalog.mutations;
@@ -91,29 +135,62 @@ try {
       );
     }
 
-    const label = catalog.name ? `${catalog.name}: ` : '';
-    const baseline = await runNode(['--test', testPath], process.env, timeout);
+    entries.push({
+      label: catalog.name ? `${catalog.name}: ` : '',
+      mutations,
+      target,
+      testPath,
+    });
+  }
+
+  // Catalogs that share a test file share one baseline run.
+  const distinctTestPaths = [
+    ...new Set(entries.map((entry) => entry.testPath)),
+  ];
+  const baselines = await mapWithConcurrency(
+    distinctTestPaths,
+    availableParallelism(),
+    (testPath) => runNode([...testFlags, testPath], process.env, timeout)
+  );
+  const baselineResults = new Map(
+    distinctTestPaths.map((testPath, index) => [testPath, baselines[index]])
+  );
+
+  const runnable = [];
+  for (const entry of entries) {
+    const baseline = baselineResults.get(entry.testPath);
     if (baseline.timedOut || baseline.code !== 0) {
-      printFailure(`${label}baseline failed`, baseline);
+      printFailure(`${entry.label}baseline failed`, baseline);
       process.exitCode = 1;
+      entry.skipped = true;
       continue;
     }
-
-    const results = [];
-    for (const mutation of mutations) {
-      const environment = {
-        ...process.env,
-        CSSNANO_MUTATION_TARGET: mutation.target ?? target,
-        CSSNANO_MUTATION: JSON.stringify(mutation),
-      };
-      const result = await runNode(
-        ['--import', loader, '--test', testPath],
-        environment,
-        timeout
-      );
-      const status = mutationStatus(result);
-      results.push({ mutation, result, status });
+    for (const mutation of entry.mutations) {
+      runnable.push({ entry, mutation });
     }
+  }
+
+  const outcomes = await mapWithConcurrency(
+    runnable,
+    availableParallelism(),
+    ({ entry, mutation }) =>
+      runMutation({
+        mutation,
+        target: entry.target,
+        testPath: entry.testPath,
+        timeout,
+      })
+  );
+
+  const resultsByEntry = new Map(entries.map((entry) => [entry, []]));
+  for (const [index, { entry }] of runnable.entries()) {
+    resultsByEntry.get(entry).push(outcomes[index]);
+  }
+
+  for (const entry of entries) {
+    if (entry.skipped) continue;
+    const results = resultsByEntry.get(entry);
+    const { label } = entry;
 
     for (const { mutation, result, status } of results) {
       console.log(`${label}${status}: ${mutation.name}`);

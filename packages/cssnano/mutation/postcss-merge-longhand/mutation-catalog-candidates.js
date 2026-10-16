@@ -55,4 +55,9 @@ export const mutations = [
     find: '  if (!hasReset || touched.size !== 12 || barrierCells.size !== 0) return [];',
     replace: '  if (touched.size !== 12 || barrierCells.size !== 0) return [];',
   },
+  /* Not listed: reversing the equal-size mask tie-break in compareCandidates
+   * has not changed the output of any rule found so far, so the mutant would
+   * survive without proving a gap. The tie-break stays so the result does not
+   * depend on candidate generation order. List the mutant once a rule whose
+   * output it changes is found. */
 ];

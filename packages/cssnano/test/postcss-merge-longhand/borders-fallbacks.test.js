@@ -265,3 +265,35 @@ describe('newer syntax a browser may reject', () => {
     passthroughCSS('a{border:1px solid red;border-bottom-color:rgba(0,0,0,.5)}')
   );
 });
+
+test(
+  'should not merge fallback-protected border colors into a larger border-color',
+  processCSS(
+    'h1{border-left-width:1px;border-top-width:1px;border-color:red red;border-left-color:rgba(0,0,0,.5);border-color:rgba(0,0,0,.5);border-width:2px;border-style:solid;border-right-width:1px;border-right-color:blue;border-style:solid}',
+    'h1{border-color:red red;border-color:rgba(0,0,0,.5);border-right-color:blue;border-style:solid;border-width:2px 1px 2px 2px}'
+  )
+);
+
+test(
+  'should collapse a repeated border-width pair beside a side colour that must stay a longhand',
+  processCSS(
+    'a{border:1px solid red;border-bottom-color:lab(50% 10 10);border-width:2px 2px}',
+    'a{border:1px solid red;border-bottom-color:lab(50% 10 10);border-width:2px}'
+  )
+);
+
+test(
+  'should not re-emit border-style when a longhand already sets it and only border-width is mergeable',
+  processCSS(
+    'a{border:thin solid red;border-color:lab(50% 10 10);border-width:thin thin;border-bottom-width:1px}',
+    'a{border:thin solid red;border-color:lab(50% 10 10);border-width:thin thin 1px}'
+  )
+);
+
+test(
+  'should shorten a side style longhand to border-style beside a colour that cannot join the border shorthand',
+  processCSS(
+    'a{border:2px dotted red;border-bottom-style:dotted;border-color:lab(50% 10 10)}',
+    'a{border:2px dotted red;border-style:dotted;border-color:lab(50% 10 10)}'
+  )
+);

@@ -22,7 +22,7 @@
     "test:coverage": "cd packages && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=../lcov.info",
     "test:uncovered-branches": "node util/uncoveredBranches.js",
     "test:unit": "pnpm --recursive --workspace-concurrency=1 exec node --test --test-reporter=dot --test-skip-pattern=\"framework tests\"",
-    "test:util": "node --test util/webref/*.test.js",
+    "test:util": "node --test util/webref/*.test.js util/mutation-testing/*.test.js",
     "test:site": "node --test site/test/*.js",
     "test:integration": "node --test packages/cssnano/test/presets/default/integrations.test.js packages/cssnano/test/presets/default/pluginIdempotency.test.js packages/cssnano/test/presets/advanced/integrations.test.js packages/cssnano/test/presets/lite/integrations.test.js",
     "test:packaging": "node --test util/packaging.test.js",
