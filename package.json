@@ -5,6 +5,7 @@
   "scripts": {
     "lint": "pnpm types && oxlint . && oxfmt --check",
     "fixlint": "oxfmt . && pnpm oxlint --fix .",
+    "acquire": "pnpm --filter cssnano run acquire",
     "build:integration": "node util/buildFrameworks.js",
     "bench": "node ./util/benchmark/bench.js",
     "bench:smoke": "node ./util/benchmark/bench.js --mode=quick --runs=1",

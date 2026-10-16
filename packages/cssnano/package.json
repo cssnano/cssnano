@@ -70,7 +70,7 @@
     "@csstools/css-tokenizer": "catalog:",
     "browserslist": "catalog:",
     "caniuse-api": "^4.0.0",
-    "postcss-calc": "^11.2.2"
+    "postcss-calc": "^11.2.3"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
@@ -97,12 +97,12 @@
     "@mdn/browser-compat-data": "catalog:",
     "@webref/css": "catalog:",
     "autoprefixer": "catalog:",
-    "jsdom": "^30.1.2",
+    "jsdom": "^30.1.3",
     "mdn-data": "catalog:",
     "postcss": "catalog:",
     "postcss-font-magician": "^4.0.0",
     "postcss-scss": "^4.0.9",
-    "postcss-selector-parser": "^7.1.5",
+    "postcss-selector-parser": "^7.1.6",
     "postcss-simple-vars": "^7.0.1",
     "postcss-svgo": "workspace:^"
   },
@@ -110,6 +110,15 @@
     "postcss": "^8.5.29"
   },
   "scripts": {
+    "acquire": "pnpm run \"/^acquire:/\"",
+    "acquire:postcss-colormin": "node ./script/postcss-colormin/acquire.js",
+    "acquire:postcss-merge-idents": "node ./script/postcss-merge-idents/acquire.js",
+    "acquire:postcss-merge-longhand": "node ./script/postcss-merge-longhand/acquire.js",
+    "acquire:postcss-merge-rules": "node ./script/postcss-merge-rules/acquire.js",
+    "acquire:postcss-minify-font-values": "node ./script/postcss-minify-font-values/acquire.js",
+    "acquire:postcss-ordered-values": "node ./script/postcss-ordered-values/acquire.js",
+    "acquire:postcss-reduce-idents": "node ./script/postcss-reduce-idents/acquire.js",
+    "acquire:postcss-reduce-initial": "node ./script/postcss-reduce-initial/acquire.js",
     "test": "node --test"
   },
   "type": "module"
