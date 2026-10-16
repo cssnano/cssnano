@@ -26,16 +26,23 @@ export const mutations = [
     replace: '    if (false) continue;',
   },
   {
-    name: 'let a candidate shorthand touch untouched border cells',
-    find: '  return candidates.filter((c) => footprintValid(c.decls, touched, hasReset));',
-    replace: '  return candidates;',
-  },
-  {
     name: 'ignore !important when comparing declaration byte cost',
     target: builders,
     find: '  for (const d of decls) sum += declCost(d.prop, d.value, important);',
     replace:
       '  for (const d of decls) sum += declCost(d.prop, d.value, false);',
+  },
+  {
+    name: 'emit leaves for border cells the segment never set',
+    target: builders,
+    find: '    if (touched.has(i) && !blockedCells.has(i) && !coveredCells.has(i)) {',
+    replace: '    if (!blockedCells.has(i) && !coveredCells.has(i)) {',
+  },
+  {
+    name: 'offer a component shorthand over partly set border cells',
+    target: builders,
+    find: '      componentCells[c].every((i) => touched.has(i) && !barrierCells.has(i))',
+    replace: '      componentCells[c].every((i) => !barrierCells.has(i))',
   },
   {
     name: 'insert the reduced shorthand before the declarations it represents',
@@ -47,10 +54,5 @@ export const mutations = [
     target: builders,
     find: '  if (!hasReset || touched.size !== 12 || barrierCells.size !== 0) return [];',
     replace: '  if (touched.size !== 12 || barrierCells.size !== 0) return [];',
-  },
-  {
-    name: 'prefer narrower shorthand coverage on equal-size tie-breaking',
-    find: '    return b.mask - a.mask;',
-    replace: '    return a.mask - b.mask;',
   },
 ];

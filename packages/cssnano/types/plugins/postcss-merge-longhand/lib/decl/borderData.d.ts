@@ -8,7 +8,6 @@ export declare const cellProperties: string[];
 export declare const borderPropertyToCellIndex: Map<string, number>;
 export declare const sideCells: number[][];
 export declare const componentCells: number[][];
-export declare const borderImageProperties: Set<string>;
 export declare const allPhysicalBorderProperties: Set<string>;
 export declare const physicalRadiusLonghands: string[];
 export declare const physicalRadiusProperties: Set<string>;

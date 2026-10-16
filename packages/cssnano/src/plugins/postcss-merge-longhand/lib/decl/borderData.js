@@ -44,7 +44,6 @@ export const componentCells = widthStyleColor.map((_, c) => [
   c + 6,
   c + 9,
 ]);
-export const borderImageProperties = new Set(spec.shorthand('border').resets);
 
 const precedence = [
   ['border'],
