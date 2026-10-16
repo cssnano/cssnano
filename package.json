@@ -34,8 +34,8 @@
   "devDependencies": {
     "@types/node": "^26.6.5",
     "knip": "^6.41.0",
-    "oxfmt": "^0.72.0",
-    "oxlint": "^1.87.0",
+    "oxfmt": "^0.73.0",
+    "oxlint": "^1.88.0",
     "postcss": "catalog:",
     "resolve": "^1.22.13",
     "typescript": "~7.0.2"
