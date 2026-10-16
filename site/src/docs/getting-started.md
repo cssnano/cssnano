@@ -25,7 +25,8 @@ you will need to use an application such as Terminal or the Windows Command
 Prompt. If you don't already have Node.js installed, then you'll need to
 install it.
 
-We require a minimum of Node.js version 22.11.0  to run. You can [visit the Node.js website](https://nodejs.org/en/) and
+cssnano requires Node.js 22.22.3 or later in the 22 release line, 24.15.0 or
+later in the 24 release line, or version 26 or later. You can [visit the Node.js website](https://nodejs.org/en/) and
 follow the instructions there to install it for your machine.
 
 cssnano is a [PostCSS](https://postcss.org/) plugin, so running cssnano also requires installing PostCSS. 
@@ -85,7 +86,7 @@ You should then see an `output.css` with the same styles but compressed!
 
 Note that you can also find a [basic example][example] in our GitHub repository.
 
-[example]: https://github.com/cssnano/cssnano/tree/master/example-cli-usage
+[example]: https://github.com/cssnano/cssnano/tree/main/example-cli-usage
 
 
 ## Alternatives to using the CLI

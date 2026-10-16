@@ -6,13 +6,10 @@ description: Choose the default, lite or advanced preset to control which optimi
 
 ## What are presets?
 
-Starting with version 4, presets are a way of loading cssnano with different
-features, depending on your use case. Now, instead of having to opt-out of
-advanced transformations, you can choose to opt-in instead. Prior to the
-introduction of presets, code to perform advanced transformations was downloaded
-from npm whether or not it was used. Presets ensure that this is no longer the
-case, and also afford the ability to save configuration for cssnano to re-use
-across multiple contexts.
+Presets are named sets of optimisations. Instead of having to opt out of
+advanced transformations, you opt in by choosing a preset, and you can save
+your configuration to reuse across multiple contexts. cssnano includes three
+presets: `default`, `lite`, and `advanced`.
 
 
 ## How do presets work?
@@ -33,9 +30,13 @@ module.exports = {
 ```
 
 _The preset names `default`, `lite`, and `advanced` select the presets built
-into cssnano, so they need no separate install. If a `cssnano-preset-*` package
-with the same name is installed in your project, cssnano uses that package
-instead. For other presets, pass the complete resolvable package name._
+into cssnano, so they need no separate install. `default` always uses the
+built-in preset. For `lite`, `advanced` and the full `cssnano-preset-*` names,
+an installed package with the same name takes precedence, and cssnano prints a
+`CSSNANO_INSTALLED_PRESET` warning so an outdated install does not go
+unnoticed. Uninstall the package to use the built-in preset, or pass the
+imported preset function to keep the installed one without the warning. For
+other presets, pass the complete resolvable package name._
 
 If you need to pass any options to a preset, you must specify them using the
 array syntax instead. For example, you can remove all comments with the
@@ -58,37 +59,33 @@ module.exports = {
 For other cases where the preset was not explicitly set, cssnano checks the
 supported configuration files in the current working directory. It does not
 search parent directories. These two configuration examples function
-identically to the above:
+identically to the above. A `.cssnanorc.json`:
 
 ```json
 {
-  "name": "awesome-application",
-  "cssnano": {
-    "preset": [
-      "default",
-      {"discardComments": {"removeAll": true}}
-    ]
-  }
+  "preset": [
+    "default",
+    {"discardComments": {"removeAll": true}}
+  ]
 }
 ```
 
-And the `cssnano.config.js`, which requires the `cssnano-preset-default`
-package to be installed in your project:
+And a `cssnano.config.js`:
 
 ```js
-const defaultPreset = require('cssnano-preset-default');
-
-module.exports = defaultPreset({
-    discardComments: {
-        removeAll: true,
-    },
-});
+module.exports = {
+    preset: ['default', {
+        discardComments: {
+            removeAll: true,
+        },
+    }],
+};
 ```
 
 _The `cssnano.config.js` is useful if you need to make use of transformations
 that can accept functions as parameters, for more specific use cases._
 
-If cssnano was not loaded with a preset explicitly, or a local configuration
+If cssnano was not loaded with a preset explicitly, and a local configuration
 file was not found, then the defaults will be loaded. Use `configFile` when the
 configuration is stored in another directory. cssnano automatically discovers
 `.cssnanorc.json` and `cssnano.config.js`. The `configFile` can point to any filename with a supported extension.
