@@ -156,6 +156,13 @@ describe('support-dependent (env()) merge blocking', () => {
       'h1{border-top-width:1px;border-top-width:env(safe-area-inset-bottom);border-top-style:solid;border-top-color:red}'
     )
   );
+
+  test(
+    'should not merge env() longhands into border-width because a substitution may expand to several widths',
+    passthroughCSS(
+      'h1{border-top-width:env(safe-area-inset-top);border-right-width:env(safe-area-inset-top);border-bottom-width:env(safe-area-inset-top);border-left-width:env(safe-area-inset-top)}'
+    )
+  );
 });
 
 describe('border-color', () => {
@@ -239,5 +246,22 @@ describe('newer syntax a browser may reject', () => {
   test(
     'should keep a six-digit hex before an alpha hex duplicate because older browsers reject the later one',
     passthroughCSS('a{border-top-color:#fff;border-top-color:#ffff}')
+  );
+
+  test(
+    'should keep a width beside a lab() border because browsers without lab() drop the reset but must not reset the other widths',
+    passthroughCSS('a{border:0 solid lab(0 0 0);border-right-width:2px}')
+  );
+
+  test(
+    'should keep a side fallback after the border it overrides because browsers without rgba() fall back to it',
+    passthroughCSS(
+      'a{border:1px solid red;border-right:1px solid #000;border-right:1px solid rgba(0,0,0,.5)}'
+    )
+  );
+
+  test(
+    'should keep an rgba() side colour out of border-color because browsers without rgba() would drop every side colour',
+    passthroughCSS('a{border:1px solid red;border-bottom-color:rgba(0,0,0,.5)}')
   );
 });

@@ -189,7 +189,6 @@ function reduceSegment(rule, segment, lane) {
     lane,
     state.fallbacks
   );
-  if (candidates.length === 0) return;
 
   const best = selectBestCandidate(
     candidates,

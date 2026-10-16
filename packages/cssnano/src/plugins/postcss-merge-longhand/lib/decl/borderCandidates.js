@@ -4,7 +4,6 @@ import insertCloned from '../insertCloned.js';
 import { setsLonghands } from '../spec.js';
 import {
   allBorderShorthands,
-  borderImageProperties,
   borderPropertyToCellIndex,
   cellProperties,
   componentCells,
@@ -31,17 +30,6 @@ const { asciiLowerCase } = cssnanoUtils;
  * history, barriers, fallbacks), score the non-overlapping covers and rewrite
  * the rule. Candidate construction lives in borderCandidateBuilders.js. */
 
-/** @param {{prop: string, value: string}[]} candDecls @param {Set<number>} touched @param {boolean} hasReset */
-function footprintValid(candDecls, touched, hasReset) {
-  for (const { prop } of candDecls) {
-    for (const p of setsLonghands(asciiLowerCase(prop))) {
-      if (borderImageProperties.has(p) && !hasReset) return false;
-      const cellIndex = borderPropertyToCellIndex.get(p);
-      if (cellIndex !== undefined && !touched.has(cellIndex)) return false;
-    }
-  }
-  return true;
-}
 /**
  * @template T
  * @param {T[]} items
@@ -72,7 +60,8 @@ function compareCandidates(a, b, lane) {
   const sizeB = declSize(b.decls, lane);
   if (sizeA !== sizeB) return sizeA - sizeB;
   if (a.rank !== b.rank) return a.rank - b.rank;
-  /* Broader coverage wins when the same shorthand family ties. */
+  /* Masks are distinct within a shorthand family, so the winner does not
+   * depend on the order the candidates were generated in. */
   if (
     a.rank === COMPONENT_SHORTHAND_CANDIDATE ||
     a.rank === SIDE_SHORTHAND_CANDIDATE
@@ -140,35 +129,32 @@ export function generateCandidates(
     fallbacks
   );
 
-  const compCands = getSubsets(availComps)
-    .map((sub) =>
-      createGroupCandidate(
-        sub.map((c) => componentCells[c]),
-        cells,
-        touched,
-        blockedCells,
-        true
-      )
+  const compCands = getSubsets(availComps).map((sub) =>
+    createGroupCandidate(
+      sub.map((c) => componentCells[c]),
+      cells,
+      touched,
+      blockedCells,
+      true
     )
-    .toSorted((a, b) => b.mask - a.mask);
+  );
 
-  const sideCands = getSubsets(availSides)
-    .map((sub) =>
-      createGroupCandidate(
-        sub.map((s) => sideCells[s]),
-        cells,
-        touched,
-        blockedCells,
-        false
-      )
+  const sideCands = getSubsets(availSides).map((sub) =>
+    createGroupCandidate(
+      sub.map((s) => sideCells[s]),
+      cells,
+      touched,
+      blockedCells,
+      false
     )
-    .toSorted((a, b) => b.mask - a.mask);
+  );
 
   const leafCand = createLeafCandidate(cells, touched, blockedCells);
 
-  const candidates = [...resetCands, ...compCands, ...sideCands, leafCand];
-
-  return candidates.filter((c) => footprintValid(c.decls, touched, hasReset));
+  /* Every builder emits declarations only for touched cells, and a reset
+   * candidate, whose `border` also resets border-image, only when the segment
+   * already has a reset. */
+  return [...resetCands, ...compCands, ...sideCands, leafCand];
 }
 /**
  * @param {{ decls: { prop: string, value: string }[], rank: number, mask: number, resetIndex?: number, coveredCells: Set<number> }[]} candidates

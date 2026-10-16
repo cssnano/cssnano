@@ -91,6 +91,21 @@ describe('unified border reduction', () => {
   );
 
   test(
+    'keeps two side longhands when the side shorthand repeating a long colour is longer',
+    passthroughCSS(
+      'a{border:1px solid rgba(100,100,100,0.25);border-top-width:2px;border-top-style:dashed}'
+    )
+  );
+
+  test(
+    'counts each !important when replacing two side longhands with one side shorthand',
+    processCSS(
+      'a{border:1px solid rgba(100,100,100,0.25)!important;border-top-width:2px!important;border-top-style:dashed!important}',
+      'a{border:1px solid rgba(100,100,100,0.25)!important;border-top:2px dashed rgba(100,100,100,0.25)!important}'
+    )
+  );
+
+  test(
     'blocks border reduction when border-image is present',
     passthroughCSS(
       'a{border-top-width:1px;border-top-style:solid;border-top-color:red;border-image:none}'

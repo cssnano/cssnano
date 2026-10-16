@@ -339,7 +339,6 @@ function createResetCandidates(
 
 export {
   COMPONENT_SHORTHAND_CANDIDATE,
-  LEAF_CANDIDATE,
   RESET_CANDIDATE,
   SIDE_SHORTHAND_CANDIDATE,
   createGroupCandidate,

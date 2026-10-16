@@ -8,7 +8,6 @@ declare function declSize(decls: {
 declare const RESET_CANDIDATE = 1;
 declare const COMPONENT_SHORTHAND_CANDIDATE = 2;
 declare const SIDE_SHORTHAND_CANDIDATE = 3;
-declare const LEAF_CANDIDATE = 4;
 /**
  * A shorthand fills several cells, so a declaration appears once per cell it
  * set; collecting into a Set makes each one count once.
@@ -85,5 +84,5 @@ declare function createResetCandidates(hasReset: boolean, touched: Set<number>, 
     resetIndex: number;
     coveredCells: Set<number>;
 }[];
-export { COMPONENT_SHORTHAND_CANDIDATE, LEAF_CANDIDATE, RESET_CANDIDATE, SIDE_SHORTHAND_CANDIDATE, createGroupCandidate, createLeafCandidate, createResetCandidates, declSize, declarationsOfCells, getAvailableComponents, getAvailableSides, };
+export { COMPONENT_SHORTHAND_CANDIDATE, RESET_CANDIDATE, SIDE_SHORTHAND_CANDIDATE, createGroupCandidate, createLeafCandidate, createResetCandidates, declSize, declarationsOfCells, getAvailableComponents, getAvailableSides, };
 //# sourceMappingURL=borderCandidateBuilders.d.ts.map
