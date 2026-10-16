@@ -21,3 +21,28 @@ export function applyMutation(source, mutation) {
     first + mutation.find.length
   )}`;
 }
+
+/**
+ * Map items with at most `limit` workers in flight; results keep input order.
+ *
+ * @template T, R
+ * @param {T[]} items
+ * @param {number} limit
+ * @param {(item: T, index: number) => Promise<R>} worker
+ * @returns {Promise<R[]>}
+ */
+export async function mapWithConcurrency(items, limit, worker) {
+  const results = Array.from({ length: items.length });
+  let next = 0;
+  const lane = async () => {
+    while (next < items.length) {
+      const index = next;
+      next += 1;
+      results[index] = await worker(items[index], index);
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, lane)
+  );
+  return results;
+}

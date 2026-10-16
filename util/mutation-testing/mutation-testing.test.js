@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { applyMutation } from './mutation-testing.js';
+import { applyMutation, mapWithConcurrency } from './mutation-testing.js';
 const catalogPromises = [
   import('../../packages/cssnano/mutation/postcss-discard-empty/mutation-catalog.js'),
   import('../../packages/cssnano/mutation/postcss-discard-comments/mutation-catalog.js'),
@@ -36,6 +36,30 @@ test('rejects a mutation that matches more than once', () => {
       applyMutation('target target', { find: 'target', replace: 'changed' }),
     /more than once/v
   );
+});
+
+test('returns mapped results in input order', async () => {
+  const results = await mapWithConcurrency([3, 1, 2], 2, async (item) => {
+    await new Promise((resolve) => {
+      setTimeout(resolve, item);
+    });
+    return item * 10;
+  });
+  assert.deepStrictEqual(results, [30, 10, 20]);
+});
+
+test('never runs more workers at once than the concurrency limit', async () => {
+  let inFlight = 0;
+  let peak = 0;
+  await mapWithConcurrency(Array.from({ length: 10 }), 3, async () => {
+    inFlight += 1;
+    peak = Math.max(peak, inFlight);
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
+    inFlight -= 1;
+  });
+  assert.strictEqual(peak, 3);
 });
 
 test('every catalog mutation matches its source once', async () => {

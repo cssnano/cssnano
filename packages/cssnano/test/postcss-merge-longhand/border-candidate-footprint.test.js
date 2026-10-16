@@ -59,14 +59,12 @@ function* everyTouchedSet(hasReset) {
 test('border candidates only set longhands the segment already sets', () => {
   for (const hasReset of [false, true]) {
     for (const { touched, candidates } of everyTouchedSet(hasReset)) {
-      for (const decls of candidates) {
-        for (const { prop } of decls) {
-          for (const longhand of physicalLonghands(prop)) {
-            assert.ok(
-              touched.has(cellNames.indexOf(longhand)),
-              `${prop} sets untouched ${longhand}`
-            );
-          }
+      for (const { prop } of candidates.flat()) {
+        for (const longhand of physicalLonghands(prop)) {
+          assert.ok(
+            touched.has(cellNames.indexOf(longhand)),
+            `${prop} sets untouched ${longhand}`
+          );
         }
       }
     }
