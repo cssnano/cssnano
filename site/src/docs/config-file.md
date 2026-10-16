@@ -59,93 +59,65 @@ TypeScript files only support the TypeScript language features usable with Node.
 - **option:** `preset` 
 -  **type:** `string` | `function` | `[string, Objects<preset options here>]` | `[function(preset options here)]`
 
-Pass a preset to choose a pre-configured set of optimizations. You can specify a preset with its name as a string, or pass a preset object from a preset package you have installed.
-
-With the preset as import, the `cssnano-preset-default` package must be installed in your project:
-
-```js
-cssnano({ preset: require('cssnano-preset-default') })
-```
-
-Using a string is useful if you use a configuration file in the JSON format.
-
-
-```js
-cssnano({ preset: 'cssnano-preset-default' })
-```
-
-The strings `default`, `lite`, and `advanced` are shorthand for the built-in
-`cssnano-preset-*` packages:
+Pass a preset to choose a pre-configured set of optimizations. The presets
+`default`, `lite`, and `advanced` are built into cssnano, so you select them by
+name without installing anything else:
 
 ```js
 cssnano({ preset: 'lite' })
 ```
 
-For any other preset, pass a name that points to a resolvable node module.
+Using a string is also how you choose a preset in a `.cssnanorc.json` file.
+See [the presets guide](../presets/) for how cssnano resolves these names when
+a `cssnano-preset-*` package is also installed in your project.
+
+For any other preset, pass a name that points to a resolvable node module, or
+pass the preset function itself:
 
 ```js
 cssnano({ preset: 'my-custom-preset' })
+cssnano({ preset: require('my-custom-preset') })
 ```
 
 ### Disable a plugin included in a preset
 You can disable one or more of the plugins used in a preset.
 Pass an array where the first element is the preset and the second is an object with the preset options. 
-
+For example, here's how to deactivate the `discardComments` plugin when using the `advanced` preset:
 
 ```js
 // cssnano.config.js
 module.exports = {
-  preset: [ 
-    require('cssnano-preset-default'),
-    { discardComments: false } 
-  ]
+  preset: ['advanced', { discardComments: false }]
 };
-```
-
-
-You can also pass preset options when you use the preset name as a string:
-For example, here's how to deactivate the `discardComments` plugin when using the `advanced` preset:
-
-```js
-cssnano({ 
-  preset: [
-    'cssnano-preset-advanced', { discardComments: false }
-  ]
-});
 ```
 
 
 ### Use individual plugins
 
 - **option:** `plugins`
-- **type:** `Array<'string' | 'function' | ['string' | 'function', Object<Options for the plugin here>]>`
+- **type:** `Array<function | string | [function | string, Object<Options for the plugin here>]>`
 
-You can also pass a list of plugins to cssnano.
-To configure the individual plugins, use an array of arrays:
+You can pass PostCSS plugins to cssnano in the PostCSS configuration. cssnano
+runs them after the plugins of the preset. Pass the plugin function, or an
+array of the plugin function and its options:
 
 ```js
-cssnano({ plugins: [['autoprefixer', {}]] });
+import cssnano from 'cssnano';
+import autoprefixer from 'autoprefixer';
+
+cssnano({
+  preset: 'default',
+  plugins: [[autoprefixer, { remove: false }]],
+});
 ```
 
-- **Example:**
-   
-  ```js
-  // cssnano.config.js
-  module.exports = {
-    plugins: [require('autoprefixer')]
-    
-    // or
-    plugins: ['autoprefixer', 'postcss-preset-env']
-    
-    // or
-    plugins: [ 
-      ['autoprefixer', { remove: false }],
-    ]
+Always set `preset` together with `plugins`: when you pass `plugins` without a
+`preset`, cssnano runs only the listed plugins and skips both the default
+preset and any configuration file, so the CSS is not minified.
 
-    // or
-    plugins: [
-      [ require('autoprefixer'), {remove: false} ],
-      [ 'postcss-preset-env']
-    ]
-  };
-  ```
+Pass plugin functions rather than package names. cssnano resolves a name such
+as `'autoprefixer'` from its own installation directory, not from your project,
+so the name may fail to load, for example with pnpm.
+
+The `.cssnanorc.json` and `cssnano.config.js` files only support the `preset`
+option. To add plugins, configure them in the PostCSS configuration instead.

@@ -30,6 +30,34 @@ function builtInPresetPlugins(name, options) {
   }
 }
 
+/** Built-in preset packages whose installed copy has not been reported yet. */
+const unreportedPresetPackages = new Set([
+  'cssnano-preset-default',
+  'cssnano-preset-lite',
+  'cssnano-preset-advanced',
+]);
+
+/**
+ * Loads an installed preset package. When it shares a name with a built-in
+ * preset, warn once: an outdated install would otherwise silently replace the
+ * preset that ships with this version of cssnano.
+ *
+ * @param {string} moduleId
+ * @param {string} modulePath
+ * @param {any} options
+ * @returns {PresetPlugin[]}
+ */
+function installedPresetPlugins(moduleId, modulePath, options) {
+  if (unreportedPresetPackages.delete(moduleId)) {
+    process.emitWarning(
+      `cssnano is using the installed package "${moduleId}" (${modulePath}) instead of its built-in preset. ` +
+        `Uninstall "${moduleId}" to use the built-in preset, or pass the imported preset function to keep the installed one.`,
+      { code: 'CSSNANO_INSTALLED_PRESET' }
+    );
+  }
+  return require(modulePath)(options).plugins;
+}
+
 const configFileNames = ['.cssnanorc.json', 'cssnano.config.js'];
 
 /** @typedef {boolean | { exclude?: boolean } | void | undefined} PluginOptions */
@@ -41,14 +69,13 @@ const configFileNames = ['.cssnanorc.json', 'cssnano.config.js'];
 /** @typedef {{ preset?: PresetSpec, plugins?: PluginSpec[], configFile?: string }} Options */
 /**
  * @param {string} moduleId
- * @returns {boolean}
+ * @returns {string | undefined} the resolved path, if the module is installed
  */
-function isResolvable(moduleId) {
+function resolveModule(moduleId) {
   try {
-    require.resolve(moduleId);
-    return true;
+    return require.resolve(moduleId);
   } catch {
-    return false;
+    return undefined;
   }
 }
 
@@ -88,18 +115,15 @@ function resolvePreset(preset) {
     return fn(options).plugins;
   }
 
-  // Try loading a preset from node_modules
-  if (isResolvable(fn)) {
-    return require(fn)(options).plugins;
-  }
+  // The shorthands stand for the cssnano-preset-* packages only, never for an
+  // unrelated package that happens to be called "lite" or "advanced".
+  const moduleId =
+    fn === 'lite' || fn === 'advanced' ? `cssnano-preset-${fn}` : fn;
 
-  // Only the built-in preset names support shorthand resolution. Other
-  // strings must be passed to the module resolver unchanged.
-  if (fn === 'lite' || fn === 'advanced') {
-    const sugar = `cssnano-preset-${fn}`;
-    if (isResolvable(sugar)) {
-      return require(sugar)(options).plugins;
-    }
+  // Try loading a preset from node_modules
+  const modulePath = resolveModule(moduleId);
+  if (modulePath) {
+    return installedPresetPlugins(moduleId, modulePath, options);
   }
 
   // An installed preset wins above; the built-in only fills in when none exists.
@@ -193,7 +217,7 @@ function cssnanoPlugin(options = {}) {
     for (const plugin of inputPlugins) {
       if (Array.isArray(plugin)) {
         const [pluginDef, opts = {}] = plugin;
-        if (typeof pluginDef === 'string' && isResolvable(pluginDef)) {
+        if (typeof pluginDef === 'string' && resolveModule(pluginDef)) {
           nanoPlugins.push([
             /** @type {PluginCreator} */ (require(pluginDef)),
             opts,
@@ -201,7 +225,7 @@ function cssnanoPlugin(options = {}) {
         } else {
           nanoPlugins.push([/** @type {PluginCreator} */ (pluginDef), opts]);
         }
-      } else if (typeof plugin === 'string' && isResolvable(plugin)) {
+      } else if (typeof plugin === 'string' && resolveModule(plugin)) {
         nanoPlugins.push([/** @type {PluginCreator} */ (require(plugin)), {}]);
       } else {
         nanoPlugins.push([/** @type {PluginCreator} */ (plugin), {}]);
