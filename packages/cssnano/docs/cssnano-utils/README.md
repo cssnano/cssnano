@@ -44,10 +44,9 @@ themselves.
 | Export | Description |
 | --- | --- |
 | `#utils/browser-targets` `resolveTargets` | Resolves a plugin's browserslist targets once per file. |
-| `#utils/browser-targets` `defaultTargetsQuery` | The query used when the user states no preference: `baseline widely available with downstream`. |
+| `#utils/browser-targets` `defaultTargetsQuery` | The query used when the user states no preference: `baseline widely available with downstream`. It is counted back from the current date, so the targets it resolves move forward over time. |
 | `#utils/browser-support` `supportsAll(targets, feature)` | Whether every target supports a caniuse feature. |
 | `#utils/browser-bugs` `anyAffected(targets, bug)` | Whether at least one target has a browser bug listed in `bugs.json`. |
-| `#utils/browser-bugs` `browsersAffectedBy(bug)` | The shared, read-only set of browser entries that a bug affects. |
 | `#utils/versions` `compareVersions(left, right)` | Orders dotted release numbers numerically per component, so `10.1` follows `9.3`. |
 | `#utils/versions` `isDottedVersion(version)` | Whether a string is a dotted numeric release, rejecting words such as `TP` and ranges. |
 
@@ -73,17 +72,24 @@ Unknown engines follow one policy in each check:
 Support follows caniuse's status: `y` is supported, and so are notes such as
 `y #2`. `y x` (needs a vendor prefix), `a` (partial), `u` and `n` are not.
 Only the caniuse features that the plugins check are imported, rather than
-the whole caniuse database. The same code runs in Node and in the browser.
+the whole caniuse database. The same support checks run in Node and in the
+browser.
 
-The resolved target lists are the arrays that browserslist caches and shares
-between plugins and other tools, so a plugin must copy a list before it
-changes it. A `stats` object is cached by
-identity, so pass a new object instead of changing one between runs.
+The resolved target lists are frozen copies, shared by every plugin that
+resolves the same query for a file, so a plugin cannot change one. A `stats`
+object is cached by identity, so pass a new object instead of changing one
+between runs.
+
+A browser version that cssnano's copy of caniuse-lite does not list adds a
+PostCSS warning, because it counts as unsupported for every feature check.
+Targets older than IE 11 get the output written for IE 11, without a warning.
 
 The search for a browserslist config starts at `path`, then at `from` or
 `file`, and at the working directory when none is set. The directory of the
 plugin package has no influence. In a browser there is no config to find, so
-the targets are the override or the default.
+the targets are the override or the default. The playground on the
+documentation site is the exception: it uses the default targets resolved
+when the site was built, whatever the options.
 
 ### `BalancedTokens` Methods
 

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 /**
  * Runs the plugin on `root` in place so tests can observe the original nodes.
@@ -10,7 +11,7 @@ import plugin from '../../src/plugins/postcss-merge-rules/index.js';
  * @return {Promise<import('postcss').Root>}
  */
 async function mergeRules(root) {
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss([plugin()]).process(root, { from: repositoryFile });
   return root;
 }
 

@@ -6,6 +6,7 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { resolveTargets } from '../../src/utils/browserTargets.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 const longhands = 'a{align-items:center;justify-items:start}';
 
@@ -16,7 +17,7 @@ const longhands = 'a{align-items:center;justify-items:start}';
  */
 async function run(options, processOptions = {}) {
   const result = await postcss([plugin(options)]).process(longhands, {
-    from: undefined,
+    from: repositoryFile,
     ...processOptions,
   });
   return result.css;

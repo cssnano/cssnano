@@ -1,74 +1,30 @@
 import { test } from 'node:test';
-import processCSS from './_processCSS.js';
+import { detectsHack, detectsNoHack } from './_detectHack.js';
 
-test(
-  'ie 6 underscore hack',
-  processCSS('h1 { _color: red }', 'h1 { }', {
-    target: 'IE 6',
-    unaffected: 'IE 7',
-  })
-);
+test('ie 6 underscore hack', detectsHack('h1 { _color: red }'));
 
-test(
-  'ie 6 underscore hack (uppercase)',
-  processCSS('h1 { _COLOR: red }', 'h1 { }', {
-    target: 'IE 6',
-    unaffected: 'IE 7',
-  })
-);
+test('ie 6 underscore hack (uppercase)', detectsHack('h1 { _COLOR: red }'));
 
-test(
-  'ie 6 hyphen hack',
-  processCSS('h1 { -color: red }', 'h1 { }', {
-    target: 'IE 6',
-    unaffected: 'IE 7',
-  })
-);
+test('ie 6 hyphen hack', detectsHack('h1 { -color: red }'));
 
-test(
-  'ie 6 hyphen hack (uppercase)',
-  processCSS('h1 { -COLOR: red }', 'h1 { }', {
-    target: 'IE 6',
-    unaffected: 'IE 7',
-  })
-);
+test('ie 6 hyphen hack (uppercase)', detectsHack('h1 { -COLOR: red }'));
 
 test(
   'prefixed value must be ignored',
-  processCSS(
-    'h1 { -moz-tab-size: 10px }',
-    'h1 { -moz-tab-size: 10px }',
-    { target: 'IE 6', unaffected: 'IE 7' },
-    0
-  )
+  detectsNoHack('h1 { -moz-tab-size: 10px }')
 );
 
 test(
   'prefixed value must be ignored (uppercase)',
-  processCSS(
-    'h1 { -MOZ-TAB-SIZE: 10px }',
-    'h1 { -MOZ-TAB-SIZE: 10px }',
-    { target: 'IE 6', unaffected: 'IE 7' },
-    0
-  )
+  detectsNoHack('h1 { -MOZ-TAB-SIZE: 10px }')
 );
 
 test(
   'custom property must be ignored',
-  processCSS(
-    'h1 { --color-foobar: #000; }',
-    'h1 { --color-foobar: #000; }',
-    { target: 'IE 6', unaffected: 'IE 7' },
-    0
-  )
+  detectsNoHack('h1 { --color-foobar: #000; }')
 );
 
 test(
   'custom property must be ignored (uppercase)',
-  processCSS(
-    'h1 { --COLOR-FOOBAR: #000; }',
-    'h1 { --COLOR-FOOBAR: #000; }',
-    { target: 'IE 6', unaffected: 'IE 7' },
-    0
-  )
+  detectsNoHack('h1 { --COLOR-FOOBAR: #000; }')
 );

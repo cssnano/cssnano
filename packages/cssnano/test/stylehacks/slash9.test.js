@@ -1,34 +1,22 @@
 import { test } from 'node:test';
-import processCSS from './_processCSS.js';
+import { detectsHack } from './_detectHack.js';
 
 test(
-  'ie 6 underscore hack',
-  processCSS('h1 { margin-top: 1px\\9; }', 'h1 { }', {
-    target: 'IE 8',
-    unaffected: 'Chrome 58',
-  })
+  'detects the ie 6-8 \\9 value hack',
+  detectsHack('h1 { margin-top: 1px\\9; }')
 );
 
 test(
-  'ie 6 underscore hack #1',
-  processCSS('h1 { margin-top/*\\**/: 1px\\9; }', 'h1 { }', {
-    target: 'IE 8',
-    unaffected: 'Chrome 58',
-  })
+  'detects the ie 6-8 \\9 value hack after a comment in the property',
+  detectsHack('h1 { margin-top/*\\**/: 1px\\9; }')
 );
 
 test(
-  'ie 6 underscore hack (uppercase)',
-  processCSS('h1 { MARGIN-TOP: 1PX\\9; }', 'h1 { }', {
-    target: 'IE 8',
-    unaffected: 'Chrome 58',
-  })
+  'detects the ie 6-8 \\9 value hack (uppercase)',
+  detectsHack('h1 { MARGIN-TOP: 1PX\\9; }')
 );
 
 test(
-  'ie 6 underscore hack (uppercase) #1',
-  processCSS('h1 { MARGIN-TOP/*\\**/: 1PX\\9; }', 'h1 { }', {
-    target: 'IE 8',
-    unaffected: 'Chrome 58',
-  })
+  'detects the ie 6-8 \\9 value hack after a comment in the property (uppercase)',
+  detectsHack('h1 { MARGIN-TOP/*\\**/: 1PX\\9; }')
 );

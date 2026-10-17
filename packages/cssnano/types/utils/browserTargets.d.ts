@@ -22,6 +22,12 @@ export type Browserslist = ((query: TargetOptions['overrideBrowserslist'], optio
  */
 export declare const defaultTargetsQuery = "baseline widely available with downstream";
 /**
+ * How many distinct target lists keep a shared copy. A build uses one or a
+ * few; the bound keeps a long-running process that receives many queries
+ * from holding every list it has seen.
+ */
+export declare const sharedTargetListLimit = 500;
+/**
  * Resolves the targets for one plugin, with the same option precedence as
  * browserslist: plugin options win over the postcss options, and the override
  * query wins over the project config. Without either, the targets are the

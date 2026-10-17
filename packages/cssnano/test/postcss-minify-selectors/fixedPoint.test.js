@@ -4,6 +4,7 @@ import postcss from 'postcss';
 import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
 import { isFixedPointSelector } from '../../src/plugins/postcss-minify-selectors/lib/fixedPointSelector.js';
 import { normalizeList } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 test('classifies generated fixed-point selectors consistently with normalization', () => {
   const names = ['a', 'A', 'item-1', '_private', '123'];
@@ -51,7 +52,9 @@ test('rejects selectors outside the narrow fixed-point grammar', () => {
 
 test('does not use the fixed-point path for keyframe selectors', async () => {
   const input = '@keyframes fade{from{opacity:0}to{opacity:1}}';
-  const result = await postcss([plugin()]).process(input, { from: undefined });
+  const result = await postcss([plugin()]).process(input, {
+    from: repositoryFile,
+  });
 
   assert.equal(result.css, '@keyframes fade{0%{opacity:0}to{opacity:1}}');
 });
@@ -62,7 +65,7 @@ test('retains raw selector metadata on the fixed-point path', async () => {
   const rawSelector = { raw: '.utility', value: '.utility' };
   rule.raws.selector = rawSelector;
 
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss([plugin()]).process(root, { from: repositoryFile });
 
   assert.strictEqual(rule.raws.selector, rawSelector);
   assert.equal(rule.selector, '.utility');

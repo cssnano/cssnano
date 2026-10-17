@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 import { requiredSupport } from '../../src/plugins/postcss-merge-longhand/lib/isFallback.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 /**
  * A browser that parses calc() but not newer syntax inside it, such as the
@@ -16,7 +17,7 @@ import { requiredSupport } from '../../src/plugins/postcss-merge-longhand/lib/is
 async function run(css, browsers) {
   const result = await postcss([
     plugin({ overrideBrowserslist: browsers }),
-  ]).process(css, { from: undefined });
+  ]).process(css, { from: repositoryFile });
   return result.css;
 }
 

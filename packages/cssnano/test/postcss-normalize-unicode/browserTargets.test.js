@@ -11,8 +11,8 @@ const testDir = dirname(fileURLToPath(import.meta.url));
 const configDir = join(testDir, 'browserslist');
 
 describe('normalize-unicode browser targets', () => {
-  // IE and Edge before 16 ignore unicode-range when the U is lowercase.
-  for (const query of ['ie 8', 'ie 11', 'edge 15']) {
+  // IE 11 and Edge before 16 ignore unicode-range when the U is lowercase.
+  for (const query of ['ie 11', 'edge 15']) {
     test(
       `keeps the uppercase U+ prefix for ${query}`,
       processCSS(input, '@font-face{unicode-range:U+25-ff}', {

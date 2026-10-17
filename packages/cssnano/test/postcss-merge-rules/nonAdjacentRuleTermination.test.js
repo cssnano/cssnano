@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { random } from '../../../../util/fuzzRng.js';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 const mergingFixtures = [
   '.a{color:red}.b{width:1px}.a{height:1px}',
@@ -29,9 +30,11 @@ const mergingFixtures = [
 
 for (const fixture of mergingFixtures) {
   test(`should converge in one pass for ${fixture}`, async () => {
-    const once = await postcss(plugin()).process(fixture, { from: undefined });
+    const once = await postcss(plugin()).process(fixture, {
+      from: repositoryFile,
+    });
     const twice = await postcss(plugin()).process(once.css, {
-      from: undefined,
+      from: repositoryFile,
     });
     assert.equal(twice.css, once.css);
   });
@@ -67,9 +70,11 @@ test(
   async () => {
     for (let seed = 1; seed <= 1500; seed++) {
       const input = generateStylesheet(seed);
-      const once = await postcss(plugin()).process(input, { from: undefined });
+      const once = await postcss(plugin()).process(input, {
+        from: repositoryFile,
+      });
       const twice = await postcss(plugin()).process(once.css, {
-        from: undefined,
+        from: repositoryFile,
       });
       assert.ok(once.css.length <= input.length, `longer output for ${input}`);
       assert.equal(twice.css, once.css, `not settled for ${input}`);

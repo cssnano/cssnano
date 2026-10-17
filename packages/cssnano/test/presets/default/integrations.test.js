@@ -9,6 +9,7 @@ import {
   processCSSWithPresetFactory,
 } from '../../../../../util/integrationTestHelpers.js';
 import preset from '../../../src/presets/default.js';
+import { repositoryFile } from '../../../../../util/testHelpers.js';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
 const withDefaults = processCSSWithPresetFactory(preset);
@@ -161,7 +162,7 @@ describe('CSS processing', () => {
   test('should preserve whitespace-only custom properties', async () => {
     const input = ':root{--x: ;--empty:}';
     const processor = createCssnanoProcessor(preset);
-    const firstPass = await processor.process(input, { from: undefined });
+    const firstPass = await processor.process(input, { from: repositoryFile });
     const declarations = new Map(
       postcss
         .parse(firstPass.css)
@@ -178,7 +179,7 @@ describe('CSS processing', () => {
     );
 
     const secondPass = await processor.process(firstPass.css, {
-      from: undefined,
+      from: repositoryFile,
     });
     assert.strictEqual(secondPass.css, firstPass.css);
   });
@@ -275,7 +276,7 @@ describe('colormin options', () => {
     const { css } = await createCssnanoProcessor(
       preset({ colormin: false })
     ).process(input, {
-      from: undefined,
+      from: repositoryFile,
     });
 
     assert.strictEqual(css, input);
@@ -285,7 +286,7 @@ describe('colormin options', () => {
     const input = 'h1{color:black}';
     const { css } = await createCssnanoProcessor(
       preset({ colormin: { exclude: true } })
-    ).process(input, { from: undefined });
+    ).process(input, { from: repositoryFile });
 
     assert.strictEqual(css, input);
   });
@@ -294,7 +295,7 @@ describe('colormin options', () => {
 test('should preserve important comments while merging equal declarations', async () => {
   const input = '.a{/*!keep*/color:red}.b{color:red}';
   const { css } = await createCssnanoProcessor(preset()).process(input, {
-    from: undefined,
+    from: repositoryFile,
   });
 
   assert.equal(css, '.a{/*!keep*/}.a,.b{color:red}');
@@ -304,7 +305,7 @@ test('should drop a declaration repeated in a sibling @media block with identica
   const input =
     '@media (max-width:767px){#header{position:fixed}.a{display:none}}@media (max-width:767px){#header{position:fixed}.b{color:red}}';
   const { css } = await createCssnanoProcessor(preset()).process(input, {
-    from: undefined,
+    from: repositoryFile,
   });
 
   assert.equal(

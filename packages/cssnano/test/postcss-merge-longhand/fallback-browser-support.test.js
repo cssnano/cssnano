@@ -7,6 +7,7 @@ import postcss from 'postcss';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 import { longstandingFeatures } from '../../src/plugins/postcss-merge-longhand/lib/syntaxFeatures.js';
 import { featuresSupportedByAll } from '../../src/plugins/postcss-merge-longhand/lib/targetSupport.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 const modern = 'chrome 120, firefox 120, safari 17';
 
@@ -18,7 +19,7 @@ const modern = 'chrome 120, firefox 120, safari 17';
  */
 async function run(css, options, processOptions = {}) {
   const result = await postcss([plugin(options)]).process(css, {
-    from: undefined,
+    from: repositoryFile,
     ...processOptions,
   });
   return result.css;

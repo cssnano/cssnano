@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import stylehacks from '#stylehacks';
+import { detectDeclaration } from '#stylehacks';
 import canExplode from '../canExplode.js';
 import { isAll } from './importanceLanes.js';
 import {
@@ -108,7 +108,7 @@ function appendRadiusNode(node, lanes, radiusDescriptors) {
     return true;
   }
   const prop = asciiLowerCase(node.prop);
-  const isHacked = Boolean(stylehacks.detect(node));
+  const isHacked = Boolean(detectDeclaration(node));
   const desc = createRadiusDescriptor(node, prop, isHacked);
   if (!desc) return false;
   lanes[laneIndex].push(desc);

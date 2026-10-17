@@ -103,16 +103,9 @@ describe('Height, min-width, and Browserslist zero-percentage', () => {
   );
 
   test(
-    'should not strip the percentage from 0 in max-height, height, and min-width props for IE 10 target',
+    'should not strip the percentage from 0 in max-height, height, and min-width props for IE 11 target',
     passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
-      overrideBrowserslist: 'ie 10',
-    })
-  );
-
-  test(
-    'should not strip the percentage from 0 in max-height, height, and min-width props for IE 9 target',
-    passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
-      overrideBrowserslist: 'ie 9',
+      overrideBrowserslist: 'ie 11',
     })
   );
 

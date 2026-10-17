@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -283,7 +286,7 @@ test(
   async () => {
     const { css } = await postcss([plugin]).process(
       '@media print{.a{color:red}}\n.x{top:0}\n  /* later */\n  @media print{.b{top:2px}}',
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.ok(
       css.endsWith(
@@ -297,10 +300,10 @@ test(
 test('should produce the same output when equal @media blocks joined downward are processed again', async () => {
   const once = await postcss([plugin]).process(
     '@media print{.a{color:red}}.x{top:0}@media print{.b{top:2px}}',
-    { from: undefined }
+    { from: repositoryFile }
   );
   const twice = await postcss([plugin]).process(once.css, {
-    from: undefined,
+    from: repositoryFile,
   });
   assert.equal(twice.css, once.css);
 });

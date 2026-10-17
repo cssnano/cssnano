@@ -5,6 +5,7 @@ import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 import { boxTargets } from '../../script/postcss-merge-longhand/lib/fuzzBoxCheck.js';
 import { computedValues } from '../../script/postcss-merge-longhand/lib/fuzzBoxOracle.js';
 import { generateBoxRules } from '../../script/postcss-merge-longhand/lib/fuzzBoxGenerate.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 /**
  * The plugin may rewrite box declarations only if every physical side keeps
@@ -25,7 +26,7 @@ const casesPerSeed = 25;
 async function minify(css, overrideBrowserslist) {
   const result = await postcss([plugin({ overrideBrowserslist })]).process(
     css,
-    { from: undefined }
+    { from: repositoryFile }
   );
   return result.css;
 }

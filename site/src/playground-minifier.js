@@ -1,6 +1,5 @@
 import postcss from 'postcss';
 import { enabledPlugins } from './utils/enabledPlugins.js';
-import { playgroundTargets } from './utils/playgroundTargets.js';
 
 /** @import {PresetName, MinificationResult} from './types.js'*/
 
@@ -24,9 +23,9 @@ async function loadPlugins(presetName) {
       throw new Error('Invalid configuration preset');
   }
 
-  return enabledPlugins(() =>
-    preset({ overrideBrowserslist: playgroundTargets })
-  ).map(([processor, opts]) => processor(opts));
+  return enabledPlugins(() => preset()).map(([processor, opts]) =>
+    processor(opts)
+  );
 }
 
 /** @param {string} input

@@ -8,6 +8,7 @@ import {
   processCSSWithPresetFactory,
 } from '../../../../../util/integrationTestHelpers.js';
 import preset from '../../../src/presets/advanced.js';
+import { repositoryFile } from '../../../../../util/testHelpers.js';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
 const withDefaults = processCSSWithPresetFactory(preset);
@@ -67,7 +68,7 @@ describe('z-index options', () => {
     const { css } = await createCssnanoProcessor(
       preset({ zindex: false })
     ).process(input, {
-      from: undefined,
+      from: repositoryFile,
     });
 
     assert.strictEqual(css, input);
@@ -77,7 +78,7 @@ describe('z-index options', () => {
     const input = 'h1{z-index:10}';
     const { css } = await createCssnanoProcessor(
       preset({ zindex: { exclude: true } })
-    ).process(input, { from: undefined });
+    ).process(input, { from: repositoryFile });
 
     assert.strictEqual(css, input);
   });

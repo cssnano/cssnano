@@ -11,9 +11,11 @@ cssnano is a modular CSS minifier built on PostCSS and pnpm workspaces:
   - `src/presets/{default,lite,advanced}.js` provide conservative semantic
     optimizations (`default`), assumption-making transforms (`advanced`), and
     comment, whitespace, and empty-node cleanup only (`lite`).
-  - `src/plugins/<postcss-plugin-name>/` holds each plugin, including
-    `stylehacks`. Plugin tests, perf files, scripts, and mutation catalogs
-    mirror that name under `test/`, `perf/`, `script/`, and `mutation/`.
+  - `src/plugins/<postcss-plugin-name>/` holds each plugin. Plugin tests, perf
+    files, scripts, and mutation catalogs mirror that name under `test/`,
+    `perf/`, `script/`, and `mutation/`.
+  - `src/utils/stylehacks/` holds the browser-hack detectors that
+    postcss-merge-longhand uses. It is not a PostCSS plugin.
   - `src/utils/` holds the shared CSS parsing and manipulation utilities.
   - Code in `packages/cssnano` imports its own modules through private `#`
     specifiers declared in its `package.json` `imports`, such as `#utils`.

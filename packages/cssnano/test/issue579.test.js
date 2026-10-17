@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import cssnano from '../src/index.js';
+import { repositoryFile } from '../../../util/testHelpers.js';
 
 test('should support `env()` and `constant()` is an iPhone X-only feature', async () => {
   const css = `
@@ -12,7 +13,9 @@ test('should support `env()` and `constant()` is an iPhone X-only feature', asyn
     }
     `;
 
-  const result = await postcss([cssnano]).process(css, { from: undefined });
+  const result = await postcss([cssnano]).process(css, {
+    from: repositoryFile,
+  });
   assert.strictEqual(
     result.css,
     '@supports(height:env(safe-area-inset-bottom)){.footer{padding-bottom:calc(env(safe-area-inset-bottom) * 3)!important}}'

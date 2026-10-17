@@ -1,4 +1,4 @@
-import { BoxSupport } from './lib/targetSupport.js';
+import type { BoxSupport } from './lib/targetSupport.js';
 import type { Container, Declaration } from 'postcss';
 import type { TargetOptions } from '#utils';
 export type Options = TargetOptions;

@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import stylehacks from '#stylehacks';
+import { detectDeclaration } from '#stylehacks';
 import { detach } from '../deferredChildEdits.js';
 import { isFallback, needsUnmetSupport } from '../isFallback.js';
 import { boxProperties, writingModes } from './boxGroups.js';
@@ -74,7 +74,7 @@ export function discardDeadDeclarations(lane, support) {
       continue;
     }
     const property = boxProperties.get(asciiLowerCase(declaration.prop));
-    if (property === undefined || stylehacks.detect(declaration)) continue;
+    if (property === undefined || detectDeclaration(declaration)) continue;
     const { cells } = property;
     const isCovered = coversEveryCell(
       declaration,

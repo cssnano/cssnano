@@ -93,22 +93,41 @@ describe('default preset browser targets', () => {
     );
   });
 
-  test('ignores browser targets given to a single plugin, so every plugin judges the file against the same browsers', async () => {
-    const targets = { overrideBrowserslist: 'defaults' };
-    assert.equal(
-      await minify(projectWithoutConfig, {
-        overrideBrowserslist: defaultTargetsQuery,
-        mergeLonghand: targets,
-      }),
-      await minifyFor(defaultTargetsQuery)
-    );
+  // A wrapper preset may copy the plugin options, and structuredClone, like a
+  // JSON round trip, drops symbol-keyed properties.
+  test('targets overrideBrowserslist when a wrapper preset clones the plugin options', async () => {
+    const { plugins } = preset({ overrideBrowserslist: defaultTargetsQuery });
+    const cloned = plugins.map(([plugin, options]) => [
+      plugin,
+      structuredClone(options),
+    ]);
+    const result = await postcss(
+      cssnano({ preset: { plugins: cloned } })
+    ).process(input, { from: join(projectWithDefaultsConfig, 'app.css') });
+    assert.equal(result.css, await minifyFor(defaultTargetsQuery));
+  });
+
+  // A spread keeps the preset's symbol-keyed properties, so the edit must be
+  // read from the plain options, as it is after a clone.
+  test('targets overrideBrowserslist that a wrapper preset sets on the plugin options', async () => {
+    const { plugins } = preset({ overrideBrowserslist: 'defaults' });
+    const edited = plugins.map(([plugin, options]) => [
+      plugin,
+      { ...options, overrideBrowserslist: defaultTargetsQuery },
+    ]);
+    const result = await postcss(
+      cssnano({ preset: { plugins: edited } })
+    ).process(input, { from: join(projectWithoutConfig, 'app.css') });
+    assert.equal(result.css, await minifyFor(defaultTargetsQuery));
   });
 });
 
 // Each rule minifies differently for the Baseline targets and the oldest
-// ones, through a check on browser support or on a browser bug.
+// ones, through a check on browser support or on a browser bug. The
+// rgba(0,0,0,0) rule is left out: it becomes the transparent keyword for every
+// known target, IE 11 included, so it does not depend on support.
 const supportDependentInput = [
-  'a{background-color:rgba(0,0,0,0);color:rgba(255,0,0,.5)}',
+  'a{color:rgba(255,0,0,.5)}',
   'b{align-items:center;justify-items:start}',
   'c{top:0;right:0;bottom:0;left:0}',
   'd{height:0%}',
@@ -118,10 +137,9 @@ const supportDependentInput = [
   '@font-face{unicode-range:U+0-7F}',
 ].join('');
 
-// Every browser that bugs.json lists, none of which supports the newer
-// syntax the plugins check for.
-const oldestTargets =
-  'ie 5.5, ie 6, ie 7, ie 8, ie 9, ie 10, ie 11, edge 12, edge 13, edge 14, edge 15, firefox 2, opera 9';
+// IE 11 is the oldest supported browser, and it lacks the newer syntax the
+// plugins check for.
+const oldestTargets = 'ie 11';
 
 /** @param {string | string[]} query */
 function processFor(query) {
@@ -154,5 +172,106 @@ describe('default preset with a query that matches no browser', () => {
     assert.ok(
       result.warnings().some(({ text }) => /matches no browser/v.test(text))
     );
+  });
+});
+
+/**
+ * @param {object} presetOptions
+ * @param {number} files how many stylesheets one processor handles
+ * @return {Promise<string[][]>} the warning texts of each result
+ */
+async function warningsPerFile(presetOptions, files = 1) {
+  const processor = postcss(cssnano({ preset: [preset, presetOptions] }));
+  const texts = [];
+  for (let i = 0; i < files; i++) {
+    const result = await processor.process(input, {
+      from: join(projectWithoutConfig, `app${i}.css`),
+    });
+    texts.push(result.warnings().map(({ text }) => text));
+  }
+  return texts;
+}
+
+describe('per-plugin browser target options', () => {
+  for (const key of ['overrideBrowserslist', 'stats', 'env', 'path']) {
+    test(`the result warns that ${key} set on a plugin is ignored`, async () => {
+      const [[text]] = await warningsPerFile({
+        mergeRules: { [key]: 'ie 11' },
+      });
+      assert.match(
+        text,
+        new RegExp(`The mergeRules option ${key} is ignored`, 'v')
+      );
+    });
+  }
+
+  test('the result warns that a target option set on a plugin that ignores browser targets is ignored', async () => {
+    const [[text]] = await warningsPerFile({
+      discardComments: { overrideBrowserslist: 'ie 11' },
+    });
+    assert.match(
+      text,
+      /The discardComments option overrideBrowserslist is ignored/v
+    );
+  });
+
+  test('the result warns about a target option on a plugin that ignores browser targets on every file', async () => {
+    const [first, second] = await warningsPerFile(
+      { discardComments: { stats: {} } },
+      2
+    );
+    assert.deepEqual([first.length, second.length], [1, 1]);
+  });
+
+  test('the result warns about a target option on minifySelectors when convertToIs is false', async () => {
+    const [[text]] = await warningsPerFile({
+      minifySelectors: { convertToIs: false, env: 'production' },
+    });
+    assert.match(text, /The minifySelectors option env is ignored/v);
+  });
+
+  test('the plugin keeps the preset targets when it sets its own', async () => {
+    assert.equal(
+      (
+        await minify(projectWithoutConfig, {
+          overrideBrowserslist: defaultTargetsQuery,
+          mergeRules: { overrideBrowserslist: 'ie 11' },
+        })
+      ).toString(),
+      await minifyFor(defaultTargetsQuery)
+    );
+  });
+
+  test('the result warns on every file a processor handles', async () => {
+    const [first, second, third] = await warningsPerFile(
+      { minifyParams: { path: '/a' } },
+      3
+    );
+    assert.deepEqual([first.length, second.length, third.length], [1, 1, 1]);
+  });
+
+  test('a plugin that sets other options produces no warning', async () => {
+    assert.deepEqual(
+      await warningsPerFile({ minifySelectors: { sort: false } }),
+      [[]]
+    );
+  });
+
+  test('a plugin target option that is undefined produces no warning', async () => {
+    assert.deepEqual(
+      await warningsPerFile({ mergeRules: { env: undefined } }),
+      [[]]
+    );
+  });
+
+  test('a plugin excluded with exclude: true produces no warning, because it never runs', async () => {
+    assert.deepEqual(
+      await warningsPerFile({ colormin: { exclude: true, stats: {} } }),
+      [[]]
+    );
+  });
+
+  test('a plugin disabled with false produces no warning', async () => {
+    assert.deepEqual(await warningsPerFile({ mergeRules: false }), [[]]);
   });
 });

@@ -5,6 +5,7 @@ import advancedPreset from '#presets/advanced';
 import defaultPreset from '#presets/default';
 import litePreset from '#presets/lite';
 import cssnano from '../src/index.js';
+import { repositoryFile } from '../../../util/testHelpers.js';
 
 describe('preset resolution', () => {
   test('should accept an invoked preset', async () => {
@@ -12,7 +13,7 @@ describe('preset resolution', () => {
 
     const result = await postcss([cssnano({ preset })]).process(
       `h1{content:"©"}`,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
   });
@@ -22,7 +23,7 @@ describe('preset resolution', () => {
 
     const result = await postcss([cssnano({ preset })]).process(
       `h1{content:"©"}`,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
   });
@@ -32,7 +33,7 @@ describe('preset resolution', () => {
 
     const result = await postcss([cssnano({ preset })]).process(
       `h1{content:"©"}`,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
   });
@@ -42,7 +43,7 @@ describe('preset resolution', () => {
 
     const result = await postcss([cssnano({ preset })]).process(
       `h1{z-index:10}`,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(result.css, `h1{z-index:15}`);
   });
@@ -52,7 +53,7 @@ describe('preset resolution', () => {
 
     const result = await postcss([cssnano({ preset })]).process(
       `h1{z-index:10}`,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(result.css, `h1{z-index:1}`);
   });
@@ -62,7 +63,7 @@ describe('preset resolution', () => {
 
     const result = await postcss([cssnano({ preset })]).process(
       `h1{z-index:10}`,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(result.css, `h1{z-index:15}`);
   });
@@ -72,7 +73,7 @@ describe('preset resolution', () => {
 
     const result = await postcss([cssnano({ preset })]).process(
       `h1{z-index:10}`,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(result.css, `h1{z-index:15}`);
   });
@@ -84,7 +85,7 @@ describe('plugin selection', () => {
 
     const result = await postcss([cssnano({ preset })]).process(
       `h1{z-index:10}`,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(result.css, `h1{z-index:10}`);
   });
@@ -94,7 +95,7 @@ describe('plugin selection', () => {
 
     const result = await postcss([cssnano({ preset })]).process(
       `h1{z-index:10}`,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(result.css, `h1{z-index:1}`);
   });
@@ -104,7 +105,7 @@ describe('plugin selection', () => {
 
     const result = await postcss([cssnano({ preset })]).process(
       `h1{z-index:10}`,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(result.css, `h1{z-index:10}`);
   });
@@ -117,7 +118,9 @@ describe('plugin selection', () => {
           reduceInitial: { ignore: ['pointer-events'] },
         },
       ],
-    }).process('.selector { pointer-events: initial; }', { from: undefined });
+    }).process('.selector { pointer-events: initial; }', {
+      from: repositoryFile,
+    });
     assert.strictEqual(result.css, '.selector{pointer-events:initial}');
   });
 
@@ -126,7 +129,7 @@ describe('plugin selection', () => {
 
     const defaultResult = await postcss([
       cssnano({ preset: defaultPreset }),
-    ]).process(input, { from: undefined });
+    ]).process(input, { from: repositoryFile });
     assert.strictEqual(
       defaultResult.css,
       '@media(min-width:1px){h1{color:red}}'
@@ -134,7 +137,7 @@ describe('plugin selection', () => {
 
     const liteResult = await postcss([cssnano({ preset: litePreset })]).process(
       input,
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.strictEqual(
       liteResult.css,
@@ -146,7 +149,7 @@ describe('plugin selection', () => {
 test('should error on a bad preset', async () => {
   try {
     await postcss([cssnano({ preset: 'avanced' })]).process('h1{}', {
-      from: undefined,
+      from: repositoryFile,
     });
     assert.unreachable();
   } catch (error) {

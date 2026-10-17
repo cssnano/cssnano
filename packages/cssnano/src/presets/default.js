@@ -25,8 +25,9 @@ import postcssNormalizeUnicode from '#postcss-normalize-unicode';
 import postcssNormalizeDisplayValues from '#postcss-normalize-display-values';
 import postcssNormalizeTimingFunctions from '#postcss-normalize-timing-functions';
 import cssnanoUtils from '#utils';
+import { ignoredTargetOptionsPlugin } from '#utils/ignored-target-options';
 
-const { rawCache } = cssnanoUtils;
+const { rawCache, presetTargets, targetOptionKeys } = cssnanoUtils;
 /**
  * @template {object | void} [OptionsExtends=void]
  * @typedef {false | OptionsExtends & {exclude?: true}} SimpleOptions
@@ -77,6 +78,21 @@ const { rawCache } = cssnanoUtils;
  */
 
 /**
+ * Plugins that judge a file against the preset's browser targets.
+ * @type {ReadonlySet<keyof Options>}
+ */
+const targetDependent = new Set([
+  'colormin',
+  'convertValues',
+  'mergeLonghand',
+  'mergeRules',
+  'minifyParams',
+  'normalizeUnicode',
+  'reduceInitial',
+  'minifySelectors',
+]);
+
+/**
  * @param {[import('postcss').PluginCreator<any>, keyof Options][]} plugins
  * @param {Parameters<typeof defaultPreset>[0]} opts
  * @returns {ReturnType<typeof defaultPreset>["plugins"]}
@@ -108,35 +124,53 @@ function configurePlugins(plugins, opts = {}) {
     },
   };
 
-  /** @type {ReadonlySet<keyof Options>} */
-  const targetDependent = new Set([
-    'colormin',
-    'convertValues',
-    'mergeLonghand',
-    'mergeRules',
-    'minifyParams',
-    'normalizeUnicode',
-    'reduceInitial',
-    'minifySelectors',
-  ]);
-
-  // Merge option properties for each plugin; the preset targets come last,
-  // so a plugin's own options cannot replace them
-  return plugins.map(([plugin, opt]) => {
+  // Merge option properties for each plugin. The preset targets replace the
+  // target options the user set on a plugin, which move into a list of
+  // ignored ones under a symbol, so the plugin can warn about them once.
+  // Plain options survive a wrapper preset that copies or edits them.
+  /** @type {{plugin: string, ignored: readonly string[]}[]} */
+  const unreported = [];
+  /** @type {ReturnType<typeof defaultPreset>['plugins']} */
+  const configured = plugins.map(([plugin, opt]) => {
     const defaultProps = defaults[opt] ?? {};
-    const presetProps = opts[opt] ?? {};
+    const presetProps = /** @type {Record<string, unknown> | false} */ (
+      opts[opt] ?? {}
+    );
+    if (presetProps === false) return [plugin, { exclude: true }];
+
+    const ignored = targetOptionKeys.filter(
+      (key) => presetProps[key] !== undefined
+    );
+    const pluginProps = /** @type {Record<string, unknown>} */ ({
+      ...defaultProps,
+      ...presetProps,
+    });
+    for (const key of ignored) delete pluginProps[key];
+    // Only a target-dependent plugin can report its own ignored options.
+    if (ignored.length > 0 && !targetDependent.has(opt)) {
+      unreported.push({ plugin: opt, ignored });
+    }
 
     return [
       plugin,
-      presetProps !== false
+      targetDependent.has(opt)
         ? {
-            ...defaultProps,
-            ...presetProps,
-            ...(targetDependent.has(opt) ? targets : undefined),
+            ...pluginProps,
+            ...targets,
+            [presetTargets]: { plugin: opt, ignored },
           }
-        : { exclude: true },
+        : pluginProps,
     ];
   });
+  if (unreported.length > 0) {
+    configured.push([
+      /** @type {import('postcss').PluginCreator<any>} */ (
+        /** @type {unknown} */ (ignoredTargetOptionsPlugin)
+      ),
+      { reports: unreported },
+    ]);
+  }
+  return configured;
 }
 
 /**

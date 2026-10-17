@@ -35,5 +35,4 @@ export declare const packedFeatures: Readonly<{
 }>;
 export type FeatureKey = keyof typeof packedFeatures;
 /** @typedef {keyof typeof packedFeatures} FeatureKey */
-export declare const featureKeys: readonly ("css-any-link" | "css-autofill" | "css-case-insensitive" | "css-default-pseudo" | "css-dir-pseudo" | "css-file-selector-button" | "css-first-letter" | "css-first-line" | "css-focus-visible" | "css-focus-within" | "css-gencontent" | "css-has" | "css-in-out-of-range" | "css-indeterminate-pseudo" | "css-initial-value" | "css-marker-pseudo" | "css-matches-pseudo" | "css-optional-pseudo" | "css-placeholder" | "css-placeholder-shown" | "css-read-only-write" | "css-rrggbbaa" | "css-sel2" | "css-sel3" | "css-selection" | "dialog" | "form-validation" | "fullscreen")[];
 //# sourceMappingURL=featureKeys.d.ts.map

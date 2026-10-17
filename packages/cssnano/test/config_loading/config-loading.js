@@ -17,6 +17,7 @@ import litePreset from '#presets/lite';
 import defaultPreset from '#presets/default';
 import autoprefixer from 'autoprefixer';
 import cssnano from '../../src/index.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 const testDirectory = dirname(fileURLToPath(import.meta.url));
 
@@ -243,7 +244,9 @@ describe('configuration file priority', () => {
 test('direct plugins should bypass the cssnano configuration file', async () => {
   const result = await postcss([cssnano({ plugins: [autoprefixer] })]).process(
     `.example { user-select: none; }`,
-    { from: undefined }
+    // Autoprefixer finds the repository's browserslist config from the input
+    // file, wherever the tests run from.
+    { from: repositoryFile }
   );
 
   assert.strictEqual(

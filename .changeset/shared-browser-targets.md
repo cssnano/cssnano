@@ -8,7 +8,9 @@ All plugins that depend on browser support now share one resolver, so the plugin
 
 This is a breaking change for projects without a browserslist config: the output may no longer work in browsers that `defaults` includes but the Baseline targets do not, such as Opera Mini, UC Browser, QQ Browser, KaiOS, Opera Mobile and Chrome 109. To keep the previous targets, add a browserslist config with `defaults`, or pass `overrideBrowserslist: 'defaults'`.
 
-The browser build no longer uses a fixed list of targets and a precomputed support table. It runs the same resolver and support checks as the Node build, with browserslist's client-side build, so it honours `overrideBrowserslist` and lowercases the `U+` prefix of `unicode-range` for modern targets.
+Baseline widely available is counted back from the current date, so the default targets move forward over time, and rebuilding the same code with the same lockfile months later can produce different output. Builds that must be reproducible should pin the targets with a browserslist config, such as `baseline widely available on 2026-10-01 with downstream`.
+
+The documentation site's playground, which is the only browser build, embeds the targets that the default query resolves at build time. It runs the same support checks as the Node build and lowercases the `U+` prefix of `unicode-range` for modern targets, but it does not honour `overrideBrowserslist`.
 
 Feature support is read from `caniuse-lite`, which replaces the `caniuse-api` dependency, and only the features cssnano checks are imported. A feature that needs a vendor prefix, such as unprefixed `:autofill` for chrome 8, is now treated as unsupported, and so is a target that caniuse-lite does not list.
 

@@ -1,7 +1,10 @@
 import { test, suite } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -76,8 +79,9 @@ suite('top-level folding with functional pseudos', () => {
         '.scope .a:hover,.scope .c:nth-child(2n){color:red}',
       ][cases.indexOf(input)];
       assert.equal(
-        postcss([plugin({ ...modernBl })]).process(input, { from: undefined })
-          .css,
+        postcss([plugin({ ...modernBl })]).process(input, {
+          from: repositoryFile,
+        }).css,
         output,
         input
       );
@@ -99,8 +103,9 @@ suite('top-level folding with functional pseudos', () => {
     ];
     for (const { input, expected } of cases) {
       assert.equal(
-        postcss([plugin({ ...modernBl })]).process(input, { from: undefined })
-          .css,
+        postcss([plugin({ ...modernBl })]).process(input, {
+          from: repositoryFile,
+        }).css,
         expected,
         input
       );
@@ -114,7 +119,7 @@ suite('top-level folding with functional pseudos', () => {
     ).join(',');
     const output = postcss([plugin({ ...modernBl })]).process(
       `${selectors}{color:red}`,
-      { from: undefined }
+      { from: repositoryFile }
     ).css;
     assert.match(output, /^\.scope:is\(\.a0,\.b0\) /v);
     assert.match(output, /\.item999\)\{color:red\}$/v);

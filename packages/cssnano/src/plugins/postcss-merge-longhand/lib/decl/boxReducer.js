@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
-import stylehacks from '#stylehacks';
+import { detectDeclaration } from '#stylehacks';
 import { boxBrowserKeeps } from '../validateBox.js';
 import { boxProperties, shorthandSlot } from './boxGroups.js';
 import { discardDeadDeclarations } from './crossKindCoverage.js';
@@ -67,7 +67,7 @@ export function addBoxDeclaration(
 
 /** @param {Declaration} d */
 const isInvalid = (d) =>
-  !stylehacks.detect(d) &&
+  !detectDeclaration(d) &&
   !isCssWideKeyword(d.value) &&
   !boxBrowserKeeps(asciiLowerCase(d.prop), d.value);
 
@@ -94,7 +94,7 @@ export function reduceBox(rule, box, support) {
     const property = s && boxProperties.get(asciiLowerCase(s.prop));
     if (
       property?.slot === shorthandSlot &&
-      !stylehacks.detect(s) &&
+      !detectDeclaration(s) &&
       isExplodable(s)
     ) {
       const { family } = property;

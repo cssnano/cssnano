@@ -3,6 +3,8 @@ import lengthUnits from './lengthUnits.js';
 import mathFunctions from './mathFunctions.js';
 import rawCache from './rawCache.js';
 import isAnonymousLayer from './isAnonymousLayer.js';
+import isCSSWhitespace from './isCSSWhitespace.js';
+import presetTargets, { targetOptionKeys } from './presetTargets.js';
 import isHexDigitCode from './isHexDigitCode.js';
 import isImportantComment from './isImportantComment.js';
 import { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens } from './value.js';
@@ -26,6 +28,9 @@ export type TargetOptions = {
 declare const moduleExports: {
     rawCache: typeof rawCache;
     isAnonymousLayer: typeof isAnonymousLayer;
+    isCSSWhitespace: typeof isCSSWhitespace;
+    presetTargets: typeof presetTargets;
+    targetOptionKeys: typeof targetOptionKeys;
     isHexDigitCode: typeof isHexDigitCode;
     isImportantComment: typeof isImportantComment;
     TokenType: typeof TokenType;

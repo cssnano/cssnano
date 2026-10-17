@@ -5,6 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import process from 'node:process';
 import postcss from 'postcss';
 import cssnano from '../packages/cssnano/src/index.js';
+import { repositoryFile } from './testHelpers.js';
 
 // Dry-run reports which fixtures would change without writing, so an
 // intentional output change can be reviewed before regenerating artifacts.
@@ -34,7 +35,9 @@ async function rebuild(name) {
   for (const framework of Object.keys(frameworks)) {
     const result = await postcss([cssnano({ preset })]).process(
       frameworks[framework],
-      { from: undefined }
+      // The fixtures follow the repository's browserslist config, as the
+      // tests that check them do, wherever the script runs from.
+      { from: repositoryFile }
     );
 
     const fixturePath = join(

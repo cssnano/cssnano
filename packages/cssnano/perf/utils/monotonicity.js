@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import { knownBrowsers } from '../../script/utils/knownBrowsers.js';
 import { random } from '../../../../util/fuzzRng.js';
-import { featureKeys } from '../../src/utils/featureKeys.js';
+import { featureKeys } from '../../test/utils/_featureKeys.js';
 import { supportsAll } from '../../src/utils/browserSupport.js';
 import { anyAffected } from '../../src/utils/browserBugs.js';
 

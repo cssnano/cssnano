@@ -5,9 +5,11 @@
  * --experimental-test-coverage` and an lcov reporter, then renders every
  * 0-hit BRDA entry with its block/branch indices and a source snippet.
  *
- * A plugin directory (`packages/postcss-<name>`, `packages/stylehacks` or
+ * A plugin directory (`packages/postcss-<name>` or
  * `packages/cssnano/src/plugins/<name>`) runs only that plugin's tests in
- * `packages/cssnano/test/<name>` and reports only its sources.
+ * `packages/cssnano/test/<name>` and reports only its sources. The stylehacks
+ * detectors (`packages/stylehacks` or `packages/cssnano/src/utils/stylehacks`)
+ * are focused the same way, with their tests in `test/stylehacks`.
  *
  * Usage:
  *   node util/uncoveredBranches.js packages/<pkg> [node --test args...]
@@ -16,6 +18,7 @@
  *   node util/uncoveredBranches.js packages/postcss-merge-longhand
  *   node util/uncoveredBranches.js packages/cssnano --test-name-pattern=config
  *   node util/uncoveredBranches.js packages/postcss-colormin --save-lcov=lcov.info
+ *   node util/uncoveredBranches.js packages/cssnano/src/utils/stylehacks
  */
 
 import { spawn } from 'node:child_process';
@@ -52,18 +55,24 @@ function parseArgs(argv) {
 }
 
 /**
+ * The tests and sources of a plugin or of the stylehacks detectors, which
+ * live inside the cssnano package.
  * @param {string} dir
  * @param {string} repoRoot
- * @returns {string | undefined} the plugin name when `dir` is a folded plugin
+ * @returns {{tests: string, sources: string} | undefined} paths relative to
+ * the cssnano package, when `dir` names one of them
  */
-function foldedPluginName(dir, repoRoot) {
+function cssnanoFocus(dir, repoRoot) {
   const rel = relative(repoRoot, dir).split(sep).join('/');
+  if (/^packages\/(?:cssnano\/src\/utils\/)?stylehacks$/v.test(rel)) {
+    return { tests: 'test/stylehacks', sources: 'src/utils/stylehacks/' };
+  }
   const match =
-    /^(?:packages\/cssnano\/src\/plugins\/|packages\/)(postcss-[a-z\-]+|stylehacks)$/v.exec(
+    /^(?:packages\/cssnano\/src\/plugins\/|packages\/)(postcss-[a-z\-]+)$/v.exec(
       rel
     );
   if (!match || match[1] === 'postcss-svgo') return undefined;
-  return match[1];
+  return { tests: `test/${match[1]}`, sources: `src/plugins/${match[1]}/` };
 }
 
 async function runCoverageTests(packageDir, extraArgs, lcovPath) {
@@ -232,11 +241,11 @@ async function main() {
     process.exit(1);
   }
   const requestedDir = resolve(packageArg);
-  const plugin = foldedPluginName(requestedDir, repoRoot);
-  const packageDir = plugin
+  const focus = cssnanoFocus(requestedDir, repoRoot);
+  const packageDir = focus
     ? join(repoRoot, 'packages', 'cssnano')
     : requestedDir;
-  const testArgs = plugin ? [`test/${plugin}/**/*.js`, ...extra] : extra;
+  const testArgs = focus ? [`${focus.tests}/**/*.js`, ...extra] : extra;
 
   const tempDir = await mkdtemp(join(tmpdir(), 'uncovered-branches-'));
   const lcovPath = join(tempDir, 'lcov.info');
@@ -261,10 +270,8 @@ async function main() {
     }
 
     const parsed = parseLcov(text);
-    const files = plugin
-      ? parsed.filter((record) =>
-          record.path.startsWith(`src/plugins/${plugin}/`)
-        )
+    const files = focus
+      ? parsed.filter((record) => record.path.startsWith(focus.sources))
       : parsed;
     await attachSnippets(files, packageDir);
     printReport(files, packageDir, repoRoot, testExit);

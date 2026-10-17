@@ -1,8 +1,7 @@
 import { resolveTargets } from '#utils/browser-targets';
 import { tryMinifyColor } from './minifyColor.js';
 import cssnanoUtils from '#utils';
-import { supportsAll } from '#utils/browser-support';
-import { anyAffected } from '#utils/browser-bugs';
+import { supportsAll, targetsAreUnknown } from '#utils/browser-support';
 import colorPropertiesData from './data/colorProperties.json' with { type: 'json' };
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -73,6 +72,23 @@ function transform(value, options) {
       : '';
   }
 
+  /**
+   * Whether an identifier that starts with an escape directly follows the
+   * token, so the two belong together. Hacks such as `\9` and `\0` are the
+   * motivating case, but any escaped identifier stops minification, because
+   * a browser may read the pair as a different value.
+   * @param {number} index
+   */
+  function hasHackSuffix(index) {
+    const next = input[index + 1];
+    return (
+      next !== undefined &&
+      next[0] === TokenType.Ident &&
+      tokenEnd(input[index]) === tokenStart(next) &&
+      next[1].charCodeAt(0) === 0x5c
+    );
+  }
+
   for (let i = 0; i < input.length; i++) {
     const t = input[i];
     if (t[0] === TokenType.Function) {
@@ -86,6 +102,10 @@ function transform(value, options) {
         continue;
       }
       if (colorFunctionRegex.test(name)) {
+        if (hasHackSuffix(closeIndex)) {
+          i = closeIndex;
+          continue;
+        }
         const closeToken = input[closeIndex];
         const raw = value.slice(tokenStart(t), tokenEnd(closeToken));
         const inputForMinify =
@@ -127,9 +147,9 @@ function transform(value, options) {
  */
 function addPluginDefaults(options, browsers) {
   const defaults = {
-    // IE 8 & 9 do not properly handle clicks on elements with a `transparent`
-    // `background-color`, so the keyword is kept for them.
-    transparent: !anyAffected(browsers, 'transparent-click-ie8-9'),
+    // Unknown targets keep rgba(), which every browser reads. Targets older
+    // than IE 11 are unsupported, so the IE 8 and 9 click bug is not checked.
+    transparent: !targetsAreUnknown(browsers),
     // Does the browser support 4 & 8 character hex notation
     alphaHex: supportsAll(browsers, 'css-rrggbbaa'),
     name: true,

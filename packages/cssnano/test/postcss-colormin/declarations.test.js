@@ -345,9 +345,16 @@ describe('Passthrough and browser quirks', () => {
   test('should passthrough broken syntax', passthroughCSS('h1{color:}'));
 
   test(
-    'should not convert this specific rgba value to "transparent" (old IE)',
+    'should convert rgba(0,0,0,0) to "transparent" for an IE 11 target',
+    processCSS('h1{color:rgba(0,0,0,0)}', 'h1{color:transparent}', {
+      overrideBrowserslist: 'IE 11',
+    })
+  );
+
+  test(
+    'should keep rgba(0,0,0,0) when the query matches no browser, because the targets are unknown',
     passthroughCSS('h1{color:rgba(0,0,0,0)}', {
-      overrideBrowserslist: 'IE 8',
+      overrideBrowserslist: 'ie 6 and not ie 6',
     })
   );
 

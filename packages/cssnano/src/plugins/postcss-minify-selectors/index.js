@@ -1,4 +1,5 @@
 import { resolveTargets } from '#utils/browser-targets';
+import { reportIgnoredTargetOptions } from '#utils/ignored-target-options';
 import { supportsAll } from '#utils/browser-support';
 import { isFixedPointSelector } from './lib/fixedPointSelector.js';
 import { isInvalidSelector } from './lib/isInvalidSelector.js';
@@ -62,6 +63,10 @@ function pluginCreator(opts = {}) {
           resolveTargets(resolved, result),
           'css-matches-pseudo'
         );
+      } else {
+        // Without folding the targets are never read, but the user's
+        // target options are ignored all the same.
+        reportIgnoredTargetOptions(resolved, result);
       }
       return {
         /** @param {import('postcss').Root} css */

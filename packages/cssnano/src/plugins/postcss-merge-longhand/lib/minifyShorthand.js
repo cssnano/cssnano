@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import stylehacks from '#stylehacks';
+import { detectDeclaration } from '#stylehacks';
 import { normalizeValue } from './minifyShorthandValues.js';
 
 const { asciiLowerCase } = cssnanoUtils;
@@ -38,7 +38,7 @@ export function foldShorthandDeclaration(
   memoTable,
   property = asciiLowerCase(decl.prop)
 ) {
-  if (!foldableShorthands.has(property) || stylehacks.detect(decl)) return;
+  if (!foldableShorthands.has(property) || detectDeclaration(decl)) return;
   const sourceValue =
     decl.raws.value?.value === decl.value
       ? (decl.raws.value.raw ?? decl.value)

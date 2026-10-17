@@ -1,12 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
-import browserslist from 'browserslist';
 import { knownBrowsers } from '../../script/utils/knownBrowsers.js';
-import {
-  anyAffected,
-  browsersAffectedBy,
-} from '../../src/utils/browserBugs.js';
+import { anyAffected } from '../../src/utils/browserBugs.js';
 
 const bugs = JSON.parse(
   readFileSync(
@@ -16,22 +12,12 @@ const bugs = JSON.parse(
 );
 
 describe('anyAffected', () => {
-  test('is true when a target has the transparent click bug', () => {
-    assert.equal(
-      anyAffected(['chrome 150', 'ie 8'], 'transparent-click-ie8-9'),
-      true
-    );
+  test('is true when a target has the media all keyword bug', () => {
+    assert.equal(anyAffected(['chrome 150', 'ie 11'], 'media-all-ie11'), true);
   });
 
-  test('is false when no target has the transparent click bug', () => {
-    assert.equal(
-      anyAffected(['chrome 150', 'ie 11'], 'transparent-click-ie8-9'),
-      false
-    );
-  });
-
-  test('is true for an ie 10 target with the media all keyword bug', () => {
-    assert.equal(anyAffected(['ie 10'], 'media-all-ie10-11'), true);
+  test('is false when no target has the media all keyword bug', () => {
+    assert.equal(anyAffected(['chrome 150'], 'media-all-ie11'), false);
   });
 
   test('is true for every bug when the target list is empty, because unknown targets may have any bug', () => {
@@ -49,7 +35,7 @@ describe('anyAffected', () => {
   });
 
   test('throws a RangeError for a bug key that is not in the data', () => {
-    assert.throws(() => anyAffected(['ie 8'], 'no-such-bug'), RangeError);
+    assert.throws(() => anyAffected(['ie 11'], 'no-such-bug'), RangeError);
   });
 });
 
@@ -63,47 +49,20 @@ describe('browser bug data', () => {
     }
   });
 
-  test('ie zero unit retention covers every ie version that browserslist can emit', () => {
-    // The old check matched any "ie " target; the bug list must stay as wide.
-    for (const target of browserslist('ie > 0')) {
-      assert.equal(
-        anyAffected([target], 'ie-zero-unit-retention'),
-        true,
-        target
-      );
-    }
+  test('ie zero unit retention covers ie 11, the oldest IE that cssnano supports', () => {
+    assert.equal(anyAffected(['ie 11'], 'ie-zero-unit-retention'), true);
   });
+
+  // IE Mobile 11 runs the same Trident engine as IE 11.
+  for (const bug of Object.keys(bugs)) {
+    test(`${bug} affects ie_mob 11, which shares the engine of ie 11`, () => {
+      assert.equal(anyAffected(['ie_mob 11'], bug), true);
+    });
+  }
 
   test('every bug cites an https source', () => {
     for (const [key, bug] of Object.entries(bugs)) {
       assert.ok(bug.source?.startsWith('https://'), key);
     }
-  });
-});
-
-describe('browsersAffectedBy', () => {
-  test('lists the browser entries that the bug affects, in bugs.json order', () => {
-    assert.deepEqual(
-      [...browsersAffectedBy('transparent-click-ie8-9')],
-      ['ie 8', 'ie 9']
-    );
-  });
-
-  test('returns the same set on every call, so a caller allocates nothing', () => {
-    assert.equal(
-      browsersAffectedBy('transparent-click-ie8-9'),
-      browsersAffectedBy('transparent-click-ie8-9')
-    );
-  });
-
-  test('returns a frozen list, so a reporter cannot change the bug data for other files', () => {
-    assert.equal(
-      Object.isFrozen(browsersAffectedBy('transparent-click-ie8-9')),
-      true
-    );
-  });
-
-  test('throws a RangeError for a bug key that is not in the data', () => {
-    assert.throws(() => browsersAffectedBy('no-such-bug'), RangeError);
   });
 });

@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-convert-values/index.js';
 import transform from '../../src/plugins/postcss-convert-values/lib/transform.js';
 
@@ -38,7 +41,7 @@ describe('Raw PostCSS metadata and preceding plugins', () => {
       'a{width:192px, /*x*/ 192px} b{width:192px, /*x*/ 192px}'
     );
     const cachedResult = await postcss([plugin()]).process(root, {
-      from: undefined,
+      from: repositoryFile,
     });
     assert.equal(
       cachedResult.css,
@@ -96,7 +99,7 @@ describe('Raw PostCSS metadata and preceding plugins', () => {
     };
     const result = await postcss([preceding, plugin()]).process(
       'a{width:192px}',
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.equal(result.css, 'a{width:1in}');
   });
@@ -111,7 +114,7 @@ describe('Raw PostCSS metadata and preceding plugins', () => {
     };
     const result = await postcss([preceding, plugin()]).process(
       'a{width:192px}',
-      { from: undefined }
+      { from: repositoryFile }
     );
     assert.equal(result.css, 'a{width:1in}');
   });

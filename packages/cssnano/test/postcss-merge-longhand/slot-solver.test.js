@@ -1,7 +1,10 @@
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import assert from 'node:assert/strict';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 import { shortestWithFreeSlots } from '../../src/plugins/postcss-merge-longhand/lib/decl/slotSolver.js';
 import minifyTrbl from '../../src/plugins/postcss-merge-longhand/lib/minifyTrbl.js';
@@ -82,7 +85,7 @@ describe('values a later declaration overrides', () => {
     const rule =
       '{margin:1px 2px 3px 4px;margin-inline-start:0;margin-left:5px;margin-right:5px}';
     const result = await postcss([plugin(modern)]).process(`a${rule}b${rule}`, {
-      from: undefined,
+      from: repositoryFile,
     });
     const [first, second] = result.css.split(/[ab]\{/v).slice(1);
     assert.equal(first, second);

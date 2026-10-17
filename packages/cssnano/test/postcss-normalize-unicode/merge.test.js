@@ -58,7 +58,7 @@ describe('Merge', () => {
   test(
     'should upcase merged ranges in legacy descriptor lists',
     processCSS(fixture('u+41,u+42'), fixture('U+41-42'), {
-      overrideBrowserslist: 'IE 9',
+      overrideBrowserslist: 'IE 11',
     })
   );
 

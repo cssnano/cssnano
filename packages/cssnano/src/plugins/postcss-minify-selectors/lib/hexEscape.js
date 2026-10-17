@@ -1,20 +1,6 @@
 import cssnanoUtils from '#utils';
 
-const { isHexDigitCode } = cssnanoUtils;
-
-/**
- * CSS whitespace before preprocessing, which folds CR and FF into LF.
- * @param {number} code
- */
-function isWhitespaceCode(code) {
-  return (
-    code === 0x20 ||
-    code === 0x09 ||
-    code === 0x0a ||
-    code === 0x0c ||
-    code === 0x0d
-  );
-}
+const { isCSSWhitespace, isHexDigitCode } = cssnanoUtils;
 
 /**
  * Digit count of the hex escape that ends just before `end`, or 0 when no
@@ -56,7 +42,7 @@ export function dropHexEscapeTerminator(value) {
   let copied = 0;
   for (let index = 0; index < value.length; index++) {
     const code = value.charCodeAt(index);
-    if (!isWhitespaceCode(code)) continue;
+    if (!isCSSWhitespace(code)) continue;
     const length =
       code === 0x0d && value.charCodeAt(index + 1) === 0x0a ? 2 : 1;
     const end = index + length;
@@ -65,7 +51,7 @@ export function dropHexEscapeTerminator(value) {
       (end === value.length ||
         !(
           isHexDigitCode(value.charCodeAt(end)) ||
-          isWhitespaceCode(value.charCodeAt(end))
+          isCSSWhitespace(value.charCodeAt(end))
         ))
     ) {
       result += value.slice(copied, index);
@@ -99,8 +85,8 @@ export function needsHexEscapeTerminator(before, after) {
  * @param {number} next
  */
 export function needsTerminatorAfterDigits(digits, next) {
-  if (!isWhitespaceCode(next) && !isHexDigitCode(next)) return false;
-  return digits > 0 && (digits < 6 || isWhitespaceCode(next));
+  if (!isCSSWhitespace(next) && !isHexDigitCode(next)) return false;
+  return digits > 0 && (digits < 6 || isCSSWhitespace(next));
 }
 
 /**

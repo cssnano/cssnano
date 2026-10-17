@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import postcss from 'postcss';
 import assert from 'node:assert/strict';
 import cssnano from '../packages/cssnano/src/index.js';
-import { processCSSFactory } from './testHelpers.js';
+import { processCSSFactory, repositoryFile } from './testHelpers.js';
 
 export function processCSSWithPresetFactory(preset) {
   return processCSSFactory([cssnano({ preset })]);
@@ -57,7 +57,7 @@ export function integrationTests(preset, integrations) {
       Array.from(frameworks, ([framework, css]) =>
         t.test(`${presetName} - ${framework}`, async () => {
           const result = await postcss([cssnano({ preset })]).process(css, {
-            from: undefined,
+            from: repositoryFile,
           });
           const expected = fs.readFileSync(
             path.join(integrations, `${framework}.css`),
@@ -88,7 +88,7 @@ export function idempotencyTests(preset, integrations) {
       Array.from(integrationsByFramework, ([framework, css]) =>
         t.test(`${presetName} - ${framework}`, async () => {
           const result = await postcss([cssnano({ preset })]).process(css, {
-            from: undefined,
+            from: repositoryFile,
           });
           if (result.css !== css) {
             assert.fail(mismatchMessage(framework, result.css, css));
@@ -135,10 +135,10 @@ export function pluginIdempotencyTests(
         t.test(`${presetName} - ${plugin.name}`, async () => {
           const firstPass = await postcss([
             plugin.creator(plugin.options),
-          ]).process(aggregateRoot.clone(), { from: undefined });
+          ]).process(aggregateRoot.clone(), { from: repositoryFile });
           const secondPass = await postcss([
             plugin.creator(plugin.options),
-          ]).process(firstPass.css, { from: undefined });
+          ]).process(firstPass.css, { from: repositoryFile });
           if (secondPass.css !== firstPass.css) {
             assert.fail(
               mismatchMessage(plugin.name, secondPass.css, firstPass.css)

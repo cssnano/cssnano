@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import assert from 'node:assert/strict';
 import cssnano from '../src/index.js';
+import { repositoryFile } from '../../../util/testHelpers.js';
 
 // URL rewriting (dot segments, duplicate slashes, ...) is only enabled by the
 // advanced preset; the default preset only rewrites the url() token.
@@ -11,7 +12,7 @@ const processor = postcss([
 
 function processCss(fixture, expected) {
   return async () => {
-    const { css } = await processor.process(fixture, { from: undefined });
+    const { css } = await processor.process(fixture, { from: repositoryFile });
     assert.strictEqual(css, expected);
   };
 }

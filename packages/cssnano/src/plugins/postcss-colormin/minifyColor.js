@@ -2,6 +2,9 @@ import { colordx as colord, extend } from '@colordx/core';
 import hwbPlugin from '@colordx/core/plugins/hwb';
 import namesPlugin from '@colordx/core/plugins/names';
 import minifierPlugin from '@colordx/core/plugins/minify';
+import cssnanoUtils from '#utils';
+
+const { isCSSWhitespace } = cssnanoUtils;
 
 extend(/** @type {any[]} */ ([hwbPlugin, namesPlugin, minifierPlugin]));
 
@@ -13,6 +16,14 @@ extend(/** @type {any[]} */ ([hwbPlugin, namesPlugin, minifierPlugin]));
  * @return {string | undefined}
  */
 export function tryMinifyColor(input, options = {}) {
+  // The color parser trims whitespace, but at the edge of a decoded token it
+  // comes from an escape such as the `\9` hack, so the token is no color.
+  if (
+    isCSSWhitespace(input.charCodeAt(0)) ||
+    isCSSWhitespace(input.charCodeAt(input.length - 1))
+  ) {
+    return undefined;
+  }
   const instance = colord(input);
 
   if (instance.isValid()) {

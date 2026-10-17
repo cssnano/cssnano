@@ -25,7 +25,7 @@
     "no-regex-spaces": "error",
     "no-shadow": "error",
     "no-throw-literal": "error",
-    "no-underscore-dangle": ["error", { "allow": ["_stylehacks"] }],
+    "no-underscore-dangle": "error",
     "no-unnecessary-await": "error",
     "no-useless-assignment": "error",
     "only-throw-error": "error",

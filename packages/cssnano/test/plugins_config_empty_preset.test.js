@@ -4,6 +4,7 @@ import autoprefixer from 'autoprefixer';
 import litePreset from '#presets/lite';
 import postcss from 'postcss';
 import cssnano from '../src/index.js';
+import { repositoryFile } from '../../../util/testHelpers.js';
 
 test('should run the plugin when preset is empty array and plugin module as in array in plugins array', async () => {
   const result = await postcss([
@@ -11,7 +12,7 @@ test('should run the plugin when preset is empty array and plugin module as in a
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -27,7 +28,7 @@ test('should run the plugin plugin module as in array in plugins array', async (
   ).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -42,7 +43,7 @@ test('should run the plugin plugin module as in array in plugins array with empt
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -56,7 +57,7 @@ test('should run the plugin when preset is empty array and plugin module as in n
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -71,7 +72,7 @@ test('should run the plugin when preset is empty array and plugin as string as i
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -86,7 +87,7 @@ test('should run the plugin when preset is empty array', async () => {
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -104,7 +105,7 @@ test('should run the plugin when preset is empty array with string as a plugin',
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -119,7 +120,7 @@ test('should run the plugin when preset is empty array with options', async () =
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -134,7 +135,7 @@ test('should run the plugin when preset is empty array with options and string a
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined },
+    { from: repositoryFile },
     { preset: [], plugins: [['autoprefixer', { add: false }]] }
   );
   assert.strictEqual(
@@ -150,7 +151,7 @@ test('should run the plugin when preset is empty array with options and string a
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,

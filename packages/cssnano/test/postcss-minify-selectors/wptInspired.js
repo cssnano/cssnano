@@ -6,6 +6,7 @@ import {
   normalizeList,
   specificityOf,
 } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 // Pinned translations of selector syntax/specification cases. These are kept
 // as Node assertions rather than importing the browser-oriented WPT harness.
@@ -56,7 +57,7 @@ test('keeps namespace-significant universals and only rewrites keyframe position
     plugin({ convertToIs: false, sort: false }),
   ]).process(
     '@namespace url(http://www.w3.org/2000/svg);*.a{x:y}@keyframes x{from .a{a:b}100%{a:b}}',
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.equal(
     result.css,
@@ -159,7 +160,7 @@ test('minifies rules under default namespace without dropping universal or skipp
     plugin({ convertToIs: false, sort: false }),
   ]).process(
     '@namespace url(http://www.w3.org/2000/svg); *.card, .b, .b { color: red; }',
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.equal(
     result.css,
@@ -171,7 +172,7 @@ test('preserves malformed universal selectors under default namespace verbatim',
   for (const selector of ['.ok, *div', '.ok, **', '.ok, .a*']) {
     const input = `@namespace url(http://www.w3.org/2000/svg); ${selector} { color: red; }`;
     const result = await postcss([plugin({ sort: true })]).process(input, {
-      from: undefined,
+      from: repositoryFile,
     });
     assert.equal(result.css, input);
   }
@@ -180,7 +181,7 @@ test('preserves malformed universal selectors under default namespace verbatim',
 test('preserves important comments before universal selector without marking compound invalid', async () => {
   const input = '.a + /*! keep */ *, .b, .b { color: red; }';
   const result = await postcss([plugin({ sort: true })]).process(input, {
-    from: undefined,
+    from: repositoryFile,
   });
   assert.equal(result.css, '.a+/*! keep */*,.b { color: red; }');
 });

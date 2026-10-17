@@ -1,5 +1,6 @@
 import unpackFeature from 'caniuse-lite/dist/unpacker/feature.js';
 import { packedFeatures } from './featureKeys.js';
+import { versionSeparator } from './versions.js';
 
 /** @import {FeatureKey} from './featureKeys.js' */
 /** @typedef {Record<string, Record<string, string>>} Stats */
@@ -42,10 +43,21 @@ function isUnprefixedSupport(status) {
  * @return {boolean}
  */
 function supportsTarget(stats, target) {
-  const space = target.indexOf(' ');
+  const separator = versionSeparator(target);
   return isUnprefixedSupport(
-    stats[target.slice(0, space)]?.[target.slice(space + 1)]
+    stats[target.slice(0, separator)]?.[target.slice(separator + 1)]
   );
+}
+
+/**
+ * An empty target list means the targets are unknown, as when a query
+ * matches no browser. Every support and bug check applies this one policy, so
+ * unknown targets never enable a transform that some browser may break on.
+ * @param {readonly string[]} targets browserslist entries such as "safari 26.5"
+ * @return {boolean}
+ */
+export function targetsAreUnknown(targets) {
+  return targets.length === 0;
 }
 
 /** @type {WeakMap<readonly string[], Map<string, boolean>>} */
@@ -53,13 +65,9 @@ const supportCache = new WeakMap();
 
 /**
  * Whether every target supports the feature, judged by the installed
- * caniuse-lite. An entry that caniuse-lite does not list counts as
- * unsupported, so it never lets a feature through; an empty list is
- * unsupported too. Plugins that keep fallbacks, such as merge-longhand,
- * instead assume an unknown engine may understand a property; both choices
- * keep the output safe for that engine.
- * Answers are cached by the identity of the list, so the list must not change
- * after the first call.
+ * caniuse-lite. A target it does not list, or an empty list, counts as
+ * unsupported, so unknown browsers never let a feature through. The list must
+ * not change after the first call, because answers are cached by its identity.
  * @param {readonly string[]} targets browserslist entries such as "safari 26.5"
  * @param {FeatureKey} feature
  * @return {boolean}
@@ -79,17 +87,6 @@ export function supportsAll(targets, feature) {
 }
 
 /**
- * Whether there are targets and every one passes the test. An empty list
- * means the targets are unknown, so no target can vouch for anything.
- * @param {readonly string[]} targets browserslist entries such as "ie 8"
- * @param {(entry: string) => boolean} test
- * @return {boolean}
- */
-export function everyTarget(targets, test) {
-  return targets.length > 0 && targets.every(test);
-}
-
-/**
  * @param {readonly string[]} targets
  * @param {string} key
  * @return {boolean}
@@ -99,5 +96,8 @@ function checkSupportsAll(targets, key) {
   if (stats === undefined) {
     throw new RangeError(`Unknown caniuse feature key: ${key}`);
   }
-  return everyTarget(targets, (target) => supportsTarget(stats, target));
+  return (
+    !targetsAreUnknown(targets) &&
+    targets.every((target) => supportsTarget(stats, target))
+  );
 }

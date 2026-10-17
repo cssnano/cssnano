@@ -64,7 +64,3 @@ export const packedFeatures = Object.freeze({
 });
 
 /** @typedef {keyof typeof packedFeatures} FeatureKey */
-
-export const featureKeys = Object.freeze(
-  /** @type {FeatureKey[]} */ (Object.keys(packedFeatures))
-);

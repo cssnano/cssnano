@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
 import { sharesShorthandKeyword } from '../isCssWideKeyword.js';
-import stylehacks from '#stylehacks';
+import { detectDeclaration } from '#stylehacks';
 import canExplode from '../canExplode.js';
 import isCustomProp from '../isCustomProp.js';
 import { commitShorthand } from './slotVector.js';
@@ -127,7 +127,7 @@ export function reduceAlignmentFamily(rule, family, declarations, lanes) {
   for (const decl of declarations) {
     const isShort = asciiLowerCase(decl.prop) === family.shorthand;
     // Hacks and substitution-backed shorthands only bound a segment.
-    if (stylehacks.detect(decl) || (isShort && !canExplode(decl))) continue;
+    if (detectDeclaration(decl) || (isShort && !canExplode(decl))) continue;
     const parsed = parseAlignmentDeclaration(family, decl);
     if (!parsed) return;
     parsedDecls.set(decl, parsed);

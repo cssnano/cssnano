@@ -337,12 +337,16 @@ describe('resolveTargets result', () => {
   test('keeps the resolved targets when another tool changes the array that browserslist returned', () => {
     const shared = ['chrome 150'];
     const browserslist = withoutConfig(() => shared);
-    resolveTargets({}, resultWith(), browserslist);
+    const targets = resolveTargets({}, resultWith(), browserslist);
     shared.push('ie 6');
-    assert.deepEqual(
-      [...resolveTargets({}, resultWith(), browserslist)],
-      ['chrome 150']
-    );
+    assert.deepEqual([...targets], ['chrome 150']);
+  });
+
+  test('returns one frozen list when browserslist returns a new array with the same entries for each result', () => {
+    const browserslist = withoutConfig(() => ['chrome 150', 'firefox 140']);
+    const first = resolveTargets({}, resultWith(), browserslist);
+    const second = resolveTargets({}, resultWith(), browserslist);
+    assert.equal(first, second);
   });
 
   test('returns one frozen list for every result that resolves the same browserslist list', () => {

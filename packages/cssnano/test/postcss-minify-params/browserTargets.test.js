@@ -7,16 +7,13 @@ const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 const input = '@media all{a{color:red}}';
 
 describe('minify-params browser targets', () => {
-  // ie 10 and ie 11 misparse a media query without `all`, so the keyword stays.
-  for (const query of ['ie 10', 'ie 11']) {
-    test(
-      `keeps the all keyword for ${query}, which has the ie 10/11 bug`,
-      passthroughCSS(input, { overrideBrowserslist: query })
-    );
-  }
+  // IE 11 misparses a media query without `all`, so the keyword stays.
+  test(
+    'keeps the all keyword for ie 11, which has the media all bug',
+    passthroughCSS(input, { overrideBrowserslist: 'ie 11' })
+  );
 
   for (const query of [
-    'ie 8',
     'edge 15',
     'defaults',
     'last 1 chrome version',
