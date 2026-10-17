@@ -1,5 +1,8 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -14,23 +17,24 @@ describe('merge-rules browser targets', () => {
   for (const query of ['ie 8', 'ie 11', 'edge 15', 'defaults', 'op_mini all']) {
     test(
       `keeps the rules separate for ${query}, which lacks :focus-visible and :any-link`,
-      passthroughCSS(input, { overrideBrowserslist: query })
+      passthroughCSS(input, withTargets(query))
     );
   }
 
   for (const query of ['last 1 chrome version', 'safari TP']) {
     test(
       `merges the rules for ${query}`,
-      processCSS(input, merged, { overrideBrowserslist: query })
+      processCSS(input, merged, withTargets(query))
     );
   }
 
   test(
     'merges the rules when stats select only chrome 150',
-    processCSS(input, merged, {
-      overrideBrowserslist: '> 1%',
-      stats: { chrome: { 150: 100 } },
-    })
+    processCSS(
+      input,
+      merged,
+      withTargets('> 1%', { stats: { chrome: { 150: 100 } } })
+    )
   );
 });
 
@@ -41,7 +45,7 @@ test(
   processCSS(
     'a:autofill{color:red} b:autofill{color:red}',
     'a:autofill{color:red} b:autofill{color:red}',
-    { overrideBrowserslist: 'chrome 8' }
+    withTargets('chrome 8')
   )
 );
 
@@ -50,6 +54,6 @@ test(
   processCSS(
     'a:any-link{color:red} b:any-link{color:red}',
     'a:any-link{color:red} b:any-link{color:red}',
-    { overrideBrowserslist: 'safari 8' }
+    withTargets('safari 8')
   )
 );

@@ -1,5 +1,8 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-normalize-unicode/index.js';
 
 const { processCSS } = processCSSFactory(plugin);
@@ -13,7 +16,7 @@ test(
   processCSS(
     fixture('u+2b00-2bff'), // Miscellaneous Symbols and Arrows
     fixture('u+2b??'),
-    { overrideBrowserslist: ['defaults', 'not ie <=11'] }
+    withTargets(['defaults', 'not ie <=11'])
   )
 );
 
@@ -23,35 +26,43 @@ describe('Convert', () => {
     processCSS(
       fixture('u+1e00-1eff'), // Latin Extended Additional
       fixture('u+1e??'),
-      { overrideBrowserslist: ['defaults', 'not ie <=11'] }
+      withTargets(['defaults', 'not ie <=11'])
     )
   );
 
   test(
     'should convert a unicode range to a wildcard range (3)',
-    processCSS(fixture('u+2120-212f'), fixture('u+212?'), {
-      overrideBrowserslist: ['defaults', 'not ie <=11'],
-    })
+    processCSS(
+      fixture('u+2120-212f'),
+      fixture('u+212?'),
+      withTargets(['defaults', 'not ie <=11'])
+    )
   );
 
   test(
     'should convert a unicode range to a wildcard range (4)',
-    processCSS(fixture('u+2100-21ff'), fixture('u+21??'), {
-      overrideBrowserslist: ['defaults', 'not ie <=11'],
-    })
+    processCSS(
+      fixture('u+2100-21ff'),
+      fixture('u+21??'),
+      withTargets(['defaults', 'not ie <=11'])
+    )
   );
 
   test(
     'should convert a unicode range to a wildcard range (5)',
-    processCSS(fixture('u+2000-2fff'), fixture('u+2???'), {
-      overrideBrowserslist: ['defaults', 'not ie <=11'],
-    })
+    processCSS(
+      fixture('u+2000-2fff'),
+      fixture('u+2???'),
+      withTargets(['defaults', 'not ie <=11'])
+    )
   );
 
   test(
     'should convert a unicode range starting at zero to a bare wildcard',
-    processCSS(fixture('u+0-f'), fixture('u+?'), {
-      overrideBrowserslist: ['defaults', 'not ie <=11'],
-    })
+    processCSS(
+      fixture('u+0-f'),
+      fixture('u+?'),
+      withTargets(['defaults', 'not ie <=11'])
+    )
   );
 });

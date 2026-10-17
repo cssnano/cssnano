@@ -185,7 +185,13 @@ function filterFont({ atRules, values }, comma) {
   }
 }
 
-/**@typedef {{fontFace?: boolean, counterStyle?: boolean, keyframes?: boolean, namespace?: boolean}} Options */
+/**
+ * @typedef {object} Options
+ * @property {boolean} [fontFace] Discards unused font face rules. (default: true)
+ * @property {boolean} [counterStyle] Discards unused counter style rules. (default: true)
+ * @property {boolean} [keyframes] Discards unused keyframe rules. (default: true)
+ * @property {boolean} [namespace] Discards unused namespace rules. (default: true)
+ */
 
 /**
  * @param {import('postcss').AnyNode} node

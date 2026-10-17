@@ -1,7 +1,10 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-normalize-unicode/index.js';
 
 const { processCSS } = processCSSFactory(plugin);
@@ -15,9 +18,7 @@ describe('normalize-unicode browser targets', () => {
   for (const query of ['ie 11', 'edge 15']) {
     test(
       `keeps the uppercase U+ prefix for ${query}`,
-      processCSS(input, '@font-face{unicode-range:U+25-ff}', {
-        overrideBrowserslist: query,
-      })
+      processCSS(input, '@font-face{unicode-range:U+25-ff}', withTargets(query))
     );
   }
 
@@ -29,18 +30,17 @@ describe('normalize-unicode browser targets', () => {
   ]) {
     test(
       `lowercases the U+ prefix for ${query}`,
-      processCSS(input, '@font-face{unicode-range:u+25-ff}', {
-        overrideBrowserslist: query,
-      })
+      processCSS(input, '@font-face{unicode-range:u+25-ff}', withTargets(query))
     );
   }
 
   test(
     'lowercases the U+ prefix when stats select only chrome 150',
-    processCSS(input, '@font-face{unicode-range:u+25-ff}', {
-      overrideBrowserslist: '> 1%',
-      stats: { chrome: { 150: 100 } },
-    })
+    processCSS(
+      input,
+      '@font-face{unicode-range:u+25-ff}',
+      withTargets('> 1%', { stats: { chrome: { 150: 100 } } })
+    )
   );
 });
 
@@ -55,34 +55,24 @@ describe('browserslist config resolution', () => {
   test(
     'reads the legacy env from the config found next to from',
     processCSS(input, '@font-face{unicode-range:U+25-ff}', {
+      ...withTargets(undefined, { env: 'legacy' }),
       from: join(configDir, 'example.css'),
-      env: 'legacy',
     })
   );
 
   test(
     'reads the legacy env from the config found next to file',
     processCSS(input, '@font-face{unicode-range:U+25-ff}', {
+      ...withTargets(undefined, { env: 'legacy' }),
       file: join(configDir, 'example.css'),
-      env: 'legacy',
     })
   );
 
   test(
-    'reads the legacy env from the config in path',
+    'reads the legacy env from the config next to the input given as from',
     processCSS(input, '@font-face{unicode-range:U+25-ff}', {
-      path: configDir,
-      env: 'legacy',
-    })
-  );
-
-  // path wins over from: the test directory has no legacy env, so the modern output wins.
-  test(
-    'searches path instead of from when both are set',
-    processCSS(input, '@font-face{unicode-range:u+25-ff}', {
-      from: join(configDir, 'example.css'),
-      path: testDir,
-      env: 'legacy',
+      ...withTargets(undefined, { env: 'legacy' }),
+      from: join(configDir, 'input.css'),
     })
   );
 });

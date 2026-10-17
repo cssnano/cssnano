@@ -1,5 +1,8 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-colormin/index.js';
 
 const { processCSS } = processCSSFactory(plugin);
@@ -19,22 +22,23 @@ describe('colormin browser targets', () => {
   ]) {
     test(
       `keeps rgba() and transparent for ${query}, which lacks #rrggbbaa`,
-      processCSS(input, withoutAlphaHex, { overrideBrowserslist: query })
+      processCSS(input, withoutAlphaHex, withTargets(query))
     );
   }
 
   for (const query of ['last 1 chrome version', 'safari TP']) {
     test(
       `writes #rrggbbaa for ${query}`,
-      processCSS(input, withAlphaHex, { overrideBrowserslist: query })
+      processCSS(input, withAlphaHex, withTargets(query))
     );
   }
 
   test(
     'writes #rrggbbaa when stats select only chrome 150',
-    processCSS(input, withAlphaHex, {
-      overrideBrowserslist: '> 1%',
-      stats: { chrome: { 150: 100 } },
-    })
+    processCSS(
+      input,
+      withAlphaHex,
+      withTargets('> 1%', { stats: { chrome: { 150: 100 } } })
+    )
   );
 });

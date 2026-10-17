@@ -49,7 +49,7 @@ into cssnano, so you can load it using any of the techniques mentioned in
 ```js
 // cssnano.config.js
 module.exports = {
-  preset: 'advanced',
+  preset: require('cssnano/presets/advanced'),
 };
 ```
 

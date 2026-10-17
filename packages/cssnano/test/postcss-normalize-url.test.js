@@ -1,14 +1,12 @@
 import { test } from 'node:test';
 import postcss from 'postcss';
 import assert from 'node:assert/strict';
-import cssnano from '../src/index.js';
+import advancedPreset from '#presets/advanced';
 import { repositoryFile } from '../../../util/testHelpers.js';
 
 // URL rewriting (dot segments, duplicate slashes, ...) is only enabled by the
 // advanced preset; the default preset only rewrites the url() token.
-const processor = postcss([
-  cssnano({ preset: ['advanced', { discardUnused: false }] }),
-]);
+const processor = postcss(advancedPreset({ disable: ['discardUnused'] }));
 
 function processCss(fixture, expected) {
   return async () => {

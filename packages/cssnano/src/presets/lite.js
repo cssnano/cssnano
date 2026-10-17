@@ -1,63 +1,15 @@
-import postcssDiscardComments from '#postcss-discard-comments';
-import postcssNormalizeWhitespace from '#postcss-normalize-whitespace';
-import postcssDiscardEmpty from '#postcss-discard-empty';
-import cssnanoUtils from '#utils';
+import { definePreset } from './configurePlugins.js';
+import { litePluginEntries } from './litePlugins.js';
 
-const { rawCache } = cssnanoUtils;
-/**
- * @template {object | void} [OptionsExtends=void]
- * @typedef {false | OptionsExtends & {exclude?: true}} SimpleOptions
- */
+/** @import {NamedPreset} from './presetEntries.js' */
+/** @import {LitePluginOptions} from './litePlugins.js' */
 
-/**
- * @typedef {object} LiteOptions
- * @property {SimpleOptions<import('#postcss-discard-comments').Options>} [discardComments]
- * @property {SimpleOptions} [normalizeWhitespace]
- * @property {SimpleOptions} [discardEmpty]
- * @property {SimpleOptions} [rawCache]
- */
-
-/**
- * @param {[import('postcss').PluginCreator<any>, keyof LiteOptions][]} plugins
- * @param {Parameters<typeof litePreset>[0]} opts
- * @returns {ReturnType<typeof litePreset>["plugins"]}
- */
-function configurePlugins(plugins, opts = {}) {
-  const defaults = /** @type {LiteOptions} */ ({});
-
-  // Merge option properties for each plugin
-  return plugins.map(([plugin, opt]) => {
-    const defaultProps = defaults[opt] ?? {};
-    const presetProps = opts[opt] ?? {};
-
-    return [
-      plugin,
-      presetProps !== false
-        ? { ...defaultProps, ...presetProps }
-        : { exclude: true },
-    ];
-  });
-}
+/** @typedef {import('./configurePlugins.js').PresetOptions<LitePluginOptions>} PresetOptions */
 
 /**
  * Safe and minimum transformation with just removing whitespaces, line breaks and comments
- *
- * @param {LiteOptions} opts
- * @returns {{ plugins: [import('postcss').PluginCreator<any>, LiteOptions[keyof LiteOptions]][] }}
+ * @type {NamedPreset<'lite', LitePluginOptions>}
  */
-function litePreset(opts = {}) {
-  return {
-    plugins: configurePlugins(
-      [
-        [postcssDiscardComments, 'discardComments'],
-        [postcssNormalizeWhitespace, 'normalizeWhitespace'],
-        [postcssDiscardEmpty, 'discardEmpty'],
-        [rawCache, 'rawCache'],
-      ],
-      opts
-    ),
-  };
-}
-const moduleExports = litePreset;
+const litePreset = definePreset('lite', litePluginEntries);
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+export { litePreset as default, litePreset as 'module.exports' };

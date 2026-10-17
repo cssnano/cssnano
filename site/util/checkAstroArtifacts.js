@@ -100,7 +100,7 @@ globalThis.postMessage = (message) => {
 };
 await import(path.join(assetDirectory, worker));
 
-for (const { packageName: preset } of presets) {
+for (const { id: preset } of presets) {
   await globalThis.onmessage({
     data: { input: 'a { z-index: 10; color: red; }', preset },
   });

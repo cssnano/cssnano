@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 import { timePlugin } from './lib/timing.js';
+import { withTargets } from '../../../../util/testHelpers.js';
 
 /**
  * @param {number} groups
@@ -19,9 +20,10 @@ function createCSS(groups) {
 }
 
 test('merging declaration groups takes linear time as the rule grows', () => {
-  const sample = postcss([
-    plugin({ overrideBrowserslist: 'chrome 120' }),
-  ]).process(createCSS(3), { from: undefined }).css;
+  const sample = postcss([plugin(withTargets('chrome 120'))]).process(
+    createCSS(3),
+    { from: undefined }
+  ).css;
   assert.strictEqual(
     sample,
     'a{margin:0px;&{x:y}margin:1px;&{x:y}margin:2px;&{x:y}}'

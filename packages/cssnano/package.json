@@ -7,50 +7,175 @@
       "types": "./types/index.d.ts",
       "default": "./src/index.js"
     },
+    "./presets/advanced": {
+      "types": "./types/presets/advanced.d.ts",
+      "default": "./src/presets/advanced.js"
+    },
+    "./presets/default": {
+      "types": "./types/presets/default.d.ts",
+      "default": "./src/presets/default.js"
+    },
+    "./presets/lite": {
+      "types": "./types/presets/lite.d.ts",
+      "default": "./src/presets/lite.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
   "imports": {
-    "#postcss-colormin": "./src/plugins/postcss-colormin/index.js",
-    "#postcss-convert-values": "./src/plugins/postcss-convert-values/index.js",
-    "#postcss-discard-comments": "./src/plugins/postcss-discard-comments/index.js",
-    "#postcss-discard-duplicates": "./src/plugins/postcss-discard-duplicates/index.js",
-    "#postcss-discard-empty": "./src/plugins/postcss-discard-empty/index.js",
-    "#postcss-discard-overridden": "./src/plugins/postcss-discard-overridden/index.js",
-    "#postcss-discard-unused": "./src/plugins/postcss-discard-unused/index.js",
-    "#postcss-merge-idents": "./src/plugins/postcss-merge-idents/index.js",
-    "#postcss-merge-longhand": "./src/plugins/postcss-merge-longhand/index.js",
-    "#postcss-merge-rules": "./src/plugins/postcss-merge-rules/index.js",
-    "#postcss-minify-font-values": "./src/plugins/postcss-minify-font-values/index.js",
-    "#postcss-minify-gradients": "./src/plugins/postcss-minify-gradients/index.js",
-    "#postcss-minify-params": "./src/plugins/postcss-minify-params/index.js",
-    "#postcss-minify-selectors": "./src/plugins/postcss-minify-selectors/index.js",
-    "#postcss-normalize-charset": "./src/plugins/postcss-normalize-charset/index.js",
-    "#postcss-normalize-display-values": "./src/plugins/postcss-normalize-display-values/index.js",
-    "#postcss-normalize-positions": "./src/plugins/postcss-normalize-positions/index.js",
-    "#postcss-normalize-repeat-style": "./src/plugins/postcss-normalize-repeat-style/index.js",
-    "#postcss-normalize-string": "./src/plugins/postcss-normalize-string/index.js",
-    "#postcss-normalize-timing-functions": "./src/plugins/postcss-normalize-timing-functions/index.js",
-    "#postcss-normalize-unicode": "./src/plugins/postcss-normalize-unicode/index.js",
-    "#postcss-normalize-url": "./src/plugins/postcss-normalize-url/index.js",
-    "#postcss-normalize-whitespace": "./src/plugins/postcss-normalize-whitespace/index.js",
-    "#postcss-ordered-values": "./src/plugins/postcss-ordered-values/index.js",
-    "#postcss-reduce-idents": "./src/plugins/postcss-reduce-idents/index.js",
-    "#postcss-reduce-initial": "./src/plugins/postcss-reduce-initial/index.js",
-    "#postcss-reduce-transforms": "./src/plugins/postcss-reduce-transforms/index.js",
-    "#postcss-unique-selectors": "./src/plugins/postcss-unique-selectors/index.js",
-    "#postcss-zindex": "./src/plugins/postcss-zindex/index.js",
-    "#presets/advanced": "./src/presets/advanced.js",
-    "#presets/default": "./src/presets/default.js",
-    "#presets/lite": "./src/presets/lite.js",
-    "#stylehacks": "./src/utils/stylehacks/index.js",
-    "#utils": "./src/utils/index.js",
-    "#utils/browser-bugs": "./src/utils/browserBugs.js",
-    "#utils/browser-support": "./src/utils/browserSupport.js",
-    "#utils/browser-targets": "./src/utils/browserTargets.js",
-    "#utils/ignored-target-options": "./src/utils/ignoredTargetOptions.js",
-    "#utils/versions": "./src/utils/versions.js"
+    "#postcss-colormin": {
+      "types": "./types/plugins/postcss-colormin/index.d.ts",
+      "default": "./src/plugins/postcss-colormin/index.js"
+    },
+    "#postcss-convert-values": {
+      "types": "./types/plugins/postcss-convert-values/index.d.ts",
+      "default": "./src/plugins/postcss-convert-values/index.js"
+    },
+    "#postcss-discard-comments": {
+      "types": "./types/plugins/postcss-discard-comments/index.d.ts",
+      "default": "./src/plugins/postcss-discard-comments/index.js"
+    },
+    "#postcss-discard-duplicates": {
+      "types": "./types/plugins/postcss-discard-duplicates/index.d.ts",
+      "default": "./src/plugins/postcss-discard-duplicates/index.js"
+    },
+    "#postcss-discard-empty": {
+      "types": "./types/plugins/postcss-discard-empty/index.d.ts",
+      "default": "./src/plugins/postcss-discard-empty/index.js"
+    },
+    "#postcss-discard-overridden": {
+      "types": "./types/plugins/postcss-discard-overridden/index.d.ts",
+      "default": "./src/plugins/postcss-discard-overridden/index.js"
+    },
+    "#postcss-discard-unused": {
+      "types": "./types/plugins/postcss-discard-unused/index.d.ts",
+      "default": "./src/plugins/postcss-discard-unused/index.js"
+    },
+    "#postcss-merge-idents": {
+      "types": "./types/plugins/postcss-merge-idents/index.d.ts",
+      "default": "./src/plugins/postcss-merge-idents/index.js"
+    },
+    "#postcss-merge-longhand": {
+      "types": "./types/plugins/postcss-merge-longhand/index.d.ts",
+      "default": "./src/plugins/postcss-merge-longhand/index.js"
+    },
+    "#postcss-merge-rules": {
+      "types": "./types/plugins/postcss-merge-rules/index.d.ts",
+      "default": "./src/plugins/postcss-merge-rules/index.js"
+    },
+    "#postcss-minify-font-values": {
+      "types": "./types/plugins/postcss-minify-font-values/index.d.ts",
+      "default": "./src/plugins/postcss-minify-font-values/index.js"
+    },
+    "#postcss-minify-gradients": {
+      "types": "./types/plugins/postcss-minify-gradients/index.d.ts",
+      "default": "./src/plugins/postcss-minify-gradients/index.js"
+    },
+    "#postcss-minify-params": {
+      "types": "./types/plugins/postcss-minify-params/index.d.ts",
+      "default": "./src/plugins/postcss-minify-params/index.js"
+    },
+    "#postcss-minify-selectors": {
+      "types": "./types/plugins/postcss-minify-selectors/index.d.ts",
+      "default": "./src/plugins/postcss-minify-selectors/index.js"
+    },
+    "#postcss-normalize-charset": {
+      "types": "./types/plugins/postcss-normalize-charset/index.d.ts",
+      "default": "./src/plugins/postcss-normalize-charset/index.js"
+    },
+    "#postcss-normalize-display-values": {
+      "types": "./types/plugins/postcss-normalize-display-values/index.d.ts",
+      "default": "./src/plugins/postcss-normalize-display-values/index.js"
+    },
+    "#postcss-normalize-positions": {
+      "types": "./types/plugins/postcss-normalize-positions/index.d.ts",
+      "default": "./src/plugins/postcss-normalize-positions/index.js"
+    },
+    "#postcss-normalize-repeat-style": {
+      "types": "./types/plugins/postcss-normalize-repeat-style/index.d.ts",
+      "default": "./src/plugins/postcss-normalize-repeat-style/index.js"
+    },
+    "#postcss-normalize-string": {
+      "types": "./types/plugins/postcss-normalize-string/index.d.ts",
+      "default": "./src/plugins/postcss-normalize-string/index.js"
+    },
+    "#postcss-normalize-timing-functions": {
+      "types": "./types/plugins/postcss-normalize-timing-functions/index.d.ts",
+      "default": "./src/plugins/postcss-normalize-timing-functions/index.js"
+    },
+    "#postcss-normalize-unicode": {
+      "types": "./types/plugins/postcss-normalize-unicode/index.d.ts",
+      "default": "./src/plugins/postcss-normalize-unicode/index.js"
+    },
+    "#postcss-normalize-url": {
+      "types": "./types/plugins/postcss-normalize-url/index.d.ts",
+      "default": "./src/plugins/postcss-normalize-url/index.js"
+    },
+    "#postcss-normalize-whitespace": {
+      "types": "./types/plugins/postcss-normalize-whitespace/index.d.ts",
+      "default": "./src/plugins/postcss-normalize-whitespace/index.js"
+    },
+    "#postcss-ordered-values": {
+      "types": "./types/plugins/postcss-ordered-values/index.d.ts",
+      "default": "./src/plugins/postcss-ordered-values/index.js"
+    },
+    "#postcss-reduce-idents": {
+      "types": "./types/plugins/postcss-reduce-idents/index.d.ts",
+      "default": "./src/plugins/postcss-reduce-idents/index.js"
+    },
+    "#postcss-reduce-initial": {
+      "types": "./types/plugins/postcss-reduce-initial/index.d.ts",
+      "default": "./src/plugins/postcss-reduce-initial/index.js"
+    },
+    "#postcss-reduce-transforms": {
+      "types": "./types/plugins/postcss-reduce-transforms/index.d.ts",
+      "default": "./src/plugins/postcss-reduce-transforms/index.js"
+    },
+    "#postcss-unique-selectors": {
+      "types": "./types/plugins/postcss-unique-selectors/index.d.ts",
+      "default": "./src/plugins/postcss-unique-selectors/index.js"
+    },
+    "#postcss-zindex": {
+      "types": "./types/plugins/postcss-zindex/index.d.ts",
+      "default": "./src/plugins/postcss-zindex/index.js"
+    },
+    "#presets/advanced": {
+      "types": "./types/presets/advanced.d.ts",
+      "default": "./src/presets/advanced.js"
+    },
+    "#presets/default": {
+      "types": "./types/presets/default.d.ts",
+      "default": "./src/presets/default.js"
+    },
+    "#presets/lite": {
+      "types": "./types/presets/lite.d.ts",
+      "default": "./src/presets/lite.js"
+    },
+    "#stylehacks": {
+      "types": "./types/utils/stylehacks/index.d.ts",
+      "default": "./src/utils/stylehacks/index.js"
+    },
+    "#utils": {
+      "types": "./types/utils/index.d.ts",
+      "default": "./src/utils/index.js"
+    },
+    "#utils/browser-bugs": {
+      "types": "./types/utils/browserBugs.d.ts",
+      "default": "./src/utils/browserBugs.js"
+    },
+    "#utils/browser-support": {
+      "types": "./types/utils/browserSupport.d.ts",
+      "default": "./src/utils/browserSupport.js"
+    },
+    "#utils/browser-targets": {
+      "types": "./types/utils/browserTargets.d.ts",
+      "default": "./src/utils/browserTargets.js"
+    },
+    "#utils/versions": {
+      "types": "./types/utils/versions.d.ts",
+      "default": "./src/utils/versions.js"
+    }
   },
   "funding": {
     "type": "opencollective",

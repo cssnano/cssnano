@@ -1,35 +1,25 @@
 import postcss from 'postcss';
-import { enabledPlugins } from './utils/enabledPlugins.js';
 
-/** @import {PresetName, MinificationResult} from './types.js'*/
+/** @import {PresetId, MinificationResult} from './types.js'*/
 
-/** @param {PresetName} presetName */
-async function loadPlugins(presetName) {
-  let preset;
-  switch (presetName) {
-    case 'cssnano-preset-lite':
-      preset = (await import('../../packages/cssnano/src/presets/lite.js'))
-        .default;
-      break;
-    case 'cssnano-preset-default':
-      preset = (await import('../../packages/cssnano/src/presets/default.js'))
-        .default;
-      break;
-    case 'cssnano-preset-advanced':
-      preset = (await import('../../packages/cssnano/src/presets/advanced.js'))
-        .default;
-      break;
+// The preset modules are imported by their subpaths, because the cssnano entry
+// reads configuration files from the file system, which a browser cannot do.
+/** @param {PresetId} presetId */
+async function loadPlugins(presetId) {
+  switch (presetId) {
+    case 'lite':
+      return (await import('cssnano/presets/lite')).default();
+    case 'default':
+      return (await import('cssnano/presets/default')).default();
+    case 'advanced':
+      return (await import('cssnano/presets/advanced')).default();
     default:
       throw new Error('Invalid configuration preset');
   }
-
-  return enabledPlugins(() => preset()).map(([processor, opts]) =>
-    processor(opts)
-  );
 }
 
 /** @param {string} input
-    @param {PresetName} preset
+    @param {PresetId} preset
     @returns {Promise<MinificationResult>}
  */
 export async function minimize(input, preset) {

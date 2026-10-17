@@ -1,14 +1,19 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 test(
   'should merge a relative selector that starts with a combinator inside :has()',
-  processCSS('a:has(> b){color:red}x{color:red}', 'a:has(> b),x{color:red}', {
-    overrideBrowserslist: 'Chrome 120',
-  })
+  processCSS(
+    'a:has(> b){color:red}x{color:red}',
+    'a:has(> b),x{color:red}',
+    withTargets('Chrome 120')
+  )
 );
 
 test(
@@ -56,9 +61,7 @@ test(
   processCSS(
     ':is(a::before,b) c{color:red}x{color:red}',
     ':is(a::before,b) c,x{color:red}',
-    {
-      overrideBrowserslist: 'Chrome 120',
-    }
+    withTargets('Chrome 120')
   )
 );
 
@@ -69,9 +72,11 @@ test(
 
 test(
   'should merge an attribute selector with whitespace after its matcher',
-  processCSS('a{color:red}[x~= y]{color:red}', 'a,[x~= y]{color:red}', {
-    overrideBrowserslist: 'Chrome 100',
-  })
+  processCSS(
+    'a{color:red}[x~= y]{color:red}',
+    'a,[x~= y]{color:red}',
+    withTargets('Chrome 100')
+  )
 );
 
 test(
@@ -101,9 +106,7 @@ for (const attribute of [
     processCSS(
       `a{color:red}${attribute}{color:red}`,
       `a,${attribute}{color:red}`,
-      {
-        overrideBrowserslist: 'Chrome 100',
-      }
+      withTargets('Chrome 100')
     )
   );
 }
@@ -135,14 +138,18 @@ test(
 
 test(
   'should drop a repeated rule whose selector is :is() with a comma, because the comma is nested and the lists are equal',
-  processCSS(':is(a,b){color:red}:is(a,b){color:red}', ':is(a,b){color:red}', {
-    overrideBrowserslist: 'Chrome 120',
-  })
+  processCSS(
+    ':is(a,b){color:red}:is(a,b){color:red}',
+    ':is(a,b){color:red}',
+    withTargets('Chrome 120')
+  )
 );
 
 test(
   'should list both selectors when one list is :is(a,b) and the other is a,b, because a nested comma does not make the lists equal',
-  processCSS(':is(a,b){color:red}a,b{color:red}', ':is(a,b),a,b{color:red}', {
-    overrideBrowserslist: 'Chrome 120',
-  })
+  processCSS(
+    ':is(a,b){color:red}a,b{color:red}',
+    ':is(a,b),a,b{color:red}',
+    withTargets('Chrome 120')
+  )
 );

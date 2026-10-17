@@ -7,117 +7,114 @@ import litePreset from '#presets/lite';
 import cssnano from '../src/index.js';
 import { repositoryFile } from '../../../util/testHelpers.js';
 
+const fixture = `h1{content:"©";color:#ff0000;z-index:10;display:grid}`;
+
+/**
+ * @param {import('postcss').AcceptedPlugin[] | Parameters<typeof cssnano>[0]} plugins
+ *   a built preset, or cssnano options
+ * @param {string} css
+ */
+async function minify(plugins, css = fixture) {
+  const processor = Array.isArray(plugins)
+    ? postcss(plugins)
+    : postcss([cssnano(plugins)]);
+  const result = await processor.process(css, { from: repositoryFile });
+  return result.css;
+}
+
 describe('preset resolution', () => {
-  test('should accept an invoked preset', async () => {
-    const preset = defaultPreset({ normalizeCharset: { add: true } });
-
-    const result = await postcss([cssnano({ preset })]).process(
-      `h1{content:"©"}`,
-      { from: repositoryFile }
-    );
-    assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
+  test('uses the default preset when no preset is given', async () => {
+    assert.strictEqual(await minify({}), await minify(defaultPreset()));
   });
 
-  test('should accept a non-invoked preset', async () => {
-    const preset = [defaultPreset, { normalizeCharset: { add: true } }];
-
-    const result = await postcss([cssnano({ preset })]).process(
-      `h1{content:"©"}`,
-      { from: repositoryFile }
+  test('the imported lite preset given as preset runs the same plugins as the lite preset itself', async () => {
+    assert.strictEqual(
+      await minify({ preset: litePreset }),
+      await minify(litePreset())
     );
-    assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
   });
 
-  test('should accept a default preset string', async () => {
-    const preset = ['default', { normalizeCharset: { add: true } }];
-
-    const result = await postcss([cssnano({ preset })]).process(
-      `h1{content:"©"}`,
-      { from: repositoryFile }
+  test('the imported default preset given as preset runs the same plugins as the default preset itself', async () => {
+    assert.strictEqual(
+      await minify({ preset: defaultPreset }),
+      await minify(defaultPreset())
     );
-    assert.strictEqual(result.css, `@charset "utf-8";h1{content:"©"}`);
   });
 
-  test('should accept an invoked preset other than default', async () => {
-    const preset = advancedPreset({ zindex: { startIndex: 15 } });
-
-    const result = await postcss([cssnano({ preset })]).process(
-      `h1{z-index:10}`,
-      { from: repositoryFile }
+  test('the imported advanced preset given as preset, with options, runs the same plugins as the preset with those options', async () => {
+    const options = { disable: ['zindex'] };
+    assert.strictEqual(
+      await minify({ preset: advancedPreset, ...options }),
+      await minify(advancedPreset(options))
     );
-    assert.strictEqual(result.css, `h1{z-index:15}`);
+  });
+});
+
+describe('preset errors', () => {
+  test('throws for a plugin list given as preset, since a preset is the function itself', () => {
+    assert.throws(() => cssnano({ preset: litePreset() }), {
+      message: /^Option "preset" must be a preset imported from cssnano/v,
+    });
   });
 
-  test('should accept a preset string other than default', async () => {
-    const preset = 'cssnano-preset-advanced';
-
-    const result = await postcss([cssnano({ preset })]).process(
-      `h1{z-index:10}`,
-      { from: repositoryFile }
-    );
-    assert.strictEqual(result.css, `h1{z-index:1}`);
+  test('throws for a preset array, which is not a preset function', () => {
+    assert.throws(() => cssnano({ preset: ['lite', {}] }), {
+      message: /^Option "preset" must be a preset imported from cssnano/v,
+    });
   });
 
-  test('should accept a preset string other than default, with options', async () => {
-    const preset = ['cssnano-preset-advanced', { zindex: { startIndex: 15 } }];
-
-    const result = await postcss([cssnano({ preset })]).process(
-      `h1{z-index:10}`,
-      { from: repositoryFile }
-    );
-    assert.strictEqual(result.css, `h1{z-index:15}`);
+  test('throws for a preset name string, because a preset is imported, not named', () => {
+    assert.throws(() => cssnano({ preset: 'lite' }), {
+      message: /^Option "preset" must be a preset imported from cssnano/v,
+    });
   });
 
-  test('should accept a preset string other than default (sugar syntax)', async () => {
-    const preset = ['advanced', { zindex: { startIndex: 15 } }];
+  test('throws for a misspelled option, instead of running the default preset', () => {
+    assert.throws(() => cssnano({ presett: 'lite' }), {
+      message: '"presett" is not an option of cssnano options.',
+    });
+  });
 
-    const result = await postcss([cssnano({ preset })]).process(
-      `h1{z-index:10}`,
-      { from: repositoryFile }
-    );
-    assert.strictEqual(result.css, `h1{z-index:15}`);
+  test('a built preset called with null throws a cssnano message, as cssnano(null) does', () => {
+    assert.throws(() => litePreset(/** @type {any} */ (null)), {
+      name: 'TypeError',
+      message: 'The preset options must be an object.',
+    });
   });
 });
 
 describe('plugin selection', () => {
-  test('should be able to exclude plugins', async () => {
-    const preset = ['advanced', { zindex: false }];
-
-    const result = await postcss([cssnano({ preset })]).process(
-      `h1{z-index:10}`,
-      { from: repositoryFile }
+  test('disable leaves out the named plugin', async () => {
+    assert.strictEqual(
+      await minify(
+        { preset: advancedPreset, disable: ['zindex'] },
+        `h1{z-index:10}`
+      ),
+      `h1{z-index:10}`
     );
-    assert.strictEqual(result.css, `h1{z-index:10}`);
   });
 
-  test('should be able to include plugins', async () => {
-    const preset = ['advanced', { zindex: true }];
-
-    const result = await postcss([cssnano({ preset })]).process(
-      `h1{z-index:10}`,
-      { from: repositoryFile }
+  test('a plugin that the advanced preset adds runs when no option disables it', async () => {
+    assert.strictEqual(
+      await minify({ preset: advancedPreset }, `h1{z-index:10}`),
+      `h1{z-index:1}`
     );
-    assert.strictEqual(result.css, `h1{z-index:1}`);
   });
 
-  test('should be able to exclude plugins (exclude syntax)', async () => {
-    const preset = ['advanced', { zindex: { startIndex: 15, exclude: true } }];
-
-    const result = await postcss([cssnano({ preset })]).process(
-      `h1{z-index:10}`,
-      { from: repositoryFile }
+  test('options configure a plugin, such as the start index of zindex', async () => {
+    assert.strictEqual(
+      await minify(
+        { preset: advancedPreset, options: { zindex: { startIndex: 15 } } },
+        `h1{z-index:10}`
+      ),
+      `h1{z-index:15}`
     );
-    assert.strictEqual(result.css, `h1{z-index:10}`);
   });
 
-  test('should be able to exclude pointer-events plugin', async () => {
+  test('a plugin option, such as the ignore list of reduceInitial, reaches the plugin', async () => {
     const result = await cssnano({
-      preset: [
-        'default',
-        {
-          reduceInitial: { ignore: ['pointer-events'] },
-        },
-      ],
+      preset: defaultPreset,
+      options: { reduceInitial: { ignore: ['pointer-events'] } },
     }).process('.selector { pointer-events: initial; }', {
       from: repositoryFile,
     });
@@ -127,32 +124,13 @@ describe('plugin selection', () => {
   test('should distinguish at-rule whitespace handling between lite and default presets', async () => {
     const input = '@media   (min-width: 1px) { h1 { color: red } }';
 
-    const defaultResult = await postcss([
-      cssnano({ preset: defaultPreset }),
-    ]).process(input, { from: repositoryFile });
     assert.strictEqual(
-      defaultResult.css,
+      await minify(defaultPreset(), input),
       '@media(min-width:1px){h1{color:red}}'
     );
-
-    const liteResult = await postcss([cssnano({ preset: litePreset })]).process(
-      input,
-      { from: repositoryFile }
-    );
     assert.strictEqual(
-      liteResult.css,
+      await minify(litePreset(), input),
       '@media (min-width: 1px){h1{color:red}}'
     );
   });
-});
-
-test('should error on a bad preset', async () => {
-  try {
-    await postcss([cssnano({ preset: 'avanced' })]).process('h1{}', {
-      from: repositoryFile,
-    });
-    assert.unreachable();
-  } catch (error) {
-    assert.ok(error);
-  }
 });

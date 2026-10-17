@@ -1,5 +1,8 @@
 import { test, describe } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 import { addTests } from './helpers/boxTests.js';
 
@@ -145,7 +148,7 @@ describe('newer syntax a browser may reject', () => {
 });
 
 describe('repeated box property', () => {
-  const legacy = { overrideBrowserslist: ['ie 11'] };
+  const legacy = withTargets(['ie 11']);
 
   test(
     'keeps the earlier physical longhand because a browser without the cap unit drops the later one',

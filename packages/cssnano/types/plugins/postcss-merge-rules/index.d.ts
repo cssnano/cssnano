@@ -1,4 +1,3 @@
-import type { TargetOptions } from '#utils';
 export type RuleMeta = {
     /**
      * - Array of selector strings for the rule
@@ -9,15 +8,14 @@ export type RuleMeta = {
      */
     declarations: import('postcss').Declaration[];
 };
-export type Options = TargetOptions;
-/** @import {TargetOptions} from '#utils' */
+export type Options = object;
 /**
  * @typedef {Object} RuleMeta
  * @property {string[]} selectors - Array of selector strings for the rule
  * @property {import('postcss').Declaration[]} declarations - Array of declaration nodes for the rule
  */
 /**
- * @typedef {TargetOptions} Options
+ * @typedef {object} Options
  */
 /** @param {Options} opts @return {import('postcss').Plugin} */
 declare function pluginCreator(opts?: Options): import('postcss').Plugin;

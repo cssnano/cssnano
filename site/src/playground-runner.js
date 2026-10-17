@@ -1,4 +1,4 @@
-/** @import {PresetName, CssNanoWorker, MinificationResult, MinificationSuccess} from './types.js'*/
+/** @import {PresetId, CssNanoWorker, MinificationResult, MinificationSuccess} from './types.js'*/
 
 /** Rejection for CSS the minifier cannot parse, as opposed to a worker failure. */
 export class CssInputError extends Error {}
@@ -22,7 +22,7 @@ export class PlaygroundRunner {
   }
 
   /** @param {string} input
-   * @param {PresetName} preset
+   * @param {PresetId} preset
    * @returns {Promise<string>} */
   async minimizeCss(input, preset) {
     if (this.#pendingMinification) {

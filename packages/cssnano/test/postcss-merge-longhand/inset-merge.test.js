@@ -1,12 +1,15 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 /* Chrome 87, Firefox 66 and Safari 14.1 shipped `inset`, long after `top`. */
-const modern = { overrideBrowserslist: ['chrome 120'] };
-const legacy = { overrideBrowserslist: ['ie 11'] };
+const modern = withTargets(['chrome 120']);
+const legacy = withTargets(['ie 11']);
 
 describe('inset', () => {
   test(
@@ -53,9 +56,10 @@ describe('inset', () => {
 
   test(
     'keeps the sides apart for Safari 14.0, which predates inset',
-    passthroughCSS('a{top:0;right:0;bottom:0;left:0}', {
-      overrideBrowserslist: ['safari 14'],
-    })
+    passthroughCSS(
+      'a{top:0;right:0;bottom:0;left:0}',
+      withTargets(['safari 14'])
+    )
   );
 
   test(

@@ -1,8 +1,6 @@
 import { resolveTargets } from '#utils/browser-targets';
 import runMerge from './lib/selectorMerger.js';
 
-/** @import {TargetOptions} from '#utils' */
-
 /**
  * @typedef {Object} RuleMeta
  * @property {string[]} selectors - Array of selector strings for the rule
@@ -10,7 +8,7 @@ import runMerge from './lib/selectorMerger.js';
  */
 
 /**
- * @typedef {TargetOptions} Options
+ * @typedef {object} Options
  */
 
 /** @param {Options} opts @return {import('postcss').Plugin} */

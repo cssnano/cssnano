@@ -2,8 +2,7 @@ import assert from 'node:assert/strict';
 import { glob, readFile } from 'node:fs/promises';
 import { sep } from 'node:path';
 import { test } from 'node:test';
-import preset from '../../../src/presets/default.js';
-import presetTargets from '../../../src/utils/presetTargets.js';
+import { defaultPluginEntries } from '../../../src/presets/defaultPlugins.js';
 
 const pluginsDirectory = new URL('../../../src/plugins/', import.meta.url);
 
@@ -22,12 +21,13 @@ async function pluginsThatResolveTargets() {
   return [...names].toSorted();
 }
 
-test('the default preset hands its browser targets to exactly the plugins that resolve browser targets', async () => {
-  const given = new Set();
-  for (const [creator, options] of preset().plugins) {
-    if (options && Object.hasOwn(options, presetTargets)) {
-      given.add(creator(options).postcssPlugin);
-    }
-  }
-  assert.deepEqual([...given].toSorted(), await pluginsThatResolveTargets());
+test('the default preset marks exactly the plugins that resolve browser targets', async () => {
+  // mergeLonghand runs twice, so the names are compared as a set.
+  const marked = defaultPluginEntries
+    .filter(([, , settings]) => settings?.targets === true)
+    .map(([creator]) => creator({}).postcssPlugin);
+  assert.deepEqual(
+    [...new Set(marked)].toSorted(),
+    await pluginsThatResolveTargets()
+  );
 });

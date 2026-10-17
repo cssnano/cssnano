@@ -1,10 +1,13 @@
 import { test, suite } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
 
 const { processCSS } = processCSSFactory(plugin);
 
-const modernBl = { overrideBrowserslist: 'last 2 Chrome versions' };
+const modernBl = withTargets('last 2 Chrome versions');
 
 suite('fold that do not fire', () => {
   test(
@@ -175,7 +178,7 @@ suite('options  / browserslist interactions', () => {
     processCSS(
       'section h1,article h1,aside h1,nav h1{font-size:25px}',
       'article h1,aside h1,nav h1,section h1{font-size:25px}',
-      { overrideBrowserslist: 'ie 11' }
+      withTargets('ie 11')
     )
   );
 
@@ -184,7 +187,7 @@ suite('options  / browserslist interactions', () => {
     processCSS(
       'section h1,article h1,aside h1,nav h1{font-size:25px}',
       'article h1,aside h1,nav h1,section h1{font-size:25px}',
-      { overrideBrowserslist: ['last 2 Chrome versions', 'IE 11'] }
+      withTargets(['last 2 Chrome versions', 'IE 11'])
     )
   );
 

@@ -4,11 +4,14 @@ import counterStyleReducer from './lib/counter-style.js';
 import keyframesReducer from './lib/keyframes.js';
 import gridTemplateReducer from './lib/grid-template.js';
 
-/** @typedef {{
-    counter?: boolean, counterStyle?: boolean,
-    keyframes?: boolean, gridTemplate?: boolean,
-    encoder?: (value: string, index: number) => string}} Options
-*/
+/**
+ * @typedef {object} Options
+ * @property {boolean} [counter] Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)
+ * @property {boolean} [counterStyle] Reduces `counter-style` rules and `list-style` and `system` declarations. (default: true)
+ * @property {boolean} [keyframes] Reduces `keyframes` rules and `animation` declarations. (default: true)
+ * @property {boolean} [gridTemplate] Reduces `grid-template`, `grid-area`, `grid-column`, `grid-row` and `grid-template-areas` declarations. (default: true)
+ * @property {(value: string, index: number) => string} [encoder] Replaces a name. Receives the name and how many names came before it.
+ */
 /** @typedef {{
  *    collect: (node: import('postcss').AnyNode) => void,
  *    transform: () => void

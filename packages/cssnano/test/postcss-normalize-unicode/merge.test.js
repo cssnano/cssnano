@@ -1,10 +1,13 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-normalize-unicode/index.js';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
-const modern = { overrideBrowserslist: ['defaults', 'not ie <=11'] };
+const modern = withTargets(['defaults', 'not ie <=11']);
 
 function fixture(range) {
   return `@font-face{font-family:test;unicode-range:${range}}*{font-family:test}`;
@@ -57,9 +60,7 @@ describe('Merge', () => {
 
   test(
     'should upcase merged ranges in legacy descriptor lists',
-    processCSS(fixture('u+41,u+42'), fixture('U+41-42'), {
-      overrideBrowserslist: 'IE 11',
-    })
+    processCSS(fixture('u+41,u+42'), fixture('U+41-42'), withTargets('IE 11'))
   );
 
   test(

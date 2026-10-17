@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   processCSSFactory,
   repositoryFile,
+  withTargets,
 } from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 import { shortestWithFreeSlots } from '../../src/plugins/postcss-merge-longhand/lib/decl/slotSolver.js';
@@ -12,10 +13,10 @@ import { minifyPair } from '../../src/plugins/postcss-merge-longhand/lib/pairs.j
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
-const modern = { overrideBrowserslist: ['chrome 120'] };
-const legacy = { overrideBrowserslist: ['ie 11'] };
+const modern = withTargets(['chrome 120']);
+const legacy = withTargets(['ie 11']);
 /* Before dvh, cap and the axis shorthands arrived. */
-const older = { overrideBrowserslist: ['chrome 100'] };
+const older = withTargets(['chrome 100']);
 
 describe('values a later declaration overrides', () => {
   test(

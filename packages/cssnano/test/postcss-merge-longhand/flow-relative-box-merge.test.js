@@ -1,15 +1,18 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 /* Every target supports the axis shorthands, which shipped after the
  * longhands, so they may be created and grown. */
-const modern = { overrideBrowserslist: ['chrome 120'] };
+const modern = withTargets(['chrome 120']);
 /* Internet Explorer 11 has none of them, and drops a shorthand it does not
  * know together with every side it would have set. */
-const legacy = { overrideBrowserslist: ['ie 11'] };
+const legacy = withTargets(['ie 11']);
 
 const groups = [
   'margin',
@@ -132,9 +135,7 @@ describe('start and end longhands', () => {
     'keeps scroll-margin longhands apart for Safari 14.0, which lacks the axis shorthand',
     passthroughCSS(
       'a{scroll-margin-block-start:1px;scroll-margin-block-end:2px}',
-      {
-        overrideBrowserslist: ['safari 14'],
-      }
+      withTargets(['safari 14'])
     )
   );
 
@@ -143,15 +144,16 @@ describe('start and end longhands', () => {
     processCSS(
       'a{padding-inline:1px 2px;padding-inline-end:3px}',
       'a{padding-inline:1px;padding-inline-end:3px}',
-      { overrideBrowserslist: ['chrome 80'] }
+      withTargets(['chrome 80'])
     )
   );
 
   test(
     'keeps a longhand before its axis shorthand for UC Browser, which may apply the longhand alone because the compatibility data does not cover it',
-    passthroughCSS('a{margin-inline-start:1px;margin-inline:2px}', {
-      overrideBrowserslist: ['chrome 120', 'and_uc 15.5'],
-    })
+    passthroughCSS(
+      'a{margin-inline-start:1px;margin-inline:2px}',
+      withTargets(['chrome 120', 'and_uc 15.5'])
+    )
   );
 
   test(

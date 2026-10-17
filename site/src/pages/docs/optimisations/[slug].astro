@@ -15,6 +15,7 @@ const { optimisation } = Astro.props;
 ---
 <MainLayout title={optimisation.shortName} description={optimisation.shortDescription}>
   <p>{optimisation.longDescription}</p>
+  {optimisation.option && <p>Preset option: <code>{optimisation.option}</code></p>}
   <h2>Example</h2>
   <h3 id="example-input">Input</h3>
   <CodeSample code={optimisation.inputExample} lang="css" labelledBy="example-input" />

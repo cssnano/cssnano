@@ -1,5 +1,8 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import { pseudoElements } from '../../src/plugins/postcss-merge-rules/lib/pseudoSupport.js';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
 
@@ -202,6 +205,6 @@ for (const {
     const input = `${first}{color:blue}${second}{color:blue}`;
     const output =
       expected === 'merged' ? `${first},${second}{color:blue}` : input;
-    return processCSS(input, output, { overrideBrowserslist: browsers })();
+    return processCSS(input, output, withTargets(browsers))();
   });
 }

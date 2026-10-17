@@ -9,156 +9,132 @@ description: Choose the default, lite or advanced preset to control which optimi
 Presets are named sets of optimisations. Instead of having to opt out of
 advanced transformations, you opt in by choosing a preset, and you can save
 your configuration to reuse across multiple contexts. cssnano includes three
-presets: `default`, `lite`, and `advanced`.
+presets: `default`, `lite`, and `advanced`. All three are built in, so
+importing one needs no other package.
 
+## Import a preset
 
-## How do presets work?
-
-cssnano runs a few different operations to check what preset it should use.
-Firstly, it checks that it was loaded with a preset when it was initialized;
-if so, it will use that one. For example, using a `postcss.config.js` in the
-project root:
+Import a preset from cssnano and pass it as the `preset` option. The presets are
+`cssnano/presets/default`, `cssnano/presets/lite` and `cssnano/presets/advanced`:
 
 ```js
 module.exports = {
     plugins: [
         require('cssnano')({
-            preset: 'default',
+            preset: require('cssnano/presets/default'),
         }),
     ],
 };
 ```
 
-_The preset names `default`, `lite`, and `advanced` select the presets built
-into cssnano, so they need no separate install. `default` always uses the
-built-in preset. For `lite`, `advanced` and the full `cssnano-preset-*` names,
-an installed package with the same name takes precedence, and cssnano prints a
-`CSSNANO_INSTALLED_PRESET` warning so an outdated install does not go
-unnoticed. Uninstall the package to use the built-in preset, or pass the
-imported preset function to keep the installed one without the warning. For
-other presets, pass the complete resolvable package name._
+A configuration file imports the preset the same way, in `cssnano.config.js`:
 
-If you need to pass any options to a preset, you must specify them using the
-array syntax instead. For example, you can remove all comments with the
-following configuration:
+```js
+module.exports = {
+    preset: require('cssnano/presets/lite'),
+};
+```
+
+Without a preset, cssnano runs the `default` preset, and `disable` and
+`options` name its plugins. A preset written as a name such as `'lite'` is
+rejected: import the preset instead. A configuration file must be a JavaScript module, so
+JSON is not read.
+
+## Options
+
+cssnano takes these options, and a configuration file takes the same ones:
+
+- `preset`: an imported `default`, `lite` or `advanced` preset.
+- `disable`: an array of plugin names to leave out.
+- `options`: an object from plugin name to the options of that plugin, merged over
+  its defaults.
+- `browserslist`: the browser targets, described below.
+
+To remove all comments, keep the default preset and set an option of the
+`discardComments` plugin:
 
 ```js
 module.exports = {
     plugins: [
         require('cssnano')({
-            preset: ['default', {
+            preset: require('cssnano/presets/default'),
+            options: {
                 discardComments: {
                     removeAll: true,
                 },
-            }]
+            },
         }),
     ],
 };
 ```
 
-For other cases where the preset was not explicitly set, cssnano checks the
-supported configuration files in the current working directory. It does not
-search parent directories. These two configuration examples function
-identically to the above. A `.cssnanorc.json`:
+Each preset uses only the plugins of its own. A plugin that the active preset
+lacks, such as `zindex` with `lite`, throws.
 
-```json
-{
-  "preset": [
-    "default",
-    {"discardComments": {"removeAll": true}}
-  ]
-}
-```
-
-And a `cssnano.config.js`:
-
-```js
-module.exports = {
-    preset: ['default', {
-        discardComments: {
-            removeAll: true,
-        },
-    }],
-};
-```
-
-_The `cssnano.config.js` is useful if you need to make use of transformations
-that can accept functions as parameters, for more specific use cases._
-
-If cssnano was not loaded with a preset explicitly, and a local configuration
-file was not found, then the defaults will be loaded. Use `configFile` when the
-configuration is stored in another directory. cssnano automatically discovers
-`.cssnanorc.json` and `cssnano.config.js`. The `configFile` can point to any filename with a supported extension.
-An example `postcss.config.js`:
-
-```js
-module.exports = {
-    plugins: [
-        require('cssnano'),
-    ],
-};
-```
-
-For most use cases, the default preset should be suitable, but
-we also offer an advanced preset which performs more aggressive transformations.
-You can read more about this in
-[our advanced transformations guide][guideadvancedtransforms].
-
-
-## Options syntax
-
-The options follow a simple pattern - the optional `postcss-` prefix is removed
-and then the rest should be converted into `camelCase`. So, if you need to set
-an option for `postcss-colormin`, you can do:
-
-```js
-module.exports = {
-    plugins: [
-        require('cssnano')({
-            preset: ['default', {
-                colormin: {
-                    // plugin options
-                },
-            }],
-        }),
-    ],
-};
-```
-
+An unknown key, such as a misspelled `presett`, or a removed option such as
+`svgo`, throws, because the default would run instead of the setting the user
+wrote. The message says where a removed setting moved.
 
 ## Excluding transforms
 
-You may wish to exclude a transform from the list if it isn't required for your
-build; there are two possible ways to do this. The first is to set the option
-key to `false`:
+To leave a transform out, list its plugin name in `disable`:
 
 ```js
 module.exports = {
     plugins: [
         require('cssnano')({
-            preset: ['default', {
-                colormin: false,
-            }],
+            preset: require('cssnano/presets/default'),
+            disable: ['colormin'],
         }),
     ],
 };
 ```
 
-Alternately, if you have already supplied options and would prefer to exclude
-a transform temporarily, you may set the `exclude` option:
+A plugin that is in both `disable` and `options` is an error, because the two
+contradict each other.
+
+## Browser targets
+
+cssnano gives every plugin that depends on browser support the same targets.
+Set them with `browserslist`:
 
 ```js
 module.exports = {
     plugins: [
         require('cssnano')({
-            preset: ['default', {
-                colormin: {
-                    exclude: true,
-                },
-            }],
+            browserslist: { query: 'last 2 versions, not dead' },
         }),
     ],
 };
 ```
 
-[guideadvancedtransforms]: ../advanced-transforms/
+- `browserslist.query` is a browserslist query, or an array of them.
+- `browserslist.env` names a section of the browserslist config.
+- `browserslist.stats` is a usage data file path or object, for queries such as `> 1% in my stats`.
+
+Without a `query`, cssnano reads the browserslist config that PostCSS's `from`
+option points to, and otherwise uses the Baseline widely available targets. A
+plugin cannot have its own targets, so a target option set in `options`, such as
+`overrideBrowserslist`, throws, because ignoring it would widen the targets.
+
+## Build a preset in PostCSS
+
+To build a preset yourself, import it from its subpath and add its plugins to
+the PostCSS configuration. A built preset is a list of PostCSS plugins, so
+other plugins can sit beside it:
+
+```js
+const autoprefixer = require('autoprefixer');
+const lite = require('cssnano/presets/lite');
+
+module.exports = {
+    plugins: [
+        autoprefixer(),
+        ...lite({ disable: ['discardComments'] }),
+    ],
+};
+```
+
+The subpaths are `cssnano/presets/default`, `cssnano/presets/lite` and
+`cssnano/presets/advanced`. They take the same options as cssnano, except
+`preset` and `configFile`.

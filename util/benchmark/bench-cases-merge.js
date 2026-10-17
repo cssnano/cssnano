@@ -1,4 +1,5 @@
 import { pluginCase } from './bench-case-utils.js';
+import { withTargets } from '../testHelpers.js';
 
 /* Focused merge-longhand cases: the no-op negative path (single standalone
  * shorthands, and multi-declaration rules that revert), and the concrete
@@ -99,7 +100,7 @@ export const mergeCases = {
   'merge-longhand-flow-relative-modern': pluginCase(
     'postcss-merge-longhand',
     flowRelativeBoxCSS,
-    { overrideBrowserslist: ['chrome 120'] }
+    withTargets(['chrome 120'])
   ),
   'merge-rules-dense': pluginCase(
     'postcss-merge-rules',

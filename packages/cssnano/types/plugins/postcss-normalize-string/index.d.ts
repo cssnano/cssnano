@@ -1,7 +1,13 @@
 export type Options = {
+    /**
+     * The quote to prefer for strings. (default: 'double')
+     */
     preferredQuote?: 'double' | 'single';
 };
-/** @typedef {{preferredQuote?: 'double' | 'single'}} Options */
+/**
+ * @typedef {object} Options
+ * @property {'double' | 'single'} [preferredQuote] The quote to prefer for strings. (default: 'double')
+ */
 /**
  * @param {Options} opts
  * @return {import('postcss').Plugin}

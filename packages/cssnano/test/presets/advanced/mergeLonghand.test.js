@@ -1,8 +1,8 @@
 import { test } from 'node:test';
-import { processCSSWithPresetFactory } from '../../../../../util/integrationTestHelpers.js';
 import preset from '../../../src/presets/advanced.js';
+import { processCSSFactory } from '../../../../../util/testHelpers.js';
 
-const { processCSS, passthroughCSS } = processCSSWithPresetFactory(preset);
+const { processCSS, passthroughCSS } = processCSSFactory(preset());
 
 test(
   'advanced preset drops a margin longhand overridden by a later shorthand',

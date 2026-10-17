@@ -1,9 +1,9 @@
 import { test } from 'node:test';
-import { processCSSWithPresetFactory } from '../../../../../util/integrationTestHelpers.js';
 import preset from '../../../src/presets/advanced.js';
+import { processCSSFactory } from '../../../../../util/testHelpers.js';
 
-const { passthroughCSS } = processCSSWithPresetFactory(
-  preset({ discardUnused: false })
+const { passthroughCSS } = processCSSFactory(
+  preset({ disable: ['discardUnused'] })
 );
 
 test(

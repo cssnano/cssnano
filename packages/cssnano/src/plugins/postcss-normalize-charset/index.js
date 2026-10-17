@@ -3,7 +3,8 @@ const charset = 'charset';
 const nonAscii = /[^\x00-\x7F]/v;
 
 /**
- * @typedef {{add?: boolean}} Options
+ * @typedef {object} Options
+ * @property {boolean} [add] Adds a `@charset` when the file has non-ASCII characters and no charset. (default: true; the default preset sets false)
  */
 /**
  * @param {Options} opts

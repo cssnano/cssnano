@@ -7,6 +7,7 @@ import {
   usePostCSSPlugin,
   processCSSFactory,
   repositoryFile,
+  withTargets,
 } from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-normalize-unicode/index.js';
 
@@ -28,7 +29,7 @@ test(
   processCSS(
     '@font-face{font-family:test;UNICODE-RANGE:U+07-F}*{font-family:test}',
     '@font-face{font-family:test;UNICODE-RANGE:u+7-f}*{font-family:test}',
-    { overrideBrowserslist: ['defaults', 'not ie <=11'] }
+    withTargets(['defaults', 'not ie <=11'])
   )
 );
 
@@ -40,9 +41,10 @@ test('should update raw values on cache hits', async () => {
   for (const decl of declarations) {
     decl.raws.value = { raw: decl.value, value: decl.value };
   }
-  await postcss(
-    plugin({ overrideBrowserslist: ['defaults', 'not ie <=11'] })
-  ).process(root, { from: repositoryFile });
+  await postcss(plugin(withTargets(['defaults', 'not ie <=11']))).process(
+    root,
+    { from: repositoryFile }
+  );
   for (const decl of declarations) {
     assert.equal(decl.value, 'u+2b??');
     assert.equal(decl.raws.value.raw, 'u+2b??');
@@ -52,9 +54,11 @@ test('should update raw values on cache hits', async () => {
 
 test(
   'should upcase every range in a legacy descriptor list',
-  processCSS(fixture('u+2b00-2bff, u+1e00-1eff'), fixture('U+1e??,U+2b??'), {
-    overrideBrowserslist: 'IE 11',
-  })
+  processCSS(
+    fixture('u+2b00-2bff, u+1e00-1eff'),
+    fixture('U+1e??,U+2b??'),
+    withTargets('IE 11')
+  )
 );
 
 test(
@@ -66,46 +70,50 @@ test(
     fixture(
       ' /* before */ U+2b?? /* left */ , /* right */ U+1e?? /* after */ '
     ),
-    { overrideBrowserslist: 'IE 11' }
+    withTargets('IE 11')
   )
 );
 
 describe('Upcase', () => {
   test(
     'should upcase the "u" prefix (IE)',
-    processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
-      overrideBrowserslist: 'IE 11',
-    })
+    processCSS(
+      fixture('u+2002-2ff2'),
+      fixture('U+2002-2ff2'),
+      withTargets('IE 11')
+    )
   );
 
   test(
     'should upcase the "u" prefix (Edge 15)',
-    processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
-      overrideBrowserslist: 'Edge 15',
-    })
+    processCSS(
+      fixture('u+2002-2ff2'),
+      fixture('U+2002-2ff2'),
+      withTargets('Edge 15')
+    )
   );
 
   test(
     'should upcase the "u" prefix based on Browserslist config [legacy] env',
     processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
+      ...withTargets(undefined, { env: 'legacy' }),
       from: join(testDir, 'browserslist/example.css'),
-      env: 'legacy',
     })
   );
 
   test(
     'should upcase the "u" prefix based on Browserslist config [legacy] env using webpack file path',
     processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
+      ...withTargets(undefined, { env: 'legacy' }),
       file: join(testDir, 'browserslist/example.css'),
-      env: 'legacy',
     })
   );
 
   test(
     'should upcase the "u" prefix based on Browserslist config [legacy] env using custom path',
     processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
-      path: join(testDir, 'browserslist'),
-      env: 'legacy',
+      ...withTargets(undefined, { env: 'legacy' }),
+      from: join(join(testDir, 'browserslist'), 'input.css'),
     })
   );
 });
@@ -114,24 +122,24 @@ describe('Downcase', () => {
   test(
     'should downcase the "u" prefix based on Browserslist config [modern] env',
     processCSS(fixture('U+2002-2ff2'), fixture('u+2002-2ff2'), {
+      ...withTargets(undefined, { env: 'modern' }),
       from: join(testDir, 'browserslist/example.css'),
-      env: 'modern',
     })
   );
 
   test(
     'should downcase the "u" prefix based on Browserslist config [modern] env using webpack file path',
     processCSS(fixture('U+2002-2ff2'), fixture('u+2002-2ff2'), {
+      ...withTargets(undefined, { env: 'modern' }),
       file: join(testDir, 'browserslist/example.css'),
-      env: 'modern',
     })
   );
 
   test(
     'should downcase the "u" prefix based on Browserslist config [modern] env using custom path',
     processCSS(fixture('U+2002-2ff2'), fixture('u+2002-2ff2'), {
-      path: join(testDir, 'browserslist'),
-      env: 'modern',
+      ...withTargets(undefined, { env: 'modern' }),
+      from: join(join(testDir, 'browserslist'), 'input.css'),
     })
   );
 });

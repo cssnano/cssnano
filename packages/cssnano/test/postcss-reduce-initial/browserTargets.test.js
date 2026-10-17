@@ -1,5 +1,8 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-reduce-initial/index.js';
 
 const { processCSS } = processCSSFactory(plugin);
@@ -12,9 +15,7 @@ describe('reduce-initial browser targets', () => {
   for (const query of ['ie 8', 'ie 11', 'defaults', 'op_mini all']) {
     test(
       `keeps transparent and the initial keyword for ${query}, which lacks css-initial-value`,
-      processCSS(input, input, {
-        overrideBrowserslist: query,
-      })
+      processCSS(input, input, withTargets(query))
     );
   }
 
@@ -22,26 +23,31 @@ describe('reduce-initial browser targets', () => {
   for (const query of ['ie 11', 'ie 8']) {
     test(
       `keeps the initial keyword for min-width for ${query}, which lacks css-initial-value`,
-      processCSS('a{min-width:initial}', 'a{min-width:initial}', {
-        overrideBrowserslist: query,
-      })
+      processCSS(
+        'a{min-width:initial}',
+        'a{min-width:initial}',
+        withTargets(query)
+      )
     );
   }
 
   for (const query of ['edge 15', 'last 1 chrome version', 'safari TP']) {
     test(
       `writes the initial keyword for ${query}`,
-      processCSS(input, 'a{background-color:initial;top:auto}', {
-        overrideBrowserslist: query,
-      })
+      processCSS(
+        input,
+        'a{background-color:initial;top:auto}',
+        withTargets(query)
+      )
     );
   }
 
   test(
     'writes the initial keyword when stats select only chrome 150',
-    processCSS(input, 'a{background-color:initial;top:auto}', {
-      overrideBrowserslist: '> 1%',
-      stats: { chrome: { 150: 100 } },
-    })
+    processCSS(
+      input,
+      'a{background-color:initial;top:auto}',
+      withTargets('> 1%', { stats: { chrome: { 150: 100 } } })
+    )
   );
 });

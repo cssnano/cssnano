@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 import { supportsPlaceShorthands } from '../../src/plugins/postcss-merge-longhand/lib/targetSupport.js';
 
@@ -8,7 +11,7 @@ import { supportsPlaceShorthands } from '../../src/plugins/postcss-merge-longhan
  * @param {string} overrideBrowserslist
  */
 function forTargets(overrideBrowserslist) {
-  return processCSSFactory([plugin({ overrideBrowserslist })]);
+  return processCSSFactory([plugin(withTargets(overrideBrowserslist))]);
 }
 
 describe('place-* synthesis gated on browserslist targets', () => {

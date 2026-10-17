@@ -14,7 +14,7 @@ import { page } from '../../_data/navigation.js';
       <div class="preset-picker">
         <label for="presetSelector">Choose a preset</label>
         <select id="presetSelector" aria-describedby="presetDescription">
-          {presets.map((preset) => <option value={preset.packageName}>{preset.label}</option>)}
+          {presets.map((preset) => <option value={preset.id}>{preset.label}</option>)}
         </select>
       </div>
       <button id="runButton" class="button" disabled>Minify</button>

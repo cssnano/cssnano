@@ -1,7 +1,19 @@
 export type Options = {
+    /**
+     * Discards unused font face rules. (default: true)
+     */
     fontFace?: boolean;
+    /**
+     * Discards unused counter style rules. (default: true)
+     */
     counterStyle?: boolean;
+    /**
+     * Discards unused keyframe rules. (default: true)
+     */
     keyframes?: boolean;
+    /**
+     * Discards unused namespace rules. (default: true)
+     */
     namespace?: boolean;
 };
 /**

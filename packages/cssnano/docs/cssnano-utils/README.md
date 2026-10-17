@@ -52,7 +52,7 @@ themselves.
 
 The targets come from the first of these that is set:
 
-1. the `overrideBrowserslist` option;
+1. the `browserslist.query` option;
 2. the project's browserslist config, or the `BROWSERSLIST` environment
    variable, found as browserslist finds it;
 3. `defaultTargetsQuery`, instead of browserslist's own `defaults`.

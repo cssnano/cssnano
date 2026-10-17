@@ -1,5 +1,8 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -112,15 +115,16 @@ test(
   processCSS(
     'dialog:modal{color:red}aside:modal{color:red}',
     'dialog:modal,aside:modal{color:red}',
-    { overrideBrowserslist: ['chrome 120', 'firefox 120', 'safari 16'] }
+    withTargets(['chrome 120', 'firefox 120', 'safari 16'])
   )
 );
 
 test(
   'should not merge :modal selectors when a target browser predates the dialog element',
-  passthroughCSS('dialog:modal{color:red}aside:modal{color:red}', {
-    overrideBrowserslist: ['chrome 120', 'firefox 97', 'safari 15'],
-  })
+  passthroughCSS(
+    'dialog:modal{color:red}aside:modal{color:red}',
+    withTargets(['chrome 120', 'firefox 97', 'safari 15'])
+  )
 );
 
 test(
@@ -128,7 +132,7 @@ test(
   processCSS(
     'input::file-selector-button{color:red}form input::file-selector-button{color:red}',
     'input::file-selector-button,form input::file-selector-button{color:red}',
-    { overrideBrowserslist: ['chrome 120', 'firefox 120', 'safari 16'] }
+    withTargets(['chrome 120', 'firefox 120', 'safari 16'])
   )
 );
 
@@ -137,7 +141,7 @@ test(
   processCSS(
     'input:read-only{color:red}input:read-write{color:red}',
     'input:read-only,input:read-write{color:red}',
-    { overrideBrowserslist: ['chrome 120', 'firefox 120', 'safari 16'] }
+    withTargets(['chrome 120', 'firefox 120', 'safari 16'])
   )
 );
 
@@ -146,7 +150,7 @@ test(
   processCSS(
     'input:autofill{color:red}textarea:autofill{color:red}',
     'input:autofill,textarea:autofill{color:red}',
-    { overrideBrowserslist: ['chrome 122', 'edge 122', 'safari 17'] }
+    withTargets(['chrome 122', 'edge 122', 'safari 17'])
   )
 );
 
@@ -155,22 +159,24 @@ test(
   processCSS(
     'section:fullscreen{color:red}article:fullscreen{color:red}',
     'section:fullscreen,article:fullscreen{color:red}',
-    { overrideBrowserslist: ['chrome 120', 'firefox 120', 'safari 16.4'] }
+    withTargets(['chrome 120', 'firefox 120', 'safari 16.4'])
   )
 );
 
 test(
   'should not merge :popover-open because it has no verified caniuse feature',
-  passthroughCSS('a:popover-open{color:red}b:popover-open{color:red}', {
-    overrideBrowserslist: ['chrome 140', 'firefox 140', 'safari 18.4'],
-  })
+  passthroughCSS(
+    'a:popover-open{color:red}b:popover-open{color:red}',
+    withTargets(['chrome 140', 'firefox 140', 'safari 18.4'])
+  )
 );
 
 test(
   'should not merge :user-invalid because it has no verified caniuse feature',
-  passthroughCSS('a:user-invalid{color:red}b:user-invalid{color:red}', {
-    overrideBrowserslist: ['chrome 140', 'firefox 140', 'safari 18.4'],
-  })
+  passthroughCSS(
+    'a:user-invalid{color:red}b:user-invalid{color:red}',
+    withTargets(['chrome 140', 'firefox 140', 'safari 18.4'])
+  )
 );
 
 test(

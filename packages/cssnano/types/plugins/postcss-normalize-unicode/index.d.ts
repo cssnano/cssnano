@@ -1,7 +1,6 @@
-import type { TargetOptions } from '#utils';
-export type Options = TargetOptions;
+export type Options = object;
 /**
- * @typedef {TargetOptions} Options
+ * @typedef {object} Options
  */
 /**
  * @type {import('postcss').PluginCreator<Options>}

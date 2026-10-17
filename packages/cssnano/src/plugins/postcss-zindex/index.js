@@ -1,7 +1,10 @@
 import LayerCache from './lib/layerCache.js';
 
 const zIndexRegex = /^[zZ]-[iI][nN][dD][eE][xX]$/v;
-/** @typedef {{startIndex?: number}} Options */
+/**
+ * @typedef {object} Options
+ * @property {number} [startIndex] The first positive integer z-index to assign, so z-indices from other sources can be overridden. (default: 1)
+ */
 /**
  * @param {Options} opts
  * @return {import('postcss').Plugin}

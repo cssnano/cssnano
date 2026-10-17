@@ -1,123 +1,205 @@
 ---
 id: config-file
 title: Configuration
-description: Configure cssnano in your PostCSS configuration or in a dedicated cssnano configuration file.
+description: Configure cssnano in your PostCSS configuration or, when you cannot reach it, in a dedicated cssnano configuration file.
 ---
 
-You can configure cssnano either in the PostCSS configuration or in a dedicated cssnano configuration. The PostCSS configuration takes precedence over the dedicated cssnano configuration.
-Without configuration, cssnano runs with the `default` preset.
+Configure cssnano in the PostCSS configuration whenever you can. That is also
+where you add other PostCSS plugins. If your framework adds cssnano and you
+cannot edit the PostCSS configuration, use a dedicated cssnano configuration
+file instead. Without any configuration, cssnano runs the `default` preset.
 
-## Configuration files
-### Configure through the PostCSS configuration
+## Choose a preset
 
-In the [PostCSS configuration](https://github.com/postcss/postcss#usage), you can pass both the `preset` and `plugins` options when you add `cssnano` to the PostCSS plugins. For example, if you use PostCSS programmatically, the following uses cssnano with the `lite` preset and adds the autoprefixer plugin. No cssnano preset includes autoprefixer, so install it yourself if you need it.
+A preset is a function that you import from cssnano, not a name. Pass the
+imported function as the `preset` option:
+
+```js
+import postcss from 'postcss';
+import cssnano from 'cssnano';
+import lite from 'cssnano/presets/lite';
+
+postcss([
+  cssnano({ preset: lite }),
+]).process('/* Your CSS here */');
+```
+
+The presets are `cssnano/presets/default`, `cssnano/presets/lite` and
+`cssnano/presets/advanced`. Without a preset, cssnano runs the default preset,
+and `disable` and `options` name its plugins. It rejects a string such as
+`'lite'`.
+
+## Configure through the PostCSS configuration
+
+Pass the options when you add cssnano to the PostCSS plugins. The following runs
+the `lite` preset, with the comments kept, and adds autoprefixer. No cssnano
+preset includes autoprefixer, so install it yourself:
 
 ```js
 import postcss from 'postcss';
 import cssnano from 'cssnano';
 import autoprefixer from 'autoprefixer';
+import lite from 'cssnano/presets/lite';
 
-postcss([cssnano({ preset: ['lite', { discardComments: false }], plugins: [autoprefixer] })])
-  .process("/* Your CSS here */");
+postcss([
+  cssnano({ preset: lite }),
+  autoprefixer,
+]).process('/* Your CSS here */');
 ```
 
-### Configure through a dedicated cssnano configuration
-
-You can configure cssnano with a dedicated configuration, for example if you cannot access the PostCSS configuration file. The cssnano configuration can be in different formats:
-
-* a JSON (JavaScript Object Notation) file named `.cssnanorc.json`
-* a JavaScript file named `cssnano.config.js`
-
-cssnano checks these files in the order listed, in the current working
-directory only.  Only `.cssnanorc.json` and `cssnano.config.js` are
-discovered automatically: use the `configFile` option
-to select a configuration file in another directory. The path may be relative
-to the current working directory or absolute, and you may use ESM (ECMAScript modules) and TypeScript configuration files.
-
-ESM configuration files and TypeScript files loaded as ESM must use a default
-export. A `.ts` file follows the nearest `package.json` module type. In a
-CommonJS project, use `.mts` for a TypeScript configuration with a default
-export, or use CommonJS exports from `.ts`:
+PostCSS runs the plugins in the order you list them. A built preset is also a
+list of PostCSS plugins, so you can compose one with others in the PostCSS
+configuration:
 
 ```js
-// cssnano.config.mjs, cssnano.config.mts, or cssnano.config.ts in an ESM project
-export default { preset: 'lite' };
-```
+import lite from 'cssnano/presets/lite';
 
-```js
-// cssnano.config.ts in a CommonJS project
-module.exports = { preset: 'lite' };
-```
-
-TypeScript files only support the TypeScript language features usable with Node.js built-in type stripping.
-
-
-## Configuration options
-
-### Choose a preset
-
-- **option:** `preset` 
--  **type:** `string` | `function` | `[string, Objects<preset options here>]` | `[function(preset options here)]`
-
-Pass a preset to choose a pre-configured set of optimizations. The presets
-`default`, `lite`, and `advanced` are built into cssnano, so you select them by
-name without installing anything else:
-
-```js
-cssnano({ preset: 'lite' })
-```
-
-Using a string is also how you choose a preset in a `.cssnanorc.json` file.
-See [the presets guide](../presets/) for how cssnano resolves these names when
-a `cssnano-preset-*` package is also installed in your project.
-
-For any other preset, pass a name that points to a resolvable node module, or
-pass the preset function itself:
-
-```js
-cssnano({ preset: 'my-custom-preset' })
-cssnano({ preset: require('my-custom-preset') })
-```
-
-### Disable a plugin included in a preset
-You can disable one or more of the plugins used in a preset.
-Pass an array where the first element is the preset and the second is an object with the preset options. 
-For example, here's how to deactivate the `discardComments` plugin when using the `advanced` preset:
-
-```js
-// cssnano.config.js
-module.exports = {
-  preset: ['advanced', { discardComments: false }]
+export default {
+  plugins: [autoprefixer(), ...lite({ disable: ['discardComments'] })],
 };
 ```
 
+## Use a dedicated configuration file
 
-### Use individual plugins
-
-- **option:** `plugins`
-- **type:** `Array<function | string | [function | string, Object<Options for the plugin here>]>`
-
-You can pass PostCSS plugins to cssnano in the PostCSS configuration. cssnano
-runs them after the plugins of the preset. Pass the plugin function, or an
-array of the plugin function and its options:
+Use a configuration file when the PostCSS configuration is out of reach. cssnano
+reads only `cssnano.config.js` from the current working directory. It is a
+JavaScript or TypeScript module, as an ES module or a CommonJS module. An ES
+module must have a default export:
 
 ```js
-import cssnano from 'cssnano';
-import autoprefixer from 'autoprefixer';
+// cssnano.config.js in an ESM project
+import lite from 'cssnano/presets/lite';
 
-cssnano({
-  preset: 'default',
-  plugins: [[autoprefixer, { remove: false }]],
-});
+export default { preset: lite };
 ```
 
-Always set `preset` together with `plugins`: when you pass `plugins` without a
-`preset`, cssnano runs only the listed plugins and skips both the default
-preset and any configuration file, so the CSS is not minified.
+cssnano does not search parent directories, and it ignores the `cssnano` key of
+`package.json`. To use another file, pass its path to the `configFile` option.
+The path is relative to the current working directory, or absolute. ESM
+configuration files must use a default export, and top-level `await` is not
+supported.
 
-Pass plugin functions rather than package names. cssnano resolves a name such
-as `'autoprefixer'` from its own installation directory, not from your project,
-so the name may fail to load, for example with pnpm.
+Configuration files are JavaScript because a preset is a function. JSON cannot
+hold one, so cssnano does not read JSON configuration files. A `configFile` that
+ends in `.json` throws, and a `.cssnanorc.json` in the working directory throws
+when cssnano looks for a configuration file, because it does not read it. With
+`configFile` or an inline option, cssnano does not look.
 
-The `.cssnanorc.json` and `cssnano.config.js` files only support the `preset`
-option. To add plugins, configure them in the PostCSS configuration instead.
+A configuration file can hold function-valued options:
+
+```js
+// cssnano.config.js
+import lite from 'cssnano/presets/lite';
+
+/** @type {import('cssnano').Config} */
+export default {
+  preset: lite,
+  options: {
+    discardComments: { remove: (comment) => comment.startsWith('!') },
+  },
+};
+```
+
+A configuration file has these limits:
+
+* It is replaced by the inline options, and it does not merge with them. When you
+  pass any option inline, including `browserslist`, cssnano does not read the
+  file. `configFile` cannot be given with an inline option.
+* A file whose `preset` is not an imported preset throws. Without a preset, the
+  default preset runs.
+* An unknown or removed key throws and names the file.
+* Add other PostCSS plugins to the PostCSS configuration. A `plugins` key
+  throws.
+
+## Options
+
+cssnano takes these options inline and in a configuration file. The
+configuration file takes the same options, except `configFile`.
+
+### `preset`
+
+- **type:** a preset imported from `cssnano/presets/default`, `cssnano/presets/lite` or `cssnano/presets/advanced`
+- **default:** the default preset
+
+Chooses the set of optimisations. See [the presets guide](../presets/) for
+what each preset runs.
+
+```js
+import lite from 'cssnano/presets/lite';
+
+cssnano({ preset: lite });
+```
+
+### `disable`
+
+- **type:** `string[]`
+
+Plugin names to leave out, such as `['colormin']`. A name in both `disable` and
+`options` is an error. A plugin name counts only when the preset runs that
+plugin, so a name that the preset does not run throws. Without a preset, the
+names are those of the default preset.
+
+### `options`
+
+- **type:** `{ [plugin]: object }`
+
+The options of each plugin, merged over the plugin's defaults.
+
+```js
+import defaultPreset from 'cssnano/presets/default';
+
+cssnano({ preset: defaultPreset, options: { discardComments: { removeAll: true } } });
+```
+
+### `browserslist`
+
+- **type:** `{ query?, env?, stats?, path?, config?, ignoreUnknownVersions?, mobileToDesktop?, throwOnMissing? }`
+
+The browser targets that every plugin uses. These are browserslist's options
+under their browserslist names: `query` is the queries argument, `env` names a
+section of the browserslist config, and `stats` is usage data for queries such
+as `> 1% in my stats`. `path` is the directory to search for the config, and
+defaults to the PostCSS `from` option. `config` names the config file to read.
+An unset setting is left to browserslist. An unknown key throws. Like every
+inline option, inline `browserslist` replaces the configuration file, so the
+file's preset and plugin options do not apply either.
+
+`dangerousExtend` is refused, because it lets a browserslist config extend any
+package.
+
+```js
+import defaultPreset from 'cssnano/presets/default';
+
+cssnano({ preset: defaultPreset, browserslist: { query: 'ie 11' } });
+```
+
+### `configFile`
+
+- **type:** `string`, not empty
+
+The path of a configuration file to use instead of the discovered one. It cannot
+be combined with other inline options.
+
+```js
+cssnano({ configFile: 'config/cssnano.config.js' });
+```
+
+Any inline option, `browserslist` included, replaces the configuration file
+entirely: cssnano does not read the file, and it does not merge the file with the
+inline options.
+
+## Removed options
+
+cssnano 10 removed these. A configuration that still uses `svgo` throws, and the
+message names the replacement: run [postcss-svgo](https://github.com/cssnano/cssnano/tree/main/packages/postcss-svgo)
+before cssnano.
+
+A `plugins` key throws, because the plugins it names would not run. Add PostCSS
+plugins to the PostCSS configuration instead.
+
+A configuration that still uses `overrideBrowserslist`, `env`, `stats` or `path`,
+inline or in a plugin's options, throws, because ignoring it would widen the
+browser targets. Use `browserslist` instead; `path` is now `browserslist.path`.
+
+A preset name such as `'lite'` is not a removed option but a rejected value, so
+cssnano throws. Import the preset from `cssnano/presets/lite` instead.

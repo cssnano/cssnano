@@ -1,6 +1,10 @@
 /**
  * @typedef {'length' | 'time' | 'angle' | 'frequency'} ConvertOption
- * @typedef {{time?: boolean, length?: boolean, angle?: boolean, frequency?: boolean}} ConvertOptions
+ * @typedef {object} ConvertOptions
+ * @property {boolean} [time] Converts between `ms` and `s`. (default: true)
+ * @property {boolean} [length] Converts among `px`, `pt`, `pc` and `in`; `cm` and `mm` always convert. The default preset sets it to false. (default: true)
+ * @property {boolean} [angle] Converts between `deg` and `turn`. (default: true)
+ * @property {boolean} [frequency] Converts between `Hz` and `kHz`. (default: true)
  * @typedef {{
  *   option?: ConvertOption,
  *   factors: Map<string, number>,

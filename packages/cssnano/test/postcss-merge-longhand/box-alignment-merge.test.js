@@ -1,10 +1,13 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 
 // Targets that all support place-*, so only the alignment grammar decides.
 const { passthroughCSS, processCSS } = processCSSFactory([
-  plugin({ overrideBrowserslist: 'chrome 120, firefox 120, safari 17' }),
+  plugin(withTargets('chrome 120, firefox 120, safari 17')),
 ]);
 
 describe('paired box alignment shorthand merging', () => {

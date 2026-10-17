@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { decl } from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 import {
   alignmentFamilies,
@@ -10,7 +13,7 @@ import {
 
 // Targets that all support place-*, so only the alignment grammar decides.
 const { passthroughCSS, processCSS } = processCSSFactory([
-  plugin({ overrideBrowserslist: 'chrome 120, firefox 120, safari 17' }),
+  plugin(withTargets('chrome 120, firefox 120, safari 17')),
 ]);
 
 describe('box alignment merging fail-closed contracts', () => {

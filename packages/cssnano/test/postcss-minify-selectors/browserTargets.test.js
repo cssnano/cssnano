@@ -1,5 +1,8 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
 
 const { processCSS } = processCSSFactory(plugin);
@@ -13,22 +16,23 @@ describe('minify-selectors browser targets', () => {
   for (const query of ['ie 8', 'ie 11', 'edge 15', 'defaults', 'op_mini all']) {
     test(
       `keeps the unfolded selector list for ${query}, which lacks :is()`,
-      processCSS(input, unfolded, { overrideBrowserslist: query })
+      processCSS(input, unfolded, withTargets(query))
     );
   }
 
   for (const query of ['last 1 chrome version', 'safari TP']) {
     test(
       `folds the selector list into :is() for ${query}`,
-      processCSS(input, folded, { overrideBrowserslist: query })
+      processCSS(input, folded, withTargets(query))
     );
   }
 
   test(
     'folds the selector list when stats select only chrome 150',
-    processCSS(input, folded, {
-      overrideBrowserslist: '> 1%',
-      stats: { chrome: { 150: 100 } },
-    })
+    processCSS(
+      input,
+      folded,
+      withTargets('> 1%', { stats: { chrome: { 150: 100 } } })
+    )
   );
 });

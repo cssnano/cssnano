@@ -1,8 +1,8 @@
 import { test } from 'node:test';
-import { processCSSWithPresetFactory } from '../../../../../util/integrationTestHelpers.js';
 import preset from '../../../src/presets/lite.js';
+import { processCSSFactory } from '../../../../../util/testHelpers.js';
 
-const { processCSS } = processCSSWithPresetFactory(preset);
+const { processCSS } = processCSSFactory(preset());
 
 test('Simple test', processCSS('h1 { } ', ''));
 

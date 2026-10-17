@@ -17,8 +17,11 @@ cssnano is a modular CSS minifier built on PostCSS and pnpm workspaces:
   - `src/utils/stylehacks/` holds the browser-hack detectors that
     postcss-merge-longhand uses. It is not a PostCSS plugin.
   - `src/utils/` holds the shared CSS parsing and manipulation utilities.
-  - Code in `packages/cssnano` imports its own modules through private `#`
-    specifiers declared in its `package.json` `imports`, such as `#utils`.
+  - Code in `packages/cssnano` imports neighbouring modules by relative path.
+    Add a private `#` specifier to `package.json` `imports` only when it offers
+    a concrete advantage: a subsystem entry point reached from many distant
+    directories (`#utils`, `#stylehacks`, `#postcss-*`), or a module that tests,
+    scripts or `util/` would otherwise reach through `../../src/` paths.
 - `packages/postcss-svgo` is a separate package with its own helper copies.
 - `util` contains shared test, integration, fuzzing, build, and benchmark support;
   benchmarking utilities live under `util/benchmark/`.
@@ -45,7 +48,7 @@ Every change should make the intended CSS transformation clearer while preservin
 
 ## Durable conventions
 
-- Use Node’s built-in `test` module for repository package tests and the shared helpers. Plugin tests use `processCSSFactory()` from `util/testHelpers.js`; preset tests use `processCSSWithPresetFactory()` or `createCssnanoProcessor()` from `util/integrationTestHelpers.js`.
+- Use Node’s built-in `test` module for repository package tests and the shared helpers. Plugin and preset tests use `processCSSFactory()` from `util/testHelpers.js`, and preset tests that need a processor call `postcss()` directly.
 - Tests that assert wall-clock time or asymptotic scaling, and fuzz or exhaustive sweeps that take about a second or more, go in `packages/<pkg>/perf/` (plain `.js`, not `*.test.js`; plugin perf files live in `packages/cssnano/perf/<name>/`), so `node --test` and the coverage run skip them; run them with the `test:performance` script. Keep correctness assertions in `test/`.
 - Keep package tests under `test/` and follow the existing filename convention for the package or subsystem (`*.js` and `*.test.js` are both present). Use `describe()` when it improves source readability without disturbing unrelated test order.
 - Keep test-suite nesting shallow; avoid wrapping descriptive suites in redundant package- or preset-level suites.

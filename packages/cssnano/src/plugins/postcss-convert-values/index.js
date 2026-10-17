@@ -2,12 +2,10 @@ import { resolveTargets } from '#utils/browser-targets';
 import { anyAffected } from '#utils/browser-bugs';
 import transform from './lib/transform.js';
 
-/** @import {TargetOptions} from '#utils' */
-
 const plugin = 'postcss-convert-values';
 
 /**
- * @typedef {import('./lib/findReplacements.js').Options & TargetOptions} Options
+ * @typedef {import('./lib/findReplacements.js').Options} Options
  */
 
 /** @param {Options} opts @return {import('postcss').Plugin} */

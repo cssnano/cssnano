@@ -4,6 +4,7 @@ import { describe, test } from 'node:test';
 import {
   usePostCSSPlugin,
   processCSSFactory,
+  withTargets,
 } from '../../../../util/testHelpers.js';
 import fromInitial from '../../src/plugins/postcss-reduce-initial/data/fromInitial.json' with { type: 'json' };
 import toInitial from '../../src/plugins/postcss-reduce-initial/data/toInitial.json' with { type: 'json' };
@@ -16,9 +17,7 @@ const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 // The repo's own browserslist config targets IE 11, which lacks the initial
 // keyword, so the conversions below pin the default targets explicitly.
-const defaultTargets = {
-  overrideBrowserslist: 'baseline widely available with downstream',
-};
+const defaultTargets = withTargets('baseline widely available with downstream');
 
 function convertInitial(property, value) {
   return processCSS(
@@ -33,42 +32,42 @@ function convertToInitial(property, value) {
 
   return () =>
     Promise.all([
-      processCSS(`${property}:${value}`, `${property}:${output}`, {
-        overrideBrowserslist: 'Chrome 58',
-      })(),
+      processCSS(
+        `${property}:${value}`,
+        `${property}:${output}`,
+        withTargets('Chrome 58')
+      )(),
 
-      passthroughCSS(`${property}:${value}`, {
-        overrideBrowserslist: 'IE 6',
-      })(),
+      passthroughCSS(`${property}:${value}`, withTargets('IE 6'))(),
 
       processCSS(`${property}:${value}`, `${property}:${output}`, {
+        ...withTargets(undefined, { env: 'modern' }),
         from: join(testDir, 'browserslist/example.css'),
-        env: 'modern',
       })(),
 
       processCSS(`${property}:${value}`, `${property}:${output}`, {
+        ...withTargets(undefined, { env: 'modern' }),
         file: join(testDir, 'browserslist/example.css'),
-        env: 'modern',
       })(),
 
       processCSS(`${property}:${value}`, `${property}:${output}`, {
-        path: join(testDir, 'browserslist'),
-        env: 'modern',
+        ...withTargets(undefined, { env: 'modern' }),
+        from: join(join(testDir, 'browserslist'), 'input.css'),
       })(),
 
       passthroughCSS(`${property}:${value}`, {
+        ...withTargets(undefined, { env: 'legacy' }),
         from: join(testDir, 'browserslist/example.css'),
-        env: 'legacy',
       })(),
 
       passthroughCSS(`${property}:${value}`, {
+        ...withTargets(undefined, { env: 'legacy' }),
         file: join(testDir, 'browserslist/example.css'),
-        env: 'legacy',
       })(),
 
       passthroughCSS(`${property}:${value}`, {
-        path: join(testDir, 'browserslist'),
-        env: 'legacy',
+        ...withTargets(undefined, { env: 'legacy' }),
+        from: join(join(testDir, 'browserslist'), 'input.css'),
       })(),
     ]);
 }
@@ -103,7 +102,7 @@ describe('Border-Block-Color:', () => {
     processCSS(
       'border-block-color: currentColor',
       'border-block-color: initial',
-      { overrideBrowserslist: 'Chrome 58' }
+      withTargets('Chrome 58')
     )
   );
 
@@ -112,7 +111,7 @@ describe('Border-Block-Color:', () => {
     processCSS(
       'BORDER-BLOCK-COLOR: CURRENTCOLOR',
       'BORDER-BLOCK-COLOR: initial',
-      { overrideBrowserslist: 'Chrome 58' }
+      withTargets('Chrome 58')
     )
   );
 });
@@ -156,9 +155,7 @@ test(
    but MDN has the wrong data so  */
 test(
   'preserve no-repeat mask-repeat',
-  passthroughCSS('div{mask-repeat:no-repeat}', {
-    overrideBrowserslist: 'Chrome 58',
-  })
+  passthroughCSS('div{mask-repeat:no-repeat}', withTargets('Chrome 58'))
 );
 
 test(

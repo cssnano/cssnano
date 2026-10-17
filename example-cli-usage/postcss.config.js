@@ -1,3 +1,3 @@
 module.exports = {
-  plugins: [require('cssnano')({ preset: 'default' })],
+  plugins: [require('cssnano')({ preset: require('cssnano/presets/default') })],
 };

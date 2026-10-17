@@ -1,7 +1,13 @@
 export type Options = {
+    /**
+     * The first positive integer z-index to assign, so z-indices from other sources can be overridden. (default: 1)
+     */
     startIndex?: number;
 };
-/** @typedef {{startIndex?: number}} Options */
+/**
+ * @typedef {object} Options
+ * @property {number} [startIndex] The first positive integer z-index to assign, so z-indices from other sources can be overridden. (default: 1)
+ */
 /**
  * @param {Options} opts
  * @return {import('postcss').Plugin}

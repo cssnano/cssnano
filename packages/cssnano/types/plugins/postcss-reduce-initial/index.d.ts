@@ -1,10 +1,12 @@
-import type { TargetOptions } from '#utils';
 export type Options = {
+    /**
+     * Properties that keep their value, such as `min-height`. (default: none)
+     */
     ignore?: string[];
-} & TargetOptions;
+};
 /**
- * @import {TargetOptions} from '#utils'
- * @typedef {{ignore?: string[]} & TargetOptions} Options
+ * @typedef {object} Options
+ * @property {string[]} [ignore] Properties that keep their value, such as `min-height`. (default: none)
  */
 /**
  * @param {Options} options

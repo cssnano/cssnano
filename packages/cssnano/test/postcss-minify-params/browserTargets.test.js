@@ -1,5 +1,8 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-minify-params/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -10,7 +13,7 @@ describe('minify-params browser targets', () => {
   // IE 11 misparses a media query without `all`, so the keyword stays.
   test(
     'keeps the all keyword for ie 11, which has the media all bug',
-    passthroughCSS(input, { overrideBrowserslist: 'ie 11' })
+    passthroughCSS(input, withTargets('ie 11'))
   );
 
   for (const query of [
@@ -22,15 +25,16 @@ describe('minify-params browser targets', () => {
   ]) {
     test(
       `drops the all keyword for ${query}`,
-      processCSS(input, '@media{a{color:red}}', { overrideBrowserslist: query })
+      processCSS(input, '@media{a{color:red}}', withTargets(query))
     );
   }
 
   test(
     'drops the all keyword when stats select only chrome 150',
-    processCSS(input, '@media{a{color:red}}', {
-      overrideBrowserslist: '> 1%',
-      stats: { chrome: { 150: 100 } },
-    })
+    processCSS(
+      input,
+      '@media{a{color:red}}',
+      withTargets('> 1%', { stats: { chrome: { 150: 100 } } })
+    )
   );
 });

@@ -6,7 +6,7 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { resolveTargets } from '../../src/utils/browserTargets.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
-import { repositoryFile } from '../../../../util/testHelpers.js';
+import { repositoryFile, withTargets } from '../../../../util/testHelpers.js';
 
 const longhands = 'a{align-items:center;justify-items:start}';
 
@@ -39,20 +39,18 @@ describe('Browserslist options of the place-* gate', () => {
     assert.equal(await run({}, { from: join(dir, 'in.css') }), longhands);
   });
 
-  test('prefers path over the location of from', async () => {
-    const old = projectWith('safari 10.1\n');
-    const modern = projectWith('chrome 120\n');
-    assert.equal(
-      await run({ path: modern }, { from: join(old, 'in.css') }),
-      'a{place-items:center start}'
-    );
-  });
-
   test('selects the browserslist environment given as env', async () => {
     const dir = projectWith('[legacy]\nsafari 10.1\n[modern]\nchrome 120\n');
-    assert.equal(await run({ path: dir, env: 'legacy' }), longhands);
     assert.equal(
-      await run({ path: dir, env: 'modern' }),
+      await run(withTargets(undefined, { env: 'legacy' }), {
+        from: join(dir, 'input.css'),
+      }),
+      longhands
+    );
+    assert.equal(
+      await run(withTargets(undefined, { env: 'modern' }), {
+        from: join(dir, 'input.css'),
+      }),
       'a{place-items:center start}'
     );
   });
@@ -60,10 +58,7 @@ describe('Browserslist options of the place-* gate', () => {
   test('resolves a coverage query against the given usage stats', async () => {
     const modernOnly = { chrome: { 120: 100 }, safari: { 10.1: 0 } };
     assert.equal(
-      await run({
-        overrideBrowserslist: '> 50% in my stats',
-        stats: modernOnly,
-      }),
+      await run(withTargets('> 50% in my stats', { stats: modernOnly })),
       'a{place-items:center start}'
     );
   });
@@ -71,18 +66,14 @@ describe('Browserslist options of the place-* gate', () => {
   test('takes stats from the PostCSS options when the plugin has none', async () => {
     const legacyOnly = { safari: { 10.1: 100 } };
     assert.equal(
-      await run(
-        { overrideBrowserslist: '> 50% in my stats' },
-        { stats: legacyOnly }
-      ),
+      await run(withTargets('> 50% in my stats'), { stats: legacyOnly }),
       longhands
     );
   });
 
-  test('resolves the targets from the overrideBrowserslist option', () => {
-    assert.deepEqual(
-      resolveTargets({ overrideBrowserslist: 'chrome 120' }, undefined),
-      ['chrome 120']
-    );
+  test('resolves the targets from the query of the preset targets', () => {
+    assert.deepEqual(resolveTargets(withTargets('chrome 120'), undefined), [
+      'chrome 120',
+    ]);
   });
 });

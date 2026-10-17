@@ -1,5 +1,8 @@
 import { test, suite } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
 
 const { processCSS } = processCSSFactory(plugin);
@@ -8,7 +11,7 @@ const { processCSS } = processCSSFactory(plugin);
 // :is() folding (issue #1703)
 // ---------------------------------------------------------------------------
 
-const modernBl = { overrideBrowserslist: 'last 2 Chrome versions' };
+const modernBl = withTargets('last 2 Chrome versions');
 
 suite('fold that fires', () => {
   test(
