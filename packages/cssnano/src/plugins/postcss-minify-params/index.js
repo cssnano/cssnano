@@ -2,15 +2,12 @@ import { resolveTargets } from '#utils/browser-targets';
 import { anyAffected } from '#utils/browser-bugs';
 import transform from './lib/transform.js';
 
-/** @import {TargetOptions} from '#utils' */
-
 /**
- * @typedef {TargetOptions} Options
+ * @typedef {object} Options
  */
 
 /**
- * @type {import('postcss').PluginCreator<Options>}
- * @param {Options} options
+ * @param {Options} [options]
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(options = {}) {

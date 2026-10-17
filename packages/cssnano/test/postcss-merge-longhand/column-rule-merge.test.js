@@ -1,16 +1,19 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 
 // Targets that all support the shorthands, so only the grammar decides.
 const modern = processCSSFactory([
-  plugin({ overrideBrowserslist: 'chrome 120, firefox 120, safari 17' }),
+  plugin(withTargets('chrome 120, firefox 120, safari 17')),
 ]);
 const { passthroughCSS, processCSS } = modern;
 
 /** @param {string} browsers */
 function targeting(browsers) {
-  return processCSSFactory([plugin({ overrideBrowserslist: browsers })]);
+  return processCSSFactory([plugin(withTargets(browsers))]);
 }
 
 describe('column-rule longhand merging', () => {

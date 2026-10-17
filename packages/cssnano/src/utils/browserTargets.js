@@ -1,14 +1,40 @@
 import defaultBrowserslist from 'browserslist';
 import { agents } from 'caniuse-lite/dist/unpacker/agents.js';
-import { reportIgnoredTargetOptions } from './ignoredTargetOptions.js';
 import { versionSeparator } from './versions.js';
+import workingDirectory from './workingDirectory.js';
 
-/** @import {TargetOptions} from './index.js' */
 /** @import {Result} from 'postcss' */
 
 /**
- * @typedef {((query: TargetOptions['overrideBrowserslist'], options: {stats?: TargetOptions['stats'], path?: string, env?: string}) => string[]) & {loadConfig: (options: {path?: string, env?: string}) => string | string[] | undefined}} Browserslist
+ * The browser targets a preset gives every target-reading plugin. The fields
+ * are the options of browserslist; an unset one is left to browserslist.
+ * @typedef {object} SharedTargets
+ * @property {string | string[]} [query] the positional queries of browserslist
+ * @property {string} [env]
+ * @property {string | Record<string, Record<string, number>> | {dataByBrowser: Record<string, Record<string, number>>}} [stats]
+ * @property {string} [path] the directory to search for the config, default the PostCSS from
+ * @property {string} [config] the config file to read instead of the one found
+ * @property {boolean} [ignoreUnknownVersions]
+ * @property {boolean} [mobileToDesktop]
+ * @property {boolean} [throwOnMissing]
  */
+
+/**
+ * The options of a plugin that reads the browser targets. Only a preset sets
+ * browserTargets, so a plugin that runs alone has none and uses the defaults.
+ * @typedef {{[browserTargets]?: SharedTargets}} TargetOptions
+ */
+
+/**
+ * @typedef {((query: SharedTargets['query'], options: Omit<SharedTargets, 'query'>) => string[]) & {loadConfig: (options: Pick<SharedTargets, 'path' | 'env' | 'config'>) => string | string[] | undefined}} Browserslist
+ */
+
+/**
+ * Key under which a preset gives every target-reading plugin the browser
+ * targets it was configured with. A symbol keeps them out of the plugin
+ * options a user writes, so only a preset can set them.
+ */
+export const browserTargets = Symbol('cssnano.browserTargets');
 
 /**
  * The targets when the user states no preference: browsers that support
@@ -71,7 +97,7 @@ function frozenCopyOf(list) {
 /**
  * Stats objects are keyed by identity, because serializing a large object on
  * every lookup would cost more than the browserslist call it saves.
- * @param {TargetOptions['stats']} stats
+ * @param {SharedTargets['stats']} stats
  * @return {string | number | null}
  */
 function statsKey(stats) {
@@ -83,20 +109,6 @@ function statsKey(stats) {
     statsIds.set(stats, id);
   }
   return id;
-}
-
-/**
- * Browserslist searches the config upwards from a file or a directory. A
- * browser, a partial process shim, or a deleted working directory (as in a
- * long-running watcher) has none to offer.
- * @return {string | undefined}
- */
-function workingDirectory() {
-  try {
-    return globalThis.process?.cwd();
-  } catch {
-    return undefined;
-  }
 }
 
 /**
@@ -189,13 +201,49 @@ function warnMissingFromCaniuse(result, targets) {
 }
 
 /**
- * Resolves the targets for one plugin, with the same option precedence as
- * browserslist: plugin options win over the postcss options, and the override
- * query wins over the project config. Without either, the targets are the
- * default ones rather than browserslist's own `defaults`. A query that
- * matches no browser yields an empty list and a warning on the result.
- * Without a result there is no file to share with, so nothing is cached.
- * @param {TargetOptions} options
+ * The directory that browserslist searches for a config: the browserslist path,
+ * else the PostCSS from or file, else the working directory.
+ * @param {SharedTargets | undefined} shared
+ * @param {{from?: string, file?: string}} resultOptions
+ * @return {string | undefined} undefined where there is no working directory
+ */
+function searchPathOf(shared, resultOptions) {
+  return (
+    shared?.path ??
+    (resultOptions.from || resultOptions.file || workingDirectory())
+  );
+}
+
+/**
+ * Two plugins share their targets when every input of the resolution matches.
+ * @param {SharedTargets | undefined} shared
+ * @param {string | undefined} path
+ * @param {string | undefined} env
+ * @param {SharedTargets['stats']} stats
+ * @return {string}
+ */
+function cacheKeyOf(shared, path, env, stats) {
+  return JSON.stringify([
+    shared?.query ?? null,
+    path ?? null,
+    env ?? null,
+    statsKey(stats),
+    shared?.config ?? null,
+    shared?.ignoreUnknownVersions ?? null,
+    shared?.mobileToDesktop ?? null,
+    shared?.throwOnMissing ?? null,
+  ]);
+}
+
+/**
+ * Resolves the targets for one plugin. The preset's targets are the only ones
+ * a plugin takes, and the query wins over the project config. The config is
+ * searched from the browserslist `path`, else the PostCSS `from` option, and
+ * read from the browserslist `config` when that is set. Without a query, the
+ * targets are the default ones rather than browserslist's own `defaults`. A
+ * query that matches no browser yields an empty list and a warning on the
+ * result. Without a result there is no file to share with, so nothing is cached.
+ * @param {object} options the plugin options, which may hold a preset's targets
  * @param {Result | undefined} result
  * @param {Browserslist} [browserslist]
  * @return {readonly string[]}
@@ -203,43 +251,44 @@ function warnMissingFromCaniuse(result, targets) {
 export function resolveTargets(
   options,
   result,
-  browserslist = defaultBrowserslist
+  // browserslist unwraps dataByBrowser at runtime, which its own types omit.
+  browserslist = /** @type {Browserslist} */ (defaultBrowserslist)
 ) {
   const resultOptions =
-    /** @type {TargetOptions & {from?: string, file?: string}} */ (
+    /** @type {{env?: string, stats?: SharedTargets['stats'], from?: string, file?: string}} */ (
       result?.opts || {}
     );
-  // In a preset, the options hold the preset's targets, which replaced any
-  // the user set on the plugin.
-  reportIgnoredTargetOptions(options, result);
-  const stats = options.stats || resultOptions.stats;
-  const env = options.env || resultOptions.env;
-  const path =
-    options.path ||
-    resultOptions.from ||
-    resultOptions.file ||
-    workingDirectory();
-  const key = JSON.stringify([
-    options.overrideBrowserslist ?? null,
-    path,
-    env ?? null,
-    statsKey(stats),
-  ]);
+  const shared = /** @type {TargetOptions} */ (options)[browserTargets];
+  const query = shared?.query;
+  const config = shared?.config;
+  // The preset's env and stats win over the result's.
+  const env = shared?.env ?? resultOptions.env;
+  const stats = shared?.stats ?? resultOptions.stats;
+  const path = searchPathOf(shared, resultOptions);
+  const key = cacheKeyOf(shared, path, env, stats);
 
   const entries = result ? entriesFor(result) : undefined;
   let targets = entries?.get(key);
   if (targets === undefined) {
-    const resolveOptions = { stats, path, env };
-    const query =
-      options.overrideBrowserslist ??
-      browserslist.loadConfig({ path, env }) ??
+    const resolveOptions = {
+      env,
+      stats,
+      path,
+      config,
+      ignoreUnknownVersions: shared?.ignoreUnknownVersions,
+      mobileToDesktop: shared?.mobileToDesktop,
+      throwOnMissing: shared?.throwOnMissing,
+    };
+    const resolvedQuery =
+      query ??
+      browserslist.loadConfig({ path, env, config }) ??
       defaultTargetsQuery;
     // Browserslist caches its array, so other tools may hold it. Freezing that
     // array would break them; cssnano takes a frozen copy instead.
-    targets = frozenCopyOf(browserslist(query, resolveOptions));
+    targets = frozenCopyOf(browserslist(resolvedQuery, resolveOptions));
     // An empty list keeps support-dependent optimizations off, because widening
     // it would enable transforms that the query excluded.
-    if (targets.length === 0) warnEmptyQuery(result, query);
+    if (targets.length === 0) warnEmptyQuery(result, resolvedQuery);
     else warnMissingFromCaniuse(result, targets);
     entries?.set(key, targets);
   }

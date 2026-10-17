@@ -26,6 +26,7 @@ import {
   parseFuzzArgs,
   runFuzz,
 } from '../../../../util/fuzzRunner.js';
+import { withTargets } from '../../../../util/testHelpers.js';
 
 /**
  * @param {string[]} selectors
@@ -213,9 +214,9 @@ function verifyTransform(item, legacy, current) {
     ? `${normalizedSelector},b{color:red}`
     : `${normalizedSelector}{color:red}b{color:red}`;
   // The plugin is synchronous, so `.css` is available without awaiting.
-  const actual = postcss([
-    plugin({ overrideBrowserslist: item.browsers }),
-  ]).process(parsed, { from: undefined }).css;
+  const actual = postcss([plugin(withTargets(item.browsers))]).process(parsed, {
+    from: undefined,
+  }).css;
   if (legacy !== current && hasSeparatorComment(item.selector)) return;
   if (actual !== expected) return { item, legacy, current, expected, actual };
 }
@@ -229,9 +230,9 @@ function verifyInvalid(item) {
   } catch {
     return;
   }
-  const actual = postcss([
-    plugin({ overrideBrowserslist: item.browsers }),
-  ]).process(parsed, { from: undefined }).css;
+  const actual = postcss([plugin(withTargets(item.browsers))]).process(parsed, {
+    from: undefined,
+  }).css;
   if (actual !== input) {
     return {
       item,

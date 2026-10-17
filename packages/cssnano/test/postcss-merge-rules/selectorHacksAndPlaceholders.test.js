@@ -1,7 +1,10 @@
 import nodepath from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
 
 const { join } = nodepath;
@@ -21,31 +24,31 @@ test(
   processCSS(
     '::placeholder{color:blue}h1{color:blue}',
     '::placeholder,h1{color:blue}',
-    { overrideBrowserslist: 'Chrome 58' }
+    withTargets('Chrome 58')
   )
 );
 
 test(
   'should not merge ::placeholder selectors based on Browserslist config [legacy] env',
   passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
+    ...withTargets(undefined, { env: 'legacy' }),
     from: join(testDir, 'browserslist/example.css'),
-    env: 'legacy',
   })
 );
 
 test(
   'should not merge ::placeholder selectors based on Browserslist config [legacy] env using webpack file path',
   passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
+    ...withTargets(undefined, { env: 'legacy' }),
     file: join(testDir, 'browserslist/example.css'),
-    env: 'legacy',
   })
 );
 
 test(
   'should not merge ::placeholder selectors based on Browserslist config [legacy] env using custom path',
   passthroughCSS('::placeholder{color:blue}h1{color:blue}', {
-    path: join(testDir, 'browserslist'),
-    env: 'legacy',
+    ...withTargets(undefined, { env: 'legacy' }),
+    from: join(join(testDir, 'browserslist'), 'input.css'),
   })
 );
 
@@ -55,8 +58,8 @@ test(
     '::placeholder{color:blue}h1{color:blue}',
     '::placeholder,h1{color:blue}',
     {
+      ...withTargets(undefined, { env: 'modern' }),
       from: join(testDir, 'browserslist/example.css'),
-      env: 'modern',
     }
   )
 );
@@ -67,8 +70,8 @@ test(
     '::placeholder{color:blue}h1{color:blue}',
     '::placeholder,h1{color:blue}',
     {
+      ...withTargets(undefined, { env: 'modern' }),
       file: join(testDir, 'browserslist/example.css'),
-      env: 'modern',
     }
   )
 );
@@ -79,8 +82,8 @@ test(
     '::placeholder{color:blue}h1{color:blue}',
     '::placeholder,h1{color:blue}',
     {
-      path: join(testDir, 'browserslist'),
-      env: 'modern',
+      ...withTargets(undefined, { env: 'modern' }),
+      from: join(join(testDir, 'browserslist'), 'input.css'),
     }
   )
 );

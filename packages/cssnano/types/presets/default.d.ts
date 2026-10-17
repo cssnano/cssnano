@@ -1,53 +1,13 @@
-export type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
-    exclude?: true;
-});
-export type TargetDependentOptions<PluginOptions extends object> = SimpleOptions<Omit<PluginOptions, keyof import('#utils').TargetOptions>>;
-export type Options = {
-    discardComments?: SimpleOptions<import('#postcss-discard-comments').Options>;
-    reduceInitial?: TargetDependentOptions<import('#postcss-reduce-initial').Options>;
-    minifyGradients?: SimpleOptions;
-    /**
-     * Ignored; run postcss-svgo before cssnano.
-     */
-    svgo?: false | Record<string, unknown>;
-    reduceTransforms?: SimpleOptions;
-    convertValues?: TargetDependentOptions<import('#postcss-convert-values').Options>;
-    calc?: SimpleOptions<import('postcss-calc').PostCssCalcOptions>;
-    colormin?: TargetDependentOptions<import('#postcss-colormin').Options>;
-    orderedValues?: SimpleOptions;
-    minifySelectors?: TargetDependentOptions<import('#postcss-minify-selectors').Options>;
-    minifyParams?: TargetDependentOptions<import('#postcss-minify-params').Options>;
-    normalizeCharset?: SimpleOptions<import('#postcss-normalize-charset').Options>;
-    minifyFontValues?: SimpleOptions<import('#postcss-minify-font-values').Options>;
-    normalizeUrl?: SimpleOptions;
-    mergeLonghand?: TargetDependentOptions<import('#postcss-merge-longhand').Options>;
-    discardDuplicates?: SimpleOptions;
-    discardOverridden?: SimpleOptions;
-    normalizeRepeatStyle?: SimpleOptions;
-    mergeRules?: TargetDependentOptions<import('#postcss-merge-rules').Options>;
-    discardEmpty?: SimpleOptions;
-    uniqueSelectors?: SimpleOptions;
-    normalizeString?: SimpleOptions<import('#postcss-normalize-string').Options>;
-    normalizePositions?: SimpleOptions;
-    normalizeWhitespace?: SimpleOptions;
-    normalizeUnicode?: TargetDependentOptions<import('#postcss-normalize-unicode').Options>;
-    normalizeDisplayValues?: SimpleOptions;
-    normalizeTimingFunctions?: SimpleOptions;
-    rawCache?: SimpleOptions;
-};
-export type AutoprefixerOptions = {
-    overrideBrowserslist?: string | string[];
-};
-export type BrowserslistOptions = Pick<import('#utils').TargetOptions, 'stats' | 'path' | 'env'>;
+import type { NamedPreset } from './presetEntries.js';
+import type { DefaultPluginOptions } from './defaultPlugins.js';
+export type PresetOptions = import('./configurePlugins.js').PresetOptions<DefaultPluginOptions>;
+/** @import {NamedPreset} from './presetEntries.js' */
+/** @import {DefaultPluginOptions} from './defaultPlugins.js' */
+/** @typedef {import('./configurePlugins.js').PresetOptions<DefaultPluginOptions>} PresetOptions */
 /**
  * Safe defaults for cssnano which require minimal configuration
- *
- * @param {Options & AutoprefixerOptions & BrowserslistOptions} opts
- * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
+ * @type {NamedPreset<'default', DefaultPluginOptions>}
  */
-declare function defaultPreset(opts?: Options & AutoprefixerOptions & BrowserslistOptions): {
-    plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][];
-};
-declare const moduleExports: typeof defaultPreset;
-export { moduleExports as default, moduleExports as 'module.exports' };
+declare const defaultPreset: NamedPreset<'default', DefaultPluginOptions>;
+export { defaultPreset as default, defaultPreset as 'module.exports' };
 //# sourceMappingURL=default.d.ts.map

@@ -60,9 +60,10 @@ support all three. A target without compatibility data, such as Opera Mini,
 counts as unsupported, so a query that includes it keeps the longhands. A
 query that matches no browser keeps them too.
 
-The targets come from the cssnano preset options `overrideBrowserslist`,
-`stats`, `path` and `env`, shared by every plugin. Without them or a project
-config, cssnano targets `baseline widely available with downstream`.
+The targets come from the cssnano `browserslist` options `query`, `stats` and
+`env`, shared by every plugin. The PostCSS `from` option sets where the project
+config is looked up. Without them or a project config, cssnano targets
+`baseline widely available with downstream`.
 
 Values that a target may not parse, such as `safe`, `unsafe`, `last baseline`,
 `left`, `right`, `legacy`, `anchor-center` and `safe normal`, merge only with a

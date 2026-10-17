@@ -15,7 +15,6 @@ const {
   tokenEnd,
   tokenStart,
 } = cssnanoUtils;
-/** @import {TargetOptions} from '#utils' */
 
 const colorProperties = new Set(colorPropertiesData);
 const colorFunctionRegex = /^(?:rgb|hsl)a?$|^hwb$/v;
@@ -159,17 +158,17 @@ function addPluginDefaults(options, browsers) {
 
 /**
  * @typedef {object} MinifyColorOptions
- * @property {boolean} [hex]
- * @property {boolean} [alphaHex]
- * @property {boolean} [rgb]
- * @property {boolean} [hsl]
- * @property {boolean} [name]
- * @property {boolean} [transparent]
- * @property {boolean} [transformCustomProperties] Whether to minify colors inside custom property values (default: true)
+ * @property {boolean} [hex] Allows hexadecimal output, such as `#f00`. (default: true)
+ * @property {boolean} [alphaHex] Allows 4 and 8 digit hexadecimal output for translucent colors. (default: whether the browser targets support it)
+ * @property {boolean} [rgb] Allows `rgb()` and `rgba()` output. (default: true)
+ * @property {boolean} [hsl] Allows `hsl()` and `hsla()` output. (default: true)
+ * @property {boolean} [name] Allows named colors, such as `red`. (default: true)
+ * @property {boolean} [transparent] Allows the `transparent` keyword for a fully transparent color. Unknown browser targets keep `rgba()`. (default: whether the browser targets know `transparent`)
+ * @property {boolean} [transformCustomProperties] Minifies colors inside custom property values (`--*`). (default: true)
  */
 
 /**
- * @typedef {MinifyColorOptions & TargetOptions} Options
+ * @typedef {MinifyColorOptions} Options
  */
 
 /**

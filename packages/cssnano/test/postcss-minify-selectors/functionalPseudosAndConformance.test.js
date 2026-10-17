@@ -4,12 +4,13 @@ import postcss from 'postcss';
 import {
   processCSSFactory,
   repositoryFile,
+  withTargets,
 } from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
-const modernBl = { overrideBrowserslist: 'last 2 Chrome versions' };
+const modernBl = withTargets('last 2 Chrome versions');
 
 suite('top-level folding with functional pseudos', () => {
   test(

@@ -26,10 +26,7 @@ test('PlaygroundRunner returns the worker minification result', async () => {
   const playgroundRunner = new PlaygroundRunner(minifierWorker);
 
   assert.strictEqual(
-    await playgroundRunner.minimizeCss(
-      'a { color: red; }',
-      'cssnano-preset-default'
-    ),
+    await playgroundRunner.minimizeCss('a { color: red; }', 'default'),
     'a{color:red}'
   );
 });
@@ -37,16 +34,10 @@ test('PlaygroundRunner returns the worker minification result', async () => {
 test('PlaygroundRunner rejects overlapping minification requests', async () => {
   const minifierWorker = createMinifierWorker();
   const playgroundRunner = new PlaygroundRunner(minifierWorker);
-  const pending = playgroundRunner.minimizeCss(
-    'a { color: red; }',
-    'cssnano-preset-default'
-  );
+  const pending = playgroundRunner.minimizeCss('a { color: red; }', 'default');
 
   await assert.rejects(
-    playgroundRunner.minimizeCss(
-      'b { color: blue; }',
-      'cssnano-preset-default'
-    ),
+    playgroundRunner.minimizeCss('b { color: blue; }', 'default'),
     /Minification is busy/v
   );
 
@@ -58,7 +49,7 @@ test('PlaygroundRunner reports worker failures', async () => {
   const playgroundRunner = new PlaygroundRunner(minifierWorker);
   const minification = playgroundRunner.minimizeCss(
     'a { color: red; }',
-    'cssnano-preset-default'
+    'default'
   );
 
   minifierWorker.emitError('Worker crashed');
@@ -70,7 +61,7 @@ test('PlaygroundRunner rejects unparsable CSS with an input error', async () => 
   const playgroundRunner = new PlaygroundRunner(minifierWorker);
 
   await assert.rejects(
-    playgroundRunner.minimizeCss('a { color: red', 'cssnano-preset-default'),
+    playgroundRunner.minimizeCss('a { color: red', 'default'),
     CssInputError
   );
 });
@@ -80,7 +71,7 @@ test('PlaygroundRunner does not report worker failures as input errors', async (
   const playgroundRunner = new PlaygroundRunner(minifierWorker);
   const minification = playgroundRunner.minimizeCss(
     'a { color: red; }',
-    'cssnano-preset-default'
+    'default'
   );
 
   minifierWorker.emitError('Worker crashed');

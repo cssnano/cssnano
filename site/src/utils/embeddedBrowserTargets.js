@@ -5,6 +5,12 @@
  * the visitor's clock.
  */
 
+/**
+ * The key that a preset sets for the browser targets. The embedded targets
+ * ignore the options, so a symbol of this module is enough for the site build.
+ */
+export const browserTargets = Symbol('cssnano.browserTargets');
+
 /** @type {readonly string[] | undefined} */
 let embeddedTargets;
 

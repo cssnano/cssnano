@@ -1,7 +1,10 @@
 import nodepath from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-colormin/index.js';
 
 const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
@@ -40,16 +43,20 @@ describe('Custom properties and variables', () => {
 describe('Browserslist and alphaHex targets', () => {
   test(
     'should convert long color to 8-digit hex when supported',
-    processCSS('h1{color:rgba(100% 50% 0% / 50%)}', 'h1{color:#ff800080}', {
-      overrideBrowserslist: 'Chrome 62',
-    })
+    processCSS(
+      'h1{color:rgba(100% 50% 0% / 50%)}',
+      'h1{color:#ff800080}',
+      withTargets('Chrome 62')
+    )
   );
 
   test(
     'should convert long color to 4-digit hex when supported',
-    processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
-      overrideBrowserslist: 'Chrome 62',
-    })
+    processCSS(
+      'h1{color:hsla(0 100% 50% / 40%)}',
+      'h1{color:#f006}',
+      withTargets('Chrome 62')
+    )
   );
 
   test(
@@ -58,8 +65,8 @@ describe('Browserslist and alphaHex targets', () => {
       'h1{color:hsla(0 100% 50% / 40%)}',
       'h1{color:rgba(255,0,0,.4)}',
       {
+        ...withTargets(undefined, { env: 'legacy' }),
         from: join(testDir, 'browserslist/example.css'),
-        env: 'legacy',
       }
     )
   );
@@ -70,8 +77,8 @@ describe('Browserslist and alphaHex targets', () => {
       'h1{color:hsla(0 100% 50% / 40%)}',
       'h1{color:rgba(255,0,0,.4)}',
       {
+        ...withTargets(undefined, { env: 'legacy' }),
         file: join(testDir, 'browserslist/example.css'),
-        env: 'legacy',
       }
     )
   );
@@ -82,8 +89,8 @@ describe('Browserslist and alphaHex targets', () => {
       'h1{color:hsla(0 100% 50% / 40%)}',
       'h1{color:rgba(255,0,0,.4)}',
       {
-        path: join(testDir, 'browserslist'),
-        env: 'legacy',
+        ...withTargets(undefined, { env: 'legacy' }),
+        from: join(join(testDir, 'browserslist'), 'input.css'),
       }
     )
   );
@@ -91,24 +98,24 @@ describe('Browserslist and alphaHex targets', () => {
   test(
     'should convert long color based on Browserslist config [modern] env',
     processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
+      ...withTargets(undefined, { env: 'modern' }),
       from: join(testDir, 'browserslist/example.css'),
-      env: 'modern',
     })
   );
 
   test(
     'should convert long color based on Browserslist config [modern] env using webpack file path',
     processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
+      ...withTargets(undefined, { env: 'modern' }),
       file: join(testDir, 'browserslist/example.css'),
-      env: 'modern',
     })
   );
 
   test(
     'should convert long color based on Browserslist config [modern] env using custom path',
     processCSS('h1{color:hsla(0 100% 50% / 40%)}', 'h1{color:#f006}', {
-      path: join(testDir, 'browserslist'),
-      env: 'modern',
+      ...withTargets(undefined, { env: 'modern' }),
+      from: join(join(testDir, 'browserslist'), 'input.css'),
     })
   );
 

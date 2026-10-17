@@ -1,7 +1,6 @@
 import type { BoxSupport } from './lib/targetSupport.js';
 import type { Container, Declaration } from 'postcss';
-import type { TargetOptions } from '#utils';
-export type Options = TargetOptions;
+export type Options = object;
 import type { PairFamily } from './lib/decl/pairForms.js';
 import type { AlignmentFamilyConfig } from './lib/decl/alignmentForms.js';
 export type MergeContext = {

@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  browserTargets,
   defaultTargetsQuery,
   resolveTargets,
 } from '../../packages/cssnano/src/utils/browserTargets.js';
@@ -20,5 +21,5 @@ test('the playground targets resolve to themselves, so the browser reads the sam
 
 /** @param {string | string[]} query */
 function browserslistOf(query) {
-  return [...resolveTargets({ overrideBrowserslist: query }, undefined)];
+  return [...resolveTargets({ [browserTargets]: { query } }, undefined)];
 }

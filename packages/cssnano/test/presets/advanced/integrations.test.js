@@ -1,29 +1,28 @@
+import postcss from 'postcss';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  integrationTests,
-  createCssnanoProcessor,
-  processCSSWithPresetFactory,
-} from '../../../../../util/integrationTestHelpers.js';
+import { integrationTests } from '../../../../../util/integrationTestHelpers.js';
 import preset from '../../../src/presets/advanced.js';
-import { repositoryFile } from '../../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../../util/testHelpers.js';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
-const withDefaults = processCSSWithPresetFactory(preset);
-const withBrowserslist = processCSSWithPresetFactory(
-  preset({
-    path: join(testDir, 'browserslist/example.css'),
-    env: 'modern',
-  })
+const withDefaults = processCSSFactory(preset());
+const withBrowserslist = processCSSFactory(
+  preset({ browserslist: { env: 'modern' } })
 );
+// The browserslist config is found next to the stylesheet given as from.
+const browserslistFrom = { from: join(testDir, 'browserslist/example.css') };
 
 describe('CSS processing', () => {
   test(
     'should merge alignment longhands into place-content when every target supports place-*',
-    processCSSWithPresetFactory(
-      preset({ overrideBrowserslist: 'chrome 120, firefox 120, safari 17' })
+    processCSSFactory(
+      preset({ browserslist: { query: 'chrome 120, firefox 120, safari 17' } })
     ).processCSS(
       '.a{justify-content:center;align-items:center;align-content:center}',
       '.a{align-items:center;place-content:center}'
@@ -49,7 +48,8 @@ describe('CSS processing', () => {
     'should process CSS with Browserslist options',
     withBrowserslist.processCSS(
       'button { color: hsla(0 100% 50% / 40%); appearance: none }',
-      'button{color:#f006;appearance:none}'
+      'button{color:#f006;appearance:none}',
+      browserslistFrom
     )
   );
 });
@@ -65,20 +65,22 @@ describe('framework tests', () => {
 describe('z-index options', () => {
   test('preserves z-index values when zindex is disabled', async () => {
     const input = 'h1{z-index:10}';
-    const { css } = await createCssnanoProcessor(
-      preset({ zindex: false })
-    ).process(input, {
-      from: repositoryFile,
-    });
+    const { css } = await postcss(preset({ disable: ['zindex'] })).process(
+      input,
+      {
+        from: repositoryFile,
+      }
+    );
 
     assert.strictEqual(css, input);
   });
 
   test('preserves z-index values with the exclude option', async () => {
     const input = 'h1{z-index:10}';
-    const { css } = await createCssnanoProcessor(
-      preset({ zindex: { exclude: true } })
-    ).process(input, { from: repositoryFile });
+    const { css } = await postcss(preset({ disable: ['zindex'] })).process(
+      input,
+      { from: repositoryFile }
+    );
 
     assert.strictEqual(css, input);
   });

@@ -13,9 +13,9 @@ import {
   normalizeList,
   specificityOf,
 } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
-import { repositoryFile } from '../../../../util/testHelpers.js';
+import { repositoryFile, withTargets } from '../../../../util/testHelpers.js';
 
-const modernOptions = { overrideBrowserslist: 'last 2 Chrome versions' };
+const modernOptions = withTargets('last 2 Chrome versions');
 const { JSDOM } = jsdom;
 
 /** @param {string} selector @return {string} */

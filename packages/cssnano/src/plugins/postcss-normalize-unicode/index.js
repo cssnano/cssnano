@@ -3,7 +3,6 @@ import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { anyAffected } from '#utils/browser-bugs';
 
-/** @import {TargetOptions} from '#utils' */
 /** @import { TokenUnicodeRange } from '@csstools/css-tokenizer' */
 
 const { asciiLowerCase } = cssnanoUtils;
@@ -159,7 +158,7 @@ function assignValue(decl, value) {
 }
 
 /**
- * @typedef {TargetOptions} Options
+ * @typedef {object} Options
  */
 
 /**

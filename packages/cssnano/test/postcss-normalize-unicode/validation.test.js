@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-normalize-unicode/index.js';
 
 const { passthroughCSS, processCSS, processor } = processCSSFactory(plugin);
@@ -14,9 +17,7 @@ async function processDeclaration(value) {
         .rule({ selector: 'a' })
         .append(postcss.decl({ prop: 'unicode-range', value }))
     );
-  await processor(root, {
-    overrideBrowserslist: ['defaults', 'not ie <=11'],
-  });
+  await processor(root, withTargets(['defaults', 'not ie <=11']));
   return root.first.first;
 }
 
@@ -29,29 +30,32 @@ describe('Pass', () => {
     'should pass through a unicode range that cannot be reduced',
     passthroughCSS(
       fixture('u+0-7f'), // Basic Latin
-      { overrideBrowserslist: ['defaults', 'not ie <=11'] }
+      withTargets(['defaults', 'not ie <=11'])
     )
   );
 
   test(
     'should pass through a unicode range that cannot be reduced (2)',
-    passthroughCSS(fixture('u+2125-2128'), {
-      overrideBrowserslist: ['defaults', 'not ie <=11'],
-    })
+    passthroughCSS(
+      fixture('u+2125-2128'),
+      withTargets(['defaults', 'not ie <=11'])
+    )
   );
 
   test(
     'should pass through a unicode range that cannot be reduced (3)',
-    passthroughCSS(fixture('u+2012-2f12'), {
-      overrideBrowserslist: ['defaults', 'not ie <=11'],
-    })
+    passthroughCSS(
+      fixture('u+2012-2f12'),
+      withTargets(['defaults', 'not ie <=11'])
+    )
   );
 
   test(
     'should pass through a unicode range that cannot be reduced (4)',
-    passthroughCSS(fixture('u+2002-2ff2'), {
-      overrideBrowserslist: ['defaults', 'not ie <=11'],
-    })
+    passthroughCSS(
+      fixture('u+2002-2ff2'),
+      withTargets(['defaults', 'not ie <=11'])
+    )
   );
 
   test(
@@ -66,9 +70,10 @@ describe('Pass', () => {
 
   test(
     'should preserve strings and functions',
-    passthroughCSS(fixture('"u+2b00-2bff" /* comment */ var(--range)'), {
-      overrideBrowserslist: ['defaults', 'not ie <=11'],
-    })
+    passthroughCSS(
+      fixture('"u+2b00-2bff" /* comment */ var(--range)'),
+      withTargets(['defaults', 'not ie <=11'])
+    )
   );
 
   test('should preserve a mismatched delimiter', async () => {
@@ -88,9 +93,10 @@ describe('Pass', () => {
 
   test(
     'should preserve a bare URL token',
-    passthroughCSS(fixture('url(u+2b00-2bff)'), {
-      overrideBrowserslist: ['defaults', 'not ie <=11'],
-    })
+    passthroughCSS(
+      fixture('url(u+2b00-2bff)'),
+      withTargets(['defaults', 'not ie <=11'])
+    )
   );
 
   test(
@@ -98,7 +104,7 @@ describe('Pass', () => {
     processCSS(
       fixture('u+2b00-2bff/**/, U+1e00-1eff'),
       fixture('u+2b??/**/, u+1e??'),
-      { overrideBrowserslist: ['defaults', 'not ie <=11'] }
+      withTargets(['defaults', 'not ie <=11'])
     )
   );
 
@@ -128,15 +134,16 @@ describe('Pass', () => {
       fixture(
         'var(--range,u+2b00-2bff) func(u+2b00-2bff) [u+2b00-2bff] (u+2b00-2bff) u+2b00-2bff'
       ),
-      { overrideBrowserslist: ['defaults', 'not ie <=11'] }
+      withTargets(['defaults', 'not ie <=11'])
     )
   );
 
   test(
     'should preserve escaped function names',
-    passthroughCSS(fixture('v\\61 r(u+2b00-2bff)'), {
-      overrideBrowserslist: ['defaults', 'not ie <=11'],
-    })
+    passthroughCSS(
+      fixture('v\\61 r(u+2b00-2bff)'),
+      withTargets(['defaults', 'not ie <=11'])
+    )
   );
 
   test('should pass through initial', passthroughCSS(fixture('initial')));

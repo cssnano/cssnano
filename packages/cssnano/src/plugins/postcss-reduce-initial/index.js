@@ -10,8 +10,8 @@ const initial = 'initial';
 const defaultIgnoreProps = ignoreProps;
 
 /**
- * @import {TargetOptions} from '#utils'
- * @typedef {{ignore?: string[]} & TargetOptions} Options
+ * @typedef {object} Options
+ * @property {string[]} [ignore] Properties that keep their value, such as `min-height`. (default: none)
  */
 
 /**

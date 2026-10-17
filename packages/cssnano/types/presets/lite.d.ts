@@ -1,21 +1,13 @@
-export type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
-    exclude?: true;
-});
-export type LiteOptions = {
-    discardComments?: SimpleOptions<import('#postcss-discard-comments').Options>;
-    normalizeWhitespace?: SimpleOptions;
-    discardEmpty?: SimpleOptions;
-    rawCache?: SimpleOptions;
-};
+import type { NamedPreset } from './presetEntries.js';
+import type { LitePluginOptions } from './litePlugins.js';
+export type PresetOptions = import('./configurePlugins.js').PresetOptions<LitePluginOptions>;
+/** @import {NamedPreset} from './presetEntries.js' */
+/** @import {LitePluginOptions} from './litePlugins.js' */
+/** @typedef {import('./configurePlugins.js').PresetOptions<LitePluginOptions>} PresetOptions */
 /**
  * Safe and minimum transformation with just removing whitespaces, line breaks and comments
- *
- * @param {LiteOptions} opts
- * @returns {{ plugins: [import('postcss').PluginCreator<any>, LiteOptions[keyof LiteOptions]][] }}
+ * @type {NamedPreset<'lite', LitePluginOptions>}
  */
-declare function litePreset(opts?: LiteOptions): {
-    plugins: [import('postcss').PluginCreator<any>, LiteOptions[keyof LiteOptions]][];
-};
-declare const moduleExports: typeof litePreset;
-export { moduleExports as default, moduleExports as 'module.exports' };
+declare const litePreset: NamedPreset<'lite', LitePluginOptions>;
+export { litePreset as default, litePreset as 'module.exports' };
 //# sourceMappingURL=lite.d.ts.map

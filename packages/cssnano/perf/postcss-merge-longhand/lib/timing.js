@@ -1,5 +1,6 @@
 import postcss from 'postcss';
 import plugin from '../../../src/plugins/postcss-merge-longhand/index.js';
+import { withTargets } from '../../../../../util/testHelpers.js';
 
 /**
  * @param {() => void} work
@@ -20,7 +21,7 @@ function bestOfTwo(work) {
  * @return {number} best of two runs of the whole plugin in milliseconds
  */
 export function timePlugin(css, browsers) {
-  const options = { overrideBrowserslist: browsers };
+  const options = withTargets(browsers);
   return bestOfTwo(() => {
     postcss([plugin(options)])
       .process(css, { from: undefined })

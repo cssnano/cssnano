@@ -1,5 +1,8 @@
 import { test, suite } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -234,7 +237,7 @@ suite('@keyframe normalization', () => {
   );
 });
 
-const modernBl = { overrideBrowserslist: 'last 2 Chrome versions' };
+const modernBl = withTargets('last 2 Chrome versions');
 
 suite('sorting ownership and keyframe ordering', () => {
   test(

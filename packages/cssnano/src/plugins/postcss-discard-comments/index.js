@@ -9,9 +9,9 @@ import {
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 
 /** @typedef {object} Options
- *  @property {boolean=} removeAll
- *  @property {boolean=} removeAllButFirst
- *  @property {(s: string) => boolean=} remove
+ *  @property {boolean=} removeAll Removes comments marked as important (`/*!`) too. (default: false)
+ *  @property {boolean=} removeAllButFirst Removes comments marked as important, except the first one. (default: false)
+ *  @property {(s: string) => boolean=} remove Returns true to remove a comment. Receives the comment text without its delimiters.
  */
 
 /**

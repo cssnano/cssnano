@@ -4,7 +4,6 @@ import fs from 'node:fs/promises';
 import { readdirSync, readFileSync } from 'node:fs';
 import process from 'node:process';
 import postcss from 'postcss';
-import cssnano from '../packages/cssnano/src/index.js';
 import { repositoryFile } from './testHelpers.js';
 
 // Dry-run reports which fixtures would change without writing, so an
@@ -30,10 +29,9 @@ const changed = [];
 
 async function rebuild(name) {
   const presetModule = await import(join(presetsDir, `${name}.js`));
-  const preset = presetModule.default();
 
   for (const framework of Object.keys(frameworks)) {
-    const result = await postcss([cssnano({ preset })]).process(
+    const result = await postcss(presetModule.default()).process(
       frameworks[framework],
       // The fixtures follow the repository's browserslist config, as the
       // tests that check them do, wherever the script runs from.
@@ -77,8 +75,14 @@ const cssnanoDir = join(
 );
 const presetsDir = join(cssnanoDir, 'src', 'presets');
 const testDir = join(cssnanoDir, 'test');
-for (const file of await fs.readdir(presetsDir)) {
-  await rebuild(basename(file, '.js'));
+// Each preset has one integrations directory under test/presets.
+const presetNames = readdirSync(join(testDir, 'presets'), {
+  withFileTypes: true,
+})
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name);
+for (const name of presetNames) {
+  await rebuild(name);
 }
 
 if (changed.length === 0) {

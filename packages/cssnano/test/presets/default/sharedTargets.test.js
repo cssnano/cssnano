@@ -11,7 +11,7 @@ function countBrowserslistCalls(css, from) {
 import postcss from ${JSON.stringify(new URL('../../../node_modules/postcss/lib/postcss.js', import.meta.url).href)};
 import cssnano from ${JSON.stringify(new URL('../../../src/index.js', import.meta.url).href)};
 import preset from ${JSON.stringify(new URL('../../../src/presets/default.js', import.meta.url).href)};
-await postcss(cssnano({ preset })).process(${JSON.stringify(css)}, { from: ${JSON.stringify(from)} });
+await postcss(preset()).process(${JSON.stringify(css)}, { from: ${JSON.stringify(from)} });
 process.stdout.write(String(globalThis.browserslistCalls ?? 0));
 `;
   return Number(

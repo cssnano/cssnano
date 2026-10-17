@@ -1,6 +1,7 @@
 import postcss from 'postcss';
 import plugin from '../../../src/plugins/postcss-merge-longhand/index.js';
 import { computedValues } from './fuzzBoxOracle.js';
+import { withTargets } from '../../../../../util/testHelpers.js';
 
 /** @import {Engine} from './fuzzBoxOracle.js' */
 
@@ -21,7 +22,7 @@ export const boxTargets = [
 ];
 
 const processors = boxTargets.map(({ browsers }) =>
-  postcss([plugin({ overrideBrowserslist: browsers })])
+  postcss([plugin(withTargets(browsers))])
 );
 
 /**

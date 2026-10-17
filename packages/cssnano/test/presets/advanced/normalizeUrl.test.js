@@ -1,8 +1,8 @@
 import { test } from 'node:test';
-import { processCSSWithPresetFactory } from '../../../../../util/integrationTestHelpers.js';
 import preset from '../../../src/presets/advanced.js';
+import { processCSSFactory } from '../../../../../util/testHelpers.js';
 
-const { passthroughCSS } = processCSSWithPresetFactory(preset);
+const { passthroughCSS } = processCSSFactory(preset());
 
 // Guards against URL rewriting moving from postcss-normalize-url into the
 // advanced preset. The default preset's tests cover the rest of the URL token.

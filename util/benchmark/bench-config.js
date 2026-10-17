@@ -35,6 +35,12 @@ export {
 
 const require = createRequire(import.meta.url);
 const cssnano = require('../../packages/cssnano/src/index.js');
+// The benchmark names a preset on the command line, and cssnano takes the imported preset.
+const presetsByName = {
+  default: require('../../packages/cssnano/src/presets/default.js'),
+  advanced: require('../../packages/cssnano/src/presets/advanced.js'),
+  lite: require('../../packages/cssnano/src/presets/lite.js'),
+};
 
 const DEFAULT_RESULTS_DIR = join(
   import.meta.dirname,
@@ -57,9 +63,9 @@ function validateArgs(args) {
   if (!args.label || /[\\\/]/v.test(args.label)) {
     throw new Error('--label must be a non-empty filename component');
   }
-  if (!['default', 'advanced', 'lite'].includes(args.preset)) {
+  if (!Object.hasOwn(presetsByName, args.preset)) {
     throw new Error(
-      `unknown preset "${args.preset}"; expected default, advanced, or lite`
+      `unknown preset "${args.preset}"; expected ${Object.keys(presetsByName).join(', ')}`
     );
   }
   if (args.case && !benchmarkCases[args.case]) {
@@ -89,7 +95,7 @@ export function createBenchmarkProcessor(args) {
   const benchmarkCase = args.case ? benchmarkCases[args.case] : null;
   return benchmarkCase?.createProcessor
     ? () => benchmarkCase.createProcessor()
-    : () => cssnano({ preset: args.preset });
+    : () => cssnano({ preset: presetsByName[args.preset] });
 }
 
 function validateBounds(args) {

@@ -1,14 +1,17 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 /* Chrome 69, Firefox 90 and Safari 14.1 support the scroll-margin shorthand
  * without the partial implementations that came before. */
-const modern = { overrideBrowserslist: ['chrome 120'] };
-const legacy = { overrideBrowserslist: ['ie 11'] };
-const safari14 = { overrideBrowserslist: ['safari 14'] };
+const modern = withTargets(['chrome 120']);
+const legacy = withTargets(['ie 11']);
+const safari14 = withTargets(['safari 14']);
 
 for (const group of ['scroll-margin', 'scroll-padding']) {
   describe(group, () => {

@@ -5,9 +5,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import realBrowserslist from 'browserslist';
 import {
+  browserTargets,
   defaultTargetsQuery,
   resolveTargets,
 } from '../../src/utils/browserTargets.js';
+import { withTargets } from '../../../../util/testHelpers.js';
 
 /**
  * @param {string | undefined} [config] what the project's browserslist config holds
@@ -45,18 +47,18 @@ describe('resolveTargets arguments', () => {
   test('passes the override query to browserslist unchanged', () => {
     const { browserslist, calls } = recordingBrowserslist();
     resolveTargets(
-      { overrideBrowserslist: ['defaults', 'not ie <=11'] },
+      withTargets(['defaults', 'not ie <=11']),
       resultWith(),
       browserslist
     );
     assert.deepEqual(calls[0].query, ['defaults', 'not ie <=11']);
   });
 
-  test('uses the plugin stats, env and path over the result options', () => {
+  test('uses the preset stats and env over the result options, and from as the search path', () => {
     const { browserslist, calls } = recordingBrowserslist();
     const stats = { chrome: { 150: 1 } };
     resolveTargets(
-      { overrideBrowserslist: '> 1%', stats, env: 'legacy', path: '/plugin' },
+      withTargets('> 1%', { stats, env: 'legacy' }),
       resultWith({
         stats: { firefox: { 1: 1 } },
         env: 'modern',
@@ -66,18 +68,18 @@ describe('resolveTargets arguments', () => {
     );
     assert.equal(calls[0].opts.stats, stats);
     assert.equal(calls[0].opts.env, 'legacy');
-    assert.equal(calls[0].opts.path, '/plugin');
+    assert.equal(calls[0].opts.path, '/from/a.css');
   });
 
-  test('looks up the project config with the resolved path and env', () => {
+  test('looks up the project config with the preset env and the from path', () => {
     const { browserslist, configLookups } = recordingBrowserslist();
     resolveTargets(
-      { env: 'legacy' },
+      withTargets(undefined, { env: 'legacy' }),
       resultWith({ from: '/project/src/a.css' }),
       browserslist
     );
     assert.deepEqual(configLookups, [
-      { path: '/project/src/a.css', env: 'legacy' },
+      { path: '/project/src/a.css', env: 'legacy', config: undefined },
     ]);
   });
 
@@ -124,14 +126,14 @@ describe('resolveTargets arguments', () => {
     assert.equal(calls[0].opts.path, undefined);
   });
 
-  test('uses the plugin path over from when both are set', () => {
+  test('ignores a path written in the plugin options, because only from sets the search path', () => {
     const { browserslist, calls } = recordingBrowserslist();
     resolveTargets(
       { path: '/configured' },
       resultWith({ from: '/project/a.css' }),
       browserslist
     );
-    assert.equal(calls[0].opts.path, '/configured');
+    assert.equal(calls[0].opts.path, '/project/a.css');
   });
 });
 
@@ -150,11 +152,7 @@ describe('resolveTargets default targets', () => {
 
   test('does not look up the project config when the override sets a query', () => {
     const { browserslist, configLookups } = recordingBrowserslist('ie 11');
-    resolveTargets(
-      { overrideBrowserslist: 'chrome 120' },
-      resultWith(),
-      browserslist
-    );
+    resolveTargets(withTargets('chrome 120'), resultWith(), browserslist);
     assert.equal(configLookups.length, 0);
   });
 
@@ -166,7 +164,13 @@ describe('resolveTargets default targets', () => {
       delete process.env.BROWSERSLIST;
       try {
         assert.deepEqual(
-          [...resolveTargets({ path: directory }, undefined, realBrowserslist)],
+          [
+            ...resolveTargets(
+              {},
+              resultWith({ from: join(directory, 'app.css') }),
+              realBrowserslist
+            ),
+          ],
           realBrowserslist(defaultTargetsQuery)
         );
       } finally {
@@ -180,7 +184,7 @@ describe('resolveTargets default targets', () => {
 
 describe('resolveTargets empty resolution', () => {
   const emptyBrowserslist = withoutConfig(() => []);
-  const query = { overrideBrowserslist: 'not dead and not ie 11' };
+  const query = withTargets('not dead and not ie 11');
 
   test('keeps the empty list, so no optimization that depends on support is enabled', () => {
     const targets = resolveTargets(query, resultWith(), emptyBrowserslist);
@@ -197,7 +201,7 @@ describe('resolveTargets empty resolution', () => {
         return [];
       })
     );
-    assert.deepEqual(calls, [query.overrideBrowserslist]);
+    assert.deepEqual(calls, [query[browserTargets].query]);
   });
 
   test('warns once per file that the query matches no browser', () => {
@@ -232,13 +236,9 @@ describe('resolveTargets cache', () => {
   test('resolves once for two plugins that share one result and options', () => {
     const { browserslist, calls } = recordingBrowserslist();
     const result = resultWith({ from: '/project/a.css' });
-    const first = resolveTargets(
-      { overrideBrowserslist: 'defaults' },
-      result,
-      browserslist
-    );
+    const first = resolveTargets(withTargets('defaults'), result, browserslist);
     const second = resolveTargets(
-      { overrideBrowserslist: 'defaults' },
+      withTargets('defaults'),
       result,
       browserslist
     );
@@ -249,8 +249,8 @@ describe('resolveTargets cache', () => {
   test('keeps separate entries for different plugin options on one result', () => {
     const { browserslist, calls } = recordingBrowserslist();
     const result = resultWith({ from: '/project/a.css' });
-    resolveTargets({ overrideBrowserslist: 'defaults' }, result, browserslist);
-    resolveTargets({ overrideBrowserslist: 'ie 11' }, result, browserslist);
+    resolveTargets(withTargets('defaults'), result, browserslist);
+    resolveTargets(withTargets('ie 11'), result, browserslist);
     assert.equal(calls.length, 2);
   });
 
@@ -266,12 +266,12 @@ describe('resolveTargets cache', () => {
     const { browserslist, calls } = recordingBrowserslist();
     const result = resultWith({ from: '/project/a.css' });
     resolveTargets(
-      { overrideBrowserslist: '> 1%', stats: { chrome: { 150: 1 } } },
+      withTargets('> 1%', { stats: { chrome: { 150: 1 } } }),
       result,
       browserslist
     );
     resolveTargets(
-      { overrideBrowserslist: '> 1%', stats: { chrome: { 150: 1 } } },
+      withTargets('> 1%', { stats: { chrome: { 150: 1 } } }),
       result,
       browserslist
     );
@@ -288,15 +288,11 @@ describe('resolveTargets cache', () => {
   test('resolves without a result and keeps no cache entry for the call', () => {
     const { browserslist, calls } = recordingBrowserslist();
     const first = resolveTargets(
-      { overrideBrowserslist: 'chrome 120' },
+      withTargets('chrome 120'),
       undefined,
       browserslist
     );
-    resolveTargets(
-      { overrideBrowserslist: 'chrome 120' },
-      undefined,
-      browserslist
-    );
+    resolveTargets(withTargets('chrome 120'), undefined, browserslist);
     assert.equal(calls.length, 2);
     assert.equal(first.length, 2);
   });
@@ -324,7 +320,7 @@ describe('resolveTargets cache', () => {
 describe('resolveTargets result', () => {
   test('leaves the array that browserslist caches unfrozen, so other tools can still change theirs', () => {
     const query = 'chrome 120, firefox 115';
-    resolveTargets({ overrideBrowserslist: query }, resultWith());
+    resolveTargets(withTargets(query), resultWith());
     assert.equal(Object.isFrozen(realBrowserslist(query)), false);
   });
 
@@ -366,7 +362,7 @@ describe('resolveTargets warnings', () => {
       warn: (text, options) => warnings.push({ text, options }),
     };
     resolveTargets(
-      { overrideBrowserslist: 'not dead and not ie 11' },
+      withTargets('not dead and not ie 11'),
       result,
       withoutConfig(() => [])
     );

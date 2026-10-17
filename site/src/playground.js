@@ -88,7 +88,7 @@ if (cssMinifier) {
     try {
       const css = await cssMinifier.minimizeCss(
         userInput,
-        /** @type {import('./types.js').PresetName} */ (presetSelector.value)
+        /** @type {import('./types.js').PresetId} */ (presetSelector.value)
       );
       setOutput(css, false);
       announcer.announce(

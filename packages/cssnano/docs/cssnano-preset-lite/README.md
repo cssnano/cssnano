@@ -13,11 +13,6 @@
 
 - [Plugins](#plugins)
 
-  - [cssnano-utils](#cssnano-utils)
-  - [postcss-discard-comments](#postcss-discard-comments)
-  - [postcss-discard-empty](#postcss-discard-empty)
-  - [postcss-normalize-whitespace](#postcss-normalize-whitespace)
-
 - [Contributors](#contributors)
 
 - [License](#license)
@@ -31,63 +26,64 @@ linebreaks, and comments.
 
 ### Install
 
-With [npm](https://npmjs.com/package/cssnano-preset-lite) do:
-
-    npm install cssnano-preset-lite --save-dev
-
-If you don't have npm then [check out this installation tutorial](https://npmjs.com/package/cssnano-preset-lite/tutorial).
+This preset comes bundled with cssnano, so you don't need to install it separately.
 
 ### Configuration
 
 If you would like to use the default configuration, then you don't need any additional configuration.
 
-But should you wish to customise this, you can pass an array with the second parameter as the options object to use. For example, to remove all comments, add a `.cssnanorc.json` to the directory where you run the build:
-
-```json
-{
-  "preset": ["lite", { "discardComments": { "removeAll": true } }]
-}
-```
-
-JSON cannot express options with customisable function parameters. For this use case, create a `cssnano.config.js` instead. You can then load a preset and export it with your custom parameters:
+But should you wish to customise this, you can set the `options` key of the configuration. For example, to remove all comments, add a `cssnano.config.js` to the directory where you run the build, and import the preset in it:
 
 ```js
-const litePreset = require('cssnano-preset-lite');
+// cssnano.config.js
+import lite from 'cssnano/presets/lite';
 
-module.exports = litePreset({
-  discardComments: {
-    remove: (comment) => comment[0] === '@',
+export default {
+  preset: lite,
+  options: { discardComments: { removeAll: true } },
+};
+```
+
+Options that hold functions work the same way, because the configuration file is a JavaScript module:
+
+```js
+// cssnano.config.js
+import lite from 'cssnano/presets/lite';
+
+export default {
+  preset: lite,
+  options: {
+    discardComments: {
+      remove: (comment) => comment[0] === '@',
+    },
   },
-});
+};
+```
+
+To compose the preset with other PostCSS plugins, load it in the PostCSS configuration instead, since a built preset is a list of plugins:
+
+```js
+// postcss.config.js
+import litePreset from 'cssnano/presets/lite';
+
+export default {
+  plugins: [
+    ...litePreset({
+      options: {
+        discardComments: {
+          remove: (comment) => comment[0] === '@',
+        },
+      },
+    }),
+  ],
+};
 ```
 
 Note that you may wish to publish your own preset to npm for reusability, should it differ a lot from this one. This is highly encouraged!
 
 ## Plugins
 
-### [`cssnano-utils`](https://github.com/cssnano/cssnano/tree/main/packages/cssnano-utils)
-
-> Utility methods used by cssnano
-
-
-### [`postcss-discard-comments`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-discard-comments)
-
-> Discard comments in your CSS files with PostCSS.
-
-This plugin is loaded with its default configuration.
-
-### [`postcss-discard-empty`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-discard-empty)
-
-> Discard empty rules and values with PostCSS.
-
-This plugin is loaded with its default configuration.
-
-### [`postcss-normalize-whitespace`](https://github.com/cssnano/cssnano/tree/main/packages/postcss-normalize-whitespace)
-
-> Trim whitespace inside and around CSS rules & declarations.
-
-This plugin is loaded with its default configuration.
-
+The plugins in this preset, and the option that enables each, are listed on the [optimisations page](https://cssnano.github.io/cssnano/docs/what-are-optimisations/).
 
 ## Contributors
 

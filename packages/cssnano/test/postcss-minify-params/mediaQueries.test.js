@@ -6,6 +6,7 @@ import postcss from 'postcss';
 import {
   processCSSFactory,
   repositoryFile,
+  withTargets,
 } from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-minify-params/index.js';
 
@@ -108,70 +109,76 @@ describe('Normalise @media queries', () => {
 describe('Normalise "all" in @media queries', () => {
   test(
     'should normalise "all" in @media queries',
-    processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
-      overrideBrowserslist: 'Chrome 58',
-    })
+    processCSS(
+      '@media all{h1{color:blue}}',
+      '@media{h1{color:blue}}',
+      withTargets('Chrome 58')
+    )
   );
 
   test(
     'should normalise "all" in @media queries (uppercase)',
-    processCSS('@MEDIA ALL{h1{color:blue}}', '@MEDIA{h1{color:blue}}', {
-      overrideBrowserslist: 'Chrome 58',
-    })
+    processCSS(
+      '@MEDIA ALL{h1{color:blue}}',
+      '@MEDIA{h1{color:blue}}',
+      withTargets('Chrome 58')
+    )
   );
 
   test(
     'should not normalise "all" in @media queries',
-    processCSS('@media all{h1{color:blue}}', '@media all{h1{color:blue}}', {
-      overrideBrowserslist: 'IE 11',
-    })
+    processCSS(
+      '@media all{h1{color:blue}}',
+      '@media all{h1{color:blue}}',
+      withTargets('IE 11')
+    )
   );
 
   test(
     'should not normalise "all" in @media queries based on Browserslist config [legacy] env',
     passthroughCSS('@media all{h1{color:blue}}', {
+      ...withTargets(undefined, { env: 'legacy' }),
       from: join(testDir, 'browserslist/example.css'),
-      env: 'legacy',
     })
   );
 
   test(
     'should not normalise "all" in @media queries based on Browserslist config [legacy] env using webpack file path',
     passthroughCSS('@media all{h1{color:blue}}', {
+      ...withTargets(undefined, { env: 'legacy' }),
       file: join(testDir, 'browserslist/example.css'),
-      env: 'legacy',
     })
   );
 
   test(
     'should not normalise "all" in @media queries based on Browserslist config [legacy] env using custom path',
     passthroughCSS('@media all{h1{color:blue}}', {
-      path: join(testDir, 'browserslist'),
-      env: 'legacy',
+      ...withTargets(undefined, { env: 'legacy' }),
+      from: join(join(testDir, 'browserslist'), 'input.css'),
     })
   );
 
   test(
     'should normalise "all" in @media queries based on Browserslist config [modern] env',
     processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
+      ...withTargets(undefined, { env: 'modern' }),
       from: join(testDir, 'browserslist/example.css'),
-      env: 'modern',
     })
   );
 
   test(
     'should normalise "all" in @media queries based on Browserslist config [modern] env using webpack file path',
     processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
+      ...withTargets(undefined, { env: 'modern' }),
       file: join(testDir, 'browserslist/example.css'),
-      env: 'modern',
     })
   );
 
   test(
     'should normalise "all" in @media queries based on Browserslist config [modern] env using custom path',
     processCSS('@media all{h1{color:blue}}', '@media{h1{color:blue}}', {
-      path: join(testDir, 'browserslist'),
-      env: 'modern',
+      ...withTargets(undefined, { env: 'modern' }),
+      from: join(join(testDir, 'browserslist'), 'input.css'),
     })
   );
 
@@ -185,9 +192,11 @@ describe('Normalise "all" in @media queries', () => {
 
   test(
     'should make a media query list unconditional when it contains standalone all',
-    processCSS('@media all, screen{h1{color:blue}}', '@media{h1{color:blue}}', {
-      overrideBrowserslist: 'Chrome 58',
-    })
+    processCSS(
+      '@media all, screen{h1{color:blue}}',
+      '@media{h1{color:blue}}',
+      withTargets('Chrome 58')
+    )
   );
 
   test(
@@ -195,7 +204,7 @@ describe('Normalise "all" in @media queries', () => {
     processCSS(
       '@media all/**/,screen{h1{color:blue}}',
       '@media{h1{color:blue}}',
-      { overrideBrowserslist: 'Chrome 58' }
+      withTargets('Chrome 58')
     )
   );
 
@@ -204,7 +213,7 @@ describe('Normalise "all" in @media queries', () => {
     processCSS(
       '@media all, screen{h1{color:blue}}',
       '@media all,screen{h1{color:blue}}',
-      { overrideBrowserslist: 'IE 11' }
+      withTargets('IE 11')
     )
   );
 
@@ -213,7 +222,7 @@ describe('Normalise "all" in @media queries', () => {
     processCSS(
       '@media all/**/,screen{h1{color:blue}}',
       '@media all/**/,screen{h1{color:blue}}',
-      { overrideBrowserslist: 'IE 11' }
+      withTargets('IE 11')
     )
   );
 
@@ -246,7 +255,7 @@ describe('Normalise "all" in @media queries', () => {
     processCSS(
       '@media /*before*/ all /*between*/ and /*after*/ (width:1px){h1{color:blue}}',
       '@media /*before*/ /*between*//*after*/ (width:1px){h1{color:blue}}',
-      { overrideBrowserslist: 'IE 11' }
+      withTargets('IE 11')
     )
   );
 

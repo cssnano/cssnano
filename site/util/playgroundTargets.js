@@ -1,4 +1,5 @@
 import {
+  browserTargets,
   defaultTargetsQuery,
   resolveTargets,
 } from '../../packages/cssnano/src/utils/browserTargets.js';
@@ -11,7 +12,10 @@ import {
  */
 export function resolvePlaygroundTargets() {
   const targets = [
-    ...resolveTargets({ overrideBrowserslist: defaultTargetsQuery }, undefined),
+    ...resolveTargets(
+      { [browserTargets]: { query: defaultTargetsQuery } },
+      undefined
+    ),
   ];
   // An empty list would silently switch off every support-dependent
   // optimization in the playground.

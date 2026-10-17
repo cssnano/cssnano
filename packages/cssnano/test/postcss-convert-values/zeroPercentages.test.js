@@ -1,7 +1,10 @@
 import nodepath from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-convert-values/index.js';
 
 const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
@@ -81,32 +84,33 @@ describe('Height, min-width, and Browserslist zero-percentage', () => {
   test(
     'should not strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [legacy] env',
     passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
+      ...withTargets(undefined, { env: 'legacy' }),
       from: join(testDir, 'browserslist/example.css'),
-      env: 'legacy',
     })
   );
 
   test(
     'should not strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [legacy] env using webpack file path',
     passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
+      ...withTargets(undefined, { env: 'legacy' }),
       file: join(testDir, 'browserslist/example.css'),
-      env: 'legacy',
     })
   );
 
   test(
     'should not strip the percentage from 0 in max-height, height, and min-width props based on Browserslist config [legacy] env using custom path',
     passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
-      path: join(testDir, 'browserslist'),
-      env: 'legacy',
+      ...withTargets(undefined, { env: 'legacy' }),
+      from: join(join(testDir, 'browserslist'), 'input.css'),
     })
   );
 
   test(
     'should not strip the percentage from 0 in max-height, height, and min-width props for IE 11 target',
-    passthroughCSS('h1{height:0%;max-height:0%;min-width:0%}', {
-      overrideBrowserslist: 'ie 11',
-    })
+    passthroughCSS(
+      'h1{height:0%;max-height:0%;min-width:0%}',
+      withTargets('ie 11')
+    )
   );
 
   test(
@@ -115,8 +119,8 @@ describe('Height, min-width, and Browserslist zero-percentage', () => {
       'h1{height:0%;max-height:0%;min-width:0%}',
       'h1{height:0;max-height:0;min-width:0}',
       {
+        ...withTargets(undefined, { env: 'modern' }),
         from: join(testDir, 'browserslist/example.css'),
-        env: 'modern',
       }
     )
   );
@@ -127,8 +131,8 @@ describe('Height, min-width, and Browserslist zero-percentage', () => {
       'h1{height:0%;max-height:0%;min-width:0%}',
       'h1{height:0;max-height:0;min-width:0}',
       {
+        ...withTargets(undefined, { env: 'modern' }),
         file: join(testDir, 'browserslist/example.css'),
-        env: 'modern',
       }
     )
   );
@@ -139,14 +143,14 @@ describe('Height, min-width, and Browserslist zero-percentage', () => {
       'h1{height:0%;max-height:0%;min-width:0%}',
       'h1{height:0;max-height:0;min-width:0}',
       {
-        path: join(testDir, 'browserslist'),
-        env: 'modern',
+        ...withTargets(undefined, { env: 'modern' }),
+        from: join(join(testDir, 'browserslist'), 'input.css'),
       }
     )
   );
 
   test('should cache browserslist determination across multiple process calls', async () => {
-    const instance = plugin({ overrideBrowserslist: 'ie 11' });
+    const instance = plugin(withTargets('ie 11'));
     const { processCSS: run } = processCSSFactory([instance]);
     await run(
       'h1{height:0%;max-height:0%;min-width:0%}',

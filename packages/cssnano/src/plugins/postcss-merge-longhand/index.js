@@ -34,12 +34,11 @@ import {
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
-/** @import {TargetOptions} from '#utils' */
 /** @import {BoxDeclarations} from './lib/decl/boxReducer.js'; */
 /** @import {BoxGroup} from './lib/decl/boxGroups.js'; */
 
 /**
- * @typedef {TargetOptions} Options
+ * @typedef {object} Options
  */
 
 /**

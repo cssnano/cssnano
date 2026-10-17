@@ -3,8 +3,7 @@
 import advancedPreset from '../../../packages/cssnano/src/presets/advanced.js';
 import defaultPreset from '../../../packages/cssnano/src/presets/default.js';
 import litePreset from '../../../packages/cssnano/src/presets/lite.js';
-import pluginName from '../../util/pluginName.js';
-import { enabledPlugins } from '../utils/enabledPlugins.js';
+import { presetEntriesKey } from '../../../packages/cssnano/src/presets/presetEntries.js';
 import { editorialOptimisations } from './editorialOptimisations.js';
 
 /**
@@ -16,24 +15,41 @@ import { editorialOptimisations } from './editorialOptimisations.js';
  * @property {string} inputExample
  * @property {string} outputExample
  * @property {string} [safe] Reason this optimisation may be unsafe.
+ * @property {string} [option] Preset option that enables the plugin.
  * @property {PresetId[]} presets
  */
 
 /** @typedef {Omit<Optimisation, 'presets'>} EditorialOptimisation */
 
+/**
+ * The [preset option, PostCSS plugin name] pairs that a preset runs.
+ * @param {{[presetEntriesKey]: readonly (readonly [unknown, string, {postcssPlugin: string}])[]}} preset
+ * @returns {[string, string][]}
+ */
+function pluginNamesOf(preset) {
+  return preset[presetEntriesKey].map(([, option, settings]) => [
+    option,
+    settings.postcssPlugin,
+  ]);
+}
+
 function matchPluginsWithPresets() {
-  const presetModules = {
-    default: defaultPreset,
-    lite: litePreset,
-    advanced: advancedPreset,
+  /** @type {Record<PresetId, [string, string][]>} */
+  const pluginsByPreset = {
+    default: pluginNamesOf(defaultPreset),
+    lite: pluginNamesOf(litePreset),
+    advanced: pluginNamesOf(advancedPreset),
   };
   const internalPlugins = new Set(['cssnano-util-raw-cache']);
+  const optionByPlugin = new Map(
+    Object.values(pluginsByPreset)
+      .flat()
+      .map(([option, plugin]) => [plugin, option])
+  );
   const presetPlugins = Object.fromEntries(
-    Object.entries(presetModules).map(([preset, presetModule]) => [
+    Object.entries(pluginsByPreset).map(([preset, pairs]) => [
       preset,
-      new Set(
-        enabledPlugins(presetModule).map(([plugin]) => pluginName(plugin))
-      ),
+      new Set(pairs.map(([, plugin]) => plugin)),
     ])
   );
   const documentedPlugins = new Set(
@@ -53,6 +69,7 @@ function matchPluginsWithPresets() {
 
   const optimisations = editorialOptimisations.map((optimisation) => ({
     ...optimisation,
+    option: optionByPlugin.get(optimisation.plugin),
     presets: Object.entries(presetPlugins)
       .filter(([, plugins]) => plugins.has(optimisation.plugin))
       .map(([preset]) => preset),

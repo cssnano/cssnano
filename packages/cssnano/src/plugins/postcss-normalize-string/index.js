@@ -339,7 +339,10 @@ function assignValue(decl, value) {
   if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
 }
 
-/** @typedef {{preferredQuote?: 'double' | 'single'}} Options */
+/**
+ * @typedef {object} Options
+ * @property {'double' | 'single'} [preferredQuote] The quote to prefer for strings. (default: 'double')
+ */
 /**
  * @param {Options} opts
  * @return {import('postcss').Plugin}

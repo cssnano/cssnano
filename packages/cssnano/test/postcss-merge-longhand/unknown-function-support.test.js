@@ -6,7 +6,7 @@ import {
   mergeBlockingSupport,
   requiredSupport,
 } from '../../src/plugins/postcss-merge-longhand/lib/isFallback.js';
-import { repositoryFile } from '../../../../util/testHelpers.js';
+import { repositoryFile, withTargets } from '../../../../util/testHelpers.js';
 
 /**
  * A browser that does not parse a function drops the declaration whole, so a
@@ -19,9 +19,9 @@ import { repositoryFile } from '../../../../util/testHelpers.js';
  * @return {Promise<string>}
  */
 async function run(css, browsers) {
-  const result = await postcss([
-    plugin({ overrideBrowserslist: browsers }),
-  ]).process(css, { from: repositoryFile });
+  const result = await postcss([plugin(withTargets(browsers))]).process(css, {
+    from: repositoryFile,
+  });
   return result.css;
 }
 

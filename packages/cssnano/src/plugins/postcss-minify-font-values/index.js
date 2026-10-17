@@ -58,7 +58,12 @@ function transform(prop, value, opts) {
   return value;
 }
 
-/** @typedef {{removeAfterKeyword?: boolean, removeDuplicates?: boolean, removeQuotes?: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight')}} Options */
+/**
+ * @typedef {object} Options
+ * @property {boolean} [removeAfterKeyword] Removes the font families that follow a font keyword, such as `sans-serif`. (default: false)
+ * @property {boolean} [removeDuplicates] Removes duplicated font families. (default: true)
+ * @property {boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight')} [removeQuotes] Removes quotes from font families. A function chooses the property to change for each one. (default: true)
+ */
 
 /**
  * @param {Options} opts

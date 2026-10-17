@@ -1,6 +1,7 @@
 import postcss from 'postcss';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { browserTargets } from '../packages/cssnano/src/utils/browserTargets.js';
 
 /**
  * A file in the repository root, so browserslist finds the repository's
@@ -10,6 +11,18 @@ import { fileURLToPath } from 'node:url';
 export const repositoryFile = fileURLToPath(
   new URL('../input.css', import.meta.url)
 );
+
+/**
+ * The browser targets of a plugin, as a preset gives them. The query, env and
+ * stats are the ones browserslist takes; unset ones are left to browserslist.
+ *
+ * @param {string | string[]} [query]
+ * @param {{env?: string, stats?: unknown}} [settings]
+ * @returns {Record<symbol, object>}
+ */
+export function withTargets(query, { env, stats } = {}) {
+  return { [browserTargets]: Object.freeze({ query, env, stats }) };
+}
 
 /**
  * Process options that read the repository's browserslist config, unless the

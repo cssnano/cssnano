@@ -1,9 +1,14 @@
 import { isInvalidSelector } from './lib/isInvalidSelector.js';
-import type { TargetOptions } from '#utils';
 export type Options = {
+    /**
+     * Sorts the selectors of a list alphabetically. (default: true)
+     */
     sort?: boolean;
+    /**
+     * Factors a shared prefix or suffix of a selector list into `:is()` when that is shorter and keeps the cascade. (default: true)
+     */
     convertToIs?: boolean;
-} & TargetOptions;
+};
 /**
  * Minify selectors from tokenizer spans. Function arguments are normalized
  * bottom-up without recursive descent.

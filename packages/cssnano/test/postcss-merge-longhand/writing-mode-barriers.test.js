@@ -1,5 +1,8 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -7,8 +10,8 @@ const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 /* A flow-relative property names a physical side only once the element's
  * writing-mode and direction are known, and any other rule may set them. So
  * each case has to hold for all of them. */
-const modern = { overrideBrowserslist: ['chrome 120'] };
-const legacy = { overrideBrowserslist: ['ie 11'] };
+const modern = withTargets(['chrome 120']);
+const legacy = withTargets(['ie 11']);
 
 describe('folding across a declaration of the other kind', () => {
   test(
@@ -185,7 +188,7 @@ describe('declarations dead in every writing mode', () => {
     processCSS(
       'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px;margin-block:1dvh;margin-inline:1dvh}',
       'a{margin:1px;margin-block:1dvh;margin-inline:1dvh}',
-      { overrideBrowserslist: ['chrome 100'] }
+      withTargets(['chrome 100'])
     )
   );
 });

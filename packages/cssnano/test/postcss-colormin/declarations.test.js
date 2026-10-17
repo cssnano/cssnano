@@ -2,6 +2,7 @@ import { describe, test } from 'node:test';
 import {
   usePostCSSPlugin,
   processCSSFactory,
+  withTargets,
 } from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-colormin/index.js';
 
@@ -346,16 +347,16 @@ describe('Passthrough and browser quirks', () => {
 
   test(
     'should convert rgba(0,0,0,0) to "transparent" for an IE 11 target',
-    processCSS('h1{color:rgba(0,0,0,0)}', 'h1{color:transparent}', {
-      overrideBrowserslist: 'IE 11',
-    })
+    processCSS(
+      'h1{color:rgba(0,0,0,0)}',
+      'h1{color:transparent}',
+      withTargets('IE 11')
+    )
   );
 
   test(
     'should keep rgba(0,0,0,0) when the query matches no browser, because the targets are unknown',
-    passthroughCSS('h1{color:rgba(0,0,0,0)}', {
-      overrideBrowserslist: 'ie 6 and not ie 6',
-    })
+    passthroughCSS('h1{color:rgba(0,0,0,0)}', withTargets('ie 6 and not ie 6'))
   );
 
   test(

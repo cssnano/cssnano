@@ -17,6 +17,8 @@ const input = 'a{align-items:center;justify-items:start}';
 let projectWithoutConfig;
 /** @type {string} */
 let projectWithDefaultsConfig;
+/** @type {string} */
+let projectWithEnvConfig;
 const savedQuery = process.env.BROWSERSLIST;
 
 before(() => {
@@ -24,6 +26,11 @@ before(() => {
   writeFileSync(join(projectWithoutConfig, 'package.json'), '{}');
   projectWithDefaultsConfig = mkdtempSync(join(tmpdir(), 'cssnano-config-'));
   writeFileSync(join(projectWithDefaultsConfig, '.browserslistrc'), 'defaults');
+  projectWithEnvConfig = mkdtempSync(join(tmpdir(), 'cssnano-env-config-'));
+  writeFileSync(
+    join(projectWithEnvConfig, '.browserslistrc'),
+    `[modern]\n${defaultTargetsQuery}\n\n[legacy]\nie 11\n`
+  );
 });
 
 beforeEach(() => {
@@ -35,6 +42,7 @@ after(() => {
   else process.env.BROWSERSLIST = savedQuery;
   rmSync(projectWithoutConfig, { recursive: true });
   rmSync(projectWithDefaultsConfig, { recursive: true });
+  rmSync(projectWithEnvConfig, { recursive: true });
 });
 
 /**
@@ -43,16 +51,15 @@ after(() => {
  * @return {Promise<string>}
  */
 async function minify(project, options = {}) {
-  const result = await postcss(cssnano({ preset: [preset, options] })).process(
-    input,
-    { from: join(project, 'app.css') }
-  );
+  const result = await postcss(preset(options)).process(input, {
+    from: join(project, 'app.css'),
+  });
   return result.css;
 }
 
 /** @param {string | string[]} query */
 function minifyFor(query) {
-  return minify(projectWithoutConfig, { overrideBrowserslist: query });
+  return minify(projectWithoutConfig, { browserslist: { query } });
 }
 
 describe('default preset browser targets', () => {
@@ -84,41 +91,32 @@ describe('default preset browser targets', () => {
     assert.equal(output, await minifyFor('defaults'));
   });
 
-  test('targets overrideBrowserslist instead of the project config', async () => {
+  test('targets browserslist.query instead of the project config', async () => {
     assert.equal(
       await minify(projectWithDefaultsConfig, {
-        overrideBrowserslist: defaultTargetsQuery,
+        browserslist: { query: defaultTargetsQuery },
       }),
       await minifyFor(defaultTargetsQuery)
     );
   });
 
-  // A wrapper preset may copy the plugin options, and structuredClone, like a
-  // JSON round trip, drops symbol-keyed properties.
-  test('targets overrideBrowserslist when a wrapper preset clones the plugin options', async () => {
-    const { plugins } = preset({ overrideBrowserslist: defaultTargetsQuery });
-    const cloned = plugins.map(([plugin, options]) => [
-      plugin,
-      structuredClone(options),
-    ]);
-    const result = await postcss(
-      cssnano({ preset: { plugins: cloned } })
-    ).process(input, { from: join(projectWithDefaultsConfig, 'app.css') });
-    assert.equal(result.css, await minifyFor(defaultTargetsQuery));
+  test('targets the section of the project browserslist config that browserslist.env names', async () => {
+    assert.equal(
+      await minify(projectWithEnvConfig, { browserslist: { env: 'legacy' } }),
+      await minify(projectWithoutConfig, { browserslist: { query: 'ie 11' } })
+    );
   });
 
-  // A spread keeps the preset's symbol-keyed properties, so the edit must be
-  // read from the plain options, as it is after a clone.
-  test('targets overrideBrowserslist that a wrapper preset sets on the plugin options', async () => {
-    const { plugins } = preset({ overrideBrowserslist: 'defaults' });
-    const edited = plugins.map(([plugin, options]) => [
-      plugin,
-      { ...options, overrideBrowserslist: defaultTargetsQuery },
-    ]);
-    const result = await postcss(
-      cssnano({ preset: { plugins: edited } })
-    ).process(input, { from: join(projectWithoutConfig, 'app.css') });
-    assert.equal(result.css, await minifyFor(defaultTargetsQuery));
+  test('targets the usage data that browserslist.stats gives for a query', async () => {
+    assert.equal(
+      await minify(projectWithoutConfig, {
+        browserslist: {
+          query: '> 1%',
+          stats: { chrome: { 150: 100 } },
+        },
+      }),
+      await minifyFor('chrome 150')
+    );
   });
 });
 
@@ -143,11 +141,12 @@ const oldestTargets = 'ie 11';
 
 /** @param {string | string[]} query */
 function processFor(query) {
-  return postcss(
-    cssnano({ preset: [preset, { overrideBrowserslist: query }] })
-  ).process(supportDependentInput, {
-    from: join(projectWithoutConfig, 'app.css'),
-  });
+  return postcss(preset({ browserslist: { query } })).process(
+    supportDependentInput,
+    {
+      from: join(projectWithoutConfig, 'app.css'),
+    }
+  );
 }
 
 const matchesNothing = ['ie 11', 'not ie 11'];
@@ -175,103 +174,15 @@ describe('default preset with a query that matches no browser', () => {
   });
 });
 
-/**
- * @param {object} presetOptions
- * @param {number} files how many stylesheets one processor handles
- * @return {Promise<string[][]>} the warning texts of each result
- */
-async function warningsPerFile(presetOptions, files = 1) {
-  const processor = postcss(cssnano({ preset: [preset, presetOptions] }));
-  const texts = [];
-  for (let i = 0; i < files; i++) {
-    const result = await processor.process(input, {
-      from: join(projectWithoutConfig, `app${i}.css`),
-    });
-    texts.push(result.warnings().map(({ text }) => text));
-  }
-  return texts;
-}
-
-describe('per-plugin browser target options', () => {
-  for (const key of ['overrideBrowserslist', 'stats', 'env', 'path']) {
-    test(`the result warns that ${key} set on a plugin is ignored`, async () => {
-      const [[text]] = await warningsPerFile({
-        mergeRules: { [key]: 'ie 11' },
-      });
-      assert.match(
-        text,
-        new RegExp(`The mergeRules option ${key} is ignored`, 'v')
-      );
-    });
-  }
-
-  test('the result warns that a target option set on a plugin that ignores browser targets is ignored', async () => {
-    const [[text]] = await warningsPerFile({
-      discardComments: { overrideBrowserslist: 'ie 11' },
-    });
-    assert.match(
-      text,
-      /The discardComments option overrideBrowserslist is ignored/v
+describe('browser target options that a plugin sets itself', () => {
+  test('throws for overrideBrowserslist in the options of a plugin, and names browserslist', () => {
+    assert.throws(
+      () =>
+        cssnano({
+          preset,
+          options: { mergeRules: { overrideBrowserslist: 'ie 11' } },
+        }),
+      /"overrideBrowserslist" in options\.mergeRules was removed; set browserslist\.query instead/v
     );
-  });
-
-  test('the result warns about a target option on a plugin that ignores browser targets on every file', async () => {
-    const [first, second] = await warningsPerFile(
-      { discardComments: { stats: {} } },
-      2
-    );
-    assert.deepEqual([first.length, second.length], [1, 1]);
-  });
-
-  test('the result warns about a target option on minifySelectors when convertToIs is false', async () => {
-    const [[text]] = await warningsPerFile({
-      minifySelectors: { convertToIs: false, env: 'production' },
-    });
-    assert.match(text, /The minifySelectors option env is ignored/v);
-  });
-
-  test('the plugin keeps the preset targets when it sets its own', async () => {
-    assert.equal(
-      (
-        await minify(projectWithoutConfig, {
-          overrideBrowserslist: defaultTargetsQuery,
-          mergeRules: { overrideBrowserslist: 'ie 11' },
-        })
-      ).toString(),
-      await minifyFor(defaultTargetsQuery)
-    );
-  });
-
-  test('the result warns on every file a processor handles', async () => {
-    const [first, second, third] = await warningsPerFile(
-      { minifyParams: { path: '/a' } },
-      3
-    );
-    assert.deepEqual([first.length, second.length, third.length], [1, 1, 1]);
-  });
-
-  test('a plugin that sets other options produces no warning', async () => {
-    assert.deepEqual(
-      await warningsPerFile({ minifySelectors: { sort: false } }),
-      [[]]
-    );
-  });
-
-  test('a plugin target option that is undefined produces no warning', async () => {
-    assert.deepEqual(
-      await warningsPerFile({ mergeRules: { env: undefined } }),
-      [[]]
-    );
-  });
-
-  test('a plugin excluded with exclude: true produces no warning, because it never runs', async () => {
-    assert.deepEqual(
-      await warningsPerFile({ colormin: { exclude: true, stats: {} } }),
-      [[]]
-    );
-  });
-
-  test('a plugin disabled with false produces no warning', async () => {
-    assert.deepEqual(await warningsPerFile({ mergeRules: false }), [[]]);
   });
 });

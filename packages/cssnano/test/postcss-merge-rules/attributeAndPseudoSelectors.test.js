@@ -1,91 +1,94 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  withTargets,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 test(
   'should not merge general sibling combinators',
-  passthroughCSS('div{color:#fff}a ~ b{color:#fff}', {
-    overrideBrowserslist: 'IE 6',
-  })
+  passthroughCSS('div{color:#fff}a ~ b{color:#fff}', withTargets('IE 6'))
 );
 
 test(
   'should not merge child combinators',
-  passthroughCSS('div{color:#fff}a > b{color:#fff}', {
-    overrideBrowserslist: 'IE 6',
-  })
+  passthroughCSS('div{color:#fff}a > b{color:#fff}', withTargets('IE 6'))
 );
 
 test(
   'should not merge attribute selectors (css 2.1)',
-  passthroughCSS('div{color:#fff}[href]{color:#fff}', {
-    overrideBrowserslist: 'IE 6',
-  })
+  passthroughCSS('div{color:#fff}[href]{color:#fff}', withTargets('IE 6'))
 );
 
 test(
   'should not merge attribute selectors (css 2.1) (2)',
-  passthroughCSS('div{color:#fff}[href="foo"]{color:#fff}', {
-    overrideBrowserslist: 'IE 6',
-  })
+  passthroughCSS('div{color:#fff}[href="foo"]{color:#fff}', withTargets('IE 6'))
 );
 
 test(
   'should not merge attribute selectors (css 2.1) (3)',
-  passthroughCSS('div{color:#fff}[href~="foo"]{color:#fff}', {
-    overrideBrowserslist: 'IE 6',
-  })
+  passthroughCSS(
+    'div{color:#fff}[href~="foo"]{color:#fff}',
+    withTargets('IE 6')
+  )
 );
 
 test(
   'should not merge attribute selectors (css 2.1) (4)',
-  passthroughCSS('div{color:#fff}[href|="foo"]{color:#fff}', {
-    overrideBrowserslist: 'IE 6',
-  })
+  passthroughCSS(
+    'div{color:#fff}[href|="foo"]{color:#fff}',
+    withTargets('IE 6')
+  )
 );
 
 test(
   'should not merge attribute selectors (css 3)',
-  passthroughCSS('div{color:#fff}[href^="foo"]{color:#fff}', {
-    overrideBrowserslist: 'IE 7',
-  })
+  passthroughCSS(
+    'div{color:#fff}[href^="foo"]{color:#fff}',
+    withTargets('IE 7')
+  )
 );
 
 test(
   'should not merge attribute selectors (css 3) (2)',
-  passthroughCSS('div{color:#fff}[href$="foo"]{color:#fff}', {
-    overrideBrowserslist: 'IE 7',
-  })
+  passthroughCSS(
+    'div{color:#fff}[href$="foo"]{color:#fff}',
+    withTargets('IE 7')
+  )
 );
 
 test(
   'should not merge attribute selectors (css 3) (3)',
-  passthroughCSS('div{color:#fff}[href*="foo"]{color:#fff}', {
-    overrideBrowserslist: 'IE 7',
-  })
+  passthroughCSS(
+    'div{color:#fff}[href*="foo"]{color:#fff}',
+    withTargets('IE 7')
+  )
 );
 
 test(
   'should not merge case insensitive attribute selectors',
-  passthroughCSS('div{color:#fff}[href="foo" i]{color:#fff}', {
-    overrideBrowserslist: 'Edge 15',
-  })
+  passthroughCSS(
+    'div{color:#fff}[href="foo" i]{color:#fff}',
+    withTargets('Edge 15')
+  )
 );
 
 test(
   'should not merge unsupported case-sensitive attribute selectors',
-  passthroughCSS('div{color:#fff}[href="foo" s]{color:#fff}', {
-    overrideBrowserslist: 'Chrome 100',
-  })
+  passthroughCSS(
+    'div{color:#fff}[href="foo" s]{color:#fff}',
+    withTargets('Chrome 100')
+  )
 );
 
 test(
   'should recognize uppercase case-sensitive attribute selectors',
-  passthroughCSS('div{color:#fff}[href="foo" S]{color:#fff}', {
-    overrideBrowserslist: 'Edge 15',
-  })
+  passthroughCSS(
+    'div{color:#fff}[href="foo" S]{color:#fff}',
+    withTargets('Edge 15')
+  )
 );
 
 test(
@@ -106,15 +109,16 @@ test(
   processCSS(
     'div:where(.a){color:red}div:where(.b){color:red}',
     'div:where(.a),div:where(.b){color:red}',
-    { overrideBrowserslist: ['chrome 120', 'safari 17', 'firefox 120'] }
+    withTargets(['chrome 120', 'safari 17', 'firefox 120'])
   )
 );
 
 test(
   'should not merge rules with :where when unsupported',
-  passthroughCSS('div:where(.a){color:red}div:where(.b){color:red}', {
-    overrideBrowserslist: ['ie 11'],
-  })
+  passthroughCSS(
+    'div:where(.a){color:red}div:where(.b){color:red}',
+    withTargets(['ie 11'])
+  )
 );
 
 test(
@@ -152,6 +156,6 @@ test(
   processCSS(
     ':lang(en,fr){color:red}x{color:red}',
     ':lang(en,fr),x{color:red}',
-    { overrideBrowserslist: 'Chrome 100' }
+    withTargets('Chrome 100')
   )
 );

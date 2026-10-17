@@ -1,13 +1,15 @@
 import { resolveTargets } from '#utils/browser-targets';
-import { reportIgnoredTargetOptions } from '#utils/ignored-target-options';
 import { supportsAll } from '#utils/browser-support';
 import { isFixedPointSelector } from './lib/fixedPointSelector.js';
 import { isInvalidSelector } from './lib/isInvalidSelector.js';
 import { isDefaultNamespace } from './lib/isDefaultNamespace.js';
 import { normalizeList } from './lib/selectorScanner.js';
 
-/** @import {TargetOptions} from '#utils' */
-/** @typedef {{ sort?: boolean, convertToIs?: boolean } & TargetOptions} Options */
+/**
+ * @typedef {object} Options
+ * @property {boolean} [sort] Sorts the selectors of a list alphabetically. (default: true)
+ * @property {boolean} [convertToIs] Factors a shared prefix or suffix of a selector list into `:is()` when that is shorter and keeps the cascade. (default: true)
+ */
 
 /**
  * These vendor spellings were used by browsers before unprefixed keyframes
@@ -63,10 +65,6 @@ function pluginCreator(opts = {}) {
           resolveTargets(resolved, result),
           'css-matches-pseudo'
         );
-      } else {
-        // Without folding the targets are never read, but the user's
-        // target options are ignored all the same.
-        reportIgnoredTargetOptions(resolved, result);
       }
       return {
         /** @param {import('postcss').Root} css */

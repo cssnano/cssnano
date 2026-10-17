@@ -1,7 +1,6 @@
-import type { TargetOptions } from '#utils';
-export type Options = import('./lib/findReplacements.js').Options & TargetOptions;
+export type Options = import('./lib/findReplacements.js').Options;
 /**
- * @typedef {import('./lib/findReplacements.js').Options & TargetOptions} Options
+ * @typedef {import('./lib/findReplacements.js').Options} Options
  */
 /** @param {Options} opts @return {import('postcss').Plugin} */
 declare function pluginCreator(opts?: Options): import('postcss').Plugin;

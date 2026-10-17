@@ -1,4 +1,4 @@
-export type PresetName = import('./_data/presets.js').PresetName;
+export type PresetId = import('./_data/presets.js').PresetId;
 
 export interface MinificationSuccess {
   ok: true;
@@ -20,7 +20,7 @@ export interface CssNanoWorker {
 
 export interface MinificationRequest {
   input: string;
-  preset: PresetName;
+  preset: PresetId;
 }
 
 export type MinificationResult = MinificationSuccess | MinificationError;

@@ -67,7 +67,7 @@ as an example:
 module.exports = {
     plugins: [
         require('cssnano')({
-            preset: 'default',
+            preset: require('cssnano/presets/default'),
         }),
     ],
 };

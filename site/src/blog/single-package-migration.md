@@ -26,8 +26,10 @@ If you audit your dependencies, or review lockfile changes before you merge them
 
 ## What to check during migration
 
-Most projects need no changes. Check these points if any of them apply to you.
-These are mostly edge cases, which occur if you relied on the transitive dependencies of the `cssnano` package being available in your build.
+Most projects need no changes. Check these points if any of them apply to you. These are mostly edge cases, which occur if you relied on the transitive dependencies of the `cssnano` package being available in your build.
+
+> **Note:** cssnano 10 removes the preset behavior described in the first four points below. A preset is a function imported from `cssnano/presets/default`, `cssnano/presets/lite` or `cssnano/presets/advanced`; a preset name such as `'default'`, or an array such as `['default', {...}]`, throws, and `CSSNANO_INSTALLED_PRESET` is gone.
+
 - **Separately installed preset packages take precedence.** To preserve backward-compatibility, if `cssnano-preset-lite` or `cssnano-preset-advanced` is installed in your project, cssnano uses it instead of the built-in preset. cssnano prints a one-time `CSSNANO_INSTALLED_PRESET` warning. Uninstall the package to use the built-in preset, or pass the imported preset function to keep the installed one without the warning.
 - The shorthand **`preset: 'default'` always uses the built-in preset.** Installed `cssnano-preset-default` packages are not used when using the shorthand.
 - **Full preset package names fall back to the built-in preset.** If you write `cssnano-preset-default` and no `cssnano-preset-default` package is installed, cssnano uses its own copy.

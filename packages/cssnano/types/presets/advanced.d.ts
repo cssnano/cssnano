@@ -1,24 +1,13 @@
-export type SimpleOptions<OptionsExtends extends object | void = void> = false | (OptionsExtends & {
-    exclude?: true;
-});
-export type AdvancedOptions = {
-    discardUnused?: SimpleOptions<import('#postcss-discard-unused').Options>;
-    mergeIdents?: SimpleOptions;
-    reduceIdents?: SimpleOptions<import('#postcss-reduce-idents').Options>;
-    zindex?: SimpleOptions<import('#postcss-zindex').Options>;
-};
-export type AutoprefixerOptions = import('#presets/default').AutoprefixerOptions;
-export type BrowserslistOptions = import('#presets/default').BrowserslistOptions;
-export type Options = import('#presets/default').Options & AdvancedOptions;
+import type { NamedPreset } from './presetEntries.js';
+import type { AdvancedPluginOptions } from './advancedPlugins.js';
+export type PresetOptions = import('./configurePlugins.js').PresetOptions<AdvancedPluginOptions>;
+/** @import {NamedPreset} from './presetEntries.js' */
+/** @import {AdvancedPluginOptions} from './advancedPlugins.js' */
+/** @typedef {import('./configurePlugins.js').PresetOptions<AdvancedPluginOptions>} PresetOptions */
 /**
  * Advanced optimisations for cssnano; may or may not break your CSS!
- *
- * @param {Options & AutoprefixerOptions & BrowserslistOptions} opts
- * @returns {{ plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][] }}
+ * @type {NamedPreset<'advanced', AdvancedPluginOptions>}
  */
-declare function advancedPreset(opts?: Options & AutoprefixerOptions & BrowserslistOptions): {
-    plugins: [import('postcss').PluginCreator<any>, Options[keyof Options]][];
-};
-declare const moduleExports: typeof advancedPreset;
-export { moduleExports as default, moduleExports as 'module.exports' };
+declare const advancedPreset: NamedPreset<'advanced', AdvancedPluginOptions>;
+export { advancedPreset as default, advancedPreset as 'module.exports' };
 //# sourceMappingURL=advanced.d.ts.map
