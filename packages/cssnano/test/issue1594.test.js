@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import preset from '#presets/default';
 import nano from '../src/index.js';
+import { repositoryFile } from '../../../util/testHelpers.js';
 
 const fixture = `
 @layer components {
@@ -27,6 +28,6 @@ test('should discard empty layers after merging layers', () => {
   ]);
 
   return processor
-    .process(fixture, { from: undefined })
+    .process(fixture, { from: repositoryFile })
     .then((result) => assert.strictEqual(result.css, expected));
 });

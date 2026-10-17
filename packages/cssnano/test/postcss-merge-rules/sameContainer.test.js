@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { sameContainer } from '../../src/plugins/postcss-merge-rules/lib/sameContainer.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 /**
  * Parses `css` and returns the two nodes found by following each child-index
@@ -13,7 +14,7 @@ import { sameContainer } from '../../src/plugins/postcss-merge-rules/lib/sameCon
  */
 async function parseNodePair(css, firstPath, secondPath) {
   const { root } = await postcss().process(css, {
-    from: undefined,
+    from: repositoryFile,
     hideNothingWarning: true,
   });
   const resolve = (path) => {
@@ -212,20 +213,22 @@ test('sameContainer holds for named @layer blocks with identical comments and na
 
 test('sameContainer should hold for equal conditional blocks that are different nodes', () => {
   const { root } = postcss().process('@media print{a{}}@media print{b{}}', {
-    from: undefined,
+    from: repositoryFile,
   });
   assert.strictEqual(sameContainer(root.nodes[0], root.nodes[1]), true);
 });
 
 test('sameContainer should not hold for blocks with different conditions', () => {
   const { root } = postcss().process('@media print{a{}}@media screen{b{}}', {
-    from: undefined,
+    from: repositoryFile,
   });
   assert.strictEqual(sameContainer(root.nodes[0], root.nodes[1]), false);
 });
 
 test('sameContainer should not hold when only one side is the stylesheet root', () => {
-  const { root } = postcss().process('@media print{a{}}', { from: undefined });
+  const { root } = postcss().process('@media print{a{}}', {
+    from: repositoryFile,
+  });
   assert.strictEqual(sameContainer(root, root.nodes[0]), false);
 });
 
@@ -236,7 +239,7 @@ test('sameContainer should hold for two undefined containers', () => {
 test('sameContainer should not hold when the outer blocks differ and the inner ones match', () => {
   const { root } = postcss().process(
     '@media print{@supports (x:y){a{}}}@media screen{@supports (x:y){b{}}}',
-    { from: undefined }
+    { from: repositoryFile }
   );
   const first = root.nodes[0].nodes[0];
   const second = root.nodes[1].nodes[0];

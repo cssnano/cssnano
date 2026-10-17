@@ -7,7 +7,7 @@ import minifyWidthStyleColor from '../minifyWsc.js';
 import parseTrbl from '../parseTrbl.js';
 import parseWidthStyleColor from '../parseWsc.js';
 import { setsLonghands } from '../spec.js';
-import stylehacks from '#stylehacks';
+import { detectDeclaration } from '#stylehacks';
 import hasSubstitution from '../hasSubstitution.js';
 import canExplode from '../canExplode.js';
 import {
@@ -58,7 +58,7 @@ function borderBrowserKeeps(declaration) {
 
 /** @param {Declaration} d */
 function normalizeBorderSingleton(d) {
-  if (stylehacks.detect(d) || !canExplode(d)) return;
+  if (detectDeclaration(d) || !canExplode(d)) return;
   const p = asciiLowerCase(d.prop);
   if (borderAndSideShorthands.has(p)) {
     d.prop = p;
@@ -213,7 +213,7 @@ function processLane(rule, laneDecls, lane) {
   let segment = [];
 
   for (const d of laneDecls) {
-    if (stylehacks.detect(d) || !canExplode(d)) {
+    if (detectDeclaration(d) || !canExplode(d)) {
       if (segment.length) {
         reduceSegment(rule, segment, lane);
         segment = [];
@@ -272,7 +272,7 @@ export function reduceBorder(rule, decls, hasForeignBorder) {
       return (
         isCssWideKeyword(d.value) ||
         isCustomShorthand ||
-        (!stylehacks.detect(d) && !borderBrowserKeeps(d))
+        (!detectDeclaration(d) && !borderBrowserKeeps(d))
       );
     })
   )

@@ -14,8 +14,18 @@ const testDir = dirname(fileURLToPath(import.meta.url));
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
+// The repo's own browserslist config targets IE 11, which lacks the initial
+// keyword, so the conversions below pin the default targets explicitly.
+const defaultTargets = {
+  overrideBrowserslist: 'baseline widely available with downstream',
+};
+
 function convertInitial(property, value) {
-  return processCSS(`${property}:initial`, `${property}:${value}`);
+  return processCSS(
+    `${property}:initial`,
+    `${property}:${value}`,
+    defaultTargets
+  );
 }
 
 function convertToInitial(property, value) {
@@ -79,12 +89,12 @@ for (const [property, value] of Object.entries(toInitial)) {
 
 test(
   'cursor: initial => cursor: auto (uppercase property and value)',
-  processCSS('CURSOR: INITIAL', 'CURSOR: auto')
+  processCSS('CURSOR: INITIAL', 'CURSOR: auto', defaultTargets)
 );
 
 test(
   'z-index: initial => z-index: auto (uppercase property and value)',
-  processCSS('Z-INDEX: INITIAL', 'Z-INDEX: auto')
+  processCSS('Z-INDEX: INITIAL', 'Z-INDEX: auto', defaultTargets)
 );
 
 describe('Border-Block-Color:', () => {
@@ -134,12 +144,12 @@ test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
 
 test(
   'min-width auto tests',
-  processCSS('h1{min-width:initial}', 'h1{min-width:auto}')
+  processCSS('h1{min-width:initial}', 'h1{min-width:auto}', defaultTargets)
 );
 
 test(
   'min-height auto tests',
-  processCSS('h1{min-height:initial}', 'h1{min-height:auto}')
+  processCSS('h1{min-height:initial}', 'h1{min-height:auto}', defaultTargets)
 );
 
 /* The correct initial value is `repeat`,
@@ -153,7 +163,11 @@ test(
 
 test(
   'transform initial mask-repeat to repeat',
-  processCSS('div{mask-repeat:initial}', 'div{mask-repeat:repeat}')
+  processCSS(
+    'div{mask-repeat:initial}',
+    'div{mask-repeat:repeat}',
+    defaultTargets
+  )
 );
 
 /* Skip transform-box for browser compatibility  */

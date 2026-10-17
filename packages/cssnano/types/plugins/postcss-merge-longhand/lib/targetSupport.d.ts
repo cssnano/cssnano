@@ -1,3 +1,14 @@
+export type EngineProfile = {
+    /**
+     * - the lowest dotted version targeted
+     */
+    oldest: string | undefined;
+    /**
+     * - whether a target names a version that is
+     * neither dotted, a range of dotted versions, nor TP
+     */
+    malformed: boolean;
+};
 /**
  * Whether every target supports all place-* shorthands. An engine without
  * them drops the whole declaration, losing both axes that separate longhands
@@ -62,4 +73,15 @@ export declare class BoxSupport {
      */
     understandsWherever(earlier: BoxProperty, later: BoxProperty): boolean;
 }
+export type TargetSupport = {
+    placeShorthands: boolean;
+    boxSupport: BoxSupport;
+    pairShorthands: ReadonlySet<string>;
+    features: ReadonlySet<string>;
+};
+/**
+ * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
+ * @return {TargetSupport}
+ */
+export declare function targetSupportOf(browsers: readonly string[]): TargetSupport;
 //# sourceMappingURL=targetSupport.d.ts.map

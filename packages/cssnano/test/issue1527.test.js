@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import preset from '#presets/default';
 import nano from '../src/index.js';
+import { repositoryFile } from '../../../util/testHelpers.js';
 
 const fixture = `
 .b {
@@ -20,6 +21,6 @@ test('it should keep quote', () => {
   ]);
 
   return processor
-    .process(fixture, { from: undefined })
+    .process(fixture, { from: repositoryFile })
     .then((r) => assert.strictEqual(r.css, expected));
 });

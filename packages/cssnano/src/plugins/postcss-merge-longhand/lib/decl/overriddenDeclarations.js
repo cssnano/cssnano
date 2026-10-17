@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import stylehacks from '#stylehacks';
+import { detectDeclaration } from '#stylehacks';
 import { detach } from '../deferredChildEdits.js';
 import { isFallback } from '../isFallback.js';
 import { endsDeclarationRun } from './declarationRuns.js';
@@ -98,7 +98,7 @@ class OverrideFrontier {
     // Style hacks target specific browsers: never drop one or let one win.
     if (
       (survivors !== undefined || this.#crossPropertyRule !== undefined) &&
-      stylehacks.detect(node)
+      detectDeclaration(node)
     ) {
       return false;
     }
@@ -188,7 +188,7 @@ class OverrideFrontier {
    * @return {void}
    */
   #addSurvivor(buckets, declaration, name) {
-    if (stylehacks.detect(declaration)) return;
+    if (detectDeclaration(declaration)) return;
     const key = this.#keyOf(declaration, name);
     if (key !== undefined) addToBucket(buckets, key, declaration);
   }

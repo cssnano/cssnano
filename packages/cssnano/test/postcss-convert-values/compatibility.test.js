@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-convert-values/index.js';
 
 const { processCSS } = processCSSFactory(plugin);
@@ -52,6 +55,8 @@ test('preserves the legacy partial scan for an unbalanced function', async () =>
   const root = postcss.root({
     nodes: [postcss.decl({ prop: 'width', value: 'calc(192px + 0px' })],
   });
-  const result = await postcss(plugin()).process(root, { from: undefined });
+  const result = await postcss(plugin()).process(root, {
+    from: repositoryFile,
+  });
   assert.equal(result.css, 'width: calc(2in + 0px');
 });

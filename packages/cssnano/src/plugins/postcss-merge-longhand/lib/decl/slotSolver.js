@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
-import stylehacks from '#stylehacks';
+import { detectDeclaration } from '#stylehacks';
 import canExplode from '../canExplode.js';
 import hasSubstitution from '../hasSubstitution.js';
 import { mergeBlockingSupport, needsUnmetSupport } from '../isFallback.js';
@@ -121,7 +121,7 @@ function lastPlainSetters(family, laneDecls) {
     if (
       declaration.parent === undefined ||
       property?.family !== family ||
-      stylehacks.detect(declaration) ||
+      detectDeclaration(declaration) ||
       needsUnmetSupport(declaration)
     ) {
       continue;
@@ -162,7 +162,7 @@ function freeOverriddenSlots(family, laneDecls, inserted) {
     if (
       property?.family !== family ||
       property.slot !== shorthandSlot ||
-      stylehacks.detect(target) ||
+      detectDeclaration(target) ||
       !isExplodable(target) ||
       mergeBlockingSupport(target).size > 0
     ) {
@@ -280,7 +280,7 @@ export function reduceFamilyLane(
       continue;
     }
     const isShort = property.slot === shorthandSlot;
-    if (stylehacks.detect(decl) || (isShort && !isExplodable(decl))) {
+    if (detectDeclaration(decl) || (isShort && !isExplodable(decl))) {
       lane.reset();
       continue;
     }

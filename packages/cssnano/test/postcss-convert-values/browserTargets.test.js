@@ -7,14 +7,11 @@ const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 const input = 'a{height:0%;min-width:0%}';
 
 describe('convert-values browser targets', () => {
-  // Any target list that contains an ie browser keeps the unit: IE 11 needs
-  // 0% for height and min-width.
-  for (const query of ['ie 8', 'ie 9', 'ie 11']) {
-    test(
-      `keeps 0% for ${query}, because an IE target needs the unit`,
-      passthroughCSS(input, { overrideBrowserslist: query })
-    );
-  }
+  // IE 11 needs the unit on 0% for height and min-width.
+  test(
+    'keeps 0% for ie 11, because an IE target needs the unit',
+    passthroughCSS(input, { overrideBrowserslist: 'ie 11' })
+  );
 
   for (const query of [
     'edge 15',

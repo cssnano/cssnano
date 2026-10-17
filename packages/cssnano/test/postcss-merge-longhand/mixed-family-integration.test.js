@@ -1,7 +1,10 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
@@ -209,7 +212,7 @@ async function minifyWithStaleRaws(css, raws) {
   );
   decl.raws.value = raws;
 
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss([plugin()]).process(root, { from: repositoryFile });
 
   return decl;
 }

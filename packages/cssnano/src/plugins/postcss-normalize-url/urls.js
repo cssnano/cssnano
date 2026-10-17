@@ -1,8 +1,7 @@
 import cssnanoUtils from '#utils';
 
-const { asciiLowerCase } = cssnanoUtils;
+const { asciiLowerCase, isCSSWhitespace } = cssnanoUtils;
 
-const cssWhitespace = new Set([' ', '\t', '\n', '\r', '\f']);
 // eslint-disable-next-line no-useless-escape
 const urlTokenEscapeChars = /[\\ \t\n\r\f\(\)"']/gv;
 const singleQuoteStringEscapeChars = /[\\\n\r\f']/gv;
@@ -62,8 +61,8 @@ export function escapeForString(value, quote) {
 function trimCSSWhitespace(value) {
   let start = 0;
   let end = value.length;
-  while (start < end && cssWhitespace.has(value[start])) start++;
-  while (end > start && cssWhitespace.has(value[end - 1])) end--;
+  while (start < end && isCSSWhitespace(value.charCodeAt(start))) start++;
+  while (end > start && isCSSWhitespace(value.charCodeAt(end - 1))) end--;
   return value.slice(start, end);
 }
 

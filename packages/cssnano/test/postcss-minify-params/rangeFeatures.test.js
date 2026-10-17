@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-minify-params/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -279,10 +282,10 @@ describe('Drop redundant range features in @media queries', () => {
   test('should give the same output when a query with a dropped feature is minified again', async () => {
     const once = await postcss([plugin]).process(
       '@media (min-width:768px) and (min-width:320px) and (max-width:2000px) and (max-width:1000px){h1{color:red}}',
-      { from: undefined }
+      { from: repositoryFile }
     );
     const twice = await postcss([plugin]).process(once.css, {
-      from: undefined,
+      from: repositoryFile,
     });
     assert.equal(twice.css, once.css);
   });

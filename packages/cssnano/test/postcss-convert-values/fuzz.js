@@ -7,6 +7,7 @@ import {
   edgeCases,
   generate,
 } from '../../script/postcss-convert-values/lib/fuzzGenerate.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 const processor = postcss([plugin()]);
 
@@ -59,12 +60,14 @@ describe('Fuzzing & Invariant Testing', () => {
   test('repeated identical declarations reuse cache correctly without corruption', async () => {
     const input =
       'a{flex-basis:192px} b{flex-basis:192px} c{transform:rotate(0rad)} d{transform:rotate(0rad)}';
-    const output = (await processor.process(input, { from: undefined })).css;
+    const output = (await processor.process(input, { from: repositoryFile }))
+      .css;
     assert.equal(
       output,
       'a{flex-basis:2in} b{flex-basis:2in} c{transform:rotate(0deg)} d{transform:rotate(0deg)}'
     );
-    const second = (await processor.process(output, { from: undefined })).css;
+    const second = (await processor.process(output, { from: repositoryFile }))
+      .css;
     assert.equal(second, output);
   });
 
@@ -86,7 +89,7 @@ describe('Fuzzing & Invariant Testing', () => {
     ]);
 
     const result = await pipeline.process('a{width:10px} b{width:10px}', {
-      from: undefined,
+      from: repositoryFile,
     });
     assert.ok(
       !result.css.includes('20px'),

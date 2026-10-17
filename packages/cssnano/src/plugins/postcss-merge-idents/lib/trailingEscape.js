@@ -1,3 +1,7 @@
+import cssnanoUtils from '#utils';
+
+const { isCSSWhitespace } = cssnanoUtils;
+
 /**
  * @param {string} value
  * @return {boolean} whether the last backslash escapes nothing inside the
@@ -63,11 +67,7 @@ function trailingEscape(decl) {
     return value;
   }
   const codePoint = codePointAfterValue(decl);
-  return codePoint === ' ' ||
-    codePoint === '\t' ||
-    codePoint === '\n' ||
-    codePoint === '\r' ||
-    codePoint === '\f'
+  return codePoint !== undefined && isCSSWhitespace(codePoint.charCodeAt(0))
     ? value + codePoint
     : undefined;
 }

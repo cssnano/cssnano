@@ -3,6 +3,7 @@ import postcss from 'postcss';
 import assert from 'node:assert/strict';
 import postcssSvgo from 'postcss-svgo';
 import cssnano from '../src/index.js';
+import { repositoryFile } from '../../../util/testHelpers.js';
 
 // postcss-svgo is not part of the default preset; this is the documented way
 // to keep optimizing inline SVG.
@@ -10,7 +11,7 @@ const processor = postcss([postcssSvgo(), cssnano()]);
 
 function processCss(fixture, expected) {
   return async () => {
-    const { css } = await processor.process(fixture, { from: undefined });
+    const { css } = await processor.process(fixture, { from: repositoryFile });
     assert.strictEqual(css, expected);
   };
 }

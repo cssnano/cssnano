@@ -5,7 +5,7 @@ import caniuseApi from 'caniuse-api';
 import { feature, features } from 'caniuse-lite';
 import { knownBrowsers } from '../../script/utils/knownBrowsers.js';
 import { random } from '../../../../util/fuzzRng.js';
-import { featureKeys } from '../../src/utils/featureKeys.js';
+import { featureKeys } from '../../test/utils/_featureKeys.js';
 import { supportsAll } from '../../src/utils/browserSupport.js';
 
 const known = knownBrowsers();

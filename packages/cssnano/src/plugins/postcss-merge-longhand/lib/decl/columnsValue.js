@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import stylehacks from '#stylehacks';
+import { detectDeclaration } from '#stylehacks';
 import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
 import { isLengthValue } from '../lengthGrammar.js';
 import { isUnresolved } from '../unresolved.js';
@@ -282,7 +282,7 @@ function isValidColumnProperty(d) {
 
 /** @param {Declaration} d @return {boolean} */
 export const isInvalid = (d) =>
-  !stylehacks.detect(d) &&
+  !detectDeclaration(d) &&
   (asciiLowerCase(d.prop) === columns
     ? !isValidColumns(d)
     : !isValidColumnProperty(d));

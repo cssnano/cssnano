@@ -1,4 +1,7 @@
 import defaultBrowserslist from 'browserslist';
+import { agents } from 'caniuse-lite/dist/unpacker/agents.js';
+import { reportIgnoredTargetOptions } from './ignoredTargetOptions.js';
+import { versionSeparator } from './versions.js';
 
 /** @import {TargetOptions} from './index.js' */
 /** @import {Result} from 'postcss' */
@@ -18,11 +21,19 @@ export const defaultTargetsQuery = 'baseline widely available with downstream';
 /** @type {WeakMap<Result, Map<string, readonly string[]>>} */
 const cacheByResult = new WeakMap();
 /**
- * One frozen copy per browserslist list. The copy is shared by every result
- * that resolves the list, so its support answers stay cached across files.
- * @type {WeakMap<readonly string[], readonly string[]>}
+ * How many distinct target lists keep a shared copy. A build uses one or a
+ * few; the bound keeps a long-running process that receives many queries
+ * from holding every list it has seen.
  */
-const frozenByBrowserslistList = new WeakMap();
+export const sharedTargetListLimit = 500;
+/**
+ * One frozen copy per distinct list of targets, least recently used first.
+ * Browserslist returns a new array when its cache is disabled, evicted, or
+ * path-dependent, so the copy is found by content; the shared identity keeps
+ * the support answers once per list rather than once per file.
+ * @type {Map<string, readonly string[]>}
+ */
+const frozenByContent = new Map();
 /** @type {WeakMap<object, number>} */
 const statsIds = new WeakMap();
 let nextStatsId = 0;
@@ -42,11 +53,18 @@ function entriesFor(result) {
  * @return {readonly string[]}
  */
 function frozenCopyOf(list) {
-  let frozen = frozenByBrowserslistList.get(list);
+  const content = list.join(',');
+  let frozen = frozenByContent.get(content);
   if (frozen === undefined) {
     frozen = Object.freeze([...list]);
-    frozenByBrowserslistList.set(list, frozen);
+    if (frozenByContent.size >= sharedTargetListLimit) {
+      frozenByContent.delete(frozenByContent.keys().next().value ?? '');
+    }
+  } else {
+    // Move the list to the most recently used end.
+    frozenByContent.delete(content);
   }
+  frozenByContent.set(content, frozen);
   return frozen;
 }
 
@@ -94,6 +112,82 @@ function warnEmptyQuery(result, query) {
   );
 }
 
+/** @type {Map<string, Set<string | null> | undefined>} */
+const versionsByBrowser = new Map();
+
+/**
+ * Engines that browserslist resolves from its own data, not from caniuse.
+ * @type {ReadonlySet<string>}
+ */
+const enginesWithoutCaniuseData = new Set(['node', 'electron']);
+
+/**
+ * @param {string} browser
+ * @return {Set<string | null> | undefined} undefined for a browser that caniuse-lite does not list
+ */
+function listedVersions(browser) {
+  if (!versionsByBrowser.has(browser)) {
+    versionsByBrowser.set(
+      browser,
+      Object.hasOwn(agents, browser)
+        ? new Set(agents[browser].versions)
+        : undefined
+    );
+  }
+  return versionsByBrowser.get(browser);
+}
+
+/** @type {WeakMap<readonly string[], readonly string[]>} */
+const missingByTargets = new WeakMap();
+
+/**
+ * Targets that the installed caniuse-lite lacks, either a version of a
+ * browser it lists or a whole browser. That happens when browserslist
+ * resolves targets from a newer caniuse-lite than the one cssnano uses; every
+ * feature then counts as unsupported for them. Every file of a build shares
+ * the frozen list, so the scan runs once per list.
+ * @param {readonly string[]} targets a frozen list of browserslist entries
+ * @return {readonly string[]}
+ */
+function targetsMissingFromCaniuse(targets) {
+  let missing = missingByTargets.get(targets);
+  if (missing === undefined) {
+    missing = findTargetsMissingFromCaniuse(targets);
+    missingByTargets.set(targets, missing);
+  }
+  return missing;
+}
+
+/**
+ * @param {readonly string[]} targets browserslist entries such as "safari 26.5"
+ * @return {string[]}
+ */
+function findTargetsMissingFromCaniuse(targets) {
+  return targets.filter((target) => {
+    const separator = versionSeparator(target);
+    const version = target.slice(separator + 1);
+    if (version === '') return false;
+    const browser = target.slice(0, separator);
+    if (enginesWithoutCaniuseData.has(browser)) return false;
+    const versions = listedVersions(browser);
+    return versions === undefined || !versions.has(version);
+  });
+}
+
+/**
+ * @param {Result | undefined} result
+ * @param {readonly string[]} targets
+ */
+function warnMissingFromCaniuse(result, targets) {
+  if (result === undefined) return;
+  const missing = targetsMissingFromCaniuse(targets);
+  if (missing.length === 0) return;
+  result.warn(
+    `The installed caniuse-lite does not list ${missing.join(', ')}, which browserslist resolved from a newer copy, so optimizations that depend on browser support treat them as unsupported. Update caniuse-lite so the copies match.`,
+    { plugin: 'cssnano' }
+  );
+}
+
 /**
  * Resolves the targets for one plugin, with the same option precedence as
  * browserslist: plugin options win over the postcss options, and the override
@@ -115,6 +209,9 @@ export function resolveTargets(
     /** @type {TargetOptions & {from?: string, file?: string}} */ (
       result?.opts || {}
     );
+  // In a preset, the options hold the preset's targets, which replaced any
+  // the user set on the plugin.
+  reportIgnoredTargetOptions(options, result);
   const stats = options.stats || resultOptions.stats;
   const env = options.env || resultOptions.env;
   const path =
@@ -143,6 +240,7 @@ export function resolveTargets(
     // An empty list keeps support-dependent optimizations off, because widening
     // it would enable transforms that the query excluded.
     if (targets.length === 0) warnEmptyQuery(result, query);
+    else warnMissingFromCaniuse(result, targets);
     entries?.set(key, targets);
   }
   return targets;

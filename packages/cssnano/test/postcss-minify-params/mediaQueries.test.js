@@ -3,7 +3,10 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-minify-params/index.js';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
@@ -79,7 +82,7 @@ describe('Normalise @media queries', () => {
   test('should handle at-rule with missing raws.afterName', async () => {
     const root = postcss.parse('@media (min-width: 100px){}');
     delete root.first.raws.afterName;
-    await postcss([plugin()]).process(root, { from: undefined });
+    await postcss([plugin()]).process(root, { from: repositoryFile });
     assert.strictEqual(root.first.raws.afterName, '');
   });
 

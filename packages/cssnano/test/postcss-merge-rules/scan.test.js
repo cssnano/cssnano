@@ -3,10 +3,11 @@ import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 /** @param {string} css */
 function merge(css) {
-  return postcss([plugin]).process(css, { from: undefined }).css;
+  return postcss([plugin]).process(css, { from: repositoryFile }).css;
 }
 
 test('should merge overlapping declarations of three adjacent rules into two rules', () => {
@@ -32,7 +33,7 @@ test('should merge the earlier pair first when two adjacent pairs share equally 
     postcss([plugin]).process(
       '.a{color:red}.b{color:red;margin:0}.c{margin:0}',
       {
-        from: undefined,
+        from: repositoryFile,
       }
     ).css,
     '.a,.b{color:red}.b,.c{margin:0}'
@@ -56,7 +57,7 @@ test('should merge the best pair of a chain whose shared declarations keep incre
   assert.equal(
     postcss([plugin]).process(
       "input[type='range']::-moz-range-track{}input[type='range']::-ms-thumb{-webkit-transition:all 200ms ease-in-out}input[type='range']::-ms-fill-upper{-webkit-transition:all 200ms ease-in-out;transition:all 200ms ease-in-out}input[type='range']::-ms-track{-webkit-transition:all 200ms ease-in-out;transition:all 200ms ease-in-out}",
-      { from: undefined }
+      { from: repositoryFile }
     ).css,
     "input[type='range']::-moz-range-track{}input[type='range']::-ms-thumb{-webkit-transition:all 200ms ease-in-out}input[type='range']::-ms-fill-upper,input[type='range']::-ms-track{-webkit-transition:all 200ms ease-in-out;transition:all 200ms ease-in-out}"
   );
@@ -68,7 +69,7 @@ test('should merge the best pair of a chain whose shared declarations include !i
   assert.equal(
     postcss([plugin]).process(
       '.ui.scrolling.dropdown .menu,.ui.dropdown .scrolling.menu{overflow-x:hidden;overflow-y:auto}.ui.scrolling.dropdown .menu{overflow-x:hidden;overflow-y:auto;min-width:100%!important;width:auto!important}.ui.dropdown .scrolling.menu{overflow-y:auto;min-width:100%!important;width:auto!important}',
-      { from: undefined }
+      { from: repositoryFile }
     ).css,
     '.ui.scrolling.dropdown .menu,.ui.dropdown .scrolling.menu{overflow-x:hidden;overflow-y:auto;min-width:100%!important;width:auto!important}.ui.scrolling.dropdown .menu{overflow-x:hidden}'
   );
@@ -99,9 +100,11 @@ test('should converge on a bounded deterministic rewrite corpus', () => {
   });
 
   for (const input of inputs) {
-    const first = postcss([plugin]).process(input, { from: undefined }).css;
+    const first = postcss([plugin]).process(input, {
+      from: repositoryFile,
+    }).css;
     const second = postcss([plugin]).process(first, {
-      from: undefined,
+      from: repositoryFile,
     }).css;
     assert.equal(second, first);
     assert.ok(first.length <= input.length);
@@ -134,7 +137,7 @@ function processAllWithLimits(inputs) {
     const inputs = ${JSON.stringify(inputs)};
     inputs.forEach((css, index) => {
       process.stdout.write(index + '\\n');
-      process.stdout.write(JSON.stringify(postcss([plugin]).process(css, {from: undefined}).css) + '\\n');
+      process.stdout.write(JSON.stringify(postcss([plugin]).process(css, {from: ${JSON.stringify(repositoryFile)}}).css) + '\\n');
     });
   `;
   const result = spawnSync(

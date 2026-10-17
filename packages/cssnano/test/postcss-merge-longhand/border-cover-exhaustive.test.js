@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import plugin from '../../src/plugins/postcss-merge-longhand/index.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 const sides = ['top', 'right', 'bottom', 'left'];
 const components = ['width', 'style', 'color'];
@@ -176,7 +177,7 @@ async function checkMask(mode, mask, important) {
     })
     .join(';');
   const result = await postcss([plugin()]).process(`a{${input}}`, {
-    from: undefined,
+    from: repositoryFile,
   });
   const actual = /** @type {import('postcss').Rule} */ (
     postcss.parse(result.css).first

@@ -25,7 +25,7 @@ export const mutations = [
   },
   {
     name: 'reduce segments containing style hacks',
-    find: '    if (stylehacks.detect(d) || !canExplode(d)) {',
+    find: '    if (detect(d) || !canExplode(d)) {',
     replace: '    if (!canExplode(d)) {',
   },
   {

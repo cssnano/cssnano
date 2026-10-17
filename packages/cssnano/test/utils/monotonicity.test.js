@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { knownBrowsers } from '../../script/utils/knownBrowsers.js';
-import { featureKeys } from '../../src/utils/featureKeys.js';
+import { featureKeys } from './_featureKeys.js';
 import { supportsAll } from '../../src/utils/browserSupport.js';
 import { anyAffected } from '../../src/utils/browserBugs.js';
 import bugs from '../../src/utils/data/bugs.json' with { type: 'json' };

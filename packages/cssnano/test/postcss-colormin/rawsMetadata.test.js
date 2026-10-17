@@ -2,6 +2,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import plugin from '../../src/plugins/postcss-colormin/index.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 describe('Raw PostCSS metadata handling and synchronization', () => {
   test('should read decl.raws.value.raw when decl.raws.value.value === decl.value', async () => {
@@ -11,7 +12,7 @@ describe('Raw PostCSS metadata handling and synchronization', () => {
     );
     decl.raws.value = { raw: '\\77 hite', value: 'white' };
 
-    await postcss([plugin()]).process(root, { from: undefined });
+    await postcss([plugin()]).process(root, { from: repositoryFile });
 
     assert.strictEqual(decl.value, '#fff');
     assert.deepStrictEqual(decl.raws.value, { raw: '#fff', value: '#fff' });
@@ -29,7 +30,7 @@ describe('Raw PostCSS metadata handling and synchronization', () => {
     decl1.raws.value = { raw: 'white', value: 'white' };
     decl2.raws.value = { raw: 'white', value: 'white' };
 
-    await postcss([plugin()]).process(root, { from: undefined });
+    await postcss([plugin()]).process(root, { from: repositoryFile });
 
     assert.strictEqual(decl1.value, '#fff');
     assert.deepStrictEqual(decl1.raws.value, { raw: '#fff', value: '#fff' });
@@ -47,7 +48,7 @@ describe('Raw PostCSS metadata handling and synchronization', () => {
     decl.value = 'white';
     decl.raws.value = { raw: 'black', value: 'black' };
 
-    await postcss([plugin()]).process(root, { from: undefined });
+    await postcss([plugin()]).process(root, { from: repositoryFile });
 
     // Should transform 'white' to '#fff', ignoring stale 'black' raws
     assert.strictEqual(decl.value, '#fff');

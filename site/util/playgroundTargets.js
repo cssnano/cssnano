@@ -10,7 +10,15 @@ import {
  * @return {string[]}
  */
 export function resolvePlaygroundTargets() {
-  return [
+  const targets = [
     ...resolveTargets({ overrideBrowserslist: defaultTargetsQuery }, undefined),
   ];
+  // An empty list would silently switch off every support-dependent
+  // optimization in the playground.
+  if (targets.length === 0) {
+    throw new Error(
+      `The playground targets query ${JSON.stringify(defaultTargetsQuery)} matches no browser.`
+    );
+  }
+  return targets;
 }

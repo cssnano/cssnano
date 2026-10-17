@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
 import {
   longSelector,
@@ -80,7 +83,7 @@ test('should not copy any rule while trying pairs of rules with long selectors w
     return clone.apply(this, args);
   };
   try {
-    postcss([plugin]).process(css, { from: undefined }).sync();
+    postcss([plugin]).process(css, { from: repositoryFile }).sync();
   } finally {
     postcss.Rule.prototype.clone = clone;
   }

@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  repositoryFile,
+} from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-merge-rules/index.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -81,9 +84,11 @@ test(
 test('should converge after partial merging duplicate declarations', async () => {
   const input =
     '.a{color:red;color:red}.b{color:red;font-weight:bold}.c{color:red;font-weight:bold}';
-  const first = await postcss([plugin]).process(input, { from: undefined });
+  const first = await postcss([plugin]).process(input, {
+    from: repositoryFile,
+  });
   const second = await postcss([plugin]).process(first.css, {
-    from: undefined,
+    from: repositoryFile,
   });
 
   assert.equal(
@@ -135,10 +140,10 @@ test(
 test('should converge after a greedy merge pass', async () => {
   const first = await postcss([plugin]).process(
     'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
-    { from: undefined }
+    { from: repositoryFile }
   );
   const second = await postcss([plugin]).process(first.css, {
-    from: undefined,
+    from: repositoryFile,
   });
 
   assert.equal(second.css, first.css);

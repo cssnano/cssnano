@@ -22,7 +22,7 @@ function pluginCreator(options = {}) {
      */
     prepare(result) {
       const browsers = resolveTargets(options, result);
-      const hasAllBug = anyAffected(browsers, 'media-all-ie10-11');
+      const hasAllBug = anyAffected(browsers, 'media-all-ie11');
 
       return {
         /** @param {import('postcss').Root} css */

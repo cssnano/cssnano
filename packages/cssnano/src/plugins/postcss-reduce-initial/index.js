@@ -28,7 +28,14 @@ function pluginCreator(options = {}) {
     prepare(result) {
       const browsers = resolveTargets(options, result);
 
-      const initialSupport = supportsAll(browsers, 'css-initial-value');
+      // A target without the initial keyword drops the declaration, so
+      // rewriting it to an explicit value would make it apply.
+      if (!supportsAll(browsers, 'css-initial-value')) {
+        return {};
+      }
+      const ignoreProp = new Set(
+        defaultIgnoreProps.concat(/** @type {Options} */ (options).ignore || [])
+      );
       return {
         /**
          * @param {import('postcss').Root} css
@@ -36,18 +43,11 @@ function pluginCreator(options = {}) {
         OnceExit(css) {
           css.walkDecls((decl) => {
             const lowerCasedProp = decl.prop.toLowerCase();
-            const ignoreProp = new Set(
-              defaultIgnoreProps.concat(
-                /** @type {Options} */ (options).ignore || []
-              )
-            );
-
             if (ignoreProp.has(lowerCasedProp)) {
               return;
             }
 
             if (
-              initialSupport &&
               Object.hasOwn(toInitial, lowerCasedProp) &&
               decl.value.toLowerCase() ===
                 toInitial[/** @type keyof typeof toInitial */ (lowerCasedProp)]

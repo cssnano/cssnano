@@ -29,6 +29,18 @@ describe('Selectors', () => {
   // A comment is not whitespace (CSS Syntax 3): `div/**/span` is two type
   // selectors without a combinator, whereas `div span` is a descendant
   // combinator.
+  // The IE 5.5-7 hack `html > /**/ body` reads the same without its comment in
+  // every browser that cssnano supports, which starts at IE 11.
+  test(
+    'should remove the comment in the html > /**/ body hack selector',
+    processCSS('html > /**/ body .c{color:red}', 'html > body .c{color:red}')
+  );
+
+  test(
+    'should remove the comment in the html>/**/body hack selector without spaces',
+    processCSS('html>/**/body .d{color:red}', 'html>body .d{color:red}')
+  );
+
   test(
     'should keep adjacent type selectors without a combinator when the comment between them is removed',
     processCSS('div/*c*/span{color:red}', 'div/**/span{color:red}')

@@ -1,7 +1,7 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 
-const { isHexDigitCode } = cssnanoUtils;
+const { isCSSWhitespace, isHexDigitCode } = cssnanoUtils;
 
 const SINGLE_QUOTE = "'".charCodeAt(0);
 const DOUBLE_QUOTE = '"'.charCodeAt(0);
@@ -9,8 +9,6 @@ const BACKSLASH = '\\'.charCodeAt(0);
 const NEWLINE = '\n'.charCodeAt(0);
 const FEED = '\f'.charCodeAt(0);
 const CR = '\r'.charCodeAt(0);
-const SPACE = ' '.charCodeAt(0);
-const TAB = '\t'.charCodeAt(0);
 
 /**
  * Return the index just past the hex digits of the escape whose backslash is at `pos`.
@@ -41,9 +39,7 @@ function getWhitespaceLength(inner, pos) {
   if (code === CR) {
     return inner.charCodeAt(pos + 1) === NEWLINE ? 2 : 1;
   }
-  return code === SPACE || code === TAB || code === NEWLINE || code === FEED
-    ? 1
-    : 0;
+  return isCSSWhitespace(code) ? 1 : 0;
 }
 
 /**

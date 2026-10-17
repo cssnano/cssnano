@@ -237,3 +237,24 @@ describe('Space-separated syntax and format flags', () => {
     );
   });
 });
+
+// Escaped whitespace such as `\9` is part of the token, so the input is not a
+// color even though a trimming parser would read one.
+describe('Surrounding whitespace', () => {
+  test(
+    'should keep a keyword followed by an escaped tab unchanged',
+    isEqual('white\t', 'white\t')
+  );
+  test(
+    'should keep a keyword preceded by a space unchanged',
+    isEqual(' white', ' white')
+  );
+  test(
+    'should keep a keyword followed by a form feed unchanged',
+    isEqual('white\f', 'white\f')
+  );
+  test(
+    'should keep a color function followed by a newline unchanged',
+    isEqual('rgb(255,0,0)\n', 'rgb(255,0,0)\n')
+  );
+});

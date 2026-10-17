@@ -20,12 +20,8 @@ import { pairFamilyOf } from './lib/decl/pairForms.js';
 import { reducePairFamily } from './lib/decl/pairReducer.js';
 import { withTargetSupport } from './lib/isFallback.js';
 import { clearSupportCache } from './lib/syntaxFeatures.js';
-import {
-  featuresSupportedByAll,
-  BoxSupport,
-  supportsPlaceShorthands,
-  supportedPairShorthands,
-} from './lib/targetSupport.js';
+import { targetSupportOf } from './lib/targetSupport.js';
+/** @import {BoxSupport} from './lib/targetSupport.js' */
 import { endsDeclarationRun } from './lib/decl/declarationRuns.js';
 import { applyChildEdits } from './lib/deferredChildEdits.js';
 import { discardOverriddenDeclarations } from './lib/decl/overriddenDeclarations.js';
@@ -344,17 +340,15 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
      */
     prepare(result) {
       const browsers = resolveTargets(opts, result);
-      const placeShorthands = supportsPlaceShorthands(browsers);
-      const boxSupport = new BoxSupport(browsers);
-      const pairShorthands = supportedPairShorthands(browsers);
-      const supportedFeatures = featuresSupportedByAll(browsers);
+      const { placeShorthands, boxSupport, pairShorthands, features } =
+        targetSupportOf(browsers);
       return {
         /**
          * @param {import('postcss').Root} css
          */
         OnceExit(css) {
           try {
-            withTargetSupport(supportedFeatures, () =>
+            withTargetSupport(features, () =>
               mergeLonghands(css, placeShorthands, boxSupport, pairShorthands)
             );
           } finally {

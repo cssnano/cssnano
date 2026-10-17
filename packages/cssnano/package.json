@@ -44,11 +44,12 @@
     "#presets/advanced": "./src/presets/advanced.js",
     "#presets/default": "./src/presets/default.js",
     "#presets/lite": "./src/presets/lite.js",
-    "#stylehacks": "./src/plugins/stylehacks/index.js",
+    "#stylehacks": "./src/utils/stylehacks/index.js",
     "#utils": "./src/utils/index.js",
     "#utils/browser-bugs": "./src/utils/browserBugs.js",
     "#utils/browser-support": "./src/utils/browserSupport.js",
     "#utils/browser-targets": "./src/utils/browserTargets.js",
+    "#utils/ignored-target-options": "./src/utils/ignoredTargetOptions.js",
     "#utils/versions": "./src/utils/versions.js"
   },
   "funding": {

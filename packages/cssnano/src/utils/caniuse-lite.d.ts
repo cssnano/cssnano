@@ -19,3 +19,7 @@ declare module 'caniuse-lite/dist/unpacker/feature.js' {
     stats: Record<string, Record<string, string>>;
   };
 }
+
+declare module 'caniuse-lite/dist/unpacker/agents.js' {
+  export const agents: Record<string, { versions: (string | null)[] }>;
+}

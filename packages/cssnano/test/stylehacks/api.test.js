@@ -1,60 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import stylehacks from '../../src/plugins/stylehacks/index.js';
-function processCss(fixture, expected, options) {
-  return async () => {
-    const { css } = await postcss(stylehacks(options)).process(fixture, {
-      from: undefined,
-    });
-    assert.strictEqual(css, expected);
-  };
-}
+import { detectDeclaration } from '../../src/utils/stylehacks/index.js';
+import { detectsHack, detectsNoHack } from './_detectHack.js';
 
-function passthroughCss(fixture, options) {
-  return processCss(fixture, fixture, options);
-}
-
-test('can be used as a postcss plugin', async () => {
-  const css = 'h1 { _color: #ffffff }';
-
-  const result = await postcss()
-    .use(stylehacks())
-    .process(css, { from: undefined });
-
-  assert.strictEqual(result.css, 'h1 { }');
-});
-
-test('can be used as a postcss plugin (2)', async () => {
-  const css = 'h1 { _color: #ffffff }';
-
-  const result = await postcss([stylehacks()]).process(css, {
-    from: undefined,
-  });
-
-  assert.strictEqual(result.css, 'h1 { }');
-});
-
-test('can be used as a postcss plugin (3)', async () => {
-  const css = 'h1 { _color: #ffffff }';
-
-  const result = await postcss([stylehacks]).process(css, { from: undefined });
-
-  assert.strictEqual(result.css, 'h1 { }');
-});
-
-test('should use the postcss plugin api', () => {
-  assert.strictEqual(stylehacks().postcssPlugin, 'stylehacks');
-});
-
-test('should have a separate detect method', async () => {
+test('should have a separate detectDeclaration method', async () => {
   let counter = 0;
 
   const plugin = () => {
     return {
       postcssPlugin: 'test',
       Declaration(decl) {
-        if (stylehacks.detect(decl)) {
+        if (detectDeclaration(decl)) {
           counter++;
         }
       },
@@ -68,95 +25,34 @@ test('should have a separate detect method', async () => {
   assert.strictEqual(counter, 2);
 });
 
-test('should have a separate detect method (2)', async () => {
-  let counter = 0;
-
-  const plugin = () => {
-    return {
-      postcssPlugin: 'test',
-      Rule(rule) {
-        if (stylehacks.detect(rule)) {
-          counter++;
-        }
-      },
-    };
-  };
-  plugin.postcss = true;
-
-  await postcss(plugin).process('h1 { _color: red; =color: black }', {
-    from: undefined,
-  });
-  assert.strictEqual(counter, 0);
-});
-
-test('detect finds at-rule hacks', () => {
-  const atRule = postcss.parse('@media \\0screen {}').first;
-
-  assert.equal(stylehacks.detect(atRule), true);
-});
-
-test('detect finds selector hacks', () => {
-  const rule = postcss.parse('* html .example {}').first;
-
-  assert.equal(stylehacks.detect(rule), true);
-});
-
-test('reports and removes multiple selector hacks independently', async () => {
-  const css =
-    '* html h1, html:first-child h2, html > /**/ body h3, body:empty h4 { color: red }';
-  const lint = await postcss(
-    stylehacks({ lint: true, overrideBrowserslist: 'Chrome 58' })
-  ).process(css, { from: undefined });
-
-  assert.deepEqual(
-    lint.warnings().map((warning) => warning.text),
-    [
-      'Bad selector:  body:empty h4{"browsers":["firefox 2"],"identifier":"selector","hack":" body:empty h4"}',
-      'Bad selector:  html > /**/ body h3{"browsers":["ie 5.5","ie 6","ie 7"],"identifier":"selector","hack":" html > /**/ body h3"}',
-      'Bad selector:  html:first-child h2{"browsers":["opera 9"],"identifier":"selector","hack":" html:first-child h2"}',
-      'Bad selector: * html h1{"browsers":["ie 5.5","ie 6"],"identifier":"selector","hack":"* html h1"}',
-    ]
-  );
-
-  const removed = await postcss(
-    stylehacks({ overrideBrowserslist: 'Chrome 58' })
-  ).process(css, { from: undefined });
-  assert.equal(removed.css, '');
-});
-
-test('detect reclassifies a declaration after its value changes', () => {
+test('detectDeclaration reclassifies a declaration after its value changes', () => {
   const decl = postcss.parse('a{margin:1px}').first.first;
 
-  assert.equal(stylehacks.detect(decl), false);
+  assert.equal(detectDeclaration(decl), false);
 
   decl.value = '1px\\9';
 
-  assert.equal(stylehacks.detect(decl), true);
+  assert.equal(detectDeclaration(decl), true);
 });
 
-test('detect does not share classifications with cloned declarations', () => {
+test('detectDeclaration does not share classifications with cloned declarations', () => {
   const decl = postcss.parse('a{margin:1px}').first.first;
 
-  assert.equal(stylehacks.detect(decl), false);
+  assert.equal(detectDeclaration(decl), false);
 
   const clone = decl.clone({ value: '1px\\9' });
 
-  assert.equal(stylehacks.detect(clone), true);
+  assert.equal(detectDeclaration(clone), true);
 });
 
 test(
-  'should handle rules with empty selectors',
-  processCss('{ _color: red }', '{ }')
-);
-
-test(
-  'should pass through other comments in selectors',
-  passthroughCss('h1 /* => */ h2 {}')
+  'should detect a hack in a rule with an empty selector',
+  detectsHack('{ _color: red }')
 );
 
 test(
   'should pass through css mixins',
-  passthroughCss(`paper-card {
+  detectsNoHack(`paper-card {
         --paper-card-content: {
             padding-top: 0;
         };
@@ -168,7 +64,7 @@ test(
 
 test(
   'should pass through css mixins (2)',
-  passthroughCss(`paper-card {
+  detectsNoHack(`paper-card {
         --paper-card-header: {
             height: 128px;
             padding: 0 48px;

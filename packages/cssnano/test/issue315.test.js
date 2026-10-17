@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import fontMagician from 'postcss-font-magician';
 import cssnano from '../src/index.js';
+import { repositoryFile } from '../../../util/testHelpers.js';
 
 test('should work with postcss-font-magician', async () => {
   const css = `
@@ -11,7 +12,7 @@ test('should work with postcss-font-magician', async () => {
     }
     `;
   const result = await postcss([fontMagician({}), cssnano()]).process(css, {
-    from: undefined,
+    from: repositoryFile,
   });
   assert.strictEqual(
     result.css,

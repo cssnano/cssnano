@@ -25,3 +25,27 @@ export function compareVersions(left, right) {
   }
   return 0;
 }
+
+/**
+ * Where the browser of a browserslist entry such as "safari 26.5" ends. The
+ * browser is `entry.slice(0, separator)` and the version, which may be a
+ * range such as "18.5-18.7" or a word such as "TP", is
+ * `entry.slice(separator + 1)`. An entry without a version ends at its
+ * length, so its version is empty.
+ * @param {string} entry
+ * @return {number}
+ */
+export function versionSeparator(entry) {
+  const space = entry.indexOf(' ');
+  return space < 0 ? entry.length : space;
+}
+
+/**
+ * The browser of a browserslist entry such as "safari 26.5", or the whole
+ * entry when it names no version.
+ * @param {string} entry
+ * @return {string}
+ */
+export function browserName(entry) {
+  return entry.slice(0, versionSeparator(entry));
+}

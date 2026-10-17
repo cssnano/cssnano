@@ -3,10 +3,11 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
 import { normalizeList } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
+import { repositoryFile } from '../../../../util/testHelpers.js';
 
 function minify(selector) {
   return postcss([plugin({ convertToIs: false })]).process(`${selector}{x:y}`, {
-    from: undefined,
+    from: repositoryFile,
   }).css;
 }
 

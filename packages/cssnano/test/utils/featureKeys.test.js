@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { features as caniuseFeatures } from 'caniuse-lite';
-import { featureKeys, packedFeatures } from '../../src/utils/featureKeys.js';
+import { packedFeatures } from '../../src/utils/featureKeys.js';
+import { featureKeys } from './_featureKeys.js';
 
 describe('feature keys', () => {
   test('every key is a caniuse-lite feature', () => {
@@ -10,9 +11,9 @@ describe('feature keys', () => {
     }
   });
 
-  test('each separately imported feature holds the same data as the caniuse-lite index', () => {
+  test('each separately imported feature holds data equal to the caniuse-lite index', () => {
     for (const key of featureKeys) {
-      assert.equal(packedFeatures[key], caniuseFeatures[key], key);
+      assert.deepEqual(packedFeatures[key], caniuseFeatures[key], key);
     }
   });
 

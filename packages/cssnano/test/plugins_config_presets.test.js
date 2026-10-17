@@ -4,6 +4,7 @@ import autoprefixer from 'autoprefixer';
 import litePreset from '#presets/lite';
 import postcss from 'postcss';
 import cssnano from '../src/index.js';
+import { repositoryFile } from '../../../util/testHelpers.js';
 
 test('should run the plugins in the preset', async () => {
   const preset = litePreset();
@@ -16,7 +17,7 @@ test('should run the plugins in the preset', async () => {
     background: linear-gradient(to bottom, white, black);
 }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -35,7 +36,7 @@ test('should run the plugins in the first preset in an array', async () => {
     background: linear-gradient(to bottom, white, black);
 }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -56,7 +57,7 @@ test('should run the plugin passed through the cssnano config.plugins', async ()
     background: linear-gradient(to bottom, white, black);
 }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -67,7 +68,7 @@ test('should run the plugin passed through the cssnano config.plugins', async ()
 test('should retain the plugins-only result with a string preset', async () => {
   const result = await postcss([
     cssnano({ preset: 'lite', plugins: [autoprefixer] }),
-  ]).process(`.example { user-select: none; }`, { from: undefined });
+  ]).process(`.example { user-select: none; }`, { from: repositoryFile });
 
   assert.strictEqual(
     result.css,
@@ -78,7 +79,7 @@ test('should retain the plugins-only result with a string preset', async () => {
 test('should retain the plugins-only result with a preset factory', async () => {
   const result = await postcss([
     cssnano({ preset: litePreset, plugins: [autoprefixer] }),
-  ]).process(`.example { user-select: none; }`, { from: undefined });
+  ]).process(`.example { user-select: none; }`, { from: repositoryFile });
 
   assert.strictEqual(
     result.css,
@@ -89,7 +90,7 @@ test('should retain the plugins-only result with a preset factory', async () => 
 test('should retain the plugins-only result with a configured preset', async () => {
   const result = await postcss([
     cssnano({ preset: [litePreset, {}], plugins: [autoprefixer] }),
-  ]).process(`.example { user-select: none; }`, { from: undefined });
+  ]).process(`.example { user-select: none; }`, { from: repositoryFile });
 
   assert.strictEqual(
     result.css,
@@ -104,7 +105,7 @@ test('should run the plugin when plugin module is being used with no array insid
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -116,7 +117,7 @@ test('should run the plugin when no preset is mentioned', async () => {
   const result = await postcss([cssnano({ plugins: [autoprefixer] })]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -131,7 +132,7 @@ test('should run the plugin when no preset is mentioned with string plugin name'
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -146,7 +147,7 @@ test('should run the plugin when no preset is mentioned with string plugin name 
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -162,7 +163,7 @@ test('should run the plugin with string plugin name as in array', async () => {
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -176,7 +177,7 @@ test('should run the plugin when no preset is mentioned with string plugin name 
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,
@@ -192,7 +193,7 @@ test('should run the plugin with string plugin name as in array and options', as
   ]).process(
     `.example { user-select: none; }
 `,
-    { from: undefined }
+    { from: repositoryFile }
   );
   assert.strictEqual(
     result.css,

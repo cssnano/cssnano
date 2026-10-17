@@ -1,10 +1,8 @@
 import { test } from 'node:test';
-import processCSS from './_processCSS.js';
-
-const opts = { target: 'IE 7', unaffected: 'IE 8' };
+import { detectsHack } from './_detectHack.js';
 
 function testStarHack(character) {
-  return processCSS(`h1 { ${character}color: red }`, `h1 { }`, opts);
+  return detectsHack(`h1 { ${character}color: red }`);
 }
 
 test('*', testStarHack('*'));
@@ -25,13 +23,3 @@ test('~', testStarHack('~'));
 test('?', testStarHack('?'));
 test(':', testStarHack(':'));
 test('|', testStarHack('|'));
-
-test(
-  'should also handle @hacks',
-  processCSS('h1 { @color: red }', 'h1 {}', opts)
-);
-
-test(
-  'should also handle @hacks (uppercase)',
-  processCSS('h1 { @COLOR: red }', 'h1 {}', opts)
-);

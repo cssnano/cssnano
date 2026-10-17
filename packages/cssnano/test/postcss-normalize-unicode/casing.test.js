@@ -6,6 +6,7 @@ import postcss from 'postcss';
 import {
   usePostCSSPlugin,
   processCSSFactory,
+  repositoryFile,
 } from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-normalize-unicode/index.js';
 
@@ -41,7 +42,7 @@ test('should update raw values on cache hits', async () => {
   }
   await postcss(
     plugin({ overrideBrowserslist: ['defaults', 'not ie <=11'] })
-  ).process(root, { from: undefined });
+  ).process(root, { from: repositoryFile });
   for (const decl of declarations) {
     assert.equal(decl.value, 'u+2b??');
     assert.equal(decl.raws.value.raw, 'u+2b??');
@@ -52,7 +53,7 @@ test('should update raw values on cache hits', async () => {
 test(
   'should upcase every range in a legacy descriptor list',
   processCSS(fixture('u+2b00-2bff, u+1e00-1eff'), fixture('U+1e??,U+2b??'), {
-    overrideBrowserslist: 'IE 9',
+    overrideBrowserslist: 'IE 11',
   })
 );
 
@@ -65,7 +66,7 @@ test(
     fixture(
       ' /* before */ U+2b?? /* left */ , /* right */ U+1e?? /* after */ '
     ),
-    { overrideBrowserslist: 'IE 9' }
+    { overrideBrowserslist: 'IE 11' }
   )
 );
 
@@ -73,7 +74,7 @@ describe('Upcase', () => {
   test(
     'should upcase the "u" prefix (IE)',
     processCSS(fixture('u+2002-2ff2'), fixture('U+2002-2ff2'), {
-      overrideBrowserslist: 'IE 9',
+      overrideBrowserslist: 'IE 11',
     })
   );
 
