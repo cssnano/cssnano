@@ -22,18 +22,15 @@ import { editorialOptimisations } from './editorialOptimisations.js';
 /** @typedef {Omit<Optimisation, 'presets'>} EditorialOptimisation */
 
 /**
- * The [preset option, PostCSS plugin name] pairs that a preset runs. A plugin
- * that hosts transforms gives one pair per transform.
- * @param {{[presetEntriesKey]: readonly (readonly [unknown, string, {postcssPlugin: string, transforms?: readonly {name: string}[]}])[]}} preset
+ * The [preset option, PostCSS plugin name] pairs that a preset runs.
+ * @param {{[presetEntriesKey]: readonly (readonly [unknown, string, {postcssPlugin: string}])[]}} preset
  * @returns {[string, string][]}
  */
 function pluginNamesOf(preset) {
-  return preset[presetEntriesKey].flatMap(([, option, settings]) =>
-    (settings.transforms ?? [{ name: option }]).map(({ name }) => [
-      name,
-      settings.postcssPlugin,
-    ])
-  );
+  return preset[presetEntriesKey].map(([, option, settings]) => [
+    option,
+    settings.postcssPlugin,
+  ]);
 }
 
 function matchPluginsWithPresets() {

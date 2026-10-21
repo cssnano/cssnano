@@ -10,7 +10,10 @@ const testDir = dirname(fileURLToPath(import.meta.url));
 // framework corpora in parallel.
 describe('framework tests', () => {
   test(
-    'should be idempotent for each default plugin except mergeRules',
-    pluginIdempotencyTests(preset, `${testDir}/integrations`, ['mergeRules'])
+    'should be idempotent for each default plugin, with merge run without rule merging',
+    pluginIdempotencyTests(preset, `${testDir}/integrations`, {
+      // Rule merging is not idempotent on its own, so merge runs with it off.
+      merge: { rules: false },
+    })
   );
 });

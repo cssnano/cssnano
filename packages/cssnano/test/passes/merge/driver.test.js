@@ -5,57 +5,69 @@ import {
   attachedTableCount,
   enableConsistencyChecks,
 } from '../../../src/passes/ir/blockTable.js';
-import { mergePass } from '../../../src/passes/merge/index.js';
+import { mergePass, transformPlugin } from '../../../src/passes/merge/index.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 
 /**
+ * Runs the merge pass, with rule merging on unless `rules` is false.
+ *
  * @param {string} css
- * @param {string[]} [transforms] the transforms to run, all by default
+ * @param {{ rules?: boolean }} [options]
  * @return {string}
  */
-function runMergePass(css, transforms) {
+function runMergePass(css, options) {
   const root = postcss.parse(css);
-  const enabled = transforms && new Set(transforms);
-  mergePass(root, resolveTargets({}, undefined), enabled);
+  mergePass(root, resolveTargets({}, undefined), options);
   return root.toString();
 }
 
-test('mergePass with only discardDuplicates removes the repeated declaration', () => {
+/**
+ * Runs the named transforms in order, each as its own plugin, as the hooks of
+ * the merge plugin are tested.
+ *
+ * @param {string} css
+ * @param {('mergeLonghand' | 'discardDuplicates' | 'mergeRules')[]} names
+ * @return {string}
+ */
+function runTransforms(css, names) {
+  return postcss(names.map((name) => transformPlugin(name)({}))).process(css, {
+    from: undefined,
+  }).css;
+}
+
+test('the discardDuplicates transform removes the repeated declaration', () => {
   assert.equal(
-    runMergePass('a{color:red;color:red}', ['discardDuplicates']),
+    runTransforms('a{color:red;color:red}', ['discardDuplicates']),
     'a{color:red}'
   );
 });
 
 // A repeated declaration within one block is also dropped by merge-longhand's
 // own canonicalization, so the repeated rule isolates discardDuplicates.
-test('mergePass without discardDuplicates keeps the repeated rule', () => {
+test('without discardDuplicates, the mergeLonghand transform keeps the repeated rule', () => {
   assert.equal(
-    runMergePass('a{color:red}a{color:red}', ['mergeLonghand']),
+    runTransforms('a{color:red}a{color:red}', ['mergeLonghand']),
     'a{color:red}a{color:red}'
   );
 });
 
-test('mergePass with only mergeRules merges adjacent rules with the same declarations', () => {
+test('the mergeRules transform merges adjacent rules with the same declarations', () => {
   assert.equal(
-    runMergePass('a{color:red}b{color:red}', ['mergeRules']),
+    runTransforms('a{color:red}b{color:red}', ['mergeRules']),
     'a,b{color:red}'
   );
 });
 
-test('mergePass without mergeRules keeps adjacent rules with the same declarations apart', () => {
+test('the merge pass with rules off keeps adjacent rules with the same declarations apart', () => {
   assert.equal(
-    runMergePass('a{color:red}b{color:red}', [
-      'mergeLonghand',
-      'discardDuplicates',
-    ]),
+    runMergePass('a{color:red}b{color:red}', { rules: false }),
     'a{color:red}b{color:red}'
   );
 });
 
-test('mergePass with only mergeLonghand folds four longhand margins into one shorthand', () => {
+test('the mergeLonghand transform folds four longhand margins into one shorthand', () => {
   assert.equal(
-    runMergePass(
+    runTransforms(
       'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}',
       ['mergeLonghand']
     ),
@@ -63,9 +75,9 @@ test('mergePass with only mergeLonghand folds four longhand margins into one sho
   );
 });
 
-test('mergePass without mergeLonghand keeps four longhand margins as they are', () => {
+test('without mergeLonghand, discardDuplicates and mergeRules keep four longhand margins as they are', () => {
   assert.equal(
-    runMergePass(
+    runTransforms(
       'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}',
       ['discardDuplicates', 'mergeRules']
     ),
@@ -96,18 +108,6 @@ test('mergePass drops the overridden border-radius:1px from the rule that a part
   );
 });
 
-// The second longhand round canonicalizes the rule that mergeRules joined.
-// Only then is the overridden border-radius:1px dropped.
-test('mergePass with mergeLonghand and mergeRules canonicalizes the rule that mergeRules joined', () => {
-  assert.equal(
-    runMergePass(
-      'b{border-radius:1px}b{border-radius:0;justify-items:1px}a{justify-items:1px}',
-      ['mergeLonghand', 'mergeRules']
-    ),
-    'b{border-radius:0}b,a{justify-items:1px}'
-  );
-});
-
 // The nested @media splits the margins into two runs, which the first round
 // cannot fold together. Removing its earlier copy joins the runs, and only
 // the second round sees all four margins in one run.
@@ -115,7 +115,7 @@ test('mergePass with mergeLonghand and discardDuplicates folds the margins that 
   assert.equal(
     runMergePass(
       '.a{margin-top:0;margin-right:0;@media (x){color:red}margin-bottom:0;margin-left:0;@media (x){color:red}}',
-      ['mergeLonghand', 'discardDuplicates']
+      { rules: false }
     ),
     '.a{margin:0;@media (x){color:red}}'
   );
@@ -128,7 +128,7 @@ test('mergePass with mergeLonghand and discardDuplicates reduces the borders onc
   assert.equal(
     runMergePass(
       'a{border-top:1px solid red;border-right:1px solid red;border-bottom:1px solid red;border-left:1px solid red;border-image:none}b{color:blue}a{border-image:none}',
-      ['mergeLonghand', 'discardDuplicates']
+      { rules: false }
     ),
     'a{border-color:red;border-style:solid;border-width:1px}b{color:blue}a{border-image:none}'
   );
@@ -136,9 +136,9 @@ test('mergePass with mergeLonghand and discardDuplicates reduces the borders onc
 
 // Without mergeRules no block changes after the first round, so the
 // overridden border-radius:1px is still there.
-test('mergePass with only mergeLonghand keeps the overridden border-radius:1px, since no merge runs', () => {
+test('the mergeLonghand transform keeps the overridden border-radius:1px, since no merge runs', () => {
   assert.equal(
-    runMergePass(
+    runTransforms(
       'b{border-radius:1px}b{border-radius:0;justify-items:1px}a{justify-items:1px}',
       ['mergeLonghand']
     ),
@@ -183,13 +183,13 @@ test('mergePass drops the border-radius:0 that a rule left behind by a merge ove
 });
 
 /**
- * Counts the calls to the root's `walk` method during a merge pass.
+ * Counts the calls to the root's `walk` method while `run` works on the root.
  *
  * @param {string} css
- * @param {string[]} transforms the transforms to run
+ * @param {(root: import('postcss').Root) => void} run
  * @return {number}
  */
-function rootWalkCount(css, transforms) {
+function rootWalkCount(css, run) {
   const root = postcss.parse(css);
   const walk = root.walk;
   let count = 0;
@@ -197,39 +197,60 @@ function rootWalkCount(css, transforms) {
     count++;
     return walk.apply(root, args);
   };
-  mergePass(root, resolveTargets({}, undefined), new Set(transforms));
+  run(root);
   return count;
 }
 
+const targets = resolveTargets({}, undefined);
+
+/**
+ * Runs one transform hook over a stylesheet that is already parsed.
+ *
+ * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} name
+ * @param {import('postcss').Root} root
+ */
+function runHook(name, root) {
+  return postcss([transformPlugin(name)({})]).process(root, { from: undefined })
+    .css;
+}
+
 // One build walk records the blocks, and both canonicalize rounds iterate that
-// list. Every row that enables dedupe or rule merging walks the root once to
-// build the block table those transforms read.
-test('mergePass with mergeLonghand and discardDuplicates walks the root once, to record the blocks for both rounds', () => {
+// list. Turning rules off still walks the root once, for the first round.
+test('mergePass with rules off walks the root once, to record the blocks for both rounds', () => {
   assert.equal(
     rootWalkCount(
       'a{border-top:1px solid red;border-right:1px solid red;border-bottom:1px solid red;border-left:1px solid red;border-image:none}b{color:blue}a{border-image:none}',
-      ['mergeLonghand', 'discardDuplicates']
+      (root) => mergePass(root, targets, { rules: false })
     ),
     1
   );
 });
 
-test('mergePass with only mergeLonghand walks the root once, for the first round', () => {
-  assert.equal(rootWalkCount('a{color:red}', ['mergeLonghand']), 1);
+test('the mergeLonghand transform walks the root once, for the first round', () => {
+  assert.equal(
+    rootWalkCount('a{color:red}', (root) => runHook('mergeLonghand', root)),
+    1
+  );
 });
 
 // Dedupe recurses through the tree itself and reads no block table, so it walks nothing.
-test('mergePass with only discardDuplicates does not walk the root', () => {
-  assert.equal(rootWalkCount('a{color:red}', ['discardDuplicates']), 0);
-});
-
-test('mergePass with only mergeRules walks the root once, to build the block table', () => {
-  assert.equal(rootWalkCount('a{color:red}', ['mergeRules']), 1);
-});
-
-test('mergePass with discardDuplicates and mergeRules walks the root once, to build the block table', () => {
+test('the discardDuplicates transform does not walk the root', () => {
   assert.equal(
-    rootWalkCount('a{color:red}', ['discardDuplicates', 'mergeRules']),
+    rootWalkCount('a{color:red}', (root) => runHook('discardDuplicates', root)),
+    0
+  );
+});
+
+test('the mergeRules transform walks the root once, to build the block table', () => {
+  assert.equal(
+    rootWalkCount('a{color:red}', (root) => runHook('mergeRules', root)),
+    1
+  );
+});
+
+test('the full merge pass walks the root once, to build the block table and the first round', () => {
+  assert.equal(
+    rootWalkCount('a{color:red}', (root) => mergePass(root, targets)),
     1
   );
 });
@@ -240,8 +261,7 @@ test('mergePass with discardDuplicates and mergeRules walks the root once, to bu
 test('mergePass joins an at-rule by the declarations a nested join gave its rule', () => {
   assert.equal(
     runMergePass(
-      '@media print{a{width:1px}}@media print{b{color:red}a{margin-top:1px}}@media screen{b{margin:0}}@media print{.x{margin-top:1px}}',
-      ['mergeLonghand', 'discardDuplicates', 'mergeRules']
+      '@media print{a{width:1px}}@media print{b{color:red}a{margin-top:1px}}@media screen{b{margin:0}}@media print{.x{margin-top:1px}}'
     ),
     '@media print{a{width:1px;margin-top:1px}b{color:red}}@media screen{b{margin:0}}@media print{.x{margin-top:1px}}'
   );
@@ -250,7 +270,7 @@ test('mergePass joins an at-rule by the declarations a nested join gave its rule
 // The empty `c{}` is needed to reach the second join this test pins.
 test('mergePass joins an at-rule into an earlier one, then reads the earlier one with the joined declarations', () => {
   assert.equal(
-    runMergePass(
+    runTransforms(
       '@media print{.x{color:blue}}.x{color:red}@media print{a{color:red}b{width:1px}}b{margin-top:1px}@media print{a{margin:0}}c{}@media print{b{margin-top:1px}}',
       ['mergeRules']
     ),
@@ -258,35 +278,25 @@ test('mergePass joins an at-rule into an earlier one, then reads the earlier one
   );
 });
 
-// Every row that leaves merge-rules out runs with no block table attached, so
-// the edits it makes never reach one.
-test('mergePass attaches a block table during the walk only when merge-rules is enabled', () => {
+// Every run with rules off leaves merge-rules out, so no block table is
+// attached and the edits it makes never reach one.
+test('mergePass attaches a block table during the walk only when rules are merged', () => {
   const counts = [];
-  for (const transforms of [
-    ['mergeLonghand'],
-    ['discardDuplicates'],
-    ['mergeRules'],
-    ['mergeLonghand', 'discardDuplicates', 'mergeRules'],
-  ]) {
+  for (const options of [{ rules: false }, { rules: true }]) {
     const root = postcss.parse('a{color:red}');
     const walk = root.walk;
     root.walk = (...args) => {
       counts.push(attachedTableCount());
       return walk.apply(root, args);
     };
-    mergePass(root, resolveTargets({}, undefined), new Set(transforms));
+    mergePass(root, targets, options);
   }
-  assert.deepEqual(counts, [0, 1, 1]);
+  assert.deepEqual(counts, [0, 1]);
 });
 
-test('mergePass leaves no block table attached after any transform row', () => {
-  for (const transforms of [
-    ['mergeLonghand'],
-    ['discardDuplicates'],
-    ['mergeRules'],
-    ['mergeLonghand', 'discardDuplicates', 'mergeRules'],
-  ]) {
-    runMergePass('a{color:red}b{color:red}', transforms);
+test('mergePass leaves no block table attached after any run', () => {
+  for (const options of [{ rules: false }, { rules: true }]) {
+    runMergePass('a{color:red}b{color:red}', options);
     assert.equal(attachedTableCount(), 0);
   }
 });
@@ -296,11 +306,7 @@ test('mergePass detaches the block table when the pass throws', () => {
   root.walk = () => {
     throw new Error('walk failed');
   };
-  assert.throws(
-    () =>
-      mergePass(root, resolveTargets({}, undefined), new Set(['mergeRules'])),
-    /walk failed/v
-  );
+  assert.throws(() => mergePass(root, targets), /walk failed/v);
   assert.equal(attachedTableCount(), 0);
 });
 
@@ -364,26 +370,24 @@ function block(next, depth) {
 
 // Every test in this file reads summaries with the consistency checks on, so a
 // stale summary throws.
-test('mergePass finds no stale block summary on nested generated sheets in any transform row', () => {
-  const rows = [
-    ['mergeLonghand'],
-    ['discardDuplicates'],
-    ['mergeRules'],
-    ['discardDuplicates', 'mergeRules'],
-    ['mergeLonghand', 'discardDuplicates'],
-    ['mergeLonghand', 'mergeRules'],
-    ['mergeLonghand', 'discardDuplicates', 'mergeRules'],
-  ];
+test('mergePass finds no stale block summary on nested generated sheets, with rules on or off', () => {
   for (let seed = 1; seed <= 300; seed++) {
     const css = block(random(seed), 0);
-    for (const transforms of rows) runMergePass(css, transforms);
+    runMergePass(css, { rules: true });
+    runMergePass(css, { rules: false });
+  }
+});
+
+test('the mergeRules transform finds no stale block summary on nested generated sheets', () => {
+  for (let seed = 1; seed <= 300; seed++) {
+    runTransforms(block(random(seed), 0), ['mergeRules']);
   }
 });
 
 // The first round leaves the border colours and widths unreduced, and neither
 // removing duplicates nor merging rules changes the block. The second round
 // still reduces it, as the second merge-longhand run of the default preset did.
-test('mergePass gives a block that no duplicate removal or rule merge changed the second longhand round', () => {
+test('the merge pass gives a block that no duplicate removal or rule merge changed the second longhand round', () => {
   assert.equal(
     runMergePass(
       'a{border-right:double color-mix(in srgb,red,blue);border-right-color:color-mix(in srgb,red,blue);border:medium solid rgba(0,0,0,.5);border-left-color:currentcolor;border-bottom-color:blue;border-width:2px}'

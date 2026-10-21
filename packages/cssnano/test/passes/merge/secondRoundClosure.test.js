@@ -27,12 +27,11 @@ import {
 
 const browsers = resolveTargets({}, undefined);
 
-// Every row of the options table that runs mergeLonghand.
+// Each run of the merge pass: with rule merging, and with it off. Round one
+// alone is not closed, which is why the second round exists, so it has no row.
 const rows = [
-  ['mergeLonghand'],
-  ['mergeLonghand', 'discardDuplicates'],
-  ['mergeLonghand', 'mergeRules'],
-  ['mergeLonghand', 'discardDuplicates', 'mergeRules'],
+  ['rules', { rules: true }],
+  ['rules off', { rules: false }],
 ];
 
 // Empty and comment-only rules, which the oracle families do not generate.
@@ -96,12 +95,12 @@ function blocksChangedBySecondRound(css) {
   return changed;
 }
 
-for (const transforms of rows) {
-  test(`after mergePass with ${transforms.join(' and ')}, canonicalizing any block of the output changes nothing`, () => {
+for (const [label, options] of rows) {
+  test(`after mergePass with ${label}, canonicalizing any block of the output changes nothing`, () => {
     const failures = [];
     for (const css of inputs) {
       const root = postcss.parse(css);
-      mergePass(root, browsers, new Set(transforms));
+      mergePass(root, browsers, options);
       const changed = blocksChangedBySecondRound(root.toString());
       if (changed.length > 0) failures.push({ input: css, changed });
     }

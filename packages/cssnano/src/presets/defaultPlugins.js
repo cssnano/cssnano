@@ -18,7 +18,7 @@ import postcssNormalizePositions from '#postcss-normalize-positions';
 import postcssNormalizeUnicode from '#postcss-normalize-unicode';
 import postcssNormalizeDisplayValues from '#postcss-normalize-display-values';
 import postcssNormalizeTimingFunctions from '#postcss-normalize-timing-functions';
-import mergePass from '../passes/merge/index.js';
+import mergePass, { rulesGuard } from '../passes/merge/index.js';
 import {
   discardCommentsEntry,
   discardEmptyEntry,
@@ -53,9 +53,7 @@ import {
  * @property {Record<string, never>} [normalizeRepeatStyle] Shortens `background-repeat` values, such as `repeat no-repeat` to `repeat-x`. Takes no options.
  * @property {Record<string, never>} [normalizePositions] Shortens position values. Takes no options.
  * @property {Record<string, never>} [normalizeWhitespace] Removes whitespace and line breaks that are not needed. Takes no options.
- * @property {Record<string, never>} [mergeLonghand] Merges longhand properties into shorthands that the browser targets support. Takes no options.
- * @property {Record<string, never>} [discardDuplicates] Discards duplicate rules. Takes no options.
- * @property {Record<string, never>} [mergeRules] Merges adjacent rules that share a selector or declaration. Takes no options.
+ * @property {{rules?: boolean}} [merge] Merges longhand properties into shorthands that the browser targets support, discards duplicate rules and merges rules that share a selector or declaration. Set `rules` to false to keep rules apart.
  * @property {Record<string, never>} [discardEmpty] Discards empty rules and declarations. Takes no options.
  * @property {Record<string, never>} [uniqueSelectors] Removes duplicate selectors from a selector list. Takes no options.
  * @property {Record<string, never>} [rawCache] Records the raw formatting of the output on the root, for later plugins to reuse. Takes no options.
@@ -64,18 +62,17 @@ import {
 /**
  * The merge transforms run in one pass. Merging rules can bring a declaration
  * and its override into one rule, which the second longhand round then cleans up.
- * The longhand and rule transforms read the browser targets; deduplication does not.
+ * Only `rules` can be turned off, because longhand merging and duplicate removal
+ * always run together.
  */
 const mergeEntry = /** @type {const} */ ([
   mergePass,
   'merge',
   {
     postcssPlugin: 'cssnano-merge',
-    transforms: [
-      { name: 'mergeLonghand', targets: true, optionKeys: [] },
-      { name: 'discardDuplicates', optionKeys: [] },
-      { name: 'mergeRules', targets: true, optionKeys: [] },
-    ],
+    targets: true,
+    optionKeys: ['rules'],
+    guards: { rules: rulesGuard },
   },
 ]);
 

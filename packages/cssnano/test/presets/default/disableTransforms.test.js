@@ -7,11 +7,11 @@ import { mergeOracleDifference } from '../../../script/passes/merge/rules/lib/me
 
 /**
  * @param {string} css
- * @param {string[]} disable
+ * @param {object} options the preset options
  * @return {Promise<string>}
  */
-async function minify(css, disable) {
-  const result = await postcss(preset({ disable })).process(css, {
+async function minify(css, options) {
+  const result = await postcss(preset(options)).process(css, {
     from: repositoryFile,
   });
   return result.css;
@@ -27,80 +27,56 @@ function assertSameStyles(before, after) {
   assert.equal(mergeOracleDifference(before, after), undefined);
 }
 
-test('with mergeRules off, discardDuplicates removes the earlier of two equal rules', async () => {
-  const css = 'a{color:red}b{color:blue}a{color:red}';
-  const output = await minify(css, ['mergeRules']);
+const marginLonghands =
+  'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}';
 
-  assert.equal(output, 'b{color:blue}a{color:red}');
-  assertSameStyles(css, output);
+test('disable merge keeps four margin longhands unfolded, because the merge pass does not run', async () => {
+  const output = await minify(marginLonghands, { disable: ['merge'] });
+
+  assert.equal(output, marginLonghands);
+  assertSameStyles(marginLonghands, output);
 });
 
-test('with mergeRules and discardDuplicates off, equal rules around another rule are kept', async () => {
-  const css = 'a{color:red}b{color:blue}a{color:red}';
-  const output = await minify(css, ['mergeRules', 'discardDuplicates']);
-
-  assert.equal(output, 'a{color:red}b{color:blue}a{color:red}');
-  assertSameStyles(css, output);
-});
-
-test('with discardDuplicates off, a repeated rule after a different rule is kept', async () => {
-  const css = '.a{color:red}.b{color:blue}.a{color:red}';
-  const output = await minify(css, ['discardDuplicates']);
-
-  assert.equal(output, '.a{color:red}.b{color:blue}.a{color:red}');
-  assertSameStyles(css, output);
-});
-
-test('with mergeLonghand off, four margin longhands are not folded into margin', async () => {
-  const css =
-    'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}';
-  const output = await minify(css, ['mergeLonghand']);
+test('disable merge keeps two rules with the same declaration apart', async () => {
+  const css = 'a{color:red}b{color:red}';
+  const output = await minify(css, { disable: ['merge'] });
 
   assert.equal(output, css);
   assertSameStyles(css, output);
 });
 
-test('with mergeRules off, two rules with the same declaration are not joined', async () => {
-  const css = 'a{color:red}b{color:red}';
-  const output = await minify(css, ['mergeRules']);
-
-  assert.equal(output, 'a{color:red}b{color:red}');
-  assertSameStyles(css, output);
-});
-
-test('with mergeLonghand off, mergeRules still joins rules whose margins are not folded', async () => {
-  const css =
-    'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}b{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}';
-  const output = await minify(css, ['mergeLonghand']);
-
-  assert.equal(
-    output,
-    'a,b{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}'
-  );
-  assertSameStyles(css, output);
-});
-
-test('with mergeRules off, mergeLonghand still folds the margins of each rule', async () => {
-  const css =
-    'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}b{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}';
-  const output = await minify(css, ['mergeRules']);
-
-  assert.equal(output, 'a{margin:1px}b{margin:1px}');
-  assertSameStyles(css, output);
-});
-
-test('with mergeLonghand and mergeRules off, discardDuplicates still removes the earlier of two equal rules', async () => {
+test('disable merge keeps the earlier of two equal rules, since discarding duplicates is part of merge', async () => {
   const css = 'a{color:red}b{color:blue}a{color:red}';
-  const output = await minify(css, ['mergeLonghand', 'mergeRules']);
+  const output = await minify(css, { disable: ['merge'] });
+
+  assert.equal(output, css);
+  assertSameStyles(css, output);
+});
+
+test('merge with rules false still folds four margin longhands into margin', async () => {
+  const output = await minify(marginLonghands, {
+    options: { merge: { rules: false } },
+  });
+
+  assert.equal(output, 'a{margin:1px}');
+  assertSameStyles(marginLonghands, output);
+});
+
+test('merge with rules false removes the earlier of two equal rules', async () => {
+  const css = 'a{color:red}b{color:blue}a{color:red}';
+  const output = await minify(css, {
+    options: { merge: { rules: false } },
+  });
 
   assert.equal(output, 'b{color:blue}a{color:red}');
   assertSameStyles(css, output);
 });
 
-test('with mergeLonghand and mergeRules off, margin longhands are not folded and equal rules are not joined', async () => {
-  const css =
-    'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}b{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}';
-  const output = await minify(css, ['mergeLonghand', 'mergeRules']);
+test('merge with rules false does not join two rules with the same declaration', async () => {
+  const css = 'a{color:red}b{color:red}';
+  const output = await minify(css, {
+    options: { merge: { rules: false } },
+  });
 
   assert.equal(output, css);
   assertSameStyles(css, output);

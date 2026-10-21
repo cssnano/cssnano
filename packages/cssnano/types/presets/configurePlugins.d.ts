@@ -1,6 +1,7 @@
 import type { AcceptedPlugin } from 'postcss';
 import type { NamedPreset } from './presetEntries.js';
 import type { SharedTargets } from '#utils/browser-targets';
+import type { Guard } from '../optionGuards.js';
 export type PresetOptions<Plugins extends object> = {
     browserslist?: SharedTargets;
     /**
@@ -13,36 +14,19 @@ export type PresetOptions<Plugins extends object> = {
      */
     options?: { [Name in keyof Plugins]?: Plugins[Name]; };
 };
-export type TransformSettings = {
-    name: string;
-    /**
-     * the transform reads the browser targets of its preset
-     */
-    targets?: true;
-    /**
-     * options the transform uses unless the preset sets them
-     */
-    defaults?: object;
-    /**
-     * the options the transform accepts
-     */
-    optionKeys: readonly string[];
-};
 export type PluginEntrySettings = {
     postcssPlugin: string;
-    transforms?: undefined;
     targets?: true;
     defaults?: object;
     optionKeys: readonly string[];
-} | {
-    postcssPlugin: string;
-    transforms: readonly TransformSettings[];
+    guards?: Readonly<Record<string, Guard>>;
 };
 export type PluginCreator = import('postcss').PluginCreator<any>;
 export type PluginEntry = readonly [PluginCreator, string, PluginEntrySettings];
 /** @import {AcceptedPlugin} from 'postcss' */
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
+/** @import {Guard} from '../optionGuards.js' */
 /**
  * The options of a built preset: the same as cssnano, without the preset and
  * the configuration file.
@@ -54,35 +38,18 @@ export type PluginEntry = readonly [PluginCreator, string, PluginEntrySettings];
  *   are merged over the plugin's defaults
  */
 /**
- * A transform in a preset: the name that `disable` and `options` use, and
- * its settings. A plugin entry with no list hosts one transform, named by its
- * own option name.
- *
- * `targets` is set when the transform reads the browser targets; `defaults`
- * are the options it uses unless the preset sets them; `optionKeys` lists the
- * options it accepts, so a key it does not declare can be reported.
- *
- * @typedef {object} TransformSettings
- * @property {string} name
- * @property {true} [targets] the transform reads the browser targets of its preset
- * @property {object} [defaults] options the transform uses unless the preset sets them
- * @property {readonly string[]} optionKeys the options the transform accepts
- */
-/**
  * A plugin in a preset: the PostCSS creator, the name of the entry, and its
- * settings. An entry with `transforms` runs them in one PostCSS plugin, which
- * reports `postcssPlugin`. Its transforms are configured by name, and the
- * entry's own name is not an option.
+ * settings. `targets` is set when the plugin reads the browser targets of its
+ * preset; `defaults` are the options it uses unless the preset sets them;
+ * `optionKeys` lists the options it accepts, so a key it does not declare can
+ * be reported; `guards` checks the value of an option by its key.
  *
  * @typedef {{
  *   postcssPlugin: string,
- *   transforms?: undefined,
  *   targets?: true,
  *   defaults?: object,
  *   optionKeys: readonly string[],
- * } | {
- *   postcssPlugin: string,
- *   transforms: readonly TransformSettings[],
+ *   guards?: Readonly<Record<string, Guard>>,
  * }} PluginEntrySettings
  */
 /**

@@ -1,5 +1,3 @@
-/** @import {PluginEntrySettings, TransformSettings} from './configurePlugins.js' */
-import type { PluginEntrySettings, TransformSettings } from './configurePlugins.js';
 /**
  * The key that a built-in preset function carries, holding the plugins that it
  * runs. cssnano reads it from the function the user imported, so no table of
@@ -42,20 +40,11 @@ export type BuiltInPreset = NamedPreset<'default', import('./defaultPlugins.js')
  * plugin name at the top level without loading the plugin modules. A test keeps
  * the list equal to the default preset's own.
  */
-export declare const defaultPluginNames: readonly ['discardComments', 'minifyGradients', 'reduceInitial', 'normalizeDisplayValues', 'reduceTransforms', 'colormin', 'normalizeTimingFunctions', 'calc', 'convertValues', 'orderedValues', 'minifySelectors', 'minifyParams', 'normalizeCharset', 'discardOverridden', 'normalizeString', 'normalizeUnicode', 'minifyFontValues', 'normalizeUrl', 'normalizeRepeatStyle', 'normalizePositions', 'normalizeWhitespace', 'mergeLonghand', 'discardDuplicates', 'mergeRules', 'discardEmpty', 'uniqueSelectors', 'rawCache'];
+export declare const defaultPluginNames: readonly ['discardComments', 'minifyGradients', 'reduceInitial', 'normalizeDisplayValues', 'reduceTransforms', 'colormin', 'normalizeTimingFunctions', 'calc', 'convertValues', 'orderedValues', 'minifySelectors', 'minifyParams', 'normalizeCharset', 'discardOverridden', 'normalizeString', 'normalizeUnicode', 'minifyFontValues', 'normalizeUrl', 'normalizeRepeatStyle', 'normalizePositions', 'normalizeWhitespace', 'merge', 'discardEmpty', 'uniqueSelectors', 'rawCache'];
 /**
  * The advanced-only plugins, named here so a configuration without the advanced
  * preset can report them without loading their modules. A type test keeps the
  * list equal to the advanced preset's own.
  */
 export declare const advancedOnlyPluginNames: readonly ['discardUnused', 'mergeIdents', 'reduceIdents', 'zindex'];
-/**
- * The transforms that an entry hosts. An entry without a list hosts one, named
- * by the entry's own name and configured by its settings.
- *
- * @param {string} name the entry's name
- * @param {PluginEntrySettings} settings
- * @returns {readonly TransformSettings[]}
- */
-export declare function transformsOf(name: string, settings: PluginEntrySettings): readonly TransformSettings[];
 //# sourceMappingURL=presetEntries.d.ts.map

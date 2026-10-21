@@ -4,7 +4,6 @@ import {
   defaultPluginNames,
   presetConfigureKey,
   presetEntriesKey,
-  transformsOf,
 } from './presets/presetEntries.js';
 import {
   assertValid,
@@ -15,7 +14,7 @@ import {
 } from './optionGuards.js';
 import { validateBrowserslist } from './browserslistOptions.js';
 
-/** @import {PluginEntry, TransformSettings} from './presets/configurePlugins.js' */
+/** @import {PluginEntry, PluginEntrySettings} from './presets/configurePlugins.js' */
 /** @import {BuiltInPreset} from './presets/presetEntries.js' */
 /** @import {Guard} from './optionGuards.js' */
 
@@ -47,6 +46,11 @@ export const removedOptions = Object.freeze({
   env: 'set browserslist.env instead',
   stats: 'set browserslist.stats instead',
   path: 'set browserslist.path instead',
+  mergeLonghand:
+    'disable merge instead; longhand merging and duplicate removal now run together, and disabling merge also turns off rule merging',
+  discardDuplicates:
+    'disable merge instead; longhand merging and duplicate removal now run together, and disabling merge also turns off rule merging',
+  mergeRules: 'set options.merge.rules to false instead',
 });
 
 /**
@@ -225,18 +229,12 @@ export function validateOptions(input, place, entries) {
 
 /**
  * @param {readonly PluginEntry[]} entries
- * @param {string} name a transform name, such as "colormin"
- * @returns {TransformSettings | undefined}
- *   the settings of the transform, or undefined when the preset does not run it
+ * @param {string} name a plugin option name, such as "colormin"
+ * @returns {PluginEntrySettings | undefined}
+ *   the settings of the plugin, or undefined when the preset does not run it
  */
 function settingsOf(entries, name) {
-  for (const [, entryName, settings] of entries) {
-    const transform = transformsOf(entryName, settings).find(
-      (candidate) => candidate.name === name
-    );
-    if (transform !== undefined) return transform;
-  }
-  return undefined;
+  return entries.find(([, option]) => option === name)?.[2];
 }
 
 /**
@@ -285,6 +283,10 @@ function validatePluginOptions(pluginOptions, entries) {
     for (const [key, option] of Object.entries(value)) {
       if (isAbsent(option)) continue;
       if (settings.optionKeys.includes(key)) {
+        const guard = settings.guards?.[key];
+        if (guard !== undefined) {
+          assertValid(guard, option, `options.${name}.${key}`);
+        }
         kept[key] = option;
       } else if (key === 'exclude') {
         throw new TypeError(

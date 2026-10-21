@@ -1,25 +1,53 @@
-import { createRequire } from 'node:module';
+import { existsSync } from 'node:fs';
 import postcss from 'postcss';
+import { browserTargets } from '../../../packages/cssnano/src/utils/browserTargets.js';
 
-const require = createRequire(import.meta.url);
-const defaultPreset = require('../../../packages/cssnano/src/presets/default.js');
-
-const mergeTransforms = ['mergeLonghand', 'discardDuplicates', 'mergeRules'];
+const mergeDirectory = '../../../packages/cssnano/src/passes/merge/index.js';
+const basePlugins = {
+  mergeLonghand: 'postcss-merge-longhand',
+  discardDuplicates: 'postcss-discard-duplicates',
+  mergeRules: 'postcss-merge-rules',
+};
 
 /**
- * A case that runs the default preset with the other merge transforms
- * disabled, so the case builds on the base revision too.
+ * The creator of the plugin that runs one merge transform alone. A revision
+ * with the merge pass exposes `transformPlugin`; an earlier one has a plugin
+ * per transform, so the same case runs on both sides of a comparison.
  *
- * @param {string} transform the merge transform to keep
+ * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} transform
+ * @returns {Promise<(options: object) => import('postcss').Plugin>}
+ */
+async function loadTransform(transform) {
+  if (existsSync(new URL(mergeDirectory, import.meta.url))) {
+    const { transformPlugin } = await import(mergeDirectory);
+    return transformPlugin(transform);
+  }
+  const module = await import(
+    `../../../packages/cssnano/src/plugins/${basePlugins[transform]}/index.js`
+  );
+  return module.default;
+}
+
+const creators = {
+  mergeLonghand: await loadTransform('mergeLonghand'),
+  discardDuplicates: await loadTransform('discardDuplicates'),
+  mergeRules: await loadTransform('mergeRules'),
+};
+
+/**
+ * A case that runs one merge transform alone, so the other merge transforms
+ * do not change what it measures.
+ *
+ * @param {keyof typeof creators} transform
  * @param {string} css
- * @param {object} [options] preset options, such as the browser targets
+ * @param {{ browserslist?: object }} [options] the browser targets, as a preset takes them
  */
 function mergeCase(transform, css, options = {}) {
   return {
     plugin: 'cssnano-merge',
     createProcessor() {
-      const disable = mergeTransforms.filter((name) => name !== transform);
-      return postcss(defaultPreset({ ...options, disable }));
+      const targets = Object.freeze({ ...options.browserslist });
+      return postcss([creators[transform]({ [browserTargets]: targets })]);
     },
     css,
   };

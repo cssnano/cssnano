@@ -122,3 +122,69 @@ describe('a removed target option', () => {
     });
   });
 });
+
+describe('a merge transform that was split into options', () => {
+  const mergeMessage =
+    'disable merge instead; longhand merging and duplicate removal now run together, and disabling merge also turns off rule merging.';
+  const rulesMessage = 'set options.merge.rules to false instead.';
+
+  test('throws for mergeLonghand in disable, and names disable merge', () => {
+    assert.throws(() => validate({ disable: ['mergeLonghand'] }), {
+      message: `"mergeLonghand" in disable was removed; ${mergeMessage}`,
+    });
+  });
+
+  test('throws for discardDuplicates in disable, and names disable merge', () => {
+    assert.throws(() => validate({ disable: ['discardDuplicates'] }), {
+      message: `"discardDuplicates" in disable was removed; ${mergeMessage}`,
+    });
+  });
+
+  test('throws for mergeRules in disable, and names options.merge.rules', () => {
+    assert.throws(() => validate({ disable: ['mergeRules'] }), {
+      message: `"mergeRules" in disable was removed; ${rulesMessage}`,
+    });
+  });
+
+  test('throws for mergeLonghand in options, and names disable merge', () => {
+    assert.throws(() => validate({ options: { mergeLonghand: {} } }), {
+      message: `"mergeLonghand" in options was removed; ${mergeMessage}`,
+    });
+  });
+
+  test('throws for discardDuplicates in options, and names disable merge', () => {
+    assert.throws(() => validate({ options: { discardDuplicates: {} } }), {
+      message: `"discardDuplicates" in options was removed; ${mergeMessage}`,
+    });
+  });
+
+  test('throws for mergeRules in options, and names options.merge.rules', () => {
+    assert.throws(() => validate({ options: { mergeRules: {} } }), {
+      message: `"mergeRules" in options was removed; ${rulesMessage}`,
+    });
+  });
+
+  test('throws for mergeLonghand at the top level, and names disable merge', () => {
+    assert.throws(() => validate({ mergeLonghand: false }), {
+      message: `Option "mergeLonghand" was removed; ${mergeMessage}`,
+    });
+  });
+
+  test('throws for mergeRules at the top level, and names options.merge.rules', () => {
+    assert.throws(() => validate({ mergeRules: false }), {
+      message: `Option "mergeRules" was removed; ${rulesMessage}`,
+    });
+  });
+
+  test('throws for a non-boolean merge rules option, so the rule merging is not guessed', () => {
+    assert.throws(() => validate({ options: { merge: { rules: 'no' } } }), {
+      message: 'Option "options.merge.rules" must be a boolean.',
+    });
+  });
+
+  test('accepts merge rules set to false', () => {
+    assert.doesNotThrow(() =>
+      validate({ options: { merge: { rules: false } } })
+    );
+  });
+});

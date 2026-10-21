@@ -4,7 +4,7 @@
 
 feat(cssnano)!: one options object for presets, plugins and browser targets
 
-cssnano takes `preset`, `disable`, `options` and `browserslist`, inline or in a `cssnano.config.js` module. `preset` is a function imported from `cssnano/presets/default`, `cssnano/presets/lite` or `cssnano/presets/advanced`. `disable` lists transforms to leave out, and `options` configures transforms, merged over their defaults. A transform is one optimization: most plugins host one, and a single PostCSS plugin can host several. `browserslist` sets the browser targets for every plugin. A built preset is a list of PostCSS plugins, so other plugins are composed in the PostCSS configuration:
+cssnano takes `preset`, `disable`, `options` and `browserslist`, inline or in a `cssnano.config.js` module. `preset` is a function imported from `cssnano/presets/default`, `cssnano/presets/lite` or `cssnano/presets/advanced`. `disable` lists transforms to leave out, and `options` configures transforms, merged over their defaults. A transform is one optimization, and each transform is one PostCSS plugin. `browserslist` sets the browser targets for every plugin. A built preset is a list of PostCSS plugins, so other plugins are composed in the PostCSS configuration:
 
 ```js
 import autoprefixer from 'autoprefixer';
@@ -35,3 +35,5 @@ The configuration file is a JavaScript module with a default export; a module wi
 | `preset: lite()` | `plugins: [...lite()]` in the PostCSS configuration |
 | `svgo: false` | omit it (throws) |
 | `plugins: [...]` | add them to the PostCSS configuration (throws) |
+| `disable: ['mergeLonghand']`, `disable: ['discardDuplicates']` | `disable: ['merge']` (also turns off rule merging) |
+| `disable: ['mergeRules']` | `options: { merge: { rules: false } }` |

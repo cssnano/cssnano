@@ -43,7 +43,6 @@ export const editorialOptimisations =
     {
       plugin: 'cssnano-merge',
       shortName: 'discardDuplicates',
-      option: 'discardDuplicates',
       shortDescription:
         'Discard duplicate rules in your CSS files with PostCSS.',
       longDescription:
@@ -99,7 +98,6 @@ export const editorialOptimisations =
     {
       plugin: 'cssnano-merge',
       shortName: 'mergeLonghand',
-      option: 'mergeLonghand',
       shortDescription:
         'Merge longhand properties into shorthand with PostCSS.',
       longDescription:
@@ -111,10 +109,9 @@ export const editorialOptimisations =
     {
       plugin: 'cssnano-merge',
       shortName: 'mergeRules',
-      option: 'mergeRules',
       shortDescription: 'Merge CSS rules with PostCSS.',
       longDescription:
-        'Merges rules by selectors & overlapping property/value pairs. Rules with the same selector, and `@media`, `@supports` or `@container` blocks with the same condition, also merge across rules in between that set none of the same properties.\n',
+        'Merges rules by selectors & overlapping property/value pairs. Rules with the same selector, and `@media`, `@supports` or `@container` blocks with the same condition, also merge across rules in between that set none of the same properties. Set `options: { merge: { rules: false } }` to turn it off.\n',
       inputExample:
         '.box {\n    color: blue;\n}\n.box {\n    font-weight: 700;\n}\n',
       outputExample: '.box {\n    color: blue;\n    font-weight: 700;\n}\n',
