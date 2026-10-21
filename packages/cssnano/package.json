@@ -24,6 +24,10 @@
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
   "imports": {
+    "#passes/merge": {
+      "types": "./types/passes/merge/index.d.ts",
+      "default": "./src/passes/merge/index.js"
+    },
     "#postcss-colormin": {
       "types": "./types/plugins/postcss-colormin/index.d.ts",
       "default": "./src/plugins/postcss-colormin/index.js"
@@ -35,10 +39,6 @@
     "#postcss-discard-comments": {
       "types": "./types/plugins/postcss-discard-comments/index.d.ts",
       "default": "./src/plugins/postcss-discard-comments/index.js"
-    },
-    "#postcss-discard-duplicates": {
-      "types": "./types/plugins/postcss-discard-duplicates/index.d.ts",
-      "default": "./src/plugins/postcss-discard-duplicates/index.js"
     },
     "#postcss-discard-empty": {
       "types": "./types/plugins/postcss-discard-empty/index.d.ts",
@@ -55,14 +55,6 @@
     "#postcss-merge-idents": {
       "types": "./types/plugins/postcss-merge-idents/index.d.ts",
       "default": "./src/plugins/postcss-merge-idents/index.js"
-    },
-    "#postcss-merge-longhand": {
-      "types": "./types/plugins/postcss-merge-longhand/index.d.ts",
-      "default": "./src/plugins/postcss-merge-longhand/index.js"
-    },
-    "#postcss-merge-rules": {
-      "types": "./types/plugins/postcss-merge-rules/index.d.ts",
-      "default": "./src/plugins/postcss-merge-rules/index.js"
     },
     "#postcss-minify-font-values": {
       "types": "./types/plugins/postcss-minify-font-values/index.d.ts",
@@ -238,10 +230,10 @@
   },
   "scripts": {
     "acquire": "pnpm run \"/^acquire:/\"",
+    "acquire:passes-ir": "node ./script/passes/ir/acquire.js",
     "acquire:postcss-colormin": "node ./script/postcss-colormin/acquire.js",
     "acquire:postcss-merge-idents": "node ./script/postcss-merge-idents/acquire.js",
-    "acquire:postcss-merge-longhand": "node ./script/postcss-merge-longhand/acquire.js",
-    "acquire:postcss-merge-rules": "node ./script/postcss-merge-rules/acquire.js",
+    "acquire:postcss-merge-longhand": "node ./script/passes/merge/longhand/acquire.js",
     "acquire:postcss-minify-font-values": "node ./script/postcss-minify-font-values/acquire.js",
     "acquire:postcss-ordered-values": "node ./script/postcss-ordered-values/acquire.js",
     "acquire:postcss-reduce-idents": "node ./script/postcss-reduce-idents/acquire.js",

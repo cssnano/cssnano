@@ -4,6 +4,7 @@ import {
   defaultPluginNames,
   presetConfigureKey,
   presetEntriesKey,
+  transformsOf,
 } from './presets/presetEntries.js';
 import {
   assertValid,
@@ -14,7 +15,7 @@ import {
 } from './optionGuards.js';
 import { validateBrowserslist } from './browserslistOptions.js';
 
-/** @import {PluginEntry, PluginEntrySettings} from './presets/configurePlugins.js' */
+/** @import {PluginEntry, TransformSettings} from './presets/configurePlugins.js' */
 /** @import {BuiltInPreset} from './presets/presetEntries.js' */
 /** @import {Guard} from './optionGuards.js' */
 
@@ -224,12 +225,18 @@ export function validateOptions(input, place, entries) {
 
 /**
  * @param {readonly PluginEntry[]} entries
- * @param {string} name an option name, such as "colormin"
- * @returns {PluginEntrySettings | undefined}
- *   the settings of the plugin, or undefined when the preset does not run it
+ * @param {string} name a transform name, such as "colormin"
+ * @returns {TransformSettings | undefined}
+ *   the settings of the transform, or undefined when the preset does not run it
  */
 function settingsOf(entries, name) {
-  return entries.find(([, option]) => option === name)?.[2];
+  for (const [, entryName, settings] of entries) {
+    const transform = transformsOf(entryName, settings).find(
+      (candidate) => candidate.name === name
+    );
+    if (transform !== undefined) return transform;
+  }
+  return undefined;
 }
 
 /**
@@ -244,7 +251,7 @@ function validateDisable(names, entries) {
     }
     if (settingsOf(entries, name) === undefined) {
       throw new TypeError(
-        `"${name}" in disable is not a plugin that the preset runs.`
+        `"${name}" in disable is not a transform that the preset runs.`
       );
     }
   }
@@ -267,7 +274,7 @@ function validatePluginOptions(pluginOptions, entries) {
     const settings = settingsOf(entries, name);
     if (settings === undefined) {
       throw new TypeError(
-        `"${name}" in options is not a plugin that the preset runs.`
+        `"${name}" in options is not a transform that the preset runs.`
       );
     }
     if (!isRecord(value)) {

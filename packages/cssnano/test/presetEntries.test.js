@@ -6,6 +6,7 @@ import litePreset from '#presets/lite';
 import {
   defaultPluginNames,
   presetEntriesKey,
+  transformsOf,
 } from '../src/presets/presetEntries.js';
 
 const presets = {
@@ -24,8 +25,10 @@ describe('plugin entries of the built-in presets', () => {
   }
 
   test('the default plugin names are the option names of the default preset, so a top-level plugin name is recognised without loading it', () => {
-    const optionNames = defaultPreset[presetEntriesKey].map(
-      ([, option]) => option
+    // An entry that hosts transforms names each of them, not the entry.
+    const optionNames = defaultPreset[presetEntriesKey].flatMap(
+      ([, option, settings]) =>
+        transformsOf(option, settings).map(({ name }) => name)
     );
     assert.deepStrictEqual(
       [...new Set(optionNames)].toSorted(),

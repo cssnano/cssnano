@@ -84,7 +84,7 @@ describe('options from one source', () => {
 
   test('a plugin that the preset does not run throws in disable', () => {
     assert.throws(() => cssnano({ preset: litePreset, disable: ['zindex'] }), {
-      message: '"zindex" in disable is not a plugin that the preset runs.',
+      message: '"zindex" in disable is not a transform that the preset runs.',
     });
   });
 

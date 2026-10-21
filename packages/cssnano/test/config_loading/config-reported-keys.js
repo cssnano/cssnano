@@ -177,7 +177,7 @@ describe('cssnano config file with a reported top-level key', () => {
 
   test('inline disable without a preset is checked against the default preset', () => {
     assert.throws(() => cssnano({ disable: ['zindex'] }), {
-      message: '"zindex" in disable is not a plugin that the preset runs.',
+      message: '"zindex" in disable is not a transform that the preset runs.',
     });
   });
 
@@ -206,14 +206,16 @@ describe('cssnano config file with a reported top-level key', () => {
     );
     assert.throws(() => cssnano(), {
       message:
-        'cssnano.config.js: "zindex" in disable is not a plugin that the preset runs.',
+        'cssnano.config.js: "zindex" in disable is not a transform that the preset runs.',
     });
   });
 
   test('plugin names in inline disable are checked against the inline preset, and the file is skipped', () => {
     assert.throws(
       () => cssnano({ preset: defaultPreset, disable: ['zindex'] }),
-      { message: '"zindex" in disable is not a plugin that the preset runs.' }
+      {
+        message: '"zindex" in disable is not a transform that the preset runs.',
+      }
     );
   });
 

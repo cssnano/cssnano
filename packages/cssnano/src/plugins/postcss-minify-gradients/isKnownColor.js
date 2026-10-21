@@ -17,7 +17,7 @@ extend([
  * and `postcss-colormin` shares it, so colordx loads only the plugins this
  * module needs — otherwise colormin would gamut-map wide-gamut colours.
  * Colour notations colordx cannot parse remain valid stop colours.
- * `postcss-merge-longhand` duplicates this list on purpose. */
+ * The merge pass's `systemColors.js` duplicates this list on purpose. */
 export const dynamicColorKeywords = new Set([
   'currentcolor',
   'accentcolor',

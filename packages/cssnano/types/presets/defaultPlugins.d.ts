@@ -1,4 +1,5 @@
 import postcssMinifyGradients from '#postcss-minify-gradients';
+import mergePass from '../passes/merge/index.js';
 export type DefaultPluginOptions = {
     /**
      * Removes comments. Comments marked as important (`/*!`) stay unless `removeAll` is set.
@@ -93,9 +94,9 @@ export type DefaultPluginOptions = {
      */
     discardDuplicates?: Record<string, never>;
     /**
-     * Merges adjacent rules that share a selector or declaration.
+     * Merges adjacent rules that share a selector or declaration. Takes no options.
      */
-    mergeRules?: import('#postcss-merge-rules').Options;
+    mergeRules?: Record<string, never>;
     /**
      * Discards empty rules and declarations. Takes no options.
      */
@@ -248,33 +249,20 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }, "normalizeWhitespace", {
     readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
-}], readonly [{
-    (opts?: import("#postcss-merge-longhand").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, "mergeLonghand", {
-    readonly postcssPlugin: 'postcss-merge-longhand';
-    readonly targets: true;
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'discardDuplicates', {
-    readonly postcssPlugin: 'postcss-discard-duplicates';
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (opts?: import("#postcss-merge-rules").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'mergeRules', {
-    readonly postcssPlugin: 'postcss-merge-rules';
-    readonly targets: true;
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (opts?: import("#postcss-merge-longhand").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, "mergeLonghand", {
-    readonly postcssPlugin: 'postcss-merge-longhand';
-    readonly targets: true;
-    readonly optionKeys: readonly [];
+}], readonly [typeof mergePass, "merge", {
+    readonly postcssPlugin: 'cssnano-merge';
+    readonly transforms: readonly [{
+        readonly name: 'mergeLonghand';
+        readonly targets: true;
+        readonly optionKeys: readonly [];
+    }, {
+        readonly name: 'discardDuplicates';
+        readonly optionKeys: readonly [];
+    }, {
+        readonly name: 'mergeRules';
+        readonly targets: true;
+        readonly optionKeys: readonly [];
+    }];
 }], readonly [{
     (): import("postcss/lib/postcss").Plugin;
     postcss: true;

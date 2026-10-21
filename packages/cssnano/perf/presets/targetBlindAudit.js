@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
+import { transformPlugin } from '#passes/merge';
 
 // Plugins that do not read browser targets. Their output must not need newer
 // syntax or drop a fallback for some target, so the audit checks their output
@@ -29,6 +30,17 @@ const plugins = [
   'unique-selectors',
   'zindex',
 ];
+
+/**
+ * @param {string} name
+ * @return {Promise<import('postcss').PluginCreator<any>>}
+ */
+async function loadPlugin(name) {
+  // The merge pass replaced this plugin; the audit runs it as a transform.
+  if (name === 'discard-duplicates')
+    return transformPlugin('discardDuplicates');
+  return (await import(`../../src/plugins/postcss-${name}/index.js`)).default;
+}
 
 const fixtureDir = new URL(
   '../../test/presets/default/integrations/',
@@ -76,9 +88,7 @@ describe('target-blind plugins add no newer syntax to the integration fixtures',
   test('a function, at-rule, unit or keyword appears in output only when the input has it, except @charset', async () => {
     const added = [];
     for (const name of plugins) {
-      const plugin = (
-        await import(`../../src/plugins/postcss-${name}/index.js`)
-      ).default;
+      const plugin = await loadPlugin(name);
       for (const file of fixtures) {
         const input = readFileSync(new URL(file, fixtureDir), 'utf8');
         const output = (
@@ -114,9 +124,7 @@ describe('target-blind plugins drop no fallback declaration', () => {
       'reduce-transforms',
       'reduce-idents',
     ]) {
-      const plugin = (
-        await import(`../../src/plugins/postcss-${name}/index.js`)
-      ).default;
+      const plugin = await loadPlugin(name);
       for (const file of fixtures) {
         if (
           await replacesValue(

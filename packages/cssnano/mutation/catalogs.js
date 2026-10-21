@@ -2,7 +2,7 @@
 // the catalog's test file against each mutant; `suites` names the module of
 // fuzz suites that judge it in the oracle check. Add a new catalog here only.
 const mergeRulesSuites = new URL(
-  '../script/postcss-merge-rules/mutationSuites.js',
+  '../script/passes/merge/rules/mutationSuites.js',
   import.meta.url
 );
 
@@ -37,7 +37,7 @@ export const catalogs = [
   },
   {
     url: new URL(
-      './postcss-merge-longhand/mutation-catalog.js',
+      './passes/merge/lib/longhand/mutation-catalog.js',
       import.meta.url
     ),
     test: true,
@@ -45,7 +45,7 @@ export const catalogs = [
   },
   {
     url: new URL(
-      './postcss-merge-longhand/mutation-catalog-validity.js',
+      './passes/merge/lib/longhand/mutation-catalog-validity.js',
       import.meta.url
     ),
     test: true,
@@ -53,7 +53,7 @@ export const catalogs = [
   },
   {
     url: new URL(
-      './postcss-merge-longhand/mutation-catalog-candidates.js',
+      './passes/merge/lib/longhand/mutation-catalog-candidates.js',
       import.meta.url
     ),
     test: true,
@@ -61,14 +61,22 @@ export const catalogs = [
   },
   {
     url: new URL(
-      './postcss-merge-longhand/mutation-catalog-reset-gates.js',
+      './passes/merge/lib/longhand/mutation-catalog-reset-gates.js',
       import.meta.url
     ),
     test: true,
     suites: mergeRulesSuites,
   },
   {
-    url: new URL('./postcss-merge-rules/mutation-catalog.js', import.meta.url),
+    url: new URL(
+      './passes/merge/lib/rules/mutation-catalog.js',
+      import.meta.url
+    ),
+    suites: mergeRulesSuites,
+    test: true,
+  },
+  {
+    url: new URL('./passes/merge/mutation-catalog.js', import.meta.url),
     suites: mergeRulesSuites,
     test: true,
   },

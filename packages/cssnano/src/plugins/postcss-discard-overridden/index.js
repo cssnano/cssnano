@@ -1,14 +1,9 @@
+import cssnanoUtils from '#utils';
+
+const { vendorUnprefixed } = cssnanoUtils;
+
 const OVERRIDABLE_RULES = new Set(['keyframes', 'counter-style']);
 const SCOPE_RULES = new Set(['media', 'supports', 'container', 'layer']);
-const vendorPrefixPattern = /^-\w+-/v;
-
-/**
- * @param {string} prop
- * @return {string}
- */
-function vendorUnprefixed(prop) {
-  return prop.replace(vendorPrefixPattern, '');
-}
 
 /**
  * @param {string} name
