@@ -10,11 +10,11 @@
     "check:astro": "pnpm build && node util/checkAstroArtifacts.js"
   },
   "dependencies": {
-    "postcss": "^8.5.30"
+    "postcss": "^8.5.31"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.4",
-    "astro": "^7.4.0",
+    "astro": "^7.4.1",
     "cssnano": "link:../packages/cssnano",
     "typescript": "~7.0.2"
   },

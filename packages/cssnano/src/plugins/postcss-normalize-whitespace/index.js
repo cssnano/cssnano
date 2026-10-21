@@ -316,7 +316,7 @@ function pluginCreator() {
         const { type } = node;
 
         if ([decl, rule, atrule].includes(type) && node.raws.before) {
-          node.raws.before = node.raws.before.replace(whitespaceRegex, '');
+          node.raws.before = node.raws.before.replaceAll(whitespaceRegex, '');
         }
 
         if (type === decl) {

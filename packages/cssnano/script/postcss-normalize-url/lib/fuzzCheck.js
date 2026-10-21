@@ -136,7 +136,7 @@ function decodedUrlValues(css) {
   const values = [];
   for (const token of tokenize({ css })) {
     if (token[0] === TokenType.URL || token[0] === TokenType.String) {
-      values.push(token[4].value.replace(CSS_WHITESPACE_AT_ENDS, ''));
+      values.push(token[4].value.replaceAll(CSS_WHITESPACE_AT_ENDS, ''));
     }
   }
   return values;
