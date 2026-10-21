@@ -40,37 +40,23 @@ pnpm test:mutation
 
 ### Benchmarking
 
-Benchmark comparisons are advisory comparative reports, not regression gates.
-The primary estimand is the candidate/base runtime ratio for one complete pass
-over the fixed selected corpus. `TOTAL` is the sole primary endpoint; per-file
-and memory results are exploratory. The comparison uses balanced paired fresh
-process blocks, confidence intervals, a declared 10% practical margin, and a
-precision check. See [the benchmark contract](util/benchmark/README.md) for
-the statistical and operational details.
-
-The standalone benchmark uses stable settings and five independent process
-runs:
+Benchmark comparisons are advisory, not regression gates. Each block runs a
+fresh process per side in a balanced order and decides two endpoints, the
+warm runtime and the cold start, against a 10% margin. A run stops as soon as
+both endpoints have a verdict, or at its time budget. See
+[the benchmark README](util/benchmark/README.md) for the verdict rule and its
+limits.
 
 ```shell
-pnpm bench
-pnpm bench -- --case=selector-reduction
-pnpm bench:smoke -- --case=selector-reduction
-pnpm bench:profile -- --case=selector-reduction
 pnpm bench:check -- --package=<plugin> --budget=90s
-pnpm bench:compare -- --base-revision=<ref> --candidate-revision=<ref> \
-  --base-dir=<worktree> --candidate-dir=<worktree> --results-dir=<path>
+pnpm bench:check -- --corpus --budget=30m --base=<ref> --candidate=<ref>
+pnpm bench:profile -- --case=selector-reduction
 ```
 
 `bench:check` benchmarks the working tree against `HEAD` for a plugin's focused
-cases within a time budget and prints one JSON line per case. It gives
-directional evidence in a minute or two; `bench:compare` is the full
-comparison.
-
-Smoke output only verifies that the harness and fixture work. Use the balanced
-comparison workflow for performance reports. It retains every measured
-iteration and fresh-process block, provenance, schedule metadata, and raw
-artifact. An interval spanning 1 is statistically inconclusive; reports say
-“within the declared 10% margin,” never “the same.”
+cases and prints one line per case. `--corpus` runs the framework corpus, and
+`bench:compare` is an alias for it. `bench:profile` writes a CPU profile of one
+process. The benchmark README lists the other options.
 
 The comparison CLI exits 0 for a generated report, including an inconclusive
 report. Invalid artifacts, execution failures, and correctness mismatches exit

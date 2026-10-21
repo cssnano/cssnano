@@ -1,174 +1,347 @@
-// cssnano benchmark harness.
-//
-// A measured sample is one complete pass over the selected corpus. Independent
-// process runs are retained in the snapshot so the comparison analysis can
-// estimate the uncertainty of a change instead of treating in-process samples
-// as replicas.
+// Benchmark the working tree (or any revision) against a base revision.
+// Each block runs one fresh child per side in a balanced order, and the
+// verdict comes from the paired log ratios.
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import {
-  createBenchmarkProcessor,
-  MODES,
-  resolveBenchmarkArgs,
-} from './bench-config.js';
-import { benchmarkCases } from './bench-cases.js';
-import { processCorpus, selectCorpus, shuffleCorpus } from './bench-corpus.js';
-import { warnUnstableGovernor } from './bench-provenance.js';
-import {
-  aggregateSnapshots,
-  runOnce,
-  SNAPSHOT_VERSION,
-  MIN_USEFUL_SAMPLE_MS,
-} from './bench-snapshots.js';
-import { quantile, summaryStatistics } from './bench-stats.js';
+import { randomUUID } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parseArgs } from 'node:util';
+import { performance } from 'node:perf_hooks';
+import { benchmarkCases } from './cases/index.js';
+import { createComparisonSchedule, decide } from './stats.js';
+import { prepareComparison, snapshotWorkingTree } from './worktrees.js';
 
-if (process.env.NODE_ENV === undefined) process.env.NODE_ENV = 'production';
+const MINIMUM_BLOCKS = 4;
+const REQUESTED_BLOCKS = 20;
+const COOLDOWN_MS = 100;
+const DURATION_UNITS = { s: 1000, m: 60_000 };
+const RESULTS_DIR = join(import.meta.dirname, '..', '..', 'bench-results');
+const CORPUS_DIR = join(import.meta.dirname, '..', '..', 'frameworks');
+const GOVERNOR_PATH = '/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor';
+const UNSTABLE_GOVERNORS = new Set(['powersave', 'ondemand']);
 
-const DEFAULT_DIR = join(import.meta.dirname, '..', '..', 'frameworks');
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
 
-export {
-  aggregateSnapshots,
-  createBenchmarkProcessor,
-  MIN_USEFUL_SAMPLE_MS,
-  MODES,
-  processCorpus,
-  quantile,
-  resolveBenchmarkArgs,
-  runOnce,
-  selectCorpus,
-  shuffleCorpus,
-  SNAPSHOT_VERSION,
-  summaryStatistics,
+/**
+ * @param {string} text a duration such as `90s` or `5m`
+ * @return {number | null} milliseconds, or null when the text is not a duration
+ */
+export function parseDuration(text) {
+  const match = /^(\d+(?:\.\d+)?)([sm])$/v.exec(text ?? '');
+  const ms = match ? Number(match[1]) * DURATION_UNITS[match[2]] : 0;
+  return ms > 0 ? ms : null;
+}
+
+/**
+ * Turns a ref such as HEAD or a branch name into the full commit hash.
+ * @param {string} ref
+ * @return {string}
+ */
+export function resolveRevision(ref) {
+  try {
+    const sha = execFileSync(
+      'git',
+      ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+    ).trim();
+    if (sha) return sha;
+  } catch {
+    // reported below
+  }
+  throw new Error(`cannot resolve "${ref}" to a commit`);
+}
+
+// Frequency scaling makes timings jittery, so the user is told once, up front.
+function warnUnstableGovernor() {
+  let governor = null;
+  try {
+    governor = readFileSync(GOVERNOR_PATH, 'utf8').trim();
+  } catch {
+    // no scaling governor on this platform
+  }
+  if (UNSTABLE_GOVERNORS.has(governor)) {
+    console.warn(
+      `Warning: CPU scaling governor is "${governor}". Frequency scaling induces timing jitter; use --pin-core (or the "performance" governor) for stable measurements.`
+    );
+  }
+}
+
+function casesFor(values) {
+  if (values.case) {
+    return values.case
+      .split(',')
+      .filter(Boolean)
+      .map((name) => {
+        if (!Object.hasOwn(benchmarkCases, name)) {
+          throw new Error(`unknown case "${name}"`);
+        }
+        return name;
+      });
+  }
+  const names = Object.keys(benchmarkCases)
+    .filter((name) => benchmarkCases[name].plugin === values.package)
+    .toSorted();
+  if (!names.length) {
+    throw new Error(`no focused benchmark case for "${values.package}"`);
+  }
+  return names;
+}
+
+function childArgs(name, dir) {
+  const target =
+    name === 'corpus' ? [`--dir=${CORPUS_DIR}`] : [`--case=${name}`];
+  return [join(dir, 'util', 'benchmark', 'child.js'), ...target];
+}
+
+// Runs one fresh process. The last stdout line is the child's JSON result.
+function runChild(name, dir, pinCore) {
+  let executable = process.execPath;
+  let args = childArgs(name, dir);
+  if (pinCore !== undefined) {
+    executable = 'taskset';
+    args = ['-c', String(pinCore), process.execPath, ...args];
+  }
+  const stdout = execFileSync(executable, args, {
+    cwd: dir,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'inherit'],
+  });
+  return JSON.parse(stdout.trim().split('\n').at(-1));
+}
+
+function outputsMatch(baseline, candidate) {
+  return Object.keys(baseline).filter(
+    (file) => baseline[file] !== candidate[file]
+  );
+}
+
+const ENDPOINTS = { runtime: 'medianMs', coldStart: 'coldStartMs' };
+const ENDPOINT_LABELS = { runtime: 'runtime', coldStart: 'cold start' };
+const DIRECTIONS = {
+  regression: 'slower beyond the margin',
+  improvement: 'faster beyond the margin',
 };
 
-export function childRunArguments(argv) {
-  return argv.filter(
-    (argument) =>
-      argument !== '--' &&
-      !argument.startsWith('--runs=') &&
-      !argument.startsWith('--label=') &&
-      !argument.startsWith('--childRun') &&
-      !argument.startsWith('--child-run') &&
-      !argument.startsWith('--runIndex=') &&
-      !argument.startsWith('--run-index=')
-  );
-}
-
-export function usageText() {
-  return [
-    'cssnano benchmark harness',
-    '',
-    'usage: node util/benchmark/bench.js [options]',
-    '',
-    'modes:',
-    '  quick   warmup=0, samples=1 (smoke)',
-    '  stable  warmup=20, samples=100 (requires --revision)',
-    '',
-    'key options:',
-    '  --mode=<quick|stable>      benchmark mode (default: stable)',
-    '  --preset=<name>            cssnano preset (default, advanced, lite)',
-    '  --case=<name>              run one focused benchmark case',
-    '  --only=<substring>         select corpus fixtures; repeatable',
-    '  --corpus-manifest=<path>   select corpus fixtures by exact name, one per line',
-    '  --runs=<n>                 independent process runs (default: 5)',
-    '  --label=<name>             snapshot label',
-    '  --results-dir=<path>       where snapshots are written',
-    '  --quiet                    suppress progress output (coordinator child mode)',
-    '  --help                     show this message',
-    '  --list-cases               list the focused benchmark cases',
-    '',
-    'examples:',
-    '  node util/benchmark/bench.js --mode=quick --runs=1 --label=smoke',
-    `  node util/benchmark/bench.js --case=${Object.keys(benchmarkCases)[0]}`,
-    '  node util/benchmark/bench.js --mode=stable --revision=<full-sha>',
-  ].join('\n');
-}
-
-export function listCasesText() {
-  return Object.keys(benchmarkCases).toSorted().join('\n');
-}
-
-export async function main(argv = process.argv.slice(2)) {
-  if (argv.includes('--help') || argv.includes('-h')) {
-    console.log(usageText());
-    return;
+// Each block is a pair of children run in the scheduled order, so a process
+// that starts first does not always lose to the other on warm caches.
+export function runCase(
+  name,
+  comparison,
+  {
+    budgetMs,
+    allowOutputChange,
+    pinCore,
+    seed,
+    run = runChild,
+    pause = sleep,
+    now = () => performance.now(),
   }
-  if (argv.includes('--list-cases')) {
-    console.log(listCasesText());
-    return;
-  }
-  const args = resolveBenchmarkArgs(argv);
-  const dir = args.dir ? resolve(args.dir) : DEFAULT_DIR;
-  const corpus = selectCorpus(args, dir);
-  if (args.profile && !args.case && corpus.length !== 1) {
-    throw new Error(
-      '--profile requires exactly one selected fixture (--only or --case)'
-    );
-  }
-
-  // Environment setup is reported once per top-level invocation, not per child.
-  if (!args.quiet && !args.childRun) warnUnstableGovernor(args.mode);
-
-  if (!args.quiet) {
-    console.log(
-      `benchmark configuration: mode=${args.mode}, reliability=${
-        MODES[args.mode].reliability
-      }, warmup=${args.warmup}, samples=${args.iters}, runs=${args.runs}, ` +
-        `seed=${args.seed}, corpus=${corpus.length}, NODE_ENV=${process.env.NODE_ENV}`
-    );
-    console.log(`results: ${args.resultsDir}`);
-  }
-
-  if (args.runs > 1 && !args.childRun) {
-    const forwarded = childRunArguments(argv);
-    const snapshots = [];
-    for (let run = 1; run <= args.runs; run++) {
-      const label = `${args.label}-${run}`;
-      execFileSync(
-        process.execPath,
-        [
-          import.meta.filename,
-          ...forwarded,
-          `--label=${label}`,
-          '--runs=1',
-          `--run-index=${run}`,
-          '--child-run',
-        ],
-        { stdio: 'inherit', env: process.env }
-      );
-      snapshots.push(
-        JSON.parse(readFileSync(join(args.resultsDir, `${label}.json`), 'utf8'))
-      );
+) {
+  const schedule = createComparisonSchedule(REQUESTED_BLOCKS, seed);
+  const started = now();
+  const blocks = [];
+  let stopReason = null;
+  for (const entry of schedule) {
+    const elapsed = now() - started;
+    const pairs = Math.floor(blocks.length / 2);
+    const averagePair = pairs ? elapsed / pairs : 0;
+    if (
+      blocks.length >= MINIMUM_BLOCKS &&
+      blocks.length % 2 === 0 &&
+      elapsed + averagePair > budgetMs
+    ) {
+      stopReason = 'time budget reached';
+      break;
     }
-    const aggregate = aggregateSnapshots(snapshots, args.label, args);
-    return aggregate;
+    const blockStarted = now();
+    const observations = {};
+    for (const [index, side] of entry.processOrder.entries()) {
+      if (index > 0) pause(COOLDOWN_MS);
+      observations[side] = run(name, comparison.dirs[side], pinCore);
+    }
+    blocks.push({
+      blockId: entry.blockId,
+      processOrder: entry.processOrder,
+      durationMs: now() - blockStarted,
+      observations,
+    });
+    const changed = outputsMatch(
+      observations.baseline.outputHashes,
+      observations.candidate.outputHashes
+    );
+    if (entry.blockId === 1 && changed.length && !allowOutputChange) {
+      stopReason = `output changed: ${changed.join(', ')}`;
+      break;
+    }
+    if (
+      blocks.length >= MINIMUM_BLOCKS &&
+      blocks.length % 2 === 0 &&
+      endpointsDecided(blocks)
+    ) {
+      break;
+    }
   }
-
-  const snapshot = await runOnce(
-    args,
-    corpus,
-    createBenchmarkProcessor(args)(),
-    args.label,
-    args.runIndex
-  );
-  writeFileSync(
-    join(args.resultsDir, `${args.label}.json`),
-    JSON.stringify(snapshot, null, 2)
-  );
-  if (!args.quiet)
-    console.log(`wrote ${join(args.resultsDir, `${args.label}.json`)}`);
-  return snapshot;
+  return summarize(name, blocks, stopReason);
 }
 
-const isMain =
-  process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename);
-if (isMain) {
+// Adaptive stopping waits until both endpoints have a verdict.
+function endpointsDecided(blocks) {
+  return Object.values(ENDPOINTS).every(
+    (field) => decide(logRatios(blocks, field)).verdict !== 'inconclusive'
+  );
+}
+
+function logRatios(blocks, field) {
+  return blocks.map((block) => ({
+    logRatio: Math.log(
+      block.observations.candidate[field] / block.observations.baseline[field]
+    ),
+    baselineFirst: block.processOrder[0] === 'baseline',
+  }));
+}
+
+// Either endpoint regressing flags the case; no change needs both to be
+// within the margin.
+function combineVerdicts(verdicts) {
+  if (verdicts.includes('regression')) return 'regression';
+  if (verdicts.includes('improvement')) return 'improvement';
+  if (verdicts.every((verdict) => verdict === 'no-meaningful-change')) {
+    return 'no-meaningful-change';
+  }
+  return 'inconclusive';
+}
+
+function verdictReason(verdict, decisions, stopReason) {
+  if (verdict === 'no-meaningful-change') return 'within the margin';
+  if (DIRECTIONS[verdict]) {
+    const endpoints = Object.keys(decisions)
+      .filter((key) => decisions[key].verdict === verdict)
+      .map((key) => ENDPOINT_LABELS[key]);
+    return `${endpoints.join(' and ')} ${DIRECTIONS[verdict]}`;
+  }
+  return stopReason ?? 'noise is too large to rule out a meaningful change';
+}
+
+function summarize(name, blocks, stopReason) {
+  if (blocks.length < MINIMUM_BLOCKS) {
+    return { case: name, verdict: 'inconclusive', reason: stopReason, blocks };
+  }
+  const decisions = Object.fromEntries(
+    Object.entries(ENDPOINTS).map(([key, field]) => [
+      key,
+      decide(logRatios(blocks, field)),
+    ])
+  );
+  const { runtime, coldStart } = decisions;
+  const verdict = combineVerdicts(
+    Object.values(decisions).map((decision) => decision.verdict)
+  );
+  return {
+    case: name,
+    verdict,
+    reason: verdictReason(verdict, decisions, stopReason),
+    ratio: runtime.ratio,
+    interval: runtime.interval,
+    orderEffect: runtime.orderEffect,
+    orderStable: runtime.orderStable,
+    coldStart: {
+      ratio: coldStart.ratio,
+      interval: coldStart.interval,
+      verdict: coldStart.verdict,
+    },
+    blocks,
+  };
+}
+
+const pct = (value) => `${((value - 1) * 100).toFixed(1)}%`;
+
+function formatRow(result) {
+  if (!result.interval) {
+    return `${result.case}: ${result.verdict} (${result.reason})`;
+  }
+  const interval = `[${pct(result.interval.low)}, ${pct(result.interval.high)}]`;
+  return `${result.case}: ${pct(result.ratio)} ${interval} ${result.verdict} (${result.reason})`;
+}
+
+export function parseOptions(argv) {
+  const { values } = parseArgs({
+    args: argv,
+    options: {
+      case: { type: 'string' },
+      package: { type: 'string' },
+      corpus: { type: 'boolean', default: false },
+      base: { type: 'string', default: 'HEAD' },
+      candidate: { type: 'string', default: 'worktree' },
+      budget: { type: 'string', default: '2m' },
+      'pin-core': { type: 'string' },
+      'allow-output-change': { type: 'boolean', default: false },
+      json: { type: 'boolean', default: false },
+      keep: { type: 'boolean', default: false },
+      seed: { type: 'string' },
+    },
+  });
+  const budgetMs = parseDuration(values.budget);
+  if (budgetMs === null) {
+    throw new Error('--budget must be a duration such as 90s or 5m');
+  }
+  if (values.seed === '') throw new Error('--seed must be a non-empty string');
+  // Each run draws its own schedule; --seed replays an earlier one.
+  const seed = values.seed ?? randomUUID();
+  return { ...values, budgetMs, seed };
+}
+
+function main(argv = process.argv.slice(2)) {
+  const options = parseOptions(argv);
+  const names = options.corpus ? ['corpus'] : casesFor(options);
+  const repoRoot = git(['rev-parse', '--show-toplevel']);
+  const revisions = {
+    baseline: resolveRevision(options.base),
+    candidate:
+      options.candidate === 'worktree'
+        ? snapshotWorkingTree(repoRoot)
+        : resolveRevision(options.candidate),
+  };
+  const comparison = prepareComparison(revisions, repoRoot);
   try {
-    await main();
+    warnUnstableGovernor();
+    const pinCore = options['pin-core'];
+    const perCase = options.budgetMs / names.length;
+    const results = names.map((name) => {
+      const result = runCase(name, comparison, {
+        budgetMs: perCase,
+        allowOutputChange: options['allow-output-change'],
+        pinCore,
+        seed: options.seed,
+      });
+      if (options.json) console.log(JSON.stringify(result));
+      else console.log(formatRow(result));
+      return result;
+    });
+    const stamp = new Date().toISOString().replaceAll(':', '-');
+    mkdirSync(join(RESULTS_DIR, stamp), { recursive: true });
+    writeFileSync(
+      join(RESULTS_DIR, stamp, 'results.json'),
+      JSON.stringify({ revisions, seed: options.seed, results }, null, 2)
+    );
+  } finally {
+    const failures = options.keep ? [] : comparison.cleanup();
+    for (const failure of failures) console.error(`bench: ${failure}`);
+    if (failures.length > 0) process.exitCode = 1;
+  }
+}
+
+function git(args) {
+  return execFileSync('git', args, { encoding: 'utf8' }).trim();
+}
+
+if (process.argv[1] === import.meta.filename) {
+  try {
+    main();
   } catch (error) {
-    console.error(error);
+    console.error(`bench: ${error.message}`);
     process.exit(1);
   }
 }
