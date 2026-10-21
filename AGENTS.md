@@ -49,6 +49,12 @@ Every change should make the intended CSS transformation clearer while preservin
 ## Durable conventions
 
 - Use Node’s built-in `test` module for repository package tests and the shared helpers. Plugin and preset tests use `processCSSFactory()` from `util/testHelpers.js`, and preset tests that need a processor call `postcss()` directly.
+- Agents benchmark with `pnpm run bench:check --case=<name>` or
+  `--package=<name>` only. Use `bench:compare` (`bench:check --corpus`) only when the user asks for it.
+  A benchmark always runs its minimum blocks, and `--budget` only stops it from
+  starting more pairs, so a small budget or a shell `timeout` does not bound the
+  run: one block over the whole corpus can take minutes. Pick the narrowest case,
+  run it in the background, and never raise or wrap a timeout to compensate.
 - Tests that assert wall-clock time or asymptotic scaling, and fuzz or exhaustive sweeps that take about a second or more, go in `packages/<pkg>/perf/` (plain `.js`, not `*.test.js`; plugin perf files live in `packages/cssnano/perf/<name>/`), so `node --test` and the coverage run skip them; run them with the `test:performance` script. Keep correctness assertions in `test/`.
 - Keep package tests under `test/` and follow the existing filename convention for the package or subsystem (`*.js` and `*.test.js` are both present). Use `describe()` when it improves source readability without disturbing unrelated test order.
 - Keep test-suite nesting shallow; avoid wrapping descriptive suites in redundant package- or preset-level suites.

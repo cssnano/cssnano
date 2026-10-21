@@ -1,222 +1,100 @@
-# Benchmark comparisons
+# Benchmarks
 
-## Quick check of a change (a minute or two)
+## Commands
 
-To benchmark uncommitted work against `HEAD` for one plugin:
+| Command                                              | Use it to                                                  |
+| ---------------------------------------------------- | ---------------------------------------------------------- |
+| `pnpm run bench:check --case=a,b` or `--package=<p>` | compare the working tree with `HEAD` (agents: this only)   |
+| `pnpm run bench:check --corpus --budget=30m`         | compare on the framework corpus (`bench:compare` is this)  |
+| `pnpm run bench:profile --case=<name>`               | write a CPU profile of one process to `bench-results/`     |
+| `pnpm run test:benchmark:simulation`                 | check that the decision rule keeps its error rates         |
 
-```sh
-pnpm run bench:check --package=postcss-merge-rules   # or --case=<name>
-pnpm run bench:check --package=postcss-merge-rules --budget=90s
-```
+`--base=<ref>` and `--candidate=<ref>` compare two revisions instead of `HEAD`
+and the working tree. `--budget=<90s|5m>` is shared equally by the cases
+(default `2m`). `--pin-core=<n>` reduces scheduler noise. `--json` prints one
+line per case. `--keep` leaves the worktrees for inspection. `--seed=<value>`
+replays a block schedule; each run draws its own seed otherwise.
 
-It snapshots the working tree (untracked files included, your index and branch
-untouched), prepares two temporary worktrees, runs each focused case of the
-package, prints a table (case, ratio, interval, verdict, reason), an overall
-line (`no change detected`, `possible regression: <cases>`, `possible
-improvement: <cases>`, or `incomplete: <cases>`) and, for flagged cases, the
-exact commands to confirm them, then removes the worktrees. Run
-`bench-check.js --help` for every option.
+The working tree is snapshotted with a private index, so untracked files are
+included while your index and branch are untouched. Both sides run the harness
+from the current checkout, so a new case also runs on the base revision.
 
-Progress, the per-case budget share and the CPU governor warning (printed once)
-go to stderr, and the pnpm install output goes to a log whose path is shown only
-if installation fails. A reported result also means the base and candidate
-output hashes matched: preflight stops on any difference.
+## Measurement
 
-`--json` prints only one JSON line per case on stdout (`verdict`, `direction`,
-`practical`, `ratio`, `intervalPct`, `blocks`, `basis`, `reason`, `outputs`) for
-scripts. `reason` appears for an inconclusive verdict: `requested precision was
-not achieved` needs a larger `--budget`, `process-order interaction cannot be
-ruled out` needs a rerun, and `fewer than minimumBlocks` needs more time.
+A block runs one fresh child process per side, in a balanced order: the
+baseline goes first in half the blocks. Each child takes two endpoints:
 
-- `--case=a,b` takes a comma-separated list; a bad name lists the known cases.
-- `--budget=<90s|5m>` is the total time for all cases (default `2m`), shared
-  equally between them. Each case runs the minimum 4 blocks, then adds balanced
-  pairs while another pair is predicted to fit in its share. Precision reached
-  earlier also stops a case. The budget is a ceiling on starting another pair:
-  the minimum is always run, so a tiny budget is exceeded rather than giving
-  an invalid analysis.
-- `--base=<ref>` and `--candidate=<ref>` compare two commits instead of `HEAD`
-  and the working tree; any ref is accepted.
-- `--pin-core=<n>` reduces scheduler noise, and `--keep` leaves the worktrees
-  for inspection.
+- **runtime**: the median of 10 timed samples, after warm-up of at least 3
+  passes and 500 ms. A sample is the mean pass time over enough passes to last
+  at least 50 ms, so a fast case is not timed at the resolution of the
+  scheduler;
+- **cold start**: the time from the process start to the end of the first pass,
+  which includes module loading and cold caches.
 
-More budget means more blocks and a narrower interval, but this is still
-directional evidence: a verdict of `inconclusive` with a ratio near 1 means no
-large change, not "the same". Use `compare-revisions.js` below for the full
-statistical comparison, which takes much longer (one block over the whole
-corpus can take minutes).
+The child also returns the output hash of each file. Block 1 must produce the
+same hashes on both sides, or the case stops with `output changed` (unless
+`--allow-output-change`).
 
-cssnano benchmark comparisons are comparative-reporting evidence. They are
-advisory and are not regression gates. The primary estimand is the
-candidate/base runtime ratio for one complete pass over the fixed selected
-corpus. `TOTAL` is the sole primary endpoint; per-file timings and memory are
-exploratory and cannot fail the primary conclusion.
+## Verdict
 
-The independent unit is a paired fresh-process block. Each block runs one
-baseline process and one candidate process, with process order balanced across
-blocks. Warmup is outside measurement. A measured sample is one complete pass
-over the selected corpus, and output hashing happens after the timing interval.
+Each endpoint is decided separately on log ratios from a balanced 2×2
+crossover fit (treatment and process-order effects):
 
-The report has separate decisions:
+1. If the 95% interval of the order effect is not inside ±ln(1.05), the
+   endpoint is `inconclusive`: a process-order interaction blocks it.
+2. `regression` when the 99% interval lies above the 1.10 margin.
+3. `improvement` when it lies below 1/1.10.
+4. `no-meaningful-change` when the 98% interval lies inside [1/1.10, 1.10].
+5. Otherwise `inconclusive`.
 
-- `statisticalDirection` is `faster`, `slower`, or `inconclusive`, based on a
-  95% Student's t interval from the balanced 2x2 crossover model on log runtime
-  ratios.
-- `practicalConclusion` is `within-margin`, `outside-margin`, or
-  `inconclusive`, based on a 90% interval and the declared practical margin.
-- `overallVerdict` is conservatively derived from those fields, structural
-  validity, order interaction, and the requested precision check.
+The case verdict combines the two endpoints. Either endpoint regressing makes
+it `regression`, and either improving makes it `improvement`. It is
+`no-meaningful-change` only when both endpoints are within the margin.
 
-The report also records a verdict basis that separates the observed signal
-from readiness criteria: `direction`, `precision` (`achieved` or
-`not-achieved`), `order` (`stable` or above threshold), and whether enough
-blocks were measured. An inconclusive verdict with a clear direction is
-therefore reported as inconclusive-with-signal, not as absence of signal.
+The run looks after every pair from block 4 on, and stops at the first look
+where both endpoints have decided. It also stops at 20 blocks, at the time
+budget, or at an output mismatch. Repeated looks inflate the error of each one,
+so the stricter 99% and 98% levels are used, as in Pocock's group-sequential
+design.
 
-An interval spanning a ratio of 1 is statistically inconclusive. A precise
-ratio such as 1.01 may be within the declared 10% margin; a noisy ratio of
-1.00 remains inconclusive. Reports say “within the declared 10% margin,” never
-“the same.”
+A precise 1.01 ratio is `no-meaningful-change`, even when it is statistically
+slower. The table reports the ratio, its interval, the verdict and a reason:
 
-The conservative verdict matrix is:
+| Reason                                              | Meaning                                              |
+| --------------------------------------------------- | ---------------------------------------------------- |
+| `runtime slower beyond the margin`                  | regression on the runtime endpoint (or the cold start) |
+| `cold start faster beyond the margin`               | improvement on the cold start endpoint               |
+| `within the margin`                                 | both endpoints are inside the margin                 |
+| `time budget reached`                               | the budget, not the noise, ended the run; rerun with a larger budget |
+| `output changed: <case>`                            | the two sides produced different CSS                 |
+| `noise is too large to rule out a meaningful change` | all blocks were used and an interval still spans the margin |
 
-| Structural/process validity | Blocks | Precision | Order interaction | TOTAL direction | Runtime margin | Overall verdict |
-| --- | --- | --- | --- | --- | --- | --- |
-| invalid | any | any | any | any | any | `inconclusive` |
-| valid | below `minimumBlocks` | any | any | any | any | `inconclusive` |
-| valid | `minimumBlocks` or more | not achieved | any | any | any | `inconclusive` |
-| valid | `minimumBlocks` or more | achieved | above threshold | any | any | `inconclusive` |
-| valid | `minimumBlocks` or more | achieved | stable | `faster` | any | `improvement` |
-| valid | `minimumBlocks` or more | achieved | stable | `slower` | lower bound above margin | `regression` |
-| valid | `minimumBlocks` or more | achieved | stable | `slower` | otherwise | `inconclusive` |
+## Limits
 
-`requestedBlocks` is an upper bound on the scheduled blocks, not a readiness
-requirement: an adaptive comparison may stop earlier once the requested
-precision is met, and the verdict stays substantive as long as at least
-`minimumBlocks` blocks were measured and the precision target was reached.
+- The margin is relative to the whole case. A case that runs several plugins
+  dilutes a change in one of them, so choose the narrowest case.
+- Results are advisory. They are not a regression gate, and a result inside the
+  margin is not a finding.
+- The calibration assumes independent blocks. Autocorrelated noise is reported
+  by `test:benchmark:simulation` but has no error band, so its verdicts are not
+  calibrated.
+- The cold start is one sample per process and is noisier than the runtime, so
+  it often needs more blocks.
+- Every run installs dependencies in two worktrees, which takes minutes. Every
+  run also takes its minimum number of blocks: `--budget` only stops more pairs
+  from starting, so a shell `timeout` does not shorten a run.
 
-The practical interval is reported independently: entirely inside the
-practical margin is `within-margin`, entirely outside is `outside-margin`, and
-all other intervals are `inconclusive`. Thus a precise 1.01 ratio can be
-within margin without being an improvement or regression, while a noisy
-distribution centered at 1.00 remains inconclusive.
+## Files
 
-The defaults are named and recorded in every schema-v3 artifact:
+- `bench.js`: the driver, block loop, verdict table and `results.json`.
+- `child.js`: one fresh process; prints one JSON line on stdout.
+- `stats.js`: the crossover fit, the decision rule and the balanced schedule.
+- `distributions.js`: normal and Student t quantiles.
+- `worktrees.js`: the working-tree snapshot and the two temporary worktrees.
+- `simulation.js`: the calibration of the decision rule on synthetic log ratios.
+- `analyze-cpuprofile.js`: summarises a profile from `bench:profile`.
+- `cases/`: the focused case inputs, keyed by name.
+- `reports/`: notes kept from earlier investigations.
 
-```js
-SUPERIORITY_CONFIDENCE_LEVEL = 0.95;
-EQUIVALENCE_CONFIDENCE_LEVEL = 0.90;
-RUNTIME_NON_REGRESSION_MARGIN = 1.1;
-PRACTICAL_EQUIVALENCE_MARGIN = 1.1;
-```
-
-The reported order interaction is the estimated per-process period effect
-`π`. The difference between the two sequence means is `2π`, so the configured
-5% threshold is applied to `π`, not to the unscaled sequence difference.
-
-The v3 artifact also records raw samples, the complete balanced schedule,
-decision parameters, analyzer version, source and harness hashes, lockfile and
-corpus hashes, runtime details, and dirty paths. The paired analyzer does not
-resample blocks; the saved `bootstrapResamples` and `bootstrapSeed` fields are
-kept so the snapshot file format does not change. All snapshots and comparisons must use schema v3;
-legacy v1 and v2 formats are not supported.
-
-Every successful block observation must include the declared acquisition
-configuration, side-specific provenance, raw samples for every selected corpus
-entry, and its SHA-256 output hash. If a child process fails, the coordinator
-still records both exit statuses; the failed side may have null provenance and
-no observation, and the analyzer reports a structural failure.
-
-## Running a comparison
-
-`compare-revisions.js` drives the whole flow: preflight, smoke, matched
-benchmarking, analysis, report writing, and cleanup.
-
-```sh
-node util/benchmark/compare-revisions.js \
-  --base-revision=<ref> --candidate-revision=<ref> \
-  --base-dir=<worktree> --candidate-dir=<worktree> --results-dir=<path>
-```
-
-Revisions may be any ref (`HEAD`, a branch, a tag); they are resolved to full
-hashes inside each checkout, and artifacts record the hashes. The directory
-options are required. `--case=<name>` benchmarks one focused case (see
-`--list-cases`) instead of the framework corpus; `--only=<substring>` selects
-corpus fixtures only, and a selector that matches none fails preflight.
-`--time-budget=<90s|5m>` ends the run after the last balanced pair that is
-predicted to fit, never below `--minimum-blocks`; the artifact records the stop
-as `time budget reached`. Each block line also shows the time left at the pace
-so far.
-
-The coordinator defaults to a quiet child mode: each side's bench process is
-suppressed to a single line per block, such as
-`block 3/10: baseline 173 ms, candidate 129 ms`, and one final report. Pass
-`--verbose-child` to stream full child output.
-
-Phases and flags:
-
-- **Preflight** (on by default; disable with `--no-preflight`) verifies that
-  both revisions match their checkouts, that dependencies are installed, and
-  that both sides share the same corpus. When corpora differ, it writes a
-  common-corpus manifest into the results directory and prints the exact
-  `--corpus-manifest=` command to rerun with. It then runs one quick smoke
-  process per side, checks metadata compatibility (schema, target, seed,
-  Node version, runtime flags), and compares output hashes. Intentional
-  output changes are approved explicitly with
-  `--allow-output-hash=<fixture,base,candidate>`; unapproved changes stop the
-  comparison and the preflight prints the exact command to approve and rerun.
-- **Adaptive benchmarking** is the stable-mode default and runs a pilot of
-  `--pilot-blocks`; pass `--adaptive` explicitly for clarity or
-  `--no-adaptive` to run a fixed block count. It keeps adding blocks only
-  until the requested precision target is reached or the block cap is hit.
-  Stopping is checked only after complete two-block pairs, and the artifact
-  records `adaptiveStop`. Fixed comparisons also require an even `--blocks`
-  count. Each pair contains one baseline-first and one candidate-first block,
-  with a seed-derived randomized pair orientation.
-- **Reports** are written by default as `comparison-report.json`, and the
-  verdict with its basis is printed to the terminal. Pass `--markdown=<path>`
-  to also write the report as Markdown; disable the report entirely with
-  `--no-report`.
-- **Cleanup** removes worktrees created for the comparison when possible. If
-  removal fails (for example, read-only Git metadata), the coordinator prints
-  the exact recovery command instead of claiming success, and
-  `prepare-worktree.js --cleanup --destination=<path>` reports the
-  same recovery command.
-
-Corpus selection is shared with `bench.js`: `--only=<selector>` may be
-repeated (each selector broadens the selection), and `--corpus-manifest=<path>`
-pins an exact fixture list, which is how a preflight-detected corpus mismatch
-is resolved. `bench.js` supports `--help` and `--list-cases`, and `--quiet`
-suppresses its own progress output for coordinator-invoked runs.
-
-The harness provenance hash covers only the injected benchmark harness files
-under `util/benchmark/`. Workflow definitions and package scripts are
-intentionally excluded from that hash, so changing them does not invalidate a
-comparison.
-
-Interpretation has practical limits: results describe this fixed corpus and
-runtime environment, not every stylesheet or machine. Controlled runs should
-use an idle AC-powered machine, a stable CPU governor, no concurrent builds,
-and the same Node version. Rerun a surprising or inconclusive comparison with
-those conditions and retain both raw artifacts.
-
-Correctness or output mismatches are structural failures and stop performance
-analysis. Fewer than the minimum number of blocks permits no conclusion, and
-only the requested precision check permits a substantive verdict. The CI
-workflow remains advisory while the procedure is calibrated; any future gate
-must be a separately documented policy and exit-code mode.
-
-The default inter-block cooldown is 100 ms; use `--cooldown-ms=0` only when a
-deliberately back-to-back schedule is required. The child benchmark receives
-the block index as `--run-index`, so corpus shuffling differs across blocks
-while remaining identical between the two sides of each block.
-
-The CLI exits 0 when it writes a report, including an inconclusive report. It
-exits nonzero for an invalid artifact, execution failure, or correctness
-mismatch. Performance conclusions never cause a nonzero exit; a future
-`--policy=gate` mode must be explicitly introduced before changing that rule.
-
-`statistical-simulation.js` reports both fixed-sample and adaptive-stopping
-coverage. The adaptive result is a calibration diagnostic rather than an
-assumption that optional stopping is harmless: skewed stress cases can show
-under-coverage even when the fixed-sample t interval is well calibrated.
+Raw results are written to `bench-results/<timestamp>/results.json`, which is
+git-ignored. It records both revisions, the seed, and every block.

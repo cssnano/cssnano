@@ -1,307 +1,134 @@
 import assert from 'node:assert/strict';
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { test } from 'node:test';
-import {
-  MODES,
-  aggregateSnapshots,
-  childRunArguments,
-  listCasesText,
-  main,
-  processCorpus,
-  resolveBenchmarkArgs,
-  shuffleCorpus,
-  usageText,
-} from '../bench.js';
-import { resolveBenchmarkTarget } from '../bench-cases.js';
-import { selectCorpus } from '../bench-corpus.js';
-import { currentGitRevision } from '../bench-provenance.js';
-import {
-  ANALYZER_VERSION,
-  INTERVAL_METHOD,
-} from '../compareObservationValidation.js';
+import { parseOptions, runCase } from '../bench.js';
 
-test('corpus ordering is deterministic for a seed and replicate', () => {
-  const corpus = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((name) => ({
-    name,
+test('a run without --seed draws a new seed each time', () => {
+  const first = parseOptions([]).seed;
+  const second = parseOptions([]).seed;
+  assert.notEqual(first, second);
+});
+
+test('--seed replays the given seed', () => {
+  assert.equal(parseOptions(['--seed=replay-1']).seed, 'replay-1');
+});
+
+test('--seed rejects an empty seed', () => {
+  assert.throws(
+    () => parseOptions(['--seed=']),
+    /--seed must be a non-empty string/v
+  );
+});
+
+const COMPARISON = { dirs: { baseline: 'baseline', candidate: 'candidate' } };
+
+// Fake children whose timings depend on the side and on how many blocks that
+// side has already run. `outputs` overrides the output hash per side.
+function fakeRunner(timings, outputs = {}) {
+  const blocksRun = { baseline: 0, candidate: 0 };
+  return (name, side) => {
+    const block = blocksRun[side]++;
+    const { medianMs, coldStartMs } = timings(side, block);
+    return {
+      medianMs,
+      coldStartMs,
+      maxRSS: 1,
+      outputHashes: { [name]: outputs[side] ?? 'same' },
+      perFileMedianMs: { [name]: medianMs },
+    };
+  };
+}
+
+// Alternating jitter gives a positive residual variance, so the intervals are
+// finite and narrow.
+const jitter = (block) => (block % 2 === 0 ? 0.01 : -0.01);
+
+// A swing of ±3 ms, large enough that no interval settles.
+const alternating = (block) => (block % 2 === 0 ? 3 : -3);
+
+// Runs one case where each child advances the fake clock by stepMs.
+function runWithClock(runner, { budgetMs = Infinity, stepMs = 0 } = {}) {
+  let clock = 0;
+  return runCase('fixture', COMPARISON, {
+    budgetMs,
+    allowOutputChange: false,
+    seed: 'test-seed',
+    run: (name, side) => {
+      clock += stepMs;
+      return runner(name, side);
+    },
+    pause: () => {},
+    now: () => clock,
+  });
+}
+
+test('a cold-start regression alone flags the case', () => {
+  const runner = fakeRunner((side, block) => ({
+    medianMs: 10,
+    coldStartMs: (side === 'candidate' ? 13 : 10) + jitter(block),
   }));
-  const first = shuffleCorpus(corpus, 'seed', 1).map(({ name }) => name);
-  assert.deepEqual(
-    shuffleCorpus(corpus, 'seed', 1).map(({ name }) => name),
-    first
-  );
-  assert.notDeepEqual(
-    shuffleCorpus(corpus, 'other', 1).map(({ name }) => name),
-    first
-  );
-  assert.notDeepEqual(
-    shuffleCorpus(corpus, 'seed', 2).map(({ name }) => name),
-    first
-  );
+  const result = runWithClock(runner);
+  assert.equal(result.verdict, 'regression');
+  assert.match(result.reason, /cold start/v);
 });
 
-test('default and smoke configurations resolve to their reliability settings', () => {
-  const defaults = resolveBenchmarkArgs([`--revision=${currentGitRevision()}`]);
-  assert.equal(defaults.mode, 'stable');
-  assert.equal(defaults.warmup, 20);
-  assert.equal(defaults.iters, 100);
-  assert.equal(defaults.runs, 5);
-  assert.equal(resolveBenchmarkArgs(['--mode=quick', '--runs=1']).runs, 1);
-  assert.deepEqual(MODES.quick, { warmup: 0, iters: 1, reliability: 'smoke' });
+test('a case stops at the first pair where both endpoints have decided', () => {
+  const runner = fakeRunner((side, block) => ({
+    medianMs: 10 + jitter(block) * 0.1,
+    coldStartMs: 10 + jitter(block) * 0.1,
+  }));
+  const result = runWithClock(runner);
+  assert.equal(result.blocks.length, 4);
+  assert.equal(result.verdict, 'no-meaningful-change');
 });
 
-test('--help and --list-cases document modes, options, and cases', () => {
-  assert.match(usageText(), /--mode=<quick\|stable>/v);
-  assert.match(usageText(), /--corpus-manifest=<path>/v);
-  assert.match(usageText(), /examples:/v);
-  const cases = listCasesText().split('\n');
-  assert.ok(cases.includes('selector-fixed-point'));
-  assert.ok(cases.length > 5);
+test('a case keeps measuring while the cold start is undecided', () => {
+  // The warm runtime is exact, but the cold start swings so widely that its
+  // interval never settles, so the case runs to the requested block count.
+  const runner = fakeRunner((side, block) => ({
+    medianMs: 10,
+    coldStartMs: side === 'candidate' ? 10 + alternating(block) : 10,
+  }));
+  const result = runWithClock(runner);
+  assert.equal(result.blocks.length, 20);
+  assert.equal(result.verdict, 'inconclusive');
 });
 
-test('repeated --only selectors broaden corpus selection instead of overwriting', () => {
-  const args = resolveBenchmarkArgs([
-    '--mode=quick',
-    '--only=selector',
-    '--only=gradient',
-  ]);
-  assert.deepEqual(args.only, ['selector', 'gradient']);
-  assert.equal(resolveBenchmarkArgs(['--mode=quick']).only, null);
-
-  const directory = mkdtempSync(join(tmpdir(), 'cssnano-corpus-'));
-  try {
-    for (const name of [
-      'selector-fixed',
-      'gradient-stop',
-      'merge-box',
-      'gradient-colour',
-    ]) {
-      writeFileSync(join(directory, `${name}.css`), '.a{}\n');
-    }
-    const selected = selectCorpus(
-      { case: null, only: ['selector', 'merge'], corpusManifest: null },
-      directory
-    );
-    assert.deepEqual(
-      selected.map((fixture) => fixture.name),
-      ['merge-box', 'selector-fixed']
-    );
-
-    const manifestPath = join(directory, 'manifest.txt');
-    writeFileSync(manifestPath, 'gradient-stop\ngradient-colour\n');
-    const fromManifest = selectCorpus(
-      { case: null, only: null, corpusManifest: manifestPath },
-      directory
-    );
-    assert.deepEqual(
-      fromManifest.map((fixture) => fixture.name),
-      ['gradient-colour', 'gradient-stop']
-    );
-
-    writeFileSync(manifestPath, 'gradient-stop\nmissing-fixture\n');
-    assert.throws(
-      () =>
-        selectCorpus(
-          { case: null, only: null, corpusManifest: manifestPath },
-          directory
-        ),
-      /missing from the corpus.*missing-fixture/v
-    );
-  } finally {
-    rmSync(directory, { recursive: true, force: true });
-  }
+test('a case runs at least the minimum number of blocks even past the budget', () => {
+  // Each child takes a second, so the budget is spent before the first pair.
+  const runner = fakeRunner((side, block) => ({
+    medianMs: 10 + jitter(block),
+    coldStartMs: 10 + jitter(block),
+  }));
+  const result = runWithClock(runner, { budgetMs: 0, stepMs: 1000 });
+  assert.equal(result.blocks.length, 4);
 });
 
-test('--quiet suppresses child progress output but still writes the snapshot', async () => {
-  const directory = mkdtempSync(join(tmpdir(), 'cssnano-quiet-'));
-  const corpusDirectory = join(directory, 'corpus');
-  const resultsDirectory = join(directory, 'results');
-  mkdirSync(corpusDirectory);
-  writeFileSync(join(corpusDirectory, 'fixture.css'), '.a { color: red }');
-  const logs = [];
-  const originalLog = console.log;
-  console.log = (...args) => logs.push(args.join(' '));
-  try {
-    await main([
-      '--mode=quick',
-      '--runs=1',
-      `--dir=${corpusDirectory}`,
-      `--results-dir=${resultsDirectory}`,
-      '--label=quiet-smoke',
-      '--summary',
-      '--quiet',
-    ]);
-  } finally {
-    console.log = originalLog;
-  }
-  assert.deepEqual(logs, []);
-  const smokeRun = JSON.parse(
-    readFileSync(join(resultsDirectory, 'quiet-smoke.json'), 'utf8')
-  );
-  assert.equal(smokeRun.schemaVersion, 3);
+test('a case stops on the time budget when another pair would not fit', () => {
+  // Only the candidate swings, so neither endpoint settles before the budget.
+  const runner = fakeRunner((side, block) => {
+    const swing = side === 'candidate' ? alternating(block) : 0;
+    return { medianMs: 10 + swing, coldStartMs: 10 + swing };
+  });
+  const result = runWithClock(runner, { budgetMs: 10_000, stepMs: 1000 });
+  assert.ok(result.blocks.length < 20);
+  assert.match(result.reason, /time budget reached/v);
 });
 
-test('the benchmark target resolver is shared by snapshots and comparisons', () => {
-  assert.equal(
-    resolveBenchmarkTarget('selector-fixed-point'),
-    'postcss-minify-selectors'
-  );
-  assert.equal(resolveBenchmarkTarget(null), 'cssnano');
-  assert.throws(
-    () => resolveBenchmarkTarget('nope'),
-    /unknown benchmark case/v
-  );
+test('a changed output stops the case before any timing is trusted', () => {
+  const runner = fakeRunner(() => ({ medianMs: 10, coldStartMs: 10 }), {
+    candidate: 'different',
+  });
+  const result = runWithClock(runner);
+  assert.equal(result.verdict, 'inconclusive');
+  assert.match(result.reason, /output changed: fixture/v);
 });
 
-test('total timing stops before output hashing', async () => {
-  let clockCalls = 0;
-  let hashClockCalls;
-  const result = await processCorpus(
-    [{ name: 'fixture', source: 'input' }],
-    { process: async () => ({ css: 'output' }) },
-    true,
-    {
-      now: () => ++clockCalls,
-      hash: () => {
-        hashClockCalls = clockCalls;
-        return 'hash';
-      },
-    }
-  );
-
-  assert.equal(result.elapsed, 3);
-  assert.equal(hashClockCalls, 4);
-});
-
-test('stable benchmarks require a validated explicit revision', () => {
-  assert.throws(
-    () => resolveBenchmarkArgs(['--mode=stable']),
-    /--revision is required for stable benchmarks/v
-  );
-  assert.throws(
-    () => resolveBenchmarkArgs(['--mode=stable', '--revision=short']),
-    /full commit SHA/v
-  );
-  const revision = currentGitRevision();
-  assert.equal(
-    resolveBenchmarkArgs(['--mode=stable', `--revision=${revision}`]).revision,
-    revision
-  );
-});
-
-test('fresh child runs preserve revision provenance unchanged', () => {
-  const revision = '0123456789abcdef0123456789abcdef01234567';
-  assert.deepEqual(
-    childRunArguments([
-      '--',
-      '--mode=stable',
-      `--revision=${revision}`,
-      '--runs=5',
-      '--label=candidate',
-      '--run-index=4',
-      '--child-run',
-    ]),
-    ['--mode=stable', `--revision=${revision}`]
-  );
-});
-
-test('aggregate snapshots reject revision provenance changes', () => {
-  const first = {
-    gitRevision: '0123456789abcdef0123456789abcdef01234567',
-    corpusManifest: 'hash',
-    outputHashes: {},
-  };
-  const second = {
-    ...first,
-    gitRevision: 'fedcba9876543210fedcba9876543210fedcba98',
-  };
-  assert.throws(
-    () =>
-      aggregateSnapshots([first, second], 'aggregate', {
-        runs: 2,
-        resultsDir: mkdtempSync(join(tmpdir(), 'cssnano-benchmark-')),
-      }),
-    /revision changed/v
-  );
-});
-
-test('smoke benchmark writes a versioned snapshot with stable output hashes', async () => {
-  const directory = mkdtempSync(join(tmpdir(), 'cssnano-benchmark-'));
-  const corpusDirectory = join(directory, 'corpus');
-  const resultsDirectory = join(directory, 'results');
-  mkdirSync(corpusDirectory);
-  writeFileSync(join(corpusDirectory, 'fixture.css'), '.a { color: red }');
-  await main([
-    '--mode=quick',
-    '--runs=1',
-    '--dir=' + corpusDirectory,
-    '--results-dir=' + resultsDirectory,
-    '--label=smoke',
-    '--summary',
-  ]);
-  await main([
-    '--mode=quick',
-    '--runs=1',
-    '--dir=' + corpusDirectory,
-    '--results-dir=' + resultsDirectory,
-    '--label=smoke-repeat',
-    '--summary',
-    `--revision=${currentGitRevision()}`,
-  ]);
-  const result = JSON.parse(
-    readFileSync(join(resultsDirectory, 'smoke.json'), 'utf8')
-  );
-  const repeat = JSON.parse(
-    readFileSync(join(resultsDirectory, 'smoke-repeat.json'), 'utf8')
-  );
-  assert.equal(result.schemaVersion, 3);
-  assert.match(result.gitRevision, /^[\da-f]{40}$/v);
-  assert.equal(result.runs.length, 1);
-  assert.equal(result.outputHashes.fixture, repeat.outputHashes.fixture);
-});
-
-test('processCorpus rejects negative elapsed timings', async () => {
-  let time = 100;
-  await assert.rejects(
-    async () =>
-      processCorpus(
-        [{ name: 'fixture', source: 'input' }],
-        { process: async () => ({ css: 'output' }) },
-        true,
-        {
-          now: () => {
-            time -= 10;
-            return time;
-          },
-        }
-      ),
-    /elapsed timing must be a non-negative finite number/v
-  );
-});
-
-test('block snapshots declare the interval method and analyzer version the comparison validator accepts', async () => {
-  const directory = mkdtempSync(join(tmpdir(), 'cssnano-benchmark-'));
-  const corpusDirectory = join(directory, 'corpus');
-  mkdirSync(corpusDirectory);
-  writeFileSync(join(corpusDirectory, 'fixture.css'), '.a { color: red }');
-  await main([
-    '--mode=quick',
-    '--runs=1',
-    '--dir=' + corpusDirectory,
-    '--results-dir=' + directory,
-    '--label=block',
-    '--summary',
-  ]);
-  const { configuration } = JSON.parse(
-    readFileSync(join(directory, 'block.json'), 'utf8')
-  );
-  assert.equal(configuration.intervalMethod, INTERVAL_METHOD);
-  assert.equal(configuration.analyzerVersion, ANALYZER_VERSION);
+test('a case result reports the order effect for --json', () => {
+  const runner = fakeRunner((side, block) => ({
+    medianMs: 10 + jitter(block) * 0.1,
+    coldStartMs: 10 + jitter(block) * 0.1,
+  }));
+  const result = runWithClock(runner);
+  assert.equal(typeof result.orderEffect, 'number');
+  assert.equal(typeof result.orderStable, 'boolean');
 });

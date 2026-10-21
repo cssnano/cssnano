@@ -9,7 +9,7 @@ export const stylehacksCases = {
     createProcessor() {
       const {
         detectDeclaration,
-      } = require('../../packages/cssnano/src/utils/stylehacks/index.js');
+      } = require('../../../packages/cssnano/src/utils/stylehacks/index.js');
       return postcss([
         {
           postcssPlugin: 'stylehacks-detect-benchmark',

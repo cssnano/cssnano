@@ -1,5 +1,11 @@
 # postcss-merge-longhand Refactoring Ledger
 
+> **Historical record.** This ledger documents a September 2026 run made with
+> the retired v2 harness: the `cssnano-benchmark-v2` seed, a bootstrap interval
+> and `packages/postcss-merge-longhand`, which has since moved into
+> `packages/cssnano`. The current harness uses the paired crossover analysis in
+> `../README.md`; its numbers are not comparable with the ones below.
+
 **Date**: September 12, 2026
 **Baseline revision**: `fa2bae2ba1164208742fe6533d7e4e72c51d0d95`
 **Candidate revision**: `9a8f785834a0184fb80ce11953f924af4600ba47` plus the dirty worktree under test
