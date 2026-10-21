@@ -69,7 +69,7 @@ function matchPluginsWithPresets() {
 
   const optimisations = editorialOptimisations.map((optimisation) => ({
     ...optimisation,
-    option: optimisation.option ?? optionByPlugin.get(optimisation.plugin),
+    option: optionByPlugin.get(optimisation.plugin),
     presets: Object.entries(presetPlugins)
       .filter(([, plugins]) => plugins.has(optimisation.plugin))
       .map(([preset]) => preset),
