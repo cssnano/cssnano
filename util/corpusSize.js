@@ -1,17 +1,10 @@
 import { spawnSync } from 'node:child_process';
-import {
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createRequire } from 'node:module';
-import { extractTree, hasTree } from './fuzzAgainstRevision.js';
+import { withRevisionPackage } from './fuzzAgainstRevision.js';
 import { repositoryFile } from './testHelpers.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -100,39 +93,13 @@ function measureInProcess(src) {
 }
 
 /**
- * Measures the `src` of a git revision. The revision is extracted into a
- * sibling of the real package, so `#` imports resolve as they do in place.
+ * Measures the `src` of a git revision.
  *
  * @param {string} rev
  * @return {Record<string, number>}
  */
 function measureRevision(rev) {
-  if (!hasTree(rev, 'packages/cssnano/src')) {
-    throw new Error(`${rev} has no packages/cssnano/src`);
-  }
-  const sandbox = join(root, 'packages', `.corpus-rev-${process.pid}`);
-  rmSync(sandbox, { recursive: true, force: true });
-  try {
-    mkdirSync(sandbox, { recursive: true });
-    extractTree(rev, 'packages/cssnano/src', join(sandbox, 'src'));
-    // The `#` imports belong to the revision, so its manifest is used too.
-    const manifest = spawnSync(
-      'git',
-      ['show', `${rev}:packages/cssnano/package.json`],
-      { cwd: root, encoding: 'utf8' }
-    );
-    if (manifest.status !== 0) {
-      throw new Error(`${rev} has no packages/cssnano/package.json`);
-    }
-    writeFileSync(join(sandbox, 'package.json'), manifest.stdout);
-    symlinkSync(
-      join(root, 'packages', 'cssnano', 'node_modules'),
-      join(sandbox, 'node_modules')
-    );
-    return measureInProcess(join(sandbox, 'src'));
-  } finally {
-    rmSync(sandbox, { recursive: true, force: true });
-  }
+  return withRevisionPackage(rev, measureInProcess);
 }
 
 /**

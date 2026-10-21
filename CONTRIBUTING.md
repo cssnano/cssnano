@@ -38,6 +38,16 @@ with:
 pnpm test:mutation
 ```
 
+`pnpm test:mutation:oracle` runs the catalogs that declare `suites`
+against the fuzz suites instead of a test file and reports the mutants the
+oracles miss. For each suite it counts the cases that executed the mutated
+code (`reached=`) and the cases whose output changed (`changed=`). A mutant
+that no case runs is `not reached`, and one that runs without changing any
+output is `unchanged`. Both call for a corpus that exercises the mutant;
+only a `survived` mutant shows an output change that the oracle accepted.
+Register a new catalog in
+`packages/cssnano/mutation/catalogs.js`; both commands read that list.
+
 ### Benchmarking
 
 Benchmark comparisons are advisory, not regression gates. Each block runs a
