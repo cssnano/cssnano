@@ -180,9 +180,9 @@ describe('browser target options that a plugin sets itself', () => {
       () =>
         cssnano({
           preset,
-          options: { mergeRules: { overrideBrowserslist: 'ie 11' } },
+          options: { merge: { overrideBrowserslist: 'ie 11' } },
         }),
-      /"overrideBrowserslist" in options\.mergeRules was removed; set browserslist\.query instead/v
+      /"overrideBrowserslist" in options\.merge was removed; set browserslist\.query instead/v
     );
   });
 });

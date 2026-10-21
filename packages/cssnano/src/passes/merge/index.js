@@ -10,15 +10,9 @@ import { clearSupportCache } from './lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import runMerge from './lib/rules/selectorMerger.js';
 import { createRunContext } from '../ir/runContext.js';
+import { assertValid, isBoolean } from '../../optionGuards.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
-
-/** The transforms the pass runs, each named as the preset option that enables it. */
-const allTransforms = new Set([
-  'mergeLonghand',
-  'discardDuplicates',
-  'mergeRules',
-]);
 
 /**
  * Whether the node still hangs under the stylesheet. A block that a merge or a
@@ -68,6 +62,60 @@ function inLonghandSupport(features, work) {
 }
 
 /**
+ * The first longhand round: canonicalizes the stylesheet and every block that
+ * holds a declaration, then finishes the columns. Each block is recorded in
+ * `context` when a rule merge runs, and in `blocks` when a second round will
+ * canonicalize it again.
+ *
+ * @param {Root} css
+ * @param {ReturnType<typeof longhandContext>} first
+ * @param {ReturnType<typeof createRunContext> | undefined} context the run context, when rules are merged
+ * @param {Container[] | undefined} blocks receives each block that holds a declaration, when a second round runs
+ * @return {void}
+ */
+function canonicalizeFirstRound(css, first, context, blocks) {
+  canonicalize(css, first);
+  css.walk((node) => {
+    if (node.type !== 'rule' && node.type !== 'atrule') return;
+    if (context) context.blocks.add(node);
+    if (!node.nodes?.some((n) => n.type === 'decl')) return;
+    canonicalize(node, first);
+    if (blocks) blocks.push(node);
+  });
+  finishColumns(first);
+}
+
+/**
+ * Runs the first longhand round under the longhand support of the targets.
+ *
+ * @param {Root} css
+ * @param {ReturnType<typeof targetSupportOf>} support
+ * @param {ReturnType<typeof createRunContext> | undefined} context
+ * @param {Container[] | undefined} blocks
+ * @return {ReturnType<typeof longhandContext>} the context of the round, which the second round reuses
+ */
+function runFirstRound(css, support, context, blocks) {
+  const { placeShorthands, boxSupport, pairShorthands, features } = support;
+  const first = longhandContext(placeShorthands, boxSupport, pairShorthands);
+  inLonghandSupport(features, () =>
+    canonicalizeFirstRound(css, first, context, blocks)
+  );
+  return first;
+}
+
+/**
+ * Merges rules with the caches of one run, as the rule-merging plugin does.
+ *
+ * @param {Root} css
+ * @param {readonly string[]} browsers
+ * @param {ReturnType<typeof createRunContext>} context
+ * @return {void}
+ */
+function mergeRules(css, browsers, context) {
+  runMerge(css, browsers, new Map(), new WeakSet(), new WeakMap(), context);
+}
+
+/**
  * The merge transforms over one stylesheet, in the order the default preset
  * runs them: canonicalize every declaration block, remove duplicates, merge
  * rules, then canonicalize again every block still in the stylesheet.
@@ -75,79 +123,53 @@ function inLonghandSupport(features, work) {
  * Removing duplicates keeps the last copy, so running it first can delete the
  * declaration that let an earlier one be dropped as overridden.
  *
- * A disabled transform does not act. Without merge-longhand, or without
- * removing duplicates or merging rules, nothing is recorded and the second
- * round is skipped.
+ * Longhand merging and duplicate removal always run. Rule merging runs unless
+ * `rules` is false, which also leaves the block table unattached.
  *
  * @param {Root} css
  * @param {readonly string[]} browsers the resolved browser targets
- * @param {ReadonlySet<string>} [enabled] the transforms to run, all by default
+ * @param {{ rules?: boolean }} [options]
  * @return {void}
  */
-export function mergePass(css, browsers, enabled = allTransforms) {
+export function mergePass(css, browsers, { rules = true } = {}) {
   // Only rule merging reads the block table, so the table is attached only for it.
-  const context = createRunContext(enabled.has('mergeRules') ? css : undefined);
+  const context = createRunContext(rules ? css : undefined);
   try {
-    runTransforms(css, browsers, enabled, context);
+    runTransforms(css, browsers, rules, context);
   } finally {
     context.blocks.detach();
   }
 }
 
 /**
- * Runs the enabled transforms of `mergePass` over one stylesheet with its run context.
+ * Runs the merge transforms of `mergePass` over one stylesheet with its run context.
  *
  * @param {Root} css
  * @param {readonly string[]} browsers
- * @param {ReadonlySet<string>} enabled
+ * @param {boolean} rules whether rules are merged
  * @param {ReturnType<typeof createRunContext>} context
  * @return {void}
  */
-function runTransforms(css, browsers, enabled, context) {
-  const longhand = enabled.has('mergeLonghand');
-  const dedupe = enabled.has('discardDuplicates');
-  const rules = enabled.has('mergeRules');
+function runTransforms(css, browsers, rules, context) {
+  const support = targetSupportOf(browsers);
+  const { placeShorthands, boxSupport, pairShorthands, features } = support;
 
-  // Only the longhand transform reads the target support, so skip building it otherwise.
-  const { placeShorthands, boxSupport, pairShorthands, features } = longhand
-    ? targetSupportOf(browsers)
-    : /** @type {ReturnType<typeof targetSupportOf>} */ ({});
-
-  // A second round is only needed when removing duplicates or merging rules
-  // can expose a reduction the first round left, so only then is each block recorded.
-  const second = longhand && (dedupe || rules);
-  const first = longhandContext(placeShorthands, boxSupport, pairShorthands);
+  // A second round canonicalizes every block recorded here, because removing
+  // duplicates or merging rules can expose a reduction the first round left.
   /** @type {Container[]} */
   const blocks = [];
-  if (longhand) {
-    inLonghandSupport(features, () => {
-      canonicalize(css, first);
-      css.walk((node) => {
-        if (node.type !== 'rule' && node.type !== 'atrule') return;
-        if (rules) context.blocks.add(node);
-        if (!node.nodes?.some((n) => n.type === 'decl')) return;
-        canonicalize(node, first);
-        if (second) blocks.push(node);
-      });
-      finishColumns(first);
-    });
-  } else if (rules) {
-    css.walk((node) => {
-      if (node.type === 'rule' || node.type === 'atrule') {
-        context.blocks.add(node);
-      }
-    });
-  }
+  const first = runFirstRound(
+    css,
+    support,
+    rules ? context : undefined,
+    blocks
+  );
 
   // The merge reports the rules it creates, which the second round also canonicalizes.
-  if (second) context.createdBlocks = new Set();
-  if (dedupe) discardDuplicates(css, context);
+  context.createdBlocks = new Set();
+  discardDuplicates(css, context);
 
-  // The merge uses its own caches, one set per run, as its plugin does.
-  if (rules)
-    runMerge(css, browsers, new Map(), new WeakSet(), new WeakMap(), context);
-
-  if (!second) return;
+  if (rules) mergeRules(css, browsers, context);
 
   // Canonicalizing is not idempotent: a block the first round reduced can
   // reduce again, so every block still in the stylesheet gets the second round,
@@ -172,28 +194,32 @@ function runTransforms(css, browsers, enabled, context) {
   });
 }
 
+/** The guard for the `rules` option, shared with the preset that validates it. */
+export const rulesGuard = Object.freeze({
+  isValid: isBoolean,
+  expected: 'a boolean',
+});
+
 /**
- * The `cssnano-merge` plugin: the merge transforms the preset enables, run in
- * one pass over the stylesheet. Without an `enabled` set, all of them run.
+ * The `cssnano-merge` plugin: the merge transforms of the default preset, run
+ * in one pass over the stylesheet. `rules: false` leaves rule merging out.
  *
- * @param {{ enabled?: ReadonlySet<string> }} [opts]
+ * @param {{ rules?: boolean }} [opts]
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(opts = {}) {
-  const { enabled = allTransforms } = opts;
+  const { rules = true } = opts;
+  // Preset options are validated before they reach the plugin; a direct user is not.
+  assertValid(rulesGuard, rules, 'rules');
   return {
     postcssPlugin: 'cssnano-merge',
     /** @param {import('postcss').Result} result */
     prepare(result) {
-      // Only the longhand and rule transforms read the targets, so the others never resolve them.
-      const browsers =
-        enabled.has('mergeLonghand') || enabled.has('mergeRules')
-          ? resolveTargets(opts, result)
-          : [];
+      const browsers = resolveTargets(opts, result);
       return {
         /** @param {Root} css */
         OnceExit(css) {
-          mergePass(css, browsers, enabled);
+          mergePass(css, browsers, { rules });
         },
       };
     },
@@ -205,6 +231,34 @@ pluginCreator.postcss = true;
 export default pluginCreator;
 
 /**
+ * Each transform run alone, as the hook of its own plugin. They call the
+ * library code directly, so a test can pin one transform without the preset.
+ *
+ * @type {Readonly<Record<'mergeLonghand' | 'discardDuplicates' | 'mergeRules', (css: Root, browsers: readonly string[]) => void>>}
+ */
+const transformHooks = Object.freeze({
+  mergeLonghand(css, browsers) {
+    runFirstRound(css, targetSupportOf(browsers), undefined, undefined);
+  },
+  discardDuplicates(css) {
+    discardDuplicates(css, createRunContext());
+  },
+  mergeRules(css, browsers) {
+    const context = createRunContext(css);
+    try {
+      css.walk((node) => {
+        if (node.type === 'rule' || node.type === 'atrule') {
+          context.blocks.add(node);
+        }
+      });
+      mergeRules(css, browsers, context);
+    } finally {
+      context.blocks.detach();
+    }
+  },
+});
+
+/**
  * The creator of a pass that runs one transform, so each transform can be
  * tested alone as its own plugin.
  *
@@ -212,9 +266,23 @@ export default pluginCreator;
  * @return {import('postcss').PluginCreator<object>}
  */
 export function transformPlugin(name) {
+  const hook = transformHooks[name];
   /** @type {import('postcss').PluginCreator<object>} */
-  const creator = (opts = {}) =>
-    pluginCreator({ ...opts, enabled: new Set([name]) });
+  const creator = (opts = {}) => ({
+    postcssPlugin: 'cssnano-merge',
+    /** @param {import('postcss').Result} result */
+    prepare(result) {
+      // Only discardDuplicates ignores the browser targets.
+      const browsers =
+        name === 'discardDuplicates' ? [] : resolveTargets(opts, result);
+      return {
+        /** @param {Root} css */
+        OnceExit(css) {
+          hook(css, browsers);
+        },
+      };
+    },
+  });
   creator.postcss = true;
   return creator;
 }

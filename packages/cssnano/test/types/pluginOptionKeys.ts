@@ -27,60 +27,29 @@ type NamedKeysOf<Options> = string extends keyof Options
   : keyof Options;
 
 /**
- * The names of the transforms whose optionKeys differ from their preset
- * option type. A transform has no creator of its own, so its preset option
- * documents its options.
- */
-type DriftedTransform<Transform> = Transform extends {
-  readonly name: infer Name;
-  readonly optionKeys: readonly (infer Key)[];
-}
-  ? Name extends keyof AdvancedPluginOptions
-    ? Equal<
-        Key,
-        NamedKeysOf<NonNullable<AdvancedPluginOptions[Name]>>
-      > extends true
-      ? never
-      : Name
-    : Name
-  : never;
-
-/**
- * The names of the entries or transforms whose optionKeys differ from their
- * options type. An entry of any other shape is reported, so that no entry
- * escapes the check.
+ * The names of the entries whose optionKeys differ from their options type. An
+ * entry of any other shape is reported, so that no entry escapes the check.
  */
 type Drifted<Entry> = Entry extends readonly [
-  unknown,
-  unknown,
-  { readonly transforms: readonly (infer Transform)[] },
+  infer Creator,
+  infer Name,
+  { readonly optionKeys: readonly (infer Key)[] },
 ]
-  ? DriftedTransform<Transform>
-  : Entry extends readonly [
-        infer Creator,
-        infer Name,
-        { readonly optionKeys: readonly (infer Key)[] },
-      ]
-    ? Equal<Key, OptionKeysOf<Creator>> extends true
-      ? never
-      : Name
-    : Entry extends readonly [unknown, infer Name, unknown]
-      ? Name
-      : Entry;
-
-/**
- * The preset options an entry answers to: its transforms' names when it
- * hosts transforms, and its own name otherwise.
- */
-type PresetOptionName<Entry> = Entry extends readonly [
-  unknown,
-  unknown,
-  { readonly transforms: readonly { readonly name: infer Name }[] },
-]
-  ? Name
+  ? Equal<Key, OptionKeysOf<Creator>> extends true
+    ? never
+    : Name
   : Entry extends readonly [unknown, infer Name, unknown]
     ? Name
-    : never;
+    : Entry;
+
+/** The preset option that an entry answers to, which is its own name. */
+type PresetOptionName<Entry> = Entry extends readonly [
+  unknown,
+  infer Name,
+  unknown,
+]
+  ? Name
+  : never;
 
 type Entries =
   | (typeof defaultPluginEntries)[number]

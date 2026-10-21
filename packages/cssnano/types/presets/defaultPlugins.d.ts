@@ -86,17 +86,11 @@ export type DefaultPluginOptions = {
      */
     normalizeWhitespace?: Record<string, never>;
     /**
-     * Merges longhand properties into shorthands that the browser targets support. Takes no options.
+     * Merges longhand properties into shorthands that the browser targets support, discards duplicate rules and merges rules that share a selector or declaration. Set `rules` to false to keep rules apart.
      */
-    mergeLonghand?: Record<string, never>;
-    /**
-     * Discards duplicate rules. Takes no options.
-     */
-    discardDuplicates?: Record<string, never>;
-    /**
-     * Merges adjacent rules that share a selector or declaration. Takes no options.
-     */
-    mergeRules?: Record<string, never>;
+    merge?: {
+        rules?: boolean;
+    };
     /**
      * Discards empty rules and declarations. Takes no options.
      */
@@ -251,18 +245,14 @@ export declare const defaultPluginEntries: readonly [readonly [{
     readonly optionKeys: readonly [];
 }], readonly [typeof mergePass, "merge", {
     readonly postcssPlugin: 'cssnano-merge';
-    readonly transforms: readonly [{
-        readonly name: 'mergeLonghand';
-        readonly targets: true;
-        readonly optionKeys: readonly [];
-    }, {
-        readonly name: 'discardDuplicates';
-        readonly optionKeys: readonly [];
-    }, {
-        readonly name: 'mergeRules';
-        readonly targets: true;
-        readonly optionKeys: readonly [];
-    }];
+    readonly targets: true;
+    readonly optionKeys: readonly ['rules'];
+    readonly guards: {
+        readonly rules: Readonly<{
+            isValid: typeof import("../optionGuards.js").isBoolean;
+            expected: "a boolean";
+        }>;
+    };
 }], readonly [{
     (): import("postcss/lib/postcss").Plugin;
     postcss: true;

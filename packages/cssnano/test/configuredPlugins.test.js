@@ -5,15 +5,13 @@ import { browserTargets } from '../src/utils/browserTargets.js';
 import { advancedPresetEntries } from '../src/presets/advancedPlugins.js';
 import { defaultPluginEntries } from '../src/presets/defaultPlugins.js';
 import { litePluginEntries } from '../src/presets/litePlugins.js';
-import { transformsOf } from '../src/presets/presetEntries.js';
 
 // Browser targets that a preset shares with its target-reading plugins.
 const browserslist = { query: 'defaults', env: 'production', stats: 'x' };
 
 /**
- * Replaces each creator with one that records the options of each transform it
- * runs, so the test sees the configuration before any plugin is built. A
- * transform receives browser targets only when it reads them.
+ * Replaces each creator with one that records the options it is called with,
+ * so the test sees the configuration before any plugin is built.
  *
  * @param {readonly unknown[][]} entries
  * @returns {{entries: unknown[][], calls: {name: string, options: Record<PropertyKey, unknown>}[]}}
@@ -23,16 +21,7 @@ function recording(entries) {
   const calls = [];
   const recorded = entries.map(([, option, settings]) => [
     (/** @type {Record<PropertyKey, any>} */ options) => {
-      for (const transform of transformsOf(option, settings)) {
-        if (options.enabled && !options.enabled.has(transform.name)) continue;
-        const transformOptions = options.options
-          ? { ...options.options[transform.name] }
-          : { ...options };
-        if (transform.targets) {
-          transformOptions[browserTargets] = options[browserTargets];
-        }
-        calls.push({ name: transform.name, options: transformOptions });
-      }
+      calls.push({ name: option, options: { ...options } });
       return { postcssPlugin: settings.postcssPlugin };
     },
     option,
@@ -42,18 +31,17 @@ function recording(entries) {
 }
 
 /**
- * The transforms of each entry, each with its settings. A plugin without a
- * transform list hosts one transform, named by its entry.
+ * The plugins of each entry, each with its option name and settings.
  *
  * @param {readonly unknown[][]} entries
  */
-function transformUnits(entries) {
-  return entries.flatMap(([, option, settings]) =>
-    transformsOf(
-      /** @type {string} */ (option),
-      /** @type {Parameters<typeof transformsOf>[1]} */ (settings)
-    )
-  );
+function pluginUnits(entries) {
+  return entries.map(([, option, settings]) => ({
+    name: /** @type {string} */ (option),
+    .../** @type {Parameters<typeof configurePlugins>[0][number][2]} */ (
+      settings
+    ),
+  }));
 }
 
 /**
@@ -77,7 +65,7 @@ const presets = {
 
 describe('plugins configured by each preset', () => {
   for (const [presetName, entries] of Object.entries(presets)) {
-    const units = transformUnits(entries);
+    const units = pluginUnits(entries);
 
     test(`${presetName} preset runs each plugin with the defaults its entry declares`, () => {
       for (const { name, options } of configuredCalls(entries, {})) {
@@ -116,13 +104,15 @@ describe('plugins configured by each preset', () => {
     });
 
     test(`${presetName} preset lets options replace each plugin's declared keys`, () => {
-      for (const { name, optionKeys } of units) {
+      for (const { name, optionKeys, guards } of units) {
         const [key] = optionKeys;
         if (key === undefined) continue;
+        // A guarded key takes a boolean, the only kind of value a guard in the presets accepts.
+        const value = guards?.[key] ? false : 'replaced';
         const call = configuredCalls(entries, {
-          options: { [name]: { [key]: 'replaced' } },
+          options: { [name]: { [key]: value } },
         }).find((recorded) => recorded.name === name);
-        assert.equal(call.options[key], 'replaced', name);
+        assert.equal(call.options[key], value, name);
       }
     });
   }

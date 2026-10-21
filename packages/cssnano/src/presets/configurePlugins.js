@@ -10,6 +10,7 @@ import {
 /** @import {AcceptedPlugin} from 'postcss' */
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
+/** @import {Guard} from '../optionGuards.js' */
 
 /**
  * The options of a built preset: the same as cssnano, without the preset and
@@ -23,36 +24,18 @@ import {
  */
 
 /**
- * A transform in a preset: the name that `disable` and `options` use, and
- * its settings. A plugin entry with no list hosts one transform, named by its
- * own option name.
- *
- * `targets` is set when the transform reads the browser targets; `defaults`
- * are the options it uses unless the preset sets them; `optionKeys` lists the
- * options it accepts, so a key it does not declare can be reported.
- *
- * @typedef {object} TransformSettings
- * @property {string} name
- * @property {true} [targets] the transform reads the browser targets of its preset
- * @property {object} [defaults] options the transform uses unless the preset sets them
- * @property {readonly string[]} optionKeys the options the transform accepts
- */
-
-/**
  * A plugin in a preset: the PostCSS creator, the name of the entry, and its
- * settings. An entry with `transforms` runs them in one PostCSS plugin, which
- * reports `postcssPlugin`. Its transforms are configured by name, and the
- * entry's own name is not an option.
+ * settings. `targets` is set when the plugin reads the browser targets of its
+ * preset; `defaults` are the options it uses unless the preset sets them;
+ * `optionKeys` lists the options it accepts, so a key it does not declare can
+ * be reported; `guards` checks the value of an option by its key.
  *
  * @typedef {{
  *   postcssPlugin: string,
- *   transforms?: undefined,
  *   targets?: true,
  *   defaults?: object,
  *   optionKeys: readonly string[],
- * } | {
- *   postcssPlugin: string,
- *   transforms: readonly TransformSettings[],
+ *   guards?: Readonly<Record<string, Guard>>,
  * }} PluginEntrySettings
  */
 
@@ -102,36 +85,12 @@ export function configureValidated(entries, known) {
   /** @type {AcceptedPlugin[]} */
   const plugins = [];
   for (const [creator, name, settings] of entries) {
-    if (settings.transforms === undefined) {
-      if (disabled.has(name)) continue;
-      plugins.push(
-        creator({
-          ...settings.defaults,
-          ...pluginOptions[name],
-          ...(settings.targets ? { [browserTargets]: targets } : undefined),
-        })
-      );
-      continue;
-    }
-    // An entry whose transforms are all disabled is left out.
-    const enabled = settings.transforms.filter(
-      (transform) => !disabled.has(transform.name)
-    );
-    if (enabled.length === 0) continue;
-    /** @type {Record<string, object>} */
-    const options = {};
-    for (const transform of enabled) {
-      options[transform.name] = {
-        ...transform.defaults,
-        ...pluginOptions[transform.name],
-      };
-    }
-    const readsTargets = enabled.some((transform) => transform.targets);
+    if (disabled.has(name)) continue;
     plugins.push(
       creator({
-        enabled: new Set(enabled.map((transform) => transform.name)),
-        options,
-        ...(readsTargets ? { [browserTargets]: targets } : undefined),
+        ...settings.defaults,
+        ...pluginOptions[name],
+        ...(settings.targets ? { [browserTargets]: targets } : undefined),
       })
     );
   }

@@ -15,10 +15,11 @@ const everyKey: DefaultPresetOptions = {
     mobileToDesktop: false,
     throwOnMissing: true,
   },
-  disable: ['mergeLonghand'],
+  disable: ['discardEmpty'],
   options: {
     discardComments: { removeAll: true },
     colormin: { hex: false },
+    merge: { rules: false },
   },
 };
 const liteKey: LitePresetOptions = { browserslist: { query: 'defaults' } };
@@ -116,4 +117,24 @@ const misspelledOption: DefaultPresetOptions = {
     colormin: { hexes: true },
   },
 };
-void [zindexOnDefault, misspelledOption];
+// The merge transforms are one option: rule merging is the only one a user turns off.
+const mergeRulesOff: DefaultPresetOptions = {
+  options: { merge: { rules: false } },
+};
+const mergeRulesNumber: DefaultPresetOptions = {
+  options: {
+    // @ts-expect-error rules takes a boolean
+    merge: { rules: 0 },
+  },
+};
+const disableMergeLonghand: DefaultPresetOptions = {
+  // @ts-expect-error mergeLonghand is part of merge, so it cannot be disabled alone
+  disable: ['mergeLonghand'],
+};
+void [
+  zindexOnDefault,
+  misspelledOption,
+  mergeRulesOff,
+  mergeRulesNumber,
+  disableMergeLonghand,
+];

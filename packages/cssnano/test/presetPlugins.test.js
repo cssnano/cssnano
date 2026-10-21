@@ -24,28 +24,17 @@ describe('built presets return plugins', () => {
     );
   });
 
-  test('disabling one merge transform keeps the cssnano-merge pass for the others', () => {
-    for (const transform of [
-      'mergeLonghand',
-      'discardDuplicates',
-      'mergeRules',
-    ]) {
-      assert.ok(
-        names(defaultPreset({ disable: [transform] })).includes(
-          'cssnano-merge'
-        ),
-        transform
-      );
-    }
+  test('disabling merge leaves the cssnano-merge pass out', () => {
+    assert.ok(
+      !names(defaultPreset({ disable: ['merge'] })).includes('cssnano-merge')
+    );
   });
 
-  test('disabling every merge transform leaves the cssnano-merge pass out', () => {
+  test('turning off rule merging keeps the cssnano-merge pass for longhand merging and duplicate removal', () => {
     assert.ok(
-      !names(
-        defaultPreset({
-          disable: ['mergeLonghand', 'discardDuplicates', 'mergeRules'],
-        })
-      ).includes('cssnano-merge')
+      names(defaultPreset({ options: { merge: { rules: false } } })).includes(
+        'cssnano-merge'
+      )
     );
   });
 

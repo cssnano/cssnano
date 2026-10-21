@@ -1,3 +1,4 @@
+import { isBoolean } from '../../optionGuards.js';
 import type { Root } from 'postcss';
 /**
  * The merge transforms over one stylesheet, in the order the default preset
@@ -7,25 +8,31 @@ import type { Root } from 'postcss';
  * Removing duplicates keeps the last copy, so running it first can delete the
  * declaration that let an earlier one be dropped as overridden.
  *
- * A disabled transform does not act. Without merge-longhand, or without
- * removing duplicates or merging rules, nothing is recorded and the second
- * round is skipped.
+ * Longhand merging and duplicate removal always run. Rule merging runs unless
+ * `rules` is false, which also leaves the block table unattached.
  *
  * @param {Root} css
  * @param {readonly string[]} browsers the resolved browser targets
- * @param {ReadonlySet<string>} [enabled] the transforms to run, all by default
+ * @param {{ rules?: boolean }} [options]
  * @return {void}
  */
-export declare function mergePass(css: Root, browsers: readonly string[], enabled?: ReadonlySet<string>): void;
+export declare function mergePass(css: Root, browsers: readonly string[], { rules }?: {
+    rules?: boolean;
+}): void;
+/** The guard for the `rules` option, shared with the preset that validates it. */
+export declare const rulesGuard: Readonly<{
+    isValid: typeof isBoolean;
+    expected: "a boolean";
+}>;
 /**
- * The `cssnano-merge` plugin: the merge transforms the preset enables, run in
- * one pass over the stylesheet. Without an `enabled` set, all of them run.
+ * The `cssnano-merge` plugin: the merge transforms of the default preset, run
+ * in one pass over the stylesheet. `rules: false` leaves rule merging out.
  *
- * @param {{ enabled?: ReadonlySet<string> }} [opts]
+ * @param {{ rules?: boolean }} [opts]
  * @return {import('postcss').Plugin}
  */
 declare function pluginCreator(opts?: {
-    enabled?: ReadonlySet<string>;
+    rules?: boolean;
 }): import('postcss').Plugin;
 declare namespace pluginCreator {
     var postcss: true;

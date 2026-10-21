@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { compareOutputs } from '../../presetDifferential.js';
+import {
+  compareOutputs,
+  parsePresetOptions,
+} from '../../presetDifferential.js';
 
 test('compareOutputs rejects a candidate that dropped a case', () => {
   assert.throws(
@@ -103,4 +106,26 @@ test('compareOutputs does not report a case that throws the same error on both s
 
   assert.equal(counts.identical, 1);
   assert.deepEqual(differences, []);
+});
+
+test('parsePresetOptions reads a JSON object of preset options', () => {
+  assert.deepEqual(
+    parsePresetOptions('--options', '{"options":{"merge":{"rules":false}}}'),
+    { options: { merge: { rules: false } } }
+  );
+});
+
+test('parsePresetOptions treats an absent flag as the default preset options', () => {
+  assert.deepEqual(parsePresetOptions('--options', undefined), {});
+});
+
+test('parsePresetOptions rejects text that is not a JSON object', () => {
+  assert.throws(
+    () => parsePresetOptions('--base-options', '["mergeRules"]'),
+    /--base-options must be a JSON object/v
+  );
+  assert.throws(
+    () => parsePresetOptions('--options', '{not json'),
+    /--options must be valid JSON/v
+  );
 });

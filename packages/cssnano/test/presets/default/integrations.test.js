@@ -36,10 +36,10 @@ describe('CSS processing', () => {
   );
 
   test(
-    'should keep a declaration overridden in a later rule when mergeLonghand is disabled, because both passes share the option',
-    processCSSFactory(preset({ disable: ['mergeLonghand'] })).processCSS(
+    'should keep a declaration overridden in a later rule when merge is disabled',
+    processCSSFactory(preset({ disable: ['merge'] })).processCSS(
       'body{padding:50px}body{padding:0}',
-      'body{padding:50px;padding:0}'
+      'body{padding:50px}body{padding:0}'
     )
   );
 

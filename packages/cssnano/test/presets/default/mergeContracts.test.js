@@ -1,12 +1,39 @@
 import { test } from 'node:test';
 import preset from '../../../src/presets/default.js';
+import { transformPlugin } from '../../../src/passes/merge/index.js';
 import { processCSSFactory } from '../../../../../util/testHelpers.js';
 
 const { processCSS } = processCSSFactory(preset());
-const withoutLonghand = processCSSFactory(
-  preset({ disable: ['mergeLonghand'] })
+const withoutRules = processCSSFactory(
+  preset({ options: { merge: { rules: false } } })
 );
-const withoutRules = processCSSFactory(preset({ disable: ['mergeRules'] }));
+
+/**
+ * The default preset with its merge plugin replaced by the given transforms,
+ * each run alone in the merge plugin's place. No option turns off longhand
+ * merging alone, so a test that needs that combination composes it here.
+ *
+ * @param {('mergeLonghand' | 'discardDuplicates' | 'mergeRules')[]} transforms
+ * @return {import('postcss').AcceptedPlugin[]}
+ */
+function presetWithMergeTransforms(transforms) {
+  const plugins = preset();
+  const index = plugins.findIndex(
+    (plugin) =>
+      /** @type {{postcssPlugin: string}} */ (plugin).postcssPlugin ===
+      'cssnano-merge'
+  );
+  plugins.splice(
+    index,
+    1,
+    ...transforms.map((name) => transformPlugin(name)({}))
+  );
+  return plugins;
+}
+
+const withoutLonghand = processCSSFactory(
+  presetWithMergeTransforms(['discardDuplicates', 'mergeRules'])
+);
 
 // Each case is a saving or trade-off that a framework fixture relies on. Each
 // input depends on the phase order it pins, so the companion case with the
@@ -21,7 +48,7 @@ test(
 );
 
 test(
-  'keeps the dead margin:0 in its own rule when mergeRules is off (gutenberg body margin)',
+  'keeps the dead margin:0 in its own rule when rule merging is off (gutenberg body margin)',
   withoutRules.passthroughCSS('body{margin:0;padding:0}body{margin:0 auto}')
 );
 

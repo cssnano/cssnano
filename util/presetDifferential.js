@@ -31,7 +31,29 @@ const mergeScripts = join(
 );
 const candidateSrc = join(root, 'packages', 'cssnano', 'src');
 const usage =
-  'usage: node util/presetDifferential.js [--base <rev>] [--seed <n>] [--count <n>] [--show <n>]';
+  'usage: node util/presetDifferential.js [--base <rev>] [--base-options <json>] [--options <json>] [--seed <n>] [--count <n>] [--show <n>]';
+
+/**
+ * Parses the JSON object that a flag passes to the preset, so both sides can
+ * be run with different options.
+ *
+ * @param {string} flag the flag the text came from, for the error message
+ * @param {string | undefined} text the JSON text, or undefined when the flag is absent
+ * @return {Record<string, unknown>} the preset options; `{}` when absent
+ */
+export function parsePresetOptions(flag, text) {
+  if (text === undefined) return {};
+  let value;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    throw new Error(`${flag} must be valid JSON`);
+  }
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error(`${flag} must be a JSON object`);
+  }
+  return value;
+}
 
 /**
  * @param {string} file A generator module, relative to the merge pass scripts
@@ -181,12 +203,20 @@ async function buildCorpus(seed, count) {
  * @param {string} src A `src` directory holding `presets/default.js`
  * @param {string} inputFile JSON array of `{ name, css }`
  * @param {string} outputFile Receives a JSON array of `CaseOutput`
+ * @param {Record<string, unknown>} options The options passed to the preset
  * @return {CaseOutput[]}
  */
-function runCorpus(src, inputFile, outputFile) {
+function runCorpus(src, inputFile, outputFile, options) {
   const run = spawnSync(
     process.execPath,
-    [fileURLToPath(import.meta.url), '--run', src, inputFile, outputFile],
+    [
+      fileURLToPath(import.meta.url),
+      '--run',
+      src,
+      inputFile,
+      outputFile,
+      JSON.stringify(options),
+    ],
     { encoding: 'utf8', stdio: ['ignore', 'ignore', 'pipe'] }
   );
   if (run.status !== 0) {
@@ -202,8 +232,9 @@ function runCorpus(src, inputFile, outputFile) {
  * @param {string} src
  * @param {string} inputFile
  * @param {string} outputFile
+ * @param {string} optionsJson the preset options as JSON
  */
-async function runChild(src, inputFile, outputFile) {
+async function runChild(src, inputFile, outputFile, optionsJson) {
   const require = createRequire(join(src, 'package.json'));
   const postcss = (await import(pathToFileURL(require.resolve('postcss')).href))
     .default;
@@ -211,11 +242,12 @@ async function runChild(src, inputFile, outputFile) {
     pathToFileURL(join(src, 'presets', 'default.js')).href
   );
   const cases = JSON.parse(readFileSync(inputFile, 'utf8'));
+  const options = JSON.parse(optionsJson);
   /** @type {CaseOutput[]} */
   const outputs = [];
   for (const { name, css } of cases) {
     try {
-      const result = await postcss(presetDefault()).process(css, {
+      const result = await postcss(presetDefault(options)).process(css, {
         // The corpus follows the repository's browserslist config, as the
         // integration tests do.
         from: repositoryFile,
@@ -277,20 +309,31 @@ function report({ counts, differences }, corpus, show, rev) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (process.argv[2] === '--run') {
-    const [src, inputFile, outputFile] = process.argv.slice(3);
-    await runChild(src, inputFile, outputFile);
+    const [src, inputFile, outputFile, optionsJson] = process.argv.slice(3);
+    await runChild(src, inputFile, outputFile, optionsJson);
   } else {
     let values;
+    /** @type {Record<string, unknown>} */
+    let baseOptions;
+    /** @type {Record<string, unknown>} */
+    let candidateOptions;
     try {
       ({ values } = parseArgs({
         options: {
           base: { type: 'string', default: 'main' },
+          'base-options': { type: 'string' },
+          options: { type: 'string' },
           seed: { type: 'string', default: '1' },
           count: { type: 'string', default: '1000' },
           show: { type: 'string', default: '5' },
         },
         strict: true,
       }));
+      baseOptions = parsePresetOptions(
+        '--base-options',
+        values['base-options']
+      );
+      candidateOptions = parsePresetOptions('--options', values.options);
     } catch (error) {
       console.error(error instanceof Error ? error.message : error);
       console.error(usage);
@@ -310,12 +353,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       const inputFile = join(exchange, 'input.json');
       writeFileSync(inputFile, JSON.stringify(corpus));
       const base = withRevisionPackage(values.base, (src) =>
-        runCorpus(src, inputFile, join(exchange, 'base.json'))
+        runCorpus(src, inputFile, join(exchange, 'base.json'), baseOptions)
       );
       const candidate = runCorpus(
         candidateSrc,
         inputFile,
-        join(exchange, 'candidate.json')
+        join(exchange, 'candidate.json'),
+        candidateOptions
       );
       const comparison = compareOutputs(base, candidate);
       process.exitCode = report(comparison, corpus, show, values.base);

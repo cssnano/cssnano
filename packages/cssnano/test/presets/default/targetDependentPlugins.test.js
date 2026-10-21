@@ -22,12 +22,12 @@ async function pluginsThatResolveTargets() {
 }
 
 test('the default preset marks exactly the plugins that resolve browser targets', async () => {
-  // mergeLonghand runs twice, so the names are compared as a set.
+  // The merge pass lives under passes/, so the scan above does not find it.
   const marked = defaultPluginEntries
     .filter(([, , settings]) => settings?.targets === true)
     .map(([creator]) => creator({}).postcssPlugin);
   assert.deepEqual(
-    [...new Set(marked)].toSorted(),
-    await pluginsThatResolveTargets()
+    marked.toSorted(),
+    [...(await pluginsThatResolveTargets()), 'cssnano-merge'].toSorted()
   );
 });
