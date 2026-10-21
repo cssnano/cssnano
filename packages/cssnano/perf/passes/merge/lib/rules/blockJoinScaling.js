@@ -1,20 +1,14 @@
-import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
 import { transformPlugin } from '#passes/merge';
+import { assertLinearTime, timeOneRun } from '../linearTiming.js';
 const plugin = transformPlugin('mergeRules');
 
 /**
  * @param {string} css
- * @return {number} best of two runs of the whole plugin in milliseconds, so one GC pause does not decide
+ * @return {number} one run of the whole plugin in milliseconds
  */
 function timePlugin(css) {
-  const run = () => {
-    const start = performance.now();
-    postcss([plugin()]).process(css, { from: undefined }).sync();
-    return performance.now() - start;
-  };
-  return Math.min(run(), run());
+  return timeOneRun(plugin, css);
 }
 
 /**
@@ -33,13 +27,5 @@ function mediaRuns(count) {
 }
 
 test('joining runs of blocks that each move down after the next one takes linear time as the runs grow', () => {
-  timePlugin(mediaRuns(800));
-  const small = timePlugin(mediaRuns(400));
-  const large = timePlugin(mediaRuns(800));
-  // Doubling the input takes about two times as long for a linear pass and
-  // about four times as long for a quadratic one.
-  assert.ok(
-    large / small < 3,
-    `800/400 time ratio ${(large / small).toFixed(2)}`
-  );
+  assertLinearTime((size) => timePlugin(mediaRuns(size)), 1500);
 });

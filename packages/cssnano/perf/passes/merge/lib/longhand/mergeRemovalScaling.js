@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 const plugin = transformPlugin('mergeLonghand');
 import { timePlugin } from './lib/timing.js';
+import { assertLinearTime } from '../linearTiming.js';
 import { withTargets } from '../../../../../../../util/testHelpers.js';
 import { transformPlugin } from '#passes/merge';
 
@@ -29,13 +30,5 @@ test('merging declaration groups takes linear time as the rule grows', () => {
     sample,
     'a{margin:0px;&{x:y}margin:1px;&{x:y}margin:2px;&{x:y}}'
   );
-  timePlugin(createCSS(500), 'chrome 120');
-  const small = timePlugin(createCSS(8000), 'chrome 120');
-  const large = timePlugin(createCSS(16000), 'chrome 120');
-  // Doubling the input takes about two times as long for a linear pass and
-  // about four times as long for a quadratic one.
-  assert.ok(
-    large / small < 3,
-    `16000/8000 time ratio ${(large / small).toFixed(2)}`
-  );
+  assertLinearTime((size) => timePlugin(createCSS(size), 'chrome 120'), 2000);
 });

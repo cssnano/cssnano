@@ -1,30 +1,45 @@
-import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
 import { transformPlugin } from '#passes/merge';
+import { assertLinearTime, timeOneRun } from '../linearTiming.js';
 const plugin = transformPlugin('mergeRules');
 
-test('should join many alternating rules in linear time', () => {
-  const css = Array.from(
-    { length: 6000 },
+/**
+ * @param {number} count
+ * @return {string} rules that alternate `display` between `none` and `block`
+ */
+function alternatingDisplayRules(count) {
+  return Array.from(
+    { length: count },
     (_, i) => `.r${i}{display:${i % 2 ? 'none' : 'block'}}`
   ).join('');
-  const start = performance.now();
-  postcss([plugin()]).process(css, { from: undefined }).sync();
-  // Quadratic behavior took ten seconds on this input; linear takes < 0.1.
-  assert.ok(performance.now() - start < 3000);
-});
+}
 
-test('should join many rules into one growing group in linear time', () => {
-  // Each `y` rule joins the `x` group across the `q` rule, which sets nothing
-  // the group sets. The group gains a selector on every join.
-  const css = Array.from(
-    { length: 4000 },
+/**
+ * @param {number} count
+ * @return {string} `x` rules, each followed by a `q` rule and a `y` rule that joins the `x` group
+ */
+function joinableRuleGroups(count) {
+  return Array.from(
+    { length: count },
     (_, i) =>
       `x${i}{color:red;top:0}q${i}{margin:0}y${i}::before{color:red;top:0}`
   ).join('');
-  const start = performance.now();
-  postcss([plugin()]).process(css, { from: undefined }).sync();
-  // Re-recording the group on every join took about 19 seconds on this input.
-  assert.ok(performance.now() - start < 3000);
+}
+
+/**
+ * @param {string} css
+ * @return {number} one run of the whole plugin in milliseconds
+ */
+function timePlugin(css) {
+  return timeOneRun(plugin, css);
+}
+
+test('should join many alternating rules in linear time', () => {
+  assertLinearTime((size) => timePlugin(alternatingDisplayRules(size)), 6000);
+});
+
+// Each `y` rule joins the `x` group across the `q` rule, which sets nothing
+// the group sets. The group gains a selector on every join.
+test('should join many rules into one growing group in linear time', () => {
+  assertLinearTime((size) => timePlugin(joinableRuleGroups(size)), 400);
 });
