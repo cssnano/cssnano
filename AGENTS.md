@@ -55,6 +55,19 @@ Every change should make the intended CSS transformation clearer while preservin
   starting more pairs, so a small budget or a shell `timeout` does not bound the
   run: one block over the whole corpus can take minutes. Pick the narrowest case,
   run it in the background, and never raise or wrap a timeout to compensate.
+- Mutation testing (Node 24) judges whether tests or fuzz oracles notice a
+  curated fault in a plugin. Run it only through the runner, never a
+  hand-copied module or a string replacement, which silently tests the
+  unmutated code:
+  - `pnpm test:mutation` reruns each catalog's test file;
+    `pnpm test:mutation:oracle` uses the fuzz suites. Probe one mutant with
+    `node util/mutation-testing/mutation-runner.js --check oracle --catalog <file> --only '<regex>' --suites <module> --allow-unkilled`.
+  - Read the `Running N mutants` line and the summary. Only `killed` is a
+    verdict in favor of the tests. `survived`, `unchanged` and `not reached`
+    mean the mutant was not caught; `errored` and `timed out` mean it was not
+    judged. A run with no mutants, an `--only` pattern that matches none, or a
+    test file that executes no tests fails.
+  - Register a new catalog in `packages/cssnano/mutation/catalogs.js`.
 - Tests that assert wall-clock time or asymptotic scaling, and fuzz or exhaustive sweeps that take about a second or more, go in `packages/<pkg>/perf/` (plain `.js`, not `*.test.js`; plugin perf files live in `packages/cssnano/perf/<name>/`), so `node --test` and the coverage run skip them; run them with the `test:performance` script. Keep correctness assertions in `test/`.
 - Keep package tests under `test/` and follow the existing filename convention for the package or subsystem (`*.js` and `*.test.js` are both present). Use `describe()` when it improves source readability without disturbing unrelated test order.
 - Keep test-suite nesting shallow; avoid wrapping descriptive suites in redundant package- or preset-level suites.

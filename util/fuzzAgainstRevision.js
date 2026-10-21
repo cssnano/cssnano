@@ -89,6 +89,37 @@ export function fuzzAgainstRevision(
 }
 
 /**
+ * Runs `run` on the `src` of a git revision. The revision is extracted into a
+ * sibling of the real package with its own manifest, so `#` imports resolve
+ * as they did at that revision. The sandbox is removed even when `run` throws.
+ *
+ * @template T
+ * @param {string} rev
+ * @param {(src: string) => T} run
+ * @return {T}
+ */
+export function withRevisionPackage(rev, run) {
+  if (!hasTree(rev, 'packages/cssnano/src')) {
+    throw new Error(`${rev} has no packages/cssnano/src`);
+  }
+  const packageDir = join(root, 'packages', 'cssnano');
+  const sandbox = join(root, 'packages', `.revision-${process.pid}`);
+  rmSync(sandbox, { recursive: true, force: true });
+  try {
+    mkdirSync(sandbox, { recursive: true });
+    extractTree(rev, 'packages/cssnano/src', join(sandbox, 'src'));
+    writeFileSync(join(sandbox, 'package.json'), readManifest(rev, 'cssnano'));
+    symlinkSync(
+      join(packageDir, 'node_modules'),
+      join(sandbox, 'node_modules')
+    );
+    return run(join(sandbox, 'src'));
+  } finally {
+    rmSync(sandbox, { recursive: true, force: true });
+  }
+}
+
+/**
  * @param {string} rev
  * @param {string} path Repository-relative path
  * @return {boolean}

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { describeOutcome } from './fuzzAgainstRevision.js';
+import { describeOutcome, withRevisionPackage } from './fuzzAgainstRevision.js';
 import { FAILURE_EXIT_CODE } from './fuzzRunner.js';
 
 test('describeOutcome reports a clean run as passed', () => {
@@ -32,5 +34,39 @@ test('describeOutcome names the signal that stopped the fuzzer', () => {
   assert.match(
     describeOutcome({ status: null, signal: 'SIGINT' }),
     /^could not run \(SIGINT\)/v
+  );
+});
+
+test('withRevisionPackage runs with the src of the revision', () => {
+  withRevisionPackage('HEAD', (src) => {
+    assert.ok(existsSync(join(src, 'presets', 'default.js')));
+  });
+});
+
+test('withRevisionPackage removes its sandbox after the run', () => {
+  let sandbox = '';
+  withRevisionPackage('HEAD', (src) => {
+    sandbox = dirname(src);
+  });
+
+  assert.ok(!existsSync(sandbox));
+});
+
+test('withRevisionPackage removes its sandbox when the run throws', () => {
+  let sandbox = '';
+  assert.throws(() =>
+    withRevisionPackage('HEAD', (src) => {
+      sandbox = dirname(src);
+      throw new Error('run failed');
+    })
+  );
+
+  assert.ok(!existsSync(sandbox));
+});
+
+test('withRevisionPackage rejects a revision without a cssnano src', () => {
+  assert.throws(
+    () => withRevisionPackage('HEAD~100000', () => {}),
+    /has no packages\/cssnano\/src/v
   );
 });

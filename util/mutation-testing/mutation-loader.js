@@ -1,5 +1,5 @@
 import { registerHooks } from 'node:module';
-import { applyMutation } from './mutation-testing.js';
+import { applyMutation, notReachedMarker } from './mutation-testing.js';
 
 const target = process.env.CSSNANO_MUTATION_TARGET;
 const serializedMutation = process.env.CSSNANO_MUTATION;
@@ -11,6 +11,22 @@ if (!target || !serializedMutation) {
 }
 
 const mutation = JSON.parse(serializedMutation);
+
+let reached = false;
+
+/**
+ * Whether anything loaded the mutation target yet.
+ *
+ * @returns {boolean}
+ */
+export function wasReached() {
+  return reached;
+}
+
+// A mutant in a module that nothing imports is untested, not survived.
+process.on('exit', () => {
+  if (!reached) process.stderr.write(`${notReachedMarker}: ${target}\n`);
+});
 
 registerHooks({
   /**
@@ -25,6 +41,7 @@ registerHooks({
       return loaded;
     }
 
+    reached = true;
     try {
       // ES module sources arrive as bytes; decode them before mutating.
       const source =
