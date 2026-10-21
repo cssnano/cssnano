@@ -1,7 +1,8 @@
 import cssnanoUtils from '#utils';
 import mappings from './lib/map.js';
 
-const { TokenType, asciiLowerCase, decoded, tokens } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, tokens, assignValue, sourceValue } =
+  cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const repeatPropertyRegex =
@@ -152,10 +153,7 @@ function pluginCreator() {
          */
         OnceExit(css) {
           css.walkDecls(repeatPropertyRegex, (decl) => {
-            const value =
-              decl.raws.value?.value === decl.value
-                ? (decl.raws.value.raw ?? decl.value)
-                : decl.value;
+            const value = sourceValue(decl);
 
             if (!value) {
               return;
@@ -178,11 +176,6 @@ function pluginCreator() {
   };
 }
 
-/** @param {import('postcss').Declaration} decl @param {string} value */
-function assignValue(decl, value) {
-  decl.value = value;
-  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
-}
 /** @type {true} */
 pluginCreator.postcss = true;
 const moduleExports = pluginCreator;

@@ -1,7 +1,7 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 
-const { isCSSWhitespace, isHexDigitCode } = cssnanoUtils;
+const { isCSSWhitespace, isHexDigitCode, assignValue } = cssnanoUtils;
 
 const SINGLE_QUOTE = "'".charCodeAt(0);
 const DOUBLE_QUOTE = '"'.charCodeAt(0);
@@ -331,12 +331,6 @@ function minify(original, cache, preferredQuote) {
   const newValue = normalize(original, preferredQuote);
   cache.set(original, newValue);
   return newValue;
-}
-
-/** @param {import('postcss').Declaration} decl @param {string} value */
-function assignValue(decl, value) {
-  decl.value = value;
-  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
 }
 
 /**

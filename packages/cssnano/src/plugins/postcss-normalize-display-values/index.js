@@ -7,7 +7,7 @@ import {
 import cssnanoUtils from '#utils';
 import mappings from './lib/map.js';
 
-const { asciiLowerCase } = cssnanoUtils;
+const { asciiLowerCase, assignValue, sourceValue } = cssnanoUtils;
 const displayPropertyRegex = /^[dD][iI][sS][pP][lL][aA][yY]$/v;
 const displayOutside = new Set(['block', 'inline', 'run-in']);
 const displayInside = new Set([
@@ -107,18 +107,6 @@ function transform(value) {
 
   return mappings.get(key) ?? value;
 }
-
-/**
- * @param {import('postcss').Declaration} decl
- * @param {string} value
- */
-function assignValue(decl, value) {
-  decl.value = value;
-  if (decl.raws.value?.raw) {
-    decl.raws.value = { raw: value, value };
-  }
-}
-
 /**
  * @return {import('postcss').Plugin}
  */
@@ -134,10 +122,7 @@ function pluginCreator() {
          */
         OnceExit(css) {
           css.walkDecls(displayPropertyRegex, (decl) => {
-            const value =
-              decl.raws.value?.value === decl.value
-                ? (decl.raws.value.raw ?? decl.value)
-                : decl.value;
+            const value = sourceValue(decl);
 
             if (!value) {
               return;

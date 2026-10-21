@@ -3,9 +3,11 @@ import cssnanoUtils from '#utils';
 const {
   TokenType,
   asciiLowerCase,
+  assignValue,
   balancedTokens,
   decoded,
   numeric,
+  sourceValue,
   tokenEnd,
   tokenStart,
 } = cssnanoUtils;
@@ -291,10 +293,7 @@ function pluginCreator() {
       return {
         OnceExit(css) {
           css.walkDecls(transformPropertyRegex, (decl) => {
-            const value =
-              decl.raws.value?.value === decl.value
-                ? (decl.raws.value.raw ?? decl.value)
-                : decl.value;
+            const value = sourceValue(decl);
             if (!value) return;
             if (!value.includes('(')) {
               assignValue(decl, value);
@@ -315,11 +314,6 @@ function pluginCreator() {
   };
 }
 
-/** @param {import('postcss').Declaration} decl @param {string} value */
-function assignValue(decl, value) {
-  decl.value = value;
-  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
-}
 /** @type {true} */
 pluginCreator.postcss = true;
 const moduleExports = pluginCreator;
