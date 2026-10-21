@@ -120,10 +120,31 @@ function motif(k) {
   return css;
 }
 
+/**
+ * Sibling `@media` blocks as in picnic: one run of `k` blocks that set
+ * `display`, then a run that sets `margin-left` under the same conditions and
+ * one more before them. Each block of the second run joins its
+ * counterpart in the first only after the block after it has.
+ *
+ * @param {number} k
+ * @return {string}
+ */
+function mediaRuns(k) {
+  let css = '';
+  for (let i = 1; i <= k; i++) {
+    css += `@media (min-width:${i}px){.c${i}{display:none}}`;
+  }
+  for (let i = 0; i <= k; i++) {
+    css += `@media (min-width:${i}px){.d${i}{margin-left:1px}}`;
+  }
+  return css;
+}
+
 // Nodes per unit of k, and the offset, of each family.
 const families = [
   { name: 'join-chain', build: joinChain, perUnit: 4, offset: 4 },
   { name: 'motif', build: motif, perUnit: 10, offset: 0 },
+  { name: 'media-runs', build: mediaRuns, perUnit: 2, offset: 1 },
 ];
 
 for (const { name, build, perUnit, offset } of families) {
@@ -139,6 +160,13 @@ for (const { name, build, perUnit, offset } of families) {
       );
       // Proved in `selectorMerger.js`; the sweeps have no proved bound.
       assert.ok(result.rounds <= nodes + declarations + 1);
+      if (name === 'media-runs') {
+        // Joining blocks needs no round of its own per block.
+        assert.ok(
+          result.rounds <= 3,
+          `${name} N=${nodes} took ${result.rounds} rounds`
+        );
+      }
       assert.equal(
         run(result.output).output,
         result.output,

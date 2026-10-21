@@ -66,6 +66,18 @@ export const mutations = [
     replace: '      if (false) {',
   },
   {
+    name: 'move a block down in the backward pass across a conflicting write',
+    target: source('nonAdjacentMerge.js'),
+    find: '    if (!index.conflictsSinceIn(earlierDeclarations, laterPosition, keysOf)) {',
+    replace: '    if (true) {',
+  },
+  {
+    name: 'forget the writes of a block moved down in the backward pass',
+    target: source('nonAdjacentMerge.js'),
+    find: '      index.moveWrites(earlierDeclarations, laterPosition, keysOf);',
+    replace: '',
+  },
+  {
     name: 'ignore !important when comparing declarations',
     target: source('declarations.js'),
     find: '    a.important === b.important &&\n',

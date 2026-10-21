@@ -29,7 +29,7 @@ export default class MergeState {
   properties;
   /** @type {import('./ruleMeta.js').SelectorLookup} */
   #lookup;
-  /** @type {WeakSet<Rule>} */
+  /** @type {WeakSet<Rule>} rules whose selectors are known to be compatible */
   #ruleCache;
   /** @type {WeakMap<Rule, RuleMeta>} */
   #ruleMeta;
@@ -53,21 +53,15 @@ export default class MergeState {
 
   /**
    * @param {readonly string[]} browsers
-   * @param {Map<string, import('./ensureCompatibility.js').SelectorInfo>} compatibilityCache
-   * @param {WeakSet<Rule>} ruleCache rules whose selectors are known to be compatible
-   * @param {WeakMap<Rule, RuleMeta>} ruleMeta
    * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
    */
-  constructor(
-    browsers,
-    compatibilityCache,
-    ruleCache,
-    ruleMeta,
-    context = createRunContext()
-  ) {
-    this.#lookup = createSelectorLookup(browsers, compatibilityCache);
-    this.#ruleCache = ruleCache;
-    this.#ruleMeta = ruleMeta;
+  constructor(browsers, context = createRunContext()) {
+    this.#lookup = createSelectorLookup(
+      browsers,
+      context.selectorCompatibility
+    );
+    this.#ruleCache = context.compatibleRules;
+    this.#ruleMeta = context.ruleMeta;
     this.#declarations = context.declarations;
     this.properties = context.properties;
     this.blocks = context.blocks;

@@ -3,6 +3,8 @@ import { DeclarationKeys } from './declarationKey.js';
 import { PropertyTable } from './propertyTable.js';
 
 /** @import {Root, Rule} from 'postcss' */
+/** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
+/** @import {RuleMeta} from '../merge/lib/rules/ruleMeta.js' */
 
 /**
  * The state one run of the merge pass shares across its transforms. Nothing in
@@ -13,6 +15,9 @@ import { PropertyTable } from './propertyTable.js';
  *   declarations: DeclarationKeys,
  *   createdBlocks: Set<Rule> | null,
  *   blocks: BlockTable,
+ *   selectorCompatibility: Map<string, SelectorInfo>,
+ *   compatibleRules: WeakSet<Rule>,
+ *   ruleMeta: WeakMap<Rule, RuleMeta>,
  * }} RunContext
  */
 
@@ -30,5 +35,8 @@ export function createRunContext(root) {
     declarations: new DeclarationKeys(),
     createdBlocks: null,
     blocks: new BlockTable(root),
+    selectorCompatibility: new Map(),
+    compatibleRules: new WeakSet(),
+    ruleMeta: new WeakMap(),
   };
 }

@@ -104,7 +104,7 @@ function runFirstRound(css, support, context, blocks) {
 }
 
 /**
- * Merges rules with the caches of one run, as the rule-merging plugin does.
+ * Merges rules with the context of one run, as the rule-merging plugin does.
  *
  * @param {Root} css
  * @param {readonly string[]} browsers
@@ -112,7 +112,7 @@ function runFirstRound(css, support, context, blocks) {
  * @return {void}
  */
 function mergeRules(css, browsers, context) {
-  runMerge(css, browsers, new Map(), new WeakSet(), new WeakMap(), context);
+  runMerge(css, browsers, context);
 }
 
 /**

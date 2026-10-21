@@ -203,4 +203,20 @@ export const mergeCases = {
         `.join-${index}{color:red;width:1px}.noise-${index}{--v:${index}}`
     ).join('')
   ),
+  // As in picnic: a block joins its counterpart only after the block after it.
+  'merge-rules-media-runs': mergeCase(
+    'mergeRules',
+    [
+      ...Array.from(
+        { length: 60 },
+        (_, index) =>
+          `@media (min-width:${index + 1}px){.display-${index}{display:none}}`
+      ),
+      ...Array.from(
+        { length: 61 },
+        (_, index) =>
+          `@media (min-width:${index}px){.offset-${index}{margin-left:1px}}`
+      ),
+    ].join('')
+  ),
 };
