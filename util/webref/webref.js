@@ -129,7 +129,7 @@ export function keywordTerminals(syntax) {
     return [];
   }
 
-  const literals = syntax.replace(REFERENCE, ' ');
+  const literals = syntax.replaceAll(REFERENCE, ' ');
   /** @type {string[]} */
   const keywords = [];
 

@@ -131,10 +131,10 @@ function escapeForQuote(value, quote) {
   if (!quote) return value;
   if (quote === '"') {
     if (!needsEscapeDoubleQuote.test(value)) return value;
-    return value.replace(escapeDoubleQuotePattern, replaceEscape);
+    return value.replaceAll(escapeDoubleQuotePattern, replaceEscape);
   }
   if (!needsEscapeSingleQuote.test(value)) return value;
-  return value.replace(escapeSingleQuotePattern, replaceEscape);
+  return value.replaceAll(escapeSingleQuotePattern, replaceEscape);
 }
 
 /** @param {string} quote @param {string} value @return {string} */

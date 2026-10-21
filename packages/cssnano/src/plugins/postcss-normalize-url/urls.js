@@ -37,7 +37,7 @@ function replaceEscapeChar(match) {
  * @return {string}
  */
 function escapeForUrlToken(value) {
-  return value.replace(urlTokenEscapeChars, replaceEscapeChar);
+  return value.replaceAll(urlTokenEscapeChars, replaceEscapeChar);
 }
 
 /**
