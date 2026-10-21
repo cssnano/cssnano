@@ -1,29 +1,6 @@
 import type { PluginEntry } from './presets/configurePlugins.js';
 import type { BuiltInPreset } from './presets/presetEntries.js';
-import type { Guard } from './optionGuards.js';
 export type Place = 'inline' | 'file' | 'preset';
-/**
- * The keys that moved or were removed, each with where its setting went. A key
- * that a user still writes throws, because ignoring it would change the output
- * the user asked for: a plugin they added would not run, or the browser
- * targets would widen.
- * @type {Readonly<Record<string, string>>}
- */
-export declare const removedOptions: Readonly<Record<string, string>>;
-/**
- * An empty list or object sets nothing, so it is unset too.
- * @param {unknown} value
- * @returns {boolean}
- */
-export declare const isUnset: (value: unknown) => boolean;
-/**
- * The top-level keys. Each has the places that accept it and the guard its
- * value must pass; a known key that fails its guard throws.
- */
-/** @type {Readonly<Record<string, Guard & {places: readonly Place[]}>>} */
-export declare const optionTable: Readonly<Record<string, Guard & {
-    places: readonly Place[];
-}>>;
 /**
  * Whether validated options set something that replaces the configuration
  * file: any option with a value, other than configFile. Validation has already

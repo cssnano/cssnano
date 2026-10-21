@@ -39,7 +39,7 @@ const placeLabels = /** @type {const} */ ({
  * targets would widen.
  * @type {Readonly<Record<string, string>>}
  */
-export const removedOptions = Object.freeze({
+const removedOptions = Object.freeze({
   plugins: 'configure additional PostCSS plugins in your PostCSS configuration',
   svgo: 'run postcss-svgo before cssnano',
   overrideBrowserslist: 'set browserslist.query instead',
@@ -68,7 +68,7 @@ function removedMessage(key, location) {
  * @param {unknown} value
  * @returns {boolean}
  */
-export const isUnset = (value) =>
+const isUnset = (value) =>
   isAbsent(value) ||
   (Array.isArray(value) && value.length === 0) ||
   (isRecord(value) && Object.keys(value).length === 0);
@@ -78,7 +78,7 @@ export const isUnset = (value) =>
  * value must pass; a known key that fails its guard throws.
  */
 /** @type {Readonly<Record<string, Guard & {places: readonly Place[]}>>} */
-export const optionTable = Object.freeze({
+const optionTable = Object.freeze({
   preset: {
     places: /** @type {readonly Place[]} */ (['inline', 'file']),
     isValid: (/** @type {unknown} */ value) => isBuiltInPreset(value),

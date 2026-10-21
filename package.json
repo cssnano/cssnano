@@ -35,7 +35,6 @@
     "oxfmt": "^0.74.0",
     "oxlint": "^1.89.0",
     "postcss": "catalog:",
-    "resolve": "^1.22.13",
     "typescript": "~7.0.2"
   },
   "browserslist": {

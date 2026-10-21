@@ -20,12 +20,3 @@ export const benchmarkCases = {
   ...mergeCases,
   ...stylehacksCases,
 };
-
-// One authoritative mapping so snapshots and comparison artifacts record the
-// same target metadata for the same case name.
-export function resolveBenchmarkTarget(caseName) {
-  if (!caseName) return 'cssnano';
-  const benchmarkCase = benchmarkCases[caseName];
-  if (!benchmarkCase) throw new Error(`unknown benchmark case "${caseName}"`);
-  return benchmarkCase.plugin;
-}

@@ -32,7 +32,9 @@ export type AdvancedPluginOptions = import('./defaultPlugins.js').DefaultPluginO
  */
 /**
  * The plugins the advanced preset adds to the default ones, each with the
- * preset option that enables it.
+ * preset option that enables it. Referenced only by the type tests.
+ *
+ * @lintignore
  */
 export declare const advancedPluginEntries: readonly [readonly [{
     (opts: import("#postcss-discard-unused").Options): import("postcss/lib/postcss").Plugin;

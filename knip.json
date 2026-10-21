@@ -1,14 +1,27 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "tags": ["-lintignore"],
-  "ignore": ["**/types/**", "example-cli-usage/**"],
+  "ignore": ["**/types/**", "example-cli-usage/**", ".agents/**", ".codex/**"],
+  "ignoreBinaries": ["build"],
   "workspaces": {
-    ".": {},
+    ".": {
+      "entry": [
+        "util/countTokenize.js",
+        "util/tokenizerCalls.js",
+        "util/benchmark/analyze-cpuprofile.js"
+      ]
+    },
     "packages/postcss-svgo": {
       "entry": ["perf/*.js"]
     },
     "packages/cssnano": {
-      "entry": ["perf/*/*.js"]
+      "entry": [
+        "perf/**/*.js",
+        "test/types/*.ts",
+        "script/**/fuzz*.js",
+        "script/**/browserDiff.js",
+        "script/**/compareSize.js"
+      ]
     }
   }
 }

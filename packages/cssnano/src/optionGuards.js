@@ -27,7 +27,7 @@ export function assertValid({ isValid, expected }, value, name) {
 export const isAbsent = (value) => value === undefined || value === null;
 
 /** @param {unknown} value @returns {value is string} */
-export const isString = (value) => typeof value === 'string';
+const isString = (value) => typeof value === 'string';
 
 /** @param {unknown} value @returns {value is string} */
 export const isNonEmptyString = (value) =>
