@@ -1,8 +1,10 @@
+import { availableParallelism } from 'node:os';
 import { launchChromium } from '../../../../../../util/chromium.js';
 import {
   FAILURE_EXIT_CODE,
   parseFuzzArgs,
 } from '../../../../../../util/fuzzRunner.js';
+import { buildFixture, pageDifferences } from './browserPage.js';
 import { elements } from './lib/cascadeOracle.js';
 import { processBatched } from './lib/fuzzCrossBlock.js';
 import {
@@ -12,94 +14,20 @@ import {
 
 /**
  * @typedef {{input: string, output: string}} Pair
- * @typedef {{index: number, media: string, direction: string, element: string, property: string, before: string, after: string}} BrowserDifference
+ * @typedef {{index: number, media: string, writingMode: string, direction: string, element: string, property: string, before: string, after: string}} BrowserDifference
  * @typedef {Awaited<ReturnType<typeof launchChromium>>} Browser
  */
 
 // The default export of the package runs preset-default.
 const presetUrl = new URL('../../../../src/index.js', import.meta.url);
 
-/**
- * Runs in the page. Builds one host element per oracle element, so the
- * browser and the oracle see the same document; `::before` is read from its
- * host. Elements inside a `div` share one plain wrapper, which matches the
- * same rules as the oracle's bare `div`.
- *
- * @param {{name: string, tag: string, classes: string[], id: boolean, inDiv: boolean, pseudo: boolean}[]} hosts
- */
-function buildFixture(hosts) {
-  const doc = globalThis.document;
-  doc.head.innerHTML = '<style id="sheet"></style>';
-  doc.body.innerHTML = '<div id="wrapper"></div>';
-  const wrapper = doc.querySelector('#wrapper');
-  wrapper.removeAttribute('id');
-  for (const host of hosts) {
-    if (host.pseudo) continue;
-    const node = doc.createElement(host.tag);
-    node.className = host.classes.join(' ');
-    if (host.id) node.id = 'i';
-    node.dataset.name = host.name;
-    (host.inDiv ? wrapper : doc.body).append(node);
-  }
-}
-
-/**
- * Runs in the page. For each pair, reads the computed value of every
- * longhand either stylesheet declares, plus `direction`, on every element and
- * `::before`, and returns the first difference per pair and direction.
- *
- * @param {{pairs: Pair[], directions: string[]}} options
- */
-function pageDifferences({ pairs, directions }) {
-  const doc = globalThis.document;
-  const style = doc.querySelector('#sheet');
-  const hosts = [...doc.querySelectorAll('[data-name]')];
-  const targets = hosts.flatMap((host) => [
-    { host, pseudo: null, name: host.dataset.name },
-    { host, pseudo: '::before', name: `${host.dataset.name}::before` },
-  ]);
-  // The browser's own expansion of the declarations it accepted, so a
-  // shorthand reads as the longhands it sets and a dropped one reads as none.
-  const declaredLonghands = (css, found) => {
-    style.textContent = css;
-    const rules = [...style.sheet.cssRules];
-    while (rules.length > 0) {
-      const rule = rules.pop();
-      if (rule.style) for (const property of rule.style) found.add(property);
-      if (rule.cssRules) rules.push(...rule.cssRules);
-    }
-  };
-  const read = (css, properties) => {
-    style.textContent = css;
-    return targets.flatMap(({ host, pseudo }) => {
-      const computed = globalThis.getComputedStyle(host, pseudo);
-      return properties.map((property) => computed.getPropertyValue(property));
-    });
-  };
-  const differences = [];
-  for (const [index, { input, output }] of pairs.entries()) {
-    const found = new Set(['direction']);
-    declaredLonghands(input, found);
-    declaredLonghands(output, found);
-    const properties = [...found];
-    for (const direction of directions) {
-      doc.documentElement.dir = direction;
-      const before = read(input, properties);
-      const after = read(output, properties);
-      const slot = before.findIndex((value, i) => value !== after[i]);
-      if (slot === -1) continue;
-      differences.push({
-        index,
-        direction,
-        element: targets[Math.trunc(slot / properties.length)].name,
-        property: properties[slot % properties.length],
-        before: before[slot],
-        after: after[slot],
-      });
-    }
-  }
-  return differences;
-}
+const flowEnvironments = [
+  'horizontal-tb',
+  'vertical-rl',
+  'vertical-lr',
+].flatMap((writingMode) =>
+  ['ltr', 'rtl'].map((direction) => [writingMode, direction])
+);
 
 /**
  * Loads the oracle's elements into a fresh page.
@@ -114,14 +42,20 @@ export async function loadFixture(browser) {
 /**
  * Every place where Chromium computes a different style for a pair's output
  * than for its input, at most one per pair and environment, under screen and
- * print media and both directions.
+ * print media, each writing mode and each direction.
  *
  * @param {Browser} browser with the fixture loaded
  * @param {Pair[]} pairs
  * @return {Promise<BrowserDifference[]>}
  */
 export async function browserDifferences(browser, pairs) {
-  const argument = JSON.stringify({ pairs, directions: ['ltr', 'rtl'] });
+  // Vertical modes map logical sides to physical ones differently from the
+  // horizontal mode the oracle models.
+  const environments = flowEnvironments.map(([writingMode, direction]) => ({
+    writingMode,
+    direction,
+  }));
+  const argument = JSON.stringify({ pairs, environments });
   const differences = [];
   for (const media of ['screen', 'print']) {
     await browser.setMedia(media);
@@ -131,34 +65,112 @@ export async function browserDifferences(browser, pairs) {
   return differences;
 }
 
+// Cases the preset did not finish are skipped; a sweep that skips more than
+// this share of its cases checked too little to count as clean.
+export const maxSkippedShare = 0.02;
+
 /**
- * Runs preset-default on `cases` a chunk at a time and returns the first case
- * whose output Chromium styles differently from its input. Cases that don't
- * terminate are left to the oracle fuzzer, which reports them.
+ * Starts browsers with the fixture loaded. A page computes styles on one
+ * thread, so the sweep spreads chunks over several. A failed start closes the
+ * browsers that did start.
  *
- * @param {Browser} browser with the fixture loaded
+ * @param {string} executablePath
+ * @param {number} [size]
+ * @return {Promise<Browser[]>}
+ */
+export async function launchPool(
+  executablePath,
+  size = Math.min(8, availableParallelism())
+) {
+  const settled = await Promise.allSettled(
+    Array.from({ length: size }, async () => {
+      const browser = await launchChromium(executablePath);
+      try {
+        await loadFixture(browser);
+      } catch (error) {
+        await browser.close();
+        throw error;
+      }
+      return browser;
+    })
+  );
+  const browsers = settled.flatMap((r) =>
+    r.status === 'fulfilled' ? [r.value] : []
+  );
+  const failure = settled.find((r) => r.status === 'rejected');
+  if (failure) {
+    await closePool(browsers);
+    throw failure.reason;
+  }
+  return browsers;
+}
+
+/**
+ * @param {Browser[]} browsers
+ * @return {Promise<void>}
+ */
+export async function closePool(browsers) {
+  await Promise.all(browsers.map((browser) => browser.close()));
+}
+
+/**
+ * Runs preset-default on `cases` a chunk at a time and finds the first case
+ * whose output Chromium styles differently from its input. Browsers take
+ * chunks concurrently, since a page computes styles on one thread. Cases that
+ * don't terminate are skipped and counted; the oracle fuzzer reports them.
+ *
+ * @param {Browser | Browser[]} browsers with the fixture loaded
  * @param {{css: string}[]} cases
  * @param {number} [chunkSize]
- * @return {Promise<(BrowserDifference & Pair) | undefined>}
+ * @return {Promise<{difference: (BrowserDifference & Pair) | undefined, checked: number, skipped: number}>}
  */
-export async function firstBrowserDifference(browser, cases, chunkSize = 100) {
-  for (let start = 0; start < cases.length; start += chunkSize) {
-    const chunk = cases.slice(start, start + chunkSize).map((item) => item.css);
-    const results = processBatched(chunk, { pluginUrl: presetUrl });
-    const indices = [];
-    const pairs = [];
-    for (const [offset, input] of chunk.entries()) {
-      const output = results.get(input)?.css;
-      if (output === undefined) continue;
-      indices.push(start + offset);
-      pairs.push({ input, output });
-    }
-    const [first] = await browserDifferences(browser, pairs);
-    if (first) {
-      return { ...first, ...pairs[first.index], index: indices[first.index] };
-    }
-  }
-  return undefined;
+export async function browserSweep(browsers, cases, chunkSize = 100) {
+  const pool = Array.isArray(browsers) ? browsers : [browsers];
+  const chunkCount = Math.ceil(cases.length / chunkSize);
+  let next = 0;
+  let stop = false;
+  let processed = 0;
+  let skipped = 0;
+  /** @type {((BrowserDifference & Pair) | undefined)[]} */
+  const found = [];
+  await Promise.all(
+    pool.map(async (browser) => {
+      // Workers claim chunks in index order, so every chunk before a claimed
+      // one is claimed too, and the lowest `found` entry is the earliest case.
+      while (!stop && next < chunkCount) {
+        const start = next++ * chunkSize;
+        const chunk = cases
+          .slice(start, start + chunkSize)
+          .map((item) => item.css);
+        // The preset runs only for chunks a worker reaches, so a difference
+        // found early spares the rest.
+        const results = processBatched(chunk, { pluginUrl: presetUrl });
+        const indices = [];
+        const pairs = [];
+        for (const [offset, input] of chunk.entries()) {
+          const output = results.get(input)?.css;
+          if (output === undefined) {
+            skipped++;
+            continue;
+          }
+          indices.push(start + offset);
+          pairs.push({ input, output });
+        }
+        processed += chunk.length;
+        const [first] = await browserDifferences(browser, pairs);
+        if (!first) continue;
+        stop = true;
+        found[start / chunkSize] = {
+          ...first,
+          ...pairs[first.index],
+          index: indices[first.index],
+        };
+      }
+    })
+  );
+  // Chunks finish out of order; report the earliest case, as a serial run would.
+  const difference = found.find(Boolean);
+  return { difference, checked: processed - skipped, skipped };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -173,14 +185,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   });
   const cases = generateFamilyCases(seed, count);
   assertFamilyCoverage(cases);
-  const browser = await launchChromium(executablePath);
-  let difference;
+  const browsers = await launchPool(executablePath);
+  let sweep;
   try {
-    await loadFixture(browser);
-    difference = await firstBrowserDifference(browser, cases);
+    sweep = await browserSweep(browsers, cases);
   } finally {
-    await browser.close();
+    await closePool(browsers);
   }
+  const { difference, skipped } = sweep;
   if (difference) {
     const { index, input, output, ...where } = difference;
     console.error(
@@ -189,5 +201,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     );
     process.exit(FAILURE_EXIT_CODE);
   }
-  console.log(`${cases.length} family stylesheets, seed ${seed}, clean`);
+  if (skipped > cases.length * maxSkippedShare) {
+    console.error(
+      `seed=${seed} ${skipped} of ${cases.length} cases were skipped; too few were checked`
+    );
+    process.exit(FAILURE_EXIT_CODE);
+  }
+  console.log(
+    `${cases.length} family stylesheets, seed ${seed}, clean (${skipped} skipped)`
+  );
 }
