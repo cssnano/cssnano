@@ -7,6 +7,7 @@ const {
   asciiLowerCase,
   balancedTokens,
   decoded,
+  isSubstitutionFunction,
   lengthUnits,
   tokenEnd,
 } = cssnanoUtils;
@@ -65,18 +66,10 @@ function skipTrivia(input, start) {
   return index;
 }
 
-// Functions whose result is substituted at computed-value time, so the
-// shorthand cannot be split into components statically. Custom functions
-// (`--name()`) are substitution functions too.
-const substitutionFunctions = new Set(['var', 'env', 'attr', 'if', 'inherit']);
-
 /** @param {CSSToken} token */
 function isSubstitution(token) {
   if (token[0] !== TokenType.Function) return false;
-  const name = decoded(token);
-  return (
-    name.startsWith('--') || substitutionFunctions.has(asciiLowerCase(name))
-  );
+  return isSubstitutionFunction(asciiLowerCase(decoded(token)));
 }
 
 /**

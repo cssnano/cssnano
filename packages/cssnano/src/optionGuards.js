@@ -92,7 +92,29 @@ export function isPluginEntries(value) {
         typeof entry[0] === 'function' &&
         isString(entry[1]) &&
         isRecord(entry[2]) &&
-        isStringList(entry[2].optionKeys)
+        (entry[2].transforms === undefined
+          ? isStringList(entry[2].optionKeys)
+          : isTransformList(entry[2].transforms))
+    )
+  );
+}
+
+/**
+ * Whether a list of transforms has the names and option keys that the entry's
+ * settings need.
+ *
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function isTransformList(value) {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every(
+      (transform) =>
+        isRecord(transform) &&
+        isString(transform.name) &&
+        isStringList(transform.optionKeys)
     )
   );
 }

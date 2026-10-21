@@ -337,7 +337,7 @@ describe('cssnano config loading', () => {
     );
     assert.throws(() => cssnano(), {
       message:
-        'cssnano.config.js: "zindex" in disable is not a plugin that the preset runs.',
+        'cssnano.config.js: "zindex" in disable is not a transform that the preset runs.',
     });
   });
 

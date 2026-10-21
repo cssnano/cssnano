@@ -6,6 +6,8 @@ import isAnonymousLayer from './isAnonymousLayer.js';
 import isCSSWhitespace from './isCSSWhitespace.js';
 import isHexDigitCode from './isHexDigitCode.js';
 import isImportantComment from './isImportantComment.js';
+import vendorUnprefixed from './vendorUnprefixed.js';
+import { isSubstitutionFunction } from './substitution.js';
 import { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens } from './value.js';
 /** @param {string} value @return {string} */
 declare function asciiLowerCase(value: string): string;
@@ -19,6 +21,8 @@ declare const moduleExports: {
     isCSSWhitespace: typeof isCSSWhitespace;
     isHexDigitCode: typeof isHexDigitCode;
     isImportantComment: typeof isImportantComment;
+    vendorUnprefixed: typeof vendorUnprefixed;
+    isSubstitutionFunction: typeof isSubstitutionFunction;
     TokenType: typeof TokenType;
     applyEdits: typeof applyEdits;
     asciiLowerCase: typeof asciiLowerCase;

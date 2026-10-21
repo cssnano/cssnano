@@ -10,17 +10,15 @@ import postcssMinifyParams from '#postcss-minify-params';
 import postcssNormalizeCharset from '#postcss-normalize-charset';
 import postcssMinifyFontValues from '#postcss-minify-font-values';
 import postcssNormalizeUrl from '#postcss-normalize-url';
-import postcssDiscardDuplicates from '#postcss-discard-duplicates';
 import postcssDiscardOverridden from '#postcss-discard-overridden';
 import postcssNormalizeRepeatStyle from '#postcss-normalize-repeat-style';
-import postcssMergeRules from '#postcss-merge-rules';
 import postcssUniqueSelectors from '#postcss-unique-selectors';
 import postcssNormalizeString from '#postcss-normalize-string';
 import postcssNormalizePositions from '#postcss-normalize-positions';
 import postcssNormalizeUnicode from '#postcss-normalize-unicode';
 import postcssNormalizeDisplayValues from '#postcss-normalize-display-values';
 import postcssNormalizeTimingFunctions from '#postcss-normalize-timing-functions';
-import postcssMergeLonghand from '#postcss-merge-longhand';
+import mergePass from '../passes/merge/index.js';
 import {
   discardCommentsEntry,
   discardEmptyEntry,
@@ -57,22 +55,27 @@ import {
  * @property {Record<string, never>} [normalizeWhitespace] Removes whitespace and line breaks that are not needed. Takes no options.
  * @property {Record<string, never>} [mergeLonghand] Merges longhand properties into shorthands that the browser targets support. Takes no options.
  * @property {Record<string, never>} [discardDuplicates] Discards duplicate rules. Takes no options.
- * @property {import('#postcss-merge-rules').Options} [mergeRules] Merges adjacent rules that share a selector or declaration.
+ * @property {Record<string, never>} [mergeRules] Merges adjacent rules that share a selector or declaration. Takes no options.
  * @property {Record<string, never>} [discardEmpty] Discards empty rules and declarations. Takes no options.
  * @property {Record<string, never>} [uniqueSelectors] Removes duplicate selectors from a selector list. Takes no options.
  * @property {Record<string, never>} [rawCache] Records the raw formatting of the output on the root, for later plugins to reuse. Takes no options.
  */
 
 /**
- * Merge-longhand reads the browser targets, and only the default preset runs it.
+ * The merge transforms run in one pass. Merging rules can bring a declaration
+ * and its override into one rule, which the second longhand round then cleans up.
+ * The longhand and rule transforms read the browser targets; deduplication does not.
  */
-const mergeLonghandEntry = /** @type {const} */ ([
-  postcssMergeLonghand,
-  'mergeLonghand',
+const mergeEntry = /** @type {const} */ ([
+  mergePass,
+  'merge',
   {
-    postcssPlugin: 'postcss-merge-longhand',
-    targets: true,
-    optionKeys: [],
+    postcssPlugin: 'cssnano-merge',
+    transforms: [
+      { name: 'mergeLonghand', targets: true, optionKeys: [] },
+      { name: 'discardDuplicates', optionKeys: [] },
+      { name: 'mergeRules', targets: true, optionKeys: [] },
+    ],
   },
 ]);
 
@@ -235,19 +238,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     { postcssPlugin: 'postcss-normalize-positions', optionKeys: [] },
   ],
   normalizeWhitespaceEntry,
-  mergeLonghandEntry,
-  [
-    postcssDiscardDuplicates,
-    'discardDuplicates',
-    { postcssPlugin: 'postcss-discard-duplicates', optionKeys: [] },
-  ],
-  [
-    postcssMergeRules,
-    'mergeRules',
-    { postcssPlugin: 'postcss-merge-rules', targets: true, optionKeys: [] },
-  ],
-  // Merging rules can bring a declaration and its override into one rule
-  mergeLonghandEntry,
+  mergeEntry,
   discardEmptyEntry,
   [
     postcssUniqueSelectors,

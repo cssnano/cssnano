@@ -124,7 +124,7 @@ export function withRevisionPackage(rev, run) {
  * @param {string} path Repository-relative path
  * @return {boolean}
  */
-function hasTree(rev, path) {
+export function hasTree(rev, path) {
   return (
     spawnSync('git', ['cat-file', '-e', `${rev}:${path}`], { cwd: root })
       .status === 0
@@ -137,7 +137,7 @@ function hasTree(rev, path) {
  * @param {string} destination
  * @param {string[]} [entries] Limits the extraction to these children
  */
-function extractTree(rev, path, destination, entries = []) {
+export function extractTree(rev, path, destination, entries = []) {
   const archive = spawnSync(
     'git',
     ['archive', '--format=tar', `${rev}:${path}`, ...entries],

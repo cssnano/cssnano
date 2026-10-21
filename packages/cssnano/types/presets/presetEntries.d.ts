@@ -1,3 +1,5 @@
+/** @import {PluginEntrySettings, TransformSettings} from './configurePlugins.js' */
+import type { PluginEntrySettings, TransformSettings } from './configurePlugins.js';
 /**
  * The key that a built-in preset function carries, holding the plugins that it
  * runs. cssnano reads it from the function the user imported, so no table of
@@ -47,4 +49,13 @@ export declare const defaultPluginNames: readonly ['discardComments', 'minifyGra
  * list equal to the advanced preset's own.
  */
 export declare const advancedOnlyPluginNames: readonly ['discardUnused', 'mergeIdents', 'reduceIdents', 'zindex'];
+/**
+ * The transforms that an entry hosts. An entry without a list hosts one, named
+ * by the entry's own name and configured by its settings.
+ *
+ * @param {string} name the entry's name
+ * @param {PluginEntrySettings} settings
+ * @returns {readonly TransformSettings[]}
+ */
+export declare function transformsOf(name: string, settings: PluginEntrySettings): readonly TransformSettings[];
 //# sourceMappingURL=presetEntries.d.ts.map

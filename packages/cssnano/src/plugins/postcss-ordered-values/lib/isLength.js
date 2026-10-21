@@ -1,9 +1,9 @@
 import cssnanoUtils from '#utils';
-import vendorUnprefixed from './vendorUnprefixed.js';
 import { parseMath } from './isTime.js';
 import { isDimension, isFunction, isNumber, name } from './tokenize.js';
 
-const { asciiLowerCase, lengthUnits, mathFunctions } = cssnanoUtils;
+const { asciiLowerCase, lengthUnits, mathFunctions, vendorUnprefixed } =
+  cssnanoUtils;
 
 /**
  * The lowercased CSS length unit of a single-token dimension, or null when

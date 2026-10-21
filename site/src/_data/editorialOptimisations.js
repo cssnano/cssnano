@@ -41,8 +41,9 @@ export const editorialOptimisations =
       outputExample: '/*! license */\n.box {\n    color: red;\n}\n',
     },
     {
-      plugin: 'postcss-discard-duplicates',
+      plugin: 'cssnano-merge',
       shortName: 'discardDuplicates',
+      option: 'discardDuplicates',
       shortDescription:
         'Discard duplicate rules in your CSS files with PostCSS.',
       longDescription:
@@ -96,8 +97,9 @@ export const editorialOptimisations =
         '@keyframes fadeOut {\n    from {\n        opacity: 1;\n    }\n    to {\n        opacity: 0;\n    }\n}\n.box {\n    animation-name: fadeOut;\n}\n',
     },
     {
-      plugin: 'postcss-merge-longhand',
+      plugin: 'cssnano-merge',
       shortName: 'mergeLonghand',
+      option: 'mergeLonghand',
       shortDescription:
         'Merge longhand properties into shorthand with PostCSS.',
       longDescription:
@@ -107,8 +109,9 @@ export const editorialOptimisations =
       outputExample: '.box {\n    margin: 10px 20px;\n}\n',
     },
     {
-      plugin: 'postcss-merge-rules',
+      plugin: 'cssnano-merge',
       shortName: 'mergeRules',
+      option: 'mergeRules',
       shortDescription: 'Merge CSS rules with PostCSS.',
       longDescription:
         'Merges rules by selectors & overlapping property/value pairs. Rules with the same selector, and `@media`, `@supports` or `@container` blocks with the same condition, also merge across rules in between that set none of the same properties.\n',

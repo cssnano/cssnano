@@ -1,5 +1,4 @@
 import cssnanoUtils from '#utils';
-import vendorUnprefixed from '../lib/vendorUnprefixed.js';
 import { classifyMathLength, isLength } from '../lib/isLength.js';
 import {
   isFunction,
@@ -11,7 +10,7 @@ import {
   serializeArguments,
 } from '../lib/tokenize.js';
 
-const { mathFunctions } = cssnanoUtils;
+const { mathFunctions, vendorUnprefixed } = cssnanoUtils;
 
 // Color-producing functions per CSS Color 4/5. Anything else is not a
 // <color> value and must not be reordered as one.

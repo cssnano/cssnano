@@ -7,7 +7,9 @@ import flexFlow from './rules/flexFlow.js';
 import transition from './rules/transition.js';
 import listStyle from './rules/listStyle.js';
 import column from './rules/columns.js';
-import vendorUnprefixed from './lib/vendorUnprefixed.js';
+import cssnanoUtils from '#utils';
+
+const { vendorUnprefixed } = cssnanoUtils;
 
 /** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
 const borderProcessor = (parsed) => border(parsed.terms);

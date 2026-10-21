@@ -24,11 +24,28 @@ describe('built presets return plugins', () => {
     );
   });
 
-  test('disable leaves a plugin that the preset runs twice out of both runs', () => {
+  test('disabling one merge transform keeps the cssnano-merge pass for the others', () => {
+    for (const transform of [
+      'mergeLonghand',
+      'discardDuplicates',
+      'mergeRules',
+    ]) {
+      assert.ok(
+        names(defaultPreset({ disable: [transform] })).includes(
+          'cssnano-merge'
+        ),
+        transform
+      );
+    }
+  });
+
+  test('disabling every merge transform leaves the cssnano-merge pass out', () => {
     assert.ok(
-      !names(defaultPreset({ disable: ['mergeLonghand'] })).includes(
-        'postcss-merge-longhand'
-      )
+      !names(
+        defaultPreset({
+          disable: ['mergeLonghand', 'discardDuplicates', 'mergeRules'],
+        })
+      ).includes('cssnano-merge')
     );
   });
 

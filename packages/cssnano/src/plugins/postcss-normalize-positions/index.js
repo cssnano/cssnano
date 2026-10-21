@@ -4,6 +4,7 @@ const {
   TokenType,
   asciiLowerCase,
   decoded,
+  isSubstitutionFunction,
   mathFunctions,
   tokenEnd,
   tokenStart,
@@ -25,17 +26,6 @@ const sides = new Map([
   ['top', { axis: 'y', offset: '0' }],
   ['bottom', { axis: 'y', offset: '100%' }],
   ['center', { axis: 'center', offset: '50%' }],
-]);
-/* Arbitrary substitution functions (CSS Values 5) may supply any number of
- * position terms, so the layer around them has no known shape. Dashed
- * function names are custom functions, which substitute the same way. */
-const substitutionFunctions = new Set([
-  'var',
-  'env',
-  'constant',
-  'attr',
-  'if',
-  'inherit',
 ]);
 /* Every value that can change contains a side keyword, possibly escaped. This
  * is a conservative shortcut before tokenizing, not a parse. */
@@ -60,7 +50,7 @@ const propFilterRegex =
 function isSubstitution(token) {
   if (token[0] !== TokenType.Function) return false;
   const name = lowerName(token);
-  return substitutionFunctions.has(name) || name.startsWith('--');
+  return isSubstitutionFunction(name);
 }
 
 /**

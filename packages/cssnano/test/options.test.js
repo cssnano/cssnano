@@ -148,19 +148,19 @@ describe('unknown items', () => {
 
   test('throws for a misspelled plugin name in disable', () => {
     assert.throws(() => validate({ disable: ['colorMin'] }), {
-      message: '"colorMin" in disable is not a plugin that the preset runs.',
+      message: '"colorMin" in disable is not a transform that the preset runs.',
     });
   });
 
   test('throws for a misspelled plugin name in options', () => {
     assert.throws(() => validate({ options: { colorMin: {} } }), {
-      message: '"colorMin" in options is not a plugin that the preset runs.',
+      message: '"colorMin" in options is not a transform that the preset runs.',
     });
   });
 
   test('throws for a plugin in disable that only the advanced preset runs, when the default preset runs', () => {
     assert.throws(() => validate({ disable: ['zindex'] }), {
-      message: '"zindex" in disable is not a plugin that the preset runs.',
+      message: '"zindex" in disable is not a transform that the preset runs.',
     });
   });
 
@@ -185,13 +185,16 @@ describe('unknown items', () => {
           'inline',
           'lite'
         ),
-      { message: '"colormin" in options is not a plugin that the preset runs.' }
+      {
+        message:
+          '"colormin" in options is not a transform that the preset runs.',
+      }
     );
   });
 
   test('throws for a plugin in disable that the lite preset does not run', () => {
     assert.throws(() => validate({ disable: ['zindex'] }, 'inline', 'lite'), {
-      message: '"zindex" in disable is not a plugin that the preset runs.',
+      message: '"zindex" in disable is not a transform that the preset runs.',
     });
   });
 

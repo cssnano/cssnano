@@ -15,7 +15,6 @@
  *   node util/uncoveredBranches.js packages/<pkg> [node --test args...]
  *
  * Examples:
- *   node util/uncoveredBranches.js packages/postcss-merge-longhand
  *   node util/uncoveredBranches.js packages/cssnano --test-name-pattern=config
  *   node util/uncoveredBranches.js packages/postcss-colormin --save-lcov=lcov.info
  *   node util/uncoveredBranches.js packages/cssnano/src/utils/stylehacks

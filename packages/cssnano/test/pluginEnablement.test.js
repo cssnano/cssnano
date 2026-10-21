@@ -50,7 +50,7 @@ describe('plugin enablement shared by every preset', () => {
     test(`${name}: a plugin that the preset does not have throws, because a misspelled name would otherwise go unnoticed`, () => {
       assert.throws(() => preset({ disable: ['notAPlugin'] }), {
         message:
-          '"notAPlugin" in disable is not a plugin that the preset runs.',
+          '"notAPlugin" in disable is not a transform that the preset runs.',
       });
     });
   }
