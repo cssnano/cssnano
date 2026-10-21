@@ -11,6 +11,7 @@ const {
   balancedTokens,
   decoded,
   mathFunctions,
+  sourceValue,
   TokenType,
   tokenEnd,
   tokenStart,
@@ -216,10 +217,7 @@ function pluginCreator(config = {}) {
               }
             }
 
-            const rawValue =
-              decl.raws.value?.value === decl.value
-                ? (decl.raws.value.raw ?? decl.value)
-                : decl.value;
+            const rawValue = sourceValue(decl);
 
             if (!rawValue) {
               return;

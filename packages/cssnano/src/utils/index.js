@@ -6,6 +6,7 @@ import isAnonymousLayer from './isAnonymousLayer.js';
 import isCSSWhitespace from './isCSSWhitespace.js';
 import isHexDigitCode from './isHexDigitCode.js';
 import isImportantComment from './isImportantComment.js';
+import { assignValue, sourceValue } from './declValue.js';
 import vendorUnprefixed from './vendorUnprefixed.js';
 import { isSubstitutionFunction } from './substitution.js';
 import {
@@ -31,9 +32,11 @@ function asciiLowerCase(value) {
   return value.replaceAll(/[A-Z]/gv, (character) => character.toLowerCase());
 }
 
-/** @type {{rawCache: typeof rawCache, isAnonymousLayer: typeof isAnonymousLayer, isCSSWhitespace: typeof isCSSWhitespace, isHexDigitCode: typeof isHexDigitCode, isImportantComment: typeof isImportantComment, vendorUnprefixed: typeof vendorUnprefixed, isSubstitutionFunction: typeof isSubstitutionFunction, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, numeric: typeof numeric, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
+/** @type {{rawCache: typeof rawCache, assignValue: typeof assignValue, sourceValue: typeof sourceValue, isAnonymousLayer: typeof isAnonymousLayer, isCSSWhitespace: typeof isCSSWhitespace, isHexDigitCode: typeof isHexDigitCode, isImportantComment: typeof isImportantComment, vendorUnprefixed: typeof vendorUnprefixed, isSubstitutionFunction: typeof isSubstitutionFunction, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, numeric: typeof numeric, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
 const cssnanoUtils = {
   rawCache,
+  assignValue,
+  sourceValue,
   isAnonymousLayer,
   isCSSWhitespace,
   isHexDigitCode,

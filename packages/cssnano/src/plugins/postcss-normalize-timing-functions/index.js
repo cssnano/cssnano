@@ -1,6 +1,7 @@
 import cssnanoUtils from '#utils';
 
-const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, assignValue, sourceValue } =
+  cssnanoUtils;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @type {(source: string) => {tokens: readonly CSSToken[], endForOpening(index: number): number | undefined, topLevelSegments(start: number, end: number): {startIndex: number, endIndex: number}[]} | undefined} */
 const getBalancedTokens = cssnanoUtils.balancedTokens;
@@ -115,10 +116,7 @@ function pluginCreator() {
       const cache = new Map();
 
       css.walkDecls(animationTransitionRegex, (decl) => {
-        const value =
-          decl.raws.value?.value === decl.value
-            ? (decl.raws.value.raw ?? decl.value)
-            : decl.value;
+        const value = sourceValue(decl);
 
         if (cache.has(value)) {
           assignValue(decl, cache.get(value));
@@ -135,11 +133,6 @@ function pluginCreator() {
   };
 }
 
-/** @param {import('postcss').Declaration} decl @param {string} value */
-function assignValue(decl, value) {
-  decl.value = value;
-  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
-}
 /** @type {true} */
 pluginCreator.postcss = true;
 const moduleExports = pluginCreator;

@@ -5,7 +5,7 @@ import { anyAffected } from '#utils/browser-bugs';
 
 /** @import { TokenUnicodeRange } from '@csstools/css-tokenizer' */
 
-const { asciiLowerCase } = cssnanoUtils;
+const { asciiLowerCase, assignValue, sourceValue } = cssnanoUtils;
 const unicodeRangePropertyRegex =
   /^[uU][nN][iI][cC][oO][dD][eE]-[rR][aA][nN][gG][eE]$/v;
 const maxCodePoint = 0x10ffff;
@@ -147,17 +147,6 @@ function transform(value, isLegacy = false) {
 }
 
 /**
- * @param {import('postcss').Declaration} decl
- * @param {string} value
- */
-function assignValue(decl, value) {
-  decl.value = value;
-  if (decl.raws.value?.raw) {
-    decl.raws.value = { raw: value, value };
-  }
-}
-
-/**
  * @typedef {object} Options
  */
 
@@ -186,10 +175,7 @@ function pluginCreator(/** @type {Options} */ opts = {}) {
          */
         OnceExit(css) {
           css.walkDecls(unicodeRangePropertyRegex, (decl) => {
-            const value =
-              decl.raws.value?.value === decl.value
-                ? (decl.raws.value.raw ?? decl.value)
-                : decl.value;
+            const value = sourceValue(decl);
 
             if (cache.has(value)) {
               const newValue = cache.get(value);

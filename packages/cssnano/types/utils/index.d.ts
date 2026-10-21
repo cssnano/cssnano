@@ -6,6 +6,7 @@ import isAnonymousLayer from './isAnonymousLayer.js';
 import isCSSWhitespace from './isCSSWhitespace.js';
 import isHexDigitCode from './isHexDigitCode.js';
 import isImportantComment from './isImportantComment.js';
+import { assignValue, sourceValue } from './declValue.js';
 import vendorUnprefixed from './vendorUnprefixed.js';
 import { isSubstitutionFunction } from './substitution.js';
 import { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens } from './value.js';
@@ -17,6 +18,8 @@ export type BugKey = import('./browserBugs.js').BugKey;
 /** @typedef {import('./browserBugs.js').BugKey} BugKey */
 declare const moduleExports: {
     rawCache: typeof rawCache;
+    assignValue: typeof assignValue;
+    sourceValue: typeof sourceValue;
     isAnonymousLayer: typeof isAnonymousLayer;
     isCSSWhitespace: typeof isCSSWhitespace;
     isHexDigitCode: typeof isHexDigitCode;
