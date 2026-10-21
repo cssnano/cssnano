@@ -52,6 +52,13 @@ function joinKey(node, joinRules, mergeState) {
  * rule: a later rule adds its selectors to the earlier one, and is removed,
  * when no node between them sets a property its declarations also set.
  *
+ * A block that moves down can unblock a pair of blocks it passed, which a
+ * forward pass has already visited, so blocks join again in a backward pass,
+ * then alternately forward and backward until a pass joins nothing. Rules join
+ * in the first pass alone: joining by selector can remove a declaration that
+ * would have merged more selectors, so the scan must see every rule before
+ * any join.
+ *
  * @param {Container} root
  * @param {MergeState} mergeState
  * @return {boolean} whether anything was joined
@@ -62,7 +69,15 @@ export function joinNonAdjacent(root, mergeState) {
   const { blocks } = mergeState;
   if (blocks.isSettled(root)) return false;
   const edits = blocks.edits;
-  let joined = joinInParent(root, mergeState);
+  let joined = joinInParent(root, mergeState, true);
+  // A forward pass resolves a chain of blocks that move up, and a backward
+  // pass a chain that moves down, each in one pass. A pass that joins nothing
+  // saw the tree unchanged, so a pass the other way would join nothing too.
+  for (let again = joined, backward = true; again; backward = !backward) {
+    again = backward
+      ? joinBlocksBackward(root, mergeState)
+      : joinInParent(root, mergeState, false);
+  }
   joined = joinByDeclarations(root, mergeState) || joined;
   for (const child of /** @type {ChildNode[]} */ (root.nodes)) {
     if (child.type === 'atrule' && child.nodes) {
@@ -91,12 +106,94 @@ function takePlaceOf(earlier, later) {
 }
 
 /**
+ * Joins blocks as `joinInParent` does, visiting them from last to first, so
+ * a block that moves down to its counterpart unblocks, in the same pass, the
+ * pairs it moved past. The write index sees positions mirrored, so "written
+ * after" means written before, in document order.
+ *
  * @param {Container} parent
  * @param {MergeState} mergeState
  * @return {boolean}
  */
-function joinInParent(parent, mergeState) {
-  const joinRules = !isKeyframes(parent);
+function joinBlocksBackward(parent, mergeState) {
+  // A snapshot, since joining removes nodes from the parent.
+  const nodes = /** @type {ChildNode[]} */ (parent.nodes).slice();
+  const last = nodes.length - 1;
+  const keys = nodes.map((node) => joinKey(node, false, mergeState));
+  const scan = new RepeatScan();
+  for (let position = last; position >= 0; position--) {
+    const key = keys[position];
+    if (key !== null) scan.see(key, last - position);
+  }
+  if (scan.start === Infinity) return false;
+
+  const { blocks } = mergeState;
+  const index = new LastWriteIndex(mergeState.properties);
+  const keysOf = mergeState.elementKeysOf;
+  /** @type {Map<string, {node: AtRule, position: number}>} */
+  const next = new Map();
+  let joined = false;
+  for (let position = last - scan.start; position >= 0; position--) {
+    const node = nodes[position];
+    const key = keys[position];
+    const later = key === null ? undefined : next.get(key);
+    let at = position;
+    if (later) {
+      const moved = joinBlock(
+        /** @type {AtRule} */ (node),
+        later.node,
+        last - later.position
+      );
+      if (moved === 'down') at = later.position;
+      joined ||= moved !== null;
+    }
+    if (key !== null) {
+      next.set(key, { node: /** @type {AtRule} */ (node), position: at });
+    }
+    if (at === position) index.recordNode(node, last - position, keysOf);
+  }
+  applyChildEdits(parent);
+  return joined;
+
+  /**
+   * @param {AtRule} earlier
+   * @param {AtRule} later
+   * @param {number} laterPosition the mirrored position of `later`
+   * @return {'up' | 'down' | null} where the joined block stands
+   */
+  function joinBlock(earlier, later, laterPosition) {
+    if (blocks.opaque(later)) return null;
+    if (
+      !index.conflictsSinceIn(blocks.declarations(later), laterPosition, keysOf)
+    ) {
+      invalidate(earlier);
+      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());
+      detach(later);
+      return 'up';
+    }
+    // The earlier block's content stays first, so source order is kept.
+    if (blocks.opaque(earlier)) return null;
+    const earlierDeclarations = blocks.declarations(earlier);
+    if (!index.conflictsSinceIn(earlierDeclarations, laterPosition, keysOf)) {
+      index.moveWrites(earlierDeclarations, laterPosition, keysOf);
+      invalidate(earlier);
+      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());
+      applyChildEdits(parent);
+      takePlaceOf(earlier, later);
+      return 'down';
+    }
+    return null;
+  }
+}
+
+/**
+ * @param {Container} parent
+ * @param {MergeState} mergeState
+ * @param {boolean} rules whether rules with the same selector join, or only blocks
+ * @return {boolean}
+ */
+function joinInParent(parent, mergeState, rules) {
+  const joinRules = rules && !isKeyframes(parent);
   // A snapshot, since joining removes nodes from the parent.
   const nodes = /** @type {ChildNode[]} */ (parent.nodes).slice();
   const keys = nodes.map((node) => joinKey(node, joinRules, mergeState));

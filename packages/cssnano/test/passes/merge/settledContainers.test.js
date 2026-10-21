@@ -16,13 +16,7 @@ import { joinNonAdjacent } from '../../../src/passes/merge/lib/rules/nonAdjacent
  */
 function mergeStateOf(root) {
   const context = createRunContext(root);
-  return new MergeState(
-    ['Chrome 120'],
-    new Map(),
-    new WeakSet(),
-    new WeakMap(),
-    context
-  );
+  return new MergeState(['Chrome 120'], context);
 }
 
 /**

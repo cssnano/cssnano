@@ -37,13 +37,7 @@ test('block table: a join that empties a rule leaves its at-rule summary equal t
   const context = createRunContext(root);
   try {
     const media = /** @type {AtRule} */ (root.first);
-    const mergeState = new MergeState(
-      ['Chrome 120'],
-      new Map(),
-      new WeakSet(),
-      new WeakMap(),
-      context
-    );
+    const mergeState = new MergeState(['Chrome 120'], context);
     assert.deepEqual(propsOf(context.blocks, media), ['color', 'color']);
     joinByDeclarations(media, mergeState);
     assert.equal(media.toString(), '@media print{a,b{color:red}}');

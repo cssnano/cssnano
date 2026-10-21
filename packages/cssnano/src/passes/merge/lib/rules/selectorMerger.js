@@ -3,26 +3,13 @@ import MergeState from './mergeState.js';
 import { joinNonAdjacent } from './nonAdjacentMerge.js';
 import runScan from './scan.js';
 
-/** @import {Rule} from 'postcss' */
-/** @import {RuleMeta} from './ruleMeta.js' */
-
 /**
  * @param {import('postcss').Root} root
  * @param {readonly string[]} browsers
- * @param {Map<string, import('./ensureCompatibility.js').SelectorInfo>} compatibilityCache
- * @param {WeakSet<Rule>} ruleCache
- * @param {WeakMap<Rule, RuleMeta>} ruleMeta
  * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
  * @return void
  */
-export default function runMerge(
-  root,
-  browsers,
-  compatibilityCache,
-  ruleCache,
-  ruleMeta,
-  context = createRunContext()
-) {
+export default function runMerge(root, browsers, context = createRunContext()) {
   // The scan runs first because a join by selector can remove a
   // shared declaration that would have merged more selectors. Its merges
   // can leave same-selector rules apart, so the joins repeat until none apply.
@@ -35,13 +22,7 @@ export default function runMerge(
   // rewrites add a node or withdraw a declaration, and at most N + D joins
   // remove a node or withdraw one. The bound on sweeps per round is open
   // (see `runScan`), so the cost of the whole loop is not bounded in N.
-  const mergeState = new MergeState(
-    browsers,
-    compatibilityCache,
-    ruleCache,
-    ruleMeta,
-    context
-  );
+  const mergeState = new MergeState(browsers, context);
   do {
     runScan(root, mergeState);
   } while (joinNonAdjacent(root, mergeState));

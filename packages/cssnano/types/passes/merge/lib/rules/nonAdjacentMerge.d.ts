@@ -20,6 +20,13 @@ import type MergeState from './mergeState.js';
  * rule: a later rule adds its selectors to the earlier one, and is removed,
  * when no node between them sets a property its declarations also set.
  *
+ * A block that moves down can unblock a pair of blocks it passed, which a
+ * forward pass has already visited, so blocks join again in a backward pass,
+ * then alternately forward and backward until a pass joins nothing. Rules join
+ * in the first pass alone: joining by selector can remove a declaration that
+ * would have merged more selectors, so the scan must see every rule before
+ * any join.
+ *
  * @param {Container} root
  * @param {MergeState} mergeState
  * @return {boolean} whether anything was joined

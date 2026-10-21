@@ -56,12 +56,7 @@ function stylesheet(seed, { comments = false, blocks = false } = {}) {
 /** @param {string} css */
 function groupsOf(css) {
   const root = postcss.parse(css);
-  const mergeState = new MergeState(
-    ['Chrome 120'],
-    new Map(),
-    new WeakSet(),
-    new WeakMap()
-  );
+  const mergeState = new MergeState(['Chrome 120']);
   const sequence = new RuleSequence(root);
   const outsideDeclarations = new WeakMap();
   const links = [];

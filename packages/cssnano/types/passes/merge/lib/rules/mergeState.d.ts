@@ -21,12 +21,9 @@ export default class MergeState {
     blocks: import('../../../ir/blockTable.js').BlockTable;
     /**
      * @param {readonly string[]} browsers
-     * @param {Map<string, import('./ensureCompatibility.js').SelectorInfo>} compatibilityCache
-     * @param {WeakSet<Rule>} ruleCache rules whose selectors are known to be compatible
-     * @param {WeakMap<Rule, RuleMeta>} ruleMeta
      * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
      */
-    constructor(browsers: readonly string[], compatibilityCache: Map<string, import('./ensureCompatibility.js').SelectorInfo>, ruleCache: WeakSet<Rule>, ruleMeta: WeakMap<Rule, RuleMeta>, context?: import('../../../ir/runContext.js').RunContext);
+    constructor(browsers: readonly string[], context?: import('../../../ir/runContext.js').RunContext);
     /**
      * @param {Rule} rule
      * @return {RuleMeta}

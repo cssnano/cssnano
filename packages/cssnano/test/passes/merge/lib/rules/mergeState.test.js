@@ -2,15 +2,12 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
+import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 
 const createState = () => {
-  const ruleMeta = new WeakMap();
-  const state = new MergeState(
-    ['chrome 120'],
-    new Map(),
-    new WeakSet(),
-    ruleMeta
-  );
+  const context = createRunContext();
+  const { ruleMeta } = context;
+  const state = new MergeState(['chrome 120'], context);
   return { state, ruleMeta };
 };
 
@@ -65,12 +62,7 @@ test('canMerge should still reject a pair with different vendor prefixes after o
 });
 
 test('canMerge should still reject a rule with an unsupported selector after it is marked compatible', () => {
-  const state = new MergeState(
-    ['ie 9'],
-    new Map(),
-    new WeakSet(),
-    new WeakMap()
-  );
+  const state = new MergeState(['ie 9']);
   const root = postcss.parse('a:has(b){color:red}c{color:red}');
   state.markCompatible(root.first);
   assert.equal(state.canMerge(root.first, root.last), false);

@@ -240,6 +240,37 @@ test(
   )
 );
 
+// As in picnic: each `display` block can move down to its `margin-left`
+// counterpart only once the `display` block after it has moved past.
+
+test(
+  'should join each block of a run with its counterpart in a later run once the block after it has moved down',
+  processCSS(
+    '@media (min-width:1px){.c1{display:none}}@media (min-width:2px){.c2{display:none}}@media (min-width:0){.d0{margin-left:1px}}@media (min-width:1px){.d1{margin-left:1px}}@media (min-width:2px){.d2{margin-left:1px}}',
+    '@media (min-width:0){.d0{margin-left:1px}}@media (min-width:1px){.c1{display:none}.d1{margin-left:1px}}@media (min-width:2px){.c2{display:none}.d2{margin-left:1px}}'
+  )
+);
+
+test(
+  // `.x` sets `display` after the first `display` block, which therefore
+  // cannot move down, and `.d0` sets `margin-left`, so `.d1` cannot move up.
+  'should not join a block of a run with its counterpart across a rule that sets the same property after the later blocks have joined',
+  processCSS(
+    '@media (min-width:1px){.c1{display:none}}.x{display:block}@media (min-width:2px){.c2{display:none}}@media (min-width:3px){.c3{display:none}}@media (min-width:0){.d0{margin-left:1px}}@media (min-width:1px){.d1{margin-left:1px}}@media (min-width:2px){.d2{margin-left:1px}}@media (min-width:3px){.d3{margin-left:1px}}',
+    '@media (min-width:1px){.c1{display:none}}.x{display:block}@media (min-width:0){.d0{margin-left:1px}}@media (min-width:1px){.d1{margin-left:1px}}@media (min-width:2px){.c2{display:none}.d2{margin-left:1px}}@media (min-width:3px){.c3{display:none}.d3{margin-left:1px}}'
+  )
+);
+
+test(
+  // `.c1` moves down to `.d1` but still sets `color` between the two
+  // `min-width:9px` blocks, so neither can move to the other.
+  'should not join two blocks across a block of a run that moved down between them',
+  processCSS(
+    '@media (min-width:9px){.q1{color:red}}@media (min-width:1px){.c1{display:none;color:green}}@media (min-width:2px){.c2{display:none}}@media (min-width:0){.d0{margin-left:1px}}@media (min-width:1px){.d1{margin-left:1px}}@media (min-width:2px){.d2{margin-left:1px}}@media (min-width:9px){.q2{color:blue}}',
+    '@media (min-width:9px){.q1{color:red}}@media (min-width:0){.d0{margin-left:1px}}@media (min-width:1px){.c1{display:none;color:green}.d1{margin-left:1px}}@media (min-width:2px){.c2{display:none}.d2{margin-left:1px}}@media (min-width:9px){.q2{color:blue}}'
+  )
+);
+
 test(
   'should join a third equal @media block upward into the block that an earlier down join placed',
   processCSS(
