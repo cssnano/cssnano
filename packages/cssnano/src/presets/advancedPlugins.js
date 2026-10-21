@@ -21,7 +21,9 @@ import { defaultPluginEntries } from './defaultPlugins.js';
 
 /**
  * The plugins the advanced preset adds to the default ones, each with the
- * preset option that enables it.
+ * preset option that enables it. Referenced only by the type tests.
+ *
+ * @lintignore
  */
 export const advancedPluginEntries = /** @type {const} */ ([
   [

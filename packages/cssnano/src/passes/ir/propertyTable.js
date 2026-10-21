@@ -58,7 +58,7 @@ export function resolveProperty(name) {
  * @param {string} name
  * @return {string[]}
  */
-export function longhandsOf(name) {
+function longhandsOf(name) {
   return entries.get(name)?.writes ?? [name];
 }
 
@@ -69,7 +69,7 @@ export function longhandsOf(name) {
  * @param {string} longhand
  * @return {{group: string, flowRelative: boolean} | undefined}
  */
-export function logicalSideOf(longhand) {
+function logicalSideOf(longhand) {
   const entry = entries.get(longhand);
   if (entry?.group === undefined) {
     return undefined;

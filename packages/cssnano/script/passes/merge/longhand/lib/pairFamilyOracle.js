@@ -49,7 +49,7 @@ import {
 const cssWideKeywords = new Set(['initial', 'unset', 'inherit']);
 
 /** @type {PairRow[]} */
-export const pairRows = [
+const pairRows = [
   // CSS Box Alignment 3. `grid-gap` and its legacy longhand names are aliases
   // of `gap`, `row-gap` and `column-gap` and share their cascade.
   {

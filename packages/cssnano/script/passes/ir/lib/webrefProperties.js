@@ -212,22 +212,6 @@ export function validate(data) {
 }
 
 /**
- * Maps only exist in memory; the generated file is JSON.
- *
- * @param {PropertyGroups} data
- * @return {string}
- */
-export function serialize(data) {
-  return serializeJson({
-    properties: data.properties,
-    aliases: Object.fromEntries(data.aliases),
-    shorthands: Object.fromEntries(data.shorthands),
-    logicalGroups: Object.fromEntries(data.logicalGroups),
-    flowRelative: data.flowRelative,
-  });
-}
-
-/**
  * One entry of the pass IR's property table. An entry is an alias, a
  * shorthand with the longhands it writes, or a longhand; a longhand in a
  * logical property group also names its group and side.

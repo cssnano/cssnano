@@ -11,12 +11,12 @@ const CANDIDATE = 'candidate';
 // Each look at an adaptive run uses a stricter level than its nominal one,
 // as in Pocock's group-sequential design, so a change at the margin is wrongly
 // decided in about 5% of runs.
-export const SUPERIORITY_CONFIDENCE_LEVEL = 0.99;
-export const EQUIVALENCE_CONFIDENCE_LEVEL = 0.98;
-export const RUNTIME_NON_REGRESSION_MARGIN = 1.1;
-export const ORDER_INTERACTION_THRESHOLD = 0.05;
+const SUPERIORITY_CONFIDENCE_LEVEL = 0.99;
+const EQUIVALENCE_CONFIDENCE_LEVEL = 0.98;
+const RUNTIME_NON_REGRESSION_MARGIN = 1.1;
+const ORDER_INTERACTION_THRESHOLD = 0.05;
 
-export function quantile(sorted, q) {
+function quantile(sorted, q) {
   if (!sorted.length)
     throw new RangeError('cannot calculate a quantile of no samples');
   if (!Number.isFinite(q) || q < 0 || q > 1) {
@@ -36,7 +36,7 @@ export function quantile(sorted, q) {
   return sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower);
 }
 
-export function mean(values) {
+function mean(values) {
   if (!values.length) return 0;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }

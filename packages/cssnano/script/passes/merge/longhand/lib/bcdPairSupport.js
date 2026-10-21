@@ -25,7 +25,7 @@ const extraKeywords = { gap: ['normal'] };
  *
  * @type {Record<string, { longhands: string[], keywords: string[] }>}
  */
-export const pairShorthands = Object.fromEntries(
+const pairShorthands = Object.fromEntries(
   pairFamilies
     .filter(({ supportKey }) => supportKey !== null)
     .map(({ shorthand, longhands }) => [

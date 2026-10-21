@@ -62,7 +62,7 @@ const environments = [
 // Values drawn from each family's alphabet, so that every shorthand and
 // longhand form of a family is generated with valid and nearly valid values.
 /** @type {[string, string[]][]} */
-export const familyProperties = [
+const familyProperties = [
   ['border-top-width', ['0', '1px', 'thick']],
   ['border-top-style', ['solid', 'none', 'dashed']],
   ['border-top-color', ['red', 'currentcolor']],

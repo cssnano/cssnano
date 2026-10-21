@@ -15,7 +15,7 @@ import {
  * positional queries argument. An unset path is the PostCSS from.
  */
 /** @type {Readonly<Record<string, Guard>>} */
-export const browserslistOptions = Object.freeze({
+const browserslistOptions = Object.freeze({
   query: {
     isValid: isQuery,
     expected: 'a non-empty string or a non-empty array of non-empty strings',
@@ -34,7 +34,7 @@ export const browserslistOptions = Object.freeze({
  * project config may load, so a user who writes one gets the reason.
  * @type {Readonly<Record<string, string>>}
  */
-export const refusedBrowserslistOptions = Object.freeze({
+const refusedBrowserslistOptions = Object.freeze({
   dangerousExtend: 'it would let a browserslist config extend any package.',
 });
 

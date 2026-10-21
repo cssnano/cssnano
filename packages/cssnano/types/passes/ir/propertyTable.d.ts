@@ -11,24 +11,6 @@ export declare function resolveProperty(name: string): {
     name: string;
     known: boolean;
 };
-/**
- * The longhands a known property sets. A longhand sets only itself.
- *
- * @param {string} name
- * @return {string[]}
- */
-export declare function longhandsOf(name: string): string[];
-/**
- * The logical property group a longhand belongs to, and whether it is
- * flow-relative, or undefined when it is in no group.
- *
- * @param {string} longhand
- * @return {{group: string, flowRelative: boolean} | undefined}
- */
-export declare function logicalSideOf(longhand: string): {
-    group: string;
-    flowRelative: boolean;
-} | undefined;
 export type PropertyKeys = {
     custom: true;
     key: string;

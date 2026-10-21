@@ -22,8 +22,6 @@ export declare function assertValid({ isValid, expected }: Guard, value: unknown
  */
 export declare const isAbsent: (value: unknown) => value is null | undefined;
 /** @param {unknown} value @returns {value is string} */
-export declare const isString: (value: unknown) => value is string;
-/** @param {unknown} value @returns {value is string} */
 export declare const isNonEmptyString: (value: unknown) => value is string;
 /** @param {unknown} value @returns {value is boolean} */
 export declare const isBoolean: (value: unknown) => value is boolean;

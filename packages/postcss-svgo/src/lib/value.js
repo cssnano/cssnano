@@ -20,16 +20,6 @@ function tokens(value, options) {
   return result;
 }
 
-/** @param {CSSToken} token @return {number} */
-function tokenStart(token) {
-  return token[2];
-}
-
-/** @param {CSSToken} token @return {number} */
-function tokenEnd(token) {
-  return token[3] + 1;
-}
-
 /**
  * Apply non-overlapping source edits. Invalid source bounds and overlaps fail
  * closed, preserving the complete input instead of a partial rewrite.
@@ -76,25 +66,6 @@ function applyEdits(source, edits) {
   return pieces.join('');
 }
 
-/** @param {CSSToken} token @return {{number: number, unit: string} | false} */
-function numeric(token) {
-  if (token[0] === TokenType.Number)
-    return {
-      number: /** @type {{value: number}} */ (token[4]).value,
-      unit: '',
-    };
-  if (token[0] === TokenType.Percentage)
-    return {
-      number: /** @type {{value: number}} */ (token[4]).value,
-      unit: '%',
-    };
-  if (token[0] === TokenType.Dimension) {
-    const value = /** @type {{value: number, unit: string}} */ (token[4]);
-    return { number: value.value, unit: value.unit };
-  }
-  return false;
-}
-
 /**
  * @param {TokenType} type
  * @return {TokenType | undefined}
@@ -111,20 +82,6 @@ function closeForOpening(type) {
     default:
       return undefined;
   }
-}
-
-/**
- * Reports whether a value ends in a backslash that begins an escape
- * sequence, as opposed to a backslash that is itself escaped.
- * @param {string} value
- * @return {boolean}
- */
-function endsWithEscapingBackslash(value) {
-  let i = value.length - 1;
-  while (i >= 0 && value.charCodeAt(i) === 92) {
-    i--;
-  }
-  return (value.length - 1 - i) % 2 === 1;
 }
 
 /**
@@ -212,15 +169,4 @@ function balancedTokens(source, options) {
   }
 }
 
-export {
-  TokenType,
-  applyEdits,
-  balancedTokens,
-  closeForOpening,
-  decoded,
-  endsWithEscapingBackslash,
-  numeric,
-  tokenEnd,
-  tokenStart,
-  tokens,
-};
+export { applyEdits, balancedTokens, decoded };
