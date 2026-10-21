@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { discardDeadDeclarations } from '../../../../../src/passes/merge/lib/longhand/decl/crossKindCoverage.js';
 import { BoxSupport } from '../../../../../src/passes/merge/lib/longhand/targetSupport.js';
+import { assertLinearTime } from '../linearTiming.js';
 
 const units = [
   'vw',
@@ -36,19 +37,23 @@ const units = [
 ];
 
 /**
- * Every value uses a different trio of newer units, so no later value is
- * parsed by every browser that parses an earlier one: each declaration is a
- * fallback that survives, and every later one is a candidate to cover it.
+ * Values draw on trios of newer units and vary their number once the trios
+ * run out, so each declaration is distinct and a fallback that survives, and
+ * every later one is a candidate to cover it.
  *
  * @param {number} size
  * @return {string}
  */
 function createCSS(size) {
   const values = [];
-  for (let a = 0; a < units.length; a++) {
-    for (let b = a + 1; b < units.length; b++) {
-      for (let c = b + 1; c < units.length && values.length < size; c++) {
-        values.push(`calc(1${units[a]} + 1${units[b]} + 1${units[c]})`);
+  for (let n = 1; values.length < size; n++) {
+    for (let a = 0; a < units.length && values.length < size; a++) {
+      for (let b = a + 1; b < units.length && values.length < size; b++) {
+        for (let c = b + 1; c < units.length && values.length < size; c++) {
+          values.push(
+            `calc(${n}${units[a]} + ${n}${units[b]} + ${n}${units[c]})`
+          );
+        }
       }
     }
   }
@@ -61,30 +66,19 @@ function createCSS(size) {
  * before it in the plugin does not hide its cost.
  *
  * @param {number} size
- * @return {number} best of two runs in milliseconds, so one GC pause does not decide
+ * @return {number} one run in milliseconds, parsing outside the timed span
  */
 function timeRun(size) {
   const css = createCSS(size);
   const support = new BoxSupport(['chrome 120']);
-  const run = () => {
-    const lane = /** @type {postcss.Declaration[]} */ (
-      /** @type {postcss.Rule} */ (postcss.parse(css).first).nodes
-    );
-    const start = performance.now();
-    discardDeadDeclarations(lane, support);
-    return performance.now() - start;
-  };
-  return Math.min(run(), run());
+  const lane = /** @type {postcss.Declaration[]} */ (
+    /** @type {postcss.Rule} */ (postcss.parse(css).first).nodes
+  );
+  const start = performance.now();
+  discardDeadDeclarations(lane, support);
+  return performance.now() - start;
 }
 
 test('discarding dead box declarations takes linear time as fallbacks accumulate', () => {
-  timeRun(500);
-  const small = timeRun(800);
-  const large = timeRun(1600);
-  // Doubling the input takes about two times as long for a linear pass and
-  // about four times as long for a quadratic one.
-  assert.ok(
-    large / small < 3,
-    `1600/800 time ratio ${(large / small).toFixed(2)}`
-  );
+  assertLinearTime(timeRun, 13000);
 });

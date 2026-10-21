@@ -1,20 +1,14 @@
-import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
 import { transformPlugin } from '#passes/merge';
+import { assertLinearTime, timeOneRun } from '../linearTiming.js';
 const plugin = transformPlugin('mergeRules');
 
 /**
  * @param {string} css
- * @return {number} best of two runs of the whole plugin in milliseconds, so one GC pause does not decide
+ * @return {number} one run of the whole plugin in milliseconds
  */
 function timePlugin(css) {
-  const run = () => {
-    const start = performance.now();
-    postcss([plugin()]).process(css, { from: undefined }).sync();
-    return performance.now() - start;
-  };
-  return Math.min(run(), run());
+  return timeOneRun(plugin, css);
 }
 
 /**
@@ -42,24 +36,13 @@ function alternatingShorthandAndLonghand(count) {
 }
 
 test('merging rules that repeat one longhand takes linear time as the rules grow', () => {
-  timePlugin(repeatedLonghands(2000));
-  const small = timePlugin(repeatedLonghands(1000));
-  const large = timePlugin(repeatedLonghands(2000));
-  // Doubling the input takes about two times as long for a linear pass and
-  // about four times as long for a quadratic one.
-  assert.ok(
-    large / small < 3,
-    `2000/1000 time ratio ${(large / small).toFixed(2)}`
-  );
+  assertLinearTime((size) => timePlugin(repeatedLonghands(size)), 6000);
 });
 
 test('merging rules that alternate a shorthand and its longhand takes linear time as the rules grow', () => {
-  timePlugin(alternatingShorthandAndLonghand(1000));
-  const small = timePlugin(alternatingShorthandAndLonghand(500));
-  const large = timePlugin(alternatingShorthandAndLonghand(1000));
-  assert.ok(
-    large / small < 3,
-    `1000/500 time ratio ${(large / small).toFixed(2)}`
+  assertLinearTime(
+    (size) => timePlugin(alternatingShorthandAndLonghand(size)),
+    5000
   );
 });
 
@@ -107,31 +90,16 @@ function laterRuleWithUnsharedNames(count) {
 }
 
 test('merging rules with distinct unknown names outside the shared declarations takes linear time as the rules grow', () => {
-  timePlugin(denseUnknownNames(250));
-  const small = timePlugin(denseUnknownNames(250));
-  const large = timePlugin(denseUnknownNames(500));
-  assert.ok(
-    large / small < 3,
-    `500/250 time ratio ${(large / small).toFixed(2)}`
-  );
+  assertLinearTime((size) => timePlugin(denseUnknownNames(size)), 5000);
 });
 
 test('merging rules when a later rule with all follows many distinct unknown names takes linear time as the rules grow', () => {
-  timePlugin(laterRuleWithAll(250));
-  const small = timePlugin(laterRuleWithAll(250));
-  const large = timePlugin(laterRuleWithAll(500));
-  assert.ok(
-    large / small < 3,
-    `500/250 time ratio ${(large / small).toFixed(2)}`
-  );
+  assertLinearTime((size) => timePlugin(laterRuleWithAll(size)), 5000);
 });
 
 test('merging rules when a later rule holds many distinct unshared unknown names takes linear time as the rules grow', () => {
-  timePlugin(laterRuleWithUnsharedNames(250));
-  const small = timePlugin(laterRuleWithUnsharedNames(250));
-  const large = timePlugin(laterRuleWithUnsharedNames(500));
-  assert.ok(
-    large / small < 3,
-    `500/250 time ratio ${(large / small).toFixed(2)}`
+  assertLinearTime(
+    (size) => timePlugin(laterRuleWithUnsharedNames(size)),
+    5000
   );
 });

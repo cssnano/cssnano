@@ -2,19 +2,15 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { transformPlugin } from '#passes/merge';
+import { assertLinearTime, timeOneRun } from '../linearTiming.js';
 const plugin = transformPlugin('discardDuplicates');
 
 /**
  * @param {string} css
- * @return {number} best of two runs of the whole plugin in milliseconds, so one GC pause does not decide
+ * @return {number} one run of the whole plugin in milliseconds
  */
 function timePlugin(css) {
-  const run = () => {
-    const start = performance.now();
-    postcss([plugin()]).process(css, { from: undefined }).sync();
-    return performance.now() - start;
-  };
-  return Math.min(run(), run());
+  return timeOneRun(plugin, css);
 }
 
 /**
@@ -133,23 +129,9 @@ test('discarding duplicate @media blocks scans the children of the stylesheet li
 });
 
 test('discarding duplicate @media blocks takes linear time as the count grows', () => {
-  timePlugin(distinctMediaBlocks(8000));
-  const small = timePlugin(distinctMediaBlocks(4000));
-  const large = timePlugin(distinctMediaBlocks(8000));
-  // Doubling the input takes about two times as long for a linear pass and
-  // about four times as long for a quadratic one.
-  assert.ok(
-    large / small < 3,
-    `8000/4000 time ratio ${(large / small).toFixed(2)}`
-  );
+  assertLinearTime((size) => timePlugin(distinctMediaBlocks(size)), 8000);
 });
 
 test('discarding duplicate declarations takes linear time as one rule grows', () => {
-  timePlugin(distinctColors(500));
-  const small = timePlugin(distinctColors(4000));
-  const large = timePlugin(distinctColors(8000));
-  assert.ok(
-    large / small < 3,
-    `8000/4000 time ratio ${(large / small).toFixed(2)}`
-  );
+  assertLinearTime((size) => timePlugin(distinctColors(size)), 48000);
 });
