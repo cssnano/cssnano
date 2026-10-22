@@ -1,8 +1,6 @@
 import { balancedStructure } from '../utils/value.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
 export type BalancedTokens = NonNullable<ReturnType<typeof balancedStructure>>;
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} BalancedTokens */
 /**
  * The working copy of one fold over a declaration value. Reads come from the
  * source text until the first edit. Tokens are built on first use, and a
