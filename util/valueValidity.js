@@ -77,6 +77,32 @@ export function invalidBecameValid(changes, supports) {
  * @type {Record<string, string>}
  */
 const syntheticCorpus = {
+  'postcss-reduce-transforms': [
+    'scale(1, 1)',
+    'scale(2, 2)',
+    'scale(2, 1)',
+    'scale(1, 2)',
+    'scale(1px, 1px)',
+    'scale(1%, 1%)',
+    'scale(1deg, 1)',
+    'scale3d(1, 1, 2)',
+    'scale3d(1, 1px, 2)',
+    'translate(10px, 0)',
+    'translate(0, 10px)',
+    'translate(0, 0)',
+    'translate(0deg, 10px)',
+    'translate(10px, 0deg)',
+    'translate(10px, 0foo)',
+    'translate3d(0, 0, 10px)',
+    'translate3d(0, 0%, 10px)',
+    'translate3d(0deg, 0, 10px)',
+    'rotate3d(1, 0, 0, 10deg)',
+    'rotate3d(0, 1, 0, 10deg)',
+    'rotate3d(1, 0, 0, 10)',
+    'rotate3d(1px, 0, 0, 10deg)',
+  ]
+    .map((value) => `a{transform:${value}}`)
+    .join('\n'),
   'postcss-normalize-timing-functions': [
     'cubic-bezier(0.25, 0.1, 0.25, 1)',
     'cubic-bezier(0, 0, 1, 1)',
@@ -151,7 +177,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const stageDir = join(root, 'packages', 'cssnano', 'src', 'plugins');
-  const stages = ['postcss-colormin', 'postcss-normalize-timing-functions'];
+  const stages = [
+    'postcss-reduce-transforms',
+    'postcss-colormin',
+    'postcss-normalize-timing-functions',
+  ];
   const browser = await launchChromium(executablePath);
   let failures = 0;
   try {
