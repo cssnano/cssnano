@@ -2,6 +2,7 @@ import type { AcceptedPlugin } from 'postcss';
 import type { NamedPreset } from './presetEntries.js';
 import type { SharedTargets } from '#utils/browser-targets';
 import type { Guard } from '../optionGuards.js';
+import type { StageDescriptor } from '../pipeline/host.js';
 export type PresetOptions<Plugins extends object> = {
     browserslist?: SharedTargets;
     /**
@@ -22,11 +23,12 @@ export type PluginEntrySettings = {
     guards?: Readonly<Record<string, Guard>>;
 };
 export type PluginCreator = import('postcss').PluginCreator<any>;
-export type PluginEntry = readonly [PluginCreator, string, PluginEntrySettings];
+export type PluginEntry = readonly [PluginCreator | StageDescriptor, string, PluginEntrySettings];
 /** @import {AcceptedPlugin} from 'postcss' */
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
+/** @import {Stage, StageDescriptor} from '../pipeline/host.js' */
 /**
  * The options of a built preset: the same as cssnano, without the preset and
  * the configuration file.
@@ -57,7 +59,10 @@ export type PluginEntry = readonly [PluginCreator, string, PluginEntrySettings];
  */
 /**
  * A plugin in a preset, the preset option that enables it, and its settings.
- * @typedef {readonly [PluginCreator, string, PluginEntrySettings]} PluginEntry
+ * The first element is either a PostCSS plugin creator, which runs as its own
+ * plugin, or a stage descriptor, which runs in a host plugin with the stages
+ * of the adjacent descriptors.
+ * @typedef {readonly [PluginCreator | StageDescriptor, string, PluginEntrySettings]} PluginEntry
  */
 /**
  * Turns the options of a built preset into the plugins it runs. A disabled
@@ -71,6 +76,8 @@ export declare function configurePlugins(entries: readonly PluginEntry[], option
 /**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
+ * Each run of adjacent enabled stage descriptors becomes one host plugin. A
+ * plugin creator that runs ends the run, so the stages keep their order.
  *
  * @param {readonly PluginEntry[]} entries
  * @param {Record<string, unknown>} known the validated options, without preset
