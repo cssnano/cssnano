@@ -1,3 +1,4 @@
+import { stageDescriptor } from '../../pipeline/host.js';
 import { tryMinifyColor } from './minifyColor.js';
 import cssnanoUtils from '#utils';
 import { supportsAll, targetsAreUnknown } from '#utils/browser-support';
@@ -215,6 +216,6 @@ function compileColormin(config, browsers) {
 }
 
 /** @type {import('../../pipeline/host.js').StageDescriptor} */
-const colormin = { targets: true, compile: compileColormin };
+const colormin = stageDescriptor({ targets: true, compile: compileColormin });
 
 export { colormin as default };

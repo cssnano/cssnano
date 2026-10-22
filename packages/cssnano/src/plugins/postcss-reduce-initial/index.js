@@ -1,3 +1,4 @@
+import { stageDescriptor } from '../../pipeline/host.js';
 import { supportsAll } from '#utils/browser-support';
 import fromInitial from './data/fromInitial.json' with { type: 'json' };
 import toInitial from './data/toInitial.json' with { type: 'json' };
@@ -85,6 +86,9 @@ function compileReduceInitial(options, browsers) {
 }
 
 /** @type {import('../../pipeline/host.js').StageDescriptor} */
-const reduceInitial = { targets: true, compile: compileReduceInitial };
+const reduceInitial = stageDescriptor({
+  targets: true,
+  compile: compileReduceInitial,
+});
 
 export { reduceInitial as default };

@@ -1,3 +1,4 @@
+import { stageDescriptor } from '../../pipeline/host.js';
 import {
   isTokenIdent,
   isTokenWhiteSpaceOrComment,
@@ -127,6 +128,6 @@ function displayStage() {
 }
 
 /** @type {import('../../pipeline/host.js').StageDescriptor} */
-const normalizeDisplayValues = { compile: () => displayStage };
+const normalizeDisplayValues = stageDescriptor({ compile: () => displayStage });
 
 export { normalizeDisplayValues as default };

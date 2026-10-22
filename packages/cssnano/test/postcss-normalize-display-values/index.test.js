@@ -226,7 +226,7 @@ test('should reduce a value that two declarations share and leave no raw behind'
   );
 });
 
-test('should ignore stale raw values on cache misses and hits', async () => {
+test('should ignore stale raw values on first and repeated values', async () => {
   const first = postcss.decl({ prop: 'display', value: 'block flow' });
   first.raws.value = { raw: 'inline flex', value: 'inline flex' };
   const second = postcss.decl({ prop: 'display', value: 'block flow' });

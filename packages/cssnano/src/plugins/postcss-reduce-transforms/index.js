@@ -1,3 +1,4 @@
+import { stageDescriptor } from '../../pipeline/host.js';
 import cssnanoUtils from '#utils';
 
 const {
@@ -303,6 +304,6 @@ function transformsStage() {
 }
 
 /** @type {import('../../pipeline/host.js').StageDescriptor} */
-const reduceTransforms = { compile: () => transformsStage };
+const reduceTransforms = stageDescriptor({ compile: () => transformsStage });
 
 export { reduceTransforms as default };
