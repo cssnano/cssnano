@@ -76,10 +76,10 @@ export const isStats = (value) =>
 
 /**
  * @param {unknown} value
- * @returns {boolean} whether the value is a stage descriptor, which has a build function
+ * @returns {boolean} whether the value is a stage descriptor, which has a compile function
  */
 const isStageDescriptor = (value) =>
-  isRecord(value) && typeof value.build === 'function';
+  isRecord(value) && typeof value.compile === 'function';
 
 /**
  * Whether a list has the entries that validateOptions reads: a plugin creator

@@ -1,4 +1,4 @@
-import type { Helpers, Plugin, Result, Root } from 'postcss';
+import type { Helpers, Plugin, Root } from 'postcss';
 import type { ValueBuffer } from '../values/valueBuffer.js';
 export type Reducer = (buffer: ValueBuffer) => void;
 export type ValueStage = {
@@ -9,7 +9,11 @@ export type PhaseStage = {
 };
 export type Stage = ValueStage | PhaseStage;
 export type StageDescriptor = {
-    build: (options: Record<PropertyKey, unknown>, result: Result) => Stage | null;
+    /**
+     * whether the stage reads the browser targets
+     */
+    targets?: boolean;
+    compile: (options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => (() => Stage) | null;
 };
 export type StageMember = {
     descriptor: StageDescriptor;
