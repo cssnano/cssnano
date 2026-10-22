@@ -9,7 +9,10 @@ import { hostPlugin } from '../../src/pipeline/host.js';
  */
 const hostOf = (...stages) =>
   hostPlugin(
-    stages.map((stage) => ({ descriptor: { build: () => stage }, options: {} }))
+    stages.map((stage) => ({
+      descriptor: { compile: () => () => stage },
+      options: {},
+    }))
   );
 
 /**
@@ -62,5 +65,69 @@ describe('a host plugin', () => {
       from: undefined,
     });
     assert.deepStrictEqual(seen, ['a', '.added']);
+  });
+});
+
+/** @param {{count: number, targets: unknown[]}} calls */
+const countingDescriptor = (calls, targets = false) => ({
+  targets,
+  compile(
+    /** @type {Record<PropertyKey, unknown>} */ _options,
+    /** @type {readonly string[] | undefined} */ resolved
+  ) {
+    calls.count += 1;
+    calls.targets.push(resolved);
+    return () => ({ run() {} });
+  },
+});
+
+describe('a host plugin compiling its stages', () => {
+  test('compiles a stage once for the same options over several stylesheets', async () => {
+    const calls = { count: 0, targets: [] };
+    const host = hostPlugin([
+      { descriptor: countingDescriptor(calls), options: {} },
+    ]);
+    const processor = postcss([host]);
+    await processor.process('a{}', { from: undefined });
+    await processor.process('b{}', { from: undefined });
+    assert.equal(calls.count, 1);
+  });
+
+  test('compiles again for another options object', async () => {
+    const calls = { count: 0, targets: [] };
+    const descriptor = countingDescriptor(calls);
+    await postcss([hostPlugin([{ descriptor, options: {} }])]).process('a{}', {
+      from: undefined,
+    });
+    await postcss([hostPlugin([{ descriptor, options: {} }])]).process('a{}', {
+      from: undefined,
+    });
+    assert.equal(calls.count, 2);
+  });
+
+  test('gives a stage that reads targets the same frozen targets for every stylesheet', async () => {
+    const calls = { count: 0, targets: [] };
+    const host = hostPlugin([
+      { descriptor: countingDescriptor(calls, true), options: {} },
+    ]);
+    const processor = postcss([host]);
+    await processor.process('a{}', { from: undefined });
+    await processor.process('b{}', { from: undefined });
+    assert.equal(calls.count, 1);
+    assert.ok(Object.isFrozen(calls.targets[0]));
+  });
+
+  test('starts a fresh stage for each stylesheet, so no state outlives a run', async () => {
+    let started = 0;
+    const descriptor = {
+      compile: () => () => {
+        started += 1;
+        return { run() {} };
+      },
+    };
+    const processor = postcss([hostPlugin([{ descriptor, options: {} }])]);
+    await processor.process('a{}', { from: undefined });
+    await processor.process('b{}', { from: undefined });
+    assert.equal(started, 2);
   });
 });
