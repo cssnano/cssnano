@@ -1,4 +1,3 @@
-import { resolveTargets } from '#utils/browser-targets';
 import { supportsAll } from '#utils/browser-support';
 import fromInitial from './data/fromInitial.json' with { type: 'json' };
 import toInitial from './data/toInitial.json' with { type: 'json' };
@@ -15,68 +14,77 @@ const defaultIgnoreProps = ignoreProps;
  */
 
 /**
- * @param {Options} options
- * @return {import('postcss').Plugin}
+ * One reducer per pair of replacements, so properties that are treated alike
+ * share it and their plan.
+ * @typedef {Map<string | null, Map<string | null, import('../../pipeline/host.js').Reducer>>} Reducers
  */
-function pluginCreator(options = {}) {
-  return {
-    postcssPlugin: 'postcss-reduce-initial',
 
-    /**
-     * @param {import('postcss').Result} result
-     */
-    prepare(result) {
-      const browsers = resolveTargets(options, result);
-
-      // A target without the initial keyword drops the declaration, so
-      // rewriting it to an explicit value would make it apply.
-      if (!supportsAll(browsers, 'css-initial-value')) {
-        return {};
+/**
+ * @param {Reducers} reducers
+ * @param {string | null} toKeyword the initial value of the property, which becomes `initial`
+ * @param {string | null} fromKeyword what `initial` becomes
+ * @return {import('../../pipeline/host.js').Reducer}
+ */
+function reducerFor(reducers, toKeyword, fromKeyword) {
+  let byFrom = reducers.get(toKeyword);
+  if (byFrom === undefined) {
+    byFrom = new Map();
+    reducers.set(toKeyword, byFrom);
+  }
+  let reducer = byFrom.get(fromKeyword);
+  if (reducer === undefined) {
+    reducer = (buffer) => {
+      const lower = buffer.text().toLowerCase();
+      if (toKeyword !== null && lower === toKeyword) {
+        buffer.replaceText(initial);
+      } else if (fromKeyword !== null && lower === initial) {
+        buffer.replaceText(fromKeyword);
       }
-      const ignoreProp = new Set(
-        defaultIgnoreProps.concat(/** @type {Options} */ (options).ignore || [])
-      );
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          css.walkDecls((decl) => {
-            const lowerCasedProp = decl.prop.toLowerCase();
-            if (ignoreProp.has(lowerCasedProp)) {
-              return;
-            }
+    };
+    byFrom.set(fromKeyword, reducer);
+  }
+  return reducer;
+}
 
-            if (
-              Object.hasOwn(toInitial, lowerCasedProp) &&
-              decl.value.toLowerCase() ===
-                toInitial[/** @type keyof typeof toInitial */ (lowerCasedProp)]
-            ) {
-              decl.value = initial;
-              return;
-            }
-
-            if (
-              decl.value.toLowerCase() !== initial ||
-              !fromInitial[
-                /** @type keyof typeof fromInitial */ (lowerCasedProp)
-              ]
-            ) {
-              return;
-            }
-
-            decl.value =
-              fromInitial[
-                /** @type keyof typeof fromInitial */ (lowerCasedProp)
-              ];
-          });
-        },
-      };
-    },
+/**
+ * Compiles the properties to leave alone. The stage does nothing when a
+ * browser target lacks the `initial` keyword.
+ *
+ * @param {Options} options
+ * @param {readonly string[] | undefined} browsers
+ * @return {(() => import('../../pipeline/host.js').ValueStage) | null}
+ */
+function compileReduceInitial(options, browsers) {
+  if (
+    !supportsAll(
+      /** @type {readonly string[]} */ (browsers),
+      'css-initial-value'
+    )
+  ) {
+    return null;
+  }
+  const ignoreProp = new Set(defaultIgnoreProps.concat(options.ignore || []));
+  return () => {
+    /** @type {Reducers} */
+    const reducers = new Map();
+    return {
+      forProperty(property) {
+        const lowerCasedProp = property.toLowerCase();
+        if (ignoreProp.has(lowerCasedProp)) return null;
+        const toKeyword = Object.hasOwn(toInitial, lowerCasedProp)
+          ? toInitial[/** @type keyof typeof toInitial */ (lowerCasedProp)]
+          : null;
+        const fromKeyword =
+          fromInitial[/** @type keyof typeof fromInitial */ (lowerCasedProp)] ||
+          null;
+        if (toKeyword === null && fromKeyword === null) return null;
+        return reducerFor(reducers, toKeyword, fromKeyword);
+      },
+    };
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @type {import('../../pipeline/host.js').StageDescriptor} */
+const reduceInitial = { targets: true, compile: compileReduceInitial };
+
+export { reduceInitial as default };

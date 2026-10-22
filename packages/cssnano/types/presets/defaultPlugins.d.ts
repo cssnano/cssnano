@@ -117,10 +117,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }], readonly [typeof postcssMinifyGradients, 'minifyGradients', {
     readonly postcssPlugin: 'postcss-minify-gradients';
     readonly optionKeys: readonly [];
-}], readonly [{
-    (options?: import("#postcss-reduce-initial").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'reduceInitial', {
+}], readonly [import("../pipeline/host.js").StageDescriptor, 'reduceInitial', {
     readonly postcssPlugin: 'postcss-reduce-initial';
     readonly targets: true;
     readonly optionKeys: readonly ['ignore'];
