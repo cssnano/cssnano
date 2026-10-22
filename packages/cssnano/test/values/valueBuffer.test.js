@@ -3,10 +3,7 @@ import assert from 'node:assert/strict';
 import { TokenType } from '@csstools/css-tokenizer';
 import { ValueTable } from '../../src/values/value.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
-import {
-  ident,
-  whitespace,
-} from '../../src/values/tokenConstructors.js';
+import { ident, whitespace } from '../../src/values/tokenConstructors.js';
 
 /**
  * A buffer over `text`, with the table that interns its results.
