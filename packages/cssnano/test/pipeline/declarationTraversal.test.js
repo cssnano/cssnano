@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { hostPlugin } from '../../src/pipeline/host.js';
+import { hostPlugin, stageDescriptor } from '../../src/pipeline/host.js';
 
 /**
  * A stage that gives each property the reducer that `select` returns for it.
@@ -21,7 +21,7 @@ function valueStage(select) {
 function hostOf(stages) {
   return hostPlugin(
     stages.map((stage) => ({
-      descriptor: { compile: () => () => stage },
+      descriptor: stageDescriptor({ compile: () => () => stage }),
       options: {},
     }))
   );

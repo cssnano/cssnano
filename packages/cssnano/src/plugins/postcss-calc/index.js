@@ -1,3 +1,4 @@
+import { stageDescriptor } from '../../pipeline/host.js';
 import reduceCalc from 'postcss-calc/reduce';
 import { parsedValueText } from '../../utils/parsedValueText.js';
 
@@ -88,6 +89,8 @@ function calcStage(options) {
 }
 
 /** @type {StageDescriptor} */
-const calc = { compile: (options) => () => calcStage(options) };
+const calc = stageDescriptor({
+  compile: (options) => () => calcStage(options),
+});
 
 export { calc as default };

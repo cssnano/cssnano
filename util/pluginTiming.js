@@ -107,17 +107,16 @@ function addingTimeTo(totals, label, run) {
  * A stage descriptor that times the reducers and the run of the stages it
  * compiles. A reducer keeps one wrapper, so plans still share.
  *
- * @param {{ targets?: boolean, compile: Function }} descriptor
+ * @param {{ start: Function }} descriptor
  * @param {string} name the preset option of the entry
  */
 function timedDescriptor(descriptor, name) {
   return {
-    targets: descriptor.targets,
-    compile(/** @type {unknown[]} */ ...args) {
-      const start = descriptor.compile(...args);
-      if (start === null) return null;
+    start(/** @type {unknown[]} */ ...args) {
+      const compiled = descriptor.start(...args);
+      if (compiled === null) return null;
       return () => {
-        const stage = start();
+        const stage = compiled();
         if (!('forProperty' in stage)) {
           return { run: addingTimeTo(stageTotals, name, stage.run) };
         }

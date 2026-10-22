@@ -9,8 +9,8 @@ function pluginProcessor(packageName, options) {
     `../../../packages/cssnano/src/plugins/${packageName}/index.js`
   );
   const stage = exported.default ?? exported;
-  // A stage descriptor runs as the host plugin it builds, as in the preset.
-  if ('compile' in stage) return postcss([oneStagePlugin(stage)(options)]);
+  // A stage descriptor, which is not a creator, runs as the host plugin it builds, as in the preset.
+  if (typeof stage !== 'function') return postcss([oneStagePlugin(stage)(options)]);
   return postcss([options === undefined ? stage : stage(options)]);
 }
 
