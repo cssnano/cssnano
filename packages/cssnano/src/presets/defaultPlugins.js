@@ -17,7 +17,7 @@ import postcssNormalizeString from '#postcss-normalize-string';
 import postcssNormalizePositions from '#postcss-normalize-positions';
 import postcssNormalizeUnicode from '#postcss-normalize-unicode';
 import postcssNormalizeDisplayValues from '#postcss-normalize-display-values';
-import postcssNormalizeTimingFunctions from '#postcss-normalize-timing-functions';
+import normalizeTimingFunctions from '#postcss-normalize-timing-functions';
 import mergePass, { rulesGuard } from '../passes/merge/index.js';
 import {
   discardCommentsEntry,
@@ -25,7 +25,6 @@ import {
   normalizeWhitespaceEntry,
   rawCacheEntry,
 } from './sharedPluginEntries.js';
-import { pluginStageDescriptor } from '../pipeline/host.js';
 
 /**
  * The options of each plugin in the default preset, keyed by the preset option
@@ -125,7 +124,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     },
   ],
   [
-    pluginStageDescriptor(postcssNormalizeTimingFunctions),
+    normalizeTimingFunctions,
     'normalizeTimingFunctions',
     { postcssPlugin: 'postcss-normalize-timing-functions', optionKeys: [] },
   ],
