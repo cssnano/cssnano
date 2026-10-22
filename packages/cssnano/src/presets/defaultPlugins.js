@@ -16,7 +16,7 @@ import postcssUniqueSelectors from '#postcss-unique-selectors';
 import postcssNormalizeString from '#postcss-normalize-string';
 import postcssNormalizePositions from '#postcss-normalize-positions';
 import postcssNormalizeUnicode from '#postcss-normalize-unicode';
-import postcssNormalizeDisplayValues from '#postcss-normalize-display-values';
+import normalizeDisplayValues from '#postcss-normalize-display-values';
 import normalizeTimingFunctions from '#postcss-normalize-timing-functions';
 import mergePass, { rulesGuard } from '../passes/merge/index.js';
 import {
@@ -97,7 +97,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     },
   ],
   [
-    postcssNormalizeDisplayValues,
+    normalizeDisplayValues,
     'normalizeDisplayValues',
     { postcssPlugin: 'postcss-normalize-display-values', optionKeys: [] },
   ],
