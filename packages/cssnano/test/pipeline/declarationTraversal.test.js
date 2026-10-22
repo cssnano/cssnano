@@ -65,7 +65,7 @@ describe('a value reducer in a host plugin', () => {
     assert.equal(css, 'a{color:red!;width:1px}');
   });
 
-  test('folds a value that several declarations share once for each declaration', async () => {
+  test('folds a value that several declarations of one property share only once', async () => {
     let calls = 0;
     await run(
       'a{color:red}b{color:red}c{color:red}',
@@ -76,7 +76,7 @@ describe('a value reducer in a host plugin', () => {
         }),
       ])
     );
-    assert.equal(calls, 3);
+    assert.equal(calls, 1);
   });
 
   test('folds a declaration with no reducer for its property not at all', async () => {
@@ -92,7 +92,7 @@ describe('a value reducer in a host plugin', () => {
     assert.deepEqual(seen, []);
   });
 
-  test('folds each declaration with a shared reducer, even when two of them have the same value', async () => {
+  test('folds a value of another property again, since each property has its own memo', async () => {
     const seen = [];
     // One reducer object for both properties, as forProperty returns for properties treated alike.
     const reducer = appending('!', seen);
@@ -100,7 +100,7 @@ describe('a value reducer in a host plugin', () => {
       'a{color:red;background:red;color:red}',
       hostOf([valueStage(() => reducer)])
     );
-    assert.deepEqual(seen, ['red', 'red', 'red']);
+    assert.deepEqual(seen, ['red', 'red']);
   });
 
   test('folds the same value separately for properties whose reducers run in another order', async () => {
