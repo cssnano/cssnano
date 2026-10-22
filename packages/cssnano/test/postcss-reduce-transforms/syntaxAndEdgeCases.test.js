@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import {
+  oneStagePlugin,
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-reduce-transforms/index.js';
+import reduceTransforms from '../../src/plugins/postcss-reduce-transforms/index.js';
+
+const plugin = oneStagePlugin(reduceTransforms);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

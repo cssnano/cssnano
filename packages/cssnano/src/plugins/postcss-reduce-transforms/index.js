@@ -3,11 +3,9 @@ import cssnanoUtils from '#utils';
 const {
   TokenType,
   asciiLowerCase,
-  assignValue,
   balancedTokens,
   decoded,
   numeric,
-  sourceValue,
   tokenEnd,
   tokenStart,
 } = cssnanoUtils;
@@ -284,37 +282,32 @@ function transform(value) {
   return result;
 }
 
-/** @return {import('postcss').Plugin} */
-function pluginCreator() {
+/**
+ * The stage for one run. It reads every property that ends in `transform`,
+ * and keeps its own cache of values.
+ *
+ * @return {import('../../pipeline/host.js').ValueStage}
+ */
+function transformsStage() {
+  const cache = new Map();
+  /** @type {import('../../pipeline/host.js').Reducer} */
+  const reduce = (buffer) => {
+    const text = buffer.text();
+    if (!text.includes('(')) return;
+    let out = cache.get(text);
+    if (out === undefined) {
+      out = transform(text);
+      cache.set(text, out);
+    }
+    if (out !== text) buffer.replaceText(out);
+  };
   return {
-    postcssPlugin: 'postcss-reduce-transforms',
-    prepare() {
-      const cache = new Map();
-      return {
-        OnceExit(css) {
-          css.walkDecls(transformPropertyRegex, (decl) => {
-            const value = sourceValue(decl);
-            if (!value) return;
-            if (!value.includes('(')) {
-              assignValue(decl, value);
-              cache.set(value, value);
-              return;
-            }
-            if (cache.has(value)) {
-              assignValue(decl, cache.get(value));
-              return;
-            }
-            const result = transform(value);
-            assignValue(decl, result);
-            cache.set(value, result);
-          });
-        },
-      };
-    },
+    forProperty: (property) =>
+      transformPropertyRegex.test(property) ? reduce : null,
   };
 }
 
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @type {import('../../pipeline/host.js').StageDescriptor} */
+const reduceTransforms = { compile: () => transformsStage };
+
+export { reduceTransforms as default };

@@ -1,6 +1,6 @@
 import postcssReduceInitial from '#postcss-reduce-initial';
 import postcssMinifyGradients from '#postcss-minify-gradients';
-import postcssReduceTransforms from '#postcss-reduce-transforms';
+import reduceTransforms from '#postcss-reduce-transforms';
 import postcssConvertValues from '#postcss-convert-values';
 import postcssCalc from 'postcss-calc';
 import colormin from '#postcss-colormin';
@@ -102,7 +102,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     { postcssPlugin: 'postcss-normalize-display-values', optionKeys: [] },
   ],
   [
-    postcssReduceTransforms,
+    reduceTransforms,
     'reduceTransforms',
     { postcssPlugin: 'postcss-reduce-transforms', optionKeys: [] },
   ],

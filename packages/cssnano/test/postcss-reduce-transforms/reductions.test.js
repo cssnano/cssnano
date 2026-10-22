@@ -1,6 +1,11 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-reduce-transforms/index.js';
+import {
+  oneStagePlugin,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
+import reduceTransforms from '../../src/plugins/postcss-reduce-transforms/index.js';
+
+const plugin = oneStagePlugin(reduceTransforms);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
