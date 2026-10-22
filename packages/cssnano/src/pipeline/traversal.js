@@ -6,14 +6,15 @@ import { sourceValue } from '../utils/declValue.js';
 /**
  * Runs the value stages of one run over the declarations of a stylesheet in a
  * single walk. Each declaration reads its source text, folds it through the
- * plan of its property, and writes the result only when it changed.
+ * plan of its property, and writes the result only when it changed. A value
+ * that reports a warning is not memoised, so each declaration reports it.
  *
  * @param {readonly ValueStage[]} stages in pipeline order
  * @returns {PhaseStage}
  */
 export function declarationTraversal(stages) {
   return {
-    run(root) {
+    run(root, helpers) {
       /** @type {Map<string, readonly Reducer[] | null>} */
       const plans = new Map();
       /**
@@ -48,7 +49,17 @@ export function declarationTraversal(stages) {
           const buffer = new ValueBuffer(text);
           for (const reducer of plan) reducer(buffer);
           result = buffer.finish();
-          memo.set(text, result);
+          const warnings = buffer.warnings();
+          if (warnings === undefined) {
+            memo.set(text, result);
+          } else {
+            for (const { message, plugin } of warnings) {
+              helpers.result.warn(
+                message,
+                plugin ? { plugin, node: decl } : { node: decl }
+              );
+            }
+          }
         }
         if (result !== text) {
           decl.value = result;
