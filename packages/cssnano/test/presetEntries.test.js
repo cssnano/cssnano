@@ -18,7 +18,7 @@ describe('plugin entries of the built-in presets', () => {
   for (const [name, preset] of Object.entries(presets)) {
     test(`the ${name} preset names the PostCSS plugin that each of its creator entries makes`, () => {
       for (const [creator, , settings] of preset[presetEntriesKey]) {
-        // A stage descriptor builds no PostCSS plugin of its own, so its name is not checked here.
+        // A stage entry builds no PostCSS plugin of its own, so its name is not checked here.
         if (typeof creator !== 'function') continue;
         assert.equal(settings.postcssPlugin, creator({}).postcssPlugin);
       }

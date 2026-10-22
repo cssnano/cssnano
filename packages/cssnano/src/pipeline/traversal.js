@@ -3,7 +3,8 @@ import { sourceValue } from '../utils/declValue.js';
 import { contextOf } from './context.js';
 
 /** @import {Container, Document} from 'postcss' */
-/** @import {PhaseStage, Reducer, ValueStage} from './host.js' */
+/** @import {Helpers, Root} from 'postcss' */
+/** @import {Reducer, Stage} from './host.js' */
 
 /**
  * What one run knows about a property: the reducers of its plan, or null when
@@ -13,7 +14,7 @@ import { contextOf } from './context.js';
  */
 
 /**
- * @param {readonly ValueStage[]} stages in pipeline order
+ * @param {readonly Stage[]} stages in pipeline order
  * @param {string} property
  * @returns {PropertyEntry}
  */
@@ -21,7 +22,7 @@ function propertyEntry(stages, property) {
   /** @type {Reducer[]} */
   const reducers = [];
   for (const stage of stages) {
-    const reducer = stage.forProperty(property);
+    const reducer = stage.forProperty?.(property) ?? null;
     if (reducer !== null) reducers.push(reducer);
   }
   return reducers.length > 0
@@ -36,8 +37,8 @@ function propertyEntry(stages, property) {
  * changed. A value that reports a warning is not memoised, so each declaration
  * reports it.
  *
- * @param {readonly ValueStage[]} stages in pipeline order
- * @returns {PhaseStage}
+ * @param {readonly Stage[]} stages in pipeline order
+ * @returns {{run: (root: Root, helpers: Helpers) => void}}
  */
 export function declarationTraversal(stages) {
   return {

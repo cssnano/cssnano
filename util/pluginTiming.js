@@ -104,34 +104,29 @@ function addingTimeTo(totals, label, run) {
 }
 
 /**
- * A stage descriptor that times the reducers and the run of the stages it
- * compiles. A reducer keeps one wrapper, so plans still share.
+ * A stage entry that times the reducers and the run of the stages it creates.
+ * A reducer keeps one wrapper, so plans still share.
  *
- * @param {{ start: Function }} descriptor
+ * @param {{ create: Function }} entry
  * @param {string} name the preset option of the entry
  */
-function timedDescriptor(descriptor, name) {
+function timedEntry(entry, name) {
   return {
-    start(/** @type {unknown[]} */ ...args) {
-      const compiled = descriptor.start(...args);
-      if (compiled === null) return null;
-      return () => {
-        const stage = compiled();
-        if (!('forProperty' in stage)) {
-          return { run: addingTimeTo(stageTotals, name, stage.run) };
-        }
-        /** @type {Map<Function, Function>} */
-        const wrappers = new Map();
-        return {
-          forProperty(/** @type {string} */ property) {
-            const reducer = stage.forProperty(property);
-            if (reducer === null) return null;
-            if (!wrappers.has(reducer)) {
-              wrappers.set(reducer, addingTimeTo(stageTotals, name, reducer));
-            }
-            return wrappers.get(reducer);
-          },
-        };
+    create(/** @type {unknown[]} */ ...args) {
+      const stage = entry.create(...args);
+      if (stage === null) return null;
+      /** @type {Map<Function, Function>} */
+      const wrappers = new Map();
+      return {
+        forProperty(/** @type {string} */ property) {
+          const reducer = stage.forProperty?.(property) ?? null;
+          if (reducer === null) return null;
+          if (!wrappers.has(reducer)) {
+            wrappers.set(reducer, addingTimeTo(stageTotals, name, reducer));
+          }
+          return wrappers.get(reducer);
+        },
+        run: stage.run && addingTimeTo(stageTotals, name, stage.run),
       };
     },
   };
@@ -144,7 +139,7 @@ function timedDescriptor(descriptor, name) {
 function pluginsWithTimedStages() {
   const entries = /** @type {any[][]} */ (preset[presetEntriesKey]).map(
     ([first, name, settings]) => [
-      typeof first === 'function' ? first : timedDescriptor(first, name),
+      typeof first === 'function' ? first : timedEntry(first, name),
       name,
       settings,
     ]

@@ -7,8 +7,7 @@ import { defaultPluginEntries } from '../../../src/presets/defaultPlugins.js';
 const pluginsDirectory = new URL('../../../src/plugins/', import.meta.url);
 
 /**
- * A plugin resolves targets itself, or it is a stage descriptor that sets
- * `targets: true` and has the host resolve them.
+ * A plugin resolves targets itself, or it imports the browser-targets module.
  * @return {Promise<string[]>} directories of the plugins that resolve browser targets
  */
 async function pluginsThatResolveTargets() {
@@ -17,10 +16,7 @@ async function pluginsThatResolveTargets() {
     cwd: pluginsDirectory,
   })) {
     const source = await readFile(new URL(file, pluginsDirectory), 'utf8');
-    if (
-      /from\s*'#utils\/browser-targets'/v.test(source) ||
-      /\btargets:\s*true\b/v.test(source)
-    ) {
+    if (/from\s*'#utils\/browser-targets'/v.test(source)) {
       // Glob returns paths with the platform's separator.
       names.add(file.split(sep)[0]);
     }
@@ -33,8 +29,15 @@ test('the default preset marks exactly the plugins that resolve browser targets'
   const marked = defaultPluginEntries
     .filter(([, , settings]) => settings?.targets === true)
     .map(([, , settings]) => settings.postcssPlugin);
+  // The stage entries below take the targets the host resolves for them, so
+  // the scan above does not find them.
   assert.deepEqual(
     marked.toSorted(),
-    [...(await pluginsThatResolveTargets()), 'cssnano-merge'].toSorted()
+    [
+      ...(await pluginsThatResolveTargets()),
+      'cssnano-merge',
+      'postcss-colormin',
+      'postcss-reduce-initial',
+    ].toSorted()
   );
 });

@@ -113,27 +113,43 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }, "discardComments", {
     readonly postcssPlugin: 'postcss-discard-comments';
     readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
-}], readonly [import("../pipeline/host.js").StageDescriptor, 'minifyGradients', {
+}], readonly [{
+    create: () => {
+        forProperty: () => (buffer: import("../values/valueBuffer.js").ValueBuffer) => void;
+    };
+}, 'minifyGradients', {
     readonly postcssPlugin: 'postcss-minify-gradients';
     readonly optionKeys: readonly [];
-}], readonly [import("../pipeline/host.js").StageDescriptor, 'reduceInitial', {
+}], readonly [{
+    create: (options: import("#postcss-reduce-initial").Options, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage | null;
+}, 'reduceInitial', {
     readonly postcssPlugin: 'postcss-reduce-initial';
     readonly targets: true;
     readonly optionKeys: readonly ['ignore'];
-}], readonly [import("../pipeline/host.js").StageDescriptor, 'normalizeDisplayValues', {
+}], readonly [{
+    create: () => import("../pipeline/host.js").Stage;
+}, 'normalizeDisplayValues', {
     readonly postcssPlugin: 'postcss-normalize-display-values';
     readonly optionKeys: readonly [];
-}], readonly [import("../pipeline/host.js").StageDescriptor, 'reduceTransforms', {
+}], readonly [{
+    create: () => import("../pipeline/host.js").Stage;
+}, 'reduceTransforms', {
     readonly postcssPlugin: 'postcss-reduce-transforms';
     readonly optionKeys: readonly [];
-}], readonly [import("../pipeline/host.js").StageDescriptor, 'colormin', {
+}], readonly [{
+    create: (config: import("#postcss-colormin").Options, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
+}, 'colormin', {
     readonly postcssPlugin: 'postcss-colormin';
     readonly targets: true;
     readonly optionKeys: readonly ['hex', 'alphaHex', 'rgb', 'hsl', 'name', 'transparent', 'transformCustomProperties'];
-}], readonly [import("../pipeline/host.js").StageDescriptor, 'normalizeTimingFunctions', {
+}], readonly [{
+    create: () => import("../pipeline/host.js").Stage;
+}, 'normalizeTimingFunctions', {
     readonly postcssPlugin: 'postcss-normalize-timing-functions';
     readonly optionKeys: readonly [];
-}], readonly [import("../pipeline/host.js").StageDescriptor, 'calc', {
+}], readonly [{
+    create: (options: import("postcss-calc").PostCssCalcOptions) => import("../pipeline/host.js").Stage;
+}, 'calc', {
     readonly postcssPlugin: 'postcss-calc';
     readonly optionKeys: readonly ['precision', 'warnWhenCannotResolve', 'mediaQueries', 'selectors', 'unwrapSingleValue', 'onParseError'];
 }], readonly [{
