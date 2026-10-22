@@ -200,6 +200,15 @@ const syntheticCorpus = {
   ]
     .map((value) => `a{width:${value}}`)
     .join('\n'),
+  'postcss-convert-values': [
+    'a{width:96px;transition-duration:500ms;transform:rotate(1grad)}',
+    'a{line-height:0px;flex-basis:0%;opacity:1.2}',
+    'a{margin:0px 0.0px;font:12px/1.5 serif}',
+    '@keyframes k{from{width:0px;opacity:1.2}to{width:0%}}',
+    '@property --x{syntax:"<length>";initial-value:0px}',
+    '@property --y{syntax:"<length-percentage>";initial-value:0%}',
+    '@property --z{syntax:"<length>";initial-value:0%}',
+  ].join('\n'),
 };
 
 /**
@@ -263,6 +272,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     'postcss-colormin',
     'postcss-normalize-timing-functions',
     'postcss-calc',
+    'postcss-convert-values',
   ];
   const browser = await launchChromium(executablePath);
   let failures = 0;

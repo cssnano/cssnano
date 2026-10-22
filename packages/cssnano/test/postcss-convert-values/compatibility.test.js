@@ -4,8 +4,11 @@ import postcss from 'postcss';
 import {
   processCSSFactory,
   repositoryFile,
+  oneStagePlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-convert-values/index.js';
+import convertValues from '../../src/plugins/postcss-convert-values/index.js';
+
+const plugin = oneStagePlugin(convertValues);
 
 const { processCSS } = processCSSFactory(plugin);
 

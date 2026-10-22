@@ -1,12 +1,17 @@
+import type { Stage } from '../../pipeline/host.js';
 export type Options = import('./lib/findReplacements.js').Options;
 /**
- * @typedef {import('./lib/findReplacements.js').Options} Options
+ * The stage for one run. It converts the lengths, times, angles and frequencies
+ * of every property it does not skip, with the target support for IE zero units.
+ *
+ * @param {Options} options
+ * @param {readonly string[] | undefined} browsers
+ * @return {Stage}
  */
-/** @param {Options} opts @return {import('postcss').Plugin} */
-declare function pluginCreator(opts?: Options): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+declare function compileConvertValues(options: Options, browsers: readonly string[] | undefined): Stage;
+/** @satisfies {StageEntry} */
+declare const convertValues: {
+    create: typeof compileConvertValues;
+};
+export { convertValues as default };
 //# sourceMappingURL=index.d.ts.map
