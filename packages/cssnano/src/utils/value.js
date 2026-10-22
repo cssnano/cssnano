@@ -182,31 +182,42 @@ class BalancedTokens {
 }
 
 /**
+ * The bracket structure of a token list the caller already has, so the list
+ * is not tokenized again. Undefined when a bracket is unclosed or closes out
+ * of order.
+ *
+ * @param {readonly CSSToken[]} input
+ * @return {BalancedTokens | undefined}
+ */
+function balancedStructure(input) {
+  /** @type {[number, TokenType][]} */
+  const stack = [];
+  const ends = new Map();
+  for (let index = 0; index < input.length; index++) {
+    const token = input[index];
+    const expected = closeForOpening(token[0]);
+    if (expected !== undefined) stack.push([index, expected]);
+    else if (
+      token[0] === TokenType.CloseParen ||
+      token[0] === TokenType.CloseSquare ||
+      token[0] === TokenType.CloseCurly
+    ) {
+      const frame = stack.pop();
+      if (!frame || frame[1] !== token[0]) return;
+      ends.set(frame[0], index);
+    }
+  }
+  return stack.length ? undefined : new BalancedTokens(input, ends);
+}
+
+/**
  * @param {string} source
  * @param {{ unicodeRangesAllowed?: boolean }} [options]
  * @return {BalancedTokens | undefined}
  */
 function balancedTokens(source, options) {
   try {
-    const input = tokens(source, options);
-    /** @type {[number, TokenType][]} */
-    const stack = [];
-    const ends = new Map();
-    for (let index = 0; index < input.length; index++) {
-      const token = input[index];
-      const expected = closeForOpening(token[0]);
-      if (expected !== undefined) stack.push([index, expected]);
-      else if (
-        token[0] === TokenType.CloseParen ||
-        token[0] === TokenType.CloseSquare ||
-        token[0] === TokenType.CloseCurly
-      ) {
-        const frame = stack.pop();
-        if (!frame || frame[1] !== token[0]) return;
-        ends.set(frame[0], index);
-      }
-    }
-    return stack.length ? undefined : new BalancedTokens(input, ends);
+    return balancedStructure(tokens(source, options));
   } catch {
     return;
   }
@@ -215,6 +226,7 @@ function balancedTokens(source, options) {
 export {
   TokenType,
   applyEdits,
+  balancedStructure,
   balancedTokens,
   closeForOpening,
   decoded,
