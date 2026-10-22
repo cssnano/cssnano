@@ -11,7 +11,7 @@ import postcssNormalizeCharset from '#postcss-normalize-charset';
 import postcssMinifyFontValues from '#postcss-minify-font-values';
 import postcssNormalizeUrl from '#postcss-normalize-url';
 import postcssDiscardOverridden from '#postcss-discard-overridden';
-import postcssNormalizeRepeatStyle from '#postcss-normalize-repeat-style';
+import normalizeRepeatStyle from '#postcss-normalize-repeat-style';
 import postcssUniqueSelectors from '#postcss-unique-selectors';
 import postcssNormalizeString from '#postcss-normalize-string';
 import postcssNormalizePositions from '#postcss-normalize-positions';
@@ -225,7 +225,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     { postcssPlugin: 'postcss-normalize-url', optionKeys: [] },
   ],
   [
-    postcssNormalizeRepeatStyle,
+    normalizeRepeatStyle,
     'normalizeRepeatStyle',
     { postcssPlugin: 'postcss-normalize-repeat-style', optionKeys: [] },
   ],

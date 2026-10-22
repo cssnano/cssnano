@@ -143,6 +143,25 @@ const syntheticCorpus = {
   ]
     .map((value) => `a{display:${value}}`)
     .join('\n'),
+  'postcss-normalize-repeat-style': [
+    'repeat no-repeat',
+    'no-repeat repeat',
+    'repeat repeat',
+    'space round',
+    'repeat / no-repeat',
+    'repeat no-repeat/cover',
+    'repeat red no-repeat',
+    'repeat 50% no-repeat',
+    'repeat var(--x) no-repeat',
+    'repeat/* c */no-repeat',
+    'repeat no-repeat, space round',
+    'repeat no-repeat, repeat-x',
+    'repeat, no-repeat',
+    'repeat repeat-x',
+    'repeat no-repeat foo',
+  ]
+    .map((value) => `a{background-repeat:${value}}`)
+    .join('\n'),
   'postcss-reduce-transforms': [
     'scale(1, 1)',
     'scale(2, 2)',
@@ -268,6 +287,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     'postcss-minify-gradients',
     'postcss-reduce-initial',
     'postcss-normalize-display-values',
+    'postcss-normalize-repeat-style',
     'postcss-reduce-transforms',
     'postcss-colormin',
     'postcss-normalize-timing-functions',

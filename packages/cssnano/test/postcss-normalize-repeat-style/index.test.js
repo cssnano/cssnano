@@ -1,9 +1,12 @@
 import { test } from 'node:test';
 import {
+  oneStagePlugin,
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-repeat-style/index.js';
+import repeatStyle from '../../src/plugins/postcss-normalize-repeat-style/index.js';
+
+const plugin = oneStagePlugin(repeatStyle);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
