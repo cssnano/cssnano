@@ -156,13 +156,19 @@ describe('stage entries in a preset', () => {
     assert.equal(ignores?.options[browserTargets], undefined);
   });
 
-  test('the default preset runs its stage entries in the place of minifyGradients, reduceInitial, normalizeDisplayValues, reduceTransforms, colormin, the timing functions, calc and convertValues, in one host plugin', () => {
+  test('the default preset runs the stage entries before orderedValues in one host plugin', () => {
     const names = defaultPreset().map((plugin) => plugin.postcssPlugin);
     const host = names.indexOf('cssnano-host');
     assert.notEqual(host, -1);
-    assert.equal(names.lastIndexOf('cssnano-host'), host);
     assert.equal(names[host - 1], 'postcss-discard-comments');
     assert.equal(names[host + 1], 'postcss-ordered-values');
+  });
+
+  test('the default preset runs normalizeRepeatStyle in its own host plugin, between the plugins that are not stages yet', () => {
+    const names = defaultPreset().map((plugin) => plugin.postcssPlugin);
+    const url = names.indexOf('postcss-normalize-url');
+    assert.equal(names[url + 1], 'cssnano-host');
+    assert.equal(names[url + 2], 'postcss-normalize-positions');
   });
 });
 
