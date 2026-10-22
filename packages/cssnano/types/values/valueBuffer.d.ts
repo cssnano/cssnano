@@ -1,22 +1,18 @@
 import { balancedStructure } from '../utils/value.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
-import type { Value, ValueTable } from './value.js';
 export type BalancedTokens = NonNullable<ReturnType<typeof balancedStructure>>;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Value, ValueTable} from './value.js' */
 /** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} BalancedTokens */
 /**
- * The working copy of one fold over a Value. Reads come from the source until
- * the first edit. After it, the buffer owns a token list and edits that list
- * only; finish serializes the list once and interns the result.
+ * The working copy of one fold over a declaration value. Reads come from the
+ * source text until the first edit. Tokens are built on first use, and a
+ * buffer owns its token list, so an edit never touches a list another reader
+ * holds. finish serializes the result once.
  */
 declare class ValueBuffer {
     #private;
-    /**
-     * @param {Value} source
-     * @param {ValueTable} table interns the Value that finish returns
-     */
-    constructor(source: Value, table: ValueTable);
+    /** @param {string} source the value as the stylesheet reads it */
+    constructor(source: string);
     /**
      * The current text. Before any edit this is the source text.
      *
@@ -24,9 +20,8 @@ declare class ValueBuffer {
      */
     text(): string;
     /**
-     * The current tokens. Before any edit these are the source's frozen tokens.
-     * After an edit they are the buffer's own list, which reducers may read but
-     * should change only through replace.
+     * The current tokens. The list is the buffer's own, so readers may use it
+     * but should change it only through replace.
      *
      * @return {readonly CSSToken[]}
      */
@@ -56,11 +51,12 @@ declare class ValueBuffer {
      */
     replaceText(text: string): void;
     /**
-     * The Value of the current text. A buffer with no edits gives its source.
+     * The serialized text of the buffer. A buffer with no edits gives its
+     * source text.
      *
-     * @return {Value}
+     * @return {string}
      */
-    finish(): Value;
+    finish(): string;
 }
 export { ValueBuffer };
 //# sourceMappingURL=valueBuffer.d.ts.map
