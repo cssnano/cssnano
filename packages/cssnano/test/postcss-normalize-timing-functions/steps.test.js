@@ -1,6 +1,11 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-timing-functions/index.js';
+import {
+  oneStagePlugin,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
+import timing from '../../src/plugins/postcss-normalize-timing-functions/index.js';
+
+const plugin = oneStagePlugin(timing);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
