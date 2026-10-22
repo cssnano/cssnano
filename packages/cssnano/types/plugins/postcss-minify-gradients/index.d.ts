@@ -1,3 +1,5 @@
+import type { ValueBuffer } from '../../values/valueBuffer.js';
+export type Structure = NonNullable<ReturnType<ValueBuffer['structure']>>;
 export type ColorStop = {
     /**
      * Comma-separated argument the stop came from.
@@ -12,10 +14,12 @@ export type ColorStop = {
      */
     position: readonly number[];
 };
-/** @return {import('postcss').Plugin} */
-declare function pluginCreator(): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-export { pluginCreator as default, pluginCreator as 'module.exports' };
+/**
+ * The stage keeps no state between values, so every run shares its reducer.
+ * It reads every property, as gradients can appear in any of them.
+ *
+ * @type {import('../../pipeline/host.js').StageDescriptor}
+ */
+declare const minifyGradients: import('../../pipeline/host.js').StageDescriptor;
+export { minifyGradients as default };
 //# sourceMappingURL=index.d.ts.map

@@ -81,6 +81,28 @@ const modernTargets = withTargets('baseline widely available with downstream');
  * @type {Record<string, string>}
  */
 const syntheticCorpus = {
+  'postcss-minify-gradients': [
+    'linear-gradient(to top, red, blue)',
+    'linear-gradient(to bottom right, red, blue)',
+    'linear-gradient(to top left, red, blue)',
+    'linear-gradient(to nowhere, red, blue)',
+    'linear-gradient(red 0%, blue 100%)',
+    'linear-gradient(red 0px, blue 100%)',
+    'linear-gradient(0deg, red 0%, blue 100%)',
+    'linear-gradient(red, blue 100%)',
+    'linear-gradient(red 0%, blue)',
+    'linear-gradient(red, blue, 100%)',
+    'linear-gradient(rgb(0 0 0 / 50%) 0%, blue 100%)',
+    'repeating-linear-gradient(red 0%, blue 10px 100%)',
+    '-webkit-linear-gradient(top, red 0%, blue 100%)',
+    'radial-gradient(circle at center, red 0%, blue 100%)',
+    'radial-gradient(circle at top left, red 0px, blue 100%)',
+    'radial-gradient(red 0%, blue 100%)',
+    'conic-gradient(from 0deg, red 0deg, blue 360deg)',
+    'conic-gradient(red 0%, blue 100%)',
+  ]
+    .map((value) => `a{background-image:${value}}`)
+    .join('\n'),
   'postcss-reduce-initial': [
     ['top', 'initial'],
     ['top', 'auto'],
@@ -222,6 +244,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const stageDir = join(root, 'packages', 'cssnano', 'src', 'plugins');
   const stages = [
+    'postcss-minify-gradients',
     'postcss-reduce-initial',
     'postcss-normalize-display-values',
     'postcss-reduce-transforms',

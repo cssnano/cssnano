@@ -1,13 +1,24 @@
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {SourceEdit, PositionValue} from './lib/positions.js' */
+/** @import {ValueBuffer} from '../../values/valueBuffer.js' */
 import cssnanoUtils from '#utils';
 import isKnownColor from './isKnownColor.js';
 import { isPositionZeroUnit, zeroPositionEdits } from './lib/positions.js';
 
-const { TokenType, applyEdits, asciiLowerCase, decoded, numeric, tokenEnd } =
-  cssnanoUtils;
-/** @type {typeof cssnanoUtils.balancedTokens} */
-const balancedTokens = cssnanoUtils.balancedTokens;
+const {
+  TokenType,
+  applyEdits,
+  asciiLowerCase,
+  balancedTokens,
+  decoded,
+  numeric,
+  tokenEnd,
+} = cssnanoUtils;
+
+/**
+ * The bracket structure of a value's tokens, as ValueBuffer gives it.
+ * @typedef {NonNullable<ReturnType<ValueBuffer['structure']>>} Structure
+ */
 
 const directions = new Map([
   ['top', '0deg'],
@@ -67,7 +78,7 @@ const lineKeywords = new Set([
  * of any balanced frame the range opens.
  *
  * @param {readonly CSSToken[]} input
- * @param {NonNullable<ReturnType<typeof balancedTokens>>} structure
+ * @param {Structure} structure
  * @param {{startIndex: number, endIndex: number}} range
  * @return {number[]} Indexes of the significant tokens in `input`.
  */
@@ -114,7 +125,7 @@ function startsLineSpecification(input, parts) {
  * such as `rgb(0 0 0 / 50%)` ends at its closing parenthesis.
  *
  * @param {readonly CSSToken[]} input
- * @param {NonNullable<ReturnType<typeof balancedTokens>>} structure
+ * @param {Structure} structure
  * @param {readonly number[]} parts Offsets of an argument's significant tokens.
  * @return {number}
  */
@@ -155,7 +166,7 @@ function lineDirectionEdit(input, parts) {
  *
  * @param {string} source
  * @param {readonly CSSToken[]} input
- * @param {NonNullable<ReturnType<typeof balancedTokens>>} structure
+ * @param {Structure} structure
  * @param {{startIndex: number, endIndex: number}[]} args
  * @param {boolean} linear Whether the line specification may hold an angle.
  * @param {boolean} conic Whether the stop positions are angles.
@@ -261,14 +272,51 @@ function boundaryStopEdits(
 }
 
 /**
- * @param {import('postcss').Declaration} decl
+ * The value as PostCSS parses it. A comment survives only between two tokens
+ * that are neither spaces nor the edges of the value, and not after a comma.
+ *
+ * @param {readonly CSSToken[]} input
+ * @return {string}
  */
-function optimise(decl) {
-  const source = decl.value;
-  if (!source || !gradientSourceRegex.test(source)) return;
-  const structure = balancedTokens(source);
+function parsedValueText(input) {
+  let text = '';
+  for (let index = 0; index < input.length; index++) {
+    const token = input[index];
+    if (token[0] !== TokenType.Comment) {
+      text += token[1];
+      continue;
+    }
+    const before = input[index - 1];
+    const after = input[index + 1];
+    if (isSpaceOrEdge(before) || isSpaceOrEdge(after) || text.endsWith(','))
+      continue;
+    text += token[1];
+  }
+  return text;
+}
+
+/**
+ * @param {CSSToken | undefined} token
+ * @return {boolean}
+ */
+function isSpaceOrEdge(token) {
+  return token === undefined || token[0] === TokenType.Whitespace;
+}
+
+/**
+ * Shortens the gradients of one value. The edits index the value as PostCSS
+ * parses it, so a rewritten value loses the comments that the parse drops.
+ *
+ * @param {ValueBuffer} buffer
+ */
+function reduce(buffer) {
+  const raw = buffer.text();
+  if (!gradientSourceRegex.test(raw)) return;
+  const source = parsedValueText(buffer.tokens());
+  const structure =
+    source === raw ? buffer.structure() : balancedTokens(source);
   if (!structure) return;
-  const { tokens: input } = structure;
+  const input = structure.tokens;
   if (
     input.some(
       (token) =>
@@ -308,20 +356,18 @@ function optimise(decl) {
       ...zeroEdits.values()
     );
   }
-  // With nothing to rewrite, neither the edit pass nor the write can change the
-  // declaration.
-  if (replacements.length) decl.value = applyEdits(source, replacements);
+  // With nothing to rewrite, the buffer keeps its source value.
+  if (replacements.length) buffer.replaceText(applyEdits(source, replacements));
 }
 
-/** @return {import('postcss').Plugin} */
-function pluginCreator() {
-  return {
-    postcssPlugin: 'postcss-minify-gradients',
-    OnceExit(css) {
-      css.walkDecls(optimise);
-    },
-  };
-}
-/** @type {true} */
-pluginCreator.postcss = true;
-export { pluginCreator as default, pluginCreator as 'module.exports' };
+/**
+ * The stage keeps no state between values, so every run shares its reducer.
+ * It reads every property, as gradients can appear in any of them.
+ *
+ * @type {import('../../pipeline/host.js').StageDescriptor}
+ */
+const minifyGradients = {
+  compile: () => () => ({ forProperty: () => reduce }),
+};
+
+export { minifyGradients as default };
