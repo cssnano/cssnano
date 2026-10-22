@@ -1,6 +1,5 @@
-import type { Value } from '../values/value.js';
 import type { PhaseStage, ValueStage } from './host.js';
-export type Memo = Map<Value, Value>;
+/** @import {PhaseStage, Reducer, ValueStage} from './host.js' */
 /**
  * Runs the value stages of one run over the declarations of a stylesheet in a
  * single walk. Each declaration reads its source text, folds it through the
