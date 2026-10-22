@@ -7,7 +7,7 @@ import {
 import cssnanoUtils from '#utils';
 import mappings from './lib/map.js';
 
-const { asciiLowerCase, assignValue, sourceValue } = cssnanoUtils;
+const { asciiLowerCase } = cssnanoUtils;
 const displayPropertyRegex = /^[dD][iI][sS][pP][lL][aA][yY]$/v;
 const displayOutside = new Set(['block', 'inline', 'run-in']);
 const displayInside = new Set([
@@ -108,44 +108,30 @@ function transform(value) {
   return mappings.get(key) ?? value;
 }
 /**
- * @return {import('postcss').Plugin}
+ * The stage for one run. It reads the `display` property and keeps its own
+ * cache of values.
+ *
+ * @return {import('../../pipeline/host.js').ValueStage}
  */
-function pluginCreator() {
+function displayStage() {
+  const cache = new Map();
+  /** @type {import('../../pipeline/host.js').Reducer} */
+  const reduce = (buffer) => {
+    const text = buffer.text();
+    let out = cache.get(text);
+    if (out === undefined) {
+      out = transform(text);
+      cache.set(text, out);
+    }
+    if (out !== text) buffer.replaceText(out);
+  };
   return {
-    postcssPlugin: 'postcss-normalize-display-values',
-
-    prepare() {
-      const cache = new Map();
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          css.walkDecls(displayPropertyRegex, (decl) => {
-            const value = sourceValue(decl);
-
-            if (!value) {
-              return;
-            }
-
-            if (cache.has(value)) {
-              assignValue(decl, cache.get(value));
-
-              return;
-            }
-
-            const result = transform(value);
-
-            assignValue(decl, result);
-            cache.set(value, result);
-          });
-        },
-      };
-    },
+    forProperty: (property) =>
+      displayPropertyRegex.test(property) ? reduce : null,
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @type {import('../../pipeline/host.js').StageDescriptor} */
+const normalizeDisplayValues = { compile: () => displayStage };
+
+export { normalizeDisplayValues as default };
