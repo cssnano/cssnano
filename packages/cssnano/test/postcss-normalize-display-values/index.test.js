@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import {
+  oneStagePlugin,
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-display-values/index.js';
+import displayValues from '../../src/plugins/postcss-normalize-display-values/index.js';
+
+const plugin = oneStagePlugin(displayValues);
 
 const { processCSS, processor, passthroughCSS } = processCSSFactory(plugin);
 
@@ -203,7 +206,7 @@ test('should pass through nested and unclosed blocks', async () => {
   assert.strictEqual(unclosed.value, 'block [x flow');
 });
 
-test('should synchronize raw values on cache hits', async () => {
+test('should reduce a value that two declarations share and leave no raw behind', async () => {
   const first = postcss.decl({ prop: 'display', value: 'block flow' });
   first.raws.value = { raw: 'BLOCK FLOW', value: 'block flow' };
   const second = postcss.decl({ prop: 'display', value: 'block flow' });
@@ -213,12 +216,12 @@ test('should synchronize raw values on cache hits', async () => {
 
   assert.deepStrictEqual(
     [first, second].map((decl) => ({
-      raw: decl.raws.value.raw,
+      raw: decl.raws.value,
       value: decl.value,
     })),
     [
-      { raw: 'block', value: 'block' },
-      { raw: 'block', value: 'block' },
+      { raw: undefined, value: 'block' },
+      { raw: undefined, value: 'block' },
     ]
   );
 });

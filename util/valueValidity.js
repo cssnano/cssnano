@@ -77,6 +77,29 @@ export function invalidBecameValid(changes, supports) {
  * @type {Record<string, string>}
  */
 const syntheticCorpus = {
+  'postcss-normalize-display-values': [
+    'block flow',
+    'block flow-root',
+    'inline flow',
+    'inline flow-root',
+    'block flex',
+    'inline flex',
+    'inline grid',
+    'inline table',
+    'block flow list-item',
+    'list-item block flow',
+    'list-item inline flow',
+    'list-item block flex',
+    'block block',
+    'flow flow',
+    'block inline',
+    'block foo',
+    'run-in flow',
+    'block ruby',
+    'inline ruby',
+  ]
+    .map((value) => `a{display:${value}}`)
+    .join('\n'),
   'postcss-reduce-transforms': [
     'scale(1, 1)',
     'scale(2, 2)',
@@ -178,6 +201,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const stageDir = join(root, 'packages', 'cssnano', 'src', 'plugins');
   const stages = [
+    'postcss-normalize-display-values',
     'postcss-reduce-transforms',
     'postcss-colormin',
     'postcss-normalize-timing-functions',
