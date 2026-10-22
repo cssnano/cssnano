@@ -6,11 +6,7 @@ import type { PhaseStage, ValueStage } from './host.js';
  * plan of its property, and writes the result only when it changed.
  *
  * @param {readonly ValueStage[]} stages in pipeline order
- * @param {{memoise?: boolean}} [options] `memoise: false` folds every
- *   declaration, which checks that the memo only saves work
  * @returns {PhaseStage}
  */
-export declare function declarationTraversal(stages: readonly ValueStage[], { memoise }?: {
-    memoise?: boolean;
-}): PhaseStage;
+export declare function declarationTraversal(stages: readonly ValueStage[]): PhaseStage;
 //# sourceMappingURL=traversal.d.ts.map

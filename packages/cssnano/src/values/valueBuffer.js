@@ -1,23 +1,20 @@
 import { balancedStructure, tokens } from '../utils/value.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Value, ValueTable} from './value.js' */
 /** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} BalancedTokens */
 
 /**
- * The working copy of one fold over a Value. Reads come from the source until
- * the first edit. After it, the buffer owns a token list and edits that list
- * only; finish serializes the list once and interns the result.
+ * The working copy of one fold over a declaration value. Reads come from the
+ * source text until the first edit. Tokens are built on first use, and a
+ * buffer owns its token list, so an edit never touches a list another reader
+ * holds. finish serializes the result once.
  */
 class ValueBuffer {
-  /** @type {Value} */
+  /** @type {string} */
   #source;
-  /** @type {ValueTable} */
-  #table;
   #edited = false;
   /**
-   * The buffer's own text. Undefined after an edit until text() or tokens()
-   * needs it.
+   * The buffer's own text. Undefined after an edit until text() needs it.
    * @type {string | undefined}
    */
   #text;
@@ -31,13 +28,9 @@ class ValueBuffer {
   #structure;
   #structureFresh = false;
 
-  /**
-   * @param {Value} source
-   * @param {ValueTable} table interns the Value that finish returns
-   */
-  constructor(source, table) {
+  /** @param {string} source the value as the stylesheet reads it */
+  constructor(source) {
     this.#source = source;
-    this.#table = table;
   }
 
   /**
@@ -46,7 +39,7 @@ class ValueBuffer {
    * @return {string}
    */
   text() {
-    if (!this.#edited) return this.#source.text;
+    if (!this.#edited) return this.#source;
     if (this.#text === undefined) {
       this.#text = (this.#tokens ?? []).map((token) => token[1]).join('');
     }
@@ -54,15 +47,13 @@ class ValueBuffer {
   }
 
   /**
-   * The current tokens. Before any edit these are the source's frozen tokens.
-   * After an edit they are the buffer's own list, which reducers may read but
-   * should change only through replace.
+   * The current tokens. The list is the buffer's own, so readers may use it
+   * but should change it only through replace.
    *
    * @return {readonly CSSToken[]}
    */
   tokens() {
-    if (!this.#edited) return this.#source.tokens();
-    if (this.#tokens === undefined) this.#tokens = tokens(this.#text ?? '');
+    if (this.#tokens === undefined) this.#tokens = tokens(this.text());
     return this.#tokens;
   }
 
@@ -73,7 +64,6 @@ class ValueBuffer {
    * @return {BalancedTokens | undefined}
    */
   structure() {
-    if (!this.#edited) return this.#source.structure();
     if (!this.#structureFresh) {
       this.#structure = balancedStructure(this.tokens());
       this.#structureFresh = true;
@@ -110,28 +100,24 @@ class ValueBuffer {
   }
 
   /**
-   * The Value of the current text. A buffer with no edits gives its source.
+   * The serialized text of the buffer. A buffer with no edits gives its
+   * source text.
    *
-   * @return {Value}
+   * @return {string}
    */
   finish() {
-    if (!this.#edited) return this.#source;
-    return this.#table.intern(this.text());
+    return this.text();
   }
 
   /**
-   * Makes the buffer own a copy of its tokens, so the source list stays frozen.
+   * Gives the buffer its own tokens, so edits can change them in place.
    *
    * @return {CSSToken[]}
    */
   #own() {
-    if (!this.#edited) {
-      this.#tokens = [...this.#source.tokens()];
-      this.#edited = true;
-    } else if (this.#tokens === undefined) {
-      this.#tokens = tokens(this.#text ?? '');
-    }
-    return /** @type {CSSToken[]} */ (this.#tokens);
+    if (this.#tokens === undefined) this.#tokens = tokens(this.text());
+    this.#edited = true;
+    return this.#tokens;
   }
 }
 
