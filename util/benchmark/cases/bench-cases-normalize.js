@@ -15,6 +15,13 @@ export const normalizeCases = {
       (_, index) => `.display-${index}{display:inline flow-root}`
     ).join('')
   ),
+  'reduce-transforms-cache-hits': pluginCase(
+    'postcss-reduce-transforms',
+    Array.from(
+      { length: 1000 },
+      (_, index) => `.transform-${index}{transform:scale(1,1)}`
+    ).join('')
+  ),
   'normalize-unicode-cache-misses': pluginCase(
     'postcss-normalize-unicode',
     Array.from(
