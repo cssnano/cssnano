@@ -92,16 +92,15 @@ describe('a value reducer in a host plugin', () => {
     assert.deepEqual(seen, []);
   });
 
-  test('shares folded values between properties whose reducers are the same', async () => {
+  test('keeps a separate memo for each property, even when the properties share a reducer', async () => {
     const seen = [];
     // One reducer object for both properties, as forProperty returns for properties treated alike.
     const reducer = appending('!', seen);
-    const css = await run(
-      'a{color:red;background:red}',
+    await run(
+      'a{color:red;background:red;color:red}',
       hostOf([valueStage(() => reducer)])
     );
-    assert.equal(css, 'a{color:red!;background:red!}');
-    assert.deepEqual(seen, ['red']);
+    assert.deepEqual(seen, ['red', 'red']);
   });
 
   test('folds the same value separately for properties whose reducers run in another order', async () => {
