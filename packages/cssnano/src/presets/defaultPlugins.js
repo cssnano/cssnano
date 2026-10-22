@@ -3,7 +3,7 @@ import postcssMinifyGradients from '#postcss-minify-gradients';
 import postcssReduceTransforms from '#postcss-reduce-transforms';
 import postcssConvertValues from '#postcss-convert-values';
 import postcssCalc from 'postcss-calc';
-import postcssColormin from '#postcss-colormin';
+import colormin from '#postcss-colormin';
 import postcssOrderedValues from '#postcss-ordered-values';
 import postcssMinifySelectors from '#postcss-minify-selectors';
 import postcssMinifyParams from '#postcss-minify-params';
@@ -108,7 +108,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     { postcssPlugin: 'postcss-reduce-transforms', optionKeys: [] },
   ],
   [
-    pluginStageDescriptor(postcssColormin),
+    colormin,
     'colormin',
     {
       postcssPlugin: 'postcss-colormin',

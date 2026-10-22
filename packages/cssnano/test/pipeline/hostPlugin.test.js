@@ -4,6 +4,15 @@ import postcss from 'postcss';
 import { hostPlugin, pluginStage } from '../../src/pipeline/host.js';
 
 /**
+ * A host plugin's stage member that builds the given stage, with no options.
+ * @param {import('../../src/pipeline/host.js').Stage} stage
+ */
+const hostOf = (...stages) =>
+  hostPlugin(
+    stages.map((stage) => ({ descriptor: { build: () => stage }, options: {} }))
+  );
+
+/**
  * @param {string} name
  * @param {string[]} log the names of the stages in the order they ran
  */
@@ -19,7 +28,7 @@ describe('a host plugin', () => {
   test('runs its stages in the order they were given', async () => {
     const log = [];
     await postcss([
-      hostPlugin([recordingStage('first', log), recordingStage('second', log)]),
+      hostOf(recordingStage('first', log), recordingStage('second', log)),
     ]).process('a{color:red}', { from: undefined });
     assert.deepStrictEqual(log, ['first', 'second']);
   });
@@ -28,7 +37,7 @@ describe('a host plugin', () => {
     /** @type {unknown[]} */
     const roots = [];
     const record = { run: (/** @type {unknown} */ root) => roots.push(root) };
-    await postcss([hostPlugin([record, record])]).process('a{}', {
+    await postcss([hostOf(record, record)]).process('a{}', {
       from: undefined,
     });
     assert.equal(roots.length, 2);
@@ -49,7 +58,7 @@ describe('a host plugin', () => {
         seen.push(...root.nodes.map((node) => node.selector));
       },
     };
-    await postcss([addRule, hostPlugin([observe])]).process('a{}', {
+    await postcss([addRule, hostOf(observe)]).process('a{}', {
       from: undefined,
     });
     assert.deepStrictEqual(seen, ['a', '.added']);
@@ -65,7 +74,7 @@ describe('a plugin stage', () => {
         log.push(root.type);
       },
     };
-    await postcss([hostPlugin([pluginStage(plugin)])]).process('a{}', {
+    await postcss([hostOf(pluginStage(plugin))]).process('a{}', {
       from: undefined,
     });
     assert.deepStrictEqual(log, ['root']);
@@ -83,7 +92,7 @@ describe('a plugin stage', () => {
         };
       },
     };
-    await postcss([hostPlugin([pluginStage(plugin)])]).process('a{}', {
+    await postcss([hostOf(pluginStage(plugin))]).process('a{}', {
       from: 'input.css',
     });
     assert.deepStrictEqual(log, ['input.css']);
@@ -95,7 +104,7 @@ describe('a plugin stage', () => {
       Declaration() {},
     };
     await assert.rejects(
-      postcss([hostPlugin([pluginStage(plugin)])]).process('a{color:red}', {
+      postcss([hostOf(pluginStage(plugin))]).process('a{color:red}', {
         from: undefined,
       }),
       /Declaration/v
