@@ -20,21 +20,4 @@ export type StageMember = {
  * @returns {Plugin}
  */
 export declare function hostPlugin(members: readonly StageMember[]): Plugin;
-/**
- * Runs a plugin that changes the stylesheet only at OnceExit, in the place of
- * the host's stage. A plugin with any other listener would need a walk that
- * the host does not make, so it is rejected.
- *
- * @param {Plugin} plugin
- * @returns {PhaseStage}
- */
-export declare function pluginStage(plugin: Plugin): PhaseStage;
-/**
- * A descriptor for an entry whose plugin still runs as a PostCSS plugin. It is
- * the bridge for a stage that is not yet a reducer, and is replaced once it is.
- *
- * @param {import('postcss').PluginCreator<any>} creator
- * @returns {StageDescriptor}
- */
-export declare function pluginStageDescriptor(creator: import('postcss').PluginCreator<any>): StageDescriptor;
 //# sourceMappingURL=host.d.ts.map

@@ -1,7 +1,6 @@
 import cssnanoUtils from '#utils';
 
-const { TokenType, asciiLowerCase, decoded, assignValue, sourceValue } =
-  cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @type {(source: string) => {tokens: readonly CSSToken[], endForOpening(index: number): number | undefined, topLevelSegments(start: number, end: number): {startIndex: number, endIndex: number}[]} | undefined} */
 const getBalancedTokens = cssnanoUtils.balancedTokens;
@@ -104,37 +103,30 @@ function transform(value) {
 }
 
 /**
- * @return {import('postcss').Plugin}
+ * The stage for one run. It reads the animation and transition properties,
+ * including their vendor-prefixed forms, and keeps its own cache of values.
+ *
+ * @return {import('../../pipeline/host.js').ValueStage}
  */
-function pluginCreator() {
+function timingStage() {
+  const cache = new Map();
+  /** @type {import('../../pipeline/host.js').Reducer} */
+  const reduce = (buffer) => {
+    const text = buffer.text();
+    let out = cache.get(text);
+    if (out === undefined) {
+      out = transform(text);
+      cache.set(text, out);
+    }
+    if (out !== text) buffer.replaceText(out);
+  };
   return {
-    postcssPlugin: 'postcss-normalize-timing-functions',
-    /**
-     * @param {import('postcss').Root} css
-     */
-    OnceExit(css) {
-      const cache = new Map();
-
-      css.walkDecls(animationTransitionRegex, (decl) => {
-        const value = sourceValue(decl);
-
-        if (cache.has(value)) {
-          assignValue(decl, cache.get(value));
-
-          return;
-        }
-
-        const result = transform(value);
-
-        assignValue(decl, result);
-        cache.set(value, result);
-      });
-    },
+    forProperty: (property) =>
+      animationTransitionRegex.test(property) ? reduce : null,
   };
 }
 
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
+/** @type {import('../../pipeline/host.js').StageDescriptor} */
+const normalizeTimingFunctions = { build: timingStage };
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+export { normalizeTimingFunctions as default };
