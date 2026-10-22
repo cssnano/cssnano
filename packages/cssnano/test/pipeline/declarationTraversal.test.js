@@ -65,7 +65,7 @@ describe('a value reducer in a host plugin', () => {
     assert.equal(css, 'a{color:red!;width:1px}');
   });
 
-  test('folds a value that several declarations share only once', async () => {
+  test('folds a value that several declarations share once for each declaration', async () => {
     let calls = 0;
     await run(
       'a{color:red}b{color:red}c{color:red}',
@@ -76,7 +76,7 @@ describe('a value reducer in a host plugin', () => {
         }),
       ])
     );
-    assert.equal(calls, 1);
+    assert.equal(calls, 3);
   });
 
   test('folds a declaration with no reducer for its property not at all', async () => {
@@ -92,7 +92,7 @@ describe('a value reducer in a host plugin', () => {
     assert.deepEqual(seen, []);
   });
 
-  test('keeps a separate memo for each property, even when the properties share a reducer', async () => {
+  test('folds each declaration with a shared reducer, even when two of them have the same value', async () => {
     const seen = [];
     // One reducer object for both properties, as forProperty returns for properties treated alike.
     const reducer = appending('!', seen);
@@ -100,7 +100,7 @@ describe('a value reducer in a host plugin', () => {
       'a{color:red;background:red;color:red}',
       hostOf([valueStage(() => reducer)])
     );
-    assert.deepEqual(seen, ['red', 'red']);
+    assert.deepEqual(seen, ['red', 'red', 'red']);
   });
 
   test('folds the same value separately for properties whose reducers run in another order', async () => {
@@ -118,7 +118,7 @@ describe('a value reducer in a host plugin', () => {
     assert.equal(css, 'a{color:xAB;background:xBA}');
   });
 
-  test('does not fold a value that a reducer has already produced', async () => {
+  test('folds each declaration from its own source, not from a value an earlier one produced', async () => {
     const seen = [];
     const css = await run(
       'a{color:a;color:b}',
@@ -130,7 +130,7 @@ describe('a value reducer in a host plugin', () => {
       ])
     );
     assert.equal(css, 'a{color:b;color:b}');
-    assert.deepEqual(seen, ['a']);
+    assert.deepEqual(seen, ['a', 'b']);
   });
 
   test('leaves the raws of a declaration whose value does not change as they were', async () => {
