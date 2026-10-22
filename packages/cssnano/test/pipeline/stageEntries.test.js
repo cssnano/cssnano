@@ -155,12 +155,12 @@ describe('stage entries in a preset', () => {
     assert.equal(ignores.options[browserTargets], undefined);
   });
 
-  test('the default preset runs its stage entries in the place of colormin, in one host plugin', () => {
+  test('the default preset runs its stage entries in the place of reduceTransforms, colormin and the timing functions, in one host plugin', () => {
     const names = defaultPreset().map((plugin) => plugin.postcssPlugin);
     const host = names.indexOf('cssnano-host');
     assert.notEqual(host, -1);
     assert.equal(names.lastIndexOf('cssnano-host'), host);
-    assert.equal(names[host - 1], 'postcss-reduce-transforms');
+    assert.equal(names[host - 1], 'postcss-normalize-display-values');
     assert.equal(names[host + 1], 'postcss-calc');
   });
 });
