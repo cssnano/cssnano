@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
+import reduceInitial from '../../src/plugins/postcss-reduce-initial/index.js';
 import normalizeDisplayValues from '../../src/plugins/postcss-normalize-display-values/index.js';
 import reduceTransforms from '../../src/plugins/postcss-reduce-transforms/index.js';
 import colormin from '../../src/plugins/postcss-colormin/index.js';
@@ -8,6 +9,7 @@ import normalizeTimingFunctions from '../../src/plugins/postcss-normalize-timing
 import { declarationTraversal } from '../../src/pipeline/traversal.js';
 
 const stages = [
+  reduceInitial,
   normalizeDisplayValues,
   reduceTransforms,
   colormin,
@@ -21,8 +23,8 @@ const stages = [
 // Repeated values exercise memo hits, and the unchanged ones exercise misses
 // that fold to the input.
 const css = `
-a{display:block flow;transform:scale(1,1);color:#ff0000;background:#ff0000 url(a.png);transition:opacity 1s cubic-bezier(0.25,0.1,0.25,1)}
-b{display:block flow;transform:scale(1,1);color:#ff0000;border-color:rgb(0,0,0);transition:opacity 1s cubic-bezier(0.25,0.1,0.25,1)}
+a{top:initial;display:block flow;transform:scale(1,1);color:#ff0000;background:#ff0000 url(a.png);transition:opacity 1s cubic-bezier(0.25,0.1,0.25,1)}
+b{top:initial;display:block flow;transform:scale(1,1);color:#ff0000;border-color:rgb(0,0,0);transition:opacity 1s cubic-bezier(0.25,0.1,0.25,1)}
 c{color:red;--x:#ff0000;animation:x 1s steps(1,start)}
 @media print{d{color:#ff0000;animation:x 1s steps(1,start)}}
 `;
@@ -49,6 +51,7 @@ describe('the value plan memo', () => {
     assert.match(output, /transition:opacity 1s ease/v);
     assert.match(output, /transform:scale\(1\)/v);
     assert.match(output, /display:block;/v);
+    assert.match(output, /top:auto/v);
   });
 });
 

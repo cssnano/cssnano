@@ -1,4 +1,4 @@
-import postcssReduceInitial from '#postcss-reduce-initial';
+import reduceInitial from '#postcss-reduce-initial';
 import postcssMinifyGradients from '#postcss-minify-gradients';
 import reduceTransforms from '#postcss-reduce-transforms';
 import postcssConvertValues from '#postcss-convert-values';
@@ -88,7 +88,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     { postcssPlugin: 'postcss-minify-gradients', optionKeys: [] },
   ],
   [
-    postcssReduceInitial,
+    reduceInitial,
     'reduceInitial',
     {
       postcssPlugin: 'postcss-reduce-initial',
