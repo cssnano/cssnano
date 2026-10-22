@@ -5,7 +5,9 @@
 //
 // Every listener of an entry is timed, so an entry's time excludes the other
 // entries' listeners. The table shows, per entry, the fastest round, because
-// the slowest rounds are mostly noise from the machine.
+// the slowest rounds are mostly noise from the machine. A host plugin also
+// lists the time of each of its stages, indented below it; those times are
+// part of the host's and are not added to the total.
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { createRequire } from 'node:module';
@@ -39,6 +41,12 @@ const postcss = (await import(pathToFileURL(require.resolve('postcss')).href))
 const { default: preset } = await import(
   pathToFileURL(join(cssnanoDir, 'src', 'presets', `${values.preset}.js`)).href
 );
+const { configurePlugins } = await import(
+  pathToFileURL(join(cssnanoDir, 'src', 'presets', 'configurePlugins.js')).href
+);
+const { presetEntriesKey } = await import(
+  pathToFileURL(join(cssnanoDir, 'src', 'presets', 'presetEntries.js')).href
+);
 
 /**
  * Labels each plugin by its PostCSS name, and numbers repeats, so two entries
@@ -66,6 +74,84 @@ function labelled(plugins) {
  * @type {Map<string, bigint>}
  */
 let roundTotals = new Map();
+
+/**
+ * Accumulated nanoseconds per stage of a host plugin for the round in progress.
+ * @type {Map<string, bigint>}
+ */
+let stageTotals = new Map();
+
+/**
+ * @template {unknown[]} Args
+ * @template Result
+ * @param {Map<string, bigint>} totals
+ * @param {string} label
+ * @param {(...args: Args) => Result} run
+ * @return {(...args: Args) => Result}
+ */
+function addingTimeTo(totals, label, run) {
+  return (...args) => {
+    const start = process.hrtime.bigint();
+    try {
+      return run(...args);
+    } finally {
+      totals.set(
+        label,
+        (totals.get(label) ?? 0n) + process.hrtime.bigint() - start
+      );
+    }
+  };
+}
+
+/**
+ * A stage descriptor that times the reducers and the run of the stages it
+ * compiles. A reducer keeps one wrapper, so plans still share.
+ *
+ * @param {{ targets?: boolean, compile: Function }} descriptor
+ * @param {string} name the preset option of the entry
+ */
+function timedDescriptor(descriptor, name) {
+  return {
+    targets: descriptor.targets,
+    compile(/** @type {unknown[]} */ ...args) {
+      const start = descriptor.compile(...args);
+      if (start === null) return null;
+      return () => {
+        const stage = start();
+        if (!('forProperty' in stage)) {
+          return { run: addingTimeTo(stageTotals, name, stage.run) };
+        }
+        /** @type {Map<Function, Function>} */
+        const wrappers = new Map();
+        return {
+          forProperty(/** @type {string} */ property) {
+            const reducer = stage.forProperty(property);
+            if (reducer === null) return null;
+            if (!wrappers.has(reducer)) {
+              wrappers.set(reducer, addingTimeTo(stageTotals, name, reducer));
+            }
+            return wrappers.get(reducer);
+          },
+        };
+      };
+    },
+  };
+}
+
+/**
+ * The plugins of the preset, with every stage timed under its entry name.
+ * @return {Plugin[]}
+ */
+function pluginsWithTimedStages() {
+  const entries = /** @type {any[][]} */ (preset[presetEntriesKey]).map(
+    ([first, name, settings]) => [
+      typeof first === 'function' ? first : timedDescriptor(first, name),
+      name,
+      settings,
+    ]
+  );
+  return configurePlugins(entries, {});
+}
 
 /**
  * Wraps a listener so its run time is added to `label`.
@@ -147,10 +233,13 @@ const files = readdirSync(frameworksDir)
 const labels = [];
 /** @type {Map<string, bigint>} */
 const best = new Map();
+/** @type {Map<string, bigint>} */
+const bestStage = new Map();
 let wholeRunBest = Infinity;
 for (let round = 0; round < rounds; round++) {
   roundTotals = new Map();
-  const entries = labelled(/** @type {Plugin[]} */ (preset()));
+  stageTotals = new Map();
+  const entries = labelled(pluginsWithTimedStages());
   for (const { label } of entries) {
     if (!labels.includes(label)) labels.push(label);
   }
@@ -166,6 +255,10 @@ for (let round = 0; round < rounds; round++) {
     const previous = best.get(label);
     if (previous === undefined || total < previous) best.set(label, total);
   }
+  for (const [name, total] of stageTotals) {
+    const previous = bestStage.get(name);
+    if (previous === undefined || total < previous) bestStage.set(name, total);
+  }
 }
 
 const ms = (/** @type {bigint} */ ns) => Number(ns) / 1e6;
@@ -179,6 +272,11 @@ for (const label of labels) {
   const share = sum === 0n ? 0 : (Number(time) / Number(sum)) * 100;
   console.log(
     `${label.padEnd(width)}  ${ms(time).toFixed(1).padStart(10)}  ${`${share.toFixed(1)}%`.padStart(7)}`
+  );
+}
+for (const [name, time] of bestStage) {
+  console.log(
+    `${`  ${name}`.padEnd(width)}  ${ms(time).toFixed(1).padStart(10)}`
   );
 }
 console.log(
