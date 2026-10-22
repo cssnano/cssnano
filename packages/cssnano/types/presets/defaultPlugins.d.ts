@@ -136,17 +136,11 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }, 'reduceTransforms', {
     readonly postcssPlugin: 'postcss-reduce-transforms';
     readonly optionKeys: readonly [];
-}], readonly [{
-    (config?: import("#postcss-colormin").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'colormin', {
+}], readonly [import("../pipeline/host.js").StageDescriptor, 'colormin', {
     readonly postcssPlugin: 'postcss-colormin';
     readonly targets: true;
     readonly optionKeys: readonly ['hex', 'alphaHex', 'rgb', 'hsl', 'name', 'transparent', 'transformCustomProperties'];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizeTimingFunctions', {
+}], readonly [import("../pipeline/host.js").StageDescriptor, 'normalizeTimingFunctions', {
     readonly postcssPlugin: 'postcss-normalize-timing-functions';
     readonly optionKeys: readonly [];
 }], readonly [import("postcss/lib/postcss").PluginCreator<import("postcss-calc").PostCssCalcOptions>, 'calc', {

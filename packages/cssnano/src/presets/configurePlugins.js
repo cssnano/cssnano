@@ -1,4 +1,5 @@
 import { validateOptions } from '../options.js';
+import { hostPlugin } from '../pipeline/host.js';
 import isRecord from '../utils/isRecord.js';
 import { browserTargets } from '#utils/browser-targets';
 import {
@@ -11,6 +12,7 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
+/** @import {Stage, StageDescriptor} from '../pipeline/host.js' */
 
 /**
  * The options of a built preset: the same as cssnano, without the preset and
@@ -45,7 +47,10 @@ import {
 
 /**
  * A plugin in a preset, the preset option that enables it, and its settings.
- * @typedef {readonly [PluginCreator, string, PluginEntrySettings]} PluginEntry
+ * The first element is either a PostCSS plugin creator, which runs as its own
+ * plugin, or a stage descriptor, which runs in a host plugin with the stages
+ * of the adjacent descriptors.
+ * @typedef {readonly [PluginCreator | StageDescriptor, string, PluginEntrySettings]} PluginEntry
  */
 
 /**
@@ -66,6 +71,8 @@ export function configurePlugins(entries, options) {
 /**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
+ * Each run of adjacent enabled stage descriptors becomes one host plugin. A
+ * plugin creator that runs ends the run, so the stages keep their order.
  *
  * @param {readonly PluginEntry[]} entries
  * @param {Record<string, unknown>} known the validated options, without preset
@@ -84,16 +91,28 @@ export function configureValidated(entries, known) {
   const disabled = new Set(/** @type {string[]} */ (disable));
   /** @type {AcceptedPlugin[]} */
   const plugins = [];
-  for (const [creator, name, settings] of entries) {
+  /** @type {Stage[]} */
+  let run = [];
+  const endRun = () => {
+    if (run.length > 0) plugins.push(hostPlugin(run));
+    run = [];
+  };
+  for (const [entry, name, settings] of entries) {
     if (disabled.has(name)) continue;
-    plugins.push(
-      creator({
-        ...settings.defaults,
-        ...pluginOptions[name],
-        ...(settings.targets ? { [browserTargets]: targets } : undefined),
-      })
-    );
+    const options = {
+      ...settings.defaults,
+      ...pluginOptions[name],
+      ...(settings.targets ? { [browserTargets]: targets } : undefined),
+    };
+    if (typeof entry === 'function') {
+      endRun();
+      plugins.push(entry(options));
+    } else {
+      const stage = entry.build(options);
+      if (stage !== null) run.push(stage);
+    }
   }
+  endRun();
   return plugins;
 }
 
