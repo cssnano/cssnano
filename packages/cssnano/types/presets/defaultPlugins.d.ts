@@ -153,8 +153,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
     readonly postcssPlugin: 'postcss-calc';
     readonly optionKeys: readonly ['precision', 'warnWhenCannotResolve', 'mediaQueries', 'selectors', 'unwrapSingleValue', 'onParseError'];
 }], readonly [{
-    (opts?: import("#postcss-convert-values").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: (options: import("#postcss-convert-values").Options, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
 }, 'convertValues', {
     readonly postcssPlugin: 'postcss-convert-values';
     readonly targets: true;

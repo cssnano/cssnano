@@ -37,6 +37,7 @@ test('the default preset marks exactly the plugins that resolve browser targets'
       ...(await pluginsThatResolveTargets()),
       'cssnano-merge',
       'postcss-colormin',
+      'postcss-convert-values',
       'postcss-reduce-initial',
     ].toSorted()
   );

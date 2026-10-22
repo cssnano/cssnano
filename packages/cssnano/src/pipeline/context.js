@@ -1,4 +1,4 @@
-import { syntaxAllowsPercentage } from '../plugins/postcss-convert-values/lib/parseSyntax.js';
+import { syntaxAllowsPercentage } from '../utils/syntaxPercentage.js';
 
 /** @import {AtRule, Container, Document} from 'postcss' */
 

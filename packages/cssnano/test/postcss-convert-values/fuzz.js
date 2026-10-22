@@ -1,13 +1,18 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import plugin from '../../src/plugins/postcss-convert-values/index.js';
+import convertValues from '../../src/plugins/postcss-convert-values/index.js';
 import { check } from '../../script/postcss-convert-values/lib/fuzzCheck.js';
 import {
   edgeCases,
   generate,
 } from '../../script/postcss-convert-values/lib/fuzzGenerate.js';
-import { repositoryFile } from '../../../../util/testHelpers.js';
+import {
+  repositoryFile,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
+
+const plugin = oneStagePlugin(convertValues);
 
 const processor = postcss([plugin()]);
 

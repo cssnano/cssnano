@@ -1,5 +1,8 @@
+import { oneStagePlugin } from '../../../../../util/testHelpers.js';
 import postcss from 'postcss';
-import plugin from '../../../src/plugins/postcss-convert-values/index.js';
+import convertValues from '../../../src/plugins/postcss-convert-values/index.js';
+
+const plugin = oneStagePlugin(convertValues);
 
 const processor = postcss([plugin()]);
 
