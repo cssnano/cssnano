@@ -6,14 +6,21 @@ import { defaultPluginEntries } from '../../../src/presets/defaultPlugins.js';
 
 const pluginsDirectory = new URL('../../../src/plugins/', import.meta.url);
 
-/** @return {Promise<string[]>} directories of the plugins that resolve browser targets */
+/**
+ * A plugin resolves targets itself, or it is a stage descriptor that sets
+ * `targets: true` and has the host resolve them.
+ * @return {Promise<string[]>} directories of the plugins that resolve browser targets
+ */
 async function pluginsThatResolveTargets() {
   const names = new Set();
   for await (const file of glob('postcss-*/**/*.js', {
     cwd: pluginsDirectory,
   })) {
     const source = await readFile(new URL(file, pluginsDirectory), 'utf8');
-    if (/from\s*'#utils\/browser-targets'/v.test(source)) {
+    if (
+      /from\s*'#utils\/browser-targets'/v.test(source) ||
+      /\btargets:\s*true\b/v.test(source)
+    ) {
       // Glob returns paths with the platform's separator.
       names.add(file.split(sep)[0]);
     }

@@ -10,7 +10,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
 import { launchChromium } from './chromium.js';
-import { oneStagePlugin } from './testHelpers.js';
+import { oneStagePlugin, withTargets } from './testHelpers.js';
 
 /**
  * @typedef {object} ValueChange
@@ -71,12 +71,33 @@ export function invalidBecameValid(changes, supports) {
   );
 }
 
+// The repository's own browserslist config targets IE 11, which switches off
+// the stages that need modern browsers, so the gate pins its targets.
+const modernTargets = withTargets('baseline widely available with downstream');
+
 /**
  * Values the frameworks lack. Invalid inputs matter most: a stage must leave
  * them ignored.
  * @type {Record<string, string>}
  */
 const syntheticCorpus = {
+  'postcss-reduce-initial': [
+    ['top', 'initial'],
+    ['top', 'auto'],
+    ['display', 'initial'],
+    ['display', 'inline'],
+    ['opacity', 'initial'],
+    ['opacity', '1'],
+    ['opacity', '1.0'],
+    ['color', 'initial'],
+    ['margin-left', 'initial'],
+    ['margin-left', '0'],
+    ['margin-left', '0px'],
+    ['flex-direction', 'ROW'],
+    ['unknown-property', 'initial'],
+  ]
+    .map(([prop, value]) => `a{${prop}:${value}}`)
+    .join('\n'),
   'postcss-normalize-display-values': [
     'block flow',
     'block flow-root',
@@ -167,7 +188,7 @@ async function checkStage(stage, frameworks, stageDir, browser) {
   for (const css of corpus) {
     for (const change of await changedValues(
       css,
-      oneStagePlugin(descriptor)()
+      oneStagePlugin(descriptor)(modernTargets)
     )) {
       unique.set(JSON.stringify(change), change);
     }
@@ -201,6 +222,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const stageDir = join(root, 'packages', 'cssnano', 'src', 'plugins');
   const stages = [
+    'postcss-reduce-initial',
     'postcss-normalize-display-values',
     'postcss-reduce-transforms',
     'postcss-colormin',
