@@ -51,6 +51,18 @@ test('ValueBuffer.replace applies edits given from last to first', () => {
   assert.equal(buffer.text(), 'x b d');
 });
 
+test('ValueBuffer.replace accepts a replacement longer than the argument limit', () => {
+  const count = 200_000;
+  const buffer = new ValueBuffer('a');
+  buffer.replace(
+    0,
+    1,
+    Array.from({ length: count }, () => ident('b'))
+  );
+  assert.equal(buffer.tokens().length, count);
+  assert.equal(buffer.finish(), 'b'.repeat(count));
+});
+
 test('ValueBuffer.replace makes the structure undefined when the edit unbalances the brackets', () => {
   const buffer = new ValueBuffer('f(a)');
   buffer.replace(2, 3, [ident('x')]);
