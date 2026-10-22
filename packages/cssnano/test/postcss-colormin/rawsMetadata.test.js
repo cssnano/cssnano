@@ -24,7 +24,7 @@ describe('Raw PostCSS metadata handling and synchronization', () => {
     assert.equal(decl.raws.value, undefined);
   });
 
-  test('should synchronize decl.raws.value on both cache miss and cache hit', async () => {
+  test('should synchronize decl.raws.value on both first and repeated values', async () => {
     const root = postcss.parse('h1{color:white} h2{color:white}');
     const decl1 = /** @type {import('postcss').Declaration} */ (
       root.nodes?.[0]?.nodes?.[0]

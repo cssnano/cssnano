@@ -1,3 +1,4 @@
+import { stageDescriptor } from '../../pipeline/host.js';
 import cssnanoUtils from '#utils';
 
 const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
@@ -123,6 +124,8 @@ function timingStage() {
 }
 
 /** @type {import('../../pipeline/host.js').StageDescriptor} */
-const normalizeTimingFunctions = { compile: () => timingStage };
+const normalizeTimingFunctions = stageDescriptor({
+  compile: () => timingStage,
+});
 
 export { normalizeTimingFunctions as default };
