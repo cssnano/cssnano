@@ -1,10 +1,4 @@
-/**
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @type {import('../../pipeline/host.js').StageDescriptor} */
+declare const normalizeTimingFunctions: import('../../pipeline/host.js').StageDescriptor;
+export { normalizeTimingFunctions as default };
 //# sourceMappingURL=index.d.ts.map
