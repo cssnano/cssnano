@@ -14,8 +14,8 @@ declare class Value {
     /** @param {string} text */
     constructor(text: string);
     /**
-     * The tokens of the text, without the end-of-file token. The list and each
-     * token are frozen, so a reader cannot change what another reader sees.
+     * The tokens of the text, without the end-of-file token. Readers must not
+     * change the list; ValueBuffer copies it before it edits.
      *
      * @return {readonly CSSToken[]}
      */

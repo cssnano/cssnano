@@ -1,5 +1,5 @@
 import reduceInitial from '#postcss-reduce-initial';
-import postcssMinifyGradients from '#postcss-minify-gradients';
+import minifyGradients from '#postcss-minify-gradients';
 import reduceTransforms from '#postcss-reduce-transforms';
 import postcssConvertValues from '#postcss-convert-values';
 import postcssCalc from 'postcss-calc';
@@ -83,7 +83,7 @@ const mergeEntry = /** @type {const} */ ([
 export const defaultPluginEntries = /** @type {const} */ ([
   discardCommentsEntry,
   [
-    postcssMinifyGradients,
+    minifyGradients,
     'minifyGradients',
     { postcssPlugin: 'postcss-minify-gradients', optionKeys: [] },
   ],

@@ -33,15 +33,6 @@ test('Value.tokens lists the tokenizer tokens of its text without end-of-file', 
   ]);
 });
 
-test('Value.tokens returns a frozen list', () => {
-  assert.ok(Object.isFrozen(new ValueTable().intern('a').tokens()));
-});
-
-test('Value.tokens freezes each token it holds', () => {
-  const [token] = new ValueTable().intern('a').tokens();
-  assert.ok(Object.isFrozen(token));
-});
-
 test('Value.tokens returns the same list on every call', () => {
   const value = new ValueTable().intern('a b');
   assert.equal(value.tokens(), value.tokens());

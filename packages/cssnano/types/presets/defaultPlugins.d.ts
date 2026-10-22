@@ -1,4 +1,3 @@
-import postcssMinifyGradients from '#postcss-minify-gradients';
 import mergePass from '../passes/merge/index.js';
 export type DefaultPluginOptions = {
     /**
@@ -114,7 +113,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }, "discardComments", {
     readonly postcssPlugin: 'postcss-discard-comments';
     readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
-}], readonly [typeof postcssMinifyGradients, 'minifyGradients', {
+}], readonly [import("../pipeline/host.js").StageDescriptor, 'minifyGradients', {
     readonly postcssPlugin: 'postcss-minify-gradients';
     readonly optionKeys: readonly [];
 }], readonly [import("../pipeline/host.js").StageDescriptor, 'reduceInitial', {
