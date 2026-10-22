@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { hostPlugin, stageDescriptor } from '../../src/pipeline/host.js';
+import { hostPlugin } from '../../src/pipeline/host.js';
 
 /**
  * A host plugin's stage member that builds the given stage, with no options.
@@ -10,8 +10,9 @@ import { hostPlugin, stageDescriptor } from '../../src/pipeline/host.js';
 const hostOf = (...stages) =>
   hostPlugin(
     stages.map((stage) => ({
-      descriptor: stageDescriptor({ compile: () => () => stage }),
+      entry: { create: () => stage },
       options: {},
+      targets: false,
     }))
   );
 
@@ -38,7 +39,7 @@ describe('a host plugin', () => {
 
   test('runs the at-rule and selector part of a value stage after its declaration walk, before the next phase', async () => {
     const log = [];
-    /** @type {import('../../src/pipeline/host.js').ValueStage & {run: (root: unknown) => void}} */
+    /** @type {import('../../src/pipeline/host.js').Stage & {run: (root: unknown) => void}} */
     const valueAndPrelude = {
       forProperty: () => (buffer) => {
         log.push(`value:${buffer.text()}`);

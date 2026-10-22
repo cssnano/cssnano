@@ -1,4 +1,3 @@
-import { stageDescriptor } from '../../pipeline/host.js';
 import cssnanoUtils from '#utils';
 
 const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
@@ -114,7 +113,7 @@ const reduce = (buffer) => {
  * The stage for one run. It reads the animation and transition properties,
  * including their vendor-prefixed forms.
  *
- * @return {import('../../pipeline/host.js').ValueStage}
+ * @return {import('../../pipeline/host.js').Stage}
  */
 function timingStage() {
   return {
@@ -123,9 +122,7 @@ function timingStage() {
   };
 }
 
-/** @type {import('../../pipeline/host.js').StageDescriptor} */
-const normalizeTimingFunctions = stageDescriptor({
-  compile: () => timingStage,
-});
+/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+const normalizeTimingFunctions = { create: () => timingStage() };
 
 export { normalizeTimingFunctions as default };

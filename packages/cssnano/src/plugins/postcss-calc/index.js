@@ -1,10 +1,9 @@
-import { stageDescriptor } from '../../pipeline/host.js';
 import reduceCalc from 'postcss-calc/reduce';
 import { parsedValueText } from '../../utils/parsedValueText.js';
 
 /** @import {PostCssCalcOptions} from 'postcss-calc' */
 /** @import {Helpers, Root} from 'postcss' */
-/** @import {StageDescriptor, ValueStage} from '../../pipeline/host.js' */
+/** @import {StageEntry, Stage} from '../../pipeline/host.js' */
 
 /**
  * Reduces the calc() functions of one text. A parse error goes to the
@@ -66,7 +65,7 @@ function reducePreludes(root, options, result) {
  * stages, and its at-rule and selector part follows that walk.
  *
  * @param {PostCssCalcOptions} options
- * @returns {ValueStage}
+ * @returns {Stage}
  */
 function calcStage(options) {
   return {
@@ -88,9 +87,9 @@ function calcStage(options) {
   };
 }
 
-/** @type {StageDescriptor} */
-const calc = stageDescriptor({
-  compile: (options) => () => calcStage(options),
-});
+/** @satisfies {StageEntry} */
+const calc = {
+  create: (/** @type {PostCssCalcOptions} */ options) => calcStage(options),
+};
 
 export { calc as default };

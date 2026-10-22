@@ -1,4 +1,3 @@
-import { stageDescriptor } from '../../pipeline/host.js';
 import { supportsAll } from '#utils/browser-support';
 import fromInitial from './data/fromInitial.json' with { type: 'json' };
 import toInitial from './data/toInitial.json' with { type: 'json' };
@@ -53,7 +52,7 @@ function reducerFor(reducers, toKeyword, fromKeyword) {
  *
  * @param {Options} options
  * @param {readonly string[] | undefined} browsers
- * @return {(() => import('../../pipeline/host.js').ValueStage) | null}
+ * @return {import('../../pipeline/host.js').Stage | null}
  */
 function compileReduceInitial(options, browsers) {
   if (
@@ -65,30 +64,25 @@ function compileReduceInitial(options, browsers) {
     return null;
   }
   const ignoreProp = new Set(defaultIgnoreProps.concat(options.ignore || []));
-  return () => {
-    /** @type {Reducers} */
-    const reducers = new Map();
-    return {
-      forProperty(property) {
-        const lowerCasedProp = property.toLowerCase();
-        if (ignoreProp.has(lowerCasedProp)) return null;
-        const toKeyword = Object.hasOwn(toInitial, lowerCasedProp)
-          ? toInitial[/** @type keyof typeof toInitial */ (lowerCasedProp)]
-          : null;
-        const fromKeyword =
-          fromInitial[/** @type keyof typeof fromInitial */ (lowerCasedProp)] ||
-          null;
-        if (toKeyword === null && fromKeyword === null) return null;
-        return reducerFor(reducers, toKeyword, fromKeyword);
-      },
-    };
+  /** @type {Reducers} */
+  const reducers = new Map();
+  return {
+    forProperty(property) {
+      const lowerCasedProp = property.toLowerCase();
+      if (ignoreProp.has(lowerCasedProp)) return null;
+      const toKeyword = Object.hasOwn(toInitial, lowerCasedProp)
+        ? toInitial[/** @type keyof typeof toInitial */ (lowerCasedProp)]
+        : null;
+      const fromKeyword =
+        fromInitial[/** @type keyof typeof fromInitial */ (lowerCasedProp)] ||
+        null;
+      if (toKeyword === null && fromKeyword === null) return null;
+      return reducerFor(reducers, toKeyword, fromKeyword);
+    },
   };
 }
 
-/** @type {import('../../pipeline/host.js').StageDescriptor} */
-const reduceInitial = stageDescriptor({
-  targets: true,
-  compile: compileReduceInitial,
-});
+/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+const reduceInitial = { create: compileReduceInitial };
 
 export { reduceInitial as default };

@@ -15,11 +15,16 @@ type Equal<A, B> =
     ? true
     : false;
 
+/** The options type of a plugin creator, or of a stage entry's create. */
 type OptionKeysOf<Creator> = Creator extends (...args: infer Args) => unknown
   ? Args extends []
     ? never
     : keyof NonNullable<Args[0]>
-  : never;
+  : Creator extends { create: (...args: infer Args) => unknown }
+    ? Args extends []
+      ? never
+      : keyof NonNullable<Args[0]>
+    : never;
 
 /** The named keys of an options type; `Record<string, never>` takes none. */
 type NamedKeysOf<Options> = string extends keyof Options
