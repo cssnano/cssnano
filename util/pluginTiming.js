@@ -1,0 +1,189 @@
+// Prints the time each preset entry spends in its own listeners over the
+// framework corpus, so a refactor can show where its time moved.
+//
+//   node util/pluginTiming.js [--preset default|lite|advanced] [--rounds <n>]
+//
+// Every listener of an entry is timed, so an entry's time excludes the other
+// entries' listeners. The table shows, per entry, the fastest round, because
+// the slowest rounds are mostly noise from the machine.
+import { readdirSync, readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { createRequire } from 'node:module';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { parseArgs } from 'node:util';
+import { repositoryFile } from './testHelpers.js';
+
+/** @typedef {(this: unknown, ...args: unknown[]) => unknown} Listener */
+/** @typedef {Record<string, unknown>} Plugin */
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const cssnanoDir = join(root, 'packages', 'cssnano');
+const frameworksDir = join(root, 'frameworks');
+
+const { values } = parseArgs({
+  options: {
+    preset: { type: 'string', default: 'default' },
+    rounds: { type: 'string', default: '3' },
+  },
+  strict: true,
+});
+const rounds = Number(values.rounds);
+if (!Number.isSafeInteger(rounds) || rounds < 1) {
+  console.error('--rounds must be a positive integer');
+  process.exit(2);
+}
+
+const require = createRequire(join(cssnanoDir, 'package.json'));
+const postcss = (await import(pathToFileURL(require.resolve('postcss')).href))
+  .default;
+const { default: preset } = await import(
+  pathToFileURL(join(cssnanoDir, 'src', 'presets', `${values.preset}.js`)).href
+);
+
+/**
+ * Labels each plugin by its PostCSS name, and numbers repeats, so two entries
+ * with the same name stay apart.
+ *
+ * @param {Plugin[]} plugins
+ * @return {{ label: string, plugin: Plugin }[]}
+ */
+function labelled(plugins) {
+  /** @type {Map<string, number>} */
+  const seen = new Map();
+  return plugins.map((plugin) => {
+    const name = String(plugin.postcssPlugin);
+    const occurrence = (seen.get(name) ?? 0) + 1;
+    seen.set(name, occurrence);
+    return {
+      label: occurrence === 1 ? name : `${name}#${occurrence}`,
+      plugin,
+    };
+  });
+}
+
+/**
+ * Accumulated nanoseconds per entry for the round in progress.
+ * @type {Map<string, bigint>}
+ */
+let roundTotals = new Map();
+
+/**
+ * Wraps a listener so its run time is added to `label`.
+ *
+ * @param {string} label
+ * @param {Listener} listener
+ * @return {Listener}
+ */
+function timedListener(label, listener) {
+  return function timedRun(...args) {
+    const start = process.hrtime.bigint();
+    try {
+      return listener.apply(this, args);
+    } finally {
+      roundTotals.set(
+        label,
+        (roundTotals.get(label) ?? 0n) + process.hrtime.bigint() - start
+      );
+    }
+  };
+}
+
+/**
+ * Wraps every listener of a visitor object, including per-property ones such
+ * as `Declaration: { color() {} }`.
+ *
+ * @param {Plugin} visitors
+ * @param {string} label
+ * @return {Plugin}
+ */
+function timedVisitors(visitors, label) {
+  return Object.fromEntries(
+    Object.entries(visitors).map(([name, listener]) => [
+      name,
+      typeof listener === 'function'
+        ? timedListener(label, /** @type {Listener} */ (listener))
+        : timedVisitors(/** @type {Plugin} */ (listener), label),
+    ])
+  );
+}
+
+/**
+ * Copies a plugin so each of its listeners records its time under `label`.
+ * A `prepare` hook returns the listeners for one run, so those are timed too.
+ *
+ * @param {Plugin} plugin
+ * @param {string} label
+ * @return {Plugin}
+ */
+function timed(plugin, label) {
+  /** @type {Plugin} */
+  const copy = { ...plugin };
+  for (const [key, value] of Object.entries(plugin)) {
+    if (typeof value !== 'function') continue;
+    const listener = /** @type {Listener} */ (value);
+    if (key === 'prepare') {
+      copy[key] = /** @type {Listener} */ (
+        function timedPrepare(...args) {
+          const visitors = /** @type {Plugin | undefined} */ (
+            timedListener(label, listener).apply(this, args)
+          );
+          return visitors === undefined || visitors === null
+            ? visitors
+            : timedVisitors(visitors, label);
+        }
+      );
+    } else {
+      copy[key] = timedListener(label, listener);
+    }
+  }
+  return copy;
+}
+
+const files = readdirSync(frameworksDir)
+  .toSorted()
+  .map((file) => readFileSync(join(frameworksDir, file), 'utf8'));
+
+/** @type {string[]} */
+const labels = [];
+/** @type {Map<string, bigint>} */
+const best = new Map();
+let wholeRunBest = Infinity;
+for (let round = 0; round < rounds; round++) {
+  roundTotals = new Map();
+  const entries = labelled(/** @type {Plugin[]} */ (preset()));
+  for (const { label } of entries) {
+    if (!labels.includes(label)) labels.push(label);
+  }
+  const plugins = entries.map(({ label, plugin }) => timed(plugin, label));
+  const processor = postcss(plugins);
+  const start = performance.now();
+  for (const css of files) {
+    await processor.process(css, { from: repositoryFile });
+  }
+  wholeRunBest = Math.min(wholeRunBest, performance.now() - start);
+  for (const label of labels) {
+    const total = roundTotals.get(label) ?? 0n;
+    const previous = best.get(label);
+    if (previous === undefined || total < previous) best.set(label, total);
+  }
+}
+
+const ms = (/** @type {bigint} */ ns) => Number(ns) / 1e6;
+const sum = [...best.values()].reduce((a, b) => a + b, 0n);
+const width = Math.max(...labels.map((label) => label.length), 'total'.length);
+console.log(
+  `${'entry'.padEnd(width)}  ${'ms'.padStart(10)}  ${'share'.padStart(7)}`
+);
+for (const label of labels) {
+  const time = best.get(label) ?? 0n;
+  const share = sum === 0n ? 0 : (Number(time) / Number(sum)) * 100;
+  console.log(
+    `${label.padEnd(width)}  ${ms(time).toFixed(1).padStart(10)}  ${`${share.toFixed(1)}%`.padStart(7)}`
+  );
+}
+console.log(
+  `${'total'.padEnd(width)}  ${ms(sum).toFixed(1).padStart(10)}  ${'100.0%'.padStart(7)}`
+);
+console.log(
+  `wall time of the fastest round, all listeners included: ${wholeRunBest.toFixed(1)} ms (${rounds} rounds, ${files.length} files)`
+);
