@@ -102,24 +102,20 @@ function transform(value) {
   return result;
 }
 
+/** @type {import('../../pipeline/host.js').Reducer} */
+const reduce = (buffer) => {
+  const text = buffer.text();
+  const out = transform(text);
+  if (out !== text) buffer.replaceText(out);
+};
+
 /**
  * The stage for one run. It reads the animation and transition properties,
- * including their vendor-prefixed forms, and keeps its own cache of values.
+ * including their vendor-prefixed forms.
  *
  * @return {import('../../pipeline/host.js').ValueStage}
  */
 function timingStage() {
-  const cache = new Map();
-  /** @type {import('../../pipeline/host.js').Reducer} */
-  const reduce = (buffer) => {
-    const text = buffer.text();
-    let out = cache.get(text);
-    if (out === undefined) {
-      out = transform(text);
-      cache.set(text, out);
-    }
-    if (out !== text) buffer.replaceText(out);
-  };
   return {
     forProperty: (property) =>
       animationTransitionRegex.test(property) ? reduce : null,
