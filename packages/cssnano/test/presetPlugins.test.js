@@ -19,9 +19,21 @@ describe('built presets return plugins', () => {
 
   test('disable leaves out exactly the named plugin', () => {
     assert.deepStrictEqual(
-      names(defaultPreset({ disable: ['colormin'] })),
-      names(defaultPreset()).filter((name) => name !== 'postcss-colormin')
+      names(defaultPreset({ disable: ['discardComments'] })),
+      names(defaultPreset()).filter(
+        (name) => name !== 'postcss-discard-comments'
+      )
     );
+  });
+
+  test('disabling colormin leaves the timing stage in its host plugin running', async () => {
+    const css =
+      'a{color:#ff0000;animation-timing-function:cubic-bezier(0.42,0,0.58,1)}';
+    const result = await postcss(
+      defaultPreset({ disable: ['colormin'] })
+    ).process(css, { from: repositoryFile });
+    assert.match(result.css, /#ff0000/v);
+    assert.match(result.css, /ease-in-out/v);
   });
 
   test('disabling merge leaves the cssnano-merge pass out', () => {

@@ -25,6 +25,7 @@ import {
   normalizeWhitespaceEntry,
   rawCacheEntry,
 } from './sharedPluginEntries.js';
+import { pluginStageDescriptor } from '../pipeline/host.js';
 
 /**
  * The options of each plugin in the default preset, keyed by the preset option
@@ -107,7 +108,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     { postcssPlugin: 'postcss-reduce-transforms', optionKeys: [] },
   ],
   [
-    postcssColormin,
+    pluginStageDescriptor(postcssColormin),
     'colormin',
     {
       postcssPlugin: 'postcss-colormin',
@@ -124,7 +125,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     },
   ],
   [
-    postcssNormalizeTimingFunctions,
+    pluginStageDescriptor(postcssNormalizeTimingFunctions),
     'normalizeTimingFunctions',
     { postcssPlugin: 'postcss-normalize-timing-functions', optionKeys: [] },
   ],

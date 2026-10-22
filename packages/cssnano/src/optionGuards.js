@@ -75,9 +75,17 @@ export const isStats = (value) =>
   (isRecord(value) && isUsageByBrowser(value.dataByBrowser));
 
 /**
- * Whether a list has the entries that validateOptions reads: a plugin creator,
- * the option name and the settings with their option keys. A copy of cssnano
- * with another entry shape is rejected here, not crashed on later.
+ * @param {unknown} value
+ * @returns {boolean} whether the value is a stage descriptor, which has a build function
+ */
+const isStageDescriptor = (value) =>
+  isRecord(value) && typeof value.build === 'function';
+
+/**
+ * Whether a list has the entries that validateOptions reads: a plugin creator
+ * or a stage descriptor, the option name and the settings with their option
+ * keys. A copy of cssnano with another entry shape is rejected here, not
+ * crashed on later.
  *
  * @param {unknown} value
  * @returns {value is readonly PluginEntry[]}
@@ -89,7 +97,7 @@ export function isPluginEntries(value) {
       (entry) =>
         Array.isArray(entry) &&
         entry.length === 3 &&
-        typeof entry[0] === 'function' &&
+        (typeof entry[0] === 'function' || isStageDescriptor(entry[0])) &&
         isString(entry[1]) &&
         isRecord(entry[2]) &&
         isStringList(entry[2].optionKeys)

@@ -41,9 +41,10 @@ export declare const isQuery: (value: unknown) => value is string | string[];
  */
 export declare const isStats: (value: unknown) => boolean;
 /**
- * Whether a list has the entries that validateOptions reads: a plugin creator,
- * the option name and the settings with their option keys. A copy of cssnano
- * with another entry shape is rejected here, not crashed on later.
+ * Whether a list has the entries that validateOptions reads: a plugin creator
+ * or a stage descriptor, the option name and the settings with their option
+ * keys. A copy of cssnano with another entry shape is rejected here, not
+ * crashed on later.
  *
  * @param {unknown} value
  * @returns {value is readonly PluginEntry[]}
