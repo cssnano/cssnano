@@ -12,7 +12,7 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {Stage, StageDescriptor} from '../pipeline/host.js' */
+/** @import {StageDescriptor, StageMember} from '../pipeline/host.js' */
 
 /**
  * The options of a built preset: the same as cssnano, without the preset and
@@ -71,8 +71,9 @@ export function configurePlugins(entries, options) {
 /**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
- * Each run of adjacent enabled stage descriptors becomes one host plugin. A
- * plugin creator that runs ends the run, so the stages keep their order.
+ * Each run of adjacent enabled stage descriptors becomes one host plugin, which
+ * builds its stages when it processes a stylesheet. A plugin creator that runs
+ * ends the run, so the stages keep their order.
  *
  * @param {readonly PluginEntry[]} entries
  * @param {Record<string, unknown>} known the validated options, without preset
@@ -91,7 +92,7 @@ export function configureValidated(entries, known) {
   const disabled = new Set(/** @type {string[]} */ (disable));
   /** @type {AcceptedPlugin[]} */
   const plugins = [];
-  /** @type {Stage[]} */
+  /** @type {StageMember[]} */
   let run = [];
   const endRun = () => {
     if (run.length > 0) plugins.push(hostPlugin(run));
@@ -108,8 +109,7 @@ export function configureValidated(entries, known) {
       endRun();
       plugins.push(entry(options));
     } else {
-      const stage = entry.build(options);
-      if (stage !== null) run.push(stage);
+      run.push({ descriptor: entry, options });
     }
   }
   endRun();

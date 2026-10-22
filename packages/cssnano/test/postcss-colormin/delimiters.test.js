@@ -2,10 +2,13 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import {
+  oneStagePlugin,
   processCSSFactory,
   repositoryFile,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-colormin/index.js';
+import colormin from '../../src/plugins/postcss-colormin/index.js';
+
+const plugin = oneStagePlugin(colormin);
 
 const { passthroughCSS } = processCSSFactory(plugin);
 

@@ -28,7 +28,7 @@ export type PluginEntry = readonly [PluginCreator | StageDescriptor, string, Plu
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {Stage, StageDescriptor} from '../pipeline/host.js' */
+/** @import {StageDescriptor, StageMember} from '../pipeline/host.js' */
 /**
  * The options of a built preset: the same as cssnano, without the preset and
  * the configuration file.
@@ -76,8 +76,9 @@ export declare function configurePlugins(entries: readonly PluginEntry[], option
 /**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
- * Each run of adjacent enabled stage descriptors becomes one host plugin. A
- * plugin creator that runs ends the run, so the stages keep their order.
+ * Each run of adjacent enabled stage descriptors becomes one host plugin, which
+ * builds its stages when it processes a stylesheet. A plugin creator that runs
+ * ends the run, so the stages keep their order.
  *
  * @param {readonly PluginEntry[]} entries
  * @param {Record<string, unknown>} known the validated options, without preset

@@ -1,43 +1,34 @@
-/**
- * A stage changes the stylesheet once per run. A host plugin runs the stages
- * of a run in order, at OnceExit, so the plugins before it have finished.
- */
-import type { Helpers, Plugin, Root } from 'postcss';
-export type Stage = {
-    /**
-     * changes the stylesheet
-     */
+import type { Helpers, Plugin, Result, Root } from 'postcss';
+import type { ValueBuffer } from '../values/valueBuffer.js';
+export type Reducer = (buffer: ValueBuffer) => void;
+export type ValueStage = {
+    forProperty: (property: string) => Reducer | null;
+};
+export type PhaseStage = {
     run: (root: Root, helpers: Helpers) => void;
 };
+export type Stage = ValueStage | PhaseStage;
 export type StageDescriptor = {
-    build: (options: Record<PropertyKey, unknown>) => Stage | null;
+    build: (options: Record<PropertyKey, unknown>, result: Result) => Stage | null;
 };
-/** @import {Helpers, Plugin, PluginCreator, Root} from 'postcss' */
+export type StageMember = {
+    descriptor: StageDescriptor;
+    options: Record<PropertyKey, unknown>;
+};
 /**
- * @typedef {object} Stage
- * @property {(root: Root, helpers: Helpers) => void} run changes the stylesheet
- */
-/**
- * A stage descriptor builds the stage for the options of its preset entry, or
- * returns null when the stage does nothing with those options.
- *
- * @typedef {object} StageDescriptor
- * @property {(options: Record<PropertyKey, unknown>) => Stage | null} build
- */
-/**
- * @param {readonly Stage[]} stages the stages of one run, in order
+ * @param {readonly StageMember[]} members the stages of one run, in order
  * @returns {Plugin}
  */
-export declare function hostPlugin(stages: readonly Stage[]): Plugin;
+export declare function hostPlugin(members: readonly StageMember[]): Plugin;
 /**
  * Runs a plugin that changes the stylesheet only at OnceExit, in the place of
  * the host's stage. A plugin with any other listener would need a walk that
  * the host does not make, so it is rejected.
  *
  * @param {Plugin} plugin
- * @returns {Stage}
+ * @returns {PhaseStage}
  */
-export declare function pluginStage(plugin: Plugin): Stage;
+export declare function pluginStage(plugin: Plugin): PhaseStage;
 /**
  * A descriptor for an entry whose plugin still runs as a PostCSS plugin. It is
  * the bridge for a stage that is not yet a reducer, and is replaced once it is.
