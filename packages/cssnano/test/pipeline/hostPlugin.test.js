@@ -36,6 +36,23 @@ describe('a host plugin', () => {
     assert.deepStrictEqual(log, ['first', 'second']);
   });
 
+  test('runs the at-rule and selector part of a value stage after its declaration walk, before the next phase', async () => {
+    const log = [];
+    /** @type {import('../../src/pipeline/host.js').ValueStage & {run: (root: unknown) => void}} */
+    const valueAndPrelude = {
+      forProperty: () => (buffer) => {
+        log.push(`value:${buffer.text()}`);
+      },
+      run() {
+        log.push('prelude');
+      },
+    };
+    await postcss([
+      hostOf(valueAndPrelude, recordingStage('next', log)),
+    ]).process('a{color:red}', { from: undefined });
+    assert.deepStrictEqual(log, ['value:red', 'prelude', 'next']);
+  });
+
   test('passes the same stylesheet root to every stage', async () => {
     /** @type {unknown[]} */
     const roots = [];

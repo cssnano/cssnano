@@ -22,6 +22,12 @@ const timingRules = Array.from(
     `.t-${index}{transition:opacity ${index}ms cubic-bezier(0.42,0,0.58,1);animation-timing-function:cubic-bezier(0,0,1,1)}`
 ).join('');
 
+const calcRules = Array.from(
+  { length: 2000 },
+  (_, index) =>
+    `.k-${index}{width:calc(${index}px + 2px);height:calc(100% - ${index % 9}px)}`
+).join('');
+
 export const presetCases = {
   'preset-default-colour-values': {
     plugin: 'cssnano',
@@ -32,5 +38,10 @@ export const presetCases = {
     plugin: 'cssnano',
     createProcessor: () => postcss(defaultPreset()),
     css: timingRules,
+  },
+  'preset-default-calc-values': {
+    plugin: 'cssnano',
+    createProcessor: () => postcss(defaultPreset()),
+    css: calcRules,
   },
 };

@@ -27,6 +27,8 @@ class ValueBuffer {
   /** @type {BalancedTokens | undefined} */
   #structure;
   #structureFresh = false;
+  /** @type {{message: string, plugin: string | undefined}[] | undefined} */
+  #warnings;
 
   /** @param {string} source the value as the stylesheet reads it */
   constructor(source) {
@@ -97,6 +99,27 @@ class ValueBuffer {
     this.#text = text;
     this.#tokens = undefined;
     this.#structureFresh = false;
+  }
+
+  /**
+   * Reports a problem with the value. The host turns each message into a
+   * warning on the declaration, tagged with the plugin name when given.
+   *
+   * @param {string} message
+   * @param {string} [plugin]
+   */
+  warn(message, plugin) {
+    if (this.#warnings === undefined) this.#warnings = [];
+    this.#warnings.push({ message, plugin });
+  }
+
+  /**
+   * The warnings reported so far, or undefined when there are none.
+   *
+   * @return {readonly {message: string, plugin: string | undefined}[] | undefined}
+   */
+  warnings() {
+    return this.#warnings;
   }
 
   /**

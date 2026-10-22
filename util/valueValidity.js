@@ -188,6 +188,18 @@ const syntheticCorpus = {
   ]
     .map((value) => `a{transition-timing-function:${value}}`)
     .join('\n'),
+  'postcss-calc': [
+    'calc(1px + 2px)',
+    'calc(100% - 10px)',
+    'calc(2 * 3px)',
+    'calc(1px * 2 + 3px)',
+    'calc(1px / 0)',
+    'calc(1px + var(--x))',
+    'calc(1deg + 1rad)',
+    'calc(10px * (1px + 1px))',
+  ]
+    .map((value) => `a{width:${value}}`)
+    .join('\n'),
 };
 
 /**
@@ -250,6 +262,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     'postcss-reduce-transforms',
     'postcss-colormin',
     'postcss-normalize-timing-functions',
+    'postcss-calc',
   ];
   const browser = await launchChromium(executablePath);
   let failures = 0;
