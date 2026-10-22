@@ -124,10 +124,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
     readonly postcssPlugin: 'postcss-reduce-initial';
     readonly targets: true;
     readonly optionKeys: readonly ['ignore'];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizeDisplayValues', {
+}], readonly [import("../pipeline/host.js").StageDescriptor, 'normalizeDisplayValues', {
     readonly postcssPlugin: 'postcss-normalize-display-values';
     readonly optionKeys: readonly [];
 }], readonly [import("../pipeline/host.js").StageDescriptor, 'reduceTransforms', {
