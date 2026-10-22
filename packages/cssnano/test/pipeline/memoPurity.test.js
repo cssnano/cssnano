@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
+import minifyGradients from '../../src/plugins/postcss-minify-gradients/index.js';
 import reduceInitial from '../../src/plugins/postcss-reduce-initial/index.js';
 import normalizeDisplayValues from '../../src/plugins/postcss-normalize-display-values/index.js';
 import reduceTransforms from '../../src/plugins/postcss-reduce-transforms/index.js';
@@ -9,6 +10,7 @@ import normalizeTimingFunctions from '../../src/plugins/postcss-normalize-timing
 import { declarationTraversal } from '../../src/pipeline/traversal.js';
 
 const stages = [
+  minifyGradients,
   reduceInitial,
   normalizeDisplayValues,
   reduceTransforms,

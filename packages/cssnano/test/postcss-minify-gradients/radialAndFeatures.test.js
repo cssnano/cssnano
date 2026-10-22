@@ -1,9 +1,12 @@
 import { describe, test } from 'node:test';
 import {
+  oneStagePlugin,
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-gradients/index.js';
+import minifyGradients from '../../src/plugins/postcss-minify-gradients/index.js';
+
+const plugin = oneStagePlugin(minifyGradients);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
