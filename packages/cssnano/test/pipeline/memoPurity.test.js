@@ -35,10 +35,29 @@ function valuesByKey(root) {
     const source = decl.raws.value?.raw ?? decl.value;
     const key = `${decl.prop}\0${source}`;
     // Repeats of a key are served from the memo, so each must agree.
-    assert.equal(values.get(key) ?? decl.value, decl.value, key);
-    values.set(key, decl.value);
+    assert.equal(
+      values.get(key) ?? printedValue(decl),
+      printedValue(decl),
+      key
+    );
+    values.set(key, printedValue(decl));
   });
   return values;
+}
+
+/**
+ * The value as PostCSS prints it. A stage that writes a value with a comment in
+ * it leaves no raw text behind, while parsing the same text keeps the comment in
+ * the raw text, so the comparison uses what the output shows.
+ *
+ * @param {import('postcss').Declaration} decl
+ * @returns {string}
+ */
+function printedValue(decl) {
+  const raw = decl.raws.value;
+  return raw?.value === decl.value && raw.raw !== undefined
+    ? raw.raw
+    : decl.value;
 }
 
 test('each declaration of the frameworks gets the same value in a whole stylesheet, where the memo serves repeats, as alone', async () => {
@@ -60,6 +79,10 @@ test('each declaration of the frameworks gets the same value in a whole styleshe
       `a{${prop}:${source};}`,
       { from: undefined }
     );
-    assert.equal(alone.root.first.first.value, shared, `${prop}: ${source}`);
+    assert.equal(
+      printedValue(alone.root.first.first),
+      shared,
+      `${prop}: ${source}`
+    );
   }
 });
