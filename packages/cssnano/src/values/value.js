@@ -23,17 +23,13 @@ class Value {
   }
 
   /**
-   * The tokens of the text, without the end-of-file token. The list and each
-   * token are frozen, so a reader cannot change what another reader sees.
+   * The tokens of the text, without the end-of-file token. Readers must not
+   * change the list; ValueBuffer copies it before it edits.
    *
    * @return {readonly CSSToken[]}
    */
   tokens() {
-    if (this.#tokens === undefined) {
-      const list = tokens(this.text);
-      for (const token of list) Object.freeze(token);
-      this.#tokens = Object.freeze(list);
-    }
+    if (this.#tokens === undefined) this.#tokens = tokens(this.text);
     return this.#tokens;
   }
 
