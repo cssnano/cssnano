@@ -1,0 +1,53 @@
+import { test } from 'node:test';
+import {
+  oneStagePlugin,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
+import calc from '../../src/plugins/postcss-calc/index.js';
+
+const plugin = oneStagePlugin(calc);
+
+test(
+  'unwrapSingleValue serializes a resolved value without calc()',
+  processCSSFactory([plugin({ unwrapSingleValue: true })]).processCSS(
+    'a{width:calc(1px + 2px)}',
+    'a{width:3px}'
+  )
+);
+
+test(
+  'a value with the mediaQueries option off keeps its media query',
+  processCSSFactory([plugin({})]).passthroughCSS(
+    '@media (min-width:calc(100px + 20px)){a{color:red}}'
+  )
+);
+
+test(
+  'mediaQueries reduces a calc() in the media query parameters',
+  processCSSFactory([plugin({ mediaQueries: true })]).processCSS(
+    '@media (min-width:calc(100px + 20px)){a{color:red}}',
+    '@media (min-width:calc(120px)){a{color:red}}'
+  )
+);
+
+test(
+  'a value with the selectors option off keeps its selector',
+  processCSSFactory([plugin({})]).passthroughCSS(
+    'a:nth-child(calc(1 + 2)){color:red}'
+  )
+);
+
+test(
+  'selectors reduces a calc() in a selector',
+  processCSSFactory([plugin({ selectors: true })]).processCSS(
+    'a:nth-child(calc(1 + 2)){color:red}',
+    'a:nth-child(3){color:red}'
+  )
+);
+
+test(
+  'selectors leaves a calc() inside a quoted attribute value as a literal',
+  processCSSFactory([plugin({ selectors: true })]).passthroughCSS(
+    'a[x="calc(1px + 2px)"]{color:red}'
+  )
+);

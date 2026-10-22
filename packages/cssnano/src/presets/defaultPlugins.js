@@ -2,7 +2,7 @@ import reduceInitial from '#postcss-reduce-initial';
 import minifyGradients from '#postcss-minify-gradients';
 import reduceTransforms from '#postcss-reduce-transforms';
 import postcssConvertValues from '#postcss-convert-values';
-import postcssCalc from 'postcss-calc';
+import calc from '../plugins/postcss-calc/index.js';
 import colormin from '#postcss-colormin';
 import postcssOrderedValues from '#postcss-ordered-values';
 import postcssMinifySelectors from '#postcss-minify-selectors';
@@ -129,7 +129,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     { postcssPlugin: 'postcss-normalize-timing-functions', optionKeys: [] },
   ],
   [
-    postcssCalc,
+    calc,
     'calc',
     {
       postcssPlugin: 'postcss-calc',
