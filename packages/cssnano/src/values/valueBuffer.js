@@ -3,6 +3,9 @@ import { balancedStructure, tokens } from '../utils/value.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} BalancedTokens */
 
+/** Longest replacement passed to splice as spread arguments. */
+const maxSpreadArguments = 10_000;
+
 /**
  * The working copy of one fold over a declaration value. Reads come from the
  * source text until the first edit. Tokens are built on first use, and a
@@ -83,7 +86,18 @@ class ValueBuffer {
    * @param {readonly CSSToken[]} replacement built with the token constructors
    */
   replace(start, end, replacement) {
-    this.#own().splice(start, end - start, ...replacement);
+    const own = this.#own();
+    // Spreading into splice overflows the call stack for a long replacement,
+    // so the list is rebuilt from an array literal instead.
+    if (replacement.length <= maxSpreadArguments) {
+      own.splice(start, end - start, ...replacement);
+    } else {
+      this.#tokens = [
+        ...own.slice(0, start),
+        ...replacement,
+        ...own.slice(end),
+      ];
+    }
     this.#text = undefined;
     this.#structureFresh = false;
   }
