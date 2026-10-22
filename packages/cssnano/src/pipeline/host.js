@@ -1,3 +1,4 @@
+import { resolveTargets } from '#utils/browser-targets';
 import { declarationTraversal } from './traversal.js';
 
 /**
@@ -30,10 +31,13 @@ import { declarationTraversal } from './traversal.js';
 /** @typedef {ValueStage | PhaseStage} Stage */
 
 /**
- * A stage descriptor builds the stage for the options of its preset entry and
- * the result being processed, or returns null when the stage does nothing.
+ * A stage descriptor compiles what depends only on the options of its preset
+ * entry and the browser targets. It returns a function that starts the stage
+ * for one stylesheet, so no state outlives a run, or null when the stage does
+ * nothing.
  * @typedef {object} StageDescriptor
- * @property {(options: Record<PropertyKey, unknown>, result: Result) => Stage | null} build
+ * @property {boolean} [targets] whether the stage reads the browser targets
+ * @property {(options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => (() => Stage) | null} compile
  */
 
 /**
@@ -66,6 +70,44 @@ function phasesOf(stages) {
   return phases;
 }
 
+/** Stands for the targets of a stage that does not read them. */
+const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
+
+/**
+ * The compiled stages, by descriptor, options object and frozen targets. The
+ * targets of equal browserslist results are the same frozen array.
+ * @type {WeakMap<StageDescriptor, WeakMap<object, WeakMap<object, (() => Stage) | null>>>}
+ */
+const compiled = new WeakMap();
+
+/**
+ * @param {StageMember} member
+ * @param {Result} result
+ * @returns {(() => Stage) | null}
+ */
+function compileMember({ descriptor, options }, result) {
+  const targets = descriptor.targets
+    ? resolveTargets(options, result)
+    : noTargets;
+  let byOptions = compiled.get(descriptor);
+  if (byOptions === undefined) {
+    byOptions = new WeakMap();
+    compiled.set(descriptor, byOptions);
+  }
+  let byTargets = byOptions.get(options);
+  if (byTargets === undefined) {
+    byTargets = new WeakMap();
+    byOptions.set(options, byTargets);
+  }
+  if (!byTargets.has(targets)) {
+    byTargets.set(
+      targets,
+      descriptor.compile(options, descriptor.targets ? targets : undefined)
+    );
+  }
+  return /** @type {(() => Stage) | null} */ (byTargets.get(targets));
+}
+
 /**
  * @param {readonly StageMember[]} members the stages of one run, in order
  * @returns {Plugin}
@@ -76,9 +118,9 @@ export function hostPlugin(members) {
     prepare(result) {
       /** @type {Stage[]} */
       const stages = [];
-      for (const { descriptor, options } of members) {
-        const stage = descriptor.build(options, result);
-        if (stage !== null) stages.push(stage);
+      for (const member of members) {
+        const start = compileMember(member, result);
+        if (start !== null) stages.push(start());
       }
       const phases = phasesOf(stages);
       return {

@@ -20,7 +20,10 @@ function valueStage(select) {
  */
 function hostOf(stages) {
   return hostPlugin(
-    stages.map((stage) => ({ descriptor: { build: () => stage }, options: {} }))
+    stages.map((stage) => ({
+      descriptor: { compile: () => () => stage },
+      options: {},
+    }))
   );
 }
 

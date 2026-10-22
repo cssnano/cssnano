@@ -1,4 +1,3 @@
-import { resolveTargets } from '#utils/browser-targets';
 import { tryMinifyColor } from './minifyColor.js';
 import cssnanoUtils from '#utils';
 import { supportsAll, targetsAreUnknown } from '#utils/browser-support';
@@ -192,34 +191,38 @@ function readsProperty(property, config) {
 }
 
 /**
- * The stage for one run. The browser targets come from the result, so the
- * stage is built per run, and it keeps its own cache of transformed values.
+ * Compiles the supported color forms for the browser targets. The stage keeps
+ * its own cache of transformed values for one run.
  *
  * @param {Options} config
- * @param {import('postcss').Result} result
- * @return {import('../../pipeline/host.js').ValueStage}
+ * @param {readonly string[] | undefined} browsers
+ * @return {() => import('../../pipeline/host.js').ValueStage}
  */
-function colorminStage(config, result) {
-  const browsers = resolveTargets(config, result);
-  const options = addPluginDefaults(config, browsers);
-  const cache = new Map();
-  /** @type {import('../../pipeline/host.js').Reducer} */
-  const reduce = (buffer) => {
-    const text = buffer.text();
-    let out = cache.get(text);
-    if (out === undefined) {
-      out = transform(text, options);
-      cache.set(text, out);
-    }
-    if (out !== text) buffer.replaceText(out);
-  };
-  return {
-    forProperty: (property) =>
-      readsProperty(property, config) ? reduce : null,
+function compileColormin(config, browsers) {
+  const options = addPluginDefaults(
+    config,
+    /** @type {readonly string[]} */ (browsers)
+  );
+  return () => {
+    const cache = new Map();
+    /** @type {import('../../pipeline/host.js').Reducer} */
+    const reduce = (buffer) => {
+      const text = buffer.text();
+      let out = cache.get(text);
+      if (out === undefined) {
+        out = transform(text, options);
+        cache.set(text, out);
+      }
+      if (out !== text) buffer.replaceText(out);
+    };
+    return {
+      forProperty: (property) =>
+        readsProperty(property, config) ? reduce : null,
+    };
   };
 }
 
 /** @type {import('../../pipeline/host.js').StageDescriptor} */
-const colormin = { build: colorminStage };
+const colormin = { targets: true, compile: compileColormin };
 
 export { colormin as default };

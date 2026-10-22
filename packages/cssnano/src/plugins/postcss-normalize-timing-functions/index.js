@@ -127,6 +127,6 @@ function timingStage() {
 }
 
 /** @type {import('../../pipeline/host.js').StageDescriptor} */
-const normalizeTimingFunctions = { build: timingStage };
+const normalizeTimingFunctions = { compile: () => timingStage };
 
 export { normalizeTimingFunctions as default };
