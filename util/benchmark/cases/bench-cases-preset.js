@@ -28,6 +28,12 @@ const calcRules = Array.from(
     `.k-${index}{width:calc(${index}px + 2px);height:calc(100% - ${index % 9}px)}`
 ).join('');
 
+const lengthRules = Array.from(
+  { length: 2000 },
+  (_, index) =>
+    `.l-${index}{width:${index}.0px;margin:0px 1.50em;transition-duration:${index}00ms;opacity:1.${index % 9}}`
+).join('');
+
 export const presetCases = {
   'preset-default-colour-values': {
     plugin: 'cssnano',
@@ -43,5 +49,10 @@ export const presetCases = {
     plugin: 'cssnano',
     createProcessor: () => postcss(defaultPreset()),
     css: calcRules,
+  },
+  'preset-default-length-values': {
+    plugin: 'cssnano',
+    createProcessor: () => postcss(defaultPreset()),
+    css: lengthRules,
   },
 };

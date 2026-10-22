@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-convert-values/index.js';
+import {
+  processCSSFactory,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
+import convertValues from '../../src/plugins/postcss-convert-values/index.js';
 import convert from '../../src/plugins/postcss-convert-values/lib/convert.js';
+
+const plugin = oneStagePlugin(convertValues);
 
 const { processCSS } = processCSSFactory(plugin);
 
