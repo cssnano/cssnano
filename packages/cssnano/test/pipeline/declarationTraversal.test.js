@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { hostPlugin, stageDescriptor } from '../../src/pipeline/host.js';
+import { hostPlugin } from '../../src/pipeline/host.js';
 
 /**
  * A stage that gives each property the reducer that `select` returns for it.
  *
  * @param {(property: string) => ((buffer: import('../../src/values/valueBuffer.js').ValueBuffer) => void) | null} select
- * @returns {import('../../src/pipeline/host.js').ValueStage}
+ * @returns {import('../../src/pipeline/host.js').Stage}
  */
 function valueStage(select) {
   return { forProperty: select };
@@ -21,8 +21,9 @@ function valueStage(select) {
 function hostOf(stages) {
   return hostPlugin(
     stages.map((stage) => ({
-      descriptor: stageDescriptor({ compile: () => () => stage }),
+      entry: { create: () => stage },
       options: {},
+      targets: false,
     }))
   );
 }
@@ -201,7 +202,7 @@ describe('a value reducer in a host plugin', () => {
 });
 
 describe('the stages of a host plugin in one run', () => {
-  test('runs a value reducer before a later phase stage and after an earlier one', async () => {
+  test('runs the value reducers of every stage in the walk before any stage runs its run part', async () => {
     const log = [];
     await run(
       'a{color:red}',
@@ -221,7 +222,7 @@ describe('the stages of a host plugin in one run', () => {
         }),
       ])
     );
-    assert.deepEqual(log, ['before', 'phase', 'after']);
+    assert.deepEqual(log, ['before', 'after', 'phase']);
   });
 
   test('runs adjacent value stages on each declaration in pipeline order', async () => {

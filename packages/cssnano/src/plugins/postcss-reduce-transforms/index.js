@@ -1,4 +1,3 @@
-import { stageDescriptor } from '../../pipeline/host.js';
 import cssnanoUtils from '#utils';
 
 const {
@@ -294,7 +293,7 @@ const reduceTransform = (buffer) => {
 /**
  * The stage for one run. It reads every property that ends in `transform`.
  *
- * @return {import('../../pipeline/host.js').ValueStage}
+ * @return {import('../../pipeline/host.js').Stage}
  */
 function transformsStage() {
   return {
@@ -303,7 +302,7 @@ function transformsStage() {
   };
 }
 
-/** @type {import('../../pipeline/host.js').StageDescriptor} */
-const reduceTransforms = stageDescriptor({ compile: () => transformsStage });
+/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+const reduceTransforms = { create: () => transformsStage() };
 
 export { reduceTransforms as default };

@@ -15,11 +15,22 @@ export type ColorStop = {
     position: readonly number[];
 };
 /**
- * The stage keeps no state between values, so every run shares its reducer.
- * It reads every property, as gradients can appear in any of them.
+ * Shortens the gradients of one value. The edits index the value as PostCSS
+ * parses it, so a rewritten value loses the comments that the parse drops.
  *
- * @type {import('../../pipeline/host.js').StageDescriptor}
+ * @param {ValueBuffer} buffer
  */
-declare const minifyGradients: import('../../pipeline/host.js').StageDescriptor;
+declare function reduce(buffer: ValueBuffer): void;
+/**
+ * The stage keeps no state between values. It reads every property, as
+ * gradients can appear in any of them.
+ *
+ * @satisfies {import('../../pipeline/host.js').StageEntry}
+ */
+declare const minifyGradients: {
+    create: () => {
+        forProperty: () => typeof reduce;
+    };
+};
 export { minifyGradients as default };
 //# sourceMappingURL=index.d.ts.map

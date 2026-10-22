@@ -1,4 +1,3 @@
-import { stageDescriptor } from '../../pipeline/host.js';
 import { tryMinifyColor } from './minifyColor.js';
 import cssnanoUtils from '#utils';
 import { supportsAll, targetsAreUnknown } from '#utils/browser-support';
@@ -196,7 +195,7 @@ function readsProperty(property, config) {
  *
  * @param {Options} config
  * @param {readonly string[] | undefined} browsers
- * @return {() => import('../../pipeline/host.js').ValueStage}
+ * @return {import('../../pipeline/host.js').Stage}
  */
 function compileColormin(config, browsers) {
   const options = addPluginDefaults(
@@ -209,13 +208,13 @@ function compileColormin(config, browsers) {
     const out = transform(text, options);
     if (out !== text) buffer.replaceText(out);
   };
-  return () => ({
+  return {
     forProperty: (property) =>
       readsProperty(property, config) ? reduce : null,
-  });
+  };
 }
 
-/** @type {import('../../pipeline/host.js').StageDescriptor} */
-const colormin = stageDescriptor({ targets: true, compile: compileColormin });
+/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+const colormin = { create: compileColormin };
 
 export { colormin as default };

@@ -210,7 +210,7 @@ const syntheticCorpus = {
  * @return {Promise<{checked: number, bad: ValueChange[]}>}
  */
 async function checkStage(stage, frameworks, stageDir, browser) {
-  const descriptor = (await import(join(stageDir, stage, 'index.js'))).default;
+  const entry = (await import(join(stageDir, stage, 'index.js'))).default;
   const corpus = [
     ...readdirSync(frameworks)
       .toSorted()
@@ -222,7 +222,7 @@ async function checkStage(stage, frameworks, stageDir, browser) {
   for (const css of corpus) {
     for (const change of await changedValues(
       css,
-      oneStagePlugin(descriptor)(modernTargets)
+      oneStagePlugin(entry)(modernTargets)
     )) {
       unique.set(JSON.stringify(change), change);
     }

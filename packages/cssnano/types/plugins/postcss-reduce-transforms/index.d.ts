@@ -10,7 +10,9 @@ export type ParsedArgument = {
     number: number;
     unit: string;
 } | string | undefined;
-/** @type {import('../../pipeline/host.js').StageDescriptor} */
-declare const reduceTransforms: import('../../pipeline/host.js').StageDescriptor;
+/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+declare const reduceTransforms: {
+    create: () => import("../../pipeline/host.js").Stage;
+};
 export { reduceTransforms as default };
 //# sourceMappingURL=index.d.ts.map

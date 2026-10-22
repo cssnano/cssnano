@@ -76,14 +76,14 @@ export const isStats = (value) =>
 
 /**
  * @param {unknown} value
- * @returns {boolean} whether the value is a stage descriptor, which has a start function
+ * @returns {boolean} whether the value is a stage entry, which has a create function
  */
-const isStageDescriptor = (value) =>
-  isRecord(value) && typeof value.start === 'function';
+const isStageEntry = (value) =>
+  isRecord(value) && typeof value.create === 'function';
 
 /**
  * Whether a list has the entries that validateOptions reads: a plugin creator
- * or a stage descriptor, the option name and the settings with their option
+ * or a stage entry, the option name and the settings with their option
  * keys. A copy of cssnano with another entry shape is rejected here, not
  * crashed on later.
  *
@@ -97,7 +97,7 @@ export function isPluginEntries(value) {
       (entry) =>
         Array.isArray(entry) &&
         entry.length === 3 &&
-        (typeof entry[0] === 'function' || isStageDescriptor(entry[0])) &&
+        (typeof entry[0] === 'function' || isStageEntry(entry[0])) &&
         isString(entry[1]) &&
         isRecord(entry[2]) &&
         isStringList(entry[2].optionKeys)
