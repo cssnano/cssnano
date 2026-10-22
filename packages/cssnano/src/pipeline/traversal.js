@@ -39,9 +39,11 @@ function foldThrough(plan, value, table, memo) {
  * plan of its property, and writes the result only when it changed.
  *
  * @param {readonly ValueStage[]} stages in pipeline order
+ * @param {{memoise?: boolean}} [options] `memoise: false` folds every
+ *   declaration, which checks that the memo only saves work
  * @returns {PhaseStage}
  */
-export function declarationTraversal(stages) {
+export function declarationTraversal(stages, { memoise = true } = {}) {
   return {
     run(root) {
       const table = new ValueTable();
@@ -67,10 +69,10 @@ export function declarationTraversal(stages) {
         const plan = planByProperty.get(decl.prop);
         if (plan === null || plan === undefined) return;
 
-        let memo = memoByPlan.get(plan);
+        let memo = memoise ? memoByPlan.get(plan) : undefined;
         if (memo === undefined) {
           memo = new Map();
-          memoByPlan.set(plan, memo);
+          if (memoise) memoByPlan.set(plan, memo);
         }
         const value = table.intern(sourceValue(decl));
         const result = foldThrough(plan, value, table, memo);
