@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { isPluginEntries } from '../src/optionGuards.js';
-import { stageDescriptor } from '../src/pipeline/host.js';
 
 const creator = () => ({ postcssPlugin: 'x' });
 
@@ -15,13 +14,13 @@ test('isPluginEntries rejects an entry whose optionKeys is not a list of strings
   assert.equal(isPluginEntries([[creator, 'x', settings]]), false);
 });
 
-test('isPluginEntries accepts an entry whose first element is a stage descriptor', () => {
-  const descriptor = stageDescriptor({ compile: () => null });
+test('isPluginEntries accepts an entry whose first element is a stage entry with a create function', () => {
+  const entry = { create: () => null };
   const settings = { postcssPlugin: 'x', optionKeys: [] };
-  assert.equal(isPluginEntries([[descriptor, 'x', settings]]), true);
+  assert.equal(isPluginEntries([[entry, 'x', settings]]), true);
 });
 
-test('isPluginEntries rejects an entry whose first element is neither a creator nor a stage descriptor', () => {
+test('isPluginEntries rejects an entry whose first element is neither a creator nor a stage entry', () => {
   const settings = { postcssPlugin: 'x', optionKeys: [] };
   assert.equal(isPluginEntries([[{ run() {} }, 'x', settings]]), false);
 });

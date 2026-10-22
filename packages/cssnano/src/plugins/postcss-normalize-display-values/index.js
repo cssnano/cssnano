@@ -1,4 +1,3 @@
-import { stageDescriptor } from '../../pipeline/host.js';
 import {
   isTokenIdent,
   isTokenWhiteSpaceOrComment,
@@ -118,7 +117,7 @@ const reduce = (buffer) => {
 /**
  * The stage for one run. It reads the `display` property.
  *
- * @return {import('../../pipeline/host.js').ValueStage}
+ * @return {import('../../pipeline/host.js').Stage}
  */
 function displayStage() {
   return {
@@ -127,7 +126,7 @@ function displayStage() {
   };
 }
 
-/** @type {import('../../pipeline/host.js').StageDescriptor} */
-const normalizeDisplayValues = stageDescriptor({ compile: () => displayStage });
+/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+const normalizeDisplayValues = { create: () => displayStage() };
 
 export { normalizeDisplayValues as default };

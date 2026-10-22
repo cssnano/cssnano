@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { hostPlugin, stageDescriptor } from '../../src/pipeline/host.js';
+import { hostPlugin } from '../../src/pipeline/host.js';
 import {
   IN_KEYFRAMES,
   IN_PROPERTY,
@@ -27,7 +27,7 @@ const reportContext = (
 /**
  * A stage that reports the context of the declarations of one property.
  * @param {string} property
- * @returns {import('../../src/pipeline/host.js').ValueStage}
+ * @returns {import('../../src/pipeline/host.js').Stage}
  */
 const reportingStage = (property) => ({
   forProperty: (prop) => (prop === property ? reportContext : null),
@@ -41,10 +41,9 @@ const reportingStage = (property) => ({
 async function reportedCss(css, property) {
   const host = hostPlugin([
     {
-      descriptor: stageDescriptor({
-        compile: () => () => reportingStage(property),
-      }),
+      entry: { create: () => reportingStage(property) },
       options: {},
+      targets: false,
     },
   ]);
   const result = await postcss([host]).process(css, { from: undefined });

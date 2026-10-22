@@ -12,7 +12,7 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {StageDescriptor, StageMember} from '../pipeline/host.js' */
+/** @import {StageEntry, HostMember} from '../pipeline/host.js' */
 
 /**
  * The options of a built preset: the same as cssnano, without the preset and
@@ -48,9 +48,9 @@ import {
 /**
  * A plugin in a preset, the preset option that enables it, and its settings.
  * The first element is either a PostCSS plugin creator, which runs as its own
- * plugin, or a stage descriptor, which runs in a host plugin with the stages
- * of the adjacent descriptors.
- * @typedef {readonly [PluginCreator | StageDescriptor, string, PluginEntrySettings]} PluginEntry
+ * plugin, or a stage entry, which runs in a host plugin with the stages of the
+ * adjacent stage entries.
+ * @typedef {readonly [PluginCreator | StageEntry, string, PluginEntrySettings]} PluginEntry
  */
 
 /**
@@ -71,8 +71,8 @@ export function configurePlugins(entries, options) {
 /**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
- * Each run of adjacent enabled stage descriptors becomes one host plugin, which
- * builds its stages when it processes a stylesheet. A plugin creator that runs
+ * Each run of adjacent enabled stage entries becomes one host plugin, which
+ * builds its stages as it processes a stylesheet. A plugin creator that runs
  * ends the run, so the stages keep their order.
  *
  * @param {readonly PluginEntry[]} entries
@@ -92,7 +92,7 @@ export function configureValidated(entries, known) {
   const disabled = new Set(/** @type {string[]} */ (disable));
   /** @type {AcceptedPlugin[]} */
   const plugins = [];
-  /** @type {StageMember[]} */
+  /** @type {HostMember[]} */
   let run = [];
   const endRun = () => {
     if (run.length > 0) plugins.push(hostPlugin(run));
@@ -109,7 +109,7 @@ export function configureValidated(entries, known) {
       endRun();
       plugins.push(entry(options));
     } else {
-      run.push({ descriptor: entry, options });
+      run.push({ entry, options, targets: Boolean(settings.targets) });
     }
   }
   endRun();

@@ -1,4 +1,6 @@
-/** @type {import('../../pipeline/host.js').StageDescriptor} */
-declare const normalizeDisplayValues: import('../../pipeline/host.js').StageDescriptor;
+/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+declare const normalizeDisplayValues: {
+    create: () => import("../../pipeline/host.js").Stage;
+};
 export { normalizeDisplayValues as default };
 //# sourceMappingURL=index.d.ts.map

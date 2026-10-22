@@ -29,7 +29,17 @@ export type MinifyColorOptions = {
     transformCustomProperties?: boolean;
 };
 export type Options = MinifyColorOptions;
-/** @type {import('../../pipeline/host.js').StageDescriptor} */
-declare const colormin: import('../../pipeline/host.js').StageDescriptor;
+/**
+ * Compiles the supported color forms for the browser targets.
+ *
+ * @param {Options} config
+ * @param {readonly string[] | undefined} browsers
+ * @return {import('../../pipeline/host.js').Stage}
+ */
+declare function compileColormin(config: Options, browsers: readonly string[] | undefined): import('../../pipeline/host.js').Stage;
+/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+declare const colormin: {
+    create: typeof compileColormin;
+};
 export { colormin as default };
 //# sourceMappingURL=index.d.ts.map

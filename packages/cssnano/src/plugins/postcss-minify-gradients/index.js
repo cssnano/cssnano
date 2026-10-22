@@ -1,4 +1,3 @@
-import { stageDescriptor } from '../../pipeline/host.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {SourceEdit, PositionValue} from './lib/positions.js' */
 /** @import {ValueBuffer} from '../../values/valueBuffer.js' */
@@ -331,13 +330,13 @@ function reduce(buffer) {
 }
 
 /**
- * The stage keeps no state between values, so every run shares its reducer.
- * It reads every property, as gradients can appear in any of them.
+ * The stage keeps no state between values. It reads every property, as
+ * gradients can appear in any of them.
  *
- * @type {import('../../pipeline/host.js').StageDescriptor}
+ * @satisfies {import('../../pipeline/host.js').StageEntry}
  */
-const minifyGradients = stageDescriptor({
-  compile: () => () => ({ forProperty: () => reduce }),
-});
+const minifyGradients = {
+  create: () => ({ forProperty: () => reduce }),
+};
 
 export { minifyGradients as default };

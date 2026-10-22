@@ -70,13 +70,15 @@ function processCSSFactory(plugin) {
 }
 
 /**
- * A PostCSS plugin creator that runs one stage descriptor, the way a preset
- * does: the stage is built for each run in a host plugin of its own.
+ * A PostCSS plugin creator that runs one stage entry, the way a preset does: the
+ * stage is built for each run in a host plugin of its own. The browser targets
+ * are resolved for every stage, so a stage that ignores them is built once per
+ * targets array, which changes nothing it outputs.
  *
- * @param {import('../packages/cssnano/src/pipeline/host.js').StageDescriptor} descriptor
+ * @param {import('../packages/cssnano/src/pipeline/host.js').StageEntry} entry
  */
-function oneStagePlugin(descriptor) {
-  return (options = {}) => hostPlugin([{ descriptor, options }]);
+function oneStagePlugin(entry) {
+  return (options = {}) => hostPlugin([{ entry, options, targets: true }]);
 }
 
 export { oneStagePlugin, usePostCSSPlugin, processCSSFactory };

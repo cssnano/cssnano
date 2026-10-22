@@ -4,12 +4,12 @@ import postcss from 'postcss';
 import defaultPreset from '#presets/default';
 import { configurePlugins } from '../../src/presets/configurePlugins.js';
 import { browserTargets } from '../../src/utils/browserTargets.js';
-import { hostPlugin, stageDescriptor } from '../../src/pipeline/host.js';
+import { hostPlugin } from '../../src/pipeline/host.js';
 
 /** @typedef {import('../../src/presets/configurePlugins.js').PluginEntry} PluginEntry */
 
 /**
- * A stage entry. Its descriptor records the options it is built with, and its
+ * A stage entry. Its create records the options it is built with, and its
  * stage logs the name of the entry each time it runs.
  *
  * @param {string} option
@@ -18,18 +18,17 @@ import { hostPlugin, stageDescriptor } from '../../src/pipeline/host.js';
  */
 function stageEntry(option, { log, built, targets, returnsNull }) {
   return /** @type {PluginEntry} */ ([
-    stageDescriptor({
-      targets: Boolean(targets),
-      compile(/** @type {Record<PropertyKey, unknown>} */ options) {
+    {
+      create(/** @type {Record<PropertyKey, unknown>} */ options) {
         built.push({ option, options });
         if (returnsNull) return null;
-        return () => ({
+        return {
           run() {
             log.push(option);
           },
-        });
+        };
       },
-    }),
+    },
     option,
     {
       postcssPlugin: `postcss-${option}`,
@@ -151,9 +150,10 @@ describe('stage entries in a preset', () => {
       [stageEntry('reads', { ...s, targets: true }), stageEntry('ignores', s)],
       { browserslist }
     );
-    const [reads, ignores] = s.built;
-    assert.deepStrictEqual(reads.options[browserTargets], browserslist);
-    assert.equal(ignores.options[browserTargets], undefined);
+    const reads = s.built.find(({ option }) => option === 'reads');
+    const ignores = s.built.find(({ option }) => option === 'ignores');
+    assert.deepStrictEqual(reads?.options[browserTargets], browserslist);
+    assert.equal(ignores?.options[browserTargets], undefined);
   });
 
   test('the default preset runs its stage entries in the place of minifyGradients, reduceInitial, normalizeDisplayValues, reduceTransforms, colormin, the timing functions and calc, in one host plugin', () => {
@@ -167,84 +167,79 @@ describe('stage entries in a preset', () => {
 });
 
 /**
- * A descriptor that counts its compiles and records the targets each one got.
+ * A stage entry that counts its creates and records the targets each one got.
  * @param {{count: number, targets: unknown[]}} calls
- * @param {boolean} [targets] whether the stage reads the browser targets
  */
-const countingDescriptor = (calls, targets = false) =>
-  stageDescriptor({
-    targets,
-    compile(
-      /** @type {Record<PropertyKey, unknown>} */ _options,
-      /** @type {readonly string[] | undefined} */ resolved
-    ) {
-      calls.count += 1;
-      calls.targets.push(resolved);
-      return () => ({ run() {} });
-    },
+const countingEntry = (calls) => ({
+  create(/** @type {unknown} */ _options, /** @type {unknown} */ targets) {
+    calls.count += 1;
+    calls.targets.push(targets);
+    return { run() {} };
+  },
+});
+
+/**
+ * A host member for an entry, with the targets flag the preset would set.
+ * @param {{create: (options: Record<PropertyKey, unknown>, targets?: readonly string[]) => unknown}} entry
+ * @param {{targets?: boolean, options?: Record<PropertyKey, unknown>}} [settings]
+ */
+const member = (entry, { targets = false, options = {} } = {}) => ({
+  entry,
+  options,
+  targets,
+});
+
+describe('a host plugin creating its stages', () => {
+  test('creates a stage that reads no targets once, when the plugin is configured', async () => {
+    const calls = { count: 0, targets: [] };
+    const host = hostPlugin([member(countingEntry(calls))]);
+    assert.equal(calls.count, 1);
+    const processor = postcss([host]);
+    await processor.process('a{}', { from: undefined });
+    await processor.process('b{}', { from: undefined });
+    assert.equal(calls.count, 1);
+    assert.equal(calls.targets[0], undefined);
   });
 
-describe('a stage descriptor compiling its stages', () => {
-  test('compiles a stage once for the same options over several stylesheets', async () => {
+  test('creates a stage that reads targets once per targets array over several stylesheets', async () => {
     const calls = { count: 0, targets: [] };
     const processor = postcss([
-      hostPlugin([{ descriptor: countingDescriptor(calls), options: {} }]),
+      hostPlugin([member(countingEntry(calls), { targets: true })]),
     ]);
     await processor.process('a{}', { from: undefined });
     await processor.process('b{}', { from: undefined });
     assert.equal(calls.count, 1);
-  });
-
-  test('compiles again for another options object', async () => {
-    const calls = { count: 0, targets: [] };
-    const descriptor = countingDescriptor(calls);
-    await postcss([hostPlugin([{ descriptor, options: {} }])]).process('a{}', {
-      from: undefined,
-    });
-    await postcss([hostPlugin([{ descriptor, options: {} }])]).process('a{}', {
-      from: undefined,
-    });
-    assert.equal(calls.count, 2);
-  });
-
-  test('compiles separately for two descriptors given the same options', async () => {
-    const options = {};
-    const first = { count: 0, targets: [] };
-    const second = { count: 0, targets: [] };
-    await postcss([
-      hostPlugin([
-        { descriptor: countingDescriptor(first), options },
-        { descriptor: countingDescriptor(second), options },
-      ]),
-    ]).process('a{}', { from: undefined });
-    assert.equal(first.count, 1);
-    assert.equal(second.count, 1);
   });
 
   test('gives a stage that reads targets the same frozen targets for every stylesheet', async () => {
     const calls = { count: 0, targets: [] };
     const processor = postcss([
-      hostPlugin([
-        { descriptor: countingDescriptor(calls, true), options: {} },
-      ]),
+      hostPlugin([member(countingEntry(calls), { targets: true })]),
     ]);
     await processor.process('a{}', { from: undefined });
     await processor.process('b{}', { from: undefined });
-    assert.equal(calls.count, 1);
     assert.ok(Object.isFrozen(calls.targets[0]));
   });
 
-  test('starts a fresh stage for each stylesheet, so no state outlives a run', async () => {
-    let started = 0;
-    const descriptor = stageDescriptor({
-      compile: () => () => {
-        started += 1;
-        return { run() {} };
-      },
-    });
-    const processor = postcss([hostPlugin([{ descriptor, options: {} }])]);
-    await processor.process('a{}', { from: undefined });
-    await processor.process('b{}', { from: undefined });
-    assert.equal(started, 2);
+  test('creates each stage of a host separately, even for entries given the same options', async () => {
+    const first = { count: 0, targets: [] };
+    const second = { count: 0, targets: [] };
+    const options = {};
+    postcss([
+      hostPlugin([
+        member(countingEntry(first), { options }),
+        member(countingEntry(second), { options }),
+      ]),
+    ]);
+    assert.equal(first.count, 1);
+    assert.equal(second.count, 1);
+  });
+
+  test('creates a stage again for a host configured with other options', async () => {
+    const calls = { count: 0, targets: [] };
+    const entry = countingEntry(calls);
+    hostPlugin([member(entry)]);
+    hostPlugin([member(entry)]);
+    assert.equal(calls.count, 2);
   });
 });

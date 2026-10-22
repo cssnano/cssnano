@@ -1,4 +1,5 @@
-import type { PhaseStage, Reducer, ValueStage } from './host.js';
+import type { Helpers, Root } from 'postcss';
+import type { Reducer, Stage } from './host.js';
 export type PropertyEntry = {
     plan: readonly Reducer[] | null;
     memos: (Map<string, string> | undefined)[] | null;
@@ -10,8 +11,10 @@ export type PropertyEntry = {
  * changed. A value that reports a warning is not memoised, so each declaration
  * reports it.
  *
- * @param {readonly ValueStage[]} stages in pipeline order
- * @returns {PhaseStage}
+ * @param {readonly Stage[]} stages in pipeline order
+ * @returns {{run: (root: Root, helpers: Helpers) => void}}
  */
-export declare function declarationTraversal(stages: readonly ValueStage[]): PhaseStage;
+export declare function declarationTraversal(stages: readonly Stage[]): {
+    run: (root: Root, helpers: Helpers) => void;
+};
 //# sourceMappingURL=traversal.d.ts.map
