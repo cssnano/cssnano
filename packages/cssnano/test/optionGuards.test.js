@@ -15,7 +15,7 @@ test('isPluginEntries rejects an entry whose optionKeys is not a list of strings
 });
 
 test('isPluginEntries accepts an entry whose first element is a stage descriptor', () => {
-  const descriptor = { build: () => null };
+  const descriptor = { compile: () => null };
   const settings = { postcssPlugin: 'x', optionKeys: [] };
   assert.equal(isPluginEntries([[descriptor, 'x', settings]]), true);
 });

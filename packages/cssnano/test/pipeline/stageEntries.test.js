@@ -18,15 +18,16 @@ import { browserTargets } from '../../src/utils/browserTargets.js';
 function stageEntry(option, { log, built, targets, returnsNull }) {
   return /** @type {PluginEntry} */ ([
     {
-      build(/** @type {Record<PropertyKey, unknown>} */ options) {
+      compile(/** @type {Record<PropertyKey, unknown>} */ options) {
         built.push({ option, options });
         if (returnsNull) return null;
-        return {
+        return () => ({
           run() {
             log.push(option);
           },
-        };
+        });
       },
+      ...(targets ? { targets } : undefined),
     },
     option,
     {
