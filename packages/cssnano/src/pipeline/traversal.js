@@ -16,6 +16,12 @@ export function declarationTraversal(stages) {
     run(root) {
       /** @type {Map<string, readonly Reducer[] | null>} */
       const plans = new Map();
+      /**
+       * One memo per property: the pipeline's result for each source text.
+       * It lives for this run only, so no state crosses stylesheets.
+       * @type {Map<string, Map<string, string>>}
+       */
+      const memoByProperty = new Map();
 
       root.walkDecls((decl) => {
         let plan = plans.get(decl.prop);
@@ -31,10 +37,19 @@ export function declarationTraversal(stages) {
         }
         if (plan === null) return;
 
+        let memo = memoByProperty.get(decl.prop);
+        if (memo === undefined) {
+          memo = new Map();
+          memoByProperty.set(decl.prop, memo);
+        }
         const text = sourceValue(decl);
-        const buffer = new ValueBuffer(text);
-        for (const reducer of plan) reducer(buffer);
-        const result = buffer.finish();
+        let result = memo.get(text);
+        if (result === undefined) {
+          const buffer = new ValueBuffer(text);
+          for (const reducer of plan) reducer(buffer);
+          result = buffer.finish();
+          memo.set(text, result);
+        }
         if (result !== text) {
           decl.value = result;
           delete decl.raws.value;
