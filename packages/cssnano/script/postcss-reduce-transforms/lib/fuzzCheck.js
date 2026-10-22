@@ -1,5 +1,6 @@
 import postcss from 'postcss';
-import plugin from '../../../src/plugins/postcss-reduce-transforms/index.js';
+import reduceTransforms from '../../../src/plugins/postcss-reduce-transforms/index.js';
+import { oneStagePlugin } from '../../../../../util/testHelpers.js';
 import { differences, evaluate } from './fuzzEvaluate.js';
 import { shrink } from './fuzzGenerate.js';
 import {
@@ -18,7 +19,7 @@ import {
  * `test/fuzz.js` and the soak run in `script/fuzz.js`.
  */
 
-const processor = postcss([plugin()]);
+const processor = postcss([oneStagePlugin(reduceTransforms)()]);
 
 /**
  * @param {string} css
