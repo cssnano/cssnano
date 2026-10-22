@@ -225,8 +225,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
     readonly postcssPlugin: 'postcss-normalize-url';
     readonly optionKeys: readonly [];
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: () => import("../pipeline/host.js").Stage;
 }, 'normalizeRepeatStyle', {
     readonly postcssPlugin: 'postcss-normalize-repeat-style';
     readonly optionKeys: readonly [];
