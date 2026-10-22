@@ -1,9 +1,12 @@
 import { describe, test } from 'node:test';
 import {
+  oneStagePlugin,
   processCSSFactory,
   withTargets,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-reduce-initial/index.js';
+import reduceInitial from '../../src/plugins/postcss-reduce-initial/index.js';
+
+const plugin = oneStagePlugin(reduceInitial);
 
 const { processCSS } = processCSSFactory(plugin);
 

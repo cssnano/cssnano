@@ -4,18 +4,8 @@ export type Options = {
      */
     ignore?: string[];
 };
-/**
- * @typedef {object} Options
- * @property {string[]} [ignore] Properties that keep their value, such as `min-height`. (default: none)
- */
-/**
- * @param {Options} options
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(options?: Options): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+export type Reducers = Map<string | null, Map<string | null, import('../../pipeline/host.js').Reducer>>;
+/** @type {import('../../pipeline/host.js').StageDescriptor} */
+declare const reduceInitial: import('../../pipeline/host.js').StageDescriptor;
+export { reduceInitial as default };
 //# sourceMappingURL=index.d.ts.map
