@@ -282,28 +282,23 @@ function transform(value) {
   return result;
 }
 
+/** @type {import('../../pipeline/host.js').Reducer} */
+const reduceTransform = (buffer) => {
+  const text = buffer.text();
+  if (!text.includes('(')) return;
+  const out = transform(text);
+  if (out !== text) buffer.replaceText(out);
+};
+
 /**
- * The stage for one run. It reads every property that ends in `transform`,
- * and keeps its own cache of values.
+ * The stage for one run. It reads every property that ends in `transform`.
  *
  * @return {import('../../pipeline/host.js').ValueStage}
  */
 function transformsStage() {
-  const cache = new Map();
-  /** @type {import('../../pipeline/host.js').Reducer} */
-  const reduce = (buffer) => {
-    const text = buffer.text();
-    if (!text.includes('(')) return;
-    let out = cache.get(text);
-    if (out === undefined) {
-      out = transform(text);
-      cache.set(text, out);
-    }
-    if (out !== text) buffer.replaceText(out);
-  };
   return {
     forProperty: (property) =>
-      transformPropertyRegex.test(property) ? reduce : null,
+      transformPropertyRegex.test(property) ? reduceTransform : null,
   };
 }
 
