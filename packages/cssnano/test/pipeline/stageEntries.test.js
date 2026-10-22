@@ -131,9 +131,9 @@ describe('stage entries in a preset', () => {
     assert.deepStrictEqual(await ranStages(s, entries, {}), ['a', 'b']);
   });
 
-  test('options reach only the stage they name, merged over its defaults', () => {
+  test('options reach only the stage they name, merged over its defaults', async () => {
     const s = state();
-    configurePlugins([stageEntry('a', s), stageEntry('b', s)], {
+    await ranStages(s, [stageEntry('a', s), stageEntry('b', s)], {
       options: { a: { level: 1 } },
     });
     const [first, second] = s.built;
@@ -141,10 +141,11 @@ describe('stage entries in a preset', () => {
     assert.equal(second.options.level, undefined);
   });
 
-  test('a stage receives the browser targets only when its entry reads them', () => {
+  test('a stage receives the browser targets only when its entry reads them', async () => {
     const s = state();
     const browserslist = { query: 'defaults' };
-    configurePlugins(
+    await ranStages(
+      s,
       [stageEntry('reads', { ...s, targets: true }), stageEntry('ignores', s)],
       { browserslist }
     );

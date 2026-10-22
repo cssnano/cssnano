@@ -2,10 +2,13 @@ import nodepath from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, test } from 'node:test';
 import {
+  oneStagePlugin,
   processCSSFactory,
   withTargets,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-colormin/index.js';
+import colormin from '../../src/plugins/postcss-colormin/index.js';
+
+const plugin = oneStagePlugin(colormin);
 
 const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
 const { join } = nodepath;

@@ -2,6 +2,7 @@ import postcss from 'postcss';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { browserTargets } from '../packages/cssnano/src/utils/browserTargets.js';
+import { hostPlugin } from '../packages/cssnano/src/pipeline/host.js';
 
 /**
  * A file in the repository root, so browserslist finds the repository's
@@ -68,4 +69,14 @@ function processCSSFactory(plugin) {
   return { processor, processCSS, passthroughCSS };
 }
 
-export { usePostCSSPlugin, processCSSFactory };
+/**
+ * A PostCSS plugin creator that runs one stage descriptor, the way a preset
+ * does: the stage is built for each run in a host plugin of its own.
+ *
+ * @param {import('../packages/cssnano/src/pipeline/host.js').StageDescriptor} descriptor
+ */
+function oneStagePlugin(descriptor) {
+  return (options = {}) => hostPlugin([{ descriptor, options }]);
+}
+
+export { oneStagePlugin, usePostCSSPlugin, processCSSFactory };
