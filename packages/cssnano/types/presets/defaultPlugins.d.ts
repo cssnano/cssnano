@@ -133,7 +133,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }], readonly [import("../pipeline/host.js").StageDescriptor, 'normalizeTimingFunctions', {
     readonly postcssPlugin: 'postcss-normalize-timing-functions';
     readonly optionKeys: readonly [];
-}], readonly [import("postcss/lib/postcss").PluginCreator<import("postcss-calc").PostCssCalcOptions>, 'calc', {
+}], readonly [import("../pipeline/host.js").StageDescriptor, 'calc', {
     readonly postcssPlugin: 'postcss-calc';
     readonly optionKeys: readonly ['precision', 'warnWhenCannotResolve', 'mediaQueries', 'selectors', 'unwrapSingleValue', 'onParseError'];
 }], readonly [{

@@ -3,6 +3,7 @@ import type { ValueBuffer } from '../values/valueBuffer.js';
 export type Reducer = (buffer: ValueBuffer) => void;
 export type ValueStage = {
     forProperty: (property: string) => Reducer | null;
+    run?: (root: Root, helpers: Helpers) => void;
 };
 export type PhaseStage = {
     run: (root: Root, helpers: Helpers) => void;

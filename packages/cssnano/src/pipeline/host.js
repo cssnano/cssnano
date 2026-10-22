@@ -17,9 +17,12 @@ import { declarationTraversal } from './traversal.js';
 
 /**
  * A stage that changes declaration values. It gives the reducer of each
- * property it treats, or null for a property it leaves alone.
+ * property it treats, or null for a property it leaves alone. A stage may
+ * also change at-rule or selector text, in `run`, which runs once the walk of
+ * its run has finished.
  * @typedef {object} ValueStage
  * @property {(property: string) => Reducer | null} forProperty
+ * @property {(root: Root, helpers: Helpers) => void} [run]
  */
 
 /**
@@ -47,7 +50,9 @@ import { declarationTraversal } from './traversal.js';
 
 /**
  * Groups the stages of a run into phases: each run of adjacent value stages
- * becomes one traversal, and a phase stage stays as it is.
+ * becomes one traversal, and a phase stage stays as it is. The `run` part of a
+ * value stage follows the traversal that holds its declarations, before the
+ * next phase.
  *
  * @param {readonly Stage[]} stages in pipeline order
  * @returns {PhaseStage[]}
@@ -57,16 +62,24 @@ function phasesOf(stages) {
   const phases = [];
   /** @type {ValueStage[]} */
   let values = [];
+  /** @type {PhaseStage[]} */
+  let afterValues = [];
+  const endValues = () => {
+    if (values.length > 0) phases.push(declarationTraversal(values));
+    phases.push(...afterValues);
+    values = [];
+    afterValues = [];
+  };
   for (const stage of stages) {
     if ('forProperty' in stage) {
       values.push(stage);
+      if (stage.run) afterValues.push({ run: stage.run });
       continue;
     }
-    if (values.length > 0) phases.push(declarationTraversal(values));
-    values = [];
+    endValues();
     phases.push(stage);
   }
-  if (values.length > 0) phases.push(declarationTraversal(values));
+  endValues();
   return phases;
 }
 
