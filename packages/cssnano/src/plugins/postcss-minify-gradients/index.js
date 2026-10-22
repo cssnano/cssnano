@@ -1,3 +1,4 @@
+import { stageDescriptor } from '../../pipeline/host.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {SourceEdit, PositionValue} from './lib/positions.js' */
 /** @import {ValueBuffer} from '../../values/valueBuffer.js' */
@@ -335,8 +336,8 @@ function reduce(buffer) {
  *
  * @type {import('../../pipeline/host.js').StageDescriptor}
  */
-const minifyGradients = {
+const minifyGradients = stageDescriptor({
   compile: () => () => ({ forProperty: () => reduce }),
-};
+});
 
 export { minifyGradients as default };
