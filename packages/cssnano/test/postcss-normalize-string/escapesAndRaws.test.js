@@ -2,8 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-string/index.js';
+import {
+  oneStagePlugin,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
+import stringEntry from '../../src/plugins/postcss-normalize-string/index.js';
+
+const plugin = oneStagePlugin(stringEntry);
 
 const { processCSS } = processCSSFactory(plugin);
 
@@ -82,13 +87,13 @@ test(
   )
 );
 
-test('should normalize parsed declaration raw values', async () => {
+test('should drop the raw value of a declaration whose parsed value it normalizes', async () => {
   const decl = postcss.decl({ prop: 'content', value: "'value'" });
   decl.raws.value = { raw: "'value'", value: "'value'" };
   const root = postcss.root({ nodes: [decl] });
   await postcss([plugin()]).process(root, { from: undefined });
   assert.equal(decl.value, '"value"');
-  assert.deepEqual(decl.raws.value, { raw: '"value"', value: '"value"' });
+  assert.equal(decl.raws.value, undefined);
 });
 
 test('should ignore stale declaration raw values', async () => {
@@ -103,19 +108,16 @@ test('should ignore stale declaration raw values', async () => {
   const root = postcss.root({ nodes: [decl] });
   await postcss([preceding, plugin()]).process(root, { from: undefined });
   assert.equal(decl.value, '"changed"');
-  assert.deepEqual(decl.raws.value, { raw: '"changed"', value: '"changed"' });
+  assert.equal(decl.raws.value, undefined);
 });
 
-test('should normalize declaration raw values with surrounding formatting', async () => {
+test('should drop the raw value, with its surrounding formatting, of a declaration it normalizes', async () => {
   const decl = postcss.decl({ prop: 'content', value: "'value'" });
   decl.raws.value = { raw: "  'value'  ", value: "'value'" };
   const root = postcss.root({ nodes: [decl] });
   await postcss([plugin()]).process(root, { from: undefined });
   assert.equal(decl.value, '  "value"  ');
-  assert.deepEqual(decl.raws.value, {
-    raw: '  "value"  ',
-    value: '  "value"  ',
-  });
+  assert.equal(decl.raws.value, undefined);
 });
 
 test(
@@ -246,3 +248,8 @@ test('should treat a raw form feed after a hex escape as its terminator', async 
   assert.equal(out, 'p{content:"\\31\f "}');
   assertStringValueInvariant(css, out);
 });
+
+test(
+  'should normalize a string in a value with a comment, and keep the comment when the string is unchanged',
+  processCSS("a{content:'x' /*c*/}", 'a{content:"x" /*c*/}')
+);
