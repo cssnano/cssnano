@@ -162,6 +162,30 @@ const syntheticCorpus = {
   ]
     .map((value) => `a{background-repeat:${value}}`)
     .join('\n'),
+  'postcss-normalize-positions': [
+    'left center',
+    'center left',
+    'top center',
+    'center top',
+    'right bottom',
+    'bottom right',
+    'left top',
+    'top left',
+    'left 10px',
+    'left center / cover',
+    'left center, top right',
+    'center center',
+    'left center top',
+    'calc(10px) center',
+    'var(--x) left',
+    'left/* c */top',
+    'left center foo',
+    'top center center',
+    'left\\ center',
+    'left center left',
+  ]
+    .map((value) => `a{background-position:${value}}`)
+    .join('\n'),
   'postcss-reduce-transforms': [
     'scale(1, 1)',
     'scale(2, 2)',
@@ -288,6 +312,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     'postcss-reduce-initial',
     'postcss-normalize-display-values',
     'postcss-normalize-repeat-style',
+    'postcss-normalize-positions',
     'postcss-reduce-transforms',
     'postcss-colormin',
     'postcss-normalize-timing-functions',

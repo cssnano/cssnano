@@ -1,6 +1,11 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-positions/index.js';
+import {
+  oneStagePlugin,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
+import normalizePositions from '../../src/plugins/postcss-normalize-positions/index.js';
+
+const plugin = oneStagePlugin(normalizePositions);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -173,5 +178,13 @@ test(
   'should handle 0 in background positions',
   passthroughCSS(
     'background-position: url("../../media/examples/star.png") 0 0 repeat-x'
+  )
+);
+
+test(
+  'should keep a comment between two side keywords and their offsets',
+  processCSS(
+    'background-position:left /* c */ top',
+    'background-position:0 /* c */ 0'
   )
 );

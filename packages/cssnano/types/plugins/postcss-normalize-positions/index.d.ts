@@ -1,24 +1,24 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
-export type BalancedIndex = {
-    tokens: readonly CSSToken[];
-    endForOpening(index: number): number | undefined;
-};
+import type { Stage } from '../../pipeline/host.js';
+import type { ValueBuffer } from '../../values/valueBuffer.js';
+export type Structure = NonNullable<ReturnType<ValueBuffer['structure']>>;
 export type Side = {
     axis: 'x' | 'y' | 'center';
-    offset: string;
+    offset: () => CSSToken;
 };
 export type PositionTerm = {
     start: number;
     end: number;
     side: Side | undefined;
 };
-/**
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+export type Edit = {
+    start: number;
+    end: number;
+    replacement: CSSToken[];
+};
+/** @satisfies {StageEntry} */
+declare const normalizePositions: {
+    create: () => Stage;
+};
+export { normalizePositions as default };
 //# sourceMappingURL=index.d.ts.map
