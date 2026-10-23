@@ -1,10 +1,13 @@
 import { describe, test } from 'node:test';
 import {
+  oneStagePlugin,
   usePostCSSPlugin,
   processCSSFactory,
   withTargets,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-colormin/index.js';
+import colormin from '../../src/plugins/postcss-colormin/index.js';
+
+const plugin = oneStagePlugin(colormin);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 

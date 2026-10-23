@@ -6,6 +6,7 @@ import { fontCases } from './bench-cases-font.js';
 import { gradientCases } from './bench-cases-gradients.js';
 import { mergeCases } from './bench-cases-merge.js';
 import { normalizeCases } from './bench-cases-normalize.js';
+import { presetCases } from './bench-cases-preset.js';
 import { orderedCases } from './bench-cases-ordered.js';
 import { selectorCases } from './bench-cases-selectors.js';
 import { stylehacksCases } from './bench-cases-stylehacks.js';
@@ -19,4 +20,5 @@ export const benchmarkCases = {
   ...orderedCases,
   ...mergeCases,
   ...stylehacksCases,
+  ...presetCases,
 };

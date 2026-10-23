@@ -2,10 +2,13 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import {
-  usePostCSSPlugin,
+  oneStagePlugin,
   processCSSFactory,
+  usePostCSSPlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-url/index.js';
+import urlEntry from '../../src/plugins/postcss-normalize-url/index.js';
+
+const plugin = oneStagePlugin(urlEntry);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -173,7 +176,7 @@ test('should pass through malformed and unclosed url strings byte-for-byte', asy
   }
 });
 
-test('should not override rule.params when rule.raws.params has stale raw representation', async () => {
+test('should drop a stale raw of rule.params when the url rewrite changes it', async () => {
   const atRule = (
     await postcss([plugin()]).process(
       '@namespace islands url("http://bar.yandex.ru/ui/islands");',
@@ -189,14 +192,7 @@ test('should not override rule.params when rule.raws.params has stale raw repres
   };
   await postcss([plugin()]).process(atRule.root(), { from: undefined });
   assert.strictEqual(atRule.params, 'islands "http://example.com/fresh"');
-  assert.strictEqual(
-    atRule.raws.params.raw,
-    'islands "http://example.com/fresh"'
-  );
-  assert.strictEqual(
-    atRule.raws.params.value,
-    'islands "http://example.com/fresh"'
-  );
+  assert.strictEqual(atRule.raws.params, undefined);
 });
 
 test('should bypass declarations without URLs without mutating them', async () => {
@@ -253,6 +249,14 @@ describe('@import', () => {
   );
 
   test(
+    'should keep a comment after the url of an @import prelude that the url rewrite changes',
+    processCSS(
+      '@import url("a.css") /*x*/ screen;',
+      '@import "a.css" /*x*/ screen;'
+    )
+  );
+
+  test(
     'should handle uppercase @IMPORT at-rules',
     processCSS('@IMPORT url("style.css");', '@IMPORT "style.css";')
   );
@@ -298,7 +302,7 @@ describe('@import', () => {
     passthroughCSS('@import not_a_url;')
   );
 
-  test('should not override @import rule.params when rule.raws.params has stale raw representation', async () => {
+  test('should drop a stale raw of @import params when the url rewrite changes them', async () => {
     const atRule = (
       await postcss([plugin()]).process(
         '@import url("http://bar.yandex.ru/ui/islands.css");',
@@ -314,14 +318,7 @@ describe('@import', () => {
     };
     await postcss([plugin()]).process(atRule.root(), { from: undefined });
     assert.strictEqual(atRule.params, '"http://example.com/fresh.css"');
-    assert.strictEqual(
-      atRule.raws.params.raw,
-      '"http://example.com/fresh.css"'
-    );
-    assert.strictEqual(
-      atRule.raws.params.value,
-      '"http://example.com/fresh.css"'
-    );
+    assert.strictEqual(atRule.raws.params, undefined);
   });
 });
 
@@ -350,7 +347,7 @@ describe('@supports', () => {
     )
   );
 
-  test('should not override @supports rule.params when rule.raws.params has stale raw representation', async () => {
+  test('should drop a stale raw of @supports params when the url rewrite changes them', async () => {
     const atRule = (
       await postcss([plugin()]).process(
         '@supports (background: url("http://bar.yandex.ru/ui/islands.png")) {}',
@@ -369,13 +366,6 @@ describe('@supports', () => {
       atRule.params,
       '(background: url(http://example.com/fresh.png))'
     );
-    assert.strictEqual(
-      atRule.raws.params.raw,
-      '(background: url(http://example.com/fresh.png))'
-    );
-    assert.strictEqual(
-      atRule.raws.params.value,
-      '(background: url(http://example.com/fresh.png))'
-    );
+    assert.strictEqual(atRule.raws.params, undefined);
   });
 });

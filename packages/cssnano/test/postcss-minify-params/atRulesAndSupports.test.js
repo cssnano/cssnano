@@ -5,8 +5,11 @@ import {
   usePostCSSPlugin,
   processCSSFactory,
   repositoryFile,
+  oneStagePlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-params/index.js';
+import minifyParams from '../../src/plugins/postcss-minify-params/index.js';
+
+const plugin = oneStagePlugin(minifyParams);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

@@ -259,6 +259,17 @@ const transformHooks = Object.freeze({
 });
 
 /**
+ * The pass of one merge transform, which a preset can run in the place of the
+ * merge pass, so each transform can be tested alone.
+ *
+ * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} name
+ * @return {(css: Root, browsers: readonly string[]) => void}
+ */
+export function transformPass(name) {
+  return transformHooks[name];
+}
+
+/**
  * The creator of a pass that runs one transform, so each transform can be
  * tested alone as its own plugin.
  *

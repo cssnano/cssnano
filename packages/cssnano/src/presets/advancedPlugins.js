@@ -1,8 +1,10 @@
-import postcssDiscardUnused from '#postcss-discard-unused';
-import postcssMergeIdents from '#postcss-merge-idents';
-import postcssReduceIdents from '#postcss-reduce-idents';
-import postcssZindex from '#postcss-zindex';
+import { discardUnusedSymbols } from '#postcss-discard-unused';
+import { mergeIdentsSymbols } from '#postcss-merge-idents';
+import { createReducers, reduceIdentsSymbols } from '#postcss-reduce-idents';
+import { zindexSymbols } from '#postcss-zindex';
 import { defaultPluginEntries } from './defaultPlugins.js';
+
+/** @import {SymbolTransform} from '../pipeline/host.js' */
 
 /**
  * The options of the plugins that only the advanced preset adds.
@@ -27,23 +29,34 @@ import { defaultPluginEntries } from './defaultPlugins.js';
  */
 export const advancedPluginEntries = /** @type {const} */ ([
   [
-    postcssDiscardUnused,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'discardUnused',
     {
-      postcssPlugin: 'postcss-discard-unused',
       optionKeys: ['fontFace', 'counterStyle', 'keyframes', 'namespace'],
+      transform: true,
+      symbols: /** @type {SymbolTransform} */ (discardUnusedSymbols),
     },
   ],
   [
-    postcssMergeIdents,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'mergeIdents',
-    { postcssPlugin: 'postcss-merge-idents', optionKeys: [] },
+    {
+      optionKeys: [],
+      transform: true,
+      symbols: /** @type {SymbolTransform} */ (mergeIdentsSymbols),
+    },
   ],
   [
-    postcssReduceIdents,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) =>
+        createReducers(options),
+    },
     'reduceIdents',
     {
-      postcssPlugin: 'postcss-reduce-idents',
       optionKeys: [
         'counter',
         'counterStyle',
@@ -51,12 +64,23 @@ export const advancedPluginEntries = /** @type {const} */ ([
         'gridTemplate',
         'encoder',
       ],
+      transform: true,
+      // Its options are the reducers that create built.
+      symbols: /** @type {SymbolTransform} */ (
+        /** @type {unknown} */ (reduceIdentsSymbols)
+      ),
     },
   ],
   [
-    postcssZindex,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'zindex',
-    { postcssPlugin: 'postcss-zindex', optionKeys: ['startIndex'] },
+    {
+      optionKeys: ['startIndex'],
+      transform: true,
+      symbols: /** @type {SymbolTransform} */ (zindexSymbols),
+    },
   ],
 ]);
 

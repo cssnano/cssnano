@@ -93,7 +93,7 @@ function spellingsOf(decl, restored) {
  */
 
 /**
- * One walk over the stylesheet's declarations that finds the names substituted
+ * One pass over the stylesheet's declarations that finds the names substituted
  * text may spell and the declarations that reference keyframes or counter
  * styles. Substituted text is custom property values, `@property` initial
  * values, `@function` definitions, and references inside functions other than
@@ -104,7 +104,8 @@ function spellingsOf(decl, restored) {
  * definition is removed or keeps that definition. A spelling that no
  * declaration rewrite reaches therefore has to be collected here.
  *
- * @param {import('postcss').Root} css
+ * @param {import('postcss').Declaration[]} decls every declaration of the
+ *   stylesheet that is still attached
  * @param {Set<string>} candidates the names that may be merged; only they
  *   need protection
  * @param {import('postcss').AtRule[]} functionRules the `@function` rules
@@ -115,7 +116,7 @@ function spellingsOf(decl, restored) {
  * @return {{ protectedNames: Set<string>, references: Reference[] }}
  */
 function scanDeclarations(
-  css,
+  decls,
   candidates,
   functionRules,
   parameterRules,
@@ -139,7 +140,7 @@ function scanDeclarations(
   for (const rule of conditionRules) {
     collectNames(rule.params, candidates, protectedNames, false, false);
   }
-  css.walkDecls((decl) => {
+  for (const decl of decls) {
     const prop = asciiLowerCase(decl.prop);
     const classification = classifyDeclaration(decl, prop);
     const restored = trailingEscape(decl);
@@ -170,7 +171,7 @@ function scanDeclarations(
         );
       }
     }
-  });
+  }
   return { protectedNames, references };
 }
 

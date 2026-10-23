@@ -2,6 +2,10 @@ import postcss from 'postcss';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { browserTargets } from '../packages/cssnano/src/utils/browserTargets.js';
+import { hostPlugin } from '../packages/cssnano/src/pipeline/host.js';
+import { configureValidated } from '../packages/cssnano/src/presets/configurePlugins.js';
+import { normalizeWhitespaceEntry } from '../packages/cssnano/src/presets/sharedPluginEntries.js';
+import { defaultPluginEntries } from '../packages/cssnano/src/presets/defaultPlugins.js';
 
 /**
  * A file in the repository root, so browserslist finds the repository's
@@ -68,4 +72,45 @@ function processCSSFactory(plugin) {
   return { processor, processCSS, passthroughCSS };
 }
 
-export { usePostCSSPlugin, processCSSFactory };
+/**
+ * A PostCSS plugin creator that runs one stage entry, the way a preset does: the
+ * stage is built for each run in a host plugin of its own. The browser targets
+ * are resolved for every stage, so a stage that ignores them is built once per
+ * targets array, which changes nothing it outputs.
+ *
+ * @param {import('../packages/cssnano/src/pipeline/host.js').StageEntry} entry
+ */
+function oneStagePlugin(entry) {
+  return (options = {}) => hostPlugin([{ entry, options, targets: true }]);
+}
+
+/**
+ * The plugins that normalizeWhitespace runs in a preset: its value stage and the
+ * walk's option for it in one host, then its raws plugin.
+ *
+ * @returns {import('postcss').AcceptedPlugin[]}
+ */
+function normalizeWhitespacePlugins() {
+  return configureValidated([normalizeWhitespaceEntry], {});
+}
+
+/**
+ * The plugins that the default preset runs for discardOverridden: its walk
+ * transform, in a host of its own.
+ *
+ * @returns {import('postcss').AcceptedPlugin[]}
+ */
+function discardOverriddenPlugins() {
+  return configureValidated(
+    defaultPluginEntries.filter(([, name]) => name === 'discardOverridden'),
+    {}
+  );
+}
+
+export {
+  oneStagePlugin,
+  usePostCSSPlugin,
+  processCSSFactory,
+  normalizeWhitespacePlugins,
+  discardOverriddenPlugins,
+};

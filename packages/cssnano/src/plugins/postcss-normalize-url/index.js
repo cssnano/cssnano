@@ -3,6 +3,7 @@ import cssnanoUtils from '#utils';
 import { escapeForString, normalizeUrlTokenValue } from './urls.js';
 
 /** @import {CSSToken, TokenString} from '@csstools/css-tokenizer' */
+/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
 const { applyEdits, asciiLowerCase } = cssnanoUtils;
 const URL_CANDIDATE_REGEX = /url|src|\\/iv;
@@ -221,29 +222,6 @@ function forEachUrl(value, callback, options = {}) {
 }
 
 /**
- * Synchronize node value or params with PostCSS raw metadata.
- * @param {import('postcss').Declaration | import('postcss').AtRule} node
- * @param {'value' | 'params'} prop
- * @param {(currentValue: string) => string | undefined} updater
- * @return {void}
- */
-function updateNodeValue(node, prop, updater) {
-  const target = /** @type {Record<string, any>} */ (
-    /** @type {unknown} */ (node)
-  );
-  const raws = target.raws?.[prop];
-  const value =
-    raws?.value === target[prop] ? (raws.raw ?? target[prop]) : target[prop];
-  const updated = updater(value);
-  if (updated !== undefined && updated !== value) {
-    target[prop] = updated;
-    if (raws?.raw) {
-      target.raws[prop] = { raw: updated, value: updated };
-    }
-  }
-}
-
-/**
  * @param {string} value
  * @param {{ isImport?: boolean }} [options]
  * @return {string | undefined}
@@ -275,73 +253,71 @@ function normalizeImportUrls(value) {
 }
 
 /**
- * @param {import('postcss').Declaration | import('postcss').AtRule} node
- * @param {'value' | 'params'} prop
- * @return {void}
+ * Normalize the url() and string sources of an @namespace prelude. A namespace
+ * name is compared literally, so its whitespace is kept.
+ * @param {string} value
+ * @return {string | undefined}
  */
-function transformNodeUrls(node, prop) {
-  const current = /** @type {Record<string, any>} */ (
-    /** @type {unknown} */ (node)
-  )[prop];
-  if (!URL_CANDIDATE_REGEX.test(current)) return;
-  updateNodeValue(node, prop, normalizeUrls);
+function normalizeNamespaceUrls(value) {
+  /** @type {{start: number, end: number, text: string}[]} */
+  const edits = [];
+  forEachUrl(
+    value,
+    (start, end, decoded, quote, name) => {
+      const text = name
+        ? `"${escapeForString(decoded, '"')}"`
+        : `${quote}${escapeForString(decoded, quote)}${quote}`;
+      if (text !== value.slice(start, end)) {
+        edits.push({ start, end, text });
+      }
+    },
+    { includeStrings: true }
+  );
+  return edits.length > 0 ? applyEdits(value, edits) : undefined;
 }
 
 /**
- * @param {import('postcss').AtRule} rule
- * @return {void}
+ * Rewrites the url() and src() values of a declaration, when its text has a candidate.
+ * @type {Reducer}
  */
-function transformNamespace(rule) {
-  updateNodeValue(rule, 'params', (value) => {
-    /** @type {{start: number, end: number, text: string}[]} */
-    const edits = [];
-    forEachUrl(
-      value,
-      (start, end, decoded, quote, name) => {
-        // A namespace name is compared literally, so its whitespace is kept.
-        const text = name
-          ? `"${escapeForString(decoded, '"')}"`
-          : `${quote}${escapeForString(decoded, quote)}${quote}`;
-        if (text !== value.slice(start, end)) {
-          edits.push({ start, end, text });
-        }
-      },
-      { includeStrings: true }
-    );
-    return edits.length > 0 ? applyEdits(value, edits) : undefined;
-  });
-}
+const reduceValue = (buffer) => {
+  const text = buffer.text();
+  if (!URL_CANDIDATE_REGEX.test(text)) return;
+  const updated = normalizeUrls(text);
+  if (updated !== undefined) buffer.replaceText(updated);
+};
 
 /**
- * @return {import('postcss').Plugin}
+ * The stage for one run. Its value reducer serves every declaration, and its
+ * prelude reducers serve the import, namespace and supports at-rules, which
+ * the walk reads without comments.
+ *
+ * @return {Stage}
  */
-function pluginCreator() {
+function urlStage() {
   return {
-    postcssPlugin: 'postcss-normalize-url',
-    /**
-     * @param {import('postcss').Root} css
-     */
-    OnceExit(css) {
-      css.walk((node) => {
-        if (node.type === 'decl') {
-          transformNodeUrls(node, 'value');
-        } else if (node.type === 'atrule') {
-          const name = asciiLowerCase(node.name);
-          if (name === 'import') {
-            updateNodeValue(node, 'params', normalizeImportUrls);
-          } else if (name === 'namespace') {
-            transformNamespace(node);
-          } else if (name === 'supports') {
-            transformNodeUrls(node, 'params');
-          }
-        }
-      });
+    forProperty: () => reduceValue,
+    forAtRule(name) {
+      switch (asciiLowerCase(name)) {
+        case 'import':
+          return (text) => normalizeImportUrls(text) ?? text;
+        case 'namespace':
+          return (text) => normalizeNamespaceUrls(text) ?? text;
+        case 'supports':
+          return (text) =>
+            URL_CANDIDATE_REGEX.test(text)
+              ? (normalizeUrls(text) ?? text)
+              : text;
+        default:
+          return null;
+      }
     },
   };
 }
 
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
+/** @satisfies {StageEntry} */
+const urlEntry = {
+  create: () => urlStage(),
+};
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+export { urlEntry as default };

@@ -1,45 +1,48 @@
 import cssnanoUtils from '#utils';
+import { integer, percentage } from '../../values/tokenConstructors.js';
 
 const {
   TokenType,
   asciiLowerCase,
-  assignValue,
   decoded,
   isSubstitutionFunction,
   mathFunctions,
-  sourceValue,
-  tokenEnd,
-  tokenStart,
 } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @typedef {{tokens: readonly CSSToken[], endForOpening(index: number): number | undefined}} BalancedIndex */
-/** @type {(source: string) => BalancedIndex | undefined} */
-const balancedTokens = cssnanoUtils.balancedTokens;
+/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {ValueBuffer} from '../../values/valueBuffer.js' */
+/** @typedef {NonNullable<ReturnType<ValueBuffer['structure']>>} Structure */
 
 /**
- * The axis a side keyword names and its offset as a percentage of that axis.
- * @typedef {{axis: 'x' | 'y' | 'center', offset: string}} Side
+ * The axis a side keyword names and the offset it stands for, as a percentage
+ * of that axis. Each edit builds its offset token afresh.
+ * @typedef {{axis: 'x' | 'y' | 'center', offset: () => CSSToken}} Side
  */
 /** @type {Map<string, Side>} */
 const sides = new Map([
-  ['left', { axis: 'x', offset: '0' }],
-  ['right', { axis: 'x', offset: '100%' }],
-  ['top', { axis: 'y', offset: '0' }],
-  ['bottom', { axis: 'y', offset: '100%' }],
-  ['center', { axis: 'center', offset: '50%' }],
+  ['left', { axis: 'x', offset: () => integer(0) }],
+  ['right', { axis: 'x', offset: () => percentage(100) }],
+  ['top', { axis: 'y', offset: () => integer(0) }],
+  ['bottom', { axis: 'y', offset: () => percentage(100) }],
+  ['center', { axis: 'center', offset: () => percentage(50) }],
 ]);
 /* Every value that can change contains a side keyword, possibly escaped. This
  * is a conservative shortcut before tokenizing, not a parse. */
 const mayContainSide = /left|right|top|bottom|center|\\/iv;
-const leadingWhitespace = /[ \t\n\r\f]*/vy;
 const propFilterRegex =
   /^(?:[bB][aA][cC][kK][gG][rR][oO][uU][nN][dD](?:-[pP][oO][sS][iI][tT][iI][oO][nN])?|(?:-[A-Za-z0-9_]+-)?[pP][eE][rR][sS][pP][eE][cC][tT][iI][vV][eE]-[oO][rR][iI][gG][iI][nN])$/v;
 
 /**
- * One term of a `<position>`: the source span of a keyword, a number or a
- * whole math function. `side` is set only for a side keyword.
+ * One term of a `<position>`: the tokens of a keyword, a number or a whole math
+ * function, as indexes into the token list with `end` exclusive. `side` is set
+ * only for a side keyword.
  * @typedef {{start: number, end: number, side: Side | undefined}} PositionTerm
+ */
+
+/**
+ * The tokens that replace the span from `start` up to `end`, exclusive.
+ * @typedef {{start: number, end: number, replacement: CSSToken[]}} Edit
  */
 
 /** @param {CSSToken} token */ const lowerName = (token) =>
@@ -58,27 +61,26 @@ function isSubstitution(token) {
 /**
  * Any math function counts as a term: one that cannot yield a length leaves
  * the layer invalid either way, and counting it keeps the term run whole.
- * @param {BalancedIndex} index
- * @param {number} position index of the token in `index.tokens`
+ * @param {Structure} structure
+ * @param {number} position index of the token in `structure.tokens`
  * @return {PositionTerm | undefined}
  */
-function positionTerm(index, position) {
-  const token = index.tokens[position];
-  const start = tokenStart(token);
+function positionTerm(structure, position) {
+  const token = structure.tokens[position];
   switch (token[0]) {
     case TokenType.Ident: {
       const side = sides.get(lowerName(token));
-      return side ? { start, end: tokenEnd(token), side } : undefined;
+      return side ? { start: position, end: position + 1, side } : undefined;
     }
     case TokenType.Number:
     case TokenType.Percentage:
     case TokenType.Dimension:
-      return { start, end: tokenEnd(token), side: undefined };
+      return { start: position, end: position + 1, side: undefined };
     case TokenType.Function: {
       if (!mathFunctions.has(lowerName(token))) return undefined;
       /* Balanced input closes every function. */
-      const close = /** @type {number} */ (index.endForOpening(position));
-      return { start, end: tokenEnd(index.tokens[close]), side: undefined };
+      const close = /** @type {number} */ (structure.endForOpening(position));
+      return { start: position, end: close + 1, side: undefined };
     }
     default:
       return undefined;
@@ -89,16 +91,17 @@ function positionTerm(index, position) {
  * Splits a value into the position term runs of its comma-separated layers.
  * A layer is skipped when it contains a CSS function
  * or when its terms are split by another component.
- * @param {BalancedIndex} index
+ * @param {Structure} structure
  * @return {PositionTerm[][]}
  */
-function positionLayers(index) {
+function positionLayers(structure) {
+  const { tokens } = structure;
   /** @type {PositionTerm[][]} */ const layers = [];
   /** @type {PositionTerm[]} */ let terms = [];
   let stopped = false;
   let separated = false;
-  for (let position = 0; position < index.tokens.length; position++) {
-    const token = index.tokens[position];
+  for (let position = 0; position < tokens.length; position++) {
+    const token = tokens[position];
     if (token[0] === TokenType.Comma) {
       if (!stopped && terms.length) layers.push(terms);
       terms = [];
@@ -106,9 +109,9 @@ function positionLayers(index) {
       separated = false;
       continue;
     }
-    const term = stopped ? undefined : positionTerm(index, position);
+    const term = stopped ? undefined : positionTerm(structure, position);
     /* The contents of a function or block never hold this layer's terms. */
-    position = index.endForOpening(position) ?? position;
+    position = structure.endForOpening(position) ?? position;
     if (stopped) continue;
     if (isSubstitution(token)) stopped = true;
     else if (token[0] === TokenType.Delim && token[1] === '/') {
@@ -125,121 +128,116 @@ function positionLayers(index) {
 }
 
 /**
- * The shortest spelling of a term used as a one-value position. A lone
- * horizontal or center keyword becomes its offset; a vertical keyword stays,
- * because a lone offset is always horizontal.
- * @param {string} value @param {PositionTerm} term
+ * The tokens of a term written as a one-value position. A lone horizontal or
+ * center keyword becomes its offset; a vertical keyword stays, because a lone
+ * offset is always horizontal.
+ * @param {readonly CSSToken[]} tokens @param {PositionTerm} term
+ * @return {CSSToken[]}
  */
-const oneValue = (value, term) =>
+const oneValue = (tokens, term) =>
   term.side && term.side.axis !== 'y'
-    ? term.side.offset
-    : value.slice(term.start, term.end);
+    ? [term.side.offset()]
+    : tokens.slice(term.start, term.end);
 
-/** @param {string} value @param {PositionTerm} first @param {PositionTerm} second @return {[number, number, string] | undefined} */
-function twoValueReplacement(value, first, second) {
+/**
+ * @param {readonly CSSToken[]} tokens
+ * @param {PositionTerm} first
+ * @param {PositionTerm} second
+ * @return {Edit | undefined}
+ */
+function twoValueReplacement(tokens, first, second) {
   /* A one-value position implies center on the other axis, so `X center`
-   * becomes `X`. A slash that follows keeps one separating space. */
-  if (second.side?.axis === 'center') {
-    leadingWhitespace.lastIndex = second.end;
-    /* The pattern matches the empty string, so it never fails. */
-    const [whitespace] = /** @type {RegExpExecArray} */ (
-      leadingWhitespace.exec(value)
-    );
-    const slashFollows = value[second.end + whitespace.length] === '/';
-    return slashFollows && whitespace
-      ? [
-          first.start,
-          second.end + whitespace.length,
-          oneValue(value, first) + whitespace[0],
-        ]
-      : [first.start, second.end, oneValue(value, first)];
-  }
+   * becomes `X`. The tokens after the second term, such as the space before a
+   * `/`, stay as they are. */
+  if (second.side?.axis === 'center')
+    return {
+      start: first.start,
+      end: second.end,
+      replacement: oneValue(tokens, first),
+    };
   /* `center` beside a side keyword is the same implied default: `center top`
    * becomes `top` and `center left` becomes `0`. */
   if (first.side?.axis === 'center' && second.side)
-    return [first.start, second.end, oneValue(value, second)];
+    return {
+      start: first.start,
+      end: second.end,
+      replacement: oneValue(tokens, second),
+    };
   /* Two side keywords on different axes become offsets in x-then-y order. */
   if (first.side && second.side && first.side.axis !== second.side.axis) {
     const [x, y] =
       first.side.axis === 'x'
         ? [first.side, second.side]
         : [second.side, first.side];
-    return [
-      first.start,
-      second.end,
-      x.offset + value.slice(first.end, second.start) + y.offset,
-    ];
+    return {
+      start: first.start,
+      end: second.end,
+      replacement: [
+        x.offset(),
+        ...tokens.slice(first.end, second.start),
+        y.offset(),
+      ],
+    };
   }
   return undefined;
 }
 
-/** @param {string} value @param {PositionTerm[]} terms @return {[number, number, string] | undefined} */
-function positionReplacement(value, terms) {
-  if (terms.length === 1)
-    return [terms[0].start, terms[0].end, oneValue(value, terms[0])];
-  if (terms.length === 2) return twoValueReplacement(value, terms[0], terms[1]);
+/**
+ * @param {readonly CSSToken[]} tokens
+ * @param {PositionTerm[]} terms
+ * @return {Edit | undefined}
+ */
+function positionReplacement(tokens, terms) {
+  if (terms.length === 1) {
+    const [term] = terms;
+    if (!term.side || term.side.axis === 'y') return undefined;
+    return {
+      start: term.start,
+      end: term.end,
+      replacement: [term.side.offset()],
+    };
+  }
+  if (terms.length === 2)
+    return twoValueReplacement(tokens, terms[0], terms[1]);
   /* Three- and four-value positions have no shorter equivalent here. */
   return undefined;
 }
 
-/**
- * @param {string} value
- * @return {string}
- */
-function transform(value) {
-  if (!mayContainSide.test(value)) return value;
-  const index = balancedTokens(value);
-  /* Unbalanced brackets leave the layer structure unknown; keep the source. */
-  if (!index) return value;
-  let result = '';
+/** @type {Reducer} */
+const reduce = (buffer) => {
+  if (!mayContainSide.test(buffer.text())) return;
+  // Unbalanced brackets leave the layer structure unknown; keep the source.
+  const structure = buffer.structure();
+  if (!structure) return;
+  const { tokens } = structure;
+  /** @type {CSSToken[]} */ const output = [];
   let copied = 0;
-  for (const terms of positionLayers(index)) {
-    const replacement = positionReplacement(value, terms);
-    if (!replacement) continue;
-    const [start, end, text] = replacement;
-    result += value.slice(copied, start) + text;
-    copied = end;
+  let changed = false;
+  for (const terms of positionLayers(structure)) {
+    const edit = positionReplacement(tokens, terms);
+    if (!edit) continue;
+    for (; copied < edit.start; copied++) output.push(tokens[copied]);
+    output.push(...edit.replacement);
+    copied = edit.end;
+    changed = true;
   }
-  return copied ? result + value.slice(copied) : value;
-}
+  if (!changed) return;
+  for (; copied < tokens.length; copied++) output.push(tokens[copied]);
+  buffer.replace(0, tokens.length, output);
+};
 
 /**
- * @return {import('postcss').Plugin}
+ * The stage for one run. It reads the background and mask position properties.
+ *
+ * @return {Stage}
  */
-function pluginCreator() {
+function positionStage() {
   return {
-    postcssPlugin: 'postcss-normalize-positions',
-
-    /**
-     * @param {import('postcss').Root} css
-     */
-    OnceExit(css) {
-      const cache = new Map();
-
-      css.walkDecls(propFilterRegex, (decl) => {
-        const value = sourceValue(decl);
-
-        if (!value) {
-          return;
-        }
-
-        if (cache.has(value)) {
-          assignValue(decl, cache.get(value));
-
-          return;
-        }
-
-        const result = transform(value);
-
-        assignValue(decl, result);
-        cache.set(value, result);
-      });
-    },
+    forProperty: (property) => (propFilterRegex.test(property) ? reduce : null),
   };
 }
 
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
+/** @satisfies {StageEntry} */
+const normalizePositions = { create: () => positionStage() };
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+export { normalizePositions as default };

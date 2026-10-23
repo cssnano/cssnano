@@ -1,6 +1,11 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-font-values/index.js';
+import {
+  oneStagePlugin,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
+import minifyFontValues from '../../src/plugins/postcss-minify-font-values/index.js';
+
+const plugin = oneStagePlugin(minifyFontValues);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 

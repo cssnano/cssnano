@@ -121,16 +121,28 @@ function shouldDiscard(node, sub, isLayer, isRedundantLayer) {
 }
 
 /**
+ * @param {import('postcss').Result} result
+ * @param {import('postcss').AnyNode} node
+ * @return {void}
+ */
+function reportRemoval(result, node) {
+  result.messages.push({ type: 'removal', plugin, node });
+}
+
+/**
  * An empty `@layer x{}` is redundant only when an earlier block or statement
  * already fixed the order of `x`. Every ancestor other than `@layer` is
  * treated as a condition, so an earlier declaration counts only at top level
- * or under a condition that also encloses the later block.
+ * or under a condition that also encloses the later block. `visit` runs on
+ * each node that is kept, after its children, so another per-node transform
+ * can share this walk.
  *
  * @param {import('postcss').Root} css
  * @param {import('postcss').Result} result
+ * @param {(node: import('postcss').AnyNode) => void} [visit]
  * @return {void}
  */
-function discardAndReport(css, result) {
+export function discardAndReport(css, result, visit) {
   /** Layer keys declared in each open condition, outermost (top level) first.
    * Sets are created on first use; most conditions declare no layer.
    * @type {(Set<string> | undefined)[]} */
@@ -211,18 +223,43 @@ function discardAndReport(css, result) {
 
     if (shouldDiscard(node, sub, isLayer, isRedundantLayer)) {
       node.remove();
-
-      result.messages.push({
-        type: 'removal',
-        plugin,
-        node,
-      });
-    } else if (name !== undefined) {
-      declare(parentKey, name);
+      reportRemoval(result, node);
+    } else {
+      if (name !== undefined) declare(parentKey, name);
+      if (visit) visit(node);
     }
   }
 
   css.each((node) => discardEmpty(node));
+}
+
+/**
+ * Removes a node that a transform after the walk no longer needs, then each
+ * ancestor the removal empties, so no parent the walk passed stays empty. An
+ * emptied named `@layer` stays: it may fix the order of its layer.
+ *
+ * @param {import('postcss').ChildNode} node
+ * @param {import('postcss').Result} result
+ * @return {void}
+ */
+export function removeAndDiscardEmptied(node, result) {
+  /** @typedef {import('postcss').AnyNode | import('postcss').Document | undefined} Parent */
+  let parent = /** @type {Parent} */ (node.parent);
+  node.remove();
+  while (
+    (parent?.type === 'rule' || parent?.type === 'atrule') &&
+    shouldDiscard(
+      parent,
+      parent.nodes,
+      parent.type === 'atrule' && asciiLowerCase(parent.name) === 'layer',
+      false
+    )
+  ) {
+    const next = /** @type {Parent} */ (parent.parent);
+    parent.remove();
+    reportRemoval(result, parent);
+    parent = next;
+  }
 }
 
 /**

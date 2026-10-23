@@ -1,24 +1,22 @@
-import postcssReduceInitial from '#postcss-reduce-initial';
-import postcssMinifyGradients from '#postcss-minify-gradients';
-import postcssReduceTransforms from '#postcss-reduce-transforms';
+import reduceInitial from '#postcss-reduce-initial';
+import minifyGradients from '#postcss-minify-gradients';
+import reduceTransforms from '#postcss-reduce-transforms';
 import postcssConvertValues from '#postcss-convert-values';
-import postcssCalc from 'postcss-calc';
-import postcssColormin from '#postcss-colormin';
+import calc from '../plugins/postcss-calc/index.js';
+import colormin from '#postcss-colormin';
 import postcssOrderedValues from '#postcss-ordered-values';
 import postcssMinifySelectors from '#postcss-minify-selectors';
 import postcssMinifyParams from '#postcss-minify-params';
-import postcssNormalizeCharset from '#postcss-normalize-charset';
 import postcssMinifyFontValues from '#postcss-minify-font-values';
 import postcssNormalizeUrl from '#postcss-normalize-url';
 import postcssDiscardOverridden from '#postcss-discard-overridden';
-import postcssNormalizeRepeatStyle from '#postcss-normalize-repeat-style';
-import postcssUniqueSelectors from '#postcss-unique-selectors';
+import normalizeRepeatStyle from '#postcss-normalize-repeat-style';
 import postcssNormalizeString from '#postcss-normalize-string';
 import postcssNormalizePositions from '#postcss-normalize-positions';
 import postcssNormalizeUnicode from '#postcss-normalize-unicode';
-import postcssNormalizeDisplayValues from '#postcss-normalize-display-values';
-import postcssNormalizeTimingFunctions from '#postcss-normalize-timing-functions';
-import mergePass, { rulesGuard } from '../passes/merge/index.js';
+import normalizeDisplayValues from '#postcss-normalize-display-values';
+import normalizeTimingFunctions from '#postcss-normalize-timing-functions';
+import { mergePass, rulesGuard } from '../passes/merge/index.js';
 import {
   discardCommentsEntry,
   discardEmptyEntry,
@@ -66,11 +64,12 @@ import {
  * always run together.
  */
 const mergeEntry = /** @type {const} */ ([
-  mergePass,
+  { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
   'merge',
   {
-    postcssPlugin: 'cssnano-merge',
     targets: true,
+    transform: true,
+    pass: mergePass,
     optionKeys: ['rules'],
     guards: { rules: rulesGuard },
   },
@@ -82,35 +81,21 @@ const mergeEntry = /** @type {const} */ ([
  */
 export const defaultPluginEntries = /** @type {const} */ ([
   discardCommentsEntry,
+  [minifyGradients, 'minifyGradients', { optionKeys: [] }],
   [
-    postcssMinifyGradients,
-    'minifyGradients',
-    { postcssPlugin: 'postcss-minify-gradients', optionKeys: [] },
-  ],
-  [
-    postcssReduceInitial,
+    reduceInitial,
     'reduceInitial',
     {
-      postcssPlugin: 'postcss-reduce-initial',
       targets: true,
       optionKeys: ['ignore'],
     },
   ],
+  [normalizeDisplayValues, 'normalizeDisplayValues', { optionKeys: [] }],
+  [reduceTransforms, 'reduceTransforms', { optionKeys: [] }],
   [
-    postcssNormalizeDisplayValues,
-    'normalizeDisplayValues',
-    { postcssPlugin: 'postcss-normalize-display-values', optionKeys: [] },
-  ],
-  [
-    postcssReduceTransforms,
-    'reduceTransforms',
-    { postcssPlugin: 'postcss-reduce-transforms', optionKeys: [] },
-  ],
-  [
-    postcssColormin,
+    colormin,
     'colormin',
     {
-      postcssPlugin: 'postcss-colormin',
       targets: true,
       optionKeys: [
         'hex',
@@ -123,16 +108,11 @@ export const defaultPluginEntries = /** @type {const} */ ([
       ],
     },
   ],
+  [normalizeTimingFunctions, 'normalizeTimingFunctions', { optionKeys: [] }],
   [
-    postcssNormalizeTimingFunctions,
-    'normalizeTimingFunctions',
-    { postcssPlugin: 'postcss-normalize-timing-functions', optionKeys: [] },
-  ],
-  [
-    postcssCalc,
+    calc,
     'calc',
     {
-      postcssPlugin: 'postcss-calc',
       optionKeys: [
         'precision',
         'warnWhenCannotResolve',
@@ -147,7 +127,6 @@ export const defaultPluginEntries = /** @type {const} */ ([
     postcssConvertValues,
     'convertValues',
     {
-      postcssPlugin: 'postcss-convert-values',
       targets: true,
       defaults: { length: false },
       optionKeys: [
@@ -160,45 +139,33 @@ export const defaultPluginEntries = /** @type {const} */ ([
       ],
     },
   ],
-  [
-    postcssOrderedValues,
-    'orderedValues',
-    { postcssPlugin: 'postcss-ordered-values', optionKeys: [] },
-  ],
+  [postcssOrderedValues, 'orderedValues', { optionKeys: [] }],
   [
     postcssMinifySelectors,
     'minifySelectors',
     {
-      postcssPlugin: 'postcss-minify-selectors',
       targets: true,
       defaults: { sort: true },
       optionKeys: ['sort', 'convertToIs'],
     },
   ],
+  [postcssMinifyParams, 'minifyParams', { targets: true, optionKeys: [] }],
   [
-    postcssMinifyParams,
-    'minifyParams',
-    { postcssPlugin: 'postcss-minify-params', targets: true, optionKeys: [] },
-  ],
-  [
-    postcssNormalizeCharset,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'normalizeCharset',
     {
-      postcssPlugin: 'postcss-normalize-charset',
       defaults: { add: false },
       optionKeys: ['add'],
+      transform: true,
+      after: true,
     },
-  ],
-  [
-    postcssDiscardOverridden,
-    'discardOverridden',
-    { postcssPlugin: 'postcss-discard-overridden', optionKeys: [] },
   ],
   [
     postcssNormalizeString,
     'normalizeString',
     {
-      postcssPlugin: 'postcss-normalize-string',
       optionKeys: ['preferredQuote'],
     },
   ],
@@ -206,7 +173,6 @@ export const defaultPluginEntries = /** @type {const} */ ([
     postcssNormalizeUnicode,
     'normalizeUnicode',
     {
-      postcssPlugin: 'postcss-normalize-unicode',
       targets: true,
       optionKeys: [],
     },
@@ -215,32 +181,33 @@ export const defaultPluginEntries = /** @type {const} */ ([
     postcssMinifyFontValues,
     'minifyFontValues',
     {
-      postcssPlugin: 'postcss-minify-font-values',
       optionKeys: ['removeAfterKeyword', 'removeDuplicates', 'removeQuotes'],
     },
   ],
+  [postcssNormalizeUrl, 'normalizeUrl', { optionKeys: [] }],
+  [normalizeRepeatStyle, 'normalizeRepeatStyle', { optionKeys: [] }],
+  [postcssNormalizePositions, 'normalizePositions', { optionKeys: [] }],
   [
-    postcssNormalizeUrl,
-    'normalizeUrl',
-    { postcssPlugin: 'postcss-normalize-url', optionKeys: [] },
-  ],
-  [
-    postcssNormalizeRepeatStyle,
-    'normalizeRepeatStyle',
-    { postcssPlugin: 'postcss-normalize-repeat-style', optionKeys: [] },
-  ],
-  [
-    postcssNormalizePositions,
-    'normalizePositions',
-    { postcssPlugin: 'postcss-normalize-positions', optionKeys: [] },
+    postcssDiscardOverridden,
+    'discardOverridden',
+    {
+      optionKeys: [],
+      transform: true,
+    },
   ],
   normalizeWhitespaceEntry,
   mergeEntry,
   discardEmptyEntry,
   [
-    postcssUniqueSelectors,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'uniqueSelectors',
-    { postcssPlugin: 'postcss-unique-selectors', optionKeys: [] },
+    {
+      optionKeys: [],
+      transform: true,
+      after: true,
+    },
   ],
   rawCacheEntry,
 ]);

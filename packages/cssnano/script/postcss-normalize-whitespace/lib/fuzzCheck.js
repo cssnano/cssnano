@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
-import plugin from '../../../src/plugins/postcss-normalize-whitespace/index.js';
+import { normalizeWhitespacePlugins } from '../../../../../util/testHelpers.js';
 import {
   report,
   runPlugin,
@@ -14,7 +14,7 @@ import {
  * `test/fuzz.js` and the soak run in `script/fuzz.js`.
  */
 
-const processor = postcss([plugin()]);
+const processor = postcss(normalizeWhitespacePlugins());
 
 /** @param {string} value */
 function getURLValue(value) {

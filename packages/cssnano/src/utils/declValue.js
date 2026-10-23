@@ -12,17 +12,4 @@ function sourceValue(decl) {
     : decl.value;
 }
 
-/**
- * Replace the value and keep the raw in step, so serialization does not
- * restore the previous source text.
- *
- * @param {import('postcss').Declaration} decl
- * @param {string} value
- * @return {void}
- */
-function assignValue(decl, value) {
-  decl.value = value;
-  if (decl.raws.value?.raw) decl.raws.value = { raw: value, value };
-}
-
-export { assignValue, sourceValue };
+export { sourceValue };

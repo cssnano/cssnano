@@ -1,31 +1,24 @@
 /**
- * @return {import('postcss').Plugin}
+ * Records the raw formatting of the output on the root, for later plugins to
+ * reuse.
+ *
+ * @param {import('postcss').Result} result
+ * @return {void}
  */
-function pluginCreator() {
-  return {
-    postcssPlugin: 'cssnano-util-raw-cache',
-    /**
-     * @param {import('postcss').Root} css
-     * @param {{result: import('postcss').Result & {root: {rawCache?: any}}}} arg
-     */
-    OnceExit(css, { result }) {
-      result.root.rawCache = {
-        colon: ':',
-        indent: '',
-        beforeDecl: '',
-        beforeRule: '',
-        beforeOpen: '',
-        beforeClose: '',
-        beforeComment: '',
-        after: '',
-        emptyBody: '',
-        commentLeft: '',
-        commentRight: '',
-      };
-    },
+export default function rawCache(result) {
+  /** @type {import('postcss').Result & {root: {rawCache?: any}}} */ (
+    result
+  ).root.rawCache = {
+    colon: ':',
+    indent: '',
+    beforeDecl: '',
+    beforeRule: '',
+    beforeOpen: '',
+    beforeClose: '',
+    beforeComment: '',
+    after: '',
+    emptyBody: '',
+    commentLeft: '',
+    commentRight: '',
   };
 }
-
-/** @type {true} */
-pluginCreator.postcss = true;
-export default pluginCreator;

@@ -1,10 +1,12 @@
-/**
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+import type { Stage } from '../../pipeline/host.js';
+export type KeywordPair = {
+    start: number;
+    end: number;
+    keyword: string;
+};
+/** @satisfies {StageEntry} */
+declare const normalizeRepeatStyle: {
+    create: () => Stage;
+};
+export { normalizeRepeatStyle as default };
 //# sourceMappingURL=index.d.ts.map

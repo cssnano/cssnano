@@ -1,3 +1,5 @@
+import type { AtRule } from 'postcss';
+import type { SymbolLists } from '../../pipeline/symbolLists.js';
 export type Options = {
     /**
      * Discards unused font face rules. (default: true)
@@ -16,6 +18,24 @@ export type Options = {
      */
     namespace?: boolean;
 };
+/**
+ * @typedef {object} Options
+ * @property {boolean} [fontFace] Discards unused font face rules. (default: true)
+ * @property {boolean} [counterStyle] Discards unused counter style rules. (default: true)
+ * @property {boolean} [keyframes] Discards unused keyframe rules. (default: true)
+ * @property {boolean} [namespace] Discards unused namespace rules. (default: true)
+ */
+/**
+ * Removes the at-rules that define a name nothing references. Every reference
+ * is read before the first removal, so a reference inside a removed at-rule
+ * still keeps its definition.
+ *
+ * @param {SymbolLists} lists
+ * @param {Options} options
+ * @param {(node: AtRule) => void} remove
+ * @return {void}
+ */
+export declare function discardUnusedSymbols(lists: SymbolLists, options: Options, remove: (node: AtRule) => void): void;
 /**
  * @param {Options} opts
  * @return {import('postcss').Plugin}
