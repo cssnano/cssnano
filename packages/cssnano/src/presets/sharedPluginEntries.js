@@ -2,8 +2,10 @@ import discardComments from '#postcss-discard-comments';
 import postcssNormalizeWhitespace, {
   valueEntry as normalizeWhitespaceValues,
 } from '#postcss-normalize-whitespace';
-import postcssDiscardEmpty from '#postcss-discard-empty';
+import { discardAndReport as discardEmptyNodes } from '#postcss-discard-empty';
 import cssnanoUtils from '#utils';
+
+/** @import {PassRun} from '../pipeline/host.js' */
 
 const { rawCache } = cssnanoUtils;
 
@@ -34,10 +36,23 @@ export const normalizeWhitespaceEntry = /** @type {const} */ ([
   },
 ]);
 
+/** @type {PassRun['pass']} */
+const discardEmptyPass = (css, _browsers, _options, result) =>
+  discardEmptyNodes(css, result);
+
+/**
+ * discardEmpty runs as a pass of its host, after the merge pass, so the host
+ * walks the stylesheet without a plugin of its own.
+ */
 export const discardEmptyEntry = /** @type {const} */ ([
-  postcssDiscardEmpty,
+  { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
   'discardEmpty',
-  { postcssPlugin: 'postcss-discard-empty', optionKeys: [] },
+  {
+    postcssPlugin: 'postcss-discard-empty',
+    optionKeys: [],
+    transform: true,
+    pass: discardEmptyPass,
+  },
 ]);
 
 export const rawCacheEntry = /** @type {const} */ ([
