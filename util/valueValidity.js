@@ -186,6 +186,18 @@ const syntheticCorpus = {
   ]
     .map((value) => `a{background-position:${value}}`)
     .join('\n'),
+  'postcss-minify-font-values': [
+    'font-family:"Arial", "Times New Roman", serif',
+    'font-family:"Helvetica Neue" , sans-serif',
+    'font-family:"sans-serif", Arial',
+    'font:bold 12px/1.5 "Helvetica Neue", serif',
+    'font:12px/* c */"Arial"',
+    'font-weight:bold',
+    'font-weight:var(--weight)',
+    'font-family:var(--family), "Arial"',
+  ]
+    .map((declaration) => `a{${declaration}}`)
+    .join('\n'),
   'postcss-normalize-unicode': [
     'U+0025-00FF',
     'u+4??',
@@ -350,6 +362,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     'postcss-convert-values',
     'postcss-ordered-values',
     'postcss-normalize-unicode',
+    'postcss-minify-font-values',
   ];
   const browser = await launchChromium(executablePath);
   let failures = 0;

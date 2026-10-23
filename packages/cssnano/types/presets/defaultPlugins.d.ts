@@ -211,8 +211,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
     readonly targets: true;
     readonly optionKeys: readonly [];
 }], readonly [{
-    (opts: import("#postcss-minify-font-values").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: (options: import("#postcss-minify-font-values").Options) => import("../pipeline/host.js").Stage;
 }, 'minifyFontValues', {
     readonly postcssPlugin: 'postcss-minify-font-values';
     readonly optionKeys: readonly ['removeAfterKeyword', 'removeDuplicates', 'removeQuotes'];
