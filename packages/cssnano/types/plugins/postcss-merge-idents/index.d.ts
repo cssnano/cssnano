@@ -11,6 +11,7 @@ export type AtRuleEntry = {
     documentIndex: number;
     family: string;
     containerId: number;
+    layerKey?: string;
     parsed: {
         isString: boolean;
         isReservedName: boolean;

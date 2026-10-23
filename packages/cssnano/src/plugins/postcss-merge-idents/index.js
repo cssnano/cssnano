@@ -4,7 +4,11 @@ import {
   isAttached,
   symbolVisit,
 } from '../../pipeline/symbolLists.js';
-import { LayerRegistry, compareAtRulePriority } from './lib/layerRegistry.js';
+import {
+  LayerRegistry,
+  compareAtRulePriority,
+  hasImport,
+} from './lib/layerRegistry.js';
 import {
   getBody,
   getConditionContainer,
@@ -30,6 +34,7 @@ const { asciiLowerCase } = cssnanoUtils;
  *   documentIndex: number,
  *   family: string,
  *   containerId: number,
+ *   layerKey?: string,
  *   parsed: { isString: boolean, isReservedName: boolean, key: string, tokenText: string }
  * }} AtRuleEntry
  */
@@ -95,10 +100,36 @@ function collapseSameNameCopies(copies, removals) {
 
 /**
  * @param {AtRuleEntry} entry
- * @return {string} the at-rule family and condition container defining it
+ * @return {string} the at-rule family and condition container defining it,
+ *   and its layer when the layer order is not known
  */
 function placementOf(entry) {
-  return `${entry.family}@${entry.containerId}`;
+  return `${entry.family}@${entry.containerId}${entry.layerKey ?? ''}`;
+}
+
+/**
+ * @param {import('postcss').AtRule} atRule
+ * @param {Map<import('postcss').Container, number>} containerIds
+ * @return {number} the id of the condition container defining the at-rule
+ */
+function containerIdOf(atRule, containerIds) {
+  const container = getConditionContainer(atRule);
+  let containerId = containerIds.get(container);
+  if (containerId === undefined) {
+    containerId = containerIds.size;
+    containerIds.set(container, containerId);
+  }
+  return containerId;
+}
+
+/**
+ * @param {SymbolLists} lists
+ * @return {boolean} whether this stylesheet alone decides its layer order
+ */
+function isLayerOrderKnown(lists) {
+  const definition =
+    lists.keyframes.find(isAttached) ?? lists.counterStyles.find(isAttached);
+  return definition === undefined || !hasImport(definition.root());
 }
 
 /**
@@ -219,6 +250,7 @@ function mergeAtRules(lists, remove) {
   ]);
   /** @type {Map<import('postcss').Container, number>} */
   const containerIds = new Map();
+  const layerOrderKnown = isLayerOrderKnown(lists);
 
   // A walk visits two at-rules that do not nest in visit order, which is their
   // document order. These kinds never nest, so the position in a namespace
@@ -239,20 +271,20 @@ function mergeAtRules(lists, remove) {
     }
     const entries = /** @type {AtRuleEntry[]} */ (namespaces.get(namespace));
 
-    const container = getConditionContainer(atRule);
-    let containerId = containerIds.get(container);
-    if (containerId === undefined) {
-      containerId = containerIds.size;
-      containerIds.set(container, containerId);
-    }
-    entries.push({
+    const containerId = containerIdOf(atRule, containerIds);
+    const layerPriority = layerRegistry.getPriority(atRule);
+    /** @type {AtRuleEntry} */
+    const entry = {
       rule: atRule,
       parsed,
       family,
       containerId,
-      layerPriority: layerRegistry.getPriority(atRule),
+      layerPriority,
       documentIndex: entries.length,
-    });
+    };
+    // Without a known layer order, only definitions in one layer compare.
+    if (!layerOrderKnown) entry.layerKey = ` ${layerPriority.join('.')}`;
+    entries.push(entry);
   }
 
   if ([...namespaces.values()].every((entries) => entries.length < 2)) {
