@@ -221,25 +221,36 @@ function forEachUrl(value, callback, options = {}) {
 }
 
 /**
- * Synchronize node value or params with PostCSS raw metadata.
- * @param {import('postcss').Declaration | import('postcss').AtRule} node
- * @param {'value' | 'params'} prop
+ * Synchronize a declaration value with PostCSS raw metadata.
+ * @param {import('postcss').Declaration} decl
  * @param {(currentValue: string) => string | undefined} updater
  * @return {void}
  */
-function updateNodeValue(node, prop, updater) {
-  const target = /** @type {Record<string, any>} */ (
-    /** @type {unknown} */ (node)
-  );
-  const raws = target.raws?.[prop];
+function updateDeclValue(decl, updater) {
+  const raws = decl.raws.value;
   const value =
-    raws?.value === target[prop] ? (raws.raw ?? target[prop]) : target[prop];
+    raws?.value === decl.value ? (raws.raw ?? decl.value) : decl.value;
   const updated = updater(value);
   if (updated !== undefined && updated !== value) {
-    target[prop] = updated;
+    decl.value = updated;
     if (raws?.raw) {
-      target.raws[prop] = { raw: updated, value: updated };
+      decl.raws.value = { raw: updated, value: updated };
     }
+  }
+}
+
+/**
+ * Rewrite an at-rule prelude from `params`, which PostCSS gives without comments,
+ * as the walk reads it. A changed prelude drops its raw, and with it its comments.
+ * @param {import('postcss').AtRule} atRule
+ * @param {(currentParams: string) => string | undefined} updater
+ * @return {void}
+ */
+function updateParams(atRule, updater) {
+  const updated = updater(atRule.params);
+  if (updated !== undefined && updated !== atRule.params) {
+    atRule.params = updated;
+    delete atRule.raws.params;
   }
 }
 
@@ -275,16 +286,21 @@ function normalizeImportUrls(value) {
 }
 
 /**
- * @param {import('postcss').Declaration | import('postcss').AtRule} node
- * @param {'value' | 'params'} prop
+ * @param {import('postcss').Declaration} decl
  * @return {void}
  */
-function transformNodeUrls(node, prop) {
-  const current = /** @type {Record<string, any>} */ (
-    /** @type {unknown} */ (node)
-  )[prop];
-  if (!URL_CANDIDATE_REGEX.test(current)) return;
-  updateNodeValue(node, prop, normalizeUrls);
+function transformDeclUrls(decl) {
+  if (!URL_CANDIDATE_REGEX.test(decl.value)) return;
+  updateDeclValue(decl, normalizeUrls);
+}
+
+/**
+ * @param {import('postcss').AtRule} atRule
+ * @return {void}
+ */
+function transformSupportsUrls(atRule) {
+  if (!URL_CANDIDATE_REGEX.test(atRule.params)) return;
+  updateParams(atRule, normalizeUrls);
 }
 
 /**
@@ -292,7 +308,7 @@ function transformNodeUrls(node, prop) {
  * @return {void}
  */
 function transformNamespace(rule) {
-  updateNodeValue(rule, 'params', (value) => {
+  updateParams(rule, (value) => {
     /** @type {{start: number, end: number, text: string}[]} */
     const edits = [];
     forEachUrl(
@@ -324,15 +340,15 @@ function pluginCreator() {
     OnceExit(css) {
       css.walk((node) => {
         if (node.type === 'decl') {
-          transformNodeUrls(node, 'value');
+          transformDeclUrls(node);
         } else if (node.type === 'atrule') {
           const name = asciiLowerCase(node.name);
           if (name === 'import') {
-            updateNodeValue(node, 'params', normalizeImportUrls);
+            updateParams(node, normalizeImportUrls);
           } else if (name === 'namespace') {
             transformNamespace(node);
           } else if (name === 'supports') {
-            transformNodeUrls(node, 'params');
+            transformSupportsUrls(node);
           }
         }
       });
