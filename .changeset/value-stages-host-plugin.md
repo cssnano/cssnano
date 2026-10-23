@@ -4,7 +4,7 @@
 
 refactor(cssnano)!: a built-in preset returns one `cssnano-host` plugin
 
-The default and lite presets no longer return one PostCSS plugin per option. Each returns one `cssnano-host` plugin that walks the stylesheet to run the value transforms, comment removal, whitespace cleanup, empty-node removal and merging. The advanced preset returns that host plugin, which also runs `discardUnused`, `mergeIdents` and `reduceIdents`, followed by `zindex`, which still runs as a plugin of its own. A preset's array therefore has fewer entries, and a host plugin is not the same object as the plugin it replaces. Option keys and their meaning are unchanged.
+The default and lite presets no longer return one PostCSS plugin per option. Each returns one `cssnano-host` plugin that walks the stylesheet to run the value transforms, comment removal, whitespace cleanup, empty-node removal and merging. The advanced preset returns that host plugin, which also runs `discardUnused`, `mergeIdents`, `reduceIdents` and `zindex`. A preset's array therefore has fewer entries, and a host plugin is not the same object as the plugin it replaces. Option keys and their meaning are unchanged.
 
 Code that inspects a preset's plugins by `postcssPlugin` name, or that expects `postcss-calc`, `postcss-convert-values`, `postcss-discard-empty` or `postcss-discard-unused` to be its own entry, needs to read the `cssnano-host` entry instead.
 

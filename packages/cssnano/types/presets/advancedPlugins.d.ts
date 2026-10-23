@@ -60,11 +60,12 @@ export declare const advancedPluginEntries: readonly [readonly [{
     readonly transform: true;
     readonly symbols: SymbolTransform;
 }], readonly [{
-    (opts?: import("#postcss-zindex").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'zindex', {
     readonly postcssPlugin: 'postcss-zindex';
     readonly optionKeys: readonly ['startIndex'];
+    readonly transform: true;
+    readonly symbols: SymbolTransform;
 }]];
 /**
  * Every plugin the advanced preset runs: the default ones, then the advanced ones.
