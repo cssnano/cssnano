@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 import { normalizeList } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import {
+  processCSSFactory,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 
 const { processCSS } = processCSSFactory(plugin);
 
