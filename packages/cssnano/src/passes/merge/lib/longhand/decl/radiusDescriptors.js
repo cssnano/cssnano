@@ -12,7 +12,7 @@ import {
   physicalRadiusProperties,
 } from './borderData.js';
 
-const { asciiLowerCase } = cssnanoUtils;
+const { asciiLowerCase, sourceValue } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 
@@ -56,7 +56,7 @@ function createRadiusDescriptor(node, prop, isHacked) {
     return {
       decl: node,
       prop,
-      val: node.raws?.value?.raw ?? node.value,
+      val: sourceValue(node),
       isBarrier: false,
       isHacked: true,
       isGlobalKeyword: false,
@@ -71,7 +71,7 @@ function createRadiusDescriptor(node, prop, isHacked) {
     return null;
   }
 
-  const val = node.raws?.value?.raw ?? node.value;
+  const val = sourceValue(node);
   const isGlobal = isGlobalKeyword(val);
 
   let parsed = null;
