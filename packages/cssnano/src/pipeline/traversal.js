@@ -1,6 +1,7 @@
 import { ValueBuffer } from '../values/valueBuffer.js';
 import { sourceValue } from '../utils/declValue.js';
 import cssnanoUtils from '#utils';
+import { tightenAfterName } from './afterName.js';
 import { isDefaultNamespace } from '../plugins/postcss-minify-selectors/lib/isDefaultNamespace.js';
 import { contextOf, DEFAULT_NAMESPACE, withBit } from './context.js';
 import {
@@ -25,7 +26,9 @@ import {
 /**
  * What one run knows about a prelude or selector kind: the text reducers of its
  * plan, or null when no stage rewrites it, with a memo per context as above.
- * @typedef {{plan: readonly TextReducer[] | null, memos: (Map<string, string> | undefined)[]}} TextEntry
+ * `tightens` is set when a stage asks for the space after an at-rule name to be
+ * stripped, as AtRulePart describes.
+ * @typedef {{plan: readonly TextReducer[] | null, memos: (Map<string, string> | undefined)[], tightens: boolean}} TextEntry
  */
 
 /**
@@ -61,10 +64,11 @@ function propertyEntry(stages, property) {
 
 /**
  * @param {readonly TextReducer[]} plan in pipeline order, empty for no stage
+ * @param {boolean} tightens whether a stage tightens the space after the name
  * @returns {TextEntry}
  */
-function textEntry(plan) {
-  return { plan: plan.length > 0 ? plan : null, memos: [] };
+function textEntry(plan, tightens) {
+  return { plan: plan.length > 0 ? plan : null, memos: [], tightens };
 }
 
 /**
@@ -214,10 +218,35 @@ function sourceSelector(rule) {
 }
 
 /**
+ * The plan of an at-rule name: the prelude reducers of the stages that rewrite
+ * it, and whether one of them tightens the space after the name.
+ *
+ * @param {readonly Stage[]} stages in pipeline order
+ * @param {string} name
+ * @returns {TextEntry}
+ */
+function atRuleEntry(stages, name) {
+  /** @type {TextReducer[]} */
+  const plan = [];
+  let tightens = false;
+  for (const stage of stages) {
+    const part = stage.forAtRule?.(name) ?? null;
+    if (part === null) continue;
+    if (typeof part === 'function') {
+      plan.push(part);
+    } else {
+      plan.push(part.reduce);
+      tightens ||= part.tightensAfterName;
+    }
+  }
+  return textEntry(plan, tightens);
+}
+
+/**
  * Removes the comments of an at-rule, then folds its prelude through its plan.
  * The prelude is read as written and written back only when it changed.
  * `@charset` has no plan, since its name and encoding are read in the format
- * phase.
+ * phase. A prelude that PostCSS gives as empty is not folded.
  *
  * @param {RunState} state
  * @param {import('postcss').AtRule} atRule
@@ -229,6 +258,7 @@ function walkAtRule(state, atRule) {
     removeAfterNameComments(atRule, comments);
   }
   const read = sourceParams(atRule);
+  const hasPrelude = Boolean(atRule.params);
   if (
     !state.defaultNamespace &&
     cssnanoUtils.asciiLowerCase(atRule.name) === 'namespace' &&
@@ -240,18 +270,14 @@ function walkAtRule(state, atRule) {
   const text =
     comments !== null && read ? commentFreeText(read, comments) : read;
   let result = text;
+  let entry;
   if (atRule.name.toLowerCase() !== 'charset') {
-    let entry = state.atRules.get(atRule.name);
+    entry = state.atRules.get(atRule.name);
     if (entry === undefined) {
-      const plan = [];
-      for (const stage of state.stages) {
-        const reducer = stage.forAtRule?.(atRule.name) ?? null;
-        if (reducer !== null) plan.push(reducer);
-      }
-      entry = textEntry(plan);
+      entry = atRuleEntry(state.stages, atRule.name);
       state.atRules.set(atRule.name, entry);
     }
-    if (entry.plan !== null) {
+    if (entry.plan !== null && hasPrelude) {
       const context = contextOf(atRule, state.contexts);
       result = reduceText(entry, text, context, atRule, state.helpers);
     }
@@ -260,6 +286,7 @@ function walkAtRule(state, atRule) {
     atRule.params = result;
     delete atRule.raws.params;
   }
+  if (entry?.tightens && hasPrelude) tightenAfterName(atRule, result);
 }
 
 /**
@@ -321,7 +348,8 @@ export function walkStylesheet(stages, root, helpers) {
     selectors: textEntry(
       stages.flatMap((stage) =>
         stage.selector !== undefined ? [stage.selector] : []
-      )
+      ),
+      false
     ),
     contexts: new WeakMap(),
     helpers,

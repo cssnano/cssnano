@@ -157,10 +157,10 @@ describe('stage entries in a preset', () => {
     assert.equal(ignores?.options[browserTargets], undefined);
   });
 
-  test('the default preset runs the comment stage and the stage entries through minifySelectors in one host plugin, before minifyParams', () => {
+  test('the default preset runs the comment stage and the stage entries through minifyParams in one host plugin, before normalizeCharset', () => {
     const names = defaultPreset().map((plugin) => plugin.postcssPlugin);
     assert.equal(names[0], 'cssnano-host');
-    assert.equal(names[1], 'postcss-minify-params');
+    assert.equal(names[1], 'postcss-normalize-charset');
   });
 
   test('the default preset runs normalizeString through normalizePositions in one host plugin, between discardOverridden and normalizeWhitespace', () => {

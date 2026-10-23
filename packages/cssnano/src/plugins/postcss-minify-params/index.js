@@ -1,37 +1,45 @@
-import { resolveTargets } from '#utils/browser-targets';
 import { anyAffected } from '#utils/browser-bugs';
-import transform from './lib/transform.js';
+import reduceParams from './lib/transform.js';
+
+/** @import {AtRulePart, Stage, StageEntry} from '../../pipeline/host.js' */
 
 /**
  * @typedef {object} Options
  */
 
 /**
- * @param {Options} [options]
- * @return {import('postcss').Plugin}
+ * The stage for one run. It rewrites the preludes of `@media` and `@supports`,
+ * and asks the walk to tighten the space after the name of each.
+ *
+ * @param {readonly string[]} targets
+ * @returns {Stage}
  */
-function pluginCreator(options = {}) {
+function paramsStage(targets) {
+  const legacy = anyAffected(targets, 'media-all-ie11');
+  /** @type {AtRulePart} */
+  const media = {
+    reduce: (text) => reduceParams(legacy, 'media', text),
+    tightensAfterName: true,
+  };
+  /** @type {AtRulePart} */
+  const supports = {
+    reduce: (text) => reduceParams(legacy, 'supports', text),
+    tightensAfterName: true,
+  };
   return {
-    postcssPlugin: 'postcss-minify-params',
-
-    /**
-     * @param {import('postcss').Result} result
-     */
-    prepare(result) {
-      const browsers = resolveTargets(options, result);
-      const hasAllBug = anyAffected(browsers, 'media-all-ie11');
-
-      return {
-        /** @param {import('postcss').Root} css */
-        OnceExit(css) {
-          css.walkAtRules((rule) => transform(hasAllBug, rule));
-        },
-      };
+    forAtRule(name) {
+      const lowerCased = name.toLowerCase();
+      if (lowerCased === 'media') return media;
+      if (lowerCased === 'supports') return supports;
+      return null;
     },
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {StageEntry} */
+const minifyParams = {
+  create: (/** @type {Options} */ _options, targets) =>
+    paramsStage(/** @type {readonly string[]} */ (targets)),
+};
+
+export { minifyParams as default };
