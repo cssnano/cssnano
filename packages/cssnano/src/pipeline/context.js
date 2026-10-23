@@ -1,4 +1,5 @@
 import { syntaxAllowsPercentage } from '../utils/syntaxPercentage.js';
+import cssnanoUtils from '#utils';
 
 /** @import {AtRule, Container, Document} from 'postcss' */
 
@@ -14,6 +15,25 @@ export const IN_KEYFRAMES = 1;
 export const IN_PROPERTY = 2;
 /** With IN_PROPERTY, when the rule's syntax allows percentages. */
 export const PERCENTAGE_SYNTAX = 4;
+/** A rule directly inside an at-rule named `keyframes` or a vendor spelling of it. */
+export const KEYFRAME_RULE = 8;
+/**
+ * Set by the walk on a rule after a default `@namespace`, which makes a
+ * universal selector significant there.
+ */
+export const DEFAULT_NAMESPACE = 16;
+
+/**
+ * The names that give a rule keyframe-selector semantics. Other suffixes that
+ * end in `keyframes` do not.
+ * @type {ReadonlySet<string>}
+ */
+const keyframeAtRuleNames = new Set([
+  'keyframes',
+  '-webkit-keyframes',
+  '-moz-keyframes',
+  '-o-keyframes',
+]);
 
 /**
  * @param {number} context
@@ -29,7 +49,7 @@ export function hasContextBit(context, bit) {
  * @param {number} bit a context bit that is not yet set in the context
  * @returns {number} the context with the bit set
  */
-function withBit(context, bit) {
+export function withBit(context, bit) {
   return hasContextBit(context, bit) ? context : context + bit;
 }
 
@@ -77,6 +97,13 @@ export function contextOf(node, contexts) {
         context = withBit(context, PERCENTAGE_SYNTAX);
       }
     }
+  }
+  if (node.parent?.type === 'atrule') {
+    const name = cssnanoUtils.asciiLowerCase(
+      /** @type {AtRule} */ (node.parent).name
+    );
+    if (keyframeAtRuleNames.has(name))
+      context = withBit(context, KEYFRAME_RULE);
   }
   contexts.set(node, context);
   return context;

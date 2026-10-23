@@ -26,6 +26,10 @@ export type RunState = {
      * the comment removal of this run, or null when no stage removes comments
      */
     comments: CommentState | null;
+    /**
+     * whether a default `@namespace` has been reached, so later rules have it in their context
+     */
+    defaultNamespace: boolean;
 };
 /**
  * Runs the comment, value, prelude and selector parts of the stages over a
