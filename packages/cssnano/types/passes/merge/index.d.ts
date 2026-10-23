@@ -39,6 +39,14 @@ declare namespace pluginCreator {
 }
 export default pluginCreator;
 /**
+ * The pass of one merge transform, which a preset can run in the place of the
+ * merge pass, so each transform can be tested alone.
+ *
+ * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} name
+ * @return {(css: Root, browsers: readonly string[]) => void}
+ */
+export declare function transformPass(name: 'mergeLonghand' | 'discardDuplicates' | 'mergeRules'): (css: Root, browsers: readonly string[]) => void;
+/**
  * The creator of a pass that runs one transform, so each transform can be
  * tested alone as its own plugin.
  *

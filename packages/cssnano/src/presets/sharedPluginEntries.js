@@ -10,7 +10,6 @@ export const discardCommentsEntry = /** @type {const} */ ([
   discardComments,
   'discardComments',
   {
-    postcssPlugin: 'postcss-discard-comments',
     optionKeys: ['removeAll', 'removeAllButFirst', 'remove'],
   },
 ]);
@@ -19,7 +18,6 @@ export const normalizeWhitespaceEntry = /** @type {const} */ ([
   normalizeWhitespaceValues,
   'normalizeWhitespace',
   {
-    postcssPlugin: 'postcss-normalize-whitespace',
     optionKeys: [],
     walk: true,
     after: true,
@@ -34,7 +32,6 @@ export const discardEmptyEntry = /** @type {const} */ ([
   { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
   'discardEmpty',
   {
-    postcssPlugin: 'postcss-discard-empty',
     optionKeys: [],
     transform: true,
     after: true,
@@ -48,7 +45,6 @@ export const rawCacheEntry = /** @type {const} */ ([
   { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
   'rawCache',
   {
-    postcssPlugin: 'cssnano-util-raw-cache',
     optionKeys: [],
     transform: true,
     after: true,
