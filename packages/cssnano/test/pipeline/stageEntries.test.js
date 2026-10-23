@@ -163,11 +163,11 @@ describe('stage entries in a preset', () => {
     assert.equal(names[1], 'postcss-normalize-charset');
   });
 
-  test('the default preset runs normalizeString through normalizePositions and discardOverridden in one host plugin, after normalizeCharset and before normalizeWhitespace', () => {
+  test('the default preset runs normalizeString through normalizeWhitespace, merge and the walk after merge in one host plugin, after normalizeCharset', () => {
     const names = defaultPreset().map((plugin) => plugin.postcssPlugin);
     const charset = names.indexOf('postcss-normalize-charset');
     assert.equal(names[charset + 1], 'cssnano-host');
-    assert.equal(names[charset + 2], 'postcss-normalize-whitespace');
+    assert.equal(names.length, charset + 2);
   });
 });
 

@@ -1,4 +1,5 @@
 import { discardAndReport } from '#postcss-discard-empty';
+import { normalizeNodeRaws } from '#postcss-normalize-whitespace';
 import { uniqueSelectorsVisit } from '#postcss-unique-selectors';
 import rawCache from '../utils/rawCache.js';
 
@@ -16,10 +17,21 @@ import rawCache from '../utils/rawCache.js';
  * @returns {void}
  */
 export function walkAfterMerge(root, result, transforms) {
+  /** @type {((node: AnyNode) => void)[]} */
+  const visits = [];
+  if (transforms.has('normalizeWhitespace')) {
+    visits.push(normalizeNodeRaws);
+    // Remove the final newline, which the raws of the root hold.
+    root.raws.after = '';
+  }
+  if (transforms.has('uniqueSelectors')) visits.push(uniqueSelectorsVisit);
   /** @type {((node: AnyNode) => void) | undefined} */
-  const visit = transforms.has('uniqueSelectors')
-    ? uniqueSelectorsVisit
-    : undefined;
+  const visit =
+    visits.length > 1
+      ? (node) => {
+          for (const each of visits) each(node);
+        }
+      : visits[0];
   if (transforms.has('discardEmpty')) {
     discardAndReport(root, result, visit);
   } else if (visit) {

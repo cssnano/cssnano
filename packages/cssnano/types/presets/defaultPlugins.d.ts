@@ -225,15 +225,12 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
     readonly optionKeys: readonly [];
     readonly transform: true;
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: () => import("../pipeline/host.js").Stage;
 }, "normalizeWhitespace", {
     readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
-    readonly stage: {
-        create: () => import("../pipeline/host.js").Stage;
-    };
     readonly walk: true;
+    readonly after: true;
 }], readonly [{
     readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, "merge", {

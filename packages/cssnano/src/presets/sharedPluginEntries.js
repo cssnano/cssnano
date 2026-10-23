@@ -1,7 +1,5 @@
 import discardComments from '#postcss-discard-comments';
-import postcssNormalizeWhitespace, {
-  valueEntry as normalizeWhitespaceValues,
-} from '#postcss-normalize-whitespace';
+import { valueEntry as normalizeWhitespaceValues } from '#postcss-normalize-whitespace';
 
 /**
  * The plugin entries that more than one built-in preset runs. Each is defined
@@ -18,15 +16,13 @@ export const discardCommentsEntry = /** @type {const} */ ([
 ]);
 
 export const normalizeWhitespaceEntry = /** @type {const} */ ([
-  postcssNormalizeWhitespace,
+  normalizeWhitespaceValues,
   'normalizeWhitespace',
   {
     postcssPlugin: 'postcss-normalize-whitespace',
     optionKeys: [],
-    // Until the raws move into the walk, the plugin runs after its value stage,
-    // which joins the run that the plugin ends.
-    stage: normalizeWhitespaceValues,
     walk: true,
+    after: true,
   },
 ]);
 
