@@ -164,11 +164,11 @@ describe('stage entries in a preset', () => {
     assert.equal(names[host + 1], 'postcss-ordered-values');
   });
 
-  test('the default preset runs normalizeRepeatStyle in its own host plugin, between the plugins that are not stages yet', () => {
+  test('the default preset runs normalizeRepeatStyle and normalizePositions in one host plugin, between normalizeUrl and normalizeWhitespace', () => {
     const names = defaultPreset().map((plugin) => plugin.postcssPlugin);
     const url = names.indexOf('postcss-normalize-url');
     assert.equal(names[url + 1], 'cssnano-host');
-    assert.equal(names[url + 2], 'postcss-normalize-positions');
+    assert.equal(names[url + 2], 'postcss-normalize-whitespace');
   });
 });
 

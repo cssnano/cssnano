@@ -1,9 +1,11 @@
 import { test } from 'node:test';
 import {
-  usePostCSSPlugin,
+  oneStagePlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-positions/index.js';
+import normalizePositions from '../../src/plugins/postcss-normalize-positions/index.js';
+
+const plugin = oneStagePlugin(normalizePositions);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -46,9 +48,11 @@ test(
   passthroughCSS('background-position:round(10px, 1px) center top')
 );
 
+/* The whitespace before `/` is outside the position, so this plugin keeps it;
+ * normalizeWhitespace removes it in the preset. */
 test(
-  'should compact whitespace before the background size separator after a keyword',
-  processCSS('background:left center  / cover', 'background:0 / cover')
+  'should keep whitespace before the background size separator after a keyword',
+  processCSS('background:left center  / cover', 'background:0  / cover')
 );
 
 test(
@@ -67,10 +71,10 @@ test(
 );
 
 test(
-  'should compact whitespace before the background size separator',
+  'should keep whitespace before the background size separator after a function',
   processCSS(
     'background:calc(100% - 5px) center  / cover',
-    'background:calc(100% - 5px) / cover'
+    'background:calc(100% - 5px)  / cover'
   )
 );
 
@@ -180,5 +184,3 @@ test(
     'background:url(a.png) bottom/cover'
   )
 );
-
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
