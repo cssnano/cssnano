@@ -9,7 +9,14 @@ export const test = new URL(
 ).href;
 
 const replaceComments = new URL(
-  '../../src/plugins/postcss-discard-comments/lib/replaceComments.js',
+  '../../src/pipeline/comments/replaceComments.js',
+  import.meta.url
+).href;
+
+const walk = new URL('../../src/pipeline/traversal.js', import.meta.url).href;
+
+const nodeComments = new URL(
+  '../../src/pipeline/comments/nodeComments.js',
   import.meta.url
 ).href;
 
@@ -17,19 +24,19 @@ export const mutations = [
   {
     name: 'preserve removable comments in values',
     target: replaceComments,
-    find: 'remover.canRemove(commentContents(raw))) {\n      pendingSpace = started;',
+    find: 'canRemove(commentContents(raw))) {\n      pendingSpace = started;',
     replace: 'false) {\n      pendingSpace = started;',
   },
   {
     name: 'preserve removable comments in custom property values',
     target: replaceComments,
-    find: 'remover.canRemove(commentContents(raw))\n      ) {\n        preserved += separator;',
-    replace: 'false\n      ) {\n        preserved += separator;',
+    find: 'canRemove(commentContents(raw))) {\n        preserved += separator;',
+    replace: 'false) {\n        preserved += separator;',
   },
   {
     name: 'preserve removable comments in selectors',
     target: replaceComments,
-    find: 'remover.canRemove(commentContents(raw))) {\n        removedCommentBefore = true;',
+    find: 'canRemove(commentContents(raw))) {\n        removedCommentBefore = true;',
     replace: 'false) {\n        removedCommentBefore = true;',
   },
   {
@@ -59,22 +66,33 @@ export const mutations = [
   },
   {
     name: 'preserve removable comment nodes',
-    find: "if (node.type === 'comment' && remover.canRemove(node.text)) {",
-    replace: "if (node.type === 'comment' && false) {",
+    target: walk,
+    find: 'if (state.comments?.canRemove(node.text)) node.remove();',
+    replace:
+      'if (state.comments?.canRemove(node.text) && false) node.remove();',
   },
   {
     name: 'skip declaration comment processing',
-    find: 'processDeclaration(node, remover, parserCache);',
-    replace: 'void node;',
+    target: walk,
+    find: "text = commentFreeText(read, comments, decl.prop.startsWith('--'));",
+    replace: 'text = read;',
   },
   {
     name: 'skip selector comment processing',
-    find: 'processRule(node, remover, parserCache);',
-    replace: 'void node;',
+    target: walk,
+    find: 'removeSelectorComments(rule, state.comments);',
+    replace: 'void rule;',
   },
   {
     name: 'skip at-rule comment processing',
-    find: 'processAtRule(node, remover, parserCache);',
-    replace: 'void node;',
+    target: walk,
+    find: 'comments !== null && read ? commentFreeText(read, comments) : read;',
+    replace: 'read;',
+  },
+  {
+    name: 'skip important comment processing',
+    target: nodeComments,
+    find: "if (!important || !important.includes('/*')) return;",
+    replace: 'return;',
   },
 ];

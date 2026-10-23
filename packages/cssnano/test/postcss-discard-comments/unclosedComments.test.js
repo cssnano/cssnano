@@ -1,8 +1,13 @@
 import { describe, test } from 'node:test';
 
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
 
-import plugin from '../../src/plugins/postcss-discard-comments/index.js';
+import discardComments from '../../src/plugins/postcss-discard-comments/index.js';
+
+const plugin = oneStagePlugin(discardComments);
 
 // Injects an unclosed comment into an AST node after parsing; PostCSS's own
 // parser rejects unclosed comments, so only a composed pipeline can reach
@@ -29,7 +34,7 @@ describe('Unclosed comments marked for removal', () => {
     'should remove an unclosed comment from a declaration value',
     processCSSFactory([
       injectAstNode('Declaration', 'value', 'red/*comment'),
-      plugin,
+      plugin(),
     ]).processCSS('a{color:blue}', 'a{color:red}')
   );
 
@@ -37,7 +42,7 @@ describe('Unclosed comments marked for removal', () => {
     'should remove an unclosed comment preceded by whitespace from a declaration value',
     processCSSFactory([
       injectAstNode('Declaration', 'value', 'red /*comment'),
-      plugin,
+      plugin(),
     ]).processCSS('a{color:blue}', 'a{color:red}')
   );
 
@@ -45,7 +50,7 @@ describe('Unclosed comments marked for removal', () => {
     'should remove an unclosed comment that occupies the entire declaration value',
     processCSSFactory([
       injectAstNode('Declaration', 'value', '/*comment'),
-      plugin,
+      plugin(),
     ]).processCSS('a{color:blue}', 'a{color:}')
   );
 
@@ -53,7 +58,7 @@ describe('Unclosed comments marked for removal', () => {
     'should remove an unclosed comment from a custom property value while preserving whitespace',
     processCSSFactory([
       injectAstNode('Declaration', 'value', '10px/*comment'),
-      plugin,
+      plugin(),
     ]).processCSS('a{--gap:0}', 'a{--gap:10px }')
   );
 
@@ -61,7 +66,7 @@ describe('Unclosed comments marked for removal', () => {
     'should remove an unclosed comment from a selector',
     processCSSFactory([
       injectAstNode('Rule', 'selector', 'h1/*comment'),
-      plugin,
+      plugin(),
     ]).processCSS('h2{color:red}', 'h1{color:red}')
   );
 
@@ -73,7 +78,7 @@ describe('Unclosed comments marked for removal', () => {
         'params',
         'screen and (min-width:900px)/*comment'
       ),
-      plugin,
+      plugin(),
     ]).processCSS(
       '@media all{a{color:red}}',
       '@media screen and (min-width:900px){a{color:red}}'
