@@ -9,6 +9,8 @@ import listStyle from './rules/listStyle.js';
 import column from './rules/columns.js';
 import cssnanoUtils from '#utils';
 
+/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+
 const { vendorUnprefixed } = cssnanoUtils;
 
 /** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
@@ -62,6 +64,7 @@ const listStyleProcessor = (parsed) => listStyle(parsed.terms);
 /** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
 const outlineProcessor = (parsed) => border(parsed.terms, true);
 
+/** Rules for values that are comma-separated lists, which may have several arguments. */
 const listRules = new Set(['animation', 'box-shadow', 'transition']);
 
 /** @type {Map<string, (parsed: ReturnType<typeof tokenizeValue>) => string | null>} */
@@ -78,115 +81,62 @@ const rules = new Map([
 ]);
 
 /**
- * @param {import('postcss').Declaration} decl
- * @return {string}
+ * The reducer of one rule. A value with fewer than two terms, a comment, a bad
+ * token, or several arguments outside a list rule stays as it is.
+ *
+ * @param {(parsed: ReturnType<typeof tokenizeValue>) => string | null} processor
+ * @param {boolean} listRule
+ * @return {Reducer}
  */
-function getValue(decl) {
-  let value = decl.value;
-  const raws = decl.raws;
-  if (raws && raws.value && raws.value.raw && raws.value.value === decl.value) {
-    value = raws.value.raw;
-  }
-
-  return value;
-}
-
-/**
- * @param {import('postcss').Declaration} decl
- * @param {string} value
- */
-function assignValue(decl, value) {
-  if (decl.value !== value) {
-    decl.value = value;
-  }
-  if (decl.raws?.value?.raw && decl.raws.value.value !== value) {
-    decl.raws.value = { raw: value, value };
-  }
-}
-/**
- * @return {import('postcss').Plugin}
- */
-function pluginCreator() {
-  return {
-    postcssPlugin: 'postcss-ordered-values',
-    prepare() {
-      /** @type {Map<Function, Map<string, string>>} */
-      const cache = new Map();
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          css.walkDecls((decl) => {
-            const prop = decl.prop;
-            let processor = rules.get(prop);
-            let normalizedProp = prop;
-            if (!processor) {
-              const lower = prop.toLowerCase();
-              processor = rules.get(lower);
-              normalizedProp = lower;
-              if (
-                !processor &&
-                prop.charCodeAt(0) === 45 /* '-' */ &&
-                prop.charCodeAt(1) !== 45 /* '-' */
-              ) {
-                normalizedProp = vendorUnprefixed(lower);
-                processor = rules.get(normalizedProp);
-              }
-            }
-
-            if (!processor) {
-              return;
-            }
-
-            const value = getValue(decl);
-            let processorCache = cache.get(processor);
-            if (processorCache === undefined) {
-              processorCache = new Map();
-              cache.set(processor, processorCache);
-            }
-
-            if (processorCache.has(value)) {
-              assignValue(
-                decl,
-                /** @type {string} */ (processorCache.get(value))
-              );
-
-              return;
-            }
-
-            if (value.length < 2 || !/[, \t\n\r\f\/]/v.test(value)) {
-              processorCache.set(value, value);
-              assignValue(decl, value);
-              return;
-            }
-
-            const parsed = tokenizeValue(value);
-
-            if (
-              parsed.terms.length < 2 ||
-              parsed.abort ||
-              (!listRules.has(normalizedProp) && parsed.arguments.length > 1)
-            ) {
-              processorCache.set(value, value);
-              assignValue(decl, value);
-
-              return;
-            }
-
-            const processed = processor(parsed);
-            const result = processed ?? value;
-
-            assignValue(decl, result);
-            processorCache.set(value, result);
-          });
-        },
-      };
-    },
+function ruleReducer(processor, listRule) {
+  return (buffer) => {
+    const text = buffer.text();
+    if (text.length < 2 || !/[, \t\n\r\f\/]/v.test(text)) return;
+    const parsed = tokenizeValue(buffer.tokens());
+    if (
+      parsed.terms.length < 2 ||
+      parsed.abort ||
+      (!listRule && parsed.arguments.length > 1)
+    ) {
+      return;
+    }
+    const processed = processor(parsed);
+    if (processed !== null) buffer.replaceText(processed);
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @type {Map<string, Reducer>} */
+const reducers = new Map(
+  [...rules].map(([name, processor]) => [
+    name,
+    ruleReducer(processor, listRules.has(name)),
+  ])
+);
+
+/**
+ * The reducer of a property. The rule is found by the name as written, then
+ * in lower case, then without a vendor prefix.
+ *
+ * @param {string} property
+ * @return {Reducer | null}
+ */
+function reducerOf(property) {
+  const lower = property.toLowerCase();
+  const vendor =
+    property.charCodeAt(0) === 45 /* '-' */ &&
+    property.charCodeAt(1) !== 45; /* '-' */
+  return (
+    reducers.get(property) ??
+    reducers.get(lower) ??
+    (vendor ? reducers.get(vendorUnprefixed(lower)) : undefined) ??
+    null
+  );
+}
+
+/** @type {Stage} */
+const orderedValuesStage = { forProperty: reducerOf };
+
+/** @satisfies {StageEntry} */
+const orderedValues = { create: () => orderedValuesStage };
+
+export { orderedValues as default };
