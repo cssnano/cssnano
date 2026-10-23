@@ -17,12 +17,17 @@ export declare const normalizeWhitespaceEntry: readonly [{
     };
     readonly walk: true;
 }];
+/**
+ * discardEmpty runs as a pass of its host, after the merge pass, so the host
+ * walks the stylesheet without a plugin of its own.
+ */
 export declare const discardEmptyEntry: readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'discardEmpty', {
     readonly postcssPlugin: 'postcss-discard-empty';
     readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
 }];
 export declare const rawCacheEntry: readonly [typeof import("../utils/rawCache.js").default, 'rawCache', {
     readonly postcssPlugin: 'cssnano-util-raw-cache';
