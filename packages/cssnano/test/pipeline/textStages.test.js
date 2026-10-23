@@ -51,4 +51,13 @@ describe('text parts of a stage', () => {
     });
     assert.equal(result.css, '@keyframes x{K{opacity:0}}a{color:red}');
   });
+
+  test('should give a prelude to a stage without the comments PostCSS strips', async () => {
+    const result = await hostWith({
+      forAtRule: () => (text) => `[${text}]`,
+    }).process('@media screen /* c */ and tv{a{color:red}}', {
+      from: undefined,
+    });
+    assert.equal(result.css, '@media [screen  and tv]{a{color:red}}');
+  });
 });
