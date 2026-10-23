@@ -70,5 +70,15 @@ declare function compareAtRulePriority(a: {
     layerPriority: number[];
     documentIndex: number;
 }): number;
-export { LayerRegistry, compareAtRulePriority };
+/**
+ * Whether the stylesheet imports another. An imported stylesheet can declare
+ * layers before this one does, so the layer order is not known from this
+ * stylesheet alone. An import rule is valid only before every rule except
+ * `@charset` and layer statements.
+ *
+ * @param {import('postcss').Root} root
+ * @return {boolean}
+ */
+declare function hasImport(root: import('postcss').Root): boolean;
+export { LayerRegistry, compareAtRulePriority, hasImport };
 //# sourceMappingURL=layerRegistry.d.ts.map
