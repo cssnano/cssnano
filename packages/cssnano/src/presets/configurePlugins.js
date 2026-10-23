@@ -30,9 +30,11 @@ import {
  * settings. `targets` is set when the plugin reads the browser targets of its
  * preset; `defaults` are the options it uses unless the preset sets them;
  * `optionKeys` lists the options it accepts, so a key it does not declare can
- * be reported; `guards` checks the value of an option by its key. `walk` is set
- * when a stylesheet walk implements part of the plugin, so the walk of the run
- * receives its options under the entry name while the plugin still runs.
+ * be reported; `guards` checks the value of an option by its key. `stage` is a
+ * stage the run takes just before the plugin, so the plugin ends that run with
+ * it. `walk` is set when a stylesheet walk implements part of the plugin, so
+ * the walk of the run receives its options under the entry name while the
+ * plugin still runs.
  *
  * @typedef {{
  *   postcssPlugin: string,
@@ -40,6 +42,7 @@ import {
  *   defaults?: object,
  *   optionKeys: readonly string[],
  *   guards?: Readonly<Record<string, Guard>>,
+ *   stage?: StageEntry,
  *   walk?: true,
  * }} PluginEntrySettings
  */
@@ -122,6 +125,9 @@ export function configureValidated(entries, known) {
       ...(settings.targets ? { [browserTargets]: targets } : undefined),
     };
     if (settings.walk) run.transforms.set(name, options);
+    if (settings.stage) {
+      run.members.push({ entry: settings.stage, options, targets: false });
+    }
     if (typeof entry === 'function') {
       endRun();
       plugins.push(entry(options));

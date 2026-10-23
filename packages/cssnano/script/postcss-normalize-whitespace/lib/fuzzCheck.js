@@ -1,7 +1,6 @@
 import postcss from 'postcss';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
-import plugin from '../../../src/plugins/postcss-normalize-whitespace/index.js';
-import { hostPlugin } from '../../../src/pipeline/host.js';
+import { normalizeWhitespacePlugins } from '../../../../../util/testHelpers.js';
 import {
   report,
   runPlugin,
@@ -15,11 +14,7 @@ import {
  * `test/fuzz.js` and the soak run in `script/fuzz.js`.
  */
 
-// The walk of a preset does the escape reattachment for normalizeWhitespace.
-const processor = postcss([
-  hostPlugin([], new Map([['normalizeWhitespace', {}]])),
-  plugin(),
-]);
+const processor = postcss(normalizeWhitespacePlugins());
 
 /** @param {string} value */
 function getURLValue(value) {
