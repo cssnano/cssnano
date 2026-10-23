@@ -1,6 +1,6 @@
 import { discardUnusedSymbols } from '#postcss-discard-unused';
 import { mergeIdentsSymbols } from '#postcss-merge-idents';
-import postcssReduceIdents from '#postcss-reduce-idents';
+import { reduceIdentsSymbols } from '#postcss-reduce-idents';
 import postcssZindex from '#postcss-zindex';
 import { defaultPluginEntries } from './defaultPlugins.js';
 
@@ -53,7 +53,9 @@ export const advancedPluginEntries = /** @type {const} */ ([
     },
   ],
   [
-    postcssReduceIdents,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'reduceIdents',
     {
       postcssPlugin: 'postcss-reduce-idents',
@@ -64,6 +66,8 @@ export const advancedPluginEntries = /** @type {const} */ ([
         'gridTemplate',
         'encoder',
       ],
+      transform: true,
+      symbols: /** @type {SymbolTransform} */ (reduceIdentsSymbols),
     },
   ],
   [
