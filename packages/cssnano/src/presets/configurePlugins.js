@@ -137,7 +137,11 @@ export function configureValidated(entries, known) {
     if (settings.transform) {
       const transform = /** @type {TransformEntry} */ (entry).create(options);
       if (transform !== null && settings.pass) {
-        run.passes.set(name, { pass: settings.pass, options: transform });
+        run.passes.set(name, {
+          pass: settings.pass,
+          options: transform,
+          targets: Boolean(settings.targets),
+        });
       } else if (transform !== null) {
         run.transforms.set(name, transform);
       }

@@ -36,6 +36,22 @@ describe('built presets return plugins', () => {
     assert.match(result.css, /ease-in-out/v);
   });
 
+  test('discardEmpty runs in the host after merge, not as a plugin of its own', () => {
+    assert.ok(!names(defaultPreset()).includes('postcss-discard-empty'));
+  });
+
+  test('disabling discardEmpty keeps the empty rule that the preset removes', async () => {
+    const css = 'a{}b{color:red}';
+    const kept = await postcss(
+      defaultPreset({ disable: ['discardEmpty'] })
+    ).process(css, { from: repositoryFile });
+    const removed = await postcss(defaultPreset()).process(css, {
+      from: repositoryFile,
+    });
+    assert.equal(removed.css, 'b{color:red}');
+    assert.equal(kept.css, 'a{}b{color:red}');
+  });
+
   test('disabling merge leaves the cssnano-merge pass out', () => {
     assert.ok(
       !names(defaultPreset({ disable: ['merge'] })).includes('cssnano-merge')

@@ -130,7 +130,7 @@ function shouldDiscard(node, sub, isLayer, isRedundantLayer) {
  * @param {import('postcss').Result} result
  * @return {void}
  */
-function discardAndReport(css, result) {
+export function discardAndReport(css, result) {
   /** Layer keys declared in each open condition, outermost (top level) first.
    * Sets are created on first use; most conditions declare no layer.
    * @type {(Set<string> | undefined)[]} */

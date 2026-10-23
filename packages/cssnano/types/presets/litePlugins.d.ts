@@ -22,11 +22,12 @@ export declare const litePluginEntries: readonly [readonly [import("../pipeline/
     };
     readonly walk: true;
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    readonly create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, "discardEmpty", {
     readonly postcssPlugin: 'postcss-discard-empty';
     readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
 }], readonly [typeof import("../utils/rawCache.js").default, "rawCache", {
     readonly postcssPlugin: 'cssnano-util-raw-cache';
     readonly optionKeys: readonly [];

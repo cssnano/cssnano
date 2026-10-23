@@ -249,11 +249,12 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
         }>;
     };
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    readonly create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, "discardEmpty", {
     readonly postcssPlugin: 'postcss-discard-empty';
     readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
 }], readonly [{
     (): import("postcss/lib/postcss").Plugin;
     postcss: true;
