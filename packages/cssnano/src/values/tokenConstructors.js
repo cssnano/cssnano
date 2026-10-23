@@ -84,6 +84,127 @@ function ident(value) {
   ]);
 }
 
+/** @param {string} text @param {number} index @return {number} */
+function skipDigits(text, index) {
+  let next = index;
+  while (isDigitCharacter(text[next])) {
+    next++;
+  }
+  return next;
+}
+
+/**
+ * Whether `text` is a CSS `<number>`: an optional sign, digits with an
+ * optional fraction, and an optional exponent. One scan, no regular
+ * expression.
+ *
+ * @param {string} text
+ * @return {boolean}
+ */
+function isNumberText(text) {
+  let index = 0;
+  if (text[index] === '+' || text[index] === '-') {
+    index++;
+  }
+  const integerStart = index;
+  index = skipDigits(text, index);
+  let hasDigits = index > integerStart;
+  if (text[index] === '.') {
+    const fractionStart = index + 1;
+    index = skipDigits(text, fractionStart);
+    if (index === fractionStart) {
+      return false;
+    }
+    hasDigits = true;
+  }
+  if (!hasDigits) {
+    return false;
+  }
+  if (text[index] === 'e' || text[index] === 'E') {
+    index++;
+    if (text[index] === '+' || text[index] === '-') {
+      index++;
+    }
+    const exponentStart = index;
+    index = skipDigits(text, index);
+    if (index === exponentStart) {
+      return false;
+    }
+  }
+  return index === text.length;
+}
+
+/**
+ * Writes a unit so the number before it does not read as an exponent. A
+ * unit such as `e3` or `E-3` gets its first letter hex-escaped.
+ *
+ * @param {string} unit a non-empty unit
+ * @return {string}
+ */
+function unitText(unit) {
+  const text = serializeIdentifier(unit);
+  const first = text[0];
+  const second = text[1];
+  const third = text[2];
+  const startsExponent =
+    (first === 'e' || first === 'E') &&
+    (isDigitCharacter(second) ||
+      ((second === '+' || second === '-') && isDigitCharacter(third)));
+  return startsExponent
+    ? hexEscape(text.codePointAt(0) ?? 0) + text.slice(1)
+    : text;
+}
+
+/**
+ * A `<number>` token, a `<percentage>` token for unit `%`, or a
+ * `<dimension>` token otherwise. The representation is kept as written.
+ *
+ * @param {string} representation a CSS `<number>`, such as `+1.50e1`
+ * @param {string} [unit] an empty string for a plain number
+ * @return {CSSToken}
+ */
+function numeric(representation, unit = '') {
+  if (!isNumberText(representation)) {
+    throw new RangeError(`${representation} is not a CSS number`);
+  }
+  /** @type {{value: number, signCharacter?: string, type?: NumberType, unit?: string}} */
+  const data = { value: Number(representation) };
+  const sign = representation[0];
+  if (sign === '+' || sign === '-') {
+    data.signCharacter = sign;
+  }
+  if (unit === '%') {
+    return /** @type {CSSToken} */ ([
+      TokenType.Percentage,
+      `${representation}%`,
+      noPosition,
+      noPosition,
+      data,
+    ]);
+  }
+  const isNumberSpelling =
+    representation.includes('.') ||
+    representation.includes('e') ||
+    representation.includes('E');
+  data.type = isNumberSpelling ? NumberType.Number : NumberType.Integer;
+  if (unit === '') {
+    return /** @type {CSSToken} */ ([
+      TokenType.Number,
+      representation,
+      noPosition,
+      noPosition,
+      data,
+    ]);
+  }
+  return /** @type {CSSToken} */ ([
+    TokenType.Dimension,
+    `${representation}${unitText(unit)}`,
+    noPosition,
+    noPosition,
+    { ...data, unit },
+  ]);
+}
+
 /**
  * A `<integer>` number token. Only safe integers are accepted, so the value
  * is exact.
@@ -95,12 +216,17 @@ function integer(value) {
   if (!Number.isSafeInteger(value)) {
     throw new RangeError(`${value} is not a safe integer`);
   }
+  /** @type {{value: number, signCharacter?: string, type: NumberType}} */
+  const data = { value, type: NumberType.Integer };
+  if (value < 0) {
+    data.signCharacter = '-';
+  }
   return /** @type {CSSToken} */ ([
     TokenType.Number,
     String(value),
     noPosition,
     noPosition,
-    { value, type: NumberType.Integer },
+    data,
   ]);
 }
 
@@ -123,4 +249,4 @@ function percentage(value) {
   ]);
 }
 
-export { ident, integer, percentage };
+export { ident, integer, numeric, percentage };
