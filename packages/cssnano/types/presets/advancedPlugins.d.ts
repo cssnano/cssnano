@@ -46,11 +46,12 @@ export declare const advancedPluginEntries: readonly [readonly [{
     readonly transform: true;
     readonly symbols: SymbolTransform;
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'mergeIdents', {
     readonly postcssPlugin: 'postcss-merge-idents';
     readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly symbols: SymbolTransform;
 }], readonly [{
     ({ counter, counterStyle, keyframes, gridTemplate, encoder, }?: import("#postcss-reduce-idents").Options): import("postcss/lib/postcss").Plugin;
     postcss: true;

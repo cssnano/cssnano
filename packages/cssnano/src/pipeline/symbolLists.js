@@ -24,6 +24,11 @@ const keyframesRegex = /keyframes/v;
  * @property {Declaration[]} listStyleDecls `list-style` and `system` declarations
  * @property {Declaration[]} animationDecls `animation` declarations
  * @property {Declaration[]} zIndexDecls `z-index` declarations
+ * @property {AtRule[]} layers `@layer` at-rules, with or without a block
+ * @property {AtRule[]} functions `@function` rules
+ * @property {AtRule[]} parameterRules `@mixin` and `@apply` rules
+ * @property {AtRule[]} conditionRules `@container`, `@when` and `@else` rules
+ * @property {Declaration[]} decls every declaration
  */
 
 /**
@@ -40,7 +45,25 @@ export function createSymbolLists() {
     listStyleDecls: [],
     animationDecls: [],
     zIndexDecls: [],
+    layers: [],
+    functions: [],
+    parameterRules: [],
+    conditionRules: [],
+    decls: [],
   };
+}
+
+/**
+ * Whether a node still hangs from the root. A transform that ran before a
+ * removal may have detached a node that the lists hold.
+ *
+ * @param {AnyNode} node
+ * @returns {boolean}
+ */
+export function isAttached(node) {
+  let curr = node.parent;
+  while (curr && curr.type !== 'root') curr = curr.parent;
+  return curr !== undefined;
 }
 
 /**
@@ -80,6 +103,12 @@ function visitAtRule(lists, node) {
   if (name === 'namespace') {
     lists.namespaces.push(node);
   }
+  if (name === 'layer') lists.layers.push(node);
+  if (name === 'function') lists.functions.push(node);
+  if (name === 'mixin' || name === 'apply') lists.parameterRules.push(node);
+  if (name === 'container' || name === 'when' || name === 'else') {
+    lists.conditionRules.push(node);
+  }
 }
 
 /**
@@ -88,6 +117,7 @@ function visitAtRule(lists, node) {
  */
 function visitDecl(lists, node) {
   const prop = asciiLowerCase(node.prop);
+  lists.decls.push(node);
   if (zIndexRegex.test(node.prop)) {
     lists.zIndexDecls.push(node);
   }
