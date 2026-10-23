@@ -216,9 +216,11 @@ export default function joinByDeclarations(parent, mergeState) {
           continue;
         }
         const { added, gain } = joinGain(group, later, mergeState);
-        // On a tie, the nearest group has the least to cross.
+        // A join that breaks even still takes the shared declarations out of
+        // the way of later rules that can join the group. On a tie, the
+        // nearest group has the least to cross.
         if (
-          gain <= 0 ||
+          gain < 0 ||
           (best &&
             (gain < best.gain ||
               (gain === best.gain && group.position < best.group.position)))

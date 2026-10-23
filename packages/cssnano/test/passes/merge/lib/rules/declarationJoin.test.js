@@ -122,3 +122,11 @@ test(
     '.a{ color : red }.x{height:1px}.abcdefghi{ color : red ;top:0}'
   )
 );
+
+test(
+  'should join a rule whose selector costs as many bytes as the declaration saves, because it no longer stands between the group and a later rule whose join shortens the output',
+  processCSS(
+    '.a{color:red}.x{height:1px}.abcdefgh{color:red;top:0}.b{color:red;left:0}',
+    '.a,.abcdefgh,.b{color:red}.x{height:1px}.abcdefgh{top:0}.b{left:0}'
+  )
+);
