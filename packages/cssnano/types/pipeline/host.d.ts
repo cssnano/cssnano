@@ -1,8 +1,12 @@
 import type { Helpers, Plugin, Root } from 'postcss';
 import type { ValueBuffer } from '../values/valueBuffer.js';
 export type Reducer = (buffer: ValueBuffer, context: number) => void;
+export type Warn = (message: string, plugin?: string) => void;
+export type TextReducer = (text: string, context: number, warn: Warn) => string;
 export type Stage = {
     forProperty?: (property: string) => Reducer | null;
+    forAtRule?: (name: string) => TextReducer | null;
+    selector?: TextReducer;
     run?: (root: Root, helpers: Helpers) => void;
 };
 export type StageEntry = {
