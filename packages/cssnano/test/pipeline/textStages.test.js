@@ -52,12 +52,27 @@ describe('text parts of a stage', () => {
     assert.equal(result.css, '@keyframes x{K{opacity:0}}a{color:red}');
   });
 
-  test('should give a prelude to a stage without the comments PostCSS strips', async () => {
+  test('should give a prelude to a stage as written, comments included, while its raw is fresh', async () => {
     const result = await hostWith({
       forAtRule: () => (text) => `[${text}]`,
     }).process('@media screen /* c */ and tv{a{color:red}}', {
       from: undefined,
     });
-    assert.equal(result.css, '@media [screen  and tv]{a{color:red}}');
+    assert.equal(result.css, '@media [screen /* c */ and tv]{a{color:red}}');
+  });
+
+  test('should give a prelude to a stage from params when an earlier plugin left its raw stale', async () => {
+    const result = await postcss([
+      {
+        postcssPlugin: 'rewrite-params',
+        AtRule(atRule) {
+          atRule.params = 'print';
+        },
+      },
+      ...hostWith({ forAtRule: () => (text) => `[${text}]` }).plugins,
+    ]).process('@media screen /* c */ and tv{a{color:red}}', {
+      from: undefined,
+    });
+    assert.equal(result.css, '@media [print]{a{color:red}}');
   });
 });
