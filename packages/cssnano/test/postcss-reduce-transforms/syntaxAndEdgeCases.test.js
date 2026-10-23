@@ -171,7 +171,7 @@ describe('Handles nested syntax and source spelling', () => {
   );
 
   test(
-    'applies reductions to transform-suffixed custom properties',
-    processCSS('h1{--transform:scale(1, 1)}', 'h1{--transform:scale(1)}')
+    'keeps custom properties named like transform, which are not transform properties',
+    passthroughCSS('h1{--transform:scale(1, 1)}')
   );
 });

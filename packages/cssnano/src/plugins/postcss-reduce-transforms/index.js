@@ -10,7 +10,14 @@ const {
   tokenStart,
 } = cssnanoUtils;
 
-const transformPropertyRegex = /[tT][rR][aA][nN][sS][fF][oO][rR][mM]$/v;
+/** The transform property and its vendor-prefixed forms, lower-cased. */
+const transformProperties = new Set([
+  'transform',
+  '-webkit-transform',
+  '-moz-transform',
+  '-ms-transform',
+  '-o-transform',
+]);
 
 /** @typedef {{open: number, close: number, name: string, args: {significant: number[]}[]}} FunctionFrame */
 /** @typedef {{number: number, unit: string} | string | undefined} ParsedArgument */
@@ -291,14 +298,16 @@ const reduceTransform = (buffer) => {
 };
 
 /**
- * The stage for one run. It reads every property that ends in `transform`.
+ * The stage for one run. It reads `transform` and its vendor-prefixed forms.
  *
  * @return {import('../../pipeline/host.js').Stage}
  */
 function transformsStage() {
   return {
     forProperty: (property) =>
-      transformPropertyRegex.test(property) ? reduceTransform : null,
+      transformProperties.has(asciiLowerCase(property))
+        ? reduceTransform
+        : null,
   };
 }
 
