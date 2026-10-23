@@ -40,6 +40,12 @@ const repeatRules = Array.from(
     `.r-${index}{background-repeat:repeat no-repeat;mask-repeat:${index % 2 ? 'space round' : 'no-repeat'}}`
 ).join('');
 
+const positionRules = Array.from(
+  { length: 2000 },
+  (_, index) =>
+    `.p-${index}{background-position:left center;mask-position:${index % 2 ? 'top right' : 'center'};object-position:${index}px top}`
+).join('');
+
 export const presetCases = {
   'preset-default-colour-values': {
     plugin: 'cssnano',
@@ -65,5 +71,10 @@ export const presetCases = {
     plugin: 'cssnano',
     createProcessor: () => postcss(defaultPreset()),
     css: repeatRules,
+  },
+  'preset-default-position-values': {
+    plugin: 'cssnano',
+    createProcessor: () => postcss(defaultPreset()),
+    css: positionRules,
   },
 };
