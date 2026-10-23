@@ -115,3 +115,10 @@ test(
   'should keep a rule apart from a group when a rule between them sets a shared property other than the first, because joining would let it override the moved declaration',
   passthroughCSS('.a{color:red;top:0}.x{top:1px}.b{color:red;top:0}')
 );
+
+test(
+  'should keep a rule apart from a group when its selector costs more than the declaration saves once minified, because source whitespace around the colon is not output',
+  passthroughCSS(
+    '.a{ color : red }.x{height:1px}.abcdefghi{ color : red ;top:0}'
+  )
+);

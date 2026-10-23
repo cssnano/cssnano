@@ -21,7 +21,6 @@ export type PluginEntrySettings = {
     defaults?: object;
     optionKeys: readonly string[];
     guards?: Readonly<Record<string, Guard>>;
-    stage?: StageEntry;
     walk?: true;
     transform?: true;
     pass?: PassRun['pass'];
