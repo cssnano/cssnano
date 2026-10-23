@@ -186,6 +186,18 @@ const syntheticCorpus = {
   ]
     .map((value) => `a{background-position:${value}}`)
     .join('\n'),
+  'postcss-normalize-unicode': [
+    'U+0025-00FF',
+    'u+4??',
+    'U+0-7F, U+80-FF',
+    'u+2b00-2bff, u+1e00-1eff',
+    'U+1E00-1EFF, U+1EFF-1F00',
+    'U+0000-FFFF, U+1F',
+    'U+0?',
+    'U+4E00-9FFF, U+3400-4DBF',
+  ]
+    .map((range) => `@font-face{unicode-range:${range}}`)
+    .join('\n'),
   'postcss-ordered-values': [
     'border:solid 1px red',
     'border:red solid 1px',
@@ -337,6 +349,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     'postcss-calc',
     'postcss-convert-values',
     'postcss-ordered-values',
+    'postcss-normalize-unicode',
   ];
   const browser = await launchChromium(executablePath);
   let failures = 0;

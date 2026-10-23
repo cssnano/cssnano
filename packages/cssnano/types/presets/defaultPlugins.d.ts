@@ -205,8 +205,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
     readonly postcssPlugin: 'postcss-normalize-string';
     readonly optionKeys: readonly ['preferredQuote'];
 }], readonly [{
-    (opts?: import("#postcss-normalize-unicode").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: (options: Record<PropertyKey, unknown>, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
 }, 'normalizeUnicode', {
     readonly postcssPlugin: 'postcss-normalize-unicode';
     readonly targets: true;
