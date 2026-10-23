@@ -199,8 +199,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
     readonly postcssPlugin: 'postcss-discard-overridden';
     readonly optionKeys: readonly [];
 }], readonly [{
-    (opts: import("#postcss-normalize-string").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: (options: import("#postcss-normalize-string").Options) => import("../pipeline/host.js").Stage;
 }, 'normalizeString', {
     readonly postcssPlugin: 'postcss-normalize-string';
     readonly optionKeys: readonly ['preferredQuote'];
