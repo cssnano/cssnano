@@ -1,15 +1,31 @@
-import type { Helpers, Root } from 'postcss';
-import type { Reducer, Stage } from './host.js';
+import type { Container, Document, Helpers, Root } from 'postcss';
+import type { Reducer, Stage, TextReducer } from './host.js';
 export type PropertyEntry = {
     plan: readonly Reducer[] | null;
-    memos: (Map<string, string> | undefined)[] | null;
+    memos: (Map<string, string> | undefined)[];
+};
+export type TextEntry = {
+    plan: readonly TextReducer[] | null;
+    memos: (Map<string, string> | undefined)[];
+};
+export type RunState = {
+    /**
+     * in pipeline order
+     */
+    stages: readonly Stage[];
+    properties: Map<string, PropertyEntry>;
+    /**
+     * by at-rule name
+     */
+    atRules: Map<string, TextEntry>;
+    selectors: TextEntry;
+    contexts: WeakMap<Container | Document, number>;
+    helpers: Helpers;
 };
 /**
- * Runs the value stages of one run over the declarations of a stylesheet in a
- * single walk. Each declaration reads its source text, folds it through the
- * plan of its property with its context, and writes the result only when it
- * changed. A value that reports a warning is not memoised, so each declaration
- * reports it.
+ * Runs the value, prelude and selector parts of the stages over a stylesheet in
+ * a single walk, in document order. Each text is read from its source, folded
+ * through its plan with its context, and written back only when it changed.
  *
  * @param {readonly Stage[]} stages in pipeline order
  * @returns {{run: (root: Root, helpers: Helpers) => void}}
