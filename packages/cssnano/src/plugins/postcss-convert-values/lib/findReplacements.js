@@ -4,6 +4,7 @@ import convert, {
   requiresZeroUnit,
   roundToPrecision,
 } from './convert.js';
+import { keepJoiningSign } from './keepJoiningSign.js';
 import { numericSource } from './numericSource.js';
 
 const {
@@ -48,7 +49,10 @@ const functionsPreservingZeroUnits = new Set([
 
 /** @typedef {Parameters<typeof convert>[2]} ConvertOptions */
 /** @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions} Options */
-/** @typedef {{keepZeroPercent: boolean, keepZeroLength: boolean, clampAlpha: boolean, isAlpha: boolean, isFont: boolean}} ReplacementFlags */
+/** @typedef {{keepZeroPercent: boolean, keepZeroLength: boolean, clampAlpha: boolean, isAlpha: boolean, isFont: boolean, isUnicodeRange: boolean, isCustomProperty: boolean}} ReplacementFlags */
+
+/* Only `unicode-range` and custom properties keep `U+` ranges as one token. */
+const unicodeRangeOptions = { unicodeRangesAllowed: true };
 
 /**
  * @param {string} unit
@@ -296,6 +300,26 @@ function processNumericToken(source, isLineHeight, frames, opts, flags) {
 }
 
 /**
+ * The tokens of `value`, or `undefined` for a custom property with a `U+`
+ * range. Such a property may be read as `unicode-range` or as anything else,
+ * and `u+1.0e2` is a range then a number in one, a single number in the
+ * other, so no edit is safe for both.
+ *
+ * @param {string} value
+ * @param {ReplacementFlags} flags
+ * @return {ReturnType<typeof tokens> | undefined}
+ */
+function valueTokens(value, flags) {
+  if (!flags.isUnicodeRange && !flags.isCustomProperty) return tokens(value);
+  const input = tokens(value, unicodeRangeOptions);
+  if (!flags.isCustomProperty) return input;
+  for (const token of input) {
+    if (token[0] === TokenType.UnicodeRange) return undefined;
+  }
+  return input;
+}
+
+/**
  * @param {string} value
  * @param {ReplacementFlags} flags
  * @param {Options} opts
@@ -307,7 +331,8 @@ export function findReplacements(value, flags, opts) {
   const frames = new FrameStack(flags.keepZeroPercent, flags.keepZeroLength);
   let afterFontSlash = false;
 
-  const input = tokens(value, { unicodeRangesAllowed: true });
+  const input = valueTokens(value, flags);
+  if (!input) return replacements;
   for (let index = 0; index < input.length; index++) {
     const token = input[index];
     if (frames.advance(token)) {
@@ -338,6 +363,7 @@ export function findReplacements(value, flags, opts) {
       continue;
     }
 
+    const previous = input[index - 1];
     const source = numericSource(input, index);
     if (!source) continue;
     index = source.index;
@@ -349,7 +375,7 @@ export function findReplacements(value, flags, opts) {
       opts,
       flags
     );
-    if (edit) replacements.push(edit);
+    if (edit) replacements.push(keepJoiningSign(edit, source, previous));
   }
   return replacements;
 }
