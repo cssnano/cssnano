@@ -89,7 +89,7 @@ function reduceValue(entry, text, context, decl, helpers) {
   if (result !== undefined) return result;
   const buffer = new ValueBuffer(text);
   for (const reducer of plan) reducer(buffer, context);
-  result = buffer.finish();
+  result = buffer.text();
   const warnings = buffer.warnings();
   if (warnings === undefined) {
     memo.set(text, result);
@@ -235,29 +235,26 @@ function walkRule(state, rule) {
  * through its plan with its context, and written back only when it changed.
  *
  * @param {readonly Stage[]} stages in pipeline order
- * @returns {{run: (root: Root, helpers: Helpers) => void}}
+ * @param {Root} root
+ * @param {Helpers} helpers
  */
-export function declarationTraversal(stages) {
-  return {
-    run(root, helpers) {
-      /** @type {RunState} */
-      const state = {
-        stages,
-        properties: new Map(),
-        atRules: new Map(),
-        selectors: textEntry(
-          stages.flatMap((stage) =>
-            stage.selector !== undefined ? [stage.selector] : []
-          )
-        ),
-        contexts: new WeakMap(),
-        helpers,
-      };
-      root.walk((node) => {
-        if (node.type === 'decl') walkDeclaration(state, node);
-        else if (node.type === 'atrule') walkAtRule(state, node);
-        else if (node.type === 'rule') walkRule(state, node);
-      });
-    },
+export function walkStylesheet(stages, root, helpers) {
+  /** @type {RunState} */
+  const state = {
+    stages,
+    properties: new Map(),
+    atRules: new Map(),
+    selectors: textEntry(
+      stages.flatMap((stage) =>
+        stage.selector !== undefined ? [stage.selector] : []
+      )
+    ),
+    contexts: new WeakMap(),
+    helpers,
   };
+  root.walk((node) => {
+    if (node.type === 'decl') walkDeclaration(state, node);
+    else if (node.type === 'atrule') walkAtRule(state, node);
+    else if (node.type === 'rule') walkRule(state, node);
+  });
 }

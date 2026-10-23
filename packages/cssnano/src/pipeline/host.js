@@ -1,13 +1,12 @@
 import { resolveTargets } from '#utils/browser-targets';
-import { declarationTraversal } from './traversal.js';
+import { walkStylesheet } from './traversal.js';
 
 /**
  * A host plugin runs the stages of one run in order, at OnceExit, so the
- * plugins before it have finished. The declarations of the run are walked once,
- * then each stage runs its `run` part.
+ * plugins before it have finished. The stylesheet is walked once.
  */
 
-/** @import {Helpers, Plugin, Root} from 'postcss' */
+/** @import {Plugin} from 'postcss' */
 /** @import {ValueBuffer} from '../values/valueBuffer.js' */
 
 /**
@@ -32,13 +31,11 @@ import { declarationTraversal } from './traversal.js';
  * A stage changes declaration values, through `forProperty`, which gives the
  * reducer of each property it treats, or null for a property it leaves alone.
  * It rewrites at-rule preludes through `forAtRule`, and selectors through
- * `selector`, in the same walk. It may also change the stylesheet in `run`,
- * once the walk has finished.
+ * `selector`, in the same walk.
  * @typedef {object} Stage
  * @property {(property: string) => Reducer | null} [forProperty]
  * @property {(name: string) => TextReducer | null} [forAtRule]
  * @property {TextReducer} [selector]
- * @property {(root: Root, helpers: Helpers) => void} [run]
  */
 
 /**
@@ -91,11 +88,9 @@ export function hostPlugin(members) {
         const stage = memo.get(resolved);
         if (stage) stages.push(stage);
       }
-      const walk = declarationTraversal(stages);
       return {
         OnceExit(root, helpers) {
-          walk.run(root, helpers);
-          for (const stage of stages) stage.run?.(root, helpers);
+          walkStylesheet(stages, root, helpers);
         },
       };
     },

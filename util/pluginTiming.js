@@ -104,7 +104,7 @@ function addingTimeTo(totals, label, run) {
 }
 
 /**
- * A stage entry that times the reducers and the run of the stages it creates.
+ * A stage entry that times the reducers of the stages it creates.
  * A reducer keeps one wrapper, so plans still share.
  *
  * @param {{ create: Function }} entry
@@ -117,17 +117,30 @@ function timedEntry(entry, name) {
       if (stage === null) return null;
       /** @type {Map<Function, Function>} */
       const wrappers = new Map();
-      return {
+      const timedReducer = (/** @type {Function} */ reducer) => {
+        if (!wrappers.has(reducer)) {
+          wrappers.set(
+            reducer,
+            addingTimeTo(stageTotals, name, /** @type {any} */ (reducer))
+          );
+        }
+        return wrappers.get(reducer);
+      };
+      const timedStage = {
         forProperty(/** @type {string} */ property) {
           const reducer = stage.forProperty?.(property) ?? null;
-          if (reducer === null) return null;
-          if (!wrappers.has(reducer)) {
-            wrappers.set(reducer, addingTimeTo(stageTotals, name, reducer));
-          }
-          return wrappers.get(reducer);
+          return reducer === null ? null : timedReducer(reducer);
         },
-        run: stage.run && addingTimeTo(stageTotals, name, stage.run),
+        forAtRule(/** @type {string} */ atRuleName) {
+          const reducer = stage.forAtRule?.(atRuleName) ?? null;
+          return reducer === null ? null : timedReducer(reducer);
+        },
       };
+      // The walk tells a stage without a selector rewrite by its absence.
+      if (stage.selector !== undefined) {
+        timedStage.selector = timedReducer(stage.selector);
+      }
+      return timedStage;
     },
   };
 }

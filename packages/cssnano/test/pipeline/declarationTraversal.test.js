@@ -202,29 +202,6 @@ describe('a value reducer in a host plugin', () => {
 });
 
 describe('the stages of a host plugin in one run', () => {
-  test('runs the value reducers of every stage in the walk before any stage runs its run part', async () => {
-    const log = [];
-    await run(
-      'a{color:red}',
-      hostOf([
-        valueStage(() => (buffer) => {
-          log.push('before');
-          buffer.replaceText(buffer.text());
-        }),
-        {
-          run() {
-            log.push('phase');
-          },
-        },
-        valueStage(() => (buffer) => {
-          log.push('after');
-          buffer.replaceText(buffer.text());
-        }),
-      ])
-    );
-    assert.deepEqual(log, ['before', 'after', 'phase']);
-  });
-
   test('runs adjacent value stages on each declaration in pipeline order', async () => {
     const log = [];
     await run(
