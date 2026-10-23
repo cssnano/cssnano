@@ -1,8 +1,13 @@
 import { describe, test } from 'node:test';
 
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
 
-import plugin from '../../src/plugins/postcss-discard-comments/index.js';
+import discardComments from '../../src/plugins/postcss-discard-comments/index.js';
+
+const plugin = oneStagePlugin(discardComments);
 
 const { processCSS } = processCSSFactory(plugin);
 
@@ -28,7 +33,7 @@ describe('Declaration values with !important', () => {
 
   test(
     'should prefer a changed declaration value over stale raw value metadata when !important is present',
-    processCSSFactory([staleRawPlugin, plugin]).processCSS(
+    processCSSFactory([staleRawPlugin, plugin()]).processCSS(
       'a{color:old /*x*/!important}',
       'a{color:new value!important}'
     )

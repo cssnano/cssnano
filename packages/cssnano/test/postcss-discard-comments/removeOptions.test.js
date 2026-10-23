@@ -4,9 +4,14 @@ import { rejects, strictEqual } from 'node:assert/strict';
 
 import postcss from 'postcss';
 
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
 
-import plugin from '../../src/plugins/postcss-discard-comments/index.js';
+import discardComments from '../../src/plugins/postcss-discard-comments/index.js';
+
+const plugin = oneStagePlugin(discardComments);
 
 const { processCSS } = processCSSFactory(plugin);
 

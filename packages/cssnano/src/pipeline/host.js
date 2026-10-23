@@ -31,11 +31,14 @@ import { walkStylesheet } from './traversal.js';
  * A stage changes declaration values, through `forProperty`, which gives the
  * reducer of each property it treats, or null for a property it leaves alone.
  * It rewrites at-rule preludes through `forAtRule`, and selectors through
- * `selector`, in the same walk.
+ * `selector`, in the same walk. `comments` gives the predicate that removes
+ * comments for one stylesheet; it is called once per stylesheet, and only one
+ * stage of a run has it.
  * @typedef {object} Stage
  * @property {(property: string) => Reducer | null} [forProperty]
  * @property {(name: string) => TextReducer | null} [forAtRule]
  * @property {TextReducer} [selector]
+ * @property {() => (comment: string) => boolean} [comments]
  */
 
 /**

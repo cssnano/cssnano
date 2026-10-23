@@ -7,6 +7,7 @@ export type Stage = {
     forProperty?: (property: string) => Reducer | null;
     forAtRule?: (name: string) => TextReducer | null;
     selector?: TextReducer;
+    comments?: () => (comment: string) => boolean;
 };
 export type StageEntry = {
     create: (options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => Stage | null;
