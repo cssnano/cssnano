@@ -29,17 +29,17 @@ declare function isPercentage(term: Term): boolean;
 /** @param {Term} term @param {string} [char] */
 declare function isDelim(term: Term, char?: string): boolean;
 /**
- * Tokenize a declaration in a single streaming pass and split it at top-level
- * whitespace, commas, and structural slashes.
+ * Splits the tokens of a declaration at top-level whitespace, commas, and
+ * structural slashes. A term's raw text is the text of its tokens, so terms
+ * built from tokens an earlier stage made still read back as their text.
  *
- * @param {string} value
- * @return {{ arguments: Term[][], terms: Term[], abort: boolean, value: string }}
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} value the tokens of the value
+ * @return {{ arguments: Term[][], terms: Term[], abort: boolean }}
  */
-declare function tokenizeValue(value: string): {
+declare function tokenizeValue(value: readonly import('@csstools/css-tokenizer').CSSToken[]): {
     arguments: Term[][];
     terms: Term[];
     abort: boolean;
-    value: string;
 };
 /** @param {Term[][]} arguments_ */
 declare function serializeArguments(arguments_: Term[][]): string;

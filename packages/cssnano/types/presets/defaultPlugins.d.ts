@@ -162,8 +162,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
     };
     readonly optionKeys: readonly ['precision', 'transformCustomProperties', 'time', 'length', 'angle', 'frequency'];
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: () => import("../pipeline/host.js").Stage;
 }, 'orderedValues', {
     readonly postcssPlugin: 'postcss-ordered-values';
     readonly optionKeys: readonly [];

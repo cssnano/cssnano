@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import {
+  oneStagePlugin,
   processCSSFactory,
-  usePostCSSPlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-ordered-values/index.js';
+import orderedValues from '../../src/plugins/postcss-ordered-values/index.js';
+
+const plugin = oneStagePlugin(orderedValues);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -194,8 +196,6 @@ describe('Pass through', () => {
   );
 });
 
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
-
 describe('Order', () => {
   test(
     'should order border-block',
@@ -219,7 +219,9 @@ test(
   processCSS('div{border:red 1px}', 'div{border:1px red}')
 );
 
-test('should synchronize raw values on cache hits and misses', async () => {
+/* The stage writes only a changed value, and a stale raw is dropped with it,
+ * so PostCSS prints the new value. */
+test('should drop the stale raw value of a reordered border on cache hits and misses', async () => {
   const first = postcss.decl({ prop: 'border', value: 'red solid 1px' });
   first.raws.value = { raw: 'red solid 1px', value: 'red solid 1px' };
   const second = postcss.decl({ prop: 'border', value: 'red solid 1px' });
@@ -233,8 +235,8 @@ test('should synchronize raw values on cache hits and misses', async () => {
       value: decl.value,
     })),
     [
-      { raw: '1px solid red', value: '1px solid red' },
-      { raw: '1px solid red', value: '1px solid red' },
+      { raw: undefined, value: '1px solid red' },
+      { raw: undefined, value: '1px solid red' },
     ]
   );
 });

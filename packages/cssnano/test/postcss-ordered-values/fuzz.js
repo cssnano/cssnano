@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import postcss from 'postcss';
-import plugin from '../../src/plugins/postcss-ordered-values/index.js';
+import { oneStagePlugin } from '../../../../util/testHelpers.js';
+import orderedValues from '../../src/plugins/postcss-ordered-values/index.js';
 import {
   edgeCases,
   generate,
   properties,
 } from '../../script/postcss-ordered-values/lib/fuzzGenerate.js';
+
+const plugin = oneStagePlugin(orderedValues);
 
 function process(css, processor = postcss([plugin()])) {
   return processor.process(css, { from: undefined }).css;
