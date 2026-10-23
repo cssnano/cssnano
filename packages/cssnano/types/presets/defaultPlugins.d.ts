@@ -254,19 +254,20 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
     readonly postcssPlugin: 'postcss-discard-empty';
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
+    readonly after: true;
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'uniqueSelectors', {
     readonly postcssPlugin: 'postcss-unique-selectors';
     readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly after: true;
 }], readonly [{
     readonly create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, "rawCache", {
     readonly postcssPlugin: 'cssnano-util-raw-cache';
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
+    readonly after: true;
 }]];
 //# sourceMappingURL=defaultPlugins.d.ts.map

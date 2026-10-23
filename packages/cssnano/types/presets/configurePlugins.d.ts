@@ -25,6 +25,7 @@ export type PluginEntrySettings = {
     walk?: true;
     transform?: true;
     pass?: PassRun['pass'];
+    after?: true;
 };
 export type PluginCreator = import('postcss').PluginCreator<any>;
 export type PluginEntry = readonly [PluginCreator | StageEntry | TransformEntry, string, PluginEntrySettings];
@@ -32,6 +33,7 @@ export type Run = {
     members: HostMember[];
     transforms: Map<string, Record<PropertyKey, unknown>>;
     passes: Map<string, PassRun>;
+    after: Map<string, Record<PropertyKey, unknown>>;
 };
 /**
  * Turns the options of a built preset into the plugins it runs. A disabled

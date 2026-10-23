@@ -38,7 +38,8 @@ import {
  *
  * `transform` is set when the entry is a whole-stylesheet transform, so its entry
  * is a TransformEntry rather than a creator or a stage. A transform with `pass`
- * runs as a pass after the walk of its run, instead of inside the walk.
+ * runs as a pass after the walk of its run, instead of inside the walk. A
+ * transform with `after` runs in the walk after the passes of its run.
  *
  * @typedef {{
  *   postcssPlugin: string,
@@ -50,6 +51,7 @@ import {
  *   walk?: true,
  *   transform?: true,
  *   pass?: PassRun['pass'],
+ *   after?: true,
  * }} PluginEntrySettings
  */
 
@@ -67,13 +69,19 @@ import {
 
 /**
  * The stage members of a host, the options of the walk transforms that the
- * host's walk runs, and the passes that run after it.
- * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, passes: Map<string, PassRun>}} Run
+ * host's walk runs, the passes that run after it, and the options of the
+ * transforms of the walk after the passes.
+ * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, passes: Map<string, PassRun>, after: Map<string, Record<PropertyKey, unknown>>}} Run
  */
 
 /** @returns {Run} */
 function newRun() {
-  return { members: [], transforms: new Map(), passes: new Map() };
+  return {
+    members: [],
+    transforms: new Map(),
+    passes: new Map(),
+    after: new Map(),
+  };
 }
 
 /**
@@ -121,9 +129,12 @@ export function configureValidated(entries, known) {
     if (
       run.members.length > 0 ||
       run.transforms.size > 0 ||
-      run.passes.size > 0
+      run.passes.size > 0 ||
+      run.after.size > 0
     ) {
-      plugins.push(hostPlugin(run.members, run.transforms, run.passes));
+      plugins.push(
+        hostPlugin(run.members, run.transforms, run.passes, run.after)
+      );
     }
     run = newRun();
   };
@@ -142,6 +153,8 @@ export function configureValidated(entries, known) {
           options: transform,
           targets: Boolean(settings.targets),
         });
+      } else if (transform !== null && settings.after) {
+        run.after.set(name, transform);
       } else if (transform !== null) {
         run.transforms.set(name, transform);
       }
