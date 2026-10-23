@@ -1,8 +1,9 @@
 import type { Result, Root } from 'postcss';
-/** @import {Result, Root} from 'postcss' */
+/** @import {AnyNode, Result, Root} from 'postcss' */
 /**
  * The walk after merge runs the whole-stylesheet transforms that need the tree
- * as merge left it. It records the raw cache last, so no later transform
+ * as merge left it. Per-node transforms share one walk, so no transform needs
+ * its own. It records the raw cache last, so no later transform
  * changes what the cache describes.
  *
  * @param {Root} root
