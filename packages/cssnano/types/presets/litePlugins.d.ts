@@ -27,13 +27,13 @@ export declare const litePluginEntries: readonly [readonly [import("../pipeline/
     readonly postcssPlugin: 'postcss-discard-empty';
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
+    readonly after: true;
 }], readonly [{
     readonly create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, "rawCache", {
     readonly postcssPlugin: 'cssnano-util-raw-cache';
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
+    readonly after: true;
 }]];
 //# sourceMappingURL=litePlugins.d.ts.map

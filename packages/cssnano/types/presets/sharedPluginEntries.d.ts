@@ -18,8 +18,8 @@ export declare const normalizeWhitespaceEntry: readonly [{
     readonly walk: true;
 }];
 /**
- * discardEmpty runs as a pass of its host, after the merge pass, so the host
- * walks the stylesheet without a plugin of its own.
+ * discardEmpty runs in the walk after merge of its host, so the host walks the
+ * stylesheet without a plugin of its own.
  */
 export declare const discardEmptyEntry: readonly [{
     readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
@@ -27,14 +27,17 @@ export declare const discardEmptyEntry: readonly [{
     readonly postcssPlugin: 'postcss-discard-empty';
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
+    readonly after: true;
 }];
+/**
+ * rawCache runs last in the walk after merge of its host.
+ */
 export declare const rawCacheEntry: readonly [{
     readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'rawCache', {
     readonly postcssPlugin: 'cssnano-util-raw-cache';
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
+    readonly after: true;
 }];
 //# sourceMappingURL=sharedPluginEntries.d.ts.map
