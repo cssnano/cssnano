@@ -28,6 +28,14 @@ import { walkStylesheet } from './traversal.js';
  */
 
 /**
+ * A rewrite of an at-rule prelude. `tightensAfterName` lets the walk strip the
+ * space after the name once the stage has run on a non-empty prelude that
+ * starts with a parenthesis, as CSS needs no space there. Only minifyParams sets
+ * it, for `@media` and `@supports`.
+ * @typedef {TextReducer | {reduce: TextReducer, tightensAfterName: true}} AtRulePart
+ */
+
+/**
  * A stage changes declaration values, through `forProperty`, which gives the
  * reducer of each property it treats, or null for a property it leaves alone.
  * It rewrites at-rule preludes through `forAtRule`, and selectors through
@@ -36,7 +44,7 @@ import { walkStylesheet } from './traversal.js';
  * stage of a run has it.
  * @typedef {object} Stage
  * @property {(property: string) => Reducer | null} [forProperty]
- * @property {(name: string) => TextReducer | null} [forAtRule]
+ * @property {(name: string) => AtRulePart | null} [forAtRule]
  * @property {TextReducer} [selector]
  * @property {() => (comment: string) => boolean} [comments]
  */
