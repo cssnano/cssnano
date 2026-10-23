@@ -275,4 +275,19 @@ function stringToken(text, value) {
   ]);
 }
 
-export { ident, integer, numeric, percentage, stringToken };
+/**
+ * A whitespace token of one space, the separator the serializer writes.
+ *
+ * @return {CSSToken}
+ */
+function whitespace() {
+  return /** @type {CSSToken} */ ([
+    TokenType.Whitespace,
+    ' ',
+    noPosition,
+    noPosition,
+    undefined,
+  ]);
+}
+
+export { ident, integer, numeric, percentage, stringToken, whitespace };

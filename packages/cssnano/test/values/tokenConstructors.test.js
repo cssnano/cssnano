@@ -7,6 +7,7 @@ import {
   numeric,
   percentage,
   stringToken,
+  whitespace,
 } from '../../src/values/tokenConstructors.js';
 
 /**
@@ -182,4 +183,12 @@ test('stringToken rejects text that is not a quoted CSS string', () => {
   for (const text of ['abc', '"abc', '\'abc"', '', '"']) {
     assert.throws(() => stringToken(text, ''), RangeError, text);
   }
+});
+
+test('whitespace reads back as the whitespace token the tokenizer reads from its text', () => {
+  const token = firstToken(whitespace()[1]);
+  assert.deepEqual(
+    [token[0], token[1], token[4]],
+    [TokenType.Whitespace, ' ', undefined]
+  );
 });
