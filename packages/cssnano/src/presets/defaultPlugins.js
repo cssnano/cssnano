@@ -190,11 +190,6 @@ export const defaultPluginEntries = /** @type {const} */ ([
     },
   ],
   [
-    postcssDiscardOverridden,
-    'discardOverridden',
-    { postcssPlugin: 'postcss-discard-overridden', optionKeys: [] },
-  ],
-  [
     postcssNormalizeString,
     'normalizeString',
     {
@@ -233,6 +228,15 @@ export const defaultPluginEntries = /** @type {const} */ ([
     postcssNormalizePositions,
     'normalizePositions',
     { postcssPlugin: 'postcss-normalize-positions', optionKeys: [] },
+  ],
+  [
+    postcssDiscardOverridden,
+    'discardOverridden',
+    {
+      postcssPlugin: 'postcss-discard-overridden',
+      optionKeys: [],
+      transform: true,
+    },
   ],
   normalizeWhitespaceEntry,
   mergeEntry,
