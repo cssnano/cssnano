@@ -6,6 +6,7 @@ import {
   ident,
   integer,
   number,
+  percentage,
   whitespace,
 } from '../../src/values/tokenConstructors.js';
 
@@ -104,4 +105,27 @@ test('whitespace gives a whitespace token', () => {
 
 test('whitespace writes a single space', () => {
   assert.equal(whitespace()[1], ' ');
+});
+
+test('percentage gives a percentage token', () => {
+  assert.equal(percentage(50)[0], TokenType.Percentage);
+});
+
+test('percentage writes the number followed by a percent sign', () => {
+  assert.equal(percentage(50)[1], '50%');
+});
+
+test('percentage reads back as one percentage token with the value it was given', () => {
+  const token = firstToken(percentage(-12.5)[1]);
+  assert.equal(token[0], TokenType.Percentage);
+  assert.equal(token[4].value, -12.5);
+  assert.equal(token[1], '-12.5%');
+});
+
+test('percentage reads back an integer-valued percentage as the value it was given', () => {
+  assert.equal(firstToken(percentage(100)[1])[4].value, 100);
+});
+
+test('percentage rejects a value that CSS cannot write', () => {
+  assert.throws(() => percentage(Number.POSITIVE_INFINITY), RangeError);
 });

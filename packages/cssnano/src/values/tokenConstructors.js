@@ -186,6 +186,23 @@ function dimension(value, unit) {
 }
 
 /**
+ * A percentage token: a `<number>` followed by a percent sign.
+ *
+ * @param {number} value
+ * @return {CSSToken}
+ */
+function percentage(value) {
+  const { text } = numberText(value);
+  return /** @type {CSSToken} */ ([
+    TokenType.Percentage,
+    `${text}%`,
+    noPosition,
+    noPosition,
+    { value },
+  ]);
+}
+
+/**
  * A whitespace token, written as a single space.
  *
  * @return {CSSToken}
@@ -200,4 +217,4 @@ function whitespace() {
   ]);
 }
 
-export { dimension, ident, integer, number, whitespace };
+export { dimension, ident, integer, number, percentage, whitespace };
