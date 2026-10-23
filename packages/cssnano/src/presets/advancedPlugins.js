@@ -1,8 +1,10 @@
-import postcssDiscardUnused from '#postcss-discard-unused';
+import { discardUnusedSymbols } from '#postcss-discard-unused';
 import postcssMergeIdents from '#postcss-merge-idents';
 import postcssReduceIdents from '#postcss-reduce-idents';
 import postcssZindex from '#postcss-zindex';
 import { defaultPluginEntries } from './defaultPlugins.js';
+
+/** @import {SymbolTransform} from '../pipeline/host.js' */
 
 /**
  * The options of the plugins that only the advanced preset adds.
@@ -27,11 +29,15 @@ import { defaultPluginEntries } from './defaultPlugins.js';
  */
 export const advancedPluginEntries = /** @type {const} */ ([
   [
-    postcssDiscardUnused,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'discardUnused',
     {
       postcssPlugin: 'postcss-discard-unused',
       optionKeys: ['fontFace', 'counterStyle', 'keyframes', 'namespace'],
+      transform: true,
+      symbols: /** @type {SymbolTransform} */ (discardUnusedSymbols),
     },
   ],
   [
