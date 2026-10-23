@@ -107,10 +107,7 @@ export type DefaultPluginOptions = {
  * The plugins of the default preset, in the order they run, each with the
  * preset option that enables it and the settings it runs with.
  */
-export declare const defaultPluginEntries: readonly [readonly [{
-    (opts?: import("#postcss-discard-comments").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, "discardComments", {
+export declare const defaultPluginEntries: readonly [readonly [import("../pipeline/host.js").StageEntry, "discardComments", {
     readonly postcssPlugin: 'postcss-discard-comments';
     readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
 }], readonly [{

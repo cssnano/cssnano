@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import comments from '#postcss-discard-comments';
+import discardComments from '#postcss-discard-comments';
 import vars from 'postcss-simple-vars';
 import {
+  oneStagePlugin,
   processCSSFactory,
   usePostCSSPlugin,
 } from '../../../../../../../util/testHelpers.js';
 import { transformPlugin } from '#passes/merge';
 const plugin = transformPlugin('mergeRules');
+const comments = oneStagePlugin(discardComments);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

@@ -2,10 +2,7 @@
  * The plugin entries that more than one built-in preset runs. Each is defined
  * once, so the settings of an option cannot differ between presets.
  */
-export declare const discardCommentsEntry: readonly [{
-    (opts?: import("#postcss-discard-comments").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'discardComments', {
+export declare const discardCommentsEntry: readonly [import("../pipeline/host.js").StageEntry, 'discardComments', {
     readonly postcssPlugin: 'postcss-discard-comments';
     readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
 }];

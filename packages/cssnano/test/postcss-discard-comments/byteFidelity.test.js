@@ -1,8 +1,13 @@
 import { describe, test } from 'node:test';
 
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  processCSSFactory,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
 
-import plugin from '../../src/plugins/postcss-discard-comments/index.js';
+import discardComments from '../../src/plugins/postcss-discard-comments/index.js';
+
+const plugin = oneStagePlugin(discardComments);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -49,7 +54,7 @@ describe('Preserved comment byte fidelity', () => {
     'should keep an unclosed comment to the end of input without fabricating a closer',
     processCSSFactory([
       injectAstNode('Declaration', 'value', 'red/*!comment'),
-      plugin,
+      plugin(),
     ]).processCSS('a{color:red}', 'a{color:red/*!comment}')
   );
 
@@ -57,7 +62,7 @@ describe('Preserved comment byte fidelity', () => {
     'should keep an unclosed comment in a selector to the end of input without fabricating a closer',
     processCSSFactory([
       injectAstNode('Rule', 'selector', 'h1/*!comment'),
-      plugin,
+      plugin(),
     ]).processCSS('h2{color:red}', 'h1/*!comment{color:red}')
   );
 
@@ -69,7 +74,7 @@ describe('Preserved comment byte fidelity', () => {
         'params',
         'screen and (min-width:900px)/*!comment'
       ),
-      plugin,
+      plugin(),
     ]).processCSS(
       '@media all{a{color:red}}',
       '@media screen and (min-width:900px)/*!comment{a{color:red}}'
