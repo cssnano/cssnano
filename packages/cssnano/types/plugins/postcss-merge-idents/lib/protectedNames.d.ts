@@ -12,7 +12,7 @@ export type Reference = {
  * }} Reference
  */
 /**
- * One walk over the stylesheet's declarations that finds the names substituted
+ * One pass over the stylesheet's declarations that finds the names substituted
  * text may spell and the declarations that reference keyframes or counter
  * styles. Substituted text is custom property values, `@property` initial
  * values, `@function` definitions, and references inside functions other than
@@ -23,7 +23,8 @@ export type Reference = {
  * definition is removed or keeps that definition. A spelling that no
  * declaration rewrite reaches therefore has to be collected here.
  *
- * @param {import('postcss').Root} css
+ * @param {import('postcss').Declaration[]} decls every declaration of the
+ *   stylesheet that is still attached
  * @param {Set<string>} candidates the names that may be merged; only they
  *   need protection
  * @param {import('postcss').AtRule[]} functionRules the `@function` rules
@@ -33,7 +34,7 @@ export type Reference = {
  *   and `@else` rules, whose preludes may test a property in a style query
  * @return {{ protectedNames: Set<string>, references: Reference[] }}
  */
-declare function scanDeclarations(css: import('postcss').Root, candidates: Set<string>, functionRules: import('postcss').AtRule[], parameterRules: import('postcss').AtRule[], conditionRules: import('postcss').AtRule[]): {
+declare function scanDeclarations(decls: import('postcss').Declaration[], candidates: Set<string>, functionRules: import('postcss').AtRule[], parameterRules: import('postcss').AtRule[], conditionRules: import('postcss').AtRule[]): {
     protectedNames: Set<string>;
     references: Reference[];
 };
