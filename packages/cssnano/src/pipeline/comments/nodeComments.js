@@ -81,28 +81,20 @@ export function removeImportantComments(decl, comments) {
 }
 
 /**
- * Removes the comments from the selector as written. PostCSS strips them from
- * `selector`, so the raw is rewritten when it holds one.
+ * The selector without the comments that go. Kept comments pass through, and
+ * the selector parser sees the rest as PostCSS writes it.
  *
- * @param {Rule} rule
+ * @param {string} text
  * @param {CommentState} comments
+ * @returns {string}
  */
-export function removeSelectorComments(rule, comments) {
-  if (rule.raws.selector && rule.raws.selector.raw) {
-    if (rule.raws.selector.raw.includes('/*')) {
-      rule.raws.selector.raw = replaceCommentsInSelector(
-        rule.raws.selector.raw,
-        comments.canRemove,
-        comments.parserCache
-      );
-    }
-  } else if (rule.selector && rule.selector.includes('/*')) {
-    rule.selector = replaceCommentsInSelector(
-      rule.selector,
-      comments.canRemove,
-      comments.parserCache
-    );
-  }
+export function commentFreeSelector(text, comments) {
+  if (!text.includes('/*')) return text;
+  return replaceCommentsInSelector(
+    text,
+    comments.canRemove,
+    comments.parserCache
+  );
 }
 
 /**

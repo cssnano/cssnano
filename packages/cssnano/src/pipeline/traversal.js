@@ -2,11 +2,11 @@ import { ValueBuffer } from '../values/valueBuffer.js';
 import { sourceValue } from '../utils/declValue.js';
 import { contextOf } from './context.js';
 import {
+  commentFreeSelector,
   commentFreeText,
   removeAfterNameComments,
   removeBetweenComments,
   removeImportantComments,
-  removeSelectorComments,
 } from './comments/nodeComments.js';
 
 /** @import {Container, Document, Helpers, Root} from 'postcss' */
@@ -197,6 +197,20 @@ function sourceParams(atRule) {
 }
 
 /**
+ * The selector as written, so a rewrite keeps the comments that PostCSS strips
+ * from `selector`. The raw is trusted only while it still matches `selector`.
+ *
+ * @param {import('postcss').Rule} rule
+ * @returns {string}
+ */
+function sourceSelector(rule) {
+  const raw = rule.raws.selector;
+  return raw !== undefined && raw.value === rule.selector
+    ? raw.raw
+    : rule.selector;
+}
+
+/**
  * Removes the comments of an at-rule, then folds its prelude through its plan.
  * The prelude is read as written and written back only when it changed.
  * `@charset` has no plan, since its name and encoding are read in the format
@@ -240,27 +254,23 @@ function walkAtRule(state, atRule) {
 
 /**
  * Removes the comments of a rule, then folds its selector through the plan.
+ * The selector is read as written and written back only when it changed.
  *
  * @param {RunState} state
  * @param {import('postcss').Rule} rule
  */
 function walkRule(state, rule) {
-  if (state.comments !== null) {
-    removeBetweenComments(rule, state.comments);
-    removeSelectorComments(rule, state.comments);
+  const { comments } = state;
+  if (comments !== null) removeBetweenComments(rule, comments);
+  if (comments === null && state.selectors.plan === null) return;
+  const read = sourceSelector(rule);
+  const text = comments !== null ? commentFreeSelector(read, comments) : read;
+  let result = text;
+  if (state.selectors.plan !== null) {
+    const context = contextOf(rule, state.contexts);
+    result = reduceText(state.selectors, text, context, rule, state.helpers);
   }
-  if (state.selectors.plan === null) return;
-  // Selectors are read without comments, as PostCSS gives them.
-  const context = contextOf(rule, state.contexts);
-  const text = rule.selector;
-  const result = reduceText(
-    state.selectors,
-    text,
-    context,
-    rule,
-    state.helpers
-  );
-  if (result !== text) {
+  if (result !== read) {
     rule.selector = result;
     delete rule.raws.selector;
   }
