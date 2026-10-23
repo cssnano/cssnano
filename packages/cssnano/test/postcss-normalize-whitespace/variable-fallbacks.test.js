@@ -1,11 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-whitespace/index.js';
+import {
+  normalizeWhitespacePlugins,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
 
-const { processCSS } = processCSSFactory(plugin);
-const processor = postcss([plugin()]);
+const { processCSS } = processCSSFactory(normalizeWhitespacePlugins());
+const processor = postcss(normalizeWhitespacePlugins());
 
 test(
   'should trim whitespace before and after first comma with fallback',

@@ -83,8 +83,15 @@ const modernTargets = withTargets('baseline widely available with downstream');
  * @param {{evaluate: (expression: string) => Promise<any>}} browser
  * @return {Promise<{checked: number, bad: ValueChange[]}>}
  */
+/**
+ * Stages that a plugin exports under a name, since its default export is not a
+ * value stage: normalizeWhitespace's default export is the plugin for raws.
+ */
+const namedStages = { 'postcss-normalize-whitespace': 'valueEntry' };
+
 async function checkStage(stage, frameworks, stageDir, browser) {
-  const entry = (await import(join(stageDir, stage, 'index.js'))).default;
+  const module = await import(join(stageDir, stage, 'index.js'));
+  const entry = module[namedStages[stage] ?? 'default'];
   const corpus = [
     ...readdirSync(frameworks)
       .toSorted()
@@ -130,6 +137,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const stageDir = join(root, 'packages', 'cssnano', 'src', 'plugins');
   const stages = [
+    'postcss-normalize-whitespace',
     'postcss-minify-gradients',
     'postcss-reduce-initial',
     'postcss-normalize-display-values',

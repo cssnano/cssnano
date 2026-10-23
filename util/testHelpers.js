@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { browserTargets } from '../packages/cssnano/src/utils/browserTargets.js';
 import { hostPlugin } from '../packages/cssnano/src/pipeline/host.js';
+import { configureValidated } from '../packages/cssnano/src/presets/configurePlugins.js';
+import { normalizeWhitespaceEntry } from '../packages/cssnano/src/presets/sharedPluginEntries.js';
 
 /**
  * A file in the repository root, so browserslist finds the repository's
@@ -81,4 +83,19 @@ function oneStagePlugin(entry) {
   return (options = {}) => hostPlugin([{ entry, options, targets: true }]);
 }
 
-export { oneStagePlugin, usePostCSSPlugin, processCSSFactory };
+/**
+ * The plugins that normalizeWhitespace runs in a preset: its value stage and the
+ * walk's option for it in one host, then its raws plugin.
+ *
+ * @returns {import('postcss').AcceptedPlugin[]}
+ */
+function normalizeWhitespacePlugins() {
+  return configureValidated([normalizeWhitespaceEntry], {});
+}
+
+export {
+  oneStagePlugin,
+  usePostCSSPlugin,
+  processCSSFactory,
+  normalizeWhitespacePlugins,
+};
