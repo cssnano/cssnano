@@ -1,9 +1,9 @@
 /**
- * @return {import('postcss').Plugin}
+ * Records the raw formatting of the output on the root, for later plugins to
+ * reuse.
+ *
+ * @param {import('postcss').Result} result
+ * @return {void}
  */
-declare function pluginCreator(): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-export default pluginCreator;
+export default function rawCache(result: import('postcss').Result): void;
 //# sourceMappingURL=rawCache.d.ts.map

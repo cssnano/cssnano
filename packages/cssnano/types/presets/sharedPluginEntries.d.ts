@@ -29,8 +29,12 @@ export declare const discardEmptyEntry: readonly [{
     readonly transform: true;
     readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
 }];
-export declare const rawCacheEntry: readonly [typeof import("../utils/rawCache.js").default, 'rawCache', {
+export declare const rawCacheEntry: readonly [{
+    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
+}, 'rawCache', {
     readonly postcssPlugin: 'cssnano-util-raw-cache';
     readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
 }];
 //# sourceMappingURL=sharedPluginEntries.d.ts.map

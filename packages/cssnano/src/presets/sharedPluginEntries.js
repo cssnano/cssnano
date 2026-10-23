@@ -55,8 +55,16 @@ export const discardEmptyEntry = /** @type {const} */ ([
   },
 ]);
 
+/** @type {PassRun['pass']} */
+const rawCachePass = (_css, _browsers, _options, result) => rawCache(result);
+
 export const rawCacheEntry = /** @type {const} */ ([
-  rawCache,
+  { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
   'rawCache',
-  { postcssPlugin: 'cssnano-util-raw-cache', optionKeys: [] },
+  {
+    postcssPlugin: 'cssnano-util-raw-cache',
+    optionKeys: [],
+    transform: true,
+    pass: rawCachePass,
+  },
 ]);
