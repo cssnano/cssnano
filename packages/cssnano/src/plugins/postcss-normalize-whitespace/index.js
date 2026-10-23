@@ -284,15 +284,6 @@ function trimDeclaration(node, cache, gridRowsCache) {
     node.raws.value = { raw: result, value: result };
   }
 
-  // Remove extra semicolons and whitespace before the declaration
-  if (node.raws.before) {
-    const prev = node.prev();
-
-    if (prev && prev.type !== rule) {
-      node.raws.before = node.raws.before.replaceAll(';', '');
-    }
-  }
-
   // The separator raw can also carry a preserved comment, which must survive.
   node.raws.between = trimSeparator(node.raws.between || ':');
   node.raws.semicolon = false;

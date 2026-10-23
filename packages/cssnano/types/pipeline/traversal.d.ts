@@ -31,6 +31,10 @@ export type RunState = {
      * whether a default `@namespace` has been reached, so later rules have it in their context
      */
     defaultNamespace: boolean;
+    /**
+     * whether the stray semicolons before declarations are removed, as normalizeWhitespace does
+     */
+    stripStraySemicolons: boolean;
 };
 /**
  * Runs the comment, value, prelude and selector parts of the stages over a
@@ -41,6 +45,7 @@ export type RunState = {
  * @param {readonly Stage[]} stages in pipeline order
  * @param {Root} root
  * @param {Helpers} helpers
+ * @param {ReadonlyMap<string, unknown>} transforms the whole-stylesheet transforms of the run, by entry name
  */
-export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers): void;
+export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers, transforms: ReadonlyMap<string, unknown>): void;
 //# sourceMappingURL=traversal.d.ts.map

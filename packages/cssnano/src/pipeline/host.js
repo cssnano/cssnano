@@ -68,9 +68,11 @@ const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
 
 /**
  * @param {readonly HostMember[]} members the stages of one run, in order
+ * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
+ *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
  * @returns {Plugin}
  */
-export function hostPlugin(members) {
+export function hostPlugin(members, transforms = new Map()) {
   // Each member keeps its stage per targets array. The frozen targets of equal
   // browserslist results are one array, so the memo serves every stylesheet.
   // A member that reads no targets is created now, under noTargets.
@@ -101,7 +103,7 @@ export function hostPlugin(members) {
       }
       return {
         OnceExit(root, helpers) {
-          walkStylesheet(stages, root, helpers);
+          walkStylesheet(stages, root, helpers, transforms);
         },
       };
     },

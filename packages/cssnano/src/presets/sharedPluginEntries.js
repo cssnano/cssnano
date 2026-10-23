@@ -22,7 +22,11 @@ export const discardCommentsEntry = /** @type {const} */ ([
 export const normalizeWhitespaceEntry = /** @type {const} */ ([
   postcssNormalizeWhitespace,
   'normalizeWhitespace',
-  { postcssPlugin: 'postcss-normalize-whitespace', optionKeys: [] },
+  {
+    postcssPlugin: 'postcss-normalize-whitespace',
+    optionKeys: [],
+    walk: true,
+  },
 ]);
 
 export const discardEmptyEntry = /** @type {const} */ ([

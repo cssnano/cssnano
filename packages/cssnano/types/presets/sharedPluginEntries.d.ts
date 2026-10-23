@@ -12,6 +12,7 @@ export declare const normalizeWhitespaceEntry: readonly [{
 }, 'normalizeWhitespace', {
     readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
+    readonly walk: true;
 }];
 export declare const discardEmptyEntry: readonly [{
     (): import("postcss/lib/postcss").Plugin;
