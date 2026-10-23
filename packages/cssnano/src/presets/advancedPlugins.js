@@ -1,5 +1,5 @@
 import { discardUnusedSymbols } from '#postcss-discard-unused';
-import postcssMergeIdents from '#postcss-merge-idents';
+import { mergeIdentsSymbols } from '#postcss-merge-idents';
 import postcssReduceIdents from '#postcss-reduce-idents';
 import postcssZindex from '#postcss-zindex';
 import { defaultPluginEntries } from './defaultPlugins.js';
@@ -41,9 +41,16 @@ export const advancedPluginEntries = /** @type {const} */ ([
     },
   ],
   [
-    postcssMergeIdents,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'mergeIdents',
-    { postcssPlugin: 'postcss-merge-idents', optionKeys: [] },
+    {
+      postcssPlugin: 'postcss-merge-idents',
+      optionKeys: [],
+      transform: true,
+      symbols: /** @type {SymbolTransform} */ (mergeIdentsSymbols),
+    },
   ],
   [
     postcssReduceIdents,

@@ -4,6 +4,7 @@ import postcss from 'postcss';
 import { discardAndReport } from '#postcss-discard-empty';
 import {
   createSymbolLists,
+  isAttached,
   symbolVisit,
 } from '../../src/pipeline/symbolLists.js';
 
@@ -109,5 +110,23 @@ describe('symbolVisit lists', () => {
     assert.equal(first.zIndexDecls.length, 1);
     assert.equal(second.zIndexDecls.length, 1);
     assert.notEqual(first, second);
+  });
+});
+
+describe('isAttached', () => {
+  test('reports a node that hangs from the root', () => {
+    const root = postcss.parse('@media print{@keyframes a{0%{top:0}}}');
+    const keyframes = /** @type {import('postcss').AtRule} */ (
+      /** @type {import('postcss').AtRule} */ (root.first).first
+    );
+    assert.equal(isAttached(keyframes), true);
+  });
+
+  test('reports a node whose removed ancestor no longer reaches the root', () => {
+    const root = postcss.parse('@media print{@keyframes a{0%{top:0}}}');
+    const media = /** @type {import('postcss').AtRule} */ (root.first);
+    const keyframes = /** @type {import('postcss').AtRule} */ (media.first);
+    media.remove();
+    assert.equal(isAttached(keyframes), false);
   });
 });
