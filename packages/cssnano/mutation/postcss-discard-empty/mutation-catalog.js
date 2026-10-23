@@ -86,7 +86,22 @@ export const mutations = [
   },
   {
     name: 'report the root instead of the removed node',
-    find: '        node,\n      });',
-    replace: '        node: css,\n      });',
+    find: '      reportRemoval(result, node);',
+    replace: '      reportRemoval(result, css);',
+  },
+  {
+    name: 'leave the ancestors a later removal empties',
+    find: '    parent.remove();',
+    replace: '    break;',
+  },
+  {
+    name: 'stop after the first emptied ancestor',
+    find: '    parent = next;',
+    replace: '    parent = undefined;',
+  },
+  {
+    name: 'treat an emptied named layer as removable',
+    find: "      parent.type === 'atrule' && asciiLowerCase(parent.name) === 'layer',",
+    replace: '      false,',
   },
 ];
