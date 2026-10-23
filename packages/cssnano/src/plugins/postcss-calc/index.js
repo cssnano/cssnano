@@ -8,8 +8,7 @@ import { tokens } from '../../utils/value.js';
 /** @import {ReduceCalcOptions} from 'postcss-calc/reduce-tokens' */
 /** @import {TokenReplacement} from 'postcss-calc/reduce-tokens' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Helpers, Root} from 'postcss' */
-/** @import {StageEntry, Stage} from '../../pipeline/host.js' */
+/** @import {StageEntry, Stage, TextReducer} from '../../pipeline/host.js' */
 
 /**
  * The reducer options for one text. A parse error goes to the `onParseError`
@@ -77,46 +76,23 @@ function reducePrelude(text, options, warn, selector) {
 }
 
 /**
- * The at-rule and selector parts of the calc stage. They run once the walk of
- * the declarations has finished, since they change no declaration.
- *
- * @param {Root} root
- * @param {PostCssCalcOptions} options
- * @param {Helpers['result']} result
- */
-function reducePreludes(root, options, result) {
-  if (!options.mediaQueries && !options.selectors) return;
-  root.walk((node) => {
-    if (node.type === 'atrule' && options.mediaQueries) {
-      const params = reducePrelude(
-        node.params,
-        options,
-        (message, plugin) => result.warn(message, { plugin, node }),
-        false
-      );
-      if (params !== node.params) node.params = params;
-    }
-    if (node.type === 'rule' && options.selectors) {
-      const selector = reducePrelude(
-        node.selector,
-        options,
-        (message, plugin) => result.warn(message, { plugin, node }),
-        true
-      );
-      if (selector !== node.selector) node.selector = selector;
-    }
-  });
-}
-
-/**
  * The stage for one run. Its value reducer joins the walk of the other value
- * stages, and its at-rule and selector part follows that walk.
+ * stages, and its prelude and selector reducers join the walk of the preludes
+ * and selectors.
  *
  * @param {PostCssCalcOptions} options
  * @returns {Stage}
  */
 function calcStage(options) {
+  /** @type {TextReducer} */
+  const reduceAtRule = (text, _context, warn) =>
+    reducePrelude(text, options, warn, false);
+  /** @type {TextReducer} */
+  const reduceSelector = (text, _context, warn) =>
+    reducePrelude(text, options, warn, true);
   return {
+    forAtRule: options.mediaQueries ? () => reduceAtRule : undefined,
+    selector: options.selectors ? reduceSelector : undefined,
     forProperty: () => (buffer) => {
       if (!hasPotentialMathFunction(buffer.text())) return;
       /** @type {(message: string, plugin?: string) => void} */
@@ -146,7 +122,6 @@ function calcStage(options) {
         applyReplacements(list, replacements)
       );
     },
-    run: (root, helpers) => reducePreludes(root, options, helpers.result),
   };
 }
 

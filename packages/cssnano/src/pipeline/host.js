@@ -17,11 +17,27 @@ import { declarationTraversal } from './traversal.js';
  */
 
 /**
+ * Reports a problem with the text being reduced. The walk turns each report
+ * into a warning on the node, tagged with the plugin name when given.
+ * @typedef {(message: string, plugin?: string) => void} Warn
+ */
+
+/**
+ * Rewrites the text of a prelude or selector, which has no buffer. The context
+ * is the bits of `context.js` for the node.
+ * @typedef {(text: string, context: number, warn: Warn) => string} TextReducer
+ */
+
+/**
  * A stage changes declaration values, through `forProperty`, which gives the
  * reducer of each property it treats, or null for a property it leaves alone.
- * It may also change the stylesheet in `run`, once the walk has finished.
+ * It rewrites at-rule preludes through `forAtRule`, and selectors through
+ * `selector`, in the same walk. It may also change the stylesheet in `run`,
+ * once the walk has finished.
  * @typedef {object} Stage
  * @property {(property: string) => Reducer | null} [forProperty]
+ * @property {(name: string) => TextReducer | null} [forAtRule]
+ * @property {TextReducer} [selector]
  * @property {(root: Root, helpers: Helpers) => void} [run]
  */
 
