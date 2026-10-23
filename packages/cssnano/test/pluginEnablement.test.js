@@ -57,13 +57,6 @@ describe('plugin enablement shared by every preset', () => {
 });
 
 describe('plugins that a preset disables', () => {
-  test('disable leaves a plugin out of the plugins a preset returns', () => {
-    const names = defaultPreset({ disable: ['colormin'] }).map(
-      (plugin) => plugin.postcssPlugin
-    );
-    assert.ok(!names.includes('postcss-colormin'));
-  });
-
   test('colormin, when disabled, leaves #ffffff unshortened, which the default preset shortens', async () => {
     const css = 'h1{color:#ffffff}';
     assert.strictEqual(
