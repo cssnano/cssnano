@@ -53,7 +53,9 @@ export declare const advancedPluginEntries: readonly [readonly [{
     readonly transform: true;
     readonly symbols: SymbolTransform;
 }], readonly [{
-    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
+    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => {
+        reducers: import("#postcss-reduce-idents").Reducer[];
+    };
 }, 'reduceIdents', {
     readonly postcssPlugin: 'postcss-reduce-idents';
     readonly optionKeys: readonly ['counter', 'counterStyle', 'keyframes', 'gridTemplate', 'encoder'];

@@ -296,7 +296,7 @@ describe('Counter', () => {
     );
   });
 
-  test('should match a fresh processor when the plugin instance is reused', async () => {
+  test('should not generate colliding counter idents when plugin instance is reused', async () => {
     const instance = postcss(plugin);
 
     const [result1, result2] = await Promise.all([
@@ -314,7 +314,7 @@ describe('Counter', () => {
     );
     assert.strictEqual(
       result2.css,
-      'body{counter-reset:a}div{content:counter(a)}'
+      'body{counter-reset:b}div{content:counter(b)}'
     );
   });
 });
