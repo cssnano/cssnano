@@ -1,15 +1,17 @@
 import { discardAndReport } from '#postcss-discard-empty';
 import { normalizeNodeRaws } from '#postcss-normalize-whitespace';
 import { uniqueSelectorsVisit } from '#postcss-unique-selectors';
+import { charsetVisit, decideCharset } from '#postcss-normalize-charset';
 import rawCache from '../utils/rawCache.js';
 
 /** @import {AnyNode, Result, Root} from 'postcss' */
+/** @import {CharsetScan} from '#postcss-normalize-charset' */
 
 /**
  * The walk after merge runs the whole-stylesheet transforms that need the tree
  * as merge left it. Per-node transforms share one walk, so no transform needs
- * its own. It records the raw cache last, so no later transform
- * changes what the cache describes.
+ * its own. The charset decision follows the walk, and the raw cache records
+ * last, so no later transform changes what the cache describes.
  *
  * @param {Root} root
  * @param {Result} result
@@ -25,6 +27,10 @@ export function walkAfterMerge(root, result, transforms) {
     root.raws.after = '';
   }
   if (transforms.has('uniqueSelectors')) visits.push(uniqueSelectorsVisit);
+  const charsetOptions = transforms.get('normalizeCharset');
+  /** @type {CharsetScan} */
+  const charset = { first: undefined, charsets: [], nonAscii: undefined };
+  if (charsetOptions) visits.push((node) => charsetVisit(node, charset));
   /** @type {((node: AnyNode) => void) | undefined} */
   const visit =
     visits.length > 1
@@ -36,6 +42,15 @@ export function walkAfterMerge(root, result, transforms) {
     discardAndReport(root, result, visit);
   } else if (visit) {
     root.walk(visit);
+  }
+  if (charsetOptions) {
+    decideCharset(
+      root,
+      charset,
+      /** @type {import('#postcss-normalize-charset').Options} */ (
+        charsetOptions
+      )
+    );
   }
   if (transforms.has('rawCache')) rawCache(result);
 }
