@@ -78,3 +78,41 @@ export const advancedOnlyPluginNames = /** @type {const} */ ([
   'reduceIdents',
   'zindex',
 ]);
+
+/**
+ * The PostCSS plugin behind each preset option, by option name. The site and the
+ * tests read it, since a preset entry names its option, not its plugin. A test
+ * keeps the keys equal to the options of the built-in presets.
+ * @type {Readonly<Record<string, string>>}
+ */
+export const pluginNameByOption = Object.freeze({
+  discardComments: 'postcss-discard-comments',
+  minifyGradients: 'postcss-minify-gradients',
+  reduceInitial: 'postcss-reduce-initial',
+  normalizeDisplayValues: 'postcss-normalize-display-values',
+  reduceTransforms: 'postcss-reduce-transforms',
+  colormin: 'postcss-colormin',
+  normalizeTimingFunctions: 'postcss-normalize-timing-functions',
+  calc: 'postcss-calc',
+  convertValues: 'postcss-convert-values',
+  orderedValues: 'postcss-ordered-values',
+  minifySelectors: 'postcss-minify-selectors',
+  minifyParams: 'postcss-minify-params',
+  normalizeCharset: 'postcss-normalize-charset',
+  discardOverridden: 'postcss-discard-overridden',
+  normalizeString: 'postcss-normalize-string',
+  normalizeUnicode: 'postcss-normalize-unicode',
+  minifyFontValues: 'postcss-minify-font-values',
+  normalizeUrl: 'postcss-normalize-url',
+  normalizeRepeatStyle: 'postcss-normalize-repeat-style',
+  normalizePositions: 'postcss-normalize-positions',
+  normalizeWhitespace: 'postcss-normalize-whitespace',
+  merge: 'cssnano-merge',
+  discardEmpty: 'postcss-discard-empty',
+  uniqueSelectors: 'postcss-unique-selectors',
+  rawCache: 'cssnano-util-raw-cache',
+  discardUnused: 'postcss-discard-unused',
+  mergeIdents: 'postcss-merge-idents',
+  reduceIdents: 'postcss-reduce-idents',
+  zindex: 'postcss-zindex',
+});

@@ -16,7 +16,6 @@ export type PresetOptions<Plugins extends object> = {
     options?: { [Name in keyof Plugins]?: Plugins[Name]; };
 };
 export type PluginEntrySettings = {
-    postcssPlugin: string;
     targets?: true;
     defaults?: object;
     optionKeys: readonly string[];
@@ -27,8 +26,7 @@ export type PluginEntrySettings = {
     after?: true;
     symbols?: SymbolTransform;
 };
-export type PluginCreator = import('postcss').PluginCreator<any>;
-export type PluginEntry = readonly [PluginCreator | StageEntry | TransformEntry, string, PluginEntrySettings];
+export type PluginEntry = readonly [StageEntry | TransformEntry, string, PluginEntrySettings];
 export type Run = {
     members: HostMember[];
     transforms: Map<string, Record<PropertyKey, unknown>>;
@@ -51,9 +49,8 @@ export declare function configurePlugins(entries: readonly PluginEntry[], option
 /**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
- * Each run of adjacent enabled stage entries becomes one host plugin, which
- * builds its stages as it processes a stylesheet. A plugin creator that runs
- * ends the run, so the stages keep their order.
+ * The entries of a preset run in one host plugin, which walks the stylesheet
+ * once for its stages and transforms.
  *
  * @param {readonly PluginEntry[]} entries
  * @param {Record<string, unknown>} known the validated options, without preset

@@ -47,4 +47,11 @@ export declare const defaultPluginNames: readonly ['discardComments', 'minifyGra
  * list equal to the advanced preset's own.
  */
 export declare const advancedOnlyPluginNames: readonly ['discardUnused', 'mergeIdents', 'reduceIdents', 'zindex'];
+/**
+ * The PostCSS plugin behind each preset option, by option name. The site and the
+ * tests read it, since a preset entry names its option, not its plugin. A test
+ * keeps the keys equal to the options of the built-in presets.
+ * @type {Readonly<Record<string, string>>}
+ */
+export declare const pluginNameByOption: Readonly<Record<string, string>>;
 //# sourceMappingURL=presetEntries.d.ts.map
