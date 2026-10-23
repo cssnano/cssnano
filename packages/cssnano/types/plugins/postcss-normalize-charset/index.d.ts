@@ -8,6 +8,7 @@ export type CharsetScan = {
     first: import('postcss').AtRule | undefined;
     charsets: import('postcss').AtRule[];
     nonAscii: import('postcss').AnyNode | undefined;
+    candidates?: import('postcss').AnyNode[];
 };
 /**
  * @typedef {object} Options
@@ -16,11 +17,13 @@ export type CharsetScan = {
 /**
  * What the charset decision reads from a walk: the first `@charset`, every
  * top-level `@charset`, in visit order, and the first top-level node with
- * non-ASCII text.
+ * non-ASCII text. `candidates`, when set, records every such node, for a run
+ * whose transforms may remove that text after the walk.
  * @typedef {object} CharsetScan
  * @property {import('postcss').AtRule | undefined} first
  * @property {import('postcss').AtRule[]} charsets
  * @property {import('postcss').AnyNode | undefined} nonAscii
+ * @property {import('postcss').AnyNode[]} [candidates]
  */
 /**
  * Records what the charset decision needs from one node. A nested `@charset`
@@ -32,6 +35,14 @@ export type CharsetScan = {
  * @return {void}
  */
 export declare function charsetVisit(node: import('postcss').AnyNode, scan: CharsetScan): void;
+/**
+ * Finds the first candidate that is still at the top and still has non-ASCII
+ * text, once the transforms after the walk have removed what they remove.
+ *
+ * @param {CharsetScan} scan
+ * @return {void}
+ */
+export declare function rescanNonAscii(scan: CharsetScan): void;
 /**
  * Removes the top-level charsets. A stylesheet with non-ASCII text keeps the
  * first charset at the top, or adds one when `add` is set. The separator

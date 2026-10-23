@@ -12,11 +12,13 @@ const nonAscii = /[^\x00-\x7F]/v;
 /**
  * What the charset decision reads from a walk: the first `@charset`, every
  * top-level `@charset`, in visit order, and the first top-level node with
- * non-ASCII text.
+ * non-ASCII text. `candidates`, when set, records every such node, for a run
+ * whose transforms may remove that text after the walk.
  * @typedef {object} CharsetScan
  * @property {import('postcss').AtRule | undefined} first
  * @property {import('postcss').AtRule[]} charsets
  * @property {import('postcss').AnyNode | undefined} nonAscii
+ * @property {import('postcss').AnyNode[]} [candidates]
  */
 
 /**
@@ -37,12 +39,26 @@ export function charsetVisit(node, scan) {
       node.remove();
     }
   } else if (
-    !scan.nonAscii &&
+    (!scan.nonAscii || scan.candidates) &&
     node.parent?.type === 'root' &&
     nonAscii.test(node.toString())
   ) {
-    scan.nonAscii = node;
+    scan.nonAscii ??= node;
+    scan.candidates?.push(node);
   }
+}
+
+/**
+ * Finds the first candidate that is still at the top and still has non-ASCII
+ * text, once the transforms after the walk have removed what they remove.
+ *
+ * @param {CharsetScan} scan
+ * @return {void}
+ */
+export function rescanNonAscii(scan) {
+  scan.nonAscii = scan.candidates?.find(
+    (node) => node.parent?.type === 'root' && nonAscii.test(node.toString())
+  );
 }
 
 /**

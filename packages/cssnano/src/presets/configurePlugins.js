@@ -12,7 +12,7 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {StageEntry, HostMember, PassRun, TransformEntry} from '../pipeline/host.js' */
+/** @import {StageEntry, HostMember, PassRun, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
 
 /**
  * The options of a built preset: the same as cssnano, without the preset and
@@ -39,7 +39,8 @@ import {
  * `transform` is set when the entry is a whole-stylesheet transform, so its entry
  * is a TransformEntry rather than a creator or a stage. A transform with `pass`
  * runs as a pass after the walk of its run, instead of inside the walk. A
- * transform with `after` runs in the walk after the passes of its run.
+ * transform with `after` runs in the walk after the passes of its run. A
+ * transform with `symbols` runs over the lists that walk collects.
  *
  * @typedef {{
  *   postcssPlugin: string,
@@ -51,6 +52,7 @@ import {
  *   transform?: true,
  *   pass?: PassRun['pass'],
  *   after?: true,
+ *   symbols?: SymbolTransform,
  * }} PluginEntrySettings
  */
 
@@ -69,8 +71,8 @@ import {
 /**
  * The stage members of a host, the options of the walk transforms that the
  * host's walk runs, the passes that run after it, and the options of the
- * transforms of the walk after the passes.
- * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, passes: Map<string, PassRun>, after: Map<string, Record<PropertyKey, unknown>>}} Run
+ * transforms of the walk after the passes, and the advanced transforms over its lists.
+ * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, passes: Map<string, PassRun>, after: Map<string, Record<PropertyKey, unknown>>, symbols: Map<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>}} Run
  */
 
 /** @returns {Run} */
@@ -80,6 +82,7 @@ function newRun() {
     transforms: new Map(),
     passes: new Map(),
     after: new Map(),
+    symbols: new Map(),
   };
 }
 
@@ -129,10 +132,17 @@ export function configureValidated(entries, known) {
       run.members.length > 0 ||
       run.transforms.size > 0 ||
       run.passes.size > 0 ||
-      run.after.size > 0
+      run.after.size > 0 ||
+      run.symbols.size > 0
     ) {
       plugins.push(
-        hostPlugin(run.members, run.transforms, run.passes, run.after)
+        hostPlugin(
+          run.members,
+          run.transforms,
+          run.passes,
+          run.after,
+          run.symbols
+        )
       );
     }
     run = newRun();
@@ -151,6 +161,11 @@ export function configureValidated(entries, known) {
           pass: settings.pass,
           options: transform,
           targets: Boolean(settings.targets),
+        });
+      } else if (transform !== null && settings.symbols) {
+        run.symbols.set(name, {
+          transform: settings.symbols,
+          options: transform,
         });
       } else if (transform !== null && settings.after) {
         run.after.set(name, transform);

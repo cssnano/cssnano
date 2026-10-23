@@ -4,7 +4,10 @@ import {
   usePostCSSPlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers.js';
-import discardEmptyPlugin from '../../src/plugins/postcss-discard-empty/index.js';
+import postcss from 'postcss';
+import discardEmptyPlugin, {
+  removeAndDiscardEmptied,
+} from '../../src/plugins/postcss-discard-empty/index.js';
 
 const { passthroughCSS, processCSS, processor } =
   processCSSFactory(discardEmptyPlugin);
@@ -175,4 +178,54 @@ describe('cross-tool regressions', () => {
     'should preserve a standalone @layer ordering declaration',
     passthroughCSS('@layer reset, base, components;')
   );
+});
+
+/**
+ * Removes the first `@keyframes` and returns the stylesheet and the
+ * selectors or at-rule names of the reported removals.
+ * @param {string} css
+ */
+function removeKeyframes(css) {
+  const root = postcss.parse(css);
+  const result = /** @type {import('postcss').Result} */ ({ messages: [] });
+  let keyframes;
+  root.walkAtRules('keyframes', (node) => {
+    keyframes ??= node;
+  });
+  removeAndDiscardEmptied(
+    /** @type {import('postcss').AtRule} */ (keyframes),
+    result
+  );
+  return {
+    css: root.toString(),
+    reported: result.messages.map(({ node }) => node.name ?? node.selector),
+  };
+}
+
+describe('removeAndDiscardEmptied', () => {
+  test('removes each ancestor the removal empties', () => {
+    assert.equal(
+      removeKeyframes('@media print{@supports (top:0){@keyframes a{}}}').css,
+      ''
+    );
+  });
+
+  test('stops at the first ancestor that keeps a child', () => {
+    assert.equal(
+      removeKeyframes('@media print{@supports (top:0){@keyframes a{}}b{}}').css,
+      '@media print{b{}}'
+    );
+  });
+
+  test('keeps an emptied named @layer, which may fix the layer order', () => {
+    assert.equal(removeKeyframes('@layer a{@keyframes b{}}').css, '@layer a{}');
+  });
+
+  test('reports each emptied ancestor it removes, innermost first', () => {
+    assert.deepEqual(
+      removeKeyframes('@media print{@supports (top:0){@keyframes a{}}}')
+        .reported,
+      ['supports', 'media']
+    );
+  });
 });
