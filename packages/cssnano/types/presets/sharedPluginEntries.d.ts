@@ -12,6 +12,9 @@ export declare const normalizeWhitespaceEntry: readonly [{
 }, 'normalizeWhitespace', {
     readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
+    readonly stage: {
+        create: () => import("../pipeline/host.js").Stage;
+    };
     readonly walk: true;
 }];
 export declare const discardEmptyEntry: readonly [{

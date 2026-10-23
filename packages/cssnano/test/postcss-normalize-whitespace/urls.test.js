@@ -2,11 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-whitespace/index.js';
+import {
+  normalizeWhitespacePlugins,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
 
-const { passthroughCSS } = processCSSFactory(plugin);
-const processor = postcss([plugin()]);
+const { passthroughCSS } = processCSSFactory(normalizeWhitespacePlugins());
+const processor = postcss(normalizeWhitespacePlugins());
 
 test(
   'should preserve whitespace in unquoted URLs',
