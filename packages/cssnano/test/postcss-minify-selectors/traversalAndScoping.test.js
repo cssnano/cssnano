@@ -4,8 +4,11 @@ import postcss from 'postcss';
 import {
   processCSSFactory,
   repositoryFile,
+  oneStagePlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 import { isDefaultNamespace } from '../../src/plugins/postcss-minify-selectors/lib/isDefaultNamespace.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
@@ -64,7 +67,7 @@ suite('AST traversal and namespace scoping', () => {
     );
   });
 
-  test('applies default namespace uniformly to rules both preceding and succeeding @namespace in AST', async () => {
+  test('a default @namespace after a rule leaves the rules before it unprefixed, since browsers ignore it there, and keeps the universal selector of the rules after it', async () => {
     const input =
       '*.before, .dup, .dup { color: blue; } @namespace url(http://www.w3.org/2000/svg); *.after, .dup2, .dup2 { color: red; }';
     const result = await postcss([
@@ -74,7 +77,7 @@ suite('AST traversal and namespace scoping', () => {
     });
     assert.equal(
       result.css,
-      '*.before,.dup { color: blue; } @namespace url(http://www.w3.org/2000/svg); *.after,.dup2 { color: red; }'
+      '.before,.dup { color: blue; } @namespace url(http://www.w3.org/2000/svg); *.after,.dup2 { color: red; }'
     );
   });
 

@@ -1,6 +1,8 @@
 import { ValueBuffer } from '../values/valueBuffer.js';
 import { sourceValue } from '../utils/declValue.js';
-import { contextOf } from './context.js';
+import cssnanoUtils from '#utils';
+import { isDefaultNamespace } from '../plugins/postcss-minify-selectors/lib/isDefaultNamespace.js';
+import { contextOf, DEFAULT_NAMESPACE, withBit } from './context.js';
 import {
   commentFreeSelector,
   commentFreeText,
@@ -37,6 +39,7 @@ import {
  * @property {WeakMap<Container | Document, number>} contexts
  * @property {Helpers} helpers
  * @property {CommentState | null} comments the comment removal of this run, or null when no stage removes comments
+ * @property {boolean} defaultNamespace whether a default `@namespace` has been reached, so later rules have it in their context
  */
 
 /**
@@ -226,6 +229,13 @@ function walkAtRule(state, atRule) {
     removeAfterNameComments(atRule, comments);
   }
   const read = sourceParams(atRule);
+  if (
+    !state.defaultNamespace &&
+    cssnanoUtils.asciiLowerCase(atRule.name) === 'namespace' &&
+    isDefaultNamespace(read)
+  ) {
+    state.defaultNamespace = true;
+  }
   // An at-rule that another plugin built may have no prelude to clean.
   const text =
     comments !== null && read ? commentFreeText(read, comments) : read;
@@ -267,7 +277,8 @@ function walkRule(state, rule) {
   const text = comments !== null ? commentFreeSelector(read, comments) : read;
   let result = text;
   if (state.selectors.plan !== null) {
-    const context = contextOf(rule, state.contexts);
+    let context = contextOf(rule, state.contexts);
+    if (state.defaultNamespace) context = withBit(context, DEFAULT_NAMESPACE);
     result = reduceText(state.selectors, text, context, rule, state.helpers);
   }
   if (result !== read) {
@@ -315,6 +326,7 @@ export function walkStylesheet(stages, root, helpers) {
     contexts: new WeakMap(),
     helpers,
     comments: commentStateOf(stages),
+    defaultNamespace: false,
   };
   root.walk((node) => {
     if (node.type === 'comment') {

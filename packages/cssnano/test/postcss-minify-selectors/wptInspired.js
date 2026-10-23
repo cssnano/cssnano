@@ -1,12 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 import {
   normalizeList,
   specificityOf,
 } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
-import { repositoryFile } from '../../../../util/testHelpers.js';
+import {
+  repositoryFile,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
 
 // Pinned translations of selector syntax/specification cases. These are kept
 // as Node assertions rather than importing the browser-oriented WPT harness.

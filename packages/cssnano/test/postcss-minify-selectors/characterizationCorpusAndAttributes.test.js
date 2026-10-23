@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 import { normalizeList } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
-import { repositoryFile } from '../../../../util/testHelpers.js';
+import {
+  repositoryFile,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
 
 const corpus = [
   ['.card, .card, article.card', '.card,article.card'],
