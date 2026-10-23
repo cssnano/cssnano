@@ -21,6 +21,26 @@ describe('Fractions and trailing/leading zeros', () => {
   );
 
   test(
+    'convert-values keeps the sign of a number that directly follows a dimension',
+    processCSS('h1{margin:1px+1.0}', 'h1{margin:1px+1}')
+  );
+
+  test(
+    'convert-values keeps the sign of a number that directly follows a `-` delim, which would otherwise make it negative',
+    processCSS('h1{margin:-+1.0px}', 'h1{margin:-+1px}')
+  );
+
+  test(
+    'convert-values keeps the sign of a number that directly follows a `.` delim, which would otherwise become its decimal point',
+    processCSS('h1{margin:.+1.0}', 'h1{margin:.+1}')
+  );
+
+  test(
+    'convert-values drops the sign of a number that follows whitespace',
+    processCSS('h1{margin:1px +1.0px}', 'h1{margin:1px 1px}')
+  );
+
+  test(
     'should trim trailing zeros without unit',
     processCSS('h1{width:100.00%}', 'h1{width:100%}')
   );

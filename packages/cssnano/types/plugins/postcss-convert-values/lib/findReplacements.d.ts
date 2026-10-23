@@ -10,6 +10,8 @@ export type ReplacementFlags = {
     clampAlpha: boolean;
     isAlpha: boolean;
     isFont: boolean;
+    isUnicodeRange: boolean;
+    isCustomProperty: boolean;
 };
 /** @param {string} str @return {string} */
 export declare function stripVendorPrefix(str: string): string;
