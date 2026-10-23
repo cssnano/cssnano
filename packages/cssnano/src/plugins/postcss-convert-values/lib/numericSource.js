@@ -1,15 +1,16 @@
 import cssnanoUtils from '#utils';
 
-const { TokenType, numeric, tokenEnd, tokenStart } = cssnanoUtils;
+const { TokenType, numeric } = cssnanoUtils;
 
 /** @typedef {ReturnType<typeof import('#utils').default.tokens>[number]} CSSToken */
-/** @typedef {{index: number, start: number, end: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
+/** @typedef {{index: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
 
 /**
  * Capture one numeric source spelling, including PostCSS's historic `1.em`
- * token shape. Its `end` is a character offset exclusive of the source.
+ * token shape. Its `index` is the last token of the spelling. Adjacent tokens
+ * are next to each other in the list, so no positions are compared.
  *
- * @param {CSSToken[]} input
+ * @param {readonly CSSToken[]} input
  * @param {number} index
  * @return {NumericSource | false}
  */
@@ -18,7 +19,6 @@ export function numericSource(input, index) {
   const value = token && numeric(token);
   if (!token || !value) return false;
   let endIndex = index;
-  let end = tokenEnd(token);
   let raw = token[1];
   let unit = value.unit;
   let hasDecimal = raw.includes('.');
@@ -26,25 +26,20 @@ export function numericSource(input, index) {
   if (
     token[0] === TokenType.Number &&
     dot?.[0] === TokenType.Delim &&
-    dot[1] === '.' &&
-    tokenStart(dot) === end
+    dot[1] === '.'
   ) {
     raw += dot[1];
     endIndex++;
-    end = tokenEnd(dot);
     hasDecimal = true;
     const ident = input[endIndex + 1];
-    if (ident?.[0] === TokenType.Ident && tokenStart(ident) === end) {
+    if (ident?.[0] === TokenType.Ident) {
       unit = ident[1];
       raw += ident[1];
       endIndex++;
-      end = tokenEnd(ident);
     }
   }
   return {
     index: endIndex,
-    start: tokenStart(token),
-    end,
     raw,
     ...value,
     unit,

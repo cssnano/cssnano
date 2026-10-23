@@ -28,8 +28,12 @@ import {
  * What one run knows about a property: the reducers of its plan, or null when
  * no stage treats it. For each context, a memo from source text to the plan's
  * result, since a value can read its context.
- * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, string> | undefined)[]}} PropertyEntry
+ * `mode` is how the tokenizer reads the values of the property.
+ * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, string> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined}} PropertyEntry
  */
+
+/* Only `unicode-range` reads a `U+` range as one token. */
+const unicodeRangeMode = { unicodeRangesAllowed: true };
 
 /**
  * What one run knows about a prelude or selector kind: the text reducers of its
@@ -67,9 +71,11 @@ function propertyEntry(stages, property) {
     const reducer = stage.forProperty?.(property) ?? null;
     if (reducer !== null) reducers.push(reducer);
   }
+  const mode =
+    property.toLowerCase() === 'unicode-range' ? unicodeRangeMode : undefined;
   return reducers.length > 0
-    ? { plan: reducers, memos: [] }
-    : { plan: null, memos: [] };
+    ? { plan: reducers, memos: [], mode }
+    : { plan: null, memos: [], mode };
 }
 
 /**
@@ -113,7 +119,7 @@ function reduceValue(entry, text, context, decl, helpers) {
   const memo = memoOf(entry.memos, context);
   let result = memo.get(text);
   if (result !== undefined) return result;
-  const buffer = new ValueBuffer(text);
+  const buffer = new ValueBuffer(text, entry.mode);
   for (const reducer of plan) reducer(buffer, context);
   result = buffer.text();
   const warnings = buffer.warnings();

@@ -15,6 +15,12 @@
  */
 
 /**
+ * A number and its unit, as the text of a token spells them. A spelling the
+ * source already has keeps the whole text as its representation, with no unit.
+ * @typedef {{representation: string, unit: string}} Spelling
+ */
+
+/**
  * Each group converts only among its own units. `option` is the ConvertOptions
  * key that disables the group; a group without one always converts. Metric
  * units relate by exact decimal factors, so `length: false` leaves them
@@ -56,8 +62,9 @@ const unitGroups = [
       ['turn', 3600],
       ['grad', 9],
     ]),
-    // `rad` converts only at zero, since no exact decimal factor exists.
-    zeroOnly: new Map([['rad', '0deg']]),
+    // `rad` converts only at zero, since no exact decimal factor exists. The
+    // map gives the unit a zero takes.
+    zeroOnly: new Map([['rad', 'deg']]),
     requiresZeroUnit: true,
   },
   {
@@ -209,24 +216,41 @@ export function formatNumber(number, allowExponent = true) {
 }
 
 /**
+ * The length of a spelling as its text: the representation and the unit.
+ *
+ * @param {Spelling} spelling
+ * @return {number}
+ */
+export function spelledLength(spelling) {
+  return spelling.representation.length + spelling.unit.length;
+}
+
+/**
  * @param {number} number
  * @param {string} originalUnit
  * @param {UnitGroup} group
- * @return {string}
+ * @return {Spelling | undefined}
  */
 function findShortestConversion(number, originalUnit, group) {
   const base = number * /** @type {number} */ (group.factors.get(originalUnit));
 
-  let shortest = '';
+  /** @type {Spelling | undefined} */
+  let shortest;
   for (const [u, factor] of group.factors) {
     if (u === originalUnit || group.sourceOnly?.has(u)) {
       continue;
     }
     const convertedNumber = Number((base / factor).toPrecision(15));
-    const value = formatNumber(convertedNumber) + u;
+    const candidate = {
+      representation: formatNumber(convertedNumber),
+      unit: u,
+    };
 
-    if (!shortest || value.length < shortest.length) {
-      shortest = value;
+    if (
+      shortest === undefined ||
+      spelledLength(candidate) < spelledLength(shortest)
+    ) {
+      shortest = candidate;
     }
   }
 
@@ -239,38 +263,50 @@ function findShortestConversion(number, originalUnit, group) {
  * @param {number} number
  * @param {string} lowerCaseUnit
  * @param {UnitGroup | undefined} group
- * @return {string | undefined}
+ * @return {Spelling | undefined}
  */
 function findConverted(number, lowerCaseUnit, group) {
   if (!group) {
     return undefined;
   }
-  const zeroText = group.zeroOnly?.get(lowerCaseUnit);
-  if (zeroText !== undefined) {
-    return number === 0 ? zeroText : undefined;
+  const zeroUnit = group.zeroOnly?.get(lowerCaseUnit);
+  if (zeroUnit !== undefined) {
+    return number === 0 ? { representation: '0', unit: zeroUnit } : undefined;
   }
   return findShortestConversion(number, lowerCaseUnit, group);
 }
 
 /**
- * @param {string} converted
- * @param {string} value
- * @param {string} decimalValue
+ * Whether the text of a spelling has an `e`, in the exponent or in a unit.
+ *
+ * @param {Spelling} spelling
+ * @return {boolean}
+ */
+function hasExponentLetter(spelling) {
+  return spelling.representation.includes('e') || spelling.unit.includes('e');
+}
+
+/**
+ * @param {Spelling} converted
+ * @param {Spelling} value
+ * @param {number} decimalLength the length of the spelling without a leading zero
  * @param {string} lowerCaseUnit
  * @return {boolean}
  */
-function shouldUseConverted(converted, value, decimalValue, lowerCaseUnit) {
-  if (converted.length < value.length) {
+function shouldUseConverted(converted, value, decimalLength, lowerCaseUnit) {
+  const convertedLength = spelledLength(converted);
+  const valueLength = spelledLength(value);
+  if (convertedLength < valueLength) {
     return true;
   }
-  if (lowerCaseUnit === 'rad' && converted.length <= value.length) {
+  if (lowerCaseUnit === 'rad' && convertedLength <= valueLength) {
     return true;
   }
   return (
-    converted.length === value.length &&
-    !converted.includes('e') &&
-    value.includes('e') &&
-    converted.length < decimalValue.length
+    convertedLength === valueLength &&
+    !hasExponentLetter(converted) &&
+    hasExponentLetter(value) &&
+    convertedLength < decimalLength
   );
 }
 
@@ -278,23 +314,23 @@ function shouldUseConverted(converted, value, decimalValue, lowerCaseUnit) {
  * @param {number} number
  * @param {string} unit
  * @param {ConvertOptions} [options]
- * @return {string}
+ * @return {Spelling}
  */
 const convert = function (number, unit, options = {}) {
   const lowerCaseUnit = unit.toLowerCase();
   const group = unitGroupByUnit.get(lowerCaseUnit);
   if (group?.option !== undefined && options[group.option] === false) {
     // Disabling conversion must not disable exponent formatting, so 1e-6s stays short.
-    return formatNumber(number) + (unit ? unit : '');
+    return { representation: formatNumber(number), unit };
   }
 
   const converted = findConverted(number, lowerCaseUnit, group);
-  const decimalValue = dropLeadingZero(number) + (unit ? unit : '');
-  const value = formatNumber(number) + (unit ? unit : '');
+  const decimalLength = dropLeadingZero(number).length + unit.length;
+  const value = { representation: formatNumber(number), unit };
 
   if (
     converted &&
-    shouldUseConverted(converted, value, decimalValue, lowerCaseUnit)
+    shouldUseConverted(converted, value, decimalLength, lowerCaseUnit)
   ) {
     return converted;
   }

@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
 
-const { TokenType, tokenEnd } = cssnanoUtils;
+const { TokenType } = cssnanoUtils;
 
 /* Tokens after which a number can lose its `+` sign. Any other token that ends
  * right before the number could absorb it, e.g. `u+1` would become the ident
@@ -21,20 +21,18 @@ const signFreeAfter = new Set([
 ]);
 
 /**
- * @param {{start: number, end: number, text: string}} edit
- * @param {{start: number, raw: string}} source
+ * Restores the `+` of a source spelling that the new spelling lost. The
+ * previous token is the one right before the number, so it touches it.
+ *
+ * @param {import('./convert.js').Spelling} spelling
+ * @param {{raw: string}} source
  * @param {ReturnType<typeof cssnanoUtils.tokens>[number] | undefined} previous
- * @return {{start: number, end: number, text: string}}
+ * @return {import('./convert.js').Spelling}
  */
-export function keepJoiningSign(edit, source, previous) {
-  if (source.raw[0] !== '+' || edit.text[0] === '+') return edit;
-  if (
-    !previous ||
-    signFreeAfter.has(previous[0]) ||
-    tokenEnd(previous) !== source.start
-  ) {
-    return edit;
+export function keepJoiningSign(spelling, source, previous) {
+  if (source.raw[0] !== '+' || spelling.representation[0] === '+') {
+    return spelling;
   }
-  edit.text = '+' + edit.text;
-  return edit;
+  if (!previous || signFreeAfter.has(previous[0])) return spelling;
+  return { representation: '+' + spelling.representation, unit: spelling.unit };
 }
