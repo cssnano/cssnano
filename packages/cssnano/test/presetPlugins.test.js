@@ -17,12 +17,11 @@ describe('built presets return plugins', () => {
     }
   });
 
-  test('disable leaves out exactly the named plugin', () => {
+  test('the default preset runs one host plugin, with or without a disabled transform', () => {
+    assert.deepStrictEqual(names(defaultPreset()), ['cssnano-host']);
     assert.deepStrictEqual(
       names(defaultPreset({ disable: ['discardComments'] })),
-      names(defaultPreset()).filter(
-        (name) => name !== 'postcss-discard-comments'
-      )
+      ['cssnano-host']
     );
   });
 
@@ -34,14 +33,6 @@ describe('built presets return plugins', () => {
     ).process(css, { from: repositoryFile });
     assert.match(result.css, /#ff0000/v);
     assert.match(result.css, /ease-in-out/v);
-  });
-
-  test('discardEmpty runs in the host after merge, not as a plugin of its own', () => {
-    assert.ok(!names(defaultPreset()).includes('postcss-discard-empty'));
-  });
-
-  test('uniqueSelectors runs in the host after merge, not as a plugin of its own', () => {
-    assert.ok(!names(defaultPreset()).includes('postcss-unique-selectors'));
   });
 
   test('disabling uniqueSelectors keeps the duplicate selector that the preset removes', async () => {
@@ -63,8 +54,7 @@ describe('built presets return plugins', () => {
     assert.equal(css, 'a{color:red}');
   });
 
-  test('rawCache is recorded by the host, not a plugin of its own', async () => {
-    assert.ok(!names(defaultPreset()).includes('cssnano-util-raw-cache'));
+  test('rawCache is recorded on the root by the host', async () => {
     const result = await postcss(defaultPreset()).process('a{color:red}', {
       from: repositoryFile,
     });
@@ -81,12 +71,6 @@ describe('built presets return plugins', () => {
     });
     assert.equal(removed.css, 'b{color:red}');
     assert.equal(kept.css, 'a{}b{color:red}');
-  });
-
-  test('disabling merge leaves the cssnano-merge pass out', () => {
-    assert.ok(
-      !names(defaultPreset({ disable: ['merge'] })).includes('cssnano-merge')
-    );
   });
 
   test('turning off rule merging keeps the merge pass for longhand merging', async () => {
