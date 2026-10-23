@@ -1,10 +1,13 @@
 import cssnanoUtils from '#utils';
 import mappings from './lib/map.js';
+import { ident } from '../../values/tokenConstructors.js';
 
-const { TokenType, asciiLowerCase, decoded, tokens, assignValue, sourceValue } =
-  cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @typedef {{start: number, end: number, keyword: string}} KeywordPair */
+
 const repeatPropertyRegex =
   /^(?:[bB][aA][cC][kK][gG][rR][oO][uU][nN][dD](?:-[rR][eE][pP][eE][aA][tT])?|(?:-[A-Za-z0-9_]+-)?[mM][aA][sS][kK]-[rR][eE][pP][eE][aA][tT])$/v;
 const repeatKeywords = new Set(mappings.values());
@@ -30,21 +33,20 @@ function changesDepth(type) {
 }
 
 /**
- * Splits the token stream into comma-separated layers at the top nesting depth.
- * Each layer is reported as its starting token index so gap checks can scan
- * only that layer instead of re-reading the whole declaration.
- * @param {CSSToken[]} input @return {[number, CSSToken[], boolean][]}
+ * Splits the tokens into comma-separated layers at the top nesting depth. Each
+ * layer lists the indexes of its repeat keywords, and whether a variable
+ * function or a size separator stops the layer from being rewritten.
+ * @param {readonly CSSToken[]} input
+ * @return {{candidates: number[], stopped: boolean}[]}
  */
 function repeatLayers(input) {
   let depth = 0;
-  let layerTokenStart = 0;
   let stopped = false;
-  /** @type {CSSToken[]} */ let candidates = [];
-  /** @type {[number, CSSToken[], boolean][]} */ const layers = [];
-  let tokenIndex = 0;
-  for (const token of input) {
+  /** @type {number[]} */ let candidates = [];
+  /** @type {{candidates: number[], stopped: boolean}[]} */ const layers = [];
+  for (let index = 0; index < input.length; index++) {
+    const token = input[index];
     const type = token[0];
-    if (type === TokenType.EOF) break;
     if (
       depth === 0 &&
       type === TokenType.Function &&
@@ -55,8 +57,7 @@ function repeatLayers(input) {
     }
     depth += changesDepth(type);
     if (depth === 0 && type === TokenType.Comma) {
-      layers.push([layerTokenStart, candidates, stopped]);
-      layerTokenStart = tokenIndex + 1;
+      layers.push({ candidates, stopped });
       candidates = [];
       stopped = false;
     } else if (depth === 0 && type === TokenType.Delim && token[1] === '/')
@@ -67,117 +68,97 @@ function repeatLayers(input) {
       type === TokenType.Ident &&
       repeatKeywords.has(asciiLowerCase(decoded(token)))
     )
-      candidates.push(token);
-    tokenIndex++;
+      candidates.push(index);
   }
-  layers.push([layerTokenStart, candidates, stopped]);
+  layers.push({ candidates, stopped });
   return layers;
 }
 
 /**
- * Whether nothing significant stands between the two keywords: only whitespace
- * and comments, which the CSS syntax permits between component values. Any
- * other token there is a component value that must survive the rewrite.
- * @param {CSSToken[]} input
- * @param {number} layerTokenStart
- * @param {CSSToken} first
- * @param {CSSToken} second
+ * Whether only whitespace and comments stand between the two keyword tokens.
+ * Any other token there is a component value that must survive the rewrite.
+ * @param {readonly CSSToken[]} input
+ * @param {number} first index of the first keyword
+ * @param {number} second index of the second keyword
  * @return {boolean}
  */
-function isInsignificantGap(input, layerTokenStart, first, second) {
-  // Both keywords live in the same layer, so no token before the layer can
-  // fall between them; scanning from the layer start keeps the total work
-  // linear in the declaration length across all layers.
-  for (let index = layerTokenStart; index < input.length; index++) {
-    const token = input[index];
-    if (token[3] <= first[3]) continue;
-    if (token[2] >= second[2]) return true;
-    const type = token[0];
+function isInsignificantGap(input, first, second) {
+  for (let index = first + 1; index < second; index++) {
+    const type = input[index][0];
     if (type !== TokenType.Whitespace && type !== TokenType.Comment)
       return false;
   }
   return true;
 }
 
-/** @param {CSSToken[]} input @param {number} layerTokenStart @param {CSSToken[]} terms @return {[number, number, string] | undefined} */
-function repeatReplacement(input, layerTokenStart, terms) {
+/**
+ * The rewrite of one layer, when it has exactly two keywords with nothing
+ * significant between them.
+ * @param {readonly CSSToken[]} input
+ * @param {number[]} terms indexes of the layer's keywords
+ * @return {KeywordPair | undefined}
+ */
+function repeatReplacement(input, terms) {
   if (terms.length !== 2) return undefined;
   const [first, second] = terms;
-  if (!isInsignificantGap(input, layerTokenStart, first, second))
-    return undefined;
-  const match = mappings.get(
-    [decoded(first), decoded(second)].map(asciiLowerCase).toString()
+  if (!isInsignificantGap(input, first, second)) return undefined;
+  const keyword = mappings.get(
+    [decoded(input[first]), decoded(input[second])]
+      .map(asciiLowerCase)
+      .toString()
   );
-  return match ? [first[2], second[3] + 1, match] : undefined;
+  return keyword ? { start: first, end: second + 1, keyword } : undefined;
 }
 
 /**
- * @param {string} value
- * @return {string}
+ * The tokens of the value with each replaced pair turned into one keyword. The
+ * pairs are ascending and do not overlap, so one forward pass builds the list.
+ * @param {readonly CSSToken[]} input
+ * @param {KeywordPair[]} pairs
+ * @return {CSSToken[]}
  */
-function transform(value) {
-  /** @type {CSSToken[]} */ const input = tokens(value);
-  if (input.length === 2) {
-    return value;
-  }
-  /** @type {[number, number, string][]} */
-  const replacements = [];
-  for (const [layerTokenStart, terms, skipped] of repeatLayers(input)) {
-    const replacement = skipped
-      ? undefined
-      : repeatReplacement(input, layerTokenStart, terms);
-    if (replacement) replacements.push(replacement);
-  }
-  // Replacements are ascending and non-overlapping, so one forward pass joins
-  // each untouched span exactly once instead of re-slicing the whole value.
-  let result = '';
+function joinKeywordPairs(input, pairs) {
+  /** @type {CSSToken[]} */ const output = [];
   let cursor = 0;
-  for (const [start, end, text] of replacements) {
-    result += value.slice(cursor, start) + text;
+  for (const { start, end, keyword } of pairs) {
+    for (; cursor < start; cursor++) output.push(input[cursor]);
+    output.push(ident(keyword));
     cursor = end;
   }
-  return result + value.slice(cursor);
+  for (; cursor < input.length; cursor++) output.push(input[cursor]);
+  return output;
 }
 
+/** @type {Reducer} */
+const reduce = (buffer) => {
+  const input = buffer.tokens();
+  // Two tokens cannot hold two keywords.
+  if (input.length === 2) return;
+  /** @type {KeywordPair[]} */
+  const pairs = [];
+  for (const { candidates, stopped } of repeatLayers(input)) {
+    if (stopped) continue;
+    const pair = repeatReplacement(input, candidates);
+    if (pair) pairs.push(pair);
+  }
+  if (pairs.length > 0) {
+    buffer.replace(0, input.length, joinKeywordPairs(input, pairs));
+  }
+};
+
 /**
- * @return {import('postcss').Plugin}
+ * The stage for one run. It reads the background and mask repeat properties.
+ *
+ * @return {Stage}
  */
-function pluginCreator() {
+function repeatStage() {
   return {
-    postcssPlugin: 'postcss-normalize-repeat-style',
-    prepare() {
-      const cache = new Map();
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          css.walkDecls(repeatPropertyRegex, (decl) => {
-            const value = sourceValue(decl);
-
-            if (!value) {
-              return;
-            }
-
-            if (cache.has(value)) {
-              assignValue(decl, cache.get(value));
-
-              return;
-            }
-
-            const result = transform(value);
-
-            assignValue(decl, result);
-            cache.set(value, result);
-          });
-        },
-      };
-    },
+    forProperty: (property) =>
+      repeatPropertyRegex.test(property) ? reduce : null,
   };
 }
 
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
+/** @satisfies {StageEntry} */
+const normalizeRepeatStyle = { create: () => repeatStage() };
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+export { normalizeRepeatStyle as default };

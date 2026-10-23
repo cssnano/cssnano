@@ -10,7 +10,7 @@ const { asciiLowerCase, calcSumFunctions, decoded, mathFunctions } =
   cssnanoUtils;
 
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
-/** @typedef {import('./commentRemover.js').default} CommentRemover */
+/** @typedef {(comment: string) => boolean | undefined} CanRemove */
 
 // Functions whose argument grammar is <calc-sum>, requiring whitespace
 // around '+' and '-' operators.
@@ -58,11 +58,11 @@ function mathDepthChange(parens, token) {
  * normalizing whitespace and math operator spacing.
  *
  * @param {string} source
- * @param {CommentRemover} remover
+ * @param {CanRemove} canRemove
  * @param {Map<string, CSSToken[]>} parserCache
  * @return {string}
  */
-function normalizeValue(source, remover, parserCache) {
+function normalizeValue(source, canRemove, parserCache) {
   const tokens = getTokens(source, parserCache);
   let result = '';
   let pendingSpace = false;
@@ -88,7 +88,7 @@ function normalizeValue(source, remover, parserCache) {
       continue;
     }
 
-    if (type === TokenType.Comment && remover.canRemove(commentContents(raw))) {
+    if (type === TokenType.Comment && canRemove(commentContents(raw))) {
       pendingSpace = started;
       continue;
     }
@@ -134,10 +134,10 @@ function normalizeValue(source, remover, parserCache) {
 /**
  * Reconstruct a value with comments removed or preserved. Kept comments
  * pass through byte-exact; removal decisions consult the per-document
- * remover.
+ * canRemove.
  *
  * @param {string | undefined} rawSource
- * @param {CommentRemover} remover
+ * @param {CanRemove} canRemove
  * @param {Map<string, CSSToken[]>} parserCache
  * @param {string=} separator
  * @param {boolean=} preserveWhitespace
@@ -145,7 +145,7 @@ function normalizeValue(source, remover, parserCache) {
  */
 export function replaceComments(
   rawSource,
-  remover,
+  canRemove,
   parserCache,
   separator = ' ',
   preserveWhitespace = false
@@ -165,10 +165,7 @@ export function replaceComments(
         continue;
       }
 
-      if (
-        type === TokenType.Comment &&
-        remover.canRemove(commentContents(raw))
-      ) {
+      if (type === TokenType.Comment && canRemove(commentContents(raw))) {
         preserved += separator;
         continue;
       }
@@ -179,7 +176,7 @@ export function replaceComments(
     return preserved;
   }
 
-  return normalizeValue(source, remover, parserCache);
+  return normalizeValue(source, canRemove, parserCache);
 }
 
 /**
@@ -188,11 +185,11 @@ export function replaceComments(
  * pass through byte-exact.
  *
  * @param {string | undefined} rawSource
- * @param {CommentRemover} remover
+ * @param {CanRemove} canRemove
  * @param {Map<string, CSSToken[]>} parserCache
  * @return {string}
  */
-export function replaceCommentsInSelector(rawSource, remover, parserCache) {
+export function replaceCommentsInSelector(rawSource, canRemove, parserCache) {
   const source = rawSource || '';
 
   if (!source.includes('/*')) {
@@ -218,7 +215,7 @@ export function replaceCommentsInSelector(rawSource, remover, parserCache) {
     }
 
     if (type === TokenType.Comment) {
-      if (remover.canRemove(commentContents(raw))) {
+      if (canRemove(commentContents(raw))) {
         removedCommentBefore = true;
         continue;
       }

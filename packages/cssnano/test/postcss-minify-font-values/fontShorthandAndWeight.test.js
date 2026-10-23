@@ -1,9 +1,11 @@
 import { describe, test } from 'node:test';
 import {
-  usePostCSSPlugin,
+  oneStagePlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-font-values/index.js';
+import minifyFontValues from '../../src/plugins/postcss-minify-font-values/index.js';
+
+const plugin = oneStagePlugin(minifyFontValues);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -270,6 +272,4 @@ describe('Variables and environments in font values', () => {
     'should pass through env variables in font-weight',
     passthroughCSS('h1{font-weight:env(--font-size)}')
   );
-
-  test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
 });

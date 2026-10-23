@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import preset from '../../../src/presets/default.js';
-import { transformPlugin } from '../../../src/passes/merge/index.js';
+import { transformPass } from '../../../src/passes/merge/index.js';
+import { configureValidated } from '../../../src/presets/configurePlugins.js';
+import { defaultPluginEntries } from '../../../src/presets/defaultPlugins.js';
 import { processCSSFactory } from '../../../../../util/testHelpers.js';
 
 const { processCSS } = processCSSFactory(preset());
@@ -17,18 +19,26 @@ const withoutRules = processCSSFactory(
  * @return {import('postcss').AcceptedPlugin[]}
  */
 function presetWithMergeTransforms(transforms) {
-  const plugins = preset();
-  const index = plugins.findIndex(
-    (plugin) =>
-      /** @type {{postcssPlugin: string}} */ (plugin).postcssPlugin ===
-      'cssnano-merge'
+  // The default entries, with the merge entry replaced by the transforms, each
+  // a pass of its own in the place the merge pass has.
+  const entries = defaultPluginEntries.flatMap(([entry, name, settings]) =>
+    name === 'merge'
+      ? transforms.map((transform) => [
+          {
+            create: (/** @type {Record<PropertyKey, unknown>} */ options) =>
+              options,
+          },
+          transform,
+          {
+            targets: true,
+            transform: true,
+            pass: transformPass(transform),
+            optionKeys: [],
+          },
+        ])
+      : [[entry, name, settings]]
   );
-  plugins.splice(
-    index,
-    1,
-    ...transforms.map((name) => transformPlugin(name)({}))
-  );
-  return plugins;
+  return configureValidated(entries, {});
 }
 
 const withoutLonghand = processCSSFactory(

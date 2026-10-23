@@ -149,12 +149,13 @@ class LayerRegistry {
     for (const parent of enclosingLayerRules(layerRule)) {
       current = current.entryFor(parent).children;
     }
+    // A block takes at most one name. Browsers drop a block with a name list,
+    // so it declares none; like an unnamed block, it is a unique entry.
+    if (layerRule.nodes) {
+      current.entryFor(layerRule);
+      return;
+    }
     if (!layerRule.params.trim()) {
-      // An unnamed block layer is itself a unique anonymous layer; register
-      // it so nested names order beneath it.
-      if (layerRule.nodes) {
-        current.getOrCreateAnonymous(layerRule);
-      }
       return;
     }
     const names = parseLayerNameList(layerRule.params);
@@ -221,4 +222,24 @@ function compareAtRulePriority(a, b) {
   return a.documentIndex - b.documentIndex;
 }
 
-export { LayerRegistry, compareAtRulePriority };
+/**
+ * Whether the stylesheet imports another. An imported stylesheet can declare
+ * layers before this one does, so the layer order is not known from this
+ * stylesheet alone. An import rule is valid only before every rule except
+ * `@charset` and layer statements.
+ *
+ * @param {import('postcss').Root} root
+ * @return {boolean}
+ */
+function hasImport(root) {
+  for (const node of root.nodes) {
+    if (node.type === 'comment') continue;
+    if (node.type !== 'atrule') return false;
+    const name = asciiLowerCase(node.name);
+    if (name === 'import') return true;
+    if (name !== 'charset' && !(name === 'layer' && !node.nodes)) return false;
+  }
+  return false;
+}
+
+export { LayerRegistry, compareAtRulePriority, hasImport };

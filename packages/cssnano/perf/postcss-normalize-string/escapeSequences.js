@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
-import plugin from '../../src/plugins/postcss-normalize-string/index.js';
+import { oneStagePlugin } from '../../../../util/testHelpers.js';
+import stringEntry from '../../src/plugins/postcss-normalize-string/index.js';
+
+const plugin = oneStagePlugin(stringEntry);
 
 function assertStringValueInvariant(input, output) {
   const inTokens = tokenize({ css: input }).filter(

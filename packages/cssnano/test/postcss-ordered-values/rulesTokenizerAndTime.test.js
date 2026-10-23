@@ -6,8 +6,12 @@ import {
   isPercentage,
   isString,
   isUrl,
-  tokenizeValue,
+  tokenizeValue as tokenizeTokens,
 } from '../../src/plugins/postcss-ordered-values/lib/tokenize.js';
+import cssnanoUtils from '#utils';
+
+/** The tokens of a value text, as a stage reads them. */
+const tokenizeValue = (text) => tokenizeTokens(cssnanoUtils.tokens(text));
 
 describe('Tokenization', () => {
   test('does not treat non-CSS whitespace as a value delimiter', () => {

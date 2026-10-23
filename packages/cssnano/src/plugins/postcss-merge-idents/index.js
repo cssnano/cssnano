@@ -1,5 +1,14 @@
 import cssnanoUtils from '#utils';
-import { LayerRegistry, compareAtRulePriority } from './lib/layerRegistry.js';
+import {
+  createSymbolLists,
+  isAttached,
+  symbolVisit,
+} from '../../pipeline/symbolLists.js';
+import {
+  LayerRegistry,
+  compareAtRulePriority,
+  hasImport,
+} from './lib/layerRegistry.js';
 import {
   getBody,
   getConditionContainer,
@@ -8,6 +17,9 @@ import {
 } from './lib/grammar.js';
 import { scanDeclarations } from './lib/protectedNames.js';
 import { createReplacement, rewriteDeclaration } from './lib/valueRewriter.js';
+
+/** @import {ChildNode} from 'postcss' */
+/** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -22,6 +34,7 @@ const { asciiLowerCase } = cssnanoUtils;
  *   documentIndex: number,
  *   family: string,
  *   containerId: number,
+ *   layerKey?: string,
  *   parsed: { isString: boolean, isReservedName: boolean, key: string, tokenText: string }
  * }} AtRuleEntry
  */
@@ -87,10 +100,36 @@ function collapseSameNameCopies(copies, removals) {
 
 /**
  * @param {AtRuleEntry} entry
- * @return {string} the at-rule family and condition container defining it
+ * @return {string} the at-rule family and condition container defining it,
+ *   and its layer when the layer order is not known
  */
 function placementOf(entry) {
-  return `${entry.family}@${entry.containerId}`;
+  return `${entry.family}@${entry.containerId}${entry.layerKey ?? ''}`;
+}
+
+/**
+ * @param {import('postcss').AtRule} atRule
+ * @param {Map<import('postcss').Container, number>} containerIds
+ * @return {number} the id of the condition container defining the at-rule
+ */
+function containerIdOf(atRule, containerIds) {
+  const container = getConditionContainer(atRule);
+  let containerId = containerIds.get(container);
+  if (containerId === undefined) {
+    containerId = containerIds.size;
+    containerIds.set(container, containerId);
+  }
+  return containerId;
+}
+
+/**
+ * @param {SymbolLists} lists
+ * @return {boolean} whether this stylesheet alone decides its layer order
+ */
+function isLayerOrderKnown(lists) {
+  const definition =
+    lists.keyframes.find(isAttached) ?? lists.counterStyles.find(isAttached);
+  return definition === undefined || !hasImport(definition.root());
 }
 
 /**
@@ -190,11 +229,20 @@ function namespaceOf(family) {
 }
 
 /**
- * @param {import('postcss').Root} css
+ * Merges the names of the lists the walk after merge collected. A node that
+ * an earlier transform detached is skipped, as the lists still hold it.
+ *
+ * @param {SymbolLists} lists
+ * @param {(node: ChildNode) => void} remove
  * @return {void}
  */
-function mergeAtRules(css) {
+function mergeAtRules(lists, remove) {
   const layerRegistry = new LayerRegistry();
+  for (const layerRule of lists.layers) {
+    if (isAttached(layerRule)) {
+      layerRegistry.declareLayerAtRule(layerRule);
+    }
+  }
   /** @type {Map<'keyframes' | 'counter-style', AtRuleEntry[]>} */
   const namespaces = new Map([
     ['keyframes', []],
@@ -202,35 +250,16 @@ function mergeAtRules(css) {
   ]);
   /** @type {Map<import('postcss').Container, number>} */
   const containerIds = new Map();
-  /** @type {import('postcss').AtRule[]} */
-  const functionRules = [];
-  /** @type {import('postcss').AtRule[]} */
-  const parameterRules = [];
-  /** @type {import('postcss').AtRule[]} */
-  const conditionRules = [];
-  let documentIndex = 0;
+  const layerOrderKnown = isLayerOrderKnown(lists);
 
-  css.walkAtRules((atRule) => {
+  // A walk visits two at-rules that do not nest in visit order, which is their
+  // document order. These kinds never nest, so the position in a namespace
+  // is its document order.
+  for (const atRule of [...lists.keyframes, ...lists.counterStyles]) {
+    if (!isAttached(atRule)) {
+      continue;
+    }
     const family = asciiLowerCase(atRule.name);
-    if (family === 'layer') {
-      layerRegistry.declareLayerAtRule(atRule);
-      return;
-    }
-    if (family === 'function') {
-      functionRules.push(atRule);
-      return;
-    }
-    // Mixin parameter defaults and @apply arguments are substituted text.
-    if (family === 'mixin' || family === 'apply') {
-      parameterRules.push(atRule);
-      return;
-    }
-
-    if (family === 'container' || family === 'when' || family === 'else') {
-      conditionRules.push(atRule);
-      return;
-    }
-
     const namespace = namespaceOf(family);
     const params = atRule.raws?.between
       ? atRule.params + atRule.raws.between
@@ -238,25 +267,25 @@ function mergeAtRules(css) {
     const parsed = namespace && parseAtRuleName(params, family);
     // A statement without a block defines nothing.
     if (!namespace || !atRule.nodes || !parsed) {
-      return;
+      continue;
     }
     const entries = /** @type {AtRuleEntry[]} */ (namespaces.get(namespace));
 
-    const container = getConditionContainer(atRule);
-    let containerId = containerIds.get(container);
-    if (containerId === undefined) {
-      containerId = containerIds.size;
-      containerIds.set(container, containerId);
-    }
-    entries.push({
+    const containerId = containerIdOf(atRule, containerIds);
+    const layerPriority = layerRegistry.getPriority(atRule);
+    /** @type {AtRuleEntry} */
+    const entry = {
       rule: atRule,
       parsed,
       family,
       containerId,
-      layerPriority: layerRegistry.getPriority(atRule),
-      documentIndex: documentIndex++,
-    });
-  });
+      layerPriority,
+      documentIndex: entries.length,
+    };
+    // Without a known layer order, only definitions in one layer compare.
+    if (!layerOrderKnown) entry.layerKey = ` ${layerPriority.join('.')}`;
+    entries.push(entry);
+  }
 
   if ([...namespaces.values()].every((entries) => entries.length < 2)) {
     return;
@@ -280,11 +309,11 @@ function mergeAtRules(css) {
   const { protectedNames, references } =
     groupedNames.size > 0
       ? scanDeclarations(
-          css,
+          lists.decls.filter(isAttached),
           groupedNames,
-          functionRules,
-          parameterRules,
-          conditionRules
+          lists.functions.filter(isAttached),
+          lists.parameterRules.filter(isAttached),
+          lists.conditionRules.filter(isAttached)
         )
       : { protectedNames: new Set(), references: [] };
   /** @type {Map<string, Map<string, import('./lib/valueRewriter.js').Replacement>>} */
@@ -307,8 +336,11 @@ function mergeAtRules(css) {
     rewriteReferences(references, renames);
   }
 
+  // An earlier removal in this loop may have emptied and removed a parent.
   for (const node of removals) {
-    node.remove();
+    if (isAttached(node)) {
+      remove(node);
+    }
   }
 }
 
@@ -327,6 +359,19 @@ function rewriteReferences(references, renames) {
 }
 
 /**
+ * Merges the names of the advanced transform's lists. The walk after merge
+ * collects the lists, so the transform needs no walk of its own.
+ *
+ * @param {SymbolLists} lists
+ * @param {Record<PropertyKey, never>} _options takes no options
+ * @param {(node: ChildNode) => void} remove
+ * @return {void}
+ */
+export function mergeIdentsSymbols(lists, _options, remove) {
+  mergeAtRules(lists, remove);
+}
+
+/**
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
@@ -336,7 +381,9 @@ function pluginCreator() {
      * @param {import('postcss').Root} css
      */
     OnceExit(css) {
-      mergeAtRules(css);
+      const lists = createSymbolLists();
+      css.walk(symbolVisit(lists));
+      mergeIdentsSymbols(lists, {}, (node) => node.remove());
     },
   };
 }

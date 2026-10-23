@@ -1,13 +1,18 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import plugin from '../../src/plugins/postcss-convert-values/index.js';
+import convertValues from '../../src/plugins/postcss-convert-values/index.js';
 import { check } from '../../script/postcss-convert-values/lib/fuzzCheck.js';
 import {
   edgeCases,
   generate,
 } from '../../script/postcss-convert-values/lib/fuzzGenerate.js';
-import { repositoryFile } from '../../../../util/testHelpers.js';
+import {
+  repositoryFile,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
+
+const plugin = oneStagePlugin(convertValues);
 
 const processor = postcss([plugin()]);
 
@@ -71,7 +76,7 @@ describe('Fuzzing & Invariant Testing', () => {
     assert.equal(second, output);
   });
 
-  test('synchronizes stale raw metadata on cache hits', async () => {
+  test('ignores stale raw metadata on memo hits, since the walk writes only changed values', async () => {
     /** @type {import('postcss').Declaration[]} */
     const decls = [];
     const pipeline = postcss([
@@ -95,6 +100,6 @@ describe('Fuzzing & Invariant Testing', () => {
       !result.css.includes('20px'),
       'stale raw metadata was retained on cache hit'
     );
-    assert.equal(decls[1]?.raws?.value?.raw, '10px');
+    assert.equal(result.css, 'a{width:10px} b{width:10px}');
   });
 });

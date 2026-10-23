@@ -1,6 +1,9 @@
 import cssnanoUtils from '#utils';
 import postcss from 'postcss';
-import plugin from '../../../src/plugins/postcss-minify-gradients/index.js';
+import minifyGradients from '../../../src/plugins/postcss-minify-gradients/index.js';
+import { oneStagePlugin } from '../../../../../util/testHelpers.js';
+
+const plugin = oneStagePlugin(minifyGradients);
 
 // Reuse the shared CSS Values 4 length set instead of a local copy so the
 // oracle cannot silently drift from the units the implementation accepts.

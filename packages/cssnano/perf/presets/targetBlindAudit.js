@@ -3,6 +3,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { transformPlugin } from '#passes/merge';
+import { configureValidated } from '../../src/presets/configurePlugins.js';
+import { defaultPluginEntries } from '../../src/presets/defaultPlugins.js';
 
 // Plugins that do not read browser targets. Their output must not need newer
 // syntax or drop a fallback for some target, so the audit checks their output
@@ -32,14 +34,28 @@ const plugins = [
 ];
 
 /**
+ * The plugins of one plugin name, built with the options it is given. A stage
+ * or transform entry runs in a host with the entries of its preset, so the
+ * result is always a list of plugins.
+ *
  * @param {string} name
- * @return {Promise<import('postcss').PluginCreator<any>>}
+ * @return {Promise<(options: object) => import('postcss').AcceptedPlugin[]>}
  */
 async function loadPlugin(name) {
   // The merge pass replaced this plugin; the audit runs it as a transform.
-  if (name === 'discard-duplicates')
-    return transformPlugin('discardDuplicates');
-  return (await import(`../../src/plugins/postcss-${name}/index.js`)).default;
+  if (name === 'discard-duplicates') {
+    const creator = transformPlugin('discardDuplicates');
+    return (options) => [creator(options)];
+  }
+  const exported = (await import(`../../src/plugins/postcss-${name}/index.js`))
+    .default;
+  if (typeof exported === 'function') return (options) => [exported(options)];
+  const option = name.replaceAll(/-(\w)/gv, (_, letter) =>
+    letter.toUpperCase()
+  );
+  const entries = defaultPluginEntries.filter(([, key]) => key === option);
+  return (options) =>
+    configureValidated(entries, { options: { [option]: options } });
 }
 
 const fixtureDir = new URL(
@@ -92,7 +108,7 @@ describe('target-blind plugins add no newer syntax to the integration fixtures',
       for (const file of fixtures) {
         const input = readFileSync(new URL(file, fixtureDir), 'utf8');
         const output = (
-          await postcss([plugin({})]).process(input, { from: undefined })
+          await postcss(plugin({})).process(input, { from: undefined })
         ).css;
         const before = tokens(input);
         for (const token of tokens(output)) {
@@ -144,7 +160,7 @@ describe('target-blind plugins drop no fallback declaration', () => {
 /**
  * Runs the plugin on each rule of the stylesheet on its own, so a removal can
  * only come from inside that rule's block.
- * @param {import('postcss').PluginCreator<any>} plugin
+ * @param {(options: object) => import('postcss').AcceptedPlugin[]} plugin
  * @param {string} css
  * @return {Promise<boolean>}
  */
@@ -154,7 +170,7 @@ async function replacesValue(plugin, css) {
   for (const text of rules) {
     if (text.length > 4000) continue;
     const output = (
-      await postcss([plugin({})]).process(text, { from: undefined })
+      await postcss(plugin({})).process(text, { from: undefined })
     ).css;
     if (
       replacedDeclaration(

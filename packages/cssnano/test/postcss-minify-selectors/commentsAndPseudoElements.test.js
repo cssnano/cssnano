@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { test, suite } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import {
+  processCSSFactory,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 import { isInvalidSelector } from '../../src/plugins/postcss-minify-selectors/lib/isInvalidSelector.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);

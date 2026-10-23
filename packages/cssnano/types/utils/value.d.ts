@@ -74,6 +74,15 @@ declare class BalancedTokens {
     }[];
 }
 /**
+ * The bracket structure of a token list the caller already has, so the list
+ * is not tokenized again. Undefined when a bracket is unclosed or closes out
+ * of order.
+ *
+ * @param {readonly CSSToken[]} input
+ * @return {BalancedTokens | undefined}
+ */
+declare function balancedStructure(input: readonly CSSToken[]): BalancedTokens | undefined;
+/**
  * @param {string} source
  * @param {{ unicodeRangesAllowed?: boolean }} [options]
  * @return {BalancedTokens | undefined}
@@ -81,5 +90,5 @@ declare class BalancedTokens {
 declare function balancedTokens(source: string, options?: {
     unicodeRangesAllowed?: boolean;
 }): BalancedTokens | undefined;
-export { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens, };
+export { TokenType, applyEdits, balancedStructure, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens, };
 //# sourceMappingURL=value.d.ts.map

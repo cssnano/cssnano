@@ -4,12 +4,14 @@ import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
 import {
-  usePostCSSPlugin,
+  oneStagePlugin,
   processCSSFactory,
   repositoryFile,
   withTargets,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-unicode/index.js';
+import normalizeUnicode from '../../src/plugins/postcss-normalize-unicode/index.js';
+
+const plugin = oneStagePlugin(normalizeUnicode);
 
 const testDir = nodepath.dirname(fileURLToPath(import.meta.url));
 const { join } = nodepath;
@@ -33,7 +35,8 @@ test(
   )
 );
 
-test('should update raw values on cache hits', async () => {
+/* A changed value drops its stale raw, so PostCSS prints the new value. */
+test('should drop the stale raw value of a recased range on cache hits', async () => {
   const root = postcss.parse(
     'a{unicode-range:U+2B00-2BFF;unicode-range:U+2B00-2BFF}'
   );
@@ -47,7 +50,7 @@ test('should update raw values on cache hits', async () => {
   );
   for (const decl of declarations) {
     assert.equal(decl.value, 'u+2b??');
-    assert.equal(decl.raws.value.raw, 'u+2b??');
+    assert.equal(decl.raws.value, undefined);
   }
   assert.equal(root.toString(), 'a{unicode-range:u+2b??;unicode-range:u+2b??}');
 });
@@ -143,5 +146,3 @@ describe('Downcase', () => {
     })
   );
 });
-
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

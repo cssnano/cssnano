@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { tokenizeValue } from '../../src/plugins/postcss-ordered-values/lib/tokenize.js';
+import { tokenizeValue as tokenizeTokens } from '../../src/plugins/postcss-ordered-values/lib/tokenize.js';
 import { normalizeGridColumnRow } from '../../src/plugins/postcss-ordered-values/rules/grid.js';
 import normalizeListStyle from '../../src/plugins/postcss-ordered-values/rules/listStyle.js';
+import cssnanoUtils from '#utils';
+
+/** The tokens of a value text, as a stage reads them. */
+const tokenizeValue = (text) => tokenizeTokens(cssnanoUtils.tokens(text));
 
 describe('List-style validation', () => {
   test('normalizes list-style with uppercase and escaped keywords', () => {
