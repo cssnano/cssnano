@@ -1,9 +1,10 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import { stringToken } from '../../values/tokenConstructors.js';
 
 /** @import {Reducer, Stage, StageEntry, TextReducer} from '../../pipeline/host.js' */
 
-const { isCSSWhitespace, isHexDigitCode } = cssnanoUtils;
+const { decoded, isCSSWhitespace, isHexDigitCode } = cssnanoUtils;
 
 const SINGLE_QUOTE = "'".charCodeAt(0);
 const DOUBLE_QUOTE = '"'.charCodeAt(0);
@@ -318,6 +319,32 @@ function normalize(value, preferredQuote) {
 }
 
 /**
+ * The edits that re-quote the closed strings among a value's tokens, one
+ * token per string. Re-quoting keeps the decoded value, so the token keeps
+ * its data.
+ *
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} input
+ * @param {'single' | 'double'} preferredQuote
+ * @return {{start: number, end: number, tokens: import('@csstools/css-tokenizer').CSSToken[]}[]}
+ */
+function stringEdits(input, preferredQuote) {
+  /** @type {{start: number, end: number, tokens: import('@csstools/css-tokenizer').CSSToken[]}[]} */
+  const edits = [];
+  for (let index = 0; index < input.length; index++) {
+    const token = input[index];
+    if (token[0] !== TokenType.String || !isClosedString(token[1])) continue;
+    const normalized = normalizeString(token[1], preferredQuote);
+    if (normalized === token[1]) continue;
+    edits.push({
+      start: index,
+      end: index + 1,
+      tokens: [stringToken(normalized, decoded(token))],
+    });
+  }
+  return edits;
+}
+
+/**
  * Normalizes the quotes of the strings in a text. A text without a quote has
  * none to change.
  *
@@ -349,9 +376,12 @@ function stringStage(opts) {
   const reduceText = (text) => minifyText(text, preferredQuote);
   /** @type {Reducer} */
   const reduceValue = (buffer) => {
-    const text = buffer.text();
-    const out = minifyText(text, preferredQuote);
-    if (out !== text) buffer.replaceText(out);
+    // A value without a quote has no string, so it is not tokenized.
+    if (!buffer.isEdited()) {
+      const text = buffer.text();
+      if (!text.includes("'") && !text.includes('"')) return;
+    }
+    buffer.replaceRanges(stringEdits(buffer.tokens(), preferredQuote));
   };
   return {
     forProperty: () => reduceValue,

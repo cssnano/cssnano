@@ -6,6 +6,7 @@ import {
   integer,
   numeric,
   percentage,
+  stringToken,
 } from '../../src/values/tokenConstructors.js';
 
 /**
@@ -157,4 +158,28 @@ test('integer sets the sign character of a negative value, as the tokenizer does
   assert.equal(integer(-3)[1], '-3');
   assert.equal(firstToken(integer(-3)[1])[4].signCharacter, '-');
   assert.equal(integer(3)[4].signCharacter, undefined);
+});
+
+test('stringToken reads back as the string token the tokenizer reads from its text', () => {
+  const cases = [
+    ['"abc"', 'abc'],
+    ["'a\\'b'", "a'b"],
+    ['"a\\"b"', 'a"b'],
+    ['"\\61 "', 'a'],
+  ];
+  for (const [text, value] of cases) {
+    const read = firstToken(text);
+    const built = stringToken(text, value);
+    assert.deepEqual(
+      [built[0], built[1], built[4]],
+      [read[0], read[1], read[4]],
+      text
+    );
+  }
+});
+
+test('stringToken rejects text that is not a quoted CSS string', () => {
+  for (const text of ['abc', '"abc', '\'abc"', '', '"']) {
+    assert.throws(() => stringToken(text, ''), RangeError, text);
+  }
 });
