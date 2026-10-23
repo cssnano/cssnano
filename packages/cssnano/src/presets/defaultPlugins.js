@@ -12,7 +12,6 @@ import postcssMinifyFontValues from '#postcss-minify-font-values';
 import postcssNormalizeUrl from '#postcss-normalize-url';
 import postcssDiscardOverridden from '#postcss-discard-overridden';
 import normalizeRepeatStyle from '#postcss-normalize-repeat-style';
-import postcssUniqueSelectors from '#postcss-unique-selectors';
 import postcssNormalizeString from '#postcss-normalize-string';
 import postcssNormalizePositions from '#postcss-normalize-positions';
 import postcssNormalizeUnicode from '#postcss-normalize-unicode';
@@ -244,9 +243,16 @@ export const defaultPluginEntries = /** @type {const} */ ([
   mergeEntry,
   discardEmptyEntry,
   [
-    postcssUniqueSelectors,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'uniqueSelectors',
-    { postcssPlugin: 'postcss-unique-selectors', optionKeys: [] },
+    {
+      postcssPlugin: 'postcss-unique-selectors',
+      optionKeys: [],
+      transform: true,
+      after: true,
+    },
   ],
   rawCacheEntry,
 ]);

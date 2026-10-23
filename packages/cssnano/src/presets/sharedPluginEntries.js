@@ -2,12 +2,6 @@ import discardComments from '#postcss-discard-comments';
 import postcssNormalizeWhitespace, {
   valueEntry as normalizeWhitespaceValues,
 } from '#postcss-normalize-whitespace';
-import { discardAndReport as discardEmptyNodes } from '#postcss-discard-empty';
-import cssnanoUtils from '#utils';
-
-/** @import {PassRun} from '../pipeline/host.js' */
-
-const { rawCache } = cssnanoUtils;
 
 /**
  * The plugin entries that more than one built-in preset runs. Each is defined
@@ -36,13 +30,9 @@ export const normalizeWhitespaceEntry = /** @type {const} */ ([
   },
 ]);
 
-/** @type {PassRun['pass']} */
-const discardEmptyPass = (css, _browsers, _options, result) =>
-  discardEmptyNodes(css, result);
-
 /**
- * discardEmpty runs as a pass of its host, after the merge pass, so the host
- * walks the stylesheet without a plugin of its own.
+ * discardEmpty runs in the walk after merge of its host, so the host walks the
+ * stylesheet without a plugin of its own.
  */
 export const discardEmptyEntry = /** @type {const} */ ([
   { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
@@ -51,13 +41,13 @@ export const discardEmptyEntry = /** @type {const} */ ([
     postcssPlugin: 'postcss-discard-empty',
     optionKeys: [],
     transform: true,
-    pass: discardEmptyPass,
+    after: true,
   },
 ]);
 
-/** @type {PassRun['pass']} */
-const rawCachePass = (_css, _browsers, _options, result) => rawCache(result);
-
+/**
+ * rawCache runs last in the walk after merge of its host.
+ */
 export const rawCacheEntry = /** @type {const} */ ([
   { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
   'rawCache',
@@ -65,6 +55,6 @@ export const rawCacheEntry = /** @type {const} */ ([
     postcssPlugin: 'cssnano-util-raw-cache',
     optionKeys: [],
     transform: true,
-    pass: rawCachePass,
+    after: true,
   },
 ]);

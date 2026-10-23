@@ -1,4 +1,5 @@
 import cssnanoUtils from '#utils';
+import { uniqueRuleSelector } from '#postcss-unique-selectors';
 
 const { asciiLowerCase, decoded, TokenType, tokens } = cssnanoUtils;
 
@@ -124,13 +125,16 @@ function shouldDiscard(node, sub, isLayer, isRedundantLayer) {
  * An empty `@layer x{}` is redundant only when an earlier block or statement
  * already fixed the order of `x`. Every ancestor other than `@layer` is
  * treated as a condition, so an earlier declaration counts only at top level
- * or under a condition that also encloses the later block.
+ * or under a condition that also encloses the later block. With
+ * `uniqueSelectors`, each rule that is kept also loses its duplicate selectors
+ * in the same walk.
  *
  * @param {import('postcss').Root} css
  * @param {import('postcss').Result} result
+ * @param {boolean} [uniqueSelectors]
  * @return {void}
  */
-export function discardAndReport(css, result) {
+export function discardAndReport(css, result, uniqueSelectors = false) {
   /** Layer keys declared in each open condition, outermost (top level) first.
    * Sets are created on first use; most conditions declare no layer.
    * @type {(Set<string> | undefined)[]} */
@@ -217,8 +221,9 @@ export function discardAndReport(css, result) {
         plugin,
         node,
       });
-    } else if (name !== undefined) {
-      declare(parentKey, name);
+    } else {
+      if (name !== undefined) declare(parentKey, name);
+      if (uniqueSelectors && type === 'rule') uniqueRuleSelector(node);
     }
   }
 

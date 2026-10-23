@@ -34,7 +34,9 @@ export type HostMember = {
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
  *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
  * @param {ReadonlyMap<string, PassRun>} [passes] the passes that run after the walk, by entry name
+ * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
+ *   the walk after the passes runs, by entry name; a missing name is disabled
  * @returns {Plugin}
  */
-export declare function hostPlugin(members: readonly HostMember[], transforms?: ReadonlyMap<string, Record<PropertyKey, unknown>>, passes?: ReadonlyMap<string, PassRun>): Plugin;
+export declare function hostPlugin(members: readonly HostMember[], transforms?: ReadonlyMap<string, Record<PropertyKey, unknown>>, passes?: ReadonlyMap<string, PassRun>, after?: ReadonlyMap<string, Record<PropertyKey, unknown>>): Plugin;
 //# sourceMappingURL=host.d.ts.map
