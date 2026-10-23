@@ -1,11 +1,12 @@
 import {
   isTokenIdent,
   isTokenWhiteSpaceOrComment,
-  tokenize,
-  TokenType,
 } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import { ident, whitespace } from '../../values/tokenConstructors.js';
 import mappings from './lib/map.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 const { asciiLowerCase } = cssnanoUtils;
 const displayPropertyRegex = /^[dD][iI][sS][pP][lL][aA][yY]$/v;
@@ -56,40 +57,38 @@ function addIdentifier(identifier, state) {
 }
 
 /**
- * @param {string} value
- * @return {string}
+ * The mapped display of a value's tokens, or undefined to keep the value.
+ *
+ * @param {readonly CSSToken[]} input
+ * @return {string | undefined}
  */
-function transform(value) {
+function transform(input) {
   let count = 0;
   /** @type {{ outer?: string, inner?: string, listItem?: string }} */
   const state = {};
 
-  for (const token of tokenize({ css: value })) {
-    if (token[0] === TokenType.EOF) {
-      break;
-    }
-
+  for (const token of input) {
     if (isTokenWhiteSpaceOrComment(token)) {
       continue;
     }
 
     if (!isTokenIdent(token)) {
-      return value;
+      return undefined;
     }
 
     count++;
     if (count > 3) {
-      return value;
+      return undefined;
     }
 
     const identifier = toASCIILowerCase(token[4].value);
     if (!addIdentifier(identifier, state)) {
-      return value;
+      return undefined;
     }
   }
 
   if (count < 2) {
-    return value;
+    return undefined;
   }
 
   if (
@@ -98,20 +97,37 @@ function transform(value) {
     state.inner !== 'flow' &&
     state.inner !== 'flow-root'
   ) {
-    return value;
+    return undefined;
   }
 
   const key = state.listItem
     ? `${state.outer ?? ''},${state.inner ?? ''},${state.listItem}`
     : `${state.outer ?? ''},${state.inner ?? ''}`;
 
-  return mappings.get(key) ?? value;
+  return mappings.get(key);
 }
+
+/**
+ * The tokens of a mapped display: one identifier, or two separated by a space.
+ * The mapped text is ours, so splitting it on the space is safe.
+ *
+ * @param {string} mapped
+ * @return {CSSToken[]}
+ */
+function mappedTokens(mapped) {
+  const [first, second] = mapped.split(' ');
+  return second === undefined
+    ? [ident(first)]
+    : [ident(first), whitespace(), ident(second)];
+}
+
 /** @type {import('../../pipeline/host.js').Reducer} */
 const reduce = (buffer) => {
-  const text = buffer.text();
-  const out = transform(text);
-  if (out !== text) buffer.replaceText(out);
+  const input = buffer.tokens();
+  const mapped = transform(input);
+  if (mapped !== undefined) {
+    buffer.replace(0, input.length, mappedTokens(mapped));
+  }
 };
 
 /**
