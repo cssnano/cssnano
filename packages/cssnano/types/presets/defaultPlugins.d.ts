@@ -179,14 +179,15 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
     readonly targets: true;
     readonly optionKeys: readonly [];
 }], readonly [{
-    (opts?: import("#postcss-normalize-charset").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'normalizeCharset', {
     readonly postcssPlugin: 'postcss-normalize-charset';
     readonly defaults: {
         readonly add: false;
     };
     readonly optionKeys: readonly ['add'];
+    readonly transform: true;
+    readonly after: true;
 }], readonly [{
     create: (options: import("#postcss-normalize-string").Options) => import("../pipeline/host.js").Stage;
 }, 'normalizeString', {

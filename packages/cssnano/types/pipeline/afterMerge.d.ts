@@ -1,10 +1,11 @@
 import type { Result, Root } from 'postcss';
 /** @import {AnyNode, Result, Root} from 'postcss' */
+/** @import {CharsetScan} from '#postcss-normalize-charset' */
 /**
  * The walk after merge runs the whole-stylesheet transforms that need the tree
  * as merge left it. Per-node transforms share one walk, so no transform needs
- * its own. It records the raw cache last, so no later transform
- * changes what the cache describes.
+ * its own. The charset decision follows the walk, and the raw cache records
+ * last, so no later transform changes what the cache describes.
  *
  * @param {Root} root
  * @param {Result} result
