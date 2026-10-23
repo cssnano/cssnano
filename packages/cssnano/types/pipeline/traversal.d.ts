@@ -32,9 +32,9 @@ export type RunState = {
      */
     defaultNamespace: boolean;
     /**
-     * whether the stray semicolons before declarations are removed, as normalizeWhitespace does
+     * whether normalizeWhitespace is on, which removes the stray semicolons and reattaches the escapes of blocks
      */
-    stripStraySemicolons: boolean;
+    normalizeWhitespace: boolean;
 };
 /**
  * Runs the comment, value, prelude and selector parts of the stages over a
