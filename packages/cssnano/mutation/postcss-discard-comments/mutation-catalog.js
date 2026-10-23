@@ -80,8 +80,8 @@ export const mutations = [
   {
     name: 'skip selector comment processing',
     target: walk,
-    find: 'removeSelectorComments(rule, state.comments);',
-    replace: 'void rule;',
+    find: 'commentFreeSelector(read, comments) : read;',
+    replace: 'read : read;',
   },
   {
     name: 'skip at-rule comment processing',
