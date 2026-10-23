@@ -40,6 +40,14 @@ describe('built presets return plugins', () => {
     assert.ok(!names(defaultPreset()).includes('postcss-discard-empty'));
   });
 
+  test('rawCache is recorded by the host, not a plugin of its own', async () => {
+    assert.ok(!names(defaultPreset()).includes('cssnano-util-raw-cache'));
+    const result = await postcss(defaultPreset()).process('a{color:red}', {
+      from: repositoryFile,
+    });
+    assert.equal(result.root.rawCache?.colon, ':');
+  });
+
   test('disabling discardEmpty keeps the empty rule that the preset removes', async () => {
     const css = 'a{}b{color:red}';
     const kept = await postcss(
