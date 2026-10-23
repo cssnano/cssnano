@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 import { isFixedPointSelector } from '../../src/plugins/postcss-minify-selectors/lib/fixedPointSelector.js';
 import { normalizeList } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
-import { repositoryFile } from '../../../../util/testHelpers.js';
+import {
+  repositoryFile,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
 
 test('classifies generated fixed-point selectors consistently with normalization', () => {
   const names = ['a', 'A', 'item-1', '_private', '123'];

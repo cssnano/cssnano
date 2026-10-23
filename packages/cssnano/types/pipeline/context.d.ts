@@ -11,12 +11,25 @@ export declare const IN_KEYFRAMES = 1;
 export declare const IN_PROPERTY = 2;
 /** With IN_PROPERTY, when the rule's syntax allows percentages. */
 export declare const PERCENTAGE_SYNTAX = 4;
+/** A rule directly inside an at-rule named `keyframes` or a vendor spelling of it. */
+export declare const KEYFRAME_RULE = 8;
+/**
+ * Set by the walk on a rule after a default `@namespace`, which makes a
+ * universal selector significant there.
+ */
+export declare const DEFAULT_NAMESPACE = 16;
 /**
  * @param {number} context
  * @param {number} bit one of the context bits
  * @returns {boolean} whether the bit is set
  */
 export declare function hasContextBit(context: number, bit: number): boolean;
+/**
+ * @param {number} context
+ * @param {number} bit a context bit that is not yet set in the context
+ * @returns {number} the context with the bit set
+ */
+export declare function withBit(context: number, bit: number): number;
 /**
  * The context of the declarations that a container holds directly. Each
  * container is computed once from its parent, through the cache of the run.

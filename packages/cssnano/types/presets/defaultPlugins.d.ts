@@ -164,8 +164,7 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
     readonly postcssPlugin: 'postcss-ordered-values';
     readonly optionKeys: readonly [];
 }], readonly [{
-    (opts?: import("#postcss-minify-selectors").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: (options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
 }, 'minifySelectors', {
     readonly postcssPlugin: 'postcss-minify-selectors';
     readonly targets: true;

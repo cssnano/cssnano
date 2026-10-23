@@ -3,7 +3,9 @@ import { test } from 'node:test';
 import jsdom from 'jsdom';
 import postcss from 'postcss';
 import { generateFoldCandidates } from '../../script/postcss-minify-selectors/lib/fuzzGenerate.js';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 import {
   classifyFoldCandidate,
   compoundBoundaries,
@@ -13,7 +15,11 @@ import {
   normalizeList,
   specificityOf,
 } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
-import { repositoryFile, withTargets } from '../../../../util/testHelpers.js';
+import {
+  repositoryFile,
+  withTargets,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
 
 const modernOptions = withTargets('last 2 Chrome versions');
 const { JSDOM } = jsdom;
