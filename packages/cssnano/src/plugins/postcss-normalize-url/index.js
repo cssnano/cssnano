@@ -3,6 +3,7 @@ import cssnanoUtils from '#utils';
 import { escapeForString, normalizeUrlTokenValue } from './urls.js';
 
 /** @import {CSSToken, TokenString} from '@csstools/css-tokenizer' */
+/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
 const { applyEdits, asciiLowerCase } = cssnanoUtils;
 const URL_CANDIDATE_REGEX = /url|src|\\/iv;
@@ -221,40 +222,6 @@ function forEachUrl(value, callback, options = {}) {
 }
 
 /**
- * Synchronize a declaration value with PostCSS raw metadata.
- * @param {import('postcss').Declaration} decl
- * @param {(currentValue: string) => string | undefined} updater
- * @return {void}
- */
-function updateDeclValue(decl, updater) {
-  const raws = decl.raws.value;
-  const value =
-    raws?.value === decl.value ? (raws.raw ?? decl.value) : decl.value;
-  const updated = updater(value);
-  if (updated !== undefined && updated !== value) {
-    decl.value = updated;
-    if (raws?.raw) {
-      decl.raws.value = { raw: updated, value: updated };
-    }
-  }
-}
-
-/**
- * Rewrite an at-rule prelude from `params`, which PostCSS gives without comments,
- * as the walk reads it. A changed prelude drops its raw, and with it its comments.
- * @param {import('postcss').AtRule} atRule
- * @param {(currentParams: string) => string | undefined} updater
- * @return {void}
- */
-function updateParams(atRule, updater) {
-  const updated = updater(atRule.params);
-  if (updated !== undefined && updated !== atRule.params) {
-    atRule.params = updated;
-    delete atRule.raws.params;
-  }
-}
-
-/**
  * @param {string} value
  * @param {{ isImport?: boolean }} [options]
  * @return {string | undefined}
@@ -286,78 +253,71 @@ function normalizeImportUrls(value) {
 }
 
 /**
- * @param {import('postcss').Declaration} decl
- * @return {void}
+ * Normalize the url() and string sources of an @namespace prelude. A namespace
+ * name is compared literally, so its whitespace is kept.
+ * @param {string} value
+ * @return {string | undefined}
  */
-function transformDeclUrls(decl) {
-  if (!URL_CANDIDATE_REGEX.test(decl.value)) return;
-  updateDeclValue(decl, normalizeUrls);
+function normalizeNamespaceUrls(value) {
+  /** @type {{start: number, end: number, text: string}[]} */
+  const edits = [];
+  forEachUrl(
+    value,
+    (start, end, decoded, quote, name) => {
+      const text = name
+        ? `"${escapeForString(decoded, '"')}"`
+        : `${quote}${escapeForString(decoded, quote)}${quote}`;
+      if (text !== value.slice(start, end)) {
+        edits.push({ start, end, text });
+      }
+    },
+    { includeStrings: true }
+  );
+  return edits.length > 0 ? applyEdits(value, edits) : undefined;
 }
 
 /**
- * @param {import('postcss').AtRule} atRule
- * @return {void}
+ * Rewrites the url() and src() values of a declaration, when its text has a candidate.
+ * @type {Reducer}
  */
-function transformSupportsUrls(atRule) {
-  if (!URL_CANDIDATE_REGEX.test(atRule.params)) return;
-  updateParams(atRule, normalizeUrls);
-}
+const reduceValue = (buffer) => {
+  const text = buffer.text();
+  if (!URL_CANDIDATE_REGEX.test(text)) return;
+  const updated = normalizeUrls(text);
+  if (updated !== undefined) buffer.replaceText(updated);
+};
 
 /**
- * @param {import('postcss').AtRule} rule
- * @return {void}
+ * The stage for one run. Its value reducer serves every declaration, and its
+ * prelude reducers serve the import, namespace and supports at-rules, which
+ * the walk reads without comments.
+ *
+ * @return {Stage}
  */
-function transformNamespace(rule) {
-  updateParams(rule, (value) => {
-    /** @type {{start: number, end: number, text: string}[]} */
-    const edits = [];
-    forEachUrl(
-      value,
-      (start, end, decoded, quote, name) => {
-        // A namespace name is compared literally, so its whitespace is kept.
-        const text = name
-          ? `"${escapeForString(decoded, '"')}"`
-          : `${quote}${escapeForString(decoded, quote)}${quote}`;
-        if (text !== value.slice(start, end)) {
-          edits.push({ start, end, text });
-        }
-      },
-      { includeStrings: true }
-    );
-    return edits.length > 0 ? applyEdits(value, edits) : undefined;
-  });
-}
-
-/**
- * @return {import('postcss').Plugin}
- */
-function pluginCreator() {
+function urlStage() {
   return {
-    postcssPlugin: 'postcss-normalize-url',
-    /**
-     * @param {import('postcss').Root} css
-     */
-    OnceExit(css) {
-      css.walk((node) => {
-        if (node.type === 'decl') {
-          transformDeclUrls(node);
-        } else if (node.type === 'atrule') {
-          const name = asciiLowerCase(node.name);
-          if (name === 'import') {
-            updateParams(node, normalizeImportUrls);
-          } else if (name === 'namespace') {
-            transformNamespace(node);
-          } else if (name === 'supports') {
-            transformSupportsUrls(node);
-          }
-        }
-      });
+    forProperty: () => reduceValue,
+    forAtRule(name) {
+      switch (asciiLowerCase(name)) {
+        case 'import':
+          return (text) => normalizeImportUrls(text) ?? text;
+        case 'namespace':
+          return (text) => normalizeNamespaceUrls(text) ?? text;
+        case 'supports':
+          return (text) =>
+            URL_CANDIDATE_REGEX.test(text)
+              ? (normalizeUrls(text) ?? text)
+              : text;
+        default:
+          return null;
+      }
     },
   };
 }
 
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
+/** @satisfies {StageEntry} */
+const urlEntry = {
+  create: () => urlStage(),
+};
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+export { urlEntry as default };
