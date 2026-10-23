@@ -2,10 +2,13 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import {
-  usePostCSSPlugin,
+  oneStagePlugin,
   processCSSFactory,
+  usePostCSSPlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-url/index.js';
+import urlEntry from '../../src/plugins/postcss-normalize-url/index.js';
+
+const plugin = oneStagePlugin(urlEntry);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
