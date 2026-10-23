@@ -43,3 +43,19 @@ test('the @charset stays when non-ASCII text remains after reduceIdents', async 
     '@charset "utf-8";@keyframes a{0%{top:0}}div{animation:a 1s}b{content:"é"}'
   );
 });
+
+test('one advanced processor gives the keyframes of each stylesheet it processes a new name, so the outputs can share a page', async () => {
+  const processor = postcss(advancedPreset());
+  const first = await processor.process(
+    '@keyframes fadeIn{0%{top:0}}div{animation:fadeIn 1s}',
+    { from: undefined }
+  );
+  const second = await processor.process(
+    '@keyframes fadeOut{0%{top:0}}p{animation:fadeOut 1s}',
+    { from: undefined }
+  );
+  assert.equal(
+    `${first.css}|${second.css}`,
+    '@keyframes a{0%{top:0}}div{animation:a 1s}|@keyframes b{0%{top:0}}p{animation:b 1s}'
+  );
+});
