@@ -1,4 +1,5 @@
 import { invalidate } from '../../../ir/blockTable.js';
+import { minifiedLength } from '../../../ir/minifiedLength.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import RepeatScan from './repeatScan.js';
 import { filterRuleIntersections } from './declarations.js';
@@ -87,7 +88,7 @@ function detach(parent, rules) {
 function joinGain(group, later, mergeState) {
   if (group.bytes < 0) {
     group.bytes = group.declarations.reduce(
-      (total, declaration) => total + String(declaration).length + 1,
+      (total, declaration) => total + minifiedLength(declaration),
       0
     );
   }

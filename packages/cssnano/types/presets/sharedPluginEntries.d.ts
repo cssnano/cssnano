@@ -7,15 +7,12 @@ export declare const discardCommentsEntry: readonly [import("../pipeline/host.js
     readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
 }];
 export declare const normalizeWhitespaceEntry: readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: () => import("../pipeline/host.js").Stage;
 }, 'normalizeWhitespace', {
     readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
-    readonly stage: {
-        create: () => import("../pipeline/host.js").Stage;
-    };
     readonly walk: true;
+    readonly after: true;
 }];
 /**
  * discardEmpty runs in the walk after merge of its host, so the host walks the

@@ -303,6 +303,39 @@ function trimDeclaration(node) {
 }
 
 /**
+ * Trims the raws of one node that are not its value, so the walk after merge
+ * can run it on each node it keeps.
+ *
+ * @param {import('postcss').AnyNode} node
+ * @return {void}
+ */
+export function normalizeNodeRaws(node) {
+  const { type } = node;
+
+  if ([decl, rule, atrule].includes(type) && node.raws.before) {
+    node.raws.before = node.raws.before.replaceAll(whitespaceRegex, '');
+  }
+
+  if (type === decl) {
+    if (!node.prop.startsWith('--')) {
+      trimDeclaration(node);
+    } else if (node.value.trim() !== '') {
+      // Custom properties skip value normalization, so only the
+      // parser-consumed separator run is trimmed.
+      node.raws.between = trimCustomPropertySeparator(node.raws.between || ':');
+      node.raws.semicolon = false;
+    }
+  } else if (type === rule || type === atrule) {
+    node.raws.between = node.raws.after = '';
+    node.raws.semicolon = false;
+
+    if (type === atrule && node.raws.afterName !== undefined) {
+      node.raws.afterName = normalizeAfterName(node.raws.afterName);
+    }
+  }
+}
+
+/**
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
@@ -313,33 +346,7 @@ function pluginCreator() {
      * @param {import('postcss').Root} css
      */
     OnceExit(css) {
-      css.walk((node) => {
-        const { type } = node;
-
-        if ([decl, rule, atrule].includes(type) && node.raws.before) {
-          node.raws.before = node.raws.before.replaceAll(whitespaceRegex, '');
-        }
-
-        if (type === decl) {
-          if (!node.prop.startsWith('--')) {
-            trimDeclaration(node);
-          } else if (node.value.trim() !== '') {
-            // Custom properties skip value normalization, so only the
-            // parser-consumed separator run is trimmed.
-            node.raws.between = trimCustomPropertySeparator(
-              node.raws.between || ':'
-            );
-            node.raws.semicolon = false;
-          }
-        } else if (type === rule || type === atrule) {
-          node.raws.between = node.raws.after = '';
-          node.raws.semicolon = false;
-
-          if (type === atrule && node.raws.afterName !== undefined) {
-            node.raws.afterName = normalizeAfterName(node.raws.afterName);
-          }
-        }
-      });
+      css.walk(normalizeNodeRaws);
 
       // Remove final newline
       css.raws.after = '';
