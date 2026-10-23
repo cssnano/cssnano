@@ -10,14 +10,12 @@ const maxSpreadArguments = 10_000;
  * The working copy of one fold over a declaration value. Reads come from the
  * source text until the first edit. Tokens are built on first use, and a
  * buffer owns its token list, so an edit never touches a list another reader
- * holds. finish serializes the result once.
+ * holds.
  */
 class ValueBuffer {
-  /** @type {string} */
-  #source;
-  #edited = false;
   /**
-   * The buffer's own text. Undefined after an edit until text() needs it.
+   * The current text: the source until the first edit. Undefined after a
+   * token edit until text() needs it.
    * @type {string | undefined}
    */
   #text;
@@ -35,7 +33,7 @@ class ValueBuffer {
 
   /** @param {string} source the value as the stylesheet reads it */
   constructor(source) {
-    this.#source = source;
+    this.#text = source;
   }
 
   /**
@@ -44,10 +42,7 @@ class ValueBuffer {
    * @return {string}
    */
   text() {
-    if (!this.#edited) return this.#source;
-    if (this.#text === undefined) {
-      this.#text = (this.#tokens ?? []).map((token) => token[1]).join('');
-    }
+    this.#text ??= (this.#tokens ?? []).map((token) => token[1]).join('');
     return this.#text;
   }
 
@@ -86,7 +81,7 @@ class ValueBuffer {
    * @param {readonly CSSToken[]} replacement built with the token constructors
    */
   replace(start, end, replacement) {
-    const own = this.#own();
+    const own = /** @type {CSSToken[]} */ (this.tokens());
     // Spreading into splice overflows the call stack for a long replacement,
     // so the list is rebuilt from an array literal instead.
     if (replacement.length <= maxSpreadArguments) {
@@ -109,7 +104,6 @@ class ValueBuffer {
    * @param {string} text
    */
   replaceText(text) {
-    this.#edited = true;
     this.#text = text;
     this.#tokens = undefined;
     this.#structureFresh = false;
@@ -134,27 +128,6 @@ class ValueBuffer {
    */
   warnings() {
     return this.#warnings;
-  }
-
-  /**
-   * The serialized text of the buffer. A buffer with no edits gives its
-   * source text.
-   *
-   * @return {string}
-   */
-  finish() {
-    return this.text();
-  }
-
-  /**
-   * Gives the buffer its own tokens, so edits can change them in place.
-   *
-   * @return {CSSToken[]}
-   */
-  #own() {
-    if (this.#tokens === undefined) this.#tokens = tokens(this.text());
-    this.#edited = true;
-    return this.#tokens;
   }
 }
 

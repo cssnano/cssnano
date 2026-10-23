@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { TokenType } from '@csstools/css-tokenizer';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
-import { ident, whitespace } from '../../src/values/tokenConstructors.js';
+import { ident } from '../../src/values/tokenConstructors.js';
 
 test('ValueBuffer.text returns the source text before any edit', () => {
   assert.equal(new ValueBuffer('a b').text(), 'a b');
@@ -26,10 +26,6 @@ test('ValueBuffer.structure returns the bracket structure of the source before a
 
 test('ValueBuffer.structure is undefined for an unclosed bracket in the source', () => {
   assert.equal(new ValueBuffer('f(a').structure(), undefined);
-});
-
-test('ValueBuffer.finish returns the source text when nothing was edited', () => {
-  assert.equal(new ValueBuffer('a b').finish(), 'a b');
 });
 
 test('ValueBuffer.replace makes text reflect the replacement', () => {
@@ -60,7 +56,7 @@ test('ValueBuffer.replace accepts a replacement longer than the argument limit',
     Array.from({ length: count }, () => ident('b'))
   );
   assert.equal(buffer.tokens().length, count);
-  assert.equal(buffer.finish(), 'b'.repeat(count));
+  assert.equal(buffer.text(), 'b'.repeat(count));
 });
 
 test('ValueBuffer.replace makes the structure undefined when the edit unbalances the brackets', () => {
@@ -84,15 +80,15 @@ test('ValueBuffer.replaceText makes text return the new text', () => {
   assert.equal(buffer.text(), 'c d');
 });
 
-test('ValueBuffer.finish returns the serialized text of an edited buffer', () => {
+test('ValueBuffer.text returns the serialized text of an edited buffer', () => {
   const buffer = new ValueBuffer('a b');
   buffer.replace(2, 3, [ident('c')]);
-  assert.equal(buffer.finish(), 'a c');
+  assert.equal(buffer.text(), 'a c');
 });
 
-test('ValueBuffer.finish keeps the text of several edits in their source order', () => {
+test('ValueBuffer.text keeps the text of several edits in their source order', () => {
   const buffer = new ValueBuffer('a b');
-  buffer.replace(1, 2, [whitespace()]);
+  buffer.replace(1, 2, [ident('y')]);
   buffer.replace(0, 1, [ident('z')]);
-  assert.equal(buffer.finish(), 'z b');
+  assert.equal(buffer.text(), 'zyb');
 });

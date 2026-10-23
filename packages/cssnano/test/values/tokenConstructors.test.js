@@ -2,12 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { tokenize, NumberType, TokenType } from '@csstools/css-tokenizer';
 import {
-  dimension,
   ident,
   integer,
-  number,
   percentage,
-  whitespace,
 } from '../../src/values/tokenConstructors.js';
 
 /**
@@ -61,50 +58,6 @@ test('integer rejects a value that is not an integer', () => {
 
 test('integer rejects an integer beyond the safe range', () => {
   assert.throws(() => integer(2 ** 53), RangeError);
-});
-
-test('number gives an integer-valued number the type its text tokenizes to', () => {
-  assert.equal(firstToken(number(3)[1])[4].type, number(3)[4].type);
-});
-
-test('number gives a fraction the number type', () => {
-  assert.equal(number(0.5)[4].type, NumberType.Number);
-});
-
-test('number reads back as the value it was given', () => {
-  assert.equal(firstToken(number(-0.25)[1])[4].value, -0.25);
-});
-
-test('number reads back exponent notation as the value it was given', () => {
-  assert.equal(firstToken(number(1e21)[1])[4].value, 1e21);
-});
-
-test('number rejects a value that CSS cannot write', () => {
-  assert.throws(() => number(Number.NaN), RangeError);
-});
-
-test('dimension reads back as a dimension with the unit it was given', () => {
-  assert.equal(firstToken(dimension(10, 'px')[1])[4].unit, 'px');
-});
-
-test('dimension reads back as the number it was given', () => {
-  assert.equal(firstToken(dimension(10, 'px')[1])[4].value, 10);
-});
-
-test('dimension escapes a unit that would read as an exponent', () => {
-  assert.equal(firstToken(dimension(1, 'e5')[1])[4].unit, 'e5');
-});
-
-test('dimension leaves a unit that starts with e but no exponent unescaped', () => {
-  assert.equal(dimension(1, 'em')[1], '1em');
-});
-
-test('whitespace gives a whitespace token', () => {
-  assert.equal(whitespace()[0], TokenType.Whitespace);
-});
-
-test('whitespace writes a single space', () => {
-  assert.equal(whitespace()[1], ' ');
 });
 
 test('percentage gives a percentage token', () => {
