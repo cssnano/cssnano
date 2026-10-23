@@ -161,6 +161,21 @@ function walkDeclaration(state, decl) {
 }
 
 /**
+ * The prelude as written, so a rewrite keeps the comments that PostCSS strips
+ * from `params`, as a declaration value keeps them. The raw is trusted only
+ * while it still matches `params`.
+ *
+ * @param {import('postcss').AtRule} atRule
+ * @returns {string}
+ */
+function sourceParams(atRule) {
+  const raw = atRule.raws.params;
+  return raw !== undefined && raw.value === atRule.params
+    ? raw.raw
+    : atRule.params;
+}
+
+/**
  * Folds the prelude of an at-rule and writes the result only when it changed.
  * `@charset` has no plan, since its name and encoding are read in the format
  * phase.
@@ -181,9 +196,8 @@ function walkAtRule(state, atRule) {
     state.atRules.set(atRule.name, entry);
   }
   if (entry.plan === null) return;
-  // Preludes and selectors are read without comments, as PostCSS gives them.
   const context = contextOf(atRule, state.contexts);
-  const text = atRule.params;
+  const text = sourceParams(atRule);
   const result = reduceText(entry, text, context, atRule, state.helpers);
   if (result !== text) {
     atRule.params = result;
@@ -199,7 +213,7 @@ function walkAtRule(state, atRule) {
  */
 function walkRule(state, rule) {
   if (state.selectors.plan === null) return;
-  // Preludes and selectors are read without comments, as PostCSS gives them.
+  // Selectors are read without comments, as PostCSS gives them.
   const context = contextOf(rule, state.contexts);
   const text = rule.selector;
   const result = reduceText(

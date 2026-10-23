@@ -249,8 +249,11 @@ describe('@import', () => {
   );
 
   test(
-    'should drop a comment after the url of an @import prelude that the url rewrite changes',
-    processCSS('@import url("a.css") /*x*/ screen;', '@import "a.css"  screen;')
+    'should keep a comment after the url of an @import prelude that the url rewrite changes',
+    processCSS(
+      '@import url("a.css") /*x*/ screen;',
+      '@import "a.css" /*x*/ screen;'
+    )
   );
 
   test(
