@@ -3,9 +3,13 @@ import type { ValueBuffer } from '../values/valueBuffer.js';
 export type Reducer = (buffer: ValueBuffer, context: number) => void;
 export type Warn = (message: string, plugin?: string) => void;
 export type TextReducer = (text: string, context: number, warn: Warn) => string;
+export type AtRulePart = TextReducer | {
+    reduce: TextReducer;
+    tightensAfterName: true;
+};
 export type Stage = {
     forProperty?: (property: string) => Reducer | null;
-    forAtRule?: (name: string) => TextReducer | null;
+    forAtRule?: (name: string) => AtRulePart | null;
     selector?: TextReducer;
     comments?: () => (comment: string) => boolean;
 };

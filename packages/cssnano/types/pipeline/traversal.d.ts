@@ -8,6 +8,7 @@ export type PropertyEntry = {
 export type TextEntry = {
     plan: readonly TextReducer[] | null;
     memos: (Map<string, string> | undefined)[];
+    tightens: boolean;
 };
 export type RunState = {
     /**

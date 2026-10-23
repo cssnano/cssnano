@@ -1,15 +1,8 @@
+import type { Stage } from '../../pipeline/host.js';
 export type Options = object;
-/**
- * @typedef {object} Options
- */
-/**
- * @param {Options} [options]
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(options?: Options): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {StageEntry} */
+declare const minifyParams: {
+    create: (_options: Options, targets: readonly string[] | undefined) => Stage;
+};
+export { minifyParams as default };
 //# sourceMappingURL=index.d.ts.map
