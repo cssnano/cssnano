@@ -1,16 +1,11 @@
+import type { Stage } from '../../pipeline/host.js';
 export type Options = object;
 /**
  * @typedef {object} Options
  */
-/**
- * @type {import('postcss').PluginCreator<Options>}
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(/** @type {Options} */ opts?: Options): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {StageEntry} */
+declare const normalizeUnicode: {
+    create: (options: Record<PropertyKey, unknown>, browsers: readonly string[] | undefined) => Stage;
+};
+export { normalizeUnicode as default };
 //# sourceMappingURL=index.d.ts.map

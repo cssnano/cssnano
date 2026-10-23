@@ -2,10 +2,13 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
 import {
+  oneStagePlugin,
   processCSSFactory,
   withTargets,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-unicode/index.js';
+import normalizeUnicode from '../../src/plugins/postcss-normalize-unicode/index.js';
+
+const plugin = oneStagePlugin(normalizeUnicode);
 
 const { processCSS } = processCSSFactory(plugin);
 

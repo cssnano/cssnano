@@ -1,11 +1,11 @@
-import { resolveTargets } from '#utils/browser-targets';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { anyAffected } from '#utils/browser-bugs';
 
 /** @import { TokenUnicodeRange } from '@csstools/css-tokenizer' */
+/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
-const { asciiLowerCase, assignValue, sourceValue } = cssnanoUtils;
+const { asciiLowerCase } = cssnanoUtils;
 const unicodeRangePropertyRegex =
   /^[uU][nN][iI][cC][oO][dD][eE]-[rR][aA][nN][gG][eE]$/v;
 const maxCodePoint = 0x10ffff;
@@ -147,53 +147,36 @@ function transform(value, isLegacy = false) {
 }
 
 /**
+ * The stage for one run. Browsers that ignore a unicode-range with a lowercase
+ * U are IE and Edge before 16, so the prefix is kept uppercase for them.
+ *
+ * @param {readonly string[] | undefined} browsers
+ * @return {Stage}
+ */
+function unicodeRangeStage(browsers) {
+  const isLegacy = anyAffected(
+    /** @type {readonly string[]} */ (browsers),
+    'unicode-range-lowercase-u'
+  );
+  /** @type {Reducer} */
+  const reduce = (buffer) => {
+    const text = buffer.text();
+    const out = transform(text, isLegacy);
+    if (out !== text) buffer.replaceText(out);
+  };
+  return {
+    forProperty: (property) =>
+      unicodeRangePropertyRegex.test(property) ? reduce : null,
+  };
+}
+
+/**
  * @typedef {object} Options
  */
 
-/**
- * @type {import('postcss').PluginCreator<Options>}
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
-function pluginCreator(/** @type {Options} */ opts = {}) {
-  return {
-    postcssPlugin: 'postcss-normalize-unicode',
+/** @satisfies {StageEntry} */
+const normalizeUnicode = {
+  create: (options, browsers) => unicodeRangeStage(browsers),
+};
 
-    /**
-     * @param {import('postcss').Result} result
-     */
-    prepare(result) {
-      const browsers = resolveTargets(opts, result);
-
-      const cache = new Map();
-      // IE and Edge before 16 ignore a unicode-range with a lowercase U.
-      const isLegacy = anyAffected(browsers, 'unicode-range-lowercase-u');
-
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          css.walkDecls(unicodeRangePropertyRegex, (decl) => {
-            const value = sourceValue(decl);
-
-            if (cache.has(value)) {
-              const newValue = cache.get(value);
-              assignValue(decl, newValue);
-              return;
-            }
-
-            const newValue = transform(value, isLegacy);
-            assignValue(decl, newValue);
-            cache.set(value, newValue);
-          });
-        },
-      };
-    },
-  };
-}
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-
-export { moduleExports as default, moduleExports as 'module.exports' };
+export { normalizeUnicode as default };
