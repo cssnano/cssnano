@@ -1,8 +1,10 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-whitespace/index.js';
+import {
+  normalizeWhitespacePlugins,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
 
-const { processCSS } = processCSSFactory(plugin);
+const { processCSS } = processCSSFactory(normalizeWhitespacePlugins());
 
 test(
   'should preserve calc whitespace around operators and trim its boundaries',

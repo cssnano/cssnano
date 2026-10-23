@@ -1,7 +1,9 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 
-const { isCSSWhitespace, isHexDigitCode, assignValue } = cssnanoUtils;
+/** @import {Reducer, Stage, StageEntry, TextReducer} from '../../pipeline/host.js' */
+
+const { isCSSWhitespace, isHexDigitCode } = cssnanoUtils;
 
 const SINGLE_QUOTE = "'".charCodeAt(0);
 const DOUBLE_QUOTE = '"'.charCodeAt(0);
@@ -316,69 +318,51 @@ function normalize(value, preferredQuote) {
 }
 
 /**
- * @param {string} original
- * @param {Map<string, string>} cache
+ * Normalizes the quotes of the strings in a text. A text without a quote has
+ * none to change.
+ *
+ * @param {string} text
  * @param {'single' | 'double'} preferredQuote
  * @return {string}
  */
-function minify(original, cache, preferredQuote) {
-  if (!original || (!original.includes("'") && !original.includes('"'))) {
-    return original;
-  }
-  if (cache.has(original)) {
-    return /** @type {string} */ (cache.get(original));
-  }
-  const newValue = normalize(original, preferredQuote);
-  cache.set(original, newValue);
-  return newValue;
+function minifyText(text, preferredQuote) {
+  if (!text || (!text.includes("'") && !text.includes('"'))) return text;
+  return normalize(text, preferredQuote);
 }
 
 /**
  * @typedef {object} Options
  * @property {'double' | 'single'} [preferredQuote] The quote to prefer for strings. (default: 'double')
  */
+
 /**
+ * The stage for one run. Its text reducers serve selectors and at-rule
+ * preludes, and its value reducer serves every declaration. The walk leaves
+ * `@charset` out, since it names an encoding.
+ *
  * @param {Options} opts
- * @return {import('postcss').Plugin}
+ * @return {Stage}
  */
-function pluginCreator(opts) {
+function stringStage(opts) {
   const { preferredQuote = 'double' } = opts ?? {};
-
+  /** @type {TextReducer} */
+  const reduceText = (text) => minifyText(text, preferredQuote);
+  /** @type {Reducer} */
+  const reduceValue = (buffer) => {
+    const text = buffer.text();
+    const out = minifyText(text, preferredQuote);
+    if (out !== text) buffer.replaceText(out);
+  };
   return {
-    postcssPlugin: 'postcss-normalize-string',
-
-    /**
-     * @param {import('postcss').Root} css
-     */
-    OnceExit(css) {
-      const cache = new Map();
-
-      css.walk((node) => {
-        switch (node.type) {
-          case 'rule':
-            node.selector = minify(node.selector, cache, preferredQuote);
-            break;
-          case 'decl': {
-            const rawValue = node.raws.value;
-            const value =
-              rawValue?.value === node.value
-                ? (rawValue.raw ?? node.value)
-                : node.value;
-            assignValue(node, minify(value, cache, preferredQuote));
-            break;
-          }
-          case 'atrule':
-            if (node.name.toLowerCase() !== 'charset') {
-              node.params = minify(node.params, cache, preferredQuote);
-            }
-            break;
-        }
-      });
-    },
+    forProperty: () => reduceValue,
+    forAtRule: () => reduceText,
+    selector: reduceText,
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {StageEntry} */
+const stringEntry = {
+  create: (/** @type {Options} */ options) => stringStage(options),
+};
+
+export { stringEntry as default };

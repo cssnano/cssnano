@@ -1,3 +1,4 @@
+import type { SymbolLists } from '../../pipeline/symbolLists.js';
 export type Options = {
     /**
      * Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)
@@ -24,6 +25,7 @@ export type Reducer = {
     collect: (node: import('postcss').AnyNode) => void;
     transform: () => void;
 };
+/** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
 /**
  * @typedef {object} Options
  * @property {boolean} [counter] Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)
@@ -38,10 +40,33 @@ export type Reducer = {
  *  }} Reducer
  */
 /**
- * @param {Options} arg
+ * The reducers of the options, in the order they run. A plugin or preset
+ * builds them once and keeps them across stylesheets, so stylesheets that one
+ * processor minifies get distinct names and can share a page.
+ *
+ * @param {Options} options
+ * @return {{reducers: Reducer[]}}
+ */
+export declare function createReducers({ counter, counterStyle, keyframes, gridTemplate, encoder, }: Options): {
+    reducers: Reducer[];
+};
+/**
+ * Renames the names that the walk after merge collected. Each reducer reads
+ * only at-rules or declarations, so the lists hold every node it needs, and a
+ * node that an earlier transform detached is skipped.
+ *
+ * @param {SymbolLists} lists
+ * @param {{reducers: Reducer[]}} state
+ * @return {void}
+ */
+export declare function reduceIdentsSymbols(lists: SymbolLists, { reducers }: {
+    reducers: Reducer[];
+}): void;
+/**
+ * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
-declare function pluginCreator({ counter, counterStyle, keyframes, gridTemplate, encoder, }?: Options): import('postcss').Plugin;
+declare function pluginCreator(opts?: Options): import('postcss').Plugin;
 declare namespace pluginCreator {
     var postcss: true;
 }

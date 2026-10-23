@@ -1,6 +1,11 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-ordered-values/index.js';
+import {
+  oneStagePlugin,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
+import orderedValues from '../../src/plugins/postcss-ordered-values/index.js';
+
+const plugin = oneStagePlugin(orderedValues);
 
 const { passthroughCSS } = processCSSFactory(plugin);
 

@@ -125,7 +125,7 @@ function normalize(args) {
   return list;
 }
 /**
- * @param {{ arguments: import('../lib/tokenize.js').Term[][], value: string }} parsed
+ * @param {{ arguments: import('../lib/tokenize.js').Term[][] }} parsed
  * @return {string | null}
  */
 function normalizeBoxShadow(parsed) {

@@ -6,8 +6,11 @@ import {
   usePostCSSPlugin,
   processCSSFactory,
   repositoryFile,
+  oneStagePlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -210,7 +213,7 @@ suite('plugin integration', () => {
   padding: 4px;
 }`;
     assert.strictEqual(
-      postcss([toModules, plugin]).process(css, { from: repositoryFile }).css,
+      postcss([toModules, plugin()]).process(css, { from: repositoryFile }).css,
       expected
     );
   });

@@ -1,7 +1,12 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-string/index.js';
+import {
+  oneStagePlugin,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
+import stringEntry from '../../src/plugins/postcss-normalize-string/index.js';
+
+const plugin = oneStagePlugin(stringEntry);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 

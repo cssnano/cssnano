@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { describe, test } from 'node:test';
 import {
+  oneStagePlugin,
   usePostCSSPlugin,
   processCSSFactory,
   withTargets,
@@ -9,7 +10,9 @@ import {
 import fromInitial from '../../src/plugins/postcss-reduce-initial/data/fromInitial.json' with { type: 'json' };
 import toInitial from '../../src/plugins/postcss-reduce-initial/data/toInitial.json' with { type: 'json' };
 import ignoreProps from '../../src/plugins/postcss-reduce-initial/lib/ignoreProps.js';
-import plugin from '../../src/plugins/postcss-reduce-initial/index.js';
+import reduceInitial from '../../src/plugins/postcss-reduce-initial/index.js';
+
+const plugin = oneStagePlugin(reduceInitial);
 
 const testDir = dirname(fileURLToPath(import.meta.url));
 

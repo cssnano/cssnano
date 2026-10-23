@@ -2,6 +2,7 @@ import type { AcceptedPlugin } from 'postcss';
 import type { NamedPreset } from './presetEntries.js';
 import type { SharedTargets } from '#utils/browser-targets';
 import type { Guard } from '../optionGuards.js';
+import type { StageEntry, HostMember, PassRun, SymbolTransform, TransformEntry } from '../pipeline/host.js';
 export type PresetOptions<Plugins extends object> = {
     browserslist?: SharedTargets;
     /**
@@ -15,50 +16,27 @@ export type PresetOptions<Plugins extends object> = {
     options?: { [Name in keyof Plugins]?: Plugins[Name]; };
 };
 export type PluginEntrySettings = {
-    postcssPlugin: string;
     targets?: true;
     defaults?: object;
     optionKeys: readonly string[];
     guards?: Readonly<Record<string, Guard>>;
+    walk?: true;
+    transform?: true;
+    pass?: PassRun['pass'];
+    after?: true;
+    symbols?: SymbolTransform;
 };
-export type PluginCreator = import('postcss').PluginCreator<any>;
-export type PluginEntry = readonly [PluginCreator, string, PluginEntrySettings];
-/** @import {AcceptedPlugin} from 'postcss' */
-/** @import {NamedPreset} from './presetEntries.js' */
-/** @import {SharedTargets} from '#utils/browser-targets' */
-/** @import {Guard} from '../optionGuards.js' */
-/**
- * The options of a built preset: the same as cssnano, without the preset and
- * the configuration file.
- * @template {object} Plugins the options of each plugin the preset runs, keyed by its preset option
- * @typedef {object} PresetOptions
- * @property {SharedTargets} [browserslist]
- * @property {readonly (keyof Plugins)[]} [disable] plugins to leave out
- * @property {{[Name in keyof Plugins]?: Plugins[Name]}} [options] plugin name to the options that
- *   are merged over the plugin's defaults
- */
-/**
- * A plugin in a preset: the PostCSS creator, the name of the entry, and its
- * settings. `targets` is set when the plugin reads the browser targets of its
- * preset; `defaults` are the options it uses unless the preset sets them;
- * `optionKeys` lists the options it accepts, so a key it does not declare can
- * be reported; `guards` checks the value of an option by its key.
- *
- * @typedef {{
- *   postcssPlugin: string,
- *   targets?: true,
- *   defaults?: object,
- *   optionKeys: readonly string[],
- *   guards?: Readonly<Record<string, Guard>>,
- * }} PluginEntrySettings
- */
-/**
- * @typedef {import('postcss').PluginCreator<any>} PluginCreator
- */
-/**
- * A plugin in a preset, the preset option that enables it, and its settings.
- * @typedef {readonly [PluginCreator, string, PluginEntrySettings]} PluginEntry
- */
+export type PluginEntry = readonly [StageEntry | TransformEntry, string, PluginEntrySettings];
+export type Run = {
+    members: HostMember[];
+    transforms: Map<string, Record<PropertyKey, unknown>>;
+    passes: Map<string, PassRun>;
+    after: Map<string, Record<PropertyKey, unknown>>;
+    symbols: Map<string, {
+        transform: SymbolTransform;
+        options: Record<PropertyKey, unknown>;
+    }>;
+};
 /**
  * Turns the options of a built preset into the plugins it runs. A disabled
  * plugin is left out. Options that the preset does not take throw.
@@ -71,6 +49,8 @@ export declare function configurePlugins(entries: readonly PluginEntry[], option
 /**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
+ * The entries of a preset run in one host plugin, which walks the stylesheet
+ * once for its stages and transforms.
  *
  * @param {readonly PluginEntry[]} entries
  * @param {Record<string, unknown>} known the validated options, without preset

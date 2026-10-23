@@ -1,4 +1,5 @@
 import { isInvalidSelector } from './lib/isInvalidSelector.js';
+import type { Stage } from '../../pipeline/host.js';
 export type Options = {
     /**
      * Sorts the selectors of a list alphabetically. (default: true)
@@ -9,16 +10,9 @@ export type Options = {
      */
     convertToIs?: boolean;
 };
-/**
- * Minify selectors from tokenizer spans. Function arguments are normalized
- * bottom-up without recursive descent.
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(opts?: Options): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports', isInvalidSelector, };
+/** @satisfies {StageEntry} */
+declare const minifySelectors: {
+    create: (options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => Stage;
+};
+export { minifySelectors as default, isInvalidSelector };
 //# sourceMappingURL=index.d.ts.map

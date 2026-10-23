@@ -1,9 +1,11 @@
 import { describe, test } from 'node:test';
 import {
-  usePostCSSPlugin,
+  oneStagePlugin,
   processCSSFactory,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-string/index.js';
+import stringEntry from '../../src/plugins/postcss-normalize-string/index.js';
+
+const plugin = oneStagePlugin(stringEntry);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -104,8 +106,6 @@ test(
   'should work for @import',
   processCSS(`@import url('foo.css')`, `@import url("foo.css")`)
 );
-
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
 
 describe('Work', () => {
   test(

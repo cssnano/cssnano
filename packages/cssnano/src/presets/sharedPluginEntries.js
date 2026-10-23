@@ -1,9 +1,5 @@
-import postcssDiscardComments from '#postcss-discard-comments';
-import postcssNormalizeWhitespace from '#postcss-normalize-whitespace';
-import postcssDiscardEmpty from '#postcss-discard-empty';
-import cssnanoUtils from '#utils';
-
-const { rawCache } = cssnanoUtils;
+import discardComments from '#postcss-discard-comments';
+import { valueEntry as normalizeWhitespaceValues } from '#postcss-normalize-whitespace';
 
 /**
  * The plugin entries that more than one built-in preset runs. Each is defined
@@ -11,28 +7,46 @@ const { rawCache } = cssnanoUtils;
  */
 
 export const discardCommentsEntry = /** @type {const} */ ([
-  postcssDiscardComments,
+  discardComments,
   'discardComments',
   {
-    postcssPlugin: 'postcss-discard-comments',
     optionKeys: ['removeAll', 'removeAllButFirst', 'remove'],
   },
 ]);
 
 export const normalizeWhitespaceEntry = /** @type {const} */ ([
-  postcssNormalizeWhitespace,
+  normalizeWhitespaceValues,
   'normalizeWhitespace',
-  { postcssPlugin: 'postcss-normalize-whitespace', optionKeys: [] },
+  {
+    optionKeys: [],
+    walk: true,
+    after: true,
+  },
 ]);
 
+/**
+ * discardEmpty runs in the walk after merge of its host, so the host walks the
+ * stylesheet without a plugin of its own.
+ */
 export const discardEmptyEntry = /** @type {const} */ ([
-  postcssDiscardEmpty,
+  { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
   'discardEmpty',
-  { postcssPlugin: 'postcss-discard-empty', optionKeys: [] },
+  {
+    optionKeys: [],
+    transform: true,
+    after: true,
+  },
 ]);
 
+/**
+ * rawCache runs last in the walk after merge of its host.
+ */
 export const rawCacheEntry = /** @type {const} */ ([
-  rawCache,
+  { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
   'rawCache',
-  { postcssPlugin: 'cssnano-util-raw-cache', optionKeys: [] },
+  {
+    optionKeys: [],
+    transform: true,
+    after: true,
+  },
 ]);

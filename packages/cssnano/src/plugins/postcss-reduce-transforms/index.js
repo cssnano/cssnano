@@ -3,16 +3,21 @@ import cssnanoUtils from '#utils';
 const {
   TokenType,
   asciiLowerCase,
-  assignValue,
   balancedTokens,
   decoded,
   numeric,
-  sourceValue,
   tokenEnd,
   tokenStart,
 } = cssnanoUtils;
 
-const transformPropertyRegex = /[tT][rR][aA][nN][sS][fF][oO][rR][mM]$/v;
+/** The transform property and its vendor-prefixed forms, lower-cased. */
+const transformProperties = new Set([
+  'transform',
+  '-webkit-transform',
+  '-moz-transform',
+  '-ms-transform',
+  '-o-transform',
+]);
 
 /** @typedef {{open: number, close: number, name: string, args: {significant: number[]}[]}} FunctionFrame */
 /** @typedef {{number: number, unit: string} | string | undefined} ParsedArgument */
@@ -284,37 +289,29 @@ function transform(value) {
   return result;
 }
 
-/** @return {import('postcss').Plugin} */
-function pluginCreator() {
+/** @type {import('../../pipeline/host.js').Reducer} */
+const reduceTransform = (buffer) => {
+  const text = buffer.text();
+  if (!text.includes('(')) return;
+  const out = transform(text);
+  if (out !== text) buffer.replaceText(out);
+};
+
+/**
+ * The stage for one run. It reads `transform` and its vendor-prefixed forms.
+ *
+ * @return {import('../../pipeline/host.js').Stage}
+ */
+function transformsStage() {
   return {
-    postcssPlugin: 'postcss-reduce-transforms',
-    prepare() {
-      const cache = new Map();
-      return {
-        OnceExit(css) {
-          css.walkDecls(transformPropertyRegex, (decl) => {
-            const value = sourceValue(decl);
-            if (!value) return;
-            if (!value.includes('(')) {
-              assignValue(decl, value);
-              cache.set(value, value);
-              return;
-            }
-            if (cache.has(value)) {
-              assignValue(decl, cache.get(value));
-              return;
-            }
-            const result = transform(value);
-            assignValue(decl, result);
-            cache.set(value, result);
-          });
-        },
-      };
-    },
+    forProperty: (property) =>
+      transformProperties.has(asciiLowerCase(property))
+        ? reduceTransform
+        : null,
   };
 }
 
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+const reduceTransforms = { create: () => transformsStage() };
+
+export { reduceTransforms as default };

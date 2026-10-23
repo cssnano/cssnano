@@ -1,4 +1,3 @@
-import { resolveTargets } from '#utils/browser-targets';
 import { tryMinifyColor } from './minifyColor.js';
 import cssnanoUtils from '#utils';
 import { supportsAll, targetsAreUnknown } from '#utils/browser-support';
@@ -11,7 +10,6 @@ const {
   balancedTokens,
   decoded,
   mathFunctions,
-  sourceValue,
   TokenType,
   tokenEnd,
   tokenStart,
@@ -173,76 +171,50 @@ function addPluginDefaults(options, browsers) {
  */
 
 /**
+ * Whether colormin reads the value of a property: a color property, or a
+ * custom property unless transformCustomProperties is false.
+ *
+ * @param {string} property
  * @param {Options} config
- * @return {import('postcss').Plugin}
+ * @return {boolean}
  */
-function pluginCreator(config = {}) {
+function readsProperty(property, config) {
+  if (property === '') return false;
+  const lowerProp = asciiLowerCase(property);
+  if (lowerProp.startsWith('--'))
+    return config.transformCustomProperties !== false;
+  const unprefixed = lowerProp.replace(/^-\w+-/v, '');
+  return (
+    (colorProperties.has(lowerProp) || colorProperties.has(unprefixed)) &&
+    lowerProp !== '-webkit-tap-highlight-color'
+  );
+}
+
+/**
+ * Compiles the supported color forms for the browser targets.
+ *
+ * @param {Options} config
+ * @param {readonly string[] | undefined} browsers
+ * @return {import('../../pipeline/host.js').Stage}
+ */
+function compileColormin(config, browsers) {
+  const options = addPluginDefaults(
+    config,
+    /** @type {readonly string[]} */ (browsers)
+  );
+  /** @type {import('../../pipeline/host.js').Reducer} */
+  const reduce = (buffer) => {
+    const text = buffer.text();
+    const out = transform(text, options);
+    if (out !== text) buffer.replaceText(out);
+  };
   return {
-    postcssPlugin: 'postcss-colormin',
-
-    /**
-     * @param {import('postcss').Result} result
-     */
-    prepare(result) {
-      const browsers = resolveTargets(config, result);
-      const cache = new Map();
-      const options = addPluginDefaults(config, browsers);
-
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          css.walkDecls((decl) => {
-            if (!decl.prop) {
-              return;
-            }
-
-            const lowerProp = asciiLowerCase(decl.prop);
-            if (lowerProp.startsWith('--')) {
-              if (
-                /** @type Options */ (config).transformCustomProperties ===
-                false
-              ) {
-                return;
-              }
-            } else {
-              const unprefixed = lowerProp.replace(/^-\w+-/v, '');
-              if (
-                (!colorProperties.has(lowerProp) &&
-                  !colorProperties.has(unprefixed)) ||
-                lowerProp === '-webkit-tap-highlight-color'
-              ) {
-                return;
-              }
-            }
-
-            const rawValue = sourceValue(decl);
-
-            if (!rawValue) {
-              return;
-            }
-
-            let newValue;
-            if (cache.has(rawValue)) {
-              newValue = cache.get(rawValue);
-            } else {
-              newValue = transform(rawValue, options);
-              cache.set(rawValue, newValue);
-            }
-
-            decl.value = newValue;
-            if (decl.raws.value?.raw) {
-              decl.raws.value = { raw: newValue, value: newValue };
-            }
-          });
-        },
-      };
-    },
+    forProperty: (property) =>
+      readsProperty(property, config) ? reduce : null,
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+const colormin = { create: compileColormin };
+
+export { colormin as default };

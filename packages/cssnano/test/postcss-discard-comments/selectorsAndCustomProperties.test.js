@@ -4,8 +4,11 @@ import vars from 'postcss-simple-vars';
 import {
   usePostCSSPlugin,
   processCSSFactory,
+  oneStagePlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-discard-comments/index.js';
+import discardComments from '../../src/plugins/postcss-discard-comments/index.js';
+
+const plugin = oneStagePlugin(discardComments);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -175,7 +178,7 @@ describe('Selectors', () => {
 
   test(
     'should pass through raw selector metadata lacking comments',
-    processCSSFactory([setRawSelectorWithoutComments, plugin]).processCSS(
+    processCSSFactory([setRawSelectorWithoutComments, plugin()]).processCSS(
       '.a .b{color:red}',
       '.a   .b{color:red}'
     )
@@ -212,7 +215,7 @@ describe('At-rules, plugins, and custom properties', () => {
     })
   );
 
-  const { processCSS: otherPlugins } = processCSSFactory([vars(), plugin]);
+  const { processCSS: otherPlugins } = processCSSFactory([vars(), plugin()]);
 
   test(
     'should handle comments from other plugins',

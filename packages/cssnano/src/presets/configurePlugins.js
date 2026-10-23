@@ -1,4 +1,5 @@
 import { validateOptions } from '../options.js';
+import { hostPlugin } from '../pipeline/host.js';
 import isRecord from '../utils/isRecord.js';
 import { browserTargets } from '#utils/browser-targets';
 import {
@@ -11,6 +12,7 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
+/** @import {StageEntry, HostMember, PassRun, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
 
 /**
  * The options of a built preset: the same as cssnano, without the preset and
@@ -24,29 +26,59 @@ import {
  */
 
 /**
- * A plugin in a preset: the PostCSS creator, the name of the entry, and its
- * settings. `targets` is set when the plugin reads the browser targets of its
- * preset; `defaults` are the options it uses unless the preset sets them;
+ * A plugin in a preset: its stage or transform entry, the name of the entry,
+ * and its settings. `targets` is set when the plugin reads the browser targets
+ * of its preset; `defaults` are the options it uses unless the preset sets them;
  * `optionKeys` lists the options it accepts, so a key it does not declare can
- * be reported; `guards` checks the value of an option by its key.
+ * be reported; `guards` checks the value of an option by its key. `walk` is
+ * set when a stylesheet walk implements part of the plugin, so the walk of the
+ * run receives its options under the entry name. `after` is set when the walk
+ * after merge of the run implements it too; a stage entry with `after` also
+ * puts its options in that walk.
+ *
+ * `transform` is set when the entry is a whole-stylesheet transform, so its entry
+ * is a TransformEntry rather than a creator or a stage. A transform with `pass`
+ * runs as a pass after the walk of its run, instead of inside the walk. A
+ * transform with `after` runs in the walk after the passes of its run. A
+ * transform with `symbols` runs over the lists that walk collects.
  *
  * @typedef {{
- *   postcssPlugin: string,
  *   targets?: true,
  *   defaults?: object,
  *   optionKeys: readonly string[],
  *   guards?: Readonly<Record<string, Guard>>,
+ *   walk?: true,
+ *   transform?: true,
+ *   pass?: PassRun['pass'],
+ *   after?: true,
+ *   symbols?: SymbolTransform,
  * }} PluginEntrySettings
  */
 
 /**
- * @typedef {import('postcss').PluginCreator<any>} PluginCreator
+ * A plugin in a preset, the preset option that enables it, and its settings.
+ * The first element is a stage entry, which the walk of the host runs, or a
+ * transform entry, which the walk or the passes of the host run.
+ * @typedef {readonly [StageEntry | TransformEntry, string, PluginEntrySettings]} PluginEntry
  */
 
 /**
- * A plugin in a preset, the preset option that enables it, and its settings.
- * @typedef {readonly [PluginCreator, string, PluginEntrySettings]} PluginEntry
+ * The stage members of a host, the options of the walk transforms that the
+ * host's walk runs, the passes that run after it, and the options of the
+ * transforms of the walk after the passes, and the advanced transforms over its lists.
+ * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, passes: Map<string, PassRun>, after: Map<string, Record<PropertyKey, unknown>>, symbols: Map<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>}} Run
  */
+
+/** @returns {Run} */
+function newRun() {
+  return {
+    members: [],
+    transforms: new Map(),
+    passes: new Map(),
+    after: new Map(),
+    symbols: new Map(),
+  };
+}
 
 /**
  * Turns the options of a built preset into the plugins it runs. A disabled
@@ -64,8 +96,53 @@ export function configurePlugins(entries, options) {
 }
 
 /**
+ * Files an enabled transform under the list that its settings name: a pass, a
+ * symbol transform, the walk after merge or the walk. A transform that creates
+ * null is off, so it is not filed.
+ *
+ * @param {Run} run
+ * @param {string} name
+ * @param {TransformEntry} entry
+ * @param {Record<PropertyKey, unknown>} options
+ * @param {PluginEntrySettings} settings
+ */
+function addTransform(run, name, entry, options, settings) {
+  const transform = entry.create(options);
+  if (transform === null) return;
+  if (settings.pass) {
+    run.passes.set(name, {
+      pass: settings.pass,
+      options: transform,
+      targets: Boolean(settings.targets),
+    });
+  } else if (settings.symbols) {
+    run.symbols.set(name, { transform: settings.symbols, options: transform });
+  } else if (settings.after) {
+    run.after.set(name, transform);
+  } else {
+    run.transforms.set(name, transform);
+  }
+}
+
+/**
+ * @param {Run} run
+ * @returns {boolean} whether the run has nothing to host
+ */
+function isEmptyRun(run) {
+  return (
+    run.members.length === 0 &&
+    run.transforms.size === 0 &&
+    run.passes.size === 0 &&
+    run.after.size === 0 &&
+    run.symbols.size === 0
+  );
+}
+
+/**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
+ * The entries of a preset run in one host plugin, which walks the stylesheet
+ * once for its stages and transforms.
  *
  * @param {readonly PluginEntry[]} entries
  * @param {Record<string, unknown>} known the validated options, without preset
@@ -82,19 +159,36 @@ export function configureValidated(entries, known) {
   // Browser targets are cssnano-wide, so every target-reading plugin gets the same ones.
   const targets = Object.freeze({ ...browserslist });
   const disabled = new Set(/** @type {string[]} */ (disable));
-  /** @type {AcceptedPlugin[]} */
-  const plugins = [];
-  for (const [creator, name, settings] of entries) {
+  const run = newRun();
+  for (const [entry, name, settings] of entries) {
     if (disabled.has(name)) continue;
-    plugins.push(
-      creator({
-        ...settings.defaults,
-        ...pluginOptions[name],
-        ...(settings.targets ? { [browserTargets]: targets } : undefined),
-      })
-    );
+    const options = {
+      ...settings.defaults,
+      ...pluginOptions[name],
+      ...(settings.targets ? { [browserTargets]: targets } : undefined),
+    };
+    if (settings.transform) {
+      addTransform(
+        run,
+        name,
+        /** @type {TransformEntry} */ (entry),
+        options,
+        settings
+      );
+      continue;
+    }
+    if (settings.walk) run.transforms.set(name, options);
+    if (settings.after) run.after.set(name, options);
+    run.members.push({
+      entry: /** @type {StageEntry} */ (entry),
+      options,
+      targets: Boolean(settings.targets),
+    });
   }
-  return plugins;
+  if (isEmptyRun(run)) return [];
+  return [
+    hostPlugin(run.members, run.transforms, run.passes, run.after, run.symbols),
+  ];
 }
 
 /**
