@@ -3,6 +3,13 @@ import counterReducer from './lib/counter.js';
 import counterStyleReducer from './lib/counter-style.js';
 import keyframesReducer from './lib/keyframes.js';
 import gridTemplateReducer from './lib/grid-template.js';
+import {
+  createSymbolLists,
+  isAttached,
+  symbolVisit,
+} from '../../pipeline/symbolLists.js';
+
+/** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
 
 /**
  * @typedef {object} Options
@@ -18,16 +25,18 @@ import gridTemplateReducer from './lib/grid-template.js';
  *  }} Reducer
  */
 /**
- * @param {Options} arg
- * @return {import('postcss').Plugin}
+ * The reducers of the options, in the order they run.
+ *
+ * @param {Options} options
+ * @return {Reducer[]}
  */
-function pluginCreator({
+function reducersOf({
   counter = true,
   counterStyle = true,
   keyframes = true,
   gridTemplate = true,
   encoder = (value, index) => encode(index),
-} = {}) {
+}) {
   /** @type {Reducer[]} */
   const reducers = [];
 
@@ -43,22 +52,46 @@ function pluginCreator({
   if (gridTemplate) {
     reducers.push(gridTemplateReducer(encoder));
   }
+  return reducers;
+}
 
+/**
+ * Renames the names that the walk after merge collected. Each reducer reads
+ * only at-rules or declarations, so the lists hold every node it needs, and a
+ * node that an earlier transform detached is skipped.
+ *
+ * @param {SymbolLists} lists
+ * @param {Options} options
+ * @return {void}
+ */
+export function reduceIdentsSymbols(lists, options) {
+  const reducers = reducersOf(options);
+  const nodes = [...lists.keyframes, ...lists.counterStyles, ...lists.decls];
+  for (const node of nodes) {
+    if (!isAttached(node)) continue;
+    for (const reducer of reducers) {
+      reducer.collect(node);
+    }
+  }
+  for (const reducer of reducers) {
+    reducer.transform();
+  }
+}
+
+/**
+ * @param {Options} opts
+ * @return {import('postcss').Plugin}
+ */
+function pluginCreator(opts = {}) {
   return {
     postcssPlugin: 'postcss-reduce-idents',
     /**
      * @param {import('postcss').Root} css
      */
     OnceExit(css) {
-      css.walk((node) => {
-        for (const reducer of reducers) {
-          reducer.collect(node);
-        }
-      });
-
-      for (const reducer of reducers) {
-        reducer.transform();
-      }
+      const lists = createSymbolLists();
+      css.walk(symbolVisit(lists));
+      reduceIdentsSymbols(lists, opts);
     },
   };
 }
