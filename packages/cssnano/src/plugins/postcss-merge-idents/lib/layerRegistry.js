@@ -149,12 +149,13 @@ class LayerRegistry {
     for (const parent of enclosingLayerRules(layerRule)) {
       current = current.entryFor(parent).children;
     }
+    // A block takes at most one name. Browsers drop a block with a name list,
+    // so it declares none; like an unnamed block, it is a unique entry.
+    if (layerRule.nodes) {
+      current.entryFor(layerRule);
+      return;
+    }
     if (!layerRule.params.trim()) {
-      // An unnamed block layer is itself a unique anonymous layer; register
-      // it so nested names order beneath it.
-      if (layerRule.nodes) {
-        current.getOrCreateAnonymous(layerRule);
-      }
       return;
     }
     const names = parseLayerNameList(layerRule.params);
