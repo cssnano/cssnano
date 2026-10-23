@@ -173,8 +173,7 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
     };
     readonly optionKeys: readonly ['sort', 'convertToIs'];
 }], readonly [{
-    (options?: import("#postcss-minify-params").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: (_options: import("#postcss-minify-params").Options, targets: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
 }, 'minifyParams', {
     readonly postcssPlugin: 'postcss-minify-params';
     readonly targets: true;
