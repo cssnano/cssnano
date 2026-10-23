@@ -1,6 +1,6 @@
 import { discardUnusedSymbols } from '#postcss-discard-unused';
 import { mergeIdentsSymbols } from '#postcss-merge-idents';
-import { reduceIdentsSymbols } from '#postcss-reduce-idents';
+import { createReducers, reduceIdentsSymbols } from '#postcss-reduce-idents';
 import { zindexSymbols } from '#postcss-zindex';
 import { defaultPluginEntries } from './defaultPlugins.js';
 
@@ -54,7 +54,8 @@ export const advancedPluginEntries = /** @type {const} */ ([
   ],
   [
     {
-      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) =>
+        createReducers(options),
     },
     'reduceIdents',
     {
@@ -67,7 +68,10 @@ export const advancedPluginEntries = /** @type {const} */ ([
         'encoder',
       ],
       transform: true,
-      symbols: /** @type {SymbolTransform} */ (reduceIdentsSymbols),
+      // Its options are the reducers that create built.
+      symbols: /** @type {SymbolTransform} */ (
+        /** @type {unknown} */ (reduceIdentsSymbols)
+      ),
     },
   ],
   [
