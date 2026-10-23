@@ -39,5 +39,11 @@ declare function percentage(value: number): CSSToken;
  * @return {CSSToken}
  */
 declare function stringToken(text: string, value: string): CSSToken;
-export { ident, integer, numeric, percentage, stringToken };
+/**
+ * A whitespace token of one space, the separator the serializer writes.
+ *
+ * @return {CSSToken}
+ */
+declare function whitespace(): CSSToken;
+export { ident, integer, numeric, percentage, stringToken, whitespace };
 //# sourceMappingURL=tokenConstructors.d.ts.map
