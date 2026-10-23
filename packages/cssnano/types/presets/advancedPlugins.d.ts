@@ -41,14 +41,12 @@ export type AdvancedPluginOptions = import('./defaultPlugins.js').DefaultPluginO
 export declare const advancedPluginEntries: readonly [readonly [{
     readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'discardUnused', {
-    readonly postcssPlugin: 'postcss-discard-unused';
     readonly optionKeys: readonly ['fontFace', 'counterStyle', 'keyframes', 'namespace'];
     readonly transform: true;
     readonly symbols: SymbolTransform;
 }], readonly [{
     readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'mergeIdents', {
-    readonly postcssPlugin: 'postcss-merge-idents';
     readonly optionKeys: readonly [];
     readonly transform: true;
     readonly symbols: SymbolTransform;
@@ -57,14 +55,12 @@ export declare const advancedPluginEntries: readonly [readonly [{
         reducers: import("#postcss-reduce-idents").Reducer[];
     };
 }, 'reduceIdents', {
-    readonly postcssPlugin: 'postcss-reduce-idents';
     readonly optionKeys: readonly ['counter', 'counterStyle', 'keyframes', 'gridTemplate', 'encoder'];
     readonly transform: true;
     readonly symbols: SymbolTransform;
 }], readonly [{
     readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'zindex', {
-    readonly postcssPlugin: 'postcss-zindex';
     readonly optionKeys: readonly ['startIndex'];
     readonly transform: true;
     readonly symbols: SymbolTransform;

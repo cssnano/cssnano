@@ -73,7 +73,7 @@ export declare const sharedTargetListLimit = 500;
  * read from the browserslist `config` when that is set. Without a query, the
  * targets are the default ones rather than browserslist's own `defaults`. A
  * query that matches no browser yields an empty list and a warning on the
- * result. Without a result there is no file to share with, so nothing is cached.
+ * result. Each call resolves again; a host plugin resolves once per file.
  * @param {object} options the plugin options, which may hold a preset's targets
  * @param {Result | undefined} result
  * @param {Browserslist} [browserslist]

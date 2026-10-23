@@ -76,16 +76,16 @@ export const isStats = (value) =>
 
 /**
  * @param {unknown} value
- * @returns {boolean} whether the value is a stage entry, which has a create function
+ * @returns {boolean} whether the value is a stage or transform entry, which has a create function
  */
 const isStageEntry = (value) =>
   isRecord(value) && typeof value.create === 'function';
 
 /**
- * Whether a list has the entries that validateOptions reads: a plugin creator
- * or a stage entry, the option name and the settings with their option
- * keys. A copy of cssnano with another entry shape is rejected here, not
- * crashed on later.
+ * Whether a list has the entries that validateOptions reads: a stage or
+ * transform entry, the option name and the settings with their option keys.
+ * A copy of cssnano with another entry shape is rejected here, not crashed on
+ * later.
  *
  * @param {unknown} value
  * @returns {value is readonly PluginEntry[]}
@@ -97,7 +97,7 @@ export function isPluginEntries(value) {
       (entry) =>
         Array.isArray(entry) &&
         entry.length === 3 &&
-        (typeof entry[0] === 'function' || isStageEntry(entry[0])) &&
+        isStageEntry(entry[0]) &&
         isString(entry[1]) &&
         isRecord(entry[2]) &&
         isStringList(entry[2].optionKeys)

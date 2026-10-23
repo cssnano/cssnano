@@ -26,9 +26,9 @@ import {
  */
 
 /**
- * A plugin in a preset: the PostCSS creator, the name of the entry, and its
- * settings. `targets` is set when the plugin reads the browser targets of its
- * preset; `defaults` are the options it uses unless the preset sets them;
+ * A plugin in a preset: its stage or transform entry, the name of the entry,
+ * and its settings. `targets` is set when the plugin reads the browser targets
+ * of its preset; `defaults` are the options it uses unless the preset sets them;
  * `optionKeys` lists the options it accepts, so a key it does not declare can
  * be reported; `guards` checks the value of an option by its key. `walk` is
  * set when a stylesheet walk implements part of the plugin, so the walk of the
@@ -43,7 +43,6 @@ import {
  * transform with `symbols` runs over the lists that walk collects.
  *
  * @typedef {{
- *   postcssPlugin: string,
  *   targets?: true,
  *   defaults?: object,
  *   optionKeys: readonly string[],
@@ -57,15 +56,10 @@ import {
  */
 
 /**
- * @typedef {import('postcss').PluginCreator<any>} PluginCreator
- */
-
-/**
  * A plugin in a preset, the preset option that enables it, and its settings.
- * The first element is a PostCSS plugin creator, which runs as its own plugin,
- * a stage entry, which runs in a host plugin with the stages of the adjacent
- * stage entries, or a transform entry, which the walk of the host runs.
- * @typedef {readonly [PluginCreator | StageEntry | TransformEntry, string, PluginEntrySettings]} PluginEntry
+ * The first element is a stage entry, which the walk of the host runs, or a
+ * transform entry, which the walk or the passes of the host run.
+ * @typedef {readonly [StageEntry | TransformEntry, string, PluginEntrySettings]} PluginEntry
  */
 
 /**
@@ -102,11 +96,53 @@ export function configurePlugins(entries, options) {
 }
 
 /**
+ * Files an enabled transform under the list that its settings name: a pass, a
+ * symbol transform, the walk after merge or the walk. A transform that creates
+ * null is off, so it is not filed.
+ *
+ * @param {Run} run
+ * @param {string} name
+ * @param {TransformEntry} entry
+ * @param {Record<PropertyKey, unknown>} options
+ * @param {PluginEntrySettings} settings
+ */
+function addTransform(run, name, entry, options, settings) {
+  const transform = entry.create(options);
+  if (transform === null) return;
+  if (settings.pass) {
+    run.passes.set(name, {
+      pass: settings.pass,
+      options: transform,
+      targets: Boolean(settings.targets),
+    });
+  } else if (settings.symbols) {
+    run.symbols.set(name, { transform: settings.symbols, options: transform });
+  } else if (settings.after) {
+    run.after.set(name, transform);
+  } else {
+    run.transforms.set(name, transform);
+  }
+}
+
+/**
+ * @param {Run} run
+ * @returns {boolean} whether the run has nothing to host
+ */
+function isEmptyRun(run) {
+  return (
+    run.members.length === 0 &&
+    run.transforms.size === 0 &&
+    run.passes.size === 0 &&
+    run.after.size === 0 &&
+    run.symbols.size === 0
+  );
+}
+
+/**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
- * Each run of adjacent enabled stage entries becomes one host plugin, which
- * builds its stages as it processes a stylesheet. A plugin creator that runs
- * ends the run, so the stages keep their order.
+ * The entries of a preset run in one host plugin, which walks the stylesheet
+ * once for its stages and transforms.
  *
  * @param {readonly PluginEntry[]} entries
  * @param {Record<string, unknown>} known the validated options, without preset
@@ -123,30 +159,7 @@ export function configureValidated(entries, known) {
   // Browser targets are cssnano-wide, so every target-reading plugin gets the same ones.
   const targets = Object.freeze({ ...browserslist });
   const disabled = new Set(/** @type {string[]} */ (disable));
-  /** @type {AcceptedPlugin[]} */
-  const plugins = [];
-  /** @type {Run} */
-  let run = newRun();
-  const endRun = () => {
-    if (
-      run.members.length > 0 ||
-      run.transforms.size > 0 ||
-      run.passes.size > 0 ||
-      run.after.size > 0 ||
-      run.symbols.size > 0
-    ) {
-      plugins.push(
-        hostPlugin(
-          run.members,
-          run.transforms,
-          run.passes,
-          run.after,
-          run.symbols
-        )
-      );
-    }
-    run = newRun();
-  };
+  const run = newRun();
   for (const [entry, name, settings] of entries) {
     if (disabled.has(name)) continue;
     const options = {
@@ -155,40 +168,27 @@ export function configureValidated(entries, known) {
       ...(settings.targets ? { [browserTargets]: targets } : undefined),
     };
     if (settings.transform) {
-      const transform = /** @type {TransformEntry} */ (entry).create(options);
-      if (transform !== null && settings.pass) {
-        run.passes.set(name, {
-          pass: settings.pass,
-          options: transform,
-          targets: Boolean(settings.targets),
-        });
-      } else if (transform !== null && settings.symbols) {
-        run.symbols.set(name, {
-          transform: settings.symbols,
-          options: transform,
-        });
-      } else if (transform !== null && settings.after) {
-        run.after.set(name, transform);
-      } else if (transform !== null) {
-        run.transforms.set(name, transform);
-      }
+      addTransform(
+        run,
+        name,
+        /** @type {TransformEntry} */ (entry),
+        options,
+        settings
+      );
       continue;
     }
     if (settings.walk) run.transforms.set(name, options);
     if (settings.after) run.after.set(name, options);
-    if (typeof entry === 'function') {
-      endRun();
-      plugins.push(entry(options));
-    } else {
-      run.members.push({
-        entry: /** @type {StageEntry} */ (entry),
-        options,
-        targets: Boolean(settings.targets),
-      });
-    }
+    run.members.push({
+      entry: /** @type {StageEntry} */ (entry),
+      options,
+      targets: Boolean(settings.targets),
+    });
   }
-  endRun();
-  return plugins;
+  if (isEmptyRun(run)) return [];
+  return [
+    hostPlugin(run.members, run.transforms, run.passes, run.after, run.symbols),
+  ];
 }
 
 /**

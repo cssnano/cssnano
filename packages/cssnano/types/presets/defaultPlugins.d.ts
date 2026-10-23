@@ -108,51 +108,42 @@ export type DefaultPluginOptions = {
  * preset option that enables it and the settings it runs with.
  */
 export declare const defaultPluginEntries: readonly [readonly [import("../pipeline/host.js").StageEntry, "discardComments", {
-    readonly postcssPlugin: 'postcss-discard-comments';
     readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
 }], readonly [{
     create: () => {
         forProperty: () => (buffer: import("../values/valueBuffer.js").ValueBuffer) => void;
     };
 }, 'minifyGradients', {
-    readonly postcssPlugin: 'postcss-minify-gradients';
     readonly optionKeys: readonly [];
 }], readonly [{
     create: (options: import("#postcss-reduce-initial").Options, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage | null;
 }, 'reduceInitial', {
-    readonly postcssPlugin: 'postcss-reduce-initial';
     readonly targets: true;
     readonly optionKeys: readonly ['ignore'];
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, 'normalizeDisplayValues', {
-    readonly postcssPlugin: 'postcss-normalize-display-values';
     readonly optionKeys: readonly [];
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, 'reduceTransforms', {
-    readonly postcssPlugin: 'postcss-reduce-transforms';
     readonly optionKeys: readonly [];
 }], readonly [{
     create: (config: import("#postcss-colormin").Options, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
 }, 'colormin', {
-    readonly postcssPlugin: 'postcss-colormin';
     readonly targets: true;
     readonly optionKeys: readonly ['hex', 'alphaHex', 'rgb', 'hsl', 'name', 'transparent', 'transformCustomProperties'];
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, 'normalizeTimingFunctions', {
-    readonly postcssPlugin: 'postcss-normalize-timing-functions';
     readonly optionKeys: readonly [];
 }], readonly [{
     create: (options: import("postcss-calc").PostCssCalcOptions) => import("../pipeline/host.js").Stage;
 }, 'calc', {
-    readonly postcssPlugin: 'postcss-calc';
     readonly optionKeys: readonly ['precision', 'warnWhenCannotResolve', 'mediaQueries', 'selectors', 'unwrapSingleValue', 'onParseError'];
 }], readonly [{
     create: (options: import("#postcss-convert-values").Options, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
 }, 'convertValues', {
-    readonly postcssPlugin: 'postcss-convert-values';
     readonly targets: true;
     readonly defaults: {
         readonly length: false;
@@ -161,12 +152,10 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, 'orderedValues', {
-    readonly postcssPlugin: 'postcss-ordered-values';
     readonly optionKeys: readonly [];
 }], readonly [{
     create: (options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
 }, 'minifySelectors', {
-    readonly postcssPlugin: 'postcss-minify-selectors';
     readonly targets: true;
     readonly defaults: {
         readonly sort: true;
@@ -175,13 +164,11 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
 }], readonly [{
     create: (_options: import("#postcss-minify-params").Options, targets: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
 }, 'minifyParams', {
-    readonly postcssPlugin: 'postcss-minify-params';
     readonly targets: true;
     readonly optionKeys: readonly [];
 }], readonly [{
     readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'normalizeCharset', {
-    readonly postcssPlugin: 'postcss-normalize-charset';
     readonly defaults: {
         readonly add: false;
     };
@@ -191,51 +178,42 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
 }], readonly [{
     create: (options: import("#postcss-normalize-string").Options) => import("../pipeline/host.js").Stage;
 }, 'normalizeString', {
-    readonly postcssPlugin: 'postcss-normalize-string';
     readonly optionKeys: readonly ['preferredQuote'];
 }], readonly [{
     create: (options: Record<PropertyKey, unknown>, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
 }, 'normalizeUnicode', {
-    readonly postcssPlugin: 'postcss-normalize-unicode';
     readonly targets: true;
     readonly optionKeys: readonly [];
 }], readonly [{
     create: (options: import("#postcss-minify-font-values").Options) => import("../pipeline/host.js").Stage;
 }, 'minifyFontValues', {
-    readonly postcssPlugin: 'postcss-minify-font-values';
     readonly optionKeys: readonly ['removeAfterKeyword', 'removeDuplicates', 'removeQuotes'];
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, 'normalizeUrl', {
-    readonly postcssPlugin: 'postcss-normalize-url';
     readonly optionKeys: readonly [];
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, 'normalizeRepeatStyle', {
-    readonly postcssPlugin: 'postcss-normalize-repeat-style';
     readonly optionKeys: readonly [];
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, 'normalizePositions', {
-    readonly postcssPlugin: 'postcss-normalize-positions';
     readonly optionKeys: readonly [];
 }], readonly [{
     create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'discardOverridden', {
-    readonly postcssPlugin: 'postcss-discard-overridden';
     readonly optionKeys: readonly [];
     readonly transform: true;
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, "normalizeWhitespace", {
-    readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
     readonly walk: true;
     readonly after: true;
 }], readonly [{
     readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, "merge", {
-    readonly postcssPlugin: 'cssnano-merge';
     readonly targets: true;
     readonly transform: true;
     readonly pass: typeof mergePass;
@@ -249,21 +227,18 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
 }], readonly [{
     readonly create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, "discardEmpty", {
-    readonly postcssPlugin: 'postcss-discard-empty';
     readonly optionKeys: readonly [];
     readonly transform: true;
     readonly after: true;
 }], readonly [{
     readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, 'uniqueSelectors', {
-    readonly postcssPlugin: 'postcss-unique-selectors';
     readonly optionKeys: readonly [];
     readonly transform: true;
     readonly after: true;
 }], readonly [{
     readonly create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, "rawCache", {
-    readonly postcssPlugin: 'cssnano-util-raw-cache';
     readonly optionKeys: readonly [];
     readonly transform: true;
     readonly after: true;

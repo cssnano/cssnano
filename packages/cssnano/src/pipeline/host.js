@@ -1,4 +1,4 @@
-import { resolveTargets } from '#utils/browser-targets';
+import { browserTargets, resolveTargets } from '#utils/browser-targets';
 import { walkStylesheet } from './traversal.js';
 import { walkAfterMerge } from './afterMerge.js';
 
@@ -86,6 +86,24 @@ import { walkAfterMerge } from './afterMerge.js';
  * @typedef {{entry: StageEntry, options: Record<PropertyKey, unknown>, targets: boolean}} HostMember
  */
 
+/**
+ * The browser targets of a member or pass, resolved once for each browserTargets
+ * object that a file's members share.
+ * @param {Map<unknown, readonly string[]>} resolutions the targets resolved so far for one file
+ * @param {Record<PropertyKey, unknown>} options
+ * @param {import('postcss').Result} result
+ * @returns {readonly string[]}
+ */
+function targetsOf(resolutions, options, result) {
+  const key = options[browserTargets];
+  let targets = resolutions.get(key);
+  if (targets === undefined) {
+    targets = resolveTargets(options, result);
+    resolutions.set(key, targets);
+  }
+  return targets;
+}
+
 /** Stands for the targets of a stage that does not read them. */
 const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
 
@@ -119,10 +137,15 @@ export function hostPlugin(
   return {
     postcssPlugin: 'cssnano-host',
     prepare(result) {
+      // Members that share one browserTargets object share one resolution per file.
+      /** @type {Map<unknown, readonly string[]>} */
+      const resolutions = new Map();
       /** @type {Stage[]} */
       const stages = [];
       for (const [index, { entry, options, targets }] of members.entries()) {
-        const resolved = targets ? resolveTargets(options, result) : noTargets;
+        const resolved = targets
+          ? targetsOf(resolutions, options, result)
+          : noTargets;
         const memo = /** @type {WeakMap<readonly string[], Stage | null>} */ (
           memos[index]
         );
@@ -138,7 +161,7 @@ export function hostPlugin(
       const runs = [...passes.values()].map(({ pass, options, targets }) => ({
         pass,
         options,
-        browsers: targets ? resolveTargets(options, result) : noTargets,
+        browsers: targets ? targetsOf(resolutions, options, result) : noTargets,
       }));
       return {
         OnceExit(root, helpers) {
