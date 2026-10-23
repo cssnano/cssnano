@@ -1,8 +1,12 @@
 import { test } from 'node:test';
 import { processCSSFactory } from '../../../../util/testHelpers.js';
 import plugin from '../../src/plugins/postcss-normalize-whitespace/index.js';
+import { hostPlugin } from '../../src/pipeline/host.js';
 
-const { processCSS, passthroughCSS } = processCSSFactory(plugin);
+// The walk of a preset does the escape reattachment for normalizeWhitespace, so
+// the walk runs before the plugin, as it does in a preset.
+const walk = hostPlugin([], new Map([['normalizeWhitespace', {}]]));
+const { processCSS, passthroughCSS } = processCSSFactory([walk, plugin()]);
 
 test(
   'should preserve an escaped tab character used as an IE hack',

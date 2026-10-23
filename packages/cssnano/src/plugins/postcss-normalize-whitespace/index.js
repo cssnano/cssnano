@@ -322,27 +322,6 @@ function pluginCreator() {
             node.raws.semicolon = false;
           }
         } else if (type === rule || type === atrule) {
-          // When the last declaration has no trailing semicolon and its
-          // value ends in an escape sequence consuming whitespace (e.g.
-          // `\9` written as `\` followed by a literal tab), the parser
-          // attributes the escaped code point to the rule's trailing
-          // raw instead of the declaration's value. Reattach the single
-          // character the backslash escapes before discarding the rest
-          // of that raw, or the escape is left dangling and becomes a
-          // valid escape of whatever follows it in the output (`}`, or
-          // even a `;` inserted as a terminator, since only a newline or
-          // end of input is not a valid escape target).
-          const last = node.last;
-
-          if (
-            last &&
-            last.type === decl &&
-            endsWithEscapingBackslash(last.value) &&
-            node.raws.after
-          ) {
-            last.value += node.raws.after[0];
-          }
-
           node.raws.between = node.raws.after = '';
           node.raws.semicolon = false;
 
