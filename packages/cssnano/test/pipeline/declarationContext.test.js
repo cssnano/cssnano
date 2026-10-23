@@ -147,13 +147,23 @@ describe('the context a value reducer receives', () => {
     );
   });
 
-  test('@property uses its first syntax declaration when there are two', async () => {
+  test('@property uses its last syntax declaration when there are two', async () => {
     assert.equal(
       await reportedCss(
         '@property --x{syntax:"<color>";syntax:"*";initial-value:red}',
         'initial-value'
       ),
-      '@property --x{syntax:"<color>";syntax:"*";initial-value:property}'
+      '@property --x{syntax:"<color>";syntax:"*";initial-value:property,percentage}'
+    );
+  });
+
+  test('@property with a percentage-free last syntax has the property bit alone', async () => {
+    assert.equal(
+      await reportedCss(
+        '@property --x{syntax:"*";syntax:"<color>";initial-value:red}',
+        'initial-value'
+      ),
+      '@property --x{syntax:"*";syntax:"<color>";initial-value:property}'
     );
   });
 
