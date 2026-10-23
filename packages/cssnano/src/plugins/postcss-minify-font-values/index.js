@@ -2,10 +2,12 @@ import minifyWeight from './lib/minify-weight.js';
 import minifyFamily from './lib/minify-family.js';
 import minifyFont from './lib/minify-font.js';
 import cssnanoUtils from '#utils';
+import { parsedValueText } from '../../utils/parsedValueText.js';
+
+/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
-const fontRegex =
-  /^(?:[fF][oO][nN][tT]|[fF][oO][nN][tT]-[fF][aA][mM][iI][lL][yY]|[fF][oO][nN][tT]-[wW][eE][iI][gG][hH][tT])$/v;
+
 /**
  * @param {string} value
  * @return {boolean}
@@ -36,12 +38,23 @@ const propertyMinifiers = new Map([
 ]);
 
 /**
- * @param {string} prop
- * @param {string} value
- * @param {Options} opts
- * @return {string}
+ * @typedef {object} Options
+ * @property {boolean} [removeAfterKeyword] Removes the font families that follow a font keyword, such as `sans-serif`. (default: false)
+ * @property {boolean} [removeDuplicates] Removes duplicated font families. (default: true)
+ * @property {boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight')} [removeQuotes] Removes quotes from font families. A function chooses the property to change for each one. (default: true)
  */
-function transform(prop, value, opts) {
+
+/**
+ * The reducer of one property. It minifies the value as PostCSS gives it, so
+ * a comment is gone, and writes only a change. When the function of
+ * `removeQuotes` maps the property to a name that is not a font property, the
+ * property has no reducer.
+ *
+ * @param {Options} opts the options with defaults applied
+ * @param {string} prop
+ * @return {Reducer | null}
+ */
+function reducerOf(opts, prop) {
   let targetType = asciiLowerCase(prop);
   let removeQuotes = opts.removeQuotes;
 
@@ -51,77 +64,39 @@ function transform(prop, value, opts) {
   }
 
   const minifier = propertyMinifiers.get(targetType);
-  if (minifier) {
-    return minifier(value, opts, removeQuotes);
-  }
-
-  return value;
+  if (!minifier) return null;
+  return (buffer) => {
+    const text = buffer.text();
+    if (!text) return;
+    // PostCSS gives the value without comments, so minify that text.
+    const value = text.includes('/*') ? parsedValueText(buffer.tokens()) : text;
+    const out = minifier(value, opts, removeQuotes);
+    if (out !== value) buffer.replaceText(out);
+  };
 }
 
 /**
- * @typedef {object} Options
- * @property {boolean} [removeAfterKeyword] Removes the font families that follow a font keyword, such as `sans-serif`. (default: false)
- * @property {boolean} [removeDuplicates] Removes duplicated font families. (default: true)
- * @property {boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight')} [removeQuotes] Removes quotes from font families. A function chooses the property to change for each one. (default: true)
- */
-
-/**
+ * The stage for one run. Its options are the preset's, with the plugin's
+ * defaults under them.
+ *
  * @param {Options} opts
- * @return {import('postcss').Plugin}
+ * @return {Stage}
  */
-function pluginCreator(opts) {
+function fontStage(opts) {
   const normalizedOpts = {
     removeAfterKeyword: false,
     removeDuplicates: true,
     removeQuotes: true,
     ...opts,
   };
-
   return {
-    postcssPlugin: 'postcss-minify-font-values',
-    prepare() {
-      const cache = new Map();
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          /** @param {import('postcss').Declaration} decl */
-          const handleDecl = (decl) => {
-            const value = decl.value;
-
-            if (!value) {
-              return;
-            }
-
-            const prop = decl.prop;
-
-            const cacheKey = `${prop}|${value}`;
-
-            if (cache.has(cacheKey)) {
-              decl.value = cache.get(cacheKey);
-
-              return;
-            }
-
-            const newValue = transform(prop, value, normalizedOpts);
-
-            decl.value = newValue;
-            cache.set(cacheKey, newValue);
-          };
-
-          if (typeof normalizedOpts.removeQuotes === 'function') {
-            css.walkDecls(handleDecl);
-          } else {
-            css.walkDecls(fontRegex, handleDecl);
-          }
-        },
-      };
-    },
+    forProperty: (property) => reducerOf(normalizedOpts, property),
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {StageEntry} */
+const minifyFontValues = {
+  create: (/** @type {Options} */ options) => fontStage(options),
+};
+
+export { minifyFontValues as default };
