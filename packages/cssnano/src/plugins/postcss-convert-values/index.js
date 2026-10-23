@@ -160,6 +160,8 @@ function flagsOf(lowerCasedProp, strippedProp, context, supportsIE) {
     clampAlpha: !inKeyframes,
     isAlpha,
     isFont: strippedProp === 'font',
+    isUnicodeRange: strippedProp === 'unicode-range',
+    isCustomProperty: strippedProp.startsWith('--'),
   };
 }
 
