@@ -34,14 +34,15 @@ function withBit(context, bit) {
 }
 
 /**
- * Whether the syntax of an `@property` rule allows percentages. The first syntax
- * declaration decides, and a rule without one allows them.
+ * Whether the syntax of an `@property` rule allows percentages. The last syntax
+ * declaration decides, as CSS specifies for a repeated descriptor, and a rule
+ * without one allows them.
  *
  * @param {AtRule} atRule an `@property` rule
  * @returns {boolean}
  */
 function propertyAllowsPercentage(atRule) {
-  const syntax = atRule.nodes?.find(
+  const syntax = atRule.nodes?.findLast(
     (node) => node.type === 'decl' && node.prop.toLowerCase() === 'syntax'
   );
   return syntax?.type !== 'decl' || syntaxAllowsPercentage(syntax.value);
