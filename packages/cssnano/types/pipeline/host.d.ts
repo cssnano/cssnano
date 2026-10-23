@@ -24,6 +24,7 @@ export type PassRun = {
 export type TransformEntry = {
     create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown> | null;
 };
+export type SymbolTransform = (lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void) => void;
 export type HostMember = {
     entry: StageEntry;
     options: Record<PropertyKey, unknown>;
@@ -36,7 +37,12 @@ export type HostMember = {
  * @param {ReadonlyMap<string, PassRun>} [passes] the passes that run after the walk, by entry name
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
  *   the walk after the passes runs, by entry name; a missing name is disabled
+ * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} [symbols]
+ *   the advanced transforms that run over the lists of the walk after the passes, in order
  * @returns {Plugin}
  */
-export declare function hostPlugin(members: readonly HostMember[], transforms?: ReadonlyMap<string, Record<PropertyKey, unknown>>, passes?: ReadonlyMap<string, PassRun>, after?: ReadonlyMap<string, Record<PropertyKey, unknown>>): Plugin;
+export declare function hostPlugin(members: readonly HostMember[], transforms?: ReadonlyMap<string, Record<PropertyKey, unknown>>, passes?: ReadonlyMap<string, PassRun>, after?: ReadonlyMap<string, Record<PropertyKey, unknown>>, symbols?: ReadonlyMap<string, {
+    transform: SymbolTransform;
+    options: Record<PropertyKey, unknown>;
+}>): Plugin;
 //# sourceMappingURL=host.d.ts.map

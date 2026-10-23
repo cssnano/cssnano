@@ -74,6 +74,13 @@ import { walkAfterMerge } from './afterMerge.js';
  */
 
 /**
+ * An advanced transform, which edits the symbol lists that the walk after
+ * merge collected, with the options its entry's `create` returned. `remove`
+ * removes a node and, with discardEmpty on, each ancestor it empties.
+ * @typedef {(lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void) => void} SymbolTransform
+ */
+
+/**
  * One stage entry of a host, with the options it is built with. `targets` is
  * set when the entry reads the browser targets.
  * @typedef {{entry: StageEntry, options: Record<PropertyKey, unknown>, targets: boolean}} HostMember
@@ -89,13 +96,16 @@ const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
  * @param {ReadonlyMap<string, PassRun>} [passes] the passes that run after the walk, by entry name
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
  *   the walk after the passes runs, by entry name; a missing name is disabled
+ * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} [symbols]
+ *   the advanced transforms that run over the lists of the walk after the passes, in order
  * @returns {Plugin}
  */
 export function hostPlugin(
   members,
   transforms = new Map(),
   passes = new Map(),
-  after = new Map()
+  after = new Map(),
+  symbols = new Map()
 ) {
   // Each member keeps its stage per targets array. The frozen targets of equal
   // browserslist results are one array, so the memo serves every stylesheet.
@@ -138,7 +148,9 @@ export function hostPlugin(
           for (const { pass, options, browsers } of runs) {
             pass(root, browsers, options, helpers.result);
           }
-          if (after.size > 0) walkAfterMerge(root, helpers.result, after);
+          if (after.size > 0 || symbols.size > 0) {
+            walkAfterMerge(root, helpers.result, after, symbols);
+          }
         },
       };
     },
