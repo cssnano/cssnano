@@ -1,3 +1,4 @@
+import type { SymbolLists } from '../../pipeline/symbolLists.js';
 export type Options = {
     /**
      * Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)
@@ -25,23 +26,20 @@ export type Reducer = {
     transform: () => void;
 };
 /**
- * @typedef {object} Options
- * @property {boolean} [counter] Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)
- * @property {boolean} [counterStyle] Reduces `counter-style` rules and `list-style` and `system` declarations. (default: true)
- * @property {boolean} [keyframes] Reduces `keyframes` rules and `animation` declarations. (default: true)
- * @property {boolean} [gridTemplate] Reduces `grid-template`, `grid-area`, `grid-column`, `grid-row` and `grid-template-areas` declarations. (default: true)
- * @property {(value: string, index: number) => string} [encoder] Replaces a name. Receives the name and how many names came before it.
+ * Renames the names that the walk after merge collected. Each reducer reads
+ * only at-rules or declarations, so the lists hold every node it needs, and a
+ * node that an earlier transform detached is skipped.
+ *
+ * @param {SymbolLists} lists
+ * @param {Options} options
+ * @return {void}
  */
-/** @typedef {{
- *    collect: (node: import('postcss').AnyNode) => void,
- *    transform: () => void
- *  }} Reducer
- */
+export declare function reduceIdentsSymbols(lists: SymbolLists, options: Options): void;
 /**
- * @param {Options} arg
+ * @param {Options} opts
  * @return {import('postcss').Plugin}
  */
-declare function pluginCreator({ counter, counterStyle, keyframes, gridTemplate, encoder, }?: Options): import('postcss').Plugin;
+declare function pluginCreator(opts?: Options): import('postcss').Plugin;
 declare namespace pluginCreator {
     var postcss: true;
 }

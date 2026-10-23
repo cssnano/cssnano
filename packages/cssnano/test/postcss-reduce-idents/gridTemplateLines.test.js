@@ -327,7 +327,7 @@ describe('Grid template lines', () => {
     assert.strictEqual(referenced.css, 'h1{grid-column-start:head}');
   });
 
-  test('should not generate colliding grid-template idents when plugin instance is reused', async () => {
+  test('should match a fresh processor when the plugin instance is reused', async () => {
     const instance = postcss(plugin);
 
     const [result1, result2] = await Promise.all([
@@ -347,7 +347,7 @@ describe('Grid template lines', () => {
     );
     assert.strictEqual(
       result2.css,
-      'body{grid-template-areas:"c d"}nav{grid-area:c}footer{grid-area:d}'
+      'body{grid-template-areas:"a b"}nav{grid-area:a}footer{grid-area:b}'
     );
   });
 });
