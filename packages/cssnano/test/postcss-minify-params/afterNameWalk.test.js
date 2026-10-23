@@ -49,6 +49,13 @@ suite('minifyParams on the space after an at-rule name', () => {
     passthroughCSS('@media all {a{color:red}}')
   );
 
+  test('keeps the space before an all prelude when minifyParams is disabled', async () => {
+    assert.equal(
+      await presetWithoutParams('@media all {a{color:red}}'),
+      '@media all{a{color:red}}'
+    );
+  });
+
   test(
     'keeps the space before a prelude that is only a comment, which PostCSS gives as an empty prelude',
     passthroughCSS('@media /*x*/ {a{color:red}}')
