@@ -1,8 +1,10 @@
 import { test } from 'node:test';
-import plugin from '../../src/plugins/postcss-discard-overridden/index.js';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
+import {
+  discardOverriddenPlugins,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
 
-const { processCSS } = processCSSFactory(plugin);
+const { processCSS } = processCSSFactory(discardOverriddenPlugins());
 
 test(
   'overridden @keyframes should be discarded correctly',
