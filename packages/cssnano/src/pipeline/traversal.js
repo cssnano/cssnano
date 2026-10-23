@@ -2,7 +2,10 @@ import { ValueBuffer } from '../values/valueBuffer.js';
 import { sourceValue } from '../utils/declValue.js';
 import cssnanoUtils from '#utils';
 import { tightenAfterName } from './afterName.js';
-import { stripStrayRawSemicolon } from './strayRawSemicolons.js';
+import {
+  reattachBlockEscape,
+  stripStrayRawSemicolon,
+} from './whitespaceRaws.js';
 import { isDefaultNamespace } from '../plugins/postcss-minify-selectors/lib/isDefaultNamespace.js';
 import { contextOf, DEFAULT_NAMESPACE, withBit } from './context.js';
 import {
@@ -44,7 +47,7 @@ import {
  * @property {Helpers} helpers
  * @property {CommentState | null} comments the comment removal of this run, or null when no stage removes comments
  * @property {boolean} defaultNamespace whether a default `@namespace` has been reached, so later rules have it in their context
- * @property {boolean} stripStraySemicolons whether the stray semicolons before declarations are removed, as normalizeWhitespace does
+ * @property {boolean} normalizeWhitespace whether normalizeWhitespace is on, which removes the stray semicolons and reattaches the escapes of blocks
  */
 
 /**
@@ -162,7 +165,7 @@ function reduceText(entry, text, context, node, helpers) {
  * @param {import('postcss').Declaration} decl
  */
 function walkDeclaration(state, decl) {
-  if (state.stripStraySemicolons && !decl.prop.startsWith('--')) {
+  if (state.normalizeWhitespace && !decl.prop.startsWith('--')) {
     stripStrayRawSemicolon(decl);
   }
   let entry = state.properties.get(decl.prop);
@@ -361,13 +364,18 @@ export function walkStylesheet(stages, root, helpers, transforms) {
     helpers,
     comments: commentStateOf(stages),
     defaultNamespace: false,
-    stripStraySemicolons: transforms.has('normalizeWhitespace'),
+    normalizeWhitespace: transforms.has('normalizeWhitespace'),
   };
   root.walk((node) => {
     if (node.type === 'comment') {
       if (state.comments?.canRemove(node.text)) node.remove();
     } else if (node.type === 'decl') walkDeclaration(state, node);
-    else if (node.type === 'atrule') walkAtRule(state, node);
-    else if (node.type === 'rule') walkRule(state, node);
+    else if (node.type === 'atrule') {
+      if (state.normalizeWhitespace) reattachBlockEscape(node);
+      walkAtRule(state, node);
+    } else if (node.type === 'rule') {
+      if (state.normalizeWhitespace) reattachBlockEscape(node);
+      walkRule(state, node);
+    }
   });
 }
