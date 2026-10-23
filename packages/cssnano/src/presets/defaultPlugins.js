@@ -7,7 +7,6 @@ import colormin from '#postcss-colormin';
 import postcssOrderedValues from '#postcss-ordered-values';
 import postcssMinifySelectors from '#postcss-minify-selectors';
 import postcssMinifyParams from '#postcss-minify-params';
-import postcssNormalizeCharset from '#postcss-normalize-charset';
 import postcssMinifyFontValues from '#postcss-minify-font-values';
 import postcssNormalizeUrl from '#postcss-normalize-url';
 import postcssDiscardOverridden from '#postcss-discard-overridden';
@@ -182,12 +181,16 @@ export const defaultPluginEntries = /** @type {const} */ ([
     { postcssPlugin: 'postcss-minify-params', targets: true, optionKeys: [] },
   ],
   [
-    postcssNormalizeCharset,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'normalizeCharset',
     {
       postcssPlugin: 'postcss-normalize-charset',
       defaults: { add: false },
       optionKeys: ['add'],
+      transform: true,
+      after: true,
     },
   ],
   [

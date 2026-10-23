@@ -157,17 +157,9 @@ describe('stage entries in a preset', () => {
     assert.equal(ignores?.options[browserTargets], undefined);
   });
 
-  test('the default preset runs the comment stage and the stage entries through minifyParams in one host plugin, before normalizeCharset', () => {
+  test('the default preset runs its comment stage, its stage entries, merge and the walk after merge in one host plugin', () => {
     const names = defaultPreset().map((plugin) => plugin.postcssPlugin);
-    assert.equal(names[0], 'cssnano-host');
-    assert.equal(names[1], 'postcss-normalize-charset');
-  });
-
-  test('the default preset runs normalizeString through normalizeWhitespace, merge and the walk after merge in one host plugin, after normalizeCharset', () => {
-    const names = defaultPreset().map((plugin) => plugin.postcssPlugin);
-    const charset = names.indexOf('postcss-normalize-charset');
-    assert.equal(names[charset + 1], 'cssnano-host');
-    assert.equal(names.length, charset + 2);
+    assert.deepStrictEqual(names, ['cssnano-host']);
   });
 });
 
