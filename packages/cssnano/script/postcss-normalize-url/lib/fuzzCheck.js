@@ -1,6 +1,10 @@
 import postcss from 'postcss';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
-import plugin from '../../../src/plugins/postcss-normalize-url/index.js';
+import urlEntry from '../../../src/plugins/postcss-normalize-url/index.js';
+import { hostPlugin } from '../../../src/pipeline/host.js';
+
+const plugin = () =>
+  hostPlugin([{ entry: urlEntry, options: {}, targets: false }]);
 
 const processor = postcss([plugin()]);
 

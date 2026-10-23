@@ -164,11 +164,11 @@ describe('stage entries in a preset', () => {
     assert.equal(names[host + 1], 'postcss-minify-selectors');
   });
 
-  test('the default preset runs normalizeRepeatStyle and normalizePositions in one host plugin, between normalizeUrl and normalizeWhitespace', () => {
+  test('the default preset runs normalizeString through normalizePositions in one host plugin, between discardOverridden and normalizeWhitespace', () => {
     const names = defaultPreset().map((plugin) => plugin.postcssPlugin);
-    const url = names.indexOf('postcss-normalize-url');
-    assert.equal(names[url + 1], 'cssnano-host');
-    assert.equal(names[url + 2], 'postcss-normalize-whitespace');
+    const overridden = names.indexOf('postcss-discard-overridden');
+    assert.equal(names[overridden + 1], 'cssnano-host');
+    assert.equal(names[overridden + 2], 'postcss-normalize-whitespace');
   });
 });
 

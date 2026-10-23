@@ -46,6 +46,12 @@ const positionRules = Array.from(
     `.p-${index}{background-position:left center;mask-position:${index % 2 ? 'top right' : 'center'};object-position:${index}px top}`
 ).join('');
 
+const urlRules = Array.from(
+  { length: 2000 },
+  (_, index) =>
+    `.u-${index}{background:url("img/${index}.png");mask:url(${index % 2 ? '"a b.png"' : 'a.svg'})}`
+).join('');
+
 export const presetCases = {
   'preset-default-colour-values': {
     plugin: 'cssnano',
@@ -76,5 +82,10 @@ export const presetCases = {
     plugin: 'cssnano',
     createProcessor: () => postcss(defaultPreset()),
     css: positionRules,
+  },
+  'preset-default-url-values': {
+    plugin: 'cssnano',
+    createProcessor: () => postcss(defaultPreset()),
+    css: urlRules,
   },
 };
