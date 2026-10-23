@@ -30,7 +30,9 @@ import {
  * settings. `targets` is set when the plugin reads the browser targets of its
  * preset; `defaults` are the options it uses unless the preset sets them;
  * `optionKeys` lists the options it accepts, so a key it does not declare can
- * be reported; `guards` checks the value of an option by its key.
+ * be reported; `guards` checks the value of an option by its key. `walk` is set
+ * when a stylesheet walk implements part of the plugin, so the walk of the run
+ * receives its options under the entry name while the plugin still runs.
  *
  * @typedef {{
  *   postcssPlugin: string,
@@ -38,6 +40,7 @@ import {
  *   defaults?: object,
  *   optionKeys: readonly string[],
  *   guards?: Readonly<Record<string, Guard>>,
+ *   walk?: true,
  * }} PluginEntrySettings
  */
 
@@ -52,6 +55,17 @@ import {
  * adjacent stage entries.
  * @typedef {readonly [PluginCreator | StageEntry, string, PluginEntrySettings]} PluginEntry
  */
+
+/**
+ * The stage members of a host, and the options of the walk transforms that
+ * the host's walk runs.
+ * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>}} Run
+ */
+
+/** @returns {Run} */
+function newRun() {
+  return { members: [], transforms: new Map() };
+}
 
 /**
  * Turns the options of a built preset into the plugins it runs. A disabled
@@ -92,11 +106,13 @@ export function configureValidated(entries, known) {
   const disabled = new Set(/** @type {string[]} */ (disable));
   /** @type {AcceptedPlugin[]} */
   const plugins = [];
-  /** @type {HostMember[]} */
-  let run = [];
+  /** @type {Run} */
+  let run = newRun();
   const endRun = () => {
-    if (run.length > 0) plugins.push(hostPlugin(run));
-    run = [];
+    if (run.members.length > 0 || run.transforms.size > 0) {
+      plugins.push(hostPlugin(run.members, run.transforms));
+    }
+    run = newRun();
   };
   for (const [entry, name, settings] of entries) {
     if (disabled.has(name)) continue;
@@ -105,11 +121,12 @@ export function configureValidated(entries, known) {
       ...pluginOptions[name],
       ...(settings.targets ? { [browserTargets]: targets } : undefined),
     };
+    if (settings.walk) run.transforms.set(name, options);
     if (typeof entry === 'function') {
       endRun();
       plugins.push(entry(options));
     } else {
-      run.push({ entry, options, targets: Boolean(settings.targets) });
+      run.members.push({ entry, options, targets: Boolean(settings.targets) });
     }
   }
   endRun();

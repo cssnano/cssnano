@@ -2,6 +2,7 @@ import { ValueBuffer } from '../values/valueBuffer.js';
 import { sourceValue } from '../utils/declValue.js';
 import cssnanoUtils from '#utils';
 import { tightenAfterName } from './afterName.js';
+import { stripStrayRawSemicolon } from './strayRawSemicolons.js';
 import { isDefaultNamespace } from '../plugins/postcss-minify-selectors/lib/isDefaultNamespace.js';
 import { contextOf, DEFAULT_NAMESPACE, withBit } from './context.js';
 import {
@@ -43,6 +44,7 @@ import {
  * @property {Helpers} helpers
  * @property {CommentState | null} comments the comment removal of this run, or null when no stage removes comments
  * @property {boolean} defaultNamespace whether a default `@namespace` has been reached, so later rules have it in their context
+ * @property {boolean} stripStraySemicolons whether the stray semicolons before declarations are removed, as normalizeWhitespace does
  */
 
 /**
@@ -160,6 +162,9 @@ function reduceText(entry, text, context, node, helpers) {
  * @param {import('postcss').Declaration} decl
  */
 function walkDeclaration(state, decl) {
+  if (state.stripStraySemicolons && !decl.prop.startsWith('--')) {
+    stripStrayRawSemicolon(decl);
+  }
   let entry = state.properties.get(decl.prop);
   if (entry === undefined) {
     entry = propertyEntry(state.stages, decl.prop);
@@ -338,8 +343,9 @@ function commentStateOf(stages) {
  * @param {readonly Stage[]} stages in pipeline order
  * @param {Root} root
  * @param {Helpers} helpers
+ * @param {ReadonlyMap<string, unknown>} transforms the whole-stylesheet transforms of the run, by entry name
  */
-export function walkStylesheet(stages, root, helpers) {
+export function walkStylesheet(stages, root, helpers, transforms) {
   /** @type {RunState} */
   const state = {
     stages,
@@ -355,6 +361,7 @@ export function walkStylesheet(stages, root, helpers) {
     helpers,
     comments: commentStateOf(stages),
     defaultNamespace: false,
+    stripStraySemicolons: transforms.has('normalizeWhitespace'),
   };
   root.walk((node) => {
     if (node.type === 'comment') {

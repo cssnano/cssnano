@@ -17,6 +17,7 @@ export declare const litePluginEntries: readonly [readonly [import("../pipeline/
 }, "normalizeWhitespace", {
     readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
+    readonly walk: true;
 }], readonly [{
     (): import("postcss/lib/postcss").Plugin;
     postcss: true;
