@@ -153,18 +153,18 @@ test('should skip the declaration protection scan when no definitions can merge'
   assert.equal(declWalks, 0);
 });
 
-test('should walk declarations of the whole stylesheet once when renaming a reference', async () => {
+test('should walk the whole stylesheet once when renaming a reference', async () => {
   const root = postcss.parse(
     `${keyframes}div{animation:a 1s;color:red}@function --f(){result:a}`
   );
-  let rootDeclWalks = 0;
-  const origWalkDecls = root.walkDecls;
-  root.walkDecls = function (...args) {
-    rootDeclWalks++;
-    return origWalkDecls.apply(this, args);
+  let rootWalks = 0;
+  const origWalk = root.walk;
+  root.walk = function (...args) {
+    rootWalks++;
+    return origWalk.apply(this, args);
   };
   await postcss([plugin()]).process(root, { from: undefined });
-  assert.equal(rootDeclWalks, 1);
+  assert.equal(rootWalks, 1);
 });
 
 test(

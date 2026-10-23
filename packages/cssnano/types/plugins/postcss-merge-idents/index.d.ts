@@ -1,3 +1,5 @@
+import type { ChildNode } from 'postcss';
+import type { SymbolLists } from '../../pipeline/symbolLists.js';
 export type Group = Array<{
     name: string;
     copies: AtRuleEntry[];
@@ -16,6 +18,16 @@ export type AtRuleEntry = {
         tokenText: string;
     };
 };
+/**
+ * Merges the names of the advanced transform's lists. The walk after merge
+ * collects the lists, so the transform needs no walk of its own.
+ *
+ * @param {SymbolLists} lists
+ * @param {Record<PropertyKey, never>} _options takes no options
+ * @param {(node: ChildNode) => void} remove
+ * @return {void}
+ */
+export declare function mergeIdentsSymbols(lists: SymbolLists, _options: Record<PropertyKey, never>, remove: (node: ChildNode) => void): void;
 /**
  * @return {import('postcss').Plugin}
  */

@@ -36,6 +36,26 @@ export type SymbolLists = {
      * `z-index` declarations
      */
     zIndexDecls: Declaration[];
+    /**
+     * `@layer` at-rules, with or without a block
+     */
+    layers: AtRule[];
+    /**
+     * `@function` rules
+     */
+    functions: AtRule[];
+    /**
+     * `@mixin` and `@apply` rules
+     */
+    parameterRules: AtRule[];
+    /**
+     * `@container`, `@when` and `@else` rules
+     */
+    conditionRules: AtRule[];
+    /**
+     * every declaration
+     */
+    decls: Declaration[];
 };
 /**
  * The nodes that the advanced transforms read, by kind. The walk after merge
@@ -51,11 +71,24 @@ export type SymbolLists = {
  * @property {Declaration[]} listStyleDecls `list-style` and `system` declarations
  * @property {Declaration[]} animationDecls `animation` declarations
  * @property {Declaration[]} zIndexDecls `z-index` declarations
+ * @property {AtRule[]} layers `@layer` at-rules, with or without a block
+ * @property {AtRule[]} functions `@function` rules
+ * @property {AtRule[]} parameterRules `@mixin` and `@apply` rules
+ * @property {AtRule[]} conditionRules `@container`, `@when` and `@else` rules
+ * @property {Declaration[]} decls every declaration
  */
 /**
  * @returns {SymbolLists}
  */
 export declare function createSymbolLists(): SymbolLists;
+/**
+ * Whether a node still hangs from the root. A transform that ran before a
+ * removal may have detached a node that the lists hold.
+ *
+ * @param {AnyNode} node
+ * @returns {boolean}
+ */
+export declare function isAttached(node: AnyNode): boolean;
 /**
  * Sorts one kept node into the lists it belongs to. Names are matched the way
  * the transforms match them, so a list holds exactly what they would find.
