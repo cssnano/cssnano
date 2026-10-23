@@ -12,15 +12,12 @@ export declare const litePluginEntries: readonly [readonly [import("../pipeline/
     readonly postcssPlugin: 'postcss-discard-comments';
     readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: () => import("../pipeline/host.js").Stage;
 }, "normalizeWhitespace", {
     readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
-    readonly stage: {
-        create: () => import("../pipeline/host.js").Stage;
-    };
     readonly walk: true;
+    readonly after: true;
 }], readonly [{
     readonly create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
 }, "discardEmpty", {
