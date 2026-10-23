@@ -59,8 +59,9 @@ import { walkStylesheet } from './traversal.js';
 
 /**
  * A pass that runs over the stylesheet after the walk, with the browsers of the
- * run and the options of its entry.
- * @typedef {{pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>) => void, options: Record<PropertyKey, unknown>}} PassRun
+ * run, the options of its entry and the result for its messages. `targets` is
+ * set when the pass reads the browser targets; otherwise it gets none.
+ * @typedef {{pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void, options: Record<PropertyKey, unknown>, targets: boolean}} PassRun
  */
 
 /**
@@ -120,10 +121,10 @@ export function hostPlugin(
         const stage = memo.get(resolved);
         if (stage) stages.push(stage);
       }
-      const runs = [...passes.values()].map(({ pass, options }) => ({
+      const runs = [...passes.values()].map(({ pass, options, targets }) => ({
         pass,
         options,
-        browsers: resolveTargets(options, result),
+        browsers: targets ? resolveTargets(options, result) : noTargets,
       }));
       return {
         OnceExit(root, helpers) {
@@ -131,7 +132,7 @@ export function hostPlugin(
             walkStylesheet(stages, root, helpers, transforms);
           }
           for (const { pass, options, browsers } of runs) {
-            pass(root, browsers, options);
+            pass(root, browsers, options, helpers.result);
           }
         },
       };
