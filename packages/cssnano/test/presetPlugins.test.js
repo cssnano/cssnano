@@ -40,6 +40,29 @@ describe('built presets return plugins', () => {
     assert.ok(!names(defaultPreset()).includes('postcss-discard-empty'));
   });
 
+  test('uniqueSelectors runs in the host after merge, not as a plugin of its own', () => {
+    assert.ok(!names(defaultPreset()).includes('postcss-unique-selectors'));
+  });
+
+  test('disabling uniqueSelectors keeps the duplicate selector that the preset removes', async () => {
+    const css = 'a,a{color:red}';
+    const kept = await postcss(
+      defaultPreset({ disable: ['uniqueSelectors', 'minifySelectors'] })
+    ).process(css, { from: repositoryFile });
+    const removed = await postcss(
+      defaultPreset({ disable: ['minifySelectors'] })
+    ).process(css, { from: repositoryFile });
+    assert.equal(kept.css, 'a,a{color:red}');
+    assert.equal(removed.css, 'a{color:red}');
+  });
+
+  test('disabling discardEmpty still removes the duplicate selector', async () => {
+    const { css } = await postcss(
+      defaultPreset({ disable: ['discardEmpty', 'minifySelectors'] })
+    ).process('a,a{color:red}', { from: repositoryFile });
+    assert.equal(css, 'a{color:red}');
+  });
+
   test('rawCache is recorded by the host, not a plugin of its own', async () => {
     assert.ok(!names(defaultPreset()).includes('cssnano-util-raw-cache'));
     const result = await postcss(defaultPreset()).process('a{color:red}', {

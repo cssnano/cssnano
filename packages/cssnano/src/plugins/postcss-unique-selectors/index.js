@@ -185,6 +185,24 @@ function generateUniqueSelector(selectors) {
     .join();
 }
 /**
+ * Removes the duplicate selectors of one rule, keeping its raw formatting.
+ *
+ * @param {import('postcss').Rule} nodes
+ * @return {void}
+ */
+export function uniqueRuleSelector(nodes) {
+  const source =
+    nodes.raws.selector?.value === nodes.selector
+      ? (nodes.raws.selector.raw ?? nodes.selector)
+      : nodes.selector;
+  const selector = generateUniqueSelector(source);
+  nodes.selector = selector;
+  if (nodes.raws.selector?.raw) {
+    nodes.raws.selector = { raw: selector, value: selector };
+  }
+}
+
+/**
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
@@ -194,17 +212,7 @@ function pluginCreator() {
      * @param {import('postcss').Root} css
      */
     OnceExit(css) {
-      css.walkRules((nodes) => {
-        const source =
-          nodes.raws.selector?.value === nodes.selector
-            ? (nodes.raws.selector.raw ?? nodes.selector)
-            : nodes.selector;
-        const selector = generateUniqueSelector(source);
-        nodes.selector = selector;
-        if (nodes.raws.selector?.raw) {
-          nodes.raws.selector = { raw: selector, value: selector };
-        }
-      });
+      css.walkRules(uniqueRuleSelector);
     },
   };
 }

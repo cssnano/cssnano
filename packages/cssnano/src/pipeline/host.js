@@ -1,5 +1,6 @@
 import { resolveTargets } from '#utils/browser-targets';
 import { walkStylesheet } from './traversal.js';
+import { walkAfterMerge } from './afterMerge.js';
 
 /**
  * A host plugin runs the stages of one run in order, at OnceExit, so the
@@ -86,12 +87,15 @@ const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
  *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
  * @param {ReadonlyMap<string, PassRun>} [passes] the passes that run after the walk, by entry name
+ * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
+ *   the walk after the passes runs, by entry name; a missing name is disabled
  * @returns {Plugin}
  */
 export function hostPlugin(
   members,
   transforms = new Map(),
-  passes = new Map()
+  passes = new Map(),
+  after = new Map()
 ) {
   // Each member keeps its stage per targets array. The frozen targets of equal
   // browserslist results are one array, so the memo serves every stylesheet.
@@ -134,6 +138,7 @@ export function hostPlugin(
           for (const { pass, options, browsers } of runs) {
             pass(root, browsers, options, helpers.result);
           }
+          if (after.size > 0) walkAfterMerge(root, helpers.result, after);
         },
       };
     },
