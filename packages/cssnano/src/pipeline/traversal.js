@@ -56,18 +56,6 @@ function textEntry(plan) {
 }
 
 /**
- * The text as written: a raw is trusted only while its cleaned text still
- * matches the node, as sourceValue does for declarations.
- *
- * @param {{raw?: string, value: string} | undefined} raw
- * @param {string} text
- * @returns {string}
- */
-function sourceText(raw, text) {
-  return raw?.value === text ? (raw.raw ?? text) : text;
-}
-
-/**
  * Looks up the memo of a context, creating it on first use.
  *
  * @param {(Map<string, string> | undefined)[]} memos
@@ -193,8 +181,9 @@ function walkAtRule(state, atRule) {
     state.atRules.set(atRule.name, entry);
   }
   if (entry.plan === null) return;
+  // Preludes and selectors are read without comments, as PostCSS gives them.
   const context = contextOf(atRule, state.contexts);
-  const text = sourceText(atRule.raws.params, atRule.params);
+  const text = atRule.params;
   const result = reduceText(entry, text, context, atRule, state.helpers);
   if (result !== text) {
     atRule.params = result;
@@ -210,8 +199,9 @@ function walkAtRule(state, atRule) {
  */
 function walkRule(state, rule) {
   if (state.selectors.plan === null) return;
+  // Preludes and selectors are read without comments, as PostCSS gives them.
   const context = contextOf(rule, state.contexts);
-  const text = sourceText(rule.raws.selector, rule.selector);
+  const text = rule.selector;
   const result = reduceText(
     state.selectors,
     text,
