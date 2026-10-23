@@ -2,6 +2,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import convertValues from '../../src/plugins/postcss-convert-values/index.js';
 import normalizeString from '../../src/plugins/postcss-normalize-string/index.js';
+import normalizeDisplayValues from '../../src/plugins/postcss-normalize-display-values/index.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
 
 describe('Value reducers edit the buffer tokens in place', () => {
@@ -21,5 +22,17 @@ describe('Value reducers edit the buffer tokens in place', () => {
     reduce(buffer, 0);
     assert.equal(buffer.text(), 'red "a"');
     assert.equal(buffer.tokens()[0], kept);
+  });
+
+  test("normalize-display-values edits the value buffer's tokens without a text edit", () => {
+    const reduce = normalizeDisplayValues.create({}).forProperty('display');
+    const buffer = new ValueBuffer('inline list-item');
+    reduce(buffer, 0);
+    assert.equal(buffer.isEdited(), true);
+    assert.equal(buffer.text(), 'inline list-item');
+    assert.deepEqual(
+      buffer.tokens().map((token) => token[1]),
+      ['inline', ' ', 'list-item']
+    );
   });
 });
