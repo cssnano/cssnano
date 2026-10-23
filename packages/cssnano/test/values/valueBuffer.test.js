@@ -92,3 +92,76 @@ test('ValueBuffer.text keeps the text of several edits in their source order', (
   buffer.replace(0, 1, [ident('z')]);
   assert.equal(buffer.text(), 'zyb');
 });
+
+test('ValueBuffer.isEdited is false until an edit', () => {
+  const buffer = new ValueBuffer('a b');
+  buffer.tokens();
+  assert.equal(buffer.isEdited(), false);
+  buffer.replace(0, 1, [ident('x')]);
+  assert.equal(buffer.isEdited(), true);
+});
+
+test('ValueBuffer.tokens reads a unicode-range value in the mode it was given', () => {
+  const unicodeRangesAllowed = { unicodeRangesAllowed: true };
+  assert.equal(
+    new ValueBuffer('U+0-7F', unicodeRangesAllowed).tokens()[0][0],
+    TokenType.UnicodeRange
+  );
+  assert.notEqual(
+    new ValueBuffer('U+0-7F').tokens()[0][0],
+    TokenType.UnicodeRange
+  );
+});
+
+/**
+ * @param {string} source
+ * @param {{start: number, end: number, tokens: import('@csstools/css-tokenizer').CSSToken[]}[]} edits
+ * @return {string}
+ */
+function textAfterSuccessiveReplaces(source, edits) {
+  const buffer = new ValueBuffer(source);
+  for (const edit of edits.toReversed()) {
+    buffer.replace(edit.start, edit.end, edit.tokens);
+  }
+  return buffer.text();
+}
+
+test('ValueBuffer.replaceRanges applies ascending edits as successive replace calls from last to first would', () => {
+  const source = 'a b c d';
+  const cases = {
+    'an empty edit list': [],
+    'adjacent edits': [
+      { start: 0, end: 1, tokens: [ident('x')] },
+      { start: 1, end: 2, tokens: [ident('y')] },
+    ],
+    'edits at both ends': [
+      { start: 0, end: 1, tokens: [ident('x')] },
+      { start: 6, end: 7, tokens: [ident('y')] },
+    ],
+    'a deletion': [{ start: 1, end: 2, tokens: [] }],
+    'an insertion between tokens': [{ start: 2, end: 2, tokens: [ident('z')] }],
+  };
+  for (const [name, edits] of Object.entries(cases)) {
+    const buffer = new ValueBuffer(source);
+    buffer.replaceRanges(edits);
+    assert.equal(
+      buffer.text(),
+      textAfterSuccessiveReplaces(source, edits),
+      name
+    );
+  }
+});
+
+test('ValueBuffer.replaceRanges gives the tokens after an edit their positions in the new text', () => {
+  const buffer = new ValueBuffer('a bc d');
+  buffer.replaceRanges([{ start: 0, end: 1, tokens: [ident('xyz')] }]);
+  const last = buffer.tokens().at(-1);
+  assert.equal(buffer.text().slice(last[2], last[3] + 1), 'd');
+});
+
+test('ValueBuffer.replace gives the tokens after an edit their positions in the new text', () => {
+  const buffer = new ValueBuffer('a bc d');
+  buffer.replace(0, 1, [ident('xyz')]);
+  const last = buffer.tokens().at(-1);
+  assert.equal(buffer.text().slice(last[2], last[3] + 1), 'd');
+});

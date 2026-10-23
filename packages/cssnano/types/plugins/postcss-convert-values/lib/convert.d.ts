@@ -39,6 +39,10 @@ export type UnitGroup = {
     zeroOnly?: Map<string, string>;
     requiresZeroUnit?: boolean;
 };
+export type Spelling = {
+    representation: string;
+    unit: string;
+};
 /**
  * @param {string} lowerCaseUnit
  * @return {boolean}
@@ -74,11 +78,18 @@ export declare function dropLeadingZero(number: number): string;
  */
 export declare function formatNumber(number: number, allowExponent?: boolean): string;
 /**
+ * The length of a spelling as its text: the representation and the unit.
+ *
+ * @param {Spelling} spelling
+ * @return {number}
+ */
+export declare function spelledLength(spelling: Spelling): number;
+/**
  * @param {number} number
  * @param {string} unit
  * @param {ConvertOptions} [options]
- * @return {string}
+ * @return {Spelling}
  */
-declare const convert: (number: number, unit: string, options?: ConvertOptions) => string;
+declare const convert: (number: number, unit: string, options?: ConvertOptions) => Spelling;
 export default convert;
 //# sourceMappingURL=convert.d.ts.map
