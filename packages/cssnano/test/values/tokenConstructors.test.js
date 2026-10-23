@@ -4,6 +4,7 @@ import { tokenize, NumberType, TokenType } from '@csstools/css-tokenizer';
 import {
   ident,
   integer,
+  numeric,
   percentage,
 } from '../../src/values/tokenConstructors.js';
 
@@ -81,4 +82,79 @@ test('percentage reads back an integer-valued percentage as the value it was giv
 
 test('percentage rejects a value that CSS cannot write', () => {
   assert.throws(() => percentage(Number.POSITIVE_INFINITY), RangeError);
+});
+
+/**
+ * The tokenizer writes `signCharacter` even when it is undefined; constructors
+ * leave the key out instead.
+ *
+ * @param {object} data
+ */
+function withoutUndefined(data) {
+  return Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined)
+  );
+}
+
+test('numeric reads back as the token the tokenizer reads from its text', () => {
+  const spellings = [
+    '1',
+    '-0',
+    '+1',
+    '.5',
+    '-.5e2',
+    '1e3',
+    '1E-3',
+    '+1e+3',
+    '1.0',
+  ];
+  const units = ['', '%', 'px', 'PX', 'e3', '-', '--'];
+  for (const spelling of spellings) {
+    for (const unit of units) {
+      const token = numeric(spelling, unit);
+      const read = firstToken(token[1]);
+      assert.equal(read[0], token[0], `${spelling}${unit}: type`);
+      assert.equal(read[1], token[1], `${spelling}${unit}: text`);
+      assert.deepEqual(
+        withoutUndefined(read[4]),
+        token[4],
+        `${spelling}${unit}: data`
+      );
+    }
+  }
+});
+
+test("numeric keeps the representation it was given as the number's text", () => {
+  const token = numeric('+1.50e1');
+  assert.equal(token[1], '+1.50e1');
+  assert.equal(token[4].value, 15);
+  assert.equal(token[4].type, NumberType.Number);
+});
+
+test('numeric escapes a unit the tokenizer would read as an exponent', () => {
+  assert.equal(numeric('1', 'e3')[1], '1\\65 3');
+  assert.equal(numeric('1', 'E-3')[1], '1\\45 -3');
+  assert.equal(firstToken(numeric('1', 'e3')[1])[4].unit, 'e3');
+});
+
+test('numeric rejects a representation that is not a CSS number', () => {
+  for (const representation of [
+    '',
+    '1.',
+    'e3',
+    '1e',
+    'Infinity',
+    '.',
+    '+',
+    '1e+',
+    '1.e3',
+  ]) {
+    assert.throws(() => numeric(representation), RangeError, representation);
+  }
+});
+
+test('integer sets the sign character of a negative value, as the tokenizer does', () => {
+  assert.equal(integer(-3)[1], '-3');
+  assert.equal(firstToken(integer(-3)[1])[4].signCharacter, '-');
+  assert.equal(integer(3)[4].signCharacter, undefined);
 });
