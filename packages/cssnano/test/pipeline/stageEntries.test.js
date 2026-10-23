@@ -10,7 +10,7 @@ import { hostPlugin } from '../../src/pipeline/host.js';
 
 /**
  * A stage entry. Its create records the options it is built with, and its
- * stage logs the name of the entry each time it runs.
+ * stage logs the name of the entry for each selector it reads.
  *
  * @param {string} option
  * @param {{log: string[], built: {option: string, options: Record<PropertyKey, unknown>}[], targets?: true, returnsNull?: true}} state
@@ -23,8 +23,9 @@ function stageEntry(option, { log, built, targets, returnsNull }) {
         built.push({ option, options });
         if (returnsNull) return null;
         return {
-          run() {
+          selector(/** @type {string} */ text) {
             log.push(option);
+            return text;
           },
         };
       },
@@ -180,7 +181,7 @@ const countingEntry = (calls) => ({
   create(/** @type {unknown} */ _options, /** @type {unknown} */ targets) {
     calls.count += 1;
     calls.targets.push(targets);
-    return { run() {} };
+    return {};
   },
 });
 

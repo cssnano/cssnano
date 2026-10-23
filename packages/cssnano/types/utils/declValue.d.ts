@@ -7,14 +7,5 @@
  * @return {string}
  */
 declare function sourceValue(decl: import('postcss').Declaration): string;
-/**
- * Replace the value and keep the raw in step, so serialization does not
- * restore the previous source text.
- *
- * @param {import('postcss').Declaration} decl
- * @param {string} value
- * @return {void}
- */
-declare function assignValue(decl: import('postcss').Declaration, value: string): void;
-export { assignValue, sourceValue };
+export { sourceValue };
 //# sourceMappingURL=declValue.d.ts.map

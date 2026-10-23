@@ -15,33 +15,11 @@ declare function ident(value: string): CSSToken;
  */
 declare function integer(value: number): CSSToken;
 /**
- * A `<number>` token. Any finite value is accepted; the token's type is
- * `integer` exactly when its text reads back as an integer.
- *
- * @param {number} value
- * @return {CSSToken}
- */
-declare function number(value: number): CSSToken;
-/**
- * A dimension token: a `<number>` followed by a unit.
- *
- * @param {number} value
- * @param {string} unit a non-empty identifier
- * @return {CSSToken}
- */
-declare function dimension(value: number, unit: string): CSSToken;
-/**
  * A percentage token: a `<number>` followed by a percent sign.
  *
  * @param {number} value
  * @return {CSSToken}
  */
 declare function percentage(value: number): CSSToken;
-/**
- * A whitespace token, written as a single space.
- *
- * @return {CSSToken}
- */
-declare function whitespace(): CSSToken;
-export { dimension, ident, integer, number, percentage, whitespace };
+export { ident, integer, percentage };
 //# sourceMappingURL=tokenConstructors.d.ts.map

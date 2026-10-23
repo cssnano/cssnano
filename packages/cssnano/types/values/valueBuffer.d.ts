@@ -5,7 +5,7 @@ export type BalancedTokens = NonNullable<ReturnType<typeof balancedStructure>>;
  * The working copy of one fold over a declaration value. Reads come from the
  * source text until the first edit. Tokens are built on first use, and a
  * buffer owns its token list, so an edit never touches a list another reader
- * holds. finish serializes the result once.
+ * holds.
  */
 declare class ValueBuffer {
     #private;
@@ -65,13 +65,6 @@ declare class ValueBuffer {
         message: string;
         plugin: string | undefined;
     }[] | undefined;
-    /**
-     * The serialized text of the buffer. A buffer with no edits gives its
-     * source text.
-     *
-     * @return {string}
-     */
-    finish(): string;
 }
 export { ValueBuffer };
 //# sourceMappingURL=valueBuffer.d.ts.map

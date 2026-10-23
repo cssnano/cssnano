@@ -28,9 +28,8 @@ export type RunState = {
  * through its plan with its context, and written back only when it changed.
  *
  * @param {readonly Stage[]} stages in pipeline order
- * @returns {{run: (root: Root, helpers: Helpers) => void}}
+ * @param {Root} root
+ * @param {Helpers} helpers
  */
-export declare function declarationTraversal(stages: readonly Stage[]): {
-    run: (root: Root, helpers: Helpers) => void;
-};
+export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers): void;
 //# sourceMappingURL=traversal.d.ts.map
