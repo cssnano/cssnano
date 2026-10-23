@@ -206,7 +206,7 @@ describe('Keyframes', () => {
     assert.strictEqual(referenced.css, '.a{animation-name:fade}');
   });
 
-  test('should not generate same ident when plugin instance is reused', async () => {
+  test('should match a fresh processor when the plugin instance is reused', async () => {
     const instance = postcss(plugin);
 
     const [result1, result2, result3, result4] = await Promise.all([
@@ -237,11 +237,11 @@ describe('Keyframes', () => {
     );
     assert.strictEqual(
       result3.css,
-      '@keyframes b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}'
+      '@keyframes a{0%{opacity:1}to{opacity:0}}.two{animation-name:a}'
     );
     assert.strictEqual(
       result4.css,
-      '@KEYFRAMES b{0%{opacity:1}to{opacity:0}}.two{animation-name:b}'
+      '@KEYFRAMES a{0%{opacity:1}to{opacity:0}}.two{animation-name:a}'
     );
   });
 });
