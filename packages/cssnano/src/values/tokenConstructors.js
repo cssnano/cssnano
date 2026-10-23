@@ -249,4 +249,30 @@ function percentage(value) {
   ]);
 }
 
-export { ident, integer, numeric, percentage };
+/**
+ * A string token with the text given, a quoted CSS string, and the value it
+ * decodes to. The text is the caller's, so it is not checked for escapes.
+ *
+ * @param {string} text
+ * @param {string} value
+ * @return {CSSToken}
+ */
+function stringToken(text, value) {
+  const quote = text[0];
+  if (
+    text.length < 2 ||
+    (quote !== '"' && quote !== "'") ||
+    text[text.length - 1] !== quote
+  ) {
+    throw new RangeError(`${text} is not a quoted CSS string`);
+  }
+  return /** @type {CSSToken} */ ([
+    TokenType.String,
+    text,
+    noPosition,
+    noPosition,
+    { value },
+  ]);
+}
+
+export { ident, integer, numeric, percentage, stringToken };
