@@ -1,7 +1,7 @@
 import { discardUnusedSymbols } from '#postcss-discard-unused';
 import { mergeIdentsSymbols } from '#postcss-merge-idents';
 import { reduceIdentsSymbols } from '#postcss-reduce-idents';
-import postcssZindex from '#postcss-zindex';
+import { zindexSymbols } from '#postcss-zindex';
 import { defaultPluginEntries } from './defaultPlugins.js';
 
 /** @import {SymbolTransform} from '../pipeline/host.js' */
@@ -71,9 +71,16 @@ export const advancedPluginEntries = /** @type {const} */ ([
     },
   ],
   [
-    postcssZindex,
+    {
+      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+    },
     'zindex',
-    { postcssPlugin: 'postcss-zindex', optionKeys: ['startIndex'] },
+    {
+      postcssPlugin: 'postcss-zindex',
+      optionKeys: ['startIndex'],
+      transform: true,
+      symbols: /** @type {SymbolTransform} */ (zindexSymbols),
+    },
   ],
 ]);
 
