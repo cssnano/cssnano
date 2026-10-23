@@ -4,6 +4,7 @@ import type { CommentState } from './comments/nodeComments.js';
 export type PropertyEntry = {
     plan: readonly Reducer[] | null;
     memos: (Map<string, string> | undefined)[];
+    mode: import('../values/valueBuffer.js').TokenizeMode | undefined;
 };
 export type TextEntry = {
     plan: readonly TextReducer[] | null;

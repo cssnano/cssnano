@@ -1,4 +1,3 @@
-import cssnanoUtils from '#utils';
 import { anyAffected } from '#utils/browser-bugs';
 import {
   hasContextBit,
@@ -6,9 +5,11 @@ import {
   IN_PROPERTY,
   PERCENTAGE_SYNTAX,
 } from '../../pipeline/context.js';
-import { findReplacements, stripVendorPrefix } from './lib/findReplacements.js';
-
-const { applyEdits } = cssnanoUtils;
+import {
+  containsUnicodeRange,
+  findReplacements,
+  stripVendorPrefix,
+} from './lib/findReplacements.js';
 
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 /** @import {ReplacementFlags} from './lib/findReplacements.js' */
@@ -160,7 +161,6 @@ function flagsOf(lowerCasedProp, strippedProp, context, supportsIE) {
     clampAlpha: !inKeyframes,
     isAlpha,
     isFont: strippedProp === 'font',
-    isUnicodeRange: strippedProp === 'unicode-range',
     isCustomProperty: strippedProp.startsWith('--'),
   };
 }
@@ -185,17 +185,21 @@ function compileConvertValues(options, browsers) {
       if (skipsTransformation(strippedProp, options)) return null;
       /** @type {Reducer} */
       const reduce = (buffer, context) => {
-        const text = buffer.text();
-        if (!/[0-9]/v.test(text)) return;
+        // Before an edit the text is the source, so a digit check costs no
+        // serialization; after one, the tokens hold the digits.
+        if (!buffer.isEdited() && !/[0-9]/v.test(buffer.text())) return;
         const flags = flagsOf(
           lowerCasedProp,
           strippedProp,
           context,
           supportsIE
         );
-        const replacements = findReplacements(text, flags, options);
-        const out = replacements.length ? applyEdits(text, replacements) : text;
-        if (out !== text) buffer.replaceText(out);
+        // A custom property may hold a `U+` range, which only `unicode-range`
+        // reads as one token, so no edit is safe for it.
+        if (flags.isCustomProperty && containsUnicodeRange(buffer.text())) {
+          return;
+        }
+        buffer.replaceRanges(findReplacements(buffer.tokens(), flags, options));
       };
       return reduce;
     },

@@ -3,9 +3,11 @@ import convert, {
   formatNumber,
   requiresZeroUnit,
   roundToPrecision,
+  spelledLength,
 } from './convert.js';
 import { keepJoiningSign } from './keepJoiningSign.js';
 import { numericSource } from './numericSource.js';
+import { numeric as numericToken } from '../../../values/tokenConstructors.js';
 
 const {
   TokenType,
@@ -49,10 +51,27 @@ const functionsPreservingZeroUnits = new Set([
 
 /** @typedef {Parameters<typeof convert>[2]} ConvertOptions */
 /** @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions} Options */
-/** @typedef {{keepZeroPercent: boolean, keepZeroLength: boolean, clampAlpha: boolean, isAlpha: boolean, isFont: boolean, isUnicodeRange: boolean, isCustomProperty: boolean}} ReplacementFlags */
+/** @typedef {import('./convert.js').Spelling} Spelling */
+/** @typedef {ReturnType<typeof tokens>[number]} CSSToken */
+/** @typedef {{keepZeroPercent: boolean, keepZeroLength: boolean, clampAlpha: boolean, isAlpha: boolean, isFont: boolean, isCustomProperty: boolean}} ReplacementFlags */
 
 /* Only `unicode-range` and custom properties keep `U+` ranges as one token. */
 const unicodeRangeOptions = { unicodeRangesAllowed: true };
+
+/**
+ * A custom property with a `U+` range may be read as `unicode-range` or as
+ * anything else, and `u+1.0e2` is a range then a number in one, a single
+ * number in the other, so no edit is safe for both.
+ *
+ * @param {string} value
+ * @return {boolean}
+ */
+export function containsUnicodeRange(value) {
+  if (!/u\+/iv.test(value)) return false;
+  return tokens(value, unicodeRangeOptions).some(
+    (token) => token[0] === TokenType.UnicodeRange
+  );
+}
 
 /**
  * @param {string} unit
@@ -60,7 +79,7 @@ const unicodeRangeOptions = { unicodeRangesAllowed: true };
  * @param {Options} opts
  * @param {boolean} keepZeroPercent
  * @param {boolean} keepZeroLength
- * @return {string}
+ * @return {Spelling}
  */
 function formatZero(
   unit,
@@ -73,15 +92,15 @@ function formatZero(
     return convert(0, unit, opts);
   }
   if (unit === '%') {
-    return keepZeroPercent ? '0%' : '0';
+    return { representation: '0', unit: keepZeroPercent ? '%' : '' };
   }
   if (lengthUnits.has(lowerCasedUnit)) {
-    return keepZeroLength ? '0' + unit : '0';
+    return { representation: '0', unit: keepZeroLength ? unit : '' };
   }
-  return '0';
+  return { representation: '0', unit: '' };
 }
 
-/** @param {number} number @param {string} unit @param {string} raw @param {Options} opts @param {boolean} keepZeroPercent @param {boolean} keepZeroLength @param {boolean} hasDecimal @return {string} */
+/** @param {number} number @param {string} unit @param {string} raw @param {Options} opts @param {boolean} keepZeroPercent @param {boolean} keepZeroLength @param {boolean} hasDecimal @return {Spelling} */
 function parseNumber(
   number,
   unit,
@@ -91,7 +110,7 @@ function parseNumber(
   keepZeroLength,
   hasDecimal
 ) {
-  if (raw.includes('\\')) return raw;
+  if (raw.includes('\\')) return { representation: raw, unit: '' };
   const lowerCasedUnit = unit.toLowerCase();
   if (
     unit !== '' &&
@@ -99,7 +118,9 @@ function parseNumber(
     !lengthUnits.has(lowerCasedUnit) &&
     !requiresZeroUnit(lowerCasedUnit)
   )
-    return raw;
+    return { representation: raw, unit: '' };
+  // A value that overflows to Infinity has no CSS spelling, so it stays as written.
+  if (!Number.isFinite(number)) return { representation: raw, unit: '' };
   let num = number;
   if (
     typeof opts.precision === 'number' &&
@@ -123,30 +144,32 @@ function parseNumber(
   if (unit === '') {
     const writtenAsInteger =
       !raw.includes('.') && !raw.toLowerCase().includes('e');
-    return formatNumber(num, !writtenAsInteger);
+    return { representation: formatNumber(num, !writtenAsInteger), unit: '' };
   }
   return convert(num, unit, opts);
 }
 
-/** @param {string} value @param {number} number @param {string} unit @param {Options} opts @param {boolean} [clamp] @return {string} */
-function clampOpacity(value, number, unit, opts, clamp = true) {
+/** @param {Spelling} spelling @param {number} number @param {string} unit @param {Options} opts @param {boolean} [clamp] @return {Spelling} */
+function clampOpacity(spelling, number, unit, opts, clamp = true) {
   if (unit === '%') {
     if (clamp) {
-      if (number >= 100) return '1';
-      if (number <= 0) return '0';
+      if (number >= 100) return { representation: '1', unit: '' };
+      if (number <= 0) return { representation: '0', unit: '' };
     }
     let decimalNumber = Number((number / 100).toPrecision(15));
     if (typeof opts.precision === 'number' && opts.precision >= 0) {
       decimalNumber = roundToPrecision(decimalNumber, opts.precision);
     }
     const decimal = formatNumber(decimalNumber);
-    return decimal.length < value.length ? decimal : value;
+    return decimal.length < spelledLength(spelling)
+      ? { representation: decimal, unit: '' }
+      : spelling;
   }
   if (clamp) {
-    if (number > 1) return '1';
-    if (number < 0) return '0';
+    if (number > 1) return { representation: '1', unit: '' };
+    if (number < 0) return { representation: '0', unit: '' };
   }
-  return value;
+  return spelling;
 }
 
 /** @param {string} str @return {string} */
@@ -160,16 +183,22 @@ export function stripVendorPrefix(str) {
 }
 
 /**
- * @param {string} replacement
+ * @param {Spelling} replacement
  * @param {string} raw
  * @param {boolean} isAlpha
  * @param {boolean} isConvertibleZero
  * @return {boolean}
  */
 function shouldReplace(replacement, raw, isAlpha, isConvertibleZero) {
-  if (replacement === raw) return false;
-  if (replacement.length < raw.length) return true;
-  return (isAlpha || isConvertibleZero) && replacement.length <= raw.length;
+  const length = spelledLength(replacement);
+  if (
+    length === raw.length &&
+    replacement.representation + replacement.unit === raw
+  ) {
+    return false;
+  }
+  if (length < raw.length) return true;
+  return (isAlpha || isConvertibleZero) && length <= raw.length;
 }
 
 class FrameStack {
@@ -253,7 +282,7 @@ class FrameStack {
   }
 }
 
-/** @typedef {{index: number, start: number, end: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
+/** @typedef {{index: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
 
 /**
  * @param {NumericSource} source
@@ -261,7 +290,7 @@ class FrameStack {
  * @param {FrameStack} frames
  * @param {Options} opts
  * @param {ReplacementFlags} flags
- * @return {{start: number, end: number, text: string} | undefined}
+ * @return {Spelling | undefined} the new spelling, or undefined to keep the source
  */
 function processNumericToken(source, isLineHeight, frames, opts, flags) {
   const currentKeepZeroPercent = frames.keepZeroPercent || isLineHeight;
@@ -289,50 +318,27 @@ function processNumericToken(source, isLineHeight, frames, opts, flags) {
   const isConvertibleZero =
     source.number === 0 && requiresZeroUnit(source.unit.toLowerCase());
 
-  if (shouldReplace(replacement, source.raw, isAlpha, isConvertibleZero)) {
-    return {
-      start: source.start,
-      end: source.end,
-      text: replacement,
-    };
-  }
-  return undefined;
+  return shouldReplace(replacement, source.raw, isAlpha, isConvertibleZero)
+    ? replacement
+    : undefined;
 }
 
 /**
- * The tokens of `value`, or `undefined` for a custom property with a `U+`
- * range. Such a property may be read as `unicode-range` or as anything else,
- * and `u+1.0e2` is a range then a number in one, a single number in the
- * other, so no edit is safe for both.
+ * The edits that shorten the numbers of a value, each replacing the tokens of
+ * one number, sign included, with one token. Edits come in ascending order,
+ * ready for ValueBuffer.replaceRanges.
  *
- * @param {string} value
- * @param {ReplacementFlags} flags
- * @return {ReturnType<typeof tokens> | undefined}
- */
-function valueTokens(value, flags) {
-  if (!flags.isUnicodeRange && !flags.isCustomProperty) return tokens(value);
-  const input = tokens(value, unicodeRangeOptions);
-  if (!flags.isCustomProperty) return input;
-  for (const token of input) {
-    if (token[0] === TokenType.UnicodeRange) return undefined;
-  }
-  return input;
-}
-
-/**
- * @param {string} value
+ * @param {readonly CSSToken[]} input the tokens of the value
  * @param {ReplacementFlags} flags
  * @param {Options} opts
- * @return {{start: number, end: number, text: string}[]}
+ * @return {{start: number, end: number, tokens: CSSToken[]}[]}
  */
-export function findReplacements(value, flags, opts) {
-  /** @type {{start: number, end: number, text: string}[]} */
-  const replacements = [];
+export function findReplacements(input, flags, opts) {
+  /** @type {{start: number, end: number, tokens: CSSToken[]}[]} */
+  const edits = [];
   const frames = new FrameStack(flags.keepZeroPercent, flags.keepZeroLength);
   let afterFontSlash = false;
 
-  const input = valueTokens(value, flags);
-  if (!input) return replacements;
   for (let index = 0; index < input.length; index++) {
     const token = input[index];
     if (frames.advance(token)) {
@@ -364,18 +370,26 @@ export function findReplacements(value, flags, opts) {
     }
 
     const previous = input[index - 1];
+    const first = index;
     const source = numericSource(input, index);
     if (!source) continue;
     index = source.index;
 
-    const edit = processNumericToken(
+    const spelling = processNumericToken(
       source,
       wasAfterFontSlash,
       frames,
       opts,
       flags
     );
-    if (edit) replacements.push(keepJoiningSign(edit, source, previous));
+    if (spelling) {
+      const joined = keepJoiningSign(spelling, source, previous);
+      edits.push({
+        start: first,
+        end: source.index + 1,
+        tokens: [numericToken(joined.representation, joined.unit)],
+      });
+    }
   }
-  return replacements;
+  return edits;
 }
