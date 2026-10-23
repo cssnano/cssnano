@@ -6,6 +6,7 @@ import {
   enableConsistencyChecks,
 } from '../../../src/passes/ir/blockTable.js';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
+import { mergePass } from '../../../src/passes/merge/index.js';
 import {
   applyChildEdits,
   detach,
@@ -13,6 +14,7 @@ import {
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import joinByDeclarations from '../../../src/passes/merge/lib/rules/declarationJoin.js';
 import RuleSequence from '../../../src/passes/merge/lib/rules/ruleSequence.js';
+import { resolveTargets } from '../../../src/utils/browserTargets.js';
 
 /** @import {AtRule, Declaration, Root, Rule} from 'postcss' */
 
@@ -82,4 +84,18 @@ test('block table: a read between a deferred removal and its apply does not hide
   } finally {
     table.detach();
   }
+});
+
+// In the joined @media (y), the forward pass moves the `a` rule down past the
+// first @media (z), so the backward pass hands the second @media (z) up to the
+// first, whose summary the next forward pass reads.
+test('block table: a backward pass that hands a block up leaves the receiving summary equal to the tree', () => {
+  const root = postcss.parse(
+    '@media (y){@media (z){a{color:red}}a{color:blue;width:1px}}@media (y){@media (z){b{width:1px}a{margin:0}}a{margin:0}@media (z){a{color:blue}}}'
+  );
+  mergePass(root, resolveTargets({}, undefined));
+  assert.equal(
+    root.toString(),
+    '@media (y){@media (z){a{color:red;margin:0}b{width:1px}}a{color:blue;width:1px;margin:0}@media (z){a{color:blue}}}'
+  );
 });
