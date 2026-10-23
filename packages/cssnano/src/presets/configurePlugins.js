@@ -12,7 +12,7 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {StageEntry, HostMember, TransformEntry} from '../pipeline/host.js' */
+/** @import {StageEntry, HostMember, PassRun, TransformEntry} from '../pipeline/host.js' */
 
 /**
  * The options of a built preset: the same as cssnano, without the preset and
@@ -36,8 +36,9 @@ import {
  * the walk of the run receives its options under the entry name while the
  * plugin still runs.
  *
- * `transform` is set when the entry is a whole-stylesheet transform that the walk
- * runs, so its entry is a TransformEntry rather than a creator or a stage.
+ * `transform` is set when the entry is a whole-stylesheet transform, so its entry
+ * is a TransformEntry rather than a creator or a stage. A transform with `pass`
+ * runs as a pass after the walk of its run, instead of inside the walk.
  *
  * @typedef {{
  *   postcssPlugin: string,
@@ -48,6 +49,7 @@ import {
  *   stage?: StageEntry,
  *   walk?: true,
  *   transform?: true,
+ *   pass?: PassRun['pass'],
  * }} PluginEntrySettings
  */
 
@@ -64,14 +66,14 @@ import {
  */
 
 /**
- * The stage members of a host, and the options of the walk transforms that
- * the host's walk runs.
- * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>}} Run
+ * The stage members of a host, the options of the walk transforms that the
+ * host's walk runs, and the passes that run after it.
+ * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, passes: Map<string, PassRun>}} Run
  */
 
 /** @returns {Run} */
 function newRun() {
-  return { members: [], transforms: new Map() };
+  return { members: [], transforms: new Map(), passes: new Map() };
 }
 
 /**
@@ -116,8 +118,12 @@ export function configureValidated(entries, known) {
   /** @type {Run} */
   let run = newRun();
   const endRun = () => {
-    if (run.members.length > 0 || run.transforms.size > 0) {
-      plugins.push(hostPlugin(run.members, run.transforms));
+    if (
+      run.members.length > 0 ||
+      run.transforms.size > 0 ||
+      run.passes.size > 0
+    ) {
+      plugins.push(hostPlugin(run.members, run.transforms, run.passes));
     }
     run = newRun();
   };
@@ -130,7 +136,11 @@ export function configureValidated(entries, known) {
     };
     if (settings.transform) {
       const transform = /** @type {TransformEntry} */ (entry).create(options);
-      if (transform !== null) run.transforms.set(name, transform);
+      if (transform !== null && settings.pass) {
+        run.passes.set(name, { pass: settings.pass, options: transform });
+      } else if (transform !== null) {
+        run.transforms.set(name, transform);
+      }
       continue;
     }
     if (settings.walk) run.transforms.set(name, options);

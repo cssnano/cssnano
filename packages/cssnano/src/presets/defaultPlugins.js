@@ -18,7 +18,7 @@ import postcssNormalizePositions from '#postcss-normalize-positions';
 import postcssNormalizeUnicode from '#postcss-normalize-unicode';
 import normalizeDisplayValues from '#postcss-normalize-display-values';
 import normalizeTimingFunctions from '#postcss-normalize-timing-functions';
-import mergePass, { rulesGuard } from '../passes/merge/index.js';
+import { mergePass, rulesGuard } from '../passes/merge/index.js';
 import {
   discardCommentsEntry,
   discardEmptyEntry,
@@ -66,11 +66,13 @@ import {
  * always run together.
  */
 const mergeEntry = /** @type {const} */ ([
-  mergePass,
+  { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
   'merge',
   {
     postcssPlugin: 'cssnano-merge',
     targets: true,
+    transform: true,
+    pass: mergePass,
     optionKeys: ['rules'],
     guards: { rules: rulesGuard },
   },

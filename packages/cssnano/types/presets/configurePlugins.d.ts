@@ -2,7 +2,7 @@ import type { AcceptedPlugin } from 'postcss';
 import type { NamedPreset } from './presetEntries.js';
 import type { SharedTargets } from '#utils/browser-targets';
 import type { Guard } from '../optionGuards.js';
-import type { StageEntry, HostMember, TransformEntry } from '../pipeline/host.js';
+import type { StageEntry, HostMember, PassRun, TransformEntry } from '../pipeline/host.js';
 export type PresetOptions<Plugins extends object> = {
     browserslist?: SharedTargets;
     /**
@@ -24,12 +24,14 @@ export type PluginEntrySettings = {
     stage?: StageEntry;
     walk?: true;
     transform?: true;
+    pass?: PassRun['pass'];
 };
 export type PluginCreator = import('postcss').PluginCreator<any>;
 export type PluginEntry = readonly [PluginCreator | StageEntry | TransformEntry, string, PluginEntrySettings];
 export type Run = {
     members: HostMember[];
     transforms: Map<string, Record<PropertyKey, unknown>>;
+    passes: Map<string, PassRun>;
 };
 /**
  * Turns the options of a built preset into the plugins it runs. A disabled
