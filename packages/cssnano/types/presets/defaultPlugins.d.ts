@@ -230,8 +230,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
     readonly postcssPlugin: 'postcss-normalize-repeat-style';
     readonly optionKeys: readonly [];
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: () => import("../pipeline/host.js").Stage;
 }, 'normalizePositions', {
     readonly postcssPlugin: 'postcss-normalize-positions';
     readonly optionKeys: readonly [];
