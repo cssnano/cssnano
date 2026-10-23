@@ -186,6 +186,24 @@ const syntheticCorpus = {
   ]
     .map((value) => `a{background-position:${value}}`)
     .join('\n'),
+  'postcss-ordered-values': [
+    'border:solid 1px red',
+    'border:red solid 1px',
+    'outline:solid red 1px',
+    'column-rule:solid 1px red',
+    'columns:auto 2',
+    'box-shadow:red 1px 1px 0 inset',
+    'list-style:inside disc',
+    'transition:opacity 1s ease-in',
+    'animation:1s ease-in fade',
+    'flex-flow:column wrap',
+    'grid-row:span 2 / 3',
+    'grid-column:header / footer',
+    '-webkit-box-shadow:red 1px 1px',
+    'border:solid calc(1px + 1px) red',
+  ]
+    .map((declaration) => `a{${declaration}}`)
+    .join('\n'),
   'postcss-reduce-transforms': [
     'scale(1, 1)',
     'scale(2, 2)',
@@ -318,6 +336,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     'postcss-normalize-timing-functions',
     'postcss-calc',
     'postcss-convert-values',
+    'postcss-ordered-values',
   ];
   const browser = await launchChromium(executablePath);
   let failures = 0;
