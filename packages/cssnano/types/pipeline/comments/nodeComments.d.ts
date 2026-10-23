@@ -41,13 +41,14 @@ export declare function commentFreeText(text: string, comments: CommentState, pr
  */
 export declare function removeImportantComments(decl: Declaration, comments: CommentState): void;
 /**
- * Removes the comments from the selector as written. PostCSS strips them from
- * `selector`, so the raw is rewritten when it holds one.
+ * The selector without the comments that go. Kept comments pass through, and
+ * the selector parser sees the rest as PostCSS writes it.
  *
- * @param {Rule} rule
+ * @param {string} text
  * @param {CommentState} comments
+ * @returns {string}
  */
-export declare function removeSelectorComments(rule: Rule, comments: CommentState): void;
+export declare function commentFreeSelector(text: string, comments: CommentState): string;
 /**
  * Removes the comments between an at-rule name and its prelude. A name that
  * loses every comment keeps one space on each side.
