@@ -1,4 +1,4 @@
-import type { Container, Document, Helpers, Root } from 'postcss';
+import type { AtRule, Container, Document, Helpers, Root } from 'postcss';
 import type { Reducer, Stage, TextReducer } from './host.js';
 import type { CommentState } from './comments/nodeComments.js';
 export type PropertyEntry = {
@@ -35,6 +35,10 @@ export type RunState = {
      * whether normalizeWhitespace is on, which removes the stray semicolons and reattaches the escapes of blocks
      */
     normalizeWhitespace: boolean;
+    /**
+     * the outermost overridable at-rules in document order, or null when discardOverridden is off
+     */
+    overridable: AtRule[] | null;
 };
 /**
  * Runs the comment, value, prelude and selector parts of the stages over a

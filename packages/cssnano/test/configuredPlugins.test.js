@@ -20,10 +20,17 @@ function recording(entries) {
   /** @type {{name: string, options: Record<PropertyKey, unknown>}[]} */
   const calls = [];
   const recorded = entries.map(([, option, settings]) => [
-    (/** @type {Record<PropertyKey, any>} */ options) => {
-      calls.push({ name: option, options: { ...options } });
-      return { postcssPlugin: settings.postcssPlugin };
-    },
+    settings.transform
+      ? {
+          create: (/** @type {Record<PropertyKey, any>} */ options) => {
+            calls.push({ name: option, options: { ...options } });
+            return options;
+          },
+        }
+      : (/** @type {Record<PropertyKey, any>} */ options) => {
+          calls.push({ name: option, options: { ...options } });
+          return { postcssPlugin: settings.postcssPlugin };
+        },
     option,
     settings,
   ]);

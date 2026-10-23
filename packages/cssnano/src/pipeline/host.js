@@ -58,6 +58,14 @@ import { walkStylesheet } from './traversal.js';
  */
 
 /**
+ * A whole-stylesheet transform that the walk runs. `create` gets the options of
+ * the entry and returns the options the walk runs the transform with, or null
+ * when the transform is off.
+ * @typedef {object} TransformEntry
+ * @property {(options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown> | null} create
+ */
+
+/**
  * One stage entry of a host, with the options it is built with. `targets` is
  * set when the entry reads the browser targets.
  * @typedef {{entry: StageEntry, options: Record<PropertyKey, unknown>, targets: boolean}} HostMember

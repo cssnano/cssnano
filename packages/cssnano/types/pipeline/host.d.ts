@@ -16,6 +16,9 @@ export type Stage = {
 export type StageEntry = {
     create: (options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => Stage | null;
 };
+export type TransformEntry = {
+    create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown> | null;
+};
 export type HostMember = {
     entry: StageEntry;
     options: Record<PropertyKey, unknown>;

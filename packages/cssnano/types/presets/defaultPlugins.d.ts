@@ -188,12 +188,6 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
     };
     readonly optionKeys: readonly ['add'];
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'discardOverridden', {
-    readonly postcssPlugin: 'postcss-discard-overridden';
-    readonly optionKeys: readonly [];
-}], readonly [{
     create: (options: import("#postcss-normalize-string").Options) => import("../pipeline/host.js").Stage;
 }, 'normalizeString', {
     readonly postcssPlugin: 'postcss-normalize-string';
@@ -224,6 +218,12 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
 }, 'normalizePositions', {
     readonly postcssPlugin: 'postcss-normalize-positions';
     readonly optionKeys: readonly [];
+}], readonly [{
+    create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
+}, 'discardOverridden', {
+    readonly postcssPlugin: 'postcss-discard-overridden';
+    readonly optionKeys: readonly [];
+    readonly transform: true;
 }], readonly [{
     (): import("postcss/lib/postcss").Plugin;
     postcss: true;

@@ -12,7 +12,7 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {StageEntry, HostMember} from '../pipeline/host.js' */
+/** @import {StageEntry, HostMember, TransformEntry} from '../pipeline/host.js' */
 
 /**
  * The options of a built preset: the same as cssnano, without the preset and
@@ -36,6 +36,9 @@ import {
  * the walk of the run receives its options under the entry name while the
  * plugin still runs.
  *
+ * `transform` is set when the entry is a whole-stylesheet transform that the walk
+ * runs, so its entry is a TransformEntry rather than a creator or a stage.
+ *
  * @typedef {{
  *   postcssPlugin: string,
  *   targets?: true,
@@ -44,6 +47,7 @@ import {
  *   guards?: Readonly<Record<string, Guard>>,
  *   stage?: StageEntry,
  *   walk?: true,
+ *   transform?: true,
  * }} PluginEntrySettings
  */
 
@@ -53,10 +57,10 @@ import {
 
 /**
  * A plugin in a preset, the preset option that enables it, and its settings.
- * The first element is either a PostCSS plugin creator, which runs as its own
- * plugin, or a stage entry, which runs in a host plugin with the stages of the
- * adjacent stage entries.
- * @typedef {readonly [PluginCreator | StageEntry, string, PluginEntrySettings]} PluginEntry
+ * The first element is a PostCSS plugin creator, which runs as its own plugin,
+ * a stage entry, which runs in a host plugin with the stages of the adjacent
+ * stage entries, or a transform entry, which the walk of the host runs.
+ * @typedef {readonly [PluginCreator | StageEntry | TransformEntry, string, PluginEntrySettings]} PluginEntry
  */
 
 /**
@@ -124,6 +128,11 @@ export function configureValidated(entries, known) {
       ...pluginOptions[name],
       ...(settings.targets ? { [browserTargets]: targets } : undefined),
     };
+    if (settings.transform) {
+      const transform = /** @type {TransformEntry} */ (entry).create(options);
+      if (transform !== null) run.transforms.set(name, transform);
+      continue;
+    }
     if (settings.walk) run.transforms.set(name, options);
     if (settings.stage) {
       run.members.push({ entry: settings.stage, options, targets: false });
@@ -132,7 +141,11 @@ export function configureValidated(entries, known) {
       endRun();
       plugins.push(entry(options));
     } else {
-      run.members.push({ entry, options, targets: Boolean(settings.targets) });
+      run.members.push({
+        entry: /** @type {StageEntry} */ (entry),
+        options,
+        targets: Boolean(settings.targets),
+      });
     }
   }
   endRun();
