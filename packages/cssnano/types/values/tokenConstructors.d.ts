@@ -30,5 +30,14 @@ declare function integer(value: number): CSSToken;
  * @return {CSSToken}
  */
 declare function percentage(value: number): CSSToken;
-export { ident, integer, numeric, percentage };
+/**
+ * A string token with the text given, a quoted CSS string, and the value it
+ * decodes to. The text is the caller's, so it is not checked for escapes.
+ *
+ * @param {string} text
+ * @param {string} value
+ * @return {CSSToken}
+ */
+declare function stringToken(text: string, value: string): CSSToken;
+export { ident, integer, numeric, percentage, stringToken };
 //# sourceMappingURL=tokenConstructors.d.ts.map
