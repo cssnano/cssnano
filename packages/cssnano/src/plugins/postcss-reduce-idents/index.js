@@ -25,12 +25,14 @@ import {
  *  }} Reducer
  */
 /**
- * The reducers of the options, in the order they run.
+ * The reducers of the options, in the order they run. A plugin or preset
+ * builds them once and keeps them across stylesheets, so stylesheets that one
+ * processor minifies get distinct names and can share a page.
  *
  * @param {Options} options
- * @return {Reducer[]}
+ * @return {{reducers: Reducer[]}}
  */
-function reducersOf({
+export function createReducers({
   counter = true,
   counterStyle = true,
   keyframes = true,
@@ -52,7 +54,7 @@ function reducersOf({
   if (gridTemplate) {
     reducers.push(gridTemplateReducer(encoder));
   }
-  return reducers;
+  return { reducers };
 }
 
 /**
@@ -61,11 +63,10 @@ function reducersOf({
  * node that an earlier transform detached is skipped.
  *
  * @param {SymbolLists} lists
- * @param {Options} options
+ * @param {{reducers: Reducer[]}} state
  * @return {void}
  */
-export function reduceIdentsSymbols(lists, options) {
-  const reducers = reducersOf(options);
+export function reduceIdentsSymbols(lists, { reducers }) {
   const nodes = [...lists.keyframes, ...lists.counterStyles, ...lists.decls];
   for (const node of nodes) {
     if (!isAttached(node)) continue;
@@ -83,6 +84,7 @@ export function reduceIdentsSymbols(lists, options) {
  * @return {import('postcss').Plugin}
  */
 function pluginCreator(opts = {}) {
+  const state = createReducers(opts);
   return {
     postcssPlugin: 'postcss-reduce-idents',
     /**
@@ -91,7 +93,7 @@ function pluginCreator(opts = {}) {
     OnceExit(css) {
       const lists = createSymbolLists();
       css.walk(symbolVisit(lists));
-      reduceIdentsSymbols(lists, opts);
+      reduceIdentsSymbols(lists, state);
     },
   };
 }
