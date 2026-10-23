@@ -1,4 +1,4 @@
-import mergePass from '../passes/merge/index.js';
+import { mergePass } from '../passes/merge/index.js';
 export type DefaultPluginOptions = {
     /**
      * Removes comments. Comments marked as important (`/*!`) stay unless `removeAll` is set.
@@ -234,9 +234,13 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
         create: () => import("../pipeline/host.js").Stage;
     };
     readonly walk: true;
-}], readonly [typeof mergePass, "merge", {
+}], readonly [{
+    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
+}, "merge", {
     readonly postcssPlugin: 'cssnano-merge';
     readonly targets: true;
+    readonly transform: true;
+    readonly pass: typeof mergePass;
     readonly optionKeys: readonly ['rules'];
     readonly guards: {
         readonly rules: Readonly<{

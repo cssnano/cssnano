@@ -42,12 +42,16 @@ describe('built presets return plugins', () => {
     );
   });
 
-  test('turning off rule merging keeps the cssnano-merge pass for longhand merging and duplicate removal', () => {
-    assert.ok(
-      names(defaultPreset({ options: { merge: { rules: false } } })).includes(
-        'cssnano-merge'
-      )
+  test('turning off rule merging keeps the merge pass for longhand merging', async () => {
+    const { css } = await postcss(
+      defaultPreset({ options: { merge: { rules: false } } })
+    ).process(
+      'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}',
+      {
+        from: repositoryFile,
+      }
     );
+    assert.equal(css, 'a{margin:1px}');
   });
 
   test('options reach the plugin, merged over its defaults', async () => {

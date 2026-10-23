@@ -58,6 +58,12 @@ import { walkStylesheet } from './traversal.js';
  */
 
 /**
+ * A pass that runs over the stylesheet after the walk, with the browsers of the
+ * run and the options of its entry.
+ * @typedef {{pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>) => void, options: Record<PropertyKey, unknown>}} PassRun
+ */
+
+/**
  * A whole-stylesheet transform that the walk runs. `create` gets the options of
  * the entry and returns the options the walk runs the transform with, or null
  * when the transform is off.
@@ -78,9 +84,14 @@ const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
  * @param {readonly HostMember[]} members the stages of one run, in order
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
  *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
+ * @param {ReadonlyMap<string, PassRun>} [passes] the passes that run after the walk, by entry name
  * @returns {Plugin}
  */
-export function hostPlugin(members, transforms = new Map()) {
+export function hostPlugin(
+  members,
+  transforms = new Map(),
+  passes = new Map()
+) {
   // Each member keeps its stage per targets array. The frozen targets of equal
   // browserslist results are one array, so the memo serves every stylesheet.
   // A member that reads no targets is created now, under noTargets.
@@ -109,9 +120,19 @@ export function hostPlugin(members, transforms = new Map()) {
         const stage = memo.get(resolved);
         if (stage) stages.push(stage);
       }
+      const runs = [...passes.values()].map(({ pass, options }) => ({
+        pass,
+        options,
+        browsers: resolveTargets(options, result),
+      }));
       return {
         OnceExit(root, helpers) {
-          walkStylesheet(stages, root, helpers, transforms);
+          if (members.length > 0 || transforms.size > 0) {
+            walkStylesheet(stages, root, helpers, transforms);
+          }
+          for (const { pass, options, browsers } of runs) {
+            pass(root, browsers, options);
+          }
         },
       };
     },
