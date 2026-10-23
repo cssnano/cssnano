@@ -173,6 +173,17 @@ test(
   )
 );
 
+// A block `@layer` takes at most one name, so browsers drop `@layer x, y{}`
+// and the statement orders y, w, x. Keeping the copy in y would let the
+// printed body in w win.
+test(
+  'should not order layers named by a block @layer with a name list',
+  processCSS(
+    '@layer x, y{}@layer y, w, x;@layer y{@keyframes a{0%{opacity:0}}}@media print{@layer w{@keyframes a{0%{opacity:1}}}}@layer x{@keyframes a{0%{opacity:0}}}div{animation:a 1s}',
+    '@layer x, y{}@layer y, w, x;@layer y{}@media print{@layer w{@keyframes a{0%{opacity:1}}}}@layer x{@keyframes a{0%{opacity:0}}}div{animation:a 1s}'
+  )
+);
+
 test(
   'should prefer unlayered keyframes over layered keyframes regardless of order',
   processCSS(
