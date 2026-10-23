@@ -1,8 +1,12 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-whitespace/index.js';
+import {
+  normalizeWhitespacePlugins,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
 
-const { processCSS, passthroughCSS } = processCSSFactory(plugin);
+const { processCSS, passthroughCSS } = processCSSFactory(
+  normalizeWhitespacePlugins()
+);
 
 test(
   'should collapse multi-character whitespace after @media',

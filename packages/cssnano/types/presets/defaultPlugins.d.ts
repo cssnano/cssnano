@@ -230,6 +230,9 @@ export declare const defaultPluginEntries: readonly [readonly [import("../pipeli
 }, "normalizeWhitespace", {
     readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
+    readonly stage: {
+        create: () => import("../pipeline/host.js").Stage;
+    };
     readonly walk: true;
 }], readonly [typeof mergePass, "merge", {
     readonly postcssPlugin: 'cssnano-merge';

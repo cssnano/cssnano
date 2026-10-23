@@ -1,10 +1,14 @@
 import assert from 'node:assert';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-whitespace/index.js';
+import {
+  normalizeWhitespacePlugins,
+  processCSSFactory,
+} from '../../../../util/testHelpers.js';
 
-const { processCSS, passthroughCSS } = processCSSFactory(plugin);
+const { processCSS, passthroughCSS } = processCSSFactory(
+  normalizeWhitespacePlugins()
+);
 
 test(
   'should trim leading and trailing spaces from each grid-template-areas row',
@@ -76,7 +80,9 @@ test('should keep an unclosed grid-template-areas string unchanged because trimm
   root.first.append(
     postcss.decl({ prop: 'grid-template-areas', value: "' a b" })
   );
-  postcss([plugin()]).process(root, { from: undefined }).sync();
+  postcss(normalizeWhitespacePlugins())
+    .process(root, { from: undefined })
+    .sync();
   assert.strictEqual(root.first.first.value, "' a b");
 });
 
