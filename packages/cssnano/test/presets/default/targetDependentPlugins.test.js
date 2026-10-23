@@ -38,6 +38,7 @@ test('the default preset marks exactly the plugins that resolve browser targets'
       'cssnano-merge',
       'postcss-colormin',
       'postcss-convert-values',
+      'postcss-normalize-unicode',
       'postcss-reduce-initial',
     ].toSorted()
   );
