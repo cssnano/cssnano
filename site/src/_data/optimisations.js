@@ -3,7 +3,10 @@
 import advancedPreset from '../../../packages/cssnano/src/presets/advanced.js';
 import defaultPreset from '../../../packages/cssnano/src/presets/default.js';
 import litePreset from '../../../packages/cssnano/src/presets/lite.js';
-import { presetEntriesKey } from '../../../packages/cssnano/src/presets/presetEntries.js';
+import {
+  pluginNameByOption,
+  presetEntriesKey,
+} from '../../../packages/cssnano/src/presets/presetEntries.js';
 import { editorialOptimisations } from './editorialOptimisations.js';
 
 /**
@@ -23,13 +26,13 @@ import { editorialOptimisations } from './editorialOptimisations.js';
 
 /**
  * The [preset option, PostCSS plugin name] pairs that a preset runs.
- * @param {{[presetEntriesKey]: readonly (readonly [unknown, string, {postcssPlugin: string}])[]}} preset
+ * @param {{[presetEntriesKey]: readonly (readonly [unknown, string, unknown])[]}} preset
  * @returns {[string, string][]}
  */
 function pluginNamesOf(preset) {
-  return preset[presetEntriesKey].map(([, option, settings]) => [
+  return preset[presetEntriesKey].map(([, option]) => [
     option,
-    settings.postcssPlugin,
+    pluginNameByOption[option],
   ]);
 }
 

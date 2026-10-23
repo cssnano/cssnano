@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import preset from '../../../src/presets/default.js';
-import { transformPlugin } from '../../../src/passes/merge/index.js';
+import { transformPass } from '../../../src/passes/merge/index.js';
 import { configureValidated } from '../../../src/presets/configurePlugins.js';
 import { defaultPluginEntries } from '../../../src/presets/defaultPlugins.js';
 import { processCSSFactory } from '../../../../../util/testHelpers.js';
@@ -20,13 +20,21 @@ const withoutRules = processCSSFactory(
  */
 function presetWithMergeTransforms(transforms) {
   // The default entries, with the merge entry replaced by the transforms, each
-  // a plugin of its own in the place the merge pass has.
+  // a pass of its own in the place the merge pass has.
   const entries = defaultPluginEntries.flatMap(([entry, name, settings]) =>
     name === 'merge'
       ? transforms.map((transform) => [
-          transformPlugin(transform),
-          'merge',
-          { postcssPlugin: 'cssnano-merge', targets: true, optionKeys: [] },
+          {
+            create: (/** @type {Record<PropertyKey, unknown>} */ options) =>
+              options,
+          },
+          transform,
+          {
+            targets: true,
+            transform: true,
+            pass: transformPass(transform),
+            optionKeys: [],
+          },
         ])
       : [[entry, name, settings]]
   );

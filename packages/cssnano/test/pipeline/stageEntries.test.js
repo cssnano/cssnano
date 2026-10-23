@@ -32,23 +32,9 @@ function stageEntry(option, { log, built, targets, returnsNull }) {
     },
     option,
     {
-      postcssPlugin: `postcss-${option}`,
       optionKeys: ['level'],
       ...(targets ? { targets } : undefined),
     },
-  ]);
-}
-
-/**
- * A plugin creator entry, which is not a stage.
- * @param {string} option
- * @returns {PluginEntry}
- */
-function creatorEntry(option) {
-  return /** @type {PluginEntry} */ ([
-    () => ({ postcssPlugin: `postcss-${option}` }),
-    option,
-    { postcssPlugin: `postcss-${option}`, optionKeys: [] },
   ]);
 }
 
@@ -76,28 +62,6 @@ describe('stage entries in a preset', () => {
     const names = configurePlugins(
       [stageEntry('a', s), stageEntry('b', s)],
       {}
-    ).map((plugin) => plugin.postcssPlugin);
-    assert.deepStrictEqual(names, ['cssnano-host']);
-  });
-
-  test('a plugin creator between two stage entries splits them into two host plugins', () => {
-    const s = state();
-    const names = configurePlugins(
-      [stageEntry('a', s), creatorEntry('c'), stageEntry('b', s)],
-      {}
-    ).map((plugin) => plugin.postcssPlugin);
-    assert.deepStrictEqual(names, [
-      'cssnano-host',
-      'postcss-c',
-      'cssnano-host',
-    ]);
-  });
-
-  test('a disabled plugin creator does not end the run of stage entries around it', () => {
-    const s = state();
-    const names = configurePlugins(
-      [stageEntry('a', s), creatorEntry('c'), stageEntry('b', s)],
-      { disable: ['c'] }
     ).map((plugin) => plugin.postcssPlugin);
     assert.deepStrictEqual(names, ['cssnano-host']);
   });

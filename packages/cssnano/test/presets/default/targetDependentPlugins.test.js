@@ -3,6 +3,7 @@ import { glob, readFile } from 'node:fs/promises';
 import { sep } from 'node:path';
 import { test } from 'node:test';
 import { defaultPluginEntries } from '../../../src/presets/defaultPlugins.js';
+import { pluginNameByOption } from '../../../src/presets/presetEntries.js';
 
 const pluginsDirectory = new URL('../../../src/plugins/', import.meta.url);
 
@@ -28,7 +29,7 @@ test('the default preset marks exactly the plugins that resolve browser targets'
   // The merge pass lives under passes/, so the scan above does not find it.
   const marked = defaultPluginEntries
     .filter(([, , settings]) => settings?.targets === true)
-    .map(([, , settings]) => settings.postcssPlugin);
+    .map(([, option]) => pluginNameByOption[option]);
   // The stage entries below take the targets the host resolves for them, so
   // the scan above does not find them.
   assert.deepEqual(

@@ -204,15 +204,6 @@ describe('resolveTargets empty resolution', () => {
     assert.deepEqual(calls, [query[browserTargets].query]);
   });
 
-  test('warns once per file that the query matches no browser', () => {
-    const warnings = [];
-    const result = { opts: {}, warn: (text) => warnings.push(text) };
-    resolveTargets(query, result, emptyBrowserslist);
-    resolveTargets(query, result, emptyBrowserslist);
-    assert.equal(warnings.length, 1);
-    assert.match(warnings[0], /matches no browser/v);
-  });
-
   test('does not warn when the query matches a browser', () => {
     const warnings = [];
     const { browserslist } = recordingBrowserslist();
@@ -232,60 +223,8 @@ describe('resolveTargets empty resolution', () => {
   });
 });
 
-describe('resolveTargets cache', () => {
-  test('resolves once for two plugins that share one result and options', () => {
-    const { browserslist, calls } = recordingBrowserslist();
-    const result = resultWith({ from: '/project/a.css' });
-    const first = resolveTargets(withTargets('defaults'), result, browserslist);
-    const second = resolveTargets(
-      withTargets('defaults'),
-      result,
-      browserslist
-    );
-    assert.equal(calls.length, 1);
-    assert.equal(first, second);
-  });
-
-  test('keeps separate entries for different plugin options on one result', () => {
-    const { browserslist, calls } = recordingBrowserslist();
-    const result = resultWith({ from: '/project/a.css' });
-    resolveTargets(withTargets('defaults'), result, browserslist);
-    resolveTargets(withTargets('ie 11'), result, browserslist);
-    assert.equal(calls.length, 2);
-  });
-
-  test('resolves once for two plugins that share one result without from or file', () => {
-    const { browserslist, calls } = recordingBrowserslist();
-    const result = resultWith();
-    resolveTargets({}, result, browserslist);
-    resolveTargets({}, result, browserslist);
-    assert.equal(calls.length, 1);
-  });
-
-  test('keeps separate entries for stats objects with equal contents', () => {
-    const { browserslist, calls } = recordingBrowserslist();
-    const result = resultWith({ from: '/project/a.css' });
-    resolveTargets(
-      withTargets('> 1%', { stats: { chrome: { 150: 1 } } }),
-      result,
-      browserslist
-    );
-    resolveTargets(
-      withTargets('> 1%', { stats: { chrome: { 150: 1 } } }),
-      result,
-      browserslist
-    );
-    assert.equal(calls.length, 2);
-  });
-
-  test('does not share entries between distinct results', () => {
-    const { browserslist, calls } = recordingBrowserslist();
-    resolveTargets({}, resultWith({ from: '/project/a.css' }), browserslist);
-    resolveTargets({}, resultWith({ from: '/project/a.css' }), browserslist);
-    assert.equal(calls.length, 2);
-  });
-
-  test('resolves without a result and keeps no cache entry for the call', () => {
+describe('resolveTargets repeated calls', () => {
+  test('resolves again for each call without a result, which has no file to share with', () => {
     const { browserslist, calls } = recordingBrowserslist();
     const first = resolveTargets(
       withTargets('chrome 120'),

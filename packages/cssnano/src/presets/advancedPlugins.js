@@ -34,7 +34,6 @@ export const advancedPluginEntries = /** @type {const} */ ([
     },
     'discardUnused',
     {
-      postcssPlugin: 'postcss-discard-unused',
       optionKeys: ['fontFace', 'counterStyle', 'keyframes', 'namespace'],
       transform: true,
       symbols: /** @type {SymbolTransform} */ (discardUnusedSymbols),
@@ -46,7 +45,6 @@ export const advancedPluginEntries = /** @type {const} */ ([
     },
     'mergeIdents',
     {
-      postcssPlugin: 'postcss-merge-idents',
       optionKeys: [],
       transform: true,
       symbols: /** @type {SymbolTransform} */ (mergeIdentsSymbols),
@@ -59,7 +57,6 @@ export const advancedPluginEntries = /** @type {const} */ ([
     },
     'reduceIdents',
     {
-      postcssPlugin: 'postcss-reduce-idents',
       optionKeys: [
         'counter',
         'counterStyle',
@@ -80,7 +77,6 @@ export const advancedPluginEntries = /** @type {const} */ ([
     },
     'zindex',
     {
-      postcssPlugin: 'postcss-zindex',
       optionKeys: ['startIndex'],
       transform: true,
       symbols: /** @type {SymbolTransform} */ (zindexSymbols),
