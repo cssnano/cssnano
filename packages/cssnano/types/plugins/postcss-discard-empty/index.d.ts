@@ -2,16 +2,16 @@
  * An empty `@layer x{}` is redundant only when an earlier block or statement
  * already fixed the order of `x`. Every ancestor other than `@layer` is
  * treated as a condition, so an earlier declaration counts only at top level
- * or under a condition that also encloses the later block. With
- * `uniqueSelectors`, each rule that is kept also loses its duplicate selectors
- * in the same walk.
+ * or under a condition that also encloses the later block. `visit` runs on
+ * each node that is kept, after its children, so another per-node transform
+ * can share this walk.
  *
  * @param {import('postcss').Root} css
  * @param {import('postcss').Result} result
- * @param {boolean} [uniqueSelectors]
+ * @param {(node: import('postcss').AnyNode) => void} [visit]
  * @return {void}
  */
-export declare function discardAndReport(css: import('postcss').Root, result: import('postcss').Result, uniqueSelectors?: boolean): void;
+export declare function discardAndReport(css: import('postcss').Root, result: import('postcss').Result, visit?: (node: import('postcss').AnyNode) => void): void;
 /**
  * @return {import('postcss').Plugin}
  */

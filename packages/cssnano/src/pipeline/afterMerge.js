@@ -1,12 +1,13 @@
 import { discardAndReport } from '#postcss-discard-empty';
-import { uniqueRuleSelector } from '#postcss-unique-selectors';
+import { uniqueSelectorsVisit } from '#postcss-unique-selectors';
 import rawCache from '../utils/rawCache.js';
 
-/** @import {Result, Root} from 'postcss' */
+/** @import {AnyNode, Result, Root} from 'postcss' */
 
 /**
  * The walk after merge runs the whole-stylesheet transforms that need the tree
- * as merge left it. It records the raw cache last, so no later transform
+ * as merge left it. Per-node transforms share one walk, so no transform needs
+ * its own. It records the raw cache last, so no later transform
  * changes what the cache describes.
  *
  * @param {Root} root
@@ -15,11 +16,14 @@ import rawCache from '../utils/rawCache.js';
  * @returns {void}
  */
 export function walkAfterMerge(root, result, transforms) {
-  const unique = transforms.has('uniqueSelectors');
+  /** @type {((node: AnyNode) => void) | undefined} */
+  const visit = transforms.has('uniqueSelectors')
+    ? uniqueSelectorsVisit
+    : undefined;
   if (transforms.has('discardEmpty')) {
-    discardAndReport(root, result, unique);
-  } else if (unique) {
-    root.walkRules(uniqueRuleSelector);
+    discardAndReport(root, result, visit);
+  } else if (visit) {
+    root.walk(visit);
   }
   if (transforms.has('rawCache')) rawCache(result);
 }

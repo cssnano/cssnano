@@ -203,6 +203,16 @@ export function uniqueRuleSelector(nodes) {
 }
 
 /**
+ * Visits one node of a walk; only rules have selectors to dedupe.
+ *
+ * @param {import('postcss').AnyNode} node
+ * @return {void}
+ */
+export function uniqueSelectorsVisit(node) {
+  if (node.type === 'rule') uniqueRuleSelector(node);
+}
+
+/**
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
