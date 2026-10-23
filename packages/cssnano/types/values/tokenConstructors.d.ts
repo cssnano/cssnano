@@ -31,10 +31,17 @@ declare function number(value: number): CSSToken;
  */
 declare function dimension(value: number, unit: string): CSSToken;
 /**
+ * A percentage token: a `<number>` followed by a percent sign.
+ *
+ * @param {number} value
+ * @return {CSSToken}
+ */
+declare function percentage(value: number): CSSToken;
+/**
  * A whitespace token, written as a single space.
  *
  * @return {CSSToken}
  */
 declare function whitespace(): CSSToken;
-export { dimension, ident, integer, number, whitespace };
+export { dimension, ident, integer, number, percentage, whitespace };
 //# sourceMappingURL=tokenConstructors.d.ts.map
