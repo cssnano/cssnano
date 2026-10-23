@@ -1,4 +1,4 @@
-import postcssDiscardComments from '#postcss-discard-comments';
+import discardComments from '#postcss-discard-comments';
 import postcssNormalizeWhitespace from '#postcss-normalize-whitespace';
 import postcssDiscardEmpty from '#postcss-discard-empty';
 import cssnanoUtils from '#utils';
@@ -11,7 +11,7 @@ const { rawCache } = cssnanoUtils;
  */
 
 export const discardCommentsEntry = /** @type {const} */ ([
-  postcssDiscardComments,
+  discardComments,
   'discardComments',
   {
     postcssPlugin: 'postcss-discard-comments',

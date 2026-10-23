@@ -8,10 +8,7 @@ export type LitePluginOptions = Pick<import('./defaultPlugins.js').DefaultPlugin
  * The plugins of the lite preset, in the order they run, each with the
  * preset option that enables it.
  */
-export declare const litePluginEntries: readonly [readonly [{
-    (opts?: import("../plugins/postcss-discard-comments/index.js").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, "discardComments", {
+export declare const litePluginEntries: readonly [readonly [import("../pipeline/host.js").StageEntry, "discardComments", {
     readonly postcssPlugin: 'postcss-discard-comments';
     readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
 }], readonly [{

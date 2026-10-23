@@ -1,9 +1,17 @@
 import { ValueBuffer } from '../values/valueBuffer.js';
 import { sourceValue } from '../utils/declValue.js';
 import { contextOf } from './context.js';
+import {
+  commentFreeText,
+  removeAfterNameComments,
+  removeBetweenComments,
+  removeImportantComments,
+  removeSelectorComments,
+} from './comments/nodeComments.js';
 
 /** @import {Container, Document, Helpers, Root} from 'postcss' */
 /** @import {Reducer, Stage, TextReducer} from './host.js' */
+/** @import {CommentState} from './comments/nodeComments.js' */
 
 /**
  * What one run knows about a property: the reducers of its plan, or null when
@@ -28,6 +36,7 @@ import { contextOf } from './context.js';
  * @property {TextEntry} selectors
  * @property {WeakMap<Container | Document, number>} contexts
  * @property {Helpers} helpers
+ * @property {CommentState | null} comments the comment removal of this run, or null when no stage removes comments
  */
 
 /**
@@ -136,7 +145,9 @@ function reduceText(entry, text, context, node, helpers) {
 }
 
 /**
- * Folds a declaration value and writes the result only when it changed.
+ * Removes the comments of a declaration, then folds its value through its plan.
+ * The value is read as written, without the comments that go, and written back
+ * only when it differs from what was read.
  *
  * @param {RunState} state
  * @param {import('postcss').Declaration} decl
@@ -147,14 +158,24 @@ function walkDeclaration(state, decl) {
     entry = propertyEntry(state.stages, decl.prop);
     state.properties.set(decl.prop, entry);
   }
-  if (entry.plan === null) return;
-  const context = contextOf(
-    /** @type {Container} */ (decl.parent),
-    state.contexts
-  );
-  const text = sourceValue(decl);
-  const result = reduceValue(entry, text, context, decl, state.helpers);
-  if (result !== text) {
+  const { comments } = state;
+  if (comments === null && entry.plan === null) return;
+  const read = sourceValue(decl);
+  let text = read;
+  if (comments !== null) {
+    removeBetweenComments(decl, comments);
+    text = commentFreeText(read, comments, decl.prop.startsWith('--'));
+    removeImportantComments(decl, comments);
+  }
+  let result = text;
+  if (entry.plan !== null) {
+    const context = contextOf(
+      /** @type {Container} */ (decl.parent),
+      state.contexts
+    );
+    result = reduceValue(entry, text, context, decl, state.helpers);
+  }
+  if (result !== read) {
     decl.value = result;
     delete decl.raws.value;
   }
@@ -176,7 +197,8 @@ function sourceParams(atRule) {
 }
 
 /**
- * Folds the prelude of an at-rule and writes the result only when it changed.
+ * Removes the comments of an at-rule, then folds its prelude through its plan.
+ * The prelude is read as written and written back only when it changed.
  * `@charset` has no plan, since its name and encoding are read in the format
  * phase.
  *
@@ -184,34 +206,49 @@ function sourceParams(atRule) {
  * @param {import('postcss').AtRule} atRule
  */
 function walkAtRule(state, atRule) {
-  if (atRule.name.toLowerCase() === 'charset') return;
-  let entry = state.atRules.get(atRule.name);
-  if (entry === undefined) {
-    const plan = [];
-    for (const stage of state.stages) {
-      const reducer = stage.forAtRule?.(atRule.name) ?? null;
-      if (reducer !== null) plan.push(reducer);
-    }
-    entry = textEntry(plan);
-    state.atRules.set(atRule.name, entry);
+  const { comments } = state;
+  if (comments !== null) {
+    removeBetweenComments(atRule, comments);
+    removeAfterNameComments(atRule, comments);
   }
-  if (entry.plan === null) return;
-  const context = contextOf(atRule, state.contexts);
-  const text = sourceParams(atRule);
-  const result = reduceText(entry, text, context, atRule, state.helpers);
-  if (result !== text) {
+  const read = sourceParams(atRule);
+  // An at-rule that another plugin built may have no prelude to clean.
+  const text =
+    comments !== null && read ? commentFreeText(read, comments) : read;
+  let result = text;
+  if (atRule.name.toLowerCase() !== 'charset') {
+    let entry = state.atRules.get(atRule.name);
+    if (entry === undefined) {
+      const plan = [];
+      for (const stage of state.stages) {
+        const reducer = stage.forAtRule?.(atRule.name) ?? null;
+        if (reducer !== null) plan.push(reducer);
+      }
+      entry = textEntry(plan);
+      state.atRules.set(atRule.name, entry);
+    }
+    if (entry.plan !== null) {
+      const context = contextOf(atRule, state.contexts);
+      result = reduceText(entry, text, context, atRule, state.helpers);
+    }
+  }
+  if (result !== read) {
     atRule.params = result;
     delete atRule.raws.params;
   }
 }
 
 /**
- * Folds the selector of a rule and writes the result only when it changed.
+ * Removes the comments of a rule, then folds its selector through the plan.
  *
  * @param {RunState} state
  * @param {import('postcss').Rule} rule
  */
 function walkRule(state, rule) {
+  if (state.comments !== null) {
+    removeBetweenComments(rule, state.comments);
+    removeSelectorComments(rule, state.comments);
+  }
   if (state.selectors.plan === null) return;
   // Selectors are read without comments, as PostCSS gives them.
   const context = contextOf(rule, state.contexts);
@@ -230,9 +267,25 @@ function walkRule(state, rule) {
 }
 
 /**
- * Runs the value, prelude and selector parts of the stages over a stylesheet in
- * a single walk, in document order. Each text is read from its source, folded
- * through its plan with its context, and written back only when it changed.
+ * The comment removal of a stylesheet, from the first stage that has one.
+ *
+ * @param {readonly Stage[]} stages
+ * @returns {CommentState | null} null when no stage removes comments
+ */
+function commentStateOf(stages) {
+  for (const stage of stages) {
+    if (stage.comments !== undefined) {
+      return { canRemove: stage.comments(), parserCache: new Map() };
+    }
+  }
+  return null;
+}
+
+/**
+ * Runs the comment, value, prelude and selector parts of the stages over a
+ * stylesheet in a single walk, in document order. Each node loses its comments
+ * first, then each text is read from its source, folded through its plan with
+ * its context, and written back only when it changed.
  *
  * @param {readonly Stage[]} stages in pipeline order
  * @param {Root} root
@@ -251,9 +304,12 @@ export function walkStylesheet(stages, root, helpers) {
     ),
     contexts: new WeakMap(),
     helpers,
+    comments: commentStateOf(stages),
   };
   root.walk((node) => {
-    if (node.type === 'decl') walkDeclaration(state, node);
+    if (node.type === 'comment') {
+      if (state.comments?.canRemove(node.text)) node.remove();
+    } else if (node.type === 'decl') walkDeclaration(state, node);
     else if (node.type === 'atrule') walkAtRule(state, node);
     else if (node.type === 'rule') walkRule(state, node);
   });
