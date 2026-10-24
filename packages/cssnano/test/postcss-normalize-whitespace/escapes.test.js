@@ -42,3 +42,8 @@ test(
   'should preserve an escaped tab character in a custom property that is the last declaration',
   passthroughCSS(':root{--x:1;--y:red\\\t}')
 );
+
+test(
+  'normalize-whitespace keeps the whitespace around `\\9` inside a string',
+  passthroughCSS('div{content:"a \\9 b"}')
+);
