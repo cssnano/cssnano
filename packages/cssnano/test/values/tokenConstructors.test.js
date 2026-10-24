@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { tokenize, NumberType, TokenType } from '@csstools/css-tokenizer';
 import {
+  closeParen,
+  func,
   ident,
   integer,
   numeric,
@@ -191,4 +193,27 @@ test('whitespace reads back as the whitespace token the tokenizer reads from its
     [token[0], token[1], token[4]],
     [TokenType.Whitespace, ' ', undefined]
   );
+});
+
+test('func gives a function token whose text opens the name', () => {
+  assert.equal(func('steps')[1], 'steps(');
+});
+
+test('func reads back as the function token the tokenizer reads from its text', () => {
+  const token = firstToken(func('steps')[1]);
+  assert.equal(token[0], TokenType.Function);
+  assert.equal(token[4].value, 'steps');
+});
+
+test('func escapes its name as an identifier does, so the name reads back', () => {
+  assert.equal(firstToken(func('1a')[1])[4].value, '1a');
+});
+
+test('func rejects an empty name, which no function token can have', () => {
+  assert.throws(() => func(''), RangeError);
+});
+
+test('closeParen reads back as the close-parenthesis token', () => {
+  assert.equal(firstToken(closeParen()[1])[0], TokenType.CloseParen);
+  assert.equal(closeParen()[1], ')');
 });

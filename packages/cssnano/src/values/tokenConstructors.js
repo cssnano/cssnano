@@ -290,4 +290,46 @@ function whitespace() {
   ]);
 }
 
-export { ident, integer, numeric, percentage, stringToken, whitespace };
+/**
+ * A function token, `name(`. The name is written as an identifier is, so it
+ * reads back with the same value.
+ *
+ * @param {string} name a non-empty function name
+ * @return {CSSToken}
+ */
+function func(name) {
+  const [, text, , , data] = ident(name);
+  return /** @type {CSSToken} */ ([
+    TokenType.Function,
+    `${text}(`,
+    noPosition,
+    noPosition,
+    data,
+  ]);
+}
+
+/**
+ * The `)` token that closes a function or a group.
+ *
+ * @return {CSSToken}
+ */
+function closeParen() {
+  return /** @type {CSSToken} */ ([
+    TokenType.CloseParen,
+    ')',
+    noPosition,
+    noPosition,
+    undefined,
+  ]);
+}
+
+export {
+  closeParen,
+  func,
+  ident,
+  integer,
+  numeric,
+  percentage,
+  stringToken,
+  whitespace,
+};
