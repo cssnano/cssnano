@@ -16,9 +16,13 @@ test('numericSource reports a dimension with the index of its last token', () =>
   });
 });
 
-test('numericSource joins the historic `1.em` token shape into one spelling', () => {
+test('numericSource does not join a number, a dot and an identifier, so `1.em` is one number and the dot stays', () => {
   const input = tokens('  -0.5PX 25% 1.em');
-  const malformed = numericSource(input, 5);
-  assert.equal(malformed?.raw, '1.em');
-  assert.equal(malformed?.index, 7);
+  assert.deepEqual(numericSource(input, 5), {
+    index: 5,
+    raw: '1',
+    number: 1,
+    unit: '',
+    hasDecimal: false,
+  });
 });
