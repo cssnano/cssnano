@@ -46,6 +46,15 @@ declare function stringToken(text: string, value: string): CSSToken;
  */
 declare function whitespace(): CSSToken;
 /**
+ * A hash token, `#name`. Its type is id when the name would start an
+ * identifier, and unrestricted otherwise, as the tokenizer reads it.
+ *
+ * @param {string} value a non-empty name of letters, digits, hyphens,
+ *   underscores and non-ASCII characters
+ * @return {CSSToken}
+ */
+declare function hash(value: string): CSSToken;
+/**
  * A function token, `name(`. The name is written as an identifier is, so it
  * reads back with the same value.
  *
@@ -59,5 +68,5 @@ declare function func(name: string): CSSToken;
  * @return {CSSToken}
  */
 declare function closeParen(): CSSToken;
-export { closeParen, func, ident, integer, numeric, percentage, stringToken, whitespace, };
+export { closeParen, func, hash, ident, integer, numeric, percentage, stringToken, whitespace, };
 //# sourceMappingURL=tokenConstructors.d.ts.map

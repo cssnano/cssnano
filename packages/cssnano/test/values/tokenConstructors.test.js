@@ -1,9 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { tokenize, NumberType, TokenType } from '@csstools/css-tokenizer';
+import {
+  tokenize,
+  HashType,
+  NumberType,
+  TokenType,
+} from '@csstools/css-tokenizer';
 import {
   closeParen,
   func,
+  hash,
   ident,
   integer,
   numeric,
@@ -216,4 +222,33 @@ test('func rejects an empty name, which no function token can have', () => {
 test('closeParen reads back as the close-parenthesis token', () => {
   assert.equal(firstToken(closeParen()[1])[0], TokenType.CloseParen);
   assert.equal(closeParen()[1], ')');
+});
+
+test('hash gives a hash token whose text opens with the hash sign', () => {
+  assert.equal(hash('abc')[1], '#abc');
+});
+
+test('hash reads back as the hash token the tokenizer reads from its text', () => {
+  const token = firstToken(hash('ff0080')[1]);
+  assert.equal(token[0], TokenType.Hash);
+  assert.equal(token[4].value, 'ff0080');
+});
+
+test('hash flags a name that starts with a letter as an id', () => {
+  assert.equal(firstToken(hash('abc')[1])[4].type, HashType.ID);
+  assert.equal(hash('abc')[4].type, HashType.ID);
+});
+
+test('hash flags a name that starts with a digit as unrestricted', () => {
+  assert.equal(firstToken(hash('123')[1])[4].type, HashType.Unrestricted);
+  assert.equal(hash('123')[4].type, HashType.Unrestricted);
+});
+
+test('hash flags a hyphen before a digit as unrestricted', () => {
+  assert.equal(firstToken(hash('-1')[1])[4].type, HashType.Unrestricted);
+  assert.equal(hash('-1')[4].type, HashType.Unrestricted);
+});
+
+test('hash rejects an empty name, which no hash token can have', () => {
+  assert.throws(() => hash(''), RangeError);
 });
