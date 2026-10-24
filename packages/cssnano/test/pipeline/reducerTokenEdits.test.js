@@ -7,6 +7,7 @@ import normalizeDisplayValues from '../../src/plugins/postcss-normalize-display-
 import normalizeTimingFunctions from '../../src/plugins/postcss-normalize-timing-functions/index.js';
 import colormin from '../../src/plugins/postcss-colormin/index.js';
 import normalizeUrl from '../../src/plugins/postcss-normalize-url/index.js';
+import reduceTransforms from '../../src/plugins/postcss-reduce-transforms/index.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
 import { ident, whitespace } from '../../src/values/tokenConstructors.js';
 
@@ -129,6 +130,42 @@ describe('normalize-url edits the value buffer tokens in place', () => {
   test('normalize-url leaves the buffer unedited when the URL is already normal', () => {
     const reduce = normalizeUrl.create({}).forProperty('background');
     const buffer = new ValueBuffer('url(x.png)');
+    const list = buffer.tokens();
+    reduce(buffer, 0);
+    assert.equal(buffer.isEdited(), false);
+    assert.equal(buffer.tokens(), list);
+  });
+});
+
+describe('reduce-transforms edits the value buffer tokens in place', () => {
+  test("reduce-transforms edits the value buffer's tokens without a text edit", () => {
+    const reduce = reduceTransforms.create({}).forProperty('transform');
+    const buffer = new TextGuardBuffer('rotate(45deg) translate(0, 0)');
+    const [kept] = buffer.tokens();
+    buffer.armed = true;
+    reduce(buffer, 0);
+    buffer.armed = false;
+    assert.equal(buffer.isEdited(), true);
+    assert.equal(buffer.text(), 'rotate(45deg) translate(0)');
+    assert.equal(buffer.tokens()[0], kept);
+    assert.deepEqual(
+      buffer.tokens().map((token) => [token[0], token[1]]),
+      tokenize({ css: buffer.text() })
+        .slice(0, -1)
+        .map((token) => [token[0], token[1]])
+    );
+  });
+
+  test('reduce-transforms keeps the text after a reduced function whose argument also reduces', () => {
+    const reduce = reduceTransforms.create({}).forProperty('transform');
+    const buffer = new ValueBuffer('scale(scale(2,1), 1) translate(0)');
+    reduce(buffer, 0);
+    assert.equal(buffer.text(), 'scaleX(scale(2,1)) translate(0)');
+  });
+
+  test('reduce-transforms leaves the buffer unedited when no function reduces', () => {
+    const reduce = reduceTransforms.create({}).forProperty('transform');
+    const buffer = new ValueBuffer('translate(1px, 2px)');
     const list = buffer.tokens();
     reduce(buffer, 0);
     assert.equal(buffer.isEdited(), false);

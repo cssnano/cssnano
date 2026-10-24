@@ -1,14 +1,12 @@
 import cssnanoUtils from '#utils';
+import { closeParen, func } from '../../values/tokenConstructors.js';
 
-const {
-  TokenType,
-  asciiLowerCase,
-  balancedTokens,
-  decoded,
-  numeric,
-  tokenEnd,
-  tokenStart,
-} = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, numeric } = cssnanoUtils;
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {Reducer} from '../../pipeline/host.js' */
+/** @import {ValueBuffer} from '../../values/valueBuffer.js' */
+/** @typedef {NonNullable<ReturnType<ValueBuffer['structure']>>} BalancedTokens */
 
 /** The transform property and its vendor-prefixed forms, lower-cased. */
 const transformProperties = new Set([
@@ -19,19 +17,54 @@ const transformProperties = new Set([
   '-o-transform',
 ]);
 
-/** @typedef {{open: number, close: number, name: string, args: {significant: number[]}[]}} FunctionFrame */
+/**
+ * @typedef {{open: number, close: number, name: string, args: {significant: number[]}[], reduction?: [string, number]}} FunctionFrame
+ */
 /** @typedef {{number: number, unit: string} | string | undefined} ParsedArgument */
 
-/** @param {number[]} significant @param {string} value @param {readonly import('@csstools/css-tokenizer').CSSToken[]} tokens @param {NonNullable<ReturnType<typeof balancedTokens>>} structure @return {string} */
-function argumentSource(significant, value, tokens, structure) {
-  if (significant.length === 0) return '';
+/**
+ * The first and last token an argument keeps: its first significant token,
+ * through the end of that token's block when it opens one.
+ *
+ * @param {number[]} significant
+ * @param {BalancedTokens} structure
+ * @return {[number, number] | undefined} undefined for an empty argument
+ */
+function argumentSpan(significant, structure) {
+  if (significant.length === 0) return undefined;
   const first = significant[0];
   const last = significant[significant.length - 1];
-  const end = structure.endForOpening(first);
-  return value.slice(
-    tokenStart(tokens[first]),
-    end !== undefined ? tokenEnd(tokens[end]) : tokenEnd(tokens[last])
-  );
+  return [first, structure.endForOpening(first) ?? last];
+}
+
+/**
+ * The tokens an argument keeps, as they are in the source.
+ *
+ * @param {number[]} significant
+ * @param {readonly CSSToken[]} tokens
+ * @param {BalancedTokens} structure
+ * @return {CSSToken[]}
+ */
+function argumentTokens(significant, tokens, structure) {
+  const span = argumentSpan(significant, structure);
+  return span ? tokens.slice(span[0], span[1] + 1) : [];
+}
+
+/**
+ * The source text of the tokens from `first` through `last`. Each token's text
+ * is its source, so the join is the slice of the source.
+ *
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} first
+ * @param {number} last
+ * @return {string}
+ */
+function tokenSource(tokens, first, last) {
+  let text = '';
+  for (let index = first; index <= last; index++) {
+    text += tokens[index][1];
+  }
+  return text;
 }
 
 /**
@@ -185,11 +218,16 @@ const reductions = new Map([
   ],
 ]);
 
-/** @param {string} value @return {string} */
-function transform(value) {
-  const structure = balancedTokens(value);
-  if (!structure) return value;
-  const { tokens } = structure;
+/**
+ * The edits that reduce the functions of a value, as token ranges. Only the
+ * outermost reduction applies: its argument is copied from the source, so it
+ * replaces any reduction inside it.
+ *
+ * @param {readonly CSSToken[]} tokens
+ * @param {BalancedTokens} structure
+ * @return {{start: number, end: number, tokens: CSSToken[]}[]}
+ */
+function transformEdits(tokens, structure) {
   /** @type {FunctionFrame[]} */
   const functions = [];
   /** @type {Map<number, FunctionFrame>} */
@@ -211,8 +249,6 @@ function transform(value) {
     }
   }
 
-  /** @type {[number, number, string][]} */
-  const replacements = [];
   for (const frame of functions.toReversed()) {
     frame.args = structure
       .topLevelSegments(frame.open + 1, frame.close)
@@ -249,12 +285,11 @@ function transform(value) {
         // Custom-property and environment variables are distinct namespaces,
         // so the resolving function is part of a reference's identity; names
         // themselves are case-sensitive.
-        return `${child.name}(${argumentSource(
-          child.args[0].significant,
-          value,
-          tokens,
-          structure
-        )})`;
+        // The argument has one significant token, so its span is never empty.
+        const [first, last] = /** @type {[number, number]} */ (
+          argumentSpan(child.args[0].significant, structure)
+        );
+        return `${child.name}(${tokenSource(tokens, first, last)})`;
       }
       const token = tokens[index];
       if (
@@ -264,44 +299,38 @@ function transform(value) {
         return undefined;
       return numeric(token) || undefined;
     };
-    const reduction = reductions.get(asciiLowerCase(frame.name))?.(
+    frame.reduction = reductions.get(asciiLowerCase(frame.name))?.(
       frame.args.map(parseArgument)
     );
-    if (!reduction) continue;
-    const [targetFunction, index] = reduction;
-    replacements.push([
-      tokenStart(tokens[frame.open]),
-      tokenEnd(tokens[frame.close]),
-      `${targetFunction}(${argumentSource(
-        frame.args[index].significant,
-        value,
-        tokens,
-        structure
-      )})`,
-    ]);
   }
 
-  // An outer reduction copies its argument from the source, so it replaces
-  // any reduction inside it; applying both would leave the outer edit with
-  // offsets from before the inner one.
-  let result = '';
-  let end = 0;
-  for (const [start, stop, text] of replacements.toSorted(
-    (a, b) => a[0] - b[0]
-  )) {
-    if (start < end) continue;
-    result += value.slice(end, start) + text;
-    end = stop;
+  /** @type {{start: number, end: number, tokens: CSSToken[]}[]} */
+  const edits = [];
+  // Frames are in ascending order of their opening token, so an outer frame
+  // comes before the frames it contains.
+  let reducedUntil = 0;
+  for (const frame of functions) {
+    if (!frame.reduction || frame.open < reducedUntil) continue;
+    const [targetFunction, index] = frame.reduction;
+    edits.push({
+      start: frame.open,
+      end: frame.close + 1,
+      tokens: [
+        func(targetFunction),
+        ...argumentTokens(frame.args[index].significant, tokens, structure),
+        closeParen(),
+      ],
+    });
+    reducedUntil = frame.close + 1;
   }
-  return result + value.slice(end);
+  return edits;
 }
 
-/** @type {import('../../pipeline/host.js').Reducer} */
+/** @type {Reducer} */
 const reduceTransform = (buffer) => {
-  const text = buffer.text();
-  if (!text.includes('(')) return;
-  const out = transform(text);
-  if (out !== text) buffer.replaceText(out);
+  const structure = buffer.structure();
+  if (!structure) return;
+  buffer.replaceRanges(transformEdits(buffer.tokens(), structure));
 };
 
 /**
