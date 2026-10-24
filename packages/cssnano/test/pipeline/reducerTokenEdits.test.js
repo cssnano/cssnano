@@ -9,6 +9,8 @@ import colormin from '../../src/plugins/postcss-colormin/index.js';
 import normalizeUrl from '../../src/plugins/postcss-normalize-url/index.js';
 import reduceTransforms from '../../src/plugins/postcss-reduce-transforms/index.js';
 import reduceInitial from '../../src/plugins/postcss-reduce-initial/index.js';
+import normalizeUnicode from '../../src/plugins/postcss-normalize-unicode/index.js';
+import { tokenizeMode } from '../../src/values/tokenizeMode.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
 import { ident, whitespace } from '../../src/values/tokenConstructors.js';
 
@@ -209,5 +211,39 @@ describe('reduce-initial edits the value buffer tokens in place', () => {
     reduce(buffer, 0);
     assert.equal(buffer.isEdited(), false);
     assert.equal(buffer.tokens(), list);
+  });
+});
+
+describe('normalize-unicode edits the value buffer tokens in place', () => {
+  const unicodeRangeMode = tokenizeMode('unicode-range');
+
+  test("normalize-unicode edits the value buffer's tokens without a text edit", () => {
+    const reduce = normalizeUnicode
+      .create({}, ['defaults'])
+      .forProperty('unicode-range');
+    const buffer = new TextGuardBuffer('U+0-7F,U+80-FF', unicodeRangeMode);
+    buffer.tokens();
+    buffer.armed = true;
+    reduce(buffer, 0);
+    buffer.armed = false;
+    assert.equal(buffer.isEdited(), true);
+    assert.equal(buffer.text(), 'u+??');
+    assert.deepEqual(
+      buffer.tokens().map((token) => [token[0], token[1]]),
+      tokenize({ css: buffer.text(), unicodeRangesAllowed: true })
+        .slice(0, -1)
+        .map((token) => [token[0], token[1]])
+    );
+  });
+
+  test('normalize-unicode keeps a canonical range token when a comment stops the canonical rewrite', () => {
+    const reduce = normalizeUnicode
+      .create({}, ['defaults'])
+      .forProperty('unicode-range');
+    const buffer = new ValueBuffer('u+0-7f, U+80-FF/*x*/', unicodeRangeMode);
+    const [kept] = buffer.tokens();
+    reduce(buffer, 0);
+    assert.equal(buffer.text(), 'u+0-7f, u+80-ff/*x*/');
+    assert.equal(buffer.tokens()[0], kept);
   });
 });
