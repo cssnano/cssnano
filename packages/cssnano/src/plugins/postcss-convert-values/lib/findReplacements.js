@@ -16,7 +16,6 @@ const {
   decoded,
   lengthUnits,
   mathFunctions,
-  tokens,
 } = cssnanoUtils;
 
 /* Functions in which a zero cannot lose its unit. Every math function qualifies
@@ -52,26 +51,8 @@ const functionsPreservingZeroUnits = new Set([
 /** @typedef {Parameters<typeof convert>[2]} ConvertOptions */
 /** @typedef {{precision?: false | number, transformCustomProperties?: boolean} & ConvertOptions} Options */
 /** @typedef {import('./convert.js').Spelling} Spelling */
-/** @typedef {ReturnType<typeof tokens>[number]} CSSToken */
+/** @typedef {ReturnType<typeof cssnanoUtils.tokens>[number]} CSSToken */
 /** @typedef {{keepZeroPercent: boolean, keepZeroLength: boolean, clampAlpha: boolean, isAlpha: boolean, isFont: boolean, isCustomProperty: boolean}} ReplacementFlags */
-
-/* Only `unicode-range` and custom properties keep `U+` ranges as one token. */
-const unicodeRangeOptions = { unicodeRangesAllowed: true };
-
-/**
- * A custom property with a `U+` range may be read as `unicode-range` or as
- * anything else, and `u+1.0e2` is a range then a number in one, a single
- * number in the other, so no edit is safe for both.
- *
- * @param {string} value
- * @return {boolean}
- */
-export function containsUnicodeRange(value) {
-  if (!/u\+/iv.test(value)) return false;
-  return tokens(value, unicodeRangeOptions).some(
-    (token) => token[0] === TokenType.UnicodeRange
-  );
-}
 
 /**
  * @param {string} unit
@@ -100,7 +81,7 @@ function formatZero(
   return { representation: '0', unit: '' };
 }
 
-/** @param {number} number @param {string} unit @param {string} raw @param {Options} opts @param {boolean} keepZeroPercent @param {boolean} keepZeroLength @param {boolean} hasDecimal @return {Spelling} */
+/** @param {number} number @param {string} unit @param {string} raw @param {Options} opts @param {boolean} keepZeroPercent @param {boolean} keepZeroLength @param {boolean} hasDecimal @return {Spelling | undefined} the spelling, or undefined to keep the source */
 function parseNumber(
   number,
   unit,
@@ -110,7 +91,7 @@ function parseNumber(
   keepZeroLength,
   hasDecimal
 ) {
-  if (raw.includes('\\')) return { representation: raw, unit: '' };
+  if (raw.includes('\\')) return undefined;
   const lowerCasedUnit = unit.toLowerCase();
   if (
     unit !== '' &&
@@ -118,9 +99,9 @@ function parseNumber(
     !lengthUnits.has(lowerCasedUnit) &&
     !requiresZeroUnit(lowerCasedUnit)
   )
-    return { representation: raw, unit: '' };
+    return undefined;
   // A value that overflows to Infinity has no CSS spelling, so it stays as written.
-  if (!Number.isFinite(number)) return { representation: raw, unit: '' };
+  if (!Number.isFinite(number)) return undefined;
   let num = number;
   if (
     typeof opts.precision === 'number' &&
@@ -183,6 +164,22 @@ export function stripVendorPrefix(str) {
 }
 
 /**
+ * Whether a spelling is the source text. The length check makes the two
+ * affixes cover the whole text, so the text is never joined.
+ *
+ * @param {Spelling} spelling
+ * @param {string} raw
+ * @return {boolean}
+ */
+function spellsSource(spelling, raw) {
+  return (
+    raw.length === spelledLength(spelling) &&
+    raw.startsWith(spelling.representation) &&
+    raw.endsWith(spelling.unit)
+  );
+}
+
+/**
  * @param {Spelling} replacement
  * @param {string} raw
  * @param {boolean} isAlpha
@@ -190,13 +187,8 @@ export function stripVendorPrefix(str) {
  * @return {boolean}
  */
 function shouldReplace(replacement, raw, isAlpha, isConvertibleZero) {
+  if (spellsSource(replacement, raw)) return false;
   const length = spelledLength(replacement);
-  if (
-    length === raw.length &&
-    replacement.representation + replacement.unit === raw
-  ) {
-    return false;
-  }
   if (length < raw.length) return true;
   return (isAlpha || isConvertibleZero) && length <= raw.length;
 }
@@ -235,7 +227,7 @@ class FrameStack {
   }
 
   /**
-   * @param {ReturnType<typeof tokens>[number]} token
+   * @param {ReturnType<typeof cssnanoUtils.tokens>[number]} token
    * @return {boolean}
    */
   advance(token) {
@@ -306,15 +298,13 @@ function processNumericToken(source, isLineHeight, frames, opts, flags) {
     source.hasDecimal
   );
   const isAlpha = flags.isAlpha && frames.isTopLevel;
+  // Only opacity can still change a kept number, by clamping it, so only
+  // that path builds a spelling for the source.
+  if (converted === undefined && !isAlpha) return undefined;
+  const spelling = converted ?? { representation: source.raw, unit: '' };
   const replacement = isAlpha
-    ? clampOpacity(
-        converted,
-        source.number,
-        source.unit,
-        opts,
-        flags.clampAlpha
-      )
-    : converted;
+    ? clampOpacity(spelling, source.number, source.unit, opts, flags.clampAlpha)
+    : spelling;
   const isConvertibleZero =
     source.number === 0 && requiresZeroUnit(source.unit.toLowerCase());
 
