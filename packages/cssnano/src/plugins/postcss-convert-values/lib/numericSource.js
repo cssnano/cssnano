@@ -6,9 +6,9 @@ const { TokenType, numeric } = cssnanoUtils;
 /** @typedef {{index: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
 
 /**
- * Capture one numeric source spelling, including PostCSS's historic `1.em`
- * token shape. Its `index` is the last token of the spelling. Adjacent tokens
- * are next to each other in the list, so no positions are compared.
+ * Capture one numeric source spelling, including a trailing dot such as `1.`.
+ * Its `index` is the last token of the spelling. Adjacent tokens are next to
+ * each other in the list, so no positions are compared.
  *
  * @param {readonly CSSToken[]} input
  * @param {number} index
@@ -20,23 +20,20 @@ export function numericSource(input, index) {
   if (!token || !value) return false;
   let endIndex = index;
   let raw = token[1];
-  let unit = value.unit;
+  const unit = value.unit;
   let hasDecimal = raw.includes('.');
   const dot = input[endIndex + 1];
+  // A dot before an identifier is not part of the number: `1.em` is invalid
+  // CSS, so the dot stays and the value keeps it.
   if (
     token[0] === TokenType.Number &&
     dot?.[0] === TokenType.Delim &&
-    dot[1] === '.'
+    dot[1] === '.' &&
+    input[endIndex + 2]?.[0] !== TokenType.Ident
   ) {
     raw += dot[1];
     endIndex++;
     hasDecimal = true;
-    const ident = input[endIndex + 1];
-    if (ident?.[0] === TokenType.Ident) {
-      unit = ident[1];
-      raw += ident[1];
-      endIndex++;
-    }
   }
   return {
     index: endIndex,
