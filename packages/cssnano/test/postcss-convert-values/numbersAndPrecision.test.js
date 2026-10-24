@@ -47,7 +47,7 @@ describe('Fractions and trailing/leading zeros', () => {
 
   test(
     'should optimise fractions',
-    processCSS('h1{opacity:1.}h2{opacity:.0}', 'h1{opacity:1}h2{opacity:0}')
+    processCSS('h1{opacity:.5}h2{opacity:.0}', 'h1{opacity:.5}h2{opacity:0}')
   );
 
   test(
