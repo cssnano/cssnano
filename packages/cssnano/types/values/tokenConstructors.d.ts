@@ -46,6 +46,13 @@ declare function stringToken(text: string, value: string): CSSToken;
  */
 declare function whitespace(): CSSToken;
 /**
+ * An unquoted url token, `name(value)`, with the name as written.
+ * @param {string} value the decoded URL, possibly empty
+ * @param {string} [name] `url` in any case
+ * @return {CSSToken}
+ */
+declare function url(value: string, name?: string): CSSToken;
+/**
  * A hash token, `#name`. Its type is id when the name would start an
  * identifier, and unrestricted otherwise, as the tokenizer reads it.
  *
@@ -68,5 +75,5 @@ declare function func(name: string): CSSToken;
  * @return {CSSToken}
  */
 declare function closeParen(): CSSToken;
-export { closeParen, func, hash, ident, integer, numeric, percentage, stringToken, whitespace, };
+export { closeParen, func, hash, ident, integer, numeric, percentage, stringToken, url, whitespace, };
 //# sourceMappingURL=tokenConstructors.d.ts.map

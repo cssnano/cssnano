@@ -15,6 +15,7 @@ import {
   numeric,
   percentage,
   stringToken,
+  url,
   whitespace,
 } from '../../src/values/tokenConstructors.js';
 
@@ -251,4 +252,18 @@ test('hash flags a hyphen before a digit as unrestricted', () => {
 
 test('hash rejects an empty name, which no hash token can have', () => {
   assert.throws(() => hash(''), RangeError);
+});
+
+test('url reads back as the URL token the tokenizer reads from its text', () => {
+  const built = url('x.png');
+  const read = firstToken(built[1]);
+  assert.deepEqual([built[0], built[1], built[4]], [read[0], read[1], read[4]]);
+});
+
+test('url escapes whitespace, quotes and parentheses in its value so the value reads back', () => {
+  assert.equal(firstToken(url('a b(")\n')[1])[4].value, 'a b(")\n');
+});
+
+test('url writes the function name it is given, such as an upper-case URL', () => {
+  assert.equal(url('x.png', 'URL')[1], 'URL(x.png)');
 });
