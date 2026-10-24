@@ -7,6 +7,15 @@ import type { CSSToken } from '@csstools/css-tokenizer';
  */
 declare function ident(value: string): CSSToken;
 /**
+ * An identifier token with the text and value given. Use it when the text
+ * is already spelled, such as an escaped name, and must be kept as it is.
+ *
+ * @param {string} text a spelling the tokenizer reads as one identifier
+ * @param {string} value the value that spelling decodes to
+ * @return {CSSToken}
+ */
+declare function identifierWithText(text: string, value: string): CSSToken;
+/**
  * A `<number>` token, a `<percentage>` token for unit `%`, or a
  * `<dimension>` token otherwise. The representation is kept as written.
  *
@@ -75,5 +84,5 @@ declare function func(name: string): CSSToken;
  * @return {CSSToken}
  */
 declare function closeParen(): CSSToken;
-export { closeParen, func, hash, ident, integer, numeric, percentage, stringToken, url, whitespace, };
+export { closeParen, func, hash, ident, identifierWithText, integer, numeric, percentage, stringToken, url, whitespace, };
 //# sourceMappingURL=tokenConstructors.d.ts.map
