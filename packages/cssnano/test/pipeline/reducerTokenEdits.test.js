@@ -4,6 +4,19 @@ import convertValues from '../../src/plugins/postcss-convert-values/index.js';
 import normalizeString from '../../src/plugins/postcss-normalize-string/index.js';
 import normalizeDisplayValues from '../../src/plugins/postcss-normalize-display-values/index.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
+import { ident, whitespace } from '../../src/values/tokenConstructors.js';
+
+/** A buffer whose text() throws once armed, so a reducer that reads the text fails. */
+class TextGuardBuffer extends ValueBuffer {
+  armed = false;
+
+  text() {
+    if (this.armed) {
+      throw new Error('the reducer read the text of an edited buffer');
+    }
+    return super.text();
+  }
+}
 
 describe('Value reducers edit the buffer tokens in place', () => {
   test("convert-values edits the value buffer's tokens without a text edit", () => {
@@ -34,5 +47,30 @@ describe('Value reducers edit the buffer tokens in place', () => {
       buffer.tokens().map((token) => token[1]),
       ['inline', ' ', 'list-item']
     );
+  });
+});
+
+describe('convert-values reads the text of an edited custom property only for a U+ start', () => {
+  const customProperty = convertValues.create(
+    { transformCustomProperties: true },
+    ['defaults']
+  );
+
+  test('convert-values reads no text of an edited custom property without a U+ start', () => {
+    const reduce = customProperty.forProperty('--gap');
+    const buffer = new TextGuardBuffer('red 1.50px');
+    buffer.replace(0, 1, [ident('blue')]);
+    buffer.armed = true;
+    reduce(buffer, 0);
+    buffer.armed = false;
+    assert.equal(buffer.text(), 'blue 1.5px');
+  });
+
+  test('convert-values keeps a U+ range in an edited custom property', () => {
+    const reduce = customProperty.forProperty('--gap');
+    const buffer = new ValueBuffer('u+1 1.50px');
+    buffer.replace(2, 3, [whitespace()]);
+    reduce(buffer, 0);
+    assert.equal(buffer.text(), 'u+1 1.50px');
   });
 });
