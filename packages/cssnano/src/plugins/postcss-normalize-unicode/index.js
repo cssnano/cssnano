@@ -1,13 +1,12 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { anyAffected } from '#utils/browser-bugs';
+import { tokenizeMode } from '../../values/tokenizeMode.js';
 
 /** @import { TokenUnicodeRange } from '@csstools/css-tokenizer' */
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
-const unicodeRangePropertyRegex =
-  /^[uU][nN][iI][cC][oO][dD][eE]-[rR][aA][nN][gG][eE]$/v;
 const maxCodePoint = 0x10ffff;
 
 /**
@@ -165,8 +164,7 @@ function unicodeRangeStage(browsers) {
     if (out !== text) buffer.replaceText(out);
   };
   return {
-    forProperty: (property) =>
-      unicodeRangePropertyRegex.test(property) ? reduce : null,
+    forProperty: (property) => (tokenizeMode(property) ? reduce : null),
   };
 }
 

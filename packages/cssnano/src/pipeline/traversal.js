@@ -1,4 +1,5 @@
 import { ValueBuffer } from '../values/valueBuffer.js';
+import { tokenizeMode } from '../values/tokenizeMode.js';
 import { sourceValue } from '../utils/declValue.js';
 import cssnanoUtils from '#utils';
 import { tightenAfterName } from './afterName.js';
@@ -31,9 +32,6 @@ import {
  * `mode` is how the tokenizer reads the values of the property.
  * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, string> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined}} PropertyEntry
  */
-
-/* Only `unicode-range` reads a `U+` range as one token. */
-const unicodeRangeMode = { unicodeRangesAllowed: true };
 
 /**
  * What one run knows about a prelude or selector kind: the text reducers of its
@@ -71,8 +69,7 @@ function propertyEntry(stages, property) {
     const reducer = stage.forProperty?.(property) ?? null;
     if (reducer !== null) reducers.push(reducer);
   }
-  const mode =
-    property.toLowerCase() === 'unicode-range' ? unicodeRangeMode : undefined;
+  const mode = tokenizeMode(property);
   return reducers.length > 0
     ? { plan: reducers, memos: [], mode }
     : { plan: null, memos: [], mode };
