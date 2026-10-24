@@ -165,3 +165,12 @@ test('ValueBuffer.replace gives the tokens after an edit their positions in the 
   const last = buffer.tokens().at(-1);
   assert.equal(buffer.text().slice(last[2], last[3] + 1), 'd');
 });
+
+test('ValueBuffer.replaceRanges puts insertions at one index before a replacement there', () => {
+  const buffer = new ValueBuffer('a b');
+  buffer.replaceRanges([
+    { start: 2, end: 2, tokens: [ident('c')] },
+    { start: 2, end: 3, tokens: [ident('d')] },
+  ]);
+  assert.equal(buffer.text(), 'a cd');
+});
