@@ -1,4 +1,5 @@
 import { HashType, NumberType, TokenType } from '@csstools/css-tokenizer';
+import { escapeForUrlToken } from './escapes.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
@@ -290,6 +291,22 @@ function whitespace() {
   ]);
 }
 
+/**
+ * An unquoted url token, `name(value)`, with the name as written.
+ * @param {string} value the decoded URL, possibly empty
+ * @param {string} [name] `url` in any case
+ * @return {CSSToken}
+ */
+function url(value, name = 'url') {
+  return /** @type {CSSToken} */ ([
+    TokenType.URL,
+    `${name}(${escapeForUrlToken(value)})`,
+    noPosition,
+    noPosition,
+    { value },
+  ]);
+}
+
 /** @param {string | undefined} character @return {boolean} */
 function isNameCharacter(character) {
   return (
@@ -378,5 +395,6 @@ export {
   numeric,
   percentage,
   stringToken,
+  url,
   whitespace,
 };

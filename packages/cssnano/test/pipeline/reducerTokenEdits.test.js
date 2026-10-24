@@ -6,6 +6,7 @@ import normalizeString from '../../src/plugins/postcss-normalize-string/index.js
 import normalizeDisplayValues from '../../src/plugins/postcss-normalize-display-values/index.js';
 import normalizeTimingFunctions from '../../src/plugins/postcss-normalize-timing-functions/index.js';
 import colormin from '../../src/plugins/postcss-colormin/index.js';
+import normalizeUrl from '../../src/plugins/postcss-normalize-url/index.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
 import { ident, whitespace } from '../../src/values/tokenConstructors.js';
 
@@ -105,5 +106,32 @@ describe('normalize-timing-functions edits the value buffer tokens in place', ()
     reduce(buffer, 0);
     assert.equal(buffer.text(), '1s ease');
     assert.equal(buffer.tokens()[0], kept);
+  });
+});
+
+describe('normalize-url edits the value buffer tokens in place', () => {
+  test("normalize-url edits the value buffer's tokens without a text edit", () => {
+    const reduce = normalizeUrl.create({}).forProperty('background');
+    const buffer = new ValueBuffer("a b url('x.png')");
+    const [kept] = buffer.tokens();
+    reduce(buffer, 0);
+    assert.equal(buffer.isEdited(), true);
+    assert.equal(buffer.text(), 'a b url(x.png)');
+    assert.equal(buffer.tokens()[0], kept);
+    assert.deepEqual(
+      buffer.tokens().map((token) => [token[0], token[1]]),
+      tokenize({ css: buffer.text() })
+        .slice(0, -1)
+        .map((token) => [token[0], token[1]])
+    );
+  });
+
+  test('normalize-url leaves the buffer unedited when the URL is already normal', () => {
+    const reduce = normalizeUrl.create({}).forProperty('background');
+    const buffer = new ValueBuffer('url(x.png)');
+    const list = buffer.tokens();
+    reduce(buffer, 0);
+    assert.equal(buffer.isEdited(), false);
+    assert.equal(buffer.tokens(), list);
   });
 });
