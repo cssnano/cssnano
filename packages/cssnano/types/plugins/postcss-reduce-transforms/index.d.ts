@@ -1,3 +1,5 @@
+import type { ValueBuffer } from '../../values/valueBuffer.js';
+export type BalancedTokens = NonNullable<ReturnType<ValueBuffer['structure']>>;
 export type FunctionFrame = {
     open: number;
     close: number;
@@ -5,6 +7,7 @@ export type FunctionFrame = {
     args: {
         significant: number[];
     }[];
+    reduction?: [string, number];
 };
 export type ParsedArgument = {
     number: number;
