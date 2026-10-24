@@ -10,6 +10,7 @@ import normalizeUrl from '../../src/plugins/postcss-normalize-url/index.js';
 import reduceTransforms from '../../src/plugins/postcss-reduce-transforms/index.js';
 import reduceInitial from '../../src/plugins/postcss-reduce-initial/index.js';
 import normalizeUnicode from '../../src/plugins/postcss-normalize-unicode/index.js';
+import minifyFontValues from '../../src/plugins/postcss-minify-font-values/index.js';
 import { tokenizeMode } from '../../src/values/tokenizeMode.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
 import { ident, whitespace } from '../../src/values/tokenConstructors.js';
@@ -245,5 +246,36 @@ describe('normalize-unicode edits the value buffer tokens in place', () => {
     reduce(buffer, 0);
     assert.equal(buffer.text(), 'u+0-7f, u+80-ff/*x*/');
     assert.equal(buffer.tokens()[0], kept);
+  });
+});
+
+describe('minify-font-values edits the value buffer tokens in place', () => {
+  test("minify-font-values edits the value buffer's tokens without a text edit", () => {
+    const reduce = minifyFontValues.create({}).forProperty('font-family');
+    // The first family keeps its position, so the buffer keeps its token.
+    const buffer = new TextGuardBuffer('Georgia, "Roboto Plus"');
+    const kept = buffer.tokens()[0];
+    buffer.armed = true;
+    reduce(buffer, 0);
+    buffer.armed = false;
+    assert.equal(buffer.text(), 'Georgia,Roboto Plus');
+    assert.equal(buffer.tokens()[0], kept);
+  });
+
+  test('minify-font-values drops a comment from a value it changes', () => {
+    const reduce = minifyFontValues.create({}).forProperty('font-family');
+    const buffer = new ValueBuffer('"Arial"/* note */');
+    reduce(buffer, 0);
+    assert.equal(buffer.text(), 'Arial');
+  });
+
+  test('minify-font-values keeps a comment in a value it does not change', () => {
+    // PostCSS drops a comment after a space, so the value minifies to
+    // `lighter ` and nothing changes.
+    const reduce = minifyFontValues.create({}).forProperty('font-weight');
+    const buffer = new ValueBuffer('lighter /* note */');
+    reduce(buffer, 0);
+    assert.equal(buffer.isEdited(), false);
+    assert.equal(buffer.text(), 'lighter /* note */');
   });
 });
