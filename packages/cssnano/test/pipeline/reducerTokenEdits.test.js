@@ -8,6 +8,7 @@ import normalizeTimingFunctions from '../../src/plugins/postcss-normalize-timing
 import colormin from '../../src/plugins/postcss-colormin/index.js';
 import normalizeUrl from '../../src/plugins/postcss-normalize-url/index.js';
 import reduceTransforms from '../../src/plugins/postcss-reduce-transforms/index.js';
+import reduceInitial from '../../src/plugins/postcss-reduce-initial/index.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
 import { ident, whitespace } from '../../src/values/tokenConstructors.js';
 
@@ -166,6 +167,44 @@ describe('reduce-transforms edits the value buffer tokens in place', () => {
   test('reduce-transforms leaves the buffer unedited when no function reduces', () => {
     const reduce = reduceTransforms.create({}).forProperty('transform');
     const buffer = new ValueBuffer('translate(1px, 2px)');
+    const list = buffer.tokens();
+    reduce(buffer, 0);
+    assert.equal(buffer.isEdited(), false);
+    assert.equal(buffer.tokens(), list);
+  });
+});
+
+describe('reduce-initial edits the value buffer tokens in place', () => {
+  test("reduce-initial edits the value buffer's tokens without a text edit", () => {
+    const reduce = reduceInitial
+      .create({}, ['chrome 120'])
+      .forProperty('background-color');
+    const buffer = new TextGuardBuffer('transparent');
+    buffer.tokens();
+    buffer.armed = true;
+    reduce(buffer, 0);
+    buffer.armed = false;
+    assert.equal(buffer.isEdited(), true);
+    assert.equal(buffer.tokens().length, 1);
+    assert.equal(buffer.tokens()[0][1], 'initial');
+  });
+
+  test('reduce-initial gives every value the same keyword token', () => {
+    const reduce = reduceInitial
+      .create({}, ['chrome 120'])
+      .forProperty('background-color');
+    const first = new ValueBuffer('transparent');
+    const second = new ValueBuffer('TRANSPARENT');
+    reduce(first, 0);
+    reduce(second, 0);
+    assert.equal(first.tokens()[0], second.tokens()[0]);
+  });
+
+  test('reduce-initial leaves a value that is not a keyword unedited', () => {
+    const reduce = reduceInitial
+      .create({}, ['chrome 120'])
+      .forProperty('background-color');
+    const buffer = new ValueBuffer('red');
     const list = buffer.tokens();
     reduce(buffer, 0);
     assert.equal(buffer.isEdited(), false);
