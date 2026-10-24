@@ -22,4 +22,9 @@ describe('A number followed by a dot and a unit is invalid, so it is kept', () =
     'should keep `10.px` inside calc, as the dot before the unit is invalid',
     passthroughCSS('h1{width:calc(10.px + 0px)}')
   );
+
+  test(
+    'should keep `1.` with no unit, which is invalid CSS, instead of making it the valid `1`',
+    passthroughCSS('a{opacity:1.}')
+  );
 });
