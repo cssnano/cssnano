@@ -9,9 +9,9 @@ export type NumericSource = {
 /** @typedef {ReturnType<typeof import('#utils').default.tokens>[number]} CSSToken */
 /** @typedef {{index: number, raw: string, number: number, unit: string, hasDecimal: boolean}} NumericSource */
 /**
- * Capture one numeric source spelling, including a trailing dot such as `1.`.
- * Its `index` is the last token of the spelling. Adjacent tokens are next to
- * each other in the list, so no positions are compared.
+ * Capture one numeric token as a source spelling. A dot after a number is not
+ * part of it, as CSS reads `1.` and `1.em` as a number and a delim: those are
+ * invalid, so the value keeps them.
  *
  * @param {readonly CSSToken[]} input
  * @param {number} index
