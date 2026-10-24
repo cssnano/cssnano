@@ -11,6 +11,7 @@ import {
   func,
   hash,
   ident,
+  identifierWithText,
   integer,
   numeric,
   percentage,
@@ -266,4 +267,23 @@ test('url escapes whitespace, quotes and parentheses in its value so the value r
 
 test('url writes the function name it is given, such as an upper-case URL', () => {
   assert.equal(url('x.png', 'URL')[1], 'URL(x.png)');
+});
+
+test('identifierWithText reads back as one identifier with the text and value it was given', () => {
+  for (const [text, value] of [
+    ['a\\ 1st', 'a 1st'],
+    ['\\31 st', '1st'],
+    ['\\ \\ lead', '  lead'],
+    ['x\\3a ', 'x:'],
+  ]) {
+    const read = tokenize({ css: text });
+    assert.equal(read.length, 2, `${text} reads as one token and EOF`);
+    assert.equal(read[0][0], TokenType.Ident);
+    assert.equal(read[0][1], text);
+    assert.equal(read[0][4].value, value);
+  }
+});
+
+test('identifierWithText keeps the text it is given rather than rewriting it from the value', () => {
+  assert.equal(identifierWithText('a\\ b', 'a b')[1], 'a\\ b');
 });

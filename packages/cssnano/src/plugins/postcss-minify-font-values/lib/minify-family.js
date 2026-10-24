@@ -1,7 +1,16 @@
 import cssnanoUtils from '#utils';
 import cssWideKeywords from '../data/cssWideKeywords.json' with { type: 'json' };
+import { balancedStructure } from '../../../utils/value.js';
+import {
+  identifierWithText,
+  whitespace,
+} from '../../../values/tokenConstructors.js';
+import { comma } from '../../../values/listSeparators.js';
 
-const { TokenType, asciiLowerCase, balancedTokens, decoded } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, tokens } = cssnanoUtils;
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {Options} from '../index.js' */
 
 /* `default` and `none` are reserved for font family names although they are
  * not CSS-wide. */
@@ -45,7 +54,7 @@ const digit = /^\d/v;
 const escapeCharacter = /[\t\n\v\f:]/v;
 const simpleEscape = /[ !"#$%\x26'\(\)*+,.\/<=>?@\[\\\]^`\{\|\}~]/v;
 const invalidIdentifier = /^(-?\d|--)/v;
-const identifier = /^[a-zA-Z\d\xa0-\uffff_\-]+$/v;
+const identifier = /^[a-zA-Z\d\xa0-￿_\-]+$/v;
 
 /** @param {string} value */
 function containsReservedComponent(value) {
@@ -57,130 +66,259 @@ function containsReservedComponent(value) {
   });
 }
 
-/** @param {string} part @param {boolean} stringContext */
-function escape(part, stringContext) {
-  let result = '';
-  for (const character of part) {
-    if (!stringContext && escapeCharacter.test(character)) {
-      result += `\\${character.codePointAt(0)?.toString(16)} `;
+/**
+ * The spelling of one word, with its characters escaped where the tokenizer
+ * would read them otherwise.
+ *
+ * @param {string} word
+ * @return {string}
+ */
+function escapeWord(word) {
+  let text = '';
+  for (const character of word) {
+    if (escapeCharacter.test(character)) {
+      text += `\\${character.codePointAt(0)?.toString(16)} `;
     } else {
-      result +=
-        !stringContext && simpleEscape.test(character)
-          ? `\\${character}`
-          : character;
+      text += simpleEscape.test(character) ? `\\${character}` : character;
     }
   }
-  if (!stringContext && invalidIdentifier.test(result)) {
-    result = result.startsWith('-')
-      ? `\\-${result.slice(1)}`
-      : `\\3${result[0]} ${result.slice(1)}`;
+  if (invalidIdentifier.test(text)) {
+    text = text.startsWith('-')
+      ? `\\-${text.slice(1)}`
+      : `\\3${text[0]} ${text.slice(1)}`;
   }
   // A lone hyphen reads as a delim token, so it needs its own escape.
-  if (!stringContext && result === '-') result = '\\-';
+  if (text === '-') text = '\\-';
+  return text;
+}
+
+/**
+ * Adds a spelling and its value to the last identifier, or starts the first.
+ *
+ * @param {{text: string, value: string}[]} identifiers
+ * @param {string} text
+ * @param {string} value
+ */
+function append(identifiers, text, value) {
+  const last = identifiers.at(-1);
+  if (last) {
+    last.text += text;
+    last.value += value;
+  } else {
+    identifiers.push({ text, value });
+  }
+}
+
+/**
+ * Writes `count` spaces as escaped spaces. Between two escapes the space is
+ * an escape too, so only every second space separates identifiers, and the
+ * last space joins the word that follows.
+ *
+ * @param {{text: string, value: string}[]} identifiers
+ * @param {number} count
+ * @param {boolean} leading the spaces start the name, so none separates
+ */
+function appendSpaces(identifiers, count, leading) {
+  for (let index = 0; index < count; index++) {
+    if (!leading && index % 2 === 0 && index < count - 1) {
+      identifiers.push({ text: '', value: '' });
+      continue;
+    }
+    append(identifiers, '\\ ', ' ');
+  }
+}
+
+/**
+ * Writes a family name as identifiers. The values of the identifiers, joined
+ * by single spaces, give the name back. Each spelling is the one that reads
+ * back as that identifier.
+ *
+ * @param {string} name the decoded family name
+ * @return {{text: string, value: string}[]}
+ */
+function familyIdentifiers(name) {
+  const pieces = name.replaceAll(/[\t\n\f\r]/gv, ' ').split(' ');
+  /** @type {{text: string, value: string}[]} */
+  const identifiers = [];
+  let previousWord = false;
+  let lastWord = 0;
+  for (let index = 0; index < pieces.length; index++) {
+    const word = pieces[index];
+    if (!word) continue;
+    const gap = index - lastWord;
+    // A digit-led word after a space reads as a hex escape unless the space is escaped.
+    const mergeable =
+      index > 0 && identifier.test(word) && invalidIdentifier.test(word);
+    const text = mergeable ? word : escapeWord(word);
+    if (!previousWord) {
+      if (gap > 0) appendSpaces(identifiers, gap, true);
+      append(identifiers, text, word);
+    } else if (gap === 1 && mergeable) {
+      append(identifiers, `\\ ${text}`, ` ${word}`);
+    } else if (gap === 1) {
+      identifiers.push({ text, value: word });
+    } else {
+      appendSpaces(identifiers, gap, false);
+      append(identifiers, text, word);
+    }
+    previousWord = true;
+    lastWord = index;
+  }
+  const trailing = pieces.length - 1 - lastWord;
+  if (trailing > 0) appendSpaces(identifiers, trailing, !previousWord);
+  return identifiers;
+}
+
+/**
+ * The text of a token list.
+ *
+ * @param {readonly CSSToken[]} list
+ * @return {string}
+ */
+function tokensText(list) {
+  let text = '';
+  for (const token of list) text += token[1];
+  return text;
+}
+
+/**
+ * The tokens with each run of whitespace as one space, and none at the edges.
+ *
+ * @param {readonly CSSToken[]} segment
+ * @return {CSSToken[]}
+ */
+function collapseSpaces(segment) {
+  /** @type {CSSToken[]} */
+  const result = [];
+  let spaced = false;
+  for (const token of segment) {
+    if (token[0] === TokenType.Whitespace) {
+      spaced = result.length > 0;
+      continue;
+    }
+    if (spaced) result.push(whitespace());
+    spaced = false;
+    result.push(token);
+  }
   return result;
 }
 
-/** @param {string} string */
-function escapeIdentifierSequence(string) {
-  const parts = string.split(/[\t\n\f\r ]/gv);
-  const escapedParts = [];
-  for (const [index, part] of parts.entries()) {
-    if (!part) {
-      escapedParts.push(part);
-      continue;
-    }
-    if (identifier.test(part) && invalidIdentifier.test(part) && index > 0) {
-      escapedParts[index - 1] = `${escapedParts[index - 1]}\\`;
-      escapedParts.push(escape(part, true));
-      continue;
-    }
-    escapedParts.push(escape(part, false));
+/**
+ * The identifiers as tokens, with a space between each pair.
+ *
+ * @param {{text: string, value: string}[]} identifiers
+ * @return {CSSToken[]}
+ */
+function identifierTokens(identifiers) {
+  /** @type {CSSToken[]} */
+  const result = [];
+  for (const [index, item] of identifiers.entries()) {
+    if (index > 0) result.push(whitespace());
+    result.push(identifierWithText(item.text, item.value));
   }
-  let result = escapedParts.join(' ');
-  result = result.replaceAll(
-    /(\\(?:[a-fA-F0-9]{1,6} | ))?( {2,})/gv,
-    (_, prefix, spaces) => {
-      const escaped = Array.from(
-        { length: Math.ceil(spaces.length / 2) },
-        () => '\\ '
-      );
-      if (spaces.length % 2) escaped[escaped.length - 1] += '\\ ';
-      return (prefix ?? '') + ' ' + escaped.join(' ');
-    }
-  );
-  if (result.endsWith(' ') && !/\\[a-fA-F0-9]{0,6} $/v.test(result))
-    result = `${result.slice(0, -1)}\\ `;
-  return result.startsWith(' ') ? `\\ ${result.slice(1)}` : result;
+  return result;
 }
 
-/** @param {string} value @param {import('../index.js').Options} opts @return {string} */
-function minifyFamily(value, opts, removeQuotes = opts.removeQuotes) {
-  if (Array.isArray(value))
-    throw new TypeError('minifyFamily accepts a CSS value string');
-  const balanced = balancedTokens(value);
-  if (!balanced) return value;
-  const input = balanced.tokens;
-  /** @type {{value: string, folded: string, completeGeneric: boolean}[]} */
-  const families = [];
-  /** @param {number} startIndex @param {number} endIndex */
-  const finish = (startIndex, endIndex) => {
-    const familyTokens = input.slice(startIndex, endIndex);
-    const meaningful = familyTokens.filter(
-      (item) =>
-        item[0] !== TokenType.Whitespace && item[0] !== TokenType.Comment
-    );
-    /** @type {import('@csstools/css-tokenizer').CSSToken|undefined} */
-    const token = meaningful.length === 1 ? meaningful[0] : undefined;
-    let family = familyTokens
-      .map((item) => (item[0] === TokenType.Whitespace ? '\0' : item[1]))
-      .join('')
-      .replaceAll(/^\0+|\0+$/gv, '')
-      .replaceAll(/\0+/gv, ' ');
-    const raw = token && decoded(token);
-    const isReservedString =
-      typeof raw === 'string' && containsReservedComponent(raw);
-    if (
-      typeof raw === 'string' &&
-      token?.[0] === TokenType.String &&
-      !token[1].includes('\\') &&
-      removeQuotes &&
-      !isReservedString &&
-      !/^generic\([^\)]*\)$/v.test(asciiLowerCase(raw)) &&
-      !digit.test(raw)
-    ) {
-      const escaped = escapeIdentifierSequence(raw);
-      if (escaped.length < raw.length + 2) family = escaped;
-    }
-    families.push({
-      value: family,
-      folded:
-        typeof raw === 'string' && !isReservedString
-          ? asciiLowerCase(raw)
-          : asciiLowerCase(family),
-      completeGeneric:
-        meaningful.length === 1 &&
-        token?.[0] === TokenType.Ident &&
-        completeGeneric.has(asciiLowerCase(decoded(token))),
-    });
-  };
-  for (const segment of balanced.topLevelSegments()) {
-    finish(segment.startIndex, segment.endIndex);
+/**
+ * The family name of one comma-separated segment: its own tokens, or the
+ * escaped identifiers when those are shorter than the quoted name.
+ *
+ * @param {readonly CSSToken[]} segment
+ * @param {Options['removeQuotes']} removeQuotes
+ * @return {{tokens: CSSToken[], folded: string, completeGeneric: boolean}}
+ */
+function familyOf(segment, removeQuotes) {
+  const meaningful = segment.filter(
+    (item) => item[0] !== TokenType.Whitespace && item[0] !== TokenType.Comment
+  );
+  /** @type {CSSToken|undefined} */
+  const token = meaningful.length === 1 ? meaningful[0] : undefined;
+  const raw = token && decoded(token);
+  const isReservedString =
+    typeof raw === 'string' && containsReservedComponent(raw);
+  let family = collapseSpaces(segment);
+  if (
+    typeof raw === 'string' &&
+    token?.[0] === TokenType.String &&
+    !token[1].includes('\\') &&
+    removeQuotes &&
+    !isReservedString &&
+    !/^generic\([^\)]*\)$/v.test(asciiLowerCase(raw)) &&
+    !digit.test(raw)
+  ) {
+    const identifiers = familyIdentifiers(raw);
+    const spelledLength =
+      identifiers.reduce((length, item) => length + item.text.length, 0) +
+      Math.max(0, identifiers.length - 1);
+    if (spelledLength < raw.length + 2) family = identifierTokens(identifiers);
   }
-  let result = families.filter((family) => family.value);
+  return {
+    tokens: family,
+    folded:
+      typeof raw === 'string' && !isReservedString
+        ? asciiLowerCase(raw)
+        : asciiLowerCase(tokensText(family)),
+    completeGeneric:
+      meaningful.length === 1 &&
+      token?.[0] === TokenType.Ident &&
+      completeGeneric.has(asciiLowerCase(decoded(token))),
+  };
+}
+
+/**
+ * The font-family list as tokens, minified. The list is unchanged when its
+ * brackets do not balance.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {Options} opts
+ * @param {Options['removeQuotes']} [removeQuotes]
+ * @return {CSSToken[]}
+ */
+function minifyFamilyTokens(input, opts, removeQuotes = opts.removeQuotes) {
+  const balanced = balancedStructure(input);
+  if (!balanced) return [...input];
+  /** @type {{tokens: CSSToken[], folded: string, completeGeneric: boolean}[]} */
+  let families = balanced
+    .topLevelSegments()
+    .map(({ startIndex, endIndex }) =>
+      familyOf(input.slice(startIndex, endIndex), removeQuotes)
+    )
+    .filter((family) => family.tokens.length > 0);
   if (opts.removeAfterKeyword) {
-    const index = result.findIndex((family) => family.completeGeneric);
-    if (index !== -1) result = result.slice(0, index + 1);
+    const index = families.findIndex((family) => family.completeGeneric);
+    if (index !== -1) families = families.slice(0, index + 1);
   }
   if (opts.removeDuplicates) {
     const seen = new Set();
-    result = result.filter((item) => {
+    families = families.filter((item) => {
       if (item.folded === 'monospace') return true;
       if (seen.has(item.folded)) return false;
       seen.add(item.folded);
       return true;
     });
   }
-  return result.map((family) => family.value).join(',');
+  /** @type {CSSToken[]} */
+  const result = [];
+  for (const family of families) {
+    if (result.length > 0) result.push(comma());
+    for (const token of family.tokens) result.push(token);
+  }
+  return result;
+}
+
+/**
+ * The font-family value as a string, minified.
+ *
+ * @param {string} value
+ * @param {Options} opts
+ * @param {Options['removeQuotes']} [removeQuotes]
+ * @return {string}
+ */
+function minifyFamily(value, opts, removeQuotes = opts.removeQuotes) {
+  if (Array.isArray(value))
+    throw new TypeError('minifyFamily accepts a CSS value string');
+  return tokensText(minifyFamilyTokens(tokens(value), opts, removeQuotes));
 }
 
 export default minifyFamily;
+export { familyIdentifiers, minifyFamilyTokens, tokensText };

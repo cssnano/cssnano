@@ -1,41 +1,40 @@
-import minifyWeight from './lib/minify-weight.js';
-import minifyFamily from './lib/minify-family.js';
-import minifyFont from './lib/minify-font.js';
+import { minifyWeightTokens } from './lib/minify-weight.js';
+import { minifyFamilyTokens } from './lib/minify-family.js';
+import { minifyFontTokens } from './lib/minify-font.js';
 import cssnanoUtils from '#utils';
-import { parsedValueText } from '../../utils/parsedValueText.js';
+import { parsedValueTokens } from '../../utils/parsedValueText.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
 /**
- * @param {string} value
+ * Whether two token lists spell the same text, compared token by token so
+ * that no string is built.
+ *
+ * @param {readonly CSSToken[]} a
+ * @param {readonly CSSToken[]} b
  * @return {boolean}
  */
-function hasVariableFunction(value) {
-  const lowerCasedValue = asciiLowerCase(value);
-
-  return lowerCasedValue.includes('var(') || lowerCasedValue.includes('env(');
+function sameText(a, b) {
+  if (a.length !== b.length) return false;
+  for (let index = 0; index < a.length; index++) {
+    if (a[index][1] !== b[index][1]) return false;
+  }
+  return true;
 }
 
-/** @type {Map<string, (value: string, opts: Options, removeQuotes: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight') | undefined) => string>} */
-const propertyMinifiers = new Map([
-  [
-    'font-weight',
-    (value) => (hasVariableFunction(value) ? value : minifyWeight(value)),
-  ],
-  [
-    'font-family',
-    (value, opts, removeQuotes) =>
-      hasVariableFunction(value)
-        ? value
-        : minifyFamily(value, opts, removeQuotes),
-  ],
-  [
-    'font',
-    (value, opts, removeQuotes) => minifyFont(value, opts, removeQuotes),
-  ],
-]);
+/**
+ * @param {readonly CSSToken[]} tokens
+ * @return {boolean}
+ */
+function hasVariableFunction(tokens) {
+  return tokens.some((token) => {
+    const lowerCasedValue = asciiLowerCase(token[1]);
+    return lowerCasedValue.includes('var(') || lowerCasedValue.includes('env(');
+  });
+}
 
 /**
  * @typedef {object} Options
@@ -44,11 +43,32 @@ const propertyMinifiers = new Map([
  * @property {boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight')} [removeQuotes] Removes quotes from font families. A function chooses the property to change for each one. (default: true)
  */
 
+/** @type {Map<string, (tokens: readonly CSSToken[], opts: Options, removeQuotes: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight') | undefined) => CSSToken[]>} */
+const propertyMinifiers = new Map([
+  [
+    'font-weight',
+    (tokens) =>
+      hasVariableFunction(tokens) ? [...tokens] : minifyWeightTokens(tokens),
+  ],
+  [
+    'font-family',
+    (tokens, opts, removeQuotes) =>
+      hasVariableFunction(tokens)
+        ? [...tokens]
+        : minifyFamilyTokens(tokens, opts, removeQuotes),
+  ],
+  [
+    'font',
+    (tokens, opts, removeQuotes) =>
+      minifyFontTokens(tokens, opts, removeQuotes),
+  ],
+]);
+
 /**
- * The reducer of one property. It minifies the value as PostCSS gives it, so
- * a comment is gone, and writes only a change. When the function of
- * `removeQuotes` maps the property to a name that is not a font property, the
- * property has no reducer.
+ * The reducer of one property. It minifies the value as PostCSS parses it, so
+ * a comment that PostCSS drops is gone. It writes only a change. When the
+ * function of `removeQuotes` maps the property to a name that is not a font
+ * property, the property has no reducer.
  *
  * @param {Options} opts the options with defaults applied
  * @param {string} prop
@@ -66,12 +86,13 @@ function reducerOf(opts, prop) {
   const minifier = propertyMinifiers.get(targetType);
   if (!minifier) return null;
   return (buffer) => {
-    const text = buffer.text();
-    if (!text) return;
-    // PostCSS gives the value without comments, so minify that text.
-    const value = text.includes('/*') ? parsedValueText(buffer.tokens()) : text;
-    const out = minifier(value, opts, removeQuotes);
-    if (out !== value) buffer.replaceText(out);
+    const tokens = buffer.tokens();
+    if (tokens.length === 0) return;
+    const parsed = parsedValueTokens(tokens);
+    const out = minifier(parsed, opts, removeQuotes);
+    if (!sameText(out, parsed)) {
+      buffer.replace(0, tokens.length, out);
+    }
   };
 }
 

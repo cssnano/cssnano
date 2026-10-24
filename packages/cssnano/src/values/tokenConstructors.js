@@ -1,5 +1,11 @@
 import { HashType, NumberType, TokenType } from '@csstools/css-tokenizer';
-import { escapeForUrlToken } from './escapes.js';
+import {
+  escapeForUrlToken,
+  hexEscape,
+  isDigitCharacter,
+  isLetterCharacter,
+  serializeIdentifier,
+} from './escapes.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
@@ -8,63 +14,6 @@ import { escapeForUrlToken } from './escapes.js';
  * Their representation is the text the tokenizer would read back.
  */
 const noPosition = -1;
-
-/** @param {string | undefined} character @return {boolean} */
-function isDigitCharacter(character) {
-  return character !== undefined && character >= '0' && character <= '9';
-}
-
-/** @param {string} character @return {boolean} */
-function isLetterCharacter(character) {
-  return (
-    (character >= 'a' && character <= 'z') ||
-    (character >= 'A' && character <= 'Z')
-  );
-}
-
-/** @param {number} codePoint @return {string} */
-function hexEscape(codePoint) {
-  return `\\${codePoint.toString(16)} `;
-}
-
-/**
- * Writes an identifier so the tokenizer reads it back as one identifier with
- * the same value. Follows CSSOM's "serialize an identifier".
- *
- * @param {string} value
- * @return {string}
- */
-function serializeIdentifier(value) {
-  const characters = [...value];
-  let text = '';
-  for (let index = 0; index < characters.length; index++) {
-    const character = characters[index];
-    const codePoint = character.codePointAt(0) ?? 0;
-    if (codePoint === 0) {
-      text += '�';
-    } else if (
-      codePoint <= 0x1f ||
-      codePoint === 0x7f ||
-      (isDigitCharacter(character) &&
-        (index === 0 || (index === 1 && characters[0] === '-')))
-    ) {
-      text += hexEscape(codePoint);
-    } else if (index === 0 && characters.length === 1 && character === '-') {
-      text += '\\-';
-    } else if (
-      codePoint >= 0x80 ||
-      character === '-' ||
-      character === '_' ||
-      isDigitCharacter(character) ||
-      isLetterCharacter(character)
-    ) {
-      text += character;
-    } else {
-      text += `\\${character}`;
-    }
-  }
-  return text;
-}
 
 /**
  * An identifier token with the value given. Its text is escaped as needed.
@@ -79,6 +28,24 @@ function ident(value) {
   return /** @type {CSSToken} */ ([
     TokenType.Ident,
     serializeIdentifier(value),
+    noPosition,
+    noPosition,
+    { value },
+  ]);
+}
+
+/**
+ * An identifier token with the text and value given. Use it when the text
+ * is already spelled, such as an escaped name, and must be kept as it is.
+ *
+ * @param {string} text a spelling the tokenizer reads as one identifier
+ * @param {string} value the value that spelling decodes to
+ * @return {CSSToken}
+ */
+function identifierWithText(text, value) {
+  return /** @type {CSSToken} */ ([
+    TokenType.Ident,
+    text,
     noPosition,
     noPosition,
     { value },
@@ -391,6 +358,7 @@ export {
   func,
   hash,
   ident,
+  identifierWithText,
   integer,
   numeric,
   percentage,
