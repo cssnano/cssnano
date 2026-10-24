@@ -281,12 +281,19 @@ function transform(value) {
     ]);
   }
 
-  // An outer reduction may span an already rewritten inner function; the
-  // outermost edit applied last wins.
-  let result = value;
-  for (const [start, end, text] of replacements.toSorted((a, b) => b[0] - a[0]))
-    result = result.slice(0, start) + text + result.slice(end);
-  return result;
+  // An outer reduction copies its argument from the source, so it replaces
+  // any reduction inside it; applying both would leave the outer edit with
+  // offsets from before the inner one.
+  let result = '';
+  let end = 0;
+  for (const [start, stop, text] of replacements.toSorted(
+    (a, b) => a[0] - b[0]
+  )) {
+    if (start < end) continue;
+    result += value.slice(end, start) + text;
+    end = stop;
+  }
+  return result + value.slice(end);
 }
 
 /** @type {import('../../pipeline/host.js').Reducer} */
