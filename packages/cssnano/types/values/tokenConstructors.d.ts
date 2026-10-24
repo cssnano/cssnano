@@ -45,5 +45,19 @@ declare function stringToken(text: string, value: string): CSSToken;
  * @return {CSSToken}
  */
 declare function whitespace(): CSSToken;
-export { ident, integer, numeric, percentage, stringToken, whitespace };
+/**
+ * A function token, `name(`. The name is written as an identifier is, so it
+ * reads back with the same value.
+ *
+ * @param {string} name a non-empty function name
+ * @return {CSSToken}
+ */
+declare function func(name: string): CSSToken;
+/**
+ * The `)` token that closes a function or a group.
+ *
+ * @return {CSSToken}
+ */
+declare function closeParen(): CSSToken;
+export { closeParen, func, ident, integer, numeric, percentage, stringToken, whitespace, };
 //# sourceMappingURL=tokenConstructors.d.ts.map

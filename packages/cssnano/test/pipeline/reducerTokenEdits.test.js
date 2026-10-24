@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import convertValues from '../../src/plugins/postcss-convert-values/index.js';
 import normalizeString from '../../src/plugins/postcss-normalize-string/index.js';
 import normalizeDisplayValues from '../../src/plugins/postcss-normalize-display-values/index.js';
+import normalizeTimingFunctions from '../../src/plugins/postcss-normalize-timing-functions/index.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
 import { ident, whitespace } from '../../src/values/tokenConstructors.js';
 
@@ -72,5 +73,18 @@ describe('convert-values reads the text of an edited custom property only for a 
     buffer.replace(2, 3, [whitespace()]);
     reduce(buffer, 0);
     assert.equal(buffer.text(), 'u+1 1.50px');
+  });
+});
+
+describe('normalize-timing-functions edits the value buffer tokens in place', () => {
+  test("normalize-timing-functions edits the value buffer's tokens without a text edit", () => {
+    const reduce = normalizeTimingFunctions
+      .create({})
+      .forProperty('transition');
+    const buffer = new ValueBuffer('1s cubic-bezier(0.25,0.1,0.25,1)');
+    const [kept] = buffer.tokens();
+    reduce(buffer, 0);
+    assert.equal(buffer.text(), '1s ease');
+    assert.equal(buffer.tokens()[0], kept);
   });
 });
