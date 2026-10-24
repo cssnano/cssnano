@@ -1,4 +1,4 @@
-import { NumberType, TokenType } from '@csstools/css-tokenizer';
+import { HashType, NumberType, TokenType } from '@csstools/css-tokenizer';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
@@ -290,6 +290,52 @@ function whitespace() {
   ]);
 }
 
+/** @param {string | undefined} character @return {boolean} */
+function isNameCharacter(character) {
+  return (
+    isDigitCharacter(character) ||
+    (character !== undefined && isLetterCharacter(character)) ||
+    character === '-' ||
+    character === '_' ||
+    (character?.codePointAt(0) ?? 0) >= 0x80
+  );
+}
+
+/** @param {string | undefined} character @return {boolean} */
+function isIdentStartCharacter(character) {
+  return (
+    (character !== undefined && isLetterCharacter(character)) ||
+    character === '_' ||
+    (character?.codePointAt(0) ?? 0) >= 0x80
+  );
+}
+
+/**
+ * A hash token, `#name`. Its type is id when the name would start an
+ * identifier, and unrestricted otherwise, as the tokenizer reads it.
+ *
+ * @param {string} value a non-empty name of letters, digits, hyphens,
+ *   underscores and non-ASCII characters
+ * @return {CSSToken}
+ */
+function hash(value) {
+  const characters = [...value];
+  if (characters.length === 0 || !characters.every(isNameCharacter)) {
+    throw new RangeError(`${value} is not a hash name`);
+  }
+  const [first, second] = characters;
+  const startsIdent =
+    isIdentStartCharacter(first) ||
+    (first === '-' && (isIdentStartCharacter(second) || second === '-'));
+  return /** @type {CSSToken} */ ([
+    TokenType.Hash,
+    `#${value}`,
+    noPosition,
+    noPosition,
+    { value, type: startsIdent ? HashType.ID : HashType.Unrestricted },
+  ]);
+}
+
 /**
  * A function token, `name(`. The name is written as an identifier is, so it
  * reads back with the same value.
@@ -326,6 +372,7 @@ function closeParen() {
 export {
   closeParen,
   func,
+  hash,
   ident,
   integer,
   numeric,

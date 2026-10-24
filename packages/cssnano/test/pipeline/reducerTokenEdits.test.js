@@ -1,9 +1,11 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
+import { tokenize } from '@csstools/css-tokenizer';
 import convertValues from '../../src/plugins/postcss-convert-values/index.js';
 import normalizeString from '../../src/plugins/postcss-normalize-string/index.js';
 import normalizeDisplayValues from '../../src/plugins/postcss-normalize-display-values/index.js';
 import normalizeTimingFunctions from '../../src/plugins/postcss-normalize-timing-functions/index.js';
+import colormin from '../../src/plugins/postcss-colormin/index.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
 import { ident, whitespace } from '../../src/values/tokenConstructors.js';
 
@@ -47,6 +49,23 @@ describe('Value reducers edit the buffer tokens in place', () => {
     assert.deepEqual(
       buffer.tokens().map((token) => token[1]),
       ['inline', ' ', 'list-item']
+    );
+  });
+});
+
+describe('colormin edits the value buffer tokens in place', () => {
+  test("colormin edits the value buffer's tokens without a text edit", () => {
+    const reduce = colormin.create({}, ['defaults']).forProperty('color');
+    const buffer = new ValueBuffer('1px #ff0000');
+    const kept = buffer.tokens()[0];
+    reduce(buffer, 0);
+    assert.equal(buffer.text(), '1px red');
+    assert.equal(buffer.tokens()[0], kept);
+    assert.deepEqual(
+      buffer.tokens().map((token) => [token[0], token[1]]),
+      tokenize({ css: buffer.text() })
+        .slice(0, -1)
+        .map((token) => [token[0], token[1]])
     );
   });
 });
