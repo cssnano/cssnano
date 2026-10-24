@@ -52,12 +52,12 @@ describe('Fractions and trailing/leading zeros', () => {
 
   test(
     'should optimise fractions with units',
-    processCSS('h1{width:10.px}h2{width:.0px}', 'h1{width:10px}h2{width:0}')
+    processCSS('h1{width:.5px}h2{width:.0px}', 'h1{width:.5px}h2{width:0}')
   );
 
   test(
     'should optimise fractions inside calc',
-    processCSS('h1{width:calc(10.px + .0px)}', 'h1{width:calc(10px + 0px)}')
+    processCSS('h1{width:calc(.5px + .0px)}', 'h1{width:calc(.5px + 0px)}')
   );
 
   test(
