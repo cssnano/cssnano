@@ -75,6 +75,8 @@ function escape(part, stringContext) {
       ? `\\-${result.slice(1)}`
       : `\\3${result[0]} ${result.slice(1)}`;
   }
+  // A lone hyphen reads as a delim token, so it needs its own escape.
+  if (!stringContext && result === '-') result = '\\-';
   return result;
 }
 
