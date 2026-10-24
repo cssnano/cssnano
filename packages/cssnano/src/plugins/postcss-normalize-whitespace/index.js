@@ -1,5 +1,6 @@
 import cssnanoUtils from '#utils';
 import { TokenType } from '@csstools/css-tokenizer';
+import { unhackOutsideStrings } from './lib/ieHack.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
@@ -17,10 +18,8 @@ const decl = 'decl';
 const rule = 'rule';
 const gridRowsPropertyRegex = /^(?:grid|grid-template|grid-template-areas)$/iv;
 const variableFunctions = new Set(['var', 'env', 'constant']);
-const ieHackRegex = /[ \t\n\r\f]*(\\9)[ \t\n\r\f]*/v;
 const whitespaceRegex = /[ \t\n\r\f]/gv;
 const hasWhitespaceRegex = /[ \t\n\r\f]/v;
-const quoteRegex = /["']/v;
 
 const plainSeparatorRegex = /^[ \t\n\r\f]*:[ \t\n\r\f]*$/v;
 
@@ -183,28 +182,6 @@ function whitespaceReplacements(tokens, trimRows) {
     }
   }
   return replacements;
-}
-
-/**
- * Removes the whitespace around each IE hack outside strings. A string keeps
- * its text, so the whitespace inside it is part of the value.
- *
- * @param {string} text
- * @return {string}
- */
-function unhackOutsideStrings(text) {
-  if (!text.includes('\\9')) return text;
-  // Without a quote there is no string to keep, so the text is not tokenized.
-  if (!quoteRegex.test(text)) return text.replace(ieHackRegex, '$1');
-  let unhacked = '';
-  let cursor = 0;
-  for (const token of tokenizeValue(text)) {
-    if (token[0] !== TokenType.String) continue;
-    unhacked +=
-      text.slice(cursor, token[2]).replace(ieHackRegex, '$1') + token[1];
-    cursor = token[3] + 1;
-  }
-  return unhacked + text.slice(cursor).replace(ieHackRegex, '$1');
 }
 
 /**
