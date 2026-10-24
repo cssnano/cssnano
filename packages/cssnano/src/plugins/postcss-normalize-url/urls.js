@@ -1,9 +1,17 @@
+import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import { escapeForUrlToken, replaceEscapeChar } from '../../values/escapes.js';
+import {
+  closeParen,
+  func,
+  stringToken,
+  url as urlToken,
+} from '../../values/tokenConstructors.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 const { asciiLowerCase, isCSSWhitespace } = cssnanoUtils;
 
-// eslint-disable-next-line no-useless-escape
-const urlTokenEscapeChars = /[\\ \t\n\r\f\(\)"']/gv;
 const singleQuoteStringEscapeChars = /[\\\n\r\f']/gv;
 const doubleQuoteStringEscapeChars = /[\\\n\r\f"]/gv;
 
@@ -13,32 +21,6 @@ const dataUrlRegex = /^[dD][aA][tT][aA]:/v;
 // control-character match below is intentional.
 // oxlint-disable-next-line no-control-regex
 const nonPrintableRegex = /[\u0000-\u0008\u000B\u000E-\u001F\u007F]/v;
-
-/**
- * @param {string} match
- * @return {string}
- */
-function replaceEscapeChar(match) {
-  switch (match) {
-    case '\n':
-      return '\\a ';
-    case '\r':
-      return '\\d ';
-    case '\f':
-      return '\\c ';
-    default:
-      return '\\' + match;
-  }
-}
-
-/**
- * Escape characters that terminate or invalidate an unquoted CSS url() token.
- * @param {string} value
- * @return {string}
- */
-function escapeForUrlToken(value) {
-  return value.replaceAll(urlTokenEscapeChars, replaceEscapeChar);
-}
 
 /**
  * Escape characters for a CSS string token in the given quote context.
@@ -67,52 +49,86 @@ function trimCSSWhitespace(value) {
 }
 
 /**
+ * The function name a url or src token was written with, such as `URL`, or
+ * an empty string when there is no function token.
+ * @param {CSSToken | undefined} nameToken a URL token or a function token
+ * @return {string}
+ */
+function functionName(nameToken) {
+  if (nameToken === undefined) return '';
+  const text = nameToken[1];
+  return text.slice(0, text.indexOf('('));
+}
+
+/**
+ * A string token in the function form, `name("…")`, or on its own when there
+ * is no name.
+ * @param {CSSToken | undefined} nameToken the function token, when there is one
+ * @param {CSSToken} string
+ * @return {CSSToken[]}
+ */
+function wrapString(nameToken, string) {
+  if (nameToken === undefined) return [string];
+  // A URL token spells the whole url(); the function form opens with its name.
+  const head =
+    nameToken[0] === TokenType.Function
+      ? nameToken
+      : func(functionName(nameToken));
+  return [head, string, closeParen()];
+}
+
+/**
  * Normalize and format a url() or src() token value (unquoted or quoted).
  * Returns undefined when the URL is a data URL. It keeps the URL itself
  * byte-identical, because dot segments, duplicate slashes, host name dots and
  * percent-escapes are not guaranteed equivalent for every server or bundler.
  * @param {string} decoded
  * @param {string} quote
- * @param {string} name
- * @return {string | undefined}
+ * @param {CSSToken | undefined} nameToken the URL or function token, or
+ *   undefined for a bare string
+ * @return {CSSToken[] | undefined}
  */
-export function normalizeUrlTokenValue(decoded, quote, name) {
-  let url = trimCSSWhitespace(decoded);
+export function normalizeUrlTokenValue(decoded, quote, nameToken) {
+  const url = trimCSSWhitespace(decoded);
+  const name = functionName(nameToken);
   const lowerName = asciiLowerCase(name);
   if (!url) {
-    if (!name) return undefined;
-    return lowerName === 'src' ? `${name}("")` : `${name}()`;
+    if (nameToken === undefined) return undefined;
+    if (lowerName === 'src') {
+      return wrapString(nameToken, stringToken('""', ''));
+    }
+    return [urlToken('', name)];
   }
   if (dataUrlRegex.test(url)) return undefined;
 
   // When name is empty (string with modifiers), or src() function,
   // quotes must be retained and unquoting is not allowed.
-  if (!name || lowerName === 'src') {
+  if (nameToken === undefined || lowerName === 'src') {
     const outputQuote = quote || '"';
-    url = escapeForString(url, outputQuote);
-    return name
-      ? `${name}(${outputQuote}${url}${outputQuote})`
-      : `${outputQuote}${url}${outputQuote}`;
+    const string = stringToken(
+      `${outputQuote}${escapeForString(url, outputQuote)}${outputQuote}`,
+      url
+    );
+    return wrapString(nameToken, string);
   }
 
-  let outputQuote = quote;
   if (nonPrintableRegex.test(url)) {
     // Non-printable characters are a parse error in unquoted url tokens
     // (CSS Syntax 3 §4.3.6), so quoted string syntax must be used.
-    outputQuote = quote || '"';
-    url = escapeForString(url, outputQuote);
-  } else if (quote) {
+    const outputQuote = quote || '"';
+    const string = stringToken(
+      `${outputQuote}${escapeForString(url, outputQuote)}${outputQuote}`,
+      url
+    );
+    return wrapString(nameToken, string);
+  }
+  if (quote) {
     const unquoted = escapeForUrlToken(url);
     const quoted = escapeForString(url, quote);
-    if (unquoted.length < quoted.length + 2) {
-      url = unquoted;
-      outputQuote = '';
-    } else {
-      url = quoted;
+    if (unquoted.length >= quoted.length + 2) {
+      const string = stringToken(`${quote}${quoted}${quote}`, url);
+      return wrapString(nameToken, string);
     }
-  } else {
-    url = escapeForUrlToken(url);
-    outputQuote = '';
   }
-  return `${name}(${outputQuote}${url}${outputQuote})`;
+  return [urlToken(url, name)];
 }
