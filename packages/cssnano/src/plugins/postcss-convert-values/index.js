@@ -5,11 +5,8 @@ import {
   IN_PROPERTY,
   PERCENTAGE_SYNTAX,
 } from '../../pipeline/context.js';
-import {
-  containsUnicodeRange,
-  findReplacements,
-  stripVendorPrefix,
-} from './lib/findReplacements.js';
+import { findReplacements, stripVendorPrefix } from './lib/findReplacements.js';
+import { containsUnicodeRange } from './lib/unicodeRange.js';
 
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 /** @import {ReplacementFlags} from './lib/findReplacements.js' */
@@ -196,7 +193,7 @@ function compileConvertValues(options, browsers) {
         );
         // A custom property may hold a `U+` range, which only `unicode-range`
         // reads as one token, so no edit is safe for it.
-        if (flags.isCustomProperty && containsUnicodeRange(buffer.text())) {
+        if (flags.isCustomProperty && containsUnicodeRange(buffer)) {
           return;
         }
         buffer.replaceRanges(findReplacements(buffer.tokens(), flags, options));
