@@ -35,6 +35,15 @@ test('ValueBuffer.replace leaves the shared list unchanged', () => {
   assert.deepEqual(shared, before);
 });
 
+test('ValueBuffer.replace leaves a list tokens() returned earlier unchanged', () => {
+  const buffer = new ValueBuffer('a b');
+  const earlier = buffer.tokens();
+  const before = earlier.slice();
+  buffer.replace(2, 3, [ident('c')]);
+  assert.equal(buffer.text(), 'a c');
+  assert.deepEqual(earlier, before);
+});
+
 test('ValueBuffer.replaceRanges leaves the shared list unchanged', () => {
   const shared = Object.freeze(new ValueBuffer('a b').tokens().slice());
   const before = shared.slice();

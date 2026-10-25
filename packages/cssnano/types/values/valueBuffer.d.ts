@@ -11,9 +11,9 @@ export type TokenEdit = {
 };
 /**
  * The working copy of one fold over a declaration value. Reads come from the
- * source text until the first edit. Tokens are built on first use, and a
- * buffer owns its token list, so an edit never touches a list another reader
- * holds. After an edit, each token's positions are its offsets in text().
+ * source text until the first edit. Tokens are built on first use, and an edit
+ * builds a new list, so a list a reader holds never changes. After an edit,
+ * each token's positions are its offsets in text().
  */
 declare class ValueBuffer {
     #private;
@@ -32,8 +32,8 @@ declare class ValueBuffer {
      */
     text(): string;
     /**
-     * The current tokens. The list is the buffer's own, so readers may use it
-     * but should change it only through replace.
+     * The current tokens. The list is never mutated, so a reader may keep it
+     * across later edits.
      *
      * @return {readonly CSSToken[]}
      */

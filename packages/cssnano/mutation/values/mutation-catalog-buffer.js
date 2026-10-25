@@ -10,8 +10,9 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'edit the shared list instead of a copy',
-    find: '? this.#shared.slice()',
-    replace: '? this.#shared',
+    name: 'write the edit into the list tokens() returned earlier',
+    find: '    renumber(next);\n    this.#tokens = next;',
+    replace:
+      '    renumber(next);\n    for (let index = 0; index < next.length; index++) own[index] = next[index];\n    this.#tokens = own;',
   },
 ];
