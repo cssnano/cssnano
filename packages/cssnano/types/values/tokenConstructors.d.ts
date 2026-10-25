@@ -79,10 +79,16 @@ declare function hash(value: string): CSSToken;
  */
 declare function func(name: string): CSSToken;
 /**
+ * The `(` token that opens a group.
+ *
+ * @return {CSSToken}
+ */
+declare function openParen(): CSSToken;
+/**
  * The `)` token that closes a function or a group.
  *
  * @return {CSSToken}
  */
 declare function closeParen(): CSSToken;
-export { closeParen, func, hash, ident, identifierWithText, integer, numeric, percentage, stringToken, url, whitespace, };
+export { closeParen, func, hash, ident, identifierWithText, integer, numeric, openParen, percentage, stringToken, url, whitespace, };
 //# sourceMappingURL=tokenConstructors.d.ts.map
