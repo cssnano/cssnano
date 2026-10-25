@@ -9,6 +9,12 @@ export type TokenEdit = {
     end: number;
     tokens: readonly CSSToken[];
 };
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} BalancedTokens */
+/**
+ * @typedef {{unicodeRangesAllowed?: boolean}} TokenizeMode
+ * @typedef {{start: number, end: number, tokens: readonly CSSToken[]}} TokenEdit
+ */
 /**
  * The working copy of one fold over a declaration value. Reads come from the
  * source text until the first edit. Tokens are built on first use, and an edit
