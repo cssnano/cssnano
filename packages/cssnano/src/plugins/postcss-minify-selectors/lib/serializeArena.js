@@ -4,7 +4,7 @@ import { needsHexEscapeTerminator } from './hexEscape.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
-const { tokenStart } = cssnanoUtils;
+const { TokenType, isCSSWhitespace, tokenStart } = cssnanoUtils;
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
 
@@ -38,9 +38,34 @@ function appendEmitTokens(list, arena, emit) {
 }
 
 /**
+ * The tokenizer keeps a hex escape's terminator in the escape's ident or hash,
+ * so a terminator restored before whitespace joins that token's text. Before a
+ * hex digit the next emit would continue the ident, which no joined token list
+ * can spell.
+ * @param {(CSSToken | undefined)[]} list
+ * @param {string} next
+ */
+function appendTerminator(list, next) {
+  const last = list.at(-1);
+  if (
+    last !== undefined &&
+    (last[0] === TokenType.Ident || last[0] === TokenType.Hash) &&
+    isCSSWhitespace(next.charCodeAt(0))
+  ) {
+    list[list.length - 1] = /** @type {CSSToken} */ ([
+      last[0],
+      `${last[1]} `,
+      last[2],
+      last[3],
+      last[4],
+    ]);
+  } else list.push(undefined);
+}
+
+/**
  * Walks the emit tree in order and returns its text. With a `list`, it also
  * collects the emits' tokens, and `undefined` for each emit without tokens and
- * each restored terminator.
+ * each restored terminator no token can hold.
  * @param {SelectorArena} arena
  * @param {Emit} root
  * @param {(CSSToken | undefined)[] | undefined} list
@@ -71,10 +96,8 @@ function serializeEmits(arena, root, list) {
     }
     if (value === '') continue;
     if (needsHexEscapeTerminator(previous, value)) {
-      // The tokenizer reads the terminator as part of the escape's ident, so
-      // no whitespace token can stand for it.
       output.push(' ');
-      if (list !== undefined) list.push(undefined);
+      if (list !== undefined) appendTerminator(list, value);
     }
     output.push(value);
     if (list !== undefined) appendEmitTokens(list, arena, emit);

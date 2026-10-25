@@ -39,6 +39,21 @@ test('serializeNormalizedTokens returns no tokens for exactly 10 corpus lists', 
   assert.equal(withoutTokens, 10);
 });
 
+/** Counts the text and source emits of a tree that carry no tokens. */
+function emitsWithoutTokens(emit) {
+  if (emit === undefined || emit.kind === 'node') return 0;
+  if (emit.kind === 'sequence')
+    return emit.items.reduce((sum, item) => sum + emitsWithoutTokens(item), 0);
+  return emit.tokens === undefined ? 1 : 0;
+}
+
+test('the serializer corpus has exactly 48 emits without tokens', () => {
+  let count = 0;
+  for (const [input] of serializerCorpus)
+    count += emitsWithoutTokens(normalizedRoot(input).root);
+  assert.equal(count, 48);
+});
+
 test('serializeNormalizedTokens text equals serializeNormalized for every corpus list', () => {
   for (const [input] of serializerCorpus) {
     const { arena, root } = normalizedRoot(input);
@@ -72,9 +87,38 @@ test('serializeNormalizedTokens joins the tokens of text emits and renumbers the
   assert.deepEqual(list, tokens(text));
 });
 
-test('serializeNormalizedTokens returns no tokens when a restored hex escape terminator would merge into an ident', () => {
-  // The tokenizer reads `\31 a` as one ident, so no token list of these two
-  // emits spells the text.
+test('serializeNormalizedTokens folds a hex escape terminator restored before whitespace into the preceding ident', () => {
+  // The tokenizer keeps the terminator in the escape's ident, `\31 `, and
+  // reads the descendant combinator after it as whitespace.
+  const arena = parseSelectorArena('.a', { verifyArena: false });
+  const root = {
+    kind: 'sequence',
+    items: [
+      { kind: 'text', value: '.\\31', tokens: tokens('.\\31') },
+      { kind: 'text', value: ' .b', tokens: tokens(' .b') },
+    ],
+  };
+  const { text, tokens: list } = serializeNormalizedTokens(arena, root);
+  assert.equal(text, '.\\31  .b');
+  assert.deepEqual(list, tokens(text));
+});
+
+test('serializeNormalizedTokens folds a hex escape terminator restored before whitespace into the preceding hash', () => {
+  const arena = parseSelectorArena('.a', { verifyArena: false });
+  const root = {
+    kind: 'sequence',
+    items: [
+      { kind: 'text', value: '#\\31', tokens: tokens('#\\31') },
+      { kind: 'text', value: ' a', tokens: tokens(' a') },
+    ],
+  };
+  const { text, tokens: list } = serializeNormalizedTokens(arena, root);
+  assert.equal(text, '#\\31  a');
+  assert.deepEqual(list, tokens(text));
+});
+
+test('serializeNormalizedTokens returns no tokens when a restored hex escape terminator joins two emits into one ident', () => {
+  // `\31 a` is one ident, so the tokens of the two emits cannot spell it.
   const arena = parseSelectorArena('.a', { verifyArena: false });
   const root = {
     kind: 'sequence',
