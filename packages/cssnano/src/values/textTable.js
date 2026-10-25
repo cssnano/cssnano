@@ -1,5 +1,6 @@
 import { tokens as tokenize } from '../utils/value.js';
 import { sourceSelector } from '../pipeline/traversal.js';
+import { tokensText } from './tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Rule} from 'postcss' */
@@ -42,7 +43,7 @@ class TextTable {
    * @param {readonly CSSToken[]} list positioned as the text it spells
    */
   write(rule, list) {
-    const text = list.map((token) => token[1]).join('');
+    const text = tokensText(list);
     assign(rule, text);
     this.#entries.set(rule, { text, tokens: list });
   }
