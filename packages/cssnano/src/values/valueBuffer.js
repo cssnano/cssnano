@@ -1,4 +1,5 @@
 import { balancedStructure, tokens } from '../utils/value.js';
+import { tokensText } from './tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} BalancedTokens */
@@ -80,7 +81,7 @@ class ValueBuffer {
    * @return {string}
    */
   text() {
-    this.#text ??= (this.#tokens ?? []).map((token) => token[1]).join('');
+    this.#text ??= tokensText(this.#tokens ?? []);
     return this.#text;
   }
 
