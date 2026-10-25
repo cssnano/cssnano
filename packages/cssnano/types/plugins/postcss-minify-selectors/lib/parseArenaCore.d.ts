@@ -1,11 +1,9 @@
-import cssnanoUtils from '#utils';
-/** @type {typeof cssnanoUtils.balancedTokens} */
-declare const balancedTokens: typeof cssnanoUtils.balancedTokens;
+declare const balancedStructure: typeof import("../../../utils/value.js").balancedStructure;
 export type ListMode = import('./arena.js').ListMode;
 export type ParseStatus = import('./arena.js').ParseStatus;
 export type SemanticFacts = import('./arena.js').SemanticFacts;
 export type Specificity = import('./arena.js').Specificity;
-export type Structure = NonNullable<ReturnType<typeof balancedTokens>>;
+export type Structure = NonNullable<ReturnType<typeof balancedStructure>>;
 export type ParseContext = {
     mode?: ListMode;
     keyframe?: boolean;
