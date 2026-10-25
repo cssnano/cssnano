@@ -6,7 +6,7 @@ import isAnonymousLayer from './isAnonymousLayer.js';
 import isCSSWhitespace from './isCSSWhitespace.js';
 import isHexDigitCode from './isHexDigitCode.js';
 import isImportantComment from './isImportantComment.js';
-import { sourceValue } from './declValue.js';
+import { sourceValue } from './sourceText.js';
 import vendorUnprefixed from './vendorUnprefixed.js';
 import { isSubstitutionFunction } from './substitution.js';
 import {
