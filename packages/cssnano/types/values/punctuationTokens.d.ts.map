@@ -1,0 +1,1 @@
+{"version":3,"file":"punctuationTokens.d.ts","sourceRoot":"","sources":["../../src/values/punctuationTokens.js"],"names":[],"mappings":"AAEI,OAAQ,KAAA,EAAC,QAAQ,EAAC,MAAM,yBAAyB,CAAA;AAKrD;;;;;GAKG;AACH,iBAAS,KAAK,IAFF,QAAQ,CAUnB;AAED;;;;GAIG;AACH,iBAAS,UAAU,IAFP,QAAQ,CAUnB;AAED;;;;GAIG;AACH,iBAAS,WAAW,IAFR,QAAQ,CAUnB;AAED,OAAO,EAAE,WAAW,EAAE,KAAK,EAAE,UAAU,EAAE,CAAC"}
