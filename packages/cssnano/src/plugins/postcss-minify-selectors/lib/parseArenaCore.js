@@ -14,13 +14,11 @@ import {
 import { addLeafWork, compoundChildren } from './parseArenaCompound.js';
 
 const { TokenType, balancedStructure, tokens: tokenize } = cssnanoUtils;
-/** @type {typeof cssnanoUtils.balancedTokens} */
-const balancedTokens = cssnanoUtils.balancedTokens;
 /** @typedef {import('./arena.js').ListMode} ListMode */
 /** @typedef {import('./arena.js').ParseStatus} ParseStatus */
 /** @typedef {import('./arena.js').SemanticFacts} SemanticFacts */
 /** @typedef {import('./arena.js').Specificity} Specificity */
-/** @typedef {NonNullable<ReturnType<typeof balancedTokens>>} Structure */
+/** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} Structure */
 /** @typedef {{mode?:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean,verifyArena?:boolean}} ParseContext */
 /** @typedef {{kind:'list',start:number,end:number,mode:ListMode,argumentPayload?:number,insideHas:boolean}} ListWork */
 /** @typedef {{kind:'complex',start:number,end:number,mode:ListMode,status?:ParseStatus,insideHas:boolean}} ComplexWork */
@@ -89,16 +87,14 @@ export function parseSelectorArena(
       ? undefined
       : tokenRange(source, sourceTokens, start, end);
   const text = range?.text ?? source;
-  const structure = range
-    ? balancedStructure(range.tokens)
-    : balancedTokens(source);
+  const list = range?.tokens ?? tokenize(source);
+  const structure = balancedStructure(list);
   if (!structure) {
-    const input = range?.tokens ?? tokenize(source);
     return buildSelectorArena(
       text,
-      input,
+      list,
       (builder) => {
-        builder.leaf('raw', 0, input.length, {
+        builder.leaf('raw', 0, list.length, {
           status: 'opaque',
         });
       },
