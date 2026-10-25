@@ -6,7 +6,7 @@ import {
   isUrl,
   name,
   reservedIdentKeywords,
-  serializeArguments,
+  argumentTokens,
 } from '../lib/tokenize.js';
 import { easingKeywords, easingFunctionNames } from '../lib/easingSets.js';
 import classifyTime from '../lib/isTime.js';
@@ -178,11 +178,11 @@ function normalize(args) {
 }
 /**
  * @param {{ arguments: import('../lib/tokenize.js').Term[][] }} parsed
- * @return {string | null}
+ * @return {import('@csstools/css-tokenizer').CSSToken[] | null}
  */
 function normalizeAnimation(parsed) {
   const normalized = normalize(parsed.arguments);
-  return normalized === null ? null : serializeArguments(normalized);
+  return normalized === null ? null : argumentTokens(normalized);
 }
 
 export default normalizeAnimation;

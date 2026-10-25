@@ -1,5 +1,9 @@
 import cssnanoUtils from '#utils';
 import cssWideKeywords from '../rules/cssWideKeywords.json' with { type: 'json' };
+import { comma } from '../../../values/listSeparators.js';
+import { whitespace } from '../../../values/tokenConstructors.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 const { TokenType, asciiLowerCase, closeForOpening, decoded } = cssnanoUtils;
 
@@ -179,17 +183,48 @@ function tokenizeValue(value) {
   return { arguments: argumentsList, terms, abort };
 }
 
-/** @param {Term[][]} arguments_ */
-function serializeArguments(arguments_) {
-  return arguments_
-    .map((terms) => terms.map((term) => term.raw).join(' '))
-    .join(',');
+/**
+ * The tokens of the groups in order, with `separator` between each pair. An
+ * empty group adds nothing, so a caller drops the groups it does not keep.
+ *
+ * @param {readonly (readonly CSSToken[])[]} groups
+ * @param {CSSToken} separator
+ * @return {CSSToken[]}
+ */
+function joinTokens(groups, separator) {
+  /** @type {CSSToken[]} */
+  const joined = [];
+  for (let index = 0; index < groups.length; index++) {
+    if (index > 0) joined.push(separator);
+    for (const token of groups[index]) joined.push(token);
+  }
+  return joined;
+}
+
+/**
+ * The tokens of a comma-separated list of arguments, each argument's terms
+ * separated by whitespace.
+ *
+ * @param {Term[][]} arguments_
+ * @return {CSSToken[]}
+ */
+function argumentTokens(arguments_) {
+  return joinTokens(
+    arguments_.map((terms) =>
+      joinTokens(
+        terms.map((term) => term.tokens),
+        whitespace()
+      )
+    ),
+    comma()
+  );
 }
 
 /* `default` is reserved for custom identifiers although it is not CSS-wide. */
 const reservedIdentKeywords = new Set([...cssWideKeywords.keywords, 'default']);
 
 export {
+  argumentTokens,
   reservedIdentKeywords,
   isDelim,
   isDimension,
@@ -200,7 +235,7 @@ export {
   isPercentage,
   isString,
   isUrl,
+  joinTokens,
   name,
-  serializeArguments,
   tokenizeValue,
 };
