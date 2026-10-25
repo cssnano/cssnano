@@ -13,10 +13,6 @@ export type Output = {
     hexDigits?: number;
     head?: number;
 };
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @typedef {import('./arena.js').SelectorArena} SelectorArena */
-/** @typedef {import('./arena.js').ArenaNode} ArenaNode */
-/** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
 /** @typedef {{emit?:Emit,id:number,length:number,text?:string,sourceNode?:number,changed?:boolean,hexDigits?:number,head?:number}} Output */
 export declare class OutputPool {
@@ -32,6 +28,12 @@ export declare class OutputPool {
     constructor(arena: SelectorArena);
     /** @param {string} value @return {Output} */
     text(value: string): Output;
+    /**
+     * A class or ID selector with the tokens that spell its text.
+     * @param {SelectorArena} arena
+     * @param {ArenaNode} node
+     */
+    classOrId(arena: SelectorArena, node: ArenaNode): Output;
     /**
      * A source comment with its token. Outputs are interned by text, so the
      * first token seen for a text is the one kept.

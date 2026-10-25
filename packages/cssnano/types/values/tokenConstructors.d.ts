@@ -72,5 +72,15 @@ declare function hash(value: string): CSSToken;
  * @return {CSSToken}
  */
 declare function func(name: string): CSSToken;
-export { func, hash, ident, identifierWithText, integer, numeric, percentage, stringToken, url, };
+/**
+ * A hash token whose text is given. Use it when the text is already spelled,
+ * such as an ID with an escape that must be kept as it is.
+ *
+ * @param {string} text a spelling the tokenizer reads as one hash token
+ * @param {string} value the name that spelling decodes to
+ * @param {'id' | 'unrestricted'} type
+ * @return {CSSToken}
+ */
+declare function hashWithText(text: string, value: string, type: 'id' | 'unrestricted'): CSSToken;
+export { func, hash, hashWithText, ident, identifierWithText, integer, numeric, percentage, stringToken, url, };
 //# sourceMappingURL=tokenConstructors.d.ts.map

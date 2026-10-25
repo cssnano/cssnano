@@ -4,31 +4,15 @@ import {
   hexEscapeDigitCount,
   needsTerminatorAfterDigits,
 } from './hexEscape.js';
-import {
-  closeParen,
-  colon,
-  comma,
-  whitespace,
-} from '../../../values/punctuationTokens.js';
-import { func } from '../../../values/tokenConstructors.js';
+import { classOrIdTokens, fixedTokens } from './outputTokens.js';
 import { serializeNormalized } from './serializeArena.js';
 import { isImportantCommentToken, skipTrivia, unquote } from './tokenUtils.js';
 
-const { TokenType, tokenStart } = cssnanoUtils;
-/**
- * The tokens of fixed punctuation texts. A text's tokens depend only on the
- * text, so the pool, which interns outputs by text, can attach them once.
- */
-const fixedTokens = new Map([
-  [',', Object.freeze([comma()])],
-  [')', Object.freeze([closeParen()])],
-  [':is(', Object.freeze([colon(), func('is')])],
-  [' ', Object.freeze([whitespace()])],
-]);
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
+const { TokenType, tokenStart } = cssnanoUtils;
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
 /** @typedef {{emit?:Emit,id:number,length:number,text?:string,sourceNode?:number,changed?:boolean,hexDigits?:number,head?:number}} Output */
 
@@ -48,6 +32,18 @@ export class OutputPool {
   /** @param {string} value @return {Output} */
   text(value) {
     return this.texts.get(value) ?? this.intern(value, fixedTokens.get(value));
+  }
+
+  /**
+   * A class or ID selector with the tokens that spell its text.
+   * @param {SelectorArena} arena
+   * @param {ArenaNode} node
+   */
+  classOrId(arena, node) {
+    const text = classOrIdText(arena, node);
+    return (
+      this.texts.get(text) ?? this.intern(text, classOrIdTokens(arena, node))
+    );
   }
 
   /**
