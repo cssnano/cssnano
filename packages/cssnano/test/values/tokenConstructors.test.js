@@ -9,6 +9,7 @@ import {
 import {
   func,
   hash,
+  hashWithText,
   ident,
   identifierWithText,
   integer,
@@ -266,6 +267,22 @@ test('identifierWithText reads back as one identifier with the text and value it
     assert.equal(read[0][0], TokenType.Ident);
     assert.equal(read[0][1], text);
     assert.equal(read[0][4].value, value);
+  }
+});
+
+test('hashWithText reads back as the hash token the tokenizer reads from its text', () => {
+  for (const [text, value, type] of [
+    ['#\\31x', '1x', 'id'],
+    ['#a\\ b', 'a b', 'id'],
+    ['#1x', '1x', 'unrestricted'],
+  ]) {
+    const token = hashWithText(text, value, type);
+    const read = tokenize({ css: text });
+    assert.equal(read.length, 2, `${text} reads as one token and EOF`);
+    assert.deepEqual(
+      [read[0][0], read[0][1], read[0][4]],
+      [token[0], token[1], token[4]]
+    );
   }
 });
 

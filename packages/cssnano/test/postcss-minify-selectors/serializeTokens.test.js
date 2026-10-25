@@ -29,14 +29,14 @@ test('serializeNormalizedTokens tokens, when returned, equal tokenize of the tex
   }
 });
 
-test('serializeNormalizedTokens returns no tokens for exactly 5 corpus lists', () => {
+test('serializeNormalizedTokens returns no tokens for exactly 4 corpus lists', () => {
   let withoutTokens = 0;
   for (const [input] of serializerCorpus) {
     const { arena, root } = normalizedRoot(input);
     if (serializeNormalizedTokens(arena, root).tokens === undefined)
       withoutTokens++;
   }
-  assert.equal(withoutTokens, 5);
+  assert.equal(withoutTokens, 4);
 });
 
 /** Counts the text and source emits of a tree that carry no tokens. */
@@ -47,11 +47,11 @@ function emitsWithoutTokens(emit) {
   return emit.tokens === undefined ? 1 : 0;
 }
 
-test('the serializer corpus has exactly 26 emits without tokens', () => {
+test('the serializer corpus has exactly 25 emits without tokens', () => {
   let count = 0;
   for (const [input] of serializerCorpus)
     count += emitsWithoutTokens(normalizedRoot(input).root);
-  assert.equal(count, 26);
+  assert.equal(count, 25);
 });
 
 test("normalizeList's emits carry tokens", () => {
@@ -86,6 +86,35 @@ test("normalizeListTrivia's space emits carry tokens", () => {
   }
 });
 
+test("normalizeNode's class and ID emits carry tokens", () => {
+  for (const [input] of serializerCorpus) {
+    const { root } = normalizedRoot(input);
+    for (const prefix of ['.', '#'])
+      for (const emit of textEmitsWithPrefix(root, prefix))
+        assert.notEqual(emit.tokens, undefined, input);
+  }
+});
+
+test("normalizeNode's combinator emits carry tokens", () => {
+  for (const [input] of serializerCorpus) {
+    const { root } = normalizedRoot(input);
+    for (const value of ['>', '||'])
+      for (const emit of textEmits(root, value))
+        assert.notEqual(emit.tokens, undefined, input);
+  }
+});
+
+test("normalizeNode's keyframe emits carry tokens", () => {
+  const arena = parseSelectorArena('from, 100%', {
+    keyframe: true,
+    verifyArena: false,
+  });
+  const root = normalizeArena(arena, { sort: true, keyframe: true });
+  const emits = [...textEmits(root, '0%'), ...textEmits(root, 'to')];
+  assert.equal(emits.length, 2);
+  for (const emit of emits) assert.notEqual(emit.tokens, undefined, emit.value);
+});
+
 test('serializeNormalizedTokens text equals serializeNormalized for every corpus list', () => {
   for (const [input] of serializerCorpus) {
     const { arena, root } = normalizedRoot(input);
@@ -96,6 +125,18 @@ test('serializeNormalizedTokens text equals serializeNormalized for every corpus
     );
   }
 });
+
+/** The text emits of a tree whose value starts with `prefix`. */
+function textEmitsWithPrefix(emit, prefix) {
+  if (emit === undefined || emit.kind === 'node') return [];
+  if (emit.kind === 'sequence')
+    return emit.items.flatMap((item) => textEmitsWithPrefix(item, prefix));
+  return emit.kind === 'text' &&
+    emit.value.length > 1 &&
+    emit.value.startsWith(prefix)
+    ? [emit]
+    : [];
+}
 
 /** The text emits of a tree whose value is `value`. */
 function textEmits(emit, value) {

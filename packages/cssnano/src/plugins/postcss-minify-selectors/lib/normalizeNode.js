@@ -3,7 +3,6 @@ import { hasSemanticFact, isFoldEligible, semanticFacts } from './arena.js';
 import {
   attributeOutput,
   childrenOf,
-  classOrIdText,
   compareOutputs,
   descendantCombinator,
   outputText,
@@ -67,7 +66,7 @@ function normalizedNodeOutput(
   if (node.kind === 'pseudo')
     return pseudoOutput(arena, pool, node, normalized);
   if (node.kind === 'class' || node.kind === 'id')
-    return pool.text(classOrIdText(arena, node));
+    return pool.classOrId(arena, node);
   if (node.kind === 'combinator') {
     const value = arena.payloads.combinators[node.payload].value;
     if (value === ' ') return descendantCombinator(arena, pool, node);
