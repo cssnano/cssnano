@@ -226,7 +226,7 @@ function sourceParams(atRule) {
  * @param {import('postcss').Rule} rule
  * @returns {string}
  */
-function sourceSelector(rule) {
+export function sourceSelector(rule) {
   const raw = rule.raws.selector;
   return raw !== undefined && raw.value === rule.selector
     ? raw.raw
