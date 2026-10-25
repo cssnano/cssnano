@@ -13,7 +13,7 @@ import {
 } from './parseArenaStructure.js';
 import { addLeafWork, compoundChildren } from './parseArenaCompound.js';
 
-const { TokenType, tokens } = cssnanoUtils;
+const { TokenType, balancedStructure, tokens: tokenize } = cssnanoUtils;
 /** @type {typeof cssnanoUtils.balancedTokens} */
 const balancedTokens = cssnanoUtils.balancedTokens;
 /** @typedef {import('./arena.js').ListMode} ListMode */
@@ -34,17 +34,68 @@ const balancedTokens = cssnanoUtils.balancedTokens;
 /** @typedef {{kind:'close',node:number,role:'list'|'complex'|'compound'|'pseudo',mode?:ListMode,status?:ParseStatus,facts?:SemanticFacts,specificity?:Specificity}} CloseWork */
 /** @typedef {ListWork|ComplexWork|CompoundWork|CombinatorWork|AttributeWork|NamedSimpleWork|QualifiedNameWork|RawWork|PseudoWork|CloseWork} ParseWork */
 
-/** @param {string} source @param {ParseContext} [context] */
-export function parseSelectorArena(source, context = {}) {
+/**
+ * The tokens from `start` to `end` of a list that spells `source`, with the
+ * text they spell. A whole list is used as it is. A range is rebased to start
+ * at 0, so the arena reads it as the text it spells.
+ *
+ * @param {string} source
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list
+ * @param {number} start
+ * @param {number} end
+ * @returns {{text: string, tokens: readonly import('@csstools/css-tokenizer').CSSToken[]}}
+ */
+function tokenRange(source, list, start, end) {
+  if (start === 0 && end === list.length) return { text: source, tokens: list };
+  if (start >= end) return { text: '', tokens: [] };
+  const base = list[start][2];
+  /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
+  const rebased = [];
+  for (let index = start; index < end; index++) {
+    const token = list[index];
+    rebased.push(
+      /** @type {import('@csstools/css-tokenizer').CSSToken} */ ([
+        token[0],
+        token[1],
+        token[2] - base,
+        token[3] - base,
+        token[4],
+      ])
+    );
+  }
+  return { text: source.slice(base, list[end - 1][3] + 1), tokens: rebased };
+}
+
+/**
+ * @param {string} source
+ * @param {ParseContext} [context]
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [sourceTokens] the tokens that spell `source`, read instead of tokenizing it
+ * @param {number} [start] where the selector starts in `sourceTokens`
+ * @param {number} [end] where the selector ends in `sourceTokens`
+ */
+export function parseSelectorArena(
+  source,
+  context = {},
+  sourceTokens,
+  start = 0,
+  end = sourceTokens?.length ?? 0
+) {
   const mode = context.mode ?? 'outer-unforgiving';
   const keyframe = context.keyframe ?? false;
   const hasDefaultNamespace = context.hasDefaultNamespace ?? false;
   const verifyArena = context.verifyArena ?? true;
-  const structure = balancedTokens(source);
+  const range =
+    sourceTokens === undefined
+      ? undefined
+      : tokenRange(source, sourceTokens, start, end);
+  const text = range?.text ?? source;
+  const structure = range
+    ? balancedStructure(range.tokens)
+    : balancedTokens(source);
   if (!structure) {
-    const input = tokens(source);
+    const input = range?.tokens ?? tokenize(source);
     return buildSelectorArena(
-      source,
+      text,
       input,
       (builder) => {
         builder.leaf('raw', 0, input.length, {
@@ -56,7 +107,7 @@ export function parseSelectorArena(source, context = {}) {
   }
   const input = structure.tokens;
   return buildSelectorArena(
-    source,
+    text,
     input,
     (builder) => {
       /** @type {ParseWork[]} */ const work = [
