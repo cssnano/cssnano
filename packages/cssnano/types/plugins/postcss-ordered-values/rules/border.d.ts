@@ -1,3 +1,4 @@
+import type { CSSToken } from '@csstools/css-tokenizer';
 export type BorderSlotName = 'width' | 'style' | 'color';
 export type BorderSlot = {
     name: BorderSlotName;
@@ -10,8 +11,8 @@ export type BorderSlot = {
 /**
  * @param {import('../lib/tokenize.js').Term[]} border
  * @param {boolean} [allowAuto]
- * @return {string | null}
+ * @return {CSSToken[] | null}
  */
-declare function normalizeBorder(border: import('../lib/tokenize.js').Term[], allowAuto?: boolean): string | null;
+declare function normalizeBorder(border: import('../lib/tokenize.js').Term[], allowAuto?: boolean): CSSToken[] | null;
 export default normalizeBorder;
 //# sourceMappingURL=border.d.ts.map
