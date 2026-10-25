@@ -11,6 +11,7 @@ import reduceTransforms from '../../src/plugins/postcss-reduce-transforms/index.
 import reduceInitial from '../../src/plugins/postcss-reduce-initial/index.js';
 import normalizeUnicode from '../../src/plugins/postcss-normalize-unicode/index.js';
 import minifyFontValues from '../../src/plugins/postcss-minify-font-values/index.js';
+import { valueEntry as normalizeWhitespaceValue } from '../../src/plugins/postcss-normalize-whitespace/index.js';
 import { tokenizeMode } from '../../src/values/tokenizeMode.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
 import { ident, whitespace } from '../../src/values/tokenConstructors.js';
@@ -278,4 +279,96 @@ describe('minify-font-values edits the value buffer tokens in place', () => {
     assert.equal(buffer.isEdited(), false);
     assert.equal(buffer.text(), 'lighter /* note */');
   });
+});
+
+/** A buffer whose text() throws once armed and edited, so a reducer that reads the edited text fails. */
+class EditedTextGuardBuffer extends ValueBuffer {
+  armed = false;
+
+  text() {
+    if (this.armed && this.isEdited()) {
+      throw new Error('the reducer read the text of an edited buffer');
+    }
+    return super.text();
+  }
+}
+
+describe('normalize-whitespace edits the value buffer tokens in place', () => {
+  test("normalize-whitespace edits the value buffer's tokens without a text edit", () => {
+    const reduce = normalizeWhitespaceValue.create().forProperty('width');
+    const buffer = new EditedTextGuardBuffer('a 1px \\9 g');
+    const [kept] = buffer.tokens();
+    buffer.armed = true;
+    reduce(buffer, 0);
+    buffer.armed = false;
+    assert.equal(buffer.text(), 'a 1px\\9g');
+    assert.equal(buffer.tokens()[0], kept);
+  });
+
+  test('normalize-whitespace leaves a value with no whitespace unedited', () => {
+    const reduce = normalizeWhitespaceValue.create().forProperty('width');
+    const buffer = new ValueBuffer('1px\\9');
+    reduce(buffer, 0);
+    assert.equal(buffer.isEdited(), false);
+  });
+
+  test('normalize-whitespace keeps the token list equal to the tokens of its text, since no edit joins two tokens', () => {
+    const reduce = normalizeWhitespaceValue.create().forProperty('width');
+    for (const source of [
+      '1 px',
+      'a -1',
+      '- 1',
+      '1px \\9 g',
+      '1px\\9  solid',
+      'a\\9  ,b',
+      'a\\9 (',
+      'a\\9 /b',
+      '1px \\9 1px\\9 a',
+    ]) {
+      const buffer = new ValueBuffer(source);
+      reduce(buffer, 0);
+      assert.deepEqual(
+        buffer.tokens().map((token) => [token[0], token[1]]),
+        tokenize({ css: buffer.text() })
+          .slice(0, -1)
+          .map((token) => [token[0], token[1]]),
+        source
+      );
+    }
+  });
+});
+
+test('normalize-whitespace joins the token before a `\\9` into the token the tokenizer reads, for each kind of token that can absorb it', () => {
+  const reduce = normalizeWhitespaceValue.create().forProperty('width');
+  const previousTokens = [
+    'none',
+    '1px',
+    '-1',
+    '1e3',
+    '#a',
+    '#1',
+    '@m',
+    '-',
+    '#',
+    '@',
+    '1%',
+    '+',
+    ',',
+    ')',
+  ];
+  const hacks = ['\\9', '\\9g', '\\9(', '\\9g(', '\\9 a'];
+  for (const previous of previousTokens) {
+    for (const hack of hacks) {
+      const source = `${previous === ')' ? '(' : ''}${previous} ${hack}`;
+      const buffer = new ValueBuffer(source);
+      reduce(buffer, 0);
+      assert.deepEqual(
+        buffer.tokens().map((token) => [token[0], token[1], token[4]]),
+        tokenize({ css: buffer.text() })
+          .slice(0, -1)
+          .map((token) => [token[0], token[1], token[4]]),
+        source
+      );
+    }
+  }
 });

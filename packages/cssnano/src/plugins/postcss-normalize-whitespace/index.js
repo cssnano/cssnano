@@ -1,8 +1,17 @@
 import cssnanoUtils from '#utils';
 import { TokenType } from '@csstools/css-tokenizer';
-import { unhackOutsideStrings } from './lib/ieHack.js';
+import {
+  endsWithHack,
+  isSeparatedByDelimiter,
+  replaceToken,
+  respelled,
+  startsWithHack,
+  unhack,
+} from './lib/ieHack.js';
+import { stringToken, whitespace } from '../../values/tokenConstructors.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {TokenEdit} from '../../values/valueBuffer.js' */
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
 const {
@@ -87,26 +96,6 @@ function whitespaceReplacement(tokens, index, stack) {
 }
 
 /**
- * @param {string} value
- * @param {[number, number, string][]} replacements
- * @return {string}
- */
-function applyReplacements(value, replacements) {
-  if (!replacements.length) return value;
-  const pieces = [];
-  let start = 0;
-  for (const [from, to, replacement] of replacements) {
-    if (from > start) pieces.push(value.slice(start, from));
-    pieces.push(replacement);
-    start = to;
-  }
-  if (start < value.length) {
-    pieces.push(value.slice(start));
-  }
-  return pieces.join('');
-}
-
-/**
  * Trim and collapse the spaces and tabs between the names of one grid row.
  * Rows with a backslash are kept as authored, because the whitespace after an
  * escape may belong to the escape or to the name. An unclosed string or a
@@ -128,24 +117,56 @@ function trimGridRow(raw) {
 }
 
 /**
- * The replacements that trim and collapse the whitespace of a value. The stack
- * mirrors the legacy walk: math descendants receive special delimiter
- * treatment, while variable functions trim whitespace around the name and comma
- * delimiters.
+ * The edit of one whitespace token, or undefined when it stays as it is. A
+ * run before a `\9` belongs to the hack, which drops it. A run after a `\9`
+ * that a delimiter follows is dropped too.
+ *
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} index
+ * @param {{ math?: boolean, variable?: boolean }[]} stack
+ * @return {TokenEdit | undefined}
+ */
+function whitespaceEdit(tokens, index, stack) {
+  const token = tokens[index];
+  if (startsWithHack(tokens[index + 1])) return replaceToken(index, []);
+  const previous = tokens[index - 1];
+  if (
+    previous &&
+    endsWithHack(previous) &&
+    isSeparatedByDelimiter(tokens[index + 1]?.[1][0] ?? '')
+  ) {
+    return replaceToken(index, []);
+  }
+  const replacement = whitespaceReplacement(tokens, index, stack);
+  if (replacement === token[1]) return undefined;
+  if (replacement === '') return replaceToken(index, []);
+  return replaceToken(index, [
+    replacement === ' ' ? whitespace() : respelled(token, replacement),
+  ]);
+}
+
+/**
+ * The token edits that trim and collapse the whitespace of a value, and
+ * unhack each IE hack outside strings. The stack mirrors the legacy walk:
+ * math descendants receive special delimiter treatment, while variable
+ * functions trim whitespace around the name and comma delimiters.
  *
  * @param {readonly CSSToken[]} tokens the tokens of the value, without EOF
  * @param {boolean} trimRows whether top-level strings are grid area rows
- * @return {[number, number, string][]}
+ * @return {TokenEdit[]}
  */
-function whitespaceReplacements(tokens, trimRows) {
+function whitespaceEdits(tokens, trimRows) {
   /** @type {{ math?: boolean, variable?: boolean }[]} */
   const stack = [];
-  /** @type {[number, number, string][]} */
-  const replacements = [];
+  /** @type {TokenEdit[]} */
+  const edits = [];
 
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const type = token[0];
+    if (type !== TokenType.String && token[1].includes('\\9')) {
+      unhack(edits, tokens, index);
+    }
     if (type === TokenType.Function) {
       const name = asciiLowerCase(decoded(token));
       const isVariable = variableFunctions.has(name);
@@ -171,39 +192,30 @@ function whitespaceReplacements(tokens, trimRows) {
     if (trimRows && type === TokenType.String && stack.length === 0) {
       const row = trimGridRow(token[1]);
       if (row !== token[1]) {
-        replacements.push([token[2], token[3] + 1, row]);
+        edits.push(replaceToken(index, [stringToken(row, row.slice(1, -1))]));
       }
       continue;
     }
-    if (type !== TokenType.Whitespace) continue;
-    const replacement = whitespaceReplacement(tokens, index, stack);
-    if (replacement !== token[1]) {
-      replacements.push([token[2], token[3] + 1, replacement]);
+    if (type === TokenType.Whitespace) {
+      const edit = whitespaceEdit(tokens, index, stack);
+      if (edit) edits.push(edit);
     }
   }
-  return replacements;
+  return edits;
 }
 
 /**
- * Trims the whitespace of a value in the buffer. The IE hack's `\9` is read
- * without the whitespace around it first. Text without whitespace is left
- * alone, so it is not tokenized.
+ * Trims the whitespace of a value in the buffer, edited as tokens. A value
+ * without whitespace is left alone, so it is not tokenized.
  *
  * @param {boolean} trimRows whether top-level strings are grid area rows
  * @returns {Reducer}
  */
 function valueReducer(trimRows) {
   return (buffer) => {
-    const text = buffer.text();
-    if (!hasWhitespaceRegex.test(text)) return;
-    const unhacked = unhackOutsideStrings(text);
-    if (unhacked !== text) buffer.replaceText(unhacked);
-    const source = buffer.text();
-    const result = applyReplacements(
-      source,
-      whitespaceReplacements(buffer.tokens(), trimRows)
-    );
-    if (result !== source) buffer.replaceText(result);
+    if (!buffer.isEdited() && !hasWhitespaceRegex.test(buffer.text())) return;
+    const edits = whitespaceEdits(buffer.tokens(), trimRows);
+    if (edits.length) buffer.replaceRanges(edits);
   };
 }
 

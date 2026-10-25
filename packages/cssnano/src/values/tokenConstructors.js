@@ -339,6 +339,21 @@ function func(name) {
 }
 
 /**
+ * The `(` token that opens a group.
+ *
+ * @return {CSSToken}
+ */
+function openParen() {
+  return /** @type {CSSToken} */ ([
+    TokenType.OpenParen,
+    '(',
+    noPosition,
+    noPosition,
+    undefined,
+  ]);
+}
+
+/**
  * The `)` token that closes a function or a group.
  *
  * @return {CSSToken}
@@ -361,6 +376,7 @@ export {
   identifierWithText,
   integer,
   numeric,
+  openParen,
   percentage,
   stringToken,
   url,
