@@ -1,9 +1,23 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { tokenizeValue as tokenizeTokens } from '../../src/plugins/postcss-ordered-values/lib/tokenize.js';
-import { normalizeGridColumnRow } from '../../src/plugins/postcss-ordered-values/rules/grid.js';
-import normalizeListStyle from '../../src/plugins/postcss-ordered-values/rules/listStyle.js';
+import { normalizeGridColumnRow as normalizeGridColumnRowTokens } from '../../src/plugins/postcss-ordered-values/rules/grid.js';
+import normalizeListStyleTokens from '../../src/plugins/postcss-ordered-values/rules/listStyle.js';
 import cssnanoUtils from '#utils';
+
+/**
+ * The text a rule writes for its tokens, or null when it rejects the value.
+ *
+ * @param {(...args: any[]) => import('@csstools/css-tokenizer').CSSToken[] | null} rule
+ */
+const asText =
+  (rule) =>
+  (...args) => {
+    const tokens = rule(...args);
+    return tokens === null ? null : tokens.map((token) => token[1]).join('');
+  };
+const normalizeGridColumnRow = asText(normalizeGridColumnRowTokens);
+const normalizeListStyle = asText(normalizeListStyleTokens);
 
 /** The tokens of a value text, as a stage reads them. */
 const tokenizeValue = (text) => tokenizeTokens(cssnanoUtils.tokens(text));

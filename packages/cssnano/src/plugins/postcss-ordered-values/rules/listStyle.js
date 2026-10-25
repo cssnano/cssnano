@@ -3,9 +3,13 @@ import {
   isIdent,
   isString,
   isUrl,
+  joinTokens,
   name,
   reservedIdentKeywords,
 } from '../lib/tokenize.js';
+import { whitespace } from '../../../values/tokenConstructors.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 const definedPosition = new Set(['inside', 'outside']);
 
@@ -88,7 +92,7 @@ function resolveNoneTerms(noneTerms, type, image) {
 
 /**
  * @param {import('../lib/tokenize.js').Term[]} listStyle
- * @return {string | null}
+ * @return {CSSToken[] | null}
  */
 function listStyleNormalizer(listStyle) {
   if (listStyle.length > 3) {
@@ -134,9 +138,12 @@ function listStyleNormalizer(listStyle) {
     return null;
   }
 
-  return [resolved.type?.raw, position?.raw, resolved.image?.raw]
-    .filter(Boolean)
-    .join(' ');
+  return joinTokens(
+    [resolved.type?.tokens, position?.tokens, resolved.image?.tokens].filter(
+      (group) => group !== undefined
+    ),
+    whitespace()
+  );
 }
 
 export default listStyleNormalizer;

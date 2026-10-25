@@ -15,6 +15,7 @@ import { valueEntry as normalizeWhitespaceValue } from '../../src/plugins/postcs
 import { tokenizeMode } from '../../src/values/tokenizeMode.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
 import { ident, whitespace } from '../../src/values/tokenConstructors.js';
+import orderedValues from '../../src/plugins/postcss-ordered-values/index.js';
 
 /** A buffer whose text() throws once armed, so a reducer that reads the text fails. */
 class TextGuardBuffer extends ValueBuffer {
@@ -57,6 +58,30 @@ describe('Value reducers edit the buffer tokens in place', () => {
       buffer.tokens().map((token) => token[1]),
       ['inline', ' ', 'list-item']
     );
+  });
+  test("ordered-values edits the value buffer's tokens without a text edit", () => {
+    const reduce = orderedValues.create({}).forProperty('border');
+    const buffer = new ValueBuffer('1px red solid');
+    const [kept] = buffer.tokens();
+    reduce(buffer, 0);
+    assert.equal(buffer.text(), '1px solid red');
+    assert.equal(buffer.tokens()[0], kept);
+    assert.deepEqual(
+      buffer.tokens().map((token) => [token[0], token[1]]),
+      tokenize({ css: buffer.text() })
+        .slice(0, -1)
+        .map((token) => [token[0], token[1]])
+    );
+  });
+
+  test('ordered-values reads no text of an edited buffer before it rewrites the tokens', () => {
+    const reduce = orderedValues.create({}).forProperty('grid-row');
+    const buffer = new TextGuardBuffer('1 / span 2');
+    buffer.replace(0, 1, [ident('a')]);
+    buffer.armed = true;
+    reduce(buffer, 0);
+    buffer.armed = false;
+    assert.equal(buffer.text(), 'a/span 2');
   });
 });
 
