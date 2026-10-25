@@ -5,6 +5,10 @@ export const serializerCorpus = [
   ['.card, .card, article.card', '.card,article.card'],
   ['.b, .a', '.a,.b'],
   ['h3, h1, h2', 'h1,h2,h3'],
+  [
+    'section h1, article h1, aside h1, nav h1',
+    'article h1,aside h1,nav h1,section h1',
+  ],
   ['div /* comment */ > :is(.a, .b)', 'div>:is(.a,.b)'],
   ['[data-value="a,b"][lang = "en" i]', '[data-value="a,b"][lang=en i]'],
   ['svg|* , |* , .\\31 23', '.\\31 23,svg|*,|*'],
