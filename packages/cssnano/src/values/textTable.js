@@ -1,5 +1,5 @@
 import { tokens as tokenize } from '../utils/value.js';
-import { sourceSelector } from '../pipeline/traversal.js';
+import { sourceSelector } from '../utils/sourceText.js';
 import { tokensText } from './tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
