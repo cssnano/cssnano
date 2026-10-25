@@ -42,6 +42,14 @@ export type RunState = {
     overridable: AtRule[] | null;
 };
 /**
+ * The selector as written, so a rewrite keeps the comments that PostCSS strips
+ * from `selector`. The raw is trusted only while it still matches `selector`.
+ *
+ * @param {import('postcss').Rule} rule
+ * @returns {string}
+ */
+export declare function sourceSelector(rule: import('postcss').Rule): string;
+/**
  * Runs the comment, value, prelude and selector parts of the stages over a
  * stylesheet in a single walk, in document order. Each node loses its comments
  * first, then each text is read from its source, folded through its plan with
