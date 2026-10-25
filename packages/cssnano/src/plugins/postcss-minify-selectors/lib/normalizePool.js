@@ -4,7 +4,12 @@ import {
   hexEscapeDigitCount,
   needsTerminatorAfterDigits,
 } from './hexEscape.js';
-import { closeParen, colon, comma } from '../../../values/punctuationTokens.js';
+import {
+  closeParen,
+  colon,
+  comma,
+  whitespace,
+} from '../../../values/punctuationTokens.js';
 import { func } from '../../../values/tokenConstructors.js';
 import { serializeNormalized } from './serializeArena.js';
 import { isImportantCommentToken, skipTrivia, unquote } from './tokenUtils.js';
@@ -18,7 +23,9 @@ const fixedTokens = new Map([
   [',', Object.freeze([comma()])],
   [')', Object.freeze([closeParen()])],
   [':is(', Object.freeze([colon(), func('is')])],
+  [' ', Object.freeze([whitespace()])],
 ]);
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
@@ -40,9 +47,26 @@ export class OutputPool {
 
   /** @param {string} value @return {Output} */
   text(value) {
-    const found = this.texts.get(value);
-    if (found) return found;
-    const tokens = fixedTokens.get(value);
+    return this.texts.get(value) ?? this.intern(value, fixedTokens.get(value));
+  }
+
+  /**
+   * A source comment with its token. Outputs are interned by text, so the
+   * first token seen for a text is the one kept.
+   * @param {CSSToken} token
+   */
+  comment(token) {
+    return (
+      this.texts.get(token[1]) ?? this.intern(token[1], Object.freeze([token]))
+    );
+  }
+
+  /**
+   * @param {string} value
+   * @param {readonly CSSToken[] | undefined} tokens
+   * @return {Output}
+   */
+  intern(value, tokens) {
     const emit = /** @type {Emit} */ (
       tokens ? { kind: 'text', value, tokens } : { kind: 'text', value }
     );
