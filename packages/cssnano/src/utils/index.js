@@ -12,6 +12,7 @@ import { isSubstitutionFunction } from './substitution.js';
 import {
   TokenType,
   applyEdits,
+  balancedStructure,
   balancedTokens,
   closeForOpening,
   decoded,
@@ -32,7 +33,7 @@ function asciiLowerCase(value) {
   return value.replaceAll(/[A-Z]/gv, (character) => character.toLowerCase());
 }
 
-/** @type {{rawCache: typeof rawCache, sourceValue: typeof sourceValue, isAnonymousLayer: typeof isAnonymousLayer, isCSSWhitespace: typeof isCSSWhitespace, isHexDigitCode: typeof isHexDigitCode, isImportantComment: typeof isImportantComment, vendorUnprefixed: typeof vendorUnprefixed, isSubstitutionFunction: typeof isSubstitutionFunction, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, numeric: typeof numeric, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
+/** @type {{rawCache: typeof rawCache, sourceValue: typeof sourceValue, isAnonymousLayer: typeof isAnonymousLayer, isCSSWhitespace: typeof isCSSWhitespace, isHexDigitCode: typeof isHexDigitCode, isImportantComment: typeof isImportantComment, vendorUnprefixed: typeof vendorUnprefixed, isSubstitutionFunction: typeof isSubstitutionFunction, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedStructure: typeof balancedStructure, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, numeric: typeof numeric, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
 const cssnanoUtils = {
   rawCache,
   sourceValue,
@@ -52,6 +53,7 @@ const cssnanoUtils = {
   mathFunctions,
   numeric,
   applyEdits,
+  balancedStructure,
   balancedTokens,
   tokenEnd,
   tokenStart,
