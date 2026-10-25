@@ -1,5 +1,6 @@
 import cssnanoUtils from '#utils';
-import { closeParen, func, ident } from '../../values/tokenConstructors.js';
+import { func, ident } from '../../values/tokenConstructors.js';
+import { closeParen } from '../../values/punctuationTokens.js';
 
 const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */

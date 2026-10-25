@@ -18,5 +18,36 @@ declare function openSquare(): CSSToken;
  * @return {CSSToken}
  */
 declare function closeSquare(): CSSToken;
-export { closeSquare, colon, openSquare };
+/**
+ * The `(` token that opens a group.
+ *
+ * @return {CSSToken}
+ */
+declare function openParen(): CSSToken;
+/**
+ * The `)` token that closes a function or a group.
+ *
+ * @return {CSSToken}
+ */
+declare function closeParen(): CSSToken;
+/**
+ * A comma token, the separator of a list.
+ *
+ * @return {CSSToken}
+ */
+declare function comma(): CSSToken;
+/**
+ * A whitespace token of one space, the separator the serializer writes.
+ *
+ * @return {CSSToken}
+ */
+declare function whitespace(): CSSToken;
+/**
+ * A delim token, one character that is no other token, such as `/`.
+ *
+ * @param {string} character a single code point
+ * @return {CSSToken}
+ */
+declare function delim(character: string): CSSToken;
+export { closeParen, closeSquare, colon, comma, delim, openParen, openSquare, whitespace, };
 //# sourceMappingURL=punctuationTokens.d.ts.map

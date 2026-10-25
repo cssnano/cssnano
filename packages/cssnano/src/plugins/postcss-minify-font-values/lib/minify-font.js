@@ -2,7 +2,8 @@ import cssnanoUtils from '#utils';
 import keywords from './keywords.js';
 import { minifyFamilyTokens } from './minify-family.js';
 import { balancedStructure } from '../../../utils/value.js';
-import { integer, whitespace } from '../../../values/tokenConstructors.js';
+import { integer } from '../../../values/tokenConstructors.js';
+import { whitespace } from '../../../values/punctuationTokens.js';
 import { tokensText } from '../../../values/tokensText.js';
 
 const {
