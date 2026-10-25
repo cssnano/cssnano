@@ -4,13 +4,21 @@ import {
   hexEscapeDigitCount,
   needsTerminatorAfterDigits,
 } from './hexEscape.js';
-import { comma } from '../../../values/punctuationTokens.js';
+import { closeParen, colon, comma } from '../../../values/punctuationTokens.js';
+import { func } from '../../../values/tokenConstructors.js';
 import { serializeNormalized } from './serializeArena.js';
 import { isImportantCommentToken, skipTrivia, unquote } from './tokenUtils.js';
 
 const { TokenType, tokenStart } = cssnanoUtils;
-/** The separator comma of a joined list, shared by every list. */
-const COMMA_TOKENS = Object.freeze([comma()]);
+/**
+ * The tokens of fixed punctuation texts. A text's tokens depend only on the
+ * text, so the pool, which interns outputs by text, can attach them once.
+ */
+const fixedTokens = new Map([
+  [',', Object.freeze([comma()])],
+  [')', Object.freeze([closeParen()])],
+  [':is(', Object.freeze([colon(), func('is')])],
+]);
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
@@ -28,23 +36,18 @@ export class OutputPool {
     /** @type {Map<number,Map<number,number>>} */ this.pairs = new Map();
     this.nextId = 1;
     this.empty = this.text('');
-    /** @type {Output} */ this.comma = {
-      emit: { kind: 'text', value: ',', tokens: COMMA_TOKENS },
-      id: this.nextId++,
-      length: 1,
-      text: ',',
-      hexDigits: hexEscapeDigitCount(',', 1),
-      head: ','.charCodeAt(0),
-      changed: true,
-    };
   }
 
   /** @param {string} value @return {Output} */
   text(value) {
     const found = this.texts.get(value);
     if (found) return found;
+    const tokens = fixedTokens.get(value);
+    const emit = /** @type {Emit} */ (
+      tokens ? { kind: 'text', value, tokens } : { kind: 'text', value }
+    );
     const output = {
-      emit: /** @type {const} */ ({ kind: 'text', value }),
+      emit,
       id: this.nextId++,
       length: value.length,
       text: value,
