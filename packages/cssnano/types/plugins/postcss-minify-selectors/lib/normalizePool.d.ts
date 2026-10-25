@@ -26,6 +26,7 @@ export declare class OutputPool {
     /** @type {Map<number,Map<number,number>>} */ pairs: Map<number, Map<number, number>>;
     nextId: number;
     empty: Output;
+    /** @type {Output} */ comma: Output;
     /** @param {SelectorArena} arena */
     constructor(arena: SelectorArena);
     /** @param {string} value @return {Output} */
