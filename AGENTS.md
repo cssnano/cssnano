@@ -25,6 +25,12 @@ cssnano is a modular CSS minifier built on PostCSS and pnpm workspaces:
   - `src/utils/stylehacks/` holds the browser-hack detectors that the merge
     pass's longhand transform uses. It is not a PostCSS plugin.
   - `src/utils/` holds the shared CSS parsing and manipulation utilities.
+  - `src/pipeline/` holds the host plugin (`host.js`) that runs a preset's
+    stages in one walk of the stylesheet, and the walkers it drives
+    (`traversal.js`, `afterMerge.js`). Tests mirror it under `test/pipeline/`.
+  - `src/values/` holds `ValueBuffer`, the token list that stages read and
+    edit, and the token constructors and microsyntax helpers beside it.
+    Tests mirror it under `test/values/`.
   - Code in `packages/cssnano` imports neighbouring modules by relative path.
     Add a private `#` specifier to `package.json` `imports` only when it offers
     a concrete advantage: a subsystem entry point reached from many distant
