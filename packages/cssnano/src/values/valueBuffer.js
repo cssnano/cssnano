@@ -61,16 +61,25 @@ class ValueBuffer {
   #warnings;
   /** @type {TokenizeMode | undefined} */
   #mode;
+  /**
+   * A list that spells the source, read until the first edit. It is never
+   * mutated: the first edit copies it.
+   * @type {readonly CSSToken[] | undefined}
+   */
+  #shared;
   #edited = false;
 
   /**
    * @param {string} source the value as the stylesheet reads it
    * @param {TokenizeMode} [mode] how the tokenizer reads the value, such as
    *   with `U+` ranges for `unicode-range`
+   * @param {readonly CSSToken[]} [shared] tokens that already spell `source`,
+   *   so tokens() returns them without tokenizing until the first edit
    */
-  constructor(source, mode) {
+  constructor(source, mode, shared) {
     this.#text = source;
     this.#mode = mode;
+    this.#shared = shared;
   }
 
   /**
@@ -90,8 +99,22 @@ class ValueBuffer {
    * @return {readonly CSSToken[]}
    */
   tokens() {
+    if (this.#tokens !== undefined) return this.#tokens;
+    return this.#shared ?? (this.#tokens = tokens(this.text(), this.#mode));
+  }
+
+  /**
+   * The buffer's own list, which an edit may change. The first edit copies
+   * the shared list, or tokenizes the source when there is none.
+   *
+   * @return {CSSToken[]}
+   */
+  #ownTokens() {
     if (this.#tokens === undefined) {
-      this.#tokens = tokens(this.text(), this.#mode);
+      this.#tokens = this.#shared
+        ? this.#shared.slice()
+        : tokens(this.text(), this.#mode);
+      this.#shared = undefined;
     }
     return this.#tokens;
   }
@@ -130,7 +153,7 @@ class ValueBuffer {
    * @param {readonly CSSToken[]} replacement built with the token constructors
    */
   replace(start, end, replacement) {
-    const own = /** @type {CSSToken[]} */ (this.tokens());
+    const own = this.#ownTokens();
     // Spreading into splice overflows the call stack for a long replacement,
     // so the list is rebuilt from an array literal instead.
     if (replacement.length <= maxSpreadArguments) {
