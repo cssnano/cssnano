@@ -1,3 +1,4 @@
+import type { CSSToken } from '@csstools/css-tokenizer';
 export type SelectorArena = import('./arena.js').SelectorArena;
 export type ArenaNode = import('./arena.js').ArenaNode;
 export type Specificity = import('./arena.js').Specificity;
@@ -12,6 +13,7 @@ export type Output = {
     hexDigits?: number;
     head?: number;
 };
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
@@ -30,6 +32,18 @@ export declare class OutputPool {
     constructor(arena: SelectorArena);
     /** @param {string} value @return {Output} */
     text(value: string): Output;
+    /**
+     * A source comment with its token. Outputs are interned by text, so the
+     * first token seen for a text is the one kept.
+     * @param {CSSToken} token
+     */
+    comment(token: CSSToken): Output;
+    /**
+     * @param {string} value
+     * @param {readonly CSSToken[] | undefined} tokens
+     * @return {Output}
+     */
+    intern(value: string, tokens: readonly CSSToken[] | undefined): Output;
     /** @param {string} value */
     payload(value: string): number;
     /**
