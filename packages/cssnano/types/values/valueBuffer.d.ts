@@ -70,13 +70,6 @@ declare class ValueBuffer {
      */
     replaceRanges(edits: readonly TokenEdit[]): void;
     /**
-     * Replaces the whole content with `text`. The tokens are read from it on
-     * the next call to tokens().
-     *
-     * @param {string} text
-     */
-    replaceText(text: string): void;
-    /**
      * Reports a problem with the value. The host turns each message into a
      * warning on the declaration, tagged with the plugin name when given.
      *
