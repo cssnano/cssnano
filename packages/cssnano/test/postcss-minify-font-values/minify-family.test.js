@@ -155,3 +155,9 @@ test('retains fallbacks after incomplete and script-specific generics', () => {
   for (const value of ['generic(foo),serif', 'fangsong,serif'])
     assert.equal(minifyFamily(value, { removeAfterKeyword: true }), value);
 });
+
+test('escapes a lone hyphen name, since a bare hyphen is a delim token, not an identifier', () => {
+  // `-` unescaped would make the family list invalid, so browsers would ignore the declaration.
+  assert.equal(minifyFamily('"-"', { removeQuotes: true }), '\\-');
+  assert.equal(minifyFamily('"-", serif', { removeQuotes: true }), '\\-,serif');
+});

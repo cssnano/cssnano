@@ -126,6 +126,21 @@ describe('Animations and font-face', () => {
   );
 
   test(
+    'convert-values keeps the number in a `u+` value outside `unicode-range`',
+    processCSS('h1{margin:u+1.0e2}', 'h1{margin:u+100}')
+  );
+
+  test(
+    "convert-values leaves a `unicode-range` value's ranges unchanged",
+    passthroughCSS('@font-face{font-family:test;unicode-range:u+1.0e2}')
+  );
+
+  test(
+    'convert-values leaves a custom property with a `u+` value unchanged, because it can read as a range or as a number',
+    passthroughCSS(':root{--x:u+1.0e2}', { transformCustomProperties: true })
+  );
+
+  test(
     'should strip length zero from border-image-width inside keyframes',
     processCSS(
       '@keyframes test {0% {border-image-width: 0px 0px 100% 0%;}}',

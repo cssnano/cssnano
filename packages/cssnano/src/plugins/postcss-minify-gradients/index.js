@@ -1,20 +1,18 @@
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {SourceEdit, PositionValue} from './lib/positions.js' */
+/** @import {PositionValue, TokenEdit} from './lib/positions.js' */
 /** @import {ValueBuffer} from '../../values/valueBuffer.js' */
 import cssnanoUtils from '#utils';
 import isKnownColor from './isKnownColor.js';
-import { isPositionZeroUnit, zeroPositionEdits } from './lib/positions.js';
-import { parsedValueText } from '../../utils/parsedValueText.js';
+import {
+  applyTokenEdits,
+  isPositionZeroUnit,
+  zeroPositionEdits,
+} from './lib/positions.js';
+import { parsedValueTokens } from '../../utils/parsedValueText.js';
+import { balancedStructure } from '../../utils/value.js';
+import { numeric as numericToken } from '../../values/tokenConstructors.js';
 
-const {
-  TokenType,
-  applyEdits,
-  asciiLowerCase,
-  balancedTokens,
-  decoded,
-  numeric,
-  tokenEnd,
-} = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, numeric } = cssnanoUtils;
 
 /**
  * The bracket structure of a value's tokens, as ValueBuffer gives it.
@@ -22,10 +20,10 @@ const {
  */
 
 const directions = new Map([
-  ['top', '0deg'],
-  ['right', '90deg'],
-  ['bottom', '180deg'],
-  ['left', '270deg'],
+  ['top', '0'],
+  ['right', '90'],
+  ['bottom', '180'],
+  ['left', '270'],
 ]);
 const gradientNames = new Set([
   'linear-gradient',
@@ -70,8 +68,8 @@ const lineKeywords = new Set([
  *
  * @typedef {object} ColorStop
  * @property {number} argIndex Comma-separated argument the stop came from.
- * @property {number} colorEnd Offset just past the colour in the declaration value.
- * @property {readonly number[]} position Positions following the colour.
+ * @property {number} colorEnd Index of the colour's last token.
+ * @property {readonly number[]} position Indexes of the positions following the colour.
  */
 
 /**
@@ -122,20 +120,18 @@ function startsLineSpecification(input, parts) {
 }
 
 /**
- * Offset just past the leading colour of an argument, so a functional colour
- * such as `rgb(0 0 0 / 50%)` ends at its closing parenthesis.
+ * Index of the last token of the leading colour of an argument, so a
+ * functional colour such as `rgb(0 0 0 / 50%)` ends at its closing parenthesis.
  *
  * @param {readonly CSSToken[]} input
  * @param {Structure} structure
- * @param {readonly number[]} parts Offsets of an argument's significant tokens.
+ * @param {readonly number[]} parts Indexes of an argument's significant tokens.
  * @return {number}
  */
 function colorEnd(input, structure, parts) {
   const leading = parts[0];
-  const component = input[leading];
-  if (component[0] !== TokenType.Function) return component[3];
-  const closing = structure.endForOpening(leading);
-  return closing === undefined ? component[3] : input[closing][3];
+  if (input[leading][0] !== TokenType.Function) return leading;
+  return structure.endForOpening(leading) ?? leading;
 }
 
 /**
@@ -143,7 +139,7 @@ function colorEnd(input, structure, parts) {
  *
  * @param {readonly CSSToken[]} input
  * @param {readonly number[]} parts Significant tokens of the first argument.
- * @return {SourceEdit | undefined}
+ * @return {TokenEdit | undefined}
  */
 function lineDirectionEdit(input, parts) {
   if (parts.length !== 2) return undefined;
@@ -155,9 +151,13 @@ function lineDirectionEdit(input, parts) {
     asciiLowerCase(decoded(from)) !== 'to'
   )
     return undefined;
-  const direction = directions.get(asciiLowerCase(decoded(side)));
-  if (!direction) return undefined;
-  return { start: from[2], end: tokenEnd(side), text: direction };
+  const degrees = directions.get(asciiLowerCase(decoded(side)));
+  if (degrees === undefined) return undefined;
+  return {
+    start: parts[0],
+    end: parts[1] + 1,
+    tokens: [numericToken(degrees, 'deg')],
+  };
 }
 
 /**
@@ -165,20 +165,19 @@ function lineDirectionEdit(input, parts) {
  * arguments naming the line or shape instead of a stop, and the positions that
  * colour stop fixup clamps to a zero.
  *
- * @param {string} source
  * @param {readonly CSSToken[]} input
  * @param {Structure} structure
  * @param {{startIndex: number, endIndex: number}[]} args
  * @param {boolean} linear Whether the line specification may hold an angle.
  * @param {boolean} conic Whether the stop positions are angles.
- * @return {{stops: ColorStop[], lineSpecifications: number, zeroEdits: Map<number, SourceEdit>, directionEdit: SourceEdit | undefined}}
+ * @return {{stops: ColorStop[], lineSpecifications: number, zeroEdits: Map<number, TokenEdit>, directionEdit: TokenEdit | undefined}}
  */
-function collectColorStops(source, input, structure, args, linear, conic) {
+function collectColorStops(input, structure, args, linear, conic) {
   /** @type {ColorStop[]} */
   const stops = [];
-  /** @type {Map<number, SourceEdit>} */
+  /** @type {Map<number, TokenEdit>} */
   const zeroEdits = new Map();
-  /** @type {SourceEdit | undefined} */
+  /** @type {TokenEdit | undefined} */
   let directionEdit;
   // A stop may only drop its start position when nothing but these arguments
   // precede it.
@@ -192,7 +191,12 @@ function collectColorStops(source, input, structure, args, linear, conic) {
       directionEdit = lineDirectionEdit(input, parts);
     const end = colorEnd(input, structure, parts);
     const leading = input[parts[0]];
-    const color = asciiLowerCase(source.slice(leading[2], end + 1));
+    const color = asciiLowerCase(
+      input
+        .slice(parts[0], end + 1)
+        .map((token) => token[1])
+        .join('')
+    );
     const isColor =
       isKnownColor(color) ||
       (leading[0] === TokenType.Function &&
@@ -226,9 +230,9 @@ function collectColorStops(source, input, structure, args, linear, conic) {
  * @param {readonly ColorStop[]} stops
  * @param {number} lineSpecifications
  * @param {number} args
- * @param {Map<number, SourceEdit>} zeroEdits
+ * @param {Map<number, TokenEdit>} zeroEdits
  * @param {boolean} conic
- * @return {SourceEdit[]}
+ * @return {TokenEdit[]}
  */
 function boundaryStopEdits(
   input,
@@ -238,7 +242,7 @@ function boundaryStopEdits(
   zeroEdits,
   conic
 ) {
-  /** @type {SourceEdit[]} */
+  /** @type {TokenEdit[]} */
   const edits = [];
   for (const slot of new Set([0, stops.length - 1])) {
     const stop = stops[slot];
@@ -263,29 +267,28 @@ function boundaryStopEdits(
     // Removing the position from the colour onwards also covers a zero edit
     // emitted for the same token.
     zeroEdits.delete(index);
-    edits.push({
-      start: stop.colorEnd + 1,
-      end: tokenEnd(position),
-      text: '',
-    });
+    edits.push({ start: stop.colorEnd + 1, end: index + 1, tokens: [] });
   }
   return edits;
 }
 
 /**
- * Shortens the gradients of one value. The edits index the value as PostCSS
- * parses it, so a rewritten value loses the comments that the parse drops.
+ * Shortens the gradients of one value. Comments that PostCSS's parse drops
+ * are dropped with the edits, so a rewritten value matches the parsed text.
  *
  * @param {ValueBuffer} buffer
  */
 function reduce(buffer) {
-  const raw = buffer.text();
-  if (!gradientSourceRegex.test(raw)) return;
-  const source = parsedValueText(buffer.tokens());
+  // The text precheck reads only a source value, as reading an edited one
+  // would serialize its tokens.
+  if (!buffer.isEdited() && !gradientSourceRegex.test(buffer.text())) return;
+  const own = buffer.tokens();
+  const input = own.some((token) => token[0] === TokenType.Comment)
+    ? parsedValueTokens(own)
+    : own;
   const structure =
-    source === raw ? buffer.structure() : balancedTokens(source);
+    input === own ? buffer.structure() : balancedStructure(input);
   if (!structure) return;
-  const input = structure.tokens;
   if (
     input.some(
       (token) =>
@@ -294,7 +297,7 @@ function reduce(buffer) {
     )
   )
     return;
-  /** @type {SourceEdit[]} */
+  /** @type {TokenEdit[]} */
   const replacements = [];
   // Nested gradients are visited in token order; their argument ranges come
   // from the shared delimiter map.
@@ -311,7 +314,7 @@ function reduce(buffer) {
     const linear = name.includes('linear') && !name.startsWith('-webkit-');
     const conic = name.includes('conic');
     const { stops, lineSpecifications, zeroEdits, directionEdit } =
-      collectColorStops(source, input, structure, args, linear, conic);
+      collectColorStops(input, structure, args, linear, conic);
     if (directionEdit) replacements.push(directionEdit);
     replacements.push(
       ...boundaryStopEdits(
@@ -326,7 +329,9 @@ function reduce(buffer) {
     );
   }
   // With nothing to rewrite, the buffer keeps its source value.
-  if (replacements.length) buffer.replaceText(applyEdits(source, replacements));
+  if (replacements.length) {
+    buffer.replace(0, own.length, applyTokenEdits(input, replacements));
+  }
 }
 
 /**

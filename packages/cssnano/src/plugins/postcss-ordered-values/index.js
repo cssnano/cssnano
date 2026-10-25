@@ -9,13 +9,15 @@ import listStyle from './rules/listStyle.js';
 import column from './rules/columns.js';
 import cssnanoUtils from '#utils';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @typedef {(parsed: ReturnType<typeof tokenizeValue>) => CSSToken[] | null} Processor */
 
 const { vendorUnprefixed } = cssnanoUtils;
 
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
+/** @type {Processor} */
 const borderProcessor = (parsed) => border(parsed.terms);
-/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | null][]} */
+/** @type {[string, Processor][]} */
 const borderRules = [
   ['border', borderProcessor],
   ['border-block', borderProcessor],
@@ -30,14 +32,14 @@ const borderRules = [
   ['border-left', borderProcessor],
 ];
 
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
+/** @type {Processor} */
 const gridAutoFlowProcessor = (parsed) => normalizeGridAutoFlow(parsed.terms);
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
+/** @type {Processor} */
 const gridLineProcessor = (parsed) => normalizeGridColumnRow(parsed.terms, 2);
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
+/** @type {Processor} */
 const gridLonghandProcessor = (parsed) =>
   normalizeGridColumnRow(parsed.terms, 1);
-/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | null][]} */
+/** @type {[string, Processor][]} */
 const grid = [
   ['grid-auto-flow', gridAutoFlowProcessor],
   ['grid-column', gridLineProcessor],
@@ -48,26 +50,26 @@ const grid = [
   ['grid-column-end', gridLonghandProcessor],
 ];
 
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
+/** @type {Processor} */
 const columnRuleProcessor = borderProcessor;
-/** @type {[string, (parsed: ReturnType<typeof tokenizeValue>) => string | null][]} */
+/** @type {[string, Processor][]} */
 const columnRules = [
   ['column-rule', columnRuleProcessor],
   ['columns', (parsed) => column(parsed.terms)],
 ];
 
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
+/** @type {Processor} */
 const flexFlowProcessor = (parsed) => flexFlow(parsed.terms);
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
+/** @type {Processor} */
 const listStyleProcessor = (parsed) => listStyle(parsed.terms);
 
-/** @type {(parsed: ReturnType<typeof tokenizeValue>) => string | null} */
+/** @type {Processor} */
 const outlineProcessor = (parsed) => border(parsed.terms, true);
 
 /** Rules for values that are comma-separated lists, which may have several arguments. */
 const listRules = new Set(['animation', 'box-shadow', 'transition']);
 
-/** @type {Map<string, (parsed: ReturnType<typeof tokenizeValue>) => string | null>} */
+/** @type {Map<string, Processor>} */
 const rules = new Map([
   ['animation', animation],
   ['outline', outlineProcessor],
@@ -84,14 +86,17 @@ const rules = new Map([
  * The reducer of one rule. A value with fewer than two terms, a comment, a bad
  * token, or several arguments outside a list rule stays as it is.
  *
- * @param {(parsed: ReturnType<typeof tokenizeValue>) => string | null} processor
+ * @param {Processor} processor
  * @param {boolean} listRule
  * @return {Reducer}
  */
 function ruleReducer(processor, listRule) {
   return (buffer) => {
-    const text = buffer.text();
-    if (text.length < 2 || !/[, \t\n\r\f\/]/v.test(text)) return;
+    // The text precheck only skips a source value; an edited one is read from its tokens.
+    if (!buffer.isEdited()) {
+      const text = buffer.text();
+      if (text.length < 2 || !/[, \t\n\r\f\/]/v.test(text)) return;
+    }
     const parsed = tokenizeValue(buffer.tokens());
     if (
       parsed.terms.length < 2 ||
@@ -101,7 +106,9 @@ function ruleReducer(processor, listRule) {
       return;
     }
     const processed = processor(parsed);
-    if (processed !== null) buffer.replaceText(processed);
+    if (processed !== null) {
+      buffer.replace(0, buffer.tokens().length, processed);
+    }
   };
 }
 

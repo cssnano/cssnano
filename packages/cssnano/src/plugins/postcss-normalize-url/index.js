@@ -34,7 +34,7 @@ function isClosedString(value) {
  * Find the close paren matching the function token at `index`. Tracks bare
  * parentheses as well as functions, so a nested `(` does not close an outer
  * function. Returns -1 when the function is unterminated.
- * @param {CSSToken[]} tokens
+ * @param {readonly CSSToken[]} tokens
  * @param {number} index
  * @return {number}
  */
@@ -49,15 +49,15 @@ function findFunctionEnd(tokens, index) {
 }
 
 /**
- * Inspect contents of a url() or src() function token.
- * @param {CSSToken[]} tokens
+ * Inspect contents of a url() or src() function token. The string is
+ * reported by index, or -1 when there is none.
+ * @param {readonly CSSToken[]} tokens
  * @param {number} index
  * @param {number} close
- * @return {{ stringToken?: TokenString, hasModifiers: boolean, hasComment: boolean }}
+ * @return {{ stringIndex: number, hasModifiers: boolean, hasComment: boolean }}
  */
 function scanFunction(tokens, index, close) {
-  /** @type {TokenString | undefined} */
-  let stringToken;
+  let stringIndex = -1;
   let hasModifiers = false;
   let hasComment = false;
   for (let i = index + 1; i < close; i++) {
@@ -67,9 +67,9 @@ function scanFunction(tokens, index, close) {
       hasComment = true;
       break;
     }
-    if (!stringToken) {
+    if (stringIndex === -1) {
       if (type === TokenType.String && isClosedString(tokens[i][1])) {
-        stringToken = /** @type {TokenString} */ (tokens[i]);
+        stringIndex = i;
       } else {
         break;
       }
@@ -78,46 +78,48 @@ function scanFunction(tokens, index, close) {
       break;
     }
   }
-  return { stringToken, hasModifiers, hasComment };
+  return { stringIndex, hasModifiers, hasComment };
 }
+
+/**
+ * A visitor for one URL source. The range is token indexes, `start` up to
+ * `end` exclusive. `nameToken` is the URL or function token that wrote the
+ * source, or undefined for a bare string.
+ * @typedef {(start: number, end: number, decoded: string, quote: string, nameToken: CSSToken | undefined) => void} UrlVisitor
+ */
 
 /**
  * Extracts the target of an import declaration,
  * returning the next token index and validity. The target is reported
  * without a function name, so that it is written as a string.
  *
- * @param {CSSToken[]} tokens
+ * @param {readonly CSSToken[]} tokens
  * @param {number} index
- * @param {(start: number, end: number, decoded: string, quote: string, name: string) => void} callback
+ * @param {UrlVisitor} callback
  * @return {{ nextIndex: number, valid: boolean }}
  */
 function processImportTarget(tokens, index, callback) {
   const token = tokens[index];
   const type = token[0];
   if (type === TokenType.String && isClosedString(token[1])) {
-    callback(token[2], token[3] + 1, token[4].value, token[1][0], '');
+    callback(index, index + 1, token[4].value, token[1][0], undefined);
     return { nextIndex: index, valid: true };
   }
   if (type === TokenType.URL) {
-    callback(token[2], token[3] + 1, token[4].value, '', '');
+    callback(index, index + 1, token[4].value, '', undefined);
     return { nextIndex: index, valid: true };
   }
   if (type === TokenType.Function && asciiLowerCase(token[4].value) === 'url') {
     const close = findFunctionEnd(tokens, index);
     if (close !== -1) {
-      const { stringToken, hasModifiers, hasComment } = scanFunction(
+      const { stringIndex, hasModifiers, hasComment } = scanFunction(
         tokens,
         index,
         close
       );
-      if (stringToken && !hasModifiers && !hasComment) {
-        callback(
-          token[2],
-          tokens[close][3] + 1,
-          stringToken[4].value,
-          stringToken[1][0],
-          ''
-        );
+      if (stringIndex !== -1 && !hasModifiers && !hasComment) {
+        const string = /** @type {TokenString} */ (tokens[stringIndex]);
+        callback(index, close + 1, string[4].value, string[1][0], undefined);
         return { nextIndex: close, valid: true };
       }
     }
@@ -126,37 +128,32 @@ function processImportTarget(tokens, index, callback) {
 }
 
 /**
- * @param {CSSToken[]} tokens
+ * @param {readonly CSSToken[]} tokens
  * @param {number} index
- * @param {(start: number, end: number, decoded: string, quote: string, name: string) => void} callback
+ * @param {UrlVisitor} callback
  * @return {number} close index or -1
  */
 function processFunctionToken(tokens, index, callback) {
   const close = findFunctionEnd(tokens, index);
   if (close === -1) return -1;
 
-  const { stringToken, hasModifiers, hasComment } = scanFunction(
+  const { stringIndex, hasModifiers, hasComment } = scanFunction(
     tokens,
     index,
     close
   );
-  if (stringToken && !hasComment) {
+  if (stringIndex !== -1 && !hasComment) {
+    const string = /** @type {TokenString} */ (tokens[stringIndex]);
     if (hasModifiers) {
       callback(
-        stringToken[2],
-        stringToken[3] + 1,
-        stringToken[4].value,
-        stringToken[1][0],
-        ''
+        stringIndex,
+        stringIndex + 1,
+        string[4].value,
+        string[1][0],
+        undefined
       );
     } else {
-      callback(
-        tokens[index][2],
-        tokens[close][3] + 1,
-        stringToken[4].value,
-        stringToken[1][0],
-        tokens[index][1].slice(0, -1)
-      );
+      callback(index, close + 1, string[4].value, string[1][0], tokens[index]);
     }
   }
 
@@ -165,14 +162,13 @@ function processFunctionToken(tokens, index, callback) {
 
 /**
  * Visit complete url() and src() ranges, top-level strings, or modifier string tokens.
- * @param {string} value
- * @param {(start: number, end: number, decoded: string, quote: string, name: string) => void} callback
+ * @param {readonly CSSToken[]} tokens
+ * @param {UrlVisitor} callback
  * @param {{ includeStrings?: boolean, isImport?: boolean }} [options]
  * @return {void}
  */
-function forEachUrl(value, callback, options = {}) {
+function forEachUrl(tokens, callback, options = {}) {
   const { includeStrings = false, isImport = false } = options;
-  const tokens = [...tokenize({ css: value })];
   let targetProcessed = false;
 
   for (let index = 0; index < tokens.length; index++) {
@@ -191,13 +187,7 @@ function forEachUrl(value, callback, options = {}) {
     }
 
     if (type === TokenType.URL) {
-      callback(
-        token[2],
-        token[3] + 1,
-        token[4].value,
-        '',
-        token[1].slice(0, token[1].indexOf('('))
-      );
+      callback(index, index + 1, token[4].value, '', token);
       continue;
     }
 
@@ -206,7 +196,7 @@ function forEachUrl(value, callback, options = {}) {
       type === TokenType.String &&
       isClosedString(token[1])
     ) {
-      callback(token[2], token[3] + 1, token[4].value, token[1][0], '');
+      callback(index, index + 1, token[4].value, token[1][0], undefined);
       continue;
     }
 
@@ -222,24 +212,62 @@ function forEachUrl(value, callback, options = {}) {
 }
 
 /**
+ * The text of the tokens from `start` up to `end`, exclusive.
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
+ * @return {string}
+ */
+function textOf(tokens, start, end) {
+  let text = '';
+  for (let index = start; index < end; index++) text += tokens[index][1];
+  return text;
+}
+
+/**
+ * The token edits that rewrite each URL source whose normal form differs from
+ * its tokens, in ascending order.
+ * @param {readonly CSSToken[]} tokens
+ * @param {{ includeStrings?: boolean, isImport?: boolean }} [options]
+ * @return {{start: number, end: number, tokens: CSSToken[]}[]}
+ */
+function urlTokenEdits(tokens, options) {
+  /** @type {{start: number, end: number, tokens: CSSToken[]}[]} */
+  const edits = [];
+  forEachUrl(
+    tokens,
+    (start, end, decoded, quote, nameToken) => {
+      const replacement = normalizeUrlTokenValue(decoded, quote, nameToken);
+      if (
+        replacement !== undefined &&
+        textOf(replacement, 0, replacement.length) !==
+          textOf(tokens, start, end)
+      ) {
+        edits.push({ start, end, tokens: replacement });
+      }
+    },
+    options
+  );
+  return edits;
+}
+
+/**
  * @param {string} value
  * @param {{ isImport?: boolean }} [options]
  * @return {string | undefined}
  */
 function normalizeUrls(value, options) {
-  /** @type {{start: number, end: number, text: string}[]} */
-  const edits = [];
-  forEachUrl(
+  const tokens = [...tokenize({ css: value })];
+  const edits = urlTokenEdits(tokens, options);
+  if (edits.length === 0) return undefined;
+  return applyEdits(
     value,
-    (start, end, decoded, quote, name) => {
-      const text = normalizeUrlTokenValue(decoded, quote, name);
-      if (text !== undefined && text !== value.slice(start, end)) {
-        edits.push({ start, end, text });
-      }
-    },
-    options
+    edits.map(({ start, end, tokens: replacement }) => ({
+      start: tokens[start][2],
+      end: tokens[end - 1][3] + 1,
+      text: textOf(replacement, 0, replacement.length),
+    }))
   );
-  return edits.length > 0 ? applyEdits(value, edits) : undefined;
 }
 
 /**
@@ -259,16 +287,21 @@ function normalizeImportUrls(value) {
  * @return {string | undefined}
  */
 function normalizeNamespaceUrls(value) {
+  const tokens = [...tokenize({ css: value })];
   /** @type {{start: number, end: number, text: string}[]} */
   const edits = [];
   forEachUrl(
-    value,
-    (start, end, decoded, quote, name) => {
-      const text = name
+    tokens,
+    (start, end, decoded, quote, nameToken) => {
+      const text = nameToken
         ? `"${escapeForString(decoded, '"')}"`
         : `${quote}${escapeForString(decoded, quote)}${quote}`;
-      if (text !== value.slice(start, end)) {
-        edits.push({ start, end, text });
+      if (text !== textOf(tokens, start, end)) {
+        edits.push({
+          start: tokens[start][2],
+          end: tokens[end - 1][3] + 1,
+          text,
+        });
       }
     },
     { includeStrings: true }
@@ -281,10 +314,8 @@ function normalizeNamespaceUrls(value) {
  * @type {Reducer}
  */
 const reduceValue = (buffer) => {
-  const text = buffer.text();
-  if (!URL_CANDIDATE_REGEX.test(text)) return;
-  const updated = normalizeUrls(text);
-  if (updated !== undefined) buffer.replaceText(updated);
+  if (!buffer.isEdited() && !URL_CANDIDATE_REGEX.test(buffer.text())) return;
+  buffer.replaceRanges(urlTokenEdits(buffer.tokens(), {}));
 };
 
 /**

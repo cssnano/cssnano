@@ -1,13 +1,27 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { tokenizeValue as tokenizeTokens } from '../../src/plugins/postcss-ordered-values/lib/tokenize.js';
-import normalizeAnimation from '../../src/plugins/postcss-ordered-values/rules/animation.js';
-import normalizeBorder from '../../src/plugins/postcss-ordered-values/rules/border.js';
-import normalizeBoxShadow from '../../src/plugins/postcss-ordered-values/rules/boxShadow.js';
-import normalizeColumns from '../../src/plugins/postcss-ordered-values/rules/columns.js';
-import normalizeListStyle from '../../src/plugins/postcss-ordered-values/rules/listStyle.js';
-import normalizeTransition from '../../src/plugins/postcss-ordered-values/rules/transition.js';
+import normalizeAnimationTokens from '../../src/plugins/postcss-ordered-values/rules/animation.js';
+import normalizeBorderTokens from '../../src/plugins/postcss-ordered-values/rules/border.js';
+import normalizeBoxShadowTokens from '../../src/plugins/postcss-ordered-values/rules/boxShadow.js';
+import normalizeColumnsTokens from '../../src/plugins/postcss-ordered-values/rules/columns.js';
+import normalizeListStyleTokens from '../../src/plugins/postcss-ordered-values/rules/listStyle.js';
+import normalizeTransitionTokens from '../../src/plugins/postcss-ordered-values/rules/transition.js';
 import cssnanoUtils from '#utils';
+
+/** @param {(...args: any[]) => any} rule */
+const asText =
+  (rule) =>
+  (...args) => {
+    const tokens = rule(...args);
+    return tokens === null ? null : tokens.map((token) => token[1]).join('');
+  };
+const normalizeAnimation = asText(normalizeAnimationTokens);
+const normalizeBorder = asText(normalizeBorderTokens);
+const normalizeBoxShadow = asText(normalizeBoxShadowTokens);
+const normalizeColumns = asText(normalizeColumnsTokens);
+const normalizeListStyle = asText(normalizeListStyleTokens);
+const normalizeTransition = asText(normalizeTransitionTokens);
 
 /** The tokens of a value text, as a stage reads them. */
 const tokenizeValue = (text) => tokenizeTokens(cssnanoUtils.tokens(text));

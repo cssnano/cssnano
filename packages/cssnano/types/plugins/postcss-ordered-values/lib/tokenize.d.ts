@@ -1,3 +1,4 @@
+import type { CSSToken } from '@csstools/css-tokenizer';
 export type Term = {
     raw: string;
     tokens: import('@csstools/css-tokenizer').CSSToken[];
@@ -41,8 +42,23 @@ declare function tokenizeValue(value: readonly import('@csstools/css-tokenizer')
     terms: Term[];
     abort: boolean;
 };
-/** @param {Term[][]} arguments_ */
-declare function serializeArguments(arguments_: Term[][]): string;
+/**
+ * The tokens of the groups in order, with `separator` between each pair. An
+ * empty group adds nothing, so a caller drops the groups it does not keep.
+ *
+ * @param {readonly (readonly CSSToken[])[]} groups
+ * @param {CSSToken} separator
+ * @return {CSSToken[]}
+ */
+declare function joinTokens(groups: readonly (readonly CSSToken[])[], separator: CSSToken): CSSToken[];
+/**
+ * The tokens of a comma-separated list of arguments, each argument's terms
+ * separated by whitespace.
+ *
+ * @param {Term[][]} arguments_
+ * @return {CSSToken[]}
+ */
+declare function argumentTokens(arguments_: Term[][]): CSSToken[];
 declare const reservedIdentKeywords: Set<string>;
-export { reservedIdentKeywords, isDelim, isDimension, isFunction, isHash, isIdent, isNumber, isPercentage, isString, isUrl, name, serializeArguments, tokenizeValue, };
+export { argumentTokens, reservedIdentKeywords, isDelim, isDimension, isFunction, isHash, isIdent, isNumber, isPercentage, isString, isUrl, joinTokens, name, tokenizeValue, };
 //# sourceMappingURL=tokenize.d.ts.map
