@@ -20,6 +20,30 @@ test('ValueBuffer.tokens returns the same list until an edit', () => {
   assert.equal(buffer.tokens(), buffer.tokens());
 });
 
+test('ValueBuffer returns the shared list until the first edit', () => {
+  const shared = new ValueBuffer('a b').tokens();
+  const buffer = new ValueBuffer('a b', undefined, shared);
+  assert.equal(buffer.tokens(), shared);
+});
+
+test('ValueBuffer.replace leaves the shared list unchanged', () => {
+  const shared = Object.freeze(new ValueBuffer('a b').tokens().slice());
+  const before = shared.slice();
+  const buffer = new ValueBuffer('a b', undefined, shared);
+  buffer.replace(2, 3, [ident('c')]);
+  assert.equal(buffer.text(), 'a c');
+  assert.deepEqual(shared, before);
+});
+
+test('ValueBuffer.replaceRanges leaves the shared list unchanged', () => {
+  const shared = Object.freeze(new ValueBuffer('a b').tokens().slice());
+  const before = shared.slice();
+  const buffer = new ValueBuffer('a b', undefined, shared);
+  buffer.replaceRanges([{ start: 2, end: 3, tokens: [ident('c')] }]);
+  assert.equal(buffer.text(), 'a c');
+  assert.deepEqual(shared, before);
+});
+
 test('ValueBuffer.structure returns the bracket structure of the source before any edit', () => {
   assert.notEqual(new ValueBuffer('f(a)').structure(), undefined);
 });

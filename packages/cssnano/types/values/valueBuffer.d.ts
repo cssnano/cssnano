@@ -21,8 +21,10 @@ declare class ValueBuffer {
      * @param {string} source the value as the stylesheet reads it
      * @param {TokenizeMode} [mode] how the tokenizer reads the value, such as
      *   with `U+` ranges for `unicode-range`
+     * @param {readonly CSSToken[]} [shared] tokens that already spell `source`,
+     *   so tokens() returns them without tokenizing until the first edit
      */
-    constructor(source: string, mode?: TokenizeMode);
+    constructor(source: string, mode?: TokenizeMode, shared?: readonly CSSToken[]);
     /**
      * The current text. Before any edit this is the source text.
      *
