@@ -323,9 +323,29 @@ function func(name) {
   ]);
 }
 
+/**
+ * A hash token whose text is given. Use it when the text is already spelled,
+ * such as an ID with an escape that must be kept as it is.
+ *
+ * @param {string} text a spelling the tokenizer reads as one hash token
+ * @param {string} value the name that spelling decodes to
+ * @param {'id' | 'unrestricted'} type
+ * @return {CSSToken}
+ */
+function hashWithText(text, value, type) {
+  return /** @type {CSSToken} */ ([
+    TokenType.Hash,
+    text,
+    noPosition,
+    noPosition,
+    { value, type },
+  ]);
+}
+
 export {
   func,
   hash,
+  hashWithText,
   ident,
   identifierWithText,
   integer,
