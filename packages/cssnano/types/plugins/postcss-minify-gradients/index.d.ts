@@ -6,17 +6,17 @@ export type ColorStop = {
      */
     argIndex: number;
     /**
-     * Offset just past the colour in the declaration value.
+     * Index of the colour's last token.
      */
     colorEnd: number;
     /**
-     * Positions following the colour.
+     * Indexes of the positions following the colour.
      */
     position: readonly number[];
 };
 /**
- * Shortens the gradients of one value. The edits index the value as PostCSS
- * parses it, so a rewritten value loses the comments that the parse drops.
+ * Shortens the gradients of one value. Comments that PostCSS's parse drops
+ * are dropped with the edits, so a rewritten value matches the parsed text.
  *
  * @param {ValueBuffer} buffer
  */
