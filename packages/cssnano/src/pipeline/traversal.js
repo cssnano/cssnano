@@ -1,6 +1,10 @@
 import { ValueBuffer } from '../values/valueBuffer.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
-import { sourceValue } from '../utils/declValue.js';
+import {
+  sourceParams,
+  sourceSelector,
+  sourceValue,
+} from '../utils/sourceText.js';
 import cssnanoUtils from '#utils';
 import { tightenAfterName } from './afterName.js';
 import {
@@ -202,35 +206,6 @@ function walkDeclaration(state, decl) {
     decl.value = result;
     delete decl.raws.value;
   }
-}
-
-/**
- * The prelude as written, so a rewrite keeps the comments that PostCSS strips
- * from `params`, as a declaration value keeps them. The raw is trusted only
- * while it still matches `params`.
- *
- * @param {import('postcss').AtRule} atRule
- * @returns {string}
- */
-function sourceParams(atRule) {
-  const raw = atRule.raws.params;
-  return raw !== undefined && raw.value === atRule.params
-    ? raw.raw
-    : atRule.params;
-}
-
-/**
- * The selector as written, so a rewrite keeps the comments that PostCSS strips
- * from `selector`. The raw is trusted only while it still matches `selector`.
- *
- * @param {import('postcss').Rule} rule
- * @returns {string}
- */
-export function sourceSelector(rule) {
-  const raw = rule.raws.selector;
-  return raw !== undefined && raw.value === rule.selector
-    ? raw.raw
-    : rule.selector;
 }
 
 /**
