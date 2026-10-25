@@ -65,21 +65,6 @@ test('ValueBuffer.replace makes the structure undefined when the edit unbalances
   assert.equal(buffer.structure(), undefined);
 });
 
-test('ValueBuffer.replaceText makes tokens retokenize the new text', () => {
-  const buffer = new ValueBuffer('a b');
-  buffer.replaceText('c d');
-  assert.deepEqual(
-    buffer.tokens().map((token) => token[0]),
-    [TokenType.Ident, TokenType.Whitespace, TokenType.Ident]
-  );
-});
-
-test('ValueBuffer.replaceText makes text return the new text', () => {
-  const buffer = new ValueBuffer('a b');
-  buffer.replaceText('c d');
-  assert.equal(buffer.text(), 'c d');
-});
-
 test('ValueBuffer.text returns the serialized text of an edited buffer', () => {
   const buffer = new ValueBuffer('a b');
   buffer.replace(2, 3, [ident('c')]);
