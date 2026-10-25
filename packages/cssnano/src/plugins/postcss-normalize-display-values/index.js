@@ -3,7 +3,8 @@ import {
   isTokenWhiteSpaceOrComment,
 } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
-import { ident, whitespace } from '../../values/tokenConstructors.js';
+import { ident } from '../../values/tokenConstructors.js';
+import { whitespace } from '../../values/punctuationTokens.js';
 import mappings from './lib/map.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */

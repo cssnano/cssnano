@@ -49,12 +49,6 @@ declare function percentage(value: number): CSSToken;
  */
 declare function stringToken(text: string, value: string): CSSToken;
 /**
- * A whitespace token of one space, the separator the serializer writes.
- *
- * @return {CSSToken}
- */
-declare function whitespace(): CSSToken;
-/**
  * An unquoted url token, `name(value)`, with the name as written.
  * @param {string} value the decoded URL, possibly empty
  * @param {string} [name] `url` in any case
@@ -78,17 +72,5 @@ declare function hash(value: string): CSSToken;
  * @return {CSSToken}
  */
 declare function func(name: string): CSSToken;
-/**
- * The `(` token that opens a group.
- *
- * @return {CSSToken}
- */
-declare function openParen(): CSSToken;
-/**
- * The `)` token that closes a function or a group.
- *
- * @return {CSSToken}
- */
-declare function closeParen(): CSSToken;
-export { closeParen, func, hash, ident, identifierWithText, integer, numeric, openParen, percentage, stringToken, url, whitespace, };
+export { func, hash, ident, identifierWithText, integer, numeric, percentage, stringToken, url, };
 //# sourceMappingURL=tokenConstructors.d.ts.map

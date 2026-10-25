@@ -8,7 +8,8 @@ import {
   startsWithHack,
   unhack,
 } from './lib/ieHack.js';
-import { stringToken, whitespace } from '../../values/tokenConstructors.js';
+import { stringToken } from '../../values/tokenConstructors.js';
+import { whitespace } from '../../values/punctuationTokens.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenEdit} from '../../values/valueBuffer.js' */

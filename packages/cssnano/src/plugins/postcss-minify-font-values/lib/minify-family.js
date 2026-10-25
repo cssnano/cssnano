@@ -1,11 +1,8 @@
 import cssnanoUtils from '#utils';
 import cssWideKeywords from '../data/cssWideKeywords.json' with { type: 'json' };
 import { balancedStructure } from '../../../utils/value.js';
-import {
-  identifierWithText,
-  whitespace,
-} from '../../../values/tokenConstructors.js';
-import { comma } from '../../../values/listSeparators.js';
+import { identifierWithText } from '../../../values/tokenConstructors.js';
+import { whitespace, comma } from '../../../values/punctuationTokens.js';
 import { tokensText } from '../../../values/tokensText.js';
 
 const { TokenType, asciiLowerCase, decoded, tokens } = cssnanoUtils;

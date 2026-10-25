@@ -7,7 +7,6 @@ import {
   TokenType,
 } from '@csstools/css-tokenizer';
 import {
-  closeParen,
   func,
   hash,
   ident,
@@ -17,7 +16,6 @@ import {
   percentage,
   stringToken,
   url,
-  whitespace,
 } from '../../src/values/tokenConstructors.js';
 
 /**
@@ -195,14 +193,6 @@ test('stringToken rejects text that is not a quoted CSS string', () => {
   }
 });
 
-test('whitespace reads back as the whitespace token the tokenizer reads from its text', () => {
-  const token = firstToken(whitespace()[1]);
-  assert.deepEqual(
-    [token[0], token[1], token[4]],
-    [TokenType.Whitespace, ' ', undefined]
-  );
-});
-
 test('func gives a function token whose text opens the name', () => {
   assert.equal(func('steps')[1], 'steps(');
 });
@@ -219,11 +209,6 @@ test('func escapes its name as an identifier does, so the name reads back', () =
 
 test('func rejects an empty name, which no function token can have', () => {
   assert.throws(() => func(''), RangeError);
-});
-
-test('closeParen reads back as the close-parenthesis token', () => {
-  assert.equal(firstToken(closeParen()[1])[0], TokenType.CloseParen);
-  assert.equal(closeParen()[1], ')');
 });
 
 test('hash gives a hash token whose text opens with the hash sign', () => {

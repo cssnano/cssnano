@@ -6,8 +6,7 @@ import {
   name,
   reservedIdentKeywords,
 } from '../lib/tokenize.js';
-import { whitespace } from '../../../values/tokenConstructors.js';
-import { delim } from '../../../values/delimToken.js';
+import { whitespace, delim } from '../../../values/punctuationTokens.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 

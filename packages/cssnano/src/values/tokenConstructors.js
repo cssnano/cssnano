@@ -244,21 +244,6 @@ function stringToken(text, value) {
 }
 
 /**
- * A whitespace token of one space, the separator the serializer writes.
- *
- * @return {CSSToken}
- */
-function whitespace() {
-  return /** @type {CSSToken} */ ([
-    TokenType.Whitespace,
-    ' ',
-    noPosition,
-    noPosition,
-    undefined,
-  ]);
-}
-
-/**
  * An unquoted url token, `name(value)`, with the name as written.
  * @param {string} value the decoded URL, possibly empty
  * @param {string} [name] `url` in any case
@@ -338,47 +323,14 @@ function func(name) {
   ]);
 }
 
-/**
- * The `(` token that opens a group.
- *
- * @return {CSSToken}
- */
-function openParen() {
-  return /** @type {CSSToken} */ ([
-    TokenType.OpenParen,
-    '(',
-    noPosition,
-    noPosition,
-    undefined,
-  ]);
-}
-
-/**
- * The `)` token that closes a function or a group.
- *
- * @return {CSSToken}
- */
-function closeParen() {
-  return /** @type {CSSToken} */ ([
-    TokenType.CloseParen,
-    ')',
-    noPosition,
-    noPosition,
-    undefined,
-  ]);
-}
-
 export {
-  closeParen,
   func,
   hash,
   ident,
   identifierWithText,
   integer,
   numeric,
-  openParen,
   percentage,
   stringToken,
   url,
-  whitespace,
 };

@@ -14,7 +14,8 @@ import minifyFontValues from '../../src/plugins/postcss-minify-font-values/index
 import { valueEntry as normalizeWhitespaceValue } from '../../src/plugins/postcss-normalize-whitespace/index.js';
 import { tokenizeMode } from '../../src/values/tokenizeMode.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
-import { ident, whitespace } from '../../src/values/tokenConstructors.js';
+import { ident } from '../../src/values/tokenConstructors.js';
+import { whitespace } from '../../src/values/punctuationTokens.js';
 import orderedValues from '../../src/plugins/postcss-ordered-values/index.js';
 
 /** A buffer whose text() throws once armed, so a reducer that reads the text fails. */

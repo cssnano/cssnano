@@ -2,7 +2,7 @@ import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { anyAffected } from '#utils/browser-bugs';
 import { tokenizeMode } from '../../values/tokenizeMode.js';
-import { comma } from '../../values/listSeparators.js';
+import { comma } from '../../values/punctuationTokens.js';
 import { unicodeRange } from '../../values/unicodeRange.js';
 
 /** @import { TokenUnicodeRange } from '@csstools/css-tokenizer' */
