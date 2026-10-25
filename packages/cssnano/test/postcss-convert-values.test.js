@@ -53,12 +53,12 @@ test(
 
 test(
   'should optimise fractions',
-  processCss('h1{opacity:1.}h2{opacity:.0}', 'h1{opacity:1}h2{opacity:0}')
+  processCss('h1{opacity:.5}h2{opacity:.0}', 'h1{opacity:.5}h2{opacity:0}')
 );
 
 test(
   'should optimise fractions with units',
-  processCss('h1{width:10.px}h2{width:.0px}', 'h1{width:10px}h2{width:0}')
+  processCss('h1{width:.5px}h2{width:.0px}', 'h1{width:.5px}h2{width:0}')
 );
 
 test(

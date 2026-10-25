@@ -1,1 +1,1 @@
-{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/plugins/postcss-normalize-display-values/index.js"],"names":[],"mappings":"AAgIA,+DAA+D;AAC/D,QAAA,MAAM,sBAAsB;;CAAmC,CAAC;AAEhE,OAAO,EAAE,sBAAsB,IAAI,OAAO,EAAE,CAAC"}
+{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/plugins/postcss-normalize-display-values/index.js"],"names":[],"mappings":"AAgJA,+DAA+D;AAC/D,QAAA,MAAM,sBAAsB;;CAAmC,CAAC;AAEhE,OAAO,EAAE,sBAAsB,IAAI,OAAO,EAAE,CAAC"}
