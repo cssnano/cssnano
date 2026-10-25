@@ -17,7 +17,7 @@ import {
 export function joinEntries(pool, entries) {
   /** @type {Output[]} */ const output = [];
   for (let index = 0; index < entries.length; index++) {
-    if (index > 0) output.push(pool.text(','));
+    if (index > 0) output.push(pool.comma);
     output.push(entries[index]);
   }
   return pool.sequence(output);

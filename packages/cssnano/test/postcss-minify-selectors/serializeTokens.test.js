@@ -29,14 +29,14 @@ test('serializeNormalizedTokens tokens, when returned, equal tokenize of the tex
   }
 });
 
-test('serializeNormalizedTokens returns no tokens for exactly 10 corpus lists', () => {
+test('serializeNormalizedTokens returns no tokens for exactly 6 corpus lists', () => {
   let withoutTokens = 0;
   for (const [input] of serializerCorpus) {
     const { arena, root } = normalizedRoot(input);
     if (serializeNormalizedTokens(arena, root).tokens === undefined)
       withoutTokens++;
   }
-  assert.equal(withoutTokens, 10);
+  assert.equal(withoutTokens, 6);
 });
 
 /** Counts the text and source emits of a tree that carry no tokens. */
@@ -47,11 +47,19 @@ function emitsWithoutTokens(emit) {
   return emit.tokens === undefined ? 1 : 0;
 }
 
-test('the serializer corpus has exactly 48 emits without tokens', () => {
+test('the serializer corpus has exactly 34 emits without tokens', () => {
   let count = 0;
   for (const [input] of serializerCorpus)
     count += emitsWithoutTokens(normalizedRoot(input).root);
-  assert.equal(count, 48);
+  assert.equal(count, 34);
+});
+
+test("normalizeList's emits carry tokens", () => {
+  for (const [input] of serializerCorpus) {
+    const { root } = normalizedRoot(input);
+    for (const emit of textEmits(root, ','))
+      assert.notEqual(emit.tokens, undefined, input);
+  }
 });
 
 test('serializeNormalizedTokens text equals serializeNormalized for every corpus list', () => {
@@ -64,6 +72,14 @@ test('serializeNormalizedTokens text equals serializeNormalized for every corpus
     );
   }
 });
+
+/** The text emits of a tree whose value is `value`. */
+function textEmits(emit, value) {
+  if (emit === undefined || emit.kind === 'node') return [];
+  if (emit.kind === 'sequence')
+    return emit.items.flatMap((item) => textEmits(item, value));
+  return emit.kind === 'text' && emit.value === value ? [emit] : [];
+}
 
 test('serializeNormalizedTokens returns the source and its tokens without an output tree', () => {
   const arena = parseSelectorArena('.a .b', { verifyArena: false });
