@@ -104,10 +104,7 @@ function calcStage(options) {
           /** @type {CSSToken[]} */ (buffer.tokens()),
           reduceOptions(options, warn, false)
         );
-        for (let index = replacements.length - 1; index >= 0; index--) {
-          const { start, end, tokens: replacement } = replacements[index];
-          buffer.replace(start, end, replacement);
-        }
+        buffer.replaceRanges(replacements);
         return;
       }
       const list = tokens(parsedValueText(buffer.tokens()));
