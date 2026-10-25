@@ -1,7 +1,6 @@
 import cssnanoUtils from '#utils';
 import cssWideKeywords from '../rules/cssWideKeywords.json' with { type: 'json' };
-import { comma } from '../../../values/listSeparators.js';
-import { whitespace } from '../../../values/tokenConstructors.js';
+import { comma, whitespace } from '../../../values/punctuationTokens.js';
 import { tokensText } from '../../../values/tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */

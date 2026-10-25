@@ -6,7 +6,7 @@ import {
   name,
 } from '../lib/tokenize.js';
 import { lengthUnit } from '../lib/isLength.js';
-import { whitespace } from '../../../values/tokenConstructors.js';
+import { whitespace } from '../../../values/punctuationTokens.js';
 
 /**
  * @param {import('../lib/tokenize.js').Term} term

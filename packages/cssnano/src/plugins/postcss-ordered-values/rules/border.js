@@ -10,7 +10,7 @@ import {
   name,
   reservedIdentKeywords,
 } from '../lib/tokenize.js';
-import { whitespace } from '../../../values/tokenConstructors.js';
+import { whitespace } from '../../../values/punctuationTokens.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 

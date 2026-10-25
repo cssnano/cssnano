@@ -1,5 +1,5 @@
 import { HashType, TokenType } from '@csstools/css-tokenizer';
-import { openParen } from '../../../values/tokenConstructors.js';
+import { openParen } from '../../../values/punctuationTokens.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenEdit} from '../../../values/valueBuffer.js' */
