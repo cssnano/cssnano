@@ -1,22 +1,28 @@
-import joinGridValue from '../lib/joinGridValue.js';
 import {
+  isDelim,
   isIdent,
   isNumber,
+  joinTokens,
   name,
   reservedIdentKeywords,
 } from '../lib/tokenize.js';
+import { whitespace } from '../../../values/tokenConstructors.js';
+import { delim } from '../../../values/delimToken.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 /**
  * @param {import('../lib/tokenize.js').Term[]} gridAutoFlow
- * @return {string | null}
+ * @return {CSSToken[] | null}
  */
 const normalizeGridAutoFlow = (gridAutoFlow) => {
-  const newValue = { front: '', back: '' };
+  /** @type {{ front: CSSToken[], back: CSSToken[] }} */
+  const newValue = { front: [], back: [] };
   let shouldNormalize = false;
   let hasDense = false;
   let hasTrack = false;
   for (const node of gridAutoFlow) {
-    const value = node.raw;
+    const value = node.tokens;
     const keyword = isIdent(node) ? name(node) : '';
     if (keyword === 'dense') {
       if (hasDense) return null;
@@ -33,9 +39,10 @@ const normalizeGridAutoFlow = (gridAutoFlow) => {
     }
   }
   if (shouldNormalize) {
-    return [newValue.front.trim(), newValue.back.trim()]
-      .filter(Boolean)
-      .join(' ');
+    return joinTokens(
+      [newValue.front, newValue.back].filter((group) => group.length > 0),
+      whitespace()
+    );
   }
   return null;
 };
@@ -119,13 +126,13 @@ function isGridLine(line) {
 /**
  * @param {import('../lib/tokenize.js').Term[]} grid
  * @param {number} [maxLines=2] Maximum number of <grid-line>s the property accepts.
- * @return {string | null}
+ * @return {CSSToken[] | null}
  */
 const normalizeGridColumnRow = (grid, maxLines = 2) => {
   /** @type {import('../lib/tokenize.js').Term[][]} */
   const lines = [[]];
   for (const term of grid) {
-    if (term.raw === '/' && term.tokens.length === 1) {
+    if (isDelim(term, '/')) {
       lines.push([]);
     } else {
       lines[lines.length - 1].push(term);
@@ -156,8 +163,14 @@ const normalizeGridColumnRow = (grid, maxLines = 2) => {
     return [integer, ...line.filter((term) => term !== integer)];
   });
 
-  return joinGridValue(
-    normalized.map((line) => line.map((term) => term.raw).join(' '))
+  return joinTokens(
+    normalized.map((line) =>
+      joinTokens(
+        line.map((term) => term.tokens),
+        whitespace()
+      )
+    ),
+    delim('/')
   );
 };
 

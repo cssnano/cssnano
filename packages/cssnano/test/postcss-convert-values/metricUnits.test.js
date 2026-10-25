@@ -7,6 +7,16 @@ import {
 import convertValues from '../../src/plugins/postcss-convert-values/index.js';
 import convert from '../../src/plugins/postcss-convert-values/lib/convert.js';
 
+/**
+ * The text of a converted spelling, as a declaration value writes it.
+ *
+ * @param {{representation: string, unit: string}} spelling
+ * @return {string}
+ */
+function toText({ representation, unit }) {
+  return representation + unit;
+}
+
 const plugin = oneStagePlugin(convertValues);
 
 const { processCSS } = processCSSFactory(plugin);
@@ -22,7 +32,7 @@ describe('Metric units', () => {
   );
 
   test('should convert q to cm when the length option is false', () => {
-    assert.equal(convert(1000, 'q', { length: false }), '25cm');
+    assert.equal(toText(convert(1000, 'q', { length: false })), '25cm');
   });
 
   test(

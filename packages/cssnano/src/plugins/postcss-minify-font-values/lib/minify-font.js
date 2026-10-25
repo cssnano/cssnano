@@ -1,21 +1,23 @@
 import cssnanoUtils from '#utils';
 import keywords from './keywords.js';
-import minifyFamily from './minify-family.js';
+import { minifyFamilyTokens, tokensText } from './minify-family.js';
+import { balancedStructure } from '../../../utils/value.js';
+import { integer, whitespace } from '../../../values/tokenConstructors.js';
 
 const {
   TokenType,
   asciiLowerCase,
-  balancedTokens,
   decoded,
   isSubstitutionFunction,
   lengthUnits,
-  tokenEnd,
 } = cssnanoUtils;
 
 // `oblique <angle>` precedes the font-size.
 const angleUnits = new Set(['deg', 'grad', 'rad', 'turn']);
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {Options} from '../index.js' */
+/** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} BalancedTokens */
 
 /** @param {string} name */
 const isPrefixKeyword = (name) =>
@@ -75,17 +77,17 @@ function isSubstitution(token) {
 /**
  * Locate the `font-size` and the tokens preceding it. Returns undefined when
  * the value cannot be minified safely (a substitution function, an unknown
- * dimension, repeated `bold`).
+ * dimension, repeated `bold`). Indexes are token indexes.
  *
- * @param {NonNullable<ReturnType<typeof balancedTokens>>} balanced
- * @return {{ sizeEnd: number, possibleFamilyStart: number, boldSpan?: { start: number, end: number } } | undefined}
+ * @param {BalancedTokens} balanced
+ * @return {{ sizeEnd: number, possibleFamilyStart: number, boldIndex?: number } | undefined}
  */
 function scanFontPrefix(balanced) {
   const input = balanced.tokens;
   let possibleFamilyStart = -1;
   let sizeEnd = -1;
-  /** @type {{ start: number, end: number } | undefined} */
-  let boldSpan;
+  /** @type {number | undefined} */
+  let boldIndex;
   for (let index = 0; index < input.length; index++) {
     const token = input[index];
     if (isSubstitution(token)) return;
@@ -99,27 +101,40 @@ function scanFontPrefix(balanced) {
       token[0] === TokenType.Ident ? asciiLowerCase(decoded(token)) : '';
     if (token[0] === TokenType.Ident && isPrefixKeyword(name)) {
       if (name === 'bold') {
-        if (boldSpan) return;
-        boldSpan = { start: token[2], end: tokenEnd(token) };
+        if (boldIndex !== undefined) return;
+        boldIndex = index;
       }
-      possibleFamilyStart = input[skipTrivia(input, index + 1)]?.[2] ?? -1;
+      possibleFamilyStart = nextTokenIndex(input, index + 1);
     } else if (isNumericWeight(token)) {
-      possibleFamilyStart = input[skipTrivia(input, index + 1)]?.[2] ?? -1;
+      possibleFamilyStart = nextTokenIndex(input, index + 1);
     } else if (isFontSize(token, name)) {
       sizeEnd = balanced.endForOpening(index) ?? index;
     }
   }
-  return { sizeEnd, possibleFamilyStart, boldSpan };
+  return { sizeEnd, possibleFamilyStart, boldIndex };
+}
+
+/**
+ * The index of the first token after `start` that is not a space or a
+ * comment, or -1 when there is none.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {number} start
+ * @return {number}
+ */
+function nextTokenIndex(input, start) {
+  const index = skipTrivia(input, start);
+  return index < input.length ? index : -1;
 }
 
 /**
  * Skip an optional `/ line-height` after the font-size.
  *
- * @param {NonNullable<ReturnType<typeof balancedTokens>>} balanced
+ * @param {BalancedTokens} balanced
  * @param {number} sizeEnd
- * @param {number} length
+ * @return {number} the index of the family, or the token count when none
  */
-function familyStartAfterSize(balanced, sizeEnd, length) {
+function familyStartAfterSize(balanced, sizeEnd) {
   const input = balanced.tokens;
   let next = skipTrivia(input, sizeEnd + 1);
   if (input[next]?.[0] === TokenType.Delim && input[next][1] === '/') {
@@ -127,31 +142,62 @@ function familyStartAfterSize(balanced, sizeEnd, length) {
     if (input[next]) next = (balanced.endForOpening(next) ?? next) + 1;
     next = skipTrivia(input, next);
   }
-  return input[next]?.[2] ?? length;
+  return next;
 }
 
-/** @param {string} value @param {import('../index.js').Options} opts @return {string} */
-export default function minifyFont(
-  value,
-  opts,
-  removeQuotes = opts.removeQuotes
-) {
-  const balanced = balancedTokens(value);
-  if (!balanced) return value;
+/**
+ * The font shorthand as tokens, minified. The list is unchanged when the
+ * font-size cannot be found safely.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {Options} opts
+ * @param {Options['removeQuotes']} [removeQuotes]
+ * @return {CSSToken[]}
+ */
+function minifyFontTokens(input, opts, removeQuotes = opts.removeQuotes) {
+  const balanced = balancedStructure(input);
+  if (!balanced) return [...input];
   const scan = scanFontPrefix(balanced);
-  if (!scan) return value;
-  const { sizeEnd, possibleFamilyStart, boldSpan } = scan;
+  if (!scan) return [...input];
+  const { sizeEnd, possibleFamilyStart, boldIndex } = scan;
   const familyStart =
     sizeEnd >= 0
-      ? familyStartAfterSize(balanced, sizeEnd, value.length)
+      ? familyStartAfterSize(balanced, sizeEnd)
       : possibleFamilyStart;
-  if (familyStart < 0) return value;
-  let prefix = boldSpan
-    ? value.slice(0, boldSpan.start) +
-      '700' +
-      value.slice(boldSpan.end, familyStart)
-    : value.slice(0, familyStart);
-  if (familyStart < value.length && !prefix.endsWith(' ') && prefix)
-    prefix += ' ';
-  return prefix + minifyFamily(value.slice(familyStart), opts, removeQuotes);
+  if (familyStart < 0) return [...input];
+  /** @type {CSSToken[]} */
+  const result = [];
+  for (let index = 0; index < familyStart; index++) {
+    result.push(index === boldIndex ? integer(700) : input[index]);
+  }
+  if (
+    familyStart > 0 &&
+    familyStart < input.length &&
+    !input[familyStart - 1][1].endsWith(' ')
+  ) {
+    result.push(whitespace());
+  }
+  for (const token of minifyFamilyTokens(
+    input.slice(familyStart),
+    opts,
+    removeQuotes
+  )) {
+    result.push(token);
+  }
+  return result;
 }
+
+/**
+ * @param {string} value
+ * @param {Options} opts
+ * @param {Options['removeQuotes']} [removeQuotes]
+ * @return {string}
+ */
+function minifyFont(value, opts, removeQuotes = opts.removeQuotes) {
+  return tokensText(
+    minifyFontTokens(cssnanoUtils.tokens(value), opts, removeQuotes)
+  );
+}
+
+export default minifyFont;
+export { minifyFontTokens };

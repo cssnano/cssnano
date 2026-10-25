@@ -1,13 +1,18 @@
 import cssnanoUtils from '#utils';
 import { classifyMathLength, isLength } from '../lib/isLength.js';
 import {
+  isDelim,
   isFunction,
   isHash,
   isIdent,
   isUrl,
+  joinTokens,
   name,
   reservedIdentKeywords,
 } from '../lib/tokenize.js';
+import { whitespace } from '../../../values/tokenConstructors.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 const { mathFunctions } = cssnanoUtils;
 
@@ -59,7 +64,7 @@ const isColor = (term, lower) => {
 /**
  * @param {import('../lib/tokenize.js').Term[]} border
  * @param {boolean} [allowAuto]
- * @return {string | null}
+ * @return {CSSToken[] | null}
  */
 function normalizeBorder(border, allowAuto = false) {
   /** @type {BorderSlot[]} */
@@ -68,17 +73,20 @@ function normalizeBorder(border, allowAuto = false) {
     { name: 'width', match: isWidth },
     { name: 'color', match: isColor },
   ];
-  /** @type {Record<BorderSlotName, string>} */
-  const order = { width: '', style: '', color: '' };
+  /** @type {Record<BorderSlotName, CSSToken[]>} */
+  const order = { width: [], style: [], color: [] };
 
   for (const term of border) {
-    if (term.raw === '/' && term.tokens.length === 1) return null;
+    if (isDelim(term, '/')) return null;
     const lower = name(term);
     const slot = borderSlots.find((s) => s.match(term, lower));
-    if (!slot || order[slot.name]) return null;
-    order[slot.name] = term.raw;
+    if (!slot || order[slot.name].length > 0) return null;
+    order[slot.name] = term.tokens;
   }
-  return [order.width, order.style, order.color].filter(Boolean).join(' ');
+  return joinTokens(
+    [order.width, order.style, order.color].filter((group) => group.length > 0),
+    whitespace()
+  );
 }
 
 export default normalizeBorder;

@@ -1,5 +1,12 @@
-import { isDimension, isIdent, isNumber, name } from '../lib/tokenize.js';
+import {
+  isDimension,
+  isIdent,
+  isNumber,
+  joinTokens,
+  name,
+} from '../lib/tokenize.js';
 import { lengthUnit } from '../lib/isLength.js';
+import { whitespace } from '../../../values/tokenConstructors.js';
 
 /**
  * @param {import('../lib/tokenize.js').Term} term
@@ -39,17 +46,20 @@ function isNonNegativeLength(term) {
   return value >= 0 && signCharacter !== '-';
 }
 
-/** @param {import('../lib/tokenize.js').Term[]} columns */
+/**
+ * @param {import('../lib/tokenize.js').Term[]} columns
+ * @return {import('@csstools/css-tokenizer').CSSToken[] | null}
+ */
 export default (columns) => {
   if (columns.length !== 2) {
     return null;
   }
 
-  /** @type {string[]} */
+  /** @type {import('../lib/tokenize.js').Term[]} */
   const widths = [];
-  /** @type {string[]} */
+  /** @type {import('../lib/tokenize.js').Term[]} */
   const counts = [];
-  /** @type {string[]} */
+  /** @type {import('../lib/tokenize.js').Term[]} */
   const autos = [];
   for (const term of columns) {
     // Multi-token terms (e.g. functions) cannot be classified safely.
@@ -57,11 +67,11 @@ export default (columns) => {
       return null;
     }
     if (isNonNegativeLength(term)) {
-      widths.push(term.raw);
+      widths.push(term);
     } else if (isPositiveInteger(term)) {
-      counts.push(term.raw);
+      counts.push(term);
     } else if (isIdent(term) && name(term) === 'auto') {
-      autos.push(term.raw);
+      autos.push(term);
     } else {
       return null;
     }
@@ -74,5 +84,7 @@ export default (columns) => {
   const width = widths[0] ?? autos.pop();
   const count = counts[0] ?? autos.pop();
 
-  return width && count ? `${width} ${count}` : null;
+  return width && count
+    ? joinTokens([width.tokens, count.tokens], whitespace())
+    : null;
 };

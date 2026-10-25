@@ -1,4 +1,7 @@
-import { isIdent, name } from '../lib/tokenize.js';
+import { isIdent, joinTokens, name } from '../lib/tokenize.js';
+import { whitespace } from '../../../values/tokenConstructors.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 // flex-flow: <flex-direction> || <flex-wrap>
 
@@ -19,22 +22,26 @@ const flexFlowSlots = [
 
 /**
  * @param {import('../lib/tokenize.js').Term[]} flexFlow
- * @return {string | null}
+ * @return {CSSToken[] | null}
  */
 function normalizeFlexFlow(flexFlow) {
+  /** @type {Record<'direction' | 'wrap', CSSToken[]>} */
   const order = {
-    direction: '',
-    wrap: '',
+    direction: [],
+    wrap: [],
   };
 
   for (const term of flexFlow) {
     if (!isIdent(term)) return null;
     const keyword = name(term);
     const slot = flexFlowSlots.find((s) => s.match(keyword));
-    if (!slot || order[slot.name]) return null;
-    order[slot.name] = term.raw;
+    if (!slot || order[slot.name].length > 0) return null;
+    order[slot.name] = term.tokens;
   }
-  return [order.direction, order.wrap].filter(Boolean).join(' ');
+  return joinTokens(
+    [order.direction, order.wrap].filter((group) => group.length > 0),
+    whitespace()
+  );
 }
 
 export default normalizeFlexFlow;

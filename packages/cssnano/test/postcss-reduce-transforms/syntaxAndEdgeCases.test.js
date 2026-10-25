@@ -129,6 +129,14 @@ describe('Handles nested syntax and source spelling', () => {
   );
 
   test(
+    'keeps the text after a reduced function whose argument also reduces',
+    processCSS(
+      'h1{transform:scale(scale(2,1), 1) translate(0)}',
+      'h1{transform:scaleX(scale(2,1)) translate(0)}'
+    )
+  );
+
+  test(
     'reduces multiple transform functions in one value',
     processCSS(
       'h1{transform:scale(1, 1) rotateZ(20deg) translate(4, 0)}',
