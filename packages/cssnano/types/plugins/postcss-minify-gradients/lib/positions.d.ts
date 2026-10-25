@@ -1,8 +1,8 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
-export type SourceEdit = {
+export type TokenEdit = {
     start: number;
     end: number;
-    text: string;
+    tokens: readonly CSSToken[];
 };
 export type PositionValue = {
     number: number;
@@ -21,15 +21,24 @@ export type PositionValue = {
  */
 export declare function isPositionZeroUnit(unit: string, conic: boolean): boolean;
 /**
+ * Applies token edits to a token list. Edits are in any order but must not
+ * overlap. Overlapping edits leave the list unchanged, as text edits do.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {readonly TokenEdit[]} edits
+ * @return {readonly CSSToken[]}
+ */
+export declare function applyTokenEdits(input: readonly CSSToken[], edits: readonly TokenEdit[]): readonly CSSToken[];
+/**
  * Colour stop fixup raises a position to the largest position before it, so a
  * position at or below that non-negative maximum can be written as a zero.
  *
  * @param {readonly CSSToken[]} input
- * @param {readonly number[]} position Offsets of the position tokens.
+ * @param {readonly number[]} position Indexes of the position tokens.
  * @param {PositionValue | undefined} maximum Running maximum of the preceding positions.
- * @param {Map<number, SourceEdit>} edits Collects the positions reduced to a zero.
+ * @param {Map<number, TokenEdit>} edits Collects the positions reduced to a zero.
  * @param {boolean} conic
  * @return {PositionValue | undefined} The maximum the following stops clamp to.
  */
-export declare function zeroPositionEdits(input: readonly CSSToken[], position: readonly number[], maximum: PositionValue | undefined, edits: Map<number, SourceEdit>, conic: boolean): PositionValue | undefined;
+export declare function zeroPositionEdits(input: readonly CSSToken[], position: readonly number[], maximum: PositionValue | undefined, edits: Map<number, TokenEdit>, conic: boolean): PositionValue | undefined;
 //# sourceMappingURL=positions.d.ts.map
