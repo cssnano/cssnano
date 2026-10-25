@@ -13,13 +13,6 @@ declare function familyIdentifiers(name: string): {
     value: string;
 }[];
 /**
- * The text of a token list.
- *
- * @param {readonly CSSToken[]} list
- * @return {string}
- */
-declare function tokensText(list: readonly CSSToken[]): string;
-/**
  * The font-family list as tokens, minified. The list is unchanged when its
  * brackets do not balance.
  *
@@ -39,5 +32,5 @@ declare function minifyFamilyTokens(input: readonly CSSToken[], opts: Options, r
  */
 declare function minifyFamily(value: string, opts: Options, removeQuotes?: Options['removeQuotes']): string;
 export default minifyFamily;
-export { familyIdentifiers, minifyFamilyTokens, tokensText };
+export { familyIdentifiers, minifyFamilyTokens };
 //# sourceMappingURL=minify-family.d.ts.map
