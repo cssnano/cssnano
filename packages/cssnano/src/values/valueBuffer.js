@@ -50,8 +50,7 @@ class ValueBuffer {
    */
   #text;
   /**
-   * The buffer's own tokens. Undefined after replaceText until tokens()
-   * retokenizes.
+   * The buffer's own tokens, built on the first call to tokens().
    * @type {CSSToken[] | undefined}
    */
   #tokens;
@@ -177,19 +176,6 @@ class ValueBuffer {
     renumber(next);
     this.#tokens = next;
     this.#text = undefined;
-    this.#structureFresh = false;
-    this.#edited = true;
-  }
-
-  /**
-   * Replaces the whole content with `text`. The tokens are read from it on
-   * the next call to tokens().
-   *
-   * @param {string} text
-   */
-  replaceText(text) {
-    this.#text = text;
-    this.#tokens = undefined;
     this.#structureFresh = false;
     this.#edited = true;
   }

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
+import { tokenize } from '@csstools/css-tokenizer';
 import { hostPlugin } from '../../src/pipeline/host.js';
 import {
   IN_KEYFRAMES,
@@ -21,7 +22,12 @@ const reportContext = (
   if (hasContextBit(context, IN_KEYFRAMES)) names.push('keyframes');
   if (hasContextBit(context, IN_PROPERTY)) names.push('property');
   if (hasContextBit(context, PERCENTAGE_SYNTAX)) names.push('percentage');
-  buffer.replaceText(names.join(',') || 'none');
+  const text = names.join(',') || 'none';
+  buffer.replace(
+    0,
+    buffer.tokens().length,
+    tokenize({ css: text }).slice(0, -1)
+  );
 };
 
 /**

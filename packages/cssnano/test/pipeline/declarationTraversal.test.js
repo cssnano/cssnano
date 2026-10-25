@@ -1,7 +1,30 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
+import { tokenize } from '@csstools/css-tokenizer';
 import { hostPlugin } from '../../src/pipeline/host.js';
+
+/** The tokens of `text`, as the tokenizer reads them. */
+const tokenized = (text) => tokenize({ css: text }).slice(0, -1);
+
+/**
+ * Replaces the whole value with `text`.
+ * @param {import('../../src/values/valueBuffer.js').ValueBuffer} buffer
+ * @param {string} text
+ */
+function setText(buffer, text) {
+  buffer.replace(0, buffer.tokens().length, tokenized(text));
+}
+
+/**
+ * Appends `text` to the value, as an insertion at its end.
+ * @param {import('../../src/values/valueBuffer.js').ValueBuffer} buffer
+ * @param {string} text
+ */
+function appendText(buffer, text) {
+  const end = buffer.tokens().length;
+  buffer.replace(end, end, tokenized(text));
+}
 
 /**
  * A stage that gives each property the reducer that `select` returns for it.
@@ -39,7 +62,7 @@ function appending(suffix, seen = []) {
     /** @type {import('../../src/values/valueBuffer.js').ValueBuffer} */ buffer
   ) => {
     seen.push(buffer.text());
-    buffer.replaceText(buffer.text() + suffix);
+    appendText(buffer, suffix);
   };
 }
 
@@ -73,7 +96,7 @@ describe('a value reducer in a host plugin', () => {
       hostOf([
         valueStage(() => (buffer) => {
           calls++;
-          buffer.replaceText(buffer.text() + '!');
+          appendText(buffer, '!');
         }),
       ])
     );
@@ -126,7 +149,7 @@ describe('a value reducer in a host plugin', () => {
       hostOf([
         valueStage(() => (buffer) => {
           seen.push(buffer.text());
-          if (buffer.text() === 'a') buffer.replaceText('b');
+          if (buffer.text() === 'a') setText(buffer, 'b');
         }),
       ])
     );
@@ -142,7 +165,7 @@ describe('a value reducer in a host plugin', () => {
     decl.raws.value = { raw: 'red /* c */', value: 'red' };
     decl.value = 'red';
     await postcss([
-      hostOf([valueStage(() => (buffer) => buffer.replaceText(buffer.text()))]),
+      hostOf([valueStage(() => (buffer) => buffer.replace(0, 0, []))]),
     ]).process(root, { from: undefined });
     assert.deepEqual(decl.raws.value, { raw: 'red /* c */', value: 'red' });
   });
@@ -209,11 +232,11 @@ describe('the stages of a host plugin in one run', () => {
       hostOf([
         valueStage(() => (buffer) => {
           log.push(`first ${buffer.text()}`);
-          buffer.replaceText(buffer.text());
+          buffer.replace(0, 0, []);
         }),
         valueStage(() => (buffer) => {
           log.push(`second ${buffer.text()}`);
-          buffer.replaceText(buffer.text());
+          buffer.replace(0, 0, []);
         }),
       ])
     );
