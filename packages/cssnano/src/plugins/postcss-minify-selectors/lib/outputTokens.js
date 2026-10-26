@@ -32,6 +32,11 @@ export const fixedTokens = new Map([
   ['||', Object.freeze([delim('|'), delim('|')])],
   ['0%', Object.freeze([percentage(0)])],
   ['to', Object.freeze([ident('to')])],
+  ['odd', Object.freeze([ident('odd')])],
+  [':first-child', Object.freeze([colon(), ident('first-child')])],
+  [':first-of-type', Object.freeze([colon(), ident('first-of-type')])],
+  [':last-child', Object.freeze([colon(), ident('last-child')])],
+  [':last-of-type', Object.freeze([colon(), ident('last-of-type')])],
 ]);
 
 /**

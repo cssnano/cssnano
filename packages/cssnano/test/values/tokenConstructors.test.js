@@ -8,6 +8,7 @@ import {
 } from '@csstools/css-tokenizer';
 import {
   func,
+  funcWithText,
   hash,
   hashWithText,
   ident,
@@ -288,4 +289,20 @@ test('hashWithText reads back as the hash token the tokenizer reads from its tex
 
 test('identifierWithText keeps the text it is given rather than rewriting it from the value', () => {
   assert.equal(identifierWithText('a\\ b', 'a b')[1], 'a\\ b');
+});
+
+test('funcWithText reads back as the function token the tokenizer reads from its text', () => {
+  for (const [text, value] of [
+    ['\\31 st(', '1st'],
+    ['a\\ b(', 'a b'],
+    ['is(', 'is'],
+  ]) {
+    const token = funcWithText(text, value);
+    const read = tokenize({ css: text });
+    assert.equal(read.length, 2, `${text} reads as one token and EOF`);
+    assert.deepEqual(
+      [read[0][0], read[0][1], read[0][4]],
+      [token[0], token[1], token[4]]
+    );
+  }
 });

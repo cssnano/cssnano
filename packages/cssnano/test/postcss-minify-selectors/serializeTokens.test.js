@@ -29,14 +29,14 @@ test('serializeNormalizedTokens tokens, when returned, equal tokenize of the tex
   }
 });
 
-test('serializeNormalizedTokens returns no tokens for exactly 4 corpus lists', () => {
+test('serializeNormalizedTokens returns no tokens for exactly 3 corpus lists', () => {
   let withoutTokens = 0;
   for (const [input] of serializerCorpus) {
     const { arena, root } = normalizedRoot(input);
     if (serializeNormalizedTokens(arena, root).tokens === undefined)
       withoutTokens++;
   }
-  assert.equal(withoutTokens, 4);
+  assert.equal(withoutTokens, 3);
 });
 
 /** Counts the text and source emits of a tree that carry no tokens. */
@@ -47,11 +47,11 @@ function emitsWithoutTokens(emit) {
   return emit.tokens === undefined ? 1 : 0;
 }
 
-test('the serializer corpus has exactly 25 emits without tokens', () => {
+test('the serializer corpus has exactly 22 emits without tokens', () => {
   let count = 0;
   for (const [input] of serializerCorpus)
     count += emitsWithoutTokens(normalizedRoot(input).root);
-  assert.equal(count, 25);
+  assert.equal(count, 22);
 });
 
 test("normalizeList's emits carry tokens", () => {
@@ -83,6 +83,18 @@ test("normalizeListTrivia's space emits carry tokens", () => {
     const { root } = normalizedRoot(input);
     for (const emit of textEmits(root, ' '))
       assert.notEqual(emit.tokens, undefined, input);
+  }
+});
+
+test("normalizePseudo.js's name emits carry tokens", () => {
+  for (const [input] of serializerCorpus) {
+    const { root } = normalizedRoot(input);
+    const emits = [
+      ...textEmitsWithPrefix(root, ':'),
+      ...textEmits(root, 'odd'),
+    ];
+    for (const emit of emits)
+      if (emit.tokens === undefined) assert.fail(`${input}: ${emit.value}`);
   }
 });
 
