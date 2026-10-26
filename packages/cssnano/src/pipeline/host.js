@@ -1,5 +1,6 @@
 import { browserTargets, resolveTargets } from '#utils/browser-targets';
 import { walkStylesheet } from './traversal.js';
+import { TextTable } from '../values/textTable.js';
 import { walkAfterMerge } from './afterMerge.js';
 
 /**
@@ -167,7 +168,7 @@ export function hostPlugin(
       return {
         OnceExit(root, helpers) {
           if (members.length > 0 || transforms.size > 0) {
-            walkStylesheet(stages, root, helpers, transforms);
+            walkStylesheet(stages, root, helpers, transforms, new TextTable());
           }
           for (const { pass, options, browsers } of runs) {
             pass(root, browsers, options, helpers.result);

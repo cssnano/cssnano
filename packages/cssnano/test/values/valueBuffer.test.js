@@ -192,3 +192,13 @@ test('ValueBuffer.replaceRanges puts insertions at one index before a replacemen
   ]);
   assert.equal(buffer.text(), 'a cd');
 });
+
+test('ValueBuffer.isTokenized is false until a reader asks for the tokens', () => {
+  assert.equal(new ValueBuffer('a b').isTokenized(), false);
+});
+
+test('ValueBuffer.isTokenized is true once the tokens are read', () => {
+  const buffer = new ValueBuffer('a b');
+  buffer.tokens();
+  assert.equal(buffer.isTokenized(), true);
+});
