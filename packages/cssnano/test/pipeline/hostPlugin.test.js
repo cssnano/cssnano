@@ -27,9 +27,8 @@ describe('a host plugin', () => {
       },
     };
     const observe = {
-      selector(/** @type {string} */ text) {
-        seen.push(text);
-        return text;
+      selector(buffer) {
+        seen.push(buffer.text());
       },
     };
     await postcss([addRule, hostOf(observe)]).process('a{}', {

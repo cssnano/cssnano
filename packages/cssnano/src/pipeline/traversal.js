@@ -1,4 +1,6 @@
 import { ValueBuffer } from '../values/valueBuffer.js';
+import { memoOf } from './memo.js';
+import { reduceSelector, selectorEntry } from './selectorReduce.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
 import {
   sourceParams,
@@ -27,6 +29,7 @@ import {
 
 /** @import {AtRule, Container, Document, Helpers, Root} from 'postcss' */
 /** @import {Reducer, Stage, TextReducer} from './host.js' */
+/** @import {SelectorEntry} from './selectorReduce.js' */
 /** @import {CommentState} from './comments/nodeComments.js' */
 
 /**
@@ -52,7 +55,7 @@ import {
  * @property {readonly Stage[]} stages in pipeline order
  * @property {Map<string, PropertyEntry>} properties
  * @property {Map<string, TextEntry>} atRules by at-rule name
- * @property {TextEntry} selectors
+ * @property {SelectorEntry} selectors
  * @property {WeakMap<Container | Document, number>} contexts
  * @property {Helpers} helpers
  * @property {CommentState | null} comments the comment removal of this run, or null when no stage removes comments
@@ -89,22 +92,6 @@ function textEntry(plan, tightens) {
 }
 
 /**
- * Looks up the memo of a context, creating it on first use.
- *
- * @param {(Map<string, string> | undefined)[]} memos
- * @param {number} context
- * @returns {Map<string, string>}
- */
-function memoOf(memos, context) {
-  let memo = memos[context];
-  if (memo === undefined) {
-    memo = new Map();
-    memos[context] = memo;
-  }
-  return memo;
-}
-
-/**
  * Folds a declaration value through its plan. A value that warned is not
  * memoised, so each declaration reports it.
  *
@@ -138,8 +125,8 @@ function reduceValue(entry, text, context, decl, helpers) {
 }
 
 /**
- * Folds the text of a prelude or selector through its plan. A text that
- * warned is not memoised, and its warnings name the node.
+ * Folds the text of a prelude through its plan. A text that warned is not
+ * memoised, and its warnings name the node.
  *
  * @param {TextEntry} entry
  * @param {string} text
@@ -297,7 +284,13 @@ function walkRule(state, rule) {
   if (state.selectors.plan !== null) {
     let context = contextOf(rule, state.contexts);
     if (state.defaultNamespace) context = withBit(context, DEFAULT_NAMESPACE);
-    result = reduceText(state.selectors, text, context, rule, state.helpers);
+    result = reduceSelector(
+      state.selectors,
+      text,
+      context,
+      rule,
+      state.helpers
+    );
   }
   if (result !== read) {
     rule.selector = result;
@@ -337,11 +330,10 @@ export function walkStylesheet(stages, root, helpers, transforms) {
     stages,
     properties: new Map(),
     atRules: new Map(),
-    selectors: textEntry(
+    selectors: selectorEntry(
       stages.flatMap((stage) =>
         stage.selector !== undefined ? [stage.selector] : []
-      ),
-      false
+      )
     ),
     contexts: new WeakMap(),
     helpers,

@@ -1,5 +1,6 @@
 import type { AtRule, Container, Document, Helpers, Root } from 'postcss';
 import type { Reducer, Stage, TextReducer } from './host.js';
+import type { SelectorEntry } from './selectorReduce.js';
 import type { CommentState } from './comments/nodeComments.js';
 export type PropertyEntry = {
     plan: readonly Reducer[] | null;
@@ -21,7 +22,7 @@ export type RunState = {
      * by at-rule name
      */
     atRules: Map<string, TextEntry>;
-    selectors: TextEntry;
+    selectors: SelectorEntry;
     contexts: WeakMap<Container | Document, number>;
     helpers: Helpers;
     /**
