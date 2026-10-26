@@ -1,4 +1,5 @@
 import { supportsAll } from '#utils/browser-support';
+import cssnanoUtils from '#utils';
 import {
   DEFAULT_NAMESPACE,
   hasContextBit,
@@ -9,6 +10,8 @@ import { isInvalidSelector } from './lib/isInvalidSelector.js';
 import { normalizeListTokens } from './lib/selectorScanner.js';
 
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+
+const { tokens: tokenize } = cssnanoUtils;
 
 /**
  * @typedef {object} Options
@@ -48,8 +51,13 @@ function selectorStage(options, targets) {
       inKeyframes,
       hasDefaultNamespace
     );
-    if (normalized.text !== source)
-      buffer.replace(0, tokens.length, normalized.tokens);
+    if (normalized.text !== source) {
+      buffer.replace(
+        0,
+        tokens.length,
+        normalized.tokens ?? tokenize(normalized.text)
+      );
+    }
   };
   return { selector: reduceSelector };
 }

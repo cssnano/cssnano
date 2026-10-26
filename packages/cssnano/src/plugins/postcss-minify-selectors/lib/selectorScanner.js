@@ -1,4 +1,3 @@
-import cssnanoUtils from '#utils';
 import { normalizeArena } from './normalizeArena.js';
 import { parseSelectorArena } from './parseArena.js';
 import {
@@ -6,12 +5,10 @@ import {
   serializeNormalizedTokens,
 } from './serializeArena.js';
 
-const { tokens: tokenize } = cssnanoUtils;
-
 /**
  * Normalizes a selector list that its tokens spell, with the tokens of the
- * result. Its tokens are built from the emits where they carry them, and
- * tokenized once from the text otherwise.
+ * result. The tokens are undefined when an emit carries none, so the caller
+ * tokenizes the text only when it changed.
  *
  * @param {string} source the text the tokens spell
  * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} sourceTokens
@@ -19,7 +16,7 @@ const { tokens: tokenize } = cssnanoUtils;
  * @param {boolean} convertToIs
  * @param {boolean} keyframe
  * @param {boolean} hasDefaultNamespace
- * @returns {{text: string, tokens: readonly import('@csstools/css-tokenizer').CSSToken[]}}
+ * @returns {{text: string, tokens: readonly import('@csstools/css-tokenizer').CSSToken[] | undefined}}
  */
 export function normalizeListTokens(
   source,
@@ -43,7 +40,7 @@ export function normalizeListTokens(
       hasDefaultNamespace,
     })
   );
-  return { text, tokens: tokens ?? tokenize(text) };
+  return { text, tokens };
 }
 
 /**
