@@ -12,7 +12,7 @@ import { VendorPrefixSummary } from './vendorPrefixSummary.js';
  * @property {string[]} list the distinct keys, in order of first appearance
  * @property {Set<string>} seen the same keys, for membership tests
  */
-/** @typedef {(selector: string) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
+/** @typedef {(selector: string, rule?: import('postcss').Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
 
 /** @type {readonly string[]} */
 const noElementKeys = Object.freeze([]);
@@ -93,7 +93,12 @@ export class RuleMeta {
    * @return {VendorPrefixSummary}
    */
   vendorProfile(lookup) {
-    this.#vendor ??= VendorPrefixSummary.of(this.#selectors.map(lookup));
+    if (this.#vendor === undefined) {
+      // A loop, since `map` would pass each index to a lookup that takes a rule.
+      const infos = [];
+      for (const selector of this.#selectors) infos.push(lookup(selector));
+      this.#vendor = VendorPrefixSummary.of(infos);
+    }
     return this.#vendor;
   }
 
