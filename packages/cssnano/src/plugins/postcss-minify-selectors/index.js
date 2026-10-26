@@ -6,9 +6,9 @@ import {
 } from '../../pipeline/context.js';
 import { isFixedPointSelector } from './lib/fixedPointSelector.js';
 import { isInvalidSelector } from './lib/isInvalidSelector.js';
-import { normalizeList } from './lib/selectorScanner.js';
+import { normalizeListTokens } from './lib/selectorScanner.js';
 
-/** @import {Stage, StageEntry, TextReducer} from '../../pipeline/host.js' */
+/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
 /**
  * @typedef {object} Options
@@ -30,21 +30,26 @@ function selectorStage(options, targets) {
   const fold =
     resolved.convertToIs !== false &&
     supportsAll(targets, 'css-matches-pseudo');
-  /** @type {TextReducer} */
-  const reduceSelector = (source, context) => {
-    if (source.at(-1) === ':') return source;
+  /** @type {Reducer} */
+  const reduceSelector = (buffer, context) => {
+    const source = buffer.text();
+    if (source.at(-1) === ':') return;
     const inKeyframes = hasContextBit(context, KEYFRAME_RULE);
     const hasDefaultNamespace = hasContextBit(context, DEFAULT_NAMESPACE);
     if (!inKeyframes && !hasDefaultNamespace && isFixedPointSelector(source)) {
-      return source;
+      return;
     }
-    return normalizeList(
+    const tokens = buffer.tokens();
+    const normalized = normalizeListTokens(
       source,
+      tokens,
       resolved.sort,
       fold,
       inKeyframes,
       hasDefaultNamespace
     );
+    if (normalized.text !== source)
+      buffer.replace(0, tokens.length, normalized.tokens);
   };
   return { selector: reduceSelector };
 }

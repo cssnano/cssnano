@@ -8,7 +8,7 @@ import { tokens } from '../../utils/value.js';
 /** @import {ReduceCalcOptions} from 'postcss-calc/reduce-tokens' */
 /** @import {TokenReplacement} from 'postcss-calc/reduce-tokens' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {StageEntry, Stage, TextReducer} from '../../pipeline/host.js' */
+/** @import {Reducer, StageEntry, Stage, TextReducer} from '../../pipeline/host.js' */
 
 /**
  * The reducer options for one text. A parse error goes to the `onParseError`
@@ -59,16 +59,12 @@ function applyReplacements(list, replacements) {
  * @param {string} text
  * @param {PostCssCalcOptions} options
  * @param {(message: string, plugin?: string) => void} warn
- * @param {boolean} selector
  * @returns {string}
  */
-function reducePrelude(text, options, warn, selector) {
+function reducePrelude(text, options, warn) {
   if (!hasPotentialMathFunction(text)) return text;
   const list = tokens(text);
-  const replacements = reduceTokens(
-    list,
-    reduceOptions(options, warn, selector)
-  );
+  const replacements = reduceTokens(list, reduceOptions(options, warn, false));
   if (replacements.length === 0) return text;
   return applyReplacements(list, replacements)
     .map((token) => token[1])
@@ -86,10 +82,20 @@ function reducePrelude(text, options, warn, selector) {
 function calcStage(options) {
   /** @type {TextReducer} */
   const reduceAtRule = (text, _context, warn) =>
-    reducePrelude(text, options, warn, false);
-  /** @type {TextReducer} */
-  const reduceSelector = (text, _context, warn) =>
-    reducePrelude(text, options, warn, true);
+    reducePrelude(text, options, warn);
+  /** @type {Reducer} */
+  const reduceSelector = (buffer) => {
+    if (!hasPotentialMathFunction(buffer.text())) return;
+    /** @type {(message: string, plugin?: string) => void} */
+    const warn = (message, plugin) => buffer.warn(message, plugin);
+    // reduceTokens reads its input only, so the buffer's readonly view is safe.
+    buffer.replaceRanges(
+      reduceTokens(
+        /** @type {CSSToken[]} */ (buffer.tokens()),
+        reduceOptions(options, warn, true)
+      )
+    );
+  };
   return {
     forAtRule: options.mediaQueries ? () => reduceAtRule : undefined,
     selector: options.selectors ? reduceSelector : undefined,

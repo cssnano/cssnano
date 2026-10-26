@@ -23,7 +23,7 @@ import { walkAfterMerge } from './afterMerge.js';
  */
 
 /**
- * Rewrites the text of a prelude or selector, which has no buffer. The context
+ * Rewrites the text of an at-rule prelude, which has no buffer. The context
  * is the bits of `context.js` for the node.
  * @typedef {(text: string, context: number, warn: Warn) => string} TextReducer
  */
@@ -40,13 +40,14 @@ import { walkAfterMerge } from './afterMerge.js';
  * A stage changes declaration values, through `forProperty`, which gives the
  * reducer of each property it treats, or null for a property it leaves alone.
  * It rewrites at-rule preludes through `forAtRule`, and selectors through
- * `selector`, in the same walk. `comments` gives the predicate that removes
- * comments for one stylesheet; it is called once per stylesheet, and only one
- * stage of a run has it.
+ * `selector`, in the same walk. A selector reducer edits the buffer of the
+ * selector, as a value reducer edits its declaration's. `comments` gives the
+ * predicate that removes comments for one stylesheet; it is called once per
+ * stylesheet, and only one stage of a run has it.
  * @typedef {object} Stage
  * @property {(property: string) => Reducer | null} [forProperty]
  * @property {(name: string) => AtRulePart | null} [forAtRule]
- * @property {TextReducer} [selector]
+ * @property {Reducer} [selector]
  * @property {() => (comment: string) => boolean} [comments]
  */
 
