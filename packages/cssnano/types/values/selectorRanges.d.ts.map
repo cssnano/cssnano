@@ -1,0 +1,1 @@
+{"version":3,"file":"selectorRanges.d.ts","sourceRoot":"","sources":["../../src/values/selectorRanges.js"],"names":[],"mappings":"AAEI,OAAQ,KAAA,EAAC,QAAQ,EAAC,MAAM,yBAAyB,CAAA;AAKlD,YAAwC,aAAa,GAA3C;IAAC,KAAK,EAAE,MAAM,CAAC;IAAC,GAAG,EAAE,MAAM,CAAA;CAAC,CAAe;AALxD,wDAAwD;AAExD;;;;GAIG;AAEH;;;;;;;;;GASG;AACH,wBAAgB,cAAc,CAAC,IAAI,EAHxB,SAAS,QAAQ,EAGO,GAFvB,aAAa,EAAE,CAkB1B"}
