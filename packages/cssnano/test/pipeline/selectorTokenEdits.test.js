@@ -95,6 +95,16 @@ suite('selector tokens handed between stages of the host walk', () => {
     assert.deepEqual(calls, [0]);
   });
 
+  test('minify-selectors tokenizes a selector it leaves unchanged only once, for its own read', async () => {
+    // The already-minified combinator carries no tokens, so the output's text is tokenized
+    // only when the text changes.
+    const calls = [];
+    await processWith('legend+*{}', [
+      probed(minifySelectors.create({}, []), calls),
+    ]);
+    assert.deepEqual(calls, [1]);
+  });
+
   test("postcss-calc's selector reducer reads the shared selector tokens, without tokenizing", async () => {
     // postcss-calc tokenizes each replacement it makes (its print, until 6.6),
     // so this selector has a calc() that it leaves as it is.

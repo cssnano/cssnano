@@ -1,7 +1,7 @@
 /**
  * Normalizes a selector list that its tokens spell, with the tokens of the
- * result. Its tokens are built from the emits where they carry them, and
- * tokenized once from the text otherwise.
+ * result. The tokens are undefined when an emit carries none, so the caller
+ * tokenizes the text only when it changed.
  *
  * @param {string} source the text the tokens spell
  * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} sourceTokens
@@ -9,11 +9,11 @@
  * @param {boolean} convertToIs
  * @param {boolean} keyframe
  * @param {boolean} hasDefaultNamespace
- * @returns {{text: string, tokens: readonly import('@csstools/css-tokenizer').CSSToken[]}}
+ * @returns {{text: string, tokens: readonly import('@csstools/css-tokenizer').CSSToken[] | undefined}}
  */
 export declare function normalizeListTokens(source: string, sourceTokens: readonly import('@csstools/css-tokenizer').CSSToken[], sort: boolean, convertToIs: boolean, keyframe: boolean, hasDefaultNamespace: boolean): {
     text: string;
-    tokens: readonly import('@csstools/css-tokenizer').CSSToken[];
+    tokens: readonly import('@csstools/css-tokenizer').CSSToken[] | undefined;
 };
 /**
  * @param {string} source
