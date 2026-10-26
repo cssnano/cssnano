@@ -1,13 +1,21 @@
 import { ValueBuffer } from '../values/valueBuffer.js';
 import { memoOf } from './memo.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Helpers, Rule} from 'postcss' */
 /** @import {Reducer} from './host.js' */
+/** @import {TextTable} from '../values/textTable.js' */
+
+/**
+ * A folded selector: its text, and the tokens that spell it when a stage read
+ * them.
+ * @typedef {{text: string, tokens: readonly CSSToken[] | undefined}} FoldedSelector
+ */
 
 /**
  * What one run knows about selectors: the buffer reducers of its plan, or null
  * when no stage rewrites them, with a memo per context.
- * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, string> | undefined)[]}} SelectorEntry
+ * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedSelector> | undefined)[]}} SelectorEntry
  */
 
 /**
@@ -19,28 +27,44 @@ export function selectorEntry(plan) {
 }
 
 /**
- * Folds the text of a selector through its plan. The stages share one buffer,
- * so a selector is tokenized only when a stage reads its tokens. A text that
- * warned is not memoised, and its warnings name the rule.
+ * Folds the text of a selector through its plan and gives the rule the result.
+ * The stages share one buffer, so a selector is tokenized only when a stage
+ * reads its tokens, and the table keeps those tokens for later readers. A text
+ * that warned is not memoised, and its warnings name the rule.
  *
  * @param {SelectorEntry} entry
- * @param {string} text
- * @param {number} context
  * @param {Rule} rule
+ * @param {string} read the selector as written
+ * @param {string} text the selector without the comments the run removes
+ * @param {number} context
  * @param {Helpers} helpers
- * @returns {string}
+ * @param {TextTable} table
  */
-export function reduceSelector(entry, text, context, rule, helpers) {
-  const plan = /** @type {readonly Reducer[]} */ (entry.plan);
+export function reduceSelector(
+  entry,
+  rule,
+  read,
+  text,
+  context,
+  helpers,
+  table
+) {
   const memo = memoOf(entry.memos, context);
   const known = memo.get(text);
-  if (known !== undefined) return known;
+  if (known !== undefined) {
+    if (known.tokens !== undefined)
+      table.record(rule, known.text, known.tokens);
+    else table.setText(rule, known.text);
+    return;
+  }
+  const plan = /** @type {readonly Reducer[]} */ (entry.plan);
   const buffer = new ValueBuffer(text);
   for (const reduce of plan) reduce(buffer, context);
   const result = buffer.text();
+  const tokens = buffer.isTokenized() ? buffer.tokens() : undefined;
   const warnings = buffer.warnings();
   if (warnings === undefined) {
-    memo.set(text, result);
+    memo.set(text, { text: result, tokens });
   } else {
     for (const { message, plugin } of warnings) {
       helpers.result.warn(
@@ -49,5 +73,8 @@ export function reduceSelector(entry, text, context, rule, helpers) {
       );
     }
   }
-  return result;
+  if (result === read) {
+    if (tokens !== undefined) table.record(rule, result, tokens);
+  } else if (tokens !== undefined) table.write(rule, tokens);
+  else table.setText(rule, result);
 }

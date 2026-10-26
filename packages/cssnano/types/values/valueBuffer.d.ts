@@ -45,6 +45,13 @@ declare class ValueBuffer {
      */
     tokens(): readonly CSSToken[];
     /**
+     * Whether the tokens exist, that is, a reader has read them or an edit has
+     * built them. It never tokenizes.
+     *
+     * @return {boolean}
+     */
+    isTokenized(): boolean;
+    /**
      * Whether an edit has changed the buffer. Until then, the source text is
      * the text, so a reader may check it without serializing the tokens.
      *
