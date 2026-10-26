@@ -78,6 +78,28 @@ function wrapPseudo(pool, head, inner) {
   return pool.sequence([head, inner, pool.text(')')]);
 }
 
+/**
+ * The text of an `<an-plus-b>` formula. A formula spelled as its source keeps
+ * the source tokens. Tokens are built only for a text not yet interned.
+ * @param {SelectorArena} arena
+ * @param {OutputPool} pool
+ * @param {{ text: string, spelled: boolean, tokenStart: number, tokenEnd: number }} formula
+ * @return {Output}
+ */
+function formulaOutput(arena, pool, formula) {
+  return (
+    pool.texts.get(formula.text) ??
+    pool.intern(
+      formula.text,
+      formula.spelled
+        ? Object.freeze(
+            arena.tokens.slice(formula.tokenStart, formula.tokenEnd)
+          )
+        : undefined
+    )
+  );
+}
+
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node @param {string} prefix @param {string} name */
 function nthPseudoOutput(arena, pool, node, prefix, name) {
   const payload = arena.payloads.pseudos[node.payload];
@@ -95,7 +117,7 @@ function nthPseudoOutput(arena, pool, node, prefix, name) {
   return wrapPseudo(
     pool,
     pseudoHead(pool, arena, payload, prefix, name, true),
-    pool.text(useOdd ? 'odd' : formula.text)
+    useOdd ? pool.text('odd') : formulaOutput(arena, pool, formula)
   );
 }
 
@@ -117,7 +139,11 @@ function structuralPseudoOutput(arena, pool, node, normalized, prefix, name) {
   return wrapPseudo(
     pool,
     head,
-    pool.sequence([pool.text(formula.text), pool.text(' of '), argument])
+    pool.sequence([
+      formulaOutput(arena, pool, formula),
+      pool.text(' of '),
+      argument,
+    ])
   );
 }
 

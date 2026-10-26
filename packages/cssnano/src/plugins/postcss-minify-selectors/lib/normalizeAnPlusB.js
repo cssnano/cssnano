@@ -38,6 +38,8 @@ function normalizedFormulaToken(input, index, important, foundSyntax) {
 
 /**
  * Normalizes an An+B formula tokens slice into canonical serialized form.
+ * `tokenStart` and `tokenEnd` bound the formula's significant tokens. When
+ * `spelled` is true, those tokens spell `text`.
  *
  * @param {readonly import('./tokenUtils.js').CSSToken[]} input
  * @param {number} start
@@ -51,12 +53,21 @@ export function normalizeAnPlusB(input, start, end) {
   let foundSyntax = false;
   let significantCount = 0;
   let singleIdent = '';
+  let tokenStart = -1;
+  let tokenEnd = -1;
+  let spelled = true;
+  let pieceLength = 0;
   for (let index = start; index < end; index++) {
     const token = input[index];
     if (consumeTrivia(token, pieces)) continue;
     significantCount++;
+    if (tokenStart === -1) tokenStart = index;
+    tokenEnd = index + 1;
     if (token[0] === TokenType.Ident) singleIdent = decodedIdent(token);
-    pieces.push(normalizedFormulaToken(input, index, important, foundSyntax));
+    const piece = normalizedFormulaToken(input, index, important, foundSyntax);
+    spelled = spelled && piece === token[1];
+    pieceLength += piece.length;
+    pieces.push(piece);
     foundSyntax = true;
   }
   let text = joinPieces(pieces);
@@ -64,5 +75,16 @@ export function normalizeAnPlusB(input, start, end) {
     if (singleIdent === 'even') text = '2n';
     else if (singleIdent === 'odd') text = 'odd';
   }
-  return { formula, important, text };
+  return {
+    formula,
+    important,
+    text,
+    tokenStart,
+    tokenEnd,
+    // Trivia inside the formula means its tokens do not spell `text`.
+    spelled:
+      spelled &&
+      tokenEnd - tokenStart === significantCount &&
+      text.length === pieceLength,
+  };
 }
