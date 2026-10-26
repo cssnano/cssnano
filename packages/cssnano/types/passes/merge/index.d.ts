@@ -1,5 +1,6 @@
 import { isBoolean } from '../../optionGuards.js';
 import type { Root } from 'postcss';
+import type { TextTable } from '../../values/textTable.js';
 /**
  * The merge transforms over one stylesheet, in the order the default preset
  * runs them: canonicalize every declaration block, remove duplicates, merge
@@ -14,11 +15,13 @@ import type { Root } from 'postcss';
  * @param {Root} css
  * @param {readonly string[]} browsers the resolved browser targets
  * @param {{ rules?: boolean }} [options]
+ * @param {unknown} [_result] the PostCSS result, which the merge does not use
+ * @param {TextTable} [textTable] the selector tokens the host walk left
  * @return {void}
  */
 export declare function mergePass(css: Root, browsers: readonly string[], { rules }?: {
     rules?: boolean;
-}): void;
+}, _result?: unknown, textTable?: TextTable): void;
 /** The guard for the `rules` option, shared with the preset that validates it. */
 export declare const rulesGuard: Readonly<{
     isValid: typeof isBoolean;

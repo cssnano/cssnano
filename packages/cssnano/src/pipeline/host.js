@@ -62,9 +62,10 @@ import { walkAfterMerge } from './afterMerge.js';
 
 /**
  * A pass that runs over the stylesheet after the walk, with the browsers of the
- * run, the options of its entry and the result for its messages. `targets` is
- * set when the pass reads the browser targets; otherwise it gets none.
- * @typedef {{pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void, options: Record<PropertyKey, unknown>, targets: boolean}} PassRun
+ * run, the options of its entry, the result for its messages and the text
+ * table the walk filled. `targets` is set when the pass reads the browser
+ * targets; otherwise it gets none.
+ * @typedef {{pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result, table: TextTable) => void, options: Record<PropertyKey, unknown>, targets: boolean}} PassRun
  */
 
 /**
@@ -167,11 +168,12 @@ export function hostPlugin(
       }));
       return {
         OnceExit(root, helpers) {
+          const table = new TextTable();
           if (members.length > 0 || transforms.size > 0) {
-            walkStylesheet(stages, root, helpers, transforms, new TextTable());
+            walkStylesheet(stages, root, helpers, transforms, table);
           }
           for (const { pass, options, browsers } of runs) {
-            pass(root, browsers, options, helpers.result);
+            pass(root, browsers, options, helpers.result, table);
           }
           if (after.size > 0 || symbols.size > 0) {
             walkAfterMerge(root, helpers.result, after, symbols);

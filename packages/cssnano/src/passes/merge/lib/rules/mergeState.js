@@ -58,7 +58,8 @@ export default class MergeState {
   constructor(browsers, context = createRunContext()) {
     this.#lookup = createSelectorLookup(
       browsers,
-      context.selectorCompatibility
+      context.selectorCompatibility,
+      context.textTable
     );
     this.#ruleCache = context.compatibleRules;
     this.#ruleMeta = context.ruleMeta;
@@ -203,9 +204,9 @@ export default class MergeState {
     // follows it, because an incompatible selector has no known prefix.
     return (
       (this.#ruleCache.has(ruleA) ||
-        selectorsCompatible(metaA.selectors, this.#lookup)) &&
+        selectorsCompatible(metaA.selectors, this.#lookup, ruleA)) &&
       (this.#ruleCache.has(ruleB) ||
-        selectorsCompatible(metaB.selectors, this.#lookup)) &&
+        selectorsCompatible(metaB.selectors, this.#lookup, ruleB)) &&
       metaA
         .vendorProfile(this.#lookup)
         .allowsMerge(metaB.vendorProfile(this.#lookup))

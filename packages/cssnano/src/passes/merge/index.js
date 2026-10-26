@@ -13,6 +13,7 @@ import { createRunContext } from '../ir/runContext.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
+/** @import {TextTable} from '../../values/textTable.js' */
 
 /**
  * Whether the node still hangs under the stylesheet. A block that a merge or a
@@ -129,11 +130,19 @@ function mergeRules(css, browsers, context) {
  * @param {Root} css
  * @param {readonly string[]} browsers the resolved browser targets
  * @param {{ rules?: boolean }} [options]
+ * @param {unknown} [_result] the PostCSS result, which the merge does not use
+ * @param {TextTable} [textTable] the selector tokens the host walk left
  * @return {void}
  */
-export function mergePass(css, browsers, { rules = true } = {}) {
+export function mergePass(
+  css,
+  browsers,
+  { rules = true } = {},
+  _result,
+  textTable
+) {
   // Only rule merging reads the block table, so the table is attached only for it.
-  const context = createRunContext(rules ? css : undefined);
+  const context = createRunContext(rules ? css : undefined, textTable);
   try {
     runTransforms(css, browsers, rules, context);
   } finally {

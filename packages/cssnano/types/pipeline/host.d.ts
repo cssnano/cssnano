@@ -1,3 +1,4 @@
+import { TextTable } from '../values/textTable.js';
 import type { Plugin } from 'postcss';
 import type { ValueBuffer } from '../values/valueBuffer.js';
 export type Reducer = (buffer: ValueBuffer, context: number) => void;
@@ -17,7 +18,7 @@ export type StageEntry = {
     create: (options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => Stage | null;
 };
 export type PassRun = {
-    pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
+    pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result, table: TextTable) => void;
     options: Record<PropertyKey, unknown>;
     targets: boolean;
 };
