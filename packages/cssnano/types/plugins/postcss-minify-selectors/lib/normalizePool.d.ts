@@ -101,6 +101,4 @@ export declare function normalizedAt<T extends Output>(normalized: (T | undefine
 export declare function rawOutput(arena: SelectorArena, pool: OutputPool, node: ArenaNode): Output;
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node @param {boolean} removable */
 export declare function qualifiedNameOutput(arena: SelectorArena, pool: OutputPool, node: ArenaNode, removable: boolean): Output;
-/** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node */
-export declare function attributeOutput(arena: SelectorArena, pool: OutputPool, node: ArenaNode): Output;
 //# sourceMappingURL=normalizePool.d.ts.map

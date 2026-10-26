@@ -1,11 +1,9 @@
 import cssnanoUtils from '#utils';
 import { serializeIdentifier } from '../../../values/escapes.js';
 import { comma, delim, whitespace } from '../../../values/punctuationTokens.js';
-import {
-  ident,
-  identifierWithText,
-} from '../../../values/tokenConstructors.js';
+import { ident } from '../../../values/tokenConstructors.js';
 import { dropHexEscapeTerminator } from './hexEscape.js';
+import { nameToken } from './outputTokens.js';
 import { isImportantCommentToken, unquote } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
@@ -13,19 +11,6 @@ const { TokenType } = cssnanoUtils;
 /** @typedef {import('./tokenUtils.js').CSSToken} CSSToken */
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {{ pieces?: string[], tokens?: (CSSToken | undefined)[], valid: boolean }} PieceResult */
-
-/**
- * The token of a name piece: its source token while the piece keeps the
- * source text, otherwise an identifier that spells the piece.
- * @param {CSSToken} token
- * @param {string} text the piece's text
- * @return {CSSToken}
- */
-function namePieceToken(token, text) {
-  if (text === token[1]) return token;
-  const { value } = /** @type {{value: string}} */ (token[4]);
-  return identifierWithText(text, value);
-}
 
 /**
  * Whitespace is trivia, and so is a comment. An important comment is kept as
@@ -114,7 +99,7 @@ function normalizePtNameArgument(tokens, start, end) {
       isWildcard = token[0] === TokenType.Delim && token[1] === '*';
       const text = dropHexEscapeTerminator(token[1]);
       pieces.push(text);
-      pieceTokens.push(namePieceToken(token, text));
+      pieceTokens.push(nameToken(token, text));
       continue;
     }
     if (!expectsClass && isPtClassSeparator(token)) {
@@ -127,7 +112,7 @@ function normalizePtNameArgument(tokens, start, end) {
     if (expectsClass && type === TokenType.Ident) {
       const text = dropHexEscapeTerminator(token[1]);
       pieces.push(text);
-      pieceTokens.push(namePieceToken(token, text));
+      pieceTokens.push(nameToken(token, text));
       expectsClass = false;
       hasClass = true;
       continue;
@@ -174,7 +159,7 @@ function normalizeIdentListArgument(tokens, start, end) {
       }
       const text = dropHexEscapeTerminator(token[1]);
       pieces.push(text);
-      pieceTokens.push(namePieceToken(token, text));
+      pieceTokens.push(nameToken(token, text));
       count++;
       continue;
     }
@@ -212,7 +197,7 @@ function normalizeIdentArgument(tokens, start, end) {
       foundIdent = true;
       const text = dropHexEscapeTerminator(token[1]);
       pieces.push(text);
-      pieceTokens.push(namePieceToken(token, text));
+      pieceTokens.push(nameToken(token, text));
       continue;
     }
     return { valid: false };
@@ -239,7 +224,7 @@ function isLanguageValue(token) {
  * @return {CSSToken | undefined}
  */
 function languageValueToken(token, value) {
-  if (token[0] === TokenType.Ident) return namePieceToken(token, value);
+  if (token[0] === TokenType.Ident) return nameToken(token, value);
   return value !== '' && serializeIdentifier(value) === value
     ? ident(value)
     : undefined;

@@ -1,7 +1,6 @@
 import cssnanoUtils from '#utils';
 import { hasSemanticFact, isFoldEligible, semanticFacts } from './arena.js';
 import {
-  attributeOutput,
   childrenOf,
   compareOutputs,
   descendantCombinator,
@@ -9,6 +8,7 @@ import {
   qualifiedNameOutput,
   rawOutput,
 } from './normalizePool.js';
+import { attributeOutput } from './attributeOutput.js';
 import {
   canReuseSourceNode,
   normalizedPayload,

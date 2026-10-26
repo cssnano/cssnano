@@ -7,6 +7,7 @@ import {
   serializeNormalized,
   serializeNormalizedTokens,
 } from '../../src/plugins/postcss-minify-selectors/lib/serializeArena.js';
+import { fixedTokens } from '../../src/plugins/postcss-minify-selectors/lib/outputTokens.js';
 import { serializerCorpus } from './serializerCorpus.js';
 
 const { tokens } = cssnanoUtils;
@@ -29,14 +30,14 @@ test('serializeNormalizedTokens tokens, when returned, equal tokenize of the tex
   }
 });
 
-test('serializeNormalizedTokens returns no tokens for exactly 3 corpus lists', () => {
+test('serializeNormalizedTokens returns tokens for every corpus list', () => {
   let withoutTokens = 0;
   for (const [input] of serializerCorpus) {
     const { arena, root } = normalizedRoot(input);
     if (serializeNormalizedTokens(arena, root).tokens === undefined)
       withoutTokens++;
   }
-  assert.equal(withoutTokens, 3);
+  assert.equal(withoutTokens, 0);
 });
 
 /** Counts the text and source emits of a tree that carry no tokens. */
@@ -47,11 +48,11 @@ function emitsWithoutTokens(emit) {
   return emit.tokens === undefined ? 1 : 0;
 }
 
-test('the serializer corpus has exactly 22 emits without tokens', () => {
+test('the serializer corpus has no emits without tokens', () => {
   let count = 0;
   for (const [input] of serializerCorpus)
     count += emitsWithoutTokens(normalizedRoot(input).root);
-  assert.equal(count, 22);
+  assert.equal(count, 0);
 });
 
 test("normalizeList's emits carry tokens", () => {
@@ -155,6 +156,28 @@ test("piece argument emits' tokens spell their text", () => {
           withoutPositions(tokens(emit.value)),
           input
         );
+});
+
+test("normalizePool.js's attribute emits carry tokens", () => {
+  let lists = 0;
+  for (const [input] of serializerCorpus) {
+    const { arena, root } = normalizedRoot(input);
+    if (!arena.nodes.some((node) => node.kind === 'attribute')) continue;
+    lists++;
+    assert.equal(emitsWithoutTokens(root), 0, input);
+  }
+  assert.ok(lists >= 6);
+});
+
+test("normalizePool.js's qualified-name emits carry tokens", () => {
+  let lists = 0;
+  for (const [input] of serializerCorpus) {
+    const { arena, root } = normalizedRoot(input);
+    if (!arena.nodes.some((node) => node.kind === 'qualified-name')) continue;
+    lists++;
+    assert.equal(emitsWithoutTokens(root), 0, input);
+  }
+  assert.ok(lists >= 5);
 });
 
 test("normalizeNode's class and ID emits carry tokens", () => {
@@ -283,4 +306,14 @@ test('serializeNormalizedTokens returns no tokens when a restored hex escape ter
     text: '\\31 a',
     tokens: undefined,
   });
+});
+
+test('the fixed attribute tokens read back as the tokenizer reads their text', () => {
+  for (const text of ['[', ']', '=', '~=', '|=', '^=', '$=', '*=']) {
+    assert.deepEqual(
+      withoutPositions(fixedTokens.get(text)),
+      withoutPositions(tokens(text)),
+      text
+    );
+  }
 });
