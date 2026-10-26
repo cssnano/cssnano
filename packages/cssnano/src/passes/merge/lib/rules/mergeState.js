@@ -45,7 +45,7 @@ export default class MergeState {
   #ruleMeta;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
   #declarations;
-  /** @type {(selector: string) => string | null} */
+  /** @type {(selector: string, piece?: RangePiece | null) => string | null} */
   #elementKeyOf = createElementKeyLookup();
   /** @type {TextTable} */
   #textTable;
@@ -122,7 +122,10 @@ export default class MergeState {
    * @param {Rule} rule
    * @return {string[] | null}
    */
-  elementKeysOf = (rule) => this.meta(rule).elementKeys(this.#elementKeyOf);
+  elementKeysOf = (rule) => {
+    this.piecesOf(rule);
+    return this.meta(rule).elementKeys(this.#elementKeyOf);
+  };
 
   /**
    * Numbers declarations so equal ones, with the same property, value,
@@ -178,13 +181,7 @@ export default class MergeState {
   addSelectors(rule, selectors, source) {
     const own = this.piecesOf(rule);
     const from = own === null ? null : this.piecesOf(source);
-    const meta = this.meta(rule);
-    const gained = meta.addSelectors(
-      selectors,
-      this.#lookup,
-      this.#elementKeyOf
-    );
-    meta.setPieces(
+    const pieces =
       from === null
         ? null
         : appendPieces(
@@ -192,9 +189,13 @@ export default class MergeState {
             selectors,
             this.meta(source).selectors,
             from
-          )
+          );
+    return this.meta(rule).addSelectors(
+      selectors,
+      this.#lookup,
+      this.#elementKeyOf,
+      pieces
     );
-    return gained;
   }
 
   /**
