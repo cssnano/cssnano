@@ -30,6 +30,7 @@ import {
 /** @import {AtRule, Container, Document, Helpers, Root} from 'postcss' */
 /** @import {Reducer, Stage, TextReducer} from './host.js' */
 /** @import {SelectorEntry} from './selectorReduce.js' */
+/** @import {TextTable} from '../values/textTable.js' */
 /** @import {CommentState} from './comments/nodeComments.js' */
 
 /**
@@ -58,6 +59,7 @@ import {
  * @property {SelectorEntry} selectors
  * @property {WeakMap<Container | Document, number>} contexts
  * @property {Helpers} helpers
+ * @property {TextTable} table the text table the walk fills
  * @property {CommentState | null} comments the comment removal of this run, or null when no stage removes comments
  * @property {boolean} defaultNamespace whether a default `@namespace` has been reached, so later rules have it in their context
  * @property {boolean} normalizeWhitespace whether normalizeWhitespace is on, which removes the stray semicolons and reattaches the escapes of blocks
@@ -280,22 +282,21 @@ function walkRule(state, rule) {
   if (comments === null && state.selectors.plan === null) return;
   const read = sourceSelector(rule);
   const text = comments !== null ? commentFreeSelector(read, comments) : read;
-  let result = text;
-  if (state.selectors.plan !== null) {
-    let context = contextOf(rule, state.contexts);
-    if (state.defaultNamespace) context = withBit(context, DEFAULT_NAMESPACE);
-    result = reduceSelector(
-      state.selectors,
-      text,
-      context,
-      rule,
-      state.helpers
-    );
+  if (state.selectors.plan === null) {
+    if (text !== read) state.table.setText(rule, text);
+    return;
   }
-  if (result !== read) {
-    rule.selector = result;
-    delete rule.raws.selector;
-  }
+  let context = contextOf(rule, state.contexts);
+  if (state.defaultNamespace) context = withBit(context, DEFAULT_NAMESPACE);
+  reduceSelector(
+    state.selectors,
+    rule,
+    read,
+    text,
+    context,
+    state.helpers,
+    state.table
+  );
 }
 
 /**
@@ -323,8 +324,9 @@ function commentStateOf(stages) {
  * @param {Root} root
  * @param {Helpers} helpers
  * @param {ReadonlyMap<string, unknown>} transforms the whole-stylesheet transforms of the run, by entry name
+ * @param {TextTable} table the selector and value tokens the walk leaves for later readers
  */
-export function walkStylesheet(stages, root, helpers, transforms) {
+export function walkStylesheet(stages, root, helpers, transforms, table) {
   /** @type {RunState} */
   const state = {
     stages,
@@ -337,6 +339,7 @@ export function walkStylesheet(stages, root, helpers, transforms) {
     ),
     contexts: new WeakMap(),
     helpers,
+    table,
     comments: commentStateOf(stages),
     defaultNamespace: false,
     normalizeWhitespace: transforms.has('normalizeWhitespace'),

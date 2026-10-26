@@ -1,6 +1,7 @@
 import type { AtRule, Container, Document, Helpers, Root } from 'postcss';
 import type { Reducer, Stage, TextReducer } from './host.js';
 import type { SelectorEntry } from './selectorReduce.js';
+import type { TextTable } from '../values/textTable.js';
 import type { CommentState } from './comments/nodeComments.js';
 export type PropertyEntry = {
     plan: readonly Reducer[] | null;
@@ -25,6 +26,10 @@ export type RunState = {
     selectors: SelectorEntry;
     contexts: WeakMap<Container | Document, number>;
     helpers: Helpers;
+    /**
+     * the text table the walk fills
+     */
+    table: TextTable;
     /**
      * the comment removal of this run, or null when no stage removes comments
      */
@@ -52,6 +57,7 @@ export type RunState = {
  * @param {Root} root
  * @param {Helpers} helpers
  * @param {ReadonlyMap<string, unknown>} transforms the whole-stylesheet transforms of the run, by entry name
+ * @param {TextTable} table the selector and value tokens the walk leaves for later readers
  */
-export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers, transforms: ReadonlyMap<string, unknown>): void;
+export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers, transforms: ReadonlyMap<string, unknown>, table: TextTable): void;
 //# sourceMappingURL=traversal.d.ts.map

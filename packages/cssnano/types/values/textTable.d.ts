@@ -37,6 +37,13 @@ declare class TextTable {
      */
     write(rule: Rule, list: readonly CSSToken[]): void;
     /**
+     * Assigns the text without storing tokens, for a text no list spells yet.
+     *
+     * @param {Rule} rule
+     * @param {string} text
+     */
+    setText(rule: Rule, text: string): void;
+    /**
      * Stores a list whose text the caller knows. The rule is assigned only when
      * it does not already spell the text.
      *

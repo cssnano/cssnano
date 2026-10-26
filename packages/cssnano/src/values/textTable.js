@@ -49,6 +49,16 @@ class TextTable {
   }
 
   /**
+   * Assigns the text without storing tokens, for a text no list spells yet.
+   *
+   * @param {Rule} rule
+   * @param {string} text
+   */
+  setText(rule, text) {
+    assign(rule, text);
+  }
+
+  /**
    * Stores a list whose text the caller knows. The rule is assigned only when
    * it does not already spell the text.
    *
