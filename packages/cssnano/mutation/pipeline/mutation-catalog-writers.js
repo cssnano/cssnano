@@ -23,8 +23,8 @@ export const mutations = [
   },
   {
     name: 'assign a memo hit as a string, dropping its tokens',
-    find: '    if (known.tokens !== undefined) table.record(rule, known.text, known.tokens);',
+    find: '    if (known.tokens !== undefined)\n      table.record(rule, known.text, known.tokens);',
     replace:
-      '    if (known.tokens !== undefined) table.setText(rule, known.text);',
+      '    if (known.tokens !== undefined)\n      table.setText(rule, known.text);',
   },
 ];

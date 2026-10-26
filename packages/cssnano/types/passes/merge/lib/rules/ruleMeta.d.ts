@@ -15,6 +15,7 @@ export type RuleElementKeys = {
     seen: Set<string>;
 };
 export type SelectorLookup = (selector: string, rule?: import('postcss').Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo;
+import type { RangePiece } from '../../../../values/joinRanges.js';
 /**
  * The selector list of a rule with what is derived from it. Every field is
  * set up front so all instances share one object layout.
@@ -30,6 +31,13 @@ export declare class RuleMeta {
     get selectors(): string[];
     /** @return {Declaration[]} */
     get declarations(): Declaration[];
+    /**
+     * @return {RangePiece[] | null | undefined} undefined until the caller
+     * sets them, and null when the token ranges of the selectors are not known
+     */
+    get pieces(): RangePiece[] | null | undefined;
+    /** @param {RangePiece[] | null} pieces one per selector, or null */
+    setPieces(pieces: RangePiece[] | null): void;
     /** @param {Declaration[]} declarations */
     setDeclarations(declarations: Declaration[]): void;
     /**

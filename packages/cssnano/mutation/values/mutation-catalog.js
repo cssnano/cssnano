@@ -14,8 +14,8 @@ export const mutations = [
   },
   {
     name: 'store the list under the old selector text before the assignment',
-    find: '    assign(rule, text);\n    this.#entries.set(rule, { text, tokens: list });\n  }\n\n  /**\n   * Stores a list',
+    find: '    assign(rule, text);\n    this.#entries.set(rule, { text, tokens: list });\n  }\n\n  /**\n   * Assigns the text without storing tokens',
     replace:
-      '    this.#entries.set(rule, { text: sourceSelector(rule), tokens: list });\n    assign(rule, text);\n  }\n\n  /**\n   * Stores a list',
+      '    this.#entries.set(rule, { text: sourceSelector(rule), tokens: list });\n    assign(rule, text);\n  }\n\n  /**\n   * Assigns the text without storing tokens',
   },
 ];

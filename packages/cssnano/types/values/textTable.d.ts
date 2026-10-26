@@ -30,6 +30,14 @@ declare class TextTable {
      */
     tokens(rule: Rule): readonly CSSToken[];
     /**
+     * The stored tokens of the selector, or undefined when none are stored for
+     * the text the rule spells. Unlike `tokens`, it never tokenizes.
+     *
+     * @param {Rule} rule
+     * @return {readonly CSSToken[] | undefined}
+     */
+    stored(rule: Rule): readonly CSSToken[] | undefined;
+    /**
      * Assigns the text of a list the caller built, and stores the list itself.
      *
      * @param {Rule} rule

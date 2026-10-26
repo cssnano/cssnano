@@ -80,6 +80,14 @@ export const catalogs = [
     test: true,
   },
   {
+    url: new URL(
+      './passes/merge/lib/rules/mutation-catalog-selector-writers.js',
+      import.meta.url
+    ),
+    suites: mergeRulesSuites,
+    test: true,
+  },
+  {
     url: new URL('./passes/merge/mutation-catalog.js', import.meta.url),
     suites: mergeRulesSuites,
     test: true,

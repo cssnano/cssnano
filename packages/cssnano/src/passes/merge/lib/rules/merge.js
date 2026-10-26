@@ -82,7 +82,7 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
     return { first: [first], second: [] };
   }
   mergeState.absorbEarlier(second, first);
-  second.selector = mergeState.meta(second).selectorText();
+  mergeState.spellSelectors(second);
   mergeState.forget(first);
   mergeState.markCompatible(second);
   return { first: [], second: [second] };

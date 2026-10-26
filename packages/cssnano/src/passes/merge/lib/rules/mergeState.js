@@ -3,11 +3,21 @@ import {
   selectorsCompatible,
 } from './ensureCompatibility.js';
 import { createElementKeyLookup } from './elementKeys.js';
+import { comma } from '../../../../values/punctuationTokens.js';
 import { createRunContext } from '../../../ir/runContext.js';
 import { getMeta } from './ruleMeta.js';
 import { isKeyframes, sameContainer } from './sameContainer.js';
+import { joinRanges } from '../../../../values/joinRanges.js';
+import {
+  selectorPieces,
+  separatorOf,
+} from '../../../../values/selectorRanges.js';
+import { tokensText } from '../../../../values/tokensText.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {RangePiece} from '../../../../values/joinRanges.js' */
+/** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleMeta} from './ruleMeta.js' */
 /** @import {RuleDeclarationKeys} from './ruleMeta.js' */
@@ -37,6 +47,10 @@ export default class MergeState {
   #declarations;
   /** @type {(selector: string) => string | null} */
   #elementKeyOf = createElementKeyLookup();
+  /** @type {TextTable} */
+  #textTable;
+  /** @type {Set<Rule>} rules whose selector text is set, and whose tokens are stored at the end of the run */
+  #spelled = new Set();
   // Merging moves only declarations and comments into a rule, so a rule found
   // to hold no rule or at-rule holds none until it is forgotten. A rule that
   // keeps receiving is then not rescanned on every merge.
@@ -67,6 +81,7 @@ export default class MergeState {
     this.properties = context.properties;
     this.blocks = context.blocks;
     this.#createdBlocks = context.createdBlocks;
+    this.#textTable = context.textTable;
   }
 
   /**
@@ -150,20 +165,128 @@ export default class MergeState {
   }
 
   /**
-   * Appends selectors to the rule's selector list, keeping its vendor prefix
-   * profile in step.
+   * Appends selectors of `source` to the rule's selector list, keeping its
+   * vendor prefix profile and its token ranges in step.
    *
    * @param {Rule} rule
-   * @param {string[]} selectors
+   * @param {string[]} selectors some of the selectors of `source`, in the
+   * order of their first occurrence there
+   * @param {Rule} source
    * @return {readonly string[] | null} the element keys the selectors add, or
    * null when the rule's elements are not listed
    */
-  addSelectors(rule, selectors) {
-    return this.meta(rule).addSelectors(
+  addSelectors(rule, selectors, source) {
+    const own = this.piecesOf(rule);
+    const from = own === null ? null : this.piecesOf(source);
+    const meta = this.meta(rule);
+    const gained = meta.addSelectors(
       selectors,
       this.#lookup,
       this.#elementKeyOf
     );
+    meta.setPieces(
+      from === null
+        ? null
+        : appendPieces(
+            /** @type {RangePiece[]} */ (own),
+            selectors,
+            this.meta(source).selectors,
+            from
+          )
+    );
+    return gained;
+  }
+
+  /**
+   * The token range of each selector of the rule, read from the text table
+   * without tokenizing, or null when the table does not hold them.
+   *
+   * @param {Rule} rule
+   * @return {RangePiece[] | null}
+   */
+  piecesOf(rule) {
+    const meta = this.meta(rule);
+    if (meta.pieces === undefined) {
+      const list = this.#textTable.stored(rule);
+      meta.setPieces(
+        list === undefined ? null : selectorPieces(list, meta.selectors)
+      );
+    }
+    return /** @type {RangePiece[] | null} */ (meta.pieces);
+  }
+
+  /**
+   * Sets the selector text of a rule from its list. Its tokens are stored at
+   * the end of the run, so a chain of merges into one rule stores them once.
+   *
+   * @param {Rule} rule
+   */
+  spellSelectors(rule) {
+    this.#textTable.setText(rule, this.meta(rule).selectorText());
+    this.#spelled.add(rule);
+  }
+
+  /**
+   * Stores the tokens of a copy of `rule` made with the rule's selectors. The
+   * copy's text is the one PostCSS joined, so the tokens are stored only when
+   * they spell it.
+   *
+   * @param {Rule} rule
+   * @param {Rule} clone
+   */
+  storeClone(rule, clone) {
+    const source = this.#textTable.stored(rule);
+    if (source === undefined) return;
+    this.#storePieces(clone, this.piecesOf(rule), separatorOf(source));
+  }
+
+  /**
+   * Stores the tokens of a rule joined from the selectors of `first` and
+   * `second`, in that order, with a comma between each, as `join()` writes it.
+   *
+   * @param {Rule} rule
+   * @param {Rule} first
+   * @param {Rule} second
+   */
+  storeJoined(rule, first, second) {
+    const earlier = this.piecesOf(first);
+    const later = this.piecesOf(second);
+    if (earlier === null || later === null) return;
+    this.#storePieces(rule, earlier.concat(later), [comma()]);
+  }
+
+  /**
+   * Stores the list the pieces join to, when it spells the rule's selector as
+   * it is written. Otherwise the rule keeps its text, and a reader tokenizes it.
+   *
+   * @param {Rule} rule
+   * @param {RangePiece[] | null} pieces
+   * @param {readonly CSSToken[]} separator
+   */
+  #storePieces(rule, pieces, separator) {
+    if (pieces === null) return;
+    const list = joinRanges(pieces, separator);
+    if (tokensText(list) === rule.selector) {
+      this.#textTable.record(rule, rule.selector, list);
+    }
+  }
+
+  /**
+   * Stores the tokens of every rule `spellSelectors` set, joined from the
+   * pieces its list holds. A rule without pieces keeps its text only, and a
+   * reader tokenizes it.
+   */
+  flushSelectors() {
+    for (const rule of this.#spelled) {
+      const meta = this.#ruleMeta.get(rule);
+      const pieces = meta?.pieces;
+      if (!pieces) continue;
+      const list = joinRanges(pieces, [comma()]);
+      if (tokensText(list) === meta?.selectorText()) {
+        this.#textTable.write(rule, list);
+      }
+    }
+    this.#spelled.clear();
   }
 
   /**
@@ -174,6 +297,9 @@ export default class MergeState {
    * @param {Rule} earlier
    */
   absorbEarlier(later, earlier) {
+    // Both lists of pieces are known before the absorb joins them.
+    this.piecesOf(earlier);
+    this.piecesOf(later);
     this.meta(later).absorbEarlier(
       this.meta(earlier),
       this.#lookup,
@@ -212,4 +338,23 @@ export default class MergeState {
         .allowsMerge(metaB.vendorProfile(this.#lookup))
     );
   }
+}
+
+/**
+ * Appends to `pieces` the piece of each selector, found in one pass over the
+ * source list, since the selectors follow its order.
+ *
+ * @param {RangePiece[]} pieces grown in place
+ * @param {readonly string[]} selectors
+ * @param {readonly string[]} sourceSelectors
+ * @param {readonly RangePiece[]} sourcePieces one per source selector
+ * @return {RangePiece[]}
+ */
+function appendPieces(pieces, selectors, sourceSelectors, sourcePieces) {
+  let index = 0;
+  for (const selector of selectors) {
+    while (sourceSelectors[index] !== selector) index++;
+    pieces.push(sourcePieces[index]);
+  }
+  return pieces;
 }

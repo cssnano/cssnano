@@ -1,4 +1,5 @@
 import type { Container, Declaration, Rule } from 'postcss';
+import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleMeta } from './ruleMeta.js';
 import type { RuleDeclarationKeys } from './ruleMeta.js';
@@ -76,15 +77,56 @@ export default class MergeState {
      */
     reportCreated(rule: Rule): void;
     /**
-     * Appends selectors to the rule's selector list, keeping its vendor prefix
-     * profile in step.
+     * Appends selectors of `source` to the rule's selector list, keeping its
+     * vendor prefix profile and its token ranges in step.
      *
      * @param {Rule} rule
-     * @param {string[]} selectors
+     * @param {string[]} selectors some of the selectors of `source`, in the
+     * order of their first occurrence there
+     * @param {Rule} source
      * @return {readonly string[] | null} the element keys the selectors add, or
      * null when the rule's elements are not listed
      */
-    addSelectors(rule: Rule, selectors: string[]): readonly string[] | null;
+    addSelectors(rule: Rule, selectors: string[], source: Rule): readonly string[] | null;
+    /**
+     * The token range of each selector of the rule, read from the text table
+     * without tokenizing, or null when the table does not hold them.
+     *
+     * @param {Rule} rule
+     * @return {RangePiece[] | null}
+     */
+    piecesOf(rule: Rule): RangePiece[] | null;
+    /**
+     * Sets the selector text of a rule from its list. Its tokens are stored at
+     * the end of the run, so a chain of merges into one rule stores them once.
+     *
+     * @param {Rule} rule
+     */
+    spellSelectors(rule: Rule): void;
+    /**
+     * Stores the tokens of a copy of `rule` made with the rule's selectors. The
+     * copy's text is the one PostCSS joined, so the tokens are stored only when
+     * they spell it.
+     *
+     * @param {Rule} rule
+     * @param {Rule} clone
+     */
+    storeClone(rule: Rule, clone: Rule): void;
+    /**
+     * Stores the tokens of a rule joined from the selectors of `first` and
+     * `second`, in that order, with a comma between each, as `join()` writes it.
+     *
+     * @param {Rule} rule
+     * @param {Rule} first
+     * @param {Rule} second
+     */
+    storeJoined(rule: Rule, first: Rule, second: Rule): void;
+    /**
+     * Stores the tokens of every rule `spellSelectors` set, joined from the
+     * pieces its list holds. A rule without pieces keeps its text only, and a
+     * reader tokenizes it.
+     */
+    flushSelectors(): void;
     /**
      * Gives `later` the selectors of `earlier`, which stands before it and is
      * dropped by the caller.

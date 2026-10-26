@@ -31,9 +31,9 @@ test('forget should leave a rule that was never described undescribed', () => {
 
 test('addSelectors should append the selectors to the rule description', () => {
   const { state } = createState();
-  const rule = firstRule('a{color:red}');
-  state.addSelectors(rule, ['b', 'c']);
-  assert.deepEqual(state.meta(rule).selectors, ['a', 'b', 'c']);
+  const root = postcss.parse('a{color:red}b,c{color:red}');
+  state.addSelectors(root.first, ['b', 'c'], root.last);
+  assert.deepEqual(state.meta(root.first).selectors, ['a', 'b', 'c']);
 });
 
 test('absorbEarlier should list the earlier rule selectors first', () => {
