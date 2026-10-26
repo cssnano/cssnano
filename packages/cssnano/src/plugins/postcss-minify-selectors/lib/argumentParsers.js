@@ -1,11 +1,60 @@
 import cssnanoUtils from '#utils';
+import { serializeIdentifier } from '../../../values/escapes.js';
+import { comma, delim, whitespace } from '../../../values/punctuationTokens.js';
+import {
+  ident,
+  identifierWithText,
+} from '../../../values/tokenConstructors.js';
 import { dropHexEscapeTerminator } from './hexEscape.js';
-import { consumeTrivia, unquote } from './tokenUtils.js';
+import { isImportantCommentToken, unquote } from './tokenUtils.js';
 
 const { TokenType } = cssnanoUtils;
 
 /** @typedef {import('./tokenUtils.js').CSSToken} CSSToken */
 /** @typedef {import('./arena.js').Specificity} Specificity */
+/** @typedef {{ pieces?: string[], tokens?: (CSSToken | undefined)[], valid: boolean }} PieceResult */
+
+/**
+ * The token of a name piece: its source token while the piece keeps the
+ * source text, otherwise an identifier that spells the piece.
+ * @param {CSSToken} token
+ * @param {string} text the piece's text
+ * @return {CSSToken}
+ */
+function namePieceToken(token, text) {
+  if (text === token[1]) return token;
+  const { value } = /** @type {{value: string}} */ (token[4]);
+  return identifierWithText(text, value);
+}
+
+/**
+ * Whitespace is trivia, and so is a comment. An important comment is kept as
+ * a piece with its token, so the piece keeps the source text.
+ * @param {CSSToken} token
+ * @param {string[]} pieces
+ * @param {(CSSToken | undefined)[]} tokens
+ */
+function consumeTrivia(token, pieces, tokens) {
+  if (token[0] === TokenType.Whitespace) return true;
+  if (token[0] !== TokenType.Comment) return false;
+  if (isImportantCommentToken(token)) {
+    pieces.push(token[1]);
+    tokens.push(token);
+  }
+  return true;
+}
+
+/**
+ * @param {string[]} pieces
+ * @param {(CSSToken | undefined)[]} tokens
+ * @param {readonly CSSToken[]} trivia important comments, each with its piece
+ */
+function pushTrivia(pieces, tokens, trivia) {
+  for (const token of trivia) {
+    pieces.push(token[1]);
+    tokens.push(token);
+  }
+}
 
 /** @param {string} kind @return {string | undefined} */
 export function firstPseudoReplacement(kind) {
@@ -34,11 +83,13 @@ function isPtClassSeparator(token) {
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: string[], specificity?: Specificity, valid: boolean }}
+ * @return {PieceResult & { specificity?: Specificity }}
  */
 function normalizePtNameArgument(tokens, start, end) {
   /** @type {string[]} */
   const pieces = [];
+  /** @type {(CSSToken | undefined)[]} */
+  const pieceTokens = [];
   let foundName = false;
   let expectsClass = false;
   let hasClass = false;
@@ -57,21 +108,26 @@ function normalizePtNameArgument(tokens, start, end) {
     if (sawTrailingWhitespace && type !== TokenType.Comment) {
       return { valid: false };
     }
-    if (consumeTrivia(token, pieces)) continue;
+    if (consumeTrivia(token, pieces, pieceTokens)) continue;
     if (!foundName && isPtNameStart(token)) {
       foundName = true;
       isWildcard = token[0] === TokenType.Delim && token[1] === '*';
-      pieces.push(dropHexEscapeTerminator(token[1]));
+      const text = dropHexEscapeTerminator(token[1]);
+      pieces.push(text);
+      pieceTokens.push(namePieceToken(token, text));
       continue;
     }
     if (!expectsClass && isPtClassSeparator(token)) {
       foundName = true;
       expectsClass = true;
       pieces.push('.');
+      pieceTokens.push(delim('.'));
       continue;
     }
     if (expectsClass && type === TokenType.Ident) {
-      pieces.push(dropHexEscapeTerminator(token[1]));
+      const text = dropHexEscapeTerminator(token[1]);
+      pieces.push(text);
+      pieceTokens.push(namePieceToken(token, text));
       expectsClass = false;
       hasClass = true;
       continue;
@@ -85,6 +141,7 @@ function normalizePtNameArgument(tokens, start, end) {
 
   return {
     pieces,
+    tokens: pieceTokens,
     valid: true,
     specificity: isWildcard && !hasClass ? [0, 0, 0] : [0, 0, 1],
   };
@@ -94,25 +151,30 @@ function normalizePtNameArgument(tokens, start, end) {
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: string[], valid: boolean }}
+ * @return {PieceResult}
  */
 function normalizeIdentListArgument(tokens, start, end) {
   /** @type {string[]} */
   const pieces = [];
+  /** @type {(CSSToken | undefined)[]} */
+  const pieceTokens = [];
   let count = 0;
 
   for (let i = start; i < end; i++) {
     const token = tokens[i];
     const type = token[0];
 
-    if (consumeTrivia(token, pieces)) {
+    if (consumeTrivia(token, pieces, pieceTokens)) {
       continue;
     }
     if (type === TokenType.Ident) {
       if (count > 0) {
         pieces.push(' ');
+        pieceTokens.push(whitespace());
       }
-      pieces.push(dropHexEscapeTerminator(token[1]));
+      const text = dropHexEscapeTerminator(token[1]);
+      pieces.push(text);
+      pieceTokens.push(namePieceToken(token, text));
       count++;
       continue;
     }
@@ -123,30 +185,34 @@ function normalizeIdentListArgument(tokens, start, end) {
     return { valid: false };
   }
 
-  return { pieces, valid: true };
+  return { pieces, tokens: pieceTokens, valid: true };
 }
 
 /**
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: string[], valid: boolean }}
+ * @return {PieceResult}
  */
 function normalizeIdentArgument(tokens, start, end) {
   /** @type {string[]} */
   const pieces = [];
+  /** @type {(CSSToken | undefined)[]} */
+  const pieceTokens = [];
   let foundIdent = false;
 
   for (let i = start; i < end; i++) {
     const token = tokens[i];
     const type = token[0];
 
-    if (consumeTrivia(token, pieces)) {
+    if (consumeTrivia(token, pieces, pieceTokens)) {
       continue;
     }
     if (type === TokenType.Ident && !foundIdent) {
       foundIdent = true;
-      pieces.push(dropHexEscapeTerminator(token[1]));
+      const text = dropHexEscapeTerminator(token[1]);
+      pieces.push(text);
+      pieceTokens.push(namePieceToken(token, text));
       continue;
     }
     return { valid: false };
@@ -156,7 +222,7 @@ function normalizeIdentArgument(tokens, start, end) {
     return { valid: false };
   }
 
-  return { pieces, valid: true };
+  return { pieces, tokens: pieceTokens, valid: true };
 }
 
 /** @param {CSSToken} token */
@@ -165,15 +231,31 @@ function isLanguageValue(token) {
 }
 
 /**
- * @param {{ value: string, trivia: string[], trailingTrivia: string[] }[]} items
+ * The token of a language value. An identifier keeps its token. A string
+ * value gets an identifier token only when its value is spelled as an
+ * identifier, so the piece's text is the one the token reads back.
+ * @param {CSSToken} token
+ * @param {string} value
+ * @return {CSSToken | undefined}
+ */
+function languageValueToken(token, value) {
+  if (token[0] === TokenType.Ident) return namePieceToken(token, value);
+  return value !== '' && serializeIdentifier(value) === value
+    ? ident(value)
+    : undefined;
+}
+
+/**
+ * @param {{ value: string, token: CSSToken | undefined, trivia: CSSToken[], trailingTrivia: CSSToken[] }[]} items
  * @param {Set<string>} seen
  * @param {string} value
- * @param {string[]} trivia
+ * @param {CSSToken | undefined} token
+ * @param {CSSToken[]} trivia
  */
-function recordLanguageItem(items, seen, value, trivia) {
+function recordLanguageItem(items, seen, value, token, trivia) {
   if (!seen.has(value)) {
     seen.add(value);
-    items.push({ value, trivia, trailingTrivia: [] });
+    items.push({ value, token, trivia, trailingTrivia: [] });
     return;
   }
   const previousItem = items.at(-1);
@@ -186,12 +268,12 @@ function recordLanguageItem(items, seen, value, trivia) {
  * @param {readonly CSSToken[]} tokens
  * @param {number} start
  * @param {number} end
- * @return {{ pieces?: string[], valid: boolean }}
+ * @return {PieceResult}
  */
 function normalizeIdentOrStringList(tokens, start, end) {
-  /** @type {{ value: string, trivia: string[], trailingTrivia: string[] }[]} */
+  /** @type {{ value: string, token: CSSToken | undefined, trivia: CSSToken[], trailingTrivia: CSSToken[] }[]} */
   const items = [];
-  /** @type {string[]} */
+  /** @type {CSSToken[]} */
   let currentTrivia = [];
   /** @type {Set<string>} */
   const seen = new Set();
@@ -202,7 +284,11 @@ function normalizeIdentOrStringList(tokens, start, end) {
     const token = tokens[i];
     const type = token[0];
 
-    if (consumeTrivia(token, currentTrivia)) {
+    if (token[0] === TokenType.Whitespace) {
+      continue;
+    }
+    if (token[0] === TokenType.Comment) {
+      if (isImportantCommentToken(token)) currentTrivia.push(token);
       continue;
     }
     if (type === TokenType.Comma) {
@@ -218,7 +304,13 @@ function normalizeIdentOrStringList(tokens, start, end) {
         type === TokenType.String
           ? unquote(token[1])
           : dropHexEscapeTerminator(token[1]);
-      recordLanguageItem(items, seen, val, currentTrivia);
+      recordLanguageItem(
+        items,
+        seen,
+        val,
+        languageValueToken(token, val),
+        currentTrivia
+      );
       currentTrivia = [];
       expectItem = false;
       hasTokenInItem = true;
@@ -233,21 +325,27 @@ function normalizeIdentOrStringList(tokens, start, end) {
 
   /** @type {string[]} */
   const pieces = [];
+  /** @type {(CSSToken | undefined)[]} */
+  const pieceTokens = [];
   for (let i = 0; i < items.length; i++) {
-    if (i > 0) pieces.push(',');
-    pieces.push(...items[i].trivia, items[i].value, ...items[i].trailingTrivia);
+    if (i > 0) {
+      pieces.push(',');
+      pieceTokens.push(comma());
+    }
+    pushTrivia(pieces, pieceTokens, items[i].trivia);
+    pieces.push(items[i].value);
+    pieceTokens.push(items[i].token);
+    pushTrivia(pieces, pieceTokens, items[i].trailingTrivia);
   }
-  if (currentTrivia.length > 0) {
-    pieces.push(...currentTrivia);
-  }
+  pushTrivia(pieces, pieceTokens, currentTrivia);
 
-  return { pieces, valid: true };
+  return { pieces, tokens: pieceTokens, valid: true };
 }
 
 /**
  * Parsers of the pseudo-class and pseudo-element arguments that are
  * normalized as token pieces, keyed by the grammar name in `selectorGrammar`.
- * @type {ReadonlyMap<string, (tokens: readonly CSSToken[], start: number, end: number) => { pieces?: string[], specificity?: Specificity, valid: boolean }>}
+ * @type {ReadonlyMap<string, (tokens: readonly CSSToken[], start: number, end: number) => PieceResult & { specificity?: Specificity }>}
  */
 export const pieceArgumentParsers = new Map([
   ['ident', normalizeIdentArgument],

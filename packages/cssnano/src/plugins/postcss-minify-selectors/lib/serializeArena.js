@@ -45,7 +45,7 @@ function appendEmitTokens(list, arena, emit) {
  * @param {(CSSToken | undefined)[]} list
  * @param {string} next
  */
-function appendTerminator(list, next) {
+export function appendTerminator(list, next) {
   const last = list.at(-1);
   if (
     last !== undefined &&
@@ -60,6 +60,29 @@ function appendTerminator(list, next) {
       last[4],
     ]);
   } else list.push(undefined);
+}
+
+/**
+ * The tokens that spell `joinPieces(pieces)`, joined as `serializeNormalized`
+ * joins emits. A piece without a token, or a restored terminator no token can
+ * hold, makes the result undefined.
+ * @param {readonly string[]} pieces
+ * @param {readonly (CSSToken | undefined)[]} tokens the token of each piece
+ * @return {readonly CSSToken[] | undefined}
+ */
+export function joinPieceTokens(pieces, tokens) {
+  /** @type {(CSSToken | undefined)[]} */ const list = [];
+  let previous = '';
+  for (let index = 0; index < pieces.length; index++) {
+    const piece = pieces[index];
+    if (piece === '') continue;
+    if (needsHexEscapeTerminator(previous, piece))
+      appendTerminator(list, piece);
+    list.push(tokens[index]);
+    previous = piece;
+  }
+  if (list.includes(undefined)) return undefined;
+  return Object.freeze(/** @type {CSSToken[]} */ (list));
 }
 
 /**

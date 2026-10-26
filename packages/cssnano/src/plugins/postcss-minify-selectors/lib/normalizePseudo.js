@@ -9,6 +9,7 @@ import {
 } from '../../../values/tokenConstructors.js';
 import { hasSemanticFact, semanticFacts } from './arena.js';
 import { dropHexEscapeTerminator, joinPieces } from './hexEscape.js';
+import { joinPieceTokens } from './serializeArena.js';
 import { legacyPseudoElements } from './grammar.js';
 import { normalizeAnPlusB } from './normalizeAnPlusB.js';
 import { trailingListTrivia } from './normalizeListTrivia.js';
@@ -21,6 +22,7 @@ import {
   rawOutput,
 } from './normalizePool.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {import('./normalizePool.js').Output} Output */
 /** @typedef {import('./normalizePool.js').OutputPool} OutputPool */
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
@@ -53,6 +55,22 @@ function pseudoHead(pool, arena, payload, prefix, name, opening) {
   else nameToken = identifierWithText(sourceText, value);
   const colons = prefix === '::' ? [colon(), colon()] : [colon()];
   return pool.intern(text, Object.freeze([...colons, nameToken]));
+}
+
+/**
+ * The text of an argument's pieces, interned with the tokens that spell it.
+ * Tokens are built only for a text not yet interned.
+ * @param {OutputPool} pool
+ * @param {{ pieces?: string[], tokens?: (CSSToken | undefined)[] }} result
+ * @return {Output}
+ */
+function pieceArgumentOutput(pool, result) {
+  const pieces = result.pieces ?? [];
+  const text = joinPieces(pieces);
+  return (
+    pool.texts.get(text) ??
+    pool.intern(text, joinPieceTokens(pieces, result.tokens ?? []))
+  );
 }
 
 /** @param {OutputPool} pool @param {Output} head @param {Output} inner */
@@ -148,7 +166,7 @@ export function pseudoOutput(arena, pool, node, normalized) {
       output = wrapPseudo(
         pool,
         pseudoHead(pool, arena, payload, prefix, name, true),
-        pool.text(joinPieces(result.pieces ?? []))
+        pieceArgumentOutput(pool, result)
       );
   }
   return output ?? rawOutput(arena, pool, node);

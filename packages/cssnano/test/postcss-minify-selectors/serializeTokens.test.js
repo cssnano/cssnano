@@ -98,6 +98,65 @@ test("normalizePseudo.js's name emits carry tokens", () => {
   }
 });
 
+const pieceGrammars = new Set([
+  'ident',
+  'ident-list',
+  'ident-or-string-list',
+  'pt-name-selector',
+]);
+
+/** The argument text emits of a tree: the text between a pseudo's head and its `)`. */
+function argumentEmits(emit) {
+  if (emit === undefined || emit.kind !== 'sequence') return [];
+  const [, argument, close] = emit.items;
+  const found =
+    emit.items.length === 3 &&
+    argument?.kind === 'text' &&
+    close?.kind === 'text' &&
+    close.value === ')'
+      ? [argument]
+      : [];
+  return [...found, ...emit.items.flatMap(argumentEmits)];
+}
+
+/** The argument emits of the corpus lists whose pseudos take a piece grammar. */
+function pieceArgumentLists() {
+  const lists = [];
+  for (const [input] of serializerCorpus) {
+    const { arena, root } = normalizedRoot(input);
+    if (
+      arena.payloads.pseudos.some((p) => pieceGrammars.has(p.argumentGrammar))
+    )
+      lists.push({ input, emits: argumentEmits(root) });
+  }
+  return lists;
+}
+
+/** Token fields without positions, which a list's tokens hold until it is serialized. */
+function withoutPositions(list) {
+  return list.map((token) => [token[0], token[1], token[4]]);
+}
+
+test('piece argument emits carry tokens', () => {
+  const lists = pieceArgumentLists();
+  assert.equal(lists.length, 9);
+  for (const { input, emits } of lists) {
+    assert.notEqual(emits.length, 0, input);
+    for (const emit of emits) assert.notEqual(emit.tokens, undefined, input);
+  }
+});
+
+test("piece argument emits' tokens spell their text", () => {
+  for (const { input, emits } of pieceArgumentLists())
+    for (const emit of emits)
+      if (emit.tokens !== undefined)
+        assert.deepEqual(
+          withoutPositions(emit.tokens),
+          withoutPositions(tokens(emit.value)),
+          input
+        );
+});
+
 test("normalizeNode's class and ID emits carry tokens", () => {
   for (const [input] of serializerCorpus) {
     const { root } = normalizedRoot(input);

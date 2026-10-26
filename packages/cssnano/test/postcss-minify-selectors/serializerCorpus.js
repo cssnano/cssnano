@@ -28,4 +28,15 @@ export const serializerCorpus = [
     'a\\E0000\\E001, a\\E0000\\E001[attr="x,y"]',
     'a\\E0000\\E001,a\\E0000\\E001[attr="x,y"]',
   ],
+  [':dir(ltr)', ':dir(ltr)'],
+  ['::part(a  b)', '::part(a b)'],
+  // The escape's terminator and the separator both stay: one space would
+  // join the two idents into one.
+  ['::part(a\\31  b)', '::part(a\\31  b)'],
+  [':lang(en, "fr")', ':lang(en,fr)'],
+  [':lang(a\\31 b)', ':lang(a\\31 b)'],
+  [':lang(en /*! keep */, "fr")', ':lang(en,/*! keep */fr)'],
+  ['::part(a /*! k */ b)', '::part(a/*! k */ b)'],
+  ['::view-transition-group(*.x)', '::view-transition-group(*.x)'],
+  ['::view-transition-group(.\\31 x)', '::view-transition-group(.\\31x)'],
 ];
