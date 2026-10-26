@@ -3,6 +3,16 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { IN_KEYFRAMES, hasContextBit } from '../../src/pipeline/context.js';
 import { hostPlugin } from '../../src/pipeline/host.js';
+import { tokens } from '../../src/utils/value.js';
+
+/**
+ * Rewrites the selector of a buffer to the text, as one token edit.
+ * @param {import('../../src/values/valueBuffer.js').ValueBuffer} buffer
+ * @param {string} text
+ */
+function setSelector(buffer, text) {
+  buffer.replace(0, buffer.tokens().length, tokens(text));
+}
 
 /**
  * A host with one stage that rewrites every selector and prelude to upper case.
@@ -23,7 +33,7 @@ function hostWith(parts) {
 describe('text parts of a stage', () => {
   test('should rewrite a selector through the selector part', async () => {
     const result = await hostWith({
-      selector: (text) => text.toUpperCase(),
+      selector: (buffer) => setSelector(buffer, buffer.text().toUpperCase()),
     }).process('a{color:red}', { from: undefined });
     assert.equal(result.css, 'A{color:red}');
   });
@@ -44,8 +54,9 @@ describe('text parts of a stage', () => {
 
   test('should pass a selector in keyframes the keyframes context', async () => {
     const result = await hostWith({
-      selector: (text, context) =>
-        hasContextBit(context, IN_KEYFRAMES) ? 'K' : text,
+      selector: (buffer, context) => {
+        if (hasContextBit(context, IN_KEYFRAMES)) setSelector(buffer, 'K');
+      },
     }).process('@keyframes x{from{opacity:0}}a{color:red}', {
       from: undefined,
     });

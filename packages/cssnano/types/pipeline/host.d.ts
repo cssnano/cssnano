@@ -10,7 +10,7 @@ export type AtRulePart = TextReducer | {
 export type Stage = {
     forProperty?: (property: string) => Reducer | null;
     forAtRule?: (name: string) => AtRulePart | null;
-    selector?: TextReducer;
+    selector?: Reducer;
     comments?: () => (comment: string) => boolean;
 };
 export type StageEntry = {

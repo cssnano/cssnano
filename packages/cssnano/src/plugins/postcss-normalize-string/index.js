@@ -374,9 +374,8 @@ function stringStage(opts) {
   const { preferredQuote = 'double' } = opts ?? {};
   /** @type {TextReducer} */
   const reduceText = (text) => minifyText(text, preferredQuote);
-  /** @type {Reducer} */
-  const reduceValue = (buffer) => {
-    // A value without a quote has no string, so it is not tokenized.
+  /** Re-quotes the strings of a value or selector through its tokens. @type {Reducer} */
+  const reduceStrings = (buffer) => {
     if (!buffer.isEdited()) {
       const text = buffer.text();
       if (!text.includes("'") && !text.includes('"')) return;
@@ -384,9 +383,9 @@ function stringStage(opts) {
     buffer.replaceRanges(stringEdits(buffer.tokens(), preferredQuote));
   };
   return {
-    forProperty: () => reduceValue,
+    forProperty: () => reduceStrings,
     forAtRule: () => reduceText,
-    selector: reduceText,
+    selector: reduceStrings,
   };
 }
 

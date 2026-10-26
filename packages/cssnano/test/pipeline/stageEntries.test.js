@@ -23,9 +23,8 @@ function stageEntry(option, { log, built, targets, returnsNull }) {
         built.push({ option, options });
         if (returnsNull) return null;
         return {
-          selector(/** @type {string} */ text) {
+          selector() {
             log.push(option);
-            return text;
           },
         };
       },
