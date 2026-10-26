@@ -250,6 +250,23 @@ test("normalizeNode's combinator emits carry tokens", () => {
   }
 });
 
+test("normalizeNode's `+` combinator emits carry tokens", () => {
+  let emits = 0;
+  for (const [input] of serializerCorpus) {
+    const { root } = normalizedRoot(input);
+    for (const emit of textEmits(root, '+')) {
+      emits++;
+      assert.notEqual(emit.tokens, undefined, input);
+      assert.deepEqual(
+        withoutPositions(emit.tokens),
+        withoutPositions(tokens('+')),
+        input
+      );
+    }
+  }
+  assert.equal(emits, 3);
+});
+
 test("normalizeNode's keyframe emits carry tokens", () => {
   const arena = parseSelectorArena('from, 100%', {
     keyframe: true,
