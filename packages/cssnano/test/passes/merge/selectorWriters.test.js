@@ -93,4 +93,31 @@ suite('the merge pass leaves the selectors it writes in the text table', () => {
     assert.equal(tokensText(table.tokens(group)), 'a,b');
     assert.equal(tokenizeTotal() - before, 0);
   });
+
+  test('elementKeys reads the selector merge.js wrote, without tokenizing', () => {
+    const { root, table } = walkedStylesheet(
+      'div > a {color:red} div > b {color:red} p {margin:0} div > c {color:red}'
+    );
+    const before = tokenizeTotal();
+    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('elementKeys reads the selector declarationJoin.js wrote, without tokenizing', () => {
+    const { root, table } = walkedStylesheet(
+      'div > a {color:red} p {margin:0} div > b {color:red}'
+    );
+    const before = tokenizeTotal();
+    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('elementKeys reads the selector ruleRewrite.js wrote, without tokenizing', () => {
+    const { root, table } = walkedStylesheet(
+      'div > a, div > c {color:red;margin:0} div > b {color:red;padding:0} div > d {color:red}'
+    );
+    const before = tokenizeTotal();
+    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
 });

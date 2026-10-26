@@ -60,10 +60,10 @@ export declare class RuleMeta {
      * there are none, which must not read as a rule that writes to no element.
      * A caller must not hold the list across a change to the rule.
      *
-     * @param {(selector: string) => string | null} [keyOf] the key of one selector
+     * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf] the key of one selector
      * @return {string[] | null}
      */
-    elementKeys(keyOf?: (selector: string) => string | null): string[] | null;
+    elementKeys(keyOf?: (selector: string, piece: RangePiece | null) => string | null): string[] | null;
     /** @return {string} */
     selectorText(): string;
     /**
@@ -77,11 +77,13 @@ export declare class RuleMeta {
     /**
      * @param {string[]} selectors appended to the rule's selector list
      * @param {SelectorLookup} lookup
-     * @param {(selector: string) => string | null} [keyOf]
+     * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
+     * @param {RangePiece[] | null} [pieces] the token range of each selector of
+     * the rule after the call, or null when they are not known
      * @return {readonly string[] | null} the element keys the selectors add to
      * those listed, or null when the rule's elements are not listed
      */
-    addSelectors(selectors: string[], lookup: SelectorLookup, keyOf?: (selector: string) => string | null): readonly string[] | null;
+    addSelectors(selectors: string[], lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null, pieces?: RangePiece[] | null): readonly string[] | null;
     /**
      * @param {string[]} selectors replaces the rule's selector list
      * @param {VendorPrefixSummary} [vendor] the profile of `selectors` when the caller
@@ -97,9 +99,9 @@ export declare class RuleMeta {
      *
      * @param {RuleMeta} earlier left unusable
      * @param {SelectorLookup} lookup
-     * @param {(selector: string) => string | null} [keyOf]
+     * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
      */
-    absorbEarlier(earlier: RuleMeta, lookup: SelectorLookup, keyOf?: (selector: string) => string | null): void;
+    absorbEarlier(earlier: RuleMeta, lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null): void;
 }
 /**
  * @param {Rule} rule

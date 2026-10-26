@@ -125,26 +125,30 @@ export class RuleMeta {
    * there are none, which must not read as a rule that writes to no element.
    * A caller must not hold the list across a change to the rule.
    *
-   * @param {(selector: string) => string | null} [keyOf] the key of one selector
+   * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf] the key of one selector
    * @return {string[] | null}
    */
   elementKeys(keyOf = elementKeyOf) {
     if (this.#elementKeys === undefined) {
       this.#elementKeys = { list: [], seen: new Set() };
-      this.#addElementKeys(this.#selectors, keyOf);
+      this.#addElementKeys(0, keyOf);
     }
     return this.#elementKeys?.list.length ? this.#elementKeys.list : null;
   }
 
   /**
-   * @param {string[]} selectors
-   * @param {(selector: string) => string | null} keyOf
+   * Adds the keys of the selectors from index `from` on, each with its token
+   * range when the rule holds one.
+   *
+   * @param {number} from
+   * @param {(selector: string, piece: RangePiece | null) => string | null} keyOf
    */
-  #addElementKeys(selectors, keyOf) {
+  #addElementKeys(from, keyOf) {
     const keys = this.#elementKeys;
     if (!keys) return;
-    for (const selector of selectors) {
-      const key = keyOf(selector);
+    const selectors = this.#selectors;
+    for (let index = from; index < selectors.length; index++) {
+      const key = keyOf(selectors[index], this.#pieces?.[index] ?? null);
       if (key === null) {
         this.#elementKeys = null;
         return;
@@ -157,13 +161,13 @@ export class RuleMeta {
   }
 
   /**
-   * @param {string[]} selectors
-   * @param {(selector: string) => string | null} keyOf
+   * @param {number} from
+   * @param {(selector: string, piece: RangePiece | null) => string | null} keyOf
    * @return {readonly string[] | null}
    */
-  #gainElementKeys(selectors, keyOf) {
+  #gainElementKeys(from, keyOf) {
     const listed = this.#elementKeys?.list.length;
-    this.#addElementKeys(selectors, keyOf);
+    this.#addElementKeys(from, keyOf);
     const list = this.#elementKeys?.list;
     if (listed === undefined || list === undefined) return null;
     return list.length === listed ? noElementKeys : list.slice(listed);
@@ -192,18 +196,21 @@ export class RuleMeta {
   /**
    * @param {string[]} selectors appended to the rule's selector list
    * @param {SelectorLookup} lookup
-   * @param {(selector: string) => string | null} [keyOf]
+   * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
+   * @param {RangePiece[] | null} [pieces] the token range of each selector of
+   * the rule after the call, or null when they are not known
    * @return {readonly string[] | null} the element keys the selectors add to
    * those listed, or null when the rule's elements are not listed
    */
-  addSelectors(selectors, lookup, keyOf = elementKeyOf) {
+  addSelectors(selectors, lookup, keyOf = elementKeyOf, pieces = null) {
     this.#selectorText = undefined;
-    this.#pieces = undefined;
+    const from = this.#selectors.length;
     for (const selector of selectors) {
       this.#selectors.push(selector);
       this.#vendor?.add(lookup(selector));
     }
-    return this.#gainElementKeys(selectors, keyOf);
+    this.#pieces = pieces;
+    return this.#gainElementKeys(from, keyOf);
   }
 
   /**
@@ -228,7 +235,7 @@ export class RuleMeta {
    *
    * @param {RuleMeta} earlier left unusable
    * @param {SelectorLookup} lookup
-   * @param {(selector: string) => string | null} [keyOf]
+   * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
    */
   absorbEarlier(earlier, lookup, keyOf = elementKeyOf) {
     const text = `${earlier.selectorText()},${this.selectorText()}`;
@@ -236,15 +243,12 @@ export class RuleMeta {
       .vendorProfile(lookup)
       .concat(this.vendorProfile(lookup));
     const selectors = earlier.#selectors;
+    const from = selectors.length;
     const own = this.#selectors;
     for (const selector of own) selectors.push(selector);
     this.#selectors = selectors;
     this.#selectorText = text;
     this.#vendor = vendor;
-    // Extends the earlier rule's keys only if they are known: deriving them
-    // from a long list would repeat on every merge.
-    this.#elementKeys = earlier.#elementKeys;
-    this.#addElementKeys(own, keyOf);
     // Grows the earlier rule's pieces in place, as its selectors grow.
     const earlierPieces = earlier.#pieces;
     const ownPieces = this.#pieces;
@@ -254,6 +258,10 @@ export class RuleMeta {
     } else {
       this.#pieces = null;
     }
+    // Extends the earlier rule's keys only if they are known: deriving them
+    // from a long list would repeat on every merge.
+    this.#elementKeys = earlier.#elementKeys;
+    this.#addElementKeys(from, keyOf);
   }
 }
 

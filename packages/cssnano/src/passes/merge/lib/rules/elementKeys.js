@@ -5,6 +5,7 @@ import { isVendorExtension } from './pseudoSupport.js';
 const { asciiLowerCase, TokenType, tokens: tokenizeCss } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {RangePiece} from '../../../../values/joinRanges.js' */
 
 /**
  * The tokens of a selector, without trailing whitespace.
@@ -21,15 +22,18 @@ function tokenize(selector) {
 
 /**
  * Index of the first token of the subject: the compound after the last
- * combinator outside any parentheses or brackets.
+ * combinator outside any parentheses or brackets, within `[start, end)`.
  *
- * @param {CSSToken[]} tokens
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
  * @return {number}
  */
-function subjectStart(tokens) {
-  let start = 0;
+function subjectStart(tokens, start, end) {
+  let first = start;
   let depth = 0;
-  for (const [i, [type, text]] of tokens.entries()) {
+  for (let i = start; i < end; i++) {
+    const [type, text] = tokens[i];
     if (
       type === TokenType.OpenParen ||
       type === TokenType.OpenSquare ||
@@ -47,36 +51,30 @@ function subjectStart(tokens) {
         (type === TokenType.Delim &&
           (text === '>' || text === '+' || text === '~')))
     ) {
-      start = i + 1;
+      first = i + 1;
     }
   }
-  return start;
+  return first;
 }
 
 /**
- * The key of one selector, as `RuleMeta#elementKeys` lists it, or null when a
- * type name cannot describe its element, as with classes, pseudo-classes and
- * escapes. Two different names cannot match one element.
+ * The key of the selector whose tokens are `[start, end)` of `tokens`, or
+ * null when a type name cannot describe its element.
  *
- * @param {string} selector
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
  * @return {string | null}
  */
-export function elementKeyOf(selector) {
-  // Most selectors are type, class and id compounds joined by spaces, whose
-  // subject is plain text, so they need no tokens.
-  if (simpleSelectorRe.test(selector)) {
-    const subject = selector.slice(selector.lastIndexOf(' ') + 1);
-    return subject.includes('.') || subject.includes('#')
-      ? null
-      : asciiLowerCase(subject);
-  }
-  const tokens = tokenize(selector);
+function keyOfTokens(tokens, start, end) {
+  const typeAt = (/** @type {number} */ i) =>
+    i < end ? tokens[i][0] : undefined;
   const isDelim = (/** @type {number} */ i, /** @type {string} */ text) =>
-    tokens[i]?.[0] === TokenType.Delim && tokens[i][1] === text;
+    typeAt(i) === TokenType.Delim && tokens[i][1] === text;
   const isIdent = (/** @type {number} */ i) =>
-    tokens[i]?.[0] === TokenType.Ident && !tokens[i][1].includes('\\');
+    typeAt(i) === TokenType.Ident && !tokens[i][1].includes('\\');
 
-  let i = subjectStart(tokens);
+  let i = subjectStart(tokens, start, end);
   // A namespace prefix: `ns|`, `*|` or `|`.
   if (isDelim(i, '|')) {
     i++;
@@ -87,10 +85,7 @@ export function elementKeyOf(selector) {
   const name = tokens[i][1];
   i++;
   let pseudo = '';
-  if (
-    tokens[i]?.[0] === TokenType.Colon &&
-    tokens[i + 1]?.[0] === TokenType.Colon
-  ) {
+  if (typeAt(i) === TokenType.Colon && typeAt(i + 1) === TokenType.Colon) {
     if (!isIdent(i + 2)) return null;
     const pseudoName = asciiLowerCase(tokens[i + 2][1]);
     // Browsers alias a vendor-prefixed pseudo-element to a standard one, such
@@ -99,7 +94,31 @@ export function elementKeyOf(selector) {
     pseudo = `::${pseudoName}`;
     i += 3;
   }
-  return i === tokens.length ? asciiLowerCase(name) + pseudo : null;
+  return i === end ? asciiLowerCase(name) + pseudo : null;
+}
+
+/**
+ * The key of one selector, as `RuleMeta#elementKeys` lists it, or null when a
+ * type name cannot describe its element, as with classes, pseudo-classes and
+ * escapes. Two different names cannot match one element. A token range of
+ * the selector, when given, gives the key without tokenizing its text.
+ *
+ * @param {string} selector
+ * @param {RangePiece | null} [piece] the selector's tokens, which spell it
+ * @return {string | null}
+ */
+export function elementKeyOf(selector, piece = null) {
+  // Most selectors are type, class and id compounds joined by spaces, whose
+  // subject is plain text, so they need no tokens.
+  if (simpleSelectorRe.test(selector)) {
+    const subject = selector.slice(selector.lastIndexOf(' ') + 1);
+    return subject.includes('.') || subject.includes('#')
+      ? null
+      : asciiLowerCase(subject);
+  }
+  if (piece) return keyOfTokens(piece.list, piece.start, piece.end);
+  const tokens = tokenize(selector);
+  return keyOfTokens(tokens, 0, tokens.length);
 }
 
 /**
@@ -107,13 +126,13 @@ export function elementKeyOf(selector) {
  * stylesheet, however many times its rule is described again.
  *
  * @param {Map<string, string | null>} [cache]
- * @return {(selector: string) => string | null}
+ * @return {(selector: string, piece?: RangePiece | null) => string | null}
  */
 export function createElementKeyLookup(cache = new Map()) {
-  return (selector) => {
+  return (selector, piece) => {
     let key = cache.get(selector);
     if (key === undefined) {
-      key = elementKeyOf(selector);
+      key = elementKeyOf(selector, piece);
       cache.set(selector, key);
     }
     return key;
