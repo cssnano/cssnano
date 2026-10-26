@@ -156,9 +156,12 @@ export function buildMergedRule(
     ...secondSelectors,
     ...(group?.added ?? []),
   ].join();
+  if (!group) mergeState.storeJoined(receivingBlock, first, second);
   receivingBlock.nodes = [];
   const firstClone = first.clone({ selectors: firstSelectors });
   const secondClone = second.clone({ selectors: secondSelectors });
+  mergeState.storeClone(first, firstClone);
+  mergeState.storeClone(second, secondClone);
   mergeState.reportCreated(receivingBlock);
   mergeState.reportCreated(firstClone);
   mergeState.reportCreated(secondClone);
@@ -189,6 +192,7 @@ export function buildMergedRule(
       const leftover = rule.clone({
         selectors: mergeState.meta(rule).selectors,
       });
+      mergeState.storeClone(rule, leftover);
       mergeState.reportCreated(leftover);
       mergeState.forget(rule);
       let index = 0;

@@ -13,6 +13,7 @@ import { VendorPrefixSummary } from './vendorPrefixSummary.js';
  * @property {Set<string>} seen the same keys, for membership tests
  */
 /** @typedef {(selector: string, rule?: import('postcss').Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
+/** @import {RangePiece} from '../../../../values/joinRanges.js' */
 
 /** @type {readonly string[]} */
 const noElementKeys = Object.freeze([]);
@@ -42,6 +43,8 @@ export class RuleMeta {
   #declarationKeys;
   /** @type {RuleElementKeys | null | undefined} derived from the selector list; null when a selector has no element key */
   #elementKeys;
+  /** @type {RangePiece[] | null | undefined} the token range of each selector, one per selector; null when unknown */
+  #pieces;
 
   /**
    * @param {string[]} selectors
@@ -54,6 +57,7 @@ export class RuleMeta {
     this.#selectorText = undefined;
     this.#declarationKeys = undefined;
     this.#elementKeys = undefined;
+    this.#pieces = undefined;
   }
 
   /** @return {string[]} change it only through the methods of this class */
@@ -64,6 +68,19 @@ export class RuleMeta {
   /** @return {Declaration[]} */
   get declarations() {
     return this.#declarations;
+  }
+
+  /**
+   * @return {RangePiece[] | null | undefined} undefined until the caller
+   * sets them, and null when the token ranges of the selectors are not known
+   */
+  get pieces() {
+    return this.#pieces;
+  }
+
+  /** @param {RangePiece[] | null} pieces one per selector, or null */
+  setPieces(pieces) {
+    this.#pieces = pieces;
   }
 
   /** @param {Declaration[]} declarations */
@@ -181,6 +198,7 @@ export class RuleMeta {
    */
   addSelectors(selectors, lookup, keyOf = elementKeyOf) {
     this.#selectorText = undefined;
+    this.#pieces = undefined;
     for (const selector of selectors) {
       this.#selectors.push(selector);
       this.#vendor?.add(lookup(selector));
@@ -198,6 +216,7 @@ export class RuleMeta {
     this.#selectorText = undefined;
     this.#vendor = vendor;
     this.#elementKeys = undefined;
+    this.#pieces = undefined;
   }
 
   /**
@@ -226,6 +245,15 @@ export class RuleMeta {
     // from a long list would repeat on every merge.
     this.#elementKeys = earlier.#elementKeys;
     this.#addElementKeys(own, keyOf);
+    // Grows the earlier rule's pieces in place, as its selectors grow.
+    const earlierPieces = earlier.#pieces;
+    const ownPieces = this.#pieces;
+    if (earlierPieces && ownPieces) {
+      for (const piece of ownPieces) earlierPieces.push(piece);
+      this.#pieces = earlierPieces;
+    } else {
+      this.#pieces = null;
+    }
   }
 }
 
