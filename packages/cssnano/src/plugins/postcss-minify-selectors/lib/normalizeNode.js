@@ -1,4 +1,5 @@
 import cssnanoUtils from '#utils';
+import { delim } from '../../../values/punctuationTokens.js';
 import { hasSemanticFact, isFoldEligible, semanticFacts } from './arena.js';
 import {
   childrenOf,
@@ -28,6 +29,11 @@ const { asciiLowerCase } = cssnanoUtils;
 /** @type {readonly number[]} */
 const emptyChildren = Object.freeze([]);
 const singleChild = [0];
+/**
+ * The `+` combinator's token. It stays out of fixedTokens: a `+` there would
+ * sit beside a following number in `<an-plus-b>` text.
+ */
+const plusTokens = Object.freeze([delim('+')]);
 
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
@@ -70,6 +76,8 @@ function normalizedNodeOutput(
   if (node.kind === 'combinator') {
     const value = arena.payloads.combinators[node.payload].value;
     if (value === ' ') return descendantCombinator(arena, pool, node);
+    if (value === '+')
+      return pool.texts.get(value) ?? pool.intern(value, plusTokens);
     return pool.text(value);
   }
   return rawOutput(arena, pool, node);
