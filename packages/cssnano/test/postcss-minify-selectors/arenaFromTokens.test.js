@@ -63,9 +63,29 @@ test("parseSelectorArena builds the same arena from a range as from the range's 
       .map((token) => token[1])
       .join('');
     assert.deepEqual(
-      parseSelectorArena(source, {}, list, startIndex, endIndex),
-      parseSelectorArena(text),
+      relativeToText(
+        parseSelectorArena(source, {}, list, startIndex, endIndex)
+      ),
+      relativeToText(parseSelectorArena(text)),
       text
     );
   }
 });
+
+/**
+ * The arena with its token positions counted from its own text. A range keeps
+ * its tokens' offsets in the parent text, and `base` records where it starts.
+ */
+function relativeToText(arena) {
+  return {
+    ...arena,
+    base: 0,
+    tokens: arena.tokens.map((token) => [
+      token[0],
+      token[1],
+      token[2] - arena.base,
+      token[3] - arena.base,
+      token[4],
+    ]),
+  };
+}

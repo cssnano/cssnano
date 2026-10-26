@@ -34,34 +34,25 @@ const { TokenType, balancedStructure, tokens: tokenize } = cssnanoUtils;
 
 /**
  * The tokens from `start` to `end` of a list that spells `source`, with the
- * text they spell. A whole list is used as it is. A range is rebased to start
- * at 0, so the arena reads it as the text it spells.
+ * text they spell and the offset that text starts at. Token positions keep
+ * their offsets in `source`; the arena subtracts `base` when it reads them.
  *
  * @param {string} source
  * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list
  * @param {number} start
  * @param {number} end
- * @returns {{text: string, tokens: readonly import('@csstools/css-tokenizer').CSSToken[]}}
+ * @returns {{text: string, tokens: readonly import('@csstools/css-tokenizer').CSSToken[], base: number}}
  */
 function tokenRange(source, list, start, end) {
-  if (start === 0 && end === list.length) return { text: source, tokens: list };
-  if (start >= end) return { text: '', tokens: [] };
+  if (start === 0 && end === list.length)
+    return { text: source, tokens: list, base: 0 };
+  if (start >= end) return { text: '', tokens: [], base: 0 };
   const base = list[start][2];
-  /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
-  const rebased = [];
-  for (let index = start; index < end; index++) {
-    const token = list[index];
-    rebased.push(
-      /** @type {import('@csstools/css-tokenizer').CSSToken} */ ([
-        token[0],
-        token[1],
-        token[2] - base,
-        token[3] - base,
-        token[4],
-      ])
-    );
-  }
-  return { text: source.slice(base, list[end - 1][3] + 1), tokens: rebased };
+  return {
+    text: source.slice(base, list[end - 1][3] + 1),
+    tokens: list.slice(start, end),
+    base,
+  };
 }
 
 /**
@@ -87,6 +78,7 @@ export function parseSelectorArena(
       ? undefined
       : tokenRange(source, sourceTokens, start, end);
   const text = range?.text ?? source;
+  const base = range?.base ?? 0;
   const list = range?.tokens ?? tokenize(source);
   const structure = balancedStructure(list);
   if (!structure) {
@@ -98,7 +90,8 @@ export function parseSelectorArena(
           status: 'opaque',
         });
       },
-      verifyArena
+      verifyArena,
+      base
     );
   }
   const input = structure.tokens;
@@ -222,6 +215,7 @@ export function parseSelectorArena(
         } else addLeafWork(builder, item, structure, work);
       }
     },
-    verifyArena
+    verifyArena,
+    base
   );
 }
