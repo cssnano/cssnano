@@ -7,7 +7,8 @@ import { getMeta } from '../../../../../src/passes/merge/lib/rules/ruleMeta.js';
 import { createSelectorLookup } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
 
 const lookup = createSelectorLookup(['chrome 120']);
-const profileOf = (selectors) => VendorPrefixSummary.of(selectors.map(lookup));
+const profileOf = (selectors) =>
+  VendorPrefixSummary.of(selectors.map((selector) => lookup(selector)));
 
 // Reference verdict: merging two selector lists keeps the same vendor
 // prefix on both sides and never joins two `-ms-input-placeholder` lists.

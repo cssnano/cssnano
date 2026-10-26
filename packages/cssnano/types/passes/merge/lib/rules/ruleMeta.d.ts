@@ -14,7 +14,7 @@ export type RuleElementKeys = {
      */
     seen: Set<string>;
 };
-export type SelectorLookup = (selector: string) => import('./ensureCompatibility.js').SelectorInfo;
+export type SelectorLookup = (selector: string, rule?: import('postcss').Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo;
 /**
  * The selector list of a rule with what is derived from it. Every field is
  * set up front so all instances share one object layout.
