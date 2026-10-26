@@ -39,6 +39,7 @@ export const fixedTokens = new Map([
   ['0%', Object.freeze([percentage(0)])],
   ['to', Object.freeze([ident('to')])],
   ['odd', Object.freeze([ident('odd')])],
+  [' of ', Object.freeze([whitespace(), ident('of'), whitespace()])],
   ['[', Object.freeze([openSquare()])],
   [']', Object.freeze([closeSquare()])],
   ['=', Object.freeze([delim('=')])],

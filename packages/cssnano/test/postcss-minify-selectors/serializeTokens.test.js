@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import cssnanoUtils from '#utils';
 import { normalizeArena } from '../../src/plugins/postcss-minify-selectors/lib/normalizeArena.js';
+import { normalizeAnPlusB } from '../../src/plugins/postcss-minify-selectors/lib/normalizeAnPlusB.js';
 import { parseSelectorArena } from '../../src/plugins/postcss-minify-selectors/lib/parseArena.js';
 import {
   serializeNormalized,
@@ -10,7 +11,7 @@ import {
 import { fixedTokens } from '../../src/plugins/postcss-minify-selectors/lib/outputTokens.js';
 import { serializerCorpus } from './serializerCorpus.js';
 
-const { tokens } = cssnanoUtils;
+const { tokens, TokenType } = cssnanoUtils;
 
 /** The emit tree normalizeList serializes, for one selector list. */
 function normalizedRoot(source) {
@@ -30,14 +31,65 @@ test('serializeNormalizedTokens tokens, when returned, equal tokenize of the tex
   }
 });
 
-test('serializeNormalizedTokens returns tokens for every corpus list', () => {
-  let withoutTokens = 0;
+/** Whether a list has an `<an-plus-b>` formula whose text is not its source spelling, ignoring whitespace. */
+function hasRewrittenFormula(arena) {
+  return arena.nodes.some((node) => {
+    if (node.kind !== 'pseudo') return false;
+    const payload = arena.payloads.pseudos[node.payload];
+    if (!['an-plus-b', 'an-plus-b-of'].includes(payload.argumentGrammar))
+      return false;
+    const start = payload.nameToken + 1;
+    const end =
+      payload.argumentNode === undefined
+        ? node.endToken - 1
+        : arena.nodes[payload.argumentNode].startToken - 1;
+    const spelled = arena.tokens
+      .slice(start, end)
+      .filter((token) => token[0] !== TokenType.Whitespace)
+      .map((token) => token[1])
+      .join('');
+    return normalizeAnPlusB(arena.tokens, start, end).text !== spelled;
+  });
+}
+
+test('serializeNormalizedTokens returns tokens for every corpus list without a rewritten <an-plus-b>', () => {
   for (const [input] of serializerCorpus) {
     const { arena, root } = normalizedRoot(input);
-    if (serializeNormalizedTokens(arena, root).tokens === undefined)
-      withoutTokens++;
+    if (hasRewrittenFormula(arena)) continue;
+    assert.notEqual(
+      serializeNormalizedTokens(arena, root).tokens,
+      undefined,
+      input
+    );
   }
-  assert.equal(withoutTokens, 0);
+});
+
+test('the serializer corpus has exactly 1 list without tokens, the one with a rewritten <an-plus-b>', () => {
+  const lists = serializerCorpus
+    .map(([input]) => normalizedRoot(input))
+    .filter(
+      ({ arena, root }) =>
+        serializeNormalizedTokens(arena, root).tokens === undefined
+    );
+  assert.equal(lists.length, 1);
+  assert.equal(hasRewrittenFormula(lists[0].arena), true);
+});
+
+test('an unchanged <an-plus-b> formula carries its source tokens', () => {
+  const { root } = normalizedRoot(':nth-child(3n+1)');
+  const emits = textEmits(root, '3n+1');
+  assert.equal(emits.length, 1);
+  assert.deepEqual(
+    withoutPositions(emits[0].tokens),
+    withoutPositions(tokens('3n+1'))
+  );
+});
+
+test('a rewritten <an-plus-b> formula carries no tokens', () => {
+  const { root } = normalizedRoot(':nth-child(+2n - 0)');
+  const emits = textEmits(root, '2n-0');
+  assert.equal(emits.length, 1);
+  assert.equal(emits[0].tokens, undefined);
 });
 
 /** Counts the text and source emits of a tree that carry no tokens. */
@@ -48,11 +100,11 @@ function emitsWithoutTokens(emit) {
   return emit.tokens === undefined ? 1 : 0;
 }
 
-test('the serializer corpus has no emits without tokens', () => {
+test('the serializer corpus has exactly 1 emit without tokens, the rewritten <an-plus-b>', () => {
   let count = 0;
   for (const [input] of serializerCorpus)
     count += emitsWithoutTokens(normalizedRoot(input).root);
-  assert.equal(count, 0);
+  assert.equal(count, 1);
 });
 
 test("normalizeList's emits carry tokens", () => {

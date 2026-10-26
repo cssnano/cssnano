@@ -48,6 +48,10 @@ export const serializerCorpus = [
   ['[lang|=en]', '[lang|=en]'],
   ['|a, *|a', '*|a,|a'],
   ['ns|a /*! k */ |b', 'ns|a /*! k */ |b'],
+  [':nth-child(3n+1)', ':nth-child(3n+1)'],
+  [':nth-child(+2n - 0)', ':nth-child(2n-0)'],
+  [':nth-child(2n+1 of .a)', ':nth-child(2n+1 of .a)'],
+  [':nth-last-child(3n+1 of li)', ':nth-last-child(3n+1 of li)'],
   ['::view-transition-group(*.x)', '::view-transition-group(*.x)'],
   ['::view-transition-group(.\\31 x)', '::view-transition-group(.\\31x)'],
 ];
