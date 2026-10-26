@@ -52,6 +52,25 @@ function identifierWithText(text, value) {
   ]);
 }
 
+/**
+ * A function token whose text, including its `(`, is given. Use it when the
+ * name is already spelled, such as a pseudo-class name with an escape that
+ * must be kept as it is.
+ *
+ * @param {string} text a spelling the tokenizer reads as one function token
+ * @param {string} value the name that spelling decodes to
+ * @return {CSSToken}
+ */
+function funcWithText(text, value) {
+  return /** @type {CSSToken} */ ([
+    TokenType.Function,
+    text,
+    noPosition,
+    noPosition,
+    { value },
+  ]);
+}
+
 /** @param {string} text @param {number} index @return {number} */
 function skipDigits(text, index) {
   let next = index;
@@ -344,6 +363,7 @@ function hashWithText(text, value, type) {
 
 export {
   func,
+  funcWithText,
   hash,
   hashWithText,
   ident,
