@@ -206,7 +206,7 @@ export class OutputPool {
 export function offset(arena, tokenIndex) {
   return tokenIndex === arena.tokens.length
     ? arena.source.length
-    : tokenStart(arena.tokens[tokenIndex]);
+    : tokenStart(arena.tokens[tokenIndex]) - arena.base;
 }
 
 /** @param {SelectorArena} arena @param {number} start @param {number} end */

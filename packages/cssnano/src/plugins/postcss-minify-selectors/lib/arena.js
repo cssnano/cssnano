@@ -39,11 +39,12 @@ const payloadTableForKind = new Map([
 ]);
 
 class SelectorArenaBuilder {
-  /** @param {string} source @param {readonly CSSToken[]} tokens @param {boolean} verifyArena */
-  constructor(source, tokens, verifyArena) {
+  /** @param {string} source @param {readonly CSSToken[]} tokens @param {boolean} verifyArena @param {number} base */
+  constructor(source, tokens, verifyArena, base) {
     this.source = source;
     this.tokens = tokens;
     this.verifyArena = verifyArena;
+    this.base = base;
     /** @type {ArenaNode[]} */ this.nodes = [];
     /** @type {number[]} */ this.frames = [];
     /** @type {number[]} */ this.lastChildren = [];
@@ -202,7 +203,8 @@ class SelectorArenaBuilder {
         this.tokens,
         this.nodes,
         this.payloads,
-        false
+        false,
+        this.base
       );
     if (
       this.roots.length !== 1 ||
@@ -248,7 +250,8 @@ class SelectorArenaBuilder {
       this.tokens,
       this.nodes,
       this.payloads,
-      true
+      true,
+      this.base
     );
   }
 
@@ -335,12 +338,20 @@ class SelectorArenaBuilder {
 }
 
 export class SelectorArena {
-  /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {boolean} freeze */
-  constructor(source, tokens, nodes, payloads, freeze) {
+  /**
+   * @param {string} source the text the arena spells
+   * @param {readonly CSSToken[]} tokens
+   * @param {readonly Readonly<ArenaNode>[]} nodes
+   * @param {PayloadTables} payloads
+   * @param {boolean} freeze
+   * @param {number} base where `source` starts in the text the token positions refer to
+   */
+  constructor(source, tokens, nodes, payloads, freeze, base) {
     this.source = source;
     this.tokens = tokens;
     this.nodes = nodes;
     this.payloads = payloads;
+    this.base = base;
     if (freeze) Object.freeze(this);
   }
 
@@ -356,9 +367,15 @@ export class SelectorArena {
   }
 }
 
-/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @param {boolean} [verifyArena] @return {SelectorArena} */
-export function buildSelectorArena(source, tokens, build, verifyArena = true) {
-  const builder = new SelectorArenaBuilder(source, tokens, verifyArena);
+/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @param {boolean} [verifyArena] @param {number} [base] @return {SelectorArena} */
+export function buildSelectorArena(
+  source,
+  tokens,
+  build,
+  verifyArena = true,
+  base = 0
+) {
+  const builder = new SelectorArenaBuilder(source, tokens, verifyArena, base);
   build(builder);
   return builder.finish();
 }

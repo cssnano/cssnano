@@ -16,7 +16,7 @@ function sourceOffset(arena, tokenIndex) {
     if (tokenIndex === 0) return 0;
     throw new RangeError('source emission has an invalid token boundary');
   }
-  return tokenStart(token);
+  return tokenStart(token) - arena.base;
 }
 
 /**
@@ -130,6 +130,20 @@ function serializeEmits(arena, root, list) {
 }
 
 /**
+ * The arena's tokens positioned as `arena.source`. A range's tokens keep their
+ * positions in the parent text, so they are renumbered from 0 when the arena
+ * starts later.
+ * @param {SelectorArena} arena
+ * @return {readonly CSSToken[]}
+ */
+function sourceTokens(arena) {
+  if (arena.base === 0) return arena.tokens;
+  const list = arena.tokens.slice();
+  renumber(list);
+  return list;
+}
+
+/**
  * Serialize trusted normalizer output, where node emissions always mean an
  * unchanged source-backed subtree. Joining restores hex escape terminators that
  * text emits omit, judged from the bytes that actually follow (see
@@ -151,7 +165,8 @@ export function serializeNormalized(arena, root) {
  * @return {{text: string, tokens: readonly CSSToken[] | undefined}}
  */
 export function serializeNormalizedTokens(arena, root) {
-  if (root === undefined) return { text: arena.source, tokens: arena.tokens };
+  if (root === undefined)
+    return { text: arena.source, tokens: sourceTokens(arena) };
   /** @type {(CSSToken | undefined)[]} */ const list = [];
   const text = serializeEmits(arena, root, list);
   if (list.includes(undefined)) return { text, tokens: undefined };
