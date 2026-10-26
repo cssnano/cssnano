@@ -16,6 +16,16 @@ declare function ident(value: string): CSSToken;
  */
 declare function identifierWithText(text: string, value: string): CSSToken;
 /**
+ * A function token whose text, including its `(`, is given. Use it when the
+ * name is already spelled, such as a pseudo-class name with an escape that
+ * must be kept as it is.
+ *
+ * @param {string} text a spelling the tokenizer reads as one function token
+ * @param {string} value the name that spelling decodes to
+ * @return {CSSToken}
+ */
+declare function funcWithText(text: string, value: string): CSSToken;
+/**
  * A `<number>` token, a `<percentage>` token for unit `%`, or a
  * `<dimension>` token otherwise. The representation is kept as written.
  *
@@ -82,5 +92,5 @@ declare function func(name: string): CSSToken;
  * @return {CSSToken}
  */
 declare function hashWithText(text: string, value: string, type: 'id' | 'unrestricted'): CSSToken;
-export { func, hash, hashWithText, ident, identifierWithText, integer, numeric, percentage, stringToken, url, };
+export { func, funcWithText, hash, hashWithText, ident, identifierWithText, integer, numeric, percentage, stringToken, url, };
 //# sourceMappingURL=tokenConstructors.d.ts.map
