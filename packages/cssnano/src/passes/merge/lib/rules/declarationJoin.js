@@ -157,9 +157,7 @@ export default function joinByDeclarations(parent, mergeState) {
     }
     index.recordNode(node, position, keysOf);
   }
-  for (const rule of grown) {
-    rule.selector = mergeState.meta(rule).selectorText();
-  }
+  for (const rule of grown) mergeState.spellSelectors(rule);
   detach(parent, emptied);
   return grown.size > 0;
 
@@ -242,7 +240,7 @@ export default function joinByDeclarations(parent, mergeState) {
     if (!best) return null;
     const { group, claimed, added } = best;
     const listed = keysOf(group.rule) !== null;
-    const gained = mergeState.addSelectors(group.rule, added);
+    const gained = mergeState.addSelectors(group.rule, added, later);
     for (const selector of added) group.selectors?.add(selector);
     if (listed) recordGained(group, gained);
     grown.add(group.rule);

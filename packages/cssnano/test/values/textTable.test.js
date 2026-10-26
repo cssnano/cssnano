@@ -73,3 +73,19 @@ test('TextTable.record assigns the selector only when the text differs', () => {
   assert.equal(assignments, 1);
   assert.equal(selector, 'b');
 });
+
+test('TextTable.stored is undefined for a rule the table has not seen', () => {
+  const rule = firstRule('a, b {}');
+  const table = new TextTable();
+  assert.equal(table.stored(rule), undefined);
+});
+
+test('TextTable returns the written list from stored while the rule still spells it', () => {
+  const rule = firstRule('a, b {}');
+  const table = new TextTable();
+  const list = tokens('z, b');
+  table.write(rule, list);
+  assert.equal(table.stored(rule), list);
+  rule.selector = 'a';
+  assert.equal(table.stored(rule), undefined);
+});
