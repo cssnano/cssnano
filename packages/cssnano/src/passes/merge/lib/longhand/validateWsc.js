@@ -162,9 +162,9 @@ const classifiers = new Map([
  * @param {ValueComponent} part
  * @return {string | undefined} the component the part represents, if any
  */
-function componentOf({ text, tokens, start, end }) {
+function componentOf({ raw, list, start, end }) {
   for (const [component, is] of classifiers) {
-    if (is(text, tokens, start, end)) {
+    if (is(raw, list, start, end)) {
       return component;
     }
   }
@@ -183,7 +183,7 @@ function componentOf({ text, tokens, start, end }) {
 function namesComponent(part, component) {
   return (
     componentOf(part) === component ||
-    isSubstitution(part.tokens, part.start, part.end)
+    isSubstitution(part.list, part.start, part.end)
   );
 }
 

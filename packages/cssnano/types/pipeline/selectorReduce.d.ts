@@ -1,17 +1,17 @@
 import type { Helpers, Rule } from 'postcss';
 import type { Reducer } from './host.js';
-import type { FoldedSelector, TextTable } from '../values/textTable.js';
+import type { FoldedText, TextTable } from '../values/textTable.js';
 export type SelectorEntry = {
     plan: readonly Reducer[] | null;
-    memos: (Map<string, FoldedSelector> | undefined)[];
+    memos: (Map<string, FoldedText> | undefined)[];
 };
 /** @import {Helpers, Rule} from 'postcss' */
 /** @import {Reducer} from './host.js' */
-/** @import {FoldedSelector, TextTable} from '../values/textTable.js' */
+/** @import {FoldedText, TextTable} from '../values/textTable.js' */
 /**
  * What one run knows about selectors: the buffer reducers of its plan, or null
  * when no stage rewrites them, with a memo per context.
- * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedSelector> | undefined)[]}} SelectorEntry
+ * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedText> | undefined)[]}} SelectorEntry
  */
 /**
  * @param {readonly Reducer[]} plan in pipeline order, empty for no stage

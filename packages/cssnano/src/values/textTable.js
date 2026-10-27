@@ -6,15 +6,15 @@ import { tokensText } from './tokensText.js';
 /** @import {Declaration, Rule} from 'postcss' */
 
 /**
- * A folded text: its text, and the tokens that spell it when a stage read
- * them.
- * @typedef {{text: string, tokens: readonly CSSToken[] | undefined}} FoldedSelector
- */
-
-/**
  * @typedef {object} TextEntry
  * @property {string} text the text the list spells
  * @property {readonly CSSToken[]} tokens
+ */
+
+/**
+ * A folded text: its text, and the tokens that spell it when a stage read
+ * them.
+ * @typedef {TextEntry | {text: string, tokens: undefined}} FoldedText
  */
 
 /** @typedef {Rule | Declaration} TextNode */
@@ -103,6 +103,18 @@ class TextTable {
   share(node, entry) {
     assign(node, entry.text);
     this.#entries.set(node, entry);
+  }
+
+  /**
+   * Gives the node a folded text. A folded text with tokens is shared as the
+   * entry, so a memo and its nodes hold one list; one without is only assigned.
+   *
+   * @param {TextNode} node
+   * @param {FoldedText} folded
+   */
+  assignFolded(node, folded) {
+    if (folded.tokens === undefined) assign(node, folded.text);
+    else this.share(node, folded);
   }
 }
 

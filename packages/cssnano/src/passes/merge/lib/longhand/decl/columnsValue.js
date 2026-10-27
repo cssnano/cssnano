@@ -4,7 +4,7 @@ import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
 import { isLengthValue } from '../lengthGrammar.js';
 import { isUnresolved } from '../unresolved.js';
 import { closingTokens } from '../valueComponents.js';
-import { declaredValueTokens, wholeText } from '../componentRanges.js';
+import { declaredValueTokens } from '../componentRanges.js';
 
 /** @import {Declaration} from 'postcss'; */
 /** @import {TextTable} from '../../../../../values/textTable.js' */
@@ -235,8 +235,10 @@ export const setsOtherColumnProperty = (declaration, textTable) =>
 
 /** @param {string} text @return {boolean} */
 const isUnresolvedText = (text) => {
-  const component = wholeText(text);
-  return isUnresolved(component.tokens, component.start, component.end);
+  // Without a `(` there is no function to be unresolved.
+  if (!text.includes('(')) return false;
+  const spelled = cssnanoUtils.tokens(text);
+  return isUnresolved(spelled, 0, spelled.length);
 };
 
 /** @param {string} v @return {boolean} */

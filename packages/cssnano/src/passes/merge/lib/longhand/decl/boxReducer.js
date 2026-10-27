@@ -2,6 +2,7 @@ import cssnanoUtils from '#utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { detectDeclaration } from '#stylehacks';
 import { boxBrowserKeeps } from '../validateBox.js';
+import { declarationTokens } from '../componentRanges.js';
 import { boxProperties, shorthandSlot } from './boxGroups.js';
 import { discardDeadDeclarations } from './crossKindCoverage.js';
 import { discardOverriddenInLanes } from './overriddenDeclarations.js';
@@ -76,7 +77,7 @@ const isInvalid = (d, textTable) =>
   !boxBrowserKeeps(
     asciiLowerCase(d.prop),
     d.value,
-    d.value.includes('(') ? textTable.tokens(d) : undefined
+    declarationTokens(textTable, d)
   );
 
 /**

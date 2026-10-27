@@ -86,7 +86,7 @@ function parseWidthStyleColor(value, tokens) {
   const parts = { width: undefined, style: undefined, color: undefined };
 
   for (const component of splitComponents(value, tokens)) {
-    const { text, tokens: part, start, end } = component;
+    const { raw: text, list: part, start, end } = component;
     count++;
     if (isBorderStyle(text)) {
       if (style !== undefined) return null;

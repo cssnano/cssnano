@@ -23,7 +23,7 @@ import { reduceAspectRatio } from './aspectRatioValue.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Component} from './valueComponents.js' */
-/** @import {FoldedSelector} from '../../../../values/textTable.js' */
+/** @import {FoldedText} from '../../../../values/textTable.js' */
 /** @import {Spelled} from './spelledText.js' */
 
 const { TokenType, asciiLowerCase } = cssnanoUtils;
@@ -53,7 +53,7 @@ const transitionTimeUnits = new Set(['ms', 's']);
 function reduceTwoAxis(list, components) {
   if (components.length !== 2) return null;
   if (componentKey(components[0]) !== componentKey(components[1])) return null;
-  return spellComponent(list, components[0]);
+  return spellComponent(components[0]);
 }
 
 /**
@@ -124,9 +124,7 @@ function reduceFourSide(list, property, components) {
   return count === 4
     ? null
     : joinSpelled(
-        values
-          .slice(0, count)
-          .map((component) => spellComponent(list, component)),
+        values.slice(0, count).map((component) => spellComponent(component)),
         ' '
       );
 }
@@ -160,7 +158,7 @@ function reduceAlignment(list, property, components) {
       first.map(componentKey).join('|') === second.map(componentKey).join('|')
     ) {
       return joinSpelled(
-        first.map((component) => spellComponent(list, component)),
+        first.map((component) => spellComponent(component)),
         ' '
       );
     }
@@ -252,7 +250,7 @@ function reduceTransitionPart(list, part) {
   return joinSpelled(
     part.components
       .filter((component) => !removed.has(component))
-      .map((component) => spellComponent(list, component)),
+      .map((component) => spellComponent(component)),
     ' '
   );
 }
@@ -350,7 +348,7 @@ function reduceValue(property, value, list) {
  * @param {string} property
  * @param {string} value
  * @param {readonly CSSToken[]} list the tokens of `value`
- * @return {FoldedSelector | null}
+ * @return {FoldedText | null}
  */
 export function normalizeValue(property, value, list) {
   const spelled = reduceValue(property, value, list);

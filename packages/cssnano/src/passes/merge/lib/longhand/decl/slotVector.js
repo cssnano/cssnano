@@ -9,7 +9,6 @@ import { isFallback, mergeBlockingSupport } from '../isFallback.js';
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
-/** @import {CSSToken} from '@csstools/css-tokenizer'; */
 /** @import {RangePiece} from '../../../../../values/joinRanges.js'; */
 /**
  * @typedef {({ value: string, decl: Declaration, range?: RangePiece } | null)[]} SlotVector
@@ -259,11 +258,12 @@ export class SlotLane {
  * @param {{ value: string, decl: Declaration }[]} full
  * @param {Set<Declaration>} contributing
  * @param {Set<Declaration>} fallbacks
- * @param {{ prop: string, value: string, important: boolean, tokens?: readonly CSSToken[], inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
- * `tokens` spell `value` and are stored for the written declaration. `mayInsert:
- * false` limits the commit to the in-place rewrite, for a shorthand that some
- * target does not support.
+ * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
+ * `mayInsert: false` limits the commit to the in-place rewrite, for a shorthand
+ * that some target does not support.
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @returns {Declaration | undefined} the declaration that now spells the
+ * shorthand, or undefined when nothing was written
  */
 export function commitShorthand(
   rule,
@@ -273,37 +273,32 @@ export function commitShorthand(
   target,
   textTable
 ) {
-  const { prop, value: shorthandVal, important, tokens } = target;
+  const { prop, value: shorthandVal, important } = target;
   const toRemove = Array.from(contributing).filter((d) => !fallbacks.has(d));
-  if (toRemove.length === 0) return;
+  if (toRemove.length === 0) return undefined;
 
   if (toRemove.length === 1 && asciiLowerCase(toRemove[0].prop) === prop) {
     toRemove[0].prop = prop;
-    if (tokens) {
-      textTable.write(toRemove[0], tokens);
-    } else {
-      textTable.setText(toRemove[0], shorthandVal);
-    }
-    return;
+    textTable.setText(toRemove[0], shorthandVal);
+    return toRemove[0];
   }
-  if (target.mayInsert === false) return;
+  if (target.mayInsert === false) return undefined;
 
   let remSize = -declCost(prop, shorthandVal, important);
   for (const d of toRemove) {
     remSize += declCost(d.prop, d.value, d.important);
   }
 
-  if (remSize >= 0) {
-    const a = toRemove.at(-1);
-    if (!a) return;
-    const inserted = insertCloned(
-      rule,
-      a,
-      { prop, value: shorthandVal, important },
-      textTable
-    );
-    if (tokens) textTable.write(inserted, tokens);
-    if (target.inserted) target.inserted.set(a, inserted);
-    for (const d of toRemove) detach(d);
-  }
+  if (remSize < 0) return undefined;
+  const a = toRemove.at(-1);
+  if (!a) return undefined;
+  const inserted = insertCloned(
+    rule,
+    a,
+    { prop, value: shorthandVal, important },
+    textTable
+  );
+  if (target.inserted) target.inserted.set(a, inserted);
+  for (const d of toRemove) detach(d);
+  return inserted;
 }

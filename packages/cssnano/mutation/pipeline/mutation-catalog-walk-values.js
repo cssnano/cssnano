@@ -13,13 +13,13 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'assign a memo hit as a string, dropping its tokens',
-    find: '      state.table.share(decl, /** @type {TableEntry} */ (known));',
-    replace: '      state.table.setText(decl, known.text);',
+    find: '    state.table.assignFolded(decl, known);',
+    replace: '    state.table.setText(decl, known.text);',
   },
   {
     name: 'assign a folded value as a string, dropping its tokens',
-    find: '    state.table.share(decl, /** @type {TableEntry} */ (folded));',
-    replace: '    state.table.setText(decl, folded.text);',
+    find: '  state.table.assignFolded(decl, folded);',
+    replace: '  state.table.setText(decl, folded.text);',
   },
   {
     name: 'build the value buffer without the list read for its text',

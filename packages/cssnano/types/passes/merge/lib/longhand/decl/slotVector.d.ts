@@ -1,5 +1,4 @@
 import type { Container, Declaration } from 'postcss';
-import type { CSSToken } from '@csstools/css-tokenizer';
 import type { RangePiece } from '../../../../../values/joinRanges.js';
 export type SlotVector = ({
     value: string;
@@ -89,11 +88,12 @@ export declare class SlotLane {
  * @param {{ value: string, decl: Declaration }[]} full
  * @param {Set<Declaration>} contributing
  * @param {Set<Declaration>} fallbacks
- * @param {{ prop: string, value: string, important: boolean, tokens?: readonly CSSToken[], inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
- * `tokens` spell `value` and are stored for the written declaration. `mayInsert:
- * false` limits the commit to the in-place rewrite, for a shorthand that some
- * target does not support.
+ * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
+ * `mayInsert: false` limits the commit to the in-place rewrite, for a shorthand
+ * that some target does not support.
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @returns {Declaration | undefined} the declaration that now spells the
+ * shorthand, or undefined when nothing was written
  */
 export declare function commitShorthand(rule: Container, full: {
     value: string;
@@ -102,8 +102,7 @@ export declare function commitShorthand(rule: Container, full: {
     prop: string;
     value: string;
     important: boolean;
-    tokens?: readonly CSSToken[];
     inserted?: Map<Declaration, Declaration>;
     mayInsert?: boolean;
-}, textTable: import('../../../../../values/textTable.js').TextTable): void;
+}, textTable: import('../../../../../values/textTable.js').TextTable): Declaration | undefined;
 //# sourceMappingURL=slotVector.d.ts.map

@@ -1,9 +1,5 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
 import type { Declaration, Rule } from 'postcss';
-export type FoldedSelector = {
-    text: string;
-    tokens: readonly CSSToken[] | undefined;
-};
 export type TextEntry = {
     /**
      * the text the list spells
@@ -11,18 +7,22 @@ export type TextEntry = {
     text: string;
     tokens: readonly CSSToken[];
 };
+export type FoldedText = TextEntry | {
+    text: string;
+    tokens: undefined;
+};
 export type TextNode = Rule | Declaration;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Declaration, Rule} from 'postcss' */
 /**
- * A folded text: its text, and the tokens that spell it when a stage read
- * them.
- * @typedef {{text: string, tokens: readonly CSSToken[] | undefined}} FoldedSelector
- */
-/**
  * @typedef {object} TextEntry
  * @property {string} text the text the list spells
  * @property {readonly CSSToken[]} tokens
+ */
+/**
+ * A folded text: its text, and the tokens that spell it when a stage read
+ * them.
+ * @typedef {TextEntry | {text: string, tokens: undefined}} FoldedText
  */
 /** @typedef {Rule | Declaration} TextNode */
 /**
@@ -79,6 +79,14 @@ declare class TextTable {
      * @param {TextEntry} entry
      */
     share(node: TextNode, entry: TextEntry): void;
+    /**
+     * Gives the node a folded text. A folded text with tokens is shared as the
+     * entry, so a memo and its nodes hold one list; one without is only assigned.
+     *
+     * @param {TextNode} node
+     * @param {FoldedText} folded
+     */
+    assignFolded(node: TextNode, folded: FoldedText): void;
 }
 export { TextTable };
 //# sourceMappingURL=textTable.d.ts.map

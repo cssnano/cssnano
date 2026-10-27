@@ -2,16 +2,19 @@ export declare const closingTokens: Set<import("@csstools/css-tokenizer").TokenT
 export type Component = {
     raw: string;
     tokens: import('@csstools/css-tokenizer').CSSToken[];
+    list: readonly import('@csstools/css-tokenizer').CSSToken[];
     start: number;
     end: number;
 };
 /**
  * A top-level component: its text, its tokens, and the range of the caller's
- * token list that holds them, `end` exclusive.
+ * token list that holds them, `end` exclusive. It is a `ValueComponent` that
+ * has a list, so it is also a `RangePiece`.
  *
  * @typedef {{
  *   raw: string,
  *   tokens: import('@csstools/css-tokenizer').CSSToken[],
+ *   list: readonly import('@csstools/css-tokenizer').CSSToken[],
  *   start: number,
  *   end: number,
  * }} Component

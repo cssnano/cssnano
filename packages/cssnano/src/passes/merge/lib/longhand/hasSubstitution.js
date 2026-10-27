@@ -19,7 +19,7 @@ export default function hasSubstitution(value, tokens) {
       spelled !== undefined &&
       opensCustomPropertyVar(spelled)) ||
     splitComponents(value, spelled).some((part) =>
-      isSubstitution(part.tokens, part.start, part.end)
+      isSubstitution(part.list, part.start, part.end)
     )
   );
 }

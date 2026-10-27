@@ -8,12 +8,13 @@ const { TokenType, tokenEnd, tokenStart } = cssnanoUtils;
 
 /**
  * A top-level component of a value: the text it spells, and the range of the
- * value's tokens that spell it when the value has a token list. The tokens are
- * undefined for a component with no `(`, which has no function to type.
+ * value's token list that spells it, `end` exclusive. The list is undefined for
+ * a component with no `(`, which has no function to type. With a list, the
+ * component is a `RangePiece`, so a writer joins it without a copy.
  *
  * @typedef {{
- *   text: string,
- *   tokens: readonly CSSToken[] | undefined,
+ *   raw: string,
+ *   list: readonly CSSToken[] | undefined,
  *   start: number,
  *   end: number,
  * }} ValueComponent
@@ -79,6 +80,34 @@ export function valueTokens(value, tokens) {
 }
 
 /**
+ * The component ranges of a token list that splits where `list.space` splits
+ * the string, shared by every reader that walks components by range.
+ *
+ * @param {readonly CSSToken[] | undefined} spelled the value's tokens, from
+ * `valueTokens`
+ * @return {number[] | undefined} the flattened ranges, or undefined when the
+ * value has no list or must be split as a string
+ */
+export function tokenComponentRanges(spelled) {
+  return spelled !== undefined && splitsAsTokens(spelled)
+    ? componentRanges(spelled)
+    : undefined;
+}
+
+/**
+ * The text a range of a value's tokens spells.
+ *
+ * @param {string} value
+ * @param {readonly CSSToken[]} spelled the tokens of `value`
+ * @param {number} start
+ * @param {number} end exclusive
+ * @return {string}
+ */
+export function rangeText(value, spelled, start, end) {
+  return value.slice(tokenStart(spelled[start]), tokenEnd(spelled[end - 1]));
+}
+
+/**
  * The top-level components of a value, split where `list.space` splits it.
  * A value with a `(` is tokenized once when the caller has no list for it; a
  * value without one has no function to type and needs none.
@@ -89,19 +118,16 @@ export function valueTokens(value, tokens) {
  */
 export function splitComponents(value, tokens) {
   const spelled = valueTokens(value, tokens);
-  if (spelled !== undefined && splitsAsTokens(spelled)) {
-    const ranges = componentRanges(spelled);
+  const ranges = tokenComponentRanges(spelled);
+  if (spelled !== undefined && ranges !== undefined) {
     /** @type {ValueComponent[]} */
     const components = [];
     for (let index = 0; index < ranges.length; index += 2) {
       const start = ranges[index];
       const end = ranges[index + 1];
       components.push({
-        text: value.slice(
-          tokenStart(spelled[start]),
-          tokenEnd(spelled[end - 1])
-        ),
-        tokens: spelled,
+        raw: rangeText(value, spelled, start, end),
+        list: spelled,
         start,
         end,
       });
@@ -151,6 +177,6 @@ export function declaredValueTokens(textTable, decl, cache) {
  * @return {ValueComponent}
  */
 export function wholeText(text) {
-  const tokens = text.includes('(') ? cssnanoUtils.tokens(text) : undefined;
-  return { text, tokens, start: 0, end: tokens?.length ?? 0 };
+  const spelled = text.includes('(') ? cssnanoUtils.tokens(text) : undefined;
+  return { raw: text, list: spelled, start: 0, end: spelled?.length ?? 0 };
 }

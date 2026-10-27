@@ -1,12 +1,12 @@
 import type { AtRule, Container, Document, Helpers, Root } from 'postcss';
 import type { Reducer, Stage, TextReducer } from './host.js';
 import type { SelectorEntry } from './selectorReduce.js';
-import type { FoldedSelector, TextTable } from '../values/textTable.js';
+import type { FoldedText, TextTable } from '../values/textTable.js';
 import type { CommentState } from './comments/nodeComments.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
 export type PropertyEntry = {
     plan: readonly Reducer[] | null;
-    memos: (Map<string, FoldedSelector> | undefined)[];
+    memos: (Map<string, FoldedText> | undefined)[];
     mode: import('../values/valueBuffer.js').TokenizeMode | undefined;
     lists: Map<string, readonly CSSToken[]>;
 };

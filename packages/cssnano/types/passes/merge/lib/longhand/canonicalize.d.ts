@@ -1,6 +1,6 @@
 import { boxProperties } from './decl/boxGroups.js';
 import type { BoxSupport } from './targetSupport.js';
-import type { FoldedSelector, TextTable } from '../../../../values/textTable.js';
+import type { FoldedText, TextTable } from '../../../../values/textTable.js';
 import type { Container, Declaration } from 'postcss';
 import type { BoxGroup } from './decl/boxGroups.js';
 export type Options = object;
@@ -9,7 +9,7 @@ import type { AlignmentFamilyConfig } from './decl/alignmentForms.js';
 export type MergeContext = {
     columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][];
     setsOtherColumn: boolean;
-    shorthandMemoTable: Map<string, FoldedSelector | null>;
+    shorthandMemoTable: Map<string, FoldedText | null>;
     familyRecords: Map<string, FamilyRecord>;
     placeShorthands: boolean;
     boxSupport: BoxSupport;
