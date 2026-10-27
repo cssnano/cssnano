@@ -10,6 +10,10 @@ const { foldShorthandDeclaration } =
   await import('../../../src/passes/merge/lib/longhand/minifyShorthand.js');
 const { boxBrowserKeeps } =
   await import('../../../src/passes/merge/lib/longhand/validateBox.js');
+const { isValidWidthStyleColor } =
+  await import('../../../src/passes/merge/lib/longhand/validateWsc.js');
+const { default: parseWidthStyleColor } =
+  await import('../../../src/passes/merge/lib/longhand/parseWsc.js');
 
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {
@@ -48,6 +52,13 @@ suite('the longhand readers take a declaration from the text table', () => {
     const list = table.tokens(decl);
     const before = tokenizeTotal();
     boxBrowserKeeps('margin', decl.value, list);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test("isValidWidthStyleColor reads the parser's slots, without tokenizing", () => {
+    const parsed = parseWidthStyleColor('1px solid rgb(0 0 0)');
+    const before = tokenizeTotal();
+    isValidWidthStyleColor(parsed);
     assert.equal(tokenizeTotal() - before, 0);
   });
 });

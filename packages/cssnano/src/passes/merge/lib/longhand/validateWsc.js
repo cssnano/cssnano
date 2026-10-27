@@ -115,13 +115,18 @@ function isColor(value) {
 }
 
 /**
- * @param {{width: (string|undefined), style: (string|undefined), color: (string|undefined)}} wscs
+ * Any two components a value names make it valid; the parser reports which
+ * ones it named, so this reads no string again.
+ *
+ * @param {{specified: {width: boolean, style: boolean, color: boolean}}} wscs
  * @return {boolean}
  */
 function isValidWidthStyleColor(wscs) {
-  const validWidth = isBorderWidth(wscs.width);
-  const validStyle = isBorderStyle(wscs.style);
-  const validColor = isColor(wscs.color);
+  const {
+    width: validWidth,
+    style: validStyle,
+    color: validColor,
+  } = wscs.specified;
 
   return (
     (validWidth && validStyle) ||
