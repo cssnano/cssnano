@@ -1,6 +1,7 @@
 import type { Container, Declaration } from 'postcss';
 import type { BoxFamily } from './boxGroups.js';
 import type { BoxGroup, BoxProperty } from './boxGroups.js';
+import type { TextTable } from '../../../../../values/textTable.js';
 export type BoxDeclarations = {
     group: BoxGroup;
     /**
@@ -25,6 +26,7 @@ export type BoxDeclarations = {
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {BoxFamily} from './boxGroups.js'; */
 /** @import {BoxGroup, BoxProperty} from './boxGroups.js'; */
+/** @import {TextTable} from '../../../../../values/textTable.js'; */
 /**
  * @typedef {object} BoxDeclarations What one run of a rule declares of a group.
  * @property {BoxGroup} group
@@ -53,7 +55,8 @@ export declare function addBoxDeclaration(state: {
  * @param {Container} rule
  * @param {BoxDeclarations} box
  * @param {import('../targetSupport.js').BoxSupport} support
+ * @param {TextTable} textTable the tokens the walk left for the declarations
  * @return {void}
  */
-export declare function reduceBox(rule: Container, box: BoxDeclarations, support: import('../targetSupport.js').BoxSupport): void;
+export declare function reduceBox(rule: Container, box: BoxDeclarations, support: import('../targetSupport.js').BoxSupport, textTable: TextTable): void;
 //# sourceMappingURL=boxReducer.d.ts.map

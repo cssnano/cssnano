@@ -113,7 +113,7 @@ function alignmentFamilyOf(prop) {
 function reduceClassifiedContainer(container, state, context) {
   if (state.boxes) {
     for (const box of state.boxes.values()) {
-      reduceBox(container, box, context.boxSupport);
+      reduceBox(container, box, context.boxSupport, context.textTable);
     }
   }
   if (state.borderRadiusDecls.length) {

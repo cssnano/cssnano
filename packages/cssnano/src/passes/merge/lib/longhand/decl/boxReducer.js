@@ -13,6 +13,7 @@ const { asciiLowerCase } = cssnanoUtils;
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {BoxFamily} from './boxGroups.js'; */
 /** @import {BoxGroup, BoxProperty} from './boxGroups.js'; */
+/** @import {TextTable} from '../../../../../values/textTable.js'; */
 
 /**
  * @typedef {object} BoxDeclarations What one run of a rule declares of a group.
@@ -65,23 +66,43 @@ export function addBoxDeclaration(
   }
 }
 
-/** @param {Declaration} d */
-const isInvalid = (d) =>
+/**
+ * @param {Declaration} d
+ * @param {TextTable} textTable
+ */
+const isInvalid = (d, textTable) =>
   !detectDeclaration(d) &&
   !isCssWideKeyword(d.value) &&
-  !boxBrowserKeeps(asciiLowerCase(d.prop), d.value);
+  !boxBrowserKeeps(
+    asciiLowerCase(d.prop),
+    d.value,
+    d.value.includes('(') ? textTable.tokens(d) : undefined
+  );
+
+/**
+ * @param {Declaration[]} decls
+ * @param {TextTable} textTable
+ * @return {boolean} whether a declaration is one a browser ignores
+ */
+function hasInvalid(decls, textTable) {
+  for (const d of decls) {
+    if (isInvalid(d, textTable)) return true;
+  }
+  return false;
+}
 
 /**
  * @param {Container} rule
  * @param {BoxDeclarations} box
  * @param {import('../targetSupport.js').BoxSupport} support
+ * @param {TextTable} textTable the tokens the walk left for the declarations
  * @return {void}
  */
-export function reduceBox(rule, box, support) {
+export function reduceBox(rule, box, support, textTable) {
   const { group, decls, lanes } = box;
   if (!rule.nodes) return;
 
-  if (decls.length === 0 || decls.some(isInvalid)) return;
+  if (decls.length === 0 || hasInvalid(decls, textTable)) return;
 
   discardOverriddenInLanes(lanes, group.properties);
   if (box.flow) {

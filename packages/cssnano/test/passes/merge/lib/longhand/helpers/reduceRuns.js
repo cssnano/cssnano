@@ -7,6 +7,7 @@ import {
 import { reduceBorder } from '../../../../../../src/passes/merge/lib/longhand/decl/borderReducer.js';
 import { reduceBorderRadius } from '../../../../../../src/passes/merge/lib/longhand/decl/borderRadiusReducer.js';
 import { reduceBox } from '../../../../../../src/passes/merge/lib/longhand/decl/boxReducer.js';
+import { TextTable } from '../../../../../../src/values/textTable.js';
 import {
   aliasedGroup,
   boxGroups,
@@ -81,11 +82,12 @@ export function reduceBoxRuns(rule, name, support = defaultSupport) {
   const group = /** @type {BoxGroup} */ (
     boxGroups.find((candidate) => candidate.name === name)
   );
+  const textTable = new TextTable();
   for (const run of declarationRuns(rule)) {
     const box = boxDeclarations(group, run, rule);
     if (box.decls.length === 0) continue;
     if (box.flow.size === 0) box.flow = null;
-    reduceBox(rule, box, support);
+    reduceBox(rule, box, support, textTable);
   }
   applyChildEdits(rule);
 }

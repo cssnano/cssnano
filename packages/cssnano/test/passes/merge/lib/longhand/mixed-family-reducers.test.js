@@ -6,6 +6,7 @@ import { reduceBorder } from '../../../../../src/passes/merge/lib/longhand/decl/
 import { reduceBox } from '../../../../../src/passes/merge/lib/longhand/decl/boxReducer.js';
 import { boxGroups } from '../../../../../src/passes/merge/lib/longhand/decl/boxGroups.js';
 import { BoxSupport } from '../../../../../src/passes/merge/lib/longhand/targetSupport.js';
+import { TextTable } from '../../../../../src/values/textTable.js';
 import { reduceColumns } from '../../../../../src/passes/merge/lib/longhand/decl/columns.js';
 import {
   reduceBorderRadiusRuns,
@@ -65,7 +66,8 @@ describe('mixed-family internal reducers and helpers', () => {
         physical: true,
         flow: null,
       },
-      new BoxSupport(['ie 11'])
+      new BoxSupport(['ie 11']),
+      new TextTable()
     );
     applyChildEdits(boxRule);
     assert.strictEqual(boxRoot.toString(), 'a{margin:10px}');
