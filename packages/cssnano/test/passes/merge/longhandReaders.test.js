@@ -8,6 +8,8 @@ const { walkStylesheet } = await import('../../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../../src/values/textTable.js');
 const { foldShorthandDeclaration } =
   await import('../../../src/passes/merge/lib/longhand/minifyShorthand.js');
+const { boxBrowserKeeps } =
+  await import('../../../src/passes/merge/lib/longhand/validateBox.js');
 
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {
@@ -37,6 +39,15 @@ suite('the longhand readers take a declaration from the text table', () => {
     const decl = root.first.first;
     const before = tokenizeTotal();
     foldShorthandDeclaration(decl, new Map(), 'transition', table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test("validateBox types each function component from the declaration's stored tokens, without tokenizing", () => {
+    const { root, table } = walkedStylesheet('a{margin:calc(1px + 2px) 0}');
+    const decl = root.first.first;
+    const list = table.tokens(decl);
+    const before = tokenizeTotal();
+    boxBrowserKeeps('margin', decl.value, list);
     assert.equal(tokenizeTotal() - before, 0);
   });
 });
