@@ -5,7 +5,34 @@ import { isLengthValue } from './lengthGrammar.js';
 import { isUnresolved } from './unresolved.js';
 import { closingTokens, splitValue } from './valueComponents.js';
 
-const { TokenType, closeForOpening, numeric } = cssnanoUtils;
+const { TokenType, closeForOpening, numeric, tokens } = cssnanoUtils;
+
+/**
+ * A parsed side or corner: its text, and the range of the caller's token list
+ * that spells it, so a writer can join the ranges into the tokens it writes.
+ *
+ * @typedef {{
+ *   raw: string,
+ *   list: readonly import('@csstools/css-tokenizer').CSSToken[],
+ *   start: number,
+ *   end: number,
+ * }} RadiusPiece
+ */
+
+/**
+ * @param {import('./valueComponents.js').Component} component
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the list
+ * the component's range indexes
+ * @return {RadiusPiece}
+ */
+function pieceOf(component, list) {
+  return {
+    raw: component.raw,
+    list,
+    start: component.start,
+    end: component.end,
+  };
+}
 
 /**
  * Whether the tokens of a balanced term are one function with its arguments.
@@ -68,10 +95,10 @@ function splitRadiusTerms(value, list) {
  * Corner longhands accept 1 or 2 non-negative <length-percentage> values.
  *
  * @param {string} value
- * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
- * @return {[string, string] | null} [horizontal, vertical] or null if invalid
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [list] the tokens of `value`
+ * @return {[RadiusPiece, RadiusPiece] | null} [horizontal, vertical] or null if invalid
  */
-export function parseCornerRadius(value, list) {
+export function parseCornerRadius(value, list = tokens(value)) {
   if (value.trim() === '') return null;
 
   const split = splitRadiusTerms(value, list);
@@ -92,9 +119,9 @@ export function parseCornerRadius(value, list) {
   }
 
   if (horizontal.length === 1) {
-    return [horizontal[0].raw, horizontal[0].raw];
+    return [pieceOf(horizontal[0], list), pieceOf(horizontal[0], list)];
   }
-  return [horizontal[0].raw, horizontal[1].raw];
+  return [pieceOf(horizontal[0], list), pieceOf(horizontal[1], list)];
 }
 
 /**
@@ -102,10 +129,10 @@ export function parseCornerRadius(value, list) {
  * Accepts 1 to 4 horizontal components, optional `/`, and 1 to 4 vertical components.
  *
  * @param {string} value
- * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
- * @return {{horizontal: [string, string, string, string], vertical: [string, string, string, string]} | null}
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [list] the tokens of `value`
+ * @return {{horizontal: [RadiusPiece, RadiusPiece, RadiusPiece, RadiusPiece], vertical: [RadiusPiece, RadiusPiece, RadiusPiece, RadiusPiece]} | null}
  */
-export function parseRadiusShorthand(value, list) {
+export function parseRadiusShorthand(value, list = tokens(value)) {
   if (value.trim() === '') return null;
 
   const split = splitRadiusTerms(value, list);
@@ -122,7 +149,7 @@ export function parseRadiusShorthand(value, list) {
     }
   }
 
-  const h4 = expandFourSides(horizontal.map((item) => item.raw));
+  const h4 = expandFourSides(horizontal.map((item) => pieceOf(item, list)));
 
   if (vertical === null) {
     return {
@@ -141,7 +168,7 @@ export function parseRadiusShorthand(value, list) {
     }
   }
 
-  const v4 = expandFourSides(vertical.map((item) => item.raw));
+  const v4 = expandFourSides(vertical.map((item) => pieceOf(item, list)));
   return {
     horizontal: h4,
     vertical: v4,

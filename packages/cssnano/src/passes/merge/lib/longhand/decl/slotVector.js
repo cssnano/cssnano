@@ -9,7 +9,12 @@ import { isFallback, mergeBlockingSupport } from '../isFallback.js';
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
-/** @typedef {({ value: string, decl: Declaration } | null)[]} SlotVector */
+/** @import {CSSToken} from '@csstools/css-tokenizer'; */
+/** @import {RangePiece} from '../../../../../values/joinRanges.js'; */
+/**
+ * @typedef {({ value: string, decl: Declaration, range?: RangePiece } | null)[]} SlotVector
+ * `range` holds the tokens that spell `value`, when the reducer keeps them.
+ */
 
 /* An emitted `!important` costs ten bytes more than the `:`/`;` separators
  * already counted for a normal declaration. */
@@ -197,11 +202,13 @@ export class SlotLane {
    * @param {string} value
    * @param {Declaration} decl
    * @param {boolean} wasFull - as returned by `begin`
+   * @param {RangePiece} [range] the tokens that spell `value`, when kept
    */
-  assign(idx, value, decl, wasFull) {
+  assign(idx, value, decl, wasFull, range) {
     const existing = this.slots[idx];
     if (existing) this.#retainFallbacks(idx, existing.decl, decl, wasFull);
-    this.slots[idx] = { value, decl };
+    this.slots[idx] =
+      range === undefined ? { value, decl } : { value, decl, range };
     this.contributing.add(decl);
   }
 
@@ -252,9 +259,10 @@ export class SlotLane {
  * @param {{ value: string, decl: Declaration }[]} full
  * @param {Set<Declaration>} contributing
  * @param {Set<Declaration>} fallbacks
- * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
- * `mayInsert: false` limits the commit to the in-place rewrite, for a
- * shorthand that some target does not support.
+ * @param {{ prop: string, value: string, important: boolean, tokens?: readonly CSSToken[], inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
+ * `tokens` spell `value` and are stored for the written declaration. `mayInsert:
+ * false` limits the commit to the in-place rewrite, for a shorthand that some
+ * target does not support.
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
 export function commitShorthand(
@@ -265,14 +273,18 @@ export function commitShorthand(
   target,
   textTable
 ) {
-  const { prop, value: shorthandVal, important } = target;
+  const { prop, value: shorthandVal, important, tokens } = target;
   const toRemove = Array.from(contributing).filter((d) => !fallbacks.has(d));
   if (toRemove.length === 0) return;
 
   if (toRemove.length === 1 && asciiLowerCase(toRemove[0].prop) === prop) {
     toRemove[0].prop = prop;
-    toRemove[0].value = shorthandVal;
-    delete toRemove[0].raws?.value;
+    if (tokens) {
+      textTable.write(toRemove[0], tokens);
+    } else {
+      toRemove[0].value = shorthandVal;
+      delete toRemove[0].raws?.value;
+    }
     return;
   }
   if (target.mayInsert === false) return;
@@ -291,6 +303,7 @@ export function commitShorthand(
       { prop, value: shorthandVal, important },
       textTable
     );
+    if (tokens) textTable.write(inserted, tokens);
     if (target.inserted) target.inserted.set(a, inserted);
     for (const d of toRemove) detach(d);
   }
