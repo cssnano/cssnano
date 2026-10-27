@@ -1,5 +1,6 @@
 import { boxProperties } from './decl/boxGroups.js';
 import type { BoxSupport } from './targetSupport.js';
+import type { TextTable } from '../../../../values/textTable.js';
 import type { Container, Declaration } from 'postcss';
 import type { BoxGroup } from './decl/boxGroups.js';
 export type Options = object;
@@ -13,6 +14,7 @@ export type MergeContext = {
     placeShorthands: boolean;
     boxSupport: BoxSupport;
     pairShorthands: ReadonlySet<string>;
+    textTable: TextTable;
 };
 export type FamilyRecord = {
     pair: PairFamily | undefined;
@@ -29,9 +31,10 @@ export type FamilyDeclarations = {
  * @param {boolean} placeShorthands
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
+ * @param {TextTable} textTable the tokens the walk left for the declarations
  * @return {MergeContext} the state that the rounds of one run share
  */
-export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>): MergeContext;
+export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, textTable: TextTable): MergeContext;
 /**
  * Reduces the column rules once every block of the stylesheet is canonicalized,
  * since whether a column property is set elsewhere is a whole-stylesheet fact.

@@ -16,6 +16,7 @@ import {
   finishColumns,
   longhandContext,
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
+import { TextTable } from '../../../src/values/textTable.js';
 import { withTargetSupport } from '../../../src/passes/merge/lib/longhand/isFallback.js';
 import { clearSupportCache } from '../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
@@ -72,7 +73,12 @@ function blocksChangedBySecondRound(css) {
   const root = postcss.parse(css);
   const { placeShorthands, boxSupport, pairShorthands, features } =
     targetSupportOf(browsers);
-  const context = longhandContext(placeShorthands, boxSupport, pairShorthands);
+  const context = longhandContext(
+    placeShorthands,
+    boxSupport,
+    pairShorthands,
+    new TextTable()
+  );
   const changed = [];
   try {
     withTargetSupport(features, () => {
