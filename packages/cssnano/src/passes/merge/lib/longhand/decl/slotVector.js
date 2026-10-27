@@ -58,17 +58,18 @@ function slotVectorReady(slots, textTable) {
  * the first, the values are not interchangeable.
  *
  * @param {{ value: string, decl: Declaration }[]} full
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {boolean}
  */
-function supportProvenanceMatches(full) {
-  const s0 = mergeBlockingSupport(full[0].decl);
+function supportProvenanceMatches(full, textTable) {
+  const s0 = mergeBlockingSupport(full[0].decl, textTable);
   // A shorthand fills adjacent slots with one declaration; compare it once.
   let previous = full[0].decl;
   for (let i = 1; i < full.length; i++) {
     const decl = full[i].decl;
     if (decl === previous) continue;
     previous = decl;
-    if (s0.symmetricDifference(mergeBlockingSupport(decl)).size) {
+    if (s0.symmetricDifference(mergeBlockingSupport(decl, textTable)).size) {
       return false;
     }
   }
@@ -92,7 +93,7 @@ export function flushableSlots(slots, textTable) {
     const sv = asciiLowerCase(s.value);
     if (kw ? sv !== v0 : cssWideKeywords.has(sv)) return null;
   }
-  if (!supportProvenanceMatches(full)) return null;
+  if (!supportProvenanceMatches(full, textTable)) return null;
 
   return full;
 }
@@ -108,15 +109,20 @@ export function flushableSlots(slots, textTable) {
  * @param {number} count - how many consecutive slots it writes; all slots for
  * a shorthand
  * @param {Declaration} decl
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {boolean}
  */
-function shouldResetSlots(slots, first, count, decl) {
+function shouldResetSlots(slots, first, count, decl, textTable) {
   if (count < slots.length && isCssWideKeyword(decl.value)) {
     return true;
   }
   for (let i = first; i < first + count; i++) {
     if (
-      isFallback(/** @type {{ decl: Declaration }} */ (slots[i]).decl, decl)
+      isFallback(
+        /** @type {{ decl: Declaration }} */ (slots[i]).decl,
+        decl,
+        textTable
+      )
     ) {
       return true;
     }
@@ -131,12 +137,17 @@ function shouldResetSlots(slots, first, count, decl) {
  * slot and `reset` wherever a declaration ends the run.
  */
 export class SlotLane {
+  /** @type {import('../../../../../values/textTable.js').TextTable} */
+  #textTable;
+
   /**
    * @param {number} size - how many slots the family has
    * @param {(slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void} commit
    * called with the state whenever the run ends, before it is cleared
+   * @param {import('../../../../../values/textTable.js').TextTable} textTable
    */
-  constructor(size, commit) {
+  constructor(size, commit, textTable) {
+    this.#textTable = textTable;
     /** @type {SlotVector} */
     this.slots = Array.from({ length: size }, () => null);
     /** @type {Set<Declaration>} */
@@ -172,7 +183,10 @@ export class SlotLane {
    */
   begin(first, count, decl) {
     const wasFull = this.slots.every(Boolean);
-    if (wasFull && shouldResetSlots(this.slots, first, count, decl)) {
+    if (
+      wasFull &&
+      shouldResetSlots(this.slots, first, count, decl, this.#textTable)
+    ) {
       this.reset();
     }
     return wasFull;
@@ -206,9 +220,11 @@ export class SlotLane {
    */
   #retainFallbacks(idx, previous, decl, fallbackSettled) {
     const behind = this.slotFallbacks?.[idx];
-    const isPreviousFallback = !fallbackSettled && isFallback(previous, decl);
+    const isPreviousFallback =
+      !fallbackSettled && isFallback(previous, decl, this.#textTable);
     if (behind === undefined && !isPreviousFallback) return;
-    const kept = behind?.filter((d) => isFallback(d, decl)) ?? [];
+    const kept =
+      behind?.filter((d) => isFallback(d, decl, this.#textTable)) ?? [];
     const pruned = behind !== undefined && kept.length < behind.length;
     if (isPreviousFallback) {
       kept.push(previous);
@@ -239,8 +255,16 @@ export class SlotLane {
  * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
  * `mayInsert: false` limits the commit to the in-place rewrite, for a
  * shorthand that some target does not support.
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export function commitShorthand(rule, full, contributing, fallbacks, target) {
+export function commitShorthand(
+  rule,
+  full,
+  contributing,
+  fallbacks,
+  target,
+  textTable
+) {
   const { prop, value: shorthandVal, important } = target;
   const toRemove = Array.from(contributing).filter((d) => !fallbacks.has(d));
   if (toRemove.length === 0) return;
@@ -261,11 +285,12 @@ export function commitShorthand(rule, full, contributing, fallbacks, target) {
   if (remSize >= 0) {
     const a = toRemove.at(-1);
     if (!a) return;
-    const inserted = insertCloned(rule, a, {
-      prop,
-      value: shorthandVal,
-      important,
-    });
+    const inserted = insertCloned(
+      rule,
+      a,
+      { prop, value: shorthandVal, important },
+      textTable
+    );
     if (target.inserted) target.inserted.set(a, inserted);
     for (const d of toRemove) detach(d);
   }

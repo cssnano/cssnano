@@ -1,5 +1,7 @@
 import type { Declaration } from 'postcss';
+import type { TextTable } from '../../../../../values/textTable.js';
 /** @import {Declaration} from 'postcss'; */
+/** @import {TextTable} from '../../../../../values/textTable.js' */
 /** @param {{prop: string, value: string}[]} decls @param {boolean} [important] */
 declare function declSize(decls: {
     prop: string;
@@ -22,16 +24,18 @@ declare function declarationsOfCells(cellHistory: Set<Declaration>[], cellIndexe
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
  * @param {Set<Declaration>} fallbacks
+ * @param {TextTable} textTable
  * @return {number[]}
  */
-declare function getAvailableSides(cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>): number[];
+declare function getAvailableSides(cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, textTable: TextTable): number[];
 /**
  * @param {Set<Declaration>[]} cellHistory
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
+ * @param {TextTable} textTable
  * @return {number[]}
  */
-declare function getAvailableComponents(cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>): number[];
+declare function getAvailableComponents(cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, textTable: TextTable): number[];
 /**
  * @param {number[][]} groups
  * @param {string[]} cells
@@ -72,9 +76,10 @@ declare function createLeafCandidate(cells: string[], touched: Set<number>, bloc
  * @param {string[]} cells
  * @param {boolean} lane
  * @param {Set<Declaration>} fallbacks
+ * @param {TextTable} textTable
  * @return {{ decls: { prop: string, value: string }[], rank: number, mask: number, resetIndex: number, coveredCells: Set<number> }[]}
  */
-declare function createResetCandidates(hasReset: boolean, touched: Set<number>, barrierCells: Set<number>, cellHistory: Set<Declaration>[], cells: string[], lane: boolean, fallbacks: Set<Declaration>): {
+declare function createResetCandidates(hasReset: boolean, touched: Set<number>, barrierCells: Set<number>, cellHistory: Set<Declaration>[], cells: string[], lane: boolean, fallbacks: Set<Declaration>, textTable: TextTable): {
     decls: {
         prop: string;
         value: string;

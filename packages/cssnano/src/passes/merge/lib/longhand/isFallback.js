@@ -1,8 +1,10 @@
 import {
   blocksMerge,
   longstandingFeatures,
-  supportDependenciesIn,
+  supportDependenciesOf,
 } from './syntaxFeatures.js';
+
+/** @import {TextTable} from '../../../../values/textTable.js' */
 
 const EMPTY_SET = new Set();
 
@@ -42,23 +44,25 @@ const inheritedSupport = new WeakMap();
 
 /**
  * @param {import('postcss').Declaration} declaration
+ * @param {TextTable} textTable
  * @return {Set<string>} every feature a browser had to support for the
  * declaration to apply: the ones its value uses, and the ones the declaration
  * it was cloned from needed
  */
-function requiredSupport(declaration) {
+function requiredSupport(declaration, textTable) {
   const inherited = inheritedSupport.get(declaration);
-  const own = supportDependenciesIn(declaration.value);
+  const own = supportDependenciesOf(declaration, textTable);
   return inherited === undefined ? own : own.union(inherited);
 }
 
 /**
  * @param {import('postcss').Declaration} source
  * @param {import('postcss').Declaration} clone taken from source
+ * @param {TextTable} textTable
  * @return {void}
  */
-function inheritSupport(source, clone) {
-  inheritedSupport.set(clone, requiredSupport(source));
+function inheritSupport(source, clone, textTable) {
+  inheritedSupport.set(clone, requiredSupport(source, textTable));
 }
 
 /**
@@ -76,11 +80,12 @@ function isDerived(declaration) {
 
 /**
  * @param {import('postcss').Declaration} declaration
+ * @param {TextTable} textTable
  * @return {boolean} whether some target may drop the declaration because it
  * lacks syntax the declaration needs
  */
-function needsUnmetSupport(declaration) {
-  for (const feature of requiredSupport(declaration)) {
+function needsUnmetSupport(declaration, textTable) {
+  for (const feature of requiredSupport(declaration, textTable)) {
     if (!targetSupport.has(feature)) return true;
   }
   return false;
@@ -88,13 +93,14 @@ function needsUnmetSupport(declaration) {
 
 /**
  * @param {import('postcss').Declaration} declaration
+ * @param {TextTable} textTable
  * @return {Set<string>} the support out of `requiredSupport` that stops a
  * merge
  */
-function mergeBlockingSupport(declaration) {
+function mergeBlockingSupport(declaration, textTable) {
   /** @type {Set<string> | undefined} */
   let blocking;
-  for (const feature of requiredSupport(declaration)) {
+  for (const feature of requiredSupport(declaration, textTable)) {
     if (blocksMerge(feature) && !targetSupport.has(feature)) {
       blocking ??= new Set();
       blocking.add(feature);
@@ -109,12 +115,13 @@ function mergeBlockingSupport(declaration) {
  *
  * @param {import('postcss').Declaration} earlier
  * @param {import('postcss').Declaration} later
+ * @param {TextTable} textTable
  * @return {boolean} whether earlier is a fallback for later
  */
-function isFallback(earlier, later) {
-  const needed = requiredSupport(later);
+function isFallback(earlier, later, textTable) {
+  const needed = requiredSupport(later, textTable);
   if (needed.size === 0) return false;
-  const available = requiredSupport(earlier);
+  const available = requiredSupport(earlier, textTable);
   for (const feature of needed) {
     if (!available.has(feature) && !targetSupport.has(feature)) return true;
   }
@@ -127,14 +134,17 @@ function isFallback(earlier, later) {
  *
  * @param {import('postcss').Declaration} earlier
  * @param {import('postcss').Declaration} later
+ * @param {TextTable} textTable
  * @return {boolean}
  */
-function strandsFallback(earlier, later) {
+function strandsFallback(earlier, later, textTable) {
   if (!isDerived(earlier)) {
-    return isFallback(earlier, later);
+    return isFallback(earlier, later, textTable);
   }
 
-  return !mergeBlockingSupport(later).isSubsetOf(mergeBlockingSupport(earlier));
+  return !mergeBlockingSupport(later, textTable).isSubsetOf(
+    mergeBlockingSupport(earlier, textTable)
+  );
 }
 
 export {

@@ -49,11 +49,18 @@ function commitSlotVector(
   const shorthandVal =
     horizontal === vertical ? horizontal : `${horizontal}/${vertical}`;
 
-  commitShorthand(rule, full, liveDefinitions, fallbackDefinitions, {
-    prop: 'border-radius',
-    value: shorthandVal,
-    important: isImportant,
-  });
+  commitShorthand(
+    rule,
+    full,
+    liveDefinitions,
+    fallbackDefinitions,
+    {
+      prop: 'border-radius',
+      value: shorthandVal,
+      important: isImportant,
+    },
+    textTable
+  );
 }
 
 /**
@@ -65,15 +72,18 @@ function commitSlotVector(
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
 function coalesceLane(rule, laneDescriptors, isImportant, textTable) {
-  const lane = new SlotLane(8, (slots, contributing, fallbacks) =>
-    commitSlotVector(
-      rule,
-      slots,
-      contributing,
-      fallbacks,
-      isImportant,
-      textTable
-    )
+  const lane = new SlotLane(
+    8,
+    (slots, contributing, fallbacks) =>
+      commitSlotVector(
+        rule,
+        slots,
+        contributing,
+        fallbacks,
+        isImportant,
+        textTable
+      ),
+    textTable
   );
 
   for (const desc of laneDescriptors) {
@@ -168,12 +178,14 @@ function canonicalizeSingleton(desc) {
  * Intra-block dead-store elimination, bounded by `all` declarations.
  *
  * @param {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} lanes
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function eliminateRedundantDeclarations(lanes) {
+function eliminateRedundantDeclarations(lanes, textTable) {
   for (const lane of lanes) {
     // A barrier descriptor holds its `all` declaration.
     discardOverriddenInList(
       lane.map((descriptor) => descriptor.decl),
+      textTable,
       allRadiusProperties
     );
   }
@@ -193,7 +205,7 @@ export function reduceBorderRadius(rule, decls, lanes, textTable) {
 
   const { lanes: descriptorLanes, radiusDescriptors } = partitioned;
 
-  eliminateRedundantDeclarations(descriptorLanes);
+  eliminateRedundantDeclarations(descriptorLanes, textTable);
 
   const liveDecls = radiusDescriptors.filter((d) => d.decl.parent);
   if (liveDecls.length <= 1) {

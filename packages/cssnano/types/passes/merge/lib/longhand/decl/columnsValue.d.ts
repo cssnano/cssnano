@@ -1,13 +1,15 @@
 import type { Declaration } from 'postcss';
+import type { TextTable } from '../../../../../values/textTable.js';
 export declare const columns = "columns";
 /** Slot of each longhand in the parsed `columns` value. */
 export declare const columnSlots: Map<string, number>;
 export declare const allColumnProps: Set<string>;
 /**
  * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
  * @return {{ value: string, hasTopLevelSlash: boolean, terms: { start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown }[] }}
  */
-declare function tokenizeColumns(value: string): {
+declare function tokenizeColumns(value: string, list: readonly import('@csstools/css-tokenizer').CSSToken[]): {
     value: string;
     hasTopLevelSlash: boolean;
     terms: {
@@ -18,8 +20,12 @@ declare function tokenizeColumns(value: string): {
         decoded: unknown;
     }[];
 };
-/** @param {Declaration} d @return {ReturnType<typeof tokenizeColumns>} */
-export declare function parsedValue(d: Declaration): ReturnType<typeof tokenizeColumns>;
+/**
+ * @param {Declaration} d
+ * @param {TextTable} textTable
+ * @return {ReturnType<typeof tokenizeColumns>}
+ */
+export declare function parsedValue(d: Declaration, textTable: TextTable): ReturnType<typeof tokenizeColumns>;
 /**
  * Normalize a columns shorthand definition. Both longhand initial values
  * are 'auto', and omitted values reset to initial, so 'auto' can be dropped.
@@ -45,12 +51,21 @@ export declare function parseColumns(parsed: ReturnType<typeof tokenizeColumns>,
  * The `columns: <width> / <height>` form sets column-height via top-level slash.
  *
  * @param {Declaration} declaration
+ * @param {TextTable} textTable
  * @return {boolean}
  */
-export declare const setsOtherColumnProperty: (declaration: Declaration) => boolean;
-/** @param {Declaration} d @return {boolean} */
-export declare function isValidColumns(d: Declaration): boolean;
-/** @param {Declaration} d @return {boolean} */
-export declare const isInvalid: (d: Declaration) => boolean;
+export declare const setsOtherColumnProperty: (declaration: Declaration, textTable: TextTable) => boolean;
+/**
+ * @param {Declaration} d
+ * @param {TextTable} textTable
+ * @return {boolean}
+ */
+export declare function isValidColumns(d: Declaration, textTable: TextTable): boolean;
+/**
+ * @param {Declaration} d
+ * @param {TextTable} textTable
+ * @return {boolean}
+ */
+export declare const isInvalid: (d: Declaration, textTable: TextTable) => boolean;
 export {};
 //# sourceMappingURL=columnsValue.d.ts.map

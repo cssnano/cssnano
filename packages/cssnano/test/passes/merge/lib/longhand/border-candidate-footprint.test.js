@@ -1,3 +1,4 @@
+import { TextTable } from '../../../../../src/values/textTable.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
@@ -50,7 +51,8 @@ function* everyTouchedSet(hasReset) {
       new Set(),
       hasReset,
       false,
-      new Set()
+      new Set(),
+      new TextTable()
     );
     yield { touched, candidates: candidates.map((c) => c.decls) };
   }

@@ -1,3 +1,4 @@
+import { TextTable } from '../../../../../src/values/textTable.js';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
@@ -30,7 +31,7 @@ async function run(css, browsers) {
 }
 
 const requires = (/** @type {string} */ value) =>
-  requiredSupport(postcss.decl({ prop: 'width', value }));
+  requiredSupport(postcss.decl({ prop: 'width', value }), new TextTable());
 
 const targets = ['ie 11', 'chrome 120'];
 
@@ -124,7 +125,8 @@ describe('support required by a function', () => {
   test('blocks a merge for a function no data covers', () => {
     assert.deepEqual(
       mergeBlockingSupport(
-        postcss.decl({ prop: 'width', value: 'calc(anchor-size(width))' })
+        postcss.decl({ prop: 'width', value: 'calc(anchor-size(width))' }),
+        new TextTable()
       ),
       new Set(['calc', 'function:anchor-size'])
     );

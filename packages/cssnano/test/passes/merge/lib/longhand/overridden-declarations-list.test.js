@@ -1,3 +1,4 @@
+import { TextTable } from '../../../../../src/values/textTable.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -17,7 +18,12 @@ function discard(css, trustedProperties, crossPropertyRule) {
     rule.nodes.filter((node) => node.type === 'decl')
   );
 
-  discardOverriddenInList(declarations, trustedProperties, crossPropertyRule);
+  discardOverriddenInList(
+    declarations,
+    new TextTable(),
+    trustedProperties,
+    crossPropertyRule
+  );
   applyChildEdits(rule);
   return root.toString();
 }

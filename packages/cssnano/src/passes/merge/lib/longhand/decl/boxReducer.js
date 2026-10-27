@@ -104,9 +104,11 @@ export function reduceBox(rule, box, support, textTable) {
 
   if (decls.length === 0 || hasInvalid(decls, textTable)) return;
 
-  discardOverriddenInLanes(lanes, group.properties);
+  discardOverriddenInLanes(lanes, textTable, group.properties);
   if (box.flow) {
-    for (const lane of lanes) discardDeadDeclarations(lane, support);
+    for (const lane of lanes) {
+      discardDeadDeclarations(lane, support, textTable);
+    }
   }
 
   const live = decls.filter((d) => d.parent);
