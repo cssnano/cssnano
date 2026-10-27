@@ -3,7 +3,7 @@ import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { discardOverriddenInList } from './overriddenDeclarations.js';
 import minifyTrbl from '../minifyTrbl.js';
 import minifyWidthStyleColor from '../minifyWsc.js';
-import parseTrbl, { expandFourSides } from '../parseTrbl.js';
+import { expandFourSides } from '../parseTrbl.js';
 import parseWidthStyleColor from '../parseWsc.js';
 import { declarationTokens, splitComponents } from '../componentRanges.js';
 import { setsLonghands } from '../spec.js';
@@ -38,6 +38,8 @@ import {
 const { asciiLowerCase } = cssnanoUtils;
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {TextTable} from '../../../../../values/textTable.js'; */
+/** @import {CellRanges} from './borderCells.js' */
+/** @import {ValueComponent} from '../componentRanges.js' */
 
 /**
  * @param {Declaration} declaration
@@ -100,11 +102,13 @@ function isDeclarationFallback(prev, d, textTable) {
  * @param {number} idx
  * @param {Declaration} d
  * @param {string} value
+ * @param {ValueComponent | undefined} part the component `value` is, when the
+ * declaration's value split into components
  * @param {boolean} isBarrier
- * @param {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
+ * @param {{ cells: string[], cellRanges: CellRanges, cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
  * @param {TextTable} textTable
  */
-function updateCell(idx, d, value, isBarrier, state, textTable) {
+function updateCell(idx, d, value, part, isBarrier, state, textTable) {
   for (const prev of state.cellHistory[idx]) {
     if (isDeclarationFallback(prev, d, textTable)) state.fallbacks.add(prev);
   }
@@ -113,13 +117,16 @@ function updateCell(idx, d, value, isBarrier, state, textTable) {
   } else {
     state.barrierCells.delete(idx);
     state.cells[idx] = value;
+    state.cellRanges.tokens[idx] = part?.tokens;
+    state.cellRanges.starts[idx] = part?.start ?? 0;
+    state.cellRanges.ends[idx] = part?.end ?? 0;
   }
   state.cellHistory[idx].add(d);
   state.touched.add(idx);
 }
 /**
  * @param {Declaration} d
- * @param {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
+ * @param {{ cells: string[], cellRanges: CellRanges, cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
  * @param {TextTable} textTable
  */
 function applySegmentDeclaration(d, state, textTable) {
@@ -135,39 +142,70 @@ function applySegmentDeclaration(d, state, textTable) {
     // borderBrowserKeeps gated this declaration; a null here would mean an ignored
     // value flowing into cell state, so never name components from it.
     if (!parsed) return;
-    const { width: w, style: st, color: clr } = parsed;
+    const { width: w, style: st, color: clr, parts } = parsed;
     const triple = [w || 'medium', st || 'none', clr || 'currentcolor'];
+    const componentParts = [parts.width, parts.style, parts.color];
     for (const s of sList) {
       for (let c = 0; c < 3; c++) {
-        updateCell(s * 3 + c, d, triple[c], isBarrier, state, textTable);
+        updateCell(
+          s * 3 + c,
+          d,
+          triple[c],
+          componentParts[c],
+          isBarrier,
+          state,
+          textTable
+        );
       }
     }
     if (isB && !isBarrier && isValidWidthStyleColor(parsed))
       state.resetFound = true;
   } else if (allSidesBorderShorthands.includes(prop)) {
     const c = components.indexOf(prop.slice(7));
-    const vals = parseTrbl(d.value);
+    const parts = expandFourSides(splitComponents(d.value, tokens));
     for (let s = 0; s < 4; s++) {
-      updateCell(s * 3 + c, d, vals[s], isBarrier, state, textTable);
+      updateCell(
+        s * 3 + c,
+        d,
+        parts[s]?.text,
+        parts[s],
+        isBarrier,
+        state,
+        textTable
+      );
     }
   } else {
     const [sName, cName] = prop.slice(7).split('-');
     const s = sides.indexOf(sName);
     const c = components.indexOf(cName);
     if (s !== -1 && c !== -1) {
-      updateCell(s * 3 + c, d, d.value, isBarrier, state, textTable);
+      const parts = splitComponents(d.value, tokens);
+      updateCell(
+        s * 3 + c,
+        d,
+        d.value,
+        parts.length === 1 ? parts[0] : undefined,
+        isBarrier,
+        state,
+        textTable
+      );
     }
   }
 }
 /**
  * @param {Declaration[]} segment
  * @param {TextTable} textTable
- * @return {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }}
+ * @return {{ cells: string[], cellRanges: CellRanges, cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }}
  */
 function analyzeSegment(segment, textTable) {
-  /** @type {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} */
+  /** @type {{ cells: string[], cellRanges: CellRanges, cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} */
   const state = {
     cells: Array.from({ length: 12 }, () => ''),
+    cellRanges: {
+      tokens: Array.from({ length: 12 }),
+      starts: Array.from({ length: 12 }, () => 0),
+      ends: Array.from({ length: 12 }, () => 0),
+    },
     cellHistory: Array.from({ length: 12 }, () => new Set()),
     touched: new Set(),
     barrierCells: new Set(),
@@ -202,6 +240,7 @@ function reduceSegment(rule, segment, lane, textTable) {
   const hasReset = state.resetFound;
   const candidates = generateCandidates(
     state.cells,
+    state.cellRanges,
     state.cellHistory,
     state.touched,
     state.barrierCells,

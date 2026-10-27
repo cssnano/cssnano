@@ -6,6 +6,39 @@ import { isValidWidthStyleColor } from './validateWsc.js';
 const { asciiLowerCase } = cssnanoUtils;
 
 const defaultBorderValue = ['medium', 'none', 'currentcolor'];
+
+/**
+ * Shortens a width, style and color that name the border's components, by
+ * dropping each one that spells its initial value unless the component before
+ * it spells the same text.
+ *
+ * @param {string | undefined} width the width as written, or undefined when unnamed
+ * @param {string | undefined} style the style as written, or undefined when unnamed
+ * @param {string | undefined} color the color as written, or undefined when unnamed
+ * @return {string}
+ */
+export function minifyComponents(width, style, color) {
+  const valuesWithSentinel = [width, style, color, ''];
+  let value = '';
+  for (let i = valuesWithSentinel.length - 1; i >= 0; i--) {
+    const cur = valuesWithSentinel[i];
+    if (
+      cur === undefined ||
+      (asciiLowerCase(cur) === defaultBorderValue[i] &&
+        (!i ||
+          asciiLowerCase(valuesWithSentinel[i - 1] || '') !==
+            asciiLowerCase(cur)))
+    ) {
+      continue;
+    }
+
+    value = cur + ' ' + value;
+  }
+  value = value.trim();
+
+  return minifyTopBottomRightLeft(value || 'none');
+}
+
 /**
  * @param {string} cssPropertyValue
  * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [tokens] the tokens
@@ -28,23 +61,5 @@ export default (cssPropertyValue, tokens) => {
     return minifyTopBottomRightLeft(cssPropertyValue);
   }
 
-  const valuesWithSentinel = [values.width, values.style, values.color, ''];
-  let value = '';
-  for (let i = valuesWithSentinel.length - 1; i >= 0; i--) {
-    const cur = valuesWithSentinel[i];
-    if (
-      cur === undefined ||
-      (asciiLowerCase(cur) === defaultBorderValue[i] &&
-        (!i ||
-          asciiLowerCase(valuesWithSentinel[i - 1] || '') !==
-            asciiLowerCase(cur)))
-    ) {
-      continue;
-    }
-
-    value = cur + ' ' + value;
-  }
-  value = value.trim();
-
-  return minifyTopBottomRightLeft(value || 'none');
+  return minifyComponents(values.width, values.style, values.color);
 };

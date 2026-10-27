@@ -1,6 +1,5 @@
 import cssnanoUtils from '#utils';
 import minifyTrbl from '../minifyTrbl.js';
-import minifyWidthStyleColor from '../minifyWsc.js';
 import { toLower } from '../parseWsc.js';
 import { mergeBlockingSupport, needsUnmetSupport } from '../isFallback.js';
 import {
@@ -12,10 +11,12 @@ import {
   widthStyleColor as components,
 } from './borderData.js';
 import { declCost } from './slotVector.js';
+import { minifyCells } from './borderCells.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 /** @import {Declaration} from 'postcss'; */
 /** @import {TextTable} from '../../../../../values/textTable.js' */
+/** @import {CellRanges} from './borderCells.js' */
 
 /* Builds the reset shorthands, component shorthands, side shorthands and
  * leaves a border cover can choose from, together with the availability and
@@ -45,29 +46,33 @@ const COMPONENT_SHORTHAND_CANDIDATE = 2;
 const SIDE_SHORTHAND_CANDIDATE = 3;
 const LEAF_CANDIDATE = 4;
 
-/** @param {string[]} cells @param {boolean} lane @param {{decls: {prop: string, value: string}[], rank: number}[]} rawCandidates */
-function addResetCandidates(cells, lane, rawCandidates) {
+/** @param {string[]} cells @param {CellRanges} cellRanges @param {boolean} lane @param {{decls: {prop: string, value: string}[], rank: number}[]} rawCandidates */
+function addResetCandidates(cells, cellRanges, lane, rawCandidates) {
   /** @type {string[][]} */
   const sideTriples = [];
   for (let s = 0; s < 4; s++) sideTriples.push(cells.slice(s * 3, s * 3 + 3));
 
   const seen = new Set(),
-    uniqueTriples = [];
-  for (const t of sideTriples) {
-    const key = t.join('|');
+    uniqueSides = [];
+  for (let s = 0; s < 4; s++) {
+    const key = sideTriples[s].join('|');
     if (!seen.has(key)) {
       seen.add(key);
-      uniqueTriples.push(t);
+      uniqueSides.push(s);
     }
   }
 
-  for (const base of uniqueTriples) {
-    const borderDecl = decl('border', minifyWidthStyleColor(base.join(' ')));
+  for (const baseSide of uniqueSides) {
+    const base = sideTriples[baseSide];
+    const borderDecl = decl(
+      'border',
+      minifyCells(cells, cellRanges, sideCells[baseSide])
+    );
     const corrections = [];
     for (let s = 0; s < 4; s++) {
       const t = sideTriples[s];
       if (t[0] === base[0] && t[1] === base[1] && t[2] === base[2]) continue;
-      const asSide = [side(s, minifyWidthStyleColor(t.join(' ')))];
+      const asSide = [side(s, minifyCells(cells, cellRanges, sideCells[s]))];
       const asLeaves = [];
       for (let c = 0; c < 3; c++) {
         if (t[c] !== base[c]) {
@@ -97,10 +102,8 @@ function addResetCandidates(cells, lane, rawCandidates) {
     const [o1, o2] = [0, 1, 2].filter((x) => x !== c);
     const t0 = sideTriples[0];
     if (sideTriples.every((t) => t[o1] === t0[o1] && t[o2] === t0[o2])) {
-      const bTriple = ['', '', ''];
-      bTriple[o1] = t0[o1] || '';
-      bTriple[o2] = t0[o2] || '';
-      const bVal = minifyWidthStyleColor(bTriple.join(' '));
+      const bIndexes = [0, 1, 2].map((k) => (k === c ? -1 : k));
+      const bVal = minifyCells(cells, cellRanges, bIndexes);
       const rawComp = `${cells[c]} ${cells[3 + c]} ${cells[6 + c]} ${cells[9 + c]}`;
       rawCandidates.push({
         decls: [decl('border', bVal), comp(c, minifyTrbl(toLower(rawComp)))],
@@ -233,6 +236,7 @@ function leavesOfFreeCells(cells, touched, blockedCells, coveredCells) {
 /**
  * @param {number[][]} groups
  * @param {string[]} cells
+ * @param {CellRanges} cellRanges
  * @param {Set<number>} touched
  * @param {Set<number>} blockedCells
  * @param {boolean} componentGroups
@@ -241,6 +245,7 @@ function leavesOfFreeCells(cells, touched, blockedCells, coveredCells) {
 function createGroupCandidate(
   groups,
   cells,
+  cellRanges,
   touched,
   blockedCells,
   componentGroups
@@ -262,7 +267,7 @@ function createGroupCandidate(
     }
     return side(
       Math.floor(group[0] / 3),
-      minifyWidthStyleColor(groupValues.join(' '))
+      minifyCells(cells, cellRanges, group)
     );
   });
   /** @type {{ prop: string, value: string }[]} */
@@ -312,6 +317,7 @@ function createLeafCandidate(cells, touched, blockedCells) {
  * @param {Set<number>} barrierCells
  * @param {Set<Declaration>[]} cellHistory
  * @param {string[]} cells
+ * @param {CellRanges} cellRanges
  * @param {boolean} lane
  * @param {Set<Declaration>} fallbacks
  * @param {TextTable} textTable
@@ -323,6 +329,7 @@ function createResetCandidates(
   barrierCells,
   cellHistory,
   cells,
+  cellRanges,
   lane,
   fallbacks,
   textTable
@@ -344,7 +351,7 @@ function createResetCandidates(
   if (!hasConsistentSupport(allDecls, textTable)) return [];
   /** @type {{decls: {prop: string, value: string}[], rank: number}[]} */
   const rawReset = [];
-  addResetCandidates(cells, lane, rawReset);
+  addResetCandidates(cells, cellRanges, lane, rawReset);
   const coveredCells = new Set(touched);
   return rawReset.map((item, resetIndex) => ({
     decls: item.decls,

@@ -7,6 +7,10 @@ const builders = new URL(
   '../../../../../src/passes/merge/lib/longhand/decl/borderCandidateBuilders.js',
   import.meta.url
 ).href;
+const cells = new URL(
+  '../../../../../src/passes/merge/lib/longhand/decl/borderCells.js',
+  import.meta.url
+).href;
 // node --test expands this glob; a directory path would resolve to a single
 // entry module instead of running every split test file.
 export const test = new URL(
@@ -54,6 +58,24 @@ export const mutations = [
     target: builders,
     find: '  if (!hasReset || touched.size !== 12 || barrierCells.size !== 0) return [];',
     replace: '  if (touched.size !== 12 || barrierCells.size !== 0) return [];',
+  },
+  {
+    name: 'format a border cell without checking that its slot classifies it',
+    target: cells,
+    find: '      !classifiers[slot](',
+    replace: '      false && !classifiers[slot](',
+  },
+  {
+    name: 'format a border cell that fails its slot check instead of falling back',
+    target: cells,
+    find: '      return minifyWidthStyleColor(joinCells(cells, indexes));\n    }\n    values.push(toLower(text));',
+    replace: '    }\n    values.push(toLower(text));',
+  },
+  {
+    name: 'classify border cells with the width classifier in the style slot',
+    target: cells,
+    find: '  const classifiers = [isBorderWidth, isBorderStyle, isColor];',
+    replace: '  const classifiers = [isBorderStyle, isBorderWidth, isColor];',
   },
   /* Not listed: reversing the equal-size mask tie-break in compareCandidates
    * has not changed the output of any rule found so far, so the mutant would
