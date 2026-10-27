@@ -14,6 +14,12 @@ const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
 const { foldShorthandDeclaration } =
   await import('../../src/passes/merge/lib/longhand/minifyShorthand.js');
+const { reduceBorderRadius } =
+  await import('../../src/passes/merge/lib/longhand/decl/borderRadiusReducer.js');
+const { partitionLanes } =
+  await import('../../src/passes/merge/lib/longhand/decl/radiusDescriptors.js');
+const { applyChildEdits } =
+  await import('../../src/passes/merge/lib/deferredChildEdits.js');
 const { discardOverriddenInList } =
   await import('../../src/passes/merge/lib/longhand/decl/overriddenDeclarations.js');
 
@@ -208,3 +214,83 @@ suite('the text table reads the text the merge longhand writers wrote', () => {
     assert.equal(tokenizeTotal() - before, 0);
   });
 });
+
+suite(
+  'the border-radius reader reads the text the border-radius writer wrote',
+  () => {
+    test('radiusDescriptors reads the text borderRadiusReducer wrote, without tokenizing', () => {
+      const root = postcss.parse('a { border-radius: 1px 1px }');
+      const table = new TextTable();
+      const rule = root.first;
+      const nodes = [...rule.nodes];
+      reduceBorderRadius(rule, nodes, [nodes, []], table);
+      assert.equal(rule.first.value, '1px');
+      const before = tokenizeTotal();
+      partitionLanes(rule, [rule.nodes, []], table);
+      assert.equal(tokenizeTotal() - before, 0);
+    });
+
+    test("borderRadiusReducer's edited tokens spell text()", () => {
+      const root = postcss.parse(
+        'a { border-radius: 1px 2px 1px 2px / 3px 4px }'
+      );
+      const table = new TextTable();
+      const rule = root.first;
+      const nodes = [...rule.nodes];
+      reduceBorderRadius(rule, nodes, [nodes, []], table);
+      const decl = rule.first;
+      assert.deepEqual(
+        table.stored(decl)?.map((token) => token.slice(0, 4)),
+        tokens(decl.value).map((token) => token.slice(0, 4))
+      );
+    });
+
+    test("borderRadiusReducer's edited corner tokens spell text()", () => {
+      const root = postcss.parse('a { border-top-left-radius: 1px 1px }');
+      const table = new TextTable();
+      const rule = root.first;
+      const nodes = [...rule.nodes];
+      reduceBorderRadius(rule, nodes, [nodes, []], table);
+      const decl = rule.first;
+      assert.deepEqual(
+        table.stored(decl)?.map((token) => token.slice(0, 4)),
+        tokens(decl.value).map((token) => token.slice(0, 4))
+      );
+    });
+
+    test("borderRadiusReducer's rewritten shorthand tokens spell text()", () => {
+      const root = postcss.parse(
+        'a { border-radius: 1px 2px 1px 2px / 3px 4px; border-top-left-radius: 5px !important }'
+      );
+      const table = new TextTable();
+      const rule = root.first;
+      const nodes = [...rule.nodes];
+      const lanes = [
+        nodes.filter((node) => !node.important),
+        nodes.filter((node) => node.important),
+      ];
+      reduceBorderRadius(rule, nodes, lanes, table);
+      const decl = rule.first;
+      assert.deepEqual(
+        table.stored(decl)?.map((token) => token.slice(0, 4)),
+        tokens(decl.value).map((token) => token.slice(0, 4))
+      );
+    });
+
+    test("borderRadiusReducer's merged tokens spell text()", () => {
+      const root = postcss.parse(
+        'a { border-top-left-radius: 1px; border-top-right-radius: 2px; border-bottom-right-radius: 1px; border-bottom-left-radius: 2px }'
+      );
+      const table = new TextTable();
+      const rule = root.first;
+      const nodes = [...rule.nodes];
+      reduceBorderRadius(rule, nodes, [nodes, []], table);
+      applyChildEdits(rule);
+      const merged = rule.nodes.find((node) => node.prop === 'border-radius');
+      assert.deepEqual(
+        table.stored(merged)?.map((token) => token.slice(0, 4)),
+        tokens(merged.value).map((token) => token.slice(0, 4))
+      );
+    });
+  }
+);

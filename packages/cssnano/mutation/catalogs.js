@@ -111,6 +111,20 @@ export const catalogs = [
     test: true,
   },
   {
+    url: new URL(
+      './passes/merge/lib/longhand/decl/mutation-catalog-radius-writers.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
+      './passes/merge/lib/longhand/decl/mutation-catalog-slot-writers.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
     url: new URL('./values/mutation-catalog.js', import.meta.url),
     test: true,
   },
