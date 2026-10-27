@@ -30,13 +30,12 @@ function isCompleteFunction(termTokens) {
 /**
  * Validates a single token / term as a non-negative <length-percentage> or unresolved function.
  *
- * @param {string} term
  * @param {import('@csstools/css-tokenizer').CSSToken[]} termTokens
  * @return {boolean}
  */
-export function isValidLengthPercentage(term, termTokens) {
+export function isValidLengthPercentage(termTokens) {
   if (isCompleteFunction(termTokens)) {
-    return isUnresolved(term);
+    return isUnresolved(termTokens, 0, termTokens.length);
   }
 
   if (termTokens.length !== 1) {
@@ -86,7 +85,7 @@ export function parseCornerRadius(value) {
   }
 
   for (const item of horizontal) {
-    if (!isValidLengthPercentage(item.raw, item.tokens)) {
+    if (!isValidLengthPercentage(item.tokens)) {
       return null;
     }
   }
@@ -117,7 +116,7 @@ export function parseRadiusShorthand(value) {
   }
 
   for (const item of horizontal) {
-    if (!isValidLengthPercentage(item.raw, item.tokens)) {
+    if (!isValidLengthPercentage(item.tokens)) {
       return null;
     }
   }
@@ -136,7 +135,7 @@ export function parseRadiusShorthand(value) {
   }
 
   for (const item of vertical) {
-    if (!isValidLengthPercentage(item.raw, item.tokens)) {
+    if (!isValidLengthPercentage(item.tokens)) {
       return null;
     }
   }

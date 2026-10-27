@@ -2,6 +2,7 @@ import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { list } from 'postcss';
 import { boxProperties, shorthandSlot } from './decl/boxGroups.js';
+import { componentRanges, splitsAsTokens } from './componentRanges.js';
 import { isLengthValue, parseDimension } from './lengthGrammar.js';
 import { mathType } from './mathType.js';
 import { isTrustedFunction, substitutionFunctions } from './unresolved.js';
@@ -109,51 +110,6 @@ function rangeKeeps(value, tokens, start, end, grammar) {
 }
 
 /**
- * The token ranges that `list.space` splits a value into: whitespace outside
- * parentheses separates components, and a `)` never opens a negative depth.
- * Tokens split where the string does except on a comment or a bad token.
- *
- * @param {readonly CSSToken[]} tokens
- * @return {number[]} the start and end token index of each component,
- * flattened
- */
-function componentRanges(tokens) {
-  const ranges = [];
-  let depth = 0;
-  let start = 0;
-  for (let index = 0; index < tokens.length; index++) {
-    const type = tokens[index][0];
-    if (depth === 0 && type === TokenType.Whitespace) {
-      if (index > start) ranges.push(start, index);
-      start = index + 1;
-    } else if (type === TokenType.Function || type === TokenType.OpenParen) {
-      depth++;
-    } else if (type === TokenType.CloseParen && depth > 0) {
-      depth--;
-    }
-  }
-  if (tokens.length > start) ranges.push(start, tokens.length);
-  return ranges;
-}
-
-/**
- * @param {readonly CSSToken[]} tokens
- * @return {boolean} whether the tokens split where `list.space` splits the
- * string; a comment or a bad token makes it split inside a word
- */
-function splitsAsTokens(tokens) {
-  for (const part of tokens) {
-    switch (part[0]) {
-      case TokenType.Comment:
-      case TokenType.BadString:
-      case TokenType.BadURL:
-        return false;
-    }
-  }
-  return true;
-}
-
-/**
  * The string path: `list.space` splits the value, and each component is
  * tokenized on its own.
  *
@@ -218,4 +174,4 @@ function boxBrowserKeeps(prop, value, tokens) {
   }
   return true;
 }
-export { boxBrowserKeeps, componentRanges };
+export { boxBrowserKeeps };

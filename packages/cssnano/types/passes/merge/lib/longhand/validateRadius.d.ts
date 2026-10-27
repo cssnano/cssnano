@@ -1,11 +1,10 @@
 /**
  * Validates a single token / term as a non-negative <length-percentage> or unresolved function.
  *
- * @param {string} term
  * @param {import('@csstools/css-tokenizer').CSSToken[]} termTokens
  * @return {boolean}
  */
-export declare function isValidLengthPercentage(term: string, termTokens: import('@csstools/css-tokenizer').CSSToken[]): boolean;
+export declare function isValidLengthPercentage(termTokens: import('@csstools/css-tokenizer').CSSToken[]): boolean;
 /**
  * Parses and validates a corner longhand value (e.g. `border-top-left-radius`).
  * Corner longhands accept 1 or 2 non-negative <length-percentage> values.

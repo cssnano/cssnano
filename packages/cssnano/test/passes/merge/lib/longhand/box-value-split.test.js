@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { list } from 'postcss';
-import {
-  boxBrowserKeeps,
-  componentRanges,
-} from '../../../../../src/passes/merge/lib/longhand/validateBox.js';
+import { boxBrowserKeeps } from '../../../../../src/passes/merge/lib/longhand/validateBox.js';
+import { componentRanges } from '../../../../../src/passes/merge/lib/longhand/componentRanges.js';
 import { tokens } from '../../../../../src/utils/value.js';
 
 /**
