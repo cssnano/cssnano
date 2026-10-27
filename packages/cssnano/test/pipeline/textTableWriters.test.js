@@ -7,6 +7,10 @@ const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../src/values/textTable.js');
 const { ident } = await import('../../src/values/tokenConstructors.js');
+const { tokens } = await import('../../src/utils/value.js');
+const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
+const { discardUnusedSymbols } =
+  await import('../../src/plugins/postcss-discard-unused/index.js');
 
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {
@@ -54,5 +58,44 @@ suite('the text table reads the text the host walk wrote', () => {
     const before = tokenizeTotal();
     assert.equal(table.tokens(second).length, 4);
     assert.equal(tokenizeTotal() - before, 0);
+  });
+});
+
+suite('the text table reads the text the afterMerge walk wrote', () => {
+  test('uniqueSelectors reads the selector tokens merge wrote, without tokenizing', () => {
+    const root = postcss.parse('a, b {}');
+    const table = new TextTable();
+    const rule = root.first;
+    table.write(rule, tokens('b, a, b'));
+    const before = tokenizeTotal();
+    walkAfterMerge(
+      root,
+      helpers.result,
+      new Map([['uniqueSelectors', {}]]),
+      new Map(),
+      table
+    );
+    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(rule.selector, ' a,b');
+  });
+
+  test("discard-unused's namespace prefixes read the selector uniqueSelectors wrote, without tokenizing", () => {
+    const root = postcss.parse('ns|a, b, ns|a {}');
+    const table = new TextTable();
+    const rule = root.first;
+    table.write(rule, tokens('ns|a, b, ns|a'));
+    const symbols = new Map([
+      ['discardUnused', { transform: discardUnusedSymbols, options: {} }],
+    ]);
+    const before = tokenizeTotal();
+    walkAfterMerge(
+      root,
+      helpers.result,
+      new Map([['uniqueSelectors', {}]]),
+      symbols,
+      table
+    );
+    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(rule.selector, ' b,ns|a');
   });
 });
