@@ -21,10 +21,18 @@ const cellCount = writingModes.length * 4;
  * @param {(Declaration | BoxProperty)[][]} others - per cell, later
  * declarations with their properties
  * @param {import('../targetSupport.js').BoxSupport} support
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {boolean} whether later declarations set every cell of the
  * declaration, without leaving it to apply in any target
  */
-function coversEveryCell(declaration, property, plain, others, support) {
+function coversEveryCell(
+  declaration,
+  property,
+  plain,
+  others,
+  support,
+  textTable
+) {
   for (const cell of property.cells) {
     if (plain[cell] === 1) continue;
     const candidates = others[cell];
@@ -34,7 +42,8 @@ function coversEveryCell(declaration, property, plain, others, support) {
         covered =
           !isFallback(
             declaration,
-            /** @type {Declaration} */ (candidates[at])
+            /** @type {Declaration} */ (candidates[at]),
+            textTable
           ) &&
           support.understandsWherever(
             property,
@@ -56,9 +65,10 @@ function coversEveryCell(declaration, property, plain, others, support) {
  * @param {Declaration[]} lane - one importance lane of a group in source
  * order; barriers that belong to no family are skipped
  * @param {import('../targetSupport.js').BoxSupport} support
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {void}
  */
-export function discardDeadDeclarations(lane, support) {
+export function discardDeadDeclarations(lane, support, textTable) {
   const plain = new Uint8Array(cellCount);
   /* Per cell, the later declarations that may cover it, each followed by its
    * property so the check looks neither up. */
@@ -81,12 +91,13 @@ export function discardDeadDeclarations(lane, support) {
       property,
       plain,
       others,
-      support
+      support,
+      textTable
     );
     if (isCovered) {
       detach(declaration);
     } else if (
-      !needsUnmetSupport(declaration) &&
+      !needsUnmetSupport(declaration, textTable) &&
       support.supportsAll(property.name)
     ) {
       for (const cell of cells) plain[cell] = 1;

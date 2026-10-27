@@ -30,7 +30,7 @@ export const mutations = [
   },
   {
     name: 'drop declarations a later one needs as a fallback',
-    find: '    !strandsFallback(node, lastNode)\n  );',
+    find: '    !strandsFallback(node, lastNode, textTable)\n  );',
     replace: '    true\n  );',
   },
 ];

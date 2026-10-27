@@ -1,3 +1,4 @@
+import type { TextTable } from '../../../../../values/textTable.js';
 import type { Container, Declaration } from 'postcss';
 /**
  * @param {string[]} cells
@@ -7,8 +8,9 @@ import type { Container, Declaration } from 'postcss';
  * @param {boolean} hasReset
  * @param {boolean} lane
  * @param {Set<Declaration>} fallbacks
+ * @param {TextTable} textTable
  */
-export declare function generateCandidates(cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, hasReset: boolean, lane: boolean, fallbacks: Set<Declaration>): {
+export declare function generateCandidates(cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, hasReset: boolean, lane: boolean, fallbacks: Set<Declaration>, textTable: TextTable): {
     decls: {
         prop: string;
         value: string;
@@ -48,6 +50,7 @@ export declare function selectBestCandidate(candidates: {
  * @param {{ cand: { decls: { prop: string, value: string }[], rank: number, mask: number, coveredCells: Set<number> }, repList: Declaration[], removable: Declaration[], diff: number, size: number, fallbacks: Set<Declaration> }} best
  * @param {Declaration[]} segment
  * @param {boolean} lane
+ * @param {TextTable} textTable
  */
 export declare function applyBestCandidate(rule: Container, best: {
     cand: {
@@ -64,5 +67,5 @@ export declare function applyBestCandidate(rule: Container, best: {
     diff: number;
     size: number;
     fallbacks: Set<Declaration>;
-}, segment: Declaration[], lane: boolean): void;
+}, segment: Declaration[], lane: boolean, textTable: TextTable): void;
 //# sourceMappingURL=borderCandidates.d.ts.map

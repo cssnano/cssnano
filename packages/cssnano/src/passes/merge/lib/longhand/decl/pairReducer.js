@@ -12,6 +12,7 @@ const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {PairFamily} from './pairForms.js'; */
+/** @import {TextTable} from '../../../../../values/textTable.js'; */
 
 /**
  * Replaces the longhands of one lane with the shorthand. A repeated
@@ -23,9 +24,10 @@ const { asciiLowerCase } = cssnanoUtils;
  * @param {Declaration[]} segment
  * @param {boolean} important
  * @param {Map<Declaration, string>} parsed - normalized values
+ * @param {TextTable} textTable
  * @return {void}
  */
-function mergeSegment(rule, family, segment, important, parsed) {
+function mergeSegment(rule, family, segment, important, parsed, textTable) {
   if (segment.length !== family.longhands.length) return;
   /** @type {(string | null)[]} */
   const slots = family.longhands.map(() => null);
@@ -37,18 +39,23 @@ function mergeSegment(rule, family, segment, important, parsed) {
   const values = /** @type {string[]} */ (slots);
 
   // A newer-syntax component is dropped, with the others, where unsupported.
-  const [first, ...rest] = segment.map(mergeBlockingSupport);
+  const [first, ...rest] = segment.map((d) =>
+    mergeBlockingSupport(d, textTable)
+  );
   if (rest.some((support) => support.symmetricDifference(first).size)) return;
 
   if (!sharesShorthandKeyword(values)) return;
 
   const value = isCssWideKeyword(values[0]) ? values[0] : family.emit(values);
   if (value === null) return;
-  commitShorthand(rule, [], new Set(segment), new Set(), {
-    prop: family.shorthand,
-    value,
-    important,
-  });
+  commitShorthand(
+    rule,
+    [],
+    new Set(segment),
+    new Set(),
+    { prop: family.shorthand, value, important },
+    textTable
+  );
 }
 
 /**
@@ -62,9 +69,10 @@ function mergeSegment(rule, family, segment, important, parsed) {
  * @param {Declaration[]} declarations
  * @param {[Declaration[], Declaration[]]} lanes - the declarations and `all`
  *   split by importance
+ * @param {TextTable} textTable
  * @return {void}
  */
-export function reducePairFamily(rule, family, declarations, lanes) {
+export function reducePairFamily(rule, family, declarations, lanes, textTable) {
   // The shorthand and aliases such as grid-gap share the cascade.
   if (
     declarations.some((d) => !family.longhands.includes(asciiLowerCase(d.prop)))
@@ -78,7 +86,7 @@ export function reducePairFamily(rule, family, declarations, lanes) {
   for (const decl of declarations) {
     if (detectDeclaration(decl)) return;
     const slot = family.longhands.indexOf(asciiLowerCase(decl.prop));
-    const value = family.parseValue[slot](decl.value);
+    const value = family.parseValue[slot](decl, textTable);
     if (value === null) return;
     parsed.set(decl, value);
   }
@@ -93,9 +101,9 @@ export function reducePairFamily(rule, family, declarations, lanes) {
         segment.push(decl);
         continue;
       }
-      mergeSegment(rule, family, segment, important, parsed);
+      mergeSegment(rule, family, segment, important, parsed, textTable);
       segment = [];
     }
-    mergeSegment(rule, family, segment, important, parsed);
+    mergeSegment(rule, family, segment, important, parsed, textTable);
   }
 }

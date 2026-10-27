@@ -51,10 +51,11 @@ export function isValidLengthPercentage(termTokens) {
  * slash.
  *
  * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
  * @return {{horizontal: import('./valueComponents.js').Component[], vertical: import('./valueComponents.js').Component[] | null} | null}
  */
-function splitRadiusTerms(value) {
-  const parts = splitValue(value, '/');
+function splitRadiusTerms(value, list) {
+  const parts = splitValue(value, '/', list);
   if (!parts || parts.length > 2) return null;
   return {
     horizontal: parts[0].components,
@@ -67,13 +68,13 @@ function splitRadiusTerms(value) {
  * Corner longhands accept 1 or 2 non-negative <length-percentage> values.
  *
  * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
  * @return {[string, string] | null} [horizontal, vertical] or null if invalid
  */
-export function parseCornerRadius(value) {
-  const trimmed = value.trim();
-  if (trimmed === '') return null;
+export function parseCornerRadius(value, list) {
+  if (value.trim() === '') return null;
 
-  const split = splitRadiusTerms(trimmed);
+  const split = splitRadiusTerms(value, list);
   if (!split || split.vertical !== null) {
     /* Slashes are not allowed in corner longhands */
     return null;
@@ -101,13 +102,13 @@ export function parseCornerRadius(value) {
  * Accepts 1 to 4 horizontal components, optional `/`, and 1 to 4 vertical components.
  *
  * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
  * @return {{horizontal: [string, string, string, string], vertical: [string, string, string, string]} | null}
  */
-export function parseRadiusShorthand(value) {
-  const trimmed = value.trim();
-  if (trimmed === '') return null;
+export function parseRadiusShorthand(value, list) {
+  if (value.trim() === '') return null;
 
-  const split = splitRadiusTerms(trimmed);
+  const split = splitRadiusTerms(value, list);
   if (!split) return null;
 
   const { horizontal, vertical } = split;

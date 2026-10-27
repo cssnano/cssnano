@@ -13,7 +13,7 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'synthesize a reset from cells whose support provenance differs',
-    find: '  if (!hasConsistentSupport(allDecls)) return [];',
+    find: '  if (!hasConsistentSupport(allDecls, textTable)) return [];',
     replace: '  if (false) return [];',
   },
   {
@@ -23,7 +23,7 @@ export const mutations = [
   },
   {
     name: 'ignore a declaration with its own support requirement',
-    find: '      needsUnmetSupport(d)\n    ) {',
+    find: '      needsUnmetSupport(d, textTable)\n    ) {',
     replace: '      false\n    ) {',
   },
 ];
