@@ -27,8 +27,8 @@ const sides = new Map([
   ['bottom', { axis: 'y', offset: () => percentage(100) }],
   ['center', { axis: 'center', offset: () => percentage(50) }],
 ]);
-/* Every value that can change contains a side keyword, possibly escaped. This
- * is a conservative shortcut before tokenizing, not a parse. */
+/* Before an edit, every value that can change contains a side keyword, possibly
+ * escaped. This is a conservative shortcut on the source, not a parse. */
 const mayContainSide = /left|right|top|bottom|center|\\/iv;
 const propFilterRegex =
   /^(?:[bB][aA][cC][kK][gG][rR][oO][uU][nN][dD](?:-[pP][oO][sS][iI][tT][iI][oO][nN])?|(?:-[A-Za-z0-9_]+-)?[pP][eE][rR][sS][pP][eE][cC][tT][iI][vV][eE]-[oO][rR][iI][gG][iI][nN])$/v;
@@ -205,7 +205,7 @@ function positionReplacement(tokens, terms) {
 
 /** @type {Reducer} */
 const reduce = (buffer) => {
-  if (!mayContainSide.test(buffer.text())) return;
+  if (!buffer.isEdited() && !mayContainSide.test(buffer.text())) return;
   // Unbalanced brackets leave the layer structure unknown; keep the source.
   const structure = buffer.structure();
   if (!structure) return;
