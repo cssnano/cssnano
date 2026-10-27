@@ -1,10 +1,13 @@
 import cssnanoUtils from '#utils';
 
-const { TokenType, asciiLowerCase, decoded, tokens } = cssnanoUtils;
-/** @param {import('postcss').Declaration} node */
-export default (node) => {
-  if (!node.value.includes('--') && !node.value.includes('\\')) return false;
-  const input = tokens(node.value);
+const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
+/**
+ * Whether a `var()` in the tokens names a custom property.
+ *
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} input
+ * @return {boolean}
+ */
+export function opensCustomPropertyVar(input) {
   for (let index = 0; index < input.length; index++) {
     const token = input[index];
     if (
@@ -24,4 +27,13 @@ export default (node) => {
     }
   }
   return false;
+}
+
+/**
+ * @param {import('postcss').Declaration} node
+ * @param {import('../../../../values/textTable.js').TextTable} textTable the tokens the walk left for the declaration
+ */
+export default (node, textTable) => {
+  if (!node.value.includes('--') && !node.value.includes('\\')) return false;
+  return opensCustomPropertyVar(textTable.tokens(node));
 };

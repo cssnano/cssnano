@@ -35,6 +35,15 @@ export declare function componentRanges(tokens: readonly CSSToken[]): number[];
  */
 export declare function splitsAsTokens(tokens: readonly CSSToken[]): boolean;
 /**
+ * The tokens a value spells: the list the caller has, or one tokenization of a
+ * value with a `(`. A value without one has no function, so it needs none.
+ *
+ * @param {string} value
+ * @param {readonly CSSToken[]} [tokens]
+ * @return {readonly CSSToken[] | undefined}
+ */
+export declare function valueTokens(value: string, tokens?: readonly CSSToken[]): readonly CSSToken[] | undefined;
+/**
  * The top-level components of a value, split where `list.space` splits it.
  * A value with a `(` is tokenized once when the caller has no list for it; a
  * value without one has no function to type and needs none.

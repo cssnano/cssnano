@@ -14,6 +14,8 @@ const { isColor, isValidWidthStyleColor } =
   await import('../../../src/passes/merge/lib/longhand/validateWsc.js');
 const { isUnresolved } =
   await import('../../../src/passes/merge/lib/longhand/unresolved.js');
+const { default: isCustomProp } =
+  await import('../../../src/passes/merge/lib/longhand/isCustomProp.js');
 const { componentRanges } =
   await import('../../../src/passes/merge/lib/longhand/componentRanges.js');
 const { default: cssnanoUtils } = await import('../../../src/utils/index.js');
@@ -67,6 +69,14 @@ suite('the longhand readers take a declaration from the text table', () => {
     const [start, end] = componentRanges(list);
     const before = tokenizeTotal();
     assert.equal(isUnresolved(list, start, end), true);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('isCustomProp reads the value from the table, without tokenizing', () => {
+    const { root, table } = walkedStylesheet('a{margin:var(--x) 1px}');
+    const decl = root.first.first;
+    const before = tokenizeTotal();
+    assert.equal(isCustomProp(decl, table), true);
     assert.equal(tokenizeTotal() - before, 0);
   });
 

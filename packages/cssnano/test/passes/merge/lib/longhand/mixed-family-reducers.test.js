@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { TextTable } from '../../../../../src/values/textTable.js';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { reduceBorderRadius } from '../../../../../src/passes/merge/lib/longhand/decl/borderRadiusReducer.js';
@@ -6,7 +7,6 @@ import { reduceBorder } from '../../../../../src/passes/merge/lib/longhand/decl/
 import { reduceBox } from '../../../../../src/passes/merge/lib/longhand/decl/boxReducer.js';
 import { boxGroups } from '../../../../../src/passes/merge/lib/longhand/decl/boxGroups.js';
 import { BoxSupport } from '../../../../../src/passes/merge/lib/longhand/targetSupport.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { reduceColumns } from '../../../../../src/passes/merge/lib/longhand/decl/columns.js';
 import {
   reduceBorderRadiusRuns,
@@ -79,7 +79,12 @@ describe('mixed-family internal reducers and helpers', () => {
     const radiusDecls = /** @type {import('postcss').Declaration[]} */ (
       radiusRule.nodes
     );
-    reduceBorderRadius(radiusRule, radiusDecls, [radiusDecls, []]);
+    reduceBorderRadius(
+      radiusRule,
+      radiusDecls,
+      [radiusDecls, []],
+      new TextTable()
+    );
     applyChildEdits(radiusRule);
     assert.strictEqual(radiusRoot.toString(), 'a{border-radius:4px}');
 
@@ -88,7 +93,7 @@ describe('mixed-family internal reducers and helpers', () => {
     const colDecls = /** @type {import('postcss').Declaration[]} */ (
       colRule.nodes
     );
-    reduceColumns(colRule, colDecls, [colDecls, []]);
+    reduceColumns(colRule, colDecls, [colDecls, []], new TextTable());
     applyChildEdits(colRule);
     assert.strictEqual(columnsRoot.toString(), 'a{columns:100px 2}');
   });
@@ -227,7 +232,7 @@ describe('reduceBorderRadius direct contract', () => {
       'a{border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px}'
     );
     const rule = /** @type {import('postcss').Rule} */ (root.first);
-    reduceBorderRadius(rule, [], [[], []]);
+    reduceBorderRadius(rule, [], [[], []], new TextTable());
     assert.equal(
       rule.toString(),
       'a{border-top-left-radius:10px;border-top-right-radius:10px;border-bottom-right-radius:10px;border-bottom-left-radius:10px}'

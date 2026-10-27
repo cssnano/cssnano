@@ -45,9 +45,10 @@ export function declCost(prop, value, important) {
  * @param {({ value: string, decl: Declaration } | null)[]} slots
  * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
  * vector, or `null` while any slot is empty or holds a custom property
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function slotVectorReady(slots) {
-  if (slots.some((s) => !s || isCustomProp(s.decl))) return null;
+function slotVectorReady(slots, textTable) {
+  if (slots.some((s) => !s || isCustomProp(s.decl, textTable))) return null;
   return /** @type {{ value: string, decl: Declaration }[]} */ (slots);
 }
 
@@ -79,9 +80,10 @@ function supportProvenanceMatches(full) {
  * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
  * vector ready to be merged, or `null` if any slot is missing, custom,
  * conflicting on CSS-wide keywords, or has mismatched support provenance
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export function flushableSlots(slots) {
-  const full = slotVectorReady(slots);
+export function flushableSlots(slots, textTable) {
+  const full = slotVectorReady(slots, textTable);
   if (!full) return null;
 
   const v0 = asciiLowerCase(full[0].value);

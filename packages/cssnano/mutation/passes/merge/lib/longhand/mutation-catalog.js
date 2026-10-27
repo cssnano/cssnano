@@ -25,8 +25,8 @@ export const mutations = [
   },
   {
     name: 'reduce segments containing style hacks',
-    find: '    if (detectDeclaration(d) || !canExplode(d)) {',
-    replace: '    if (!canExplode(d)) {',
+    find: '    if (detectDeclaration(d) || !canExplode(d, textTable)) {',
+    replace: '    if (!canExplode(d, textTable)) {',
   },
   {
     name: 'drop declarations a later one needs as a fallback',

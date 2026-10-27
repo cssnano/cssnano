@@ -30,8 +30,16 @@ const { asciiLowerCase } = cssnanoUtils;
  * @param {boolean} important
  * @param {ParsedDeclarations} parsedDecls
  * @return {void}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function mergeSegment(rule, family, segment, important, parsedDecls) {
+function mergeSegment(
+  rule,
+  family,
+  segment,
+  important,
+  parsedDecls,
+  textTable
+) {
   /** @type {(string | null)[]} */
   const axes = [null, null];
   for (const decl of segment) {
@@ -44,7 +52,7 @@ function mergeSegment(rule, family, segment, important, parsedDecls) {
   }
   const [align, justify] = axes;
   if (align === null || justify === null) return;
-  if (segment.some(isCustomProp)) return;
+  if (segment.some((decl) => isCustomProp(decl, textTable))) return;
 
   // A CSS-wide keyword cannot share a shorthand with another value.
   if (!sharesShorthandKeyword([align, justify])) return;
@@ -73,8 +81,16 @@ function mergeSegment(rule, family, segment, important, parsedDecls) {
  * @param {boolean} important
  * @param {ParsedDeclarations} parsedDecls
  * @return {void}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function processLane(rule, family, laneDecls, important, parsedDecls) {
+function processLane(
+  rule,
+  family,
+  laneDecls,
+  important,
+  parsedDecls,
+  textTable
+) {
   /** @type {Declaration[]} */
   let segment = [];
   for (const decl of laneDecls) {
@@ -82,10 +98,10 @@ function processLane(rule, family, laneDecls, important, parsedDecls) {
       segment.push(decl);
       continue;
     }
-    mergeSegment(rule, family, segment, important, parsedDecls);
+    mergeSegment(rule, family, segment, important, parsedDecls, textTable);
     segment = [];
   }
-  mergeSegment(rule, family, segment, important, parsedDecls);
+  mergeSegment(rule, family, segment, important, parsedDecls, textTable);
 }
 
 /**
@@ -109,8 +125,15 @@ function hasMergeableProperties(declarations) {
  * @param {[Declaration[], Declaration[]]} lanes - the declarations and `all`
  *   split by importance
  * @return {void}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export function reduceAlignmentFamily(rule, family, declarations, lanes) {
+export function reduceAlignmentFamily(
+  rule,
+  family,
+  declarations,
+  lanes,
+  textTable
+) {
   if (
     declarations.some((d) => !family.allProps.has(asciiLowerCase(d.prop))) ||
     !hasMergeableProperties(declarations)
@@ -127,8 +150,9 @@ export function reduceAlignmentFamily(rule, family, declarations, lanes) {
   for (const decl of declarations) {
     const isShort = asciiLowerCase(decl.prop) === family.shorthand;
     // Hacks and substitution-backed shorthands only bound a segment.
-    if (detectDeclaration(decl) || (isShort && !canExplode(decl))) continue;
-    const parsed = parseAlignmentDeclaration(family, decl);
+    if (detectDeclaration(decl) || (isShort && !canExplode(decl, textTable)))
+      continue;
+    const parsed = parseAlignmentDeclaration(family, decl, textTable);
     if (!parsed) return;
     parsedDecls.set(decl, parsed);
   }
@@ -136,7 +160,7 @@ export function reduceAlignmentFamily(rule, family, declarations, lanes) {
   for (const lane of [false, true]) {
     const laneDecls = lanes[lane ? 1 : 0];
     if (hasNonAll(laneDecls)) {
-      processLane(rule, family, laneDecls, lane, parsedDecls);
+      processLane(rule, family, laneDecls, lane, parsedDecls, textTable);
     }
   }
 }

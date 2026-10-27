@@ -18,11 +18,12 @@ export declare function declCost(prop: string, value: string, important?: boolea
  * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
  * vector ready to be merged, or `null` if any slot is missing, custom,
  * conflicting on CSS-wide keywords, or has mismatched support provenance
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
 export declare function flushableSlots(slots: ({
     value: string;
     decl: Declaration;
-} | null)[]): {
+} | null)[], textTable: import('../../../../../values/textTable.js').TextTable): {
     value: string;
     decl: Declaration;
 }[] | null;

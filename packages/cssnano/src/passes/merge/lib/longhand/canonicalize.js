@@ -120,7 +120,8 @@ function reduceClassifiedContainer(container, state, context) {
     reduceBorderRadius(
       container,
       state.borderRadiusDecls,
-      state.borderRadiusLanes
+      state.borderRadiusLanes,
+      context.textTable
     );
   }
   if (state.borderDeclarations.length) {
@@ -136,7 +137,13 @@ function reduceClassifiedContainer(container, state, context) {
       if ('longhands' in family) {
         reducePairFamily(container, family, decls, lanes);
       } else {
-        reduceAlignmentFamily(container, family, decls, lanes);
+        reduceAlignmentFamily(
+          container,
+          family,
+          decls,
+          lanes,
+          context.textTable
+        );
       }
     }
   }
@@ -362,7 +369,7 @@ export function longhandContext(
 export function finishColumns(context) {
   if (!context.setsOtherColumn) {
     for (const [rule, decls, lanes] of context.columnRules) {
-      reduceColumns(rule, decls, lanes);
+      reduceColumns(rule, decls, lanes, context.textTable);
     }
     // A rule may hold several runs; rebuild it once, after all of them.
     for (const [rule] of context.columnRules) applyChildEdits(rule);

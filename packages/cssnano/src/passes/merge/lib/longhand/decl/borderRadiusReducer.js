@@ -18,18 +18,20 @@ import { partitionLanes } from './radiusDescriptors.js';
  * @param {Set<Declaration>} liveDefinitions
  * @param {Set<Declaration>} fallbackDefinitions
  * @param {boolean} isImportant
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
 function commitSlotVector(
   rule,
   slotVector,
   liveDefinitions,
   fallbackDefinitions,
-  isImportant
+  isImportant,
+  textTable
 ) {
   /* Preserve CSS-wide keywords without merging to respect author inheritance contracts */
   if (slotVector.some((s) => s && isGlobalKeyword(s.value))) return;
 
-  const full = flushableSlots(slotVector);
+  const full = flushableSlots(slotVector, textTable);
   if (!full) return;
 
   const horizontal = minifyTrbl([
@@ -60,10 +62,18 @@ function commitSlotVector(
  * @param {Container} rule
  * @param {RadiusDeclarationDescriptor[]} laneDescriptors
  * @param {boolean} isImportant
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function coalesceLane(rule, laneDescriptors, isImportant) {
+function coalesceLane(rule, laneDescriptors, isImportant, textTable) {
   const lane = new SlotLane(8, (slots, contributing, fallbacks) =>
-    commitSlotVector(rule, slots, contributing, fallbacks, isImportant)
+    commitSlotVector(
+      rule,
+      slots,
+      contributing,
+      fallbacks,
+      isImportant,
+      textTable
+    )
   );
 
   for (const desc of laneDescriptors) {
@@ -173,11 +183,12 @@ function eliminateRedundantDeclarations(lanes) {
  * @param {Container} rule
  * @param {Declaration[]} decls
  * @param {[Declaration[], Declaration[]]} lanes
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export function reduceBorderRadius(rule, decls, lanes) {
+export function reduceBorderRadius(rule, decls, lanes, textTable) {
   if (!rule.nodes || rule.nodes.length === 0 || decls.length === 0) return;
 
-  const partitioned = partitionLanes(rule, lanes);
+  const partitioned = partitionLanes(rule, lanes, textTable);
   if (!partitioned) return;
 
   const { lanes: descriptorLanes, radiusDescriptors } = partitioned;
@@ -193,7 +204,7 @@ export function reduceBorderRadius(rule, decls, lanes) {
   for (const isImportant of [false, true]) {
     const laneDescriptors = descriptorLanes[isImportant ? 1 : 0];
     if (laneDescriptors.some((d) => !d.isBarrier && d.decl.parent === rule)) {
-      coalesceLane(rule, laneDescriptors, isImportant);
+      coalesceLane(rule, laneDescriptors, isImportant, textTable);
     }
   }
 }

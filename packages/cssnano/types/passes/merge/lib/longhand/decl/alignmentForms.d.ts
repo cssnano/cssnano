@@ -21,8 +21,9 @@ export declare const alignmentProperties: Map<string, AlignmentFamilyConfig>;
  * @param {AlignmentFamilyConfig} family
  * @param {Declaration} decl
  * @return {[string | null, string | null] | null}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export declare function parseAlignmentDeclaration(family: AlignmentFamilyConfig, decl: Declaration): [string | null, string | null] | null;
+export declare function parseAlignmentDeclaration(family: AlignmentFamilyConfig, decl: Declaration, textTable: import('../../../../../values/textTable.js').TextTable): [string | null, string | null] | null;
 export declare const widelySupported: Set<string>;
 /**
  * Whether one shorthand can replace the declarations without changing what

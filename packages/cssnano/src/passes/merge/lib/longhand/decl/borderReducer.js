@@ -69,7 +69,7 @@ function borderBrowserKeeps(declaration, textTable) {
  * @param {TextTable} textTable
  */
 function normalizeBorderSingleton(d, textTable) {
-  if (detectDeclaration(d) || !canExplode(d)) return;
+  if (detectDeclaration(d) || !canExplode(d, textTable)) return;
   const p = asciiLowerCase(d.prop);
   if (borderAndSideShorthands.has(p)) {
     d.prop = p;
@@ -229,7 +229,7 @@ function processLane(rule, laneDecls, lane, textTable) {
   let segment = [];
 
   for (const d of laneDecls) {
-    if (detectDeclaration(d) || !canExplode(d)) {
+    if (detectDeclaration(d) || !canExplode(d, textTable)) {
       if (segment.length) {
         reduceSegment(rule, segment, lane, textTable);
         segment = [];
