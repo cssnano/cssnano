@@ -64,6 +64,20 @@ export function splitsAsTokens(tokens) {
 }
 
 /**
+ * The tokens a value spells: the list the caller has, or one tokenization of a
+ * value with a `(`. A value without one has no function, so it needs none.
+ *
+ * @param {string} value
+ * @param {readonly CSSToken[]} [tokens]
+ * @return {readonly CSSToken[] | undefined}
+ */
+export function valueTokens(value, tokens) {
+  return (
+    tokens ?? (value.includes('(') ? cssnanoUtils.tokens(value) : undefined)
+  );
+}
+
+/**
  * The top-level components of a value, split where `list.space` splits it.
  * A value with a `(` is tokenized once when the caller has no list for it; a
  * value without one has no function to type and needs none.
@@ -73,8 +87,7 @@ export function splitsAsTokens(tokens) {
  * @return {ValueComponent[]}
  */
 export function splitComponents(value, tokens) {
-  const spelled =
-    tokens ?? (value.includes('(') ? cssnanoUtils.tokens(value) : undefined);
+  const spelled = valueTokens(value, tokens);
   if (spelled !== undefined && splitsAsTokens(spelled)) {
     const ranges = componentRanges(spelled);
     /** @type {ValueComponent[]} */

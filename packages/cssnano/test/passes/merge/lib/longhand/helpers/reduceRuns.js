@@ -97,7 +97,7 @@ export function reduceColumnsRuns(rule) {
   reduceFamilyRuns(
     rule,
     (d) => allColumnProps.has(d.prop.toLowerCase()),
-    (decls, lanes) => reduceColumns(rule, decls, lanes)
+    (decls, lanes) => reduceColumns(rule, decls, lanes, new TextTable())
   );
 }
 
@@ -106,7 +106,7 @@ export function reduceBorderRadiusRuns(rule) {
   reduceFamilyRuns(
     rule,
     (d) => allRadiusProperties.has(d.prop.toLowerCase()),
-    (decls, lanes) => reduceBorderRadius(rule, decls, lanes)
+    (decls, lanes) => reduceBorderRadius(rule, decls, lanes, new TextTable())
   );
 }
 

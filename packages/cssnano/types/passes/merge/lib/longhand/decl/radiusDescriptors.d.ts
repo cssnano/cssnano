@@ -17,8 +17,9 @@ export type RadiusDeclarationDescriptor = {
  * @param {Container} rule
  * @param {[Declaration[], Declaration[]]} familyLanes
  * @return {{ lanes: [RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]], radiusDescriptors: RadiusDeclarationDescriptor[] } | null}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export declare function partitionLanes(rule: Container, familyLanes: [Declaration[], Declaration[]]): {
+export declare function partitionLanes(rule: Container, familyLanes: [Declaration[], Declaration[]], textTable: import('../../../../../values/textTable.js').TextTable): {
     lanes: [RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]];
     radiusDescriptors: RadiusDeclarationDescriptor[];
 } | null;
