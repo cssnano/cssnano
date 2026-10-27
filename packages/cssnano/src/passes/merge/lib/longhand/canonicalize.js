@@ -124,7 +124,12 @@ function reduceClassifiedContainer(container, state, context) {
     );
   }
   if (state.borderDeclarations.length) {
-    reduceBorder(container, state.borderDeclarations, state.hasForeignBorder);
+    reduceBorder(
+      container,
+      state.borderDeclarations,
+      state.hasForeignBorder,
+      context.textTable
+    );
   }
   if (state.families) {
     for (const { family, decls, lanes } of state.families.values()) {

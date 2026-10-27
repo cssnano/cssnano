@@ -1,11 +1,11 @@
 import cssnanoUtils from '#utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { discardOverriddenInList } from './overriddenDeclarations.js';
-import { list } from 'postcss';
 import minifyTrbl from '../minifyTrbl.js';
 import minifyWidthStyleColor from '../minifyWsc.js';
-import parseTrbl from '../parseTrbl.js';
+import parseTrbl, { expandFourSides } from '../parseTrbl.js';
 import parseWidthStyleColor from '../parseWsc.js';
+import { declarationTokens, splitComponents } from '../componentRanges.js';
 import { setsLonghands } from '../spec.js';
 import { detectDeclaration } from '#stylehacks';
 import hasSubstitution from '../hasSubstitution.js';
@@ -15,7 +15,11 @@ import {
   mergeBlockingSupport,
   strandsFallback,
 } from '../isFallback.js';
-import { isValidWidthStyleColor, specifiesComponent } from '../validateWsc.js';
+import {
+  isValidWidthStyleColor,
+  namesComponent,
+  specifiesComponent,
+} from '../validateWsc.js';
 import {
   allPhysicalBorderProperties,
   allSidesBorderShorthands,
@@ -33,36 +37,43 @@ import {
 
 const { asciiLowerCase } = cssnanoUtils;
 /** @import {Container, Declaration} from 'postcss'; */
+/** @import {TextTable} from '../../../../../values/textTable.js'; */
 
 /**
  * @param {Declaration} declaration
+ * @param {TextTable} textTable the tokens the walk left for the declaration
  * @return {boolean}
  */
-function borderBrowserKeeps(declaration) {
+function borderBrowserKeeps(declaration, textTable) {
   if (isCssWideKeyword(declaration.value)) {
     return true;
   }
   const prop = asciiLowerCase(declaration.prop);
+  const tokens = declarationTokens(textTable, declaration);
   if (borderAndSideShorthands.has(prop)) {
-    return parseWidthStyleColor(declaration.value) !== null;
+    return parseWidthStyleColor(declaration.value, tokens) !== null;
   }
   const component = /** @type {string} */ (prop.split('-').at(-1));
   if (!allSidesBorderShorthands.includes(prop)) {
-    return specifiesComponent(declaration.value, component);
+    return specifiesComponent(declaration.value, tokens, component);
   }
-  if (list.space(declaration.value).length > sides.length) return false;
-  return parseTrbl(declaration.value).every((v) =>
-    specifiesComponent(v, component)
+  const parts = splitComponents(declaration.value, tokens);
+  if (parts.length > sides.length) return false;
+  return expandFourSides(parts).every((part) =>
+    namesComponent(part, component)
   );
 }
 
-/** @param {Declaration} d */
-function normalizeBorderSingleton(d) {
+/**
+ * @param {Declaration} d
+ * @param {TextTable} textTable
+ */
+function normalizeBorderSingleton(d, textTable) {
   if (detectDeclaration(d) || !canExplode(d)) return;
   const p = asciiLowerCase(d.prop);
   if (borderAndSideShorthands.has(p)) {
     d.prop = p;
-    d.value = minifyWidthStyleColor(d.value);
+    d.value = minifyWidthStyleColor(d.value, declarationTokens(textTable, d));
     delete d.raws?.value;
   } else if (allSidesBorderShorthands.includes(p)) {
     d.prop = p;
@@ -104,16 +115,18 @@ function updateCell(idx, d, value, isBarrier, state) {
 /**
  * @param {Declaration} d
  * @param {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
+ * @param {TextTable} textTable
  */
-function applySegmentDeclaration(d, state) {
+function applySegmentDeclaration(d, state, textTable) {
   const prop = asciiLowerCase(d.prop);
+  const tokens = declarationTokens(textTable, d);
   // Segment members passed the family guard: no global keyword, explodable.
-  const isBarrier = hasSubstitution(d.value);
+  const isBarrier = hasSubstitution(d.value, tokens);
 
   if (borderAndSideShorthands.has(prop)) {
     const isB = prop === 'border';
     const sList = isB ? [0, 1, 2, 3] : [sides.indexOf(prop.slice(7))];
-    const parsed = parseWidthStyleColor(d.value);
+    const parsed = parseWidthStyleColor(d.value, tokens);
     // borderBrowserKeeps gated this declaration; a null here would mean an ignored
     // value flowing into cell state, so never name components from it.
     if (!parsed) return;
@@ -143,9 +156,10 @@ function applySegmentDeclaration(d, state) {
 }
 /**
  * @param {Declaration[]} segment
+ * @param {TextTable} textTable
  * @return {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }}
  */
-function analyzeSegment(segment) {
+function analyzeSegment(segment, textTable) {
   /** @type {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} */
   const state = {
     cells: Array.from({ length: 12 }, () => ''),
@@ -156,7 +170,7 @@ function analyzeSegment(segment) {
     resetFound: false,
   };
   for (const d of segment) {
-    applySegmentDeclaration(d, state);
+    applySegmentDeclaration(d, state, textTable);
   }
   return state;
 }
@@ -165,8 +179,9 @@ function analyzeSegment(segment) {
  * @param {Container} rule
  * @param {Declaration[]} segment
  * @param {boolean} lane
+ * @param {TextTable} textTable
  */
-function reduceSegment(rule, segment, lane) {
+function reduceSegment(rule, segment, lane, textTable) {
   if (segment.length === 0) return;
   if (segment.length === 1) {
     const d = segment[0];
@@ -176,7 +191,7 @@ function reduceSegment(rule, segment, lane) {
     return;
   }
 
-  const state = analyzeSegment(segment);
+  const state = analyzeSegment(segment, textTable);
   if (state.touched.size === 0) return;
 
   const hasReset = state.resetFound;
@@ -207,15 +222,16 @@ function reduceSegment(rule, segment, lane) {
  * @param {Container} rule
  * @param {Declaration[]} laneDecls
  * @param {boolean} lane
+ * @param {TextTable} textTable
  */
-function processLane(rule, laneDecls, lane) {
+function processLane(rule, laneDecls, lane, textTable) {
   /** @type {Declaration[]} */
   let segment = [];
 
   for (const d of laneDecls) {
     if (detectDeclaration(d) || !canExplode(d)) {
       if (segment.length) {
-        reduceSegment(rule, segment, lane);
+        reduceSegment(rule, segment, lane, textTable);
         segment = [];
       }
       continue;
@@ -224,7 +240,7 @@ function processLane(rule, laneDecls, lane) {
   }
 
   if (segment.length) {
-    reduceSegment(rule, segment, lane);
+    reduceSegment(rule, segment, lane, textTable);
   }
 }
 
@@ -258,9 +274,10 @@ const borderPrecedence = {
  * @param {Container} rule
  * @param {Declaration[]} decls
  * @param {boolean} hasForeignBorder
+ * @param {TextTable} textTable the tokens the walk left for the declarations
  * @return {void}
  */
-export function reduceBorder(rule, decls, hasForeignBorder) {
+export function reduceBorder(rule, decls, hasForeignBorder, textTable) {
   if (!rule.nodes || hasForeignBorder) return;
 
   if (
@@ -268,11 +285,12 @@ export function reduceBorder(rule, decls, hasForeignBorder) {
     decls.some((d) => {
       const p = asciiLowerCase(d.prop);
       const isCustomShorthand =
-        allBorderShorthands.has(p) && hasSubstitution(d.value);
+        allBorderShorthands.has(p) &&
+        hasSubstitution(d.value, declarationTokens(textTable, d));
       return (
         isCssWideKeyword(d.value) ||
         isCustomShorthand ||
-        (!detectDeclaration(d) && !borderBrowserKeeps(d))
+        (!detectDeclaration(d) && !borderBrowserKeeps(d, textTable))
       );
     })
   )
@@ -282,7 +300,7 @@ export function reduceBorder(rule, decls, hasForeignBorder) {
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
-    if (live[0]) normalizeBorderSingleton(live[0]);
+    if (live[0]) normalizeBorderSingleton(live[0], textTable);
     return;
   }
 
@@ -291,7 +309,7 @@ export function reduceBorder(rule, decls, hasForeignBorder) {
       (d) => Boolean(d.important) === lane && d.parent
     );
     if (laneDecls.length) {
-      processLane(rule, laneDecls, lane);
+      processLane(rule, laneDecls, lane, textTable);
     }
   }
 }

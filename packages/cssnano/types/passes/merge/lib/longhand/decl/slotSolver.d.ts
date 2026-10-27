@@ -8,9 +8,10 @@ import type { BoxFamily } from './boxGroups.js';
  * `hasSubstitution` also rejects a custom property, so `canExplode` skips it.
  *
  * @param {Declaration} declaration - a shorthand
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {boolean}
  */
-export declare function isExplodable(declaration: Declaration): boolean;
+export declare function isExplodable(declaration: Declaration, textTable: import('../../../../../values/textTable.js').TextTable): boolean;
 /**
  * @param {BoxFamily} family
  * @return {{ parse: (value: string) => string[], minify: (value: string | string[]) => string }}
@@ -51,7 +52,8 @@ export declare function shortestWithFreeSlots(values: string[], free: boolean[],
  * importance, in source order
  * @param {boolean} important
  * @param {boolean} mayInsert - whether every target supports the shorthand
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {void}
  */
-export declare function reduceFamilyLane(rule: Container, family: BoxFamily, laneDecls: Declaration[], important: boolean, mayInsert: boolean): void;
+export declare function reduceFamilyLane(rule: Container, family: BoxFamily, laneDecls: Declaration[], important: boolean, mayInsert: boolean, textTable: import('../../../../../values/textTable.js').TextTable): void;
 //# sourceMappingURL=slotSolver.d.ts.map

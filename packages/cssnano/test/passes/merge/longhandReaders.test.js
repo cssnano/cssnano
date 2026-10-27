@@ -10,8 +10,14 @@ const { foldShorthandDeclaration } =
   await import('../../../src/passes/merge/lib/longhand/minifyShorthand.js');
 const { boxBrowserKeeps } =
   await import('../../../src/passes/merge/lib/longhand/validateBox.js');
-const { isValidWidthStyleColor } =
+const { isColor, isValidWidthStyleColor } =
   await import('../../../src/passes/merge/lib/longhand/validateWsc.js');
+const { isUnresolved } =
+  await import('../../../src/passes/merge/lib/longhand/unresolved.js');
+const { componentRanges } =
+  await import('../../../src/passes/merge/lib/longhand/componentRanges.js');
+const { default: cssnanoUtils } = await import('../../../src/utils/index.js');
+const { tokenStart, tokenEnd } = cssnanoUtils;
 const { default: parseWidthStyleColor } =
   await import('../../../src/passes/merge/lib/longhand/parseWsc.js');
 
@@ -52,6 +58,29 @@ suite('the longhand readers take a declaration from the text table', () => {
     const list = table.tokens(decl);
     const before = tokenizeTotal();
     boxBrowserKeeps('margin', decl.value, list);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test("unresolved reads a component's range from the table, without tokenizing", () => {
+    const { root, table } = walkedStylesheet('a{border:calc(1px) solid red}');
+    const list = table.tokens(root.first.first);
+    const [start, end] = componentRanges(list);
+    const before = tokenizeTotal();
+    assert.equal(isUnresolved(list, start, end), true);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test("isColor reads the color component's range from the table, without tokenizing", () => {
+    const { root, table } = walkedStylesheet('a{border:1px solid rgb(0 0 0)}');
+    const list = table.tokens(root.first.first);
+    const ranges = componentRanges(list);
+    const last = ranges.length - 2;
+    const text = root.first.first.value.slice(
+      tokenStart(list[ranges[last]]),
+      tokenEnd(list[ranges[last + 1] - 1])
+    );
+    const before = tokenizeTotal();
+    assert.equal(isColor(text, list, ranges[last], ranges[last + 1]), true);
     assert.equal(tokenizeTotal() - before, 0);
   });
 

@@ -4,6 +4,7 @@ import parseWidthStyleColor, {
   toLower,
 } from '../../../../../src/passes/merge/lib/longhand/parseWsc.js';
 import minifyWidthStyleColor from '../../../../../src/passes/merge/lib/longhand/minifyWsc.js';
+import { tokens } from '../../../../../src/utils/value.js';
 import {
   isBorderStyle,
   isBorderWidth,
@@ -11,12 +12,19 @@ import {
   isValidWidthStyleColor,
 } from '../../../../../src/passes/merge/lib/longhand/validateWsc.js';
 
+/* Classifies a parsed component with the tokens that spell it. */
+function classifies(is, component) {
+  if (component === undefined) return false;
+  const list = tokens(component);
+  return is(component, list, 0, list.length);
+}
+
 /* Classifies each parsed component string again, the reading the parser's
  * slots replace. */
 function validByClassifying({ width, style, color }) {
-  const validWidth = isBorderWidth(width);
+  const validWidth = classifies(isBorderWidth, width);
   const validStyle = isBorderStyle(style);
-  const validColor = isColor(color);
+  const validColor = classifies(isColor, color);
 
   return (
     (validWidth && validStyle) ||

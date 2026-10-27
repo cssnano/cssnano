@@ -65,7 +65,7 @@ function inspectLaneGroups(decls) {
     const isImportant = rest.toLowerCase().endsWith('!important');
     const val = (isImportant ? rest.slice(0, -10) : rest).trim();
     const comp = prop.split('-').at(-1);
-    if (!comp || !specifiesComponent(val, comp)) continue;
+    if (!comp || !specifiesComponent(val, undefined, comp)) continue;
 
     allProps.add(prop);
     if (isImportant) {

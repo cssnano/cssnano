@@ -29,8 +29,8 @@ export const mutations = [
   {
     name: 'accept tokens that are no border component',
     target: parseWsc,
-    find: '    } else {\n      return null;\n    }\n  }\n\n  if (tokens > 3)',
-    replace: '    }\n  }\n\n  if (tokens > 3)',
+    find: '    } else {\n      return null;\n    }\n  }\n\n  if (count > 3)',
+    replace: '    }\n  }\n\n  if (count > 3)',
   },
   {
     name: 'accept multi-token values for a single-component border property',

@@ -3,6 +3,7 @@ import { detectDeclaration } from '#stylehacks';
 import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
 import { isLengthValue } from '../lengthGrammar.js';
 import { isUnresolved } from '../unresolved.js';
+import { wholeText } from '../componentRanges.js';
 import { closingTokens } from '../valueComponents.js';
 
 /** @import {Declaration} from 'postcss'; */
@@ -222,9 +223,15 @@ export const setsOtherColumnProperty = (declaration) =>
   (asciiLowerCase(declaration.prop) === columns &&
     parsedValue(declaration).hasTopLevelSlash);
 
+/** @param {string} text @return {boolean} */
+const isUnresolvedText = (text) => {
+  const component = wholeText(text);
+  return isUnresolved(component.tokens, component.start, component.end);
+};
+
 /** @param {string} v @return {boolean} */
 const isKeywordOrUnresolved = (v) =>
-  v === auto || cssWideKeywords.has(v) || isUnresolved(v);
+  v === auto || cssWideKeywords.has(v) || isUnresolvedText(v);
 
 /** @param {Declaration} d @return {boolean} */
 export function isValidColumns(d) {
@@ -252,7 +259,7 @@ export function isValidColumns(d) {
         const val = asciiLowerCase(parsed.value.slice(term.start, term.end));
         // CSS-wide keywords cannot combine with other tokens (CSS Cascading 4
         // § 7.2); only unresolved functions keep a two-term value valid.
-        if (isUnresolved(val)) {
+        if (isUnresolvedText(val)) {
           pairRoles.push('unresolved');
         } else {
           return false;

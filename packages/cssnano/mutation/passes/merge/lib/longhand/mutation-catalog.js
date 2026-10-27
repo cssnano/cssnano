@@ -20,7 +20,7 @@ export const mutations = [
   },
   {
     name: 'let substituted values fill border cells without a barrier',
-    find: '  const isBarrier = hasSubstitution(d.value);',
+    find: '  const isBarrier = hasSubstitution(d.value, tokens);',
     replace: '  const isBarrier = false;',
   },
   {

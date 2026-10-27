@@ -116,7 +116,7 @@ export function reduceBox(rule, box, support, textTable) {
     if (
       property?.slot === shorthandSlot &&
       !detectDeclaration(s) &&
-      isExplodable(s)
+      isExplodable(s, textTable)
     ) {
       const { family } = property;
       s.prop = family.shorthand;
@@ -135,7 +135,8 @@ export function reduceBox(rule, box, support, textTable) {
         group.physical,
         laneDecls,
         lane,
-        support.supportsAll(group.physical.shorthand)
+        support.supportsAll(group.physical.shorthand),
+        textTable
       );
     }
     if (!box.flow) continue;
@@ -145,7 +146,8 @@ export function reduceBox(rule, box, support, textTable) {
         family,
         laneDecls,
         lane,
-        support.supportsAll(family.shorthand)
+        support.supportsAll(family.shorthand),
+        textTable
       );
     }
   }
