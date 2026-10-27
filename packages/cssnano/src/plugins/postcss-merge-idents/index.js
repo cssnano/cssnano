@@ -1,5 +1,4 @@
 import cssnanoUtils from '#utils';
-import { TextTable } from '../../values/textTable.js';
 import {
   createSymbolLists,
   isAttached,
@@ -364,12 +363,11 @@ function rewriteReferences(references, renames) {
  * collects the lists, so the transform needs no walk of its own.
  *
  * @param {SymbolLists} lists
- * @param {Record<PropertyKey, never>} _options takes no options
+ * @param {Record<PropertyKey, unknown>} _options takes no options
  * @param {(node: ChildNode) => void} remove
- * @param {import('../../values/textTable.js').TextTable} _table reads no selector tokens
  * @return {void}
  */
-export function mergeIdentsSymbols(lists, _options, remove, _table) {
+export function mergeIdentsSymbols(lists, _options, remove) {
   mergeAtRules(lists, remove);
 }
 
@@ -385,7 +383,7 @@ function pluginCreator() {
     OnceExit(css) {
       const lists = createSymbolLists();
       css.walk(symbolVisit(lists));
-      mergeIdentsSymbols(lists, {}, (node) => node.remove(), new TextTable());
+      mergeIdentsSymbols(lists, {}, (node) => node.remove());
     },
   };
 }
