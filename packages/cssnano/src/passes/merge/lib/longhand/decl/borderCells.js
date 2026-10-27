@@ -4,6 +4,8 @@ import { isBorderStyle, isBorderWidth, isColor } from '../validateWsc.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
+const classifiers = [isBorderWidth, isBorderStyle, isColor];
+
 /**
  * The token range of each cell's component, in parallel arrays. A cell whose
  * component has no function has no list; a cell no declaration filled has none.
@@ -29,7 +31,6 @@ import { isBorderStyle, isBorderWidth, isColor } from '../validateWsc.js';
  * @return {string}
  */
 export function minifyCells(cells, cellRanges, indexes) {
-  const classifiers = [isBorderWidth, isBorderStyle, isColor];
   /** @type {(string | undefined)[]} */
   const values = [];
   let named = 0;
@@ -56,6 +57,7 @@ export function minifyCells(cells, cellRanges, indexes) {
   if (named < 2) return minifyWidthStyleColor(joinCells(cells, indexes));
   return minifyComponents(values[0], values[1], values[2]);
 }
+
 /**
  * @param {string[]} cells
  * @param {number[]} indexes

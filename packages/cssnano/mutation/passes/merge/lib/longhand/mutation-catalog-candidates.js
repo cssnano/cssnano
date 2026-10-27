@@ -74,8 +74,8 @@ export const mutations = [
   {
     name: 'classify border cells with the width classifier in the style slot',
     target: cells,
-    find: '  const classifiers = [isBorderWidth, isBorderStyle, isColor];',
-    replace: '  const classifiers = [isBorderStyle, isBorderWidth, isColor];',
+    find: 'const classifiers = [isBorderWidth, isBorderStyle, isColor];',
+    replace: 'const classifiers = [isBorderStyle, isBorderWidth, isColor];',
   },
   /* Not listed: reversing the equal-size mask tie-break in compareCandidates
    * has not changed the output of any rule found so far, so the mutant would
