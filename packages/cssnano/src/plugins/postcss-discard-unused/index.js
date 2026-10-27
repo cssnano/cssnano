@@ -69,9 +69,9 @@ function namespacePrefixToken(token) {
 /**
  * Find namespace prefixes in each selector-list item. A comma resets the
  * candidate prefix so a type selector in an earlier item cannot be mistaken
- * for the prefix of a later qualified selector. Intervening whitespace or
- * comments also reset the candidate prefix because CSS qualified names cannot
- * contain whitespace between the prefix, '|', and the element/attribute name.
+ * for the prefix of a later qualified selector. Whitespace also resets it,
+ * since qualified names cannot contain whitespace. Comments are removed before
+ * parsing, so they do not reset it.
  *
  * @param {string} source
  * @return {(string | true)[]}
@@ -85,12 +85,13 @@ function namespacePrefixes(source) {
   let pendingPrefix;
 
   for (const token of tokenize({ css: source })) {
+    if (isTokenComment(token)) continue;
     if (isTokenComma(token)) {
       previous = undefined;
       pendingPrefix = undefined;
       continue;
     }
-    if (isTokenWhitespace(token) || isTokenComment(token)) {
+    if (isTokenWhitespace(token)) {
       previous = undefined;
       pendingPrefix = undefined;
       continue;

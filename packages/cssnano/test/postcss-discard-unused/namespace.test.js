@@ -184,6 +184,11 @@ test(
 );
 
 test(
+  'discard-unused keeps a namespace whose prefix is followed by a comment',
+  passthroughCSS('@namespace ns url(x);ns/**/|a{}')
+);
+
+test(
   "shouldn't remove unused prefixed namespace",
   passthroughCSS('@namespace svg url(http://www.w3.org/2000/svg)', {
     namespace: false,
