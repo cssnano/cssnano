@@ -1,16 +1,9 @@
 import { ValueBuffer } from '../values/valueBuffer.js';
 import { memoOf } from './memo.js';
 
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Helpers, Rule} from 'postcss' */
 /** @import {Reducer} from './host.js' */
-/** @import {TextTable} from '../values/textTable.js' */
-
-/**
- * A folded selector: its text, and the tokens that spell it when a stage read
- * them.
- * @typedef {{text: string, tokens: readonly CSSToken[] | undefined}} FoldedSelector
- */
+/** @import {FoldedSelector, TextTable} from '../values/textTable.js' */
 
 /**
  * What one run knows about selectors: the buffer reducers of its plan, or null

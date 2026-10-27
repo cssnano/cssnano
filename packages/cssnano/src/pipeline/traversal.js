@@ -30,7 +30,7 @@ import {
 /** @import {AtRule, Container, Document, Helpers, Root} from 'postcss' */
 /** @import {Reducer, Stage, TextReducer} from './host.js' */
 /** @import {SelectorEntry} from './selectorReduce.js' */
-/** @import {TextTable} from '../values/textTable.js' */
+/** @import {FoldedSelector, TextTable} from '../values/textTable.js' */
 /** @import {CommentState} from './comments/nodeComments.js' */
 
 /**
@@ -38,7 +38,7 @@ import {
  * no stage treats it. For each context, a memo from source text to the plan's
  * result, since a value can read its context.
  * `mode` is how the tokenizer reads the values of the property.
- * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, string> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined}} PropertyEntry
+ * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedSelector> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined}} PropertyEntry
  */
 
 /**
@@ -107,14 +107,14 @@ function textEntry(plan, tightens) {
 function reduceValue(entry, text, context, decl, helpers) {
   const plan = /** @type {readonly Reducer[]} */ (entry.plan);
   const memo = memoOf(entry.memos, context);
-  let result = memo.get(text);
-  if (result !== undefined) return result;
+  const known = memo.get(text);
+  if (known !== undefined) return known.text;
   const buffer = new ValueBuffer(text, entry.mode);
   for (const reducer of plan) reducer(buffer, context);
-  result = buffer.text();
+  const result = buffer.text();
   const warnings = buffer.warnings();
   if (warnings === undefined) {
-    memo.set(text, result);
+    memo.set(text, { text: result, tokens: undefined });
   } else {
     for (const { message, plugin } of warnings) {
       helpers.result.warn(

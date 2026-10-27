@@ -1,9 +1,15 @@
 import { tokens as tokenize } from '../utils/value.js';
-import { sourceSelector } from '../utils/sourceText.js';
+import { sourceSelector, sourceValue } from '../utils/sourceText.js';
 import { tokensText } from './tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Rule} from 'postcss' */
+/** @import {Declaration, Rule} from 'postcss' */
+
+/**
+ * A folded text: its text, and the tokens that spell it when a stage read
+ * them.
+ * @typedef {{text: string, tokens: readonly CSSToken[] | undefined}} FoldedSelector
+ */
 
 /**
  * @typedef {object} TextEntry
@@ -11,41 +17,43 @@ import { tokensText } from './tokensText.js';
  * @property {readonly CSSToken[]} tokens
  */
 
+/** @typedef {Rule | Declaration} TextNode */
+
 /**
- * Gives each rule's selector one token list, so a stage that reads a selector
- * after another stage wrote it does not tokenize it again. An entry is reused
- * only while the rule still spells its text.
+ * Gives each rule's selector and each declaration's value one token list, so
+ * a stage that reads a text after another stage wrote it does not tokenize it
+ * again. An entry is reused only while the node still spells its text.
  */
 class TextTable {
-  /** @type {WeakMap<Rule, TextEntry>} */
+  /** @type {WeakMap<TextNode, TextEntry>} */
   #entries = new WeakMap();
 
   /**
-   * The tokens of the selector as written. Lists are shared, so readers must
-   * not change them.
+   * The tokens of the text as written. Lists are shared, so readers must not
+   * change them.
    *
-   * @param {Rule} rule
+   * @param {TextNode} node
    * @return {readonly CSSToken[]}
    */
-  tokens(rule) {
-    const text = sourceSelector(rule);
-    const entry = this.#entries.get(rule);
+  tokens(node) {
+    const text = sourceOf(node);
+    const entry = this.#entries.get(node);
     if (entry !== undefined && entry.text === text) return entry.tokens;
     const list = tokenize(text);
-    this.#entries.set(rule, { text, tokens: list });
+    this.#entries.set(node, { text, tokens: list });
     return list;
   }
 
   /**
-   * The stored tokens of the selector, or undefined when none are stored for
-   * the text the rule spells. Unlike `tokens`, it never tokenizes.
+   * The stored tokens of the text, or undefined when none are stored for the
+   * text the node spells. Unlike `tokens`, it never tokenizes.
    *
-   * @param {Rule} rule
+   * @param {TextNode} node
    * @return {readonly CSSToken[] | undefined}
    */
-  stored(rule) {
-    const entry = this.#entries.get(rule);
-    return entry !== undefined && entry.text === sourceSelector(rule)
+  stored(node) {
+    const entry = this.#entries.get(node);
+    return entry !== undefined && entry.text === sourceOf(node)
       ? entry.tokens
       : undefined;
   }
@@ -53,50 +61,78 @@ class TextTable {
   /**
    * Assigns the text of a list the caller built, and stores the list itself.
    *
-   * @param {Rule} rule
+   * @param {TextNode} node
    * @param {readonly CSSToken[]} list positioned as the text it spells
    */
-  write(rule, list) {
+  write(node, list) {
     const text = tokensText(list);
-    assign(rule, text);
-    this.#entries.set(rule, { text, tokens: list });
+    assign(node, text);
+    this.#entries.set(node, { text, tokens: list });
   }
 
   /**
    * Assigns the text without storing tokens, for a text no list spells yet.
    *
-   * @param {Rule} rule
+   * @param {TextNode} node
    * @param {string} text
    */
-  setText(rule, text) {
-    assign(rule, text);
+  setText(node, text) {
+    assign(node, text);
   }
 
   /**
-   * Stores a list whose text the caller knows. The rule is assigned only when
+   * Stores a list whose text the caller knows. The node is assigned only when
    * it does not already spell the text.
    *
-   * @param {Rule} rule
+   * @param {TextNode} node
    * @param {string} text
    * @param {readonly CSSToken[]} list
    */
-  record(rule, text, list) {
-    assign(rule, text);
-    this.#entries.set(rule, { text, tokens: list });
+  record(node, text, list) {
+    assign(node, text);
+    this.#entries.set(node, { text, tokens: list });
+  }
+
+  /**
+   * Stores an entry a memo already holds, so the node and the memo share one
+   * list. The node is assigned only when it does not already spell the text.
+   *
+   * @param {TextNode} node
+   * @param {TextEntry} entry
+   */
+  share(node, entry) {
+    assign(node, entry.text);
+    this.#entries.set(node, entry);
   }
 }
 
 /**
- * Sets the selector to the text and drops the raw, which would otherwise
- * restore comments the text no longer has.
+ * The text a node is read as: its selector or value, with the comments that
+ * PostCSS strips from them.
  *
- * @param {Rule} rule
+ * @param {TextNode} node
+ * @returns {string}
+ */
+function sourceOf(node) {
+  return node.type === 'decl' ? sourceValue(node) : sourceSelector(node);
+}
+
+/**
+ * Sets the selector or value to the text and drops the raw, which would
+ * otherwise restore comments the text no longer has.
+ *
+ * @param {TextNode} node
  * @param {string} text
  */
-function assign(rule, text) {
-  if (sourceSelector(rule) === text) return;
-  rule.selector = text;
-  delete rule.raws.selector;
+function assign(node, text) {
+  if (sourceOf(node) === text) return;
+  if (node.type === 'decl') {
+    node.value = text;
+    delete node.raws.value;
+  } else {
+    node.selector = text;
+    delete node.raws.selector;
+  }
 }
 
 export { TextTable };
