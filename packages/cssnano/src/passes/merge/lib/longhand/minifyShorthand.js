@@ -1,6 +1,9 @@
 import cssnanoUtils from '#utils';
 import { detectDeclaration } from '#stylehacks';
 import { normalizeValue } from './minifyShorthandValues.js';
+import { TextTable } from '../../../../values/textTable.js';
+
+/** @import {Container} from 'postcss' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -31,12 +34,15 @@ export const foldableShorthands = new Set([
  * @param {import('postcss').Declaration} decl
  * @param {Map<string, string | null>} [memoTable]
  * @param {string} [property] - the lowercased property name, when known
+ * @param {TextTable} [table] the text table the walk left, which holds the
+ * declaration's tokens; a fresh one when omitted
  * @return {void}
  */
 export function foldShorthandDeclaration(
   decl,
   memoTable,
-  property = asciiLowerCase(decl.prop)
+  property = asciiLowerCase(decl.prop),
+  table = new TextTable()
 ) {
   if (!foldableShorthands.has(property) || detectDeclaration(decl)) return;
   const sourceValue =
@@ -48,11 +54,15 @@ export function foldShorthandDeclaration(
   if (memoTable) {
     canonicalValue = memoTable.get(memoKey);
     if (canonicalValue === undefined && !memoTable.has(memoKey)) {
-      canonicalValue = normalizeValue(property, sourceValue);
+      canonicalValue = normalizeValue(
+        property,
+        sourceValue,
+        table.tokens(decl)
+      );
       memoTable.set(memoKey, canonicalValue);
     }
   } else {
-    canonicalValue = normalizeValue(property, sourceValue);
+    canonicalValue = normalizeValue(property, sourceValue, table.tokens(decl));
   }
   if (
     canonicalValue === undefined ||
@@ -69,6 +79,31 @@ export function foldShorthandDeclaration(
 }
 
 /**
+ * Folds immediate shorthand declarations within a container (e.g. root or at-rule).
+ * @param {Container} container
+ * @param {Map<string, string | null>} shorthandMemoTable
+ * @param {TextTable} textTable
+ * @return {void}
+ */
+export function foldContainerDeclarations(
+  container,
+  shorthandMemoTable,
+  textTable
+) {
+  if (!container.nodes) return;
+  for (const node of container.nodes) {
+    if (node.type === 'decl') {
+      foldShorthandDeclaration(
+        node,
+        shorthandMemoTable,
+        asciiLowerCase(node.prop),
+        textTable
+      );
+    }
+  }
+}
+
+/**
  * Full AST traversal fallback for standalone shorthand identity canonicalization.
  *
  * @param {import('postcss').Root} root
@@ -77,5 +112,8 @@ export function foldShorthandDeclaration(
 export default function minifyShorthandIdentities(root) {
   /** @type {Map<string, string | null>} */
   const memoTable = new Map();
-  root.walkDecls((decl) => foldShorthandDeclaration(decl, memoTable));
+  const table = new TextTable();
+  root.walkDecls((decl) =>
+    foldShorthandDeclaration(decl, memoTable, asciiLowerCase(decl.prop), table)
+  );
 }

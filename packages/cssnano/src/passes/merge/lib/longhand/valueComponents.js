@@ -22,9 +22,11 @@ export const closingTokens = new Set([
  * @param {string} value
  * @param {',' | '/'} [separator] - the top-level token that divides the value
  * into parts; a comma is otherwise a failure, and a slash an ordinary token
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [list] the
+ * tokens of `value`, when the caller has them from the text table
  * @return {{components: Component[], raw: string}[] | null}
  */
-export function splitValue(value, separator) {
+export function splitValue(value, separator, list = tokens(value)) {
   /** @type {{components: Component[], start: number, end: number}[]} */
   const parts = [{ components: [], start: 0, end: value.length }];
   /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
@@ -45,7 +47,7 @@ export function splitValue(value, separator) {
     current = [];
   };
 
-  for (const token of tokens(value)) {
+  for (const token of list) {
     const type = token[0];
     if (type === TokenType.Comment) return null;
 
