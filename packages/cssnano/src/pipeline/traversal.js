@@ -30,7 +30,7 @@ import {
 /** @import {AtRule, Container, Document, Helpers, Root} from 'postcss' */
 /** @import {Reducer, Stage, TextReducer} from './host.js' */
 /** @import {SelectorEntry} from './selectorReduce.js' */
-/** @import {FoldedSelector, TextTable} from '../values/textTable.js' */
+/** @import {FoldedSelector, TextEntry as TableEntry, TextTable} from '../values/textTable.js' */
 /** @import {CommentState} from './comments/nodeComments.js' */
 
 /**
@@ -94,36 +94,49 @@ function textEntry(plan, tightens) {
 }
 
 /**
- * Folds a declaration value through its plan. A value that warned is not
- * memoised, so each declaration reports it.
+ * Folds a declaration value through its plan, then gives the declaration the
+ * result, with the tokens a stage read so later readers do not tokenize it. A
+ * memo hit is served from the memo. A value that warned is not memoised, so
+ * each declaration reports it.
  *
  * @param {PropertyEntry} entry
  * @param {string} text
  * @param {number} context
  * @param {import('postcss').Declaration} decl the declaration that holds the value
- * @param {Helpers} helpers
- * @returns {string}
+ * @param {RunState} state
  */
-function reduceValue(entry, text, context, decl, helpers) {
+function reduceValue(entry, text, context, decl, state) {
   const plan = /** @type {readonly Reducer[]} */ (entry.plan);
   const memo = memoOf(entry.memos, context);
   const known = memo.get(text);
-  if (known !== undefined) return known.text;
+  if (known !== undefined) {
+    if (known.tokens !== undefined) {
+      state.table.share(decl, /** @type {TableEntry} */ (known));
+    } else {
+      state.table.setText(decl, known.text);
+    }
+    return;
+  }
   const buffer = new ValueBuffer(text, entry.mode);
   for (const reducer of plan) reducer(buffer, context);
-  const result = buffer.text();
+  const tokens = buffer.isTokenized() ? buffer.tokens() : undefined;
+  const folded = { text: buffer.text(), tokens };
   const warnings = buffer.warnings();
   if (warnings === undefined) {
-    memo.set(text, { text: result, tokens: undefined });
+    memo.set(text, folded);
   } else {
     for (const { message, plugin } of warnings) {
-      helpers.result.warn(
+      state.helpers.result.warn(
         message,
         plugin ? { plugin, node: decl } : { node: decl }
       );
     }
   }
-  return result;
+  if (tokens !== undefined) {
+    state.table.share(decl, /** @type {TableEntry} */ (folded));
+  } else {
+    state.table.setText(decl, folded.text);
+  }
 }
 
 /**
@@ -183,18 +196,15 @@ function walkDeclaration(state, decl) {
     text = commentFreeText(read, comments, decl.prop.startsWith('--'));
     removeImportantComments(decl, comments);
   }
-  let result = text;
-  if (entry.plan !== null) {
-    const context = contextOf(
-      /** @type {Container} */ (decl.parent),
-      state.contexts
-    );
-    result = reduceValue(entry, text, context, decl, state.helpers);
+  if (entry.plan === null) {
+    if (text !== read) state.table.setText(decl, text);
+    return;
   }
-  if (result !== read) {
-    decl.value = result;
-    delete decl.raws.value;
-  }
+  const context = contextOf(
+    /** @type {Container} */ (decl.parent),
+    state.contexts
+  );
+  reduceValue(entry, text, context, decl, state);
 }
 
 /**
