@@ -11,11 +11,13 @@ export const closingTokens = new Set([
 
 /**
  * A top-level component: its text, its tokens, and the range of the caller's
- * token list that holds them, `end` exclusive.
+ * token list that holds them, `end` exclusive. It is a `ValueComponent` that
+ * has a list, so it is also a `RangePiece`.
  *
  * @typedef {{
  *   raw: string,
  *   tokens: import('@csstools/css-tokenizer').CSSToken[],
+ *   list: readonly import('@csstools/css-tokenizer').CSSToken[],
  *   start: number,
  *   end: number,
  * }} Component
@@ -52,6 +54,7 @@ export function splitValue(value, separator, list = tokens(value)) {
     part.components.push({
       raw: value.slice(tokenStart(first), tokenEnd(last)),
       tokens: current,
+      list,
       start: end - current.length,
       end,
     });

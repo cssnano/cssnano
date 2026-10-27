@@ -1,19 +1,20 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
 export type ValueComponent = {
-    text: string;
-    tokens: readonly CSSToken[] | undefined;
+    raw: string;
+    list: readonly CSSToken[] | undefined;
     start: number;
     end: number;
 };
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /**
  * A top-level component of a value: the text it spells, and the range of the
- * value's tokens that spell it when the value has a token list. The tokens are
- * undefined for a component with no `(`, which has no function to type.
+ * value's token list that spells it, `end` exclusive. The list is undefined for
+ * a component with no `(`, which has no function to type. With a list, the
+ * component is a `RangePiece`, so a writer joins it without a copy.
  *
  * @typedef {{
- *   text: string,
- *   tokens: readonly CSSToken[] | undefined,
+ *   raw: string,
+ *   list: readonly CSSToken[] | undefined,
  *   start: number,
  *   end: number,
  * }} ValueComponent
@@ -43,6 +44,26 @@ export declare function splitsAsTokens(tokens: readonly CSSToken[]): boolean;
  * @return {readonly CSSToken[] | undefined}
  */
 export declare function valueTokens(value: string, tokens?: readonly CSSToken[]): readonly CSSToken[] | undefined;
+/**
+ * The component ranges of a token list that splits where `list.space` splits
+ * the string, shared by every reader that walks components by range.
+ *
+ * @param {readonly CSSToken[] | undefined} spelled the value's tokens, from
+ * `valueTokens`
+ * @return {number[] | undefined} the flattened ranges, or undefined when the
+ * value has no list or must be split as a string
+ */
+export declare function tokenComponentRanges(spelled: readonly CSSToken[] | undefined): number[] | undefined;
+/**
+ * The text a range of a value's tokens spells.
+ *
+ * @param {string} value
+ * @param {readonly CSSToken[]} spelled the tokens of `value`
+ * @param {number} start
+ * @param {number} end exclusive
+ * @return {string}
+ */
+export declare function rangeText(value: string, spelled: readonly CSSToken[], start: number, end: number): string;
 /**
  * The top-level components of a value, split where `list.space` splits it.
  * A value with a `(` is tokenized once when the caller has no list for it; a

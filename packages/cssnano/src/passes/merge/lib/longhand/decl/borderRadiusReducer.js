@@ -11,13 +11,14 @@ import { delim, whitespace } from '../../../../../values/punctuationTokens.js';
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {SlotVector} from './slotVector.js'; */
 /** @import {RadiusDeclarationDescriptor} from './radiusDescriptors.js'; */
-/** @import {RadiusPiece, parseCornerRadius, parseRadiusShorthand} from '../validateRadius.js'; */
+/** @import {parseCornerRadius, parseRadiusShorthand} from '../validateRadius.js'; */
+/** @import {Component} from '../valueComponents.js'; */
 
 /**
  * The sides a shorthand minifies to, as `minifyTrbl` keeps them.
  *
- * @param {RadiusPiece[]} sides four sides, as the parser spreads them
- * @return {RadiusPiece[]}
+ * @param {Component[]} sides four sides, as the parser spreads them
+ * @return {Component[]}
  */
 function minifiedSides(sides) {
   const expanded = expandFourSides(sides);
@@ -25,7 +26,7 @@ function minifiedSides(sides) {
 }
 
 /**
- * @param {RadiusPiece[]} sides
+ * @param {Component[]} sides
  * @return {string} the text the sides spell, joined by spaces
  */
 function sidesText(sides) {
@@ -36,8 +37,8 @@ function sidesText(sides) {
  * The text of a shorthand whose sides are minified: `horizontal/vertical`, or
  * `horizontal` alone when both spell alike.
  *
- * @param {RadiusPiece[]} horizontal
- * @param {RadiusPiece[]} vertical
+ * @param {Component[]} horizontal
+ * @param {Component[]} vertical
  * @return {string}
  */
 function shorthandText(horizontal, vertical) {
@@ -49,8 +50,8 @@ function shorthandText(horizontal, vertical) {
 /**
  * The tokens that spell `shorthandText`, built from the sides' ranges.
  *
- * @param {RadiusPiece[]} horizontal
- * @param {RadiusPiece[]} vertical
+ * @param {Component[]} horizontal
+ * @param {Component[]} vertical
  * @return {CSSToken[]}
  */
 function shorthandTokens(horizontal, vertical) {
@@ -91,25 +92,25 @@ function commitSlotVector(
   if (!full) return;
 
   // Every slot of a radius lane keeps its range, as `assign` receives it.
-  const sides = /** @type {RadiusPiece[]} */ (
+  const sides = /** @type {Component[]} */ (
     slotVector.map((slot) => slot?.range)
   );
   const horizontal = minifiedSides([sides[0], sides[2], sides[4], sides[6]]);
   const vertical = minifiedSides([sides[1], sides[3], sides[5], sides[7]]);
 
-  commitShorthand(
+  const value = shorthandText(horizontal, vertical);
+  const written = commitShorthand(
     rule,
     full,
     liveDefinitions,
     fallbackDefinitions,
-    {
-      prop: 'border-radius',
-      value: shorthandText(horizontal, vertical),
-      important: isImportant,
-      tokens: shorthandTokens(horizontal, vertical),
-    },
+    { prop: 'border-radius', value, important: isImportant },
     textTable
   );
+  // The list is built only for a declaration that was written.
+  if (written) {
+    textTable.record(written, value, shorthandTokens(horizontal, vertical));
+  }
 }
 
 /**
@@ -219,8 +220,9 @@ function canonicalizeSingleton(desc, textTable) {
     const vertical = minifiedSides(shorthandParsed.vertical);
     decl.prop = 'border-radius';
     // An unchanged text keeps the list the walk stored for it.
-    if (shorthandText(horizontal, vertical) !== decl.value) {
-      textTable.write(decl, shorthandTokens(horizontal, vertical));
+    const text = shorthandText(horizontal, vertical);
+    if (text !== decl.value) {
+      textTable.record(decl, text, shorthandTokens(horizontal, vertical));
     }
   } else if (desc.longhandIndex !== -1) {
     const cornerParsed =
@@ -228,7 +230,11 @@ function canonicalizeSingleton(desc, textTable) {
     if (cornerParsed[0].raw === cornerParsed[1].raw) {
       decl.prop = /** @type {string} */ (prop);
       if (cornerParsed[0].raw !== decl.value) {
-        textTable.write(decl, joinRanges([cornerParsed[0]], []));
+        textTable.record(
+          decl,
+          cornerParsed[0].raw,
+          joinRanges([cornerParsed[0]], [])
+        );
       }
     }
   }

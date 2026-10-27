@@ -30,7 +30,7 @@ import {
 /** @import {AtRule, Container, Document, Helpers, Root} from 'postcss' */
 /** @import {Reducer, Stage, TextReducer} from './host.js' */
 /** @import {SelectorEntry} from './selectorReduce.js' */
-/** @import {FoldedSelector, TextEntry as TableEntry, TextTable} from '../values/textTable.js' */
+/** @import {FoldedText, TextTable} from '../values/textTable.js' */
 /** @import {CommentState} from './comments/nodeComments.js' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
@@ -40,7 +40,7 @@ import {
  * result, since a value can read its context.
  * `mode` is how the tokenizer reads the values of the property, and `lists` is
  * the token lists of that mode, keyed by text.
- * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedSelector> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined, lists: Map<string, readonly CSSToken[]>}} PropertyEntry
+ * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedText> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined, lists: Map<string, readonly CSSToken[]>}} PropertyEntry
  */
 
 /**
@@ -115,11 +115,7 @@ function reduceValue(entry, text, context, decl, state) {
   const memo = memoOf(entry.memos, context);
   const known = memo.get(text);
   if (known !== undefined) {
-    if (known.tokens !== undefined) {
-      state.table.share(decl, /** @type {TableEntry} */ (known));
-    } else {
-      state.table.setText(decl, known.text);
-    }
+    state.table.assignFolded(decl, known);
     return;
   }
   const buffer = new ValueBuffer(text, entry.mode, entry.lists.get(text));
@@ -145,11 +141,7 @@ function reduceValue(entry, text, context, decl, state) {
       );
     }
   }
-  if (tokens !== undefined) {
-    state.table.share(decl, /** @type {TableEntry} */ (folded));
-  } else {
-    state.table.setText(decl, folded.text);
-  }
+  state.table.assignFolded(decl, folded);
 }
 
 /**

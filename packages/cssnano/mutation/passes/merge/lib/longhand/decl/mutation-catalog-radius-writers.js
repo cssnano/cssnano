@@ -12,14 +12,18 @@ export const test = new URL(
 
 export const mutations = [
   {
+    name: 'assign a committed border-radius shorthand as a string, dropping its tokens',
+    find: '    textTable.record(written, value, shorthandTokens(horizontal, vertical));',
+    replace: '    textTable.setText(written, value);',
+  },
+  {
     name: 'assign a folded border-radius shorthand as a string, dropping its tokens',
-    find: '      textTable.write(decl, shorthandTokens(horizontal, vertical));',
-    replace:
-      '      textTable.setText(decl, shorthandText(horizontal, vertical));',
+    find: '      textTable.record(decl, text, shorthandTokens(horizontal, vertical));',
+    replace: '      textTable.setText(decl, text);',
   },
   {
     name: 'assign a folded border-radius corner as a string, dropping its tokens',
-    find: '        textTable.write(decl, joinRanges([cornerParsed[0]], []));',
+    find: '        textTable.record(\n          decl,\n          cornerParsed[0].raw,\n          joinRanges([cornerParsed[0]], [])\n        );',
     replace: '        textTable.setText(decl, cornerParsed[0].raw);',
   },
 ];

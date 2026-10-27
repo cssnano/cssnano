@@ -3,12 +3,12 @@ import { memoOf } from './memo.js';
 
 /** @import {Helpers, Rule} from 'postcss' */
 /** @import {Reducer} from './host.js' */
-/** @import {FoldedSelector, TextTable} from '../values/textTable.js' */
+/** @import {FoldedText, TextTable} from '../values/textTable.js' */
 
 /**
  * What one run knows about selectors: the buffer reducers of its plan, or null
  * when no stage rewrites them, with a memo per context.
- * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedSelector> | undefined)[]}} SelectorEntry
+ * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedText> | undefined)[]}} SelectorEntry
  */
 
 /**
@@ -45,9 +45,7 @@ export function reduceSelector(
   const memo = memoOf(entry.memos, context);
   const known = memo.get(text);
   if (known !== undefined) {
-    if (known.tokens !== undefined)
-      table.record(rule, known.text, known.tokens);
-    else table.setText(rule, known.text);
+    table.assignFolded(rule, known);
     return;
   }
   const plan = /** @type {readonly Reducer[]} */ (entry.plan);
@@ -55,9 +53,10 @@ export function reduceSelector(
   for (const reduce of plan) reduce(buffer, context);
   const result = buffer.text();
   const tokens = buffer.isTokenized() ? buffer.tokens() : undefined;
+  const folded = /** @type {FoldedText} */ ({ text: result, tokens });
   const warnings = buffer.warnings();
   if (warnings === undefined) {
-    memo.set(text, { text: result, tokens });
+    memo.set(text, folded);
   } else {
     for (const { message, plugin } of warnings) {
       helpers.result.warn(
@@ -66,8 +65,5 @@ export function reduceSelector(
       );
     }
   }
-  if (result === read) {
-    if (tokens !== undefined) table.record(rule, result, tokens);
-  } else if (tokens !== undefined) table.write(rule, tokens);
-  else table.setText(rule, result);
+  if (result !== read || tokens !== undefined) table.assignFolded(rule, folded);
 }

@@ -61,21 +61,18 @@ suite('border candidates format the cells from the stored tokens', () => {
 });
 
 /**
- * The cells and ranges of one side, each cell a whole component.
+ * The cells and components of one side, each cell a whole component.
  *
  * @param {string[]} values the width, style and color cells, '' for blank
  */
 function sideOf(values) {
-  const cellRanges = { tokens: [], starts: [], ends: [] };
+  const cellComponents = [];
   const cells = values.map((text, index) => {
     if (text === '') return '';
-    const component = wholeText(text);
-    cellRanges.tokens[index] = component.tokens;
-    cellRanges.starts[index] = component.start;
-    cellRanges.ends[index] = component.end;
+    cellComponents[index] = wholeText(text);
     return text;
   });
-  return { cells, cellRanges };
+  return { cells, cellComponents };
 }
 
 suite('minifyCells formats a side as minifyWsc formats its joined text', () => {
@@ -105,8 +102,8 @@ suite('minifyCells formats a side as minifyWsc formats its joined text', () => {
     for (const width of widths) {
       for (const style of styles) {
         for (const color of colors) {
-          const { cells, cellRanges } = sideOf([width, style, color]);
-          const formatted = minifyCells(cells, cellRanges, [0, 1, 2]);
+          const { cells, cellComponents } = sideOf([width, style, color]);
+          const formatted = minifyCells(cells, cellComponents, [0, 1, 2]);
           const expected = minifyWidthStyleColor(
             [width, style, color].join(' ')
           );
@@ -118,15 +115,15 @@ suite('minifyCells formats a side as minifyWsc formats its joined text', () => {
   });
 
   test('a cell its slot does not classify as falls back to the joined text', () => {
-    const { cells, cellRanges } = sideOf(['red', 'solid', '']);
-    assert.equal(minifyCells(cells, cellRanges, [0, 1, 2]), 'solid red');
+    const { cells, cellComponents } = sideOf(['red', 'solid', '']);
+    assert.equal(minifyCells(cells, cellComponents, [0, 1, 2]), 'solid red');
   });
 
   test('a cell with a function but no token range falls back to the joined text', () => {
     const cells = ['calc(1px)', 'solid', 'red'];
-    const cellRanges = { tokens: [], starts: [], ends: [] };
+    const cellComponents = [];
     assert.equal(
-      minifyCells(cells, cellRanges, [0, 1, 2]),
+      minifyCells(cells, cellComponents, [0, 1, 2]),
       'calc(1px) solid red'
     );
   });

@@ -38,7 +38,6 @@ import {
 const { asciiLowerCase } = cssnanoUtils;
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {TextTable} from '../../../../../values/textTable.js'; */
-/** @import {CellRanges} from './borderCells.js' */
 /** @import {ValueComponent} from '../componentRanges.js' */
 
 /**
@@ -106,7 +105,7 @@ function isDeclarationFallback(prev, d, textTable) {
  * @param {ValueComponent | undefined} part the component `value` is, when the
  * declaration's value split into components
  * @param {boolean} isBarrier
- * @param {{ cells: string[], cellRanges: CellRanges, cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
+ * @param {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
  * @param {TextTable} textTable
  */
 function updateCell(idx, d, value, part, isBarrier, state, textTable) {
@@ -118,16 +117,14 @@ function updateCell(idx, d, value, part, isBarrier, state, textTable) {
   } else {
     state.barrierCells.delete(idx);
     state.cells[idx] = value;
-    state.cellRanges.tokens[idx] = part?.tokens;
-    state.cellRanges.starts[idx] = part?.start ?? 0;
-    state.cellRanges.ends[idx] = part?.end ?? 0;
+    state.cellComponents[idx] = part;
   }
   state.cellHistory[idx].add(d);
   state.touched.add(idx);
 }
 /**
  * @param {Declaration} d
- * @param {{ cells: string[], cellRanges: CellRanges, cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
+ * @param {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
  * @param {TextTable} textTable
  */
 function applySegmentDeclaration(d, state, textTable) {
@@ -168,7 +165,7 @@ function applySegmentDeclaration(d, state, textTable) {
       updateCell(
         s * 3 + c,
         d,
-        parts[s]?.text,
+        parts[s]?.raw,
         parts[s],
         isBarrier,
         state,
@@ -196,17 +193,13 @@ function applySegmentDeclaration(d, state, textTable) {
 /**
  * @param {Declaration[]} segment
  * @param {TextTable} textTable
- * @return {{ cells: string[], cellRanges: CellRanges, cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }}
+ * @return {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }}
  */
 function analyzeSegment(segment, textTable) {
-  /** @type {{ cells: string[], cellRanges: CellRanges, cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} */
+  /** @type {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} */
   const state = {
     cells: Array.from({ length: 12 }, () => ''),
-    cellRanges: {
-      tokens: Array.from({ length: 12 }),
-      starts: Array.from({ length: 12 }, () => 0),
-      ends: Array.from({ length: 12 }, () => 0),
-    },
+    cellComponents: Array.from({ length: 12 }),
     cellHistory: Array.from({ length: 12 }, () => new Set()),
     touched: new Set(),
     barrierCells: new Set(),
@@ -241,7 +234,7 @@ function reduceSegment(rule, segment, lane, textTable) {
   const hasReset = state.resetFound;
   const candidates = generateCandidates(
     state.cells,
-    state.cellRanges,
+    state.cellComponents,
     state.cellHistory,
     state.touched,
     state.barrierCells,

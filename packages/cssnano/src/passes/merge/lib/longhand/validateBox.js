@@ -2,7 +2,11 @@ import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { list } from 'postcss';
 import { boxProperties, shorthandSlot } from './decl/boxGroups.js';
-import { componentRanges, splitsAsTokens } from './componentRanges.js';
+import {
+  rangeText,
+  tokenComponentRanges,
+  valueTokens,
+} from './componentRanges.js';
 import { isLengthValue, parseDimension } from './lengthGrammar.js';
 import { mathType } from './mathType.js';
 import { isTrustedFunction, substitutionFunctions } from './unresolved.js';
@@ -10,7 +14,7 @@ import { withoutVendorPrefix } from './vendorPrefix.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
-const { asciiLowerCase, decoded, tokenEnd, tokenStart } = cssnanoUtils;
+const { asciiLowerCase, decoded } = cssnanoUtils;
 
 /* CSS user agents ignore box declarations that violate the property's
  * grammar. Each group of box properties has one grammar, which the generated
@@ -100,10 +104,7 @@ function plainSideKeeps(token, grammar) {
  * @return {boolean}
  */
 function rangeKeeps(value, tokens, start, end, grammar) {
-  const token = value.slice(
-    tokenStart(tokens[start]),
-    tokenEnd(tokens[end - 1])
-  );
+  const token = rangeText(value, tokens, start, end);
   return token.includes('(')
     ? keepsFunction(tokens, start, end, grammar)
     : plainSideKeeps(token, grammar);
@@ -151,16 +152,11 @@ function boxBrowserKeeps(prop, value, tokens) {
   const most = slot === shorthandSlot ? family.longhands.length : 1;
   const { grammar } = family.group;
 
-  if (tokens === undefined && !value.includes('(')) {
+  const tokenList = valueTokens(value, tokens);
+  const ranges = tokenComponentRanges(tokenList);
+  if (tokenList === undefined || ranges === undefined) {
     return stringComponentsKeep(value, most, grammar);
   }
-
-  const tokenList = tokens ?? cssnanoUtils.tokens(value);
-  if (!splitsAsTokens(tokenList)) {
-    return stringComponentsKeep(value, most, grammar);
-  }
-
-  const ranges = componentRanges(tokenList);
   if (ranges.length === 0 || ranges.length > most * 2) {
     return false;
   }
