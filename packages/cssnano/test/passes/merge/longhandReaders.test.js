@@ -22,6 +22,18 @@ const { default: cssnanoUtils } = await import('../../../src/utils/index.js');
 const { tokenStart, tokenEnd } = cssnanoUtils;
 const { default: parseWidthStyleColor } =
   await import('../../../src/passes/merge/lib/longhand/parseWsc.js');
+const { discardOverriddenDeclarations } =
+  await import('../../../src/passes/merge/lib/longhand/decl/overriddenDeclarations.js');
+const { requiredSupport } =
+  await import('../../../src/passes/merge/lib/longhand/isFallback.js');
+const { isValidColumns } =
+  await import('../../../src/passes/merge/lib/longhand/decl/columnsValue.js');
+const { alignmentProperties, parseAlignmentDeclaration } =
+  await import('../../../src/passes/merge/lib/longhand/decl/alignmentForms.js');
+const { parseRadiusShorthand } =
+  await import('../../../src/passes/merge/lib/longhand/validateRadius.js');
+const { pairFamilies } =
+  await import('../../../src/passes/merge/lib/longhand/decl/pairForms.js');
 
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {
@@ -98,6 +110,64 @@ suite('the longhand readers take a declaration from the text table', () => {
     const parsed = parseWidthStyleColor('1px solid rgb(0 0 0)');
     const before = tokenizeTotal();
     isValidWidthStyleColor(parsed);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('shapeEquivalence reads the declaration from the table, without tokenizing', () => {
+    const { root, table } = walkedStylesheet('a{margin:0 1px;margin:0 2px}');
+    const before = tokenizeTotal();
+    discardOverriddenDeclarations(root.first, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('requiredSupport reads the list stored for the node, without tokenizing', () => {
+    const { root, table } = walkedStylesheet('a{width:7dvh}');
+    const before = tokenizeTotal();
+    requiredSupport(root.first.first, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('isValidColumns reads the list stored for the node, without tokenizing', () => {
+    const { root, table } = walkedStylesheet('a{columns:2 100px}');
+    const before = tokenizeTotal();
+    assert.equal(isValidColumns(root.first.first, table), true);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('alignmentForms reads the list stored for the node, without tokenizing', () => {
+    const { root, table } = walkedStylesheet('a{align-content:safe center}');
+    const decl = root.first.first;
+    const family = alignmentProperties.get('align-content');
+    const before = tokenizeTotal();
+    parseAlignmentDeclaration(family, decl, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('alignmentForms tokenizes decl.value once when PostCSS stripped a comment, since the stored list spells the comment', () => {
+    const { root, table } = walkedStylesheet(
+      'a{align-content:safe /* x */ center}'
+    );
+    const decl = root.first.first;
+    const family = alignmentProperties.get('align-content');
+    const before = tokenizeTotal();
+    parseAlignmentDeclaration(family, decl, table);
+    assert.equal(tokenizeTotal() - before, 1);
+  });
+
+  test('parseRadiusShorthand reads the list stored for the node, without tokenizing', () => {
+    const { root, table } = walkedStylesheet('a{border-radius:1px 2px}');
+    const decl = root.first.first;
+    const before = tokenizeTotal();
+    assert.notEqual(parseRadiusShorthand(decl.value, table.tokens(decl)), null);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('a pair family parser reads the list stored for the node, without tokenizing', () => {
+    const { root, table } = walkedStylesheet('a{row-gap:1px}');
+    const decl = root.first.first;
+    const gap = pairFamilies.find((family) => family.shorthand === 'gap');
+    const before = tokenizeTotal();
+    assert.equal(gap.parseValue[0](decl, table), '1px');
     assert.equal(tokenizeTotal() - before, 0);
   });
 });

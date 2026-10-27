@@ -52,8 +52,9 @@ export declare class SlotLane {
      * @param {number} size - how many slots the family has
      * @param {(slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void} commit
      * called with the state whenever the run ends, before it is cleared
+     * @param {import('../../../../../values/textTable.js').TextTable} textTable
      */
-    constructor(size: number, commit: (slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void);
+    constructor(size: number, commit: (slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void, textTable: import('../../../../../values/textTable.js').TextTable);
     /** Commits the run, then starts an empty one. */
     reset(): void;
     /**
@@ -87,6 +88,7 @@ export declare class SlotLane {
  * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
  * `mayInsert: false` limits the commit to the in-place rewrite, for a
  * shorthand that some target does not support.
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
 export declare function commitShorthand(rule: Container, full: {
     value: string;
@@ -97,5 +99,5 @@ export declare function commitShorthand(rule: Container, full: {
     important: boolean;
     inserted?: Map<Declaration, Declaration>;
     mayInsert?: boolean;
-}): void;
+}, textTable: import('../../../../../values/textTable.js').TextTable): void;
 //# sourceMappingURL=slotVector.d.ts.map

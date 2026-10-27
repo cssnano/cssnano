@@ -216,19 +216,18 @@ function tokenKey(token, fixed, enclosing) {
  * hex colours share a key whatever their valid length, except where the
  * property has fixed numbers.
  *
- * @param {string} value
+ * @param {readonly CSSToken[]} list the tokens of the value
  * @param {string} prop - lowercased
- * @param {Map<string, CSSToken[]>} [cache] - tokenization memo
  * @return {string | undefined} the key, or undefined when the value is
  * incomparable: unbalanced parentheses, a bad string or URL, or a token
  * the model does not cover
  */
-export function shapeKey(value, prop, cache) {
+export function shapeKey(list, prop) {
   const fixed = hasFixedNumbers(prop);
   /** @type {(string | undefined)[]} */
   const enclosing = [];
   let key = '';
-  for (const token of tokenizeMemoized(value, cache)) {
+  for (const token of list) {
     const part = tokenKey(token, fixed, enclosing);
     if (part === undefined) return undefined;
     key += part;
@@ -240,13 +239,11 @@ export function shapeKey(value, prop, cache) {
  * Older parsers reject scientific notation, so a value that uses it cannot
  * override one that does not, even where the shape is otherwise trusted.
  *
- * @param {string} value
- * @param {Map<string, CSSToken[]>} [cache] - tokenization memo
+ * @param {readonly CSSToken[]} list the tokens of the value
  * @return {boolean}
  */
-export function hasScientificNotation(value, cache) {
-  if (!mayHaveExponent(value)) return false;
-  return tokenizeMemoized(value, cache).some(
+export function hasScientificNotation(list) {
+  return list.some(
     (token) =>
       (token[0] === TokenType.Number ||
         token[0] === TokenType.Percentage ||
@@ -256,12 +253,12 @@ export function hasScientificNotation(value, cache) {
 }
 
 /**
- * Skips tokenizing the common value with no digit before `e`.
+ * Skips reading the tokens of the common value with no digit before `e`.
  *
  * @param {string} value
  * @return {boolean}
  */
-function mayHaveExponent(value) {
+export function mayHaveExponent(value) {
   for (let index = 1; index < value.length; index++) {
     const code = value.charCodeAt(index);
     if (
@@ -275,20 +272,6 @@ function mayHaveExponent(value) {
 }
 
 /**
- * @param {string} value
- * @param {Map<string, CSSToken[]> | undefined} cache
- * @return {CSSToken[]}
- */
-function tokenizeMemoized(value, cache) {
-  let result = cache?.get(value);
-  if (!result) {
-    result = tokens(value);
-    cache?.set(value, result);
-  }
-  return result;
-}
-
-/**
  * Whether a browser that accepts `earlierValue` for `prop` must also accept
  * `laterValue`, so the earlier declaration can never serve as a fallback.
  * Only magnitudes may differ; keywords, units and token types may not.
@@ -296,11 +279,10 @@ function tokenizeMemoized(value, cache) {
  * @param {string} earlierValue
  * @param {string} laterValue
  * @param {string} prop
- * @param {Map<string, CSSToken[]>} [cache] - tokenization memo
  * @return {boolean}
  */
-export function isShapeEquivalent(earlierValue, laterValue, prop, cache) {
+export function isShapeEquivalent(earlierValue, laterValue, prop) {
   const name = asciiLowerCase(prop);
-  const key = shapeKey(earlierValue, name, cache);
-  return key !== undefined && key === shapeKey(laterValue, name, cache);
+  const key = shapeKey(tokens(earlierValue), name);
+  return key !== undefined && key === shapeKey(tokens(laterValue), name);
 }

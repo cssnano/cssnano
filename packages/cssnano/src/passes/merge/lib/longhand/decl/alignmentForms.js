@@ -3,6 +3,7 @@ import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { cssWideKeywords } from '../spec.js';
 import isCustomProp from '../isCustomProp.js';
 import { splitValue } from '../valueComponents.js';
+import { declaredValueTokens } from '../componentRanges.js';
 import shorthandData from '../data/shorthandIdentities.json' with { type: 'json' };
 
 const { asciiLowerCase } = cssnanoUtils;
@@ -80,11 +81,12 @@ for (const family of Object.values(alignmentFamilies)) {
  * Returns null if the value is invalid or malformed per CSS Box Alignment 3.
  *
  * @param {AlignmentFamilyConfig} family
- * @param {string} value
+ * @param {Declaration} decl
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {[string, string] | null}
  */
-function parseAlignmentShorthand(family, value) {
-  const trimmed = value.trim();
+function parseAlignmentShorthand(family, decl, textTable) {
+  const trimmed = decl.value.trim();
   const lower = asciiLowerCase(trimmed);
   if (!/[\s\\]/v.test(lower)) {
     if (cssWideKeywords.has(lower) || family.symmetricForms.has(lower)) {
@@ -92,7 +94,11 @@ function parseAlignmentShorthand(family, value) {
     }
   }
 
-  const parsed = splitValue(trimmed);
+  const parsed = splitValue(
+    decl.value,
+    undefined,
+    declaredValueTokens(textTable, decl)
+  );
   if (!parsed || parsed.length !== 1) return null;
   const components = parsed[0].components;
   if (components.length < 1 || components.length > 4) return null;
@@ -136,14 +142,20 @@ export function parseAlignmentDeclaration(family, decl, textTable) {
   const value = decl.value?.trim();
   if (!value) return null;
   const prop = asciiLowerCase(decl.prop);
-  if (prop === family.shorthand) return parseAlignmentShorthand(family, value);
+  if (prop === family.shorthand) {
+    return parseAlignmentShorthand(family, decl, textTable);
+  }
   const slot = family.slots.get(prop);
   if (slot === undefined) return null;
 
   let normalized = value;
   if (!isCssWideKeyword(value) && !isCustomProp(decl, textTable)) {
     if (/[\s\\]/v.test(value)) {
-      const parsed = splitValue(value);
+      const parsed = splitValue(
+        decl.value,
+        undefined,
+        declaredValueTokens(textTable, decl)
+      );
       if (!parsed || parsed.length !== 1) return null;
       const components = parsed[0].components;
       if (components.length > 2) return null;

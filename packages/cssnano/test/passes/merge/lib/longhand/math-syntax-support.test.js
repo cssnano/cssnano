@@ -1,3 +1,4 @@
+import { TextTable } from '../../../../../src/values/textTable.js';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
@@ -26,7 +27,7 @@ async function run(css, browsers) {
 }
 
 const requires = (/** @type {string} */ value) =>
-  requiredSupport(postcss.decl({ prop: 'width', value }));
+  requiredSupport(postcss.decl({ prop: 'width', value }), new TextTable());
 
 /** @param {string} top */
 const marginSides = (top) =>

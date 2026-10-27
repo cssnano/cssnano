@@ -8,7 +8,8 @@ import type { Declaration } from 'postcss';
  * @param {Declaration[]} lane - one importance lane of a group in source
  * order; barriers that belong to no family are skipped
  * @param {import('../targetSupport.js').BoxSupport} support
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {void}
  */
-export declare function discardDeadDeclarations(lane: Declaration[], support: import('../targetSupport.js').BoxSupport): void;
+export declare function discardDeadDeclarations(lane: Declaration[], support: import('../targetSupport.js').BoxSupport, textTable: import('../../../../../values/textTable.js').TextTable): void;
 //# sourceMappingURL=crossKindCoverage.d.ts.map

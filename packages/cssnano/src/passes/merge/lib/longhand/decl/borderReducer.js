@@ -84,13 +84,17 @@ function normalizeBorderSingleton(d, textTable) {
 /**
  * @param {Declaration} prev
  * @param {Declaration} d
+ * @param {TextTable} textTable
  * @return {boolean}
  */
-function isDeclarationFallback(prev, d) {
+function isDeclarationFallback(prev, d, textTable) {
   if (asciiLowerCase(prev.prop) === asciiLowerCase(d.prop)) {
-    return isFallback(prev, d);
+    return isFallback(prev, d, textTable);
   }
-  return mergeBlockingSupport(d).size > 0 && isFallback(prev, d);
+  return (
+    mergeBlockingSupport(d, textTable).size > 0 &&
+    isFallback(prev, d, textTable)
+  );
 }
 /**
  * @param {number} idx
@@ -98,10 +102,11 @@ function isDeclarationFallback(prev, d) {
  * @param {string} value
  * @param {boolean} isBarrier
  * @param {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
+ * @param {TextTable} textTable
  */
-function updateCell(idx, d, value, isBarrier, state) {
+function updateCell(idx, d, value, isBarrier, state, textTable) {
   for (const prev of state.cellHistory[idx]) {
-    if (isDeclarationFallback(prev, d)) state.fallbacks.add(prev);
+    if (isDeclarationFallback(prev, d, textTable)) state.fallbacks.add(prev);
   }
   if (isBarrier) {
     state.barrierCells.add(idx);
@@ -134,7 +139,7 @@ function applySegmentDeclaration(d, state, textTable) {
     const triple = [w || 'medium', st || 'none', clr || 'currentcolor'];
     for (const s of sList) {
       for (let c = 0; c < 3; c++) {
-        updateCell(s * 3 + c, d, triple[c], isBarrier, state);
+        updateCell(s * 3 + c, d, triple[c], isBarrier, state, textTable);
       }
     }
     if (isB && !isBarrier && isValidWidthStyleColor(parsed))
@@ -143,14 +148,14 @@ function applySegmentDeclaration(d, state, textTable) {
     const c = components.indexOf(prop.slice(7));
     const vals = parseTrbl(d.value);
     for (let s = 0; s < 4; s++) {
-      updateCell(s * 3 + c, d, vals[s], isBarrier, state);
+      updateCell(s * 3 + c, d, vals[s], isBarrier, state, textTable);
     }
   } else {
     const [sName, cName] = prop.slice(7).split('-');
     const s = sides.indexOf(sName);
     const c = components.indexOf(cName);
     if (s !== -1 && c !== -1) {
-      updateCell(s * 3 + c, d, d.value, isBarrier, state);
+      updateCell(s * 3 + c, d, d.value, isBarrier, state, textTable);
     }
   }
 }
@@ -202,7 +207,8 @@ function reduceSegment(rule, segment, lane, textTable) {
     state.barrierCells,
     hasReset,
     lane,
-    state.fallbacks
+    state.fallbacks,
+    textTable
   );
 
   const best = selectBestCandidate(
@@ -215,7 +221,7 @@ function reduceSegment(rule, segment, lane, textTable) {
   );
   if (!best) return;
 
-  applyBestCandidate(rule, best, segment, lane);
+  applyBestCandidate(rule, best, segment, lane, textTable);
 }
 
 /**
@@ -254,13 +260,14 @@ function processLane(rule, laneDecls, lane, textTable) {
  *
  * @param {Declaration} node
  * @param {Declaration} lastNode
+ * @param {TextTable} textTable
  * @return {boolean}
  */
-function isOverriddenByShorthand(node, lastNode) {
+function isOverriddenByShorthand(node, lastNode, textTable) {
   return (
     /** @type {number} */ (getLevel(node.prop)) >
       /** @type {number} */ (getLevel(lastNode.prop)) &&
-    !strandsFallback(node, lastNode)
+    !strandsFallback(node, lastNode, textTable)
   );
 }
 
@@ -296,7 +303,12 @@ export function reduceBorder(rule, decls, hasForeignBorder, textTable) {
   )
     return;
 
-  discardOverriddenInList(decls, allPhysicalBorderProperties, borderPrecedence);
+  discardOverriddenInList(
+    decls,
+    textTable,
+    allPhysicalBorderProperties,
+    borderPrecedence
+  );
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {

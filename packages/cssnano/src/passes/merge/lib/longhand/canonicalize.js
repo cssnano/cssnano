@@ -135,7 +135,7 @@ function reduceClassifiedContainer(container, state, context) {
   if (state.families) {
     for (const { family, decls, lanes } of state.families.values()) {
       if ('longhands' in family) {
-        reducePairFamily(container, family, decls, lanes);
+        reducePairFamily(container, family, decls, lanes, context.textTable);
       } else {
         reduceAlignmentFamily(
           container,
@@ -229,7 +229,8 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
     return;
   }
   if (prop.startsWith('column')) {
-    context.setsOtherColumn ||= setsOtherColumnProperty(child);
+    const { textTable } = context;
+    context.setsOtherColumn ||= setsOtherColumnProperty(child, textTable);
     if (allColumnProps.has(prop)) {
       state.columnDecls.push(child);
       state.columnLanes[laneIndex].push(child);
@@ -289,7 +290,7 @@ function processContainer(container, context) {
   // Before classification, so the family reducers never see detached nodes.
   // Style rules only: at-rule descriptors follow their own validity rules.
   if (container.type === 'rule') {
-    discardOverriddenDeclarations(container);
+    discardOverriddenDeclarations(container, context.textTable);
     applyChildEdits(container);
   }
 

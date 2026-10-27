@@ -77,7 +77,10 @@ function createRadiusDescriptor(node, prop, isHacked, textTable) {
 
   let parsed = null;
   if (!isGlobal) {
-    parsed = isShorthand ? parseRadiusShorthand(val) : parseCornerRadius(val);
+    const list = textTable.tokens(node);
+    parsed = isShorthand
+      ? parseRadiusShorthand(val, list)
+      : parseCornerRadius(val, list);
     if (parsed === null) return null;
   }
 

@@ -64,11 +64,18 @@ function mergeSegment(
   );
   if (!sharesKeywordSupport(values)) return;
 
-  commitShorthand(rule, [], new Set(segment), new Set(), {
-    prop: family.shorthand,
-    value: normalizeAlignment(family, [align, justify]),
-    important,
-  });
+  commitShorthand(
+    rule,
+    [],
+    new Set(segment),
+    new Set(),
+    {
+      prop: family.shorthand,
+      value: normalizeAlignment(family, [align, justify]),
+      important,
+    },
+    textTable
+  );
 }
 
 /**

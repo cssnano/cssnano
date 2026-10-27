@@ -1,5 +1,6 @@
 import { isAsciiDigit } from './asciiCharacters.js';
 import { withoutVendorPrefix } from './vendorPrefix.js';
+import { declaredValueTokens } from './componentRanges.js';
 /**
  * The syntax a declaration value needs a browser to parse: functions, units,
  * keywords and notations that some browser lacks, spelled as features such
@@ -12,8 +13,7 @@ import {
   trustedSupportFunctions,
 } from './unresolved.js';
 
-const { TokenType, asciiLowerCase, decoded, mathFunctions, tokens } =
-  cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, mathFunctions } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
@@ -257,10 +257,13 @@ function featureOf(token, inMath) {
 }
 
 /**
- * @param {string} value
- * @return {Set<string>} the features a browser must support to parse the value
+ * @param {import('postcss').Declaration} decl
+ * @param {import('../../../../values/textTable.js').TextTable} textTable
+ * @return {Set<string>} the features a browser must support to parse the
+ * declaration's value
  */
-export function supportDependenciesIn(value) {
+export function supportDependenciesOf(decl, textTable) {
+  const value = decl.value;
   if (!mayNeedSupport(value)) {
     return EMPTY_SET;
   }
@@ -277,7 +280,7 @@ export function supportDependenciesIn(value) {
   const enclosing = [];
   let dividing = false;
 
-  for (const token of tokens(value)) {
+  for (const token of declaredValueTokens(textTable, decl)) {
     const type = token[0];
     if (type === TokenType.Whitespace || type === TokenType.Comment) continue;
     const inMath = enclosing.at(-1) === true;

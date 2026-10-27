@@ -119,10 +119,11 @@ export function shortestWithFreeSlots(values, free, minify) {
 /**
  * @param {BoxFamily} family
  * @param {Declaration[]} laneDecls
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {number[]} for each slot, the position of the last declaration of
  * the family that sets it and that every target parses, or `-1`
  */
-function lastPlainSetters(family, laneDecls) {
+function lastPlainSetters(family, laneDecls, textTable) {
   const last = family.longhands.map(() => -1);
   for (const [index, declaration] of laneDecls.entries()) {
     const property = boxProperties.get(asciiLowerCase(declaration.prop));
@@ -130,7 +131,7 @@ function lastPlainSetters(family, laneDecls) {
       declaration.parent === undefined ||
       property?.family !== family ||
       detectDeclaration(declaration) ||
-      needsUnmetSupport(declaration)
+      needsUnmetSupport(declaration, textTable)
     ) {
       continue;
     }
@@ -173,12 +174,12 @@ function freeOverriddenSlots(family, laneDecls, inserted, textTable) {
       property.slot !== shorthandSlot ||
       detectDeclaration(target) ||
       !isExplodable(target, textTable) ||
-      mergeBlockingSupport(target).size > 0
+      mergeBlockingSupport(target, textTable).size > 0
     ) {
       continue;
     }
 
-    lastOverrider ??= lastPlainSetters(family, laneDecls);
+    lastOverrider ??= lastPlainSetters(family, laneDecls, textTable);
     if (lastOverrider.every((setter) => setter <= index)) continue;
 
     const values = parse(target.value);
@@ -223,13 +224,20 @@ function flush(
   const kw = isCssWideKeyword(full[0].value);
   const rawValues = full.map((s) => s.value).join(' ');
   const shorthandVal = kw ? full[0].value : formsOf(family).minify(rawValues);
-  commitShorthand(rule, full, contributing, fallbacks, {
-    prop: family.shorthand,
-    value: shorthandVal,
-    important,
-    mayInsert,
-    inserted,
-  });
+  commitShorthand(
+    rule,
+    full,
+    contributing,
+    fallbacks,
+    {
+      prop: family.shorthand,
+      value: shorthandVal,
+      important,
+      mayInsert,
+      inserted,
+    },
+    textTable
+  );
 }
 
 /**
@@ -264,21 +272,25 @@ export function reduceFamilyLane(
   let inserted;
   let position = 0;
   const { parse } = formsOf(family);
-  const lane = new SlotLane(count, (slots, contributing, fallbacks) => {
-    // Only a shorthand with a declaration after it can have a value overridden.
-    if (position < laneDecls.length - 1) inserted ??= new Map();
-    flush(
-      rule,
-      family,
-      slots,
-      contributing,
-      fallbacks,
-      important,
-      mayInsert,
-      inserted,
-      textTable
-    );
-  });
+  const lane = new SlotLane(
+    count,
+    (slots, contributing, fallbacks) => {
+      // Only a shorthand with a declaration after it can have a value overridden.
+      if (position < laneDecls.length - 1) inserted ??= new Map();
+      flush(
+        rule,
+        family,
+        slots,
+        contributing,
+        fallbacks,
+        important,
+        mayInsert,
+        inserted,
+        textTable
+      );
+    },
+    textTable
+  );
 
   for (position = 0; position < laneDecls.length; position++) {
     const decl = laneDecls[position];
