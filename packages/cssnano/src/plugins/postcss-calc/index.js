@@ -3,10 +3,11 @@ import reduceTokens, {
 } from 'postcss-calc/reduce-tokens';
 import { parsedValueText } from '../../utils/parsedValueText.js';
 import { tokens } from '../../utils/value.js';
+import { spliceRanges } from '../../values/spliceRanges.js';
+import { tokensText } from '../../values/tokensText.js';
 
 /** @import {PostCssCalcOptions} from 'postcss-calc' */
 /** @import {ReduceCalcOptions} from 'postcss-calc/reduce-tokens' */
-/** @import {TokenReplacement} from 'postcss-calc/reduce-tokens' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Reducer, StageEntry, Stage, TextReducer} from '../../pipeline/host.js' */
 
@@ -32,27 +33,6 @@ function reduceOptions(options, warn, selector) {
 }
 
 /**
- * Writes the replacements of a token list in one pass. The replacements are
- * ordered and non-overlapping, as reduceTokens returns them.
- *
- * @param {readonly CSSToken[]} list
- * @param {readonly TokenReplacement[]} replacements
- * @returns {CSSToken[]}
- */
-function applyReplacements(list, replacements) {
-  /** @type {CSSToken[]} */
-  const out = [];
-  let index = 0;
-  for (const { start, end, tokens: replacement } of replacements) {
-    for (; index < start; index++) out.push(list[index]);
-    out.push(...replacement);
-    index = end;
-  }
-  for (; index < list.length; index++) out.push(list[index]);
-  return out;
-}
-
-/**
  * Reduces the calc() functions of a prelude. A prelude without a `(` has none,
  * so it is returned as it is.
  *
@@ -66,9 +46,7 @@ function reducePrelude(text, options, warn) {
   const list = tokens(text);
   const replacements = reduceTokens(list, reduceOptions(options, warn, false));
   if (replacements.length === 0) return text;
-  return applyReplacements(list, replacements)
-    .map((token) => token[1])
-    .join('');
+  return tokensText(spliceRanges(list, replacements));
 }
 
 /**
@@ -124,7 +102,7 @@ function calcStage(options) {
       buffer.replace(
         0,
         buffer.tokens().length,
-        applyReplacements(list, replacements)
+        spliceRanges(list, replacements)
       );
     },
   };
