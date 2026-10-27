@@ -132,8 +132,13 @@ function timedEntry(entry, name) {
           return reducer === null ? null : timedReducer(reducer);
         },
         forAtRule(/** @type {string} */ atRuleName) {
-          const reducer = stage.forAtRule?.(atRuleName) ?? null;
-          return reducer === null ? null : timedReducer(reducer);
+          const part = stage.forAtRule?.(atRuleName) ?? null;
+          if (part === null) return null;
+          if (typeof part === 'function') return timedReducer(part);
+          return {
+            reduce: timedReducer(part.reduce),
+            tightensAfterName: part.tightensAfterName,
+          };
         },
       };
       // The walk tells a stage without a selector rewrite by its absence.
