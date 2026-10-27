@@ -91,6 +91,47 @@ suite('the text table reads the value the host walk stored', () => {
   });
 });
 
+suite('the host walk shares one token list per text', () => {
+  test('two properties that spell one value share one token list', () => {
+    const root = postcss.parse('a { margin: 0 1px } b { padding: 0 1px }');
+    const table = new TextTable();
+    const stage = {
+      forProperty: () => (buffer) => buffer.replace(0, 1, [integer(1)]),
+    };
+    walkStylesheet([stage], root, helpers, new Map(), table);
+    const [first, second] = [root.first.first, root.last.first];
+    const list = table.stored(first);
+    assert.notEqual(list, undefined);
+    assert.equal(table.stored(second), list);
+  });
+
+  test("a value's stages read the list another property's value left, without tokenizing", () => {
+    const root = postcss.parse('a { margin: 0 1px } b { padding: 0 1px }');
+    const table = new TextTable();
+    const stage = {
+      forProperty: () => (buffer) => buffer.tokens(),
+    };
+    const before = tokenizeTotal();
+    walkStylesheet([stage], root, helpers, new Map(), table);
+    assert.equal(tokenizeTotal() - before, 1);
+  });
+
+  test('a unicode-range value does not take a list read in the default mode', () => {
+    const root = postcss.parse(
+      'a { color: u+0-7f } b { unicode-range: u+0-7f }'
+    );
+    const table = new TextTable();
+    const seen = [];
+    const stage = {
+      forProperty: () => (buffer) => {
+        seen.push(buffer.tokens().length);
+      },
+    };
+    walkStylesheet([stage], root, helpers, new Map(), table);
+    assert.equal(seen[1], 1);
+  });
+});
+
 suite('the text table reads the text the afterMerge walk wrote', () => {
   test('uniqueSelectors reads the selector tokens merge wrote, without tokenizing', () => {
     const root = postcss.parse('a, b {}');

@@ -32,13 +32,15 @@ import {
 /** @import {SelectorEntry} from './selectorReduce.js' */
 /** @import {FoldedSelector, TextEntry as TableEntry, TextTable} from '../values/textTable.js' */
 /** @import {CommentState} from './comments/nodeComments.js' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 /**
  * What one run knows about a property: the reducers of its plan, or null when
  * no stage treats it. For each context, a memo from source text to the plan's
  * result, since a value can read its context.
- * `mode` is how the tokenizer reads the values of the property.
- * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedSelector> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined}} PropertyEntry
+ * `mode` is how the tokenizer reads the values of the property, and `lists` is
+ * the token lists of that mode, keyed by text.
+ * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedSelector> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined, lists: Map<string, readonly CSSToken[]>}} PropertyEntry
  */
 
 /**
@@ -60,6 +62,7 @@ import {
  * @property {WeakMap<Container | Document, number>} contexts
  * @property {Helpers} helpers
  * @property {TextTable} table the text table the walk fills
+ * @property {{plain: Map<string, readonly CSSToken[]>, unicodeRange: Map<string, readonly CSSToken[]>}} valueLists the token lists of the values, by tokenizer mode
  * @property {CommentState | null} comments the comment removal of this run, or null when no stage removes comments
  * @property {boolean} defaultNamespace whether a default `@namespace` has been reached, so later rules have it in their context
  * @property {boolean} normalizeWhitespace whether normalizeWhitespace is on, which removes the stray semicolons and reattaches the escapes of blocks
@@ -69,9 +72,10 @@ import {
 /**
  * @param {readonly Stage[]} stages in pipeline order
  * @param {string} property
+ * @param {RunState['valueLists']} valueLists
  * @returns {PropertyEntry}
  */
-function propertyEntry(stages, property) {
+function propertyEntry(stages, property, valueLists) {
   /** @type {Reducer[]} */
   const reducers = [];
   for (const stage of stages) {
@@ -79,9 +83,10 @@ function propertyEntry(stages, property) {
     if (reducer !== null) reducers.push(reducer);
   }
   const mode = tokenizeMode(property);
+  const lists = mode === undefined ? valueLists.plain : valueLists.unicodeRange;
   return reducers.length > 0
-    ? { plan: reducers, memos: [], mode }
-    : { plan: null, memos: [], mode };
+    ? { plan: reducers, memos: [], mode, lists }
+    : { plan: null, memos: [], mode, lists };
 }
 
 /**
@@ -117,10 +122,18 @@ function reduceValue(entry, text, context, decl, state) {
     }
     return;
   }
-  const buffer = new ValueBuffer(text, entry.mode);
+  const buffer = new ValueBuffer(text, entry.mode, entry.lists.get(text));
   for (const reducer of plan) reducer(buffer, context);
-  const tokens = buffer.isTokenized() ? buffer.tokens() : undefined;
-  const folded = { text: buffer.text(), tokens };
+  const result = buffer.text();
+  let tokens;
+  if (buffer.isTokenized()) {
+    tokens = entry.lists.get(result);
+    if (tokens === undefined) {
+      tokens = buffer.tokens();
+      entry.lists.set(result, tokens);
+    }
+  }
+  const folded = { text: result, tokens };
   const warnings = buffer.warnings();
   if (warnings === undefined) {
     memo.set(text, folded);
@@ -184,7 +197,7 @@ function walkDeclaration(state, decl) {
   }
   let entry = state.properties.get(decl.prop);
   if (entry === undefined) {
-    entry = propertyEntry(state.stages, decl.prop);
+    entry = propertyEntry(state.stages, decl.prop, state.valueLists);
     state.properties.set(decl.prop, entry);
   }
   const { comments } = state;
@@ -350,6 +363,7 @@ export function walkStylesheet(stages, root, helpers, transforms, table) {
     contexts: new WeakMap(),
     helpers,
     table,
+    valueLists: { plain: new Map(), unicodeRange: new Map() },
     comments: commentStateOf(stages),
     defaultNamespace: false,
     normalizeWhitespace: transforms.has('normalizeWhitespace'),
