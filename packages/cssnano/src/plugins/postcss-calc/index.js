@@ -85,7 +85,8 @@ function calcStage(options) {
     reducePrelude(text, options, warn);
   /** @type {Reducer} */
   const reduceSelector = (buffer) => {
-    if (!hasPotentialMathFunction(buffer.text())) return;
+    // After an edit, reduceTokens finds the math functions in the tokens.
+    if (!buffer.isEdited() && !hasPotentialMathFunction(buffer.text())) return;
     /** @type {(message: string, plugin?: string) => void} */
     const warn = (message, plugin) => buffer.warn(message, plugin);
     // reduceTokens reads its input only, so the buffer's readonly view is safe.
@@ -100,7 +101,8 @@ function calcStage(options) {
     forAtRule: options.mediaQueries ? () => reduceAtRule : undefined,
     selector: options.selectors ? reduceSelector : undefined,
     forProperty: () => (buffer) => {
-      if (!hasPotentialMathFunction(buffer.text())) return;
+      if (!buffer.isEdited() && !hasPotentialMathFunction(buffer.text()))
+        return;
       /** @type {(message: string, plugin?: string) => void} */
       const warn = (message, plugin) => buffer.warn(message, plugin);
       // PostCSS gives the value without comments, so reduce what it would give.
