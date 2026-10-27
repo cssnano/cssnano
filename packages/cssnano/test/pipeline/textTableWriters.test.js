@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 const { counter } = await import('../../../../util/countTokenize.js');
 const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../src/pipeline/traversal.js');
+const { mergePass } = await import('../../src/passes/merge/index.js');
 const { TextTable } = await import('../../src/values/textTable.js');
 const { ident, integer } =
   await import('../../src/values/tokenConstructors.js');
@@ -294,3 +295,33 @@ suite(
     });
   }
 );
+
+suite('the merge longhand writers no traced reader reads', () => {
+  test("borderReducer's singleton write drops raws.value", () => {
+    const root = postcss.parse(
+      'a{border-color:red /*x*/ red;border-top-style:solid!important}'
+    );
+    mergePass(root, ['defaults']);
+    assert.equal(root.first.first.raws.value, undefined);
+  });
+
+  test("boxReducer's singleton write drops raws.value", () => {
+    const root = postcss.parse('a{margin:1px /*x*/ 2px}');
+    mergePass(root, ['defaults']);
+    assert.equal(root.first.first.raws.value, undefined);
+  });
+
+  test("slotSolver's shorthand write drops raws.value", () => {
+    const root = postcss.parse(
+      'a{margin:1px 2px 1px 2px /*x*/;margin-left:5px}'
+    );
+    mergePass(root, ['defaults']);
+    assert.equal(root.first.first.raws.value, undefined);
+  });
+
+  test("columns' singleton write drops raws.value", () => {
+    const root = postcss.parse('a{columns:2 /*x*/ auto}');
+    mergePass(root, ['defaults']);
+    assert.equal(root.first.first.raws.value, undefined);
+  });
+});
