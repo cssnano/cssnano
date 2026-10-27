@@ -1,7 +1,9 @@
 import type { Declaration } from 'postcss';
 import type { TextTable } from '../../../../../values/textTable.js';
+import type { CellRanges } from './borderCells.js';
 /** @import {Declaration} from 'postcss'; */
 /** @import {TextTable} from '../../../../../values/textTable.js' */
+/** @import {CellRanges} from './borderCells.js' */
 /** @param {{prop: string, value: string}[]} decls @param {boolean} [important] */
 declare function declSize(decls: {
     prop: string;
@@ -39,12 +41,13 @@ declare function getAvailableComponents(cellHistory: Set<Declaration>[], touched
 /**
  * @param {number[][]} groups
  * @param {string[]} cells
+ * @param {CellRanges} cellRanges
  * @param {Set<number>} touched
  * @param {Set<number>} blockedCells
  * @param {boolean} componentGroups
  * @return {{ decls: { prop: string, value: string }[], rank: number, mask: number, coveredCells: Set<number> }}
  */
-declare function createGroupCandidate(groups: number[][], cells: string[], touched: Set<number>, blockedCells: Set<number>, componentGroups: boolean): {
+declare function createGroupCandidate(groups: number[][], cells: string[], cellRanges: CellRanges, touched: Set<number>, blockedCells: Set<number>, componentGroups: boolean): {
     decls: {
         prop: string;
         value: string;
@@ -74,12 +77,13 @@ declare function createLeafCandidate(cells: string[], touched: Set<number>, bloc
  * @param {Set<number>} barrierCells
  * @param {Set<Declaration>[]} cellHistory
  * @param {string[]} cells
+ * @param {CellRanges} cellRanges
  * @param {boolean} lane
  * @param {Set<Declaration>} fallbacks
  * @param {TextTable} textTable
  * @return {{ decls: { prop: string, value: string }[], rank: number, mask: number, resetIndex: number, coveredCells: Set<number> }[]}
  */
-declare function createResetCandidates(hasReset: boolean, touched: Set<number>, barrierCells: Set<number>, cellHistory: Set<Declaration>[], cells: string[], lane: boolean, fallbacks: Set<Declaration>, textTable: TextTable): {
+declare function createResetCandidates(hasReset: boolean, touched: Set<number>, barrierCells: Set<number>, cellHistory: Set<Declaration>[], cells: string[], cellRanges: CellRanges, lane: boolean, fallbacks: Set<Declaration>, textTable: TextTable): {
     decls: {
         prop: string;
         value: string;

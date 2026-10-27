@@ -4,6 +4,7 @@ import { isBorderWidth, isBorderStyle, isColor } from './validateWsc.js';
 import { isSubstitution } from './unresolved.js';
 
 const { asciiLowerCase } = cssnanoUtils;
+/** @import {ValueComponent} from './componentRanges.js' */
 /* The values that spell only initial components: a style `none` alone, or the
  * initial width, optionally followed by the initial style and color. A repeated
  * component such as `none none` is no such value. */
@@ -54,10 +55,14 @@ const toLower = (v) => {
  * The value's tokens, when the caller has them, let a component with a `(` be
  * typed without tokenizing it again.
  *
+ * `parts` gives each named component's own component, so a caller can read the
+ * component's tokens without splitting the value again; a component that a
+ * substitution fills, or a `none`-only value's keyword, has none.
+ *
  * @param {string} value
  * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [tokens] the tokens
  * `value` spells
- * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined), specified: {width: boolean, style: boolean, color: boolean}} | null}
+ * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined), specified: {width: boolean, style: boolean, color: boolean}, parts: {width: (import('./componentRanges.js').ValueComponent|undefined), style: (import('./componentRanges.js').ValueComponent|undefined), color: (import('./componentRanges.js').ValueComponent|undefined)}} | null}
  */
 function parseWidthStyleColor(value, tokens) {
   if (none.test(asciiLowerCase(value))) {
@@ -66,6 +71,7 @@ function parseWidthStyleColor(value, tokens) {
       style: 'none',
       color: 'currentcolor',
       specified: { width: true, style: true, color: true },
+      parts: { width: undefined, style: undefined, color: undefined },
     };
   }
 
@@ -76,26 +82,29 @@ function parseWidthStyleColor(value, tokens) {
   let specified = 0;
   let substituted = false;
   const named = { width: false, style: false, color: false };
+  /** @type {{width: ValueComponent | undefined, style: ValueComponent | undefined, color: ValueComponent | undefined}} */
+  const parts = { width: undefined, style: undefined, color: undefined };
 
-  for (const { text, tokens: part, start, end } of splitComponents(
-    value,
-    tokens
-  )) {
+  for (const component of splitComponents(value, tokens)) {
+    const { text, tokens: part, start, end } = component;
     count++;
     if (isBorderStyle(text)) {
       if (style !== undefined) return null;
       specified++;
       named.style = true;
+      parts.style = component;
       style = toLower(text);
     } else if (isBorderWidth(text, part, start, end)) {
       if (width !== undefined) return null;
       specified++;
       named.width = true;
+      parts.width = component;
       width = toLower(text);
     } else if (isColor(text, part, start, end)) {
       if (color !== undefined) return null;
       specified++;
       named.color = true;
+      parts.color = component;
       color = toLower(text);
     } else if (isSubstitution(part, start, end)) {
       substituted = true;
@@ -120,7 +129,7 @@ function parseWidthStyleColor(value, tokens) {
     }
   }
 
-  return { width, style, color, specified: named };
+  return { width, style, color, specified: named, parts };
 }
 
 export { toLower };

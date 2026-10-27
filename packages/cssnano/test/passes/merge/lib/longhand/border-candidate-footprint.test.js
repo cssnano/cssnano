@@ -46,6 +46,7 @@ function* everyTouchedSet(hasReset) {
     const cells = cellNames.map((_, index) => values[index % 3]);
     const candidates = generateCandidates(
       cells,
+      { tokens: [], starts: [], ends: [] },
       cellHistory,
       touched,
       new Set(),
