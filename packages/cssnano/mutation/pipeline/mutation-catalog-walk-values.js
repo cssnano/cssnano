@@ -21,4 +21,14 @@ export const mutations = [
     find: '    state.table.share(decl, /** @type {TableEntry} */ (folded));',
     replace: '    state.table.setText(decl, folded.text);',
   },
+  {
+    name: 'build the value buffer without the list read for its text',
+    find: '  const buffer = new ValueBuffer(text, entry.mode, entry.lists.get(text));',
+    replace: '  const buffer = new ValueBuffer(text, entry.mode);',
+  },
+  {
+    name: 'key one list map for both tokenizer modes',
+    find: '  const lists = mode === undefined ? valueLists.plain : valueLists.unicodeRange;',
+    replace: '  const lists = valueLists.plain;',
+  },
 ];

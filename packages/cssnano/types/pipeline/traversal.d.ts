@@ -3,10 +3,12 @@ import type { Reducer, Stage, TextReducer } from './host.js';
 import type { SelectorEntry } from './selectorReduce.js';
 import type { FoldedSelector, TextTable } from '../values/textTable.js';
 import type { CommentState } from './comments/nodeComments.js';
+import type { CSSToken } from '@csstools/css-tokenizer';
 export type PropertyEntry = {
     plan: readonly Reducer[] | null;
     memos: (Map<string, FoldedSelector> | undefined)[];
     mode: import('../values/valueBuffer.js').TokenizeMode | undefined;
+    lists: Map<string, readonly CSSToken[]>;
 };
 export type TextEntry = {
     plan: readonly TextReducer[] | null;
@@ -30,6 +32,13 @@ export type RunState = {
      * the text table the walk fills
      */
     table: TextTable;
+    /**
+     * the token lists of the values, by tokenizer mode
+     */
+    valueLists: {
+        plain: Map<string, readonly CSSToken[]>;
+        unicodeRange: Map<string, readonly CSSToken[]>;
+    };
     /**
      * the comment removal of this run, or null when no stage removes comments
      */
