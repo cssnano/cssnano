@@ -132,9 +132,10 @@ function hasForeignBorder(rule) {
 /** @param {Container} rule */
 export function reduceBorderRuns(rule) {
   const foreign = hasForeignBorder(rule);
+  const textTable = new TextTable();
   reduceFamilyRuns(
     rule,
     (d) => allPhysicalBorderProperties.has(d.prop.toLowerCase()),
-    (decls) => reduceBorder(rule, decls, foreign)
+    (decls) => reduceBorder(rule, decls, foreign, textTable)
   );
 }

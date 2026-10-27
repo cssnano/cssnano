@@ -146,15 +146,22 @@ const ruleInitials = ['medium', 'none', 'currentcolor'];
  * `rgb(0,0,0)` is one component. A substitution has no known type and a math
  * function is not compared, so both are left alone.
  *
- * @param {(token: string) => boolean} is
+ * @param {(text: string, tokens: import('@csstools/css-tokenizer').CSSToken[] | undefined, start: number, end: number) => boolean} is
  * @return {Parser}
  */
 function ruleComponent(is) {
   return (value) => {
     const trimmed = value.trim();
     if (isCssWideKeyword(trimmed)) return trimmed;
-    if (!singleComponent(trimmed) || isUnresolved(trimmed)) return null;
-    return is(trimmed) ? trimmed : null;
+    const component = singleComponent(trimmed);
+    if (
+      !component ||
+      isUnresolved(component.tokens, 0, component.tokens.length)
+    )
+      return null;
+    return is(trimmed, component.tokens, 0, component.tokens.length)
+      ? trimmed
+      : null;
   };
 }
 

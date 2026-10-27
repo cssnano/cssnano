@@ -6,9 +6,13 @@ import { isValidWidthStyleColor } from './validateWsc.js';
 const { asciiLowerCase } = cssnanoUtils;
 
 const defaultBorderValue = ['medium', 'none', 'currentcolor'];
-/** @param {string} cssPropertyValue */
-export default (cssPropertyValue) => {
-  const values = parseWidthStyleColor(cssPropertyValue);
+/**
+ * @param {string} cssPropertyValue
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [tokens] the tokens
+ * `cssPropertyValue` spells
+ */
+export default (cssPropertyValue, tokens) => {
+  const values = parseWidthStyleColor(cssPropertyValue, tokens);
 
   /* Shortening a value the browser ignores — a component specified twice, or
    * a token that is no component — would put a border on the page that the

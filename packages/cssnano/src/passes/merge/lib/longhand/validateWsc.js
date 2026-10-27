@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
-import { list } from 'postcss';
 import { isLengthValue, parseDimension } from './lengthGrammar.js';
+import { splitComponents } from './componentRanges.js';
 import { isHexColorDigits } from './asciiCharacters.js';
 import { systemColors } from './systemColors.js';
 
@@ -12,7 +12,17 @@ import {
 } from './spec.js';
 import { isSubstitution, isUnresolved } from './unresolved.js';
 
-const { TokenType, asciiLowerCase, decoded, tokens } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {ValueComponent} from './componentRanges.js' */
+
+/**
+ * The classifiers take a component's text and, for a component with a `(`, the
+ * tokens of its range in the list that spells the component.
+ *
+ * @typedef {(text: string, tokens: readonly CSSToken[] | undefined, start: number, end: number) => boolean} ComponentClassifier
+ */
 
 /**
  * @param {string | undefined} value
@@ -28,29 +38,30 @@ function isBorderStyle(value) {
  * the only border component whose grammar accepts that type is the width —
  * never a `<line-style>` keyword, never a `<color>`.
  *
- * @param {string} value
+ * @param {readonly CSSToken[] | undefined} tokens
+ * @param {number} start
+ * @param {number} end
  * @return {boolean}
  */
-function isTypedAsWidth(value) {
-  return isUnresolved(value) && !isSubstitution(value);
+function isTypedAsWidth(tokens, start, end) {
+  return (
+    isUnresolved(tokens, start, end) && !isSubstitution(tokens, start, end)
+  );
 }
 
-/**
- * @param {string | undefined} value
- * @return {boolean}
- */
-function isBorderWidth(value) {
-  if (!value) {
+/** @type {ComponentClassifier} */
+function isBorderWidth(text, tokens, start, end) {
+  if (!text) {
     return false;
   }
 
-  const lowered = asciiLowerCase(value);
+  const lowered = asciiLowerCase(text);
 
   if (lineWidthKeywords.has(lowered)) {
     return true;
   }
 
-  if (isTypedAsWidth(value)) {
+  if (isTypedAsWidth(tokens, start, end)) {
     return true;
   }
 
@@ -63,15 +74,20 @@ function isBorderWidth(value) {
 }
 
 /**
- * @param {string} value
- * @return {boolean} whether the value calls a function that produces a colour
+ * @param {string} text
+ * @param {readonly CSSToken[] | undefined} tokens
+ * @param {number} start
+ * @param {number} end
+ * @return {boolean} whether the component calls a function that produces a
+ * colour
  */
-function callsColorFunction(value) {
-  if (!value.includes('(')) {
+function callsColorFunction(text, tokens, start, end) {
+  if (tokens === undefined || !text.includes('(')) {
     return false;
   }
 
-  for (const token of tokens(value)) {
+  for (let index = start; index < end; index++) {
+    const token = tokens[index];
     if (
       token[0] === TokenType.Function &&
       colorFunctions.has(asciiLowerCase(decoded(token)))
@@ -83,16 +99,13 @@ function callsColorFunction(value) {
   return false;
 }
 
-/**
- * @param {string | undefined} value
- * @return {boolean}
- */
-function isColor(value) {
-  if (!value) {
+/** @type {ComponentClassifier} */
+function isColor(text, tokens, start, end) {
+  if (!text) {
     return false;
   }
 
-  const lowered = asciiLowerCase(value);
+  const lowered = asciiLowerCase(text);
 
   if (lowered.startsWith('#') && isHexColorDigits(lowered.slice(1))) {
     return true;
@@ -111,7 +124,7 @@ function isColor(value) {
     return true;
   }
 
-  return callsColorFunction(lowered);
+  return callsColorFunction(lowered, tokens, start, end);
 }
 
 /**
@@ -138,6 +151,7 @@ function isValidWidthStyleColor(wscs) {
 /* Keyed by the names `borderComponents` gives, which are the last segment of
  * every border property that names one component. No token matches two of
  * these, so the first match is the component a token represents. */
+/** @type {Map<string, ComponentClassifier>} */
 const classifiers = new Map([
   ['width', isBorderWidth],
   ['style', isBorderStyle],
@@ -145,12 +159,12 @@ const classifiers = new Map([
 ]);
 
 /**
- * @param {string} token
- * @return {string | undefined} the component the token represents, if any
+ * @param {ValueComponent} part
+ * @return {string | undefined} the component the part represents, if any
  */
-function componentOf(token) {
+function componentOf({ text, tokens, start, end }) {
   for (const [component, is] of classifiers) {
-    if (is(token)) {
+    if (is(text, tokens, start, end)) {
       return component;
     }
   }
@@ -159,24 +173,38 @@ function componentOf(token) {
 }
 
 /**
+ * Whether one component names the border component, or is a substitution that
+ * may stand for it.
+ *
+ * @param {ValueComponent} part
+ * @param {string} component one of `borderComponents`
+ * @return {boolean}
+ */
+function namesComponent(part, component) {
+  return (
+    componentOf(part) === component ||
+    isSubstitution(part.tokens, part.start, part.end)
+  );
+}
+
+/**
  * A property that names one component takes one token, so a value of several
  * specifies nothing however well each token reads on its own: the browser
  * ignores `border-left-color: red blue` whole.
  *
  * @param {string} value
+ * @param {readonly CSSToken[] | undefined} tokens the tokens `value` spells
  * @param {string} component one of `borderComponents`
  * @return {boolean} whether the value can be what that component is set to
  */
-function specifiesComponent(value, component) {
-  const parts = list.space(value);
+function specifiesComponent(value, tokens, component) {
+  const parts = splitComponents(value, tokens);
 
   if (parts.length !== 1) {
     return false;
   }
 
-  const [token] = parts;
-
-  return componentOf(token) === component || isSubstitution(token);
+  return namesComponent(parts[0], component);
 }
 
 export {
@@ -184,5 +212,6 @@ export {
   isBorderWidth,
   isColor,
   isValidWidthStyleColor,
+  namesComponent,
   specifiesComponent,
 };

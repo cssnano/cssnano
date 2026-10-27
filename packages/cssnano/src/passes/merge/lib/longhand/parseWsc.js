@@ -1,5 +1,5 @@
-import { list } from 'postcss';
 import cssnanoUtils from '#utils';
+import { splitComponents } from './componentRanges.js';
 import { isBorderWidth, isBorderStyle, isColor } from './validateWsc.js';
 import { isSubstitution } from './unresolved.js';
 
@@ -51,10 +51,15 @@ const toLower = (v) => {
  * `specified` tells, per component, whether a value token named it rather than
  * a substitution filling the slot.
  *
+ * The value's tokens, when the caller has them, let a component with a `(` be
+ * typed without tokenizing it again.
+ *
  * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [tokens] the tokens
+ * `value` spells
  * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined), specified: {width: boolean, style: boolean, color: boolean}} | null}
  */
-function parseWidthStyleColor(value) {
+function parseWidthStyleColor(value, tokens) {
   if (none.test(asciiLowerCase(value))) {
     return {
       width: 'medium',
@@ -67,37 +72,40 @@ function parseWidthStyleColor(value) {
   let width, style, color;
   /** @type {string[]} */
   const substitutions = [];
-  let tokens = 0;
+  let count = 0;
   let specified = 0;
   let substituted = false;
   const named = { width: false, style: false, color: false };
 
-  for (const v of list.space(value)) {
-    tokens++;
-    if (isBorderStyle(v)) {
+  for (const { text, tokens: part, start, end } of splitComponents(
+    value,
+    tokens
+  )) {
+    count++;
+    if (isBorderStyle(text)) {
       if (style !== undefined) return null;
       specified++;
       named.style = true;
-      style = toLower(v);
-    } else if (isBorderWidth(v)) {
+      style = toLower(text);
+    } else if (isBorderWidth(text, part, start, end)) {
       if (width !== undefined) return null;
       specified++;
       named.width = true;
-      width = toLower(v);
-    } else if (isColor(v)) {
+      width = toLower(text);
+    } else if (isColor(text, part, start, end)) {
       if (color !== undefined) return null;
       specified++;
       named.color = true;
-      color = toLower(v);
-    } else if (isSubstitution(v)) {
+      color = toLower(text);
+    } else if (isSubstitution(part, start, end)) {
       substituted = true;
-      substitutions.push(v);
+      substitutions.push(text);
     } else {
       return null;
     }
   }
 
-  if (tokens > 3) return null;
+  if (count > 3) return null;
 
   // A substitution fills whichever component is still open only when that
   // component is unambiguous; its spelling is kept as written.

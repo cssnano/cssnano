@@ -16,10 +16,15 @@ declare const toLower: (v: string) => string;
  * `specified` tells, per component, whether a value token named it rather than
  * a substitution filling the slot.
  *
+ * The value's tokens, when the caller has them, let a component with a `(` be
+ * typed without tokenizing it again.
+ *
  * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [tokens] the tokens
+ * `value` spells
  * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined), specified: {width: boolean, style: boolean, color: boolean}} | null}
  */
-declare function parseWidthStyleColor(value: string): {
+declare function parseWidthStyleColor(value: string, tokens?: readonly import('@csstools/css-tokenizer').CSSToken[]): {
     width: (string | undefined);
     style: (string | undefined);
     color: (string | undefined);
