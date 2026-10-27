@@ -189,8 +189,7 @@ function freeOverriddenSlots(family, laneDecls, inserted, textTable) {
       minify
     );
     if (result !== undefined && result.length < target.value.length) {
-      target.value = result;
-      delete target.raws.value;
+      textTable.setText(target, result);
     }
   }
 }

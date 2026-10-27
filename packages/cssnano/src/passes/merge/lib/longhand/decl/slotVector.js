@@ -282,8 +282,7 @@ export function commitShorthand(
     if (tokens) {
       textTable.write(toRemove[0], tokens);
     } else {
-      toRemove[0].value = shorthandVal;
-      delete toRemove[0].raws?.value;
+      textTable.setText(toRemove[0], shorthandVal);
     }
     return;
   }
