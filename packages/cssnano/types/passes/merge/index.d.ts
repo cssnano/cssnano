@@ -1,6 +1,6 @@
+import { TextTable } from '../../values/textTable.js';
 import { isBoolean } from '../../optionGuards.js';
 import type { Root } from 'postcss';
-import type { TextTable } from '../../values/textTable.js';
 /**
  * The merge transforms over one stylesheet, in the order the default preset
  * runs them: canonicalize every declaration block, remove duplicates, merge

@@ -10,10 +10,10 @@ import { clearSupportCache } from './lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import runMerge from './lib/rules/selectorMerger.js';
 import { createRunContext } from '../ir/runContext.js';
+import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
-/** @import {TextTable} from '../../values/textTable.js' */
 
 /**
  * Whether the node still hangs under the stylesheet. A block that a merge or a
@@ -93,11 +93,17 @@ function canonicalizeFirstRound(css, first, context, blocks) {
  * @param {ReturnType<typeof targetSupportOf>} support
  * @param {ReturnType<typeof createRunContext> | undefined} context
  * @param {Container[] | undefined} blocks
+ * @param {TextTable} textTable the tokens the host walk left
  * @return {ReturnType<typeof longhandContext>} the context of the round, which the second round reuses
  */
-function runFirstRound(css, support, context, blocks) {
+function runFirstRound(css, support, context, blocks, textTable) {
   const { placeShorthands, boxSupport, pairShorthands, features } = support;
-  const first = longhandContext(placeShorthands, boxSupport, pairShorthands);
+  const first = longhandContext(
+    placeShorthands,
+    boxSupport,
+    pairShorthands,
+    textTable
+  );
   inLonghandSupport(features, () =>
     canonicalizeFirstRound(css, first, context, blocks)
   );
@@ -171,7 +177,8 @@ function runTransforms(css, browsers, rules, context) {
     css,
     support,
     rules ? context : undefined,
-    blocks
+    blocks,
+    context.textTable
   );
 
   // The merge reports the rules it creates, which the second round also canonicalizes.
@@ -186,7 +193,8 @@ function runTransforms(css, browsers, rules, context) {
   const secondContext = longhandContext(
     placeShorthands,
     boxSupport,
-    pairShorthands
+    pairShorthands,
+    context.textTable
   );
   // Carried over: a stale `true` only keeps columns unreduced, and any
   // column-setting declaration a merge moved sits in a block rescanned here.
@@ -247,7 +255,13 @@ export default pluginCreator;
  */
 const transformHooks = Object.freeze({
   mergeLonghand(css, browsers) {
-    runFirstRound(css, targetSupportOf(browsers), undefined, undefined);
+    runFirstRound(
+      css,
+      targetSupportOf(browsers),
+      undefined,
+      undefined,
+      new TextTable()
+    );
   },
   discardDuplicates(css) {
     discardDuplicates(css, createRunContext());

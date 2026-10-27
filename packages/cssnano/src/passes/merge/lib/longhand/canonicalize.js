@@ -18,12 +18,14 @@ import { reduceAlignmentFamily } from './decl/alignmentReducer.js';
 import { pairFamilyOf } from './decl/pairForms.js';
 import { reducePairFamily } from './decl/pairReducer.js';
 /** @import {BoxSupport} from './targetSupport.js' */
+/** @import {TextTable} from '../../../../values/textTable.js' */
 import { endsDeclarationRun } from './decl/declarationRuns.js';
 import { applyChildEdits } from '../deferredChildEdits.js';
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
 import { decodedPropertyName, isAll } from './decl/importanceLanes.js';
 import {
   foldableShorthands,
+  foldContainerDeclarations,
   foldShorthandDeclaration,
 } from './minifyShorthand.js';
 
@@ -67,7 +69,8 @@ function alignmentFamilyOf(prop) {
  *   familyRecords: Map<string, FamilyRecord>,
  *   placeShorthands: boolean,
  *   boxSupport: BoxSupport,
- *   pairShorthands: ReadonlySet<string>
+ *   pairShorthands: ReadonlySet<string>,
+ *   textTable: TextTable
  * }} MergeContext
  */
 
@@ -90,21 +93,6 @@ function alignmentFamilyOf(prop) {
  *   lanes: [Declaration[], Declaration[]]
  * }} FamilyDeclarations
  */
-
-/**
- * Folds immediate shorthand declarations within a container (e.g. root or at-rule).
- * @param {Container} container
- * @param {Map<string, string | null>} shorthandMemoTable
- * @return {void}
- */
-function foldContainerDeclarations(container, shorthandMemoTable) {
-  if (!container.nodes) return;
-  for (const node of container.nodes) {
-    if (node.type === 'decl') {
-      foldShorthandDeclaration(node, shorthandMemoTable);
-    }
-  }
-}
 
 /**
  * Runs property-family reducers on classified declarations for a container.
@@ -217,7 +205,12 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
     } else if (allPhysicalBorderProperties.has(prop)) {
       state.borderDeclarations.push(child);
     } else if (foldableShorthands.has(prop)) {
-      foldShorthandDeclaration(child, context.shorthandMemoTable, prop);
+      foldShorthandDeclaration(
+        child,
+        context.shorthandMemoTable,
+        prop,
+        context.textTable
+      );
     } else {
       state.hasForeignBorder = true;
     }
@@ -234,14 +227,24 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
   const { boxProperty, boxGroup } = record;
   if (boxGroup) {
     addBoxDeclaration(state, child, boxProperty, boxGroup, laneIndex);
-    foldShorthandDeclaration(child, context.shorthandMemoTable, prop);
+    foldShorthandDeclaration(
+      child,
+      context.shorthandMemoTable,
+      prop,
+      context.textTable
+    );
     return;
   }
   // Only when every target supports place-* may one be synthesized.
   const alignmentFamily = context.placeShorthands
     ? record.alignment
     : undefined;
-  foldShorthandDeclaration(child, context.shorthandMemoTable, prop);
+  foldShorthandDeclaration(
+    child,
+    context.shorthandMemoTable,
+    prop,
+    context.textTable
+  );
   if (alignmentFamily) {
     addFamilyDeclaration(state, alignmentFamily, child, laneIndex);
   }
@@ -323,9 +326,15 @@ function processContainer(container, context) {
  * @param {boolean} placeShorthands
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
+ * @param {TextTable} textTable the tokens the walk left for the declarations
  * @return {MergeContext} the state that the rounds of one run share
  */
-export function longhandContext(placeShorthands, boxSupport, pairShorthands) {
+export function longhandContext(
+  placeShorthands,
+  boxSupport,
+  pairShorthands,
+  textTable
+) {
   return {
     columnRules: [],
     setsOtherColumn: false,
@@ -334,6 +343,7 @@ export function longhandContext(placeShorthands, boxSupport, pairShorthands) {
     placeShorthands,
     boxSupport,
     pairShorthands,
+    textTable,
   };
 }
 
@@ -365,7 +375,11 @@ export function finishColumns(context) {
  */
 export function canonicalize(block, context) {
   if (block.type === 'root') {
-    foldContainerDeclarations(block, context.shorthandMemoTable);
+    foldContainerDeclarations(
+      block,
+      context.shorthandMemoTable,
+      context.textTable
+    );
     return;
   }
   processContainer(block, context);

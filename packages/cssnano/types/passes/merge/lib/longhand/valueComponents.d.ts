@@ -15,9 +15,11 @@ export type Component = {
  * @param {string} value
  * @param {',' | '/'} [separator] - the top-level token that divides the value
  * into parts; a comma is otherwise a failure, and a slash an ordinary token
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [list] the
+ * tokens of `value`, when the caller has them from the text table
  * @return {{components: Component[], raw: string}[] | null}
  */
-export declare function splitValue(value: string, separator?: ',' | '/'): {
+export declare function splitValue(value: string, separator?: ',' | '/', list?: readonly import('@csstools/css-tokenizer').CSSToken[]): {
     components: Component[];
     raw: string;
 }[] | null;

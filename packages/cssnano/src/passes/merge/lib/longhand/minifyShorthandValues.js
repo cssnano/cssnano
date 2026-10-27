@@ -151,9 +151,13 @@ function isSingleIdent(component) {
   );
 }
 
-/** @param {string} value @return {string | null} */
-function reduceAspectRatio(value) {
-  const parsed = splitValue(value);
+/**
+ * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
+ * @return {string | null}
+ */
+function reduceAspectRatio(value, list) {
+  const parsed = splitValue(value, undefined, list);
   if (!parsed) return null;
   const input = parsed.flatMap((part) =>
     part.components.flatMap((component) => component.tokens)
@@ -293,9 +297,13 @@ function consumeTransitionComponent(component, state) {
   return null;
 }
 
-/** @param {string} value @return {string | null} */
-function reduceTransition(value) {
-  const parsed = splitValue(value, ',');
+/**
+ * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
+ * @return {string | null}
+ */
+function reduceTransition(value, list) {
+  const parsed = splitValue(value, ',', list);
   if (!parsed) return null;
   const reduced = parsed.map(reduceTransitionPart);
   if (reduced.some((part) => part === null)) return null;
@@ -303,13 +311,18 @@ function reduceTransition(value) {
   return reduced.map((part, index) => part || parsed[index].raw).join(',');
 }
 
-/** @param {string} property @param {string} value @return {string | null} */
-export function normalizeValue(property, value) {
-  if (property === 'aspect-ratio') return reduceAspectRatio(value);
+/**
+ * @param {string} property
+ * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
+ * @return {string | null}
+ */
+export function normalizeValue(property, value, list) {
+  if (property === 'aspect-ratio') return reduceAspectRatio(value, list);
   if (property === 'transition' || property === '-webkit-transition') {
-    return reduceTransition(value);
+    return reduceTransition(value, list);
   }
-  const parsed = splitValue(value);
+  const parsed = splitValue(value, undefined, list);
   if (!parsed || parsed.length !== 1) return null;
   const components = parsed[0].components;
   if (
