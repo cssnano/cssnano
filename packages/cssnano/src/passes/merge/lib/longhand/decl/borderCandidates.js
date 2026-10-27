@@ -2,6 +2,7 @@ import cssnanoUtils from '#utils';
 import { detach } from '../../deferredChildEdits.js';
 import insertCloned from '../insertCloned.js';
 /** @import {TextTable} from '../../../../../values/textTable.js' */
+/** @import {CellRanges} from './borderCells.js' */
 import { setsLonghands } from '../spec.js';
 import {
   allBorderShorthands,
@@ -76,6 +77,7 @@ function compareCandidates(a, b, lane) {
 }
 /**
  * @param {string[]} cells
+ * @param {CellRanges} cellRanges
  * @param {Set<Declaration>[]} cellHistory
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
@@ -86,6 +88,7 @@ function compareCandidates(a, b, lane) {
  */
 export function generateCandidates(
   cells,
+  cellRanges,
   cellHistory,
   touched,
   barrierCells,
@@ -134,6 +137,7 @@ export function generateCandidates(
     barrierCells,
     cellHistory,
     cells,
+    cellRanges,
     lane,
     fallbacks,
     textTable
@@ -143,6 +147,7 @@ export function generateCandidates(
     createGroupCandidate(
       sub.map((c) => componentCells[c]),
       cells,
+      cellRanges,
       touched,
       blockedCells,
       true
@@ -153,6 +158,7 @@ export function generateCandidates(
     createGroupCandidate(
       sub.map((s) => sideCells[s]),
       cells,
+      cellRanges,
       touched,
       blockedCells,
       false

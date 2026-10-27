@@ -13,6 +13,18 @@ import {
 } from '../../../../../src/passes/merge/lib/longhand/validateWsc.js';
 
 /* Classifies a parsed component with the tokens that spell it. */
+/**
+ * The parse result without the components it names, for tests that compare
+ * the parsed slots.
+ *
+ * @param {ReturnType<typeof parseWidthStyleColor>} parsed
+ */
+function withoutParts(parsed) {
+  const { parts: _parts, ...slots } =
+    /** @type {NonNullable<typeof parsed>} */ (parsed);
+  return slots;
+}
+
 function classifies(is, component) {
   if (component === undefined) return false;
   const list = tokens(component);
@@ -67,7 +79,7 @@ describe('parseWsc validity', () => {
 
 describe('parseWsc component classification', () => {
   test('classifies each component wherever it appears, lower-casing grammar terms', () => {
-    assert.deepEqual(parseWidthStyleColor('SOLID 1px RED'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('SOLID 1px RED')), {
       width: '1px',
       style: 'solid',
       color: 'red',
@@ -76,7 +88,7 @@ describe('parseWsc component classification', () => {
   });
 
   test('leaves a component the value does not specify unnamed', () => {
-    assert.deepEqual(parseWidthStyleColor('solid red'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('solid red')), {
       width: undefined,
       style: 'solid',
       color: 'red',
@@ -85,7 +97,7 @@ describe('parseWsc component classification', () => {
   });
 
   test('reads a value that resets every component as the initial triple', () => {
-    assert.deepEqual(parseWidthStyleColor('NONE'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('NONE')), {
       width: 'medium',
       style: 'none',
       color: 'currentcolor',
@@ -94,7 +106,7 @@ describe('parseWsc component classification', () => {
   });
 
   test('reads a width and style reset with an omitted color as the initial triple', () => {
-    assert.deepEqual(parseWidthStyleColor('medium none'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('medium none')), {
       width: 'medium',
       style: 'none',
       color: 'currentcolor',
@@ -119,7 +131,7 @@ describe('parseWsc repeated components', () => {
 
 describe('parseWsc substitution slots', () => {
   test('reserves the open component for a lone substitution between specified components', () => {
-    assert.deepEqual(parseWidthStyleColor('var(--w) solid red'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('var(--w) solid red')), {
       width: 'var(--w)',
       style: 'solid',
       color: 'red',
@@ -128,16 +140,19 @@ describe('parseWsc substitution slots', () => {
   });
 
   test('fills the open component with the substituted token wherever it appears, keeping its spelling', () => {
-    assert.deepEqual(parseWidthStyleColor('SOLID red VAR(--Sub)'), {
-      width: 'VAR(--Sub)',
-      style: 'solid',
-      color: 'red',
-      specified: { width: false, style: true, color: true },
-    });
+    assert.deepEqual(
+      withoutParts(parseWidthStyleColor('SOLID red VAR(--Sub)')),
+      {
+        width: 'VAR(--Sub)',
+        style: 'solid',
+        color: 'red',
+        specified: { width: false, style: true, color: true },
+      }
+    );
   });
 
   test('reserves the open style for a lone substitution between width and color', () => {
-    assert.deepEqual(parseWidthStyleColor('1px red VAR(--Sub)'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('1px red VAR(--Sub)')), {
       width: '1px',
       style: 'VAR(--Sub)',
       color: 'red',
@@ -146,16 +161,19 @@ describe('parseWsc substitution slots', () => {
   });
 
   test('reserves the open color for a lone substitution between width and style', () => {
-    assert.deepEqual(parseWidthStyleColor('1px SOLID var(--Sub)'), {
-      width: '1px',
-      style: 'solid',
-      color: 'var(--Sub)',
-      specified: { width: true, style: true, color: false },
-    });
+    assert.deepEqual(
+      withoutParts(parseWidthStyleColor('1px SOLID var(--Sub)')),
+      {
+        width: '1px',
+        style: 'solid',
+        color: 'var(--Sub)',
+        specified: { width: true, style: true, color: false },
+      }
+    );
   });
 
   test('does not guess a component for a substitution when two components are unspecified', () => {
-    assert.deepEqual(parseWidthStyleColor('VAR(--Sub) red'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('VAR(--Sub) red')), {
       width: undefined,
       style: undefined,
       color: 'red',

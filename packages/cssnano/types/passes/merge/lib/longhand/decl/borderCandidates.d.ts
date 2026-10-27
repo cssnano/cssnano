@@ -1,7 +1,9 @@
 import type { TextTable } from '../../../../../values/textTable.js';
+import type { CellRanges } from './borderCells.js';
 import type { Container, Declaration } from 'postcss';
 /**
  * @param {string[]} cells
+ * @param {CellRanges} cellRanges
  * @param {Set<Declaration>[]} cellHistory
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
@@ -10,7 +12,7 @@ import type { Container, Declaration } from 'postcss';
  * @param {Set<Declaration>} fallbacks
  * @param {TextTable} textTable
  */
-export declare function generateCandidates(cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, hasReset: boolean, lane: boolean, fallbacks: Set<Declaration>, textTable: TextTable): {
+export declare function generateCandidates(cells: string[], cellRanges: CellRanges, cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, hasReset: boolean, lane: boolean, fallbacks: Set<Declaration>, textTable: TextTable): {
     decls: {
         prop: string;
         value: string;
