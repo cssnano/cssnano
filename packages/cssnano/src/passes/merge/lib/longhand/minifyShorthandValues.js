@@ -13,9 +13,20 @@ import {
   isLengthComponent,
   tokenName,
 } from './shorthandValueGrammar.js';
+import {
+  joinSpelled,
+  spellComponent,
+  spellPart,
+  spelledList,
+} from './spelledText.js';
+import { reduceAspectRatio } from './aspectRatioValue.js';
 
-const { TokenType, asciiLowerCase, numeric, tokenEnd, tokenStart } =
-  cssnanoUtils;
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {Component} from './valueComponents.js' */
+/** @import {FoldedSelector} from '../../../../values/textTable.js' */
+/** @import {Spelled} from './spelledText.js' */
+
+const { TokenType, asciiLowerCase } = cssnanoUtils;
 
 const overflowKeywords = new Set([
   'visible',
@@ -35,23 +46,23 @@ const timingFunctions = new Set(shorthandData.easing.functions);
 const transitionTimeUnits = new Set(['ms', 's']);
 
 /**
- * @typedef {{raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}}
- *   Component
+ * @param {readonly CSSToken[]} list the tokens of the value
+ * @param {Component[]} components
+ * @return {Spelled | null}
  */
-
-/** @param {Component[]} components @return {string | null} */
-function reduceTwoAxis(components) {
+function reduceTwoAxis(list, components) {
   if (components.length !== 2) return null;
   if (componentKey(components[0]) !== componentKey(components[1])) return null;
-  return components[0].raw;
+  return spellComponent(list, components[0]);
 }
 
 /**
+ * @param {readonly CSSToken[]} list the tokens of the value
  * @param {string} property
  * @param {Component[]} components
- * @return {string | null}
+ * @return {Spelled | null}
  */
-function reduceTwoAxisProperty(property, components) {
+function reduceTwoAxisProperty(list, property, components) {
   if (property === 'gap') {
     if (
       !components.every(
@@ -92,11 +103,16 @@ function reduceTwoAxisProperty(property, components) {
   } else {
     return null;
   }
-  return reduceTwoAxis(components);
+  return reduceTwoAxis(list, components);
 }
 
-/** @param {string} property @param {Component[]} components @return {string | null} */
-function reduceFourSide(property, components) {
+/**
+ * @param {readonly CSSToken[]} list the tokens of the value
+ * @param {string} property
+ * @param {Component[]} components
+ * @return {Spelled | null}
+ */
+function reduceFourSide(list, property, components) {
   if (components.length < 1 || components.length > 4) return null;
   const grammar = fourSideGrammar(property);
   if (!components.every((component) => isLengthComponent(component, grammar))) {
@@ -107,10 +123,12 @@ function reduceFourSide(property, components) {
   const count = fourSideCount(values.map(componentKey));
   return count === 4
     ? null
-    : values
-        .slice(0, count)
-        .map(({ raw }) => raw)
-        .join(' ');
+    : joinSpelled(
+        values
+          .slice(0, count)
+          .map((component) => spellComponent(list, component)),
+        ' '
+      );
 }
 
 /** @param {string} property @return {{percentage: boolean, auto: boolean, nonNegative?: boolean}} */
@@ -120,8 +138,13 @@ function fourSideGrammar(property) {
   return { percentage: true, auto: true, nonNegative: true };
 }
 
-/** @param {string} property @param {Component[]} components @return {string | null} */
-function reduceAlignment(property, components) {
+/**
+ * @param {readonly CSSToken[]} list the tokens of the value
+ * @param {string} property
+ * @param {Component[]} components
+ * @return {Spelled | null}
+ */
+function reduceAlignment(list, property, components) {
   const forms = shorthandForms.get(property);
   if (!forms || components.some((component) => !isSingleIdent(component))) {
     return null;
@@ -136,7 +159,10 @@ function reduceAlignment(property, components) {
       forms.has(firstName) &&
       first.map(componentKey).join('|') === second.map(componentKey).join('|')
     ) {
-      return first.map(({ raw }) => raw).join(' ');
+      return joinSpelled(
+        first.map((component) => spellComponent(list, component)),
+        ' '
+      );
     }
   }
   return null;
@@ -149,53 +175,6 @@ function isSingleIdent(component) {
     component.tokens[0][0] === TokenType.Ident &&
     !cssWideKeywords.has(componentName(component))
   );
-}
-
-/**
- * @param {string} value
- * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
- * @return {string | null}
- */
-function reduceAspectRatio(value, list) {
-  const parsed = splitValue(value, undefined, list);
-  if (!parsed) return null;
-  const input = parsed.flatMap((part) =>
-    part.components.flatMap((component) => component.tokens)
-  );
-  const significant = input.filter(
-    (token) => token[0] !== TokenType.Whitespace
-  );
-  const offset =
-    significant[0]?.[0] === TokenType.Ident &&
-    tokenName(significant[0]) === 'auto'
-      ? 1
-      : 0;
-  if (
-    significant.length !== offset + 3 ||
-    significant[offset]?.[0] !== TokenType.Number ||
-    significant[offset + 1]?.[0] !== TokenType.Delim ||
-    significant[offset + 1][1] !== '/' ||
-    significant[offset + 2]?.[0] !== TokenType.Number
-  )
-    return null;
-  const numerator = numeric(significant[offset]);
-  const denominator = numeric(significant[offset + 2]);
-  if (
-    !numerator ||
-    !denominator ||
-    numerator.number <= 0 ||
-    denominator.number !== 1 ||
-    !Number.isFinite(numerator.number) ||
-    !Number.isFinite(denominator.number)
-  )
-    return null;
-  const rawNumerator = value.slice(
-    tokenStart(significant[offset]),
-    tokenEnd(significant[offset])
-  );
-  if (offset)
-    return `${value.slice(tokenStart(significant[0]), tokenEnd(significant[0]))} ${rawNumerator}`;
-  return rawNumerator;
 }
 
 /** @param {Component} component @return {{number: number, unit: string} | null} */
@@ -237,8 +216,12 @@ function isTransitionProperty(component) {
 
 /** @typedef {{property: Component | null, duration: Component | null, timingFunction: Component | null, delay: Component | null}} TransitionSlots */
 
-/** @param {{components: Component[], raw: string}} part @return {string | false | null} */
-function reduceTransitionPart(part) {
+/**
+ * @param {readonly CSSToken[]} list the tokens of the value
+ * @param {{components: Component[], raw: string}} part
+ * @return {Spelled | false | null}
+ */
+function reduceTransitionPart(list, part) {
   /** @type {TransitionSlots} */
   let slots = {
     property: null,
@@ -266,10 +249,12 @@ function reduceTransitionPart(part) {
     removeTiming ? slots.timingFunction : null,
     removeDelay ? slots.delay : null,
   ]);
-  return part.components
-    .filter((component) => !removed.has(component))
-    .map(({ raw }) => raw)
-    .join(' ');
+  return joinSpelled(
+    part.components
+      .filter((component) => !removed.has(component))
+      .map((component) => spellComponent(list, component)),
+    ' '
+  );
 }
 
 /**
@@ -299,25 +284,31 @@ function consumeTransitionComponent(component, state) {
 
 /**
  * @param {string} value
- * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
- * @return {string | null}
+ * @param {readonly CSSToken[]} list the tokens of `value`
+ * @return {Spelled | null}
  */
 function reduceTransition(value, list) {
   const parsed = splitValue(value, ',', list);
   if (!parsed) return null;
-  const reduced = parsed.map(reduceTransitionPart);
+  const reduced = parsed.map((part) => reduceTransitionPart(list, part));
   if (reduced.some((part) => part === null)) return null;
   if (reduced.every((part) => part === false)) return null;
-  return reduced.map((part, index) => part || parsed[index].raw).join(',');
+  return joinSpelled(
+    reduced.map((part, index) => part || spellPart(list, parsed[index])),
+    ','
+  );
 }
 
 /**
+ * Reduces a shorthand value to the text it folds to, with the ranges of its
+ * tokens that spell it.
+ *
  * @param {string} property
  * @param {string} value
- * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
- * @return {string | null}
+ * @param {readonly CSSToken[]} list the tokens of `value`
+ * @return {Spelled | null}
  */
-export function normalizeValue(property, value, list) {
+function reduceValue(property, value, list) {
   if (property === 'aspect-ratio') return reduceAspectRatio(value, list);
   if (property === 'transition' || property === '-webkit-transition') {
     return reduceTransition(value, list);
@@ -331,21 +322,38 @@ export function normalizeValue(property, value, list) {
     property === 'overflow' ||
     property === 'overscroll-behavior'
   ) {
-    return reduceTwoAxisProperty(property, components);
+    return reduceTwoAxisProperty(list, property, components);
   }
   if (
     property === 'inset' ||
     property === 'scroll-margin' ||
     property === 'scroll-padding'
   ) {
-    return reduceFourSide(property, components);
+    return reduceFourSide(list, property, components);
   }
   if (
     property === 'place-items' ||
     property === 'place-self' ||
     property === 'place-content'
   ) {
-    return reduceAlignment(property, components);
+    return reduceAlignment(list, property, components);
   }
   return null;
+}
+
+/**
+ * The shorthand value a declaration folds to, with the token list that spells
+ * it. The list is built from `list`'s ranges and is undefined when those do
+ * not spell the text, as with a part's trimmed raw; a value that does not
+ * change gives null.
+ *
+ * @param {string} property
+ * @param {string} value
+ * @param {readonly CSSToken[]} list the tokens of `value`
+ * @return {FoldedSelector | null}
+ */
+export function normalizeValue(property, value, list) {
+  const spelled = reduceValue(property, value, list);
+  if (spelled === null || spelled.text === value) return null;
+  return spelledList(spelled);
 }

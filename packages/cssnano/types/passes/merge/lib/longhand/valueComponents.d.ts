@@ -2,10 +2,19 @@ export declare const closingTokens: Set<import("@csstools/css-tokenizer").TokenT
 export type Component = {
     raw: string;
     tokens: import('@csstools/css-tokenizer').CSSToken[];
+    start: number;
+    end: number;
 };
 /**
- * @typedef {{raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}}
- *   Component
+ * A top-level component: its text, its tokens, and the range of the caller's
+ * token list that holds them, `end` exclusive.
+ *
+ * @typedef {{
+ *   raw: string,
+ *   tokens: import('@csstools/css-tokenizer').CSSToken[],
+ *   start: number,
+ *   end: number,
+ * }} Component
  */
 /**
  * Split raw CSS into top-level components and comma-separated parts. This is

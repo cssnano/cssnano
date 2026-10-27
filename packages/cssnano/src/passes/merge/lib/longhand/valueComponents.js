@@ -10,8 +10,15 @@ export const closingTokens = new Set([
 ]);
 
 /**
- * @typedef {{raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}}
- *   Component
+ * A top-level component: its text, its tokens, and the range of the caller's
+ * token list that holds them, `end` exclusive.
+ *
+ * @typedef {{
+ *   raw: string,
+ *   tokens: import('@csstools/css-tokenizer').CSSToken[],
+ *   start: number,
+ *   end: number,
+ * }} Component
  */
 
 /**
@@ -34,25 +41,30 @@ export function splitValue(value, separator, list = tokens(value)) {
   /** @type {import('@csstools/css-tokenizer').TokenType[]} */
   const stack = [];
 
-  const push = () => {
+  /** @param {number} end the index of the token that closes the component */
+  const push = (end) => {
     if (!current.length) return;
     const first = current[0];
     const last = current.at(-1);
     const part = parts.at(-1);
     if (!first || !last || !part) return;
+    // Every token since the last separator is in `current`, so it starts there.
     part.components.push({
       raw: value.slice(tokenStart(first), tokenEnd(last)),
       tokens: current,
+      start: end - current.length,
+      end,
     });
     current = [];
   };
 
-  for (const token of list) {
+  for (let index = 0; index < list.length; index++) {
+    const token = list[index];
     const type = token[0];
     if (type === TokenType.Comment) return null;
 
     if (!stack.length && type === TokenType.Whitespace) {
-      push();
+      push(index);
       continue;
     }
     if (!stack.length && type === TokenType.Comma && separator !== ',') {
@@ -63,7 +75,7 @@ export function splitValue(value, separator, list = tokens(value)) {
       (type === TokenType.Comma ||
         (separator === '/' && type === TokenType.Delim && token[1] === '/'))
     ) {
-      push();
+      push(index);
       const part = parts.at(-1);
       if (!part) return null;
       part.end = tokenStart(token);
@@ -81,7 +93,7 @@ export function splitValue(value, separator, list = tokens(value)) {
   }
 
   if (stack.length) return null;
-  push();
+  push(list.length);
   if (parts.some((part) => !part.components.length)) return null;
 
   return parts.map((part) => ({

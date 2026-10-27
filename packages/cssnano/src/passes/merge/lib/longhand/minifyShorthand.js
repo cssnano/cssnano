@@ -4,6 +4,7 @@ import { normalizeValue } from './minifyShorthandValues.js';
 import { TextTable } from '../../../../values/textTable.js';
 
 /** @import {Container} from 'postcss' */
+/** @import {FoldedSelector, TextEntry} from '../../../../values/textTable.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -32,7 +33,7 @@ export const foldableShorthands = new Set([
  * using a memoization table to cache pure value transformations across the AST.
  *
  * @param {import('postcss').Declaration} decl
- * @param {Map<string, string | null>} [memoTable]
+ * @param {Map<string, FoldedSelector | null>} [memoTable]
  * @param {string} [property] - the lowercased property name, when known
  * @param {TextTable} [table] the text table the walk left, which holds the
  * declaration's tokens; a fresh one when omitted
@@ -50,38 +51,28 @@ export function foldShorthandDeclaration(
       ? (decl.raws.value.raw ?? decl.value)
       : decl.value;
   const memoKey = `${property}\0${sourceValue}`;
-  let canonicalValue;
+  let folded;
   if (memoTable) {
-    canonicalValue = memoTable.get(memoKey);
-    if (canonicalValue === undefined && !memoTable.has(memoKey)) {
-      canonicalValue = normalizeValue(
-        property,
-        sourceValue,
-        table.tokens(decl)
-      );
-      memoTable.set(memoKey, canonicalValue);
+    folded = memoTable.get(memoKey);
+    if (folded === undefined && !memoTable.has(memoKey)) {
+      folded = normalizeValue(property, sourceValue, table.tokens(decl));
+      memoTable.set(memoKey, folded);
     }
   } else {
-    canonicalValue = normalizeValue(property, sourceValue, table.tokens(decl));
+    folded = normalizeValue(property, sourceValue, table.tokens(decl));
   }
-  if (
-    canonicalValue === undefined ||
-    canonicalValue === null ||
-    canonicalValue === decl.value
-  ) {
-    return;
-  }
-  const oldValue = decl.value;
-  decl.value = canonicalValue;
-  if (decl.raws.value?.value === oldValue) {
-    decl.raws.value = { raw: canonicalValue, value: canonicalValue };
+  if (!folded || folded.text === decl.value) return;
+  if (folded.tokens === undefined) {
+    table.setText(decl, folded.text);
+  } else {
+    table.share(decl, /** @type {TextEntry} */ (folded));
   }
 }
 
 /**
  * Folds immediate shorthand declarations within a container (e.g. root or at-rule).
  * @param {Container} container
- * @param {Map<string, string | null>} shorthandMemoTable
+ * @param {Map<string, FoldedSelector | null>} shorthandMemoTable
  * @param {TextTable} textTable
  * @return {void}
  */
@@ -110,7 +101,7 @@ export function foldContainerDeclarations(
  * @return {void}
  */
 export default function minifyShorthandIdentities(root) {
-  /** @type {Map<string, string | null>} */
+  /** @type {Map<string, FoldedSelector | null>} */
   const memoTable = new Map();
   const table = new TextTable();
   root.walkDecls((decl) =>
