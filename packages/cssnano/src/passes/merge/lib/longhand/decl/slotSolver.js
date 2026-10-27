@@ -28,7 +28,7 @@ const { asciiLowerCase } = cssnanoUtils;
  */
 export function isExplodable(declaration, textTable) {
   return (
-    canExplode(declaration, false) &&
+    canExplode(declaration, textTable, false) &&
     !hasSubstitution(
       declaration.value,
       declarationTokens(textTable, declaration)
@@ -204,6 +204,7 @@ function freeOverriddenSlots(family, laneDecls, inserted, textTable) {
  * @param {boolean} mayInsert - whether every target supports the shorthand
  * @param {Map<Declaration, Declaration> | undefined} inserted
  * @return {void}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
 function flush(
   rule,
@@ -213,9 +214,10 @@ function flush(
   fallbacks,
   important,
   mayInsert,
-  inserted
+  inserted,
+  textTable
 ) {
-  const full = flushableSlots(slots);
+  const full = flushableSlots(slots, textTable);
   if (!full) return;
 
   const kw = isCssWideKeyword(full[0].value);
@@ -273,7 +275,8 @@ export function reduceFamilyLane(
       fallbacks,
       important,
       mayInsert,
-      inserted
+      inserted,
+      textTable
     );
   });
 

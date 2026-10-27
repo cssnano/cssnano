@@ -130,8 +130,9 @@ function parseAlignmentShorthand(family, value) {
  * @param {AlignmentFamilyConfig} family
  * @param {Declaration} decl
  * @return {[string | null, string | null] | null}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export function parseAlignmentDeclaration(family, decl) {
+export function parseAlignmentDeclaration(family, decl, textTable) {
   const value = decl.value?.trim();
   if (!value) return null;
   const prop = asciiLowerCase(decl.prop);
@@ -140,7 +141,7 @@ export function parseAlignmentDeclaration(family, decl) {
   if (slot === undefined) return null;
 
   let normalized = value;
-  if (!isCssWideKeyword(value) && !isCustomProp(decl)) {
+  if (!isCssWideKeyword(value) && !isCustomProp(decl, textTable)) {
     if (/[\s\\]/v.test(value)) {
       const parsed = splitValue(value);
       if (!parsed || parsed.length !== 1) return null;

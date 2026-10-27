@@ -30,12 +30,13 @@ export { allColumnProps, setsOtherColumnProperty } from './columnsValue.js';
  * @param {Container} rule
  * @param {Declaration[]} laneDecls
  * @param {boolean} important
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function processLane(rule, laneDecls, important) {
+function processLane(rule, laneDecls, important, textTable) {
   /** @type {Map<Declaration, Declaration>} */
   const inserted = new Map();
   const lane = new SlotLane(2, (slots, contributing, fallbacks) => {
-    const full = flushableSlots(slots);
+    const full = flushableSlots(slots, textTable);
     if (!full) return;
 
     commitShorthand(rule, full, contributing, fallbacks, {
@@ -53,7 +54,7 @@ function processLane(rule, laneDecls, important) {
     if (
       isAll(decl) ||
       detectDeclaration(decl) ||
-      (isShort && !canExplode(decl))
+      (isShort && !canExplode(decl, textTable))
     ) {
       lane.reset();
       continue;
@@ -106,13 +107,16 @@ const columnsPrecedence = {
     !isFallback(node, lastNode),
 };
 
-/** @param {Declaration | undefined} s */
-function normalizeSingleton(s) {
+/**
+ * @param {Declaration | undefined} s
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ */
+function normalizeSingleton(s, textTable) {
   if (
     !s ||
     asciiLowerCase(s.prop) !== columns ||
     detectDeclaration(s) ||
-    !canExplode(s)
+    !canExplode(s, textTable)
   ) {
     return;
   }
@@ -130,8 +134,9 @@ function normalizeSingleton(s) {
  * @param {Container} rule
  * @param {Declaration[]} decls
  * @param {[Declaration[], Declaration[]]} familyLanes
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export function reduceColumns(rule, decls, familyLanes) {
+export function reduceColumns(rule, decls, familyLanes, textTable) {
   if (!rule.nodes) return;
   if (decls.length === 0 || decls.some(isInvalid)) return;
 
@@ -139,7 +144,7 @@ export function reduceColumns(rule, decls, familyLanes) {
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
-    normalizeSingleton(live[0]);
+    normalizeSingleton(live[0], textTable);
     return;
   }
 
@@ -148,7 +153,7 @@ export function reduceColumns(rule, decls, familyLanes) {
       (d) => d.parent === rule
     );
     if (hasNonAll(laneDecls)) {
-      processLane(rule, laneDecls, lane);
+      processLane(rule, laneDecls, lane, textTable);
     }
   }
 }
