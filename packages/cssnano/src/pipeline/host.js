@@ -79,8 +79,9 @@ import { walkAfterMerge } from './afterMerge.js';
 /**
  * An advanced transform, which edits the symbol lists that the walk after
  * merge collected, with the options its entry's `create` returned. `remove`
- * removes a node and, with discardEmpty on, each ancestor it empties.
- * @typedef {(lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void) => void} SymbolTransform
+ * removes a node and, with discardEmpty on, each ancestor it empties. `table`
+ * gives the selector tokens the walk stored.
+ * @typedef {(lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void, table: TextTable) => void} SymbolTransform
  */
 
 /**
@@ -176,7 +177,7 @@ export function hostPlugin(
             pass(root, browsers, options, helpers.result, table);
           }
           if (after.size > 0 || symbols.size > 0) {
-            walkAfterMerge(root, helpers.result, after, symbols);
+            walkAfterMerge(root, helpers.result, after, symbols, table);
           }
         },
       };

@@ -16,6 +16,7 @@ import { createSymbolLists, symbolVisit } from './symbolLists.js';
 /** @import {CharsetScan} from '#postcss-normalize-charset' */
 /** @import {SymbolTransform} from './host.js' */
 /** @import {SymbolLists} from './symbolLists.js' */
+/** @import {TextTable} from '../values/textTable.js' */
 
 /**
  * The walk after merge runs the whole-stylesheet transforms that need the tree
@@ -29,9 +30,10 @@ import { createSymbolLists, symbolVisit } from './symbolLists.js';
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the options of each transform on, by entry name
  * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} symbols
  *   the advanced transforms on, in order
+ * @param {TextTable} table the selectors and declarations the walk before merge stored
  * @returns {void}
  */
-export function walkAfterMerge(root, result, transforms, symbols) {
+export function walkAfterMerge(root, result, transforms, symbols, table) {
   /** @type {((node: AnyNode) => void)[]} */
   const visits = [];
   if (transforms.has('normalizeWhitespace')) {
@@ -39,7 +41,9 @@ export function walkAfterMerge(root, result, transforms, symbols) {
     // Remove the final newline, which the raws of the root hold.
     root.raws.after = '';
   }
-  if (transforms.has('uniqueSelectors')) visits.push(uniqueSelectorsVisit);
+  if (transforms.has('uniqueSelectors')) {
+    visits.push((node) => uniqueSelectorsVisit(node, table));
+  }
   const charsetOptions = transforms.get('normalizeCharset');
   /** @type {CharsetScan} */
   const charset = { first: undefined, charsets: [], nonAscii: undefined };
@@ -62,7 +66,7 @@ export function walkAfterMerge(root, result, transforms, symbols) {
   } else if (visit) {
     root.walk(visit);
   }
-  if (lists) runSymbolTransforms(lists, symbols, result, transforms);
+  if (lists) runSymbolTransforms(lists, symbols, result, transforms, table);
   if (charsetOptions) {
     if (lists) rescanNonAscii(charset);
     decideCharset(
@@ -84,14 +88,15 @@ export function walkAfterMerge(root, result, transforms, symbols) {
  * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} symbols
  * @param {Result} result
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms
+ * @param {TextTable} table
  * @returns {void}
  */
-function runSymbolTransforms(lists, symbols, result, transforms) {
+function runSymbolTransforms(lists, symbols, result, transforms, table) {
   /** @type {(node: ChildNode) => void} */
   const remove = transforms.has('discardEmpty')
     ? (node) => removeAndDiscardEmptied(node, result)
     : (node) => node.remove();
   for (const { transform, options } of symbols.values()) {
-    transform(lists, options, remove);
+    transform(lists, options, remove, table);
   }
 }

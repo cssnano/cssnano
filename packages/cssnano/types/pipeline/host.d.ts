@@ -25,7 +25,7 @@ export type PassRun = {
 export type TransformEntry = {
     create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown> | null;
 };
-export type SymbolTransform = (lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void) => void;
+export type SymbolTransform = (lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void, table: TextTable) => void;
 export type HostMember = {
     entry: StageEntry;
     options: Record<PropertyKey, unknown>;

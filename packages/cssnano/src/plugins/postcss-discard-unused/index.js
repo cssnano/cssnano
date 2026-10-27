@@ -9,9 +9,11 @@ import {
 import { list } from 'postcss';
 import cssnanoUtils from '#utils';
 import { createSymbolLists, symbolVisit } from '../../pipeline/symbolLists.js';
+import { TextTable } from '../../values/textTable.js';
 
 /** @import {AtRule, Declaration} from 'postcss' */
 /** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 const { asciiLowerCase } = cssnanoUtils;
 const wildcard = true;
@@ -73,10 +75,10 @@ function namespacePrefixToken(token) {
  * since qualified names cannot contain whitespace. Comments are removed before
  * parsing, so they do not reset it.
  *
- * @param {string} source
+ * @param {readonly CSSToken[]} tokens the tokens of the selector as written
  * @return {(string | true)[]}
  */
-function namespacePrefixes(source) {
+function namespacePrefixes(tokens) {
   /** @type {(string | true)[]} */
   const prefixes = [];
   /** @type {import('@csstools/css-tokenizer').CSSToken | undefined} */
@@ -84,7 +86,7 @@ function namespacePrefixes(source) {
   /** @type {string | true | undefined} */
   let pendingPrefix;
 
-  for (const token of tokenize({ css: source })) {
+  for (const token of tokens) {
     if (isTokenComment(token)) continue;
     if (isTokenComma(token)) {
       previous = undefined;
@@ -196,9 +198,10 @@ function filterFont(atRules, decls, remove) {
  * @param {SymbolLists} lists
  * @param {Options} options
  * @param {(node: AtRule) => void} remove
+ * @param {TextTable} table the selector tokens the walk stored
  * @return {void}
  */
-export function discardUnusedSymbols(lists, options, remove) {
+export function discardUnusedSymbols(lists, options, remove, table) {
   const { fontFace, counterStyle, keyframes, namespace } = {
     fontFace: true,
     counterStyle: true,
@@ -216,7 +219,7 @@ export function discardUnusedSymbols(lists, options, remove) {
   const prefixes = new Set();
   if (namespace) {
     for (const rule of lists.namespaceRules) {
-      for (const prefix of namespacePrefixes(rule.selector)) {
+      for (const prefix of namespacePrefixes(table.tokens(rule))) {
         prefixes.add(prefix);
       }
     }
@@ -243,7 +246,12 @@ function pluginCreator(opts) {
     OnceExit(css) {
       const lists = createSymbolLists();
       css.walk(symbolVisit(lists));
-      discardUnusedSymbols(lists, opts, (node) => node.remove());
+      discardUnusedSymbols(
+        lists,
+        opts,
+        (node) => node.remove(),
+        new TextTable()
+      );
     },
   };
 }
