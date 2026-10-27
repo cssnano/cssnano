@@ -24,12 +24,11 @@ export type AtRuleEntry = {
  * collects the lists, so the transform needs no walk of its own.
  *
  * @param {SymbolLists} lists
- * @param {Record<PropertyKey, never>} _options takes no options
+ * @param {Record<PropertyKey, unknown>} _options takes no options
  * @param {(node: ChildNode) => void} remove
- * @param {import('../../values/textTable.js').TextTable} _table reads no selector tokens
  * @return {void}
  */
-export declare function mergeIdentsSymbols(lists: SymbolLists, _options: Record<PropertyKey, never>, remove: (node: ChildNode) => void, _table: import('../../values/textTable.js').TextTable): void;
+export declare function mergeIdentsSymbols(lists: SymbolLists, _options: Record<PropertyKey, unknown>, remove: (node: ChildNode) => void): void;
 /**
  * @return {import('postcss').Plugin}
  */
