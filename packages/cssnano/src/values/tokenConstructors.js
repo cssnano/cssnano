@@ -154,12 +154,14 @@ function numeric(representation, unit = '') {
   if (!isNumberText(representation)) {
     throw new RangeError(`${representation} is not a CSS number`);
   }
-  /** @type {{value: number, signCharacter?: string, type?: NumberType, unit?: string}} */
-  const data = { value: Number(representation) };
   const sign = representation[0];
-  if (sign === '+' || sign === '-') {
-    data.signCharacter = sign;
-  }
+  // Key order and the undefined `signCharacter` match the tokenizer's data,
+  // so every token reader sees one object shape.
+  /** @type {{value: number, signCharacter: string | undefined, type?: NumberType, unit?: string}} */
+  const data = {
+    value: Number(representation),
+    signCharacter: sign === '+' || sign === '-' ? sign : undefined,
+  };
   if (unit === '%') {
     return /** @type {CSSToken} */ ([
       TokenType.Percentage,
@@ -203,11 +205,11 @@ function integer(value) {
   if (!Number.isSafeInteger(value)) {
     throw new RangeError(`${value} is not a safe integer`);
   }
-  /** @type {{value: number, signCharacter?: string, type: NumberType}} */
-  const data = { value, type: NumberType.Integer };
-  if (value < 0) {
-    data.signCharacter = '-';
-  }
+  const data = {
+    value,
+    signCharacter: value < 0 ? '-' : undefined,
+    type: NumberType.Integer,
+  };
   return /** @type {CSSToken} */ ([
     TokenType.Number,
     String(value),
@@ -232,7 +234,7 @@ function percentage(value) {
     `${value}%`,
     noPosition,
     noPosition,
-    { value },
+    { value, signCharacter: value < 0 ? '-' : undefined },
   ]);
 }
 

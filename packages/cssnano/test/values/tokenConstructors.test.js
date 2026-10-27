@@ -96,18 +96,6 @@ test('percentage rejects a value that CSS cannot write', () => {
   assert.throws(() => percentage(Number.POSITIVE_INFINITY), RangeError);
 });
 
-/**
- * The tokenizer writes `signCharacter` even when it is undefined; constructors
- * leave the key out instead.
- *
- * @param {object} data
- */
-function withoutUndefined(data) {
-  return Object.fromEntries(
-    Object.entries(data).filter(([, value]) => value !== undefined)
-  );
-}
-
 test('numeric reads back as the token the tokenizer reads from its text', () => {
   const spellings = [
     '1',
@@ -127,13 +115,34 @@ test('numeric reads back as the token the tokenizer reads from its text', () => 
       const read = firstToken(token[1]);
       assert.equal(read[0], token[0], `${spelling}${unit}: type`);
       assert.equal(read[1], token[1], `${spelling}${unit}: text`);
+      assert.deepEqual(read[4], token[4], `${spelling}${unit}: data`);
       assert.deepEqual(
-        withoutUndefined(read[4]),
-        token[4],
-        `${spelling}${unit}: data`
+        Object.keys(token[4]),
+        Object.keys(read[4]),
+        `${spelling}${unit}: data keys`
       );
     }
   }
+});
+
+test('integer reads back as the token the tokenizer reads from its text', () => {
+  for (const value of [0, 7, -3, Number.MAX_SAFE_INTEGER]) {
+    const token = integer(value);
+    const read = firstToken(token[1]);
+    assert.deepEqual(read[4], token[4], `${value}: data`);
+    assert.deepEqual(
+      Object.keys(token[4]),
+      Object.keys(read[4]),
+      `${value}: keys`
+    );
+  }
+});
+
+test('percentage data has the keys the tokenizer gives, in the same order', () => {
+  const token = percentage(5);
+  const read = firstToken(token[1]);
+  assert.deepEqual(read[4], token[4]);
+  assert.deepEqual(Object.keys(token[4]), Object.keys(read[4]));
 });
 
 test("numeric keeps the representation it was given as the number's text", () => {
