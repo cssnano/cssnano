@@ -1,3 +1,4 @@
+import { TextTable } from '../../values/textTable.js';
 import type { AtRule } from 'postcss';
 import type { SymbolLists } from '../../pipeline/symbolLists.js';
 export type Options = {
@@ -33,9 +34,10 @@ export type Options = {
  * @param {SymbolLists} lists
  * @param {Options} options
  * @param {(node: AtRule) => void} remove
+ * @param {TextTable} table the selector tokens the walk stored
  * @return {void}
  */
-export declare function discardUnusedSymbols(lists: SymbolLists, options: Options, remove: (node: AtRule) => void): void;
+export declare function discardUnusedSymbols(lists: SymbolLists, options: Options, remove: (node: AtRule) => void, table: TextTable): void;
 /**
  * @param {Options} opts
  * @return {import('postcss').Plugin}

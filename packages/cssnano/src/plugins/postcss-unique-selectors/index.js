@@ -1,18 +1,54 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import { TokenType } from '@csstools/css-tokenizer';
+import { sourceSelector } from '../../utils/sourceText.js';
+import { comma } from '../../values/punctuationTokens.js';
+import { renumber } from '../../values/renumber.js';
+import { TextTable } from '../../values/textTable.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+
+/**
+ * A comment between two selectors, or inside one.
+ *
+ * @typedef {object} SelectorComment
+ * @property {number} start
+ * @property {number} end
+ * @property {CSSToken} token
+ * @property {boolean} structuralWhitespace
+ */
+
+/**
+ * One selector of a list: its text positions, its token indices and its comments.
+ *
+ * @typedef {object} SelectorPart
+ * @property {number} start
+ * @property {number} end
+ * @property {number} from the index of its first token
+ * @property {number} to the index after its last token
+ * @property {SelectorComment[]} comments
+ */
+
+/**
+ * A selector kept after deduplication, with the comment tokens of its duplicates.
+ *
+ * @typedef {object} UniquePart
+ * @property {SelectorPart} part
+ * @property {CSSToken[]} comments
+ */
 
 /**
  * @param {string} selectors
- * @return {{start: number, end: number, comments: {start: number, end: number, text: string, structuralWhitespace: boolean}[]}[]}
+ * @param {readonly CSSToken[]} tokens the tokens of `selectors`
+ * @return {SelectorPart[]}
  */
-function splitSelectors(selectors) {
-  /** @type {{start: number, end: number, comments: {start: number, end: number, text: string, structuralWhitespace: boolean}[]}[]} */
+function splitSelectors(selectors, tokens) {
+  /** @type {SelectorPart[]} */
   const parts = [];
   let start = 0;
+  let from = 0;
   let depth = 0;
-  /** @type {{start: number, end: number, text: string, structuralWhitespace: boolean}[]} */
+  /** @type {SelectorComment[]} */
   let comments = [];
 
-  const tokens = [...tokenize({ css: selectors })];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const [type, , tokenStart, tokenEnd] = token;
@@ -21,14 +57,15 @@ function splitSelectors(selectors) {
       comments.push({
         start: tokenStart,
         end: tokenEnd + 1,
-        text: token[1],
+        token,
         structuralWhitespace: commentProvidesWhitespace(tokens, index),
       });
     }
 
     if (type === TokenType.Comma && depth === 0) {
-      parts.push({ start, end: tokenStart, comments });
+      parts.push({ start, end: tokenStart, from, to: index, comments });
       start = tokenEnd + 1;
+      from = index + 1;
       comments = [];
       continue;
     }
@@ -49,7 +86,13 @@ function splitSelectors(selectors) {
     }
   }
 
-  parts.push({ start, end: selectors.length, comments });
+  parts.push({
+    start,
+    end: selectors.length,
+    from,
+    to: tokens.length,
+    comments,
+  });
 
   // PostCSS's selector parser associates trailing whitespace with the
   // preceding selector, while a trailing empty selector is discarded.
@@ -60,6 +103,7 @@ function splitSelectors(selectors) {
     if (last.start !== last.end) {
       if (parts.length > 1) {
         parts[parts.length - 2].end = last.end;
+        parts[parts.length - 2].to = last.to;
       }
       parts.pop();
     } else if (selectors.includes('/*')) {
@@ -71,7 +115,7 @@ function splitSelectors(selectors) {
 }
 
 /**
- * @param {ReturnType<typeof tokenize>} tokens
+ * @param {readonly CSSToken[]} tokens
  * @param {number} index
  * @return {boolean}
  */
@@ -85,13 +129,14 @@ function commentProvidesWhitespace(tokens, index) {
   let next = index + 1;
   while (tokens[next]?.[0] === TokenType.Comment) next++;
 
+  // The end of the selector text can end a component, as the end of input does.
   return (
     canEndSelectorComponent(tokens[previous]) &&
-    canStartSelectorComponent(tokens[next])
+    (next >= tokens.length || canStartSelectorComponent(tokens[next]))
   );
 }
 
-/** @param {ReturnType<typeof tokenize>[number] | undefined} token @return {boolean} */
+/** @param {CSSToken | undefined} token @return {boolean} */
 function canEndSelectorComponent(token) {
   if (!token) return false;
   if (
@@ -111,7 +156,7 @@ function canEndSelectorComponent(token) {
   return token[0] !== TokenType.Delim || !['>', '+', '~'].includes(token[1]);
 }
 
-/** @param {ReturnType<typeof tokenize>[number] | undefined} token @return {boolean} */
+/** @param {CSSToken | undefined} token @return {boolean} */
 function canStartSelectorComponent(token) {
   if (!token) return false;
   if (
@@ -131,11 +176,10 @@ function canStartSelectorComponent(token) {
 
 /**
  * @param {string} selectors
- * @param {{start: number, end: number, comments: {start: number, end: number, text: string, structuralWhitespace: boolean}[]}} part
- * @return {[string, string]}
+ * @param {SelectorPart} part
+ * @return {string}
  */
-function selectorText(selectors, part) {
-  const source = selectors.slice(part.start, part.end);
+function selectorKey(selectors, part) {
   /** @type {string[]} */
   const keyParts = [];
   let start = part.start;
@@ -147,29 +191,30 @@ function selectorText(selectors, part) {
   }
 
   keyParts.push(selectors.slice(start, part.end));
-  return [keyParts.join('').trim(), source];
+  return keyParts.join('').trim();
 }
 
 /**
+ * The first selector of each key, sorted by key, with the comments of the
+ * duplicates that follow it.
+ *
  * @param {string} selectors
- * @return {string}
+ * @param {readonly SelectorPart[]} parts
+ * @return {UniquePart[]}
  */
-function generateUniqueSelector(selectors) {
-  // No comma means a single selector; nothing to dedupe or sort.
-  if (!selectors.includes(',')) {
-    return selectors;
-  }
-  /** @type {Map<string, {selector: string, comments: string[]}>} */
+function uniqueParts(selectors, parts) {
+  /** @type {Map<string, UniquePart>} */
   const uniqueSelectors = new Map();
 
-  for (const part of splitSelectors(selectors)) {
-    const [key, text] = selectorText(selectors, part);
+  for (const part of parts) {
+    const key = selectorKey(selectors, part);
     const selector = uniqueSelectors.get(key);
     if (selector === undefined) {
-      uniqueSelectors.set(key, { selector: text, comments: [] });
-    } else if (part.comments.length) {
+      uniqueSelectors.set(key, { part, comments: [] });
+    } else {
       // Comments on duplicate selectors are concatenated to the first selector.
-      selector.comments.push(...part.comments.map((comment) => comment.text));
+      for (const comment of part.comments)
+        selector.comments.push(comment.token);
     }
   }
 
@@ -181,35 +226,74 @@ function generateUniqueSelector(selectors) {
         return a < b ? -1 : 0;
       }
     })
-    .map(([, selector]) => selector.selector + selector.comments.join(''))
-    .join();
+    .map(([, selector]) => selector);
 }
+
+/**
+ * The text of the unique selectors, joined by commas.
+ *
+ * @param {string} selectors
+ * @param {readonly UniquePart[]} unique
+ * @return {string}
+ */
+function uniqueSelectorsText(selectors, unique) {
+  let text = '';
+  for (const [index, { part, comments }] of unique.entries()) {
+    if (index > 0) text += ',';
+    text += selectors.slice(part.start, part.end);
+    for (const token of comments) text += token[1];
+  }
+  return text;
+}
+
+/**
+ * The tokens of the unique selectors, joined by commas and renumbered.
+ *
+ * @param {readonly CSSToken[]} list the tokens of the selector as written
+ * @param {readonly UniquePart[]} unique
+ * @return {CSSToken[]}
+ */
+function uniqueSelectorsTokens(list, unique) {
+  /** @type {CSSToken[]} */
+  const joined = [];
+  for (const [index, { part, comments }] of unique.entries()) {
+    if (index > 0) joined.push(comma());
+    for (let i = part.from; i < part.to; i++) joined.push(list[i]);
+    for (const token of comments) joined.push(token);
+  }
+  renumber(joined);
+  return joined;
+}
+
 /**
  * Removes the duplicate selectors of one rule, keeping its raw formatting.
+ * The tokens of the selector come from `table`, so a list that a stage wrote
+ * is not tokenized again.
  *
- * @param {import('postcss').Rule} nodes
+ * @param {import('postcss').Rule} rule
+ * @param {TextTable} table
  * @return {void}
  */
-export function uniqueRuleSelector(nodes) {
-  const source =
-    nodes.raws.selector?.value === nodes.selector
-      ? (nodes.raws.selector.raw ?? nodes.selector)
-      : nodes.selector;
-  const selector = generateUniqueSelector(source);
-  nodes.selector = selector;
-  if (nodes.raws.selector?.raw) {
-    nodes.raws.selector = { raw: selector, value: selector };
-  }
+export function uniqueRuleSelector(rule, table) {
+  const selectors = sourceSelector(rule);
+  // No comma means a single selector; nothing to dedupe or sort.
+  if (!selectors.includes(',')) return;
+
+  const list = table.tokens(rule);
+  const unique = uniqueParts(selectors, splitSelectors(selectors, list));
+  if (uniqueSelectorsText(selectors, unique) === selectors) return;
+  table.write(rule, uniqueSelectorsTokens(list, unique));
 }
 
 /**
  * Visits one node of a walk; only rules have selectors to dedupe.
  *
  * @param {import('postcss').AnyNode} node
+ * @param {TextTable} table
  * @return {void}
  */
-export function uniqueSelectorsVisit(node) {
-  if (node.type === 'rule') uniqueRuleSelector(node);
+export function uniqueSelectorsVisit(node, table) {
+  if (node.type === 'rule') uniqueRuleSelector(node, table);
 }
 
 /**
@@ -222,7 +306,8 @@ function pluginCreator() {
      * @param {import('postcss').Root} css
      */
     OnceExit(css) {
-      css.walkRules(uniqueRuleSelector);
+      const table = new TextTable();
+      css.walkRules((rule) => uniqueRuleSelector(rule, table));
     },
   };
 }
