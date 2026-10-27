@@ -1,5 +1,6 @@
 import { balancedStructure, tokens } from '../utils/value.js';
 import { renumber } from './renumber.js';
+import { spliceRanges } from './spliceRanges.js';
 import { tokensText } from './tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -128,20 +129,7 @@ class ValueBuffer {
    */
   replaceRanges(edits) {
     if (edits.length === 0) return;
-    const own = this.tokens();
-    /** @type {CSSToken[]} */
-    const next = [];
-    let cursor = 0;
-    for (const edit of edits) {
-      for (let index = cursor; index < edit.start; index++) {
-        next.push(own[index]);
-      }
-      for (const token of edit.tokens) next.push(token);
-      cursor = edit.end;
-    }
-    for (let index = cursor; index < own.length; index++) {
-      next.push(own[index]);
-    }
+    const next = spliceRanges(this.tokens(), edits);
     renumber(next);
     this.#tokens = next;
     this.#text = undefined;
