@@ -6,7 +6,8 @@ const { counter } = await import('../../../../util/countTokenize.js');
 const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../src/values/textTable.js');
-const { ident } = await import('../../src/values/tokenConstructors.js');
+const { ident, integer } =
+  await import('../../src/values/tokenConstructors.js');
 const { tokens } = await import('../../src/utils/value.js');
 const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
 const { discardUnusedSymbols } =
@@ -58,6 +59,35 @@ suite('the text table reads the text the host walk wrote', () => {
     const before = tokenizeTotal();
     assert.equal(table.tokens(second).length, 4);
     assert.equal(tokenizeTotal() - before, 0);
+  });
+});
+
+suite('the text table reads the value the host walk stored', () => {
+  test("a reader takes the value list the host walk's stages read, without tokenizing", () => {
+    const root = postcss.parse('a { margin: 0 1px }');
+    const table = new TextTable();
+    const stage = {
+      forProperty: () => (buffer) => buffer.replace(0, 1, [integer(1)]),
+    };
+    walkStylesheet([stage], root, helpers, new Map(), table);
+    const decl = root.first.first;
+    assert.equal(decl.value, '1 1px');
+    const before = tokenizeTotal();
+    assert.equal(table.tokens(decl).length, 3);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('two declarations of one property in one context that spell one value share one table entry', () => {
+    const root = postcss.parse('a { margin: 0 1px } b { margin: 0 1px }');
+    const table = new TextTable();
+    const stage = {
+      forProperty: () => (buffer) => buffer.replace(0, 1, [integer(1)]),
+    };
+    walkStylesheet([stage], root, helpers, new Map(), table);
+    const [first, second] = [root.first.first, root.last.first];
+    const list = table.stored(first);
+    assert.notEqual(list, undefined);
+    assert.equal(table.stored(second), list);
   });
 });
 
