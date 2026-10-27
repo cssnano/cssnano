@@ -14,13 +14,18 @@ declare function isBorderWidth(value: string | undefined): boolean;
  */
 declare function isColor(value: string | undefined): boolean;
 /**
- * @param {{width: (string|undefined), style: (string|undefined), color: (string|undefined)}} wscs
+ * Any two components a value names make it valid; the parser reports which
+ * ones it named, so this reads no string again.
+ *
+ * @param {{specified: {width: boolean, style: boolean, color: boolean}}} wscs
  * @return {boolean}
  */
 declare function isValidWidthStyleColor(wscs: {
-    width: (string | undefined);
-    style: (string | undefined);
-    color: (string | undefined);
+    specified: {
+        width: boolean;
+        style: boolean;
+        color: boolean;
+    };
 }): boolean;
 /**
  * A property that names one component takes one token, so a value of several

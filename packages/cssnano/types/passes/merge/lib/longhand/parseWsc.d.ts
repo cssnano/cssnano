@@ -13,13 +13,21 @@ declare const toLower: (v: string) => string;
  * token is left unassigned (the declaration still keeps its substitution
  * semantics for callers that track them).
  *
+ * `specified` tells, per component, whether a value token named it rather than
+ * a substitution filling the slot.
+ *
  * @param {string} value
- * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined)} | null}
+ * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined), specified: {width: boolean, style: boolean, color: boolean}} | null}
  */
 declare function parseWidthStyleColor(value: string): {
     width: (string | undefined);
     style: (string | undefined);
     color: (string | undefined);
+    specified: {
+        width: boolean;
+        style: boolean;
+        color: boolean;
+    };
 } | null;
 export { toLower };
 export default parseWidthStyleColor;

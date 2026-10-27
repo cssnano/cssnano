@@ -4,6 +4,58 @@ import parseWidthStyleColor, {
   toLower,
 } from '../../../../../src/passes/merge/lib/longhand/parseWsc.js';
 import minifyWidthStyleColor from '../../../../../src/passes/merge/lib/longhand/minifyWsc.js';
+import {
+  isBorderStyle,
+  isBorderWidth,
+  isColor,
+  isValidWidthStyleColor,
+} from '../../../../../src/passes/merge/lib/longhand/validateWsc.js';
+
+/* Classifies each parsed component string again, the reading the parser's
+ * slots replace. */
+function validByClassifying({ width, style, color }) {
+  const validWidth = isBorderWidth(width);
+  const validStyle = isBorderStyle(style);
+  const validColor = isColor(color);
+
+  return (
+    (validWidth && validStyle) ||
+    (validWidth && validColor) ||
+    (validStyle && validColor)
+  );
+}
+
+describe('parseWsc validity', () => {
+  test("parseWidthStyleColor's validity agrees with classifying its components", () => {
+    for (const value of [
+      'solid red',
+      '1px solid',
+      '1px red',
+      'thin dotted #fff',
+      'calc(1px + 2px) solid',
+      'solid rgb(0 0 0)',
+      'hsl(1 2% 3%) dashed',
+      'medium none',
+      'none',
+      '1px',
+      'red',
+      'var(--w) solid red',
+      '1px var(--s) red',
+      '1px solid var(--c)',
+      'VAR(--Sub) red',
+      '1px var(--x)',
+      'var(--a) var(--b)',
+      'currentcolor solid',
+    ]) {
+      const parsed = parseWidthStyleColor(value);
+      assert.strictEqual(
+        isValidWidthStyleColor(parsed),
+        validByClassifying(parsed),
+        value
+      );
+    }
+  });
+});
 
 describe('parseWsc component classification', () => {
   test('classifies each component wherever it appears, lower-casing grammar terms', () => {
@@ -11,6 +63,7 @@ describe('parseWsc component classification', () => {
       width: '1px',
       style: 'solid',
       color: 'red',
+      specified: { width: true, style: true, color: true },
     });
   });
 
@@ -19,6 +72,7 @@ describe('parseWsc component classification', () => {
       width: undefined,
       style: 'solid',
       color: 'red',
+      specified: { width: false, style: true, color: true },
     });
   });
 
@@ -27,6 +81,7 @@ describe('parseWsc component classification', () => {
       width: 'medium',
       style: 'none',
       color: 'currentcolor',
+      specified: { width: true, style: true, color: true },
     });
   });
 
@@ -35,6 +90,7 @@ describe('parseWsc component classification', () => {
       width: 'medium',
       style: 'none',
       color: 'currentcolor',
+      specified: { width: true, style: true, color: true },
     });
   });
 });
@@ -59,6 +115,7 @@ describe('parseWsc substitution slots', () => {
       width: 'var(--w)',
       style: 'solid',
       color: 'red',
+      specified: { width: false, style: true, color: true },
     });
   });
 
@@ -67,6 +124,7 @@ describe('parseWsc substitution slots', () => {
       width: 'VAR(--Sub)',
       style: 'solid',
       color: 'red',
+      specified: { width: false, style: true, color: true },
     });
   });
 
@@ -75,6 +133,7 @@ describe('parseWsc substitution slots', () => {
       width: '1px',
       style: 'VAR(--Sub)',
       color: 'red',
+      specified: { width: true, style: false, color: true },
     });
   });
 
@@ -83,6 +142,7 @@ describe('parseWsc substitution slots', () => {
       width: '1px',
       style: 'solid',
       color: 'var(--Sub)',
+      specified: { width: true, style: true, color: false },
     });
   });
 
@@ -91,6 +151,7 @@ describe('parseWsc substitution slots', () => {
       width: undefined,
       style: undefined,
       color: 'red',
+      specified: { width: false, style: false, color: true },
     });
   });
 });

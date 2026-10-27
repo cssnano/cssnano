@@ -48,12 +48,20 @@ const toLower = (v) => {
  * token is left unassigned (the declaration still keeps its substitution
  * semantics for callers that track them).
  *
+ * `specified` tells, per component, whether a value token named it rather than
+ * a substitution filling the slot.
+ *
  * @param {string} value
- * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined)} | null}
+ * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined), specified: {width: boolean, style: boolean, color: boolean}} | null}
  */
 function parseWidthStyleColor(value) {
   if (none.test(asciiLowerCase(value))) {
-    return { width: 'medium', style: 'none', color: 'currentcolor' };
+    return {
+      width: 'medium',
+      style: 'none',
+      color: 'currentcolor',
+      specified: { width: true, style: true, color: true },
+    };
   }
 
   let width, style, color;
@@ -62,20 +70,24 @@ function parseWidthStyleColor(value) {
   let tokens = 0;
   let specified = 0;
   let substituted = false;
+  const named = { width: false, style: false, color: false };
 
   for (const v of list.space(value)) {
     tokens++;
     if (isBorderStyle(v)) {
       if (style !== undefined) return null;
       specified++;
+      named.style = true;
       style = toLower(v);
     } else if (isBorderWidth(v)) {
       if (width !== undefined) return null;
       specified++;
+      named.width = true;
       width = toLower(v);
     } else if (isColor(v)) {
       if (color !== undefined) return null;
       specified++;
+      named.color = true;
       color = toLower(v);
     } else if (isSubstitution(v)) {
       substituted = true;
@@ -100,7 +112,7 @@ function parseWidthStyleColor(value) {
     }
   }
 
-  return { width, style, color };
+  return { width, style, color, specified: named };
 }
 
 export { toLower };
