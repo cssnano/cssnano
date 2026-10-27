@@ -126,3 +126,29 @@ test('TextTable.write spells a declaration value and drops its raw', () => {
   assert.equal(decl.raws.value, undefined);
   assert.equal(table.tokens(decl), list);
 });
+
+test('TextTable.assignFolded shares a folded entry that carries tokens, so memo and node hold one entry', () => {
+  const decl = firstDecl('a { margin: 0 1px }');
+  const table = new TextTable();
+  const folded = { text: '1px', tokens: tokens('1px') };
+  table.assignFolded(decl, folded);
+  assert.equal(decl.value, '1px');
+  assert.equal(table.stored(decl), folded.tokens);
+});
+
+test('TextTable.assignFolded stores no list for a folded text that has none', () => {
+  const decl = firstDecl('a { margin: 0 1px }');
+  const table = new TextTable();
+  table.record(decl, '0 1px', tokens('0 1px'));
+  table.assignFolded(decl, { text: '1px', tokens: undefined });
+  assert.equal(decl.value, '1px');
+  assert.equal(table.stored(decl), undefined);
+});
+
+test('TextTable.assignFolded assigns a rule selector and drops its raw', () => {
+  const rule = firstRule('a, /* x */ b {}');
+  const table = new TextTable();
+  table.assignFolded(rule, { text: 'a,b', tokens: tokens('a,b') });
+  assert.equal(rule.selector, 'a,b');
+  assert.equal(rule.raws.selector, undefined);
+});

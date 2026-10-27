@@ -15,13 +15,13 @@ export type Spelled = {
  * @typedef {{text: string, pieces: RangePiece[]}} Spelled
  */
 /**
- * The component's text, and its range of the value's tokens.
+ * The component's text, and the component itself as its range of the value's
+ * tokens.
  *
- * @param {readonly CSSToken[]} list the tokens of the value
  * @param {Component} component
  * @return {Spelled}
  */
-export declare function spellComponent(list: readonly CSSToken[], component: Component): Spelled;
+export declare function spellComponent(component: Component): Spelled;
 /**
  * A part's text as written, and its range from its first component to its
  * last, so the whitespace between them stays.

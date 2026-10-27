@@ -13,7 +13,7 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'assign a folded shorthand as a string, dropping its tokens',
-    find: '    table.share(decl, /** @type {TextEntry} */ (folded));',
-    replace: '    table.setText(decl, folded.text);',
+    find: '  table.assignFolded(decl, folded);',
+    replace: '  table.setText(decl, folded.text);',
   },
 ];

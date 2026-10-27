@@ -44,10 +44,7 @@ const roundingStrategies = new Set(['nearest', 'up', 'down', 'to-zero']);
  * @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean, firstArgument: 'empty' | 'keyword' | 'value', calculation: boolean, operand: boolean}} FunctionFrame
  */
 
-/**
- * @typedef {{raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}}
- *   Component
- */
+/** @import {Component} from './valueComponents.js' */
 
 /** @param {import('@csstools/css-tokenizer').CSSToken} token @return {string} */
 export function tokenName(token) {

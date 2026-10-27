@@ -17,17 +17,14 @@ const { tokenEnd, tokenStart } = cssnanoUtils;
  */
 
 /**
- * The component's text, and its range of the value's tokens.
+ * The component's text, and the component itself as its range of the value's
+ * tokens.
  *
- * @param {readonly CSSToken[]} list the tokens of the value
  * @param {Component} component
  * @return {Spelled}
  */
-export function spellComponent(list, component) {
-  return {
-    text: component.raw,
-    pieces: [{ list, start: component.start, end: component.end }],
-  };
+export function spellComponent(component) {
+  return { text: component.raw, pieces: [component] };
 }
 
 /**

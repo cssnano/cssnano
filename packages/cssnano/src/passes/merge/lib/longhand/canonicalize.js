@@ -18,7 +18,7 @@ import { reduceAlignmentFamily } from './decl/alignmentReducer.js';
 import { pairFamilyOf } from './decl/pairForms.js';
 import { reducePairFamily } from './decl/pairReducer.js';
 /** @import {BoxSupport} from './targetSupport.js' */
-/** @import {FoldedSelector, TextTable} from '../../../../values/textTable.js' */
+/** @import {FoldedText, TextTable} from '../../../../values/textTable.js' */
 import { endsDeclarationRun } from './decl/declarationRuns.js';
 import { applyChildEdits } from '../deferredChildEdits.js';
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
@@ -65,7 +65,7 @@ function alignmentFamilyOf(prop) {
  * @typedef {{
  *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
  *   setsOtherColumn: boolean,
- *   shorthandMemoTable: Map<string, FoldedSelector | null>,
+ *   shorthandMemoTable: Map<string, FoldedText | null>,
  *   familyRecords: Map<string, FamilyRecord>,
  *   placeShorthands: boolean,
  *   boxSupport: BoxSupport,

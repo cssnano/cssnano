@@ -8,6 +8,11 @@ export const test = new URL(
 
 export const mutations = [
   {
+    name: 'assign a folded text with tokens as a string, dropping its list',
+    find: '    else this.share(node, folded);',
+    replace: '    else assign(node, folded.text);',
+  },
+  {
     name: 'drop the stored-text equality check',
     find: 'if (entry !== undefined && entry.text === text) return entry.tokens;',
     replace: 'if (entry !== undefined) return entry.tokens;',
