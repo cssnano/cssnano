@@ -122,8 +122,7 @@ export function reduceBox(rule, box, support, textTable) {
     ) {
       const { family } = property;
       s.prop = family.shorthand;
-      s.value = formsOf(family).minify(s.value);
-      delete s.raws?.value;
+      textTable.setText(s, formsOf(family).minify(s.value));
     }
     return;
   }

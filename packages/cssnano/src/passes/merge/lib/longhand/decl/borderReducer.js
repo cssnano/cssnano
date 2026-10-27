@@ -75,12 +75,13 @@ function normalizeBorderSingleton(d, textTable) {
   const p = asciiLowerCase(d.prop);
   if (borderAndSideShorthands.has(p)) {
     d.prop = p;
-    d.value = minifyWidthStyleColor(d.value, declarationTokens(textTable, d));
-    delete d.raws?.value;
+    textTable.setText(
+      d,
+      minifyWidthStyleColor(d.value, declarationTokens(textTable, d))
+    );
   } else if (allSidesBorderShorthands.includes(p)) {
     d.prop = p;
-    d.value = minifyTrbl(d.value);
-    delete d.raws?.value;
+    textTable.setText(d, minifyTrbl(d.value));
   }
 }
 /**
@@ -229,7 +230,7 @@ function reduceSegment(rule, segment, lane, textTable) {
   if (segment.length === 1) {
     const d = segment[0];
     if (allSidesBorderShorthands.includes(asciiLowerCase(d.prop))) {
-      d.value = minifyTrbl(d.value);
+      textTable.setText(d, minifyTrbl(d.value));
     }
     return;
   }
