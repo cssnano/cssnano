@@ -36,6 +36,11 @@ const { default: loadPreset } = await import(
 );
 counter.byFrame = options['by-frame'];
 counter.checkRoundTrip = options['check-round-trip'];
+// Count calc's selector and media query reducers too. Lite has no calc.
+const presetOptions =
+  options.preset === 'lite'
+    ? undefined
+    : { options: { calc: { mediaQueries: true, selectors: true } } };
 
 /**
  * Labels each plugin by its PostCSS name, and numbers repeats, so the two
@@ -137,7 +142,7 @@ const fixtures = readdirSync(frameworksDir);
 for (const file of fixtures) {
   const css = readFileSync(join(frameworksDir, file), 'utf8');
   counter.beginStylesheet();
-  const entries = labelled(/** @type {Plugin[]} */ (loadPreset()));
+  const entries = labelled(/** @type {Plugin[]} */ (loadPreset(presetOptions)));
   for (const { label } of entries) {
     if (!labels.includes(label)) labels.push(label);
   }
