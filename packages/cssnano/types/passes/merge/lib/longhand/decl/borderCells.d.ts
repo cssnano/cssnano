@@ -4,7 +4,6 @@ export type CellRanges = {
     starts: number[];
     ends: number[];
 };
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /**
  * The token range of each cell's component, in parallel arrays. A cell whose
  * component has no function has no list; a cell no declaration filled has none.
