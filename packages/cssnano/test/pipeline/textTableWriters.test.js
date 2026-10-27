@@ -12,6 +12,10 @@ const { tokens } = await import('../../src/utils/value.js');
 const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
 const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
+const { foldShorthandDeclaration } =
+  await import('../../src/passes/merge/lib/longhand/minifyShorthand.js');
+const { discardOverriddenInList } =
+  await import('../../src/passes/merge/lib/longhand/decl/overriddenDeclarations.js');
 
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {
@@ -168,5 +172,39 @@ suite('the text table reads the text the afterMerge walk wrote', () => {
     );
     assert.equal(tokenizeTotal() - before, 0);
     assert.equal(rule.selector, ' b,ns|a');
+  });
+});
+
+suite('the text table reads the text the merge longhand writers wrote', () => {
+  test('overriddenDeclarations reads the text minifyShorthand wrote, without tokenizing', () => {
+    const root = postcss.parse('a { gap: 1px 1px; gap: 2px }');
+    const table = new TextTable();
+    const nodes = root.first.nodes;
+    foldShorthandDeclaration(nodes[0], undefined, 'gap', table);
+    table.tokens(nodes[1]);
+    const before = tokenizeTotal();
+    discardOverriddenInList(nodes, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test("minifyShorthand's edited tokens spell text()", () => {
+    const root = postcss.parse('a { gap: 1px 1px }');
+    const table = new TextTable();
+    const decl = root.first.first;
+    foldShorthandDeclaration(decl, undefined, 'gap', table);
+    assert.deepEqual(
+      table.stored(decl)?.map((token) => token.slice(0, 4)),
+      tokens(decl.value).map((token) => token.slice(0, 4))
+    );
+  });
+
+  test('foldShorthandDeclaration reads the text it wrote, without tokenizing', () => {
+    const root = postcss.parse('a { gap: 1px 1px }');
+    const table = new TextTable();
+    const decl = root.first.first;
+    foldShorthandDeclaration(decl, undefined, 'gap', table);
+    const before = tokenizeTotal();
+    foldShorthandDeclaration(decl, undefined, 'gap', table);
+    assert.equal(tokenizeTotal() - before, 0);
   });
 });
