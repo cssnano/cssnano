@@ -89,3 +89,40 @@ test('TextTable returns the written list from stored while the rule still spells
   rule.selector = 'a';
   assert.equal(table.stored(rule), undefined);
 });
+
+/**
+ * @param {string} css
+ * @return {import('postcss').Declaration}
+ */
+function firstDecl(css) {
+  return /** @type {import('postcss').Declaration} */ (
+    /** @type {import('postcss').Rule} */ (postcss.parse(css).first).first
+  );
+}
+
+test("the table reads a declaration's value from the list recorded for it, without tokenizing", () => {
+  const decl = firstDecl('a { margin: 0 1px }');
+  const table = new TextTable();
+  const list = tokens('0 1px');
+  table.record(decl, '0 1px', list);
+  assert.equal(table.tokens(decl), list);
+});
+
+test('TextTable.share stores the entry itself, so its list is the one readers get', () => {
+  const decl = firstDecl('a { margin: 0 1px }');
+  const table = new TextTable();
+  const list = tokens('1px');
+  table.share(decl, { text: '1px', tokens: list });
+  assert.equal(decl.value, '1px');
+  assert.equal(table.tokens(decl), list);
+});
+
+test('TextTable.write spells a declaration value and drops its raw', () => {
+  const decl = firstDecl('a { margin: 0/* x */ 1px }');
+  const table = new TextTable();
+  const list = tokens('0 1px');
+  table.write(decl, list);
+  assert.equal(decl.value, '0 1px');
+  assert.equal(decl.raws.value, undefined);
+  assert.equal(table.tokens(decl), list);
+});

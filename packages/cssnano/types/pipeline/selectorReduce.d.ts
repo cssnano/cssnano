@@ -1,24 +1,13 @@
-import type { CSSToken } from '@csstools/css-tokenizer';
 import type { Helpers, Rule } from 'postcss';
 import type { Reducer } from './host.js';
-import type { TextTable } from '../values/textTable.js';
-export type FoldedSelector = {
-    text: string;
-    tokens: readonly CSSToken[] | undefined;
-};
+import type { FoldedSelector, TextTable } from '../values/textTable.js';
 export type SelectorEntry = {
     plan: readonly Reducer[] | null;
     memos: (Map<string, FoldedSelector> | undefined)[];
 };
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Helpers, Rule} from 'postcss' */
 /** @import {Reducer} from './host.js' */
-/** @import {TextTable} from '../values/textTable.js' */
-/**
- * A folded selector: its text, and the tokens that spell it when a stage read
- * them.
- * @typedef {{text: string, tokens: readonly CSSToken[] | undefined}} FoldedSelector
- */
+/** @import {FoldedSelector, TextTable} from '../values/textTable.js' */
 /**
  * What one run knows about selectors: the buffer reducers of its plan, or null
  * when no stage rewrites them, with a memo per context.
