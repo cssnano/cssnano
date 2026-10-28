@@ -11,9 +11,13 @@ import {
   openingTypes,
   significantIndex,
   TokenType,
-  tokenEnd,
   whitespaceInsensitiveFunctions,
 } from './tokenUtils.js';
+import { numeric as numberToken } from '../../../values/tokenConstructors.js';
+import { whitespace } from '../../../values/punctuationTokens.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {TokenEdit} from '../../../values/valueBuffer.js' */
 
 const { numeric } = cssnanoUtils;
 /** @typedef {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens']} Tokens */
@@ -107,10 +111,17 @@ function isAspectRatioFeature(input, name, left, slash, right, after, close) {
   );
 }
 
-/** @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {number} index @param {(number|undefined)[]} parents @return {{start:number,end:number,text:string}} */
-function whitespaceEdit(structure, index, parents) {
+/**
+ * The tokens that replace the whitespace token at `index`: none when the space
+ * is tight, else one space.
+ *
+ * @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure
+ * @param {number} index
+ * @param {(number|undefined)[]} parents
+ * @return {CSSToken[]}
+ */
+function whitespaceReplacement(structure, index, parents) {
   const input = structure.tokens;
-  const token = input[index];
   const next = input[index + 1];
   const tight = isTightWhitespace(input, index);
   const open = parents[index];
@@ -119,33 +130,24 @@ function whitespaceEdit(structure, index, parents) {
     open !== undefined &&
     featureValueIndex(input, open) === structure.endForOpening(open) &&
     decoded(input[significantIndex(input, open + 1, 1)]).startsWith('--');
-  return {
-    start: token[2],
-    end: tokenEnd(token),
-    text:
-      tight &&
-      !emptyCustomProperty &&
-      !isRequiredMathOperatorWhitespace(input, index, parents)
-        ? ''
-        : ' ',
-  };
+  const tightened =
+    tight &&
+    !emptyCustomProperty &&
+    !isRequiredMathOperatorWhitespace(input, index, parents);
+  return tightened ? [] : [whitespace()];
 }
 
-/** @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {(number|undefined)[]} parents @param {{start:number,end:number,text:string}[]} changes @return {void} */
+/** @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {(number|undefined)[]} parents @param {TokenEdit[]} changes @return {void} */
 export function minifyWhitespace(structure, parents, changes) {
   const { tokens: input } = structure;
-  const existingRanges = new Set(
-    changes.map((change) => `${change.start}:${change.end}`)
-  );
+  const edited = new Set(changes.map(({ start }) => start));
   for (let i = 0; i < input.length; i++) {
-    if (input[i][0] === TokenType.Whitespace) {
-      const edit = whitespaceEdit(structure, i, parents);
-      const range = `${edit.start}:${edit.end}`;
-      if (!existingRanges.has(range)) {
-        changes.push(edit);
-        existingRanges.add(range);
-      }
-    }
+    if (input[i][0] !== TokenType.Whitespace || edited.has(i)) continue;
+    const replacement = whitespaceReplacement(structure, i, parents);
+    // A space that already spells its replacement is no edit, so the buffer keeps its text.
+    const spelled = replacement.length === 0 ? '' : ' ';
+    if (spelled === input[i][1]) continue;
+    changes.push({ start: i, end: i + 1, tokens: replacement });
   }
 }
 
@@ -159,7 +161,7 @@ function isGroupingParent(input, parents, index) {
   return true;
 }
 
-/** @param {boolean} supports @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {(number|undefined)[]} parents @param {{start:number,end:number,text:string}[]} changes @return {void} */
+/** @param {boolean} supports @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {(number|undefined)[]} parents @param {TokenEdit[]} changes @return {void} */
 export function minifyAspectRatios(supports, structure, parents, changes) {
   const { tokens: input } = structure;
   for (let open = 0; open < input.length; open++) {
@@ -195,8 +197,8 @@ export function minifyAspectRatios(supports, structure, parents, changes) {
     if (!ratio) continue;
     const [x, y] = ratio;
     changes.push(
-      { start: input[left][2], end: tokenEnd(input[left]), text: String(x) },
-      { start: input[right][2], end: tokenEnd(input[right]), text: String(y) }
+      { start: left, end: left + 1, tokens: [numberToken(String(x))] },
+      { start: right, end: right + 1, tokens: [numberToken(String(y))] }
     );
   }
 }

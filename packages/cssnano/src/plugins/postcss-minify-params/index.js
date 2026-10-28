@@ -18,12 +18,12 @@ function paramsStage(targets) {
   const legacy = anyAffected(targets, 'media-all-ie11');
   /** @type {AtRulePart} */
   const media = {
-    reduce: (text) => reduceParams(legacy, 'media', text),
+    buffer: (buffer) => reduceParams(legacy, 'media', buffer),
     tightensAfterName: true,
   };
   /** @type {AtRulePart} */
   const supports = {
-    reduce: (text) => reduceParams(legacy, 'supports', text),
+    buffer: (buffer) => reduceParams(legacy, 'supports', buffer),
     tightensAfterName: true,
   };
   return {
