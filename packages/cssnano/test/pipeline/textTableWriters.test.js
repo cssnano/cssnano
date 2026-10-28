@@ -14,6 +14,8 @@ const { ValueBuffer } = await import('../../src/values/valueBuffer.js');
 const { tokensText } = await import('../../src/values/tokensText.js');
 const { default: minifyParams } =
   await import('../../src/plugins/postcss-minify-params/index.js');
+const { default: normalizeString } =
+  await import('../../src/plugins/postcss-normalize-string/index.js');
 const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
 const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
@@ -169,6 +171,13 @@ suite('the at-rule reducers write tokens that spell their text', () => {
       .create({}, ['defaults'])
       .forAtRule('media');
     const buffer = new ValueBuffer('screen  and (min-width: 1px), print');
+    reduce(buffer, 0);
+    assert.equal(tokensText(buffer.tokens()), buffer.text());
+  });
+
+  test("normalize-string's prelude reducer's edited tokens spell text()", () => {
+    const { buffer: reduce } = normalizeString.create({}).forAtRule('import');
+    const buffer = new ValueBuffer("'a' screen");
     reduce(buffer, 0);
     assert.equal(tokensText(buffer.tokens()), buffer.text());
   });
