@@ -24,18 +24,12 @@ import { walkAfterMerge } from './afterMerge.js';
  */
 
 /**
- * Rewrites the text of an at-rule prelude, which has no buffer. The context
- * is the bits of `context.js` for the node.
- * @typedef {(text: string, context: number, warn: Warn) => string} TextReducer
- */
-
-/**
- * A rewrite of an at-rule prelude. `tightensAfterName` lets the walk strip the
- * space after the name once the stage has run on a non-empty prelude that
- * starts with a parenthesis, as CSS needs no space there. Only minifyParams sets
- * it, for `@media` and `@supports`.
- * A part with `buffer` edits the prelude as tokens, and folds with the others.
- * @typedef {TextReducer | {reduce: TextReducer, tightensAfterName: true} | {buffer: Reducer, tightensAfterName?: true}} AtRulePart
+ * A rewrite of an at-rule prelude, which edits its buffer as a declaration's
+ * value does. `tightensAfterName` lets the walk strip the space after the name
+ * once the stage has run on a non-empty prelude that starts with a parenthesis,
+ * as CSS needs no space there. Only minifyParams sets it, for `@media` and
+ * `@supports`.
+ * @typedef {{buffer: Reducer, tightensAfterName?: true}} AtRulePart
  */
 
 /**

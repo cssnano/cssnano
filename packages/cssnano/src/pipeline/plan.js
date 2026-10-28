@@ -5,13 +5,7 @@ import { ValueBuffer } from '../values/valueBuffer.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {FoldedText} from '../values/textTable.js' */
 /** @import {TokenizeMode} from '../values/valueBuffer.js' */
-/** @import {Reducer, TextReducer} from './host.js' */
-
-/**
- * One step of a plan: a buffer reducer, or a text reducer for an at-rule
- * prelude, which rewrites the text and starts a new buffer from its result.
- * @typedef {Reducer | {text: TextReducer}} PlanStep
- */
+/** @import {Reducer} from './host.js' */
 
 /**
  * What one run knows about a kind of text (a property value, a selector or an
@@ -22,7 +16,7 @@ import { ValueBuffer } from '../values/valueBuffer.js';
  * `tightens` is set when a stage asks for the space after an at-rule name to be
  * stripped, as AtRulePart describes.
  * @typedef {object} PlanEntry
- * @property {readonly PlanStep[] | null} plan in pipeline order
+ * @property {readonly Reducer[] | null} plan in pipeline order
  * @property {(Map<string, FoldedText> | undefined)[]} memos
  * @property {TokenizeMode | undefined} mode
  * @property {boolean} tightens
@@ -30,7 +24,7 @@ import { ValueBuffer } from '../values/valueBuffer.js';
  */
 
 /**
- * @param {readonly PlanStep[]} plan in pipeline order, empty for no stage
+ * @param {readonly Reducer[]} plan in pipeline order, empty for no stage
  * @param {TokenizeMode | undefined} mode
  * @param {Map<string, readonly CSSToken[]> | null} lists
  * @param {boolean} tightens
@@ -48,10 +42,9 @@ export function planEntry(plan, mode, lists, tightens) {
 
 /**
  * Folds a text through its plan on one lazy buffer, and reports the warnings of
- * the fold on the node. A text step that changes the text starts a new buffer
- * from its result, and the final buffer's text and tokens are the fold. A
- * memo hit is served from the memo, and a fold that warned is not memoised, so
- * each node reports it.
+ * the fold on the node. The buffer's text and tokens are the fold. A memo hit
+ * is served from the memo, and a fold that warned is not memoised, so each
+ * node reports it.
  *
  * @param {PlanEntry} entry
  * @param {string} text
@@ -61,33 +54,14 @@ export function planEntry(plan, mode, lists, tightens) {
  * @returns {FoldedText}
  */
 export function foldPlan(entry, text, context, node, helpers) {
-  const plan = /** @type {readonly PlanStep[]} */ (entry.plan);
+  const plan = /** @type {readonly Reducer[]} */ (entry.plan);
   const memo = memoOf(entry.memos, context);
   const known = memo.get(text);
   if (known !== undefined) return known;
   const lists = entry.lists;
-  let buffer = new ValueBuffer(text, entry.mode, lists?.get(text));
-  /** @type {{message: string, plugin: string | undefined}[] | undefined} */
-  let warnings;
-  for (const step of plan) {
-    if (typeof step === 'function') {
-      step(buffer, context);
-      continue;
-    }
-    const before = buffer.text();
-    const result = step.text(before, context, (message, plugin) => {
-      buffer.warn(message, plugin);
-    });
-    if (result === before) continue;
-    const pending = buffer.warnings();
-    if (pending !== undefined) warnings = [...(warnings ?? []), ...pending];
-    buffer = new ValueBuffer(result);
-  }
-  const last = buffer.warnings();
-  const found =
-    warnings === undefined || last === undefined
-      ? (last ?? warnings)
-      : [...warnings, ...last];
+  const buffer = new ValueBuffer(text, entry.mode, lists?.get(text));
+  for (const step of plan) step(buffer, context);
+  const warnings = buffer.warnings();
   const result = buffer.text();
   let tokens;
   if (buffer.isTokenized()) {
@@ -98,10 +72,10 @@ export function foldPlan(entry, text, context, node, helpers) {
     }
   }
   const folded = { text: result, tokens };
-  if (found === undefined) {
+  if (warnings === undefined) {
     memo.set(text, folded);
   } else {
-    for (const { message, plugin } of found) {
+    for (const { message, plugin } of warnings) {
       helpers.result.warn(message, plugin ? { plugin, node } : { node });
     }
   }
