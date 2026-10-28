@@ -84,17 +84,6 @@ export declare function splitComponents(value: string, tokens?: readonly CSSToke
  */
 export declare function declarationTokens(textTable: import('../../../../values/textTable.js').TextTable, decl: import('postcss').Declaration): readonly CSSToken[] | undefined;
 /**
- * The tokens that spell a declaration's `decl.value`. PostCSS strips some
- * comments from the value, so the stored list may spell more than the value;
- * then the value is tokenized once, and a caller's cache keeps that list.
- *
- * @param {import('../../../../values/textTable.js').TextTable} textTable
- * @param {import('postcss').Declaration} decl
- * @param {Map<string, readonly CSSToken[]>} [cache] lists of `decl.value`
- * @return {readonly CSSToken[]}
- */
-export declare function declaredValueTokens(textTable: import('../../../../values/textTable.js').TextTable, decl: import('postcss').Declaration, cache?: Map<string, readonly CSSToken[]>): readonly CSSToken[];
-/**
  * A text as one component over its own tokens, which are read only when the
  * text has a `(`.
  *

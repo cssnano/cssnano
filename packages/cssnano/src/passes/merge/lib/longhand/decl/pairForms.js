@@ -6,7 +6,7 @@ import { isBorderStyle, isBorderWidth, isColor } from '../validateWsc.js';
 import { isUnresolved } from '../unresolved.js';
 import { isLengthValue, parseDimension } from '../lengthGrammar.js';
 import { splitValue } from '../valueComponents.js';
-import { declaredValueTokens } from '../componentRanges.js';
+import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 

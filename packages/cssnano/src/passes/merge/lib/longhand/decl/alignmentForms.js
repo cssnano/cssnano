@@ -3,7 +3,7 @@ import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { cssWideKeywords } from '../spec.js';
 import isCustomProp from '../isCustomProp.js';
 import { splitValue } from '../valueComponents.js';
-import { declaredValueTokens } from '../componentRanges.js';
+import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
 import shorthandData from '../data/shorthandIdentities.json' with { type: 'json' };
 
 const { asciiLowerCase } = cssnanoUtils;

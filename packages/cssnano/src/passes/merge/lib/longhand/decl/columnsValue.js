@@ -4,7 +4,7 @@ import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
 import { isLengthValue } from '../lengthGrammar.js';
 import { isUnresolved } from '../unresolved.js';
 import { closingTokens } from '../valueComponents.js';
-import { declaredValueTokens } from '../componentRanges.js';
+import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
 
 /** @import {Declaration} from 'postcss'; */
 /** @import {TextTable} from '../../../../../values/textTable.js' */
