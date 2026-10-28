@@ -142,9 +142,10 @@ function walkAtRule(state, atRule) {
       state.atRules.set(atRule.name, entry);
     }
   }
+  let startsBalanced = false;
   if (entry !== undefined && entry.plan !== null && hasPrelude) {
     const context = contextOf(atRule, state.contexts);
-    result = foldNode(
+    const folded = foldNode(
       entry,
       atRule,
       read,
@@ -153,10 +154,14 @@ function walkAtRule(state, atRule) {
       state.helpers,
       state.table
     );
+    result = folded.text;
+    startsBalanced = folded.tightAfterName === true;
   } else if (text !== read) {
     state.table.setText(atRule, text);
   }
-  if (entry?.tightens && hasPrelude) tightenAfterName(atRule, result);
+  if (entry?.tightens && hasPrelude) {
+    tightenAfterName(atRule, result, startsBalanced);
+  }
 }
 
 /**
