@@ -1,5 +1,6 @@
 import { ValueBuffer } from '../values/valueBuffer.js';
 import { memoOf } from './memo.js';
+import { atRuleEntry, foldPrelude } from './prelude.js';
 import { reduceSelector, selectorEntry } from './selectorReduce.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
 import {
@@ -28,7 +29,8 @@ import {
 } from './comments/nodeComments.js';
 
 /** @import {AtRule, Container, Document, Helpers, Root} from 'postcss' */
-/** @import {Reducer, Stage, TextReducer} from './host.js' */
+/** @import {Reducer, Stage} from './host.js' */
+/** @import {TextEntry} from './prelude.js' */
 /** @import {SelectorEntry} from './selectorReduce.js' */
 /** @import {FoldedText, TextTable} from '../values/textTable.js' */
 /** @import {CommentState} from './comments/nodeComments.js' */
@@ -41,14 +43,6 @@ import {
  * `mode` is how the tokenizer reads the values of the property, and `lists` is
  * the token lists of that mode, keyed by text.
  * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedText> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined, lists: Map<string, readonly CSSToken[]>}} PropertyEntry
- */
-
-/**
- * What one run knows about a prelude or selector kind: the text reducers of its
- * plan, or null when no stage rewrites it, with a memo per context as above.
- * `tightens` is set when a stage asks for the space after an at-rule name to be
- * stripped, as AtRulePart describes.
- * @typedef {{plan: readonly TextReducer[] | null, memos: (Map<string, string> | undefined)[], tightens: boolean}} TextEntry
  */
 
 /**
@@ -87,15 +81,6 @@ function propertyEntry(stages, property, valueLists) {
   return reducers.length > 0
     ? { plan: reducers, memos: [], mode, lists }
     : { plan: null, memos: [], mode, lists };
-}
-
-/**
- * @param {readonly TextReducer[]} plan in pipeline order, empty for no stage
- * @param {boolean} tightens whether a stage tightens the space after the name
- * @returns {TextEntry}
- */
-function textEntry(plan, tightens) {
-  return { plan: plan.length > 0 ? plan : null, memos: [], tightens };
 }
 
 /**
@@ -145,37 +130,6 @@ function reduceValue(entry, text, context, decl, state) {
 }
 
 /**
- * Folds the text of a prelude through its plan. A text that warned is not
- * memoised, and its warnings name the node.
- *
- * @param {TextEntry} entry
- * @param {string} text
- * @param {number} context
- * @param {Container} node the at-rule or rule that holds the text
- * @param {Helpers} helpers
- * @returns {string}
- */
-function reduceText(entry, text, context, node, helpers) {
-  const plan = /** @type {readonly TextReducer[]} */ (entry.plan);
-  const memo = memoOf(entry.memos, context);
-  const known = memo.get(text);
-  if (known !== undefined) return known;
-  /** @type {{message: string, plugin: string | undefined}[]} */
-  const warnings = [];
-  let result = text;
-  for (const reduce of plan) {
-    result = reduce(result, context, (message, plugin) => {
-      warnings.push({ message, plugin });
-    });
-  }
-  if (warnings.length === 0) memo.set(text, result);
-  for (const { message, plugin } of warnings) {
-    helpers.result.warn(message, plugin ? { plugin, node } : { node });
-  }
-  return result;
-}
-
-/**
  * Removes the comments of a declaration, then folds its value through its plan.
  * The value is read as written, without the comments that go, and written back
  * only when it differs from what was read.
@@ -213,31 +167,6 @@ function walkDeclaration(state, decl) {
 }
 
 /**
- * The plan of an at-rule name: the prelude reducers of the stages that rewrite
- * it, and whether one of them tightens the space after the name.
- *
- * @param {readonly Stage[]} stages in pipeline order
- * @param {string} name
- * @returns {TextEntry}
- */
-function atRuleEntry(stages, name) {
-  /** @type {TextReducer[]} */
-  const plan = [];
-  let tightens = false;
-  for (const stage of stages) {
-    const part = stage.forAtRule?.(name) ?? null;
-    if (part === null) continue;
-    if (typeof part === 'function') {
-      plan.push(part);
-    } else {
-      plan.push(part.reduce);
-      tightens ||= part.tightensAfterName;
-    }
-  }
-  return textEntry(plan, tightens);
-}
-
-/**
  * Removes the comments of an at-rule, then folds its prelude through its plan.
  * The prelude is read as written and written back only when it changed.
  * `@charset` has no plan, since its name and encoding are read in the format
@@ -266,6 +195,8 @@ function walkAtRule(state, atRule) {
     comments !== null && read ? commentFreeText(read, comments) : read;
   let result = text;
   let entry;
+  /** @type {FoldedText | undefined} */
+  let folded;
   if (atRule.name.toLowerCase() !== 'charset') {
     entry = state.atRules.get(atRule.name);
     if (entry === undefined) {
@@ -274,10 +205,12 @@ function walkAtRule(state, atRule) {
     }
     if (entry.plan !== null && hasPrelude) {
       const context = contextOf(atRule, state.contexts);
-      result = reduceText(entry, text, context, atRule, state.helpers);
+      folded = foldPrelude(entry, text, context, atRule, state.helpers);
+      result = folded.text;
     }
   }
-  if (result !== read) state.table.setText(atRule, result);
+  if (folded === undefined) state.table.setText(atRule, result);
+  else state.table.assignFolded(atRule, folded);
   if (entry?.tightens && hasPrelude) tightenAfterName(atRule, result);
 }
 
