@@ -11,6 +11,8 @@ const { createReducers, reduceIdentsSymbols } =
   await import('../../src/plugins/postcss-reduce-idents/index.js');
 const { TextTable } = await import('../../src/values/textTable.js');
 const { tokensText } = await import('../../src/values/tokensText.js');
+const { zindexSymbols } =
+  await import('../../src/plugins/postcss-zindex/index.js');
 
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {
@@ -138,6 +140,22 @@ suite('the symbol transforms read the text the host walk stored', () => {
     reduceIdentsSymbols(lists, createReducers(gridOnly), () => {}, table);
     const use = root.last.first;
     assert.equal(tokensText(table.stored(use)), use.value);
+  });
+
+  test('zindex rewrites the value', () => {
+    const root = postcss.parse('a { z-index: 10 } b { z-index: 20 }');
+    const lists = createSymbolLists();
+    root.walk(symbolVisit(lists));
+    zindexSymbols(lists, {}, () => {}, new TextTable());
+    assert.equal(root.last.first.value, '2');
+  });
+
+  test("zindex's rewrite drops raws.value", () => {
+    const root = postcss.parse('a { z-index: 10 /* c */ ; } b { z-index: 20 }');
+    const lists = createSymbolLists();
+    root.walk(symbolVisit(lists));
+    zindexSymbols(lists, {}, () => {}, new TextTable());
+    assert.equal(root.first.first.raws.value, undefined);
   });
 
   test("reduce-idents' grid-template symbols' edited definition tokens spell text()", () => {

@@ -4,8 +4,10 @@ import {
   isAttached,
   symbolVisit,
 } from '../../pipeline/symbolLists.js';
+import { TextTable } from '../../values/textTable.js';
 
 /** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {TextTable as TextTableType} from '../../values/textTable.js' */
 
 /**
  * @typedef {object} Options
@@ -19,9 +21,17 @@ import {
  *
  * @param {SymbolLists} lists
  * @param {Options} options
+ * @param {unknown} [_remove]
+ * @param {TextTableType} [table] the text the walk stored; a standalone run
+ *   has none
  * @return {void}
  */
-export function zindexSymbols(lists, options) {
+export function zindexSymbols(
+  lists,
+  options,
+  _remove,
+  table = new TextTable()
+) {
   /** @type {import('postcss').Declaration[]} */
   const nodes = lists.zIndexDecls.filter(isAttached);
   if (nodes.length === 0 || nodes.some((decl) => decl.value[0] === '-')) {
@@ -36,7 +46,7 @@ export function zindexSymbols(lists, options) {
 
   for (const decl of nodes) {
     // Need to coerce to string so that the AST is updated correctly
-    decl.value = cache.getValue(decl.value).toString();
+    table.setText(decl, cache.getValue(decl.value).toString());
   }
 }
 
