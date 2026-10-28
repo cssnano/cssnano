@@ -1,6 +1,6 @@
 import { isAsciiDigit } from './asciiCharacters.js';
 import { withoutVendorPrefix } from './vendorPrefix.js';
-import { declaredValueTokens } from './componentRanges.js';
+import { declaredValueTokens } from '../../../../values/declaredValueTokens.js';
 /**
  * The syntax a declaration value needs a browser to parse: functions, units,
  * keywords and notations that some browser lacks, spelled as features such

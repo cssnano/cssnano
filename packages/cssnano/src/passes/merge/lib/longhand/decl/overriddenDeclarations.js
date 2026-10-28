@@ -9,7 +9,7 @@ import {
   mayHaveExponent,
   shapeKey,
 } from './shapeEquivalence.js';
-import { declaredValueTokens } from '../componentRanges.js';
+import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ChildNode, Container, Declaration} from 'postcss' */
