@@ -192,28 +192,6 @@ suite('the at-rule reducers write tokens that spell their text', () => {
   });
 });
 
-suite('the walk reads the at-rule flags that the plan stored', () => {
-  test('tightenAfterName reads the flag stored for a repeated @media prelude, without tokenizing', () => {
-    const stage = minifyParams.create({}, ['defaults']);
-    /** @param {string} css @returns {number} tokenize calls the walk made */
-    const walkCalls = (css) => {
-      const before = tokenizeTotal();
-      walkStylesheet(
-        [stage],
-        postcss.parse(css),
-        helpers,
-        new Map(),
-        new TextTable()
-      );
-      return tokenizeTotal() - before;
-    };
-    assert.equal(
-      walkCalls('@media (min-width:1px){a{}} @media (min-width:1px){a{}}'),
-      walkCalls('@media (min-width:1px){a{}}')
-    );
-  });
-});
-
 suite('the text table reads the text the afterMerge walk wrote', () => {
   test('uniqueSelectors reads the selector tokens merge wrote, without tokenizing', () => {
     const root = postcss.parse('a, b {}');

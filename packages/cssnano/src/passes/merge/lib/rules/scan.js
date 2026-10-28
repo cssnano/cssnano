@@ -73,7 +73,11 @@ export default function runScan(root, mergeState) {
     const rewritesStructure =
       (a.keys.length === 0 && b.keys.length === 0) ||
       (first.slot.parent !== second.slot.parent &&
-        sameContainer(first.slot.parent, second.slot.parent));
+        sameContainer(
+          first.slot.parent,
+          second.slot.parent,
+          mergeState.textTable
+        ));
     return rewritesStructure ? 0 : NO_BENEFIT;
   };
 
@@ -168,7 +172,7 @@ export default function runScan(root, mergeState) {
   let moved;
   do {
     moved = false;
-    const sequence = new RuleSequence(root);
+    const sequence = new RuleSequence(root, mergeState.textTable);
     const list = sequence.head;
     let current = list.next ?? list;
     /** @type {RuleLink | null} */

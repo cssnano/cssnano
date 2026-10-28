@@ -62,7 +62,7 @@ export function walkAfterMerge(root, result, transforms, symbols, table) {
         }
       : visits[0];
   if (transforms.has('discardEmpty')) {
-    discardAndReport(root, result, visit);
+    discardAndReport(root, result, visit, table);
   } else if (visit) {
     root.walk(visit);
   }

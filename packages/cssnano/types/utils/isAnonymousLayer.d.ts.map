@@ -1,1 +1,1 @@
-{"version":3,"file":"isAnonymousLayer.d.ts","sourceRoot":"","sources":["../../src/utils/isAnonymousLayer.js"],"names":[],"mappings":"AAEA;;;GAGG;AACH,iBAAS,gBAAgB,CAAC,IAAI,EAHnB,OAAO,SAAS,EAAE,MAGC,GAFlB,OAAO,CAWlB;eAEc,gBAAgB"}
+{"version":3,"file":"isAnonymousLayer.d.ts","sourceRoot":"","sources":["../../src/utils/isAnonymousLayer.js"],"names":[],"mappings":"AAEI,OAAQ,KAAA,EAAC,SAAS,EAAC,MAAM,wBAAwB,CAAA;AAArD,wDAAwD;AAExD;;;;;;;;GAQG;AACH,iBAAS,gBAAgB,CAAC,IAAI,EAJnB,OAAO,SAAS,EAAE,MAIC,EAAE,KAAK,EAH1B,SAG0B,GAFzB,OAAO,CAWlB;eAEc,gBAAgB"}

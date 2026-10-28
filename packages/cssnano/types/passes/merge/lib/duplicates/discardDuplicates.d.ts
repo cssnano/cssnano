@@ -1,8 +1,10 @@
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
+import type { TextTable } from '../../../../values/textTable.js';
 export type Interner = {
     declarations: DeclarationKeys;
     ids: WeakMap<import('postcss').AnyNode, number>;
     layered: Set<number>;
+    textTable: TextTable;
 };
 export type Scope = {
     decls?: Map<number, import('postcss').AnyNode>;

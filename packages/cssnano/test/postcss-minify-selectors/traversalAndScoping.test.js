@@ -10,6 +10,7 @@ import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js
 
 const plugin = oneStagePlugin(minifySelectors);
 import { isDefaultNamespace } from '../../src/plugins/postcss-minify-selectors/lib/isDefaultNamespace.js';
+import { tokens } from '../../src/utils/value.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -197,7 +198,8 @@ suite('isDefaultNamespace token classification', () => {
     ['unclosed comment', '/* unclosed comment', false],
   ]) {
     test(`classifies ${name}`, () => {
-      assert.equal(isDefaultNamespace(params), expected);
+      const prelude = params === undefined ? [] : tokens(params);
+      assert.equal(isDefaultNamespace(prelude), expected);
     });
   }
 });

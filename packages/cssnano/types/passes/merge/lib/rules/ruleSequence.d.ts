@@ -1,4 +1,5 @@
 import type { Container, Root, Rule } from 'postcss';
+import type { TextTable } from '../../../../values/textTable.js';
 import type { Slot } from './slotIndex.js';
 export type RuleLink = {
     rule: Rule;
@@ -29,8 +30,11 @@ export default class RuleSequence {
     #private;
     /** @type {RuleLink} a sentinel that precedes the first rule */
     head: RuleLink;
-    /** @param {Root} root */
-    constructor(root: Root);
+    /**
+     * @param {Root} root
+     * @param {TextTable} textTable the selector tokens the walk stored
+     */
+    constructor(root: Root, textTable: TextTable);
     /**
      * @param {RuleLink} first
      * @param {RuleLink} second

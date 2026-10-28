@@ -4,6 +4,8 @@ import { step } from '../../../ir/declarationKey.js';
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 import { createRunContext } from '../../../ir/runContext.js';
 
+/** @import {TextTable} from '../../../../values/textTable.js' */
+
 const { isAnonymousLayer, isImportantComment } = cssnanoUtils;
 
 // Identical preludes apply their contents under the same condition; other
@@ -15,6 +17,7 @@ const conditionalAtRules = new Set(['media', 'supports', 'container']);
  *   declarations: DeclarationKeys,
  *   ids: WeakMap<import('postcss').AnyNode, number>,
  *   layered: Set<number>,
+ *   textTable: TextTable,
  * }} Interner
  */
 
@@ -30,10 +33,11 @@ const conditionalAtRules = new Set(['media', 'supports', 'container']);
 
 /**
  * @param {DeclarationKeys} declarations
+ * @param {TextTable} textTable
  * @return {Interner}
  */
-function createInterner(declarations) {
-  return { declarations, ids: new WeakMap(), layered: new Set() };
+function createInterner(declarations, textTable) {
+  return { declarations, ids: new WeakMap(), layered: new Set(), textTable };
 }
 
 /**
@@ -201,7 +205,7 @@ function dedupeAtRule(atrule, seenAtRules, scope, interner) {
     if (atrule.nodes) {
       dedupe(
         atrule,
-        isAnonymousLayer(atrule)
+        isAnonymousLayer(atrule, interner.textTable)
           ? {}
           : childScope(scope, `layer\0${atrule.params}`),
         interner
@@ -289,5 +293,5 @@ function dedupe(node, scope, interner) {
  * @return {void}
  */
 export function discardDuplicates(css, context = createRunContext()) {
-  dedupe(css, {}, createInterner(context.declarations));
+  dedupe(css, {}, createInterner(context.declarations, context.textTable));
 }

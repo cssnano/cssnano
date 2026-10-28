@@ -5,8 +5,9 @@
  *
  * Trivia tokens (whitespace and comments) are skipped according to CSS Syntax 3.
  *
- * @param {string} [params]
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} prelude the
+ *   tokens of the prelude
  * @return {boolean}
  */
-export declare function isDefaultNamespace(params?: string): boolean;
+export declare function isDefaultNamespace(prelude: readonly import('@csstools/css-tokenizer').CSSToken[]): boolean;
 //# sourceMappingURL=isDefaultNamespace.d.ts.map

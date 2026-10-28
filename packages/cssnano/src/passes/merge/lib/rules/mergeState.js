@@ -65,6 +65,11 @@ export default class MergeState {
    */
   blocks;
 
+  /** @returns {TextTable} the selector tokens the walk stored */
+  get textTable() {
+    return this.#textTable;
+  }
+
   /**
    * @param {readonly string[]} browsers
    * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
@@ -320,7 +325,7 @@ export default class MergeState {
    * @return {boolean}
    */
   canMerge(ruleA, ruleB, parentA = ruleA.parent, parentB = ruleB.parent) {
-    if (!sameContainer(parentA, parentB)) return false;
+    if (!sameContainer(parentA, parentB, this.#textTable)) return false;
     if (isKeyframes(parentA)) return false;
     if (this.#holdsBlocks(ruleA) || this.#holdsBlocks(ruleB)) return false;
 
