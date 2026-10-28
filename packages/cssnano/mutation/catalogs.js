@@ -52,6 +52,10 @@ export const catalogs = [
     test: true,
   },
   {
+    url: new URL('./pipeline/mutation-catalog-fold.js', import.meta.url),
+    test: true,
+  },
+  {
     url: new URL(
       './postcss-unique-selectors/mutation-catalog-writers.js',
       import.meta.url

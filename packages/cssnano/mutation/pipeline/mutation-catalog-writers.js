@@ -13,18 +13,12 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'assign a folded selector as a string, dropping its tokens',
-    find: '  if (result !== read || tokens !== undefined) table.assignFolded(rule, folded);',
-    replace:
-      '  if (result !== read || tokens !== undefined) table.setText(rule, result);',
+    find: '    table.assignFolded(rule, folded);',
+    replace: '    table.setText(rule, folded.text);',
   },
   {
     name: 'assign an unchanged selector as a string, dropping its tokens',
-    find: '  if (result !== read || tokens !== undefined) table.assignFolded(rule, folded);',
-    replace: '  if (result !== read) table.assignFolded(rule, folded);',
-  },
-  {
-    name: 'assign a memo hit as a string, dropping its tokens',
-    find: '    table.assignFolded(rule, known);',
-    replace: '    table.setText(rule, known.text);',
+    find: '  if (folded.text !== read || folded.tokens !== undefined) {',
+    replace: '  if (folded.text !== read) {',
   },
 ];

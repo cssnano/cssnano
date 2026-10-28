@@ -1,27 +1,20 @@
 import type { AtRule, Container, Document, Helpers, Root } from 'postcss';
-import type { Reducer, Stage } from './host.js';
-import type { TextEntry } from './prelude.js';
-import type { SelectorEntry } from './selectorReduce.js';
-import type { FoldedText, TextTable } from '../values/textTable.js';
+import type { Stage } from './host.js';
+import type { PlanEntry } from './plan.js';
+import type { TextTable } from '../values/textTable.js';
 import type { CommentState } from './comments/nodeComments.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
-export type PropertyEntry = {
-    plan: readonly Reducer[] | null;
-    memos: (Map<string, FoldedText> | undefined)[];
-    mode: import('../values/valueBuffer.js').TokenizeMode | undefined;
-    lists: Map<string, readonly CSSToken[]>;
-};
 export type RunState = {
     /**
      * in pipeline order
      */
     stages: readonly Stage[];
-    properties: Map<string, PropertyEntry>;
+    properties: Map<string, PlanEntry>;
     /**
      * by at-rule name
      */
-    atRules: Map<string, TextEntry>;
-    selectors: SelectorEntry;
+    atRules: Map<string, PlanEntry>;
+    selectors: PlanEntry;
     contexts: WeakMap<Container | Document, number>;
     helpers: Helpers;
     /**
