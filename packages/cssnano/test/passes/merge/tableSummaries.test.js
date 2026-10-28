@@ -14,6 +14,7 @@ import {
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import joinByDeclarations from '../../../src/passes/merge/lib/rules/declarationJoin.js';
 import RuleSequence from '../../../src/passes/merge/lib/rules/ruleSequence.js';
+import { TextTable } from '../../../src/values/textTable.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 
 /** @import {AtRule, Declaration, Root, Rule} from 'postcss' */
@@ -57,7 +58,7 @@ test('block table: a sequence move that rebuilds a conditional group leaves its 
   try {
     const media = /** @type {AtRule} */ (root.first);
     assert.deepEqual(propsOf(context.blocks, media), ['color']);
-    const sequence = new RuleSequence(root);
+    const sequence = new RuleSequence(root, new TextTable());
     const first = /** @type {NonNullable<typeof sequence.head.next>} */ (
       sequence.head.next
     );

@@ -4,6 +4,7 @@ import { isConditionalGroupRule } from './lastWriteIndex.js';
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /** @import {ChildNode, Container} from 'postcss' */
+/** @import {TextTable} from '../../../../values/textTable.js' */
 
 /**
  * What collaborators may use: they ask whether a block is gone.
@@ -11,13 +12,17 @@ const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
  * @typedef {Pick<DroppableBlocks, 'isEmptied'>} BlockReader
  */
 
-/** @param {ChildNode} node @return {boolean} */
-function isNamedLayerBlock(node) {
+/**
+ * @param {ChildNode} node
+ * @param {TextTable} textTable
+ * @return {boolean}
+ */
+function isNamedLayerBlock(node, textTable) {
   return (
     node.type === 'atrule' &&
     asciiLowerCase(node.name) === 'layer' &&
     node.nodes !== undefined &&
-    !isAnonymousLayer(node)
+    !isAnonymousLayer(node, textTable)
   );
 }
 
@@ -25,10 +30,11 @@ function isNamedLayerBlock(node) {
  * True for a block that applies nothing once it is empty.
  *
  * @param {ChildNode} node
+ * @param {TextTable} textTable
  * @return {boolean}
  */
-function isDroppableWhenEmpty(node) {
-  return isConditionalGroupRule(node) || isNamedLayerBlock(node);
+function isDroppableWhenEmpty(node, textTable) {
+  return isConditionalGroupRule(node) || isNamedLayerBlock(node, textTable);
 }
 
 /**
@@ -49,6 +55,14 @@ export default class DroppableBlocks {
   /** @type {Map<Container, number>} */
   #remaining = new Map();
 
+  /** @type {TextTable} */
+  #textTable;
+
+  /** @param {TextTable} textTable */
+  constructor(textTable) {
+    this.#textTable = textTable;
+  }
+
   /**
    * Starts tracking `node` if it applies nothing once empty and has children.
    *
@@ -59,7 +73,7 @@ export default class DroppableBlocks {
     const nodes = /** @type {ChildNode[]} */ (
       /** @type {Container} */ (node).nodes
     );
-    if (nodes.length > 0 && isDroppableWhenEmpty(node)) {
+    if (nodes.length > 0 && isDroppableWhenEmpty(node, this.#textTable)) {
       this.#remaining.set(/** @type {Container} */ (node), nodes.length);
     }
   }
@@ -105,7 +119,10 @@ export default class DroppableBlocks {
    */
   #climbFrom(emptied) {
     const parent = /** @type {Container | undefined} */ (emptied.parent);
-    if (!parent || !isDroppableWhenEmpty(/** @type {ChildNode} */ (parent))) {
+    if (
+      !parent ||
+      !isDroppableWhenEmpty(/** @type {ChildNode} */ (parent), this.#textTable)
+    ) {
       return;
     }
     const known = this.#remaining.get(parent);

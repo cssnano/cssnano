@@ -123,13 +123,6 @@ function walkAtRule(state, atRule) {
   }
   const read = sourceParams(atRule);
   const hasPrelude = Boolean(atRule.params);
-  if (
-    !state.defaultNamespace &&
-    cssnanoUtils.asciiLowerCase(atRule.name) === 'namespace' &&
-    isDefaultNamespace(read)
-  ) {
-    state.defaultNamespace = true;
-  }
   // An at-rule that another plugin built may have no prelude to clean.
   const text =
     comments !== null && read ? commentFreeText(read, comments) : read;
@@ -161,6 +154,15 @@ function walkAtRule(state, atRule) {
   }
   if (entry?.tightens && hasPrelude) {
     tightenAfterName(atRule, result, startsBalanced);
+  }
+  // The prelude as the fold left it, which a stage above may have rewritten.
+  if (
+    hasPrelude &&
+    !state.defaultNamespace &&
+    cssnanoUtils.asciiLowerCase(atRule.name) === 'namespace' &&
+    isDefaultNamespace(state.table.tokens(atRule))
+  ) {
+    state.defaultNamespace = true;
   }
 }
 
