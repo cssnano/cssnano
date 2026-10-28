@@ -152,3 +152,11 @@ test('TextTable.assignFolded assigns a rule selector and drops its raw', () => {
   assert.equal(rule.selector, 'a,b');
   assert.equal(rule.raws.selector, undefined);
 });
+
+test("the table tokenizes an at-rule's prelude as written, comments included", () => {
+  const atRule = /** @type {import('postcss').AtRule} */ (
+    postcss.parse('@media screen /* c */ and (x) {}').first
+  );
+  const table = new TextTable();
+  assert.equal(spelled(table.tokens(atRule)), 'screen /* c */ and (x)');
+});

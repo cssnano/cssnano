@@ -1,9 +1,13 @@
 import { tokens as tokenize } from '../utils/value.js';
-import { sourceSelector, sourceValue } from '../utils/sourceText.js';
+import {
+  sourceParams,
+  sourceSelector,
+  sourceValue,
+} from '../utils/sourceText.js';
 import { tokensText } from './tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Declaration, Rule} from 'postcss' */
+/** @import {AtRule, Declaration, Rule} from 'postcss' */
 
 /**
  * @typedef {object} TextEntry
@@ -17,12 +21,13 @@ import { tokensText } from './tokensText.js';
  * @typedef {TextEntry | {text: string, tokens: undefined}} FoldedText
  */
 
-/** @typedef {Rule | Declaration} TextNode */
+/** @typedef {Rule | Declaration | AtRule} TextNode */
 
 /**
- * Gives each rule's selector and each declaration's value one token list, so
- * a stage that reads a text after another stage wrote it does not tokenize it
- * again. An entry is reused only while the node still spells its text.
+ * Gives each rule's selector, each declaration's value and each at-rule's
+ * prelude one token list, so a stage that reads a text after another stage
+ * wrote it does not tokenize it again. An entry is reused only while the node
+ * still spells its text.
  */
 class TextTable {
   /** @type {WeakMap<TextNode, TextEntry>} */
@@ -126,12 +131,13 @@ class TextTable {
  * @returns {string}
  */
 function sourceOf(node) {
-  return node.type === 'decl' ? sourceValue(node) : sourceSelector(node);
+  if (node.type === 'decl') return sourceValue(node);
+  return node.type === 'atrule' ? sourceParams(node) : sourceSelector(node);
 }
 
 /**
- * Sets the selector or value to the text and drops the raw, which would
- * otherwise restore comments the text no longer has.
+ * Sets the selector, value or prelude to the text and drops the raw, which
+ * would otherwise restore comments the text no longer has.
  *
  * @param {TextNode} node
  * @param {string} text
@@ -141,6 +147,9 @@ function assign(node, text) {
   if (node.type === 'decl') {
     node.value = text;
     delete node.raws.value;
+  } else if (node.type === 'atrule') {
+    node.params = text;
+    delete node.raws.params;
   } else {
     node.selector = text;
     delete node.raws.selector;
