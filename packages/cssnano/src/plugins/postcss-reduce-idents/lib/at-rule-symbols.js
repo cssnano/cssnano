@@ -113,11 +113,13 @@ export default function atRuleReducer(
         if (edits.length === 0) continue;
         const buffer = new ValueBuffer(node.value, undefined, parsedTokens);
         buffer.replaceRanges(edits);
-        table.write(node, buffer.tokens());
+        // Keep the raw of a value that renaming left as it was.
+        if (buffer.text() !== node.value) table.write(node, buffer.tokens());
       }
       for (const { name, rule } of atRules) {
-        if (referenced.has(name)) {
-          table.write(rule, [encodedIdent(cache.get(name))]);
+        const encoded = cache.get(name);
+        if (referenced.has(name) && encoded !== rule.params) {
+          table.write(rule, [encodedIdent(encoded)]);
         }
       }
       atRules = [];
