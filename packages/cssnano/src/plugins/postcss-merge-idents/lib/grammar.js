@@ -114,6 +114,14 @@ const COUNTER_STYLE_FUNCTIONS = new Map(
 );
 
 /**
+ * @param {number} code a UTF-16 code unit
+ * @return {boolean} whether it is a CSS newline: LF, CR or FF
+ */
+function isNewlineCode(code) {
+  return code === 0x0a || code === 0x0d || code === 0x0c;
+}
+
+/**
  * The tokens of a prelude's name. A dangling backslash escapes the space that
  * PostCSS keeps in `raws.between`, so that space joins the name; otherwise the
  * between-block space holds only whitespace and comments, and the stored list
@@ -127,7 +135,7 @@ function preludeTokens(atRule, table) {
   const between = atRule.raws?.between ?? '';
   const escapesBetween =
     between !== '' &&
-    !['\n', '\r', '\f'].includes(between[0]) &&
+    !isNewlineCode(between.charCodeAt(0)) &&
     endsWithDanglingEscape(atRule.params);
   if (escapesBetween) {
     return tokens(atRule.params + between);
@@ -142,14 +150,20 @@ function preludeTokens(atRule, table) {
  * @return {{ isString: boolean, isReservedName: boolean, key: string, tokenText: string } | null}
  */
 function parseAtRuleName(parsedTokens, atRuleName) {
-  const tokenList = parsedTokens.filter(
-    (t) => t[0] !== TokenType.Whitespace && t[0] !== TokenType.Comment
-  );
-  if (tokenList.length !== 1) {
+  let first;
+  for (const token of parsedTokens) {
+    if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment) {
+      continue;
+    }
+    if (first !== undefined) {
+      return null;
+    }
+    first = token;
+  }
+  if (first === undefined) {
     return null;
   }
   const isCounterStyle = atRuleName.endsWith('counter-style');
-  const first = tokenList[0];
   if (first[0] === TokenType.Ident) {
     const val = decoded(first);
     const lower = asciiLowerCase(val);

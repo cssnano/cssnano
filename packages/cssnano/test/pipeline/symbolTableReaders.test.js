@@ -15,6 +15,8 @@ const { zindexSymbols } =
   await import('../../src/plugins/postcss-zindex/index.js');
 const { mergeIdentsSymbols } =
   await import('../../src/plugins/postcss-merge-idents/index.js');
+const { preludeTokens } =
+  await import('../../src/plugins/postcss-merge-idents/lib/grammar.js');
 const { tokens } = await import('../../src/utils/value.js');
 
 /** @returns {number} tokenize calls made so far */
@@ -182,6 +184,44 @@ suite('the symbol transforms read the text the host walk stored', () => {
     root.walk(symbolVisit(lists));
     const before = tokenizeTotal();
     mergeIdentsSymbols(lists, {}, () => {}, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('PostCSS keeps in params every comment between two tokens of a prelude', () => {
+    const root = postcss.parse('@keyframes a/*x*/b {}');
+    assert.equal(root.first.params, 'a/*x*/b');
+  });
+
+  test('`preludeTokens` reads the list stored for an at-rule with a trailing comment, without tokenizing', () => {
+    const root = postcss.parse('@keyframes foo /*x*/ {}');
+    const table = new TextTable();
+    table.write(root.first, tokens('foo'));
+    const before = tokenizeTotal();
+    preludeTokens(root.first, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('`preludeTokens` tokenizes a dangling escape with the space PostCSS keeps after it', () => {
+    const root = postcss.parse('@keyframes a\\ {}');
+    const table = new TextTable();
+    assert.equal(tokensText(preludeTokens(root.first, table)), 'a\\ ');
+  });
+
+  test('`preludeTokens` reads the list stored for an at-rule whose backslash precedes a newline, without tokenizing', () => {
+    const root = postcss.parse('@keyframes a\\\n{}');
+    const table = new TextTable();
+    table.write(root.first, tokens('a\\'));
+    const before = tokenizeTotal();
+    preludeTokens(root.first, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test('`preludeTokens` reads the list stored for an at-rule whose backslashes are an even run, without tokenizing', () => {
+    const root = postcss.parse('@keyframes a\\\\ {}');
+    const table = new TextTable();
+    table.write(root.first, tokens('a\\\\'));
+    const before = tokenizeTotal();
+    preludeTokens(root.first, table);
     assert.equal(tokenizeTotal() - before, 0);
   });
 });
