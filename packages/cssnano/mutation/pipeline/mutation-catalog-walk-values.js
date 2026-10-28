@@ -22,6 +22,11 @@ export const mutations = [
     replace: '  state.table.setText(decl, folded.text);',
   },
   {
+    name: 'assign a folded prelude as a string, dropping its tokens',
+    find: 'else state.table.assignFolded(atRule, folded);',
+    replace: 'else state.table.setText(atRule, folded.text);',
+  },
+  {
     name: 'build the value buffer without the list read for its text',
     find: '  const buffer = new ValueBuffer(text, entry.mode, entry.lists.get(text));',
     replace: '  const buffer = new ValueBuffer(text, entry.mode);',

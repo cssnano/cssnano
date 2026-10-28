@@ -71,6 +71,22 @@ suite('the text table reads the text the host walk wrote', () => {
     assert.equal(table.tokens(second).length, 4);
     assert.equal(tokenizeTotal() - before, 0);
   });
+  test("the table reads the prelude the host walk's stages read, without tokenizing", () => {
+    const root = postcss.parse('@media screen and (x) {}');
+    const table = new TextTable();
+    const stage = {
+      forAtRule: () => ({
+        buffer: (buffer) => buffer.replace(0, 1, [ident('z')]),
+      }),
+    };
+    walkStylesheet([stage], root, helpers, new Map(), table);
+    const atRule = root.first;
+    assert.equal(atRule.params, 'z and (x)');
+    const before = tokenizeTotal();
+    const list = table.tokens(atRule);
+    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(list.map((token) => token[1]).join(''), 'z and (x)');
+  });
 });
 
 suite('the text table reads the value the host walk stored', () => {
