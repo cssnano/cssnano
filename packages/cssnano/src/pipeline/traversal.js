@@ -206,7 +206,13 @@ function walkRule(state, rule) {
  */
 function keepSelectorComments(rule) {
   const raw = rule.raws.selector;
-  if (raw === undefined || raw.value !== rule.selector) return;
+  if (
+    raw === undefined ||
+    raw.value !== rule.selector ||
+    raw.raw === raw.value
+  ) {
+    return;
+  }
   rule.selector = raw.raw;
   delete rule.raws.selector;
 }
