@@ -72,4 +72,4 @@ function trailingEscape(decl) {
     : undefined;
 }
 
-export { trailingEscape };
+export { endsWithDanglingEscape, trailingEscape };
