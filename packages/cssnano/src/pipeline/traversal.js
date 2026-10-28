@@ -245,6 +245,21 @@ function walkRule(state, rule) {
 }
 
 /**
+ * Moves the comments PostCSS kept only in the raw selector into the selector,
+ * as PostCSS itself does for a comment with no whitespace beside it. Later
+ * transforms rebuild selectors from `rule.selectors`, which would otherwise
+ * lose them.
+ *
+ * @param {import('postcss').Rule} rule
+ */
+function keepSelectorComments(rule) {
+  const raw = rule.raws.selector;
+  if (raw === undefined || raw.value !== rule.selector) return;
+  rule.selector = raw.raw;
+  delete rule.raws.selector;
+}
+
+/**
  * The comment removal of a stylesheet, from the first stage that has one.
  *
  * @param {readonly Stage[]} stages
@@ -304,6 +319,7 @@ export function walkStylesheet(stages, root, helpers, transforms, table) {
     } else if (node.type === 'rule') {
       if (state.normalizeWhitespace) reattachBlockEscape(node);
       walkRule(state, node);
+      keepSelectorComments(node);
     }
   });
   // The overridable at-rules are compared after the walk has folded their
