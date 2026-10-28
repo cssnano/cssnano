@@ -11,6 +11,9 @@ const sharedTokens = cssnanoUtils.tokens;
 // so their contents may name anything.
 const SUBSTITUTION_FUNCTIONS = new Set(['var', 'env', 'attr']);
 
+// Read-only: `tokenPosition` only calls `get` on it.
+const NO_FUNCTIONS = new Map();
+
 /**
  * Describe where a token sits in a value: an identifier is `bare` at the
  * value's top level, `bracketed` in a line-name list, `argument` in a slot
@@ -119,7 +122,7 @@ function rewrite(
   let cursor = 0;
   let changed = false;
   for (const token of parsedTokens) {
-    const position = tokenPosition(token, functions ?? new Map(), walk);
+    const position = tokenPosition(token, functions ?? NO_FUNCTIONS, walk);
     const text = callback(token, position);
     if (text === undefined) continue;
     const start = token[2];
