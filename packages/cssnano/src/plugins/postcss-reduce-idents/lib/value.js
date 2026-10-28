@@ -1,5 +1,6 @@
 import cssnanoUtils from '#utils';
 import { knownFunctions } from './slots.js';
+import { identifierWithText } from '../../../values/tokenConstructors.js';
 
 const { TokenType } = cssnanoUtils;
 
@@ -81,6 +82,18 @@ function tokenPosition(token, functions, walk) {
     return 'nested';
   }
   return 'other';
+}
+
+/**
+ * The identifier token that spells an encoded name as the encoder wrote it,
+ * so the token keeps that text even when the encoder's output is not an
+ * identifier the tokenizer would read back.
+ *
+ * @param {string} name
+ * @return {CSSToken}
+ */
+function encodedIdent(name) {
+  return identifierWithText(name, name);
 }
 
 /**
@@ -190,6 +203,7 @@ export {
   TokenType,
   atRuleIdent,
   collectOpaqueIdents,
+  encodedIdent,
   rewrite,
   sharedTokens as tokens,
   tokenEdits,

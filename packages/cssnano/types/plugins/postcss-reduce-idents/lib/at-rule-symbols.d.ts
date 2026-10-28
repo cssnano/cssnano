@@ -8,6 +8,21 @@ export type AtRuleSymbols = {
     functions?: Map<string, number[]>;
     descriptors?: Set<string>;
 };
+/** @import {TextTable} from '../../../values/textTable.js' */
+/** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
+/**
+ * Name the slots of an at-rule-defined name: where it is defined, what
+ * references it, and which keywords are not names.
+ *
+ * @typedef {{
+ *   atRule: string,
+ *   reserved: Set<string>,
+ *   properties: Set<string>,
+ *   functionProperties?: Set<string>,
+ *   functions?: Map<string, number[]>,
+ *   descriptors?: Set<string>,
+ * }} AtRuleSymbols
+ */
 /**
  * Rename the names an at-rule defines and declaration values reference,
  * such as `@keyframes` names. Rename only when definition and reference

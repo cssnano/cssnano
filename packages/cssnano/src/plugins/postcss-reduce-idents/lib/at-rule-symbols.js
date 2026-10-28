@@ -2,12 +2,12 @@ import addToCache from './cache.js';
 import {
   atRuleIdent,
   collectOpaqueIdents,
+  encodedIdent,
   tokenEdits,
   TokenType,
 } from './value.js';
 import { resolveAtRule, resolveProperty } from './slots.js';
 import { declaredValueTokens } from '../../../values/declaredValueTokens.js';
-import { identifierWithText } from '../../../values/tokenConstructors.js';
 import { ValueBuffer } from '../../../values/valueBuffer.js';
 
 /** @import {TextTable} from '../../../values/textTable.js' */
@@ -26,16 +26,6 @@ import { ValueBuffer } from '../../../values/valueBuffer.js';
  *   descriptors?: Set<string>,
  * }} AtRuleSymbols
  */
-
-/**
- * The identifier token that spells an encoded name, as the encoder wrote it.
- *
- * @param {string} name
- * @return {CSSToken}
- */
-function encodedIdent(name) {
-  return identifierWithText(name, name);
-}
 
 /**
  * Rename the names an at-rule defines and declaration values reference,
