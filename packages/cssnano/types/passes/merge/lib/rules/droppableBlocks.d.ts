@@ -1,4 +1,5 @@
 import type { ChildNode, Container } from 'postcss';
+import type { TextTable } from '../../../../values/textTable.js';
 export type BlockReader = Pick<DroppableBlocks, 'isEmptied'>;
 /**
  * Counts the children left in each conditional group rule or named `@layer`
@@ -16,6 +17,8 @@ export type BlockReader = Pick<DroppableBlocks, 'isEmptied'>;
  */
 export default class DroppableBlocks {
     #private;
+    /** @param {TextTable} textTable */
+    constructor(textTable: TextTable);
     /**
      * Starts tracking `node` if it applies nothing once empty and has children.
      *

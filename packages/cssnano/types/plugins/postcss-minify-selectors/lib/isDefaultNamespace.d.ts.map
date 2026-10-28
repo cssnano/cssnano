@@ -1,1 +1,1 @@
-{"version":3,"file":"isDefaultNamespace.d.ts","sourceRoot":"","sources":["../../../../src/plugins/postcss-minify-selectors/lib/isDefaultNamespace.js"],"names":[],"mappings":"AAEA;;;;;;;;;GASG;AACH,wBAAgB,kBAAkB,CAAC,MAAM,AAHtC,CACA,EADQ,MAG8B,GAF7B,OAAO,CA+BlB"}
+{"version":3,"file":"isDefaultNamespace.d.ts","sourceRoot":"","sources":["../../../../src/plugins/postcss-minify-selectors/lib/isDefaultNamespace.js"],"names":[],"mappings":"AAEA;;;;;;;;;;GAUG;AACH,wBAAgB,kBAAkB,CAAC,OAAO,EAJ/B,SAAS,OAAO,yBAAyB,EAAE,QAAQ,EAIpB,GAF9B,OAAO,CA2BlB"}

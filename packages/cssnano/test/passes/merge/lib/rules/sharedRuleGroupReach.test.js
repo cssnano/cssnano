@@ -7,6 +7,7 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/declarations.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
+import { TextTable } from '../../../../../src/values/textTable.js';
 import {
   earliestPairReaching,
   findGroup,
@@ -57,7 +58,7 @@ function stylesheet(seed, { comments = false, blocks = false } = {}) {
 function groupsOf(css) {
   const root = postcss.parse(css);
   const mergeState = new MergeState(['Chrome 120']);
-  const sequence = new RuleSequence(root);
+  const sequence = new RuleSequence(root, new TextTable());
   const outsideDeclarations = new WeakMap();
   const links = [];
   for (let link = sequence.head.next; link; link = link.next) links.push(link);

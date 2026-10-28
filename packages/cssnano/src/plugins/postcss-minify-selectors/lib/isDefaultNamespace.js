@@ -7,15 +7,12 @@ import cssnanoUtils from '#utils';
  *
  * Trivia tokens (whitespace and comments) are skipped according to CSS Syntax 3.
  *
- * @param {string} [params]
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} prelude the
+ *   tokens of the prelude
  * @return {boolean}
  */
-export function isDefaultNamespace(params) {
-  if (!params) {
-    return false;
-  }
-
-  for (const token of cssnanoUtils.tokens(params)) {
+export function isDefaultNamespace(prelude) {
+  for (const token of prelude) {
     const type = token[0];
     if (
       type === cssnanoUtils.TokenType.Comment ||

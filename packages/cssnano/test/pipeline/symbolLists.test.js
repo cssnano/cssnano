@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { discardAndReport } from '#postcss-discard-empty';
+import { TextTable } from '../../src/values/textTable.js';
 import {
   createSymbolLists,
   isAttached,
@@ -19,7 +20,8 @@ function collect(css) {
   discardAndReport(
     root,
     /** @type {import('postcss').Result} */ ({ messages: [] }),
-    symbolVisit(lists)
+    symbolVisit(lists),
+    new TextTable()
   );
   return { root, lists };
 }

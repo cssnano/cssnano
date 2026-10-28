@@ -1,3 +1,4 @@
+import type { TextTable } from '../../../../values/textTable.js';
 /**
  * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
  * cascaded by position.
@@ -17,7 +18,9 @@ export type Child = import('postcss').AnyNode & {
  *
  * @param {import('postcss').Container | undefined} containerA
  * @param {import('postcss').Container | undefined} containerB
+ * @param {TextTable} textTable the selector tokens the walk stored, which give
+ *   each layer's prelude when it has a comment
  * @return {boolean}
  */
-export declare function sameContainer(containerA: import('postcss').Container | undefined, containerB: import('postcss').Container | undefined): boolean;
+export declare function sameContainer(containerA: import('postcss').Container | undefined, containerB: import('postcss').Container | undefined, textTable: TextTable): boolean;
 //# sourceMappingURL=sameContainer.d.ts.map

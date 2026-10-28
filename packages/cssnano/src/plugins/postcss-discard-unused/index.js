@@ -4,7 +4,6 @@ import {
   isTokenDelim,
   isTokenIdent,
   isTokenWhitespace,
-  tokenize,
 } from '@csstools/css-tokenizer';
 import { list } from 'postcss';
 import cssnanoUtils from '#utils';
@@ -48,11 +47,11 @@ function filterAtRule(atRules, names, remove) {
 }
 
 /**
- * @param {string} source
+ * @param {readonly CSSToken[]} prelude the tokens of the @namespace prelude
  * @return {string | true | undefined}
  */
-function namespacePrefix(source) {
-  for (const token of tokenize({ css: source })) {
+function namespacePrefix(prelude) {
+  for (const token of prelude) {
     if (isTokenWhitespace(token) || isTokenComment(token)) continue;
     return namespacePrefixToken(token);
   }
@@ -122,12 +121,13 @@ function namespacePrefixes(tokens) {
  * @param {AtRule[]} atRules
  * @param {Set<string | true>} prefixes
  * @param {(node: AtRule) => void} remove
+ * @param {TextTable} table the @namespace preludes the walk stored
  * @return {void}
  */
-function filterNamespace(atRules, prefixes, remove) {
+function filterNamespace(atRules, prefixes, remove, table) {
   const usesAny = prefixes.has(wildcard);
   for (const atRule of atRules) {
-    const prefix = namespacePrefix(atRule.params);
+    const prefix = namespacePrefix(table.tokens(atRule));
 
     if (prefix === undefined) {
       if (!atRule.params.trim()) remove(atRule);
@@ -230,7 +230,7 @@ export function discardUnusedSymbols(lists, options, remove, table) {
   }
   if (fontFace) filterFont(lists.fontFaces, lists.fontDecls, remove);
   if (keyframesNames) filterAtRule(lists.keyframes, keyframesNames, remove);
-  if (namespace) filterNamespace(lists.namespaces, prefixes, remove);
+  if (namespace) filterNamespace(lists.namespaces, prefixes, remove, table);
 }
 
 /**

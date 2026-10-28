@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { discardAndReport } from '#postcss-discard-empty';
+import { TextTable } from '../../src/values/textTable.js';
 
 /** @param {import('postcss').AnyNode} node */
 function label(node) {
@@ -27,7 +28,8 @@ function discardWithVisit(css, visit) {
       ((node) => {
         visited.push(label(node));
         visit(node);
-      })
+      }),
+    new TextTable()
   );
   return { output: root.toString(), visited };
 }

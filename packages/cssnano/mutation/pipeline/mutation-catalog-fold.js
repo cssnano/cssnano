@@ -11,8 +11,8 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'build the value buffer without the list read for its text',
-    find: '  let buffer = new ValueBuffer(text, entry.mode, lists?.get(text));',
-    replace: '  let buffer = new ValueBuffer(text, entry.mode);',
+    find: '  const buffer = new ValueBuffer(text, entry.mode, lists?.get(text));',
+    replace: '  const buffer = new ValueBuffer(text, entry.mode);',
   },
   {
     name: 'assign a folded node as a string, dropping its tokens',

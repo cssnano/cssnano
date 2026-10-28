@@ -4,6 +4,7 @@ import SlotIndex from './slotIndex.js';
 import { invalidate } from '../../../ir/blockTable.js';
 
 /** @import {ChildNode, Container, Root, Rule} from 'postcss' */
+/** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {Slot} from './slotIndex.js' */
 
 /**
@@ -51,15 +52,22 @@ export default class RuleSequence {
 
   #slots = new SlotIndex();
 
-  #blocks = new DroppableBlocks();
+  /** @type {DroppableBlocks} */
+  #blocks;
 
-  #scan = new DeclarationScan(this.#slots, this.#blocks);
+  /** @type {DeclarationScan} */
+  #scan;
 
   /** @type {Set<Container>} containers whose rules differ from the stylesheet */
   #changed = new Set();
 
-  /** @param {Root} root */
-  constructor(root) {
+  /**
+   * @param {Root} root
+   * @param {TextTable} textTable the selector tokens the walk stored
+   */
+  constructor(root, textTable) {
+    this.#blocks = new DroppableBlocks(textTable);
+    this.#scan = new DeclarationScan(this.#slots, this.#blocks);
     let tail = this.head;
     /** @param {Container} container */
     const collect = (container) => {

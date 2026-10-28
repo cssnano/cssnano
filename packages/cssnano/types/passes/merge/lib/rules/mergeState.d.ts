@@ -1,5 +1,6 @@
 import type { Container, Declaration, Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
+import type { TextTable } from '../../../../values/textTable.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleMeta } from './ruleMeta.js';
 import type { RuleDeclarationKeys } from './ruleMeta.js';
@@ -20,6 +21,8 @@ export default class MergeState {
      * @type {import('../../../ir/blockTable.js').BlockTable}
      */
     blocks: import('../../../ir/blockTable.js').BlockTable;
+    /** @returns {TextTable} the selector tokens the walk stored */
+    get textTable(): TextTable;
     /**
      * @param {readonly string[]} browsers
      * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
