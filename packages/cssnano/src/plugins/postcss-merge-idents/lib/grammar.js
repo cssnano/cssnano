@@ -1,6 +1,8 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import specData from '../data/mergeIdents.json' with { type: 'json' };
+import { endsWithDanglingEscape } from './trailingEscape.js';
+/** @import {TextTable} from '../../../values/textTable.js' */
 
 const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
 
@@ -112,12 +114,35 @@ const COUNTER_STYLE_FUNCTIONS = new Map(
 );
 
 /**
- * @param {string} params
+ * The tokens of a prelude's name. A dangling backslash escapes the space that
+ * PostCSS keeps in `raws.between`, so that space joins the name; otherwise the
+ * between-block space holds only whitespace and comments, and the stored list
+ * of the prelude stands for it.
+ *
+ * @param {import('postcss').AtRule} atRule
+ * @param {TextTable} table
+ * @return {readonly import('@csstools/css-tokenizer').CSSToken[]}
+ */
+function preludeTokens(atRule, table) {
+  const between = atRule.raws?.between ?? '';
+  const escapesBetween =
+    between !== '' &&
+    !['\n', '\r', '\f'].includes(between[0]) &&
+    endsWithDanglingEscape(atRule.params);
+  if (escapesBetween) {
+    return tokens(atRule.params + between);
+  }
+  return table.tokens(atRule);
+}
+
+/**
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} parsedTokens
+ *   the tokens of the prelude, whose comments and whitespace are skipped
  * @param {string} atRuleName
  * @return {{ isString: boolean, isReservedName: boolean, key: string, tokenText: string } | null}
  */
-function parseAtRuleName(params, atRuleName) {
-  const tokenList = tokens(params).filter(
+function parseAtRuleName(parsedTokens, atRuleName) {
+  const tokenList = parsedTokens.filter(
     (t) => t[0] !== TokenType.Whitespace && t[0] !== TokenType.Comment
   );
   if (tokenList.length !== 1) {
@@ -236,6 +261,7 @@ function getBody(entry) {
 }
 
 export {
+  preludeTokens,
   VENDOR_PREFIX,
   CSS_WIDE_KEYWORDS,
   KEYFRAMES_SHORTHAND_KEYWORDS,
