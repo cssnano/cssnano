@@ -7,9 +7,11 @@ export type TextEntry = {
     text: string;
     tokens: readonly CSSToken[];
 };
-export type FoldedText = TextEntry | {
+export type FoldedText = (TextEntry | {
     text: string;
     tokens: undefined;
+}) & {
+    tightAfterName?: boolean;
 };
 export type TextNode = Rule | Declaration | AtRule;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -21,8 +23,9 @@ export type TextNode = Rule | Declaration | AtRule;
  */
 /**
  * A folded text: its text, and the tokens that spell it when a stage read
- * them.
- * @typedef {TextEntry | {text: string, tokens: undefined}} FoldedText
+ * them. An at-rule prelude whose plan tightens the space after its name also
+ * says whether that space can go, as startsWithBalancedParen tells.
+ * @typedef {(TextEntry | {text: string, tokens: undefined}) & {tightAfterName?: boolean}} FoldedText
  */
 /** @typedef {Rule | Declaration | AtRule} TextNode */
 /**

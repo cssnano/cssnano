@@ -17,8 +17,9 @@ import { tokensText } from './tokensText.js';
 
 /**
  * A folded text: its text, and the tokens that spell it when a stage read
- * them.
- * @typedef {TextEntry | {text: string, tokens: undefined}} FoldedText
+ * them. An at-rule prelude whose plan tightens the space after its name also
+ * says whether that space can go, as startsWithBalancedParen tells.
+ * @typedef {(TextEntry | {text: string, tokens: undefined}) & {tightAfterName?: boolean}} FoldedText
  */
 
 /** @typedef {Rule | Declaration | AtRule} TextNode */

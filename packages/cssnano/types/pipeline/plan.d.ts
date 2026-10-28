@@ -14,12 +14,6 @@ export type PlanEntry = {
     tightens: boolean;
     lists: Map<string, readonly CSSToken[]> | null;
 };
-/** @import {AtRule, Declaration, Helpers, Rule} from 'postcss' */
-/** @import {TextTable} from '../values/textTable.js' */
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {FoldedText} from '../values/textTable.js' */
-/** @import {TokenizeMode} from '../values/valueBuffer.js' */
-/** @import {Reducer} from './host.js' */
 /**
  * What one run knows about a kind of text (a property value, a selector or an
  * at-rule prelude): the steps of its plan, or null when no stage rewrites it.
@@ -69,9 +63,9 @@ export declare function foldPlan(entry: PlanEntry, text: string, context: number
  * @param {number} context
  * @param {Helpers} helpers
  * @param {TextTable} table
- * @returns {string} the folded text
+ * @returns {FoldedText} the folded text
  */
-export declare function foldNode(entry: PlanEntry, node: Rule | Declaration | AtRule, read: string, text: string, context: number, helpers: Helpers, table: TextTable): string;
+export declare function foldNode(entry: PlanEntry, node: Rule | Declaration | AtRule, read: string, text: string, context: number, helpers: Helpers, table: TextTable): FoldedText;
 /**
  * Looks up the memo of a context, creating it on first use.
  *
