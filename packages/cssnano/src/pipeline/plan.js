@@ -105,7 +105,10 @@ export function foldPlan(entry, text, context, node, helpers) {
  */
 export function foldNode(entry, node, read, text, context, helpers, table) {
   const folded = foldPlan(entry, text, context, node, helpers);
-  if (folded.text !== read || folded.tokens !== undefined) {
+  if (entry.mode !== undefined) {
+    // A list in a tokenize mode is read only in that mode, so keep the text.
+    if (folded.text !== read) table.setText(node, folded.text);
+  } else if (folded.text !== read || folded.tokens !== undefined) {
     table.assignFolded(node, folded);
   }
   return folded;
