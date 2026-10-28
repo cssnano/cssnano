@@ -14,4 +14,14 @@ export const mutations = [
     find: '  let buffer = new ValueBuffer(text, entry.mode, lists?.get(text));',
     replace: '  let buffer = new ValueBuffer(text, entry.mode);',
   },
+  {
+    name: 'assign a folded node as a string, dropping its tokens',
+    find: '    table.assignFolded(node, folded);',
+    replace: '    table.setText(node, folded.text);',
+  },
+  {
+    name: 'assign an unchanged node as a string, dropping its tokens',
+    find: '  if (folded.text !== read || folded.tokens !== undefined) {',
+    replace: '  if (folded.text !== read) {',
+  },
 ];

@@ -1,6 +1,5 @@
 import { atRuleEntry } from './prelude.js';
-import { reduceSelector, selectorEntry } from './selectorReduce.js';
-import { foldPlan, planEntry } from './plan.js';
+import { foldNode, planEntry } from './plan.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
 import {
   sourceParams,
@@ -30,7 +29,7 @@ import {
 /** @import {AtRule, Container, Document, Helpers, Root} from 'postcss' */
 /** @import {Reducer, Stage} from './host.js' */
 /** @import {PlanEntry} from './plan.js' */
-/** @import {FoldedText, TextTable} from '../values/textTable.js' */
+/** @import {TextTable} from '../values/textTable.js' */
 /** @import {CommentState} from './comments/nodeComments.js' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
@@ -71,23 +70,6 @@ function propertyEntry(stages, property, valueLists) {
 }
 
 /**
- * Folds a declaration value through its plan, then gives the declaration the
- * result, with the tokens a stage read so later readers do not tokenize it.
- *
- * @param {PlanEntry} entry
- * @param {string} text
- * @param {number} context
- * @param {import('postcss').Declaration} decl the declaration that holds the value
- * @param {RunState} state
- */
-function reduceValue(entry, text, context, decl, state) {
-  state.table.assignFolded(
-    decl,
-    foldPlan(entry, text, context, decl, state.helpers)
-  );
-}
-
-/**
  * Removes the comments of a declaration, then folds its value through its plan.
  * The value is read as written, without the comments that go, and written back
  * only when it differs from what was read.
@@ -121,7 +103,7 @@ function walkDeclaration(state, decl) {
     /** @type {Container} */ (decl.parent),
     state.contexts
   );
-  reduceValue(entry, text, context, decl, state);
+  foldNode(entry, decl, read, text, context, state.helpers, state.table);
 }
 
 /**
@@ -153,22 +135,27 @@ function walkAtRule(state, atRule) {
     comments !== null && read ? commentFreeText(read, comments) : read;
   let result = text;
   let entry;
-  /** @type {FoldedText | undefined} */
-  let folded;
   if (atRule.name.toLowerCase() !== 'charset') {
     entry = state.atRules.get(atRule.name);
     if (entry === undefined) {
       entry = atRuleEntry(state.stages, atRule.name);
       state.atRules.set(atRule.name, entry);
     }
-    if (entry.plan !== null && hasPrelude) {
-      const context = contextOf(atRule, state.contexts);
-      folded = foldPlan(entry, text, context, atRule, state.helpers);
-      result = folded.text;
-    }
   }
-  if (folded === undefined) state.table.setText(atRule, result);
-  else state.table.assignFolded(atRule, folded);
+  if (entry !== undefined && entry.plan !== null && hasPrelude) {
+    const context = contextOf(atRule, state.contexts);
+    result = foldNode(
+      entry,
+      atRule,
+      read,
+      text,
+      context,
+      state.helpers,
+      state.table
+    );
+  } else if (text !== read) {
+    state.table.setText(atRule, text);
+  }
   if (entry?.tightens && hasPrelude) tightenAfterName(atRule, result);
 }
 
@@ -191,7 +178,7 @@ function walkRule(state, rule) {
   }
   let context = contextOf(rule, state.contexts);
   if (state.defaultNamespace) context = withBit(context, DEFAULT_NAMESPACE);
-  reduceSelector(
+  foldNode(
     state.selectors,
     rule,
     read,
@@ -250,10 +237,13 @@ export function walkStylesheet(stages, root, helpers, transforms, table) {
     stages,
     properties: new Map(),
     atRules: new Map(),
-    selectors: selectorEntry(
+    selectors: planEntry(
       stages.flatMap((stage) =>
         stage.selector !== undefined ? [stage.selector] : []
-      )
+      ),
+      undefined,
+      null,
+      false
     ),
     contexts: new WeakMap(),
     helpers,

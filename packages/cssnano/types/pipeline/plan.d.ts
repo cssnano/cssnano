@@ -1,4 +1,5 @@
 import type { AtRule, Declaration, Helpers, Rule } from 'postcss';
+import type { TextTable } from '../values/textTable.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
 import type { FoldedText } from '../values/textTable.js';
 import type { TokenizeMode } from '../values/valueBuffer.js';
@@ -17,6 +18,7 @@ export type PlanEntry = {
     lists: Map<string, readonly CSSToken[]> | null;
 };
 /** @import {AtRule, Declaration, Helpers, Rule} from 'postcss' */
+/** @import {TextTable} from '../values/textTable.js' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {FoldedText} from '../values/textTable.js' */
 /** @import {TokenizeMode} from '../values/valueBuffer.js' */
@@ -64,4 +66,28 @@ export declare function planEntry(plan: readonly PlanStep[], mode: TokenizeMode 
  * @returns {FoldedText}
  */
 export declare function foldPlan(entry: PlanEntry, text: string, context: number, node: Rule | Declaration | AtRule, helpers: Helpers): FoldedText;
+/**
+ * Folds the text of a node through its plan and gives the node the result when
+ * a stage changed the text or read its tokens. An unchanged text that was not
+ * tokenized is left as written, so the node is not assigned.
+ *
+ * @param {PlanEntry} entry
+ * @param {Rule | Declaration | AtRule} node
+ * @param {string} read the text as written
+ * @param {string} text the text without the comments the run removes
+ * @param {number} context
+ * @param {Helpers} helpers
+ * @param {TextTable} table
+ * @returns {string} the folded text
+ */
+export declare function foldNode(entry: PlanEntry, node: Rule | Declaration | AtRule, read: string, text: string, context: number, helpers: Helpers, table: TextTable): string;
+/**
+ * Looks up the memo of a context, creating it on first use.
+ *
+ * @template T
+ * @param {(Map<string, T> | undefined)[]} memos
+ * @param {number} context
+ * @returns {Map<string, T>}
+ */
+export declare function memoOf<T>(memos: (Map<string, T> | undefined)[], context: number): Map<string, T>;
 //# sourceMappingURL=plan.d.ts.map

@@ -44,10 +44,6 @@ export const catalogs = [
     suites: mergeRulesSuites,
   },
   {
-    url: new URL('./pipeline/mutation-catalog-writers.js', import.meta.url),
-    test: true,
-  },
-  {
     url: new URL('./pipeline/mutation-catalog-walk-values.js', import.meta.url),
     test: true,
   },
