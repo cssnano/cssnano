@@ -165,6 +165,18 @@ suite('the host walk shares one token list per text', () => {
     walkStylesheet([stage], root, helpers, new Map(), table);
     assert.equal(seen[1], 1);
   });
+
+  test('the walk stores no unicode-range list for the declaration', () => {
+    const root = postcss.parse('a { unicode-range: u+0-7f }');
+    const table = new TextTable();
+    const stage = {
+      forProperty: () => (buffer) => {
+        buffer.tokens();
+      },
+    };
+    walkStylesheet([stage], root, helpers, new Map(), table);
+    assert.equal(table.stored(root.first.first), undefined);
+  });
 });
 
 suite('the at-rule reducers write tokens that spell their text', () => {
