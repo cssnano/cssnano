@@ -4,6 +4,7 @@ import { knownFunctions } from './slots.js';
 const { TokenType } = cssnanoUtils;
 
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
+/** @import {TokenEdit} from '../../../values/valueBuffer.js' */
 /** @type {(value: string) => CSSToken[]} */
 const sharedTokens = cssnanoUtils.tokens;
 
@@ -83,15 +84,14 @@ function tokenPosition(token, functions, walk) {
 }
 
 /**
- * Return the decoded identifier an at-rule's params hold, such as an
- * `@keyframes` name. Params stay raw, so tokenize them before matching
- * references.
+ * Return the decoded identifier an at-rule's prelude holds, such as an
+ * `@keyframes` name, ignoring the whitespace and comments around it.
  *
- * @param {string} params
+ * @param {readonly CSSToken[]} parsedTokens the tokens of the prelude
  * @return {string | undefined}
  */
-function atRuleIdent(params) {
-  for (const token of sharedTokens(params)) {
+function atRuleIdent(parsedTokens) {
+  for (const token of parsedTokens) {
     if (token[0] === TokenType.Ident) return token[4].value;
     if (token[0] !== TokenType.Whitespace && token[0] !== TokenType.Comment) {
       return undefined;
@@ -107,7 +107,7 @@ function atRuleIdent(params) {
  * @param {string} value
  * @param {(token: CSSToken, position: TokenPosition) => string|undefined} callback
  * @param {Map<string, number[]>} [functions]
- * @param {CSSToken[]} [parsedTokens]
+ * @param {readonly CSSToken[]} [parsedTokens]
  * @return {string}
  */
 function rewrite(
@@ -141,12 +141,37 @@ function rewrite(
 }
 
 /**
+ * Collect the edits that swap tokens for the tokens a callback returns. The
+ * walk and the positions are the same as rewrite's.
+ *
+ * @param {readonly CSSToken[]} parsedTokens
+ * @param {(token: CSSToken, position: TokenPosition) => CSSToken | undefined} callback
+ * @param {Map<string, number[]>} [functions]
+ * @return {TokenEdit[]}
+ */
+function tokenEdits(parsedTokens, callback, functions) {
+  /** @type {Walk} */
+  const walk = { frames: [], substitutions: 0 };
+  /** @type {TokenEdit[]} */
+  const edits = [];
+  for (let index = 0; index < parsedTokens.length; index++) {
+    const token = parsedTokens[index];
+    const position = tokenPosition(token, functions ?? NO_FUNCTIONS, walk);
+    const replacement = callback(token, position);
+    if (replacement !== undefined) {
+      edits.push({ start: index, end: index + 1, tokens: [replacement] });
+    }
+  }
+  return edits;
+}
+
+/**
  * Collect into a set the identifiers a value names from positions no grammar
  * defines. Leave those names unrenamed.
  *
  * @param {string} value
  * @param {Set<string>} into
- * @param {CSSToken[]} [parsedTokens]
+ * @param {readonly CSSToken[]} [parsedTokens]
  */
 function collectOpaqueIdents(value, into, parsedTokens = sharedTokens(value)) {
   rewrite(
@@ -167,4 +192,5 @@ export {
   collectOpaqueIdents,
   rewrite,
   sharedTokens as tokens,
+  tokenEdits,
 };

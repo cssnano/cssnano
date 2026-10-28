@@ -1,4 +1,5 @@
 import type { SymbolLists } from '../../pipeline/symbolLists.js';
+import type { TextTable as TextTableType } from '../../values/textTable.js';
 export type Options = {
     /**
      * Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)
@@ -22,10 +23,11 @@ export type Options = {
     encoder?: (value: string, index: number) => string;
 };
 export type Reducer = {
-    collect: (node: import('postcss').AnyNode) => void;
-    transform: () => void;
+    collect: (node: import('postcss').AnyNode, table: TextTableType) => void;
+    transform: (table: TextTableType) => void;
 };
 /** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {TextTable as TextTableType} from '../../values/textTable.js' */
 /**
  * @typedef {object} Options
  * @property {boolean} [counter] Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)
@@ -35,8 +37,8 @@ export type Reducer = {
  * @property {(value: string, index: number) => string} [encoder] Replaces a name. Receives the name and how many names came before it.
  */
 /** @typedef {{
- *    collect: (node: import('postcss').AnyNode) => void,
- *    transform: () => void
+ *    collect: (node: import('postcss').AnyNode, table: TextTableType) => void,
+ *    transform: (table: TextTableType) => void
  *  }} Reducer
  */
 /**
@@ -57,11 +59,14 @@ export declare function createReducers({ counter, counterStyle, keyframes, gridT
  *
  * @param {SymbolLists} lists
  * @param {{reducers: Reducer[]}} state
+ * @param {unknown} [_remove]
+ * @param {TextTableType} [table] the text the walk stored; a standalone run
+ *   has none
  * @return {void}
  */
 export declare function reduceIdentsSymbols(lists: SymbolLists, { reducers }: {
     reducers: Reducer[];
-}): void;
+}, _remove?: unknown, table?: TextTableType): void;
 /**
  * @param {Options} opts
  * @return {import('postcss').Plugin}
