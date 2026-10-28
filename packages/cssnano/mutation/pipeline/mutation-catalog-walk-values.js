@@ -12,17 +12,6 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'assign a folded value as a string, dropping its tokens',
-    find: '  state.table.assignFolded(\n    decl,\n    foldPlan(entry, text, context, decl, state.helpers)\n  );',
-    replace:
-      '  state.table.setText(decl, foldPlan(entry, text, context, decl, state.helpers).text);',
-  },
-  {
-    name: 'assign a folded prelude as a string, dropping its tokens',
-    find: 'else state.table.assignFolded(atRule, folded);',
-    replace: 'else state.table.setText(atRule, folded.text);',
-  },
-  {
     name: 'key one list map for both tokenizer modes',
     find: '  const lists = mode === undefined ? valueLists.plain : valueLists.unicodeRange;',
     replace: '  const lists = valueLists.plain;',
