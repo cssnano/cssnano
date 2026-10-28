@@ -6,8 +6,9 @@ import {
   rational,
   significantIndex,
   TokenType,
-  tokenEnd,
 } from './tokenUtils.js';
+
+/** @import {TokenEdit} from '../../../values/valueBuffer.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -31,7 +32,7 @@ function isStandaloneAll(input, { first, last }) {
   );
 }
 
-/** @param {boolean} legacy @param {Tokens} input @param {{endIndex:number,first:number}} segment @param {{start:number,end:number,text:string}[]} changes @return {void} */
+/** @param {boolean} legacy @param {Tokens} input @param {{endIndex:number,first:number}} segment @param {TokenEdit[]} changes @return {void} */
 function minifyMediaAllSegment(legacy, input, { endIndex, first }, changes) {
   if (
     input[first]?.[0] !== TokenType.Ident ||
@@ -50,31 +51,21 @@ function minifyMediaAllSegment(legacy, input, { endIndex, first }, changes) {
       input[i][0] === TokenType.Ident ||
       input[i][0] === TokenType.Whitespace
     ) {
-      changes.push({
-        start: input[i][2],
-        end: tokenEnd(input[i]),
-        text: '',
-      });
+      changes.push({ start: i, end: i + 1, tokens: [] });
     }
   }
   const trailing = end + 1;
   if (trailing < endIndex && input[trailing]?.[0] === TokenType.Whitespace) {
-    changes.push({
-      start: input[trailing][2],
-      end: tokenEnd(input[trailing]),
-      text: '',
-    });
+    changes.push({ start: trailing, end: trailing + 1, tokens: [] });
   }
 }
 
-/** @param {boolean} legacy @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {{startIndex:number,endIndex:number}[]} segments @param {{start:number,end:number,text:string}[]} changes @return {boolean} */
+/** @param {boolean} legacy @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {{startIndex:number,endIndex:number}[]} segments @param {TokenEdit[]} changes @return {boolean} whether the whole query is unconditional, so the caller empties the prelude */
 export default function minifyMediaAll(legacy, structure, segments, changes) {
   const { tokens: input } = structure;
   const ranges = segments.map((segment) => mediaSegmentInfo(input, segment));
 
   if (!legacy && ranges.some((segment) => isStandaloneAll(input, segment))) {
-    const last = input.at(-1);
-    if (last) changes.push({ start: 0, end: tokenEnd(last), text: '' });
     return true;
   }
 
@@ -275,7 +266,7 @@ function removalRange(input, features, first, last) {
  *
  * @param {Structure} structure
  * @param {{startIndex: number, endIndex: number}[]} segments the top-level comma-separated queries
- * @param {{start: number, end: number, text: string}[]} changes
+ * @param {TokenEdit[]} changes
  * @return {void}
  */
 export function dropRedundantRangeFeatures(structure, segments, changes) {
@@ -291,7 +282,7 @@ export function dropRedundantRangeFeatures(structure, segments, changes) {
       const { from, to } = removalRange(input, features, first, last);
       first = last;
       for (let i = from; i <= to; i++) {
-        changes.push({ start: input[i][2], end: tokenEnd(input[i]), text: '' });
+        changes.push({ start: i, end: i + 1, tokens: [] });
       }
     }
   }
