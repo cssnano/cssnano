@@ -1,7 +1,6 @@
-import { ValueBuffer } from '../values/valueBuffer.js';
-import { memoOf } from './memo.js';
-import { atRuleEntry, foldPrelude } from './prelude.js';
+import { atRuleEntry } from './prelude.js';
 import { reduceSelector, selectorEntry } from './selectorReduce.js';
+import { foldPlan, planEntry } from './plan.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
 import {
   sourceParams,
@@ -30,29 +29,19 @@ import {
 
 /** @import {AtRule, Container, Document, Helpers, Root} from 'postcss' */
 /** @import {Reducer, Stage} from './host.js' */
-/** @import {TextEntry} from './prelude.js' */
-/** @import {SelectorEntry} from './selectorReduce.js' */
+/** @import {PlanEntry} from './plan.js' */
 /** @import {FoldedText, TextTable} from '../values/textTable.js' */
 /** @import {CommentState} from './comments/nodeComments.js' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-
-/**
- * What one run knows about a property: the reducers of its plan, or null when
- * no stage treats it. For each context, a memo from source text to the plan's
- * result, since a value can read its context.
- * `mode` is how the tokenizer reads the values of the property, and `lists` is
- * the token lists of that mode, keyed by text.
- * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, FoldedText> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined, lists: Map<string, readonly CSSToken[]>}} PropertyEntry
- */
 
 /**
  * The state of one run. Its entries and contexts live for this run only, so no
  * state crosses stylesheets.
  * @typedef {object} RunState
  * @property {readonly Stage[]} stages in pipeline order
- * @property {Map<string, PropertyEntry>} properties
- * @property {Map<string, TextEntry>} atRules by at-rule name
- * @property {SelectorEntry} selectors
+ * @property {Map<string, PlanEntry>} properties
+ * @property {Map<string, PlanEntry>} atRules by at-rule name
+ * @property {PlanEntry} selectors
  * @property {WeakMap<Container | Document, number>} contexts
  * @property {Helpers} helpers
  * @property {TextTable} table the text table the walk fills
@@ -67,7 +56,7 @@ import {
  * @param {readonly Stage[]} stages in pipeline order
  * @param {string} property
  * @param {RunState['valueLists']} valueLists
- * @returns {PropertyEntry}
+ * @returns {PlanEntry}
  */
 function propertyEntry(stages, property, valueLists) {
   /** @type {Reducer[]} */
@@ -78,55 +67,24 @@ function propertyEntry(stages, property, valueLists) {
   }
   const mode = tokenizeMode(property);
   const lists = mode === undefined ? valueLists.plain : valueLists.unicodeRange;
-  return reducers.length > 0
-    ? { plan: reducers, memos: [], mode, lists }
-    : { plan: null, memos: [], mode, lists };
+  return planEntry(reducers, mode, lists, false);
 }
 
 /**
  * Folds a declaration value through its plan, then gives the declaration the
- * result, with the tokens a stage read so later readers do not tokenize it. A
- * memo hit is served from the memo. A value that warned is not memoised, so
- * each declaration reports it.
+ * result, with the tokens a stage read so later readers do not tokenize it.
  *
- * @param {PropertyEntry} entry
+ * @param {PlanEntry} entry
  * @param {string} text
  * @param {number} context
  * @param {import('postcss').Declaration} decl the declaration that holds the value
  * @param {RunState} state
  */
 function reduceValue(entry, text, context, decl, state) {
-  const plan = /** @type {readonly Reducer[]} */ (entry.plan);
-  const memo = memoOf(entry.memos, context);
-  const known = memo.get(text);
-  if (known !== undefined) {
-    state.table.assignFolded(decl, known);
-    return;
-  }
-  const buffer = new ValueBuffer(text, entry.mode, entry.lists.get(text));
-  for (const reducer of plan) reducer(buffer, context);
-  const result = buffer.text();
-  let tokens;
-  if (buffer.isTokenized()) {
-    tokens = entry.lists.get(result);
-    if (tokens === undefined) {
-      tokens = buffer.tokens();
-      entry.lists.set(result, tokens);
-    }
-  }
-  const folded = { text: result, tokens };
-  const warnings = buffer.warnings();
-  if (warnings === undefined) {
-    memo.set(text, folded);
-  } else {
-    for (const { message, plugin } of warnings) {
-      state.helpers.result.warn(
-        message,
-        plugin ? { plugin, node: decl } : { node: decl }
-      );
-    }
-  }
-  state.table.assignFolded(decl, folded);
+  state.table.assignFolded(
+    decl,
+    foldPlan(entry, text, context, decl, state.helpers)
+  );
 }
 
 /**
@@ -205,7 +163,7 @@ function walkAtRule(state, atRule) {
     }
     if (entry.plan !== null && hasPrelude) {
       const context = contextOf(atRule, state.contexts);
-      folded = foldPrelude(entry, text, context, atRule, state.helpers);
+      folded = foldPlan(entry, text, context, atRule, state.helpers);
       result = folded.text;
     }
   }

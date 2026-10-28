@@ -1,0 +1,109 @@
+import { ValueBuffer } from '../values/valueBuffer.js';
+import { memoOf } from './memo.js';
+
+/** @import {AtRule, Declaration, Helpers, Rule} from 'postcss' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {FoldedText} from '../values/textTable.js' */
+/** @import {TokenizeMode} from '../values/valueBuffer.js' */
+/** @import {Reducer, TextReducer} from './host.js' */
+
+/**
+ * One step of a plan: a buffer reducer, or a text reducer for an at-rule
+ * prelude, which rewrites the text and starts a new buffer from its result.
+ * @typedef {Reducer | {text: TextReducer}} PlanStep
+ */
+
+/**
+ * What one run knows about a kind of text (a property value, a selector or an
+ * at-rule prelude): the steps of its plan, or null when no stage rewrites it.
+ * `memos` has a memo per context, since a text can read its context. `mode` is
+ * how the tokenizer reads the text, and `lists` holds the token lists that
+ * values share by text, or null when the kind does not share them.
+ * `tightens` is set when a stage asks for the space after an at-rule name to be
+ * stripped, as AtRulePart describes.
+ * @typedef {object} PlanEntry
+ * @property {readonly PlanStep[] | null} plan in pipeline order
+ * @property {(Map<string, FoldedText> | undefined)[]} memos
+ * @property {TokenizeMode | undefined} mode
+ * @property {boolean} tightens
+ * @property {Map<string, readonly CSSToken[]> | null} lists
+ */
+
+/**
+ * @param {readonly PlanStep[]} plan in pipeline order, empty for no stage
+ * @param {TokenizeMode | undefined} mode
+ * @param {Map<string, readonly CSSToken[]> | null} lists
+ * @param {boolean} tightens
+ * @returns {PlanEntry}
+ */
+export function planEntry(plan, mode, lists, tightens) {
+  return {
+    plan: plan.length > 0 ? plan : null,
+    memos: [],
+    mode,
+    tightens,
+    lists,
+  };
+}
+
+/**
+ * Folds a text through its plan on one lazy buffer, and reports the warnings of
+ * the fold on the node. A text step that changes the text starts a new buffer
+ * from its result, and the final buffer's text and tokens are the fold. A
+ * memo hit is served from the memo, and a fold that warned is not memoised, so
+ * each node reports it.
+ *
+ * @param {PlanEntry} entry
+ * @param {string} text
+ * @param {number} context
+ * @param {Rule | Declaration | AtRule} node the node that holds the text
+ * @param {Helpers} helpers
+ * @returns {FoldedText}
+ */
+export function foldPlan(entry, text, context, node, helpers) {
+  const plan = /** @type {readonly PlanStep[]} */ (entry.plan);
+  const memo = memoOf(entry.memos, context);
+  const known = memo.get(text);
+  if (known !== undefined) return known;
+  const lists = entry.lists;
+  let buffer = new ValueBuffer(text, entry.mode, lists?.get(text));
+  /** @type {{message: string, plugin: string | undefined}[] | undefined} */
+  let warnings;
+  for (const step of plan) {
+    if (typeof step === 'function') {
+      step(buffer, context);
+      continue;
+    }
+    const before = buffer.text();
+    const result = step.text(before, context, (message, plugin) => {
+      buffer.warn(message, plugin);
+    });
+    if (result === before) continue;
+    const pending = buffer.warnings();
+    if (pending !== undefined) warnings = [...(warnings ?? []), ...pending];
+    buffer = new ValueBuffer(result);
+  }
+  const last = buffer.warnings();
+  const found =
+    warnings === undefined || last === undefined
+      ? (last ?? warnings)
+      : [...warnings, ...last];
+  const result = buffer.text();
+  let tokens;
+  if (buffer.isTokenized()) {
+    tokens = lists?.get(result);
+    if (tokens === undefined) {
+      tokens = buffer.tokens();
+      lists?.set(result, tokens);
+    }
+  }
+  const folded = { text: result, tokens };
+  if (found === undefined) {
+    memo.set(text, folded);
+  } else {
+    for (const { message, plugin } of found) {
+      helpers.result.warn(message, plugin ? { plugin, node } : { node });
+    }
+  }
+  return folded;
+}

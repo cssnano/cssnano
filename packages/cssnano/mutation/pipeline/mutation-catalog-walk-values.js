@@ -12,24 +12,15 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'assign a memo hit as a string, dropping its tokens',
-    find: '    state.table.assignFolded(decl, known);',
-    replace: '    state.table.setText(decl, known.text);',
-  },
-  {
     name: 'assign a folded value as a string, dropping its tokens',
-    find: '  state.table.assignFolded(decl, folded);',
-    replace: '  state.table.setText(decl, folded.text);',
+    find: '  state.table.assignFolded(\n    decl,\n    foldPlan(entry, text, context, decl, state.helpers)\n  );',
+    replace:
+      '  state.table.setText(decl, foldPlan(entry, text, context, decl, state.helpers).text);',
   },
   {
     name: 'assign a folded prelude as a string, dropping its tokens',
     find: 'else state.table.assignFolded(atRule, folded);',
     replace: 'else state.table.setText(atRule, folded.text);',
-  },
-  {
-    name: 'build the value buffer without the list read for its text',
-    find: '  const buffer = new ValueBuffer(text, entry.mode, entry.lists.get(text));',
-    replace: '  const buffer = new ValueBuffer(text, entry.mode);',
   },
   {
     name: 'key one list map for both tokenizer modes',
