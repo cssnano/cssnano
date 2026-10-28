@@ -15,7 +15,10 @@ const loader = fileURLToPath(new URL('./mutation-loader.js', import.meta.url));
 
 // One process per test file is the dominant cost; in-process runs keep each
 // mutant on a single core so the pool below can keep every core busy.
-const testFlags = ['--test-isolation=none', '--test'];
+// The tokenize counter must load before anything imports the tokenizer, or the
+// tests that assert "without tokenizing" count nothing and pass vacuously.
+const counter = fileURLToPath(new URL('../countTokenize.js', import.meta.url));
+const testFlags = ['--import', counter, '--test-isolation=none', '--test'];
 
 // A parent `node --test` sets NODE_TEST_CONTEXT, which switches child runs to a
 // binary reporter whose summary countTests cannot read.
