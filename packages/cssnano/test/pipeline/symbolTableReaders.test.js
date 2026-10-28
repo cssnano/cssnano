@@ -13,6 +13,9 @@ const { TextTable } = await import('../../src/values/textTable.js');
 const { tokensText } = await import('../../src/values/tokensText.js');
 const { zindexSymbols } =
   await import('../../src/plugins/postcss-zindex/index.js');
+const { mergeIdentsSymbols } =
+  await import('../../src/plugins/postcss-merge-idents/index.js');
+const { tokens } = await import('../../src/utils/value.js');
 
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {
@@ -169,5 +172,16 @@ suite('the symbol transforms read the text the host walk stored', () => {
     reduceIdentsSymbols(lists, createReducers(gridOnly), () => {}, table);
     const definition = root.first.first;
     assert.equal(tokensText(table.stored(definition)), definition.value);
+  });
+
+  test("merge-idents' at-rule symbols read the list stored for the at-rule, without tokenizing", () => {
+    const root = postcss.parse('@keyframes foo {}');
+    const table = new TextTable();
+    table.write(root.first, tokens('foo'));
+    const lists = createSymbolLists();
+    root.walk(symbolVisit(lists));
+    const before = tokenizeTotal();
+    mergeIdentsSymbols(lists, {}, () => {}, table);
+    assert.equal(tokenizeTotal() - before, 0);
   });
 });

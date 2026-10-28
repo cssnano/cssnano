@@ -13,13 +13,16 @@ import {
   getBody,
   getConditionContainer,
   parseAtRuleName,
+  preludeTokens,
   VENDOR_PREFIX,
 } from './lib/grammar.js';
 import { scanDeclarations } from './lib/protectedNames.js';
 import { createReplacement, rewriteDeclaration } from './lib/valueRewriter.js';
+import { TextTable } from '../../values/textTable.js';
 
 /** @import {ChildNode} from 'postcss' */
 /** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {TextTable as TextTableType} from '../../values/textTable.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -234,9 +237,10 @@ function namespaceOf(family) {
  *
  * @param {SymbolLists} lists
  * @param {(node: ChildNode) => void} remove
+ * @param {TextTableType} table
  * @return {void}
  */
-function mergeAtRules(lists, remove) {
+function mergeAtRules(lists, remove, table) {
   const layerRegistry = new LayerRegistry();
   for (const layerRule of lists.layers) {
     if (isAttached(layerRule)) {
@@ -261,10 +265,8 @@ function mergeAtRules(lists, remove) {
     }
     const family = asciiLowerCase(atRule.name);
     const namespace = namespaceOf(family);
-    const params = atRule.raws?.between
-      ? atRule.params + atRule.raws.between
-      : atRule.params;
-    const parsed = namespace && parseAtRuleName(params, family);
+    const parsed =
+      namespace && parseAtRuleName(preludeTokens(atRule, table), family);
     // A statement without a block defines nothing.
     if (!namespace || !atRule.nodes || !parsed) {
       continue;
@@ -365,10 +367,11 @@ function rewriteReferences(references, renames) {
  * @param {SymbolLists} lists
  * @param {Record<PropertyKey, unknown>} _options takes no options
  * @param {(node: ChildNode) => void} remove
+ * @param {TextTableType} table the text the walk stored
  * @return {void}
  */
-export function mergeIdentsSymbols(lists, _options, remove) {
-  mergeAtRules(lists, remove);
+export function mergeIdentsSymbols(lists, _options, remove, table) {
+  mergeAtRules(lists, remove, table);
 }
 
 /**
@@ -383,7 +386,7 @@ function pluginCreator() {
     OnceExit(css) {
       const lists = createSymbolLists();
       css.walk(symbolVisit(lists));
-      mergeIdentsSymbols(lists, {}, (node) => node.remove());
+      mergeIdentsSymbols(lists, {}, (node) => node.remove(), new TextTable());
     },
   };
 }
