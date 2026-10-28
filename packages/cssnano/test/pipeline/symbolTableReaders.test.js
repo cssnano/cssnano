@@ -19,6 +19,13 @@ function tokenizeTotal() {
 
 const helpers = { result: { warn() {} } };
 
+// Only the counter reducer, so no other reducer reads or stores the lists.
+const counterOnly = {
+  counterStyle: false,
+  keyframes: false,
+  gridTemplate: false,
+};
+
 suite('the symbol transforms read the text the host walk stored', () => {
   test("reduce-idents' at-rule symbols read the list stored for the at-rule, without tokenizing", () => {
     const root = postcss.parse('@keyframes foo { from {} }');
@@ -58,5 +65,47 @@ suite('the symbol transforms read the text the host walk stored', () => {
     reduceIdentsSymbols(lists, createReducers({}), () => {}, table);
     const atRule = root.first;
     assert.equal(tokensText(table.stored(atRule)), atRule.params);
+  });
+
+  test("reduce-idents' counter symbols read the list stored for the declaration, without tokenizing", () => {
+    const root = postcss.parse(
+      'a { counter-reset: x } b { content: counter(x) }'
+    );
+    const table = new TextTable();
+    const stage = {
+      forProperty: () => (buffer) => buffer.tokens(),
+    };
+    walkStylesheet([stage], root, helpers, new Map(), table);
+    const lists = createSymbolLists();
+    root.walk(symbolVisit(lists));
+    const before = tokenizeTotal();
+    reduceIdentsSymbols(lists, createReducers(counterOnly), () => {}, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test("reduce-idents' counter symbols' edited use tokens spell text()", () => {
+    const root = postcss.parse(
+      'a { counter-reset: x } b { content: counter(x) }'
+    );
+    const table = new TextTable();
+    walkStylesheet([], root, helpers, new Map(), table);
+    const lists = createSymbolLists();
+    root.walk(symbolVisit(lists));
+    reduceIdentsSymbols(lists, createReducers(counterOnly), () => {}, table);
+    const use = root.last.first;
+    assert.equal(tokensText(table.stored(use)), use.value);
+  });
+
+  test("reduce-idents' counter symbols' edited definition tokens spell text()", () => {
+    const root = postcss.parse(
+      'a { counter-reset: x } b { content: counter(x) }'
+    );
+    const table = new TextTable();
+    walkStylesheet([], root, helpers, new Map(), table);
+    const lists = createSymbolLists();
+    root.walk(symbolVisit(lists));
+    reduceIdentsSymbols(lists, createReducers(counterOnly), () => {}, table);
+    const definition = root.first.first;
+    assert.equal(tokensText(table.stored(definition)), definition.value);
   });
 });

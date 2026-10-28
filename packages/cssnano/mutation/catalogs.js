@@ -67,6 +67,13 @@ export const catalogs = [
   },
   {
     url: new URL(
+      './postcss-reduce-idents/mutation-catalog-counter-writers.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
       './passes/merge/lib/longhand/mutation-catalog-validity.js',
       import.meta.url
     ),
