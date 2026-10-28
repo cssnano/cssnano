@@ -1,8 +1,8 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { stringToken } from '../../values/tokenConstructors.js';
 
-/** @import {Reducer, Stage, StageEntry, TextReducer} from '../../pipeline/host.js' */
+/** @import {AtRulePart, Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
 const { decoded, isCSSWhitespace, isHexDigitCode } = cssnanoUtils;
 
@@ -299,26 +299,6 @@ function normalizeString(raw, preferredQuote) {
 }
 
 /**
- * @param {string} value
- * @param {'single' | 'double'} preferredQuote
- * @return {string}
- */
-function normalize(value, preferredQuote) {
-  const chunks = [];
-  let cursor = 0;
-  for (const [type, raw, start, end] of tokenize({ css: value })) {
-    if (type !== TokenType.String || !isClosedString(raw)) continue;
-    const normalized = normalizeString(raw, preferredQuote);
-    if (normalized === raw) continue;
-    chunks.push(value.slice(cursor, start), normalized);
-    cursor = end + 1;
-  }
-  if (cursor === 0) return value;
-  chunks.push(value.slice(cursor));
-  return chunks.join('');
-}
-
-/**
  * The edits that re-quote the closed strings among a value's tokens, one
  * token per string. Re-quoting keeps the decoded value, so the token keeps
  * its data.
@@ -345,19 +325,6 @@ function stringEdits(input, preferredQuote) {
 }
 
 /**
- * Normalizes the quotes of the strings in a text. A text without a quote has
- * none to change.
- *
- * @param {string} text
- * @param {'single' | 'double'} preferredQuote
- * @return {string}
- */
-function minifyText(text, preferredQuote) {
-  if (!text || (!text.includes("'") && !text.includes('"'))) return text;
-  return normalize(text, preferredQuote);
-}
-
-/**
  * @typedef {object} Options
  * @property {'double' | 'single'} [preferredQuote] The quote to prefer for strings. (default: 'double')
  */
@@ -372,8 +339,6 @@ function minifyText(text, preferredQuote) {
  */
 function stringStage(opts) {
   const { preferredQuote = 'double' } = opts ?? {};
-  /** @type {TextReducer} */
-  const reduceText = (text) => minifyText(text, preferredQuote);
   /** Re-quotes the strings of a value or selector through its tokens. @type {Reducer} */
   const reduceStrings = (buffer) => {
     if (!buffer.isEdited()) {
@@ -382,9 +347,11 @@ function stringStage(opts) {
     }
     buffer.replaceRanges(stringEdits(buffer.tokens(), preferredQuote));
   };
+  /** @type {AtRulePart} */
+  const atRulePart = { buffer: reduceStrings };
   return {
     forProperty: () => reduceStrings,
-    forAtRule: () => reduceText,
+    forAtRule: () => atRulePart,
     selector: reduceStrings,
   };
 }
