@@ -4,12 +4,11 @@ import reduceTokens, {
 import { parsedValueText } from '../../utils/parsedValueText.js';
 import { tokens } from '../../utils/value.js';
 import { spliceRanges } from '../../values/spliceRanges.js';
-import { tokensText } from '../../values/tokensText.js';
 
 /** @import {PostCssCalcOptions} from 'postcss-calc' */
 /** @import {ReduceCalcOptions} from 'postcss-calc/reduce-tokens' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Reducer, StageEntry, Stage, TextReducer} from '../../pipeline/host.js' */
+/** @import {Reducer, StageEntry, Stage} from '../../pipeline/host.js' */
 
 /**
  * The reducer options for one text. A parse error goes to the `onParseError`
@@ -33,20 +32,28 @@ function reduceOptions(options, warn, selector) {
 }
 
 /**
- * Reduces the calc() functions of a prelude. A prelude without a `(` has none,
- * so it is returned as it is.
+ * A reducer of the calc() functions in the tokens of a buffer, for a selector
+ * or a prelude. A buffer without a `(` after its last edit has none, so it is
+ * left as it is.
  *
- * @param {string} text
  * @param {PostCssCalcOptions} options
- * @param {(message: string, plugin?: string) => void} warn
- * @returns {string}
+ * @param {boolean} selector
+ * @returns {Reducer}
  */
-function reducePrelude(text, options, warn) {
-  if (!hasPotentialMathFunction(text)) return text;
-  const list = tokens(text);
-  const replacements = reduceTokens(list, reduceOptions(options, warn, false));
-  if (replacements.length === 0) return text;
-  return tokensText(spliceRanges(list, replacements));
+function reduceCalcTokens(options, selector) {
+  return (buffer) => {
+    // After an edit, reduceTokens finds the math functions in the tokens.
+    if (!buffer.isEdited() && !hasPotentialMathFunction(buffer.text())) return;
+    /** @type {(message: string, plugin?: string) => void} */
+    const warn = (message, plugin) => buffer.warn(message, plugin);
+    // reduceTokens reads its input only, so the buffer's readonly view is safe.
+    buffer.replaceRanges(
+      reduceTokens(
+        /** @type {CSSToken[]} */ (buffer.tokens()),
+        reduceOptions(options, warn, selector)
+      )
+    );
+  };
 }
 
 /**
@@ -58,26 +65,12 @@ function reducePrelude(text, options, warn) {
  * @returns {Stage}
  */
 function calcStage(options) {
-  /** @type {TextReducer} */
-  const reduceAtRule = (text, _context, warn) =>
-    reducePrelude(text, options, warn);
-  /** @type {Reducer} */
-  const reduceSelector = (buffer) => {
-    // After an edit, reduceTokens finds the math functions in the tokens.
-    if (!buffer.isEdited() && !hasPotentialMathFunction(buffer.text())) return;
-    /** @type {(message: string, plugin?: string) => void} */
-    const warn = (message, plugin) => buffer.warn(message, plugin);
-    // reduceTokens reads its input only, so the buffer's readonly view is safe.
-    buffer.replaceRanges(
-      reduceTokens(
-        /** @type {CSSToken[]} */ (buffer.tokens()),
-        reduceOptions(options, warn, true)
-      )
-    );
-  };
+  const reducePrelude = reduceCalcTokens(options, false);
   return {
-    forAtRule: options.mediaQueries ? () => reduceAtRule : undefined,
-    selector: options.selectors ? reduceSelector : undefined,
+    forAtRule: options.mediaQueries
+      ? () => ({ buffer: reducePrelude })
+      : undefined,
+    selector: options.selectors ? reduceCalcTokens(options, true) : undefined,
     forProperty: () => (buffer) => {
       if (!buffer.isEdited() && !hasPotentialMathFunction(buffer.text()))
         return;
