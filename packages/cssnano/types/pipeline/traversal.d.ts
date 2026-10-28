@@ -1,5 +1,6 @@
 import type { AtRule, Container, Document, Helpers, Root } from 'postcss';
-import type { Reducer, Stage, TextReducer } from './host.js';
+import type { Reducer, Stage } from './host.js';
+import type { TextEntry } from './prelude.js';
 import type { SelectorEntry } from './selectorReduce.js';
 import type { FoldedText, TextTable } from '../values/textTable.js';
 import type { CommentState } from './comments/nodeComments.js';
@@ -9,11 +10,6 @@ export type PropertyEntry = {
     memos: (Map<string, FoldedText> | undefined)[];
     mode: import('../values/valueBuffer.js').TokenizeMode | undefined;
     lists: Map<string, readonly CSSToken[]>;
-};
-export type TextEntry = {
-    plan: readonly TextReducer[] | null;
-    memos: (Map<string, string> | undefined)[];
-    tightens: boolean;
 };
 export type RunState = {
     /**

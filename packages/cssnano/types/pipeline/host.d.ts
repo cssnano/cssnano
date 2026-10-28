@@ -7,6 +7,9 @@ export type TextReducer = (text: string, context: number, warn: Warn) => string;
 export type AtRulePart = TextReducer | {
     reduce: TextReducer;
     tightensAfterName: true;
+} | {
+    buffer: Reducer;
+    tightensAfterName?: true;
 };
 export type Stage = {
     forProperty?: (property: string) => Reducer | null;

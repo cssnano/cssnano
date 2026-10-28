@@ -34,7 +34,8 @@ import { walkAfterMerge } from './afterMerge.js';
  * space after the name once the stage has run on a non-empty prelude that
  * starts with a parenthesis, as CSS needs no space there. Only minifyParams sets
  * it, for `@media` and `@supports`.
- * @typedef {TextReducer | {reduce: TextReducer, tightensAfterName: true}} AtRulePart
+ * A part with `buffer` edits the prelude as tokens, and folds with the others.
+ * @typedef {TextReducer | {reduce: TextReducer, tightensAfterName: true} | {buffer: Reducer, tightensAfterName?: true}} AtRulePart
  */
 
 /**
