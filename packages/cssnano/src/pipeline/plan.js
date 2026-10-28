@@ -6,6 +6,7 @@ import { ValueBuffer } from '../values/valueBuffer.js';
 /** @import {FoldedText} from '../values/textTable.js' */
 /** @import {TokenizeMode} from '../values/valueBuffer.js' */
 /** @import {Reducer} from './host.js' */
+import { startsWithBalancedParen } from './afterName.js';
 
 /**
  * What one run knows about a kind of text (a property value, a selector or an
@@ -71,7 +72,13 @@ export function foldPlan(entry, text, context, node, helpers) {
       lists?.set(result, tokens);
     }
   }
-  const folded = { text: result, tokens };
+  const folded = entry.tightens
+    ? {
+        text: result,
+        tokens,
+        tightAfterName: startsWithBalancedParen(result, tokens),
+      }
+    : { text: result, tokens };
   if (warnings === undefined) {
     memo.set(text, folded);
   } else {
@@ -94,14 +101,14 @@ export function foldPlan(entry, text, context, node, helpers) {
  * @param {number} context
  * @param {Helpers} helpers
  * @param {TextTable} table
- * @returns {string} the folded text
+ * @returns {FoldedText} the folded text
  */
 export function foldNode(entry, node, read, text, context, helpers, table) {
   const folded = foldPlan(entry, text, context, node, helpers);
   if (folded.text !== read || folded.tokens !== undefined) {
     table.assignFolded(node, folded);
   }
-  return folded.text;
+  return folded;
 }
 
 /**
