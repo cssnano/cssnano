@@ -1,5 +1,5 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
-import type { Declaration, Rule } from 'postcss';
+import type { AtRule, Declaration, Rule } from 'postcss';
 export type TextEntry = {
     /**
      * the text the list spells
@@ -11,9 +11,9 @@ export type FoldedText = TextEntry | {
     text: string;
     tokens: undefined;
 };
-export type TextNode = Rule | Declaration;
+export type TextNode = Rule | Declaration | AtRule;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Declaration, Rule} from 'postcss' */
+/** @import {AtRule, Declaration, Rule} from 'postcss' */
 /**
  * @typedef {object} TextEntry
  * @property {string} text the text the list spells
@@ -24,11 +24,12 @@ export type TextNode = Rule | Declaration;
  * them.
  * @typedef {TextEntry | {text: string, tokens: undefined}} FoldedText
  */
-/** @typedef {Rule | Declaration} TextNode */
+/** @typedef {Rule | Declaration | AtRule} TextNode */
 /**
- * Gives each rule's selector and each declaration's value one token list, so
- * a stage that reads a text after another stage wrote it does not tokenize it
- * again. An entry is reused only while the node still spells its text.
+ * Gives each rule's selector, each declaration's value and each at-rule's
+ * prelude one token list, so a stage that reads a text after another stage
+ * wrote it does not tokenize it again. An entry is reused only while the node
+ * still spells its text.
  */
 declare class TextTable {
     #private;

@@ -277,10 +277,7 @@ function walkAtRule(state, atRule) {
       result = reduceText(entry, text, context, atRule, state.helpers);
     }
   }
-  if (result !== read) {
-    atRule.params = result;
-    delete atRule.raws.params;
-  }
+  if (result !== read) state.table.setText(atRule, result);
   if (entry?.tightens && hasPrelude) tightenAfterName(atRule, result);
 }
 
