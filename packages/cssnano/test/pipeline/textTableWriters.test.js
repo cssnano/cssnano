@@ -16,6 +16,8 @@ const { default: minifyParams } =
   await import('../../src/plugins/postcss-minify-params/index.js');
 const { default: normalizeString } =
   await import('../../src/plugins/postcss-normalize-string/index.js');
+const { default: normalizeUrl } =
+  await import('../../src/plugins/postcss-normalize-url/index.js');
 const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
 const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
@@ -178,6 +180,13 @@ suite('the at-rule reducers write tokens that spell their text', () => {
   test("normalize-string's prelude reducer's edited tokens spell text()", () => {
     const { buffer: reduce } = normalizeString.create({}).forAtRule('import');
     const buffer = new ValueBuffer("'a' screen");
+    reduce(buffer, 0);
+    assert.equal(tokensText(buffer.tokens()), buffer.text());
+  });
+
+  test("normalize-url's @import reducer's edited tokens spell text()", () => {
+    const { buffer: reduce } = normalizeUrl.create({}).forAtRule('import');
+    const buffer = new ValueBuffer("url('a.css') screen");
     reduce(buffer, 0);
     assert.equal(tokensText(buffer.tokens()), buffer.text());
   });

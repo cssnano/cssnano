@@ -1,7 +1,7 @@
 import { planEntry } from './plan.js';
 
-/** @import {Stage} from './host.js' */
-/** @import {PlanEntry, PlanStep} from './plan.js' */
+/** @import {Reducer, Stage} from './host.js' */
+/** @import {PlanEntry} from './plan.js' */
 
 /**
  * The plan of an at-rule name: the prelude steps of the stages that rewrite
@@ -12,18 +12,14 @@ import { planEntry } from './plan.js';
  * @returns {PlanEntry}
  */
 export function atRuleEntry(stages, name) {
-  /** @type {PlanStep[]} */
+  /** @type {Reducer[]} */
   const plan = [];
   let tightens = false;
   for (const stage of stages) {
     const part = stage.forAtRule?.(name) ?? null;
     if (part === null) continue;
-    if (typeof part === 'function') {
-      plan.push({ text: part });
-    } else {
-      plan.push('buffer' in part ? part.buffer : { text: part.reduce });
-      tightens ||= part.tightensAfterName === true;
-    }
+    plan.push(part.buffer);
+    tightens ||= part.tightensAfterName === true;
   }
   return planEntry(plan, undefined, null, tightens);
 }

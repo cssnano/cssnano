@@ -6,11 +6,11 @@ import { hostPlugin } from '../../src/pipeline/host.js';
 import { tokens } from '../../src/utils/value.js';
 
 /**
- * Rewrites the selector of a buffer to the text, as one token edit.
+ * Rewrites the whole text of a buffer, as one token edit.
  * @param {import('../../src/values/valueBuffer.js').ValueBuffer} buffer
  * @param {string} text
  */
-function setSelector(buffer, text) {
+function setText(buffer, text) {
   buffer.replace(0, buffer.tokens().length, tokens(text));
 }
 
@@ -33,21 +33,25 @@ function hostWith(parts) {
 describe('text parts of a stage', () => {
   test('should rewrite a selector through the selector part', async () => {
     const result = await hostWith({
-      selector: (buffer) => setSelector(buffer, buffer.text().toUpperCase()),
+      selector: (buffer) => setText(buffer, buffer.text().toUpperCase()),
     }).process('a{color:red}', { from: undefined });
     assert.equal(result.css, 'A{color:red}');
   });
 
-  test('should rewrite an at-rule prelude through the forAtRule part', async () => {
+  test('should rewrite an at-rule prelude through the forAtRule buffer part', async () => {
     const result = await hostWith({
-      forAtRule: () => (text) => text.toUpperCase(),
+      forAtRule: () => ({
+        buffer: (buffer) => setText(buffer, buffer.text().toUpperCase()),
+      }),
     }).process('@media screen{a{color:red}}', { from: undefined });
     assert.equal(result.css, '@media SCREEN{a{color:red}}');
   });
 
   test('should leave @charset as it is, since no stage plans its prelude', async () => {
     const result = await hostWith({
-      forAtRule: () => (text) => text.toUpperCase(),
+      forAtRule: () => ({
+        buffer: (buffer) => setText(buffer, buffer.text().toUpperCase()),
+      }),
     }).process('@charset "utf-8";a{color:red}', { from: undefined });
     assert.equal(result.css, '@charset "utf-8";a{color:red}');
   });
@@ -55,7 +59,7 @@ describe('text parts of a stage', () => {
   test('should pass a selector in keyframes the keyframes context', async () => {
     const result = await hostWith({
       selector: (buffer, context) => {
-        if (hasContextBit(context, IN_KEYFRAMES)) setSelector(buffer, 'K');
+        if (hasContextBit(context, IN_KEYFRAMES)) setText(buffer, 'K');
       },
     }).process('@keyframes x{from{opacity:0}}a{color:red}', {
       from: undefined,
@@ -65,7 +69,9 @@ describe('text parts of a stage', () => {
 
   test('should give a prelude to a stage as written, comments included, while its raw is fresh', async () => {
     const result = await hostWith({
-      forAtRule: () => (text) => `[${text}]`,
+      forAtRule: () => ({
+        buffer: (buffer) => setText(buffer, `[${buffer.text()}]`),
+      }),
     }).process('@media screen /* c */ and tv{a{color:red}}', {
       from: undefined,
     });
@@ -80,7 +86,11 @@ describe('text parts of a stage', () => {
           atRule.params = 'print';
         },
       },
-      ...hostWith({ forAtRule: () => (text) => `[${text}]` }).plugins,
+      ...hostWith({
+        forAtRule: () => ({
+          buffer: (buffer) => setText(buffer, `[${buffer.text()}]`),
+        }),
+      }).plugins,
     ]).process('@media screen /* c */ and tv{a{color:red}}', {
       from: undefined,
     });
