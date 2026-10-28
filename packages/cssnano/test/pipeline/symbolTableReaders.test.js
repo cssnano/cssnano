@@ -25,6 +25,7 @@ const counterOnly = {
   keyframes: false,
   gridTemplate: false,
 };
+const gridOnly = { counter: false, counterStyle: false, keyframes: false };
 
 suite('the symbol transforms read the text the host walk stored', () => {
   test("reduce-idents' at-rule symbols read the list stored for the at-rule, without tokenizing", () => {
@@ -105,6 +106,49 @@ suite('the symbol transforms read the text the host walk stored', () => {
     const lists = createSymbolLists();
     root.walk(symbolVisit(lists));
     reduceIdentsSymbols(lists, createReducers(counterOnly), () => {}, table);
+    const definition = root.first.first;
+    assert.equal(tokensText(table.stored(definition)), definition.value);
+  });
+
+  test("reduce-idents' grid-template symbols read the list stored for the declaration, without tokenizing", () => {
+    const root = postcss.parse(
+      'a { grid-template-areas: "a b" } b { grid-area: a }'
+    );
+    const table = new TextTable();
+    const stage = {
+      forProperty: () => (buffer) => buffer.tokens(),
+    };
+    walkStylesheet([stage], root, helpers, new Map(), table);
+    const lists = createSymbolLists();
+    root.walk(symbolVisit(lists));
+    const before = tokenizeTotal();
+    reduceIdentsSymbols(lists, createReducers(gridOnly), () => {}, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test("reduce-idents' grid-template symbols' edited use tokens spell text()", () => {
+    // The area `a` is the second name, so it encodes to `b` and the use changes.
+    const root = postcss.parse(
+      'a { grid-template-areas: "x a" } b { grid-area: a }'
+    );
+    const table = new TextTable();
+    walkStylesheet([], root, helpers, new Map(), table);
+    const lists = createSymbolLists();
+    root.walk(symbolVisit(lists));
+    reduceIdentsSymbols(lists, createReducers(gridOnly), () => {}, table);
+    const use = root.last.first;
+    assert.equal(tokensText(table.stored(use)), use.value);
+  });
+
+  test("reduce-idents' grid-template symbols' edited definition tokens spell text()", () => {
+    const root = postcss.parse(
+      'a { grid-template-areas: "a  b" } b { grid-area: a }'
+    );
+    const table = new TextTable();
+    walkStylesheet([], root, helpers, new Map(), table);
+    const lists = createSymbolLists();
+    root.walk(symbolVisit(lists));
+    reduceIdentsSymbols(lists, createReducers(gridOnly), () => {}, table);
     const definition = root.first.first;
     assert.equal(tokensText(table.stored(definition)), definition.value);
   });
