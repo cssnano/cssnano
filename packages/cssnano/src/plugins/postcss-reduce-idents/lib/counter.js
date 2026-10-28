@@ -1,6 +1,7 @@
 import addToCache from './cache.js';
 import {
   collectOpaqueIdents,
+  encodedIdent,
   rewrite,
   tokenEdits,
   TokenType,
@@ -8,7 +9,6 @@ import {
 import { counter, cssWideKeywords, resolveProperty } from './slots.js';
 import { declaredValueTokens } from '../../../values/declaredValueTokens.js';
 import { whitespace } from '../../../values/punctuationTokens.js';
-import { identifierWithText } from '../../../values/tokenConstructors.js';
 import { ValueBuffer } from '../../../values/valueBuffer.js';
 
 /** @import {TextTable} from '../../../values/textTable.js' */
@@ -113,7 +113,7 @@ export default function counterReducer(encoder) {
               if (!defined.has(name) || opaque.has(name)) return;
               liveSymbols.add(name);
               const encoded = /** @type {string} */ (symbolTable.get(name));
-              return identifierWithText(encoded, encoded);
+              return encodedIdent(encoded);
             },
             counter.functions
           )
@@ -144,7 +144,7 @@ export default function counterReducer(encoder) {
                 const name = token[4].value;
                 if (!liveSymbols.has(name)) return;
                 const encoded = /** @type {string} */ (symbolTable.get(name));
-                return identifierWithText(encoded, encoded);
+                return encodedIdent(encoded);
               },
               REVERSED_FUNCTIONS
             )

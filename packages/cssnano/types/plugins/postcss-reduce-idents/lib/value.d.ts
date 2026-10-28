@@ -18,6 +18,15 @@ export type Walk = {
     substitutions: number;
 };
 /**
+ * The identifier token that spells an encoded name as the encoder wrote it,
+ * so the token keeps that text even when the encoder's output is not an
+ * identifier the tokenizer would read back.
+ *
+ * @param {string} name
+ * @return {CSSToken}
+ */
+declare function encodedIdent(name: string): CSSToken;
+/**
  * Return the decoded identifier an at-rule's prelude holds, such as an
  * `@keyframes` name, ignoring the whitespace and comments around it.
  *
@@ -55,5 +64,5 @@ declare function tokenEdits(parsedTokens: readonly CSSToken[], callback: (token:
  * @param {readonly CSSToken[]} [parsedTokens]
  */
 declare function collectOpaqueIdents(value: string, into: Set<string>, parsedTokens?: readonly CSSToken[]): void;
-export { TokenType, atRuleIdent, collectOpaqueIdents, rewrite, sharedTokens as tokens, tokenEdits, };
+export { TokenType, atRuleIdent, collectOpaqueIdents, encodedIdent, rewrite, sharedTokens as tokens, tokenEdits, };
 //# sourceMappingURL=value.d.ts.map
