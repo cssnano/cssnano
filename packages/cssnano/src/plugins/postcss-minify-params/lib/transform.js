@@ -1,45 +1,115 @@
-import cssnanoUtils from '#utils';
+import { joinRanges } from '../../../values/joinRanges.js';
+import { comma } from '../../../values/punctuationTokens.js';
+import { tokensText } from '../../../values/tokensText.js';
 import minifyMediaAll, { dropRedundantRangeFeatures } from './media.js';
 import {
   minifyAspectRatios,
   minifyWhitespace,
   parentIndexes,
 } from './whitespace.js';
-import { serializeSegments } from './tokenUtils.js';
 
-const { balancedTokens, tokenEnd } = cssnanoUtils;
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {RangePiece} from '../../../values/joinRanges.js' */
+/** @import {TokenEdit, ValueBuffer} from '../../../values/valueBuffer.js' */
+
+/** @typedef {NonNullable<ReturnType<ValueBuffer['structure']>>} BalancedTokens */
 
 /**
- * Minifies the prelude of an `@media` or `@supports` rule. A prelude whose
- * brackets do not balance is returned as it was written.
+ * Orders the edits by token index. An edit that repeats or overlaps an earlier
+ * one is dropped, so each token is edited at most once.
+ *
+ * @param {TokenEdit[]} changes
+ * @return {TokenEdit[]}
+ */
+function orderedEdits(changes) {
+  changes.sort((a, b) => a.start - b.start);
+  /** @type {TokenEdit[]} */
+  const edits = [];
+  let end = 0;
+  for (const edit of changes) {
+    if (edit.start < end) continue;
+    edits.push(edit);
+    end = edit.end;
+  }
+  return edits;
+}
+
+/**
+ * The text of the tokens from `start` up to `end`, exclusive.
+ *
+ * @param {readonly CSSToken[]} list
+ * @param {number} start
+ * @param {number} end
+ * @return {string}
+ */
+function rangeText(list, start, end) {
+  let text = '';
+  for (let index = start; index < end; index++) text += list[index][1];
+  return text;
+}
+
+/**
+ * The queries of a prelude as pieces of its token list, one for each distinct
+ * text, in UTF-16 order. Each query's text is built once.
+ *
+ * @param {readonly CSSToken[]} list
+ * @param {{startIndex: number, endIndex: number}[]} queries
+ * @return {RangePiece[]}
+ */
+function sortedQueryPieces(list, queries) {
+  /** @type {Map<string, RangePiece>} */
+  const pieces = new Map();
+  for (const { startIndex, endIndex } of queries) {
+    const key = rangeText(list, startIndex, endIndex);
+    if (!pieces.has(key)) {
+      pieces.set(key, { list, start: startIndex, end: endIndex });
+    }
+  }
+  return [...pieces.keys()]
+    .toSorted()
+    .map((key) => /** @type {RangePiece} */ (pieces.get(key)));
+}
+
+/**
+ * Minifies the prelude of an `@media` or `@supports` rule, as token edits on
+ * its buffer. A prelude whose brackets do not balance is left as it was
+ * written, and a prelude that is unchanged is not edited.
  *
  * @param {boolean} legacy
  * @param {'media' | 'supports'} ruleName the lowercase name of the rule
- * @param {string} source the prelude as written
- * @return {string}
+ * @param {ValueBuffer} buffer the prelude as written
+ * @return {void}
  */
-export default function reduceParams(legacy, ruleName, source) {
-  const structure = balancedTokens(source);
-  if (!structure) return source;
-  /** @type {{start:number,end:number,text:string}[]} */
+export default function reduceParams(legacy, ruleName, buffer) {
+  const structure = buffer.structure();
+  if (!structure) return;
+  /** @type {TokenEdit[]} */
   const changes = [];
   const parents = parentIndexes(structure);
   // One walk over the top-level queries, shared by every pass below.
   const queries = structure.topLevelSegments();
   const mediaIsUnconditional =
     ruleName === 'media' && minifyMediaAll(legacy, structure, queries, changes);
-  if (mediaIsUnconditional) return '';
+  if (mediaIsUnconditional) {
+    buffer.replaceRanges([
+      { start: 0, end: structure.tokens.length, tokens: [] },
+    ]);
+    return;
+  }
   if (ruleName === 'media')
     dropRedundantRangeFeatures(structure, queries, changes);
   minifyWhitespace(structure, parents, changes);
   minifyAspectRatios(ruleName === 'supports', structure, parents, changes);
-  const { tokens: input } = structure;
-  const segmentRanges = queries.map(({ startIndex, endIndex }) => {
-    const start = input[startIndex]?.[2] ?? source.length;
-    const end = endIndex > startIndex ? tokenEnd(input[endIndex - 1]) : start;
-    return { start, end };
-  });
-  changes.sort((a, b) => a.start - b.start);
-  const segments = serializeSegments(source, segmentRanges, changes);
-  return [...new Set(segments)].toSorted().join();
+  if (changes.length > 0) buffer.replaceRanges(orderedEdits(changes));
+  // The edits keep the brackets balanced, so the queries are split from the
+  // edited tokens.
+  const edited = /** @type {BalancedTokens} */ (buffer.structure());
+  const { tokens: list } = edited;
+  const joined = joinRanges(
+    sortedQueryPieces(list, edited.topLevelSegments()),
+    [comma()]
+  );
+  if (tokensText(joined) !== buffer.text()) {
+    buffer.replaceRanges([{ start: 0, end: list.length, tokens: joined }]);
+  }
 }

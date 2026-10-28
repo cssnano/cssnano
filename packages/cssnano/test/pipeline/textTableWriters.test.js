@@ -10,6 +10,10 @@ const { TextTable } = await import('../../src/values/textTable.js');
 const { ident, integer } =
   await import('../../src/values/tokenConstructors.js');
 const { tokens } = await import('../../src/utils/value.js');
+const { ValueBuffer } = await import('../../src/values/valueBuffer.js');
+const { tokensText } = await import('../../src/values/tokensText.js');
+const { default: minifyParams } =
+  await import('../../src/plugins/postcss-minify-params/index.js');
 const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
 const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
@@ -156,6 +160,17 @@ suite('the host walk shares one token list per text', () => {
     };
     walkStylesheet([stage], root, helpers, new Map(), table);
     assert.equal(seen[1], 1);
+  });
+});
+
+suite('the at-rule reducers write tokens that spell their text', () => {
+  test("minify-params' edited tokens spell text()", () => {
+    const { buffer: reduce } = minifyParams
+      .create({}, ['defaults'])
+      .forAtRule('media');
+    const buffer = new ValueBuffer('screen  and (min-width: 1px), print');
+    reduce(buffer, 0);
+    assert.equal(tokensText(buffer.tokens()), buffer.text());
   });
 });
 
