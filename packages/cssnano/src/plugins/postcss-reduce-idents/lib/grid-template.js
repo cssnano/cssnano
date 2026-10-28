@@ -1,7 +1,18 @@
 import addToCache from './cache.js';
-import { TokenType, collectOpaqueIdents, rewrite, tokens } from './value.js';
+import {
+  TokenType,
+  collectOpaqueIdents,
+  encodedIdent,
+  rewrite,
+  tokenEdits,
+} from './value.js';
 import { cssWideKeywords, grid, resolveProperty } from './slots.js';
+import { declaredValueTokens } from '../../../values/declaredValueTokens.js';
+import { whitespace } from '../../../values/punctuationTokens.js';
+import { stringToken } from '../../../values/tokenConstructors.js';
+import { ValueBuffer } from '../../../values/valueBuffer.js';
 
+/** @import {TextTable} from '../../../values/textTable.js' */
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 
 const RESERVED = new Set([...cssWideKeywords, ...grid.reservedKeywords]);
@@ -20,11 +31,21 @@ function stringWords(value) {
 }
 
 /**
+ * The identifier token of a name the symbol table has encoded.
+ * @param {Map<string, string>} symbolTable
+ * @param {string} name
+ * @return {CSSToken}
+ */
+function encodedName(symbolTable, name) {
+  return encodedIdent(/** @type {string} */ (symbolTable.get(name)));
+}
+
+/**
  * Record the named areas and bracketed line names a grid template
  * declaration defines: areas from the strings, line names from between
  * brackets. Filter out names substituted through var()/env()/attr().
  * @param {import('postcss').Declaration} decl
- * @param {CSSToken[]} parsedTokens
+ * @param {readonly CSSToken[]} parsedTokens
  * @param {(value: string, index: number) => string} encoder
  * @param {Map<string, string>} symbolTable
  * @param {Set<string>} areas
@@ -85,7 +106,8 @@ export default function gridTemplateReducer(encoder) {
         useSites.push(node);
       }
     },
-    transform() {
+    /** @param {TextTable} table */
+    transform(table) {
       if (defSites.length === 0 && useSites.length === 0) {
         defSites = [];
         useSites = [];
@@ -93,14 +115,15 @@ export default function gridTemplateReducer(encoder) {
       }
 
       // Bind only names whose template definition and reference occur in
-      // the same document; grid names are case-sensitive. Tokenize each
-      // definition once and reuse its tokens below.
+      // the same document; grid names are case-sensitive. Read each
+      // definition's tokens once and reuse them below.
+      const tokenCache = new Map();
       const areas = new Set();
       const lineNames = new Set();
-      /** @type {Map<import('postcss').Declaration, CSSToken[]>} */
+      /** @type {Map<import('postcss').Declaration, readonly CSSToken[]>} */
       const parsedTemplates = new Map();
       for (const decl of defSites) {
-        const parsedTokens = tokens(decl.value);
+        const parsedTokens = declaredValueTokens(table, decl, tokenCache);
         parsedTemplates.set(decl, parsedTokens);
         bindTemplateSymbols(
           decl,
@@ -112,32 +135,35 @@ export default function gridTemplateReducer(encoder) {
         );
       }
 
-      // Tokenize each use site once, then collect live symbols and rewrite
-      // references. Collect names spelled outside the grammar, such as
-      // var() fallbacks; leave them unrenamed.
+      // Read each use site's tokens once, then collect live symbols and
+      // rewrite references. Collect names spelled outside the grammar, such
+      // as var() fallbacks; leave them unrenamed.
       const opaque = new Set();
       for (const decl of defSites) {
         collectOpaqueIdents(decl.value, opaque, parsedTemplates.get(decl));
       }
-      /** @type {Map<import('postcss').Declaration, CSSToken[]>} */
+      /** @type {Map<import('postcss').Declaration, readonly CSSToken[]>} */
       const parsedReferences = new Map();
       const liveSymbols = new Set();
       for (const decl of useSites) {
-        const parsedTokens = tokens(decl.value);
+        const parsedTokens = declaredValueTokens(table, decl, tokenCache);
         parsedReferences.set(decl, parsedTokens);
         collectOpaqueIdents(decl.value, opaque, parsedTokens);
       }
       for (const decl of useSites) {
-        decl.value = rewrite(
-          decl.value,
-          (token, position) => {
+        const parsedTokens = /** @type {readonly CSSToken[]} */ (
+          parsedReferences.get(decl)
+        );
+        const buffer = new ValueBuffer(decl.value, undefined, parsedTokens);
+        buffer.replaceRanges(
+          tokenEdits(parsedTokens, (token, position) => {
             if (token[0] !== TokenType.Ident) return;
             if (position !== 'bare') return;
             const name = token[4].value;
             if (opaque.has(name)) return;
             if (areas.has(name) || lineNames.has(name)) {
               liveSymbols.add(name);
-              return symbolTable.get(name);
+              return encodedName(symbolTable, name);
             }
             // Rename an implicit <area>-start/<area>-end line with its area;
             // a bracketed line name spelled the same way takes precedence.
@@ -148,21 +174,25 @@ export default function gridTemplateReducer(encoder) {
             const area = name.slice(0, -suffix.length);
             if (areas.has(area) && !opaque.has(area)) {
               liveSymbols.add(area);
-              return symbolTable.get(area) + suffix;
+              return encodedIdent(
+                /** @type {string} */ (symbolTable.get(area)) + suffix
+              );
             }
             return undefined;
-          },
-          undefined,
-          parsedReferences.get(decl)
+          })
         );
+        if (buffer.text() !== decl.value) table.write(decl, buffer.tokens());
       }
 
       // Rename only live names; normalize dots and whitespace.
       for (const decl of defSites) {
-        decl.value = rewrite(
-          decl.value,
-          (token, position) => {
-            if (token[0] === TokenType.Whitespace) return ' ';
+        const parsedTokens = /** @type {readonly CSSToken[]} */ (
+          parsedTemplates.get(decl)
+        );
+        const buffer = new ValueBuffer(decl.value, undefined, parsedTokens);
+        buffer.replaceRanges(
+          tokenEdits(parsedTokens, (token, position) => {
+            if (token[0] === TokenType.Whitespace) return whitespace();
             if (token[0] === TokenType.String) {
               const value = stringWords(token[4].value)
                 .map((word) => {
@@ -173,17 +203,16 @@ export default function gridTemplateReducer(encoder) {
                   return symbol ?? normalized;
                 })
                 .join(' ');
-              return serializeString(value, token[1][0]);
+              return stringToken(serializeString(value, token[1][0]), value);
             }
             return token[0] === TokenType.Ident &&
               position === 'bracketed' &&
               liveSymbols.has(token[4].value)
-              ? symbolTable.get(token[4].value)
+              ? encodedName(symbolTable, token[4].value)
               : undefined;
-          },
-          undefined,
-          parsedTemplates.get(decl)
+          })
         );
+        if (buffer.text() !== decl.value) table.write(decl, buffer.tokens());
       }
 
       defSites = [];
