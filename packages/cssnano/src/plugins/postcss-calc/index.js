@@ -1,3 +1,4 @@
+import { TokenType } from '@csstools/css-tokenizer';
 import reduceTokens, {
   hasPotentialMathFunction,
 } from 'postcss-calc/reduce-tokens';
@@ -8,16 +9,10 @@ import { spliceRanges } from '../../values/spliceRanges.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/**
- * The at-rules whose preludes hold media queries. A feature query such as
- * `@supports` is left alone, since a reduced `abs()` can pass a test that the
- * original fails.
- */
-const MEDIA_QUERY_AT_RULES = new Set(['media', 'container']);
-
 /** @import {PostCssCalcOptions} from 'postcss-calc' */
 /** @import {ReduceCalcOptions} from 'postcss-calc/reduce-tokens' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {TokenEdit} from '../../values/valueBuffer.js' */
 /** @import {Reducer, StageEntry, Stage} from '../../pipeline/host.js' */
 
 /**
@@ -67,20 +62,98 @@ function reduceCalcTokens(options, selector) {
 }
 
 /**
+ * The token ranges of the `style()` queries in a container prelude, as
+ * [start, end) indexes. A style query matches a custom property as written.
+ *
+ * @param {readonly CSSToken[]} list
+ * @returns {[number, number][]}
+ */
+function styleQueryRanges(list) {
+  /** @type {[number, number][]} */
+  const ranges = [];
+  for (let start = 0; start < list.length; start++) {
+    const token = list[start];
+    if (
+      token[0] !== TokenType.Function ||
+      asciiLowerCase(token[4].value) !== 'style'
+    ) {
+      continue;
+    }
+    let depth = 0;
+    let end = start;
+    do {
+      const type = list[end][0];
+      if (type === TokenType.Function || type === TokenType.OpenParen) depth++;
+      else if (type === TokenType.CloseParen) depth--;
+      end++;
+    } while (depth > 0 && end < list.length);
+    ranges.push([start, end]);
+    start = end - 1;
+  }
+  return ranges;
+}
+
+/**
+ * A reducer of the calc() functions in a container prelude outside its
+ * `style()` queries. Each run between two queries is reduced on its own, so a
+ * calc() inside a query is neither reduced nor warned about.
+ *
+ * @param {PostCssCalcOptions} options
+ * @returns {Reducer}
+ */
+function reduceContainerTokens(options) {
+  return (buffer) => {
+    if (!buffer.isEdited() && !hasPotentialMathFunction(buffer.text())) return;
+    /** @type {(message: string, plugin?: string) => void} */
+    const warn = (message, plugin) => buffer.warn(message, plugin);
+    const list = /** @type {CSSToken[]} */ (buffer.tokens());
+    const reducerOptions = reduceOptions(options, warn, false);
+    /** @type {TokenEdit[]} */
+    const edits = [];
+    let runStart = 0;
+    for (const [queryStart, queryEnd] of [
+      ...styleQueryRanges(list),
+      [list.length, list.length],
+    ]) {
+      const run = list.slice(runStart, queryStart);
+      for (const edit of reduceTokens(run, reducerOptions)) {
+        edits.push({
+          start: edit.start + runStart,
+          end: edit.end + runStart,
+          tokens: edit.tokens,
+        });
+      }
+      runStart = queryEnd;
+    }
+    buffer.replaceRanges(edits);
+  };
+}
+
+/**
  * The stage for one run. Its value reducer joins the walk of the other value
  * stages, and its prelude and selector reducers join the walk of the preludes
- * and selectors.
+ * and selectors. A media query and a container query are reduced; a feature
+ * query such as `@supports` is left alone, since a reduced `abs()` can pass a
+ * test that the original fails.
  *
  * @param {PostCssCalcOptions} options
  * @returns {Stage}
  */
 function calcStage(options) {
-  const reducePrelude = reduceCalcTokens(options, false);
-  const preludePart = { buffer: reducePrelude };
+  const media = { buffer: reduceCalcTokens(options, false) };
+  const container = { buffer: reduceContainerTokens(options) };
   return {
     forAtRule: options.mediaQueries
-      ? (name) =>
-          MEDIA_QUERY_AT_RULES.has(asciiLowerCase(name)) ? preludePart : null
+      ? (name) => {
+          switch (asciiLowerCase(name)) {
+            case 'media':
+              return media;
+            case 'container':
+              return container;
+            default:
+              return null;
+          }
+        }
       : undefined,
     selector: options.selectors ? reduceCalcTokens(options, true) : undefined,
     forProperty: () => (buffer) => {
