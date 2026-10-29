@@ -69,11 +69,6 @@ function joinKey(node, joinRules, mergeState) {
  * @return {boolean} whether anything was joined
  */
 export function joinNonAdjacent(root, mergeState) {
-  // A container that joined nothing, with no edit since, joins nothing again:
-  // its joins read only its own subtree, and every edit to it reaches the table.
-  const { blocks } = mergeState;
-  if (blocks.isSettled(root)) return false;
-  const edits = blocks.edits;
   let joined = joinInParent(root, mergeState, true);
   // A forward pass resolves a chain of blocks that move up, and a backward
   // pass a chain that moves down, each in one pass. A pass that joins nothing
@@ -89,7 +84,6 @@ export function joinNonAdjacent(root, mergeState) {
       joined = joinNonAdjacent(child, mergeState) || joined;
     }
   }
-  if (!joined && blocks.edits === edits) blocks.settle(root);
   return joined;
 }
 

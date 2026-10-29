@@ -41,24 +41,6 @@ export declare class BlockTable {
      */
     forget(node: object): void;
     /**
-     * @return {number} the edits reported so far; a visit that sees it unchanged
-     * made none
-     */
-    get edits(): number;
-    /**
-     * Records that a visit of `block` joined nothing, so the next visit may skip
-     * it while no edit reaches it.
-     *
-     * @param {object} block
-     * @return {void}
-     */
-    settle(block: object): void;
-    /**
-     * @param {object} block
-     * @return {boolean} whether a visit of `block` may be skipped
-     */
-    isSettled(block: object): boolean;
-    /**
      * True if the subtree holds an at-rule whose position in the cascade is not
      * modelled, so its declarations cannot be reasoned about as plain writes.
      *

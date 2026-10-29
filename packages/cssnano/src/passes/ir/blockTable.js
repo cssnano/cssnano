@@ -74,12 +74,6 @@ export class BlockTable {
   /** @type {Map<object, Summary>} */
   #summaries = new Map();
 
-  /** @type {WeakSet<object>} containers whose last visit joined nothing */
-  #settled = new WeakSet();
-
-  /** @type {number} edits reported through `forget` so far */
-  #edits = 0;
-
   /** @type {Root | undefined} */
   #root;
 
@@ -106,7 +100,6 @@ export class BlockTable {
     }
     this.#root = undefined;
     this.#summaries.clear();
-    this.#settled = new WeakSet();
   }
 
   /**
@@ -126,36 +119,7 @@ export class BlockTable {
    * @return {void}
    */
   forget(node) {
-    this.#edits++;
     this.#summaries.delete(node);
-    this.#settled.delete(node);
-  }
-
-  /**
-   * @return {number} the edits reported so far; a visit that sees it unchanged
-   * made none
-   */
-  get edits() {
-    return this.#edits;
-  }
-
-  /**
-   * Records that a visit of `block` joined nothing, so the next visit may skip
-   * it while no edit reaches it.
-   *
-   * @param {object} block
-   * @return {void}
-   */
-  settle(block) {
-    if (this.#root) this.#settled.add(block);
-  }
-
-  /**
-   * @param {object} block
-   * @return {boolean} whether a visit of `block` may be skipped
-   */
-  isSettled(block) {
-    return this.#settled.has(block);
   }
 
   /**

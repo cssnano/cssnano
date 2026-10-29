@@ -12,14 +12,6 @@ function source(module) {
 }
 
 /**
- * @param {string} module a path under `src/passes/ir/`
- * @return {string}
- */
-function irSource(module) {
-  return new URL(`../../../src/passes/ir/${module}`, import.meta.url).href;
-}
-
-/**
  * @param {string} module a path under `src/passes/merge/lib/`
  * @return {string}
  */
@@ -103,22 +95,6 @@ export const mutations = [
     find: "      invalidate(earlier);\n      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());\n      detach(later);\n      return 'up';\n",
     replace:
       "      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());\n      detach(later);\n      return 'up';\n",
-  },
-  // Settled containers: a visit that joined nothing is skipped until an edit.
-  // Not mutated: settling after a visit that joined is equivalent, since every
-  // join reaches an invalidation (receive, detach, joinBlock), which changes
-  // the edit count and blocks the settle.
-  {
-    name: 'never settle a container that joined nothing',
-    target: source('nonAdjacentMerge.js'),
-    find: '  if (!joined && blocks.edits === edits) blocks.settle(root);\n',
-    replace: '',
-  },
-  {
-    name: 'keep a container settled through an edit that reaches it',
-    target: irSource('blockTable.js'),
-    find: '    this.#settled.delete(node);\n',
-    replace: '',
   },
   {
     name: 'skip invalidating a container whose deferred edits apply',
