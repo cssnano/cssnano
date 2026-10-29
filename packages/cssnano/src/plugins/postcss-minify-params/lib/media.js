@@ -281,9 +281,7 @@ export function dropRedundantRangeFeatures(structure, segments, changes) {
       while (last + 1 < features.length && removed[last + 1]) last++;
       const { from, to } = removalRange(input, features, first, last);
       first = last;
-      for (let i = from; i <= to; i++) {
-        changes.push({ start: i, end: i + 1, tokens: [] });
-      }
+      changes.push({ start: from, end: to + 1, tokens: [] });
     }
   }
 }
