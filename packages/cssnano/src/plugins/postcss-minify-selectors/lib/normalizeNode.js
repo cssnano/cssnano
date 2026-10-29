@@ -1,15 +1,15 @@
 import cssnanoUtils from '#utils';
+import { delim } from '../../../values/punctuationTokens.js';
 import { hasSemanticFact, isFoldEligible, semanticFacts } from './arena.js';
 import {
-  attributeOutput,
   childrenOf,
-  classOrIdText,
   compareOutputs,
   descendantCombinator,
   outputText,
   qualifiedNameOutput,
   rawOutput,
 } from './normalizePool.js';
+import { attributeOutput } from './attributeOutput.js';
 import {
   canReuseSourceNode,
   normalizedPayload,
@@ -29,6 +29,11 @@ const { asciiLowerCase } = cssnanoUtils;
 /** @type {readonly number[]} */
 const emptyChildren = Object.freeze([]);
 const singleChild = [0];
+/**
+ * The `+` combinator's token. It stays out of fixedTokens: a `+` there would
+ * sit beside a following number in `<an-plus-b>` text.
+ */
+const plusTokens = Object.freeze([delim('+')]);
 
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
@@ -67,10 +72,12 @@ function normalizedNodeOutput(
   if (node.kind === 'pseudo')
     return pseudoOutput(arena, pool, node, normalized);
   if (node.kind === 'class' || node.kind === 'id')
-    return pool.text(classOrIdText(arena, node));
+    return pool.classOrId(arena, node);
   if (node.kind === 'combinator') {
     const value = arena.payloads.combinators[node.payload].value;
     if (value === ' ') return descendantCombinator(arena, pool, node);
+    if (value === '+')
+      return pool.texts.get(value) ?? pool.intern(value, plusTokens);
     return pool.text(value);
   }
   return rawOutput(arena, pool, node);

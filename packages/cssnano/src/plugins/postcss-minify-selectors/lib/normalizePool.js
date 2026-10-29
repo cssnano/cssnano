@@ -4,13 +4,20 @@ import {
   hexEscapeDigitCount,
   needsTerminatorAfterDigits,
 } from './hexEscape.js';
+import {
+  classOrIdTokens,
+  fixedTokens,
+  nameToken,
+  namespaceTokens,
+} from './outputTokens.js';
 import { serializeNormalized } from './serializeArena.js';
-import { isImportantCommentToken, skipTrivia, unquote } from './tokenUtils.js';
+import { isImportantCommentToken } from './tokenUtils.js';
 
-const { TokenType, tokenStart } = cssnanoUtils;
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
+const { TokenType, tokenStart } = cssnanoUtils;
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
 /** @typedef {{emit?:Emit,id:number,length:number,text?:string,sourceNode?:number,changed?:boolean,hexDigits?:number,head?:number}} Output */
 
@@ -29,10 +36,43 @@ export class OutputPool {
 
   /** @param {string} value @return {Output} */
   text(value) {
-    const found = this.texts.get(value);
-    if (found) return found;
+    return this.texts.get(value) ?? this.intern(value, fixedTokens.get(value));
+  }
+
+  /**
+   * A class or ID selector with the tokens that spell its text.
+   * @param {SelectorArena} arena
+   * @param {ArenaNode} node
+   */
+  classOrId(arena, node) {
+    const text = classOrIdText(arena, node);
+    return (
+      this.texts.get(text) ?? this.intern(text, classOrIdTokens(arena, node))
+    );
+  }
+
+  /**
+   * A source comment with its token. Outputs are interned by text, so the
+   * first token seen for a text is the one kept.
+   * @param {CSSToken} token
+   */
+  comment(token) {
+    return (
+      this.texts.get(token[1]) ?? this.intern(token[1], Object.freeze([token]))
+    );
+  }
+
+  /**
+   * @param {string} value
+   * @param {readonly CSSToken[] | undefined} tokens
+   * @return {Output}
+   */
+  intern(value, tokens) {
+    const emit = /** @type {Emit} */ (
+      tokens ? { kind: 'text', value, tokens } : { kind: 'text', value }
+    );
     const output = {
-      emit: /** @type {const} */ ({ kind: 'text', value }),
+      emit,
       id: this.nextId++,
       length: value.length,
       text: value,
@@ -166,7 +206,7 @@ export class OutputPool {
 export function offset(arena, tokenIndex) {
   return tokenIndex === arena.tokens.length
     ? arena.source.length
-    : tokenStart(arena.tokens[tokenIndex]);
+    : tokenStart(arena.tokens[tokenIndex]) - arena.base;
 }
 
 /** @param {SelectorArena} arena @param {number} start @param {number} end */
@@ -217,12 +257,25 @@ export function classOrIdText(arena, node) {
     : dropHexEscapeTerminator(tokens[node.startToken][1]);
 }
 
+/**
+ * The output of a source token range, interned with the range's tokens. The
+ * tokens are copied only for a text not yet interned.
+ * @param {SelectorArena} arena @param {OutputPool} pool @param {number} start @param {number} end
+ */
+function sourceRangeOutput(arena, pool, start, end) {
+  const text = sourceText(arena, start, end);
+  return (
+    pool.texts.get(text) ??
+    pool.intern(text, Object.freeze(arena.tokens.slice(start, end)))
+  );
+}
+
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {number} start @param {number} end */
 export function importantTrivia(arena, pool, start, end) {
   /** @type {Output[]} */ const output = [];
   for (let index = start; index < end; index++) {
     const token = arena.tokens[index];
-    if (isImportantCommentToken(token)) output.push(pool.text(token[1]));
+    if (isImportantCommentToken(token)) output.push(pool.comment(token));
   }
   return pool.sequence(output);
 }
@@ -237,7 +290,7 @@ export function descendantCombinator(arena, pool, node) {
       if (!lastWasSpace) output.push(pool.text(' '));
       lastWasSpace = true;
     } else if (isImportantCommentToken(token)) {
-      output.push(pool.text(token[1]));
+      output.push(pool.comment(token));
       lastWasSpace = false;
     }
   }
@@ -261,7 +314,7 @@ export function normalizedAt(normalized, nodeIndex) {
 
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node */
 export function rawOutput(arena, pool, node) {
-  return pool.text(sourceText(arena, node.startToken, node.endToken));
+  return sourceRangeOutput(arena, pool, node.startToken, node.endToken);
 }
 
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node @param {boolean} removable */
@@ -277,7 +330,7 @@ export function qualifiedNameOutput(arena, pool, node, removable) {
     payload.namespace.kind === 'absent' &&
     node.endToken > payload.subject.token + 1
   )
-    return pool.text(sourceText(arena, node.startToken, node.endToken));
+    return sourceRangeOutput(arena, pool, node.startToken, node.endToken);
   let prefix = '';
   if (payload.namespace.kind === 'empty') prefix = '|';
   else if (payload.namespace.kind === 'wildcard') prefix = '*|';
@@ -285,63 +338,17 @@ export function qualifiedNameOutput(arena, pool, node, removable) {
     prefix = `${dropHexEscapeTerminator(
       arena.tokens[payload.namespace.token][1]
     )}|`;
-  return pool.text(
-    `${prefix}${dropHexEscapeTerminator(arena.tokens[payload.subject.token][1])}`
+  const subject = arena.tokens[payload.subject.token];
+  const subjectText = dropHexEscapeTerminator(subject[1]);
+  const text = `${prefix}${subjectText}`;
+  return (
+    pool.texts.get(text) ??
+    pool.intern(
+      text,
+      Object.freeze([
+        ...namespaceTokens(arena, payload.namespace),
+        nameToken(subject, subjectText),
+      ])
+    )
   );
-}
-
-/** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node */
-export function attributeOutput(arena, pool, node) {
-  if (node.status !== 'valid') return rawOutput(arena, pool, node);
-  const payload = arena.payloads.attributes[node.payload];
-  const close = node.endToken - 1;
-  let nameStart = payload.nameToken;
-  let name = dropHexEscapeTerminator(arena.tokens[payload.nameToken][1]);
-  if (payload.namespace.kind === 'empty') {
-    nameStart--;
-    name = `|${name}`;
-  } else if (payload.namespace.kind === 'wildcard') {
-    nameStart -= 2;
-    name = `*|${name}`;
-  } else if (payload.namespace.kind === 'named') {
-    nameStart = payload.namespace.token;
-    name = `${dropHexEscapeTerminator(
-      arena.tokens[payload.namespace.token][1]
-    )}|${name}`;
-  }
-  /** @type {Output[]} */ const values = [pool.text('[')];
-  values.push(importantTrivia(arena, pool, node.startToken + 1, nameStart));
-  values.push(pool.text(name));
-  let cursor = payload.nameToken + 1;
-  if (!payload.matcher) {
-    values.push(importantTrivia(arena, pool, cursor, close));
-    values.push(pool.text(']'));
-    return pool.sequence(values);
-  }
-  const matcherStart = skipTrivia(arena.tokens, cursor, close);
-  const matcherEnd = matcherStart + payload.matcher.length;
-  values.push(importantTrivia(arena, pool, cursor, matcherStart));
-  values.push(pool.text(payload.matcher));
-  if (payload.valueToken === undefined) return rawOutput(arena, pool, node);
-  const valueToken = arena.tokens[payload.valueToken];
-  let value = valueToken[1];
-  if (valueToken[0] === TokenType.String)
-    value = unquote(value).replaceAll('\\\n', '');
-  else value = dropHexEscapeTerminator(value);
-  values.push(
-    importantTrivia(arena, pool, matcherEnd, payload.valueToken),
-    pool.text(value)
-  );
-  cursor = payload.valueToken + 1;
-  if (payload.modifierToken !== undefined) {
-    values.push(
-      importantTrivia(arena, pool, cursor, payload.modifierToken),
-      pool.text(
-        ` ${dropHexEscapeTerminator(arena.tokens[payload.modifierToken][1])}`
-      )
-    );
-    cursor = payload.modifierToken + 1;
-  }
-  values.push(importantTrivia(arena, pool, cursor, close), pool.text(']'));
-  return pool.sequence(values);
 }

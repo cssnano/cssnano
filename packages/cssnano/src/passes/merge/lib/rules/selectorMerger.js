@@ -26,4 +26,5 @@ export default function runMerge(root, browsers, context = createRunContext()) {
   do {
     runScan(root, mergeState);
   } while (joinNonAdjacent(root, mergeState));
+  mergeState.flushSelectors();
 }

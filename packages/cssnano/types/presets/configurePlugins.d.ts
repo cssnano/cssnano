@@ -27,6 +27,10 @@ export type PluginEntrySettings = {
     symbols?: SymbolTransform;
 };
 export type PluginEntry = readonly [StageEntry | TransformEntry, string, PluginEntrySettings];
+export type NamedKeys<Options> = string extends keyof Options ? never : keyof Options & string;
+export type EntryFor<Options extends object, Name extends keyof Options & string> = readonly [StageEntry<NonNullable<Options[Name]>> | TransformEntry<NonNullable<Options[Name]>>, Name, PluginEntrySettings & {
+    readonly optionKeys: readonly NamedKeys<NonNullable<Options[Name]>>[];
+}];
 export type Run = {
     members: HostMember[];
     transforms: Map<string, Record<PropertyKey, unknown>>;

@@ -2,12 +2,15 @@ import cssnanoUtils from '#utils';
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
+/** @import {TextTable} from '../../../../values/textTable.js' */
+
 /**
  * @param {import('postcss').AnyNode} nodeA
  * @param {import('postcss').AnyNode} nodeB
+ * @param {TextTable} textTable
  * @return {boolean}
  */
-function checkMatch(nodeA, nodeB) {
+function checkMatch(nodeA, nodeB, textTable) {
   if (nodeA.type === 'atrule' && nodeB.type === 'atrule') {
     const nameA = asciiLowerCase(nodeA.name);
     const nameB = asciiLowerCase(nodeB.name);
@@ -16,10 +19,12 @@ function checkMatch(nodeA, nodeB) {
     }
     if (nameA === 'layer') {
       const anonA = isAnonymousLayer(
-        /** @type {import('postcss').AtRule} */ (nodeA)
+        /** @type {import('postcss').AtRule} */ (nodeA),
+        textTable
       );
       const anonB = isAnonymousLayer(
-        /** @type {import('postcss').AtRule} */ (nodeB)
+        /** @type {import('postcss').AtRule} */ (nodeB),
+        textTable
       );
       if (anonA || anonB) {
         return anonA && anonB && nodeA === nodeB;
@@ -62,19 +67,22 @@ export function isKeyframes(container) {
  *
  * @param {import('postcss').Container | undefined} containerA
  * @param {import('postcss').Container | undefined} containerB
+ * @param {TextTable} textTable the selector tokens the walk stored, which give
+ *   each layer's prelude when it has a comment
  * @return {boolean}
  */
-export function sameContainer(containerA, containerB) {
+export function sameContainer(containerA, containerB, textTable) {
   if (!containerA || !containerB) {
     return !containerA && !containerB;
   }
   const a = /** @type {Child} */ (/** @type {unknown} */ (containerA));
   const b = /** @type {Child} */ (/** @type {unknown} */ (containerB));
   return (
-    checkMatch(a, b) &&
+    checkMatch(a, b, textTable) &&
     sameContainer(
       /** @type {import('postcss').Container | undefined} */ (a.parent),
-      /** @type {import('postcss').Container | undefined} */ (b.parent)
+      /** @type {import('postcss').Container | undefined} */ (b.parent),
+      textTable
     )
   );
 }

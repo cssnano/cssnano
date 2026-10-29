@@ -7,10 +7,7 @@ export type FunctionFrame = {
     calculation: boolean;
     operand: boolean;
 };
-export type Component = {
-    raw: string;
-    tokens: import('@csstools/css-tokenizer').CSSToken[];
-};
+import type { Component } from './valueComponents.js';
 /**
  * firstArgument is 'keyword' only while the first argument of round() is a
  * lone <rounding-strategy>, which the arity table does not count. In a
@@ -18,10 +15,7 @@ export type Component = {
  *
  * @typedef {{name: string | null, expected: import('@csstools/css-tokenizer').TokenType, commas: number, hasValue: boolean, firstArgument: 'empty' | 'keyword' | 'value', calculation: boolean, operand: boolean}} FunctionFrame
  */
-/**
- * @typedef {{raw: string, tokens: import('@csstools/css-tokenizer').CSSToken[]}}
- *   Component
- */
+/** @import {Component} from './valueComponents.js' */
 /** @param {import('@csstools/css-tokenizer').CSSToken} token @return {string} */
 export declare function tokenName(token: import('@csstools/css-tokenizer').CSSToken): string;
 /** @param {Component} component @return {string} */

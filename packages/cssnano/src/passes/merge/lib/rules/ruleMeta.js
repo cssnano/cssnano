@@ -12,7 +12,8 @@ import { VendorPrefixSummary } from './vendorPrefixSummary.js';
  * @property {string[]} list the distinct keys, in order of first appearance
  * @property {Set<string>} seen the same keys, for membership tests
  */
-/** @typedef {(selector: string) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
+/** @typedef {(selector: string, rule?: import('postcss').Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
+/** @import {RangePiece} from '../../../../values/joinRanges.js' */
 
 /** @type {readonly string[]} */
 const noElementKeys = Object.freeze([]);
@@ -42,6 +43,8 @@ export class RuleMeta {
   #declarationKeys;
   /** @type {RuleElementKeys | null | undefined} derived from the selector list; null when a selector has no element key */
   #elementKeys;
+  /** @type {RangePiece[] | null | undefined} the token range of each selector, one per selector; null when unknown */
+  #pieces;
 
   /**
    * @param {string[]} selectors
@@ -54,6 +57,7 @@ export class RuleMeta {
     this.#selectorText = undefined;
     this.#declarationKeys = undefined;
     this.#elementKeys = undefined;
+    this.#pieces = undefined;
   }
 
   /** @return {string[]} change it only through the methods of this class */
@@ -64,6 +68,19 @@ export class RuleMeta {
   /** @return {Declaration[]} */
   get declarations() {
     return this.#declarations;
+  }
+
+  /**
+   * @return {RangePiece[] | null | undefined} undefined until the caller
+   * sets them, and null when the token ranges of the selectors are not known
+   */
+  get pieces() {
+    return this.#pieces;
+  }
+
+  /** @param {RangePiece[] | null} pieces one per selector, or null */
+  setPieces(pieces) {
+    this.#pieces = pieces;
   }
 
   /** @param {Declaration[]} declarations */
@@ -93,7 +110,12 @@ export class RuleMeta {
    * @return {VendorPrefixSummary}
    */
   vendorProfile(lookup) {
-    this.#vendor ??= VendorPrefixSummary.of(this.#selectors.map(lookup));
+    if (this.#vendor === undefined) {
+      // A loop, since `map` would pass each index to a lookup that takes a rule.
+      const infos = [];
+      for (const selector of this.#selectors) infos.push(lookup(selector));
+      this.#vendor = VendorPrefixSummary.of(infos);
+    }
     return this.#vendor;
   }
 
@@ -103,26 +125,30 @@ export class RuleMeta {
    * there are none, which must not read as a rule that writes to no element.
    * A caller must not hold the list across a change to the rule.
    *
-   * @param {(selector: string) => string | null} [keyOf] the key of one selector
+   * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf] the key of one selector
    * @return {string[] | null}
    */
   elementKeys(keyOf = elementKeyOf) {
     if (this.#elementKeys === undefined) {
       this.#elementKeys = { list: [], seen: new Set() };
-      this.#addElementKeys(this.#selectors, keyOf);
+      this.#addElementKeys(0, keyOf);
     }
     return this.#elementKeys?.list.length ? this.#elementKeys.list : null;
   }
 
   /**
-   * @param {string[]} selectors
-   * @param {(selector: string) => string | null} keyOf
+   * Adds the keys of the selectors from index `from` on, each with its token
+   * range when the rule holds one.
+   *
+   * @param {number} from
+   * @param {(selector: string, piece: RangePiece | null) => string | null} keyOf
    */
-  #addElementKeys(selectors, keyOf) {
+  #addElementKeys(from, keyOf) {
     const keys = this.#elementKeys;
     if (!keys) return;
-    for (const selector of selectors) {
-      const key = keyOf(selector);
+    const selectors = this.#selectors;
+    for (let index = from; index < selectors.length; index++) {
+      const key = keyOf(selectors[index], this.#pieces?.[index] ?? null);
       if (key === null) {
         this.#elementKeys = null;
         return;
@@ -135,13 +161,13 @@ export class RuleMeta {
   }
 
   /**
-   * @param {string[]} selectors
-   * @param {(selector: string) => string | null} keyOf
+   * @param {number} from
+   * @param {(selector: string, piece: RangePiece | null) => string | null} keyOf
    * @return {readonly string[] | null}
    */
-  #gainElementKeys(selectors, keyOf) {
+  #gainElementKeys(from, keyOf) {
     const listed = this.#elementKeys?.list.length;
-    this.#addElementKeys(selectors, keyOf);
+    this.#addElementKeys(from, keyOf);
     const list = this.#elementKeys?.list;
     if (listed === undefined || list === undefined) return null;
     return list.length === listed ? noElementKeys : list.slice(listed);
@@ -170,17 +196,21 @@ export class RuleMeta {
   /**
    * @param {string[]} selectors appended to the rule's selector list
    * @param {SelectorLookup} lookup
-   * @param {(selector: string) => string | null} [keyOf]
+   * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
+   * @param {RangePiece[] | null} [pieces] the token range of each selector of
+   * the rule after the call, or null when they are not known
    * @return {readonly string[] | null} the element keys the selectors add to
    * those listed, or null when the rule's elements are not listed
    */
-  addSelectors(selectors, lookup, keyOf = elementKeyOf) {
+  addSelectors(selectors, lookup, keyOf = elementKeyOf, pieces = null) {
     this.#selectorText = undefined;
+    const from = this.#selectors.length;
     for (const selector of selectors) {
       this.#selectors.push(selector);
       this.#vendor?.add(lookup(selector));
     }
-    return this.#gainElementKeys(selectors, keyOf);
+    this.#pieces = pieces;
+    return this.#gainElementKeys(from, keyOf);
   }
 
   /**
@@ -193,6 +223,7 @@ export class RuleMeta {
     this.#selectorText = undefined;
     this.#vendor = vendor;
     this.#elementKeys = undefined;
+    this.#pieces = undefined;
   }
 
   /**
@@ -204,7 +235,7 @@ export class RuleMeta {
    *
    * @param {RuleMeta} earlier left unusable
    * @param {SelectorLookup} lookup
-   * @param {(selector: string) => string | null} [keyOf]
+   * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
    */
   absorbEarlier(earlier, lookup, keyOf = elementKeyOf) {
     const text = `${earlier.selectorText()},${this.selectorText()}`;
@@ -212,15 +243,25 @@ export class RuleMeta {
       .vendorProfile(lookup)
       .concat(this.vendorProfile(lookup));
     const selectors = earlier.#selectors;
+    const from = selectors.length;
     const own = this.#selectors;
     for (const selector of own) selectors.push(selector);
     this.#selectors = selectors;
     this.#selectorText = text;
     this.#vendor = vendor;
+    // Grows the earlier rule's pieces in place, as its selectors grow.
+    const earlierPieces = earlier.#pieces;
+    const ownPieces = this.#pieces;
+    if (earlierPieces && ownPieces) {
+      for (const piece of ownPieces) earlierPieces.push(piece);
+      this.#pieces = earlierPieces;
+    } else {
+      this.#pieces = null;
+    }
     // Extends the earlier rule's keys only if they are known: deriving them
     // from a long list would repeat on every merge.
     this.#elementKeys = earlier.#elementKeys;
-    this.#addElementKeys(own, keyOf);
+    this.#addElementKeys(from, keyOf);
   }
 }
 

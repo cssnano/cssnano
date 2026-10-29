@@ -18,12 +18,14 @@ import { reduceAlignmentFamily } from './decl/alignmentReducer.js';
 import { pairFamilyOf } from './decl/pairForms.js';
 import { reducePairFamily } from './decl/pairReducer.js';
 /** @import {BoxSupport} from './targetSupport.js' */
+/** @import {FoldedText, TextTable} from '../../../../values/textTable.js' */
 import { endsDeclarationRun } from './decl/declarationRuns.js';
 import { applyChildEdits } from '../deferredChildEdits.js';
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
 import { decodedPropertyName, isAll } from './decl/importanceLanes.js';
 import {
   foldableShorthands,
+  foldContainerDeclarations,
   foldShorthandDeclaration,
 } from './minifyShorthand.js';
 
@@ -63,11 +65,12 @@ function alignmentFamilyOf(prop) {
  * @typedef {{
  *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
  *   setsOtherColumn: boolean,
- *   shorthandMemoTable: Map<string, string | null>,
+ *   shorthandMemoTable: Map<string, FoldedText | null>,
  *   familyRecords: Map<string, FamilyRecord>,
  *   placeShorthands: boolean,
  *   boxSupport: BoxSupport,
- *   pairShorthands: ReadonlySet<string>
+ *   pairShorthands: ReadonlySet<string>,
+ *   textTable: TextTable
  * }} MergeContext
  */
 
@@ -92,21 +95,6 @@ function alignmentFamilyOf(prop) {
  */
 
 /**
- * Folds immediate shorthand declarations within a container (e.g. root or at-rule).
- * @param {Container} container
- * @param {Map<string, string | null>} shorthandMemoTable
- * @return {void}
- */
-function foldContainerDeclarations(container, shorthandMemoTable) {
-  if (!container.nodes) return;
-  for (const node of container.nodes) {
-    if (node.type === 'decl') {
-      foldShorthandDeclaration(node, shorthandMemoTable);
-    }
-  }
-}
-
-/**
  * Runs property-family reducers on classified declarations for a container.
  * @param {Container} container
  * @param {{
@@ -125,25 +113,37 @@ function foldContainerDeclarations(container, shorthandMemoTable) {
 function reduceClassifiedContainer(container, state, context) {
   if (state.boxes) {
     for (const box of state.boxes.values()) {
-      reduceBox(container, box, context.boxSupport);
+      reduceBox(container, box, context.boxSupport, context.textTable);
     }
   }
   if (state.borderRadiusDecls.length) {
     reduceBorderRadius(
       container,
       state.borderRadiusDecls,
-      state.borderRadiusLanes
+      state.borderRadiusLanes,
+      context.textTable
     );
   }
   if (state.borderDeclarations.length) {
-    reduceBorder(container, state.borderDeclarations, state.hasForeignBorder);
+    reduceBorder(
+      container,
+      state.borderDeclarations,
+      state.hasForeignBorder,
+      context.textTable
+    );
   }
   if (state.families) {
     for (const { family, decls, lanes } of state.families.values()) {
       if ('longhands' in family) {
-        reducePairFamily(container, family, decls, lanes);
+        reducePairFamily(container, family, decls, lanes, context.textTable);
       } else {
-        reduceAlignmentFamily(container, family, decls, lanes);
+        reduceAlignmentFamily(
+          container,
+          family,
+          decls,
+          lanes,
+          context.textTable
+        );
       }
     }
   }
@@ -217,14 +217,20 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
     } else if (allPhysicalBorderProperties.has(prop)) {
       state.borderDeclarations.push(child);
     } else if (foldableShorthands.has(prop)) {
-      foldShorthandDeclaration(child, context.shorthandMemoTable, prop);
+      foldShorthandDeclaration(
+        child,
+        context.shorthandMemoTable,
+        prop,
+        context.textTable
+      );
     } else {
       state.hasForeignBorder = true;
     }
     return;
   }
   if (prop.startsWith('column')) {
-    context.setsOtherColumn ||= setsOtherColumnProperty(child);
+    const { textTable } = context;
+    context.setsOtherColumn ||= setsOtherColumnProperty(child, textTable);
     if (allColumnProps.has(prop)) {
       state.columnDecls.push(child);
       state.columnLanes[laneIndex].push(child);
@@ -234,14 +240,24 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
   const { boxProperty, boxGroup } = record;
   if (boxGroup) {
     addBoxDeclaration(state, child, boxProperty, boxGroup, laneIndex);
-    foldShorthandDeclaration(child, context.shorthandMemoTable, prop);
+    foldShorthandDeclaration(
+      child,
+      context.shorthandMemoTable,
+      prop,
+      context.textTable
+    );
     return;
   }
   // Only when every target supports place-* may one be synthesized.
   const alignmentFamily = context.placeShorthands
     ? record.alignment
     : undefined;
-  foldShorthandDeclaration(child, context.shorthandMemoTable, prop);
+  foldShorthandDeclaration(
+    child,
+    context.shorthandMemoTable,
+    prop,
+    context.textTable
+  );
   if (alignmentFamily) {
     addFamilyDeclaration(state, alignmentFamily, child, laneIndex);
   }
@@ -274,7 +290,7 @@ function processContainer(container, context) {
   // Before classification, so the family reducers never see detached nodes.
   // Style rules only: at-rule descriptors follow their own validity rules.
   if (container.type === 'rule') {
-    discardOverriddenDeclarations(container);
+    discardOverriddenDeclarations(container, context.textTable);
     applyChildEdits(container);
   }
 
@@ -323,9 +339,15 @@ function processContainer(container, context) {
  * @param {boolean} placeShorthands
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
+ * @param {TextTable} textTable the tokens the walk left for the declarations
  * @return {MergeContext} the state that the rounds of one run share
  */
-export function longhandContext(placeShorthands, boxSupport, pairShorthands) {
+export function longhandContext(
+  placeShorthands,
+  boxSupport,
+  pairShorthands,
+  textTable
+) {
   return {
     columnRules: [],
     setsOtherColumn: false,
@@ -334,6 +356,7 @@ export function longhandContext(placeShorthands, boxSupport, pairShorthands) {
     placeShorthands,
     boxSupport,
     pairShorthands,
+    textTable,
   };
 }
 
@@ -347,7 +370,7 @@ export function longhandContext(placeShorthands, boxSupport, pairShorthands) {
 export function finishColumns(context) {
   if (!context.setsOtherColumn) {
     for (const [rule, decls, lanes] of context.columnRules) {
-      reduceColumns(rule, decls, lanes);
+      reduceColumns(rule, decls, lanes, context.textTable);
     }
     // A rule may hold several runs; rebuild it once, after all of them.
     for (const [rule] of context.columnRules) applyChildEdits(rule);
@@ -365,7 +388,11 @@ export function finishColumns(context) {
  */
 export function canonicalize(block, context) {
   if (block.type === 'root') {
-    foldContainerDeclarations(block, context.shorthandMemoTable);
+    foldContainerDeclarations(
+      block,
+      context.shorthandMemoTable,
+      context.textTable
+    );
     return;
   }
   processContainer(block, context);

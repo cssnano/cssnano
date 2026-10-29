@@ -52,6 +52,25 @@ function identifierWithText(text, value) {
   ]);
 }
 
+/**
+ * A function token whose text, including its `(`, is given. Use it when the
+ * name is already spelled, such as a pseudo-class name with an escape that
+ * must be kept as it is.
+ *
+ * @param {string} text a spelling the tokenizer reads as one function token
+ * @param {string} value the name that spelling decodes to
+ * @return {CSSToken}
+ */
+function funcWithText(text, value) {
+  return /** @type {CSSToken} */ ([
+    TokenType.Function,
+    text,
+    noPosition,
+    noPosition,
+    { value },
+  ]);
+}
+
 /** @param {string} text @param {number} index @return {number} */
 function skipDigits(text, index) {
   let next = index;
@@ -135,12 +154,14 @@ function numeric(representation, unit = '') {
   if (!isNumberText(representation)) {
     throw new RangeError(`${representation} is not a CSS number`);
   }
-  /** @type {{value: number, signCharacter?: string, type?: NumberType, unit?: string}} */
-  const data = { value: Number(representation) };
   const sign = representation[0];
-  if (sign === '+' || sign === '-') {
-    data.signCharacter = sign;
-  }
+  // Key order and the undefined `signCharacter` match the tokenizer's data,
+  // so every token reader sees one object shape.
+  /** @type {{value: number, signCharacter: string | undefined, type?: NumberType, unit?: string}} */
+  const data = {
+    value: Number(representation),
+    signCharacter: sign === '+' || sign === '-' ? sign : undefined,
+  };
   if (unit === '%') {
     return /** @type {CSSToken} */ ([
       TokenType.Percentage,
@@ -184,11 +205,11 @@ function integer(value) {
   if (!Number.isSafeInteger(value)) {
     throw new RangeError(`${value} is not a safe integer`);
   }
-  /** @type {{value: number, signCharacter?: string, type: NumberType}} */
-  const data = { value, type: NumberType.Integer };
-  if (value < 0) {
-    data.signCharacter = '-';
-  }
+  const data = {
+    value,
+    signCharacter: value < 0 ? '-' : undefined,
+    type: NumberType.Integer,
+  };
   return /** @type {CSSToken} */ ([
     TokenType.Number,
     String(value),
@@ -213,7 +234,7 @@ function percentage(value) {
     `${value}%`,
     noPosition,
     noPosition,
-    { value },
+    { value, signCharacter: value < 0 ? '-' : undefined },
   ]);
 }
 
@@ -240,21 +261,6 @@ function stringToken(text, value) {
     noPosition,
     noPosition,
     { value },
-  ]);
-}
-
-/**
- * A whitespace token of one space, the separator the serializer writes.
- *
- * @return {CSSToken}
- */
-function whitespace() {
-  return /** @type {CSSToken} */ ([
-    TokenType.Whitespace,
-    ' ',
-    noPosition,
-    noPosition,
-    undefined,
   ]);
 }
 
@@ -339,46 +345,34 @@ function func(name) {
 }
 
 /**
- * The `(` token that opens a group.
+ * A hash token whose text is given. Use it when the text is already spelled,
+ * such as an ID with an escape that must be kept as it is.
  *
+ * @param {string} text a spelling the tokenizer reads as one hash token
+ * @param {string} value the name that spelling decodes to
+ * @param {'id' | 'unrestricted'} type
  * @return {CSSToken}
  */
-function openParen() {
+function hashWithText(text, value, type) {
   return /** @type {CSSToken} */ ([
-    TokenType.OpenParen,
-    '(',
+    TokenType.Hash,
+    text,
     noPosition,
     noPosition,
-    undefined,
-  ]);
-}
-
-/**
- * The `)` token that closes a function or a group.
- *
- * @return {CSSToken}
- */
-function closeParen() {
-  return /** @type {CSSToken} */ ([
-    TokenType.CloseParen,
-    ')',
-    noPosition,
-    noPosition,
-    undefined,
+    { value, type },
   ]);
 }
 
 export {
-  closeParen,
   func,
+  funcWithText,
   hash,
+  hashWithText,
   ident,
   identifierWithText,
   integer,
   numeric,
-  openParen,
   percentage,
   stringToken,
   url,
-  whitespace,
 };

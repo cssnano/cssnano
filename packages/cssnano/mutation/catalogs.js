@@ -44,6 +44,49 @@ export const catalogs = [
     suites: mergeRulesSuites,
   },
   {
+    url: new URL('./pipeline/mutation-catalog-walk-values.js', import.meta.url),
+    test: true,
+  },
+  {
+    url: new URL('./pipeline/mutation-catalog-fold.js', import.meta.url),
+    test: true,
+  },
+  {
+    url: new URL(
+      './postcss-unique-selectors/mutation-catalog-writers.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
+      './postcss-reduce-idents/mutation-catalog-writers.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
+      './postcss-reduce-idents/mutation-catalog-counter-writers.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
+      './postcss-reduce-idents/mutation-catalog-grid-writers.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
+      './postcss-merge-idents/mutation-catalog-rewrite-writer.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
     url: new URL(
       './passes/merge/lib/longhand/mutation-catalog-validity.js',
       import.meta.url
@@ -76,8 +119,45 @@ export const catalogs = [
     test: true,
   },
   {
+    url: new URL(
+      './passes/merge/lib/rules/mutation-catalog-selector-writers.js',
+      import.meta.url
+    ),
+    suites: mergeRulesSuites,
+    test: true,
+  },
+  {
     url: new URL('./passes/merge/mutation-catalog.js', import.meta.url),
     suites: mergeRulesSuites,
+    test: true,
+  },
+  {
+    url: new URL(
+      './passes/merge/lib/longhand/mutation-catalog-writers.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
+      './passes/merge/lib/longhand/decl/mutation-catalog-radius-writers.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL('./values/mutation-catalog.js', import.meta.url),
+    test: true,
+  },
+  {
+    url: new URL('./values/mutation-catalog-buffer.js', import.meta.url),
+    test: true,
+  },
+  {
+    url: new URL(
+      './postcss-minify-selectors/mutation-catalog-fixed-point.js',
+      import.meta.url
+    ),
     test: true,
   },
 ];

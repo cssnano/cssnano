@@ -1,3 +1,4 @@
+import { TextTable } from '../../../../../src/values/textTable.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
@@ -10,11 +11,14 @@ import {
 test('recognizes escaped support-dependent function names', () => {
   const declaration = postcss.decl({ value: 'v\\61r(--value)' });
 
-  assert.deepEqual(requiredSupport(declaration), new Set(['var']));
+  assert.deepEqual(
+    requiredSupport(declaration, new TextTable()),
+    new Set(['var'])
+  );
 });
 
 const requires = (/** @type {string} */ value) =>
-  requiredSupport(postcss.decl({ prop: 'width', value }));
+  requiredSupport(postcss.decl({ prop: 'width', value }), new TextTable());
 
 test('requires unit support for a newer length unit', () => {
   assert.deepEqual(requires('5DVH'), new Set(['unit:dvh']));
@@ -72,7 +76,11 @@ test('requires nothing for longstanding units and six-digit hex colours', () => 
 test('treats an earlier longstanding unit as a fallback for a later newer unit', () => {
   const earlier = postcss.decl({ prop: 'width', value: '1px' });
   assert.equal(
-    isFallback(earlier, postcss.decl({ prop: 'width', value: '5dvh' })),
+    isFallback(
+      earlier,
+      postcss.decl({ prop: 'width', value: '5dvh' }),
+      new TextTable()
+    ),
     true
   );
 });
@@ -80,7 +88,11 @@ test('treats an earlier longstanding unit as a fallback for a later newer unit',
 test('does not treat a later longstanding unit as needing a fallback', () => {
   const earlier = postcss.decl({ prop: 'width', value: '1px' });
   assert.equal(
-    isFallback(earlier, postcss.decl({ prop: 'width', value: '2em' })),
+    isFallback(
+      earlier,
+      postcss.decl({ prop: 'width', value: '2em' }),
+      new TextTable()
+    ),
     false
   );
 });
@@ -88,7 +100,8 @@ test('does not treat a later longstanding unit as needing a fallback', () => {
 test('does not block a merge for rgba(), which authors write without fallbacks', () => {
   assert.equal(
     mergeBlockingSupport(
-      postcss.decl({ prop: 'color', value: 'rgba(0,0,0,.5)' })
+      postcss.decl({ prop: 'color', value: 'rgba(0,0,0,.5)' }),
+      new TextTable()
     ).size,
     0
   );
@@ -96,14 +109,20 @@ test('does not block a merge for rgba(), which authors write without fallbacks',
 
 test('blocks a merge for calc(), which Opera Mini drops', () => {
   assert.deepEqual(
-    mergeBlockingSupport(postcss.decl({ prop: 'width', value: 'calc(1px)' })),
+    mergeBlockingSupport(
+      postcss.decl({ prop: 'width', value: 'calc(1px)' }),
+      new TextTable()
+    ),
     new Set(['calc'])
   );
 });
 
 test('blocks a merge for a newer unit', () => {
   assert.deepEqual(
-    mergeBlockingSupport(postcss.decl({ prop: 'width', value: '5dvh' })),
+    mergeBlockingSupport(
+      postcss.decl({ prop: 'width', value: '5dvh' }),
+      new TextTable()
+    ),
     new Set(['unit:dvh'])
   );
 });

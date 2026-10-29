@@ -3,6 +3,7 @@ import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { detectDeclaration } from '#stylehacks';
 import canExplode from '../canExplode.js';
 import hasSubstitution from '../hasSubstitution.js';
+import { declarationTokens } from '../componentRanges.js';
 import { mergeBlockingSupport, needsUnmetSupport } from '../isFallback.js';
 import minifyTrbl from '../minifyTrbl.js';
 import { minifyPair, parsePair } from '../pairs.js';
@@ -22,10 +23,17 @@ const { asciiLowerCase } = cssnanoUtils;
  * `hasSubstitution` also rejects a custom property, so `canExplode` skips it.
  *
  * @param {Declaration} declaration - a shorthand
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {boolean}
  */
-export function isExplodable(declaration) {
-  return canExplode(declaration, false) && !hasSubstitution(declaration.value);
+export function isExplodable(declaration, textTable) {
+  return (
+    canExplode(declaration, textTable, false) &&
+    !hasSubstitution(
+      declaration.value,
+      declarationTokens(textTable, declaration)
+    )
+  );
 }
 
 const trblForms = { parse: parseTrbl, minify: minifyTrbl };
@@ -111,10 +119,11 @@ export function shortestWithFreeSlots(values, free, minify) {
 /**
  * @param {BoxFamily} family
  * @param {Declaration[]} laneDecls
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {number[]} for each slot, the position of the last declaration of
  * the family that sets it and that every target parses, or `-1`
  */
-function lastPlainSetters(family, laneDecls) {
+function lastPlainSetters(family, laneDecls, textTable) {
   const last = family.longhands.map(() => -1);
   for (const [index, declaration] of laneDecls.entries()) {
     const property = boxProperties.get(asciiLowerCase(declaration.prop));
@@ -122,7 +131,7 @@ function lastPlainSetters(family, laneDecls) {
       declaration.parent === undefined ||
       property?.family !== family ||
       detectDeclaration(declaration) ||
-      needsUnmetSupport(declaration)
+      needsUnmetSupport(declaration, textTable)
     ) {
       continue;
     }
@@ -147,9 +156,10 @@ function lastPlainSetters(family, laneDecls) {
  * @param {Declaration[]} laneDecls
  * @param {Map<Declaration, Declaration> | undefined} inserted - the shorthand
  * a commit put after a declaration
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {void}
  */
-function freeOverriddenSlots(family, laneDecls, inserted) {
+function freeOverriddenSlots(family, laneDecls, inserted, textTable) {
   const { parse, minify } = formsOf(family);
   /** @type {number[] | undefined} */
   let lastOverrider;
@@ -163,13 +173,13 @@ function freeOverriddenSlots(family, laneDecls, inserted) {
       property?.family !== family ||
       property.slot !== shorthandSlot ||
       detectDeclaration(target) ||
-      !isExplodable(target) ||
-      mergeBlockingSupport(target).size > 0
+      !isExplodable(target, textTable) ||
+      mergeBlockingSupport(target, textTable).size > 0
     ) {
       continue;
     }
 
-    lastOverrider ??= lastPlainSetters(family, laneDecls);
+    lastOverrider ??= lastPlainSetters(family, laneDecls, textTable);
     if (lastOverrider.every((setter) => setter <= index)) continue;
 
     const values = parse(target.value);
@@ -179,8 +189,7 @@ function freeOverriddenSlots(family, laneDecls, inserted) {
       minify
     );
     if (result !== undefined && result.length < target.value.length) {
-      target.value = result;
-      delete target.raws.value;
+      textTable.setText(target, result);
     }
   }
 }
@@ -195,6 +204,7 @@ function freeOverriddenSlots(family, laneDecls, inserted) {
  * @param {boolean} mayInsert - whether every target supports the shorthand
  * @param {Map<Declaration, Declaration> | undefined} inserted
  * @return {void}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
 function flush(
   rule,
@@ -204,21 +214,29 @@ function flush(
   fallbacks,
   important,
   mayInsert,
-  inserted
+  inserted,
+  textTable
 ) {
-  const full = flushableSlots(slots);
+  const full = flushableSlots(slots, textTable);
   if (!full) return;
 
   const kw = isCssWideKeyword(full[0].value);
   const rawValues = full.map((s) => s.value).join(' ');
   const shorthandVal = kw ? full[0].value : formsOf(family).minify(rawValues);
-  commitShorthand(rule, full, contributing, fallbacks, {
-    prop: family.shorthand,
-    value: shorthandVal,
-    important,
-    mayInsert,
-    inserted,
-  });
+  commitShorthand(
+    rule,
+    full,
+    contributing,
+    fallbacks,
+    {
+      prop: family.shorthand,
+      value: shorthandVal,
+      important,
+      mayInsert,
+      inserted,
+    },
+    textTable
+  );
 }
 
 /**
@@ -237,6 +255,7 @@ function flush(
  * importance, in source order
  * @param {boolean} important
  * @param {boolean} mayInsert - whether every target supports the shorthand
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {void}
  */
 export function reduceFamilyLane(
@@ -244,27 +263,33 @@ export function reduceFamilyLane(
   family,
   laneDecls,
   important,
-  mayInsert
+  mayInsert,
+  textTable
 ) {
   const count = family.longhands.length;
   /** @type {Map<Declaration, Declaration> | undefined} */
   let inserted;
   let position = 0;
   const { parse } = formsOf(family);
-  const lane = new SlotLane(count, (slots, contributing, fallbacks) => {
-    // Only a shorthand with a declaration after it can have a value overridden.
-    if (position < laneDecls.length - 1) inserted ??= new Map();
-    flush(
-      rule,
-      family,
-      slots,
-      contributing,
-      fallbacks,
-      important,
-      mayInsert,
-      inserted
-    );
-  });
+  const lane = new SlotLane(
+    count,
+    (slots, contributing, fallbacks) => {
+      // Only a shorthand with a declaration after it can have a value overridden.
+      if (position < laneDecls.length - 1) inserted ??= new Map();
+      flush(
+        rule,
+        family,
+        slots,
+        contributing,
+        fallbacks,
+        important,
+        mayInsert,
+        inserted,
+        textTable
+      );
+    },
+    textTable
+  );
 
   for (position = 0; position < laneDecls.length; position++) {
     const decl = laneDecls[position];
@@ -280,7 +305,10 @@ export function reduceFamilyLane(
       continue;
     }
     const isShort = property.slot === shorthandSlot;
-    if (detectDeclaration(decl) || (isShort && !isExplodable(decl))) {
+    if (
+      detectDeclaration(decl) ||
+      (isShort && !isExplodable(decl, textTable))
+    ) {
       lane.reset();
       continue;
     }
@@ -300,5 +328,6 @@ export function reduceFamilyLane(
   position = laneDecls.length;
   lane.reset();
 
-  if (laneDecls.length > 1) freeOverriddenSlots(family, laneDecls, inserted);
+  if (laneDecls.length > 1)
+    freeOverriddenSlots(family, laneDecls, inserted, textTable);
 }

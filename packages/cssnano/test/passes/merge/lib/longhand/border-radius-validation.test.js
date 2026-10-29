@@ -179,10 +179,7 @@ test(
 );
 
 test('isValidLengthPercentage returns false for multi-token terms', () => {
-  assert.equal(
-    isValidLengthPercentage('10px 20px', tokens('10px 20px')),
-    false
-  );
+  assert.equal(isValidLengthPercentage(tokens('10px 20px')), false);
 });
 
 test(

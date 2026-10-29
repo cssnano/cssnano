@@ -1,6 +1,7 @@
 import cssnanoUtils from '#utils';
+import { TextTable } from '../../values/textTable.js';
 
-const { asciiLowerCase, decoded, TokenType, tokens } = cssnanoUtils;
+const { asciiLowerCase, decoded, TokenType } = cssnanoUtils;
 
 const plugin = 'postcss-discard-empty';
 
@@ -20,7 +21,7 @@ const SEPARATOR = '\0';
  * Builds the key of one `<layer-name>`, `<ident> ['.' <ident>]*`, from its
  * tokens. Whitespace is allowed only around the name, not between segments.
  *
- * @param {ReturnType<typeof tokens>} list
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list
  * @param {number} from
  * @param {number} to exclusive
  * @return {string | undefined} decoded segments joined by {@link SEPARATOR}
@@ -68,11 +69,12 @@ function layerNameKey(list, from, to) {
  * with any invalid name, so those return `undefined` and declare nothing,
  * as does an empty prelude, which names no layer.
  *
- * @param {string} params
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} prelude the
+ *   tokens of the prelude
  * @return {string[] | undefined}
  */
-function parseLayerNames(params) {
-  const list = tokens(params).filter((token) => token[0] !== TokenType.Comment);
+function parseLayerNames(prelude) {
+  const list = prelude.filter((token) => token[0] !== TokenType.Comment);
   /** @type {string[]} */
   const names = [];
   let from = 0;
@@ -139,10 +141,12 @@ function reportRemoval(result, node) {
  *
  * @param {import('postcss').Root} css
  * @param {import('postcss').Result} result
- * @param {(node: import('postcss').AnyNode) => void} [visit]
+ * @param {((node: import('postcss').AnyNode) => void) | undefined} visit
+ * @param {import('../../values/textTable.js').TextTable} table the text table
+ *   the walk stored, which gives each layer's names
  * @return {void}
  */
-export function discardAndReport(css, result, visit) {
+export function discardAndReport(css, result, visit, table) {
   /** Layer keys declared in each open condition, outermost (top level) first.
    * Sets are created on first use; most conditions declare no layer.
    * @type {(Set<string> | undefined)[]} */
@@ -195,7 +199,11 @@ export function discardAndReport(css, result, visit) {
     /** @type {import('postcss').ChildNode[] | undefined} */
     const sub = /** @type {import('postcss').Container} */ (node).nodes;
     const isLayer = type === 'atrule' && asciiLowerCase(node.name) === 'layer';
-    const names = isLayer ? parseLayerNames(node.params) : undefined;
+    const names = isLayer
+      ? parseLayerNames(
+          table.tokens(/** @type {import('postcss').AtRule} */ (node))
+        )
+      : undefined;
     // A block takes one name; an unnamed or invalid block gets a segment
     // no other layer can share.
     const name = sub && names?.length === 1 ? names[0] : undefined;
@@ -273,7 +281,7 @@ function pluginCreator() {
      * @param {import('postcss').Helpers} helpers
      */
     OnceExit(css, { result }) {
-      discardAndReport(css, result);
+      discardAndReport(css, result, undefined, new TextTable());
     },
   };
 }

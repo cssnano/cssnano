@@ -2,7 +2,7 @@ import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import specData from '../data/mergeIdents.json' with { type: 'json' };
 
-const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
+const { asciiLowerCase, decoded } = cssnanoUtils;
 
 const VENDOR_PREFIX = /^-(webkit|moz|o)-/v;
 
@@ -112,19 +112,26 @@ const COUNTER_STYLE_FUNCTIONS = new Map(
 );
 
 /**
- * @param {string} params
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} parsedTokens
+ *   the tokens of the prelude, whose comments and whitespace are skipped
  * @param {string} atRuleName
  * @return {{ isString: boolean, isReservedName: boolean, key: string, tokenText: string } | null}
  */
-function parseAtRuleName(params, atRuleName) {
-  const tokenList = tokens(params).filter(
-    (t) => t[0] !== TokenType.Whitespace && t[0] !== TokenType.Comment
-  );
-  if (tokenList.length !== 1) {
+function parseAtRuleName(parsedTokens, atRuleName) {
+  let first;
+  for (const token of parsedTokens) {
+    if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment) {
+      continue;
+    }
+    if (first !== undefined) {
+      return null;
+    }
+    first = token;
+  }
+  if (first === undefined) {
     return null;
   }
   const isCounterStyle = atRuleName.endsWith('counter-style');
-  const first = tokenList[0];
   if (first[0] === TokenType.Ident) {
     const val = decoded(first);
     const lower = asciiLowerCase(val);

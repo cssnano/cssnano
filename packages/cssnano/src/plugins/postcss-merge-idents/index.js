@@ -16,10 +16,13 @@ import {
   VENDOR_PREFIX,
 } from './lib/grammar.js';
 import { scanDeclarations } from './lib/protectedNames.js';
-import { createReplacement, rewriteDeclaration } from './lib/valueRewriter.js';
+import { preludeTokens } from './lib/trailingEscape.js';
+import { createReplacement, rewriteReferences } from './lib/valueRewriter.js';
+import { TextTable } from '../../values/textTable.js';
 
 /** @import {ChildNode} from 'postcss' */
 /** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {TextTable as TextTableType} from '../../values/textTable.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -234,10 +237,11 @@ function namespaceOf(family) {
  *
  * @param {SymbolLists} lists
  * @param {(node: ChildNode) => void} remove
+ * @param {TextTableType} table
  * @return {void}
  */
-function mergeAtRules(lists, remove) {
-  const layerRegistry = new LayerRegistry();
+function mergeAtRules(lists, remove, table) {
+  const layerRegistry = new LayerRegistry(table);
   for (const layerRule of lists.layers) {
     if (isAttached(layerRule)) {
       layerRegistry.declareLayerAtRule(layerRule);
@@ -261,10 +265,8 @@ function mergeAtRules(lists, remove) {
     }
     const family = asciiLowerCase(atRule.name);
     const namespace = namespaceOf(family);
-    const params = atRule.raws?.between
-      ? atRule.params + atRule.raws.between
-      : atRule.params;
-    const parsed = namespace && parseAtRuleName(params, family);
+    const parsed =
+      namespace && parseAtRuleName(preludeTokens(atRule, table), family);
     // A statement without a block defines nothing.
     if (!namespace || !atRule.nodes || !parsed) {
       continue;
@@ -313,7 +315,8 @@ function mergeAtRules(lists, remove) {
           groupedNames,
           lists.functions.filter(isAttached),
           lists.parameterRules.filter(isAttached),
-          lists.conditionRules.filter(isAttached)
+          lists.conditionRules.filter(isAttached),
+          table
         )
       : { protectedNames: new Set(), references: [] };
   /** @type {Map<string, Map<string, import('./lib/valueRewriter.js').Replacement>>} */
@@ -333,7 +336,7 @@ function mergeAtRules(lists, remove) {
 
   // Removing a repeat definition of one name leaves no reference to respell.
   if ([...renames.values()].some((namespaceRenames) => namespaceRenames.size)) {
-    rewriteReferences(references, renames);
+    rewriteReferences(references, renames, table);
   }
 
   // An earlier removal in this loop may have emptied and removed a parent.
@@ -345,30 +348,17 @@ function mergeAtRules(lists, remove) {
 }
 
 /**
- * @param {import('./lib/protectedNames.js').Reference[]} references
- * @param {Map<string, Map<string, import('./lib/valueRewriter.js').Replacement>>} renames
- * @return {void}
- */
-function rewriteReferences(references, renames) {
-  for (const { decl, classification, value } of references) {
-    const namespaceRenames = renames.get(classification.namespace);
-    if (namespaceRenames?.size) {
-      rewriteDeclaration(decl, classification.kind, namespaceRenames, value);
-    }
-  }
-}
-
-/**
  * Merges the names of the advanced transform's lists. The walk after merge
  * collects the lists, so the transform needs no walk of its own.
  *
  * @param {SymbolLists} lists
- * @param {Record<PropertyKey, never>} _options takes no options
+ * @param {Record<PropertyKey, unknown>} _options takes no options
  * @param {(node: ChildNode) => void} remove
+ * @param {TextTableType} table the text the walk stored
  * @return {void}
  */
-export function mergeIdentsSymbols(lists, _options, remove) {
-  mergeAtRules(lists, remove);
+export function mergeIdentsSymbols(lists, _options, remove, table) {
+  mergeAtRules(lists, remove, table);
 }
 
 /**
@@ -383,7 +373,7 @@ function pluginCreator() {
     OnceExit(css) {
       const lists = createSymbolLists();
       css.walk(symbolVisit(lists));
-      mergeIdentsSymbols(lists, {}, (node) => node.remove());
+      mergeIdentsSymbols(lists, {}, (node) => node.remove(), new TextTable());
     },
   };
 }

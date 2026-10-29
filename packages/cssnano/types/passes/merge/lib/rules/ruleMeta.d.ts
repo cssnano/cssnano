@@ -14,7 +14,8 @@ export type RuleElementKeys = {
      */
     seen: Set<string>;
 };
-export type SelectorLookup = (selector: string) => import('./ensureCompatibility.js').SelectorInfo;
+export type SelectorLookup = (selector: string, rule?: import('postcss').Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo;
+import type { RangePiece } from '../../../../values/joinRanges.js';
 /**
  * The selector list of a rule with what is derived from it. Every field is
  * set up front so all instances share one object layout.
@@ -30,6 +31,13 @@ export declare class RuleMeta {
     get selectors(): string[];
     /** @return {Declaration[]} */
     get declarations(): Declaration[];
+    /**
+     * @return {RangePiece[] | null | undefined} undefined until the caller
+     * sets them, and null when the token ranges of the selectors are not known
+     */
+    get pieces(): RangePiece[] | null | undefined;
+    /** @param {RangePiece[] | null} pieces one per selector, or null */
+    setPieces(pieces: RangePiece[] | null): void;
     /** @param {Declaration[]} declarations */
     setDeclarations(declarations: Declaration[]): void;
     /**
@@ -52,10 +60,10 @@ export declare class RuleMeta {
      * there are none, which must not read as a rule that writes to no element.
      * A caller must not hold the list across a change to the rule.
      *
-     * @param {(selector: string) => string | null} [keyOf] the key of one selector
+     * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf] the key of one selector
      * @return {string[] | null}
      */
-    elementKeys(keyOf?: (selector: string) => string | null): string[] | null;
+    elementKeys(keyOf?: (selector: string, piece: RangePiece | null) => string | null): string[] | null;
     /** @return {string} */
     selectorText(): string;
     /**
@@ -69,11 +77,13 @@ export declare class RuleMeta {
     /**
      * @param {string[]} selectors appended to the rule's selector list
      * @param {SelectorLookup} lookup
-     * @param {(selector: string) => string | null} [keyOf]
+     * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
+     * @param {RangePiece[] | null} [pieces] the token range of each selector of
+     * the rule after the call, or null when they are not known
      * @return {readonly string[] | null} the element keys the selectors add to
      * those listed, or null when the rule's elements are not listed
      */
-    addSelectors(selectors: string[], lookup: SelectorLookup, keyOf?: (selector: string) => string | null): readonly string[] | null;
+    addSelectors(selectors: string[], lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null, pieces?: RangePiece[] | null): readonly string[] | null;
     /**
      * @param {string[]} selectors replaces the rule's selector list
      * @param {VendorPrefixSummary} [vendor] the profile of `selectors` when the caller
@@ -89,9 +99,9 @@ export declare class RuleMeta {
      *
      * @param {RuleMeta} earlier left unusable
      * @param {SelectorLookup} lookup
-     * @param {(selector: string) => string | null} [keyOf]
+     * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
      */
-    absorbEarlier(earlier: RuleMeta, lookup: SelectorLookup, keyOf?: (selector: string) => string | null): void;
+    absorbEarlier(earlier: RuleMeta, lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null): void;
 }
 /**
  * @param {Rule} rule

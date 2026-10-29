@@ -1,20 +1,24 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import { preludeTokens } from './trailingEscape.js';
 
-const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
+const { asciiLowerCase, decoded } = cssnanoUtils;
+
+/** @import {TextTable} from '../../../values/textTable.js' */
 
 /**
- * Parses a @layer parameter list into decoded layer-name paths. A period is a
- * separator only as a Delim token between idents; an escaped dot is part of
- * the preceding identifier's value, so `a\.b` is one segment named "a.b".
- * Whitespace and comments around separators are allowed, preserving the
+ * Parses the tokens of a @layer parameter list into decoded layer-name paths.
+ * A period is a separator only as a Delim token between idents; an escaped dot
+ * is part of the preceding identifier's value, so `a\.b` is one segment named
+ * "a.b". Whitespace and comments around separators are allowed, preserving the
  * previous handling of `a . b`.
  *
- * @param {string} params
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} parsedTokens
+ *   the tokens of the layer's prelude
  * @return {string[][] | null} one decoded segment path per declared name
  */
-function parseLayerNameList(params) {
-  const tokenList = tokens(params).filter(
+function parseLayerNameList(parsedTokens) {
+  const tokenList = parsedTokens.filter(
     (t) => t[0] !== TokenType.Whitespace && t[0] !== TokenType.Comment
   );
   /** @type {string[][]} */
@@ -75,12 +79,14 @@ function enclosingLayerRules(node) {
 }
 
 class LayerRegistry {
-  constructor() {
+  /** @param {TextTable} table the text the walk stored */
+  constructor(table) {
+    this.table = table;
     this.nextIndex = 0;
     /** @type {Map<string, { index: number, children: LayerRegistry }>} */
     this.layers = new Map();
     /** @type {Map<import('postcss').AtRule, { index: number, children: LayerRegistry }>} */
-    this.anonymous = new Map();
+    this.entries = new Map();
   }
 
   /**
@@ -90,25 +96,25 @@ class LayerRegistry {
   getOrCreate(name) {
     let entry = this.layers.get(name);
     if (!entry) {
-      entry = { index: this.nextIndex++, children: new LayerRegistry() };
+      entry = {
+        index: this.nextIndex++,
+        children: new LayerRegistry(this.table),
+      };
       this.layers.set(name, entry);
     }
     return entry;
   }
 
   /**
-   * Entry for a layer with no name or an unparseable name: every occurrence
-   * is a unique cascade layer, but names nested inside still order beneath
-   * it through the child registry.
+   * The entry at a segment path, creating the missing segments.
    *
-   * @param {import('postcss').AtRule} layerRule
+   * @param {string[]} segments
    * @return {{ index: number, children: LayerRegistry }}
    */
-  getOrCreateAnonymous(layerRule) {
-    let entry = this.anonymous.get(layerRule);
-    if (!entry) {
-      entry = { index: this.nextIndex++, children: new LayerRegistry() };
-      this.anonymous.set(layerRule, entry);
+  entryAt(segments) {
+    let entry = this.getOrCreate(segments[0]);
+    for (let i = 1; i < segments.length; i++) {
+      entry = entry.children.getOrCreate(segments[i]);
     }
     return entry;
   }
@@ -116,21 +122,27 @@ class LayerRegistry {
   /**
    * The registry entry a single layer at-rule occupies, creating missing
    * segments as needed. Statement lists and unparseable names fall back to a
-   * unique anonymous entry so they order but never match another spelling.
+   * unique entry, so they order but never match another spelling; names nested
+   * inside still order beneath it through the child registry. A rule keeps one
+   * entry, so its name is read once however many definitions it holds.
    *
    * @param {import('postcss').AtRule} layerRule
    * @return {{ index: number, children: LayerRegistry }}
    */
   entryFor(layerRule) {
-    const names = layerRule.params.trim()
-      ? parseLayerNameList(layerRule.params)
-      : null;
-    if (names === null || names.length !== 1) {
-      return this.getOrCreateAnonymous(layerRule);
-    }
-    let entry = this.getOrCreate(names[0][0]);
-    for (let i = 1; i < names[0].length; i++) {
-      entry = entry.children.getOrCreate(names[0][i]);
+    let entry = this.entries.get(layerRule);
+    if (entry === undefined) {
+      const names = layerRule.params.trim()
+        ? parseLayerNameList(preludeTokens(layerRule, this.table))
+        : null;
+      entry =
+        names !== null && names.length === 1
+          ? this.entryAt(names[0])
+          : {
+              index: this.nextIndex++,
+              children: new LayerRegistry(this.table),
+            };
+      this.entries.set(layerRule, entry);
     }
     return entry;
   }
@@ -158,15 +170,12 @@ class LayerRegistry {
     if (!layerRule.params.trim()) {
       return;
     }
-    const names = parseLayerNameList(layerRule.params);
+    const names = parseLayerNameList(preludeTokens(layerRule, this.table));
     if (names === null) {
       return;
     }
     for (const segments of names) {
-      let entry = current.getOrCreate(segments[0]);
-      for (let i = 1; i < segments.length; i++) {
-        entry = entry.children.getOrCreate(segments[i]);
-      }
+      current.entryAt(segments);
     }
   }
 

@@ -12,10 +12,10 @@ import CommentRemover from './lib/commentRemover.js';
  * The comment part of the stage. The walk calls `comments` once per stylesheet,
  * so each stylesheet counts its own first important comment.
  *
- * @type {StageEntry}
+ * @satisfies {StageEntry}
  */
 const discardComments = {
-  create(options) {
+  create(/** @type {Options} */ options) {
     return {
       comments() {
         const remover = new CommentRemover(options);

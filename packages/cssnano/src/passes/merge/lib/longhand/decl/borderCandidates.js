@@ -1,6 +1,8 @@
 import cssnanoUtils from '#utils';
 import { detach } from '../../deferredChildEdits.js';
 import insertCloned from '../insertCloned.js';
+/** @import {TextTable} from '../../../../../values/textTable.js' */
+/** @import {ValueComponent} from '../componentRanges.js' */
 import { setsLonghands } from '../spec.js';
 import {
   allBorderShorthands,
@@ -75,29 +77,39 @@ function compareCandidates(a, b, lane) {
 }
 /**
  * @param {string[]} cells
+ * @param {(ValueComponent | undefined)[]} cellComponents
  * @param {Set<Declaration>[]} cellHistory
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
  * @param {boolean} hasReset
  * @param {boolean} lane
  * @param {Set<Declaration>} fallbacks
+ * @param {TextTable} textTable
  */
 export function generateCandidates(
   cells,
+  cellComponents,
   cellHistory,
   touched,
   barrierCells,
   hasReset,
   lane,
-  fallbacks
+  fallbacks,
+  textTable
 ) {
   const availSides = getAvailableSides(
     cellHistory,
     touched,
     barrierCells,
-    fallbacks
+    fallbacks,
+    textTable
   );
-  const availComps = getAvailableComponents(cellHistory, touched, barrierCells);
+  const availComps = getAvailableComponents(
+    cellHistory,
+    touched,
+    barrierCells,
+    textTable
+  );
 
   const protectedCells = new Set(
     [...touched].filter((idx) =>
@@ -125,14 +137,17 @@ export function generateCandidates(
     barrierCells,
     cellHistory,
     cells,
+    cellComponents,
     lane,
-    fallbacks
+    fallbacks,
+    textTable
   );
 
   const compCands = getSubsets(availComps).map((sub) =>
     createGroupCandidate(
       sub.map((c) => componentCells[c]),
       cells,
+      cellComponents,
       touched,
       blockedCells,
       true
@@ -143,6 +158,7 @@ export function generateCandidates(
     createGroupCandidate(
       sub.map((s) => sideCells[s]),
       cells,
+      cellComponents,
       touched,
       blockedCells,
       false
@@ -227,8 +243,9 @@ export function selectBestCandidate(
  * @param {{ cand: { decls: { prop: string, value: string }[], rank: number, mask: number, coveredCells: Set<number> }, repList: Declaration[], removable: Declaration[], diff: number, size: number, fallbacks: Set<Declaration> }} best
  * @param {Declaration[]} segment
  * @param {boolean} lane
+ * @param {TextTable} textTable
  */
-export function applyBestCandidate(rule, best, segment, lane) {
+export function applyBestCandidate(rule, best, segment, lane, textTable) {
   const {
     cand: bestCand,
     repList,
@@ -278,7 +295,12 @@ export function applyBestCandidate(rule, best, segment, lane) {
 
   let prev = anchor;
   for (const { prop, value } of toInsert) {
-    prev = insertCloned(rule, prev, { prop, value, important: lane });
+    prev = insertCloned(
+      rule,
+      prev,
+      { prop, value, important: lane },
+      textTable
+    );
   }
 
   for (const d of representedDecls) {

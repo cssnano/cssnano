@@ -1,11 +1,18 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { list } from 'postcss';
 import { boxProperties, shorthandSlot } from './decl/boxGroups.js';
+import {
+  rangeText,
+  tokenComponentRanges,
+  valueTokens,
+} from './componentRanges.js';
 import { isLengthValue, parseDimension } from './lengthGrammar.js';
 import { mathType } from './mathType.js';
 import { isTrustedFunction, substitutionFunctions } from './unresolved.js';
 import { withoutVendorPrefix } from './vendorPrefix.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 const { asciiLowerCase, decoded } = cssnanoUtils;
 
@@ -22,14 +29,17 @@ const { asciiLowerCase, decoded } = cssnanoUtils;
  * (`var()`) defers the check to computed-value time, so the declaration still
  * overrides. Anything the plugin cannot type fails closed.
  *
- * @param {string} token
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
  * @param {{auto: boolean, percentage: boolean, negative: boolean}} grammar
  * @return {boolean}
  */
-function keepsFunction(token, grammar) {
+function keepsFunction(tokens, start, end, grammar) {
   let opened = false;
   let substituted = false;
-  for (const part of tokenize({ css: token })) {
+  for (let index = start; index < end; index++) {
+    const part = tokens[index];
     switch (part[0]) {
       case TokenType.Function: {
         const name = decoded(part);
@@ -44,7 +54,6 @@ function keepsFunction(token, grammar) {
         if (!grammar.percentage) return false;
         break;
       case TokenType.Whitespace:
-      case TokenType.EOF:
         break;
       default:
         if (!opened) return false;
@@ -53,7 +62,7 @@ function keepsFunction(token, grammar) {
   if (!opened) return false;
   if (substituted) return true;
 
-  const type = mathType(token);
+  const type = mathType(tokens, start, end);
   return (
     type === 'length' ||
     (type !== undefined && type !== 'number' && grammar.percentage)
@@ -61,15 +70,11 @@ function keepsFunction(token, grammar) {
 }
 
 /**
- * @param {string} token
+ * @param {string} token a component with no function
  * @param {{auto: boolean, percentage: boolean, negative: boolean}} grammar
  * @return {boolean}
  */
-function specifiesSide(token, grammar) {
-  if (token.includes('(')) {
-    return keepsFunction(token, grammar);
-  }
-
+function plainSideKeeps(token, grammar) {
   const lowered = asciiLowerCase(token);
 
   if (lowered === 'auto') {
@@ -91,12 +96,49 @@ function specifiesSide(token, grammar) {
 }
 
 /**
+ * @param {string} value the text the tokens spell
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} start
+ * @param {number} end
+ * @param {{auto: boolean, percentage: boolean, negative: boolean}} grammar
+ * @return {boolean}
+ */
+function rangeKeeps(value, tokens, start, end, grammar) {
+  const token = rangeText(value, tokens, start, end);
+  return token.includes('(')
+    ? keepsFunction(tokens, start, end, grammar)
+    : plainSideKeeps(token, grammar);
+}
+
+/**
+ * The string path: `list.space` splits the value, and each component is
+ * tokenized on its own.
+ *
+ * @param {string} value
+ * @param {number} most
+ * @param {{auto: boolean, percentage: boolean, negative: boolean}} grammar
+ * @return {boolean}
+ */
+function stringComponentsKeep(value, most, grammar) {
+  const components = list.space(value);
+  if (components.length === 0 || components.length > most) return false;
+  return components.every((component) => {
+    if (!component.includes('(')) return plainSideKeeps(component, grammar);
+    const componentTokens = cssnanoUtils.tokens(component);
+    return keepsFunction(componentTokens, 0, componentTokens.length, grammar);
+  });
+}
+
+/**
  * @param {string} prop lower-cased
  * @param {string} value
+ * @param {readonly CSSToken[]} [tokens] the tokens `value` spells. A value with
+ * no `(` has no function to type, so it needs none; one with a `(` is
+ * tokenized when the caller omits them.
  * @return {boolean} whether the browser keeps the declaration; a property
  * outside the box groups is never kept
  */
-function boxBrowserKeeps(prop, value) {
+function boxBrowserKeeps(prop, value, tokens) {
   const property = boxProperties.get(prop);
 
   if (property === undefined) {
@@ -104,16 +146,28 @@ function boxBrowserKeeps(prop, value) {
   }
 
   const { family, slot } = property;
-  const tokens = list.space(value);
 
   /* A shorthand spreads one value per slot, or fewer; a longhand names its
    * slot and takes exactly the one. */
   const most = slot === shorthandSlot ? family.longhands.length : 1;
+  const { grammar } = family.group;
 
-  if (tokens.length === 0 || tokens.length > most) {
+  const tokenList = valueTokens(value, tokens);
+  const ranges = tokenComponentRanges(tokenList);
+  if (tokenList === undefined || ranges === undefined) {
+    return stringComponentsKeep(value, most, grammar);
+  }
+  if (ranges.length === 0 || ranges.length > most * 2) {
     return false;
   }
 
-  return tokens.every((token) => specifiesSide(token, family.group.grammar));
+  for (let index = 0; index < ranges.length; index += 2) {
+    if (
+      !rangeKeeps(value, tokenList, ranges[index], ranges[index + 1], grammar)
+    ) {
+      return false;
+    }
+  }
+  return true;
 }
 export { boxBrowserKeeps };

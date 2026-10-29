@@ -5,7 +5,7 @@ export type Options = object;
  */
 /** @satisfies {StageEntry} */
 declare const normalizeUnicode: {
-    create: (options: Record<PropertyKey, unknown>, browsers: readonly string[] | undefined) => Stage;
+    create: (options: Options, browsers: readonly string[] | undefined) => Stage;
 };
 export { normalizeUnicode as default };
 //# sourceMappingURL=index.d.ts.map

@@ -1,5 +1,6 @@
 import type { ChildNode } from 'postcss';
 import type { SymbolLists } from '../../pipeline/symbolLists.js';
+import type { TextTable as TextTableType } from '../../values/textTable.js';
 export type Group = Array<{
     name: string;
     copies: AtRuleEntry[];
@@ -24,11 +25,12 @@ export type AtRuleEntry = {
  * collects the lists, so the transform needs no walk of its own.
  *
  * @param {SymbolLists} lists
- * @param {Record<PropertyKey, never>} _options takes no options
+ * @param {Record<PropertyKey, unknown>} _options takes no options
  * @param {(node: ChildNode) => void} remove
+ * @param {TextTableType} table the text the walk stored
  * @return {void}
  */
-export declare function mergeIdentsSymbols(lists: SymbolLists, _options: Record<PropertyKey, never>, remove: (node: ChildNode) => void): void;
+export declare function mergeIdentsSymbols(lists: SymbolLists, _options: Record<PropertyKey, unknown>, remove: (node: ChildNode) => void, table: TextTableType): void;
 /**
  * @return {import('postcss').Plugin}
  */

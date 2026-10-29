@@ -14,7 +14,7 @@ export declare function isOutermostOverridable(atRule: AtRule): boolean;
  * each scope is seen first.
  *
  * @param {readonly AtRule[]} overridable the outermost overridable at-rules, in document order
- * @return {void}
+ * @return {Set<AtRule> | null} the at-rules removed, or null when none was
  */
-export declare function discardOverriddenAtRules(overridable: readonly AtRule[]): void;
+export declare function discardOverriddenAtRules(overridable: readonly AtRule[]): Set<AtRule> | null;
 //# sourceMappingURL=overridable.d.ts.map

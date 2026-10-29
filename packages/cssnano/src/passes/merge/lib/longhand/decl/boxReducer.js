@@ -2,6 +2,7 @@ import cssnanoUtils from '#utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { detectDeclaration } from '#stylehacks';
 import { boxBrowserKeeps } from '../validateBox.js';
+import { declarationTokens } from '../componentRanges.js';
 import { boxProperties, shorthandSlot } from './boxGroups.js';
 import { discardDeadDeclarations } from './crossKindCoverage.js';
 import { discardOverriddenInLanes } from './overriddenDeclarations.js';
@@ -13,6 +14,7 @@ const { asciiLowerCase } = cssnanoUtils;
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {BoxFamily} from './boxGroups.js'; */
 /** @import {BoxGroup, BoxProperty} from './boxGroups.js'; */
+/** @import {TextTable} from '../../../../../values/textTable.js'; */
 
 /**
  * @typedef {object} BoxDeclarations What one run of a rule declares of a group.
@@ -65,27 +67,49 @@ export function addBoxDeclaration(
   }
 }
 
-/** @param {Declaration} d */
-const isInvalid = (d) =>
+/**
+ * @param {Declaration} d
+ * @param {TextTable} textTable
+ */
+const isInvalid = (d, textTable) =>
   !detectDeclaration(d) &&
   !isCssWideKeyword(d.value) &&
-  !boxBrowserKeeps(asciiLowerCase(d.prop), d.value);
+  !boxBrowserKeeps(
+    asciiLowerCase(d.prop),
+    d.value,
+    declarationTokens(textTable, d)
+  );
+
+/**
+ * @param {Declaration[]} decls
+ * @param {TextTable} textTable
+ * @return {boolean} whether a declaration is one a browser ignores
+ */
+function hasInvalid(decls, textTable) {
+  for (const d of decls) {
+    if (isInvalid(d, textTable)) return true;
+  }
+  return false;
+}
 
 /**
  * @param {Container} rule
  * @param {BoxDeclarations} box
  * @param {import('../targetSupport.js').BoxSupport} support
+ * @param {TextTable} textTable the tokens the walk left for the declarations
  * @return {void}
  */
-export function reduceBox(rule, box, support) {
+export function reduceBox(rule, box, support, textTable) {
   const { group, decls, lanes } = box;
   if (!rule.nodes) return;
 
-  if (decls.length === 0 || decls.some(isInvalid)) return;
+  if (decls.length === 0 || hasInvalid(decls, textTable)) return;
 
-  discardOverriddenInLanes(lanes, group.properties);
+  discardOverriddenInLanes(lanes, textTable, group.properties);
   if (box.flow) {
-    for (const lane of lanes) discardDeadDeclarations(lane, support);
+    for (const lane of lanes) {
+      discardDeadDeclarations(lane, support, textTable);
+    }
   }
 
   const live = decls.filter((d) => d.parent);
@@ -95,12 +119,11 @@ export function reduceBox(rule, box, support) {
     if (
       property?.slot === shorthandSlot &&
       !detectDeclaration(s) &&
-      isExplodable(s)
+      isExplodable(s, textTable)
     ) {
       const { family } = property;
       s.prop = family.shorthand;
-      s.value = formsOf(family).minify(s.value);
-      delete s.raws?.value;
+      textTable.setText(s, formsOf(family).minify(s.value));
     }
     return;
   }
@@ -114,7 +137,8 @@ export function reduceBox(rule, box, support) {
         group.physical,
         laneDecls,
         lane,
-        support.supportsAll(group.physical.shorthand)
+        support.supportsAll(group.physical.shorthand),
+        textTable
       );
     }
     if (!box.flow) continue;
@@ -124,7 +148,8 @@ export function reduceBox(rule, box, support) {
         family,
         laneDecls,
         lane,
-        support.supportsAll(family.shorthand)
+        support.supportsAll(family.shorthand),
+        textTable
       );
     }
   }

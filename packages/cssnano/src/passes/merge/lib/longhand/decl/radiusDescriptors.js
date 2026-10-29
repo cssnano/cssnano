@@ -45,8 +45,9 @@ const longhandIndexByName = new Map(
  * @param {string} prop
  * @param {boolean} isHacked
  * @return {RadiusDeclarationDescriptor | null}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function createRadiusDescriptor(node, prop, isHacked) {
+function createRadiusDescriptor(node, prop, isHacked, textTable) {
   const isShorthand = prop === 'border-radius';
   const longhandIndex = isShorthand
     ? -1
@@ -76,7 +77,10 @@ function createRadiusDescriptor(node, prop, isHacked) {
 
   let parsed = null;
   if (!isGlobal) {
-    parsed = isShorthand ? parseRadiusShorthand(val) : parseCornerRadius(val);
+    const list = textTable.tokens(node);
+    parsed = isShorthand
+      ? parseRadiusShorthand(val, list)
+      : parseCornerRadius(val, list);
     if (parsed === null) return null;
   }
 
@@ -89,7 +93,7 @@ function createRadiusDescriptor(node, prop, isHacked) {
     isGlobalKeyword: isGlobal,
     isShorthand,
     longhandIndex,
-    canExplode: isShorthand ? canExplode(node) : false,
+    canExplode: isShorthand ? canExplode(node, textTable) : false,
     parsed,
   };
 }
@@ -100,8 +104,9 @@ function createRadiusDescriptor(node, prop, isHacked) {
  * @param {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} lanes
  * @param {RadiusDeclarationDescriptor[]} radiusDescriptors
  * @return {boolean}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function appendRadiusNode(node, lanes, radiusDescriptors) {
+function appendRadiusNode(node, lanes, radiusDescriptors, textTable) {
   const laneIndex = node.important ? 1 : 0;
   if (isAll(node)) {
     lanes[laneIndex].push({ decl: node, isBarrier: true });
@@ -109,7 +114,7 @@ function appendRadiusNode(node, lanes, radiusDescriptors) {
   }
   const prop = asciiLowerCase(node.prop);
   const isHacked = Boolean(detectDeclaration(node));
-  const desc = createRadiusDescriptor(node, prop, isHacked);
+  const desc = createRadiusDescriptor(node, prop, isHacked, textTable);
   if (!desc) return false;
   lanes[laneIndex].push(desc);
   radiusDescriptors.push(desc);
@@ -121,8 +126,9 @@ function appendRadiusNode(node, lanes, radiusDescriptors) {
  * @param {Container} rule
  * @param {[Declaration[], Declaration[]]} familyLanes
  * @return {{ lanes: [RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]], radiusDescriptors: RadiusDeclarationDescriptor[] } | null}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export function partitionLanes(rule, familyLanes) {
+export function partitionLanes(rule, familyLanes, textTable) {
   /** @type {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} */
   const lanes = [[], []];
   /** @type {RadiusDeclarationDescriptor[]} */
@@ -132,7 +138,7 @@ export function partitionLanes(rule, familyLanes) {
     for (const node of lane) {
       if (
         node.parent === rule &&
-        !appendRadiusNode(node, lanes, radiusDescriptors)
+        !appendRadiusNode(node, lanes, radiusDescriptors, textTable)
       ) {
         return null;
       }

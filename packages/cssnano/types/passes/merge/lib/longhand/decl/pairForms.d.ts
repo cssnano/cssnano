@@ -1,4 +1,4 @@
-export type Parser = (value: string) => string | null;
+export type Parser = (decl: import('postcss').Declaration, textTable: import('../../../../../values/textTable.js').TextTable) => string | null;
 export type PairFamily = {
     shorthand: string;
     longhands: string[];

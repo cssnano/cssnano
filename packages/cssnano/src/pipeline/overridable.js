@@ -83,17 +83,21 @@ function getScope(node) {
  * each scope is seen first.
  *
  * @param {readonly AtRule[]} overridable the outermost overridable at-rules, in document order
- * @return {void}
+ * @return {Set<AtRule> | null} the at-rules removed, or null when none was
  */
 export function discardOverriddenAtRules(overridable) {
   const seen = new Set();
+  /** @type {Set<AtRule> | null} */
+  let removed = null;
   for (let index = overridable.length - 1; index >= 0; index--) {
     const node = overridable[index];
     const scope = getScope(node);
     if (seen.has(scope)) {
       node.remove();
+      (removed ??= new Set()).add(node);
     } else {
       seen.add(scope);
     }
   }
+  return removed;
 }

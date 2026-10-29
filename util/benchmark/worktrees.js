@@ -57,7 +57,12 @@ function addWorktree(repoRoot, revision, destination, runner) {
     recursive: true,
     force: true,
   });
-  runner('pnpm', ['install', '--frozen-lockfile'], { cwd: destination });
+  // The local postcss-calc override lives in the working tree, not in HEAD.
+  cpSync(
+    join(repoRoot, 'pnpm-workspace.yaml'),
+    join(destination, 'pnpm-workspace.yaml')
+  );
+  runner('pnpm', ['install'], { cwd: destination });
 }
 
 // Git may refuse to remove a worktree it considers dirty, so the directory is

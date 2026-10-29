@@ -1,7 +1,9 @@
 import type { Container, Declaration } from 'postcss';
+import type { RangePiece } from '../../../../../values/joinRanges.js';
 export type SlotVector = ({
     value: string;
     decl: Declaration;
+    range?: RangePiece;
 } | null)[];
 /**
  * Byte cost of one emitted declaration: the property and value text, the `:`
@@ -18,11 +20,12 @@ export declare function declCost(prop: string, value: string, important?: boolea
  * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
  * vector ready to be merged, or `null` if any slot is missing, custom,
  * conflicting on CSS-wide keywords, or has mismatched support provenance
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
 export declare function flushableSlots(slots: ({
     value: string;
     decl: Declaration;
-} | null)[]): {
+} | null)[], textTable: import('../../../../../values/textTable.js').TextTable): {
     value: string;
     decl: Declaration;
 }[] | null;
@@ -51,8 +54,9 @@ export declare class SlotLane {
      * @param {number} size - how many slots the family has
      * @param {(slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void} commit
      * called with the state whenever the run ends, before it is cleared
+     * @param {import('../../../../../values/textTable.js').TextTable} textTable
      */
-    constructor(size: number, commit: (slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void);
+    constructor(size: number, commit: (slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void, textTable: import('../../../../../values/textTable.js').TextTable);
     /** Commits the run, then starts an empty one. */
     reset(): void;
     /**
@@ -70,8 +74,9 @@ export declare class SlotLane {
      * @param {string} value
      * @param {Declaration} decl
      * @param {boolean} wasFull - as returned by `begin`
+     * @param {RangePiece} [range] the tokens that spell `value`, when kept
      */
-    assign(idx: number, value: string, decl: Declaration, wasFull: boolean): void;
+    assign(idx: number, value: string, decl: Declaration, wasFull: boolean, range?: RangePiece): void;
 }
 /**
  * Commits a fully-filled slot vector when its shorthand wins the byte-cost
@@ -84,8 +89,11 @@ export declare class SlotLane {
  * @param {Set<Declaration>} contributing
  * @param {Set<Declaration>} fallbacks
  * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
- * `mayInsert: false` limits the commit to the in-place rewrite, for a
- * shorthand that some target does not support.
+ * `mayInsert: false` limits the commit to the in-place rewrite, for a shorthand
+ * that some target does not support.
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @returns {Declaration | undefined} the declaration that now spells the
+ * shorthand, or undefined when nothing was written
  */
 export declare function commitShorthand(rule: Container, full: {
     value: string;
@@ -96,5 +104,5 @@ export declare function commitShorthand(rule: Container, full: {
     important: boolean;
     inserted?: Map<Declaration, Declaration>;
     mayInsert?: boolean;
-}): void;
+}, textTable: import('../../../../../values/textTable.js').TextTable): Declaration | undefined;
 //# sourceMappingURL=slotVector.d.ts.map

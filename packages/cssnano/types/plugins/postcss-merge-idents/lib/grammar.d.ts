@@ -4,11 +4,12 @@ declare const KEYFRAMES_SHORTHAND_KEYWORDS: Set<string>;
 declare const COUNTER_STYLE_RESERVED: Set<string>;
 declare const COUNTER_STYLE_FUNCTIONS: Map<string, number[]>;
 /**
- * @param {string} params
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} parsedTokens
+ *   the tokens of the prelude, whose comments and whitespace are skipped
  * @param {string} atRuleName
  * @return {{ isString: boolean, isReservedName: boolean, key: string, tokenText: string } | null}
  */
-declare function parseAtRuleName(params: string, atRuleName: string): {
+declare function parseAtRuleName(parsedTokens: readonly import('@csstools/css-tokenizer').CSSToken[], atRuleName: string): {
     isString: boolean;
     isReservedName: boolean;
     key: string;
