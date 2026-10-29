@@ -95,4 +95,89 @@ export const mutations = [
     find: '    if (isVendorExtension(pseudoName)) return null;\n',
     replace: '',
   },
+  {
+    name: 'a move leaves the summaries of the target stale',
+    target: source('treeEdits.js'),
+    find: '  invalidate(into);\n',
+    replace: '',
+  },
+  {
+    name: 'an append leaves the summaries of the receiving rule stale',
+    target: source('treeEdits.js'),
+    find: '  invalidate(receiving);\n',
+    replace: '',
+  },
+  {
+    name: 'an append leaves the summaries of the incoming rule stale',
+    target: source('treeEdits.js'),
+    find: '  invalidate(incoming);\n',
+    replace: '',
+  },
+  {
+    name: 'an append keeps the description of the incoming rule',
+    target: source('treeEdits.js'),
+    find: '  mergeState.forget(incoming);\n',
+    replace: '',
+  },
+  {
+    name: 'a removal of declarations leaves the summaries of the rule stale',
+    target: source('treeEdits.js'),
+    find: '  invalidate(rule);\n',
+    replace: '',
+  },
+  {
+    name: 'a removal of declarations keeps the description of the rule',
+    target: source('treeEdits.js'),
+    find: '  for (const declaration of declarations) declaration.remove();\n  mergeState.forget(rule);\n',
+    replace:
+      '  for (const declaration of declarations) declaration.remove();\n',
+  },
+  {
+    name: 'a removal of rules leaves the summaries of the parent stale',
+    target: source('treeEdits.js'),
+    find: '  invalidate(parent);\n',
+    replace: '',
+  },
+  {
+    name: 'a removal of rules keeps the description of each removed rule',
+    target: source('treeEdits.js'),
+    find: '    mergeState.forget(/** @type {Rule} */ (node));\n',
+    replace: '',
+  },
+  {
+    name: 'a take-place leaves the summaries of the earlier rule stale',
+    target: source('treeEdits.js'),
+    find: '  invalidate(earlier);\n  earlier.remove();',
+    replace: '  earlier.remove();',
+  },
+  {
+    name: 'a rebuild leaves the summaries of each container stale',
+    target: source('treeEdits.js'),
+    find: '    invalidate(container);\n    container.removeAll();',
+    replace: '    container.removeAll();',
+  },
+  {
+    name: 'retiring a rule keeps its description',
+    target: source('treeEdits.js'),
+    find: 'export function retire(mergeState, rule) {\n  mergeState.forget(rule);',
+    replace: 'export function retire(mergeState, rule) {\n  void mergeState;',
+  },
+  {
+    name: 'a detach leaves the summaries of the ancestors stale',
+    target: new URL(
+      '../../../../../src/passes/merge/lib/deferredChildEdits.js',
+      import.meta.url
+    ).href,
+    find: '  invalidate(node);\n  if (!pendingEdits.has(container))',
+    replace: '  if (!pendingEdits.has(container))',
+  },
+  {
+    name: 'applying the pending edits leaves the summaries of the container stale',
+    target: new URL(
+      '../../../../../src/passes/merge/lib/deferredChildEdits.js',
+      import.meta.url
+    ).href,
+    find: '  invalidate(container);\n  const insertions',
+    replace: '  const insertions',
+  },
 ];

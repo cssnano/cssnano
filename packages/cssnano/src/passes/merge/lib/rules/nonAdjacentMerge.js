@@ -1,12 +1,17 @@
 import cssnanoUtils from '#utils';
 import LastWriteIndex, { isConditionalGroupRule } from './lastWriteIndex.js';
-import { applyChildEdits, detach } from '../deferredChildEdits.js';
-import { invalidate } from '../../../ir/blockTable.js';
 import joinByDeclarations from './declarationJoin.js';
-import { appendToDeclarations, writesOf } from './ruleRewrite.js';
+import { writesOf } from './ruleRewrite.js';
 import RepeatScan from './repeatScan.js';
 import { getDecls } from './ruleMeta.js';
 import { isKeyframes } from './sameContainer.js';
+import {
+  appendToDeclarations,
+  flushRemovals,
+  moveChildren,
+  remove,
+  takePlaceOf,
+} from './treeEdits.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -89,23 +94,6 @@ export function joinNonAdjacent(root, mergeState) {
 }
 
 /**
- * Moves `earlier`, which already holds the joined content, to the place of
- * `later`, so the joined node takes the later position and keeps the
- * whitespace before `later`.
- *
- * @param {Rule | AtRule} earlier
- * @param {Rule | AtRule} later
- * @return {void}
- */
-function takePlaceOf(earlier, later) {
-  earlier.raws.before = later.raws.before;
-  invalidate(earlier);
-  earlier.remove();
-  invalidate(later);
-  later.replaceWith(earlier);
-}
-
-/**
  * Joins blocks as `joinInParent` does, visiting them from last to first, so
  * a block that moves down to its counterpart unblocks, in the same pass, the
  * pairs it moved past. The write index sees positions mirrored, so "written
@@ -152,7 +140,7 @@ function joinBlocksBackward(parent, mergeState) {
     }
     if (at === position) index.recordNode(node, last - position, keysOf);
   }
-  applyChildEdits(parent);
+  flushRemovals(parent);
   return joined;
 
   /**
@@ -166,9 +154,8 @@ function joinBlocksBackward(parent, mergeState) {
     if (
       !index.conflictsSinceIn(blocks.declarations(later), laterPosition, keysOf)
     ) {
-      invalidate(earlier);
-      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());
-      detach(later);
+      moveChildren(earlier, later);
+      remove(later);
       return 'up';
     }
     // The earlier block's content stays first, so source order is kept.
@@ -176,10 +163,8 @@ function joinBlocksBackward(parent, mergeState) {
     const earlierDeclarations = blocks.declarations(earlier);
     if (!index.conflictsSinceIn(earlierDeclarations, laterPosition, keysOf)) {
       index.moveWrites(earlierDeclarations, laterPosition, keysOf);
-      invalidate(earlier);
-      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());
-      applyChildEdits(parent);
-      takePlaceOf(earlier, later);
+      moveChildren(earlier, later);
+      takePlaceOf(parent, earlier, later);
       return 'down';
     }
     return null;
@@ -251,7 +236,7 @@ function joinInParent(parent, mergeState, rules) {
   }
   // PostCSS finds a child by scanning its parent, so the rules that moved up
   // leave the parent in one rebuild.
-  applyChildEdits(parent);
+  flushRemovals(parent);
   return joined;
 
   /**
@@ -272,9 +257,14 @@ function joinInParent(parent, mergeState, rules) {
       };
       received.set(earlier, rule);
     }
-    appendToDeclarations(earlier, rule.declarations, rule.writes, later);
+    appendToDeclarations(
+      mergeState,
+      earlier,
+      rule.declarations,
+      rule.writes,
+      later
+    );
     mergeState.meta(earlier).setDeclarations(rule.declarations);
-    mergeState.forget(later);
   }
 
   /**
@@ -296,7 +286,7 @@ function joinInParent(parent, mergeState, rules) {
         later,
         received.get(earlier)?.declarations ?? getDecls(earlier)
       );
-      detach(later);
+      remove(later);
       return 'up';
     }
     const earlierDeclarations =
@@ -309,8 +299,7 @@ function joinInParent(parent, mergeState, rules) {
       );
       receive(earlier, later, earlierDeclarations);
       // A move edits the parent at once, after the pending removals.
-      applyChildEdits(parent);
-      takePlaceOf(earlier, later);
+      takePlaceOf(parent, earlier, later);
       return 'down';
     }
     return null;
@@ -328,9 +317,8 @@ function joinInParent(parent, mergeState, rules) {
     if (blocks.opaque(later)) return null;
     const declarations = blocks.declarations(later);
     if (!index.conflictsSinceIn(declarations, earlierPosition, keysOf)) {
-      invalidate(earlier);
-      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());
-      detach(later);
+      moveChildren(earlier, later);
+      remove(later);
       index.moveWrites(declarations, earlierPosition, keysOf);
       return 'up';
     }
@@ -338,10 +326,8 @@ function joinInParent(parent, mergeState, rules) {
     if (blocks.opaque(earlier)) return null;
     const earlierDeclarations = blocks.declarations(earlier);
     if (!index.conflictsSinceIn(earlierDeclarations, earlierPosition, keysOf)) {
-      invalidate(earlier);
-      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());
-      applyChildEdits(parent);
-      takePlaceOf(earlier, later);
+      moveChildren(earlier, later);
+      takePlaceOf(parent, earlier, later);
       index.moveWrites(
         [...earlierDeclarations, ...declarations],
         laterPosition,

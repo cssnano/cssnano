@@ -6,19 +6,6 @@ import type RuleSequence, { Placement, RuleLink } from './ruleSequence.js';
 /** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /**
- * Appends the content of `incoming` to `receiving`. A declaration of
- * `incoming` is redundant only when the last declaration of `receiving` that
- * can set the same property already has an identical value. Otherwise it
- * revives an overridden value or overrides intermediate declarations, so
- * appending it is required to preserve the cascade result.
- *
- * @param {Rule} receiving
- * @param {Rule} incoming
- * @param {PropertyTable} table
- * @return {void}
- */
-export declare function appendDeclarations(receiving: Rule, incoming: Rule, table: PropertyTable): void;
-/**
  * The writes of a rule's declarations, numbered by their position.
  *
  * @param {Declaration[]} declarations
@@ -26,18 +13,6 @@ export declare function appendDeclarations(receiving: Rule, incoming: Rule, tabl
  * @return {PropertyWrites}
  */
 export declare function writesOf(declarations: Declaration[], table: PropertyTable): PropertyWrites;
-/**
- * `appendDeclarations` for a rule that keeps receiving: the caller holds its
- * declarations and their writes, which grow with it, so an append costs time
- * in the incoming rule only.
- *
- * @param {Rule} receiving
- * @param {Declaration[]} kept the declarations of `receiving`, extended in place
- * @param {PropertyWrites} index the writes of `kept`, extended in place
- * @param {Rule} incoming
- * @return {void}
- */
-export declare function appendToDeclarations(receiving: Rule, kept: Declaration[], index: PropertyWrites, incoming: Rule): void;
 /**
  * Splits the declarations the rules set out of them into a rule with all
  * their selectors, which takes the place of the later rule of the pair,
