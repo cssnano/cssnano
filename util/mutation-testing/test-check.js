@@ -125,9 +125,11 @@ export async function run(catalogs, { timeout, allowUnkilled }) {
     }
   }
 
+  // Hyperthreads and the shared cache make a full pool several times slower
+  // per mutant, which turns healthy runs into false timeouts.
   const outcomes = await mapWithConcurrency(
     runnable,
-    availableParallelism(),
+    Math.max(1, Math.floor(availableParallelism() / 2)),
     ({ mutation, target, testPath }) =>
       runMutation({ mutation, target, testPath, timeout })
   );

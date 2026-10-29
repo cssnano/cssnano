@@ -8,6 +8,11 @@ import {
 } from './lib/mergeOracle.js';
 import { checkCascade, generateCascadeCases } from './lib/fuzzCascade.js';
 import { transformPlugin } from '#passes/merge';
+import { enableConsistencyChecks } from '../../../../src/passes/ir/consistencyChecks.js';
+
+// A stale record or key throws at the next read instead of quietly producing
+// the same output, so the oracle can see bookkeeping faults.
+enableConsistencyChecks(true);
 
 /**
  * The merge fuzzers as suites for

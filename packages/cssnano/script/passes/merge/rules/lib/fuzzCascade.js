@@ -207,6 +207,9 @@ export function generateCascadeCases(seed, count, options = {}) {
     /** @type {string[][]} */
     const bodies = [];
     let css = '';
+    // Joining a block across a conflicting rule needs two blocks of one
+    // at-rule, so a wrapper is often the previous one.
+    let previousWrapper;
     for (let rules = 3 + rng.int(8); rules > 0; rules--) {
       if (rng.chance(0.08)) {
         const [separator, branch] = rng.pick(separators);
@@ -217,7 +220,11 @@ export function generateCascadeCases(seed, count, options = {}) {
       bodies.push(body);
       const rule = `${generateSelectorList(rng, branches)}{${body.join(';')}}`;
       if (rng.chance(0.25)) {
-        const [wrapper, branch] = rng.pick(wrappers);
+        const [wrapper, branch] =
+          previousWrapper && rng.chance(0.5)
+            ? previousWrapper
+            : rng.pick(wrappers);
+        previousWrapper = [wrapper, branch];
         css += `${wrapper}{${rule}}`;
         branches.add(branch);
       } else {
