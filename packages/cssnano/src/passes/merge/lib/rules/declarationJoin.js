@@ -8,6 +8,7 @@ import { removeDeclarations, removeRules } from './treeEdits.js';
 
 /** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
+/** @import {BlockRecord} from './blockRecords.js' */
 
 /**
  * A rule made only of declarations. Comments and nested rules would be
@@ -104,9 +105,15 @@ function joinGain(group, later, mergeState) {
  */
 export default function joinByDeclarations(parent, mergeState) {
   if (isKeyframes(parent)) return false;
-  const nodes = /** @type {ChildNode[]} */ (parent.nodes).slice();
+  const nodes = /** @type {BlockRecord} */ (
+    mergeState.records.blockOf(parent)
+  ).liveChildren();
   const keyLists = nodes.map((node) =>
-    isDeclarationRule(node) ? mergeState.declarationKeysOf(node) : null
+    node.type === 'rule' &&
+    mergeState.meta(node).block === null &&
+    isDeclarationRule(node)
+      ? mergeState.declarationKeysOf(node)
+      : null
   );
   // Rules can only join where they share a declaration.
   const scan = new RepeatScan();
@@ -139,7 +146,7 @@ export default function joinByDeclarations(parent, mergeState) {
       // A trimmed rule's record took its remaining declarations, so its keys are new.
       register(rule, position, mergeState.declarationKeysOf(rule).keys);
     }
-    index.recordNode(node, position, keysOf);
+    index.recordNode(node, position, keysOf, mergeState.records);
   }
   for (const rule of grown) mergeState.spellSelectors(rule);
   removeRules(mergeState, parent, emptied);

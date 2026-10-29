@@ -1,6 +1,5 @@
 import DeclarationScan from './declarationScan.js';
 import DroppableBlocks from './droppableBlocks.js';
-import SlotIndex from './slotIndex.js';
 import { BlockRecord, Slot } from './blockRecords.js';
 import { replaceChildren } from './treeEdits.js';
 
@@ -51,8 +50,16 @@ export default class RuleSequence {
   /** @type {RuleLink} a sentinel that precedes the first rule */
   head = /** @type {RuleLink} */ ({ prev: null, next: null });
 
-  /** @type {SlotIndex} */
-  #slots;
+  /** @type {BlockRecords} */
+  #records;
+
+  /**
+   * The first child of the stylesheet when the sweep starts, which the
+   * whitespace of the stylesheet is handed on from if it is removed.
+   *
+   * @type {ChildNode | undefined}
+   */
+  #rootHead;
 
   /** @type {DroppableBlocks} */
   #blocks = new DroppableBlocks();
@@ -68,7 +75,8 @@ export default class RuleSequence {
 
   /** @param {BlockRecords} records */
   constructor(records) {
-    this.#slots = new SlotIndex(records);
+    this.#records = records;
+    this.#rootHead = records.root.firstLiveChild();
     let tail = this.head;
     /** @param {BlockRecord} block */
     const collect = (block) => {
@@ -133,7 +141,7 @@ export default class RuleSequence {
     const source = second.slot.block;
     if (target === source) return false;
     this.#blocks.moved(source, target);
-    second.slot = this.#slots.moveRule(second.rule, second.slot, target);
+    second.slot = target.moveRule(second.rule, second.slot, this.#records);
     this.#changed.add(target).add(source);
     return true;
   }
@@ -156,8 +164,8 @@ export default class RuleSequence {
     // replaced where it stands.
     this.#blocks.changed(firstSlot.block, placement.first.length - 1);
     this.#blocks.changed(secondSlot.block, placement.second.length - 1);
-    this.#slots.substitute(firstSlot, first.rule, placement.first);
-    this.#slots.substitute(secondSlot, second.rule, placement.second);
+    firstSlot.substitute(first.rule, placement.first, this.#records);
+    secondSlot.substitute(second.rule, placement.second, this.#records);
     this.#changed.add(firstSlot.block).add(secondSlot.block);
 
     let tail = linkAfter(
@@ -170,7 +178,7 @@ export default class RuleSequence {
       const link = /** @type {RuleLink} */ (following);
       following = link.next;
       this.#blocks.changed(link.slot.block, rules.length - 1);
-      this.#slots.substitute(link.slot, link.rule, rules);
+      link.slot.substitute(link.rule, rules, this.#records);
       tail = linkAfter(tail, rules, link.slot);
     }
     tail.next = following;
@@ -203,8 +211,8 @@ export default class RuleSequence {
     }
     const rebuilt = Array.from(changed, (block) => ({
       container: /** @type {Container} */ (block.node),
-      children: this.#slots.childrenOf(block),
-      head: /** @type {ChildNode[]} */ (block.node.nodes)[0],
+      children: block.liveChildren(),
+      head: block === this.#records.root ? this.#rootHead : undefined,
     }));
     replaceChildren(rebuilt);
   }
