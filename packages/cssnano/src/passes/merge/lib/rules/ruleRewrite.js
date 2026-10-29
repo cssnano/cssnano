@@ -4,7 +4,8 @@ import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 import { depart } from './treeEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
-/** @import {Container, Declaration, Rule} from 'postcss' */
+/** @import {Declaration, Rule} from 'postcss' */
+/** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 
 /**
@@ -42,7 +43,7 @@ export function writesOf(declarations, table) {
  * @param {import('./mergeState.js').default} mergeState
  * @param {RuleLink} secondLink where `second` stands in the sweep
  * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
+ * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
  * @return {Placement | null} null when the output would not get shorter
  */
 export function buildMergedRule(

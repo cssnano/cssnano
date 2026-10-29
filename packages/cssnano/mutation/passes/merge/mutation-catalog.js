@@ -49,53 +49,6 @@ export const mutations = [
     find: '      mergeState.reportCreated(leftover);\n',
     replace: '',
   },
-  // One per invalidation of the block table in ruleRewrite.js.
-  {
-    name: 'skip invalidating the receiving rule of an append',
-    find: '  invalidate(receiving);\n',
-    replace: '',
-  },
-  {
-    name: 'skip invalidating the incoming rule of an append',
-    find: '  invalidate(incoming);\n',
-    replace: '',
-  },
-  // The other invalidations are not mutated: skipping one is equivalent. The
-  // tree listing changes only in `applyChildEdits`, which invalidates its
-  // container, and each `takePlaceOf` skip has an earlier invalidation of the
-  // same subtree with no read before the edit.
-  {
-    name: 'skip invalidating the parent of a declarationJoin detach',
-    target: source('declarationJoin.js'),
-    find: '  invalidate(parent);\n',
-    replace: '',
-  },
-  {
-    name: 'skip invalidating a rule withdrawn from a declaration join',
-    target: source('declarationJoin.js'),
-    find: '    invalidate(later);\n',
-    replace: '',
-  },
-  {
-    name: 'skip invalidating the container a ruleSequence write empties',
-    target: source('ruleSequence.js'),
-    find: '      invalidate(container);\n',
-    replace: '',
-  },
-  {
-    name: 'skip invalidating the earlier block that takes a later block without a move, forward pass',
-    target: source('nonAdjacentMerge.js'),
-    find: '      invalidate(earlier);\n      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());\n      detach(later);\n      index.moveWrites(declarations, earlierPosition, keysOf);\n',
-    replace:
-      '      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());\n      detach(later);\n      index.moveWrites(declarations, earlierPosition, keysOf);\n',
-  },
-  {
-    name: 'skip invalidating the earlier block that takes a later block without a move, backward pass',
-    target: source('nonAdjacentMerge.js'),
-    find: "      invalidate(earlier);\n      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());\n      detach(later);\n      return 'up';\n",
-    replace:
-      "      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());\n      detach(later);\n      return 'up';\n",
-  },
   {
     name: 'skip invalidating a container whose deferred edits apply',
     target: passSource('deferredChildEdits.js'),

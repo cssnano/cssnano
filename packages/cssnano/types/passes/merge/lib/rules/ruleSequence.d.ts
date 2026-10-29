@@ -1,6 +1,6 @@
-import type { Container, Root, Rule } from 'postcss';
-import type { TextTable } from '../../../../values/textTable.js';
-import type { Slot } from './slotIndex.js';
+import { BlockRecord, Slot } from './blockRecords.js';
+import type { Rule } from 'postcss';
+import type { BlockRecords } from './blockRecords.js';
 export type RuleLink = {
     rule: Rule;
     slot: Slot;
@@ -24,25 +24,22 @@ export type Placement = {
 };
 /**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
- * other rules, rewritten in place and written back once.
+ * other rules, rewritten in the block records and written back once.
  */
 export default class RuleSequence {
     #private;
     /** @type {RuleLink} a sentinel that precedes the first rule */
     head: RuleLink;
-    /**
-     * @param {Root} root
-     * @param {TextTable} textTable the selector tokens the walk stored
-     */
-    constructor(root: Root, textTable: TextTable);
+    /** @param {BlockRecords} records */
+    constructor(records: BlockRecords);
     /**
      * @param {RuleLink} first
      * @param {RuleLink} second
-     * @param {WeakMap<Container, boolean>} outsideDeclarations see
+     * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations see
      * `DeclarationScan#declarationBetween`
      * @return {boolean} whether a declaration outside both rules lies between them
      */
-    declarationBetween(first: RuleLink, second: RuleLink, outsideDeclarations: WeakMap<Container, boolean>): boolean;
+    declarationBetween(first: RuleLink, second: RuleLink, outsideDeclarations: WeakMap<BlockRecord, boolean>): boolean;
     /**
      * Moves the rule of `second` to the end of the parent of `first`. It follows
      * `first` and holds no nested rules, so passing the rest of that parent
@@ -64,7 +61,7 @@ export default class RuleSequence {
     replacePair(first: RuleLink, placement: Placement): RuleLink;
     /**
      * Writes the sequence into the stylesheet, rebuilding each changed container
-     * once from its children and the rules now in its slots.
+     * once from its records.
      *
      * @return {void}
      */

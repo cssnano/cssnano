@@ -2,6 +2,7 @@ import { createRunContext } from '../../../ir/runContext.js';
 import MergeState from './mergeState.js';
 import { joinNonAdjacent } from './nonAdjacentMerge.js';
 import runScan from './scan.js';
+import { assertRecordsMatchTree, buildRecords } from './treeEdits.js';
 
 /**
  * @param {import('postcss').Root} root
@@ -23,8 +24,13 @@ export default function runMerge(root, browsers, context = createRunContext()) {
   // remove a node or withdraw one. The bound on sweeps per round is open
   // (see `runScan`), so the cost of the whole loop is not bounded in N.
   const mergeState = new MergeState(browsers, context);
+  mergeState.records = buildRecords(root, mergeState);
+  let joined;
   do {
-    runScan(root, mergeState);
-  } while (joinNonAdjacent(root, mergeState));
+    runScan(mergeState);
+    assertRecordsMatchTree(mergeState);
+    joined = joinNonAdjacent(root, mergeState);
+    assertRecordsMatchTree(mergeState);
+  } while (joined);
   mergeState.flushSelectors();
 }

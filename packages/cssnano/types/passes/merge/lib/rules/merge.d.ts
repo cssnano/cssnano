@@ -1,4 +1,5 @@
-import type { Container, Rule } from 'postcss';
+import type { Rule } from 'postcss';
+import type { BlockRecord } from './blockRecords.js';
 import type RuleSequence, { Placement, RuleLink } from './ruleSequence.js';
 import type MergeState from './mergeState.js';
 /**
@@ -28,9 +29,9 @@ export declare function mergeMatchingSelectors(first: Rule, second: Rule, mergeS
  * @param {MergeState} mergeState
  * @param {RuleLink} secondLink
  * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
+ * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
  * @return {Placement | null} null when sharing the declarations would not
  * make the output shorter
  */
-export declare function mergeSharedDeclarations(first: Rule, second: Rule, mergeState: MergeState, secondLink: RuleLink, sequence: RuleSequence, outsideDeclarations: WeakMap<Container, boolean>): Placement | null;
+export declare function mergeSharedDeclarations(first: Rule, second: Rule, mergeState: MergeState, secondLink: RuleLink, sequence: RuleSequence, outsideDeclarations: WeakMap<BlockRecord, boolean>): Placement | null;
 //# sourceMappingURL=merge.d.ts.map

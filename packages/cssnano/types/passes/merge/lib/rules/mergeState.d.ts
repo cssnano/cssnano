@@ -4,6 +4,7 @@ import type { TextTable } from '../../../../values/textTable.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleMeta } from './ruleMeta.js';
 import type { RuleDeclarationKeys } from './ruleMeta.js';
+import type { BlockRecords } from './blockRecords.js';
 /** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
@@ -11,6 +12,7 @@ import type { RuleDeclarationKeys } from './ruleMeta.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleMeta} from './ruleMeta.js' */
 /** @import {RuleDeclarationKeys} from './ruleMeta.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /**
  * The state shared by every merge of one stylesheet.
  */
@@ -28,6 +30,13 @@ export default class MergeState {
      * @type {import('../../../ir/blockTable.js').BlockTable}
      */
     blocks: import('../../../ir/blockTable.js').BlockTable;
+    /**
+     * The block and rule records of the stylesheet. `runMerge` sets them before
+     * any edit reads them.
+     *
+     * @type {BlockRecords}
+     */
+    records: BlockRecords;
     /** @returns {TextTable} the selector tokens the walk stored */
     get textTable(): TextTable;
     /**

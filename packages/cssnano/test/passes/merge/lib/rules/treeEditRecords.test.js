@@ -8,9 +8,11 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
   appendToDeclarations,
+  buildRecords,
   depart,
   removeDeclarations,
   removeRules,
+  takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
@@ -28,7 +30,9 @@ after(() => enableConsistencyChecks(false));
 function setup(css) {
   const root = postcss.parse(css);
   const context = createRunContext(root);
-  return { root, state: new MergeState(['chrome 120'], context) };
+  const state = new MergeState(['chrome 120'], context);
+  state.records = buildRecords(root, state);
+  return { root, state };
 }
 
 test('appendToDeclarations should mark the record of the incoming rule departed', () => {
@@ -193,4 +197,15 @@ test('depart should leave the rule in the tree', () => {
   const rule = /** @type {Rule} */ (root.first);
   depart(state, rule);
   assert.equal(rule.parent, root);
+});
+
+test('takePlaceOf should move the record of the earlier rule into the slot of the later one', () => {
+  const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
+  const [media] = /** @type {Container} */ (root).nodes;
+  const [earlier, later] = /** @type {Rule[]} */ (
+    /** @type {Container} */ (media).nodes
+  );
+  const laterSlot = state.meta(later).slot;
+  takePlaceOf(state, /** @type {Container} */ (media), earlier, later);
+  assert.equal(state.meta(earlier).slot, laterSlot);
 });

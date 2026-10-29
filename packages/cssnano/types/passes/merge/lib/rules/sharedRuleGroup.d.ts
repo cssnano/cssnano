@@ -1,7 +1,9 @@
-import type { Container, Rule } from 'postcss';
+import type { Rule } from 'postcss';
+import type { BlockRecord } from './blockRecords.js';
 import type RuleSequence, { RuleLink } from './ruleSequence.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
+/** @import {ChildNode, Declaration, Rule} from 'postcss' */
+/** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /** @param {string[]} selectors @return {number} */
 export declare function selectorsLength(selectors: string[]): number;
@@ -44,10 +46,10 @@ export type Group = {
  * @param {number} delta how much the pair alone lengthens the output
  * @param {import('./mergeState.js').default} mergeState
  * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
+ * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
  * @return {Group | null}
  */
-export declare function findGroup(first: Rule, second: RuleLink, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: WeakMap<Container, boolean>): Group | null;
+export declare function findGroup(first: Rule, second: RuleLink, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: WeakMap<BlockRecord, boolean>): Group | null;
 /**
  * Records in `earliest` the farthest pair before `resume` that a rewrite at
  * `link` can change, if it is farther than the recorded pair. A later rule

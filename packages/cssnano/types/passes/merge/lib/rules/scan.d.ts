@@ -1,6 +1,6 @@
-import type { Root } from 'postcss';
 import type MergeState from './mergeState.js';
-/** @import {Container, Root, Rule} from 'postcss' */
+/** @import {Rule} from 'postcss' */
+/** @import {BlockRecord} from './blockRecords.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {Placement, RuleLink} from './ruleSequence.js' */
 /**
@@ -21,9 +21,8 @@ import type MergeState from './mergeState.js';
  * `perf/passes/merge/lib/rules/loopCounts.js`): no input was found in which a
  * move in one sweep unblocks a move in the next.
  *
- * @param {Root} root
- * @param {MergeState} mergeState
+ * @param {MergeState} mergeState its records are the stylesheet the sweep rewrites
  * @return {void}
  */
-export default function runScan(root: Root, mergeState: MergeState): void;
+export default function runScan(mergeState: MergeState): void;
 //# sourceMappingURL=scan.d.ts.map

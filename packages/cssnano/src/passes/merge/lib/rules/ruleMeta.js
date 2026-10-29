@@ -15,6 +15,7 @@ import { VendorPrefixSummary } from './vendorPrefixSummary.js';
  */
 /** @typedef {(selector: string, rule?: import('postcss').Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
+/** @import {BlockRecord, Slot} from './blockRecords.js' */
 
 /** @type {readonly string[]} */
 const noElementKeys = Object.freeze([]);
@@ -58,6 +59,10 @@ export class RuleMeta {
   #departed = false;
   /** @type {boolean | undefined} whether the rule holds a rule or an at-rule, read once */
   #holdsBlocks;
+  /** @type {Slot | undefined} the slot the rule stands in, once placed */
+  #slot;
+  /** @type {BlockRecord | null} the record of the rule's children, when it holds a rule or an at-rule */
+  #block = null;
 
   /**
    * @param {string[]} selectors
@@ -72,6 +77,37 @@ export class RuleMeta {
     this.#elementKeys = undefined;
     this.#pieces = undefined;
     this.#holdsBlocks = undefined;
+    this.#slot = undefined;
+  }
+
+  /**
+   * The slot the rule stands in. It stays readable after the rule departs, so
+   * an edit can still find where the rule stood.
+   *
+   * @return {Slot | undefined}
+   */
+  get slot() {
+    return this.#slot;
+  }
+
+  /**
+   * The record of the rule's children, or null when it holds no rule or
+   * at-rule. Readable after departure, as `slot` is.
+   *
+   * @return {BlockRecord | null}
+   */
+  get block() {
+    return this.#block;
+  }
+
+  /** @param {Slot} slot the slot the rule now stands in */
+  place(slot) {
+    this.#slot = slot;
+  }
+
+  /** @param {BlockRecord} block the record of the rule's children */
+  setBlock(block) {
+    this.#block = block;
   }
 
   /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
