@@ -1,6 +1,7 @@
 import { invalidate } from '../../../ir/blockTable.js';
 import { applyChildEdits, detach } from '../deferredChildEdits.js';
 import { declarationIsEqual } from './declarations.js';
+import { getDecls } from './ruleMeta.js';
 
 /** @import {AtRule, ChildNode, Container, Declaration, Rule} from 'postcss' */
 /** @import {PropertyWrites} from './lastWriteIndex.js' */
@@ -8,8 +9,9 @@ import { declarationIsEqual } from './declarations.js';
 
 /**
  * The only edits that rule merging makes to the live tree. Each one clears the
- * summaries and descriptions of the nodes it changes, so a join cannot leave a
- * stale cache behind. Lib code outside this module edits through these names.
+ * block summaries of the nodes it changes, updates the records of the rules
+ * that stay and forgets those of the rules that leave, so a join cannot leave
+ * a stale answer behind. Lib code outside this module edits through these names.
  */
 
 /**
@@ -90,6 +92,7 @@ export function appendToDeclarations(
   // Both rules change, and so do their ancestors.
   invalidate(receiving);
   invalidate(incoming);
+  const record = mergeState.meta(receiving);
   for (const node of incoming.nodes.slice()) {
     if (node.type === 'decl') {
       const last = index.lastConflict(node);
@@ -102,6 +105,7 @@ export function appendToDeclarations(
     }
     receiving.append(node);
   }
+  record.takeDeclarations(kept);
   mergeState.forget(incoming);
 }
 
@@ -115,8 +119,10 @@ export function appendToDeclarations(
  */
 export function removeDeclarations(mergeState, rule, declarations) {
   invalidate(rule);
+  // Read before the removal, while the record still matches the rule.
+  const record = mergeState.meta(rule);
   for (const declaration of declarations) declaration.remove();
-  mergeState.forget(rule);
+  record.takeDeclarations(getDecls(rule));
 }
 
 /**

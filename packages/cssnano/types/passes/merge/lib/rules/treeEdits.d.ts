@@ -6,8 +6,9 @@ import type MergeState from './mergeState.js';
 /** @import MergeState from './mergeState.js' */
 /**
  * The only edits that rule merging makes to the live tree. Each one clears the
- * summaries and descriptions of the nodes it changes, so a join cannot leave a
- * stale cache behind. Lib code outside this module edits through these names.
+ * block summaries of the nodes it changes, updates the records of the rules
+ * that stay and forgets those of the rules that leave, so a join cannot leave
+ * a stale answer behind. Lib code outside this module edits through these names.
  */
 /**
  * Appends the children of `from` to `into`, after its own. `from` is left

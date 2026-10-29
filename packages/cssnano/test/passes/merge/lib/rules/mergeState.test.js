@@ -29,6 +29,14 @@ test('forget should leave a rule that was never described undescribed', () => {
   assert.equal(ruleMeta.has(rule), false);
 });
 
+test('addSelectors should keep the record of the rule', () => {
+  const { state } = createState();
+  const root = postcss.parse('a{color:red}b,c{color:red}');
+  const record = state.meta(root.first);
+  state.addSelectors(root.first, ['b', 'c'], root.last);
+  assert.equal(state.meta(root.first), record);
+});
+
 test('addSelectors should append the selectors to the rule description', () => {
   const { state } = createState();
   const root = postcss.parse('a{color:red}b,c{color:red}');

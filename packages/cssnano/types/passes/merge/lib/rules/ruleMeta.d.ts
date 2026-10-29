@@ -38,8 +38,13 @@ export declare class RuleMeta {
     get pieces(): RangePiece[] | null | undefined;
     /** @param {RangePiece[] | null} pieces one per selector, or null */
     setPieces(pieces: RangePiece[] | null): void;
-    /** @param {Declaration[]} declarations */
-    setDeclarations(declarations: Declaration[]): void;
+    /**
+     * Takes the declarations of the rule as its own list, which the caller
+     * keeps extending in place. The keys are derived again on the next read.
+     *
+     * @param {Declaration[]} declarations
+     */
+    takeDeclarations(declarations: Declaration[]): void;
     /**
      * Numbers the declarations so equal ones share a key. The numbering is
      * the caller's, and the keys last until the declarations change; adding
