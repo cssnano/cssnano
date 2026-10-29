@@ -1,4 +1,3 @@
-import { invalidate } from '../../../ir/blockTable.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { applyChildEdits, detach } from '../deferredChildEdits.js';
 import { BlockRecord, BlockRecords, Slot } from './blockRecords.js';
@@ -152,7 +151,6 @@ export function assertRecordsMatchTree(mergeState) {
  * @return {void}
  */
 export function moveChildren(mergeState, into, from) {
-  invalidate(into);
   const { records } = mergeState;
   const target = /** @type {BlockRecord} */ (records.blockOf(into));
   target.adopt(/** @type {BlockRecord} */ (records.blockOf(from)), records);
@@ -258,9 +256,6 @@ export function appendToDeclarations(
   index,
   incoming
 ) {
-  // Both rules change, and so do their ancestors.
-  invalidate(receiving);
-  invalidate(incoming);
   const record = mergeState.meta(receiving);
   // Read before the loop empties `incoming`, while its record still matches it.
   const departing = mergeState.meta(incoming);
@@ -289,7 +284,6 @@ export function appendToDeclarations(
  * @return {void}
  */
 export function removeDeclarations(mergeState, rule, declarations) {
-  invalidate(rule);
   // Read before the removal, while the record still matches the rule.
   const record = mergeState.meta(rule);
   for (const declaration of declarations) declaration.remove();
@@ -306,7 +300,6 @@ export function removeDeclarations(mergeState, rule, declarations) {
  */
 export function removeRules(mergeState, parent, rules) {
   if (rules.size === 0) return;
-  invalidate(parent);
   for (const rule of rules) {
     const slot = /** @type {Slot} */ (mergeState.meta(rule).slot);
     slot.rules.splice(slot.rules.indexOf(rule), 1);
@@ -336,7 +329,6 @@ export function removeRules(mergeState, parent, rules) {
  */
 export function replaceChildren(rebuilt) {
   for (const { container } of rebuilt) {
-    invalidate(container);
     container.removeAll();
   }
   for (const { container, children, head } of rebuilt) {

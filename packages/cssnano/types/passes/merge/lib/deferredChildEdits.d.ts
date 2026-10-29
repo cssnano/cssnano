@@ -1,3 +1,4 @@
+/** @import {ChildNode, Container} from 'postcss'; */
 import type { ChildNode, Container } from 'postcss';
 /**
  * @param {ChildNode} node

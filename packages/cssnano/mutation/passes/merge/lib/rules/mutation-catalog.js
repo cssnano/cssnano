@@ -96,24 +96,6 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'a move leaves the summaries of the target stale',
-    target: source('treeEdits.js'),
-    find: '  invalidate(into);\n',
-    replace: '',
-  },
-  {
-    name: 'an append leaves the summaries of the receiving rule stale',
-    target: source('treeEdits.js'),
-    find: '  invalidate(receiving);\n',
-    replace: '',
-  },
-  {
-    name: 'an append leaves the summaries of the incoming rule stale',
-    target: source('treeEdits.js'),
-    find: '  invalidate(incoming);\n',
-    replace: '',
-  },
-  {
     name: 'an append leaves the record of the incoming rule live',
     target: source('treeEdits.js'),
     find: '  departing.depart();\n',
@@ -123,12 +105,6 @@ export const mutations = [
     name: 'an append leaves the record of the receiving rule without its kept declarations',
     target: source('treeEdits.js'),
     find: '  record.takeDeclarations(kept);\n',
-    replace: '',
-  },
-  {
-    name: 'a removal of declarations leaves the summaries of the rule stale',
-    target: source('treeEdits.js'),
-    find: '  invalidate(rule);\n',
     replace: '',
   },
   {
@@ -144,22 +120,10 @@ export const mutations = [
     replace: '    this.#declarations = declarations;\n',
   },
   {
-    name: 'a removal of rules leaves the summaries of the parent stale',
-    target: source('treeEdits.js'),
-    find: '  invalidate(parent);\n',
-    replace: '',
-  },
-  {
     name: 'a removal of rules leaves the record of each removed rule live',
     target: source('treeEdits.js'),
     find: '    mergeState.meta(/** @type {Rule} */ (node)).depart();\n',
     replace: '',
-  },
-  {
-    name: 'a rebuild leaves the summaries of each container stale',
-    target: source('treeEdits.js'),
-    find: '    invalidate(container);\n    container.removeAll();',
-    replace: '    container.removeAll();',
   },
   {
     name: 'departing a rule leaves its record live',
@@ -190,24 +154,6 @@ export const mutations = [
     target: source('mergeState.js'),
     find: '    if (consistencyChecksEnabled() && !meta.departed) {',
     replace: '    if (false) {',
-  },
-  {
-    name: 'a detach leaves the summaries of the ancestors stale',
-    target: new URL(
-      '../../../../../src/passes/merge/lib/deferredChildEdits.js',
-      import.meta.url
-    ).href,
-    find: '  invalidate(node);\n  if (!pendingEdits.has(container))',
-    replace: '  if (!pendingEdits.has(container))',
-  },
-  {
-    name: 'applying the pending edits leaves the summaries of the container stale',
-    target: new URL(
-      '../../../../../src/passes/merge/lib/deferredChildEdits.js',
-      import.meta.url
-    ).href,
-    find: '  invalidate(container);\n  const insertions',
-    replace: '  const insertions',
   },
   {
     name: 'a takePlaceOf that leaves the rule record on its old slot',

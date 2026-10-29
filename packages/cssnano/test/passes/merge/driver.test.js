@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
-import { attachedTableCount } from '../../../src/passes/ir/blockTable.js';
 import { enableConsistencyChecks } from '../../../src/passes/ir/consistencyChecks.js';
 import { mergePass, transformPlugin } from '../../../src/passes/merge/index.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
@@ -239,23 +238,16 @@ test('the discardDuplicates transform does not walk the root', () => {
   );
 });
 
-test('the mergeRules transform walks the root once, to build the block table', () => {
-  assert.equal(
-    rootWalkCount('a{color:red}', (root) => runHook('mergeRules', root)),
-    1
-  );
-});
-
-test('the full merge pass walks the root once, to build the block table and the first round', () => {
+test('the full merge pass walks the root once, for the first round', () => {
   assert.equal(
     rootWalkCount('a{color:red}', (root) => mergePass(root, targets)),
     1
   );
 });
 
-// The joins read each at-rule's declarations from the block table, so a nested
-// join that gave a rule new declarations must reach that summary before the
-// at-rule is joined again.
+// The joins read each at-rule's declarations from the tree, so a nested join
+// that gave a rule new declarations must be visible before the at-rule is joined
+// again.
 test('mergePass joins an at-rule by the declarations a nested join gave its rule', () => {
   assert.equal(
     runMergePass(
@@ -274,38 +266,6 @@ test('mergePass joins an at-rule into an earlier one, then reads the earlier one
     ),
     '@media print{.x{color:blue}}.x{color:red}@media print{a{color:red;margin:0}b{width:1px}}b{margin-top:1px}c{}@media print{b{margin-top:1px}}'
   );
-});
-
-// Every run with rules off leaves merge-rules out, so no block table is
-// attached and the edits it makes never reach one.
-test('mergePass attaches a block table during the walk only when rules are merged', () => {
-  const counts = [];
-  for (const options of [{ rules: false }, { rules: true }]) {
-    const root = postcss.parse('a{color:red}');
-    const walk = root.walk;
-    root.walk = (...args) => {
-      counts.push(attachedTableCount());
-      return walk.apply(root, args);
-    };
-    mergePass(root, targets, options);
-  }
-  assert.deepEqual(counts, [0, 1]);
-});
-
-test('mergePass leaves no block table attached after any run', () => {
-  for (const options of [{ rules: false }, { rules: true }]) {
-    runMergePass('a{color:red}b{color:red}', options);
-    assert.equal(attachedTableCount(), 0);
-  }
-});
-
-test('mergePass detaches the block table when the pass throws', () => {
-  const root = postcss.parse('a{color:red}');
-  root.walk = () => {
-    throw new Error('walk failed');
-  };
-  assert.throws(() => mergePass(root, targets), /walk failed/v);
-  assert.equal(attachedTableCount(), 0);
 });
 
 before(() => enableConsistencyChecks(true));

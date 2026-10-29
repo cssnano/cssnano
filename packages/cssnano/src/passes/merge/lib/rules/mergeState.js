@@ -51,12 +51,6 @@ export default class MergeState {
   /** @type {Set<Rule> | null} */
   #createdBlocks;
   /**
-   * The summaries of the stylesheet's blocks, read by the at-rule joins.
-   *
-   * @type {import('../../../ir/blockTable.js').BlockTable}
-   */
-  blocks;
-  /**
    * The block and rule records of the stylesheet. `runMerge` sets them before
    * any edit reads them.
    *
@@ -83,7 +77,6 @@ export default class MergeState {
     this.#ruleMeta = context.ruleMeta;
     this.#declarations = context.declarations;
     this.properties = context.properties;
-    this.blocks = context.blocks;
     this.#createdBlocks = context.createdBlocks;
     this.#textTable = context.textTable;
   }
