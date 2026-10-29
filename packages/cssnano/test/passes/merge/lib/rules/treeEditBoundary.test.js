@@ -196,11 +196,9 @@ function mergeReaders() {
 const outsideReaders = [
   'declarationJoin.js',
   'lastWriteIndex.js',
-  'mergeState.js',
   'nonAdjacentMerge.js',
   'ruleMeta.js',
   'ruleSequence.js',
-  'sameContainer.js',
 ];
 
 test('the boundary guard should record reads from lib/rules during the merge', () => {

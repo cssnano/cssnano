@@ -1,4 +1,5 @@
 import type { TextTable } from '../../../../values/textTable.js';
+import type { BlockRecord } from './blockRecords.js';
 /**
  * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
  * cascaded by position.
@@ -7,20 +8,16 @@ import type { TextTable } from '../../../../values/textTable.js';
  * @return {boolean}
  */
 export declare function isKeyframes(container: import('postcss').Container | undefined): boolean;
-export type Child = import('postcss').AnyNode & {
-    parent?: Child;
-};
-/** @typedef {import('postcss').AnyNode & {parent?: Child}} Child */
 /**
- * True if two containers apply their content the same way: they are equal
- * blocks, and so are their enclosing blocks up to the stylesheet. Either may
- * be missing, for a node that is detached.
+ * True if two blocks apply their content the same way: they are equal blocks,
+ * and so are their enclosing blocks up to the stylesheet. Either may be null,
+ * for a block that has no record.
  *
- * @param {import('postcss').Container | undefined} containerA
- * @param {import('postcss').Container | undefined} containerB
+ * @param {BlockRecord | null | undefined} blockA
+ * @param {BlockRecord | null | undefined} blockB
  * @param {TextTable} textTable the selector tokens the walk stored, which give
  *   each layer's prelude when it has a comment
  * @return {boolean}
  */
-export declare function sameContainer(containerA: import('postcss').Container | undefined, containerB: import('postcss').Container | undefined, textTable: TextTable): boolean;
+export declare function sameContainer(blockA: BlockRecord | null | undefined, blockB: BlockRecord | null | undefined, textTable: TextTable): boolean;
 //# sourceMappingURL=sameContainer.d.ts.map
