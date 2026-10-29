@@ -21,7 +21,7 @@ export const mutations = [
   },
   {
     name: 'assign an unchanged node as a string, dropping its tokens',
-    find: '  if (folded.text !== read || folded.tokens !== undefined) {',
-    replace: '  if (folded.text !== read) {',
+    find: '  } else if (folded.text !== read || folded.tokens !== undefined) {',
+    replace: '  } else if (folded.text !== read) {',
   },
 ];

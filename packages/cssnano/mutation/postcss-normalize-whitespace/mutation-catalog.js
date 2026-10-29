@@ -13,7 +13,7 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'preserve declaration whitespace',
-    find: "node.raws.before = node.raws.before.replace(whitespaceRegex, '');",
+    find: "node.raws.before = node.raws.before.replaceAll(whitespaceRegex, '');",
     replace: 'node.raws.before = node.raws.before;',
   },
   {
@@ -23,7 +23,7 @@ export const mutations = [
   },
   {
     name: 'skip declaration trimming',
-    find: 'trimDeclaration(node, declarationCache, gridRowsCache);',
+    find: 'trimDeclaration(node);',
     replace: 'void node;',
   },
   {
@@ -42,13 +42,13 @@ export const mutations = [
   },
   {
     name: 'keep custom property separator whitespace',
-    find: `            node.raws.between = trimCustomPropertySeparator(
-              node.raws.between || ':'
-            );`,
+    find: "node.raws.between = trimCustomPropertySeparator(node.raws.between || ':');",
     replace: `            node.raws.between = node.raws.between;`,
   },
   {
     name: 'drop trailing escape repair',
+    target: new URL('../../src/pipeline/whitespaceRaws.js', import.meta.url)
+      .href,
     find: 'last.value += node.raws.after[0];',
     replace: 'void last.value;',
   },
