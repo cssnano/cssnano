@@ -13,7 +13,7 @@ import { createRunContext } from '../ir/runContext.js';
 import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
 
-/** @import {Container, Root, Rule} from 'postcss' */
+/** @import {AtRule, Container, Root, Rule} from 'postcss' */
 
 /**
  * Whether the node still hangs under the stylesheet. A block that a merge or a
@@ -72,17 +72,25 @@ function inLonghandSupport(features, work) {
  * @param {ReturnType<typeof longhandContext>} first
  * @param {ReturnType<typeof createRunContext> | undefined} context the run context, when rules are merged
  * @param {Container[] | undefined} blocks receives each block that holds a declaration, when a second round runs
+ * @param {readonly (Rule | AtRule)[] | undefined} reached the rules and at-rules of the stylesheet in
+ *   document order, when the host walk collected them; the stylesheet is walked otherwise
  * @return {void}
  */
-function canonicalizeFirstRound(css, first, context, blocks) {
+function canonicalizeFirstRound(css, first, context, blocks, reached) {
   canonicalize(css, first);
-  css.walk((node) => {
+  /** @param {import('postcss').ChildNode} node */
+  const visit = (node) => {
     if (node.type !== 'rule' && node.type !== 'atrule') return;
     if (context) context.blocks.add(node);
     if (!node.nodes?.some((n) => n.type === 'decl')) return;
     canonicalize(node, first);
     if (blocks) blocks.push(node);
-  });
+  };
+  if (reached) {
+    for (const node of reached) visit(node);
+  } else {
+    css.walk(visit);
+  }
   finishColumns(first);
 }
 
@@ -94,9 +102,10 @@ function canonicalizeFirstRound(css, first, context, blocks) {
  * @param {ReturnType<typeof createRunContext> | undefined} context
  * @param {Container[] | undefined} blocks
  * @param {TextTable} textTable the tokens the host walk left
+ * @param {readonly (Rule | AtRule)[]} [reached] the rules and at-rules the host walk reached
  * @return {ReturnType<typeof longhandContext>} the context of the round, which the second round reuses
  */
-function runFirstRound(css, support, context, blocks, textTable) {
+function runFirstRound(css, support, context, blocks, textTable, reached) {
   const { placeShorthands, boxSupport, pairShorthands, features } = support;
   const first = longhandContext(
     placeShorthands,
@@ -105,7 +114,7 @@ function runFirstRound(css, support, context, blocks, textTable) {
     textTable
   );
   inLonghandSupport(features, () =>
-    canonicalizeFirstRound(css, first, context, blocks)
+    canonicalizeFirstRound(css, first, context, blocks, reached)
   );
   return first;
 }
@@ -138,6 +147,8 @@ function mergeRules(css, browsers, context) {
  * @param {{ rules?: boolean }} [options]
  * @param {unknown} [_result] the PostCSS result, which the merge does not use
  * @param {TextTable} [textTable] the selector tokens the host walk left
+ * @param {readonly (Rule | AtRule)[]} [reached] the rules and at-rules the host walk reached,
+ *   in document order, so the pass need not walk the stylesheet to find them
  * @return {void}
  */
 export function mergePass(
@@ -145,12 +156,13 @@ export function mergePass(
   browsers,
   { rules = true } = {},
   _result,
-  textTable
+  textTable,
+  reached
 ) {
   // Only rule merging reads the block table, so the table is attached only for it.
   const context = createRunContext(rules ? css : undefined, textTable);
   try {
-    runTransforms(css, browsers, rules, context);
+    runTransforms(css, browsers, rules, context, reached);
   } finally {
     context.blocks.detach();
   }
@@ -163,9 +175,10 @@ export function mergePass(
  * @param {readonly string[]} browsers
  * @param {boolean} rules whether rules are merged
  * @param {ReturnType<typeof createRunContext>} context
+ * @param {readonly (Rule | AtRule)[] | undefined} reached
  * @return {void}
  */
-function runTransforms(css, browsers, rules, context) {
+function runTransforms(css, browsers, rules, context, reached) {
   const support = targetSupportOf(browsers);
   const { placeShorthands, boxSupport, pairShorthands, features } = support;
 
@@ -178,7 +191,8 @@ function runTransforms(css, browsers, rules, context) {
     support,
     rules ? context : undefined,
     blocks,
-    context.textTable
+    context.textTable,
+    reached
   );
 
   // The merge reports the rules it creates, which the second round also canonicalizes.

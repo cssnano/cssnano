@@ -26,7 +26,7 @@ import {
   removeImportantComments,
 } from './comments/nodeComments.js';
 
-/** @import {AtRule, Container, Document, Helpers, Root} from 'postcss' */
+/** @import {AtRule, Container, Document, Helpers, Root, Rule} from 'postcss' */
 /** @import {Reducer, Stage} from './host.js' */
 /** @import {PlanEntry} from './plan.js' */
 /** @import {TextTable} from '../values/textTable.js' */
@@ -49,6 +49,7 @@ import {
  * @property {boolean} defaultNamespace whether a default `@namespace` has been reached, so later rules have it in their context
  * @property {boolean} normalizeWhitespace whether normalizeWhitespace is on, which removes the stray semicolons and reattaches the escapes of blocks
  * @property {AtRule[] | null} overridable the outermost overridable at-rules in document order, or null when discardOverridden is off
+ * @property {(Rule | AtRule)[] | null} blocks receives the rules and at-rules in document order, or null when no pass reads them
  */
 
 /**
@@ -243,8 +244,17 @@ function commentStateOf(stages) {
  * @param {Helpers} helpers
  * @param {ReadonlyMap<string, unknown>} transforms the whole-stylesheet transforms of the run, by entry name
  * @param {TextTable} table the selector and value tokens the walk leaves for later readers
+ * @param {(Rule | AtRule)[] | null} [blocks] receives the rules and at-rules still in the
+ *   stylesheet after the walk, in document order, so a pass need not walk it again
  */
-export function walkStylesheet(stages, root, helpers, transforms, table) {
+export function walkStylesheet(
+  stages,
+  root,
+  helpers,
+  transforms,
+  table,
+  blocks = null
+) {
   /** @type {RunState} */
   const state = {
     stages,
@@ -266,6 +276,7 @@ export function walkStylesheet(stages, root, helpers, transforms, table) {
     defaultNamespace: false,
     normalizeWhitespace: transforms.has('normalizeWhitespace'),
     overridable: transforms.has('discardOverridden') ? [] : null,
+    blocks,
   };
   root.walk((node) => {
     if (node.type === 'comment') {
@@ -277,13 +288,40 @@ export function walkStylesheet(stages, root, helpers, transforms, table) {
         state.overridable.push(node);
       }
       walkAtRule(state, node);
+      state.blocks?.push(node);
     } else if (node.type === 'rule') {
       if (state.normalizeWhitespace) reattachBlockEscape(node);
       walkRule(state, node);
       keepSelectorComments(node);
+      state.blocks?.push(node);
     }
   });
   // The overridable at-rules are compared after the walk has folded their
   // preludes, so the scopes are the ones the output will have.
-  if (state.overridable) discardOverriddenAtRules(state.overridable);
+  if (state.overridable) {
+    const removed = discardOverriddenAtRules(state.overridable);
+    if (removed && blocks) dropDetached(blocks, removed);
+  }
+}
+
+/**
+ * Drops from the blocks each removed at-rule and every block inside one. A
+ * parent comes before its children in document order, so one pass sees each
+ * parent's verdict before its children need it.
+ *
+ * @param {(Rule | AtRule)[]} blocks in document order
+ * @param {Set<AtRule>} removed
+ */
+function dropDetached(blocks, removed) {
+  /** @type {Set<Container | Document | undefined>} */
+  const detached = removed;
+  let kept = 0;
+  for (const block of blocks) {
+    if (detached.has(block) || detached.has(block.parent)) {
+      detached.add(block);
+    } else {
+      blocks[kept++] = block;
+    }
+  }
+  blocks.length = kept;
 }
