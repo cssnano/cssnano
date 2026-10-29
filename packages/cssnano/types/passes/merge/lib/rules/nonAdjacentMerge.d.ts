@@ -1,5 +1,15 @@
-import type { Container } from 'postcss';
+import type { Container, Declaration } from 'postcss';
+import type { BlockRecord } from './blockRecords.js';
 import type MergeState from './mergeState.js';
+/**
+ * The declarations of a block at any depth, in document order, or null when
+ * the block holds an at-rule whose place in the cascade is not modelled. The
+ * answer is not stored, so an edit cannot leave it stale.
+ *
+ * @param {BlockRecord} block
+ * @return {Declaration[] | null}
+ */
+export declare function subtreeDeclarations(block: BlockRecord): Declaration[] | null;
 /**
  * Joins siblings that apply under the same circumstances across any nodes
  * between them that set no conflicting property, in every container except
