@@ -7,7 +7,8 @@ import { getDecls } from './ruleMeta.js';
 import { buildMergedRule, writesOf } from './ruleRewrite.js';
 import { appendToDeclarations, depart } from './treeEdits.js';
 
-/** @import {Container, Rule} from 'postcss' */
+/** @import {Rule} from 'postcss' */
+/** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /** @import MergeState from './mergeState.js' */
 
@@ -17,7 +18,7 @@ import { appendToDeclarations, depart } from './treeEdits.js';
  * @param {MergeState} mergeState
  * @param {RuleLink} secondLink
  * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
+ * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
  * @return {Placement | null} the rules that replace the pair, or null when
  * sharing the declarations would not make the output shorter
  */
@@ -119,7 +120,7 @@ export function mergeMatchingSelectors(first, second, mergeState) {
  * @param {MergeState} mergeState
  * @param {RuleLink} secondLink
  * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
+ * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
  * @return {Placement | null} null when sharing the declarations would not
  * make the output shorter
  */

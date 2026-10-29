@@ -209,4 +209,52 @@ export const mutations = [
     find: '  invalidate(container);\n  const insertions',
     replace: '  const insertions',
   },
+  {
+    name: 'a takePlaceOf that leaves the rule record on its old slot',
+    target: source('treeEdits.js'),
+    find: '    mergeState.meta(rule).place(laterSlot);\n',
+    replace: '',
+  },
+  {
+    name: 'a removal of a rule that leaves it in its slot',
+    target: source('treeEdits.js'),
+    find: '    slot.rules.splice(slot.rules.indexOf(node), 1);\n',
+    replace: '',
+  },
+  {
+    name: 'a removal of a rule set that leaves its rules in their slots',
+    target: source('treeEdits.js'),
+    find: '    slot.rules.splice(slot.rules.indexOf(rule), 1);\n  }\n',
+    replace: '  }\n',
+  },
+  {
+    name: 'a removal of a block that leaves its entry in place',
+    target: source('treeEdits.js'),
+    find: '  holder.children[index] = new Slot(holder, index, []);\n',
+    replace: '',
+  },
+  {
+    name: 'a takePlaceOf that leaves the entry of the earlier block in place',
+    target: source('treeEdits.js'),
+    find: '    holder.children[from] = new Slot(holder, from, []);\n',
+    replace: '',
+  },
+  {
+    name: 'a move of children that leaves the moved rules on their old slots',
+    target: source('blockRecords.js'),
+    find: '          meta.place(slot);\n',
+    replace: '',
+  },
+  {
+    name: 'a sweep move that leaves the moved rule on its old slot',
+    target: source('slotIndex.js'),
+    find: '    this.#records.metaOf(rule).place(slot);\n',
+    replace: '',
+  },
+  {
+    name: 'the records check accepts a rule record that names another slot',
+    target: source('treeEdits.js'),
+    find: '  if (meta.slot !== slot) throw new Error(OUT_OF_STEP);\n',
+    replace: '',
+  },
 ];

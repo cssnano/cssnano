@@ -19,7 +19,8 @@ function linkCount(placement) {
   return count;
 }
 
-/** @import {Container, Root, Rule} from 'postcss' */
+/** @import {Rule} from 'postcss' */
+/** @import {BlockRecord} from './blockRecords.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {Placement, RuleLink} from './ruleSequence.js' */
 
@@ -41,11 +42,10 @@ function linkCount(placement) {
  * `perf/passes/merge/lib/rules/loopCounts.js`): no input was found in which a
  * move in one sweep unblocks a move in the next.
  *
- * @param {Root} root
- * @param {MergeState} mergeState
+ * @param {MergeState} mergeState its records are the stylesheet the sweep rewrites
  * @return {void}
  */
-export default function runScan(root, mergeState) {
+export default function runScan(mergeState) {
   /**
    * Orders pairs for merging. For equal selectors it is the number of
    * declarations in both rules, since the selector is written once. Otherwise
@@ -72,10 +72,10 @@ export default function runScan(root, mergeState) {
     if (shared > 0) return shared;
     const rewritesStructure =
       (a.keys.length === 0 && b.keys.length === 0) ||
-      (first.slot.parent !== second.slot.parent &&
+      (first.slot.block !== second.slot.block &&
         sameContainer(
-          first.slot.parent,
-          second.slot.parent,
+          first.slot.block.node,
+          second.slot.block.node,
           mergeState.textTable
         ));
     return rewritesStructure ? 0 : NO_BENEFIT;
@@ -92,7 +92,7 @@ export default function runScan(root, mergeState) {
       ? NO_BENEFIT
       : mergeBenefit(first, second);
 
-  /** @type {WeakMap<Container, boolean>} */
+  /** @type {WeakMap<BlockRecord, boolean>} */
   const outsideDeclarations = new WeakMap();
 
   /**
@@ -107,8 +107,8 @@ export default function runScan(root, mergeState) {
       !mergeState.canMerge(
         first.rule,
         second.rule,
-        first.slot.parent,
-        second.slot.parent
+        first.slot.block.node,
+        second.slot.block.node
       ) ||
       sequence.declarationBetween(first, second, outsideDeclarations)
     ) {
@@ -172,7 +172,7 @@ export default function runScan(root, mergeState) {
   let moved;
   do {
     moved = false;
-    const sequence = new RuleSequence(root, mergeState.textTable);
+    const sequence = new RuleSequence(mergeState.records);
     const list = sequence.head;
     let current = list.next ?? list;
     /** @type {RuleLink | null} */

@@ -1,29 +1,161 @@
 import { invalidate } from '../../../ir/blockTable.js';
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { applyChildEdits, detach } from '../deferredChildEdits.js';
+import { BlockRecord, BlockRecords, Slot } from './blockRecords.js';
 import { declarationIsEqual } from './declarations.js';
+import { isDroppableWhenEmpty } from './droppableBlocks.js';
 import { getDecls } from './ruleMeta.js';
 
-/** @import {AtRule, ChildNode, Container, Declaration, Rule} from 'postcss' */
+/** @import {AtRule, ChildNode, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {PropertyWrites} from './lastWriteIndex.js' */
 /** @import MergeState from './mergeState.js' */
 
 /**
  * The only edits that rule merging makes to the live tree. Each one clears the
- * block summaries of the nodes it changes and updates the rule records it
- * touches, so a join cannot leave a stale answer behind. Lib code outside this
- * module edits through these names.
+ * block summaries of the nodes it changes and updates the records it touches,
+ * so a join cannot leave a stale answer behind. Lib code outside this module
+ * edits through these names.
  */
+
+/**
+ * @param {ChildNode} node
+ * @return {boolean} whether the node holds rules or at-rules
+ */
+function isRuleOrAtRule(node) {
+  return node.type === 'rule' || node.type === 'atrule';
+}
+
+/**
+ * Builds the records of a stylesheet from its tree, once per run. Each rule
+ * gets a slot, and each rule that holds a rule or an at-rule gets the record
+ * of its children.
+ *
+ * @param {Root} root
+ * @param {MergeState} mergeState
+ * @return {BlockRecords}
+ */
+export function buildRecords(root, mergeState) {
+  const { textTable } = mergeState;
+  const records = new BlockRecords(
+    mergeState,
+    new BlockRecord(root, null, 0, false)
+  );
+  /** @param {BlockRecord} block */
+  const fill = (block) => {
+    records.add(block);
+    for (const child of /** @type {ChildNode[]} */ (block.node.nodes)) {
+      const index = block.children.length;
+      if (child.type === 'rule') {
+        const slot = new Slot(block, index, [child]);
+        const meta = mergeState.meta(child);
+        meta.place(slot);
+        block.children.push(slot);
+        if (child.nodes.some(isRuleOrAtRule)) {
+          const nested = new BlockRecord(child, block, index, false);
+          meta.setBlock(nested);
+          fill(nested);
+        }
+      } else if (child.type === 'atrule' && child.nodes) {
+        const nested = new BlockRecord(
+          child,
+          block,
+          index,
+          isDroppableWhenEmpty(child, textTable)
+        );
+        block.children.push(nested);
+        fill(nested);
+      } else {
+        block.children.push(child);
+      }
+    }
+  };
+  fill(records.root);
+  return records;
+}
+
+const OUT_OF_STEP = 'block record out of step with the tree';
+
+/**
+ * Throws when the record of a rule does not name its slot, or does not hold
+ * the block of the rule's children that the tree has.
+ *
+ * @param {MergeState} mergeState
+ * @param {BlockRecord} block the block holding the slot
+ * @param {Slot} slot
+ * @param {Rule} rule
+ * @return {void}
+ */
+function checkRuleRecord(mergeState, block, slot, rule) {
+  const meta = mergeState.meta(rule);
+  if (meta.slot !== slot) throw new Error(OUT_OF_STEP);
+  if ((meta.block !== null) !== rule.nodes.some(isRuleOrAtRule)) {
+    throw new Error(OUT_OF_STEP);
+  }
+  if (meta.block) {
+    if (meta.block.parent !== block || meta.block.node !== rule) {
+      throw new Error(OUT_OF_STEP);
+    }
+    checkBlockRecord(mergeState, meta.block);
+  }
+}
+
+/**
+ * Throws when the children of a block record are not the nodes its container
+ * holds, in order.
+ *
+ * @param {MergeState} mergeState
+ * @param {BlockRecord} block
+ * @return {void}
+ */
+function checkBlockRecord(mergeState, block) {
+  const nodes = /** @type {ChildNode[]} */ (block.node.nodes);
+  let at = 0;
+  for (const entry of block.children) {
+    if (entry instanceof Slot) {
+      for (const rule of entry.rules) {
+        if (nodes[at++] !== rule) throw new Error(OUT_OF_STEP);
+        checkRuleRecord(mergeState, block, entry, rule);
+      }
+    } else if (entry instanceof BlockRecord) {
+      if (entry.dropped) continue;
+      if (entry.parent !== block || nodes[at++] !== entry.node) {
+        throw new Error(OUT_OF_STEP);
+      }
+      checkBlockRecord(mergeState, entry);
+    } else if (nodes[at++] !== entry) {
+      throw new Error(OUT_OF_STEP);
+    }
+  }
+  if (at !== nodes.length) throw new Error(OUT_OF_STEP);
+}
+
+/**
+ * Under consistency checks, throws when the records and the tree disagree:
+ * each block must hold the nodes its container holds, in order, and each rule
+ * must stand in the slot its record names.
+ *
+ * @param {MergeState} mergeState
+ * @return {void}
+ */
+export function assertRecordsMatchTree(mergeState) {
+  if (!consistencyChecksEnabled()) return;
+  checkBlockRecord(mergeState, mergeState.records.root);
+}
 
 /**
  * Appends the children of `from` to `into`, after its own. `from` is left
  * empty, so the caller removes or replaces it.
  *
+ * @param {MergeState} mergeState
  * @param {Container} into
  * @param {Container} from
  * @return {void}
  */
-export function moveChildren(into, from) {
+export function moveChildren(mergeState, into, from) {
   invalidate(into);
+  const { records } = mergeState;
+  const target = /** @type {BlockRecord} */ (records.blockOf(into));
+  target.adopt(/** @type {BlockRecord} */ (records.blockOf(from)), records);
   into.append(/** @type {ChildNode[]} */ (from.nodes).slice());
 }
 
@@ -31,11 +163,31 @@ export function moveChildren(into, from) {
  * Takes `node` out of its parent at once. The parent's child list catches up at
  * the next `takePlaceOf` or `flushRemovals`.
  *
- * @param {ChildNode} node
+ * @param {MergeState} mergeState
+ * @param {Rule | AtRule} node
  * @return {void}
  */
-export function remove(node) {
+export function remove(mergeState, node) {
+  if (node.type === 'rule') {
+    const slot = /** @type {Slot} */ (mergeState.meta(node).slot);
+    slot.rules.splice(slot.rules.indexOf(node), 1);
+  } else {
+    emptyEntry(/** @type {BlockRecord} */ (mergeState.records.blockOf(node)));
+  }
   detach(node);
+}
+
+/**
+ * Replaces the entry of a block with an empty slot, so the entry is skipped
+ * from now on.
+ *
+ * @param {BlockRecord} block
+ * @return {void}
+ */
+function emptyEntry(block) {
+  const holder = /** @type {BlockRecord} */ (block.parent);
+  const index = holder.children.indexOf(block);
+  holder.children[index] = new Slot(holder, index, []);
 }
 
 /**
@@ -53,13 +205,33 @@ export function flushRemovals(parent) {
  * `later`, so the joined node takes the later position and keeps the
  * whitespace before `later`.
  *
+ * @param {MergeState} mergeState
  * @param {Container} parent
  * @param {Rule | AtRule} earlier
  * @param {Rule | AtRule} later
  * @return {void}
  */
-export function takePlaceOf(parent, earlier, later) {
+export function takePlaceOf(mergeState, parent, earlier, later) {
   applyChildEdits(parent);
+  if (later.type === 'rule') {
+    const rule = /** @type {Rule} */ (earlier);
+    const replaced = /** @type {Rule} */ (later);
+    const laterSlot = /** @type {Slot} */ (mergeState.meta(replaced).slot);
+    const earlierSlot = /** @type {Slot} */ (mergeState.meta(rule).slot);
+    earlierSlot.rules.splice(earlierSlot.rules.indexOf(rule), 1);
+    laterSlot.rules.splice(laterSlot.rules.indexOf(replaced), 1, rule);
+    mergeState.meta(rule).place(laterSlot);
+  } else {
+    const { records } = mergeState;
+    const block = /** @type {BlockRecord} */ (records.blockOf(earlier));
+    const laterBlock = /** @type {BlockRecord} */ (records.blockOf(later));
+    const holder = /** @type {BlockRecord} */ (block.parent);
+    const from = holder.children.indexOf(block);
+    const to = holder.children.indexOf(laterBlock);
+    holder.children[to] = block;
+    block.position = to;
+    holder.children[from] = new Slot(holder, from, []);
+  }
   earlier.raws.before = later.raws.before;
   earlier.remove();
   later.replaceWith(earlier);
@@ -135,6 +307,10 @@ export function removeDeclarations(mergeState, rule, declarations) {
 export function removeRules(mergeState, parent, rules) {
   if (rules.size === 0) return;
   invalidate(parent);
+  for (const rule of rules) {
+    const slot = /** @type {Slot} */ (mergeState.meta(rule).slot);
+    slot.rules.splice(slot.rules.indexOf(rule), 1);
+  }
   const kept = /** @type {ChildNode[]} */ (parent.nodes).filter((node) => {
     if (!rules.has(/** @type {Rule} */ (node))) return true;
     mergeState.meta(/** @type {Rule} */ (node)).depart();

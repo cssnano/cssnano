@@ -1,11 +1,12 @@
 import DeclarationScan from './declarationScan.js';
 import DroppableBlocks from './droppableBlocks.js';
 import SlotIndex from './slotIndex.js';
+import { BlockRecord, Slot } from './blockRecords.js';
 import { replaceChildren } from './treeEdits.js';
 
-/** @import {ChildNode, Container, Root, Rule} from 'postcss' */
+/** @import {ChildNode, Container, Rule} from 'postcss' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
-/** @import {Slot} from './slotIndex.js' */
 
 /**
  * A doubly linked list lets the scan replace a merged pair in constant time.
@@ -44,61 +45,73 @@ function linkAfter(previous, rules, slot) {
 
 /**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
- * other rules, rewritten in place and written back once.
+ * other rules, rewritten in the block records and written back once.
  */
 export default class RuleSequence {
   /** @type {RuleLink} a sentinel that precedes the first rule */
   head = /** @type {RuleLink} */ ({ prev: null, next: null });
 
-  #slots = new SlotIndex();
+  /** @type {SlotIndex} */
+  #slots;
 
   /** @type {DroppableBlocks} */
-  #blocks;
+  #blocks = new DroppableBlocks();
 
   /** @type {DeclarationScan} */
-  #scan;
+  #scan = new DeclarationScan();
 
-  /** @type {Set<Container>} containers whose rules differ from the stylesheet */
+  /** @type {Set<BlockRecord>} blocks whose children differ from the stylesheet */
   #changed = new Set();
 
-  /**
-   * @param {Root} root
-   * @param {TextTable} textTable the selector tokens the walk stored
-   */
-  constructor(root, textTable) {
-    this.#blocks = new DroppableBlocks(textTable);
-    this.#scan = new DeclarationScan(this.#slots, this.#blocks);
+  /** @type {BlockRecord[]} droppable blocks tracked by this sweep */
+  #tracked = [];
+
+  /** @param {BlockRecords} records */
+  constructor(records) {
+    this.#slots = new SlotIndex(records);
     let tail = this.head;
-    /** @param {Container} container */
-    const collect = (container) => {
-      for (const [index, node] of /** @type {ChildNode[]} */ (
-        container.nodes
-      ).entries()) {
-        if (node.type === 'rule') {
-          /** @type {RuleLink} */
-          const link = {
-            rule: node,
-            slot: this.#slots.register(container, index, node),
-            prev: tail,
-            next: null,
-          };
-          tail.next = link;
-          tail = link;
-        }
-        if ('nodes' in node && node.nodes) {
-          this.#blocks.register(node);
-          this.#slots.recordPosition(node, index);
-          collect(node);
+    /** @param {BlockRecord} block */
+    const collect = (block) => {
+      let live = 0;
+      const { children } = block;
+      for (let index = 0; index < children.length; index++) {
+        const entry = children[index];
+        if (entry instanceof Slot) {
+          entry.position = index;
+          for (const rule of entry.rules) {
+            /** @type {RuleLink} */
+            const link = { rule, slot: entry, prev: tail, next: null };
+            tail.next = link;
+            tail = link;
+            live++;
+            const nested = records.metaOf(rule).block;
+            if (nested) {
+              nested.position = index;
+              collect(nested);
+            }
+          }
+        } else if (entry instanceof BlockRecord) {
+          if (entry.dropped) continue;
+          entry.position = index;
+          live++;
+          collect(entry);
+        } else {
+          live++;
         }
       }
+      block.remaining = null;
+      if (block.droppable && live > 0) {
+        block.remaining = live;
+        this.#tracked.push(block);
+      }
     };
-    collect(root);
+    collect(records.root);
   }
 
   /**
    * @param {RuleLink} first
    * @param {RuleLink} second
-   * @param {WeakMap<Container, boolean>} outsideDeclarations see
+   * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations see
    * `DeclarationScan#declarationBetween`
    * @return {boolean} whether a declaration outside both rules lies between them
    */
@@ -116,8 +129,8 @@ export default class RuleSequence {
    * @return {boolean} whether the parents differed
    */
   moveIntoParent(first, second) {
-    const target = first.slot.parent;
-    const source = second.slot.parent;
+    const target = first.slot.block;
+    const source = second.slot.block;
     if (target === source) return false;
     this.#blocks.moved(source, target);
     second.slot = this.#slots.moveRule(second.rule, second.slot, target);
@@ -141,11 +154,11 @@ export default class RuleSequence {
     const secondSlot = second.slot;
     // Both rules may share a slot after an earlier partial merge, so each is
     // replaced where it stands.
-    this.#blocks.changed(firstSlot.parent, placement.first.length - 1);
-    this.#blocks.changed(secondSlot.parent, placement.second.length - 1);
+    this.#blocks.changed(firstSlot.block, placement.first.length - 1);
+    this.#blocks.changed(secondSlot.block, placement.second.length - 1);
     this.#slots.substitute(firstSlot, first.rule, placement.first);
     this.#slots.substitute(secondSlot, second.rule, placement.second);
-    this.#changed.add(firstSlot.parent).add(secondSlot.parent);
+    this.#changed.add(firstSlot.block).add(secondSlot.block);
 
     let tail = linkAfter(
       linkAfter(before, placement.first, firstSlot),
@@ -156,7 +169,7 @@ export default class RuleSequence {
     for (const rules of placement.following ?? []) {
       const link = /** @type {RuleLink} */ (following);
       following = link.next;
-      this.#blocks.changed(link.slot.parent, rules.length - 1);
+      this.#blocks.changed(link.slot.block, rules.length - 1);
       this.#slots.substitute(link.slot, link.rule, rules);
       tail = linkAfter(tail, rules, link.slot);
     }
@@ -167,7 +180,7 @@ export default class RuleSequence {
 
   /**
    * Writes the sequence into the stylesheet, rebuilding each changed container
-   * once from its children and the rules now in its slots.
+   * once from its records.
    *
    * @return {void}
    */
@@ -176,20 +189,22 @@ export default class RuleSequence {
     // make every later pair walk across it. Rebuild its parent without it,
     // which avoids searching the children of the parent once per removed
     // block.
-    const emptied = this.#blocks.emptiedBlocks();
-    const changed = new Set(this.#changed);
-    for (const container of emptied) {
-      const parent = /** @type {Container} */ (container.parent);
-      if (!emptied.has(parent)) changed.add(parent);
-      changed.delete(container);
+    /** @type {Set<BlockRecord>} */
+    const emptied = new Set();
+    for (const block of this.#tracked) {
+      if (block.remaining === 0) emptied.add(block);
     }
-    const rebuilt = Array.from(changed, (container) => ({
-      container,
-      children: this.#slots.childrenOf(
-        container,
-        (node) => !emptied.has(/** @type {Container} */ (node))
-      ),
-      head: /** @type {ChildNode[]} */ (container.nodes)[0],
+    for (const block of emptied) block.dropped = true;
+    const changed = new Set(this.#changed);
+    for (const block of emptied) {
+      const parent = /** @type {BlockRecord} */ (block.parent);
+      if (!emptied.has(parent)) changed.add(parent);
+      changed.delete(block);
+    }
+    const rebuilt = Array.from(changed, (block) => ({
+      container: /** @type {Container} */ (block.node),
+      children: this.#slots.childrenOf(block),
+      head: /** @type {ChildNode[]} */ (block.node.nodes)[0],
     }));
     replaceChildren(rebuilt);
   }

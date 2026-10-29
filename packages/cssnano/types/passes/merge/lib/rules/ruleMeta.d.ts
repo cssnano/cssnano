@@ -16,6 +16,7 @@ export type RuleElementKeys = {
 };
 export type SelectorLookup = (selector: string, rule?: import('postcss').Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo;
 import type { RangePiece } from '../../../../values/joinRanges.js';
+import type { BlockRecord, Slot } from './blockRecords.js';
 /**
  * The selector list of a rule with what is derived from it. Every field is
  * set up front so all instances share one object layout.
@@ -27,6 +28,24 @@ export declare class RuleMeta {
      * @param {Declaration[]} declarations
      */
     constructor(selectors: string[], declarations: Declaration[]);
+    /**
+     * The slot the rule stands in. It stays readable after the rule departs, so
+     * an edit can still find where the rule stood.
+     *
+     * @return {Slot | undefined}
+     */
+    get slot(): Slot | undefined;
+    /**
+     * The record of the rule's children, or null when it holds no rule or
+     * at-rule. Readable after departure, as `slot` is.
+     *
+     * @return {BlockRecord | null}
+     */
+    get block(): BlockRecord | null;
+    /** @param {Slot} slot the slot the rule now stands in */
+    place(slot: Slot): void;
+    /** @param {BlockRecord} block the record of the rule's children */
+    setBlock(block: BlockRecord): void;
     /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
     get departed(): boolean;
     /** @return {string[]} change it only through the methods of this class */
