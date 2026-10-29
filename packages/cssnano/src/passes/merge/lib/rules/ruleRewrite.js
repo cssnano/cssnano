@@ -1,7 +1,7 @@
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { PropertyWrites } from './lastWriteIndex.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
-import { retire } from './treeEdits.js';
+import { depart } from './treeEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
@@ -146,7 +146,7 @@ export function buildMergedRule(
       });
       mergeState.storeClone(rule, leftover);
       mergeState.reportCreated(leftover);
-      retire(mergeState, rule);
+      depart(mergeState, rule);
       let index = 0;
       leftover.walkDecls((decl) => {
         if (claimed.has(index++)) decl.remove();

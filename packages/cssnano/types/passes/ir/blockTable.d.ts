@@ -8,11 +8,6 @@ export type Summary = {
  */
 export declare function attachedTableCount(): number;
 /**
- * @param {boolean} [enabled]
- * @return {void}
- */
-export declare function enableConsistencyChecks(enabled?: boolean): void;
-/**
  * Summaries of the blocks of one stylesheet, keyed by node. PostCSS stays the
  * source of truth: a summary answers for the subtree as it stood when it was
  * read, and every edit to the subtree calls `invalidate` first.

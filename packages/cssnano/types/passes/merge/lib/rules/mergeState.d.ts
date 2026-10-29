@@ -4,6 +4,13 @@ import type { TextTable } from '../../../../values/textTable.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleMeta } from './ruleMeta.js';
 import type { RuleDeclarationKeys } from './ruleMeta.js';
+/** @import {Container, Declaration, Rule} from 'postcss' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {RangePiece} from '../../../../values/joinRanges.js' */
+/** @import {TextTable} from '../../../../values/textTable.js' */
+/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+/** @import {RuleMeta} from './ruleMeta.js' */
+/** @import {RuleDeclarationKeys} from './ruleMeta.js' */
 /**
  * The state shared by every merge of one stylesheet.
  */
@@ -29,18 +36,13 @@ export default class MergeState {
      */
     constructor(browsers: readonly string[], context?: import('../../../ir/runContext.js').RunContext);
     /**
+     * The record of the rule, made on the first read. Under consistency checks
+     * a record whose declarations differ from the tree throws.
+     *
      * @param {Rule} rule
      * @return {RuleMeta}
      */
     meta(rule: Rule): RuleMeta;
-    /**
-     * Drops the description of a rule whose selectors or declarations changed
-     * or that left the stylesheet. It is rebuilt from the rule when next
-     * needed, so a rule that was never described stays so.
-     *
-     * @param {Rule} rule
-     */
-    forget(rule: Rule): void;
     /**
      * The elements the rule can match. An arrow function, so it passes as a
      * callback without a closure per call.

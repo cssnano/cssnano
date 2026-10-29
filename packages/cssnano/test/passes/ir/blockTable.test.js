@@ -4,9 +4,9 @@ import postcss from 'postcss';
 import {
   attachedTableCount,
   BlockTable,
-  enableConsistencyChecks,
   invalidate,
 } from '../../../src/passes/ir/blockTable.js';
+import { enableConsistencyChecks } from '../../../src/passes/ir/consistencyChecks.js';
 import {
   applyChildEdits,
   detach,

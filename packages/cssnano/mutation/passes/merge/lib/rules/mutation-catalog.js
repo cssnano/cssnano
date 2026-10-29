@@ -114,9 +114,9 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'an append keeps the description of the incoming rule',
+    name: 'an append leaves the record of the incoming rule live',
     target: source('treeEdits.js'),
-    find: '  mergeState.forget(incoming);\n',
+    find: '  departing.depart();\n',
     replace: '',
   },
   {
@@ -150,9 +150,9 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'a removal of rules keeps the description of each removed rule',
+    name: 'a removal of rules leaves the record of each removed rule live',
     target: source('treeEdits.js'),
-    find: '    mergeState.forget(/** @type {Rule} */ (node));\n',
+    find: '    mergeState.meta(/** @type {Rule} */ (node)).depart();\n',
     replace: '',
   },
   {
@@ -168,10 +168,34 @@ export const mutations = [
     replace: '    container.removeAll();',
   },
   {
-    name: 'retiring a rule keeps its description',
+    name: 'departing a rule leaves its record live',
     target: source('treeEdits.js'),
-    find: 'export function retire(mergeState, rule) {\n  mergeState.forget(rule);',
-    replace: 'export function retire(mergeState, rule) {\n  void mergeState;',
+    find: 'export function depart(mergeState, rule) {\n  mergeState.meta(rule).depart();',
+    replace: 'export function depart(mergeState, rule) {\n  void mergeState;',
+  },
+  {
+    name: 'absorbing an earlier rule leaves its record live',
+    target: source('ruleMeta.js'),
+    find: '    earlier.#departed = true;\n',
+    replace: '',
+  },
+  {
+    name: 'holdsBlocks answers false for a rule that holds a nested rule',
+    target: source('ruleMeta.js'),
+    find: '      this.#holdsBlocks = rule.some(isRuleOrAtRule);',
+    replace: '      this.#holdsBlocks = false;',
+  },
+  {
+    name: 'holdsBlocks skips the check against the tree',
+    target: source('ruleMeta.js'),
+    find: '      consistencyChecksEnabled() &&\n',
+    replace: '      false &&\n',
+  },
+  {
+    name: 'meta skips the check of the declarations against the tree',
+    target: source('mergeState.js'),
+    find: '    if (consistencyChecksEnabled() && !meta.departed) {',
+    replace: '    if (false) {',
   },
   {
     name: 'a detach leaves the summaries of the ancestors stale',
