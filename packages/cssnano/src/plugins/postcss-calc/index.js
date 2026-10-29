@@ -1,9 +1,19 @@
 import reduceTokens, {
   hasPotentialMathFunction,
 } from 'postcss-calc/reduce-tokens';
+import cssnanoUtils from '#utils';
 import { parsedValueText } from '../../utils/parsedValueText.js';
 import { tokens } from '../../utils/value.js';
 import { spliceRanges } from '../../values/spliceRanges.js';
+
+const { asciiLowerCase } = cssnanoUtils;
+
+/**
+ * The at-rules whose preludes hold media queries. A feature query such as
+ * `@supports` is left alone, since a reduced `abs()` can pass a test that the
+ * original fails.
+ */
+const MEDIA_QUERY_AT_RULES = new Set(['media', 'container']);
 
 /** @import {PostCssCalcOptions} from 'postcss-calc' */
 /** @import {ReduceCalcOptions} from 'postcss-calc/reduce-tokens' */
@@ -66,9 +76,11 @@ function reduceCalcTokens(options, selector) {
  */
 function calcStage(options) {
   const reducePrelude = reduceCalcTokens(options, false);
+  const preludePart = { buffer: reducePrelude };
   return {
     forAtRule: options.mediaQueries
-      ? () => ({ buffer: reducePrelude })
+      ? (name) =>
+          MEDIA_QUERY_AT_RULES.has(asciiLowerCase(name)) ? preludePart : null
       : undefined,
     selector: options.selectors ? reduceCalcTokens(options, true) : undefined,
     forProperty: () => (buffer) => {
