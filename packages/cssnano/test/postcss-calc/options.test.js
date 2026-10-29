@@ -23,6 +23,20 @@ test(
 );
 
 test(
+  "calc's mediaQueries option leaves an `@supports` condition unchanged, since a reduced `abs()` would pass the feature test where `abs()` fails",
+  processCSSFactory([plugin({ mediaQueries: true })]).passthroughCSS(
+    '@supports (width:abs(-1px)){a{color:red}}'
+  )
+);
+
+test(
+  "calc's mediaQueries option leaves an `@import` `supports()` condition unchanged, since a reduced `abs()` would pass the feature test where `abs()` fails",
+  processCSSFactory([plugin({ mediaQueries: true })]).passthroughCSS(
+    '@import url(a.css) supports(width:abs(-1px));'
+  )
+);
+
+test(
   'mediaQueries reduces a calc() in the media query parameters',
   processCSSFactory([plugin({ mediaQueries: true })]).processCSS(
     '@media (min-width:calc(100px + 20px)){a{color:red}}',
