@@ -185,6 +185,14 @@ test(
 );
 
 test(
+  'should keep the repeat keyframes of the later layer when `@layer a\\  {}` reopens the layer `a\\20` names',
+  processCSS(
+    '@layer a\\20, b;@layer b{@keyframes x{to{top:1px}}}@layer a\\  {@keyframes x{to{top:1px}}}div{animation:x 1s}',
+    '@layer a\\20, b;@layer b{@keyframes x{to{top:1px}}}@layer a\\  {}div{animation:x 1s}'
+  )
+);
+
+test(
   'should prefer unlayered keyframes over layered keyframes regardless of order',
   processCSS(
     '@keyframes a{0%{opacity:0}}@layer low{@keyframes a{0%{opacity:0}}}div{animation:a 1s}',
