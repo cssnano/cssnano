@@ -6,14 +6,21 @@ import {
   KEYFRAMES_SHORTHAND_KEYWORDS,
 } from './grammar.js';
 import { walkValue } from './valueWalk.js';
+import { whitespace } from '../../../values/punctuationTokens.js';
+import {
+  identifierWithText,
+  stringToken,
+} from '../../../values/tokenConstructors.js';
+import { ValueBuffer } from '../../../values/valueBuffer.js';
 
-const { applyEdits, asciiLowerCase, decoded, tokens } = cssnanoUtils;
+const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
 
 /**
- * @typedef {{ text: string, isString: boolean, absorbsWhitespace: boolean }} Replacement
- * @typedef {{ start: number, end: number, text: string }} Edit
+ * @typedef {{ text: string, value: string, isString: boolean, absorbsWhitespace: boolean }} Replacement
+ * @typedef {import('../../../values/valueBuffer.js').TokenEdit} TokenEdit
  * @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken
- * @typedef {(token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => Edit | undefined} Visitor
+ * @typedef {(token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => TokenEdit | undefined} Visitor
+ * @import {TextTable} from '../../../values/textTable.js'
  */
 
 /**
@@ -23,17 +30,26 @@ const { applyEdits, asciiLowerCase, decoded, tokens } = cssnanoUtils;
  * terminate it. A name that already includes its terminating space, or ends in
  * an escaped space, absorbs nothing.
  *
- * @param {{ isString: boolean, tokenText: string }} target the target's
- *   at-rule name
+ * @param {{ isString: boolean, tokenText: string, key: string }} target the
+ *   target's at-rule name
  * @return {Replacement}
  */
-function createReplacement({ isString, tokenText }) {
+function createReplacement({ isString, tokenText, key }) {
   return {
     text: tokenText,
+    value: key,
     isString,
     absorbsWhitespace:
       !isString && tokens(`${tokenText} `)[0][1].length > tokenText.length,
   };
+}
+
+/**
+ * @param {number} count
+ * @return {CSSToken[]} whitespace tokens spelling `count` spaces
+ */
+function spaces(count) {
+  return Array.from({ length: count }, () => whitespace());
 }
 
 /**
@@ -83,46 +99,47 @@ function canContinueIdent(token) {
  * ident needs a separator that a string did not, e.g. `1s"a"` must not become
  * `1sb`, and a name ending in a hex escape absorbs the space after it.
  *
- * @param {CSSToken[]} tokenList
+ * @param {readonly CSSToken[]} tokenList
  * @param {number} index
  * @param {Replacement} replacement
- * @return {Edit}
+ * @return {TokenEdit}
  */
 function createNameEdit(tokenList, index, replacement) {
   const token = tokenList[index];
-  const start = token[2];
-  const end = token[3] + 1;
+  const name = replacement.isString
+    ? stringToken(replacement.text, replacement.value)
+    : identifierWithText(replacement.text, replacement.value);
   if (replacement.isString) {
-    return { start, end, text: replacement.text };
+    return { start: index, end: index + 1, tokens: [name] };
   }
   const wasString = token[0] === TokenType.String;
-  const before = wasString && !isSeparator(tokenList[index - 1]) ? ' ' : '';
+  const before = wasString && !isSeparator(tokenList[index - 1]) ? 1 : 0;
   const next = tokenList[index + 1];
-  let after = '';
+  let after = 0;
   if (replacement.absorbsWhitespace) {
     if (next?.[0] === TokenType.Whitespace) {
       // The escape absorbs one whitespace, and CSS reads a CRLF as one newline.
       const isAbsorbed = next[1].length === 1 || next[1] === '\r\n';
       if (isAbsorbed && canContinueIdent(tokenList[index + 2])) {
-        after = ' ';
+        after = 1;
       }
     } else if (canContinueIdent(next)) {
-      after = '  ';
+      after = 2;
     }
   } else if ((wasString || token[1].endsWith(' ')) && !isSeparator(next)) {
-    after = ' ';
+    after = 1;
   }
   return {
-    start,
-    end,
-    text: `${before}${replacement.text}${after}`,
+    start: index,
+    end: index + 1,
+    tokens: [...spaces(before), name, ...spaces(after)],
   };
 }
 
 /**
  * @param {'animation-shorthand' | 'animation-name'} kind
  * @param {Map<string, Replacement>} renames
- * @param {CSSToken[]} tokenList
+ * @param {readonly CSSToken[]} tokenList
  * @return {Visitor}
  */
 function createAnimationVisitor(kind, renames, tokenList) {
@@ -153,10 +170,10 @@ function createAnimationVisitor(kind, renames, tokenList) {
 /**
  * Resolves a counter-style identifier token, returning a replacement edit if renamed.
  *
- * @param {CSSToken[]} tokenList
+ * @param {readonly CSSToken[]} tokenList
  * @param {number} index
  * @param {Map<string, Replacement>} renames
- * @return {Edit | undefined}
+ * @return {TokenEdit | undefined}
  */
 function resolveCounterStyleToken(tokenList, index, renames) {
   const val = decoded(tokenList[index]);
@@ -168,7 +185,7 @@ function resolveCounterStyleToken(tokenList, index, renames) {
 }
 
 /**
- * @param {CSSToken[]} tokenList
+ * @param {readonly CSSToken[]} tokenList
  * @param {Map<string, Replacement>} renames
  * @return {Visitor}
  */
@@ -180,7 +197,7 @@ function createCounterStyleVisitor(tokenList, renames) {
 }
 
 /**
- * @param {CSSToken[]} tokenList
+ * @param {readonly CSSToken[]} tokenList
  * @param {Map<string, Replacement>} renames
  * @return {Visitor}
  */
@@ -208,11 +225,11 @@ function createCounterFuncVisitor(tokenList, renames) {
  * @param {Map<string, Replacement>} renames old name → replacement
  * @param {string} value the declaration value, with the whitespace that a
  *   trailing escape consumed restored
+ * @param {readonly CSSToken[]} tokenList the tokens that spell `value`
+ * @param {TextTable} table
  * @return {void}
  */
-function rewriteDeclaration(decl, kind, renames, value) {
-  const tokenList = tokens(value);
-
+function rewriteDeclaration(decl, kind, renames, value, tokenList, table) {
   /** @type {Visitor} */
   let visit;
   if (kind === 'animation-shorthand' || kind === 'animation-name') {
@@ -226,14 +243,37 @@ function rewriteDeclaration(decl, kind, renames, value) {
   const edits = walkValue(tokenList, visit);
 
   if (edits.length > 0) {
-    const result = applyEdits(value, edits);
-    if (result !== value) {
-      decl.value = result;
-      if (decl.raws?.value?.raw) {
-        decl.raws.value = { raw: result, value: result };
-      }
+    const buffer = new ValueBuffer(value, undefined, tokenList);
+    buffer.replaceRanges(edits);
+    if (buffer.text() !== value) {
+      table.write(decl, buffer.tokens());
     }
   }
 }
 
-export { createReplacement, rewriteDeclaration };
+/**
+ * Rewrites the references whose namespace has renames. A reference shares
+ * the tokens its scan read, so the rewrite does not tokenize it again.
+ *
+ * @param {import('./protectedNames.js').Reference[]} references
+ * @param {Map<string, Map<string, Replacement>>} renames
+ * @param {TextTable} table
+ * @return {void}
+ */
+function rewriteReferences(references, renames, table) {
+  for (const { decl, classification, value, tokens: list } of references) {
+    const namespaceRenames = renames.get(classification.namespace);
+    if (namespaceRenames?.size) {
+      rewriteDeclaration(
+        decl,
+        classification.kind,
+        namespaceRenames,
+        value,
+        list,
+        table
+      );
+    }
+  }
+}
+
+export { createReplacement, rewriteReferences };

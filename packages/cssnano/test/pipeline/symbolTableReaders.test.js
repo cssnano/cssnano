@@ -34,6 +34,28 @@ const counterOnly = {
 };
 const gridOnly = { counter: false, counterStyle: false, keyframes: false };
 
+/**
+ * Two identical string-named keyframes rules, the first of which the merge
+ * drops, and a string reference to that first name, with the lists the walk
+ * would store for them. A string kept name needs no probe of its spelling,
+ * which an identifier kept name does.
+ *
+ * @returns {{ root: import('postcss').Root, table: TextTable, lists: ReturnType<typeof createSymbolLists> }}
+ */
+function mergeableKeyframes() {
+  const root = postcss.parse(
+    '@keyframes "a" { from { top: 0 } } @keyframes "b" { from { top: 0 } } div { animation: "a" 1s }'
+  );
+  const [first, second] = root.nodes;
+  const table = new TextTable();
+  table.write(first, tokens('"a"'));
+  table.write(second, tokens('"b"'));
+  table.write(root.last.first, tokens('"a" 1s'));
+  const lists = createSymbolLists();
+  root.walk(symbolVisit(lists));
+  return { root, table, lists };
+}
+
 suite('the symbol transforms read the text the host walk stored', () => {
   test("reduce-idents' at-rule symbols read the list stored for the at-rule, without tokenizing", () => {
     const root = postcss.parse('@keyframes foo { from {} }');
@@ -185,6 +207,26 @@ suite('the symbol transforms read the text the host walk stored', () => {
     const before = tokenizeTotal();
     mergeIdentsSymbols(lists, {}, () => {}, table);
     assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test("merge-idents' references read the list stored for the declaration, without tokenizing", () => {
+    const { table, lists } = mergeableKeyframes();
+    const before = tokenizeTotal();
+    mergeIdentsSymbols(lists, {}, () => {}, table);
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test("merge-idents' edited references' tokens spell text()", () => {
+    const { root, table, lists } = mergeableKeyframes();
+    mergeIdentsSymbols(lists, {}, () => {}, table);
+    const reference = root.last.first;
+    assert.equal(tokensText(table.stored(reference)), reference.value);
+  });
+
+  test('merge-idents renames a reference to the keyframes name it keeps', () => {
+    const { root, table, lists } = mergeableKeyframes();
+    mergeIdentsSymbols(lists, {}, () => {}, table);
+    assert.equal(root.last.first.value, '"b" 1s');
   });
 
   test('PostCSS keeps in params every comment between two tokens of a prelude', () => {
