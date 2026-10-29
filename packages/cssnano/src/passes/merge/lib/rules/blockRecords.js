@@ -25,6 +25,22 @@ export class Slot {
     this.position = position;
     this.rules = rules;
   }
+
+  /**
+   * Replaces `rule` in the slot with `replacements`, and places each of them
+   * here.
+   *
+   * @param {Rule} rule the rule that stands in the slot and is replaced
+   * @param {Rule[]} replacements
+   * @param {BlockRecords} records
+   * @return {void}
+   */
+  substitute(rule, replacements, records) {
+    this.rules.splice(this.rules.indexOf(rule), 1, ...replacements);
+    for (const replacement of replacements) {
+      records.metaOf(replacement).place(this);
+    }
+  }
 }
 
 /**
@@ -72,6 +88,63 @@ export class BlockRecord {
     this.parent = parent;
     this.position = position;
     this.droppable = droppable;
+  }
+
+  /**
+   * The first child the block holds now, without copying the child list.
+   *
+   * @return {ChildNode | undefined}
+   */
+  firstLiveChild() {
+    for (const entry of this.children) {
+      if (entry instanceof Slot) {
+        if (entry.rules.length > 0) return entry.rules[0];
+      } else if (entry instanceof BlockRecord) {
+        if (!entry.dropped) return /** @type {ChildNode} */ (entry.node);
+      } else {
+        return entry;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * The children the block holds now, in order: the rules of its slots, and
+   * the nodes of its other entries, except a block that was dropped.
+   *
+   * @return {ChildNode[]}
+   */
+  liveChildren() {
+    /** @type {ChildNode[]} */
+    const children = [];
+    for (const entry of this.children) {
+      if (entry instanceof Slot) {
+        children.push(...entry.rules);
+      } else if (entry instanceof BlockRecord) {
+        if (!entry.dropped)
+          children.push(/** @type {ChildNode} */ (entry.node));
+      } else {
+        children.push(entry);
+      }
+    }
+    return children;
+  }
+
+  /**
+   * Moves `rule` out of `from` into a new slot after the last child of this
+   * block.
+   *
+   * @param {Rule} rule
+   * @param {Slot} from
+   * @param {BlockRecords} records
+   * @return {Slot} the slot that now holds `rule`
+   */
+  moveRule(rule, from, records) {
+    from.rules.splice(from.rules.indexOf(rule), 1);
+    const slot = new Slot(this, this.children.length, [rule]);
+    this.children.push(slot);
+    records.metaOf(rule).place(slot);
+    return slot;
   }
 
   /**

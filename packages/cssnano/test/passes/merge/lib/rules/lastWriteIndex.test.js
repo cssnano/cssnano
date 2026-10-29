@@ -7,6 +7,11 @@ import LastWriteIndex, {
 } from '../../../../../src/passes/merge/lib/rules/lastWriteIndex.js';
 import { isConflictingProp } from '../../../../../script/passes/ir/lib/propertyRelations.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
+import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
+import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+
+/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
 /** @param {string} prop */
 const decl = (prop) => ({ prop });
@@ -14,8 +19,18 @@ const decl = (prop) => ({ prop });
 // Element keys for writes that may reach any element.
 const unknownElements = () => null;
 
-/** @param {string} css */
-const firstNode = (css) => /** @type {any} */ (postcss.parse(css).first);
+/**
+ * The first node of `css`, with the records of its stylesheet.
+ *
+ * @param {string} css
+ * @return {{node: any, records: BlockRecords}}
+ */
+function firstNodeWithRecords(css) {
+  const root = postcss.parse(css);
+  const mergeState = new MergeState(['chrome 120'], createRunContext());
+  mergeState.records = buildRecords(root, mergeState);
+  return { node: root.first, records: mergeState.records };
+}
 
 /**
  * @param {string} written
@@ -189,7 +204,8 @@ test('last-write index: recordNode records declarations inside @media, @supports
     '@container (min-width:1px){.a{color:red}}',
   ]) {
     const index = new LastWriteIndex(new PropertyTable());
-    index.recordNode(firstNode(css), 1, unknownElements);
+    const { node, records } = firstNodeWithRecords(css);
+    index.recordNode(node, 1, unknownElements, records);
     assert.equal(index.conflictsSince([decl('color')], 0), true, css);
     assert.equal(index.conflictsSince([decl('width')], 0), false, css);
   }
@@ -197,11 +213,10 @@ test('last-write index: recordNode records declarations inside @media, @supports
 
 test('last-write index: recordNode records declarations of nested rules', () => {
   const index = new LastWriteIndex(new PropertyTable());
-  index.recordNode(
-    firstNode('.a{width:1px;& .b{color:red}}'),
-    1,
-    unknownElements
+  const { node, records } = firstNodeWithRecords(
+    '.a{width:1px;& .b{color:red}}'
   );
+  index.recordNode(node, 1, unknownElements, records);
   assert.equal(index.conflictsSince([decl('color')], 0), true);
 });
 
@@ -214,13 +229,15 @@ test('last-write index: recordNode treats an at-rule it cannot analyse as a barr
     '@import "x.css";',
   ]) {
     const index = new LastWriteIndex(new PropertyTable());
-    index.recordNode(firstNode(css), 1, unknownElements);
+    const { node, records } = firstNodeWithRecords(css);
+    index.recordNode(node, 1, unknownElements, records);
     assert.equal(index.conflictsSince([decl('width')], 0), true, css);
   }
 });
 
 test('last-write index: recordNode ignores comments', () => {
   const index = new LastWriteIndex(new PropertyTable());
-  index.recordNode(firstNode('/* note */'), 1, unknownElements);
+  const { node, records } = firstNodeWithRecords('/* note */');
+  index.recordNode(node, 1, unknownElements, records);
   assert.equal(index.conflictsSince([decl('color')], 0), false);
 });

@@ -193,8 +193,8 @@ export const mutations = [
   },
   {
     name: 'a sweep move that leaves the moved rule on its old slot',
-    target: source('slotIndex.js'),
-    find: '    this.#records.metaOf(rule).place(slot);\n',
+    target: source('blockRecords.js'),
+    find: '    records.metaOf(rule).place(slot);\n',
     replace: '',
   },
   {

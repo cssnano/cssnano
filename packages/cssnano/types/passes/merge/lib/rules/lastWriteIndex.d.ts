@@ -1,5 +1,6 @@
 import type { AtRule, ChildNode, Declaration, Rule } from 'postcss';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
+import type { BlockRecords } from './blockRecords.js';
 /**
  * @param {ChildNode} node
  * @return {node is AtRule}
@@ -67,9 +68,10 @@ export default class LastWriteIndex {
      * @param {ChildNode} node
      * @param {number} position
      * @param {(rule: Rule) => string[] | null} keysOf
+     * @param {BlockRecords} records the children of a block come from its record
      * @return {void}
      */
-    recordNode(node: ChildNode, position: number, keysOf: (rule: Rule) => string[] | null): void;
+    recordNode(node: ChildNode, position: number, keysOf: (rule: Rule) => string[] | null, records: BlockRecords): void;
     /**
      * Whether a write after `position` conflicts with one of `declarations`,
      * counting only writes that can set an element in `elements`, the non-empty

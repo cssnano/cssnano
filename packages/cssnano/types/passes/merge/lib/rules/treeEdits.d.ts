@@ -99,15 +99,17 @@ export type Rebuilt = {
      */
     children: ChildNode[];
     /**
-     * the first child the container held before
+     * the first child the root held before,
+     * or undefined for any other container
      */
-    head: ChildNode;
+    head: ChildNode | undefined;
 };
 /**
  * @typedef {object} Rebuilt
  * @property {Container} container
  * @property {ChildNode[]} children the children the container takes
- * @property {ChildNode} head the first child the container held before
+ * @property {ChildNode | undefined} head the first child the root held before,
+ * or undefined for any other container
  */
 /**
  * Gives each container its children, after every container has been emptied,

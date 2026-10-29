@@ -8,6 +8,7 @@ import { getDecls } from './ruleMeta.js';
 /** @import {AtRule, ChildNode, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {PropertyWrites} from './lastWriteIndex.js' */
 /** @import MergeState from './mergeState.js' */
+/** @import {RuleMeta} from './ruleMeta.js' */
 
 /**
  * The only edits that rule merging makes to the live tree. Each one clears the
@@ -22,6 +23,22 @@ import { getDecls } from './ruleMeta.js';
  */
 function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
+}
+
+const BLOCK_DECLARATION_EDIT =
+  'a declaration edit on a rule that holds a block';
+
+/**
+ * Under consistency checks, throws when a declaration edit reaches a rule that
+ * holds a block, whose declarations stand in its block record.
+ *
+ * @param {RuleMeta} record
+ * @return {void}
+ */
+function checkNoBlock(record) {
+  if (consistencyChecksEnabled() && record.block !== null) {
+    throw new Error(BLOCK_DECLARATION_EDIT);
+  }
 }
 
 /**
@@ -257,6 +274,7 @@ export function appendToDeclarations(
   incoming
 ) {
   const record = mergeState.meta(receiving);
+  checkNoBlock(record);
   // Read before the loop empties `incoming`, while its record still matches it.
   const departing = mergeState.meta(incoming);
   for (const node of incoming.nodes.slice()) {
@@ -286,6 +304,7 @@ export function appendToDeclarations(
 export function removeDeclarations(mergeState, rule, declarations) {
   // Read before the removal, while the record still matches the rule.
   const record = mergeState.meta(rule);
+  checkNoBlock(record);
   for (const declaration of declarations) declaration.remove();
   record.takeDeclarations(getDecls(rule));
 }
@@ -317,7 +336,8 @@ export function removeRules(mergeState, parent, rules) {
  * @typedef {object} Rebuilt
  * @property {Container} container
  * @property {ChildNode[]} children the children the container takes
- * @property {ChildNode} head the first child the container held before
+ * @property {ChildNode | undefined} head the first child the root held before,
+ * or undefined for any other container
  */
 
 /**
@@ -336,7 +356,12 @@ export function replaceChildren(rebuilt) {
     for (const node of children) node.parent = undefined;
     container.append(children);
     // Removing the first child of a root hands its whitespace to the next.
-    if (container.type === 'root' && children.length && children[0] !== head) {
+    if (
+      container.type === 'root' &&
+      head &&
+      children.length &&
+      children[0] !== head
+    ) {
       children[0].raws.before = head.raws.before;
     }
   }

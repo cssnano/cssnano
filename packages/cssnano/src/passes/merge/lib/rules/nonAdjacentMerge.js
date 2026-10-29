@@ -180,7 +180,8 @@ function joinBlocksBackward(parent, mergeState) {
     if (key !== null) {
       next.set(key, { node: /** @type {AtRule} */ (node), position: at });
     }
-    if (at === position) index.recordNode(node, last - position, keysOf);
+    if (at === position)
+      index.recordNode(node, last - position, keysOf, mergeState.records);
   }
   flushRemovals(parent);
   return joined;
@@ -273,7 +274,7 @@ function joinInParent(parent, mergeState, rules) {
     if (key !== null) {
       latest.set(key, { node: /** @type {Rule | AtRule} */ (node), position });
     }
-    index.recordNode(node, position, keysOf);
+    index.recordNode(node, position, keysOf, mergeState.records);
   }
   // PostCSS finds a child by scanning its parent, so the rules that moved up
   // leave the parent in one rebuild.

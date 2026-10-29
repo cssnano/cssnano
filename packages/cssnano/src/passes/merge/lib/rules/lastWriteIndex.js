@@ -1,7 +1,9 @@
 import cssnanoUtils from '#utils';
+import { BlockRecord, Slot } from './blockRecords.js';
 
 /** @import {AtRule, ChildNode, Declaration, Rule} from 'postcss' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 
 // Conditional group rules hold ordinary rules whose declarations cascade as
 // they do at the top level. Any other at-rule may depend on its position, as
@@ -235,10 +237,11 @@ export default class LastWriteIndex {
    * @param {ChildNode} node
    * @param {number} position
    * @param {(rule: Rule) => string[] | null} keysOf
+   * @param {BlockRecords} records the children of a block come from its record
    * @return {void}
    */
-  recordNode(node, position, keysOf) {
-    this.#recordNode(node, position, null, keysOf);
+  recordNode(node, position, keysOf, records) {
+    this.#recordNode(node, position, null, keysOf, records);
   }
 
   /**
@@ -246,17 +249,47 @@ export default class LastWriteIndex {
    * @param {number} position
    * @param {string[] | null} keys
    * @param {(rule: Rule) => string[] | null} keysOf
+   * @param {BlockRecords} records
    */
-  #recordNode(node, position, keys, keysOf) {
+  #recordNode(node, position, keys, keysOf, records) {
     if (node.type === 'decl') {
       this.record(node, position, keys);
     } else if (node.type === 'atrule' && !isConditionalGroupRule(node)) {
       this.#lastBarrier = Math.max(this.#lastBarrier, position);
-    } else if ('nodes' in node && node.nodes) {
+    } else if (node.type === 'rule' || node.type === 'atrule') {
       const own =
         node.type === 'rule' ? keysOf(/** @type {Rule} */ (node)) : keys;
-      for (const child of node.nodes)
-        this.#recordNode(child, position, own, keysOf);
+      const block =
+        node.type === 'rule'
+          ? records.metaOf(node).block
+          : records.blockOf(/** @type {AtRule} */ (node));
+      if (!block) {
+        // A rule without a block holds declarations and comments only.
+        if (node.type === 'rule') {
+          for (const child of node.nodes)
+            this.#recordNode(child, position, own, keysOf, records);
+        }
+        return;
+      }
+      // Walks the entries in place, since a copy of the children would cost an
+      // allocation at every block.
+      for (const entry of block.children) {
+        if (entry instanceof Slot) {
+          for (const rule of entry.rules)
+            this.#recordNode(rule, position, own, keysOf, records);
+        } else if (entry instanceof BlockRecord) {
+          if (!entry.dropped)
+            this.#recordNode(
+              /** @type {ChildNode} */ (entry.node),
+              position,
+              own,
+              keysOf,
+              records
+            );
+        } else {
+          this.#recordNode(entry, position, own, keysOf, records);
+        }
+      }
     }
   }
 

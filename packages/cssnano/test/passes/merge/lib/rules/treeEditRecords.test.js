@@ -209,3 +209,34 @@ test('takePlaceOf should move the record of the earlier rule into the slot of th
   takePlaceOf(state, /** @type {Container} */ (media), earlier, later);
   assert.equal(state.meta(earlier).slot, laterSlot);
 });
+
+test('appendToDeclarations should throw when the receiving rule holds a block', () => {
+  const { root, state } = setup('a{color:red;b{width:1px}}c{width:2px}');
+  const [receiving, incoming] = /** @type {Rule[]} */ (
+    /** @type {Container} */ (root).nodes
+  );
+  const kept = /** @type {Declaration[]} */ ([receiving.first]);
+  assert.throws(
+    () =>
+      appendToDeclarations(
+        state,
+        receiving,
+        kept,
+        writesOf(kept, new PropertyTable()),
+        incoming
+      ),
+    /holds a block/v
+  );
+});
+
+test('removeDeclarations should throw when the rule holds a block', () => {
+  const { root, state } = setup('a{color:red;b{width:1px}}');
+  const [rule] = /** @type {Rule[]} */ (/** @type {Container} */ (root).nodes);
+  assert.throws(
+    () =>
+      removeDeclarations(state, rule, [
+        /** @type {Declaration} */ (rule.first),
+      ]),
+    /holds a block/v
+  );
+});

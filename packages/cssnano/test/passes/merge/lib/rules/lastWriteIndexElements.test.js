@@ -3,12 +3,28 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import LastWriteIndex from '../../../../../src/passes/merge/lib/rules/lastWriteIndex.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
+import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
+import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 
 /** @param {string} prop */
 const decl = (prop) => ({ prop });
 
 // Element keys for writes that may reach any element.
 const unknownElements = () => null;
+
+/**
+ * The first node of `css`, with the records of its stylesheet.
+ *
+ * @param {string} css
+ * @return {{node: any, records: import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecords}}
+ */
+function firstNodeWithRecords(css) {
+  const root = postcss.parse(css);
+  const mergeState = new MergeState(['chrome 120'], createRunContext());
+  mergeState.records = buildRecords(root, mergeState);
+  return { node: root.first, records: mergeState.records };
+}
 
 test('last-write index ignores a write to another known element', () => {
   const index = new LastWriteIndex(new PropertyTable());
@@ -42,7 +58,8 @@ test('last-write index with an unknown target element counts writes to every ele
 
 test('last-write index reports a barrier for any target element', () => {
   const index = new LastWriteIndex(new PropertyTable());
-  index.recordNode(postcss.parse('@layer x{}').first, 1, unknownElements);
+  const { node, records } = firstNodeWithRecords('@layer x{}');
+  index.recordNode(node, 1, unknownElements, records);
   assert.equal(index.conflictsSince([], 0, ['h1']), true);
 });
 
@@ -67,8 +84,8 @@ test('last-write index keeps a write at the queried position out of the answer f
 
 test('last-write index recordNode records each rule declaration under its element keys', () => {
   const index = new LastWriteIndex(new PropertyTable());
-  const rule = postcss.parse('h2{color:red}').first;
-  index.recordNode(rule, 1, () => ['h2']);
+  const { node, records } = firstNodeWithRecords('h2{color:red}');
+  index.recordNode(node, 1, () => ['h2'], records);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h1']), false);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h2']), true);
 });

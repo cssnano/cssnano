@@ -13,6 +13,8 @@ import {
   buildRecords,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { mergePass } from '../../../../../src/passes/merge/index.js';
+import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
+import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
 
 /** @import {Root, Rule} from 'postcss' */
 
@@ -92,4 +94,66 @@ test('the merge pass should keep the records in step with the tree through its j
     '@media (x){a{color:red}@media (y){b{width:1px}}c{color:blue}}@media (x){d{height:2px}@media (y){e{width:3px}}}';
   const root = postcss.parse(css);
   assert.doesNotThrow(() => mergePass(root, ['chrome 120']));
+});
+
+test('liveChildren should equal the children of the stylesheet after a sweep drops a block', () => {
+  const { root, state } = setup(
+    '@media print{a{color:red}}@media print{a{color:red}}'
+  );
+  runScan(state);
+  assert.deepEqual(state.records.root.liveChildren(), root.nodes);
+});
+
+test('liveChildren should equal the children of the stylesheet after a join moves a block', () => {
+  const { root, state } = setup(
+    '@media print{a{color:red}}@media print{b{width:1px}}'
+  );
+  joinNonAdjacent(root, state);
+  assert.deepEqual(state.records.root.liveChildren(), root.nodes);
+});
+
+test('liveChildren should equal the children of the stylesheet after a join removes a rule', () => {
+  const { root, state } = setup('a{color:red}b{color:red}');
+  joinNonAdjacent(root, state);
+  assert.deepEqual(state.records.root.liveChildren(), root.nodes);
+});
+
+test('liveChildren should return a fresh array of the children, not the entries', () => {
+  const { state } = setup('a{color:red}');
+  const children = state.records.root.liveChildren();
+  children.length = 0;
+  assert.equal(state.records.root.liveChildren().length, 1);
+});
+
+test('Slot#substitute should replace the rule in its slot and place the replacements there', () => {
+  const { root, state } = setup('@media print{a{color:red}}');
+  const [media] = /** @type {Root} */ (root).nodes;
+  const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
+  const slot = /** @type {Slot} */ (state.meta(rule).slot);
+  const replacement = postcss.rule({ selector: 'b' });
+  media.append(replacement);
+  slot.substitute(rule, [replacement], state.records);
+  assert.deepEqual(slot.rules, [replacement]);
+  assert.equal(state.meta(replacement).slot, slot);
+});
+
+test('moveRule should place the record of the moved rule in a new slot at the end of the target', () => {
+  const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
+  const [media] = /** @type {Root} */ (root).nodes;
+  const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
+  const from = /** @type {Slot} */ (state.meta(rule).slot);
+  const target = state.records.root;
+  const slot = target.moveRule(rule, from, state.records);
+  assert.equal(state.meta(rule).slot, slot);
+  assert.equal(slot.block, target);
+  assert.equal(target.children.at(-1), slot);
+});
+
+test('moveRule should leave the rule out of the slot it came from', () => {
+  const { root, state } = setup('@media print{a{color:red}}');
+  const [media] = /** @type {Root} */ (root).nodes;
+  const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
+  const from = /** @type {Slot} */ (state.meta(rule).slot);
+  state.records.root.moveRule(rule, from, state.records);
+  assert.deepEqual(from.rules, []);
 });

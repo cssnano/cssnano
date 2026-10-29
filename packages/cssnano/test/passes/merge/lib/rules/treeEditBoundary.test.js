@@ -188,13 +188,7 @@ function mergeReaders() {
 
 // The files still reading a block's children or a rule's parent. Each commit
 // that moves a reader onto records removes it from this list.
-const outsideReaders = [
-  'declarationJoin.js',
-  'lastWriteIndex.js',
-  'nonAdjacentMerge.js',
-  'ruleMeta.js',
-  'ruleSequence.js',
-];
+const outsideReaders = ['nonAdjacentMerge.js', 'ruleMeta.js'];
 
 test('the boundary guard should record reads from lib/rules during the merge', () => {
   assert.notDeepEqual(mergeReaders(), []);
