@@ -123,7 +123,6 @@ export const catalogs = [
       './passes/merge/lib/rules/mutation-catalog-selector-writers.js',
       import.meta.url
     ),
-    suites: mergeRulesSuites,
     test: true,
   },
   {
