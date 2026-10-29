@@ -1,1 +1,1 @@
-{"version":3,"file":"fixedPointSelector.d.ts","sourceRoot":"","sources":["../../../../src/plugins/postcss-minify-selectors/lib/fixedPointSelector.js"],"names":[],"mappings":"AAWA;;;;;GAKG;AACH,wBAAgB,oBAAoB,CAAC,MAAM,EAFhC,MAEgC,WA2B1C"}
+{"version":3,"file":"fixedPointSelector.d.ts","sourceRoot":"","sources":["../../../../src/plugins/postcss-minify-selectors/lib/fixedPointSelector.js"],"names":[],"mappings":"AAuBA;;;;;GAKG;AACH,wBAAgB,oBAAoB,CAAC,MAAM,EAFhC,MAEgC,WAwC1C"}

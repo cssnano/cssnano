@@ -153,4 +153,11 @@ export const catalogs = [
     url: new URL('./values/mutation-catalog-buffer.js', import.meta.url),
     test: true,
   },
+  {
+    url: new URL(
+      './postcss-minify-selectors/mutation-catalog-fixed-point.js',
+      import.meta.url
+    ),
+    test: true,
+  },
 ];
