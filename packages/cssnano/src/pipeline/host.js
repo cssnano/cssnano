@@ -50,9 +50,11 @@ import { walkAfterMerge } from './afterMerge.js';
 /**
  * The entry of a stage in a preset. `create` builds the stage from the options
  * of the entry and, when the entry reads them, the browser targets. It returns
- * null when the stage would do nothing.
- * @typedef {object} StageEntry
- * @property {(options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => Stage | null} create
+ * null when the stage would do nothing. `create` is declared as a method so that
+ * an entry can take the narrower options its plugin documents; the options are
+ * validated against those keys before the host calls it.
+ * @template [Options=Record<PropertyKey, unknown>]
+ * @typedef {{create(options: Options, targets: readonly string[] | undefined): Stage | null}} StageEntry
  */
 
 /**
@@ -67,9 +69,10 @@ import { walkAfterMerge } from './afterMerge.js';
 /**
  * A whole-stylesheet transform that the walk runs. `create` gets the options of
  * the entry and returns the options the walk runs the transform with, or null
- * when the transform is off.
- * @typedef {object} TransformEntry
- * @property {(options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown> | null} create
+ * when the transform is off. `create` is a method for the same reason as in
+ * StageEntry.
+ * @template [Options=Record<PropertyKey, unknown>]
+ * @typedef {{create(options: Options): Record<PropertyKey, unknown> | null}} TransformEntry
  */
 
 /**

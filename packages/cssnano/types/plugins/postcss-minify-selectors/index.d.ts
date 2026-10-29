@@ -12,7 +12,7 @@ export type Options = {
 };
 /** @satisfies {StageEntry} */
 declare const minifySelectors: {
-    create: (options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => Stage;
+    create: (options: Options, targets: readonly string[] | undefined) => Stage;
 };
 export { minifySelectors as default, isInvalidSelector };
 //# sourceMappingURL=index.d.ts.map

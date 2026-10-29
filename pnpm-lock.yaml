@@ -192,6 +192,9 @@ catalogs:
       specifier: ^8.5.31
       version: 8.5.31
 
+overrides:
+  postcss-calc: link:/home/ludovico/projects/scratch/postcss-calc
+
 importers:
 
   .:
@@ -230,8 +233,8 @@ importers:
         specifier: 'catalog:'
         version: 1.0.30001817
       postcss-calc:
-        specifier: ^11.2.3
-        version: 11.2.3(postcss@8.5.31)
+        specifier: link:/home/ludovico/projects/scratch/postcss-calc
+        version: link:../../../postcss-calc
     devDependencies:
       '@mdn/browser-compat-data':
         specifier: 'catalog:'
@@ -1218,12 +1221,6 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  postcss-calc@11.2.3:
-    resolution: {integrity: sha512-pFW3MR2a4W7uHcSGUiyQGGXZWHon83ljbNwnUJ1mRKublWQbv+3o9NiqhlV4TJfNby+U+zLY2OgiywzhA5eFqw==}
-    engines: {node: ^22.22.3 || ^24.15 || >=26.0}
-    peerDependencies:
-      postcss: ^8.5.29
-
   postcss-font-magician@4.0.0:
     resolution: {integrity: sha512-gOZkpptK6/9rRy5pcUuEG0QgFYR7lW62LTZ6cprn8x5AA2BERcoNuzeq/P9RTW/X43f8bOgOoGzicVy3n1RdXA==}
     engines: {node: '>=18'}
@@ -2072,11 +2069,6 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.7: {}
-
-  postcss-calc@11.2.3(postcss@8.5.31):
-    dependencies:
-      '@csstools/css-tokenizer': 4.0.2
-      postcss: 8.5.31
 
   postcss-font-magician@4.0.0(postcss@8.5.31):
     dependencies:

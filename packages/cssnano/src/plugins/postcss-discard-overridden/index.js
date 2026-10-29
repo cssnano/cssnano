@@ -7,6 +7,8 @@
  *
  * @satisfies {TransformEntry}
  */
-const discardOverridden = { create: (options) => options };
+const discardOverridden = {
+  create: (/** @type {Record<string, never>} */ options) => options,
+};
 
 export { discardOverridden as default };

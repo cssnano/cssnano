@@ -64,11 +64,8 @@ function selectorStage(options, targets) {
 
 /** @satisfies {StageEntry} */
 const minifySelectors = {
-  create: (options, targets) =>
-    selectorStage(
-      /** @type {Options} */ (options),
-      /** @type {readonly string[]} */ (targets)
-    ),
+  create: (/** @type {Options} */ options, targets) =>
+    selectorStage(options, /** @type {readonly string[]} */ (targets)),
 };
 
 export { minifySelectors as default, isInvalidSelector };

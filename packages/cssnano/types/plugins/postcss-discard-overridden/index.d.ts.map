@@ -1,1 +1,1 @@
-{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/plugins/postcss-discard-overridden/index.js"],"names":[],"mappings":"AAAA,6DAA6D;AAE7D;;;;;;GAMG;AACH,QAAA,MAAM,iBAAiB;;CAAmC,CAAC;AAE3D,OAAO,EAAE,iBAAiB,IAAI,OAAO,EAAE,CAAC"}
+{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/plugins/postcss-discard-overridden/index.js"],"names":[],"mappings":"AAAA,6DAA6D;AAE7D;;;;;;GAMG;AACH,QAAA,MAAM,iBAAiB;aACZ,oCAAoC,UAAzB,MAAM,CAAC,MAAM,EAAE,KAAK,CAAC;CAC1C,CAAC;AAEF,OAAO,EAAE,iBAAiB,IAAI,OAAO,EAAE,CAAC"}

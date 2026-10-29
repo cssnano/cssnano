@@ -176,7 +176,8 @@ function unicodeRangeStage(browsers) {
 
 /** @satisfies {StageEntry} */
 const normalizeUnicode = {
-  create: (options, browsers) => unicodeRangeStage(browsers),
+  create: (/** @type {Options} */ options, browsers) =>
+    unicodeRangeStage(browsers),
 };
 
 export { normalizeUnicode as default };

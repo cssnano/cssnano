@@ -4,6 +4,7 @@ import { createReducers, reduceIdentsSymbols } from '#postcss-reduce-idents';
 import { zindexSymbols } from '#postcss-zindex';
 import { defaultPluginEntries } from './defaultPlugins.js';
 
+/** @import {EntryFor} from './configurePlugins.js' */
 /** @import {SymbolTransform} from '../pipeline/host.js' */
 
 /**
@@ -28,9 +29,11 @@ import { defaultPluginEntries } from './defaultPlugins.js';
  * @lintignore
  */
 export const advancedPluginEntries = /** @type {const} */ ([
-  [
+  /** @satisfies {EntryFor<AdvancedPluginOptions, 'discardUnused'>} */ ([
     {
-      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+      create: (
+        /** @type {import('#postcss-discard-unused').Options} */ options
+      ) => options,
     },
     'discardUnused',
     {
@@ -38,10 +41,10 @@ export const advancedPluginEntries = /** @type {const} */ ([
       transform: true,
       symbols: /** @type {SymbolTransform} */ (discardUnusedSymbols),
     },
-  ],
-  [
+  ]),
+  /** @satisfies {EntryFor<AdvancedPluginOptions, 'mergeIdents'>} */ ([
     {
-      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+      create: (/** @type {Record<string, never>} */ options) => options,
     },
     'mergeIdents',
     {
@@ -49,11 +52,12 @@ export const advancedPluginEntries = /** @type {const} */ ([
       transform: true,
       symbols: /** @type {SymbolTransform} */ (mergeIdentsSymbols),
     },
-  ],
-  [
+  ]),
+  /** @satisfies {EntryFor<AdvancedPluginOptions, 'reduceIdents'>} */ ([
     {
-      create: (/** @type {Record<PropertyKey, unknown>} */ options) =>
-        createReducers(options),
+      create: (
+        /** @type {import('#postcss-reduce-idents').Options} */ options
+      ) => createReducers(options),
     },
     'reduceIdents',
     {
@@ -70,10 +74,11 @@ export const advancedPluginEntries = /** @type {const} */ ([
         /** @type {unknown} */ (reduceIdentsSymbols)
       ),
     },
-  ],
-  [
+  ]),
+  /** @satisfies {EntryFor<AdvancedPluginOptions, 'zindex'>} */ ([
     {
-      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+      create: (/** @type {import('#postcss-zindex').Options} */ options) =>
+        options,
     },
     'zindex',
     {
@@ -81,7 +86,7 @@ export const advancedPluginEntries = /** @type {const} */ ([
       transform: true,
       symbols: /** @type {SymbolTransform} */ (zindexSymbols),
     },
-  ],
+  ]),
 ]);
 
 /**
