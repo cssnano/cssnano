@@ -71,3 +71,7 @@ test('mergePass should keep the leading whitespace of the stylesheet on the firs
     '\n\n@media print{a{color:red}b{margin:0}}'
   );
 });
+
+test('mergePass should hand the leading whitespace of the stylesheet to the rule a sweep puts first when it joins the first two rules by declarations', () => {
+  assert.equal(merge('\n\na{color:red}\n  b{color:red}'), '\n\na,b{color:red}');
+});
