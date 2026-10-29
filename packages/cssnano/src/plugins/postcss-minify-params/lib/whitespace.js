@@ -22,18 +22,40 @@ import { whitespace } from '../../../values/punctuationTokens.js';
 const { numeric } = cssnanoUtils;
 /** @typedef {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens']} Tokens */
 
-/** @param {ReturnType<typeof cssnanoUtils.balancedTokens>} structure @return {(number|undefined)[]} */
+/**
+ * The ancestors of each token, so a walk up the brackets is one lookup.
+ *
+ * @typedef {object} Ancestry
+ * @property {(number|undefined)[]} parents the nearest opening token around each token
+ * @property {(number|undefined)[]} functions the nearest enclosing function token
+ * @property {boolean[]} plainGroups whether every enclosing token is a `(` group
+ */
+
+/**
+ * @param {ReturnType<typeof cssnanoUtils.balancedTokens>} structure
+ * @return {Ancestry}
+ */
 export function parentIndexes(structure) {
-  if (!structure) return [];
-  const parents = [];
+  /** @type {Ancestry} */
+  const ancestry = { parents: [], functions: [], plainGroups: [] };
+  if (!structure) return ancestry;
+  const { parents, functions, plainGroups } = ancestry;
+  const { tokens: input } = structure;
   const stack = [];
-  for (let i = 0; i < structure.tokens.length; i++) {
-    const type = structure.tokens[i][0];
-    parents[i] = stack.at(-1);
+  for (let i = 0; i < input.length; i++) {
+    const type = input[i][0];
+    const parent = stack.at(-1);
+    parents[i] = parent;
+    if (parent === undefined) functions[i] = undefined;
+    else if (input[parent][0] === TokenType.Function) functions[i] = parent;
+    else functions[i] = functions[parent];
+    plainGroups[i] =
+      parent === undefined ||
+      (input[parent][0] === TokenType.OpenParen && plainGroups[parent]);
     if (openingTypes.has(type)) stack.push(i);
     else if (closingTypes.has(type)) stack.pop();
   }
-  return parents;
+  return ancestry;
 }
 
 /** @param {Tokens} input @param {number} index @return {boolean} */
@@ -62,8 +84,8 @@ function isAdditiveOperator(token) {
   );
 }
 
-/** @param {Tokens} input @param {number} index @param {(number|undefined)[]} parents @return {boolean} */
-function isRequiredMathOperatorWhitespace(input, index, parents) {
+/** @param {Tokens} input @param {number} index @param {Ancestry} ancestry @return {boolean} */
+function isRequiredMathOperatorWhitespace(input, index, ancestry) {
   const previous = significantIndex(input, index - 1, -1);
   const next = significantIndex(input, index + 1, 1);
   const before = input[previous];
@@ -73,16 +95,11 @@ function isRequiredMathOperatorWhitespace(input, index, parents) {
   else if (isAdditiveOperator(after)) operator = next;
   if (operator === undefined) return false;
 
-  let parent = parents[index];
-  while (parent !== undefined) {
-    const token = input[parent];
-    if (token?.[0] === TokenType.Function) {
-      const name = String(decoded(token)).toLowerCase();
-      if (whitespaceInsensitiveFunctions.has(name)) return false;
-      if (!mathFunctions.has(name)) return true;
-      break;
-    }
-    parent = parents[parent];
+  const parent = ancestry.functions[index];
+  if (parent !== undefined) {
+    const name = String(decoded(input[parent])).toLowerCase();
+    if (whitespaceInsensitiveFunctions.has(name)) return false;
+    if (!mathFunctions.has(name)) return true;
   }
 
   const left = input[significantIndex(input, operator - 1, -1)];
@@ -117,14 +134,14 @@ function isAspectRatioFeature(input, name, left, slash, right, after, close) {
  *
  * @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure
  * @param {number} index
- * @param {(number|undefined)[]} parents
+ * @param {Ancestry} ancestry
  * @return {CSSToken[]}
  */
-function whitespaceReplacement(structure, index, parents) {
+function whitespaceReplacement(structure, index, ancestry) {
   const input = structure.tokens;
   const next = input[index + 1];
   const tight = isTightWhitespace(input, index);
-  const open = parents[index];
+  const open = ancestry.parents[index];
   const emptyCustomProperty =
     next?.[0] === TokenType.CloseParen &&
     open !== undefined &&
@@ -133,17 +150,17 @@ function whitespaceReplacement(structure, index, parents) {
   const tightened =
     tight &&
     !emptyCustomProperty &&
-    !isRequiredMathOperatorWhitespace(input, index, parents);
+    !isRequiredMathOperatorWhitespace(input, index, ancestry);
   return tightened ? [] : [whitespace()];
 }
 
-/** @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {(number|undefined)[]} parents @param {TokenEdit[]} changes @return {void} */
-export function minifyWhitespace(structure, parents, changes) {
+/** @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {Ancestry} ancestry @param {TokenEdit[]} changes @return {void} */
+export function minifyWhitespace(structure, ancestry, changes) {
   const { tokens: input } = structure;
   const edited = new Set(changes.map(({ start }) => start));
   for (let i = 0; i < input.length; i++) {
     if (input[i][0] !== TokenType.Whitespace || edited.has(i)) continue;
-    const replacement = whitespaceReplacement(structure, i, parents);
+    const replacement = whitespaceReplacement(structure, i, ancestry);
     // A space that already spells its replacement is no edit, so the buffer keeps its text.
     const spelled = replacement.length === 0 ? '' : ' ';
     if (spelled === input[i][1]) continue;
@@ -151,25 +168,15 @@ export function minifyWhitespace(structure, parents, changes) {
   }
 }
 
-/** @param {Tokens} input @param {(number|undefined)[]} parents @param {number} index @return {boolean} */
-function isGroupingParent(input, parents, index) {
-  let parent = parents[index];
-  while (parent !== undefined) {
-    if (input[parent][0] !== TokenType.OpenParen) return false;
-    parent = parents[parent];
-  }
-  return true;
-}
-
-/** @param {boolean} supports @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {(number|undefined)[]} parents @param {TokenEdit[]} changes @return {void} */
-export function minifyAspectRatios(supports, structure, parents, changes) {
+/** @param {boolean} supports @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {Ancestry} ancestry @param {TokenEdit[]} changes @return {void} */
+export function minifyAspectRatios(supports, structure, ancestry, changes) {
   const { tokens: input } = structure;
   for (let open = 0; open < input.length; open++) {
     if (
       input[open][0] !== TokenType.OpenParen ||
       (supports
-        ? !isGroupingParent(input, parents, open)
-        : parents[open] !== undefined)
+        ? !ancestry.plainGroups[open]
+        : ancestry.parents[open] !== undefined)
     )
       continue;
     const close = /** @type {number} */ (structure.endForOpening(open));

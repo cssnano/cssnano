@@ -85,7 +85,7 @@ export default function reduceParams(legacy, ruleName, buffer) {
   if (!structure) return;
   /** @type {TokenEdit[]} */
   const changes = [];
-  const parents = parentIndexes(structure);
+  const ancestry = parentIndexes(structure);
   // One walk over the top-level queries, shared by every pass below.
   const queries = structure.topLevelSegments();
   const mediaIsUnconditional =
@@ -98,8 +98,8 @@ export default function reduceParams(legacy, ruleName, buffer) {
   }
   if (ruleName === 'media')
     dropRedundantRangeFeatures(structure, queries, changes);
-  minifyWhitespace(structure, parents, changes);
-  minifyAspectRatios(ruleName === 'supports', structure, parents, changes);
+  minifyWhitespace(structure, ancestry, changes);
+  minifyAspectRatios(ruleName === 'supports', structure, ancestry, changes);
   if (changes.length > 0) buffer.replaceRanges(orderedEdits(changes));
   // The edits keep the brackets balanced, so the queries are split from the
   // edited tokens.
