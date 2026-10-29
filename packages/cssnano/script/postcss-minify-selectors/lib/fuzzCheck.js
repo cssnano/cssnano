@@ -1,9 +1,11 @@
 import postcss from 'postcss';
-import plugin from '../../../src/plugins/postcss-minify-selectors/index.js';
+import minifySelectors from '../../../src/plugins/postcss-minify-selectors/index.js';
+import { oneStagePlugin } from '../../../../../util/testHelpers.js';
 import jsdom from 'jsdom';
 import { shrink } from './fuzzGenerate.js';
 
 const { JSDOM } = jsdom;
+const plugin = oneStagePlugin(minifySelectors);
 const namespaceUris = new Map([
   ['svg', 'http://www.w3.org/2000/svg'],
   ['math', 'http://www.w3.org/1998/Math/MathML'],
