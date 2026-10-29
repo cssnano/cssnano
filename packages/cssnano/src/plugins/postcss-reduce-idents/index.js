@@ -9,7 +9,10 @@ import {
   symbolVisit,
 } from '../../pipeline/symbolLists.js';
 
+import { TextTable } from '../../values/textTable.js';
+
 /** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {TextTable as TextTableType} from '../../values/textTable.js' */
 
 /**
  * @typedef {object} Options
@@ -20,8 +23,8 @@ import {
  * @property {(value: string, index: number) => string} [encoder] Replaces a name. Receives the name and how many names came before it.
  */
 /** @typedef {{
- *    collect: (node: import('postcss').AnyNode) => void,
- *    transform: () => void
+ *    collect: (node: import('postcss').AnyNode, table: TextTableType) => void,
+ *    transform: (table: TextTableType) => void
  *  }} Reducer
  */
 /**
@@ -64,18 +67,26 @@ export function createReducers({
  *
  * @param {SymbolLists} lists
  * @param {{reducers: Reducer[]}} state
+ * @param {unknown} [_remove]
+ * @param {TextTableType} [table] the text the walk stored; a standalone run
+ *   has none
  * @return {void}
  */
-export function reduceIdentsSymbols(lists, { reducers }) {
+export function reduceIdentsSymbols(
+  lists,
+  { reducers },
+  _remove,
+  table = new TextTable()
+) {
   const nodes = [...lists.keyframes, ...lists.counterStyles, ...lists.decls];
   for (const node of nodes) {
     if (!isAttached(node)) continue;
     for (const reducer of reducers) {
-      reducer.collect(node);
+      reducer.collect(node, table);
     }
   }
   for (const reducer of reducers) {
-    reducer.transform();
+    reducer.transform(table);
   }
 }
 

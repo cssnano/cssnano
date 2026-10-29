@@ -3,8 +3,12 @@ import cssnanoUtils from '#utils';
 import { classifyDeclaration } from './grammar.js';
 import { trailingEscape } from './trailingEscape.js';
 import { walkValue } from './valueWalk.js';
+import { declaredValueTokens } from '../../../values/declaredValueTokens.js';
 
 const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {TextTable} from '../../../values/textTable.js' */
 
 /**
  * @param {import('@csstools/css-tokenizer').CSSToken} token
@@ -47,6 +51,7 @@ function maySpell(value, names) {
  * @param {boolean} everywhere whether the whole value is substituted text
  * @param {boolean} rewritesCounterSlots whether the rewriter respells the
  *   counter style arguments of counter functions in this value
+ * @param {readonly CSSToken[]} [parsed] the tokens that spell `value`
  * @return {void}
  */
 function collectNames(
@@ -54,12 +59,13 @@ function collectNames(
   candidates,
   names,
   everywhere,
-  rewritesCounterSlots
+  rewritesCounterSlots,
+  parsed
 ) {
   if (!maySpell(value, candidates)) {
     return;
   }
-  const spelled = walkValue(tokens(value), (token, frame) => {
+  const spelled = walkValue(parsed ?? tokens(value), (token, frame) => {
     const isRewritten =
       rewritesCounterSlots && frame?.expectedArgs?.includes(frame.argIndex);
     return everywhere || (frame && !isRewritten)
@@ -88,9 +94,26 @@ function spellingsOf(decl, restored) {
  * @typedef {{
  *   decl: import('postcss').Declaration,
  *   classification: NonNullable<ReturnType<typeof classifyDeclaration>>,
- *   value: string
+ *   value: string,
+ *   tokens: readonly CSSToken[]
  * }} Reference
  */
+
+/**
+ * The tokens of a reference's value, which the scan and the rewrite share.
+ * A trailing escape can restore whitespace the value lacks, and then the
+ * restored text is tokenized.
+ *
+ * @param {TextTable} table
+ * @param {import('postcss').Declaration} decl
+ * @param {string} restored the result of `trailingEscape(decl)`
+ * @return {readonly CSSToken[]}
+ */
+function referenceTokens(table, decl, restored) {
+  return restored === decl.value
+    ? declaredValueTokens(table, decl)
+    : tokens(restored);
+}
 
 /**
  * One pass over the stylesheet's declarations that finds the names substituted
@@ -113,6 +136,7 @@ function spellingsOf(decl, restored) {
  *   `@apply` rules, whose parameter defaults and arguments are substituted
  * @param {import('postcss').AtRule[]} conditionRules the `@container`, `@when`
  *   and `@else` rules, whose preludes may test a property in a style query
+ * @param {TextTable} table
  * @return {{ protectedNames: Set<string>, references: Reference[] }}
  */
 function scanDeclarations(
@@ -120,7 +144,8 @@ function scanDeclarations(
   candidates,
   functionRules,
   parameterRules,
-  conditionRules
+  conditionRules,
+  table
 ) {
   /** @type {Set<string>} */
   const protectedNames = new Set();
@@ -147,8 +172,16 @@ function scanDeclarations(
     // A reference that cannot be rewritten is skipped, so it must protect
     // every name it may spell.
     const isUnrewritable = restored === undefined;
+    /** @type {readonly CSSToken[] | undefined} */
+    let parsed;
     if (classification && !isUnrewritable) {
-      references.push({ decl, classification, value: restored });
+      parsed = referenceTokens(table, decl, restored);
+      references.push({
+        decl,
+        classification,
+        value: restored,
+        tokens: parsed,
+      });
     }
     const isInitialValue =
       prop === 'initial-value' &&
@@ -167,7 +200,8 @@ function scanDeclarations(
           candidates,
           protectedNames,
           everywhere,
-          classification?.kind === 'counter-style-func'
+          classification?.kind === 'counter-style-func',
+          parsed
         );
       }
     }

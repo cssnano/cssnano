@@ -2,11 +2,11 @@ import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { escapeForUrlToken, replaceEscapeChar } from '../../values/escapes.js';
 import {
-  closeParen,
   func,
   stringToken,
   url as urlToken,
 } from '../../values/tokenConstructors.js';
+import { closeParen } from '../../values/punctuationTokens.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 

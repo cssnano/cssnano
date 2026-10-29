@@ -1,11 +1,13 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import { stringToken } from '../../values/tokenConstructors.js';
 import { escapeForString, normalizeUrlTokenValue } from './urls.js';
 
 /** @import {CSSToken, TokenString} from '@csstools/css-tokenizer' */
-/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {AtRulePart, Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {ValueBuffer} from '../../values/valueBuffer.js' */
 
-const { applyEdits, asciiLowerCase } = cssnanoUtils;
+const { asciiLowerCase } = cssnanoUtils;
 const URL_CANDIDATE_REGEX = /url|src|\\/iv;
 
 /**
@@ -252,43 +254,25 @@ function urlTokenEdits(tokens, options) {
 }
 
 /**
- * @param {string} value
- * @param {{ isImport?: boolean }} [options]
- * @return {string | undefined}
+ * Rewrites the URL sources of the buffer that `options` selects, as token edits.
+ * @param {ValueBuffer} buffer
+ * @param {{ isImport?: boolean }} options
+ * @return {void}
  */
-function normalizeUrls(value, options) {
-  const tokens = [...tokenize({ css: value })];
-  const edits = urlTokenEdits(tokens, options);
-  if (edits.length === 0) return undefined;
-  return applyEdits(
-    value,
-    edits.map(({ start, end, tokens: replacement }) => ({
-      start: tokens[start][2],
-      end: tokens[end - 1][3] + 1,
-      text: textOf(replacement, 0, replacement.length),
-    }))
-  );
+function reduceUrls(buffer, options) {
+  const edits = urlTokenEdits(buffer.tokens(), options);
+  if (edits.length > 0) buffer.replaceRanges(edits);
 }
 
 /**
- * Normalize the first url or string import source in import at-rules (CSS Cascading 4 §2),
- * and normalize any inner url() expressions inside conditions.
- * @param {string} value
- * @return {string | undefined}
+ * The token edits that rewrite the url() and string sources of an @namespace
+ * prelude as strings. A namespace name is compared literally, so its whitespace
+ * is kept.
+ * @param {readonly CSSToken[]} tokens
+ * @return {{start: number, end: number, tokens: CSSToken[]}[]}
  */
-function normalizeImportUrls(value) {
-  return normalizeUrls(value, { isImport: true });
-}
-
-/**
- * Normalize the url() and string sources of an @namespace prelude. A namespace
- * name is compared literally, so its whitespace is kept.
- * @param {string} value
- * @return {string | undefined}
- */
-function normalizeNamespaceUrls(value) {
-  const tokens = [...tokenize({ css: value })];
-  /** @type {{start: number, end: number, text: string}[]} */
+function namespaceTokenEdits(tokens) {
+  /** @type {{start: number, end: number, tokens: CSSToken[]}[]} */
   const edits = [];
   forEachUrl(
     tokens,
@@ -297,26 +281,42 @@ function normalizeNamespaceUrls(value) {
         ? `"${escapeForString(decoded, '"')}"`
         : `${quote}${escapeForString(decoded, quote)}${quote}`;
       if (text !== textOf(tokens, start, end)) {
-        edits.push({
-          start: tokens[start][2],
-          end: tokens[end - 1][3] + 1,
-          text,
-        });
+        edits.push({ start, end, tokens: [stringToken(text, decoded)] });
       }
     },
     { includeStrings: true }
   );
-  return edits.length > 0 ? applyEdits(value, edits) : undefined;
+  return edits;
 }
 
 /**
- * Rewrites the url() and src() values of a declaration, when its text has a candidate.
+ * Rewrites the url() and src() values of a declaration, or of an @supports
+ * prelude, when its text has a candidate.
  * @type {Reducer}
  */
 const reduceValue = (buffer) => {
   if (!buffer.isEdited() && !URL_CANDIDATE_REGEX.test(buffer.text())) return;
   buffer.replaceRanges(urlTokenEdits(buffer.tokens(), {}));
 };
+
+/**
+ * Rewrites the url() and string sources of an @namespace prelude.
+ * @type {Reducer}
+ */
+const reduceNamespaceUrls = (buffer) => {
+  const edits = namespaceTokenEdits(buffer.tokens());
+  if (edits.length > 0) buffer.replaceRanges(edits);
+};
+
+// The options of an import prelude, whose first source is its target.
+const importOptions = { isImport: true };
+
+/** @type {AtRulePart} */
+const importPart = { buffer: (buffer) => reduceUrls(buffer, importOptions) };
+/** @type {AtRulePart} */
+const namespacePart = { buffer: reduceNamespaceUrls };
+/** @type {AtRulePart} */
+const supportsPart = { buffer: reduceValue };
 
 /**
  * The stage for one run. Its value reducer serves every declaration, and its
@@ -331,14 +331,11 @@ function urlStage() {
     forAtRule(name) {
       switch (asciiLowerCase(name)) {
         case 'import':
-          return (text) => normalizeImportUrls(text) ?? text;
+          return importPart;
         case 'namespace':
-          return (text) => normalizeNamespaceUrls(text) ?? text;
+          return namespacePart;
         case 'supports':
-          return (text) =>
-            URL_CANDIDATE_REGEX.test(text)
-              ? (normalizeUrls(text) ?? text)
-              : text;
+          return supportsPart;
         default:
           return null;
       }

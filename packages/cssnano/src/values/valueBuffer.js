@@ -1,10 +1,10 @@
 import { balancedStructure, tokens } from '../utils/value.js';
+import { renumber } from './renumber.js';
+import { spliceRanges } from './spliceRanges.js';
+import { tokensText } from './tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} BalancedTokens */
-
-/** Longest replacement passed to splice as spread arguments. */
-const maxSpreadArguments = 10_000;
 
 /**
  * @typedef {{unicodeRangesAllowed?: boolean}} TokenizeMode
@@ -12,35 +12,10 @@ const maxSpreadArguments = 10_000;
  */
 
 /**
- * Gives each token the positions it has in the text the list spells, so a
- * reader that slices the text by token positions sees the edit. A token whose
- * positions already match is kept as it is.
- *
- * @param {CSSToken[]} list
- */
-function renumber(list) {
-  let start = 0;
-  for (let index = 0; index < list.length; index++) {
-    const token = list[index];
-    const end = start + token[1].length - 1;
-    if (token[2] !== start || token[3] !== end) {
-      list[index] = /** @type {CSSToken} */ ([
-        token[0],
-        token[1],
-        start,
-        end,
-        token[4],
-      ]);
-    }
-    start = end + 1;
-  }
-}
-
-/**
  * The working copy of one fold over a declaration value. Reads come from the
- * source text until the first edit. Tokens are built on first use, and a
- * buffer owns its token list, so an edit never touches a list another reader
- * holds. After an edit, each token's positions are its offsets in text().
+ * source text until the first edit. Tokens are built on first use, and an edit
+ * builds a new list, so a list a reader holds never changes. After an edit,
+ * each token's positions are its offsets in text().
  */
 class ValueBuffer {
   /**
@@ -50,8 +25,9 @@ class ValueBuffer {
    */
   #text;
   /**
-   * The buffer's own tokens, built on the first call to tokens().
-   * @type {CSSToken[] | undefined}
+   * The current tokens: the shared list, else a list built on the first call
+   * to tokens() or after an edit. Never mutated.
+   * @type {readonly CSSToken[] | undefined}
    */
   #tokens;
   /** @type {BalancedTokens | undefined} */
@@ -67,10 +43,13 @@ class ValueBuffer {
    * @param {string} source the value as the stylesheet reads it
    * @param {TokenizeMode} [mode] how the tokenizer reads the value, such as
    *   with `U+` ranges for `unicode-range`
+   * @param {readonly CSSToken[]} [shared] tokens that already spell `source`,
+   *   so tokens() returns them without tokenizing until the first edit
    */
-  constructor(source, mode) {
+  constructor(source, mode, shared) {
     this.#text = source;
     this.#mode = mode;
+    this.#tokens = shared;
   }
 
   /**
@@ -79,21 +58,28 @@ class ValueBuffer {
    * @return {string}
    */
   text() {
-    this.#text ??= (this.#tokens ?? []).map((token) => token[1]).join('');
+    this.#text ??= tokensText(this.#tokens ?? []);
     return this.#text;
   }
 
   /**
-   * The current tokens. The list is the buffer's own, so readers may use it
-   * but should change it only through replace.
+   * The current tokens. The list is never mutated, so a reader may keep it
+   * across later edits.
    *
    * @return {readonly CSSToken[]}
    */
   tokens() {
-    if (this.#tokens === undefined) {
-      this.#tokens = tokens(this.text(), this.#mode);
-    }
-    return this.#tokens;
+    return (this.#tokens ??= tokens(this.text(), this.#mode));
+  }
+
+  /**
+   * Whether the tokens exist, that is, a reader has read them or an edit has
+   * built them. It never tokenizes.
+   *
+   * @return {boolean}
+   */
+  isTokenized() {
+    return this.#tokens !== undefined;
   }
 
   /**
@@ -130,23 +116,7 @@ class ValueBuffer {
    * @param {readonly CSSToken[]} replacement built with the token constructors
    */
   replace(start, end, replacement) {
-    const own = /** @type {CSSToken[]} */ (this.tokens());
-    // Spreading into splice overflows the call stack for a long replacement,
-    // so the list is rebuilt from an array literal instead.
-    if (replacement.length <= maxSpreadArguments) {
-      own.splice(start, end - start, ...replacement);
-      renumber(own);
-    } else {
-      this.#tokens = [
-        ...own.slice(0, start),
-        ...replacement,
-        ...own.slice(end),
-      ];
-      renumber(this.#tokens);
-    }
-    this.#text = undefined;
-    this.#structureFresh = false;
-    this.#edited = true;
+    this.replaceRanges([{ start, end, tokens: replacement }]);
   }
 
   /**
@@ -159,20 +129,7 @@ class ValueBuffer {
    */
   replaceRanges(edits) {
     if (edits.length === 0) return;
-    const own = this.tokens();
-    /** @type {CSSToken[]} */
-    const next = [];
-    let cursor = 0;
-    for (const edit of edits) {
-      for (let index = cursor; index < edit.start; index++) {
-        next.push(own[index]);
-      }
-      for (const token of edit.tokens) next.push(token);
-      cursor = edit.end;
-    }
-    for (let index = cursor; index < own.length; index++) {
-      next.push(own[index]);
-    }
+    const next = spliceRanges(this.tokens(), edits);
     renumber(next);
     this.#tokens = next;
     this.#text = undefined;

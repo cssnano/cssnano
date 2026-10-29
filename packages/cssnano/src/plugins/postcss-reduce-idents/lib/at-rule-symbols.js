@@ -2,12 +2,15 @@ import addToCache from './cache.js';
 import {
   atRuleIdent,
   collectOpaqueIdents,
-  rewrite,
-  tokens,
+  encodedIdent,
+  tokenEdits,
   TokenType,
 } from './value.js';
 import { resolveAtRule, resolveProperty } from './slots.js';
+import { declaredValueTokens } from '../../../values/declaredValueTokens.js';
+import { ValueBuffer } from '../../../values/valueBuffer.js';
 
+/** @import {TextTable} from '../../../values/textTable.js' */
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 
 /**
@@ -43,9 +46,13 @@ export default function atRuleReducer(
   let references = [];
 
   return {
-    /** @param {import('postcss').AnyNode} node */ collect(node) {
+    /**
+     * @param {import('postcss').AnyNode} node
+     * @param {TextTable} table
+     */
+    collect(node, table) {
       if (node.type === 'atrule' && resolveAtRule(node.name) === atRule) {
-        const name = atRuleIdent(node.params);
+        const name = atRuleIdent(table.tokens(node));
         if (name !== undefined && !reserved.has(name.toLowerCase())) {
           addToCache(name, encoder, cache);
           atRules.push({ name, rule: node });
@@ -64,34 +71,46 @@ export default function atRuleReducer(
         references.push({ node, property, functionProperty });
       }
     },
-    transform() {
+    /** @param {TextTable} table */
+    transform(table) {
       const defined = new Set(atRules.map((entry) => entry.name));
       const opaque = new Set();
-      /** @type {Map<import('postcss').Declaration, CSSToken[]>} */
+      /** @type {Map<import('postcss').Declaration, readonly CSSToken[]>} */
       const parsedValues = new Map();
+      const tokenCache = new Map();
       for (const { node } of references) {
-        const parsedTokens = tokens(node.value);
+        const parsedTokens = declaredValueTokens(table, node, tokenCache);
         parsedValues.set(node, parsedTokens);
         collectOpaqueIdents(node.value, opaque, parsedTokens);
       }
       const referenced = new Set();
       for (const { node, functionProperty } of references) {
-        node.value = rewrite(
-          node.value,
+        const parsedTokens = /** @type {readonly CSSToken[]} */ (
+          parsedValues.get(node)
+        );
+        const edits = tokenEdits(
+          parsedTokens,
           (token, position) => {
             if (token[0] !== TokenType.Ident) return;
             if (position !== (functionProperty ? 'argument' : 'bare')) return;
             const name = token[4].value;
             if (!defined.has(name) || opaque.has(name)) return;
             referenced.add(name);
-            return cache.get(name);
+            return encodedIdent(cache.get(name));
           },
-          functionProperty ? functions : undefined,
-          parsedValues.get(node)
+          functionProperty ? functions : undefined
         );
+        if (edits.length === 0) continue;
+        const buffer = new ValueBuffer(node.value, undefined, parsedTokens);
+        buffer.replaceRanges(edits);
+        // Keep the raw of a value that renaming left as it was.
+        if (buffer.text() !== node.value) table.write(node, buffer.tokens());
       }
       for (const { name, rule } of atRules) {
-        if (referenced.has(name)) rule.params = cache.get(name);
+        const encoded = cache.get(name);
+        if (referenced.has(name) && encoded !== rule.params) {
+          table.write(rule, [encodedIdent(encoded)]);
+        }
       }
       atRules = [];
       references = [];

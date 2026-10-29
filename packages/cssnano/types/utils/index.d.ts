@@ -6,10 +6,10 @@ import isAnonymousLayer from './isAnonymousLayer.js';
 import isCSSWhitespace from './isCSSWhitespace.js';
 import isHexDigitCode from './isHexDigitCode.js';
 import isImportantComment from './isImportantComment.js';
-import { sourceValue } from './declValue.js';
+import { sourceValue } from './sourceText.js';
 import vendorUnprefixed from './vendorUnprefixed.js';
 import { isSubstitutionFunction } from './substitution.js';
-import { TokenType, applyEdits, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens } from './value.js';
+import { TokenType, applyEdits, balancedStructure, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens } from './value.js';
 /** @param {string} value @return {string} */
 declare function asciiLowerCase(value: string): string;
 export type FeatureKey = import('./featureKeys.js').FeatureKey;
@@ -28,6 +28,7 @@ declare const moduleExports: {
     TokenType: typeof TokenType;
     applyEdits: typeof applyEdits;
     asciiLowerCase: typeof asciiLowerCase;
+    balancedStructure: typeof balancedStructure;
     balancedTokens: typeof balancedTokens;
     calcSumFunctions: typeof calcSumFunctions;
     closeForOpening: typeof closeForOpening;

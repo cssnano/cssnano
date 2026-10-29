@@ -20,6 +20,39 @@ test('ValueBuffer.tokens returns the same list until an edit', () => {
   assert.equal(buffer.tokens(), buffer.tokens());
 });
 
+test('ValueBuffer returns the shared list until the first edit', () => {
+  const shared = new ValueBuffer('a b').tokens();
+  const buffer = new ValueBuffer('a b', undefined, shared);
+  assert.equal(buffer.tokens(), shared);
+});
+
+test('ValueBuffer.replace leaves the shared list unchanged', () => {
+  const shared = Object.freeze(new ValueBuffer('a b').tokens().slice());
+  const before = shared.slice();
+  const buffer = new ValueBuffer('a b', undefined, shared);
+  buffer.replace(2, 3, [ident('c')]);
+  assert.equal(buffer.text(), 'a c');
+  assert.deepEqual(shared, before);
+});
+
+test('ValueBuffer.replace leaves a list tokens() returned earlier unchanged', () => {
+  const buffer = new ValueBuffer('a b');
+  const earlier = buffer.tokens();
+  const before = earlier.slice();
+  buffer.replace(2, 3, [ident('c')]);
+  assert.equal(buffer.text(), 'a c');
+  assert.deepEqual(earlier, before);
+});
+
+test('ValueBuffer.replaceRanges leaves the shared list unchanged', () => {
+  const shared = Object.freeze(new ValueBuffer('a b').tokens().slice());
+  const before = shared.slice();
+  const buffer = new ValueBuffer('a b', undefined, shared);
+  buffer.replaceRanges([{ start: 2, end: 3, tokens: [ident('c')] }]);
+  assert.equal(buffer.text(), 'a c');
+  assert.deepEqual(shared, before);
+});
+
 test('ValueBuffer.structure returns the bracket structure of the source before any edit', () => {
   assert.notEqual(new ValueBuffer('f(a)').structure(), undefined);
 });
@@ -158,4 +191,14 @@ test('ValueBuffer.replaceRanges puts insertions at one index before a replacemen
     { start: 2, end: 3, tokens: [ident('d')] },
   ]);
   assert.equal(buffer.text(), 'a cd');
+});
+
+test('ValueBuffer.isTokenized is false until a reader asks for the tokens', () => {
+  assert.equal(new ValueBuffer('a b').isTokenized(), false);
+});
+
+test('ValueBuffer.isTokenized is true once the tokens are read', () => {
+  const buffer = new ValueBuffer('a b');
+  buffer.tokens();
+  assert.equal(buffer.isTokenized(), true);
 });

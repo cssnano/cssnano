@@ -7,7 +7,7 @@
  * @satisfies {TransformEntry}
  */
 declare const discardOverridden: {
-    create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
+    create: (/** @type {Record<string, never>} */ options: Record<string, never>) => Record<string, never>;
 };
 export { discardOverridden as default };
 //# sourceMappingURL=index.d.ts.map

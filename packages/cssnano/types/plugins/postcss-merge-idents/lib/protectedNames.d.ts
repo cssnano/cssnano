@@ -1,16 +1,12 @@
 import { classifyDeclaration } from './grammar.js';
+import type { CSSToken } from '@csstools/css-tokenizer';
+import type { TextTable } from '../../../values/textTable.js';
 export type Reference = {
     decl: import('postcss').Declaration;
     classification: NonNullable<ReturnType<typeof classifyDeclaration>>;
     value: string;
+    tokens: readonly CSSToken[];
 };
-/**
- * @typedef {{
- *   decl: import('postcss').Declaration,
- *   classification: NonNullable<ReturnType<typeof classifyDeclaration>>,
- *   value: string
- * }} Reference
- */
 /**
  * One pass over the stylesheet's declarations that finds the names substituted
  * text may spell and the declarations that reference keyframes or counter
@@ -32,9 +28,10 @@ export type Reference = {
  *   `@apply` rules, whose parameter defaults and arguments are substituted
  * @param {import('postcss').AtRule[]} conditionRules the `@container`, `@when`
  *   and `@else` rules, whose preludes may test a property in a style query
+ * @param {TextTable} table
  * @return {{ protectedNames: Set<string>, references: Reference[] }}
  */
-declare function scanDeclarations(decls: import('postcss').Declaration[], candidates: Set<string>, functionRules: import('postcss').AtRule[], parameterRules: import('postcss').AtRule[], conditionRules: import('postcss').AtRule[]): {
+declare function scanDeclarations(decls: import('postcss').Declaration[], candidates: Set<string>, functionRules: import('postcss').AtRule[], parameterRules: import('postcss').AtRule[], conditionRules: import('postcss').AtRule[], table: TextTable): {
     protectedNames: Set<string>;
     references: Reference[];
 };

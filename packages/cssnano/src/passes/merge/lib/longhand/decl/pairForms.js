@@ -6,10 +6,16 @@ import { isBorderStyle, isBorderWidth, isColor } from '../validateWsc.js';
 import { isUnresolved } from '../unresolved.js';
 import { isLengthValue, parseDimension } from '../lengthGrammar.js';
 import { splitValue } from '../valueComponents.js';
+import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @typedef {(value: string) => string | null} Parser */
+/**
+ * @typedef {(
+ *   decl: import('postcss').Declaration,
+ *   textTable: import('../../../../../values/textTable.js').TextTable,
+ * ) => string | null} Parser
+ */
 
 /**
  * @typedef {{
@@ -27,8 +33,8 @@ const { asciiLowerCase } = cssnanoUtils;
  * @return {Parser}
  */
 function keywordParser(keywords) {
-  return (value) => {
-    const trimmed = value.trim();
+  return (decl) => {
+    const trimmed = decl.value.trim();
     const lower = asciiLowerCase(trimmed);
     return keywords.has(lower) || isCssWideKeyword(trimmed) ? trimmed : null;
   };
@@ -38,11 +44,16 @@ function keywordParser(keywords) {
  * The one component of a value, or undefined when a top-level comma, slash or
  * whitespace divides it. Brackets keep their contents together.
  *
- * @param {string} value
+ * @param {import('postcss').Declaration} decl
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {import('../valueComponents.js').Component | undefined}
  */
-function singleComponent(value) {
-  const parts = splitValue(value, '/');
+function singleComponent(decl, textTable) {
+  const parts = splitValue(
+    decl.value,
+    '/',
+    declaredValueTokens(textTable, decl)
+  );
   if (parts?.length !== 1) return undefined;
   const [{ components }] = parts;
   return components.length === 1 ? components[0] : undefined;
@@ -52,14 +63,15 @@ function singleComponent(value) {
  * Parses `normal | <length-percentage [0,∞]>` for a value that is a single
  * token. A function such as `calc()` or `var()` is not compared.
  *
- * @param {string} value
+ * @param {import('postcss').Declaration} decl
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @return {string | null}
  */
-function parseGap(value) {
-  const trimmed = value.trim();
+function parseGap(decl, textTable) {
+  const trimmed = decl.value.trim();
   const lower = asciiLowerCase(trimmed);
   if (lower === 'normal' || isCssWideKeyword(trimmed)) return trimmed;
-  if (singleComponent(trimmed)?.tokens.length !== 1) return null;
+  if (singleComponent(decl, textTable)?.tokens.length !== 1) return null;
   const dimension = parseDimension(lower);
   if (
     !dimension ||
@@ -146,15 +158,22 @@ const ruleInitials = ['medium', 'none', 'currentcolor'];
  * `rgb(0,0,0)` is one component. A substitution has no known type and a math
  * function is not compared, so both are left alone.
  *
- * @param {(token: string) => boolean} is
+ * @param {(text: string, tokens: import('@csstools/css-tokenizer').CSSToken[] | undefined, start: number, end: number) => boolean} is
  * @return {Parser}
  */
 function ruleComponent(is) {
-  return (value) => {
-    const trimmed = value.trim();
+  return (decl, textTable) => {
+    const trimmed = decl.value.trim();
     if (isCssWideKeyword(trimmed)) return trimmed;
-    if (!singleComponent(trimmed) || isUnresolved(trimmed)) return null;
-    return is(trimmed) ? trimmed : null;
+    const component = singleComponent(decl, textTable);
+    if (
+      !component ||
+      isUnresolved(component.tokens, 0, component.tokens.length)
+    )
+      return null;
+    return is(trimmed, component.tokens, 0, component.tokens.length)
+      ? trimmed
+      : null;
   };
 }
 

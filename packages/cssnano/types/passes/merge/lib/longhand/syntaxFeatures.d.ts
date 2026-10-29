@@ -17,10 +17,12 @@ export declare const longstandingFeatures: ReadonlySet<string>;
  */
 export declare function blocksMerge(feature: string): boolean;
 /**
- * @param {string} value
- * @return {Set<string>} the features a browser must support to parse the value
+ * @param {import('postcss').Declaration} decl
+ * @param {import('../../../../values/textTable.js').TextTable} textTable
+ * @return {Set<string>} the features a browser must support to parse the
+ * declaration's value
  */
-export declare function supportDependenciesIn(value: string): Set<string>;
+export declare function supportDependenciesOf(decl: import('postcss').Declaration, textTable: import('../../../../values/textTable.js').TextTable): Set<string>;
 /**
  * Values repeat within a file, not across files: drop the memo so a
  * long-running process does not keep every value it has seen.

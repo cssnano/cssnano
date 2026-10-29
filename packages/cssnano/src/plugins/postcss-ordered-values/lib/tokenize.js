@@ -1,7 +1,7 @@
 import cssnanoUtils from '#utils';
 import cssWideKeywords from '../rules/cssWideKeywords.json' with { type: 'json' };
-import { comma } from '../../../values/listSeparators.js';
-import { whitespace } from '../../../values/tokenConstructors.js';
+import { comma, whitespace } from '../../../values/punctuationTokens.js';
+import { tokensText } from '../../../values/tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
@@ -125,7 +125,7 @@ function tokenizeValue(value) {
   const pushTerm = () => {
     if (current.length === 0) return;
     const term = {
-      raw: current.map((token) => token[1]).join(''),
+      raw: tokensText(current),
       tokens: current,
     };
     argumentsList[argumentsList.length - 1].push(term);

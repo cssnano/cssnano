@@ -4,37 +4,113 @@ import parseWidthStyleColor, {
   toLower,
 } from '../../../../../src/passes/merge/lib/longhand/parseWsc.js';
 import minifyWidthStyleColor from '../../../../../src/passes/merge/lib/longhand/minifyWsc.js';
+import { tokens } from '../../../../../src/utils/value.js';
+import {
+  isBorderStyle,
+  isBorderWidth,
+  isColor,
+  isValidWidthStyleColor,
+} from '../../../../../src/passes/merge/lib/longhand/validateWsc.js';
+
+/* Classifies a parsed component with the tokens that spell it. */
+/**
+ * The parse result without the components it names, for tests that compare
+ * the parsed slots.
+ *
+ * @param {ReturnType<typeof parseWidthStyleColor>} parsed
+ */
+function withoutParts(parsed) {
+  const { parts: _parts, ...slots } =
+    /** @type {NonNullable<typeof parsed>} */ (parsed);
+  return slots;
+}
+
+function classifies(is, component) {
+  if (component === undefined) return false;
+  const list = tokens(component);
+  return is(component, list, 0, list.length);
+}
+
+/* Classifies each parsed component string again, the reading the parser's
+ * slots replace. */
+function validByClassifying({ width, style, color }) {
+  const validWidth = classifies(isBorderWidth, width);
+  const validStyle = isBorderStyle(style);
+  const validColor = classifies(isColor, color);
+
+  return (
+    (validWidth && validStyle) ||
+    (validWidth && validColor) ||
+    (validStyle && validColor)
+  );
+}
+
+describe('parseWsc validity', () => {
+  test("parseWidthStyleColor's validity agrees with classifying its components", () => {
+    for (const value of [
+      'solid red',
+      '1px solid',
+      '1px red',
+      'thin dotted #fff',
+      'calc(1px + 2px) solid',
+      'solid rgb(0 0 0)',
+      'hsl(1 2% 3%) dashed',
+      'medium none',
+      'none',
+      '1px',
+      'red',
+      'var(--w) solid red',
+      '1px var(--s) red',
+      '1px solid var(--c)',
+      'VAR(--Sub) red',
+      '1px var(--x)',
+      'var(--a) var(--b)',
+      'currentcolor solid',
+    ]) {
+      const parsed = parseWidthStyleColor(value);
+      assert.strictEqual(
+        isValidWidthStyleColor(parsed),
+        validByClassifying(parsed),
+        value
+      );
+    }
+  });
+});
 
 describe('parseWsc component classification', () => {
   test('classifies each component wherever it appears, lower-casing grammar terms', () => {
-    assert.deepEqual(parseWidthStyleColor('SOLID 1px RED'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('SOLID 1px RED')), {
       width: '1px',
       style: 'solid',
       color: 'red',
+      specified: { width: true, style: true, color: true },
     });
   });
 
   test('leaves a component the value does not specify unnamed', () => {
-    assert.deepEqual(parseWidthStyleColor('solid red'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('solid red')), {
       width: undefined,
       style: 'solid',
       color: 'red',
+      specified: { width: false, style: true, color: true },
     });
   });
 
   test('reads a value that resets every component as the initial triple', () => {
-    assert.deepEqual(parseWidthStyleColor('NONE'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('NONE')), {
       width: 'medium',
       style: 'none',
       color: 'currentcolor',
+      specified: { width: true, style: true, color: true },
     });
   });
 
   test('reads a width and style reset with an omitted color as the initial triple', () => {
-    assert.deepEqual(parseWidthStyleColor('medium none'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('medium none')), {
       width: 'medium',
       style: 'none',
       color: 'currentcolor',
+      specified: { width: true, style: true, color: true },
     });
   });
 });
@@ -55,42 +131,53 @@ describe('parseWsc repeated components', () => {
 
 describe('parseWsc substitution slots', () => {
   test('reserves the open component for a lone substitution between specified components', () => {
-    assert.deepEqual(parseWidthStyleColor('var(--w) solid red'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('var(--w) solid red')), {
       width: 'var(--w)',
       style: 'solid',
       color: 'red',
+      specified: { width: false, style: true, color: true },
     });
   });
 
   test('fills the open component with the substituted token wherever it appears, keeping its spelling', () => {
-    assert.deepEqual(parseWidthStyleColor('SOLID red VAR(--Sub)'), {
-      width: 'VAR(--Sub)',
-      style: 'solid',
-      color: 'red',
-    });
+    assert.deepEqual(
+      withoutParts(parseWidthStyleColor('SOLID red VAR(--Sub)')),
+      {
+        width: 'VAR(--Sub)',
+        style: 'solid',
+        color: 'red',
+        specified: { width: false, style: true, color: true },
+      }
+    );
   });
 
   test('reserves the open style for a lone substitution between width and color', () => {
-    assert.deepEqual(parseWidthStyleColor('1px red VAR(--Sub)'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('1px red VAR(--Sub)')), {
       width: '1px',
       style: 'VAR(--Sub)',
       color: 'red',
+      specified: { width: true, style: false, color: true },
     });
   });
 
   test('reserves the open color for a lone substitution between width and style', () => {
-    assert.deepEqual(parseWidthStyleColor('1px SOLID var(--Sub)'), {
-      width: '1px',
-      style: 'solid',
-      color: 'var(--Sub)',
-    });
+    assert.deepEqual(
+      withoutParts(parseWidthStyleColor('1px SOLID var(--Sub)')),
+      {
+        width: '1px',
+        style: 'solid',
+        color: 'var(--Sub)',
+        specified: { width: true, style: true, color: false },
+      }
+    );
   });
 
   test('does not guess a component for a substitution when two components are unspecified', () => {
-    assert.deepEqual(parseWidthStyleColor('VAR(--Sub) red'), {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('VAR(--Sub) red')), {
       width: undefined,
       style: undefined,
       color: 'red',
+      specified: { width: false, style: false, color: true },
     });
   });
 });

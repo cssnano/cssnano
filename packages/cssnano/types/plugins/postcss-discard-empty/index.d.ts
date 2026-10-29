@@ -8,10 +8,12 @@
  *
  * @param {import('postcss').Root} css
  * @param {import('postcss').Result} result
- * @param {(node: import('postcss').AnyNode) => void} [visit]
+ * @param {((node: import('postcss').AnyNode) => void) | undefined} visit
+ * @param {import('../../values/textTable.js').TextTable} table the text table
+ *   the walk stored, which gives each layer's names
  * @return {void}
  */
-export declare function discardAndReport(css: import('postcss').Root, result: import('postcss').Result, visit?: (node: import('postcss').AnyNode) => void): void;
+export declare function discardAndReport(css: import('postcss').Root, result: import('postcss').Result, visit: ((node: import('postcss').AnyNode) => void) | undefined, table: import('../../values/textTable.js').TextTable): void;
 /**
  * Removes a node that a transform after the walk no longer needs, then each
  * ancestor the removal empties, so no parent the walk passed stays empty. An

@@ -1,15 +1,12 @@
 import cssnanoUtils from '#utils';
+import type { TokenEdit } from '../../../values/valueBuffer.js';
 export type Tokens = Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens'];
 export type Structure = Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>;
-/** @param {boolean} legacy @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {{startIndex:number,endIndex:number}[]} segments @param {{start:number,end:number,text:string}[]} changes @return {boolean} */
+/** @param {boolean} legacy @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {{startIndex:number,endIndex:number}[]} segments @param {TokenEdit[]} changes @return {boolean} whether the whole query is unconditional, so the caller empties the prelude */
 export default function minifyMediaAll(legacy: boolean, structure: Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>, segments: {
     startIndex: number;
     endIndex: number;
-}[], changes: {
-    start: number;
-    end: number;
-    text: string;
-}[]): boolean;
+}[], changes: TokenEdit[]): boolean;
 export type Feature = {
     open: number;
     close: number;
@@ -27,15 +24,11 @@ export type Feature = {
  *
  * @param {Structure} structure
  * @param {{startIndex: number, endIndex: number}[]} segments the top-level comma-separated queries
- * @param {{start: number, end: number, text: string}[]} changes
+ * @param {TokenEdit[]} changes
  * @return {void}
  */
 export declare function dropRedundantRangeFeatures(structure: Structure, segments: {
     startIndex: number;
     endIndex: number;
-}[], changes: {
-    start: number;
-    end: number;
-    text: string;
-}[]): void;
+}[], changes: TokenEdit[]): void;
 //# sourceMappingURL=media.d.ts.map

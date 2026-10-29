@@ -30,21 +30,33 @@ export { allColumnProps, setsOtherColumnProperty } from './columnsValue.js';
  * @param {Container} rule
  * @param {Declaration[]} laneDecls
  * @param {boolean} important
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function processLane(rule, laneDecls, important) {
+function processLane(rule, laneDecls, important, textTable) {
   /** @type {Map<Declaration, Declaration>} */
   const inserted = new Map();
-  const lane = new SlotLane(2, (slots, contributing, fallbacks) => {
-    const full = flushableSlots(slots);
-    if (!full) return;
+  const lane = new SlotLane(
+    2,
+    (slots, contributing, fallbacks) => {
+      const full = flushableSlots(slots, textTable);
+      if (!full) return;
 
-    commitShorthand(rule, full, contributing, fallbacks, {
-      prop: columns,
-      value: normalize([full[0].value, full[1].value]),
-      important,
-      inserted,
-    });
-  });
+      commitShorthand(
+        rule,
+        full,
+        contributing,
+        fallbacks,
+        {
+          prop: columns,
+          value: normalize([full[0].value, full[1].value]),
+          important,
+          inserted,
+        },
+        textTable
+      );
+    },
+    textTable
+  );
 
   for (const decl of laneDecls) {
     const p = asciiLowerCase(decl.prop);
@@ -53,7 +65,7 @@ function processLane(rule, laneDecls, important) {
     if (
       isAll(decl) ||
       detectDeclaration(decl) ||
-      (isShort && !canExplode(decl))
+      (isShort && !canExplode(decl, textTable))
     ) {
       lane.reset();
       continue;
@@ -63,7 +75,7 @@ function processLane(rule, laneDecls, important) {
     const wasFull = lane.begin(Math.max(idx, 0), idx === -1 ? 2 : 1, decl);
 
     if (isShort) {
-      const parsed = parseColumns(parsedValue(decl));
+      const parsed = parseColumns(parsedValue(decl, textTable));
       if (!parsed) {
         lane.reset();
         continue;
@@ -89,7 +101,12 @@ function processLane(rule, laneDecls, important) {
   }
 
   if (remaining.length > 1) {
-    discardOverriddenInList(remaining, allColumnProps, columnsPrecedence);
+    discardOverriddenInList(
+      remaining,
+      textTable,
+      allColumnProps,
+      columnsPrecedence
+    );
   }
 }
 
@@ -99,30 +116,32 @@ function processLane(rule, laneDecls, important) {
  * @type {import('./overriddenDeclarations.js').CrossPropertyRule}
  */
 const columnsPrecedence = {
-  overrides: (node, lastNode) =>
+  overrides: (node, lastNode, textTable) =>
     asciiLowerCase(lastNode.prop) === columns &&
     asciiLowerCase(node.prop) !== columns &&
-    isValidColumns(lastNode) &&
-    !isFallback(node, lastNode),
+    isValidColumns(lastNode, textTable) &&
+    !isFallback(node, lastNode, textTable),
 };
 
-/** @param {Declaration | undefined} s */
-function normalizeSingleton(s) {
+/**
+ * @param {Declaration | undefined} s
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ */
+function normalizeSingleton(s, textTable) {
   if (
     !s ||
     asciiLowerCase(s.prop) !== columns ||
     detectDeclaration(s) ||
-    !canExplode(s)
+    !canExplode(s, textTable)
   ) {
     return;
   }
-  const parsed = parseColumns(parsedValue(s));
+  const parsed = parseColumns(parsedValue(s, textTable));
   if (!parsed) return;
   const norm = normalize(parsed);
   if (s.value !== norm || s.prop !== columns) {
     s.prop = columns;
-    s.value = norm;
-    delete s.raws?.value;
+    textTable.setText(s, norm);
   }
 }
 
@@ -130,16 +149,17 @@ function normalizeSingleton(s) {
  * @param {Container} rule
  * @param {Declaration[]} decls
  * @param {[Declaration[], Declaration[]]} familyLanes
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export function reduceColumns(rule, decls, familyLanes) {
+export function reduceColumns(rule, decls, familyLanes, textTable) {
   if (!rule.nodes) return;
-  if (decls.length === 0 || decls.some(isInvalid)) return;
+  if (decls.length === 0 || decls.some((d) => isInvalid(d, textTable))) return;
 
-  discardOverriddenInLanes(familyLanes, allColumnProps);
+  discardOverriddenInLanes(familyLanes, textTable, allColumnProps);
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
-    normalizeSingleton(live[0]);
+    normalizeSingleton(live[0], textTable);
     return;
   }
 
@@ -148,7 +168,7 @@ export function reduceColumns(rule, decls, familyLanes) {
       (d) => d.parent === rule
     );
     if (hasNonAll(laneDecls)) {
-      processLane(rule, laneDecls, lane);
+      processLane(rule, laneDecls, lane, textTable);
     }
   }
 }

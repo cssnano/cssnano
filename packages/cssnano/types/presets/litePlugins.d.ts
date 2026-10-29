@@ -8,8 +8,12 @@ export type LitePluginOptions = Pick<import('./defaultPlugins.js').DefaultPlugin
  * The plugins of the lite preset, in the order they run, each with the
  * preset option that enables it.
  */
-export declare const litePluginEntries: readonly [readonly [import("../pipeline/host.js").StageEntry, "discardComments", {
-    readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
+export declare const litePluginEntries: readonly [readonly [{
+    create(options: import("../plugins/postcss-discard-comments/index.js").Options): {
+        comments(): (text: string) => boolean;
+    };
+}, "discardComments", {
+    readonly optionKeys: readonly ["removeAll", "removeAllButFirst", "remove"];
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, "normalizeWhitespace", {
@@ -17,13 +21,13 @@ export declare const litePluginEntries: readonly [readonly [import("../pipeline/
     readonly walk: true;
     readonly after: true;
 }], readonly [{
-    readonly create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
+    readonly create: (options: Record<string, never>) => Record<string, never>;
 }, "discardEmpty", {
     readonly optionKeys: readonly [];
     readonly transform: true;
     readonly after: true;
 }], readonly [{
-    readonly create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
+    readonly create: (options: Record<string, never>) => Record<string, never>;
 }, "rawCache", {
     readonly optionKeys: readonly [];
     readonly transform: true;

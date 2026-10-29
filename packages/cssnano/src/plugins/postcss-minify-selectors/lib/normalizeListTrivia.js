@@ -35,12 +35,12 @@ export function scanListGap(arena, pool, start, end) {
         pendingSpace = true;
       } else if (isImportantCommentToken(token)) {
         if (pendingSpace) trailing.push(pool.text(' '));
-        trailing.push(pool.text(token[1]));
+        trailing.push(pool.comment(token));
         pendingSpace = false;
       }
     } else {
       if (isImportantCommentToken(token)) {
-        leading.push(pool.text(token[1]));
+        leading.push(pool.comment(token));
       }
     }
   }

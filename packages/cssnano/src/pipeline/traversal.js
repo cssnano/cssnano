@@ -1,6 +1,11 @@
-import { ValueBuffer } from '../values/valueBuffer.js';
+import { atRuleEntry } from './prelude.js';
+import { foldNode, planEntry } from './plan.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
-import { sourceValue } from '../utils/declValue.js';
+import {
+  sourceParams,
+  sourceSelector,
+  sourceValue,
+} from '../utils/sourceText.js';
 import cssnanoUtils from '#utils';
 import { tightenAfterName } from './afterName.js';
 import {
@@ -21,48 +26,39 @@ import {
   removeImportantComments,
 } from './comments/nodeComments.js';
 
-/** @import {AtRule, Container, Document, Helpers, Root} from 'postcss' */
-/** @import {Reducer, Stage, TextReducer} from './host.js' */
+/** @import {AtRule, Container, Document, Helpers, Root, Rule} from 'postcss' */
+/** @import {Reducer, Stage} from './host.js' */
+/** @import {PlanEntry} from './plan.js' */
+/** @import {TextTable} from '../values/textTable.js' */
 /** @import {CommentState} from './comments/nodeComments.js' */
-
-/**
- * What one run knows about a property: the reducers of its plan, or null when
- * no stage treats it. For each context, a memo from source text to the plan's
- * result, since a value can read its context.
- * `mode` is how the tokenizer reads the values of the property.
- * @typedef {{plan: readonly Reducer[] | null, memos: (Map<string, string> | undefined)[], mode: import('../values/valueBuffer.js').TokenizeMode | undefined}} PropertyEntry
- */
-
-/**
- * What one run knows about a prelude or selector kind: the text reducers of its
- * plan, or null when no stage rewrites it, with a memo per context as above.
- * `tightens` is set when a stage asks for the space after an at-rule name to be
- * stripped, as AtRulePart describes.
- * @typedef {{plan: readonly TextReducer[] | null, memos: (Map<string, string> | undefined)[], tightens: boolean}} TextEntry
- */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 /**
  * The state of one run. Its entries and contexts live for this run only, so no
  * state crosses stylesheets.
  * @typedef {object} RunState
  * @property {readonly Stage[]} stages in pipeline order
- * @property {Map<string, PropertyEntry>} properties
- * @property {Map<string, TextEntry>} atRules by at-rule name
- * @property {TextEntry} selectors
+ * @property {Map<string, PlanEntry>} properties
+ * @property {Map<string, PlanEntry>} atRules by at-rule name
+ * @property {PlanEntry} selectors
  * @property {WeakMap<Container | Document, number>} contexts
  * @property {Helpers} helpers
+ * @property {TextTable} table the text table the walk fills
+ * @property {{plain: Map<string, readonly CSSToken[]>, unicodeRange: Map<string, readonly CSSToken[]>}} valueLists the token lists of the values, by tokenizer mode
  * @property {CommentState | null} comments the comment removal of this run, or null when no stage removes comments
  * @property {boolean} defaultNamespace whether a default `@namespace` has been reached, so later rules have it in their context
  * @property {boolean} normalizeWhitespace whether normalizeWhitespace is on, which removes the stray semicolons and reattaches the escapes of blocks
  * @property {AtRule[] | null} overridable the outermost overridable at-rules in document order, or null when discardOverridden is off
+ * @property {(Rule | AtRule)[] | null} blocks receives the rules and at-rules in document order, or null when no pass reads them
  */
 
 /**
  * @param {readonly Stage[]} stages in pipeline order
  * @param {string} property
- * @returns {PropertyEntry}
+ * @param {RunState['valueLists']} valueLists
+ * @returns {PlanEntry}
  */
-function propertyEntry(stages, property) {
+function propertyEntry(stages, property, valueLists) {
   /** @type {Reducer[]} */
   const reducers = [];
   for (const stage of stages) {
@@ -70,98 +66,8 @@ function propertyEntry(stages, property) {
     if (reducer !== null) reducers.push(reducer);
   }
   const mode = tokenizeMode(property);
-  return reducers.length > 0
-    ? { plan: reducers, memos: [], mode }
-    : { plan: null, memos: [], mode };
-}
-
-/**
- * @param {readonly TextReducer[]} plan in pipeline order, empty for no stage
- * @param {boolean} tightens whether a stage tightens the space after the name
- * @returns {TextEntry}
- */
-function textEntry(plan, tightens) {
-  return { plan: plan.length > 0 ? plan : null, memos: [], tightens };
-}
-
-/**
- * Looks up the memo of a context, creating it on first use.
- *
- * @param {(Map<string, string> | undefined)[]} memos
- * @param {number} context
- * @returns {Map<string, string>}
- */
-function memoOf(memos, context) {
-  let memo = memos[context];
-  if (memo === undefined) {
-    memo = new Map();
-    memos[context] = memo;
-  }
-  return memo;
-}
-
-/**
- * Folds a declaration value through its plan. A value that warned is not
- * memoised, so each declaration reports it.
- *
- * @param {PropertyEntry} entry
- * @param {string} text
- * @param {number} context
- * @param {import('postcss').Declaration} decl the declaration that holds the value
- * @param {Helpers} helpers
- * @returns {string}
- */
-function reduceValue(entry, text, context, decl, helpers) {
-  const plan = /** @type {readonly Reducer[]} */ (entry.plan);
-  const memo = memoOf(entry.memos, context);
-  let result = memo.get(text);
-  if (result !== undefined) return result;
-  const buffer = new ValueBuffer(text, entry.mode);
-  for (const reducer of plan) reducer(buffer, context);
-  result = buffer.text();
-  const warnings = buffer.warnings();
-  if (warnings === undefined) {
-    memo.set(text, result);
-  } else {
-    for (const { message, plugin } of warnings) {
-      helpers.result.warn(
-        message,
-        plugin ? { plugin, node: decl } : { node: decl }
-      );
-    }
-  }
-  return result;
-}
-
-/**
- * Folds the text of a prelude or selector through its plan. A text that
- * warned is not memoised, and its warnings name the node.
- *
- * @param {TextEntry} entry
- * @param {string} text
- * @param {number} context
- * @param {Container} node the at-rule or rule that holds the text
- * @param {Helpers} helpers
- * @returns {string}
- */
-function reduceText(entry, text, context, node, helpers) {
-  const plan = /** @type {readonly TextReducer[]} */ (entry.plan);
-  const memo = memoOf(entry.memos, context);
-  const known = memo.get(text);
-  if (known !== undefined) return known;
-  /** @type {{message: string, plugin: string | undefined}[]} */
-  const warnings = [];
-  let result = text;
-  for (const reduce of plan) {
-    result = reduce(result, context, (message, plugin) => {
-      warnings.push({ message, plugin });
-    });
-  }
-  if (warnings.length === 0) memo.set(text, result);
-  for (const { message, plugin } of warnings) {
-    helpers.result.warn(message, plugin ? { plugin, node } : { node });
-  }
-  return result;
+  const lists = mode === undefined ? valueLists.plain : valueLists.unicodeRange;
+  return planEntry(reducers, mode, lists, false);
 }
 
 /**
@@ -178,7 +84,7 @@ function walkDeclaration(state, decl) {
   }
   let entry = state.properties.get(decl.prop);
   if (entry === undefined) {
-    entry = propertyEntry(state.stages, decl.prop);
+    entry = propertyEntry(state.stages, decl.prop, state.valueLists);
     state.properties.set(decl.prop, entry);
   }
   const { comments } = state;
@@ -190,72 +96,15 @@ function walkDeclaration(state, decl) {
     text = commentFreeText(read, comments, decl.prop.startsWith('--'));
     removeImportantComments(decl, comments);
   }
-  let result = text;
-  if (entry.plan !== null) {
-    const context = contextOf(
-      /** @type {Container} */ (decl.parent),
-      state.contexts
-    );
-    result = reduceValue(entry, text, context, decl, state.helpers);
+  if (entry.plan === null) {
+    if (text !== read) state.table.setText(decl, text);
+    return;
   }
-  if (result !== read) {
-    decl.value = result;
-    delete decl.raws.value;
-  }
-}
-
-/**
- * The prelude as written, so a rewrite keeps the comments that PostCSS strips
- * from `params`, as a declaration value keeps them. The raw is trusted only
- * while it still matches `params`.
- *
- * @param {import('postcss').AtRule} atRule
- * @returns {string}
- */
-function sourceParams(atRule) {
-  const raw = atRule.raws.params;
-  return raw !== undefined && raw.value === atRule.params
-    ? raw.raw
-    : atRule.params;
-}
-
-/**
- * The selector as written, so a rewrite keeps the comments that PostCSS strips
- * from `selector`. The raw is trusted only while it still matches `selector`.
- *
- * @param {import('postcss').Rule} rule
- * @returns {string}
- */
-function sourceSelector(rule) {
-  const raw = rule.raws.selector;
-  return raw !== undefined && raw.value === rule.selector
-    ? raw.raw
-    : rule.selector;
-}
-
-/**
- * The plan of an at-rule name: the prelude reducers of the stages that rewrite
- * it, and whether one of them tightens the space after the name.
- *
- * @param {readonly Stage[]} stages in pipeline order
- * @param {string} name
- * @returns {TextEntry}
- */
-function atRuleEntry(stages, name) {
-  /** @type {TextReducer[]} */
-  const plan = [];
-  let tightens = false;
-  for (const stage of stages) {
-    const part = stage.forAtRule?.(name) ?? null;
-    if (part === null) continue;
-    if (typeof part === 'function') {
-      plan.push(part);
-    } else {
-      plan.push(part.reduce);
-      tightens ||= part.tightensAfterName;
-    }
-  }
-  return textEntry(plan, tightens);
+  const context = contextOf(
+    /** @type {Container} */ (decl.parent),
+    state.contexts
+  );
+  foldNode(entry, decl, read, text, context, state.helpers, state.table);
 }
 
 /**
@@ -275,13 +124,6 @@ function walkAtRule(state, atRule) {
   }
   const read = sourceParams(atRule);
   const hasPrelude = Boolean(atRule.params);
-  if (
-    !state.defaultNamespace &&
-    cssnanoUtils.asciiLowerCase(atRule.name) === 'namespace' &&
-    isDefaultNamespace(read)
-  ) {
-    state.defaultNamespace = true;
-  }
   // An at-rule that another plugin built may have no prelude to clean.
   const text =
     comments !== null && read ? commentFreeText(read, comments) : read;
@@ -293,16 +135,36 @@ function walkAtRule(state, atRule) {
       entry = atRuleEntry(state.stages, atRule.name);
       state.atRules.set(atRule.name, entry);
     }
-    if (entry.plan !== null && hasPrelude) {
-      const context = contextOf(atRule, state.contexts);
-      result = reduceText(entry, text, context, atRule, state.helpers);
-    }
   }
-  if (result !== read) {
-    atRule.params = result;
-    delete atRule.raws.params;
+  let startsBalanced = false;
+  if (entry !== undefined && entry.plan !== null && hasPrelude) {
+    const context = contextOf(atRule, state.contexts);
+    const folded = foldNode(
+      entry,
+      atRule,
+      read,
+      text,
+      context,
+      state.helpers,
+      state.table
+    );
+    result = folded.text;
+    startsBalanced = folded.tightAfterName === true;
+  } else if (text !== read) {
+    state.table.setText(atRule, text);
   }
-  if (entry?.tightens && hasPrelude) tightenAfterName(atRule, result);
+  if (entry?.tightens && hasPrelude) {
+    tightenAfterName(atRule, result, startsBalanced);
+  }
+  // The prelude as the fold left it, which a stage above may have rewritten.
+  if (
+    hasPrelude &&
+    !state.defaultNamespace &&
+    cssnanoUtils.asciiLowerCase(atRule.name) === 'namespace' &&
+    isDefaultNamespace(state.table.tokens(atRule))
+  ) {
+    state.defaultNamespace = true;
+  }
 }
 
 /**
@@ -318,16 +180,42 @@ function walkRule(state, rule) {
   if (comments === null && state.selectors.plan === null) return;
   const read = sourceSelector(rule);
   const text = comments !== null ? commentFreeSelector(read, comments) : read;
-  let result = text;
-  if (state.selectors.plan !== null) {
-    let context = contextOf(rule, state.contexts);
-    if (state.defaultNamespace) context = withBit(context, DEFAULT_NAMESPACE);
-    result = reduceText(state.selectors, text, context, rule, state.helpers);
+  if (state.selectors.plan === null) {
+    if (text !== read) state.table.setText(rule, text);
+    return;
   }
-  if (result !== read) {
-    rule.selector = result;
-    delete rule.raws.selector;
+  let context = contextOf(rule, state.contexts);
+  if (state.defaultNamespace) context = withBit(context, DEFAULT_NAMESPACE);
+  foldNode(
+    state.selectors,
+    rule,
+    read,
+    text,
+    context,
+    state.helpers,
+    state.table
+  );
+}
+
+/**
+ * Moves the comments PostCSS kept only in the raw selector into the selector,
+ * as PostCSS itself does for a comment with no whitespace beside it. Later
+ * transforms rebuild selectors from `rule.selectors`, which would otherwise
+ * lose them.
+ *
+ * @param {import('postcss').Rule} rule
+ */
+function keepSelectorComments(rule) {
+  const raw = rule.raws.selector;
+  if (
+    raw === undefined ||
+    raw.value !== rule.selector ||
+    raw.raw === raw.value
+  ) {
+    return;
   }
+  rule.selector = raw.raw;
+  delete rule.raws.selector;
 }
 
 /**
@@ -355,25 +243,40 @@ function commentStateOf(stages) {
  * @param {Root} root
  * @param {Helpers} helpers
  * @param {ReadonlyMap<string, unknown>} transforms the whole-stylesheet transforms of the run, by entry name
+ * @param {TextTable} table the selector and value tokens the walk leaves for later readers
+ * @param {(Rule | AtRule)[] | null} [blocks] receives the rules and at-rules still in the
+ *   stylesheet after the walk, in document order, so a pass need not walk it again
  */
-export function walkStylesheet(stages, root, helpers, transforms) {
+export function walkStylesheet(
+  stages,
+  root,
+  helpers,
+  transforms,
+  table,
+  blocks = null
+) {
   /** @type {RunState} */
   const state = {
     stages,
     properties: new Map(),
     atRules: new Map(),
-    selectors: textEntry(
+    selectors: planEntry(
       stages.flatMap((stage) =>
         stage.selector !== undefined ? [stage.selector] : []
       ),
+      undefined,
+      null,
       false
     ),
     contexts: new WeakMap(),
     helpers,
+    table,
+    valueLists: { plain: new Map(), unicodeRange: new Map() },
     comments: commentStateOf(stages),
     defaultNamespace: false,
     normalizeWhitespace: transforms.has('normalizeWhitespace'),
     overridable: transforms.has('discardOverridden') ? [] : null,
+    blocks,
   };
   root.walk((node) => {
     if (node.type === 'comment') {
@@ -385,12 +288,40 @@ export function walkStylesheet(stages, root, helpers, transforms) {
         state.overridable.push(node);
       }
       walkAtRule(state, node);
+      state.blocks?.push(node);
     } else if (node.type === 'rule') {
       if (state.normalizeWhitespace) reattachBlockEscape(node);
       walkRule(state, node);
+      keepSelectorComments(node);
+      state.blocks?.push(node);
     }
   });
   // The overridable at-rules are compared after the walk has folded their
   // preludes, so the scopes are the ones the output will have.
-  if (state.overridable) discardOverriddenAtRules(state.overridable);
+  if (state.overridable) {
+    const removed = discardOverriddenAtRules(state.overridable);
+    if (removed && blocks) dropDetached(blocks, removed);
+  }
+}
+
+/**
+ * Drops from the blocks each removed at-rule and every block inside one. A
+ * parent comes before its children in document order, so one pass sees each
+ * parent's verdict before its children need it.
+ *
+ * @param {(Rule | AtRule)[]} blocks in document order
+ * @param {Set<AtRule>} removed
+ */
+function dropDetached(blocks, removed) {
+  /** @type {Set<Container | Document | undefined>} */
+  const detached = removed;
+  let kept = 0;
+  for (const block of blocks) {
+    if (detached.has(block) || detached.has(block.parent)) {
+      detached.add(block);
+    } else {
+      blocks[kept++] = block;
+    }
+  }
+  blocks.length = kept;
 }

@@ -16,6 +16,16 @@ declare function ident(value: string): CSSToken;
  */
 declare function identifierWithText(text: string, value: string): CSSToken;
 /**
+ * A function token whose text, including its `(`, is given. Use it when the
+ * name is already spelled, such as a pseudo-class name with an escape that
+ * must be kept as it is.
+ *
+ * @param {string} text a spelling the tokenizer reads as one function token
+ * @param {string} value the name that spelling decodes to
+ * @return {CSSToken}
+ */
+declare function funcWithText(text: string, value: string): CSSToken;
+/**
  * A `<number>` token, a `<percentage>` token for unit `%`, or a
  * `<dimension>` token otherwise. The representation is kept as written.
  *
@@ -49,12 +59,6 @@ declare function percentage(value: number): CSSToken;
  */
 declare function stringToken(text: string, value: string): CSSToken;
 /**
- * A whitespace token of one space, the separator the serializer writes.
- *
- * @return {CSSToken}
- */
-declare function whitespace(): CSSToken;
-/**
  * An unquoted url token, `name(value)`, with the name as written.
  * @param {string} value the decoded URL, possibly empty
  * @param {string} [name] `url` in any case
@@ -79,16 +83,14 @@ declare function hash(value: string): CSSToken;
  */
 declare function func(name: string): CSSToken;
 /**
- * The `(` token that opens a group.
+ * A hash token whose text is given. Use it when the text is already spelled,
+ * such as an ID with an escape that must be kept as it is.
  *
+ * @param {string} text a spelling the tokenizer reads as one hash token
+ * @param {string} value the name that spelling decodes to
+ * @param {'id' | 'unrestricted'} type
  * @return {CSSToken}
  */
-declare function openParen(): CSSToken;
-/**
- * The `)` token that closes a function or a group.
- *
- * @return {CSSToken}
- */
-declare function closeParen(): CSSToken;
-export { closeParen, func, hash, ident, identifierWithText, integer, numeric, openParen, percentage, stringToken, url, whitespace, };
+declare function hashWithText(text: string, value: string, type: 'id' | 'unrestricted'): CSSToken;
+export { func, funcWithText, hash, hashWithText, ident, identifierWithText, integer, numeric, percentage, stringToken, url, };
 //# sourceMappingURL=tokenConstructors.d.ts.map

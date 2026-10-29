@@ -23,6 +23,35 @@ test(
 );
 
 test(
+  "calc's mediaQueries option leaves an `@supports` condition unchanged, since a reduced `abs()` would pass the feature test where `abs()` fails",
+  processCSSFactory([plugin({ mediaQueries: true })]).passthroughCSS(
+    '@supports (width:abs(-1px)){a{color:red}}'
+  )
+);
+
+test(
+  "calc's mediaQueries option leaves an `@import` `supports()` condition unchanged, since a reduced `abs()` would pass the feature test where `abs()` fails",
+  processCSSFactory([plugin({ mediaQueries: true })]).passthroughCSS(
+    '@import url(a.css) supports(width:abs(-1px));'
+  )
+);
+
+test(
+  'calc leaves a container `style()` query unchanged, since it matches the custom property as written',
+  processCSSFactory([plugin({ mediaQueries: true })]).passthroughCSS(
+    '@container style(--x:calc(1px + 1px)){a{color:red}}'
+  )
+);
+
+test(
+  'mediaQueries reduces a calc() in a container query outside its style() query',
+  processCSSFactory([plugin({ mediaQueries: true })]).processCSS(
+    '@container (min-width:calc(1px + 1px)) and style(--x:calc(1px + 1px)){a{color:red}}',
+    '@container (min-width:calc(2px)) and style(--x:calc(1px + 1px)){a{color:red}}'
+  )
+);
+
+test(
   'mediaQueries reduces a calc() in the media query parameters',
   processCSSFactory([plugin({ mediaQueries: true })]).processCSS(
     '@media (min-width:calc(100px + 20px)){a{color:red}}',

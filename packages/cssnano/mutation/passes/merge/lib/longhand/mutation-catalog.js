@@ -20,17 +20,17 @@ export const mutations = [
   },
   {
     name: 'let substituted values fill border cells without a barrier',
-    find: '  const isBarrier = hasSubstitution(d.value);',
+    find: '  const isBarrier = hasSubstitution(d.value, tokens);',
     replace: '  const isBarrier = false;',
   },
   {
     name: 'reduce segments containing style hacks',
-    find: '    if (detectDeclaration(d) || !canExplode(d)) {',
-    replace: '    if (!canExplode(d)) {',
+    find: '    if (detectDeclaration(d) || !canExplode(d, textTable)) {',
+    replace: '    if (!canExplode(d, textTable)) {',
   },
   {
     name: 'drop declarations a later one needs as a fallback',
-    find: '    !strandsFallback(node, lastNode)\n  );',
+    find: '    !strandsFallback(node, lastNode, textTable)\n  );',
     replace: '    true\n  );',
   },
 ];

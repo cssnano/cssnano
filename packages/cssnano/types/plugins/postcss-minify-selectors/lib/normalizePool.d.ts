@@ -1,3 +1,4 @@
+import type { CSSToken } from '@csstools/css-tokenizer';
 export type SelectorArena = import('./arena.js').SelectorArena;
 export type ArenaNode = import('./arena.js').ArenaNode;
 export type Specificity = import('./arena.js').Specificity;
@@ -12,9 +13,6 @@ export type Output = {
     hexDigits?: number;
     head?: number;
 };
-/** @typedef {import('./arena.js').SelectorArena} SelectorArena */
-/** @typedef {import('./arena.js').ArenaNode} ArenaNode */
-/** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
 /** @typedef {{emit?:Emit,id:number,length:number,text?:string,sourceNode?:number,changed?:boolean,hexDigits?:number,head?:number}} Output */
 export declare class OutputPool {
@@ -30,6 +28,24 @@ export declare class OutputPool {
     constructor(arena: SelectorArena);
     /** @param {string} value @return {Output} */
     text(value: string): Output;
+    /**
+     * A class or ID selector with the tokens that spell its text.
+     * @param {SelectorArena} arena
+     * @param {ArenaNode} node
+     */
+    classOrId(arena: SelectorArena, node: ArenaNode): Output;
+    /**
+     * A source comment with its token. Outputs are interned by text, so the
+     * first token seen for a text is the one kept.
+     * @param {CSSToken} token
+     */
+    comment(token: CSSToken): Output;
+    /**
+     * @param {string} value
+     * @param {readonly CSSToken[] | undefined} tokens
+     * @return {Output}
+     */
+    intern(value: string, tokens: readonly CSSToken[] | undefined): Output;
     /** @param {string} value */
     payload(value: string): number;
     /**
@@ -85,6 +101,4 @@ export declare function normalizedAt<T extends Output>(normalized: (T | undefine
 export declare function rawOutput(arena: SelectorArena, pool: OutputPool, node: ArenaNode): Output;
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node @param {boolean} removable */
 export declare function qualifiedNameOutput(arena: SelectorArena, pool: OutputPool, node: ArenaNode, removable: boolean): Output;
-/** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node */
-export declare function attributeOutput(arena: SelectorArena, pool: OutputPool, node: ArenaNode): Output;
 //# sourceMappingURL=normalizePool.d.ts.map
