@@ -22,10 +22,10 @@ test('declarationKeys should return the cached keys while the declarations are u
   assert.equal(meta.declarationKeys(keyOf), meta.declarationKeys(keyOf));
 });
 
-test('setDeclarations should make declarationKeys reflect the new declarations', () => {
+test('takeDeclarations should make declarationKeys reflect the new declarations', () => {
   const meta = new RuleMeta(['a'], declarationsOf('a{color:red}'));
   meta.declarationKeys(keyOf);
-  meta.setDeclarations(declarationsOf('a{color:red;top:0}'));
+  meta.takeDeclarations(declarationsOf('a{color:red;top:0}'));
   assert.deepEqual(meta.declarationKeys(keyOf).keys, [5, 3]);
 });
 

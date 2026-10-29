@@ -136,7 +136,7 @@ export default function joinByDeclarations(parent, mergeState) {
       const rule = /** @type {Rule} */ (node);
       const outcome = joinIntoGroup(rule);
       if (outcome === 'emptied') continue;
-      // A trimmed rule was forgotten, so its keys are derived anew.
+      // A trimmed rule's record took its remaining declarations, so its keys are new.
       register(rule, position, mergeState.declarationKeysOf(rule).keys);
     }
     index.recordNode(node, position, keysOf);

@@ -193,10 +193,10 @@ function joinInParent(parent, mergeState, rules) {
   /** @type {Map<string, {node: Rule | AtRule, position: number}>} */
   const latest = new Map();
   // Every rule with a selector joins the first rule with that selector, so
-  // the joined rule keeps its declarations and their writes from one join to
-  // the next: rebuilding them would make each join cost time in the growing
-  // rule.
-  /** @type {Map<Rule, {declarations: Declaration[], writes: PropertyWrites}>} */
+  // the joined rule keeps its writes from one join to the next: rebuilding
+  // them would make each join cost time in the growing rule. Its declarations
+  // live in its record.
+  /** @type {Map<Rule, PropertyWrites>} */
   const received = new Map();
   let joined = false;
   for (let position = scan.start; position < nodes.length; position++) {
@@ -240,31 +240,21 @@ function joinInParent(parent, mergeState, rules) {
   return joined;
 
   /**
-   * Appends the declarations of `later` to `earlier`, whose description
-   * follows its declarations.
+   * Appends the declarations of `later` to `earlier`. The declarations are
+   * those of the record of `earlier`, which takes them over as they grow.
    *
    * @param {Rule} earlier
    * @param {Rule} later
-   * @param {Declaration[]} declarations the declarations of `earlier`
    * @return {void}
    */
-  function receive(earlier, later, declarations) {
-    let rule = received.get(earlier);
-    if (!rule) {
-      rule = {
-        declarations,
-        writes: writesOf(declarations, mergeState.properties),
-      };
-      received.set(earlier, rule);
+  function receive(earlier, later) {
+    const kept = mergeState.meta(earlier).declarations;
+    let writes = received.get(earlier);
+    if (!writes) {
+      writes = writesOf(kept, mergeState.properties);
+      received.set(earlier, writes);
     }
-    appendToDeclarations(
-      mergeState,
-      earlier,
-      rule.declarations,
-      rule.writes,
-      later
-    );
-    mergeState.meta(earlier).setDeclarations(rule.declarations);
+    appendToDeclarations(mergeState, earlier, kept, writes, later);
   }
 
   /**
@@ -281,23 +271,18 @@ function joinInParent(parent, mergeState, rules) {
     // declarations and cached element keys. Equal selectors give equal keys.
     if (!index.conflictsSinceIn(laterDeclarations, earlierPosition, keysOf)) {
       index.moveWrites(laterDeclarations, earlierPosition, keysOf);
-      receive(
-        earlier,
-        later,
-        received.get(earlier)?.declarations ?? getDecls(earlier)
-      );
+      receive(earlier, later);
       remove(later);
       return 'up';
     }
-    const earlierDeclarations =
-      received.get(earlier)?.declarations ?? getDecls(earlier);
+    const earlierDeclarations = mergeState.meta(earlier).declarations;
     if (!index.conflictsSinceIn(earlierDeclarations, earlierPosition, keysOf)) {
       index.moveWrites(
         [...earlierDeclarations, ...laterDeclarations],
         laterPosition,
         keysOf
       );
-      receive(earlier, later, earlierDeclarations);
+      receive(earlier, later);
       // A move edits the parent at once, after the pending removals.
       takePlaceOf(parent, earlier, later);
       return 'down';

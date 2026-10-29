@@ -221,14 +221,6 @@ test('appendToDeclarations should refresh the declarations of the receiving rule
   );
 });
 
-test('removeDeclarations should forget the description of the rule', () => {
-  const { root, state, ruleMeta } = setup('a{color:red;width:1px}');
-  const rule = /** @type {Rule} */ (root.first);
-  state.meta(rule);
-  removeDeclarations(state, rule, [/** @type {Declaration} */ (rule.first)]);
-  assert.equal(ruleMeta.has(rule), false);
-});
-
 test('removeDeclarations should keep the declarations that are not removed', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);

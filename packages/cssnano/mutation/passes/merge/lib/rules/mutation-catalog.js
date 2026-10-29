@@ -120,17 +120,28 @@ export const mutations = [
     replace: '',
   },
   {
+    name: 'an append leaves the record of the receiving rule without its kept declarations',
+    target: source('treeEdits.js'),
+    find: '  record.takeDeclarations(kept);\n',
+    replace: '',
+  },
+  {
     name: 'a removal of declarations leaves the summaries of the rule stale',
     target: source('treeEdits.js'),
     find: '  invalidate(rule);\n',
     replace: '',
   },
   {
-    name: 'a removal of declarations keeps the description of the rule',
+    name: 'a removal of declarations leaves the record with the declarations it had',
     target: source('treeEdits.js'),
-    find: '  for (const declaration of declarations) declaration.remove();\n  mergeState.forget(rule);\n',
-    replace:
-      '  for (const declaration of declarations) declaration.remove();\n',
+    find: '  record.takeDeclarations(getDecls(rule));\n',
+    replace: '',
+  },
+  {
+    name: 'taking declarations keeps the declaration keys of the record',
+    target: source('ruleMeta.js'),
+    find: '    this.#declarations = declarations;\n    this.#declarationKeys = undefined;\n',
+    replace: '    this.#declarations = declarations;\n',
   },
   {
     name: 'a removal of rules leaves the summaries of the parent stale',
