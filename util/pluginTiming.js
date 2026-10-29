@@ -136,7 +136,7 @@ function timedEntry(entry, name) {
           if (part === null) return null;
           if (typeof part === 'function') return timedReducer(part);
           return {
-            reduce: timedReducer(part.reduce),
+            buffer: timedReducer(part.buffer),
             tightensAfterName: part.tightensAfterName,
           };
         },
