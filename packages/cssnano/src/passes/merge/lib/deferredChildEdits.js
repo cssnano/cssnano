@@ -1,5 +1,3 @@
-import { invalidate } from '../../ir/blockTable.js';
-
 /** @import {ChildNode, Container} from 'postcss'; */
 
 /**
@@ -28,7 +26,6 @@ const pendingEdits = new WeakMap();
 export function detach(node) {
   const container = node.parent;
   if (!container) return;
-  invalidate(node);
   if (!pendingEdits.has(container)) pendingEdits.set(container, null);
   node.parent = undefined;
 }
@@ -46,7 +43,6 @@ export function insertAfter(container, anchor, node) {
     insertions = new Map();
     pendingEdits.set(container, insertions);
   }
-  invalidate(container);
   const following = insertions.get(anchor);
   if (following) following.push(node);
   else insertions.set(anchor, [node]);
@@ -81,9 +77,6 @@ function appendInDocumentOrder(children, node, container, insertions) {
  */
 export function applyChildEdits(container) {
   if (!pendingEdits.has(container)) return;
-  // A read between a detach and this call may have summarized the children
-  // still listed, so the rebuild drops that summary too.
-  invalidate(container);
   const insertions = pendingEdits.get(container) ?? null;
   pendingEdits.delete(container);
   const nodes = container.nodes ?? [];

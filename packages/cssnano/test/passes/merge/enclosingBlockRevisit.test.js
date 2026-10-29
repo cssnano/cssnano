@@ -14,14 +14,13 @@ import {
 /** @import {AtRule, Declaration, Root, Rule} from 'postcss' */
 
 /**
- * A merge state over `root` that shares the block table of its run context.
+ * A merge state over `root` with its run context.
  *
  * @param {Root} root
  * @return {MergeState}
  */
 function mergeStateOf(root) {
-  const context = createRunContext(root);
-  const mergeState = new MergeState(['Chrome 120'], context);
+  const mergeState = new MergeState(['Chrome 120'], createRunContext());
   mergeState.records = buildRecords(root, mergeState);
   return mergeState;
 }
@@ -36,8 +35,8 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
     /** @type {AtRule} */ (root.first).first
   );
   const q = /** @type {Rule} */ (inner.last);
-  // The edits go through treeEdits, which invalidate the enclosing blocks and
-  // keep the record of `q` in step with its declarations.
+  // The edit goes through treeEdits, which keeps the record of `q` in step with
+  // its declarations.
   removeDeclarations(mergeState, q, [/** @type {Declaration} */ (q.first)]);
   const kept = mergeState.meta(q).declarations;
   appendToDeclarations(

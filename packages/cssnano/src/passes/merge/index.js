@@ -64,24 +64,21 @@ function inLonghandSupport(features, work) {
 
 /**
  * The first longhand round: canonicalizes the stylesheet and every block that
- * holds a declaration, then finishes the columns. Each block is recorded in
- * `context` when a rule merge runs, and in `blocks` when a second round will
- * canonicalize it again.
+ * holds a declaration, then finishes the columns. Each such block is recorded
+ * in `blocks` when a second round will canonicalize it again.
  *
  * @param {Root} css
  * @param {ReturnType<typeof longhandContext>} first
- * @param {ReturnType<typeof createRunContext> | undefined} context the run context, when rules are merged
  * @param {Container[] | undefined} blocks receives each block that holds a declaration, when a second round runs
  * @param {readonly (Rule | AtRule)[] | undefined} reached the rules and at-rules of the stylesheet in
  *   document order, when the host walk collected them; the stylesheet is walked otherwise
  * @return {void}
  */
-function canonicalizeFirstRound(css, first, context, blocks, reached) {
+function canonicalizeFirstRound(css, first, blocks, reached) {
   canonicalize(css, first);
   /** @param {import('postcss').ChildNode} node */
   const visit = (node) => {
     if (node.type !== 'rule' && node.type !== 'atrule') return;
-    if (context) context.blocks.add(node);
     if (!node.nodes?.some((n) => n.type === 'decl')) return;
     canonicalize(node, first);
     if (blocks) blocks.push(node);
@@ -99,13 +96,12 @@ function canonicalizeFirstRound(css, first, context, blocks, reached) {
  *
  * @param {Root} css
  * @param {ReturnType<typeof targetSupportOf>} support
- * @param {ReturnType<typeof createRunContext> | undefined} context
  * @param {Container[] | undefined} blocks
  * @param {TextTable} textTable the tokens the host walk left
  * @param {readonly (Rule | AtRule)[]} [reached] the rules and at-rules the host walk reached
  * @return {ReturnType<typeof longhandContext>} the context of the round, which the second round reuses
  */
-function runFirstRound(css, support, context, blocks, textTable, reached) {
+function runFirstRound(css, support, blocks, textTable, reached) {
   const { placeShorthands, boxSupport, pairShorthands, features } = support;
   const first = longhandContext(
     placeShorthands,
@@ -114,7 +110,7 @@ function runFirstRound(css, support, context, blocks, textTable, reached) {
     textTable
   );
   inLonghandSupport(features, () =>
-    canonicalizeFirstRound(css, first, context, blocks, reached)
+    canonicalizeFirstRound(css, first, blocks, reached)
   );
   return first;
 }
@@ -140,7 +136,7 @@ function mergeRules(css, browsers, context) {
  * declaration that let an earlier one be dropped as overridden.
  *
  * Longhand merging and duplicate removal always run. Rule merging runs unless
- * `rules` is false, which also leaves the block table unattached.
+ * `rules` is false.
  *
  * @param {Root} css
  * @param {readonly string[]} browsers the resolved browser targets
@@ -159,13 +155,7 @@ export function mergePass(
   textTable,
   reached
 ) {
-  // Only rule merging reads the block table, so the table is attached only for it.
-  const context = createRunContext(rules ? css : undefined, textTable);
-  try {
-    runTransforms(css, browsers, rules, context, reached);
-  } finally {
-    context.blocks.detach();
-  }
+  runTransforms(css, browsers, rules, createRunContext(textTable), reached);
 }
 
 /**
@@ -186,14 +176,7 @@ function runTransforms(css, browsers, rules, context, reached) {
   // duplicates or merging rules can expose a reduction the first round left.
   /** @type {Container[]} */
   const blocks = [];
-  const first = runFirstRound(
-    css,
-    support,
-    rules ? context : undefined,
-    blocks,
-    context.textTable,
-    reached
-  );
+  const first = runFirstRound(css, support, blocks, context.textTable, reached);
 
   // The merge reports the rules it creates, which the second round also canonicalizes.
   context.createdBlocks = new Set();
@@ -269,29 +252,13 @@ export default pluginCreator;
  */
 const transformHooks = Object.freeze({
   mergeLonghand(css, browsers) {
-    runFirstRound(
-      css,
-      targetSupportOf(browsers),
-      undefined,
-      undefined,
-      new TextTable()
-    );
+    runFirstRound(css, targetSupportOf(browsers), undefined, new TextTable());
   },
   discardDuplicates(css) {
     discardDuplicates(css, createRunContext());
   },
   mergeRules(css, browsers) {
-    const context = createRunContext(css);
-    try {
-      css.walk((node) => {
-        if (node.type === 'rule' || node.type === 'atrule') {
-          context.blocks.add(node);
-        }
-      });
-      mergeRules(css, browsers, context);
-    } finally {
-      context.blocks.detach();
-    }
+    mergeRules(css, browsers, createRunContext());
   },
 });
 

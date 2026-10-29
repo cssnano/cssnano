@@ -17,7 +17,7 @@ const textTable = new TextTable();
  * @return {MergeState}
  */
 function recordsOf(root) {
-  const state = new MergeState(['chrome 120'], createRunContext(root));
+  const state = new MergeState(['chrome 120'], createRunContext());
   state.records = buildRecords(root, state);
   return state;
 }

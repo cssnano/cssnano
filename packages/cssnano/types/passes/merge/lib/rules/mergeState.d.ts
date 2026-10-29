@@ -25,12 +25,6 @@ export default class MergeState {
      */
     properties: PropertyTable;
     /**
-     * The summaries of the stylesheet's blocks, read by the at-rule joins.
-     *
-     * @type {import('../../../ir/blockTable.js').BlockTable}
-     */
-    blocks: import('../../../ir/blockTable.js').BlockTable;
-    /**
      * The block and rule records of the stylesheet. `runMerge` sets them before
      * any edit reads them.
      *

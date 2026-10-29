@@ -25,7 +25,7 @@ after(() => enableConsistencyChecks(false));
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(root);
+  const context = createRunContext();
   const state = new MergeState(['chrome 120'], context);
   state.records = buildRecords(root, state);
   return { root, state };

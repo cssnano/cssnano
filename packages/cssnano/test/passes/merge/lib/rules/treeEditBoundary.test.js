@@ -23,12 +23,7 @@ const sources = readdirSync(rulesDirectory)
 // stylesheet yet, so it may edit them directly.
 const cloneEditors = new Set(['ruleRewrite.js']);
 
-const forbiddenImports = new Set([
-  'invalidate',
-  'detach',
-  'insertAfter',
-  'applyChildEdits',
-]);
+const forbiddenImports = new Set(['detach', 'insertAfter', 'applyChildEdits']);
 
 const forbiddenCall =
   /\.(remove|append|prepend|replaceWith|removeAll|insertBefore|insertAfter)\(/v;

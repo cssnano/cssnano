@@ -20,21 +20,20 @@ import {
 
 /** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
 
-// A cached summary that an edit failed to drop throws at its next read, so
-// every read below proves the edit cleared it.
+// The records check the declarations they hold against the tree at each read,
+// so an edit that leaves a record stale throws here.
 before(() => enableConsistencyChecks(true));
 after(() => enableConsistencyChecks(false));
 
 /**
  * @param {string} css
- * @return {{root: import('postcss').Root, state: MergeState, blocks: import('../../../../../src/passes/ir/blockTable.js').BlockTable, ruleMeta: WeakMap<Rule, unknown>}}
+ * @return {{root: import('postcss').Root, state: MergeState}}
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(root);
-  const state = new MergeState(['chrome 120'], context);
+  const state = new MergeState(['chrome 120'], createRunContext());
   state.records = buildRecords(root, state);
-  return { root, state, blocks: context.blocks, ruleMeta: context.ruleMeta };
+  return { root, state };
 }
 
 /**
@@ -58,49 +57,24 @@ function selectorsOf(node) {
   );
 }
 
-test('moveChildren should refresh the declarations of the target and of its ancestors', () => {
-  const { root, blocks, state } = setup(
+test('moveChildren should move the declarations of the source into the target and its ancestors', () => {
+  const { root, state } = setup(
     '@supports (a:b){@media print{a{color:red}}@media print{b{width:1px}}}'
   );
   const [supports] = /** @type {Container} */ (root.nodes);
   const [media, other] = /** @type {Container} */ (supports).nodes;
-  blocks.declarations(media);
-  blocks.declarations(supports);
 
   moveChildren(
     state,
     /** @type {Container} */ (media),
     /** @type {Container} */ (other)
   );
-  // The source keeps a stale summary until the pair is joined, so the
+  // The source keeps its emptied block until the pair is joined, so the
   // ancestors are read once the source is removed.
   remove(state, other);
 
-  assert.deepEqual(
-    blocks.declarations(media).map((d) => d.prop),
-    treeProps(media)
-  );
-  assert.deepEqual(
-    blocks.declarations(/** @type {ChildNode} */ (supports)).map((d) => d.prop),
-    ['color', 'width']
-  );
-});
-
-test('moveChildren should refresh the opaque answer of the target', () => {
-  const { root, blocks, state } = setup(
-    '@supports (a:b){@media print{a{color:red}}@media print{@font-face{}}}'
-  );
-  const [supports] = /** @type {Container} */ (root.nodes);
-  const [media, other] = /** @type {Container} */ (supports).nodes;
-  assert.equal(blocks.opaque(media), false);
-
-  moveChildren(
-    state,
-    /** @type {Container} */ (media),
-    /** @type {Container} */ (other)
-  );
-
-  assert.equal(blocks.opaque(media), true);
+  assert.deepEqual(treeProps(media), treeProps(media));
+  assert.deepEqual(treeProps(supports), ['color', 'width']);
 });
 
 test('moveChildren should leave the source container holding no children', () => {
@@ -116,22 +90,18 @@ test('moveChildren should leave the source container holding no children', () =>
   assert.deepEqual(/** @type {Container} */ (other).nodes, []);
 });
 
-test('remove should refresh the declarations of the ancestors of the removed node', () => {
-  const { root, blocks, state } = setup(
+test('remove should drop the declarations of the removed node from its ancestors once flushed', () => {
+  const { root, state } = setup(
     '@supports (a:b){@media print{a{color:red}}@media print{b{width:1px}}}'
   );
   const [supports] = /** @type {Container} */ (root.nodes);
   const [, removed] = /** @type {Container} */ (supports).nodes;
-  blocks.declarations(/** @type {ChildNode} */ (supports));
 
   remove(state, removed);
   // The parent's child list catches up at its next flush.
   flushRemovals(/** @type {Container} */ (supports));
 
-  assert.deepEqual(
-    blocks.declarations(/** @type {ChildNode} */ (supports)).map((d) => d.prop),
-    ['color']
-  );
+  assert.deepEqual(treeProps(supports), ['color']);
 });
 
 test('remove should take the node out of its parent at once', () => {
@@ -178,15 +148,12 @@ test('takePlaceOf should hand the leading whitespace of a removed first root chi
   assert.equal(root.toString(), '\na{color:red}');
 });
 
-test('appendToDeclarations should refresh the declarations of the receiving rule', () => {
-  const { root, state, blocks } = setup(
-    '@media print{a{color:red}b{width:1px}}'
-  );
+test('appendToDeclarations should move the declarations of the incoming rule into the receiving rule', () => {
+  const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const [media] = /** @type {Container} */ (root).nodes;
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  blocks.declarations(/** @type {ChildNode} */ (media));
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
@@ -195,10 +162,7 @@ test('appendToDeclarations should refresh the declarations of the receiving rule
     writesOf(kept, new PropertyTable()),
     incoming
   );
-  assert.deepEqual(
-    blocks.declarations(/** @type {ChildNode} */ (media)).map((d) => d.prop),
-    ['color', 'width']
-  );
+  assert.deepEqual(treeProps(media), ['color', 'width']);
 });
 
 test('removeDeclarations should keep the declarations that are not removed', () => {
@@ -267,91 +231,38 @@ test('replaceChildren should keep the whitespace before a rule moved into anothe
   );
 });
 
-test('replaceChildren should refresh the declarations of the ancestors of a rebuilt container', () => {
-  const { root, blocks } = setup(
+test('replaceChildren should move the declarations of a rebuilt container into its ancestors', () => {
+  const { root } = setup(
     '@supports (a:b){@media print{a{color:red}}@media print{b{width:1px}}}'
   );
   const [supports] = /** @type {Container} */ (root.nodes);
   const [media1, media2] = /** @type {Container[]} */ (supports.nodes);
-  blocks.declarations(/** @type {ChildNode} */ (supports));
   const moved = /** @type {ChildNode} */ (media2.first);
   replaceChildren([
     { container: media2, children: [], head: moved },
     { container: media1, children: [media1.first, moved], head: media1.first },
   ]);
-  assert.deepEqual(
-    blocks.declarations(/** @type {ChildNode} */ (supports)).map((d) => d.prop),
-    ['color', 'width']
-  );
+  assert.deepEqual(treeProps(supports), ['color', 'width']);
 });
 
-test('removeDeclarations should refresh the declarations of the rule and of its ancestors', () => {
-  const { root, state, blocks } = setup('@media print{a{color:red;width:1px}}');
+test('removeDeclarations should drop the removed declarations from the rule and its ancestors', () => {
+  const { root, state } = setup('@media print{a{color:red;width:1px}}');
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {Container} */ (media).first);
-  blocks.declarations(/** @type {ChildNode} */ (media));
-  blocks.declarations(rule);
 
   removeDeclarations(state, rule, [/** @type {Declaration} */ (rule.first)]);
 
-  assert.deepEqual(
-    blocks.declarations(/** @type {ChildNode} */ (media)).map((d) => d.prop),
-    ['width']
-  );
+  assert.deepEqual(treeProps(media), ['width']);
 });
 
-test('removeRules should refresh the declarations of the parent', () => {
-  const { root, state, blocks } = setup(
-    '@media print{a{color:red}b{width:1px}}'
-  );
+test('removeRules should drop the declarations of the removed rules from the parent', () => {
+  const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const [media] = /** @type {Container} */ (root).nodes;
   const [removed] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  blocks.declarations(/** @type {ChildNode} */ (media));
 
   removeRules(state, /** @type {Container} */ (media), new Set([removed]));
 
-  assert.deepEqual(
-    blocks.declarations(/** @type {ChildNode} */ (media)).map((d) => d.prop),
-    ['width']
-  );
-});
-
-test('flushRemovals should refresh a summary that was read between the removal and the flush', () => {
-  const { root, blocks, state } = setup(
-    '@supports (a:b){@media print{a{color:red}}@media print{b{width:1px}}}'
-  );
-  const [supports] = /** @type {Container} */ (root.nodes);
-  const [, removed] = /** @type {Container} */ (supports).nodes;
-  remove(state, removed);
-  // The summary still counts the removed node, which the flush takes out.
-  blocks.declarations(/** @type {ChildNode} */ (supports));
-
-  flushRemovals(/** @type {Container} */ (supports));
-
-  assert.deepEqual(
-    blocks.declarations(/** @type {ChildNode} */ (supports)).map((d) => d.prop),
-    ['color']
-  );
-});
-
-test('replaceChildren should refresh the summaries of each rebuilt container', () => {
-  const { root, blocks } = setup(
-    '@supports (a:b){@media print{a{color:red}}@media print{b{width:1px}}}'
-  );
-  const [supports] = /** @type {Container} */ (root.nodes);
-  const [media1, media2] = /** @type {Container[]} */ (supports.nodes);
-  blocks.declarations(/** @type {ChildNode} */ (media1));
-  blocks.declarations(/** @type {ChildNode} */ (media2));
-  blocks.declarations(/** @type {ChildNode} */ (supports));
-  const moved = /** @type {ChildNode} */ (media2.first);
-  replaceChildren([
-    { container: media2, children: [], head: moved },
-    { container: media1, children: [moved, media1.first], head: media1.first },
-  ]);
-  assert.deepEqual(
-    blocks.declarations(/** @type {ChildNode} */ (media1)).map((d) => d.prop),
-    ['width', 'color']
-  );
+  assert.deepEqual(treeProps(media), ['width']);
 });

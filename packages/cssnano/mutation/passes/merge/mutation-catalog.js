@@ -11,15 +11,6 @@ function source(module) {
   ).href;
 }
 
-/**
- * @param {string} module a path under `src/passes/merge/lib/`
- * @return {string}
- */
-function passSource(module) {
-  return new URL(`../../../src/passes/merge/lib/${module}`, import.meta.url)
-    .href;
-}
-
 export const target = source('ruleRewrite.js');
 
 // node --test expands this glob; the driver tests run the whole pass.
@@ -48,11 +39,5 @@ export const mutations = [
     name: 'skip reporting the leftover of a following rule',
     find: '      mergeState.reportCreated(leftover);\n',
     replace: '',
-  },
-  {
-    name: 'skip invalidating a container whose deferred edits apply',
-    target: passSource('deferredChildEdits.js'),
-    find: '  invalidate(container);\n  const insertions',
-    replace: '  const insertions',
   },
 ];
