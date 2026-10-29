@@ -10,7 +10,7 @@ import type { AtRule, Root, Rule } from 'postcss';
  * declaration that let an earlier one be dropped as overridden.
  *
  * Longhand merging and duplicate removal always run. Rule merging runs unless
- * `rules` is false, which also leaves the block table unattached.
+ * `rules` is false.
  *
  * @param {Root} css
  * @param {readonly string[]} browsers the resolved browser targets

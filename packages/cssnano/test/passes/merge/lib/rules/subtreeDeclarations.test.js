@@ -13,7 +13,7 @@ import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
  */
 function blockOf(css) {
   const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext(root));
+  const state = new MergeState(['chrome 120'], createRunContext());
   state.records = buildRecords(root, state);
   return state.records.blockOf(
     /** @type {import('postcss').AtRule} */ (root.first)
@@ -53,7 +53,7 @@ test('subtreeDeclarations should return null when a rule of the block holds an a
 
 test('subtreeDeclarations should see the declarations that an edit adds, since nothing is stored', () => {
   const root = postcss.parse('@media print{a{color:red}}');
-  const state = new MergeState(['chrome 120'], createRunContext(root));
+  const state = new MergeState(['chrome 120'], createRunContext());
   state.records = buildRecords(root, state);
   const block = state.records.blockOf(
     /** @type {import('postcss').AtRule} */ (root.first)
