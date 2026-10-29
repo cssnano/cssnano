@@ -76,12 +76,13 @@ test('lib/rules should mutate the child list only through treeEdits and clone ed
 const mergeInputs = [
   'a{color:red}b{color:red}',
   'a{color:red}b{color:blue}a{margin:0}',
-  '.x{color:red;.y{color:blue}}.x{margin:0}',
+  '.x{color:red;margin:0;.y{color:blue}}.x{color:red;padding:0}',
   '@media (width>1px){a{color:red}}b{color:blue}@media (width>1px){c{color:red}}',
   '@media print{a{color:red}}@media print{b{color:red}}',
   '@supports (display:grid){a{top:0}}a{top:0}@supports (display:grid){b{top:0}}',
   'a{color:red}@media print{}b{color:red}',
-  '@media print{a{color:red;margin:0}}a{color:red}',
+  '@media print{a{color:red;margin:0}}@media print{a{color:red;padding:0}}',
+  'a{color:red;margin:0}b{color:red;padding:0}',
 ];
 
 /**
@@ -105,22 +106,20 @@ function isBlock(node) {
  * `parent`, with the nearest file in `lib/rules/` on the stack. Reads from
  * outside `lib/rules/` report nothing.
  *
- * @param {import('postcss').Root} root
+ * @param {import('postcss').Container | import('postcss').Root} node
  * @param {Set<string>} readers the files that read a boundary property
  * @return {void}
  */
-function guardBoundary(root, readers) {
-  const limit = Error.stackTraceLimit;
-  Error.stackTraceLimit = 100;
+function guardNodes(node, readers) {
   const report = () => {
     const match = /src\/passes\/merge\/lib\/rules\/([^\/:]+\.js):\d+/v.exec(
       new Error().stack ?? ''
     );
     if (match) readers.add(match[1]);
   };
-  const guard = (node, property) => {
-    let value = node[property];
-    Object.defineProperty(node, property, {
+  const guard = (target, property) => {
+    let value = target[property];
+    Object.defineProperty(target, property, {
       configurable: true,
       enumerable: true,
       get() {
@@ -132,13 +131,36 @@ function guardBoundary(root, readers) {
       },
     });
   };
-  root.walk((node) => {
-    if (node.type === 'decl') return;
-    if (node.type !== 'root') guard(node, 'parent');
-    if (isBlock(node) && node.type !== 'root') guard(node, 'nodes');
+  node.walk((child) => {
+    if (child.type === 'decl') return;
+    if (child.type !== 'root') guard(child, 'parent');
+    if (isBlock(child) && child.type !== 'root') guard(child, 'nodes');
   });
-  if (root.type === 'root') guard(root, 'nodes');
-  Error.stackTraceLimit = limit;
+  if (node.type === 'root') guard(node, 'nodes');
+}
+
+/**
+ * Guards a stylesheet and every node that `clone` makes while the merge runs,
+ * since partial joins build their rules from clones of the originals.
+ *
+ * @param {import('postcss').Root} root
+ * @param {Set<string>} readers
+ * @return {() => void} restores `clone`
+ */
+function guardBoundary(root, readers) {
+  guardNodes(root, readers);
+  const nodeProto = Object.getPrototypeOf(
+    Object.getPrototypeOf(Object.getPrototypeOf(postcss.rule()))
+  );
+  const { clone } = nodeProto;
+  nodeProto.clone = function guardedClone(...args) {
+    const copy = clone.apply(this, args);
+    guardNodes(copy, readers);
+    return copy;
+  };
+  return () => {
+    nodeProto.clone = clone;
+  };
 }
 
 /**
@@ -149,10 +171,22 @@ function guardBoundary(root, readers) {
  */
 function mergeReaders() {
   const readers = new Set();
-  for (const css of mergeInputs) {
-    const root = postcss.parse(css);
-    guardBoundary(root, readers);
-    mergePass(root, resolveTargets({}, undefined), {});
+  // The stack reaches past the postcss frames of a deep merge, so the reader
+  // is the nearest `lib/rules/` file rather than the outermost one.
+  const limit = Error.stackTraceLimit;
+  Error.stackTraceLimit = 100;
+  try {
+    for (const css of mergeInputs) {
+      const root = postcss.parse(css);
+      const restore = guardBoundary(root, readers);
+      try {
+        mergePass(root, resolveTargets({}, undefined), {});
+      } finally {
+        restore();
+      }
+    }
+  } finally {
+    Error.stackTraceLimit = limit;
   }
   return [...readers].toSorted();
 }
@@ -174,8 +208,13 @@ test('the boundary guard should record reads from lib/rules during the merge', (
 });
 
 test("lib/rules should read a block's children and a rule's parent only through treeEdits and blockRecords", () => {
+  // A clone reads its source's `parent` only to skip it, so a clone editor's
+  // read of a rule's parent does not reach the tree.
   const readers = mergeReaders().filter(
-    (name) => name !== 'treeEdits.js' && name !== 'blockRecords.js'
+    (name) =>
+      name !== 'treeEdits.js' &&
+      name !== 'blockRecords.js' &&
+      !cloneEditors.has(name)
   );
   assert.deepEqual(readers, outsideReaders);
 });
