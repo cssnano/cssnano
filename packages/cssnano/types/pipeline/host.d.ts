@@ -17,7 +17,7 @@ export type StageEntry = {
     create: (options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => Stage | null;
 };
 export type PassRun = {
-    pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result, table: TextTable) => void;
+    pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result, table: TextTable, blocks: readonly (import('postcss').Rule | import('postcss').AtRule)[] | undefined) => void;
     options: Record<PropertyKey, unknown>;
     targets: boolean;
 };
