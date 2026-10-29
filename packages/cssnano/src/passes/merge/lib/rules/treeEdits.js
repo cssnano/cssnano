@@ -61,9 +61,6 @@ export function flushRemovals(parent) {
 export function takePlaceOf(parent, earlier, later) {
   applyChildEdits(parent);
   earlier.raws.before = later.raws.before;
-  // `later` leaves the tree, and the parent it shares with `earlier` is
-  // cleared with `earlier`.
-  invalidate(earlier);
   earlier.remove();
   later.replaceWith(earlier);
 }

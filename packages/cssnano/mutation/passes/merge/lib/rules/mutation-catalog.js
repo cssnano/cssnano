@@ -156,12 +156,6 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'a take-place leaves the summaries of the earlier rule stale',
-    target: source('treeEdits.js'),
-    find: '  invalidate(earlier);\n  earlier.remove();',
-    replace: '  earlier.remove();',
-  },
-  {
     name: 'a rebuild leaves the summaries of each container stale',
     target: source('treeEdits.js'),
     find: '    invalidate(container);\n    container.removeAll();',
