@@ -3,6 +3,7 @@ import cssnanoUtils from '#utils';
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /** @import {TextTable} from '../../../../values/textTable.js' */
+/** @import {BlockRecord} from './blockRecords.js' */
 
 /**
  * @param {import('postcss').AnyNode} nodeA
@@ -58,31 +59,26 @@ export function isKeyframes(container) {
   );
 }
 
-/** @typedef {import('postcss').AnyNode & {parent?: Child}} Child */
-
 /**
- * True if two containers apply their content the same way: they are equal
- * blocks, and so are their enclosing blocks up to the stylesheet. Either may
- * be missing, for a node that is detached.
+ * True if two blocks apply their content the same way: they are equal blocks,
+ * and so are their enclosing blocks up to the stylesheet. Either may be null,
+ * for a block that has no record.
  *
- * @param {import('postcss').Container | undefined} containerA
- * @param {import('postcss').Container | undefined} containerB
+ * @param {BlockRecord | null | undefined} blockA
+ * @param {BlockRecord | null | undefined} blockB
  * @param {TextTable} textTable the selector tokens the walk stored, which give
  *   each layer's prelude when it has a comment
  * @return {boolean}
  */
-export function sameContainer(containerA, containerB, textTable) {
-  if (!containerA || !containerB) {
-    return !containerA && !containerB;
+export function sameContainer(blockA, blockB, textTable) {
+  if (!blockA || !blockB) {
+    return !blockA && !blockB;
   }
-  const a = /** @type {Child} */ (/** @type {unknown} */ (containerA));
-  const b = /** @type {Child} */ (/** @type {unknown} */ (containerB));
   return (
-    checkMatch(a, b, textTable) &&
-    sameContainer(
-      /** @type {import('postcss').Container | undefined} */ (a.parent),
-      /** @type {import('postcss').Container | undefined} */ (b.parent),
+    checkMatch(
+      /** @type {import('postcss').AnyNode} */ (blockA.node),
+      /** @type {import('postcss').AnyNode} */ (blockB.node),
       textTable
-    )
+    ) && sameContainer(blockA.parent, blockB.parent, textTable)
   );
 }
