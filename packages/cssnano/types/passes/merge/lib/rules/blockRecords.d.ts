@@ -19,6 +19,16 @@ export declare class Slot {
      * @param {Rule[]} rules
      */
     constructor(block: BlockRecord, position: number, rules: Rule[]);
+    /**
+     * Replaces `rule` in the slot with `replacements`, and places each of them
+     * here.
+     *
+     * @param {Rule} rule the rule that stands in the slot and is replaced
+     * @param {Rule[]} replacements
+     * @param {BlockRecords} records
+     * @return {void}
+     */
+    substitute(rule: Rule, replacements: Rule[], records: BlockRecords): void;
 }
 /**
  * The record of a container that the merge visits: the stylesheet, an at-rule
@@ -54,6 +64,29 @@ export declare class BlockRecord {
      * @param {boolean} droppable
      */
     constructor(node: Container, parent: BlockRecord | null, position: number, droppable: boolean);
+    /**
+     * The first child the block holds now, without copying the child list.
+     *
+     * @return {ChildNode | undefined}
+     */
+    firstLiveChild(): ChildNode | undefined;
+    /**
+     * The children the block holds now, in order: the rules of its slots, and
+     * the nodes of its other entries, except a block that was dropped.
+     *
+     * @return {ChildNode[]}
+     */
+    liveChildren(): ChildNode[];
+    /**
+     * Moves `rule` out of `from` into a new slot after the last child of this
+     * block.
+     *
+     * @param {Rule} rule
+     * @param {Slot} from
+     * @param {BlockRecords} records
+     * @return {Slot} the slot that now holds `rule`
+     */
+    moveRule(rule: Rule, from: Slot, records: BlockRecords): Slot;
     /**
      * Takes the children of `source` after its own. Each rule gets a slot here,
      * and each block a rule holds gets this block as its parent. `source` is

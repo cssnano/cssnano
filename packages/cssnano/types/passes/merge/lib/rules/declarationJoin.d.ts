@@ -4,6 +4,7 @@ import type MergeState from './mergeState.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
+/** @import {BlockRecord} from './blockRecords.js' */
 /**
  * A rule made only of declarations. Comments and nested rules would be
  * stranded or reordered by moving declarations out of the rule.
