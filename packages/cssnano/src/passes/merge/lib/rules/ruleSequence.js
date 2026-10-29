@@ -81,11 +81,8 @@ export default class RuleSequence {
     /** @param {BlockRecord} block */
     const collect = (block) => {
       let live = 0;
-      const { children } = block;
-      for (let index = 0; index < children.length; index++) {
-        const entry = children[index];
+      for (const entry of block.children) {
         if (entry instanceof Slot) {
-          entry.position = index;
           for (const rule of entry.rules) {
             /** @type {RuleLink} */
             const link = { rule, slot: entry, prev: tail, next: null };
@@ -93,14 +90,10 @@ export default class RuleSequence {
             tail = link;
             live++;
             const nested = records.metaOf(rule).block;
-            if (nested) {
-              nested.position = index;
-              collect(nested);
-            }
+            if (nested) collect(nested);
           }
         } else if (entry instanceof BlockRecord) {
           if (entry.dropped) continue;
-          entry.position = index;
           live++;
           collect(entry);
         } else {

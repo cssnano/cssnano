@@ -11,12 +11,16 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import {
   assertRecordsMatchTree,
   buildRecords,
+  moveChildren,
+  remove,
+  takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { mergePass } from '../../../../../src/passes/merge/index.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
+import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 
-/** @import {Root, Rule} from 'postcss' */
+/** @import {Container, Root, Rule} from 'postcss' */
 
 before(() => enableConsistencyChecks(true));
 after(() => enableConsistencyChecks(false));
@@ -156,4 +160,68 @@ test('moveRule should leave the rule out of the slot it came from', () => {
   const from = /** @type {Slot} */ (state.meta(rule).slot);
   state.records.root.moveRule(rule, from, state.records);
   assert.deepEqual(from.rules, []);
+});
+
+/**
+ * Whether each slot and nested record of a block holds its index among the
+ * entries as position. A raw node has no position.
+ *
+ * @param {BlockRecord} block
+ * @return {boolean}
+ */
+function positionsMatchIndex(block) {
+  return block.children.every(
+    (entry, index) =>
+      !(entry instanceof Slot || entry instanceof BlockRecord) ||
+      entry.position === index
+  );
+}
+
+test('an entry should hold its index as position after a move of children', () => {
+  const { root, state } = setup(
+    '@media print{a{color:red}}@media print{b{width:1px}}'
+  );
+  const [first, second] = /** @type {Container} */ (root).nodes;
+  moveChildren(state, first, second);
+  assert.equal(positionsMatchIndex(state.records.blockOf(first)), true);
+});
+
+test('an entry should hold its index as position after a join takes the place of a block', () => {
+  const { root, state } = setup(
+    'a{color:red}@media print{b{width:1px}}@media print{c{height:1px}}'
+  );
+  const [, earlier, later] = /** @type {Container} */ (root).nodes;
+  takePlaceOf(state, root, earlier, later);
+  assert.equal(positionsMatchIndex(state.records.root), true);
+});
+
+test('an entry should hold its index as position after a removal of a block', () => {
+  const { root, state } = setup(
+    'a{color:red}@media print{b{width:1px}}c{height:1px}'
+  );
+  const [, media] = /** @type {Container} */ (root).nodes;
+  remove(state, media);
+  assert.equal(positionsMatchIndex(state.records.root), true);
+});
+
+test('an entry should hold its index as position after a rule moves to the end of a block', () => {
+  const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
+  const [media] = /** @type {Container} */ (root).nodes;
+  const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
+  const from = /** @type {Slot} */ (state.meta(rule).slot);
+  state.records.root.moveRule(rule, from, state.records);
+  assert.equal(positionsMatchIndex(state.records.root), true);
+});
+
+test('assertRecordsMatchTree should throw when an entry holds a position other than its index', () => {
+  const { state } = setup('a{color:red}b{width:1px}');
+  state.records.root.children[1].position = 5;
+  assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
+});
+
+test('a sweep should keep the positions the records hold rather than resetting them', () => {
+  const { state } = setup('a{color:red}b{width:1px}');
+  state.records.root.children[1].position = 5;
+  new RuleSequence(state.records);
+  assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
 });

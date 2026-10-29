@@ -108,7 +108,11 @@ function checkRuleRecord(mergeState, block, slot, rule) {
     throw new Error(OUT_OF_STEP);
   }
   if (meta.block) {
-    if (meta.block.parent !== block || meta.block.node !== rule) {
+    if (
+      meta.block.parent !== block ||
+      meta.block.node !== rule ||
+      meta.block.position !== slot.position
+    ) {
       throw new Error(OUT_OF_STEP);
     }
     checkBlockRecord(mergeState, meta.block);
@@ -126,7 +130,9 @@ function checkRuleRecord(mergeState, block, slot, rule) {
 function checkBlockRecord(mergeState, block) {
   const nodes = /** @type {ChildNode[]} */ (block.node.nodes);
   let at = 0;
-  for (const entry of block.children) {
+  for (const [index, entry] of block.children.entries()) {
+    const placed = entry instanceof Slot || entry instanceof BlockRecord;
+    if (placed && entry.position !== index) throw new Error(OUT_OF_STEP);
     if (entry instanceof Slot) {
       for (const rule of entry.rules) {
         if (nodes[at++] !== rule) throw new Error(OUT_OF_STEP);
@@ -201,8 +207,8 @@ export function remove(mergeState, node) {
  */
 function emptyEntry(block) {
   const holder = /** @type {BlockRecord} */ (block.parent);
-  const index = holder.children.indexOf(block);
-  holder.children[index] = new Slot(holder, index, []);
+  const { position } = block;
+  holder.children[position] = new Slot(holder, position, []);
 }
 
 /**
@@ -241,8 +247,8 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
     const block = /** @type {BlockRecord} */ (records.blockOf(earlier));
     const laterBlock = /** @type {BlockRecord} */ (records.blockOf(later));
     const holder = /** @type {BlockRecord} */ (block.parent);
-    const from = holder.children.indexOf(block);
-    const to = holder.children.indexOf(laterBlock);
+    const from = block.position;
+    const to = laterBlock.position;
     holder.children[to] = block;
     block.position = to;
     holder.children[from] = new Slot(holder, from, []);
