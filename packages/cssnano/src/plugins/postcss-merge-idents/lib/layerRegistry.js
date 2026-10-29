@@ -1,20 +1,24 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import { preludeTokens } from './trailingEscape.js';
 
-const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
+const { asciiLowerCase, decoded } = cssnanoUtils;
+
+/** @import {TextTable} from '../../../values/textTable.js' */
 
 /**
- * Parses a @layer parameter list into decoded layer-name paths. A period is a
- * separator only as a Delim token between idents; an escaped dot is part of
- * the preceding identifier's value, so `a\.b` is one segment named "a.b".
- * Whitespace and comments around separators are allowed, preserving the
+ * Parses the tokens of a @layer parameter list into decoded layer-name paths.
+ * A period is a separator only as a Delim token between idents; an escaped dot
+ * is part of the preceding identifier's value, so `a\.b` is one segment named
+ * "a.b". Whitespace and comments around separators are allowed, preserving the
  * previous handling of `a . b`.
  *
- * @param {string} params
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} parsedTokens
+ *   the tokens of the layer's prelude
  * @return {string[][] | null} one decoded segment path per declared name
  */
-function parseLayerNameList(params) {
-  const tokenList = tokens(params).filter(
+function parseLayerNameList(parsedTokens) {
+  const tokenList = parsedTokens.filter(
     (t) => t[0] !== TokenType.Whitespace && t[0] !== TokenType.Comment
   );
   /** @type {string[][]} */
@@ -75,7 +79,9 @@ function enclosingLayerRules(node) {
 }
 
 class LayerRegistry {
-  constructor() {
+  /** @param {TextTable} table the text the walk stored */
+  constructor(table) {
+    this.table = table;
     this.nextIndex = 0;
     /** @type {Map<string, { index: number, children: LayerRegistry }>} */
     this.layers = new Map();
@@ -90,7 +96,10 @@ class LayerRegistry {
   getOrCreate(name) {
     let entry = this.layers.get(name);
     if (!entry) {
-      entry = { index: this.nextIndex++, children: new LayerRegistry() };
+      entry = {
+        index: this.nextIndex++,
+        children: new LayerRegistry(this.table),
+      };
       this.layers.set(name, entry);
     }
     return entry;
@@ -107,7 +116,10 @@ class LayerRegistry {
   getOrCreateAnonymous(layerRule) {
     let entry = this.anonymous.get(layerRule);
     if (!entry) {
-      entry = { index: this.nextIndex++, children: new LayerRegistry() };
+      entry = {
+        index: this.nextIndex++,
+        children: new LayerRegistry(this.table),
+      };
       this.anonymous.set(layerRule, entry);
     }
     return entry;
@@ -123,7 +135,7 @@ class LayerRegistry {
    */
   entryFor(layerRule) {
     const names = layerRule.params.trim()
-      ? parseLayerNameList(layerRule.params)
+      ? parseLayerNameList(preludeTokens(layerRule, this.table))
       : null;
     if (names === null || names.length !== 1) {
       return this.getOrCreateAnonymous(layerRule);
@@ -158,7 +170,7 @@ class LayerRegistry {
     if (!layerRule.params.trim()) {
       return;
     }
-    const names = parseLayerNameList(layerRule.params);
+    const names = parseLayerNameList(preludeTokens(layerRule, this.table));
     if (names === null) {
       return;
     }
