@@ -250,6 +250,22 @@ test('replaceChildren should leave the container that gave up a child empty', ()
   assert.deepEqual(media2.nodes, []);
 });
 
+test('replaceChildren should keep the whitespace before a rule moved into another container', () => {
+  const { root } = setup(
+    '@media print{a{color:red}}\n\n@media print{\n  b{width:1px}\n}'
+  );
+  const [media1, media2] = /** @type {Container[]} */ (root.nodes);
+  const moved = /** @type {ChildNode} */ (media2.first);
+  replaceChildren([
+    { container: media2, children: [], head: moved },
+    { container: media1, children: [media1.first, moved], head: media1.first },
+  ]);
+  assert.equal(
+    root.toString(),
+    '@media print{a{color:red}\n  b{width:1px}}\n\n@media print{\n}'
+  );
+});
+
 test('replaceChildren should refresh the declarations of the ancestors of a rebuilt container', () => {
   const { root, blocks } = setup(
     '@supports (a:b){@media print{a{color:red}}@media print{b{width:1px}}}'
