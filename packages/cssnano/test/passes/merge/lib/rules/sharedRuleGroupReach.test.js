@@ -7,7 +7,7 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/declarations.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
+import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import {
   earliestPairReaching,
   findGroup,
@@ -58,7 +58,8 @@ function stylesheet(seed, { comments = false, blocks = false } = {}) {
 function groupsOf(css) {
   const root = postcss.parse(css);
   const mergeState = new MergeState(['Chrome 120']);
-  const sequence = new RuleSequence(root, new TextTable());
+  mergeState.records = buildRecords(root, mergeState);
+  const sequence = new RuleSequence(mergeState.records);
   const outsideDeclarations = new WeakMap();
   const links = [];
   for (let link = sequence.head.next; link; link = link.next) links.push(link);
@@ -174,7 +175,7 @@ test('earliestPairReaching should reach the first rule of a pair whose second ru
 test('findGroup should form a group whose pair spans two equal blocks in the generated stylesheets, so the property below covers that pair', () => {
   assert.ok(
     allGroups({ blocks: true }).some(
-      ({ first, second }) => first.slot.parent !== second.slot.parent
+      ({ first, second }) => first.slot.block !== second.slot.block
     )
   );
 });

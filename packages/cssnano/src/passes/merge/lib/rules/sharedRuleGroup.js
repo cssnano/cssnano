@@ -2,7 +2,8 @@ import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
 import { PropertyWrites } from './lastWriteIndex.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
-/** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
+/** @import {ChildNode, Declaration, Rule} from 'postcss' */
+/** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 
 /** @param {string[]} selectors @return {number} */
@@ -64,14 +65,14 @@ function overridesShared(nodes, claimed, shared, table) {
  * the shared rule does, and sets every shared declaration.
  *
  * @param {RuleLink | null} link
- * @param {Container} parent
+ * @param {BlockRecord} parent
  * @param {number[]} firstKeys the declaration keys of the earlier rule
  * @param {Set<number>} sharedIndices where the shared declarations stand in it
  * @param {import('./mergeState.js').default} mergeState
  * @return {link is RuleLink}
  */
 function repeatsShared(link, parent, firstKeys, sharedIndices, mergeState) {
-  if (!link || link.slot.parent !== parent || !isDeclarationRule(link.rule)) {
+  if (!link || link.slot.block !== parent || !isDeclarationRule(link.rule)) {
     return false;
   }
   const { keySet } = mergeState.declarationKeysOf(link.rule);
@@ -84,13 +85,14 @@ function repeatsShared(link, parent, firstKeys, sharedIndices, mergeState) {
 /**
  * @param {Rule[]} members
  * @param {Rule} later
- * @param {Container} parent
+ * @param {BlockRecord} parent
  * @param {import('./mergeState.js').default} mergeState
  * @return {boolean} whether `later` can share a selector list with every member
  */
 function mergesWithAll(members, later, parent, mergeState) {
   for (const member of members) {
-    if (!mergeState.canMerge(member, later, parent, parent)) return false;
+    if (!mergeState.canMerge(member, later, parent.node, parent.node))
+      return false;
   }
   return true;
 }
@@ -116,7 +118,7 @@ function mergesWithAll(members, later, parent, mergeState) {
  * @param {number} delta how much the pair alone lengthens the output
  * @param {import('./mergeState.js').default} mergeState
  * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
+ * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
  * @return {Group | null}
  */
 export function findGroup(
@@ -131,7 +133,7 @@ export function findGroup(
   sequence,
   outsideDeclarations
 ) {
-  const parent = second.slot.parent;
+  const parent = second.slot.block;
   const firstKeys = mergeState.declarationKeysOf(first).keys;
   if (
     !repeatsShared(
@@ -274,7 +276,7 @@ export function earliestPairReaching(
   mergeState,
   earliest
 ) {
-  const parent = link.slot.parent;
+  const parent = link.slot.block;
   const own = mergeState.declarationKeysOf(link.rule);
   let passed = false;
   let member = link;
@@ -303,7 +305,7 @@ export function earliestPairReaching(
       }
     }
     if (prev === resume) passed = true;
-    if (depth >= PAIR_REACH || prev.slot.parent !== parent) break;
+    if (depth >= PAIR_REACH || prev.slot.block !== parent) break;
     member = prev;
   }
 }

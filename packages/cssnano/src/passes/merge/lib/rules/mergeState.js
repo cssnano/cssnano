@@ -22,6 +22,7 @@ import { tokensText } from '../../../../values/tokensText.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleMeta} from './ruleMeta.js' */
 /** @import {RuleDeclarationKeys} from './ruleMeta.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 
 /**
  * The state shared by every merge of one stylesheet.
@@ -55,6 +56,13 @@ export default class MergeState {
    * @type {import('../../../ir/blockTable.js').BlockTable}
    */
   blocks;
+  /**
+   * The block and rule records of the stylesheet. `runMerge` sets them before
+   * any edit reads them.
+   *
+   * @type {BlockRecords}
+   */
+  records = /** @type {BlockRecords} */ (/** @type {unknown} */ (null));
 
   /** @returns {TextTable} the selector tokens the walk stored */
   get textTable() {

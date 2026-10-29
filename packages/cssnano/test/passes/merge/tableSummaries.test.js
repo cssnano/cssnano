@@ -12,7 +12,7 @@ import {
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import joinByDeclarations from '../../../src/passes/merge/lib/rules/declarationJoin.js';
 import RuleSequence from '../../../src/passes/merge/lib/rules/ruleSequence.js';
-import { TextTable } from '../../../src/values/textTable.js';
+import { buildRecords } from '../../../src/passes/merge/lib/rules/treeEdits.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 
 /** @import {AtRule, Declaration, Root, Rule} from 'postcss' */
@@ -39,6 +39,7 @@ test('block table: a join that empties a rule leaves its at-rule summary equal t
   try {
     const media = /** @type {AtRule} */ (root.first);
     const mergeState = new MergeState(['Chrome 120'], context);
+    mergeState.records = buildRecords(root, mergeState);
     assert.deepEqual(propsOf(context.blocks, media), ['color', 'color']);
     joinByDeclarations(media, mergeState);
     assert.equal(media.toString(), '@media print{a,b{color:red}}');
@@ -56,7 +57,9 @@ test('block table: a sequence move that rebuilds a conditional group leaves its 
   try {
     const media = /** @type {AtRule} */ (root.first);
     assert.deepEqual(propsOf(context.blocks, media), ['color']);
-    const sequence = new RuleSequence(root, new TextTable());
+    const mergeState = new MergeState(['Chrome 120'], context);
+    mergeState.records = buildRecords(root, mergeState);
+    const sequence = new RuleSequence(mergeState.records);
     const first = /** @type {NonNullable<typeof sequence.head.next>} */ (
       sequence.head.next
     );

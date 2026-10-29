@@ -7,6 +7,7 @@ import { joinNonAdjacent } from '../../../src/passes/merge/lib/rules/nonAdjacent
 import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
   appendToDeclarations,
+  buildRecords,
   removeDeclarations,
 } from '../../../src/passes/merge/lib/rules/treeEdits.js';
 
@@ -20,7 +21,9 @@ import {
  */
 function mergeStateOf(root) {
   const context = createRunContext(root);
-  return new MergeState(['Chrome 120'], context);
+  const mergeState = new MergeState(['Chrome 120'], context);
+  mergeState.records = buildRecords(root, mergeState);
+  return mergeState;
 }
 
 test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-rules visit again and join', () => {
