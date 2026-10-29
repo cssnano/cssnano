@@ -1,20 +1,8 @@
-import type { TextTable } from '../../../values/textTable.js';
 declare const VENDOR_PREFIX: RegExp;
 declare const CSS_WIDE_KEYWORDS: Set<string>;
 declare const KEYFRAMES_SHORTHAND_KEYWORDS: Set<string>;
 declare const COUNTER_STYLE_RESERVED: Set<string>;
 declare const COUNTER_STYLE_FUNCTIONS: Map<string, number[]>;
-/**
- * The tokens of a prelude's name. A dangling backslash escapes the space that
- * PostCSS keeps in `raws.between`, so that space joins the name; otherwise the
- * between-block space holds only whitespace and comments, and the stored list
- * of the prelude stands for it.
- *
- * @param {import('postcss').AtRule} atRule
- * @param {TextTable} table
- * @return {readonly import('@csstools/css-tokenizer').CSSToken[]}
- */
-declare function preludeTokens(atRule: import('postcss').AtRule, table: TextTable): readonly import('@csstools/css-tokenizer').CSSToken[];
 /**
  * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} parsedTokens
  *   the tokens of the prelude, whose comments and whitespace are skipped
@@ -53,5 +41,5 @@ declare function getBody(entry: {
     rule: import('postcss').AtRule;
     body?: string;
 }): string;
-export { preludeTokens, VENDOR_PREFIX, CSS_WIDE_KEYWORDS, KEYFRAMES_SHORTHAND_KEYWORDS, COUNTER_STYLE_RESERVED, COUNTER_STYLE_FUNCTIONS, parseAtRuleName, classifyDeclaration, getConditionContainer, getBody, };
+export { VENDOR_PREFIX, CSS_WIDE_KEYWORDS, KEYFRAMES_SHORTHAND_KEYWORDS, COUNTER_STYLE_RESERVED, COUNTER_STYLE_FUNCTIONS, parseAtRuleName, classifyDeclaration, getConditionContainer, getBody, };
 //# sourceMappingURL=grammar.d.ts.map

@@ -1,6 +1,8 @@
 import cssnanoUtils from '#utils';
 
-const { isCSSWhitespace } = cssnanoUtils;
+/** @import {TextTable} from '../../../values/textTable.js' */
+
+const { isCSSWhitespace, tokens } = cssnanoUtils;
 
 /**
  * @param {string} value
@@ -13,6 +15,36 @@ function endsWithDanglingEscape(value) {
     count++;
   }
   return count % 2 === 1;
+}
+
+/**
+ * @param {number} code a UTF-16 code unit
+ * @return {boolean} whether it is a CSS newline: LF, CR or FF
+ */
+function isNewlineCode(code) {
+  return code === 0x0a || code === 0x0d || code === 0x0c;
+}
+
+/**
+ * The tokens of an at-rule's prelude. A dangling backslash escapes the space
+ * that PostCSS keeps in `raws.between`, so that space joins the prelude;
+ * otherwise the between-block space holds only whitespace and comments, and
+ * the stored list of the prelude stands for it.
+ *
+ * @param {import('postcss').AtRule} atRule
+ * @param {TextTable} table
+ * @return {readonly import('@csstools/css-tokenizer').CSSToken[]}
+ */
+function preludeTokens(atRule, table) {
+  const between = atRule.raws?.between ?? '';
+  const escapesBetween =
+    between !== '' &&
+    !isNewlineCode(between.charCodeAt(0)) &&
+    endsWithDanglingEscape(atRule.params);
+  if (escapesBetween) {
+    return tokens(atRule.params + between);
+  }
+  return table.tokens(atRule);
 }
 
 /**
@@ -72,4 +104,4 @@ function trailingEscape(decl) {
     : undefined;
 }
 
-export { endsWithDanglingEscape, trailingEscape };
+export { endsWithDanglingEscape, preludeTokens, trailingEscape };

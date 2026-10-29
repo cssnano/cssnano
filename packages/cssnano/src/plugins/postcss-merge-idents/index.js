@@ -13,10 +13,10 @@ import {
   getBody,
   getConditionContainer,
   parseAtRuleName,
-  preludeTokens,
   VENDOR_PREFIX,
 } from './lib/grammar.js';
 import { scanDeclarations } from './lib/protectedNames.js';
+import { preludeTokens } from './lib/trailingEscape.js';
 import { createReplacement, rewriteReferences } from './lib/valueRewriter.js';
 import { TextTable } from '../../values/textTable.js';
 
@@ -241,7 +241,7 @@ function namespaceOf(family) {
  * @return {void}
  */
 function mergeAtRules(lists, remove, table) {
-  const layerRegistry = new LayerRegistry();
+  const layerRegistry = new LayerRegistry(table);
   for (const layerRule of lists.layers) {
     if (isAttached(layerRule)) {
       layerRegistry.declareLayerAtRule(layerRule);

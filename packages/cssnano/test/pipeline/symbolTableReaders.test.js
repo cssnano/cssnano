@@ -16,7 +16,7 @@ const { zindexSymbols } =
 const { mergeIdentsSymbols } =
   await import('../../src/plugins/postcss-merge-idents/index.js');
 const { preludeTokens } =
-  await import('../../src/plugins/postcss-merge-idents/lib/grammar.js');
+  await import('../../src/plugins/postcss-merge-idents/lib/trailingEscape.js');
 const { tokens } = await import('../../src/utils/value.js');
 
 /** @returns {number} tokenize calls made so far */
