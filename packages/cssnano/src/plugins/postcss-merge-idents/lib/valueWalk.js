@@ -17,7 +17,7 @@ const { asciiLowerCase, decoded } = cssnanoUtils;
  * positions of a counter function that name a counter style.
  *
  * @template T
- * @param {CSSToken[]} tokenList
+ * @param {readonly CSSToken[]} tokenList
  * @param {(token: CSSToken, frame: NestingFrame | undefined, index: number) => T | undefined} visit
  * @return {T[]} the defined results of the visitor, in source order
  */

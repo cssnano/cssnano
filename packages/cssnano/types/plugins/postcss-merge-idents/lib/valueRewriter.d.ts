@@ -1,20 +1,19 @@
 export type Replacement = {
     text: string;
+    value: string;
     isString: boolean;
     absorbsWhitespace: boolean;
 };
-export type Edit = {
-    start: number;
-    end: number;
-    text: string;
-};
+export type TokenEdit = import('../../../values/valueBuffer.js').TokenEdit;
 export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
-export type Visitor = (token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => Edit | undefined;
+export type Visitor = (token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => TokenEdit | undefined;
+import type { TextTable } from '../../../values/textTable.js';
 /**
- * @typedef {{ text: string, isString: boolean, absorbsWhitespace: boolean }} Replacement
- * @typedef {{ start: number, end: number, text: string }} Edit
+ * @typedef {{ text: string, value: string, isString: boolean, absorbsWhitespace: boolean }} Replacement
+ * @typedef {import('../../../values/valueBuffer.js').TokenEdit} TokenEdit
  * @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken
- * @typedef {(token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => Edit | undefined} Visitor
+ * @typedef {(token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => TokenEdit | undefined} Visitor
+ * @import {TextTable} from '../../../values/textTable.js'
  */
 /**
  * Prepares the spelling that references to a renamed name receive. A name
@@ -23,26 +22,24 @@ export type Visitor = (token: CSSToken, frame: import('./valueWalk.js').NestingF
  * terminate it. A name that already includes its terminating space, or ends in
  * an escaped space, absorbs nothing.
  *
- * @param {{ isString: boolean, tokenText: string }} target the target's
- *   at-rule name
+ * @param {{ isString: boolean, tokenText: string, key: string }} target the
+ *   target's at-rule name
  * @return {Replacement}
  */
-declare function createReplacement({ isString, tokenText }: {
+declare function createReplacement({ isString, tokenText, key }: {
     isString: boolean;
     tokenText: string;
+    key: string;
 }): Replacement;
 /**
- * Rewrites the names a declaration references. An ident and a string with the
- * same value are one name, and a renamed name is rewritten wherever it is
- * referenced because only interchangeable names are ever renamed.
+ * Rewrites the references whose namespace has renames. A reference shares
+ * the tokens its scan read, so the rewrite does not tokenize it again.
  *
- * @param {import('postcss').Declaration} decl
- * @param {NonNullable<ReturnType<typeof import('./grammar.js').classifyDeclaration>>['kind']} kind
- * @param {Map<string, Replacement>} renames old name → replacement
- * @param {string} value the declaration value, with the whitespace that a
- *   trailing escape consumed restored
+ * @param {import('./protectedNames.js').Reference[]} references
+ * @param {Map<string, Map<string, Replacement>>} renames
+ * @param {TextTable} table
  * @return {void}
  */
-declare function rewriteDeclaration(decl: import('postcss').Declaration, kind: NonNullable<ReturnType<typeof import('./grammar.js').classifyDeclaration>>['kind'], renames: Map<string, Replacement>, value: string): void;
-export { createReplacement, rewriteDeclaration };
+declare function rewriteReferences(references: import('./protectedNames.js').Reference[], renames: Map<string, Map<string, Replacement>>, table: TextTable): void;
+export { createReplacement, rewriteReferences };
 //# sourceMappingURL=valueRewriter.d.ts.map

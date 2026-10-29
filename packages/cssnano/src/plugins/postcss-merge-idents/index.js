@@ -17,7 +17,7 @@ import {
   VENDOR_PREFIX,
 } from './lib/grammar.js';
 import { scanDeclarations } from './lib/protectedNames.js';
-import { createReplacement, rewriteDeclaration } from './lib/valueRewriter.js';
+import { createReplacement, rewriteReferences } from './lib/valueRewriter.js';
 import { TextTable } from '../../values/textTable.js';
 
 /** @import {ChildNode} from 'postcss' */
@@ -315,7 +315,8 @@ function mergeAtRules(lists, remove, table) {
           groupedNames,
           lists.functions.filter(isAttached),
           lists.parameterRules.filter(isAttached),
-          lists.conditionRules.filter(isAttached)
+          lists.conditionRules.filter(isAttached),
+          table
         )
       : { protectedNames: new Set(), references: [] };
   /** @type {Map<string, Map<string, import('./lib/valueRewriter.js').Replacement>>} */
@@ -335,27 +336,13 @@ function mergeAtRules(lists, remove, table) {
 
   // Removing a repeat definition of one name leaves no reference to respell.
   if ([...renames.values()].some((namespaceRenames) => namespaceRenames.size)) {
-    rewriteReferences(references, renames);
+    rewriteReferences(references, renames, table);
   }
 
   // An earlier removal in this loop may have emptied and removed a parent.
   for (const node of removals) {
     if (isAttached(node)) {
       remove(node);
-    }
-  }
-}
-
-/**
- * @param {import('./lib/protectedNames.js').Reference[]} references
- * @param {Map<string, Map<string, import('./lib/valueRewriter.js').Replacement>>} renames
- * @return {void}
- */
-function rewriteReferences(references, renames) {
-  for (const { decl, classification, value } of references) {
-    const namespaceRenames = renames.get(classification.namespace);
-    if (namespaceRenames?.size) {
-      rewriteDeclaration(decl, classification.kind, namespaceRenames, value);
     }
   }
 }

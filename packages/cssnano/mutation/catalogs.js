@@ -81,6 +81,13 @@ export const catalogs = [
   },
   {
     url: new URL(
+      './postcss-merge-idents/mutation-catalog-rewrite-writer.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
       './passes/merge/lib/longhand/mutation-catalog-validity.js',
       import.meta.url
     ),
