@@ -105,10 +105,15 @@ export default function reduceParams(legacy, ruleName, buffer) {
   // edited tokens.
   const edited = /** @type {BalancedTokens} */ (buffer.structure());
   const { tokens: list } = edited;
-  const joined = joinRanges(
-    sortedQueryPieces(list, edited.topLevelSegments()),
-    [comma()]
-  );
+  const segments = edited.topLevelSegments();
+  // One query that spans the prelude has nothing to sort or join, so its text stays as it is.
+  if (
+    segments.length === 1 &&
+    segments[0].startIndex === 0 &&
+    segments[0].endIndex === list.length
+  )
+    return;
+  const joined = joinRanges(sortedQueryPieces(list, segments), [comma()]);
   if (tokensText(joined) !== buffer.text()) {
     buffer.replaceRanges([{ start: 0, end: list.length, tokens: joined }]);
   }
