@@ -1,11 +1,9 @@
 import { TokenType } from '@csstools/css-tokenizer';
-import reduceTokens, {
+import {
+  createReducer,
   hasPotentialMathFunction,
 } from 'postcss-calc/reduce-tokens';
 import cssnanoUtils from '#utils';
-import { parsedValueText } from '../../utils/parsedValueText.js';
-import { tokens } from '../../utils/value.js';
-import { spliceRanges } from '../../values/spliceRanges.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -16,22 +14,19 @@ const { asciiLowerCase } = cssnanoUtils;
 /** @import {Reducer, StageEntry, Stage} from '../../pipeline/host.js' */
 
 /**
- * The reducer options for one text. A parse error goes to the `onParseError`
- * option when it is set, and otherwise to `warn`. A selector cannot keep a
- * calc() that does not resolve to a plain value, so it always unwraps.
+ * The reducer options for a stage. A selector cannot keep a calc() that does
+ * not resolve to a plain value, so it always unwraps. Warnings go to the
+ * buffer that is reduced.
  *
  * @param {PostCssCalcOptions} options
- * @param {(message: string, plugin?: string) => void} warn
  * @param {boolean} selector
  * @returns {ReduceCalcOptions}
  */
-function reduceOptions(options, warn, selector) {
+function reduceOptions(options, selector) {
   return {
     precision: options.precision,
     warnWhenCannotResolve: options.warnWhenCannotResolve,
-    onParseError:
-      options.onParseError ?? ((error) => warn(error.message, 'postcss-calc')),
-    onWarn: (message) => warn(message, 'postcss-calc'),
+    onParseError: options.onParseError,
     unwrapSingleValue: selector || options.unwrapSingleValue,
   };
 }
@@ -46,17 +41,12 @@ function reduceOptions(options, warn, selector) {
  * @returns {Reducer}
  */
 function reduceCalcTokens(options, selector) {
+  const reduce = createReducer(reduceOptions(options, selector));
   return (buffer) => {
     // After an edit, reduceTokens finds the math functions in the tokens.
     if (!buffer.isEdited() && !hasPotentialMathFunction(buffer.text())) return;
-    /** @type {(message: string, plugin?: string) => void} */
-    const warn = (message, plugin) => buffer.warn(message, plugin);
-    // reduceTokens reads its input only, so the buffer's readonly view is safe.
     buffer.replaceRanges(
-      reduceTokens(
-        /** @type {CSSToken[]} */ (buffer.tokens()),
-        reduceOptions(options, warn, selector)
-      )
+      reduce(/** @type {CSSToken[]} */ (buffer.tokens()), buffer)
     );
   };
 }
@@ -102,26 +92,18 @@ function styleQueryRanges(list) {
  * @returns {Reducer}
  */
 function reduceContainerTokens(options) {
+  const reduce = createReducer(reduceOptions(options, false));
   return (buffer) => {
     if (!buffer.isEdited() && !hasPotentialMathFunction(buffer.text())) return;
-    /** @type {(message: string, plugin?: string) => void} */
-    const warn = (message, plugin) => buffer.warn(message, plugin);
     const list = /** @type {CSSToken[]} */ (buffer.tokens());
-    const reducerOptions = reduceOptions(options, warn, false);
+    const queries = styleQueryRanges(list);
+    queries.push([list.length, list.length]);
     /** @type {TokenEdit[]} */
     const edits = [];
     let runStart = 0;
-    for (const [queryStart, queryEnd] of [
-      ...styleQueryRanges(list),
-      [list.length, list.length],
-    ]) {
-      const run = list.slice(runStart, queryStart);
-      for (const edit of reduceTokens(run, reducerOptions)) {
-        edits.push({
-          start: edit.start + runStart,
-          end: edit.end + runStart,
-          tokens: edit.tokens,
-        });
+    for (const [queryStart, queryEnd] of queries) {
+      for (const edit of reduce(list, buffer, runStart, queryStart)) {
+        edits.push(edit);
       }
       runStart = queryEnd;
     }
@@ -142,6 +124,7 @@ function reduceContainerTokens(options) {
 function calcStage(options) {
   const media = { buffer: reduceCalcTokens(options, false) };
   const container = { buffer: reduceContainerTokens(options) };
+  const value = reduceCalcTokens(options, false);
   return {
     forAtRule: options.mediaQueries
       ? (name) => {
@@ -156,33 +139,7 @@ function calcStage(options) {
         }
       : undefined,
     selector: options.selectors ? reduceCalcTokens(options, true) : undefined,
-    forProperty: () => (buffer) => {
-      if (!buffer.isEdited() && !hasPotentialMathFunction(buffer.text()))
-        return;
-      /** @type {(message: string, plugin?: string) => void} */
-      const warn = (message, plugin) => buffer.warn(message, plugin);
-      // PostCSS gives the value without comments, so reduce what it would give.
-      if (!buffer.text().includes('/*')) {
-        // reduceTokens reads its input only, so the buffer's readonly view is safe.
-        const replacements = reduceTokens(
-          /** @type {CSSToken[]} */ (buffer.tokens()),
-          reduceOptions(options, warn, false)
-        );
-        buffer.replaceRanges(replacements);
-        return;
-      }
-      const list = tokens(parsedValueText(buffer.tokens()));
-      const replacements = reduceTokens(
-        list,
-        reduceOptions(options, warn, false)
-      );
-      if (replacements.length === 0) return;
-      buffer.replace(
-        0,
-        buffer.tokens().length,
-        spliceRanges(list, replacements)
-      );
-    },
+    forProperty: () => value,
   };
 }
 
