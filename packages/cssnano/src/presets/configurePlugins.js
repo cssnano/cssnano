@@ -63,6 +63,23 @@ import {
  */
 
 /**
+ * The keys of an options type, or none when it is an open record, which names
+ * no key that a list could be checked against.
+ * @template Options
+ * @typedef {string extends keyof Options ? never : keyof Options & string} NamedKeys
+ */
+
+/**
+ * The entry of one preset option. An entry is checked against it with
+ * `@satisfies`, so that its creator accepts the options the preset documents
+ * for the name and `optionKeys` names only keys of those options. A misspelled
+ * key then fails where it is written, and the literal types stay.
+ * @template {object} Options
+ * @template {keyof Options & string} Name
+ * @typedef {readonly [StageEntry<NonNullable<Options[Name]>> | TransformEntry<NonNullable<Options[Name]>>, Name, PluginEntrySettings & {readonly optionKeys: readonly NamedKeys<NonNullable<Options[Name]>>[]}]} EntryFor
+ */
+
+/**
  * The stage members of a host, the options of the walk transforms that the
  * host's walk runs, the passes that run after it, and the options of the
  * transforms of the walk after the passes, and the advanced transforms over its lists.
