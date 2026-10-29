@@ -8,7 +8,10 @@ import {
   buildRecords,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
+import {
+  consistencyChecksEnabled,
+  enableConsistencyChecks,
+} from '../../../../../src/passes/ir/consistencyChecks.js';
 
 const createState = () => {
   const context = createRunContext();
@@ -130,6 +133,7 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
 });
 
 test('canMerge should reject a rule with a nested rule that the tree gained after a read', () => {
+  const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);
   try {
     const { state } = createState();
@@ -138,11 +142,12 @@ test('canMerge should reject a rule with a nested rule that the tree gained afte
     root.first.append(postcss.rule({ selector: '&:hover' }));
     assert.throws(() => state.canMerge(root.first, root.last), /stale/v);
   } finally {
-    enableConsistencyChecks(false);
+    enableConsistencyChecks(wasEnabled);
   }
 });
 
 test('meta should throw when a declaration left the rule without a tree edit', () => {
+  const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);
   try {
     const { state } = createState();
@@ -152,7 +157,7 @@ test('meta should throw when a declaration left the rule without a tree edit', (
     rule.first.remove();
     assert.throws(() => state.meta(rule), /stale/v);
   } finally {
-    enableConsistencyChecks(false);
+    enableConsistencyChecks(wasEnabled);
   }
 });
 

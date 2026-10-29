@@ -33,8 +33,13 @@ export function withTargets(query, { env, stats } = {}) {
  * test names its own input file.
  */
 export function withRepositoryFile(options) {
-  if (options?.from !== undefined || options?.file !== undefined) {
+  if (options?.from !== undefined) {
     return options;
+  }
+  // A named `file` selects the browserslist config; an explicit undefined
+  // `from` keeps PostCSS from warning without overriding it.
+  if (options?.file !== undefined) {
+    return { ...options, from: undefined };
   }
   return { from: repositoryFile, ...options };
 }
