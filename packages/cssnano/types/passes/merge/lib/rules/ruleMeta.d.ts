@@ -27,6 +27,8 @@ export declare class RuleMeta {
      * @param {Declaration[]} declarations
      */
     constructor(selectors: string[], declarations: Declaration[]);
+    /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
+    get departed(): boolean;
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
     /** @return {Declaration[]} */
@@ -54,6 +56,15 @@ export declare class RuleMeta {
      * @return {RuleDeclarationKeys}
      */
     declarationKeys(keyOf: (declaration: Declaration) => number): RuleDeclarationKeys;
+    /**
+     * Whether the rule holds a rule or an at-rule. The answer is read once and
+     * kept: merging adds only declarations and comments to a rule that holds no
+     * block, and `canMerge` never merges one that holds a block.
+     *
+     * @param {Rule} rule the rule this record describes
+     * @return {boolean}
+     */
+    holdsBlocks(rule: Rule): boolean;
     /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}
@@ -107,6 +118,8 @@ export declare class RuleMeta {
      * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
      */
     absorbEarlier(earlier: RuleMeta, lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null): void;
+    /** Marks the record of a rule that left the stylesheet, so a later read throws. */
+    depart(): void;
 }
 /**
  * @param {Rule} rule

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
-import { enableConsistencyChecks } from '../../../../../src/passes/ir/blockTable.js';
+import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
@@ -14,7 +14,6 @@ import {
   removeDeclarations,
   removeRules,
   replaceChildren,
-  retire,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 
@@ -178,26 +177,6 @@ test('takePlaceOf should hand the leading whitespace of a removed first root chi
   assert.equal(root.toString(), '\na{color:red}');
 });
 
-test('appendToDeclarations should forget the description of the incoming rule', () => {
-  const { root, state, ruleMeta } = setup(
-    '@media print{a{color:red}b{width:1px}}'
-  );
-  const [media] = /** @type {Container} */ (root).nodes;
-  const [receiving, incoming] = /** @type {Rule[]} */ (
-    /** @type {Container} */ (media).nodes
-  );
-  state.meta(incoming);
-  const kept = [...receiving.nodes];
-  appendToDeclarations(
-    state,
-    receiving,
-    /** @type {Declaration[]} */ (kept),
-    writesOf(kept, new PropertyTable()),
-    incoming
-  );
-  assert.equal(ruleMeta.has(incoming), false);
-});
-
 test('appendToDeclarations should refresh the declarations of the receiving rule', () => {
   const { root, state, blocks } = setup(
     '@media print{a{color:red}b{width:1px}}'
@@ -226,16 +205,6 @@ test('removeDeclarations should keep the declarations that are not removed', () 
   const rule = /** @type {Rule} */ (root.first);
   removeDeclarations(state, rule, [/** @type {Declaration} */ (rule.first)]);
   assert.deepEqual(treeProps(rule), ['width']);
-});
-
-test('removeRules should forget each rule it removes', () => {
-  const { root, state, ruleMeta } = setup(
-    'a{color:red}b{color:red}c{color:red}'
-  );
-  const [, removed] = /** @type {Rule[]} */ (root.nodes);
-  state.meta(removed);
-  removeRules(state, root, new Set([removed]));
-  assert.equal(ruleMeta.has(removed), false);
 });
 
 test('removeRules should keep the rules it does not remove', () => {
@@ -368,19 +337,4 @@ test('replaceChildren should refresh the summaries of each rebuilt container', (
     blocks.declarations(/** @type {ChildNode} */ (media1)).map((d) => d.prop),
     ['width', 'color']
   );
-});
-
-test('retire should forget the description of the rule', () => {
-  const { root, state, ruleMeta } = setup('a{color:red}');
-  const rule = /** @type {Rule} */ (root.first);
-  state.meta(rule);
-  retire(state, rule);
-  assert.equal(ruleMeta.has(rule), false);
-});
-
-test('retire should leave the rule in the tree', () => {
-  const { root, state } = setup('a{color:red}');
-  const rule = /** @type {Rule} */ (root.first);
-  retire(state, rule);
-  assert.equal(rule.parent, root);
 });

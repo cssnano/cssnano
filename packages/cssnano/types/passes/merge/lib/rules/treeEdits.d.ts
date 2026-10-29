@@ -6,9 +6,9 @@ import type MergeState from './mergeState.js';
 /** @import MergeState from './mergeState.js' */
 /**
  * The only edits that rule merging makes to the live tree. Each one clears the
- * block summaries of the nodes it changes, updates the records of the rules
- * that stay and forgets those of the rules that leave, so a join cannot leave
- * a stale answer behind. Lib code outside this module edits through these names.
+ * block summaries of the nodes it changes and updates the rule records it
+ * touches, so a join cannot leave a stale answer behind. Lib code outside this
+ * module edits through these names.
  */
 /**
  * Appends the children of `from` to `into`, after its own. `from` is left
@@ -104,12 +104,13 @@ export type Rebuilt = {
  */
 export declare function replaceChildren(rebuilt: Rebuilt[]): void;
 /**
- * Forgets a rule that a placement drops. The rule leaves the tree when
- * `replaceChildren` applies the placement.
+ * Marks a rule that a placement drops as departed. The rule leaves the tree
+ * when `replaceChildren` applies the placement, and reading its record throws
+ * from now on.
  *
  * @param {MergeState} mergeState
  * @param {Rule} rule
  * @return {void}
  */
-export declare function retire(mergeState: MergeState, rule: Rule): void;
+export declare function depart(mergeState: MergeState, rule: Rule): void;
 //# sourceMappingURL=treeEdits.d.ts.map

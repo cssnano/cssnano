@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
-import {
-  attachedTableCount,
-  enableConsistencyChecks,
-} from '../../../src/passes/ir/blockTable.js';
+import { attachedTableCount } from '../../../src/passes/ir/blockTable.js';
+import { enableConsistencyChecks } from '../../../src/passes/ir/consistencyChecks.js';
 import { mergePass, transformPlugin } from '../../../src/passes/merge/index.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 

@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
-import {
-  BlockTable,
-  enableConsistencyChecks,
-} from '../../../src/passes/ir/blockTable.js';
+import { BlockTable } from '../../../src/passes/ir/blockTable.js';
+import { enableConsistencyChecks } from '../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { mergePass } from '../../../src/passes/merge/index.js';
 import {

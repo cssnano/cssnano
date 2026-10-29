@@ -9,9 +9,9 @@ import { getDecls } from './ruleMeta.js';
 
 /**
  * The only edits that rule merging makes to the live tree. Each one clears the
- * block summaries of the nodes it changes, updates the records of the rules
- * that stay and forgets those of the rules that leave, so a join cannot leave
- * a stale answer behind. Lib code outside this module edits through these names.
+ * block summaries of the nodes it changes and updates the rule records it
+ * touches, so a join cannot leave a stale answer behind. Lib code outside this
+ * module edits through these names.
  */
 
 /**
@@ -93,6 +93,8 @@ export function appendToDeclarations(
   invalidate(receiving);
   invalidate(incoming);
   const record = mergeState.meta(receiving);
+  // Read before the loop empties `incoming`, while its record still matches it.
+  const departing = mergeState.meta(incoming);
   for (const node of incoming.nodes.slice()) {
     if (node.type === 'decl') {
       const last = index.lastConflict(node);
@@ -106,7 +108,7 @@ export function appendToDeclarations(
     receiving.append(node);
   }
   record.takeDeclarations(kept);
-  mergeState.forget(incoming);
+  departing.depart();
 }
 
 /**
@@ -138,7 +140,7 @@ export function removeRules(mergeState, parent, rules) {
   invalidate(parent);
   const kept = /** @type {ChildNode[]} */ (parent.nodes).filter((node) => {
     if (!rules.has(/** @type {Rule} */ (node))) return true;
-    mergeState.forget(/** @type {Rule} */ (node));
+    mergeState.meta(/** @type {Rule} */ (node)).depart();
     return false;
   });
   parent.removeAll();
@@ -176,13 +178,14 @@ export function replaceChildren(rebuilt) {
 }
 
 /**
- * Forgets a rule that a placement drops. The rule leaves the tree when
- * `replaceChildren` applies the placement.
+ * Marks a rule that a placement drops as departed. The rule leaves the tree
+ * when `replaceChildren` applies the placement, and reading its record throws
+ * from now on.
  *
  * @param {MergeState} mergeState
  * @param {Rule} rule
  * @return {void}
  */
-export function retire(mergeState, rule) {
-  mergeState.forget(rule);
+export function depart(mergeState, rule) {
+  mergeState.meta(rule).depart();
 }
