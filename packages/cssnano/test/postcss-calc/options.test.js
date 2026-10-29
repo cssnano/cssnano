@@ -37,7 +37,7 @@ test(
 );
 
 test(
-  "calc leaves a container `style()` query unchanged, since it matches the custom property as written",
+  'calc leaves a container `style()` query unchanged, since it matches the custom property as written',
   processCSSFactory([plugin({ mediaQueries: true })]).passthroughCSS(
     '@container style(--x:calc(1px + 1px)){a{color:red}}'
   )
