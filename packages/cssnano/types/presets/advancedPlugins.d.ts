@@ -18,6 +18,7 @@ export type AdvancedOnlyPluginOptions = {
     zindex?: import('#postcss-zindex').Options;
 };
 export type AdvancedPluginOptions = import('./defaultPlugins.js').DefaultPluginOptions & AdvancedOnlyPluginOptions;
+/** @import {EntryFor} from './configurePlugins.js' */
 /** @import {SymbolTransform} from '../pipeline/host.js' */
 /**
  * The options of the plugins that only the advanced preset adds.
@@ -38,32 +39,34 @@ export type AdvancedPluginOptions = import('./defaultPlugins.js').DefaultPluginO
  *
  * @lintignore
  */
-export declare const advancedPluginEntries: readonly [readonly [{
-    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
-}, 'discardUnused', {
-    readonly optionKeys: readonly ['fontFace', 'counterStyle', 'keyframes', 'namespace'];
-    readonly transform: true;
-    readonly symbols: SymbolTransform;
-}], readonly [{
-    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
-}, 'mergeIdents', {
-    readonly optionKeys: readonly [];
-    readonly transform: true;
-    readonly symbols: SymbolTransform;
-}], readonly [{
-    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => {
+export declare const advancedPluginEntries: readonly [[{
+    create: (
+    /** @type {import('#postcss-discard-unused').Options} */ options: import('#postcss-discard-unused').Options) => import("#postcss-discard-unused").Options;
+}, "discardUnused", {
+    optionKeys: ("counterStyle" | "fontFace" | "keyframes" | "namespace")[];
+    transform: true;
+    symbols: SymbolTransform;
+}], [{
+    create: (/** @type {Record<string, never>} */ options: Record<string, never>) => Record<string, never>;
+}, "mergeIdents", {
+    optionKeys: never[];
+    transform: true;
+    symbols: SymbolTransform;
+}], [{
+    create: (
+    /** @type {import('#postcss-reduce-idents').Options} */ options: import('#postcss-reduce-idents').Options) => {
         reducers: import("#postcss-reduce-idents").Reducer[];
     };
-}, 'reduceIdents', {
-    readonly optionKeys: readonly ['counter', 'counterStyle', 'keyframes', 'gridTemplate', 'encoder'];
-    readonly transform: true;
-    readonly symbols: SymbolTransform;
-}], readonly [{
-    readonly create: (/** @type {Record<PropertyKey, unknown>} */ options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown>;
-}, 'zindex', {
-    readonly optionKeys: readonly ['startIndex'];
-    readonly transform: true;
-    readonly symbols: SymbolTransform;
+}, "reduceIdents", {
+    optionKeys: ("counter" | "counterStyle" | "encoder" | "gridTemplate" | "keyframes")[];
+    transform: true;
+    symbols: SymbolTransform;
+}], [{
+    create: (/** @type {import('#postcss-zindex').Options} */ options: import('#postcss-zindex').Options) => import("#postcss-zindex").Options;
+}, "zindex", {
+    optionKeys: "startIndex"[];
+    transform: true;
+    symbols: SymbolTransform;
 }]];
 /**
  * Every plugin the advanced preset runs: the default ones, then the advanced ones.

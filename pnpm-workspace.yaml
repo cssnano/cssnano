@@ -22,3 +22,5 @@ minimumReleaseAgeExclude:
 versioning:
   changelog:
     storage: repository
+overrides:
+  postcss-calc: link:/home/ludovico/projects/scratch/postcss-calc

@@ -19,11 +19,11 @@ type Equal<A, B> =
 type OptionKeysOf<Creator> = Creator extends (...args: infer Args) => unknown
   ? Args extends []
     ? never
-    : keyof NonNullable<Args[0]>
+    : NamedKeysOf<NonNullable<Args[0]>>
   : Creator extends { create: (...args: infer Args) => unknown }
     ? Args extends []
       ? never
-      : keyof NonNullable<Args[0]>
+      : NamedKeysOf<NonNullable<Args[0]>>
     : never;
 
 /** The named keys of an options type; `Record<string, never>` takes none. */

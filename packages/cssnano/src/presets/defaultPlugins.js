@@ -16,6 +16,7 @@ import postcssNormalizePositions from '#postcss-normalize-positions';
 import postcssNormalizeUnicode from '#postcss-normalize-unicode';
 import normalizeDisplayValues from '#postcss-normalize-display-values';
 import normalizeTimingFunctions from '#postcss-normalize-timing-functions';
+/** @import {EntryFor} from './configurePlugins.js' */
 import { mergePass, rulesGuard } from '../passes/merge/index.js';
 import {
   discardCommentsEntry,
@@ -63,17 +64,19 @@ import {
  * Only `rules` can be turned off, because longhand merging and duplicate removal
  * always run together.
  */
-const mergeEntry = /** @type {const} */ ([
-  { create: (/** @type {Record<PropertyKey, unknown>} */ options) => options },
-  'merge',
-  {
-    targets: true,
-    transform: true,
-    pass: mergePass,
-    optionKeys: ['rules'],
-    guards: { rules: rulesGuard },
-  },
-]);
+const mergeEntry = /** @satisfies {EntryFor<DefaultPluginOptions, 'merge'>} */ (
+  /** @type {const} */ ([
+    { create: (/** @type {{rules?: boolean}} */ options) => options },
+    'merge',
+    {
+      targets: true,
+      transform: true,
+      pass: mergePass,
+      optionKeys: ['rules'],
+      guards: { rules: rulesGuard },
+    },
+  ])
+);
 
 /**
  * The plugins of the default preset, in the order they run, each with the
@@ -81,18 +84,32 @@ const mergeEntry = /** @type {const} */ ([
  */
 export const defaultPluginEntries = /** @type {const} */ ([
   discardCommentsEntry,
-  [minifyGradients, 'minifyGradients', { optionKeys: [] }],
-  [
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'minifyGradients'>} */ ([
+    minifyGradients,
+    'minifyGradients',
+    { optionKeys: [] },
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'reduceInitial'>} */ ([
     reduceInitial,
     'reduceInitial',
     {
       targets: true,
       optionKeys: ['ignore'],
     },
-  ],
-  [normalizeDisplayValues, 'normalizeDisplayValues', { optionKeys: [] }],
-  [reduceTransforms, 'reduceTransforms', { optionKeys: [] }],
-  [
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizeDisplayValues'>} */ ([
+    normalizeDisplayValues,
+    'normalizeDisplayValues',
+    {
+      optionKeys: [],
+    },
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'reduceTransforms'>} */ ([
+    reduceTransforms,
+    'reduceTransforms',
+    { optionKeys: [] },
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'colormin'>} */ ([
     colormin,
     'colormin',
     {
@@ -107,9 +124,15 @@ export const defaultPluginEntries = /** @type {const} */ ([
         'transformCustomProperties',
       ],
     },
-  ],
-  [normalizeTimingFunctions, 'normalizeTimingFunctions', { optionKeys: [] }],
-  [
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizeTimingFunctions'>} */ ([
+    normalizeTimingFunctions,
+    'normalizeTimingFunctions',
+    {
+      optionKeys: [],
+    },
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'calc'>} */ ([
     calc,
     'calc',
     {
@@ -122,8 +145,8 @@ export const defaultPluginEntries = /** @type {const} */ ([
         'onParseError',
       ],
     },
-  ],
-  [
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'convertValues'>} */ ([
     postcssConvertValues,
     'convertValues',
     {
@@ -138,9 +161,13 @@ export const defaultPluginEntries = /** @type {const} */ ([
         'frequency',
       ],
     },
-  ],
-  [postcssOrderedValues, 'orderedValues', { optionKeys: [] }],
-  [
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'orderedValues'>} */ ([
+    postcssOrderedValues,
+    'orderedValues',
+    { optionKeys: [] },
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'minifySelectors'>} */ ([
     postcssMinifySelectors,
     'minifySelectors',
     {
@@ -148,11 +175,20 @@ export const defaultPluginEntries = /** @type {const} */ ([
       defaults: { sort: true },
       optionKeys: ['sort', 'convertToIs'],
     },
-  ],
-  [postcssMinifyParams, 'minifyParams', { targets: true, optionKeys: [] }],
-  [
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'minifyParams'>} */ ([
+    postcssMinifyParams,
+    'minifyParams',
     {
-      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+      targets: true,
+      optionKeys: [],
+    },
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizeCharset'>} */ ([
+    {
+      create: (
+        /** @type {import('#postcss-normalize-charset').Options} */ options
+      ) => options,
     },
     'normalizeCharset',
     {
@@ -161,46 +197,60 @@ export const defaultPluginEntries = /** @type {const} */ ([
       transform: true,
       after: true,
     },
-  ],
-  [
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizeString'>} */ ([
     postcssNormalizeString,
     'normalizeString',
     {
       optionKeys: ['preferredQuote'],
     },
-  ],
-  [
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizeUnicode'>} */ ([
     postcssNormalizeUnicode,
     'normalizeUnicode',
     {
       targets: true,
       optionKeys: [],
     },
-  ],
-  [
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'minifyFontValues'>} */ ([
     postcssMinifyFontValues,
     'minifyFontValues',
     {
       optionKeys: ['removeAfterKeyword', 'removeDuplicates', 'removeQuotes'],
     },
-  ],
-  [postcssNormalizeUrl, 'normalizeUrl', { optionKeys: [] }],
-  [normalizeRepeatStyle, 'normalizeRepeatStyle', { optionKeys: [] }],
-  [postcssNormalizePositions, 'normalizePositions', { optionKeys: [] }],
-  [
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizeUrl'>} */ ([
+    postcssNormalizeUrl,
+    'normalizeUrl',
+    { optionKeys: [] },
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizeRepeatStyle'>} */ ([
+    normalizeRepeatStyle,
+    'normalizeRepeatStyle',
+    { optionKeys: [] },
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizePositions'>} */ ([
+    postcssNormalizePositions,
+    'normalizePositions',
+    {
+      optionKeys: [],
+    },
+  ]),
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'discardOverridden'>} */ ([
     postcssDiscardOverridden,
     'discardOverridden',
     {
       optionKeys: [],
       transform: true,
     },
-  ],
+  ]),
   normalizeWhitespaceEntry,
   mergeEntry,
   discardEmptyEntry,
-  [
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'uniqueSelectors'>} */ ([
     {
-      create: (/** @type {Record<PropertyKey, unknown>} */ options) => options,
+      create: (/** @type {Record<string, never>} */ options) => options,
     },
     'uniqueSelectors',
     {
@@ -208,6 +258,6 @@ export const defaultPluginEntries = /** @type {const} */ ([
       transform: true,
       after: true,
     },
-  ],
+  ]),
   rawCacheEntry,
 ]);
