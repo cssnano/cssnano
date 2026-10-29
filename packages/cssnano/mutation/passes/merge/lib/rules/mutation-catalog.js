@@ -176,7 +176,7 @@ export const mutations = [
   {
     name: 'a removal of a block that leaves its entry in place',
     target: source('treeEdits.js'),
-    find: '  holder.children[index] = new Slot(holder, index, []);\n',
+    find: '  holder.children[position] = new Slot(holder, position, []);\n',
     replace: '',
   },
   {
