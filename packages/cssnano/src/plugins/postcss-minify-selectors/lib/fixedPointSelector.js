@@ -9,6 +9,18 @@ function isNameCode(code) {
   );
 }
 
+/** @param {number} code */
+function isPseudoNameStartCode(code) {
+  return code >= 97 && code <= 122;
+}
+
+/** @param {number} code */
+function isPseudoNameCode(code) {
+  return (
+    (code >= 48 && code <= 57) || (code >= 97 && code <= 122) || code === 45
+  );
+}
+
 /**
  * Classifies a narrow set of selector spellings that normalization cannot
  * change. This is not a CSS validity or canonical-syntax parser.
@@ -34,6 +46,19 @@ export function isFixedPointSelector(source) {
         index++;
       }
       if (index === subclassStart) return false;
+    }
+
+    while (source[index] === ':') {
+      index++;
+      if (!isPseudoNameStartCode(source.charCodeAt(index))) return false;
+      index++;
+      while (
+        index < source.length &&
+        isPseudoNameCode(source.charCodeAt(index))
+      ) {
+        index++;
+      }
+      if (source[index] === '(') return false;
     }
 
     if (index === source.length) return true;
