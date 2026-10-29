@@ -18,7 +18,7 @@ test(
 );
 
 test(
-  'a comment inside calc() is dropped, as PostCSS parses the value, before reducing',
+  'postcss-calc reduces a calc() whose comment tokens it skips',
   processCSS('a{width:calc(1px /* c */ + 2px)}', 'a{width:calc(3px)}')
 );
 
