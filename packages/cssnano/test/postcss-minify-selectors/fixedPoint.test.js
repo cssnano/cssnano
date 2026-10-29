@@ -37,7 +37,6 @@ test('classifies generated fixed-point selectors consistently with normalization
 
 test('rejects selectors outside the narrow fixed-point grammar', () => {
   for (const selector of [
-    '.a:hover',
     '.a,.b',
     '[data-value]',
     '.escaped\\+name',
@@ -50,6 +49,55 @@ test('rejects selectors outside the narrow fixed-point grammar', () => {
     '.a ',
     '.café',
     '& .a',
+  ]) {
+    assert.equal(isFixedPointSelector(selector), false, selector);
+  }
+});
+
+test('accepts a lowercase pseudo-class after a compound names its element and classes', () => {
+  for (const selector of [
+    '.btn:hover',
+    'a:focus-visible',
+    'li:first-child',
+    '.x:not-a-function',
+    '.a:hover .b:focus',
+    '.a.b:hover',
+  ]) {
+    assert.equal(isFixedPointSelector(selector), true, selector);
+  }
+});
+
+test('every selector the fixed-point check accepts is left unchanged by normalizeList', () => {
+  for (const selector of [
+    'a',
+    '.a.b#c .d',
+    '.btn:hover',
+    'a:focus-visible',
+    'li:first-child',
+    '.x:not-a-function',
+    '.a:hover .b:focus',
+    '.a:before',
+    '.a:hover:before',
+  ]) {
+    assert.equal(isFixedPointSelector(selector), true, selector);
+    assert.equal(
+      normalizeList(selector, true, true, false, false),
+      selector,
+      selector
+    );
+  }
+});
+
+test('rejects pseudo-elements, uppercase, vendor and functional pseudo-class names', () => {
+  for (const selector of [
+    'a::before',
+    'a:HOVER',
+    'a:hoVer',
+    'a:-moz-focusring',
+    'a:is(b)',
+    'a:hover:',
+    'a:hover::before',
+    'a:9x',
   ]) {
     assert.equal(isFixedPointSelector(selector), false, selector);
   }

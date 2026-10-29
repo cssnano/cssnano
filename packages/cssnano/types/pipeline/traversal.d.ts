@@ -1,29 +1,33 @@
-import type { AtRule, Container, Document, Helpers, Root } from 'postcss';
-import type { Reducer, Stage, TextReducer } from './host.js';
+import type { AtRule, Container, Document, Helpers, Root, Rule } from 'postcss';
+import type { Stage } from './host.js';
+import type { PlanEntry } from './plan.js';
+import type { TextTable } from '../values/textTable.js';
 import type { CommentState } from './comments/nodeComments.js';
-export type PropertyEntry = {
-    plan: readonly Reducer[] | null;
-    memos: (Map<string, string> | undefined)[];
-    mode: import('../values/valueBuffer.js').TokenizeMode | undefined;
-};
-export type TextEntry = {
-    plan: readonly TextReducer[] | null;
-    memos: (Map<string, string> | undefined)[];
-    tightens: boolean;
-};
+import type { CSSToken } from '@csstools/css-tokenizer';
 export type RunState = {
     /**
      * in pipeline order
      */
     stages: readonly Stage[];
-    properties: Map<string, PropertyEntry>;
+    properties: Map<string, PlanEntry>;
     /**
      * by at-rule name
      */
-    atRules: Map<string, TextEntry>;
-    selectors: TextEntry;
+    atRules: Map<string, PlanEntry>;
+    selectors: PlanEntry;
     contexts: WeakMap<Container | Document, number>;
     helpers: Helpers;
+    /**
+     * the text table the walk fills
+     */
+    table: TextTable;
+    /**
+     * the token lists of the values, by tokenizer mode
+     */
+    valueLists: {
+        plain: Map<string, readonly CSSToken[]>;
+        unicodeRange: Map<string, readonly CSSToken[]>;
+    };
     /**
      * the comment removal of this run, or null when no stage removes comments
      */
@@ -40,6 +44,10 @@ export type RunState = {
      * the outermost overridable at-rules in document order, or null when discardOverridden is off
      */
     overridable: AtRule[] | null;
+    /**
+     * receives the rules and at-rules in document order, or null when no pass reads them
+     */
+    blocks: (Rule | AtRule)[] | null;
 };
 /**
  * Runs the comment, value, prelude and selector parts of the stages over a
@@ -51,6 +59,9 @@ export type RunState = {
  * @param {Root} root
  * @param {Helpers} helpers
  * @param {ReadonlyMap<string, unknown>} transforms the whole-stylesheet transforms of the run, by entry name
+ * @param {TextTable} table the selector and value tokens the walk leaves for later readers
+ * @param {(Rule | AtRule)[] | null} [blocks] receives the rules and at-rules still in the
+ *   stylesheet after the walk, in document order, so a pass need not walk it again
  */
-export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers, transforms: ReadonlyMap<string, unknown>): void;
+export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers, transforms: ReadonlyMap<string, unknown>, table: TextTable, blocks?: (Rule | AtRule)[] | null): void;
 //# sourceMappingURL=traversal.d.ts.map

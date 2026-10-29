@@ -11,6 +11,7 @@ export type ParsedDeclarations = Map<Declaration, [string | null, string | null]
  * @param {[Declaration[], Declaration[]]} lanes - the declarations and `all`
  *   split by importance
  * @return {void}
+ * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export declare function reduceAlignmentFamily(rule: Container, family: AlignmentFamilyConfig, declarations: Declaration[], lanes: [Declaration[], Declaration[]]): void;
+export declare function reduceAlignmentFamily(rule: Container, family: AlignmentFamilyConfig, declarations: Declaration[], lanes: [Declaration[], Declaration[]], textTable: import('../../../../../values/textTable.js').TextTable): void;
 //# sourceMappingURL=alignmentReducer.d.ts.map

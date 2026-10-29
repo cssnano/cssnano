@@ -4,14 +4,15 @@ import {
   isTokenDelim,
   isTokenIdent,
   isTokenWhitespace,
-  tokenize,
 } from '@csstools/css-tokenizer';
 import { list } from 'postcss';
 import cssnanoUtils from '#utils';
 import { createSymbolLists, symbolVisit } from '../../pipeline/symbolLists.js';
+import { TextTable } from '../../values/textTable.js';
 
 /** @import {AtRule, Declaration} from 'postcss' */
 /** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 const { asciiLowerCase } = cssnanoUtils;
 const wildcard = true;
@@ -46,11 +47,11 @@ function filterAtRule(atRules, names, remove) {
 }
 
 /**
- * @param {string} source
+ * @param {readonly CSSToken[]} prelude the tokens of the @namespace prelude
  * @return {string | true | undefined}
  */
-function namespacePrefix(source) {
-  for (const token of tokenize({ css: source })) {
+function namespacePrefix(prelude) {
+  for (const token of prelude) {
     if (isTokenWhitespace(token) || isTokenComment(token)) continue;
     return namespacePrefixToken(token);
   }
@@ -69,14 +70,14 @@ function namespacePrefixToken(token) {
 /**
  * Find namespace prefixes in each selector-list item. A comma resets the
  * candidate prefix so a type selector in an earlier item cannot be mistaken
- * for the prefix of a later qualified selector. Intervening whitespace or
- * comments also reset the candidate prefix because CSS qualified names cannot
- * contain whitespace between the prefix, '|', and the element/attribute name.
+ * for the prefix of a later qualified selector. Whitespace also resets it,
+ * since qualified names cannot contain whitespace. Comments are removed before
+ * parsing, so they do not reset it.
  *
- * @param {string} source
+ * @param {readonly CSSToken[]} tokens the tokens of the selector as written
  * @return {(string | true)[]}
  */
-function namespacePrefixes(source) {
+function namespacePrefixes(tokens) {
   /** @type {(string | true)[]} */
   const prefixes = [];
   /** @type {import('@csstools/css-tokenizer').CSSToken | undefined} */
@@ -84,13 +85,14 @@ function namespacePrefixes(source) {
   /** @type {string | true | undefined} */
   let pendingPrefix;
 
-  for (const token of tokenize({ css: source })) {
+  for (const token of tokens) {
+    if (isTokenComment(token)) continue;
     if (isTokenComma(token)) {
       previous = undefined;
       pendingPrefix = undefined;
       continue;
     }
-    if (isTokenWhitespace(token) || isTokenComment(token)) {
+    if (isTokenWhitespace(token)) {
       previous = undefined;
       pendingPrefix = undefined;
       continue;
@@ -119,12 +121,13 @@ function namespacePrefixes(source) {
  * @param {AtRule[]} atRules
  * @param {Set<string | true>} prefixes
  * @param {(node: AtRule) => void} remove
+ * @param {TextTable} table the @namespace preludes the walk stored
  * @return {void}
  */
-function filterNamespace(atRules, prefixes, remove) {
+function filterNamespace(atRules, prefixes, remove, table) {
   const usesAny = prefixes.has(wildcard);
   for (const atRule of atRules) {
-    const prefix = namespacePrefix(atRule.params);
+    const prefix = namespacePrefix(table.tokens(atRule));
 
     if (prefix === undefined) {
       if (!atRule.params.trim()) remove(atRule);
@@ -195,9 +198,10 @@ function filterFont(atRules, decls, remove) {
  * @param {SymbolLists} lists
  * @param {Options} options
  * @param {(node: AtRule) => void} remove
+ * @param {TextTable} table the selector tokens the walk stored
  * @return {void}
  */
-export function discardUnusedSymbols(lists, options, remove) {
+export function discardUnusedSymbols(lists, options, remove, table) {
   const { fontFace, counterStyle, keyframes, namespace } = {
     fontFace: true,
     counterStyle: true,
@@ -215,7 +219,7 @@ export function discardUnusedSymbols(lists, options, remove) {
   const prefixes = new Set();
   if (namespace) {
     for (const rule of lists.namespaceRules) {
-      for (const prefix of namespacePrefixes(rule.selector)) {
+      for (const prefix of namespacePrefixes(table.tokens(rule))) {
         prefixes.add(prefix);
       }
     }
@@ -226,7 +230,7 @@ export function discardUnusedSymbols(lists, options, remove) {
   }
   if (fontFace) filterFont(lists.fontFaces, lists.fontDecls, remove);
   if (keyframesNames) filterAtRule(lists.keyframes, keyframesNames, remove);
-  if (namespace) filterNamespace(lists.namespaces, prefixes, remove);
+  if (namespace) filterNamespace(lists.namespaces, prefixes, remove, table);
 }
 
 /**
@@ -242,7 +246,12 @@ function pluginCreator(opts) {
     OnceExit(css) {
       const lists = createSymbolLists();
       css.walk(symbolVisit(lists));
-      discardUnusedSymbols(lists, opts, (node) => node.remove());
+      discardUnusedSymbols(
+        lists,
+        opts,
+        (node) => node.remove(),
+        new TextTable()
+      );
     },
   };
 }

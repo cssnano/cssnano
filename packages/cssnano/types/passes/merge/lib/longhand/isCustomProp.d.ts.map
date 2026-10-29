@@ -1,1 +1,1 @@
-{"version":3,"file":"isCustomProp.d.ts","sourceRoot":"","sources":["../../../../../src/passes/merge/lib/longhand/isCustomProp.js"],"names":[],"mappings":";AAGA,kDAAkD;0BAClC,IAAI,EADR,OAAO,SAAS,EAAE,WACV"}
+{"version":3,"file":"isCustomProp.d.ts","sourceRoot":"","sources":["../../../../../src/passes/merge/lib/longhand/isCustomProp.js"],"names":[],"mappings":"AAGA;;;;;GAKG;AACH,wBAAgB,sBAAsB,CAAC,KAAK,EAHjC,SAAS,OAAO,yBAAyB,EAAE,QAAQ,EAGlB,GAFhC,OAAO,CAsBlB;;AAED;;;GAGG;0BACa,IAAI,EAHT,OAAO,SAAS,EAAE,WAGT,EAAE,SAAS,EAFpB,OAAO,iCAAiC,EAAE,SAEtB"}

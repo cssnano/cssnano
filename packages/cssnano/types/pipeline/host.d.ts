@@ -1,30 +1,30 @@
+import { TextTable } from '../values/textTable.js';
 import type { Plugin } from 'postcss';
 import type { ValueBuffer } from '../values/valueBuffer.js';
 export type Reducer = (buffer: ValueBuffer, context: number) => void;
 export type Warn = (message: string, plugin?: string) => void;
-export type TextReducer = (text: string, context: number, warn: Warn) => string;
-export type AtRulePart = TextReducer | {
-    reduce: TextReducer;
-    tightensAfterName: true;
+export type AtRulePart = {
+    buffer: Reducer;
+    tightensAfterName?: true;
 };
 export type Stage = {
     forProperty?: (property: string) => Reducer | null;
     forAtRule?: (name: string) => AtRulePart | null;
-    selector?: TextReducer;
+    selector?: Reducer;
     comments?: () => (comment: string) => boolean;
 };
-export type StageEntry = {
-    create: (options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined) => Stage | null;
+export type StageEntry<Options = Record<PropertyKey, unknown>> = {
+    create(options: Options, targets: readonly string[] | undefined): Stage | null;
 };
 export type PassRun = {
-    pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result) => void;
+    pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result, table: TextTable, blocks: readonly (import('postcss').Rule | import('postcss').AtRule)[] | undefined) => void;
     options: Record<PropertyKey, unknown>;
     targets: boolean;
 };
-export type TransformEntry = {
-    create: (options: Record<PropertyKey, unknown>) => Record<PropertyKey, unknown> | null;
+export type TransformEntry<Options = Record<PropertyKey, unknown>> = {
+    create(options: Options): Record<PropertyKey, unknown> | null;
 };
-export type SymbolTransform = (lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void) => void;
+export type SymbolTransform = (lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void, table: TextTable) => void;
 export type HostMember = {
     entry: StageEntry;
     options: Record<PropertyKey, unknown>;

@@ -1,4 +1,3 @@
-import type { StageEntry } from '../../pipeline/host.js';
 export type Options = {
     /**
      * Removes comments marked as important (`/*!`) too. (default: false)
@@ -23,8 +22,12 @@ export type Options = {
  * The comment part of the stage. The walk calls `comments` once per stylesheet,
  * so each stylesheet counts its own first important comment.
  *
- * @type {StageEntry}
+ * @satisfies {StageEntry}
  */
-declare const discardComments: StageEntry;
+declare const discardComments: {
+    create(options: Options): {
+        comments(): (text: string) => boolean;
+    };
+};
 export { discardComments as default };
 //# sourceMappingURL=index.d.ts.map

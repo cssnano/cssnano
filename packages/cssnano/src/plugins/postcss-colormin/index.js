@@ -2,7 +2,8 @@ import { tryMinifyColor } from './minifyColor.js';
 import cssnanoUtils from '#utils';
 import { supportsAll, targetsAreUnknown } from '#utils/browser-support';
 import colorPropertiesData from './data/colorProperties.json' with { type: 'json' };
-import { hash, ident, whitespace } from '../../values/tokenConstructors.js';
+import { hash, ident } from '../../values/tokenConstructors.js';
+import { whitespace } from '../../values/punctuationTokens.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const {

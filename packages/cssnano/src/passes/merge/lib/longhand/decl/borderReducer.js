@@ -1,11 +1,11 @@
 import cssnanoUtils from '#utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { discardOverriddenInList } from './overriddenDeclarations.js';
-import { list } from 'postcss';
 import minifyTrbl from '../minifyTrbl.js';
 import minifyWidthStyleColor from '../minifyWsc.js';
-import parseTrbl from '../parseTrbl.js';
+import { expandFourSides } from '../parseTrbl.js';
 import parseWidthStyleColor from '../parseWsc.js';
+import { declarationTokens, splitComponents } from '../componentRanges.js';
 import { setsLonghands } from '../spec.js';
 import { detectDeclaration } from '#stylehacks';
 import hasSubstitution from '../hasSubstitution.js';
@@ -15,7 +15,11 @@ import {
   mergeBlockingSupport,
   strandsFallback,
 } from '../isFallback.js';
-import { isValidWidthStyleColor, specifiesComponent } from '../validateWsc.js';
+import {
+  isValidWidthStyleColor,
+  namesComponent,
+  specifiesComponent,
+} from '../validateWsc.js';
 import {
   allPhysicalBorderProperties,
   allSidesBorderShorthands,
@@ -33,122 +37,169 @@ import {
 
 const { asciiLowerCase } = cssnanoUtils;
 /** @import {Container, Declaration} from 'postcss'; */
+/** @import {TextTable} from '../../../../../values/textTable.js'; */
+/** @import {ValueComponent} from '../componentRanges.js' */
 
 /**
  * @param {Declaration} declaration
+ * @param {TextTable} textTable the tokens the walk left for the declaration
  * @return {boolean}
  */
-function borderBrowserKeeps(declaration) {
+function borderBrowserKeeps(declaration, textTable) {
   if (isCssWideKeyword(declaration.value)) {
     return true;
   }
   const prop = asciiLowerCase(declaration.prop);
+  const tokens = declarationTokens(textTable, declaration);
   if (borderAndSideShorthands.has(prop)) {
-    return parseWidthStyleColor(declaration.value) !== null;
+    return parseWidthStyleColor(declaration.value, tokens) !== null;
   }
   const component = /** @type {string} */ (prop.split('-').at(-1));
   if (!allSidesBorderShorthands.includes(prop)) {
-    return specifiesComponent(declaration.value, component);
+    return specifiesComponent(declaration.value, tokens, component);
   }
-  if (list.space(declaration.value).length > sides.length) return false;
-  return parseTrbl(declaration.value).every((v) =>
-    specifiesComponent(v, component)
+  const parts = splitComponents(declaration.value, tokens);
+  if (parts.length > sides.length) return false;
+  return expandFourSides(parts).every((part) =>
+    namesComponent(part, component)
   );
 }
 
-/** @param {Declaration} d */
-function normalizeBorderSingleton(d) {
-  if (detectDeclaration(d) || !canExplode(d)) return;
+/**
+ * @param {Declaration} d
+ * @param {TextTable} textTable
+ */
+function normalizeBorderSingleton(d, textTable) {
+  if (detectDeclaration(d) || !canExplode(d, textTable)) return;
   const p = asciiLowerCase(d.prop);
   if (borderAndSideShorthands.has(p)) {
     d.prop = p;
-    d.value = minifyWidthStyleColor(d.value);
-    delete d.raws?.value;
+    textTable.setText(
+      d,
+      minifyWidthStyleColor(d.value, declarationTokens(textTable, d))
+    );
   } else if (allSidesBorderShorthands.includes(p)) {
     d.prop = p;
-    d.value = minifyTrbl(d.value);
-    delete d.raws?.value;
+    textTable.setText(d, minifyTrbl(d.value));
   }
 }
 /**
  * @param {Declaration} prev
  * @param {Declaration} d
+ * @param {TextTable} textTable
  * @return {boolean}
  */
-function isDeclarationFallback(prev, d) {
+function isDeclarationFallback(prev, d, textTable) {
   if (asciiLowerCase(prev.prop) === asciiLowerCase(d.prop)) {
-    return isFallback(prev, d);
+    return isFallback(prev, d, textTable);
   }
-  return mergeBlockingSupport(d).size > 0 && isFallback(prev, d);
+  return (
+    mergeBlockingSupport(d, textTable).size > 0 &&
+    isFallback(prev, d, textTable)
+  );
 }
 /**
  * @param {number} idx
  * @param {Declaration} d
  * @param {string} value
+ * @param {ValueComponent | undefined} part the component `value` is, when the
+ * declaration's value split into components
  * @param {boolean} isBarrier
- * @param {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
+ * @param {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
+ * @param {TextTable} textTable
  */
-function updateCell(idx, d, value, isBarrier, state) {
+function updateCell(idx, d, value, part, isBarrier, state, textTable) {
   for (const prev of state.cellHistory[idx]) {
-    if (isDeclarationFallback(prev, d)) state.fallbacks.add(prev);
+    if (isDeclarationFallback(prev, d, textTable)) state.fallbacks.add(prev);
   }
   if (isBarrier) {
     state.barrierCells.add(idx);
   } else {
     state.barrierCells.delete(idx);
     state.cells[idx] = value;
+    state.cellComponents[idx] = part;
   }
   state.cellHistory[idx].add(d);
   state.touched.add(idx);
 }
 /**
  * @param {Declaration} d
- * @param {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
+ * @param {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
+ * @param {TextTable} textTable
  */
-function applySegmentDeclaration(d, state) {
+function applySegmentDeclaration(d, state, textTable) {
   const prop = asciiLowerCase(d.prop);
+  const tokens = declarationTokens(textTable, d);
   // Segment members passed the family guard: no global keyword, explodable.
-  const isBarrier = hasSubstitution(d.value);
+  const isBarrier = hasSubstitution(d.value, tokens);
 
   if (borderAndSideShorthands.has(prop)) {
     const isB = prop === 'border';
     const sList = isB ? [0, 1, 2, 3] : [sides.indexOf(prop.slice(7))];
-    const parsed = parseWidthStyleColor(d.value);
+    const parsed = parseWidthStyleColor(d.value, tokens);
     // borderBrowserKeeps gated this declaration; a null here would mean an ignored
     // value flowing into cell state, so never name components from it.
     if (!parsed) return;
-    const { width: w, style: st, color: clr } = parsed;
+    const { width: w, style: st, color: clr, parts } = parsed;
     const triple = [w || 'medium', st || 'none', clr || 'currentcolor'];
+    const componentParts = [parts.width, parts.style, parts.color];
     for (const s of sList) {
       for (let c = 0; c < 3; c++) {
-        updateCell(s * 3 + c, d, triple[c], isBarrier, state);
+        updateCell(
+          s * 3 + c,
+          d,
+          triple[c],
+          componentParts[c],
+          isBarrier,
+          state,
+          textTable
+        );
       }
     }
     if (isB && !isBarrier && isValidWidthStyleColor(parsed))
       state.resetFound = true;
   } else if (allSidesBorderShorthands.includes(prop)) {
     const c = components.indexOf(prop.slice(7));
-    const vals = parseTrbl(d.value);
+    const parts = expandFourSides(splitComponents(d.value, tokens));
     for (let s = 0; s < 4; s++) {
-      updateCell(s * 3 + c, d, vals[s], isBarrier, state);
+      updateCell(
+        s * 3 + c,
+        d,
+        parts[s]?.raw,
+        parts[s],
+        isBarrier,
+        state,
+        textTable
+      );
     }
   } else {
     const [sName, cName] = prop.slice(7).split('-');
     const s = sides.indexOf(sName);
     const c = components.indexOf(cName);
     if (s !== -1 && c !== -1) {
-      updateCell(s * 3 + c, d, d.value, isBarrier, state);
+      const parts = splitComponents(d.value, tokens);
+      updateCell(
+        s * 3 + c,
+        d,
+        d.value,
+        parts.length === 1 ? parts[0] : undefined,
+        isBarrier,
+        state,
+        textTable
+      );
     }
   }
 }
 /**
  * @param {Declaration[]} segment
- * @return {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }}
+ * @param {TextTable} textTable
+ * @return {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }}
  */
-function analyzeSegment(segment) {
-  /** @type {{ cells: string[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} */
+function analyzeSegment(segment, textTable) {
+  /** @type {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} */
   const state = {
     cells: Array.from({ length: 12 }, () => ''),
+    cellComponents: Array.from({ length: 12 }),
     cellHistory: Array.from({ length: 12 }, () => new Set()),
     touched: new Set(),
     barrierCells: new Set(),
@@ -156,7 +207,7 @@ function analyzeSegment(segment) {
     resetFound: false,
   };
   for (const d of segment) {
-    applySegmentDeclaration(d, state);
+    applySegmentDeclaration(d, state, textTable);
   }
   return state;
 }
@@ -165,29 +216,32 @@ function analyzeSegment(segment) {
  * @param {Container} rule
  * @param {Declaration[]} segment
  * @param {boolean} lane
+ * @param {TextTable} textTable
  */
-function reduceSegment(rule, segment, lane) {
+function reduceSegment(rule, segment, lane, textTable) {
   if (segment.length === 0) return;
   if (segment.length === 1) {
     const d = segment[0];
     if (allSidesBorderShorthands.includes(asciiLowerCase(d.prop))) {
-      d.value = minifyTrbl(d.value);
+      textTable.setText(d, minifyTrbl(d.value));
     }
     return;
   }
 
-  const state = analyzeSegment(segment);
+  const state = analyzeSegment(segment, textTable);
   if (state.touched.size === 0) return;
 
   const hasReset = state.resetFound;
   const candidates = generateCandidates(
     state.cells,
+    state.cellComponents,
     state.cellHistory,
     state.touched,
     state.barrierCells,
     hasReset,
     lane,
-    state.fallbacks
+    state.fallbacks,
+    textTable
   );
 
   const best = selectBestCandidate(
@@ -200,22 +254,23 @@ function reduceSegment(rule, segment, lane) {
   );
   if (!best) return;
 
-  applyBestCandidate(rule, best, segment, lane);
+  applyBestCandidate(rule, best, segment, lane, textTable);
 }
 
 /**
  * @param {Container} rule
  * @param {Declaration[]} laneDecls
  * @param {boolean} lane
+ * @param {TextTable} textTable
  */
-function processLane(rule, laneDecls, lane) {
+function processLane(rule, laneDecls, lane, textTable) {
   /** @type {Declaration[]} */
   let segment = [];
 
   for (const d of laneDecls) {
-    if (detectDeclaration(d) || !canExplode(d)) {
+    if (detectDeclaration(d) || !canExplode(d, textTable)) {
       if (segment.length) {
-        reduceSegment(rule, segment, lane);
+        reduceSegment(rule, segment, lane, textTable);
         segment = [];
       }
       continue;
@@ -224,7 +279,7 @@ function processLane(rule, laneDecls, lane) {
   }
 
   if (segment.length) {
-    reduceSegment(rule, segment, lane);
+    reduceSegment(rule, segment, lane, textTable);
   }
 }
 
@@ -238,13 +293,14 @@ function processLane(rule, laneDecls, lane) {
  *
  * @param {Declaration} node
  * @param {Declaration} lastNode
+ * @param {TextTable} textTable
  * @return {boolean}
  */
-function isOverriddenByShorthand(node, lastNode) {
+function isOverriddenByShorthand(node, lastNode, textTable) {
   return (
     /** @type {number} */ (getLevel(node.prop)) >
       /** @type {number} */ (getLevel(lastNode.prop)) &&
-    !strandsFallback(node, lastNode)
+    !strandsFallback(node, lastNode, textTable)
   );
 }
 
@@ -258,9 +314,10 @@ const borderPrecedence = {
  * @param {Container} rule
  * @param {Declaration[]} decls
  * @param {boolean} hasForeignBorder
+ * @param {TextTable} textTable the tokens the walk left for the declarations
  * @return {void}
  */
-export function reduceBorder(rule, decls, hasForeignBorder) {
+export function reduceBorder(rule, decls, hasForeignBorder, textTable) {
   if (!rule.nodes || hasForeignBorder) return;
 
   if (
@@ -268,21 +325,27 @@ export function reduceBorder(rule, decls, hasForeignBorder) {
     decls.some((d) => {
       const p = asciiLowerCase(d.prop);
       const isCustomShorthand =
-        allBorderShorthands.has(p) && hasSubstitution(d.value);
+        allBorderShorthands.has(p) &&
+        hasSubstitution(d.value, declarationTokens(textTable, d));
       return (
         isCssWideKeyword(d.value) ||
         isCustomShorthand ||
-        (!detectDeclaration(d) && !borderBrowserKeeps(d))
+        (!detectDeclaration(d) && !borderBrowserKeeps(d, textTable))
       );
     })
   )
     return;
 
-  discardOverriddenInList(decls, allPhysicalBorderProperties, borderPrecedence);
+  discardOverriddenInList(
+    decls,
+    textTable,
+    allPhysicalBorderProperties,
+    borderPrecedence
+  );
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
-    if (live[0]) normalizeBorderSingleton(live[0]);
+    if (live[0]) normalizeBorderSingleton(live[0], textTable);
     return;
   }
 
@@ -291,7 +354,7 @@ export function reduceBorder(rule, decls, hasForeignBorder) {
       (d) => Boolean(d.important) === lane && d.parent
     );
     if (laneDecls.length) {
-      processLane(rule, laneDecls, lane);
+      processLane(rule, laneDecls, lane, textTable);
     }
   }
 }

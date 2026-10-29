@@ -9,11 +9,17 @@ export type TokenEdit = {
     end: number;
     tokens: readonly CSSToken[];
 };
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} BalancedTokens */
+/**
+ * @typedef {{unicodeRangesAllowed?: boolean}} TokenizeMode
+ * @typedef {{start: number, end: number, tokens: readonly CSSToken[]}} TokenEdit
+ */
 /**
  * The working copy of one fold over a declaration value. Reads come from the
- * source text until the first edit. Tokens are built on first use, and a
- * buffer owns its token list, so an edit never touches a list another reader
- * holds. After an edit, each token's positions are its offsets in text().
+ * source text until the first edit. Tokens are built on first use, and an edit
+ * builds a new list, so a list a reader holds never changes. After an edit,
+ * each token's positions are its offsets in text().
  */
 declare class ValueBuffer {
     #private;
@@ -21,8 +27,10 @@ declare class ValueBuffer {
      * @param {string} source the value as the stylesheet reads it
      * @param {TokenizeMode} [mode] how the tokenizer reads the value, such as
      *   with `U+` ranges for `unicode-range`
+     * @param {readonly CSSToken[]} [shared] tokens that already spell `source`,
+     *   so tokens() returns them without tokenizing until the first edit
      */
-    constructor(source: string, mode?: TokenizeMode);
+    constructor(source: string, mode?: TokenizeMode, shared?: readonly CSSToken[]);
     /**
      * The current text. Before any edit this is the source text.
      *
@@ -30,12 +38,19 @@ declare class ValueBuffer {
      */
     text(): string;
     /**
-     * The current tokens. The list is the buffer's own, so readers may use it
-     * but should change it only through replace.
+     * The current tokens. The list is never mutated, so a reader may keep it
+     * across later edits.
      *
      * @return {readonly CSSToken[]}
      */
     tokens(): readonly CSSToken[];
+    /**
+     * Whether the tokens exist, that is, a reader has read them or an edit has
+     * built them. It never tokenizes.
+     *
+     * @return {boolean}
+     */
+    isTokenized(): boolean;
     /**
      * Whether an edit has changed the buffer. Until then, the source text is
      * the text, so a reader may check it without serializing the tokens.

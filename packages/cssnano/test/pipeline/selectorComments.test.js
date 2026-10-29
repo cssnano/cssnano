@@ -21,4 +21,12 @@ describe('a kept comment in a selector', () => {
     );
     assert.equal(css, '[a="b"] /*!x*/ c{color:red}');
   });
+
+  test('survives the merge of its rule with a rule of other selectors', async () => {
+    const { css } = await postcss(defaultPreset()).process(
+      'c{color:red;margin:0}a /*!x*/,b{color:red;margin:0;top:0}',
+      { from: undefined }
+    );
+    assert.equal(css, 'a /*!x*/,b,c{color:red;margin:0}a /*!x*/,b{top:0}');
+  });
 });

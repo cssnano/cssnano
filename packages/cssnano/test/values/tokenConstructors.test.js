@@ -7,9 +7,10 @@ import {
   TokenType,
 } from '@csstools/css-tokenizer';
 import {
-  closeParen,
   func,
+  funcWithText,
   hash,
+  hashWithText,
   ident,
   identifierWithText,
   integer,
@@ -17,7 +18,6 @@ import {
   percentage,
   stringToken,
   url,
-  whitespace,
 } from '../../src/values/tokenConstructors.js';
 
 /**
@@ -96,18 +96,6 @@ test('percentage rejects a value that CSS cannot write', () => {
   assert.throws(() => percentage(Number.POSITIVE_INFINITY), RangeError);
 });
 
-/**
- * The tokenizer writes `signCharacter` even when it is undefined; constructors
- * leave the key out instead.
- *
- * @param {object} data
- */
-function withoutUndefined(data) {
-  return Object.fromEntries(
-    Object.entries(data).filter(([, value]) => value !== undefined)
-  );
-}
-
 test('numeric reads back as the token the tokenizer reads from its text', () => {
   const spellings = [
     '1',
@@ -127,13 +115,34 @@ test('numeric reads back as the token the tokenizer reads from its text', () => 
       const read = firstToken(token[1]);
       assert.equal(read[0], token[0], `${spelling}${unit}: type`);
       assert.equal(read[1], token[1], `${spelling}${unit}: text`);
+      assert.deepEqual(read[4], token[4], `${spelling}${unit}: data`);
       assert.deepEqual(
-        withoutUndefined(read[4]),
-        token[4],
-        `${spelling}${unit}: data`
+        Object.keys(token[4]),
+        Object.keys(read[4]),
+        `${spelling}${unit}: data keys`
       );
     }
   }
+});
+
+test('integer reads back as the token the tokenizer reads from its text', () => {
+  for (const value of [0, 7, -3, Number.MAX_SAFE_INTEGER]) {
+    const token = integer(value);
+    const read = firstToken(token[1]);
+    assert.deepEqual(read[4], token[4], `${value}: data`);
+    assert.deepEqual(
+      Object.keys(token[4]),
+      Object.keys(read[4]),
+      `${value}: keys`
+    );
+  }
+});
+
+test('percentage data has the keys the tokenizer gives, in the same order', () => {
+  const token = percentage(5);
+  const read = firstToken(token[1]);
+  assert.deepEqual(read[4], token[4]);
+  assert.deepEqual(Object.keys(token[4]), Object.keys(read[4]));
 });
 
 test("numeric keeps the representation it was given as the number's text", () => {
@@ -195,14 +204,6 @@ test('stringToken rejects text that is not a quoted CSS string', () => {
   }
 });
 
-test('whitespace reads back as the whitespace token the tokenizer reads from its text', () => {
-  const token = firstToken(whitespace()[1]);
-  assert.deepEqual(
-    [token[0], token[1], token[4]],
-    [TokenType.Whitespace, ' ', undefined]
-  );
-});
-
 test('func gives a function token whose text opens the name', () => {
   assert.equal(func('steps')[1], 'steps(');
 });
@@ -219,11 +220,6 @@ test('func escapes its name as an identifier does, so the name reads back', () =
 
 test('func rejects an empty name, which no function token can have', () => {
   assert.throws(() => func(''), RangeError);
-});
-
-test('closeParen reads back as the close-parenthesis token', () => {
-  assert.equal(firstToken(closeParen()[1])[0], TokenType.CloseParen);
-  assert.equal(closeParen()[1], ')');
 });
 
 test('hash gives a hash token whose text opens with the hash sign', () => {
@@ -284,6 +280,38 @@ test('identifierWithText reads back as one identifier with the text and value it
   }
 });
 
+test('hashWithText reads back as the hash token the tokenizer reads from its text', () => {
+  for (const [text, value, type] of [
+    ['#\\31x', '1x', 'id'],
+    ['#a\\ b', 'a b', 'id'],
+    ['#1x', '1x', 'unrestricted'],
+  ]) {
+    const token = hashWithText(text, value, type);
+    const read = tokenize({ css: text });
+    assert.equal(read.length, 2, `${text} reads as one token and EOF`);
+    assert.deepEqual(
+      [read[0][0], read[0][1], read[0][4]],
+      [token[0], token[1], token[4]]
+    );
+  }
+});
+
 test('identifierWithText keeps the text it is given rather than rewriting it from the value', () => {
   assert.equal(identifierWithText('a\\ b', 'a b')[1], 'a\\ b');
+});
+
+test('funcWithText reads back as the function token the tokenizer reads from its text', () => {
+  for (const [text, value] of [
+    ['\\31 st(', '1st'],
+    ['a\\ b(', 'a b'],
+    ['is(', 'is'],
+  ]) {
+    const token = funcWithText(text, value);
+    const read = tokenize({ css: text });
+    assert.equal(read.length, 2, `${text} reads as one token and EOF`);
+    assert.deepEqual(
+      [read[0][0], read[0][1], read[0][4]],
+      [token[0], token[1], token[4]]
+    );
+  }
 });

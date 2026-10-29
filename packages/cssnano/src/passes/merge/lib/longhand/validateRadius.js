@@ -5,7 +5,9 @@ import { isLengthValue } from './lengthGrammar.js';
 import { isUnresolved } from './unresolved.js';
 import { closingTokens, splitValue } from './valueComponents.js';
 
-const { TokenType, closeForOpening, numeric } = cssnanoUtils;
+const { TokenType, closeForOpening, numeric, tokens } = cssnanoUtils;
+
+/** @import {Component} from './valueComponents.js' */
 
 /**
  * Whether the tokens of a balanced term are one function with its arguments.
@@ -30,13 +32,12 @@ function isCompleteFunction(termTokens) {
 /**
  * Validates a single token / term as a non-negative <length-percentage> or unresolved function.
  *
- * @param {string} term
  * @param {import('@csstools/css-tokenizer').CSSToken[]} termTokens
  * @return {boolean}
  */
-export function isValidLengthPercentage(term, termTokens) {
+export function isValidLengthPercentage(termTokens) {
   if (isCompleteFunction(termTokens)) {
-    return isUnresolved(term);
+    return isUnresolved(termTokens, 0, termTokens.length);
   }
 
   if (termTokens.length !== 1) {
@@ -52,10 +53,11 @@ export function isValidLengthPercentage(term, termTokens) {
  * slash.
  *
  * @param {string} value
- * @return {{horizontal: import('./valueComponents.js').Component[], vertical: import('./valueComponents.js').Component[] | null} | null}
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
+ * @return {{horizontal: Component[], vertical: Component[] | null} | null}
  */
-function splitRadiusTerms(value) {
-  const parts = splitValue(value, '/');
+function splitRadiusTerms(value, list) {
+  const parts = splitValue(value, '/', list);
   if (!parts || parts.length > 2) return null;
   return {
     horizontal: parts[0].components,
@@ -68,13 +70,13 @@ function splitRadiusTerms(value) {
  * Corner longhands accept 1 or 2 non-negative <length-percentage> values.
  *
  * @param {string} value
- * @return {[string, string] | null} [horizontal, vertical] or null if invalid
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [list] the tokens of `value`
+ * @return {[Component, Component] | null} [horizontal, vertical] or null if invalid
  */
-export function parseCornerRadius(value) {
-  const trimmed = value.trim();
-  if (trimmed === '') return null;
+export function parseCornerRadius(value, list = tokens(value)) {
+  if (value.trim() === '') return null;
 
-  const split = splitRadiusTerms(trimmed);
+  const split = splitRadiusTerms(value, list);
   if (!split || split.vertical !== null) {
     /* Slashes are not allowed in corner longhands */
     return null;
@@ -86,15 +88,15 @@ export function parseCornerRadius(value) {
   }
 
   for (const item of horizontal) {
-    if (!isValidLengthPercentage(item.raw, item.tokens)) {
+    if (!isValidLengthPercentage(item.tokens)) {
       return null;
     }
   }
 
   if (horizontal.length === 1) {
-    return [horizontal[0].raw, horizontal[0].raw];
+    return [horizontal[0], horizontal[0]];
   }
-  return [horizontal[0].raw, horizontal[1].raw];
+  return [horizontal[0], horizontal[1]];
 }
 
 /**
@@ -102,13 +104,13 @@ export function parseCornerRadius(value) {
  * Accepts 1 to 4 horizontal components, optional `/`, and 1 to 4 vertical components.
  *
  * @param {string} value
- * @return {{horizontal: [string, string, string, string], vertical: [string, string, string, string]} | null}
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [list] the tokens of `value`
+ * @return {{horizontal: [Component, Component, Component, Component], vertical: [Component, Component, Component, Component]} | null}
  */
-export function parseRadiusShorthand(value) {
-  const trimmed = value.trim();
-  if (trimmed === '') return null;
+export function parseRadiusShorthand(value, list = tokens(value)) {
+  if (value.trim() === '') return null;
 
-  const split = splitRadiusTerms(trimmed);
+  const split = splitRadiusTerms(value, list);
   if (!split) return null;
 
   const { horizontal, vertical } = split;
@@ -117,12 +119,12 @@ export function parseRadiusShorthand(value) {
   }
 
   for (const item of horizontal) {
-    if (!isValidLengthPercentage(item.raw, item.tokens)) {
+    if (!isValidLengthPercentage(item.tokens)) {
       return null;
     }
   }
 
-  const h4 = expandFourSides(horizontal.map((item) => item.raw));
+  const h4 = expandFourSides(horizontal);
 
   if (vertical === null) {
     return {
@@ -136,12 +138,12 @@ export function parseRadiusShorthand(value) {
   }
 
   for (const item of vertical) {
-    if (!isValidLengthPercentage(item.raw, item.tokens)) {
+    if (!isValidLengthPercentage(item.tokens)) {
       return null;
     }
   }
 
-  const v4 = expandFourSides(vertical.map((item) => item.raw));
+  const v4 = expandFourSides(vertical);
   return {
     horizontal: h4,
     vertical: v4,

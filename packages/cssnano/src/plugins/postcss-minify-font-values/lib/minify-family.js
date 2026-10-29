@@ -1,11 +1,9 @@
 import cssnanoUtils from '#utils';
 import cssWideKeywords from '../data/cssWideKeywords.json' with { type: 'json' };
 import { balancedStructure } from '../../../utils/value.js';
-import {
-  identifierWithText,
-  whitespace,
-} from '../../../values/tokenConstructors.js';
-import { comma } from '../../../values/listSeparators.js';
+import { identifierWithText } from '../../../values/tokenConstructors.js';
+import { whitespace, comma } from '../../../values/punctuationTokens.js';
+import { tokensText } from '../../../values/tokensText.js';
 
 const { TokenType, asciiLowerCase, decoded, tokens } = cssnanoUtils;
 
@@ -170,18 +168,6 @@ function familyIdentifiers(name) {
 }
 
 /**
- * The text of a token list.
- *
- * @param {readonly CSSToken[]} list
- * @return {string}
- */
-function tokensText(list) {
-  let text = '';
-  for (const token of list) text += token[1];
-  return text;
-}
-
-/**
  * The tokens with each run of whitespace as one space, and none at the edges.
  *
  * @param {readonly CSSToken[]} segment
@@ -321,4 +307,4 @@ function minifyFamily(value, opts, removeQuotes = opts.removeQuotes) {
 }
 
 export default minifyFamily;
-export { familyIdentifiers, minifyFamilyTokens, tokensText };
+export { familyIdentifiers, minifyFamilyTokens };

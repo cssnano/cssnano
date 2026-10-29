@@ -13,13 +13,35 @@ declare const toLower: (v: string) => string;
  * token is left unassigned (the declaration still keeps its substitution
  * semantics for callers that track them).
  *
+ * `specified` tells, per component, whether a value token named it rather than
+ * a substitution filling the slot.
+ *
+ * The value's tokens, when the caller has them, let a component with a `(` be
+ * typed without tokenizing it again.
+ *
+ * `parts` gives each named component's own component, so a caller can read the
+ * component's tokens without splitting the value again; a component that a
+ * substitution fills, or a `none`-only value's keyword, has none.
+ *
  * @param {string} value
- * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined)} | null}
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [tokens] the tokens
+ * `value` spells
+ * @return {{width: (string|undefined), style: (string|undefined), color: (string|undefined), specified: {width: boolean, style: boolean, color: boolean}, parts: {width: (import('./componentRanges.js').ValueComponent|undefined), style: (import('./componentRanges.js').ValueComponent|undefined), color: (import('./componentRanges.js').ValueComponent|undefined)}} | null}
  */
-declare function parseWidthStyleColor(value: string): {
+declare function parseWidthStyleColor(value: string, tokens?: readonly import('@csstools/css-tokenizer').CSSToken[]): {
     width: (string | undefined);
     style: (string | undefined);
     color: (string | undefined);
+    specified: {
+        width: boolean;
+        style: boolean;
+        color: boolean;
+    };
+    parts: {
+        width: (import('./componentRanges.js').ValueComponent | undefined);
+        style: (import('./componentRanges.js').ValueComponent | undefined);
+        color: (import('./componentRanges.js').ValueComponent | undefined);
+    };
 } | null;
 export { toLower };
 export default parseWidthStyleColor;
