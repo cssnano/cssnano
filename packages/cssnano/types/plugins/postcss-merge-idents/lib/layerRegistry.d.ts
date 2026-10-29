@@ -8,7 +8,7 @@ declare class LayerRegistry {
         children: LayerRegistry;
     }>;
     /** @type {Map<import('postcss').AtRule, { index: number, children: LayerRegistry }>} */
-    anonymous: Map<import('postcss').AtRule, {
+    entries: Map<import('postcss').AtRule, {
         index: number;
         children: LayerRegistry;
     }>;
@@ -23,21 +23,21 @@ declare class LayerRegistry {
         children: LayerRegistry;
     };
     /**
-     * Entry for a layer with no name or an unparseable name: every occurrence
-     * is a unique cascade layer, but names nested inside still order beneath
-     * it through the child registry.
+     * The entry at a segment path, creating the missing segments.
      *
-     * @param {import('postcss').AtRule} layerRule
+     * @param {string[]} segments
      * @return {{ index: number, children: LayerRegistry }}
      */
-    getOrCreateAnonymous(layerRule: import('postcss').AtRule): {
+    entryAt(segments: string[]): {
         index: number;
         children: LayerRegistry;
     };
     /**
      * The registry entry a single layer at-rule occupies, creating missing
      * segments as needed. Statement lists and unparseable names fall back to a
-     * unique anonymous entry so they order but never match another spelling.
+     * unique entry, so they order but never match another spelling; names nested
+     * inside still order beneath it through the child registry. A rule keeps one
+     * entry, so its name is read once however many definitions it holds.
      *
      * @param {import('postcss').AtRule} layerRule
      * @return {{ index: number, children: LayerRegistry }}
