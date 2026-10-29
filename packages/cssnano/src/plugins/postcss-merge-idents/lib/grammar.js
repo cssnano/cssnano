@@ -1,10 +1,8 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import specData from '../data/mergeIdents.json' with { type: 'json' };
-import { endsWithDanglingEscape } from './trailingEscape.js';
-/** @import {TextTable} from '../../../values/textTable.js' */
 
-const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
+const { asciiLowerCase, decoded } = cssnanoUtils;
 
 const VENDOR_PREFIX = /^-(webkit|moz|o)-/v;
 
@@ -112,36 +110,6 @@ const COUNTER_STYLE_FUNCTIONS = new Map(
     args,
   ])
 );
-
-/**
- * @param {number} code a UTF-16 code unit
- * @return {boolean} whether it is a CSS newline: LF, CR or FF
- */
-function isNewlineCode(code) {
-  return code === 0x0a || code === 0x0d || code === 0x0c;
-}
-
-/**
- * The tokens of a prelude's name. A dangling backslash escapes the space that
- * PostCSS keeps in `raws.between`, so that space joins the name; otherwise the
- * between-block space holds only whitespace and comments, and the stored list
- * of the prelude stands for it.
- *
- * @param {import('postcss').AtRule} atRule
- * @param {TextTable} table
- * @return {readonly import('@csstools/css-tokenizer').CSSToken[]}
- */
-function preludeTokens(atRule, table) {
-  const between = atRule.raws?.between ?? '';
-  const escapesBetween =
-    between !== '' &&
-    !isNewlineCode(between.charCodeAt(0)) &&
-    endsWithDanglingEscape(atRule.params);
-  if (escapesBetween) {
-    return tokens(atRule.params + between);
-  }
-  return table.tokens(atRule);
-}
 
 /**
  * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} parsedTokens
@@ -275,7 +243,6 @@ function getBody(entry) {
 }
 
 export {
-  preludeTokens,
   VENDOR_PREFIX,
   CSS_WIDE_KEYWORDS,
   KEYFRAMES_SHORTHAND_KEYWORDS,

@@ -1,4 +1,6 @@
+import type { TextTable } from '../../../values/textTable.js';
 declare class LayerRegistry {
+    table: TextTable;
     nextIndex: number;
     /** @type {Map<string, { index: number, children: LayerRegistry }>} */
     layers: Map<string, {
@@ -10,7 +12,8 @@ declare class LayerRegistry {
         index: number;
         children: LayerRegistry;
     }>;
-    constructor();
+    /** @param {TextTable} table the text the walk stored */
+    constructor(table: TextTable);
     /**
      * @param {string} name
      * @return {{ index: number, children: LayerRegistry }}
