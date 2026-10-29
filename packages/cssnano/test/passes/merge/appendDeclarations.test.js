@@ -3,10 +3,9 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { BlockTable } from '../../../src/passes/ir/blockTable.js';
 import { PropertyTable } from '../../../src/passes/ir/propertyTable.js';
-import {
-  appendToDeclarations,
-  writesOf,
-} from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
+import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
+import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
+import { appendToDeclarations } from '../../../src/passes/merge/lib/rules/treeEdits.js';
 
 // The read of the block caches the incoming rule's summary too, so the join
 // must drop that summary for the next read to see the removed duplicate.
@@ -23,6 +22,7 @@ test('appendToDeclarations drops an equal declaration from the incoming rule, an
 
   const kept = [...receiving.nodes];
   appendToDeclarations(
+    new MergeState(['chrome 120']),
     receiving,
     /** @type {import('postcss').Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),

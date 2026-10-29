@@ -1,7 +1,7 @@
 import DeclarationScan from './declarationScan.js';
 import DroppableBlocks from './droppableBlocks.js';
 import SlotIndex from './slotIndex.js';
-import { invalidate } from '../../../ir/blockTable.js';
+import { replaceChildren } from './treeEdits.js';
 
 /** @import {ChildNode, Container, Root, Rule} from 'postcss' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
@@ -183,8 +183,6 @@ export default class RuleSequence {
       if (!emptied.has(parent)) changed.add(parent);
       changed.delete(container);
     }
-    // Every container is emptied before any is refilled, so a rule that moves
-    // between two of them keeps the parent the refill gives it.
     const rebuilt = Array.from(changed, (container) => ({
       container,
       children: this.#slots.childrenOf(
@@ -193,22 +191,6 @@ export default class RuleSequence {
       ),
       head: /** @type {ChildNode[]} */ (container.nodes)[0],
     }));
-    for (const { container } of rebuilt) {
-      invalidate(container);
-      container.removeAll();
-    }
-    for (const { container, children, head } of rebuilt) {
-      // A rule kept from the source still points at its former container.
-      for (const node of children) node.parent = undefined;
-      container.append(children);
-      // Removing the first child of a root hands its whitespace to the next.
-      if (
-        container.type === 'root' &&
-        children.length &&
-        children[0] !== head
-      ) {
-        children[0].raws.before = head.raws.before;
-      }
-    }
+    replaceChildren(rebuilt);
   }
 }

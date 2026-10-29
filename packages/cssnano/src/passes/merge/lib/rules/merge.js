@@ -4,7 +4,8 @@ import {
   sameDeclarationsAndOrder,
 } from './declarations.js';
 import { getDecls } from './ruleMeta.js';
-import { appendDeclarations, buildMergedRule } from './ruleRewrite.js';
+import { buildMergedRule, writesOf } from './ruleRewrite.js';
+import { appendToDeclarations, retire } from './treeEdits.js';
 
 /** @import {Container, Rule} from 'postcss' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
@@ -78,12 +79,12 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
   // Repeating the same declarations under the same selector changes nothing,
   // and a selector list that repeats the selector is longer than one rule.
   if (mergeState.meta(first).hasSameSelectors(mergeState.meta(second))) {
-    mergeState.forget(second);
+    retire(mergeState, second);
     return { first: [first], second: [] };
   }
   mergeState.absorbEarlier(second, first);
   mergeState.spellSelectors(second);
-  mergeState.forget(first);
+  retire(mergeState, first);
   mergeState.markCompatible(second);
   return { first: [], second: [second] };
 }
@@ -99,9 +100,15 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
 export function mergeMatchingSelectors(first, second, mergeState) {
   if (!mergeState.meta(first).hasSameSelectors(mergeState.meta(second)))
     return null;
-  appendDeclarations(first, second, mergeState.properties);
+  const kept = getDecls(first);
+  appendToDeclarations(
+    mergeState,
+    first,
+    kept,
+    writesOf(kept, mergeState.properties),
+    second
+  );
   mergeState.meta(first).setDeclarations(getDecls(first));
-  mergeState.forget(second);
   return { first: [first], second: [] };
 }
 
@@ -135,7 +142,7 @@ export function mergeSharedDeclarations(
   );
   if (!placement) return null;
   // The rules that replace the pair are described afresh when needed.
-  mergeState.forget(first);
-  mergeState.forget(second);
+  retire(mergeState, first);
+  retire(mergeState, second);
   return placement;
 }

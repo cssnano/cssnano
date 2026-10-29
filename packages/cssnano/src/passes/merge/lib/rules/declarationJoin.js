@@ -1,9 +1,9 @@
-import { invalidate } from '../../../ir/blockTable.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import RepeatScan from './repeatScan.js';
 import { filterRuleIntersections } from './declarations.js';
 import { isKeyframes } from './sameContainer.js';
+import { removeDeclarations, removeRules } from './treeEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
@@ -46,22 +46,6 @@ function listLength(selectors) {
   let total = 0;
   for (const selector of selectors) total += 1 + selector.length;
   return total;
-}
-
-/**
- * Removes `rules` from `parent` with one pass over its children.
- *
- * @param {Container} parent
- * @param {Set<Rule>} rules
- */
-function detach(parent, rules) {
-  if (rules.size === 0) return;
-  invalidate(parent);
-  const kept = /** @type {ChildNode[]} */ (parent.nodes).filter(
-    (node) => !rules.has(/** @type {Rule} */ (node))
-  );
-  parent.removeAll();
-  parent.append(kept);
 }
 
 /**
@@ -158,7 +142,7 @@ export default function joinByDeclarations(parent, mergeState) {
     index.recordNode(node, position, keysOf);
   }
   for (const rule of grown) mergeState.spellSelectors(rule);
-  detach(parent, emptied);
+  removeRules(mergeState, parent, emptied);
   return grown.size > 0;
 
   /**
@@ -245,7 +229,6 @@ export default function joinByDeclarations(parent, mergeState) {
     if (listed) recordGained(group, gained);
     grown.add(group.rule);
     const outcome = withdraw(later, laterDeclarations, claimed);
-    mergeState.forget(later);
     mergeState.markCompatible(group.rule);
     return outcome;
   }
@@ -280,8 +263,7 @@ export default function joinByDeclarations(parent, mergeState) {
     }
     // Removing shifts positions, so the nodes are picked first.
     const leaving = [...claimed].map((j) => declarations[j]);
-    invalidate(later);
-    for (const declaration of leaving) declaration.remove();
+    removeDeclarations(mergeState, later, leaving);
     return 'trimmed';
   }
 }

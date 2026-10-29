@@ -1,30 +1,11 @@
-import { invalidate } from '../../../ir/blockTable.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
-import { declarationIsEqual } from './declarations.js';
 import { PropertyWrites } from './lastWriteIndex.js';
-import { getDecls } from './ruleMeta.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
+import { retire } from './treeEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
-
-/**
- * Appends the content of `incoming` to `receiving`. A declaration of
- * `incoming` is redundant only when the last declaration of `receiving` that
- * can set the same property already has an identical value. Otherwise it
- * revives an overridden value or overrides intermediate declarations, so
- * appending it is required to preserve the cascade result.
- *
- * @param {Rule} receiving
- * @param {Rule} incoming
- * @param {PropertyTable} table
- * @return {void}
- */
-export function appendDeclarations(receiving, incoming, table) {
-  const kept = getDecls(receiving);
-  appendToDeclarations(receiving, kept, writesOf(kept, table), incoming);
-}
 
 /**
  * The writes of a rule's declarations, numbered by their position.
@@ -41,35 +22,6 @@ export function writesOf(declarations, table) {
     index.record(declaration, position);
   }
   return index;
-}
-
-/**
- * `appendDeclarations` for a rule that keeps receiving: the caller holds its
- * declarations and their writes, which grow with it, so an append costs time
- * in the incoming rule only.
- *
- * @param {Rule} receiving
- * @param {Declaration[]} kept the declarations of `receiving`, extended in place
- * @param {PropertyWrites} index the writes of `kept`, extended in place
- * @param {Rule} incoming
- * @return {void}
- */
-export function appendToDeclarations(receiving, kept, index, incoming) {
-  // Both rules change, and so do their ancestors.
-  invalidate(receiving);
-  invalidate(incoming);
-  for (const node of incoming.nodes.slice()) {
-    if (node.type === 'decl') {
-      const last = index.lastConflict(node);
-      if (last !== -1 && declarationIsEqual(kept[last], node)) {
-        node.remove();
-        continue;
-      }
-      index.record(node, kept.length);
-      kept.push(node);
-    }
-    receiving.append(node);
-  }
 }
 
 /**
@@ -194,7 +146,7 @@ export function buildMergedRule(
       });
       mergeState.storeClone(rule, leftover);
       mergeState.reportCreated(leftover);
-      mergeState.forget(rule);
+      retire(mergeState, rule);
       let index = 0;
       leftover.walkDecls((decl) => {
         if (claimed.has(index++)) decl.remove();
