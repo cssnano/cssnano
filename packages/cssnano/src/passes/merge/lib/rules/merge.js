@@ -108,7 +108,6 @@ export function mergeMatchingSelectors(first, second, mergeState) {
     writesOf(kept, mergeState.properties),
     second
   );
-  mergeState.meta(first).setDeclarations(getDecls(first));
   return { first: [first], second: [] };
 }
 

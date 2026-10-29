@@ -83,8 +83,13 @@ export class RuleMeta {
     this.#pieces = pieces;
   }
 
-  /** @param {Declaration[]} declarations */
-  setDeclarations(declarations) {
+  /**
+   * Takes the declarations of the rule as its own list, which the caller
+   * keeps extending in place. The keys are derived again on the next read.
+   *
+   * @param {Declaration[]} declarations
+   */
+  takeDeclarations(declarations) {
     this.#declarations = declarations;
     this.#declarationKeys = undefined;
   }
