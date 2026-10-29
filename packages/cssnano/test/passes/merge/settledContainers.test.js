@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { invalidate } from '../../../src/passes/ir/blockTable.js';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
+import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
+import {
+  appendToDeclarations,
+  removeDeclarations,
+} from '../../../src/passes/merge/lib/rules/treeEdits.js';
 
 /** @import {AtRule, ChildNode, Declaration, Root, Rule} from 'postcss' */
 
@@ -65,12 +69,17 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
     /** @type {AtRule} */ (root.first).first
   );
   const q = /** @type {Rule} */ (inner.last);
-  invalidate(q);
-  const declaration = /** @type {Declaration} */ (q.first);
-  declaration.prop = 'width';
-  declaration.value = '1px';
-  // The merge state caches a rule's declaration keys, so an edit forgets them.
-  mergeState.forget(q);
+  // The edits go through treeEdits, which invalidate the enclosing blocks and
+  // keep the record of `q` in step with its declarations.
+  removeDeclarations(mergeState, q, [/** @type {Declaration} */ (q.first)]);
+  const kept = mergeState.meta(q).declarations;
+  appendToDeclarations(
+    mergeState,
+    q,
+    kept,
+    writesOf(kept, mergeState.properties),
+    /** @type {Rule} */ (postcss.parse('x{width:1px}').first)
+  );
   assert.equal(joinNonAdjacent(root, mergeState), true);
   assert.equal(root.toString(), '@media (x){@media (y){p,q{width:1px}}}');
 });

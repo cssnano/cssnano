@@ -5,7 +5,8 @@ import {
 import { createElementKeyLookup } from './elementKeys.js';
 import { comma } from '../../../../values/punctuationTokens.js';
 import { createRunContext } from '../../../ir/runContext.js';
-import { getMeta } from './ruleMeta.js';
+import { getDecls, getMeta } from './ruleMeta.js';
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { isKeyframes, sameContainer } from './sameContainer.js';
 import { joinRanges } from '../../../../values/joinRanges.js';
 import {
@@ -21,11 +22,6 @@ import { tokensText } from '../../../../values/tokensText.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleMeta} from './ruleMeta.js' */
 /** @import {RuleDeclarationKeys} from './ruleMeta.js' */
-
-/** @param {import('postcss').ChildNode} node @return {boolean} */
-function isRuleOrAtRule(node) {
-  return node.type === 'rule' || node.type === 'atrule';
-}
 
 /**
  * The state shared by every merge of one stylesheet.
@@ -51,11 +47,6 @@ export default class MergeState {
   #textTable;
   /** @type {Set<Rule>} rules whose selector text is set, and whose tokens are stored at the end of the run */
   #spelled = new Set();
-  // Merging moves only declarations and comments into a rule, so a rule found
-  // to hold no rule or at-rule holds none until it is forgotten. A rule that
-  // keeps receiving is then not rescanned on every merge.
-  /** @type {WeakSet<Rule>} */
-  #withoutBlocks = new WeakSet();
   /** @type {Set<Rule> | null} */
   #createdBlocks;
   /**
@@ -90,34 +81,18 @@ export default class MergeState {
   }
 
   /**
+   * The record of the rule, made on the first read. Under consistency checks
+   * a record whose declarations differ from the tree throws.
+   *
    * @param {Rule} rule
    * @return {RuleMeta}
    */
   meta(rule) {
-    return getMeta(rule, this.#ruleMeta);
-  }
-
-  /**
-   * Drops the description of a rule whose selectors or declarations changed
-   * or that left the stylesheet. It is rebuilt from the rule when next
-   * needed, so a rule that was never described stays so.
-   *
-   * @param {Rule} rule
-   */
-  forget(rule) {
-    this.#ruleMeta.delete(rule);
-    this.#withoutBlocks.delete(rule);
-  }
-
-  /**
-   * @param {Rule} rule
-   * @return {boolean} whether the rule holds a rule or an at-rule
-   */
-  #holdsBlocks(rule) {
-    if (this.#withoutBlocks.has(rule)) return false;
-    if (rule.some(isRuleOrAtRule)) return true;
-    this.#withoutBlocks.add(rule);
-    return false;
+    const meta = getMeta(rule, this.#ruleMeta);
+    if (consistencyChecksEnabled() && !meta.departed) {
+      assertDeclarationsFresh(rule, meta);
+    }
+    return meta;
   }
 
   /**
@@ -285,10 +260,12 @@ export default class MergeState {
   flushSelectors() {
     for (const rule of this.#spelled) {
       const meta = this.#ruleMeta.get(rule);
-      const pieces = meta?.pieces;
+      // A rule that left the stylesheet has nothing to store.
+      if (!meta || meta.departed) continue;
+      const pieces = meta.pieces;
       if (!pieces) continue;
       const list = joinRanges(pieces, [comma()]);
-      if (tokensText(list) === meta?.selectorText()) {
+      if (tokensText(list) === meta.selectorText()) {
         this.#textTable.write(rule, list);
       }
     }
@@ -327,10 +304,11 @@ export default class MergeState {
   canMerge(ruleA, ruleB, parentA = ruleA.parent, parentB = ruleB.parent) {
     if (!sameContainer(parentA, parentB, this.#textTable)) return false;
     if (isKeyframes(parentA)) return false;
-    if (this.#holdsBlocks(ruleA) || this.#holdsBlocks(ruleB)) return false;
-
     const metaA = this.meta(ruleA);
+    if (metaA.holdsBlocks(ruleA)) return false;
     const metaB = this.meta(ruleB);
+    if (metaB.holdsBlocks(ruleB)) return false;
+
     // Compatibility holds for a concatenated list exactly when it holds for
     // each side, so a long absorbing list is never rescanned. The vendor check
     // follows it, because an incompatible selector has no known prefix.
@@ -344,6 +322,19 @@ export default class MergeState {
         .allowsMerge(metaB.vendorProfile(this.#lookup))
     );
   }
+}
+
+/**
+ * @param {Rule} rule
+ * @param {RuleMeta} meta
+ * @return {void}
+ */
+function assertDeclarationsFresh(rule, meta) {
+  const kept = meta.declarations;
+  const fresh = getDecls(rule);
+  const same =
+    kept.length === fresh.length && kept.every((node, i) => node === fresh[i]);
+  if (!same) throw new Error('stale declarations of a rule record');
 }
 
 /**

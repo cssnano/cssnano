@@ -50,9 +50,11 @@ test('lib/rules should import no tree-edit primitive other than through treeEdit
   assert.deepEqual(offenders, []);
 });
 
-test('lib/rules should call forget only through treeEdits', () => {
+test('lib/rules should mark a rule departed only through treeEdits', () => {
   const offenders = sources
-    .filter(({ text }) => text.includes('.forget('))
+    .filter(
+      ({ name, text }) => name !== 'ruleMeta.js' && text.includes('.depart(')
+    )
     .map(({ name }) => name);
   assert.deepEqual(offenders, []);
 });

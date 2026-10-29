@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
+import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
+import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 
 const createState = () => {
   const context = createRunContext();
@@ -12,22 +15,6 @@ const createState = () => {
 };
 
 const firstRule = (css) => postcss.parse(css).first;
-
-test('forget should make meta describe the rule by its current selector', () => {
-  const { state } = createState();
-  const rule = firstRule('a{color:red}');
-  assert.deepEqual(state.meta(rule).selectors, ['a']);
-  rule.selector = 'b';
-  state.forget(rule);
-  assert.deepEqual(state.meta(rule).selectors, ['b']);
-});
-
-test('forget should leave a rule that was never described undescribed', () => {
-  const { state, ruleMeta } = createState();
-  const rule = firstRule('a{color:red}');
-  state.forget(rule);
-  assert.equal(ruleMeta.has(rule), false);
-});
 
 test('addSelectors should keep the record of the rule', () => {
   const { state } = createState();
@@ -49,6 +36,21 @@ test('absorbEarlier should list the earlier rule selectors first', () => {
   const root = postcss.parse('a{color:red}b{color:red}');
   state.absorbEarlier(root.last, root.first);
   assert.deepEqual(state.meta(root.last).selectors, ['a', 'b']);
+});
+
+test('absorbEarlier should mark the record of the earlier rule departed', () => {
+  const { state } = createState();
+  const root = postcss.parse('a{color:red}b{color:red}');
+  const record = state.meta(root.first);
+  state.absorbEarlier(root.last, root.first);
+  assert.throws(() => record.selectors, /departed/v);
+});
+
+test('absorbEarlier should leave the record of the later rule readable', () => {
+  const { state } = createState();
+  const root = postcss.parse('a{color:red}b{color:red}');
+  state.absorbEarlier(root.last, root.first);
+  assert.equal(state.meta(root.last).departed, false);
 });
 
 // Marking a rule only spares `canMerge` the compatibility check of its
@@ -76,15 +78,55 @@ test('canMerge should still reject a rule with an unsupported selector after it 
   assert.equal(state.canMerge(root.first, root.last), false);
 });
 
-// `canMerge` remembers that a rule holds no nested rule, until the rule is
-// forgotten.
-test('canMerge should reject a rule that gained a nested rule once it is forgotten', () => {
+test('canMerge should reject a rule that holds a nested rule', () => {
   const { state } = createState();
-  const root = postcss.parse('a{color:red}b{color:red}');
-  state.canMerge(root.first, root.last);
-  root.first.append(postcss.rule({ selector: '&:hover' }));
-  state.forget(root.first);
+  const root = postcss.parse('a{color:red;&:hover{width:1px}}b{color:red}');
   assert.equal(state.canMerge(root.first, root.last), false);
+});
+
+test('canMerge should keep accepting a rule after declarations join it', () => {
+  const { state } = createState();
+  const root = postcss.parse('a{color:red}b{width:1px}c{color:red}');
+  const [receiving, incoming, other] = /** @type {import('postcss').Rule[]} */ (
+    root.nodes
+  );
+  assert.equal(state.canMerge(receiving, other), true);
+  const kept = [...receiving.nodes];
+  appendToDeclarations(
+    state,
+    receiving,
+    /** @type {import('postcss').Declaration[]} */ (kept),
+    writesOf(kept, state.properties),
+    incoming
+  );
+  assert.equal(state.canMerge(receiving, other), true);
+});
+
+test('canMerge should reject a rule with a nested rule that the tree gained after a read', () => {
+  enableConsistencyChecks(true);
+  try {
+    const { state } = createState();
+    const root = postcss.parse('a{color:red}b{color:red}');
+    assert.equal(state.canMerge(root.first, root.last), true);
+    root.first.append(postcss.rule({ selector: '&:hover' }));
+    assert.throws(() => state.canMerge(root.first, root.last), /stale/v);
+  } finally {
+    enableConsistencyChecks(false);
+  }
+});
+
+test('meta should throw when a declaration left the rule without a tree edit', () => {
+  enableConsistencyChecks(true);
+  try {
+    const { state } = createState();
+    const root = postcss.parse('a{color:red;width:1px}');
+    const rule = /** @type {import('postcss').Rule} */ (root.first);
+    state.meta(rule);
+    rule.first.remove();
+    assert.throws(() => state.meta(rule), /stale/v);
+  } finally {
+    enableConsistencyChecks(false);
+  }
 });
 
 const declarationsOf = (css) => postcss.parse(css).first.nodes;
@@ -129,12 +171,4 @@ test('declarationKeysOf should return the cached keys of an unchanged rule', () 
   const { state } = createState();
   const rule = firstRule('a{color:red}');
   assert.equal(state.declarationKeysOf(rule), state.declarationKeysOf(rule));
-});
-
-test('forget should make declarationKeysOf describe the rule afresh', () => {
-  const { state } = createState();
-  const rule = firstRule('a{color:red}');
-  const before = state.declarationKeysOf(rule);
-  state.forget(rule);
-  assert.notEqual(state.declarationKeysOf(rule), before);
 });

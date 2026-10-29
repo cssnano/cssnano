@@ -5,7 +5,7 @@ import {
 } from './declarations.js';
 import { getDecls } from './ruleMeta.js';
 import { buildMergedRule, writesOf } from './ruleRewrite.js';
-import { appendToDeclarations, retire } from './treeEdits.js';
+import { appendToDeclarations, depart } from './treeEdits.js';
 
 /** @import {Container, Rule} from 'postcss' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
@@ -79,12 +79,12 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
   // Repeating the same declarations under the same selector changes nothing,
   // and a selector list that repeats the selector is longer than one rule.
   if (mergeState.meta(first).hasSameSelectors(mergeState.meta(second))) {
-    retire(mergeState, second);
+    depart(mergeState, second);
     return { first: [first], second: [] };
   }
   mergeState.absorbEarlier(second, first);
   mergeState.spellSelectors(second);
-  retire(mergeState, first);
+  depart(mergeState, first);
   mergeState.markCompatible(second);
   return { first: [], second: [second] };
 }
@@ -141,7 +141,7 @@ export function mergeSharedDeclarations(
   );
   if (!placement) return null;
   // The rules that replace the pair are described afresh when needed.
-  retire(mergeState, first);
-  retire(mergeState, second);
+  depart(mergeState, first);
+  depart(mergeState, second);
   return placement;
 }

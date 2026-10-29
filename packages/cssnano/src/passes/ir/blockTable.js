@@ -1,4 +1,5 @@
 import { isConditionalGroupRule } from '../merge/lib/rules/lastWriteIndex.js';
+import { consistencyChecksEnabled } from './consistencyChecks.js';
 
 /** @import {ChildNode, Container, Declaration, Root} from 'postcss' */
 
@@ -39,20 +40,6 @@ let attachedCount = 0;
  */
 export function attachedTableCount() {
   return attachedCount;
-}
-
-/**
- * When on, a cached answer is compared with a fresh walk of the tree, so an
- * edit that skipped `invalidate` throws at the next read. For tests only.
- */
-let consistencyChecks = false;
-
-/**
- * @param {boolean} [enabled]
- * @return {void}
- */
-export function enableConsistencyChecks(enabled = true) {
-  consistencyChecks = enabled;
 }
 
 /**
@@ -198,7 +185,7 @@ export class BlockTable {
     const summary = this.#summaryOf(node);
     if (summary.opaque === undefined) {
       summary.opaque = node.nodes.some((child) => this.opaque(child));
-    } else if (consistencyChecks) {
+    } else if (consistencyChecksEnabled()) {
       assertFresh(node, summary.opaque === opaqueInTree(node), 'opaque');
     }
     return summary.opaque;
@@ -219,7 +206,7 @@ export class BlockTable {
       summary.declarations = node.nodes.flatMap((child) =>
         this.declarations(child)
       );
-    } else if (consistencyChecks) {
+    } else if (consistencyChecksEnabled()) {
       const cached = summary.declarations;
       const fresh = declarationsInTree(node);
       const same =

@@ -1,3 +1,4 @@
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { elementKeyOf } from './elementKeys.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 
@@ -27,6 +28,14 @@ function isDeclaration(node) {
 }
 
 /**
+ * @param {import('postcss').ChildNode} node
+ * @return {boolean}
+ */
+function isRuleOrAtRule(node) {
+  return node.type === 'rule' || node.type === 'atrule';
+}
+
+/**
  * The selector list of a rule with what is derived from it. Every field is
  * set up front so all instances share one object layout.
  */
@@ -45,6 +54,10 @@ export class RuleMeta {
   #elementKeys;
   /** @type {RangePiece[] | null | undefined} the token range of each selector, one per selector; null when unknown */
   #pieces;
+  /** @type {boolean} set once the rule has left the stylesheet */
+  #departed = false;
+  /** @type {boolean | undefined} whether the rule holds a rule or an at-rule, read once */
+  #holdsBlocks;
 
   /**
    * @param {string[]} selectors
@@ -58,15 +71,23 @@ export class RuleMeta {
     this.#declarationKeys = undefined;
     this.#elementKeys = undefined;
     this.#pieces = undefined;
+    this.#holdsBlocks = undefined;
+  }
+
+  /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
+  get departed() {
+    return this.#departed;
   }
 
   /** @return {string[]} change it only through the methods of this class */
   get selectors() {
+    this.#assertLive();
     return this.#selectors;
   }
 
   /** @return {Declaration[]} */
   get declarations() {
+    this.#assertLive();
     return this.#declarations;
   }
 
@@ -75,11 +96,13 @@ export class RuleMeta {
    * sets them, and null when the token ranges of the selectors are not known
    */
   get pieces() {
+    this.#assertLive();
     return this.#pieces;
   }
 
   /** @param {RangePiece[] | null} pieces one per selector, or null */
   setPieces(pieces) {
+    this.#assertLive();
     this.#pieces = pieces;
   }
 
@@ -90,6 +113,7 @@ export class RuleMeta {
    * @param {Declaration[]} declarations
    */
   takeDeclarations(declarations) {
+    this.#assertLive();
     this.#declarations = declarations;
     this.#declarationKeys = undefined;
   }
@@ -103,6 +127,7 @@ export class RuleMeta {
    * @return {RuleDeclarationKeys}
    */
   declarationKeys(keyOf) {
+    this.#assertLive();
     if (!this.#declarationKeys) {
       const keys = this.#declarations.map(keyOf);
       this.#declarationKeys = { keys, keySet: new Set(keys) };
@@ -111,10 +136,32 @@ export class RuleMeta {
   }
 
   /**
+   * Whether the rule holds a rule or an at-rule. The answer is read once and
+   * kept: merging adds only declarations and comments to a rule that holds no
+   * block, and `canMerge` never merges one that holds a block.
+   *
+   * @param {Rule} rule the rule this record describes
+   * @return {boolean}
+   */
+  holdsBlocks(rule) {
+    this.#assertLive();
+    if (this.#holdsBlocks === undefined) {
+      this.#holdsBlocks = rule.some(isRuleOrAtRule);
+    } else if (
+      consistencyChecksEnabled() &&
+      this.#holdsBlocks !== rule.some(isRuleOrAtRule)
+    ) {
+      throw new Error('stale holdsBlocks of a rule record');
+    }
+    return this.#holdsBlocks;
+  }
+
+  /**
    * @param {SelectorLookup} lookup
    * @return {VendorPrefixSummary}
    */
   vendorProfile(lookup) {
+    this.#assertLive();
     if (this.#vendor === undefined) {
       // A loop, since `map` would pass each index to a lookup that takes a rule.
       const infos = [];
@@ -134,6 +181,7 @@ export class RuleMeta {
    * @return {string[] | null}
    */
   elementKeys(keyOf = elementKeyOf) {
+    this.#assertLive();
     if (this.#elementKeys === undefined) {
       this.#elementKeys = { list: [], seen: new Set() };
       this.#addElementKeys(0, keyOf);
@@ -180,6 +228,7 @@ export class RuleMeta {
 
   /** @return {string} */
   selectorText() {
+    this.#assertLive();
     this.#selectorText ??= this.#selectors.join(',');
     return this.#selectorText;
   }
@@ -192,6 +241,8 @@ export class RuleMeta {
    * @return {boolean}
    */
   hasSameSelectors(other) {
+    this.#assertLive();
+    other.#assertLive();
     return (
       this.#selectors.length === other.#selectors.length &&
       this.selectorText() === other.selectorText()
@@ -208,6 +259,7 @@ export class RuleMeta {
    * those listed, or null when the rule's elements are not listed
    */
   addSelectors(selectors, lookup, keyOf = elementKeyOf, pieces = null) {
+    this.#assertLive();
     this.#selectorText = undefined;
     const from = this.#selectors.length;
     for (const selector of selectors) {
@@ -224,6 +276,7 @@ export class RuleMeta {
    * already knows it; otherwise it is derived on the next `vendorProfile`
    */
   setSelectors(selectors, vendor) {
+    this.#assertLive();
     this.#selectors = selectors;
     this.#selectorText = undefined;
     this.#vendor = vendor;
@@ -243,6 +296,8 @@ export class RuleMeta {
    * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
    */
   absorbEarlier(earlier, lookup, keyOf = elementKeyOf) {
+    this.#assertLive();
+    earlier.#assertLive();
     const text = `${earlier.selectorText()},${this.selectorText()}`;
     const vendor = earlier
       .vendorProfile(lookup)
@@ -267,6 +322,17 @@ export class RuleMeta {
     // from a long list would repeat on every merge.
     this.#elementKeys = earlier.#elementKeys;
     this.#addElementKeys(from, keyOf);
+    earlier.#departed = true;
+  }
+
+  /** Marks the record of a rule that left the stylesheet, so a later read throws. */
+  depart() {
+    this.#departed = true;
+  }
+
+  /** @throws {Error} when the rule this record describes has left the stylesheet */
+  #assertLive() {
+    if (this.#departed) throw new Error('read of a departed rule record');
   }
 }
 
