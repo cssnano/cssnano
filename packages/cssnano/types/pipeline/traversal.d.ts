@@ -1,4 +1,4 @@
-import type { AtRule, Container, Document, Helpers, Root } from 'postcss';
+import type { AtRule, Container, Document, Helpers, Root, Rule } from 'postcss';
 import type { Stage } from './host.js';
 import type { PlanEntry } from './plan.js';
 import type { TextTable } from '../values/textTable.js';
@@ -44,6 +44,10 @@ export type RunState = {
      * the outermost overridable at-rules in document order, or null when discardOverridden is off
      */
     overridable: AtRule[] | null;
+    /**
+     * receives the rules and at-rules in document order, or null when no pass reads them
+     */
+    blocks: (Rule | AtRule)[] | null;
 };
 /**
  * Runs the comment, value, prelude and selector parts of the stages over a
@@ -56,6 +60,8 @@ export type RunState = {
  * @param {Helpers} helpers
  * @param {ReadonlyMap<string, unknown>} transforms the whole-stylesheet transforms of the run, by entry name
  * @param {TextTable} table the selector and value tokens the walk leaves for later readers
+ * @param {(Rule | AtRule)[] | null} [blocks] receives the rules and at-rules still in the
+ *   stylesheet after the walk, in document order, so a pass need not walk it again
  */
-export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers, transforms: ReadonlyMap<string, unknown>, table: TextTable): void;
+export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers, transforms: ReadonlyMap<string, unknown>, table: TextTable, blocks?: (Rule | AtRule)[] | null): void;
 //# sourceMappingURL=traversal.d.ts.map
