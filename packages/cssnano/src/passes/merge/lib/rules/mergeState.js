@@ -15,14 +15,14 @@ import {
 } from '../../../../values/selectorRanges.js';
 import { tokensText } from '../../../../values/tokensText.js';
 
-/** @import {Container, Declaration, Rule} from 'postcss' */
+/** @import {Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleMeta} from './ruleMeta.js' */
 /** @import {RuleDeclarationKeys} from './ruleMeta.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord, BlockRecords, Slot} from './blockRecords.js' */
 
 /**
  * The state shared by every merge of one stylesheet.
@@ -299,19 +299,34 @@ export default class MergeState {
   }
 
   /**
-   * Whether the rules can be merged. `parentA` and `parentB` are where the
-   * rules stand, which differs from their `parent` for a rule that moved
-   * during the sweep.
+   * The block whose child list holds the rule's slot. It is where the rule
+   * stands, which can differ from its PostCSS parent during a sweep.
+   *
+   * @param {Rule} rule
+   * @return {BlockRecord}
+   */
+  blockOf(rule) {
+    return /** @type {Slot} */ (this.meta(rule).slot).block;
+  }
+
+  /**
+   * Whether the rules can be merged. `blockA` and `blockB` are the blocks
+   * the rules stand in.
    *
    * @param {Rule} ruleA
    * @param {Rule} ruleB
-   * @param {Container | undefined} [parentA]
-   * @param {Container | undefined} [parentB]
+   * @param {BlockRecord} [blockA]
+   * @param {BlockRecord} [blockB]
    * @return {boolean}
    */
-  canMerge(ruleA, ruleB, parentA = ruleA.parent, parentB = ruleB.parent) {
-    if (!sameContainer(parentA, parentB, this.#textTable)) return false;
-    if (isKeyframes(parentA)) return false;
+  canMerge(
+    ruleA,
+    ruleB,
+    blockA = this.blockOf(ruleA),
+    blockB = this.blockOf(ruleB)
+  ) {
+    if (!sameContainer(blockA, blockB, this.#textTable)) return false;
+    if (isKeyframes(blockA.node)) return false;
     const metaA = this.meta(ruleA);
     if (metaA.holdsBlocks(ruleA)) return false;
     const metaB = this.meta(ruleB);

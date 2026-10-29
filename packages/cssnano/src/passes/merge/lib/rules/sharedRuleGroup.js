@@ -91,8 +91,7 @@ function repeatsShared(link, parent, firstKeys, sharedIndices, mergeState) {
  */
 function mergesWithAll(members, later, parent, mergeState) {
   for (const member of members) {
-    if (!mergeState.canMerge(member, later, parent.node, parent.node))
-      return false;
+    if (!mergeState.canMerge(member, later, parent, parent)) return false;
   }
   return true;
 }

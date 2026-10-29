@@ -3,7 +3,10 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
-import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import {
+  appendToDeclarations,
+  buildRecords,
+} from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 
@@ -15,6 +18,18 @@ const createState = () => {
 };
 
 const firstRule = (css) => postcss.parse(css).first;
+
+/**
+ * Gives the rules of `root` their slots, as the merge does before it joins any.
+ *
+ * @param {MergeState} state
+ * @param {import('postcss').Root} root
+ * @return {import('postcss').Root}
+ */
+const withRecords = (state, root) => {
+  state.records = buildRecords(root, state);
+  return root;
+};
 
 test('addSelectors should keep the record of the rule', () => {
   const { state } = createState();
@@ -58,14 +73,17 @@ test('absorbEarlier should leave the record of the later rule readable', () => {
 // selector has an unknown prefix that blocks every merge by itself.
 test('canMerge should still accept a pair of compatible rules after one is marked compatible', () => {
   const { state } = createState();
-  const root = postcss.parse('a{color:red}b{color:red}');
+  const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
   state.markCompatible(root.first);
   assert.equal(state.canMerge(root.first, root.last), true);
 });
 
 test('canMerge should still reject a pair with different vendor prefixes after one is marked compatible', () => {
   const { state } = createState();
-  const root = postcss.parse('a::-moz-selection{color:red}b{color:red}');
+  const root = withRecords(
+    state,
+    postcss.parse('a::-moz-selection{color:red}b{color:red}')
+  );
   assert.equal(state.canMerge(root.first, root.last), false);
   state.markCompatible(root.first);
   assert.equal(state.canMerge(root.first, root.last), false);
@@ -73,20 +91,29 @@ test('canMerge should still reject a pair with different vendor prefixes after o
 
 test('canMerge should still reject a rule with an unsupported selector after it is marked compatible', () => {
   const state = new MergeState(['ie 9']);
-  const root = postcss.parse('a:has(b){color:red}c{color:red}');
+  const root = withRecords(
+    state,
+    postcss.parse('a:has(b){color:red}c{color:red}')
+  );
   state.markCompatible(root.first);
   assert.equal(state.canMerge(root.first, root.last), false);
 });
 
 test('canMerge should reject a rule that holds a nested rule', () => {
   const { state } = createState();
-  const root = postcss.parse('a{color:red;&:hover{width:1px}}b{color:red}');
+  const root = withRecords(
+    state,
+    postcss.parse('a{color:red;&:hover{width:1px}}b{color:red}')
+  );
   assert.equal(state.canMerge(root.first, root.last), false);
 });
 
 test('canMerge should keep accepting a rule after declarations join it', () => {
   const { state } = createState();
-  const root = postcss.parse('a{color:red}b{width:1px}c{color:red}');
+  const root = withRecords(
+    state,
+    postcss.parse('a{color:red}b{width:1px}c{color:red}')
+  );
   const [receiving, incoming, other] = /** @type {import('postcss').Rule[]} */ (
     root.nodes
   );
@@ -106,7 +133,7 @@ test('canMerge should reject a rule with a nested rule that the tree gained afte
   enableConsistencyChecks(true);
   try {
     const { state } = createState();
-    const root = postcss.parse('a{color:red}b{color:red}');
+    const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
     assert.equal(state.canMerge(root.first, root.last), true);
     root.first.append(postcss.rule({ selector: '&:hover' }));
     assert.throws(() => state.canMerge(root.first, root.last), /stale/v);

@@ -74,8 +74,8 @@ export default function runScan(mergeState) {
       (a.keys.length === 0 && b.keys.length === 0) ||
       (first.slot.block !== second.slot.block &&
         sameContainer(
-          first.slot.block.node,
-          second.slot.block.node,
+          first.slot.block,
+          second.slot.block,
           mergeState.textTable
         ));
     return rewritesStructure ? 0 : NO_BENEFIT;
@@ -107,8 +107,8 @@ export default function runScan(mergeState) {
       !mergeState.canMerge(
         first.rule,
         second.rule,
-        first.slot.block.node,
-        second.slot.block.node
+        first.slot.block,
+        second.slot.block
       ) ||
       sequence.declarationBetween(first, second, outsideDeclarations)
     ) {

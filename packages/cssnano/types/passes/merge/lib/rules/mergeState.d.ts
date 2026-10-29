@@ -1,18 +1,18 @@
-import type { Container, Declaration, Rule } from 'postcss';
+import type { Declaration, Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { TextTable } from '../../../../values/textTable.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleMeta } from './ruleMeta.js';
 import type { RuleDeclarationKeys } from './ruleMeta.js';
-import type { BlockRecords } from './blockRecords.js';
-/** @import {Container, Declaration, Rule} from 'postcss' */
+import type { BlockRecord, BlockRecords } from './blockRecords.js';
+/** @import {Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleMeta} from './ruleMeta.js' */
 /** @import {RuleDeclarationKeys} from './ruleMeta.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord, BlockRecords, Slot} from './blockRecords.js' */
 /**
  * The state shared by every merge of one stylesheet.
  */
@@ -150,16 +150,23 @@ export default class MergeState {
      */
     absorbEarlier(later: Rule, earlier: Rule): void;
     /**
-     * Whether the rules can be merged. `parentA` and `parentB` are where the
-     * rules stand, which differs from their `parent` for a rule that moved
-     * during the sweep.
+     * The block whose child list holds the rule's slot. It is where the rule
+     * stands, which can differ from its PostCSS parent during a sweep.
+     *
+     * @param {Rule} rule
+     * @return {BlockRecord}
+     */
+    blockOf(rule: Rule): BlockRecord;
+    /**
+     * Whether the rules can be merged. `blockA` and `blockB` are the blocks
+     * the rules stand in.
      *
      * @param {Rule} ruleA
      * @param {Rule} ruleB
-     * @param {Container | undefined} [parentA]
-     * @param {Container | undefined} [parentB]
+     * @param {BlockRecord} [blockA]
+     * @param {BlockRecord} [blockB]
      * @return {boolean}
      */
-    canMerge(ruleA: Rule, ruleB: Rule, parentA?: Container | undefined, parentB?: Container | undefined): boolean;
+    canMerge(ruleA: Rule, ruleB: Rule, blockA?: BlockRecord, blockB?: BlockRecord): boolean;
 }
 //# sourceMappingURL=mergeState.d.ts.map
