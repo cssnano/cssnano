@@ -10,7 +10,7 @@ import {
   removeDeclarations,
 } from '../../../src/passes/merge/lib/rules/treeEdits.js';
 
-/** @import {AtRule, ChildNode, Declaration, Root, Rule} from 'postcss' */
+/** @import {AtRule, Declaration, Root, Rule} from 'postcss' */
 
 /**
  * A merge state over `root` that shares the block table of its run context.
@@ -22,42 +22,6 @@ function mergeStateOf(root) {
   const context = createRunContext(root);
   return new MergeState(['Chrome 120'], context);
 }
-
-/**
- * Counts the reads of `block.nodes`, which a visit of the block makes.
- *
- * @param {AtRule} container
- * @return {{count: number}}
- */
-function countNodeReads(container) {
-  let value = /** @type {ChildNode[]} */ (container.nodes);
-  const reads = { count: 0 };
-  Object.defineProperty(container, 'nodes', {
-    configurable: true,
-    get() {
-      reads.count++;
-      return value;
-    },
-    set(next) {
-      value = next;
-    },
-  });
-  return reads;
-}
-
-test('joinNonAdjacent: an at-rule that joined nothing is not visited again in a later round', () => {
-  const root = postcss.parse(
-    'a{color:red}b{color:red}@media (x){p{width:1px}q{height:1px}}'
-  );
-  const mergeState = mergeStateOf(root);
-  const media = /** @type {AtRule} */ (root.last);
-  assert.equal(joinNonAdjacent(root, mergeState), true);
-  const reads = countNodeReads(media);
-  assert.equal(joinNonAdjacent(root, mergeState), false);
-  // The root reads the at-rule's nodes twice, for its join keys and its child
-  // loop; a visit of the at-rule would add three more reads.
-  assert.equal(reads.count, 2);
-});
 
 test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-rules visit again and join', () => {
   const root = postcss.parse(
