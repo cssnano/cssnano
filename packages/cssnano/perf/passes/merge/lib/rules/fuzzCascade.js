@@ -4,6 +4,9 @@ import {
   firstCascadeFailure,
   generateCascadeCases,
 } from '../../../../../script/passes/merge/rules/lib/fuzzCascade.js';
+import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
+
+enableConsistencyChecks(true);
 
 test('cascade fuzzer seed 7 preserves every computed style', () => {
   assert.equal(firstCascadeFailure(generateCascadeCases(7, 300)), undefined);
