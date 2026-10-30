@@ -13,12 +13,13 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/sweepPotential.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
-  assertRecordsMatchTree,
   buildRecords,
   moveChildren,
   remove,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { assertRecordsWellFormed } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 import { assertNoOverDuplication } from '../../../../../src/passes/merge/lib/rules/overDuplication.js';
 import { mergePass } from '../../../../../src/passes/merge/index.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
@@ -257,17 +258,17 @@ test('an entry should hold its index as position after a rule moves to the end o
   assert.equal(positionsMatchIndex(state.records.root), true);
 });
 
-test('assertRecordsMatchTree should throw when an entry holds a position other than its index', () => {
+test('assertRecordsWellFormed should throw when an entry holds a position other than its index', () => {
   const { state } = setup('a{color:red}b{width:1px}');
   state.records.root.children[1].position = 5;
-  assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
+  assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
 });
 
 test('a sweep should keep the positions the records hold rather than resetting them', () => {
   const { state } = setup('a{color:red}b{width:1px}');
   state.records.root.children[1].position = 5;
   new RuleSequence(state.records);
-  assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
+  assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
 });
 
 test('assertSweepLowers should throw when a sweep moved a rule and the potential stayed equal', () => {

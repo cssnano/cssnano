@@ -1,5 +1,5 @@
 import { BlockRecords } from './blockRecords.js';
-import type { AtRule, ChildNode, Container, Declaration, Root, Rule } from 'postcss';
+import type { AtRule, Container, Declaration, Root, Rule } from 'postcss';
 import type { PropertyWrites } from './lastWriteIndex.js';
 import type MergeState from './mergeState.js';
 /**
@@ -12,15 +12,6 @@ import type MergeState from './mergeState.js';
  * @return {BlockRecords}
  */
 export declare function buildRecords(root: Root, mergeState: MergeState): BlockRecords;
-/**
- * Under consistency checks, throws when the records and the tree disagree:
- * each block must hold the nodes its container holds, in order, and each rule
- * must stand in the slot its record names.
- *
- * @param {MergeState} mergeState
- * @return {void}
- */
-export declare function assertRecordsMatchTree(mergeState: MergeState): void;
 /**
  * Appends the children of `from` to `into`, after its own. `from` is left
  * empty, so the caller removes or replaces it.
@@ -92,33 +83,6 @@ export declare function removeDeclarations(mergeState: MergeState, rule: Rule, d
  * @return {void}
  */
 export declare function removeRules(mergeState: MergeState, parent: Container, rules: Set<Rule>): void;
-export type Rebuilt = {
-    container: Container;
-    /**
-     * the children the container takes
-     */
-    children: ChildNode[];
-    /**
-     * the first child the root held before,
-     * or undefined for any other container
-     */
-    head: ChildNode | undefined;
-};
-/**
- * @typedef {object} Rebuilt
- * @property {Container} container
- * @property {ChildNode[]} children the children the container takes
- * @property {ChildNode | undefined} head the first child the root held before,
- * or undefined for any other container
- */
-/**
- * Gives each container its children, after every container has been emptied,
- * so a child that moves between two of them keeps the parent it is given.
- *
- * @param {Rebuilt[]} rebuilt
- * @return {void}
- */
-export declare function replaceChildren(rebuilt: Rebuilt[]): void;
 /**
  * Marks a rule that a placement drops as departed. The rule leaves the tree
  * when `replaceChildren` applies the placement, and reading its record throws

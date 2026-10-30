@@ -14,9 +14,9 @@ import {
   remove,
   removeDeclarations,
   removeRules,
-  replaceChildren,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { replaceChildren } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 
 /** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
 
