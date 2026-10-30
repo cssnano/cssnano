@@ -70,7 +70,10 @@ export class BlockRecord {
 
   /**
    * The live children of a droppable block during a sweep, or null while the
-   * block is not tracked.
+   * block is not tracked. Dropping an emptied `@layer` is safe because a rule
+   * moves only into an equivalent earlier block, which already orders the
+   * layer. A block empty at sweep start is untracked because it may be the
+   * first statement that orders its layer.
    *
    * @type {number | null}
    */
@@ -125,6 +128,39 @@ export class BlockRecord {
       }
     }
     return count;
+  }
+
+  /**
+   * Accounts for the block gaining `change` live children, or losing them when
+   * negative. A droppable block that is tracked and goes empty tells its
+   * parent, which may go empty in turn.
+   *
+   * @param {number} change
+   * @return {void}
+   */
+  changed(change) {
+    const count = this.remaining;
+    if (count === null) return;
+    this.remaining = count + change;
+    // A block already empty has told its parent; telling it again would
+    // undercount the parent.
+    if (count > 0 && count + change === 0) this.#climb();
+  }
+
+  /**
+   * Tells the parent of a block that just lost its last child. Only a
+   * droppable parent is climbed to: a style rule or any other at-rule stays.
+   *
+   * @return {void}
+   */
+  #climb() {
+    const parent = this.parent;
+    if (!parent || !parent.droppable) return;
+    const known = parent.remaining;
+    // A parent that is empty in the source is not tracked, and holds no child.
+    if (known === null) return;
+    parent.remaining = known - 1;
+    if (known === 1) parent.#climb();
   }
 
   /**

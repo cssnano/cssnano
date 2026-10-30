@@ -38,6 +38,7 @@ export declare class Slot {
  * out, so a removed entry is left in place and skipped.
  */
 export declare class BlockRecord {
+    #private;
     /** @type {Container} */
     node: Container;
     /** @type {BlockRecord | null} the block whose children hold this one's entry */
@@ -50,7 +51,10 @@ export declare class BlockRecord {
     children: (Slot | BlockRecord | ChildNode)[];
     /**
      * The live children of a droppable block during a sweep, or null while the
-     * block is not tracked.
+     * block is not tracked. Dropping an emptied `@layer` is safe because a rule
+     * moves only into an equivalent earlier block, which already orders the
+     * layer. A block empty at sweep start is untracked because it may be the
+     * first statement that orders its layer.
      *
      * @type {number | null}
      */
@@ -76,6 +80,15 @@ export declare class BlockRecord {
      * @return {number}
      */
     liveCount(): number;
+    /**
+     * Accounts for the block gaining `change` live children, or losing them when
+     * negative. A droppable block that is tracked and goes empty tells its
+     * parent, which may go empty in turn.
+     *
+     * @param {number} change
+     * @return {void}
+     */
+    changed(change: number): void;
     /**
      * The children the block holds now, in order: the rules of its slots, and
      * the nodes of its other entries, except a block that was dropped.
