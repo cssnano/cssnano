@@ -172,6 +172,14 @@ export declare class BlockRecords {
      * @return {RuleRecord}
      */
     recordRule(rule: Rule): RuleRecord;
+    /**
+     * The entry a live child of a block stands as: the record of a rule, the
+     * record of an at-rule with a block, or the node itself.
+     *
+     * @param {ChildNode} node
+     * @return {RuleRecord | BlockRecord | ChildNode}
+     */
+    entryOf(node: ChildNode): RuleRecord | BlockRecord | ChildNode;
     /** @param {Rule} rule @return {RuleRecord | undefined} */
     recordOf(rule: Rule): RuleRecord | undefined;
     /**

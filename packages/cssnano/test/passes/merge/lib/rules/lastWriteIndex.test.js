@@ -205,7 +205,7 @@ test('last-write index: recordNode records declarations inside @media, @supports
   ]) {
     const index = new LastWriteIndex(new PropertyTable());
     const { node, records } = firstNodeWithRecords(css);
-    index.recordNode(node, 1, unknownElements, records);
+    index.recordNode(records.entryOf(node), 1, unknownElements);
     assert.equal(index.conflictsSince([decl('color')], 0), true, css);
     assert.equal(index.conflictsSince([decl('width')], 0), false, css);
   }
@@ -216,7 +216,16 @@ test('last-write index: recordNode records declarations of nested rules', () => 
   const { node, records } = firstNodeWithRecords(
     '.a{width:1px;& .b{color:red}}'
   );
-  index.recordNode(node, 1, unknownElements, records);
+  index.recordNode(records.entryOf(node), 1, unknownElements);
+  assert.equal(index.conflictsSince([decl('color')], 0), true);
+});
+
+test('last-write index: recordNode given the record of a rule that holds a block records the declarations of its nested rules', () => {
+  const index = new LastWriteIndex(new PropertyTable());
+  const { node, records } = firstNodeWithRecords(
+    '.a{width:1px;& .b{color:red}}'
+  );
+  index.recordNode(records.metaOf(node), 1, unknownElements);
   assert.equal(index.conflictsSince([decl('color')], 0), true);
 });
 
@@ -230,7 +239,7 @@ test('last-write index: recordNode treats an at-rule it cannot analyse as a barr
   ]) {
     const index = new LastWriteIndex(new PropertyTable());
     const { node, records } = firstNodeWithRecords(css);
-    index.recordNode(node, 1, unknownElements, records);
+    index.recordNode(records.entryOf(node), 1, unknownElements);
     assert.equal(index.conflictsSince([decl('width')], 0), true, css);
   }
 });
@@ -238,6 +247,6 @@ test('last-write index: recordNode treats an at-rule it cannot analyse as a barr
 test('last-write index: recordNode ignores comments', () => {
   const index = new LastWriteIndex(new PropertyTable());
   const { node, records } = firstNodeWithRecords('/* note */');
-  index.recordNode(node, 1, unknownElements, records);
+  index.recordNode(records.entryOf(node), 1, unknownElements);
   assert.equal(index.conflictsSince([decl('color')], 0), false);
 });

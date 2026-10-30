@@ -233,7 +233,7 @@ test('an entry should hold its index as position after a move of children', () =
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   const [first, second] = /** @type {Container} */ (root).nodes;
-  moveChildren(state, first, second);
+  moveChildren(state.records.blockOf(first), state.records.blockOf(second));
   assert.equal(positionsMatchIndex(state.records.blockOf(first)), true);
 });
 
@@ -242,7 +242,12 @@ test('an entry should hold its index as position after a join takes the place of
     'a{color:red}@media print{b{width:1px}}@media print{c{height:1px}}'
   );
   const [, earlier, later] = /** @type {Container} */ (root).nodes;
-  takePlaceOf(state, root, earlier, later);
+  takePlaceOf(
+    state,
+    root,
+    state.records.blockOf(earlier),
+    state.records.blockOf(later)
+  );
   assert.equal(positionsMatchIndex(state.records.root), true);
 });
 
@@ -251,7 +256,7 @@ test('an entry should hold its index as position after a removal of a block', ()
     'a{color:red}@media print{b{width:1px}}c{height:1px}'
   );
   const [, media] = /** @type {Container} */ (root).nodes;
-  remove(state, media);
+  remove(state.records.blockOf(media));
   assert.equal(positionsMatchIndex(state.records.root), true);
 });
 

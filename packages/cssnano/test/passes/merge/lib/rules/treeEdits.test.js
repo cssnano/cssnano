@@ -20,6 +20,8 @@ import {
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 
+/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+
 /** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
 
 // The records check the declarations they hold against the tree at each read,
@@ -67,13 +69,16 @@ test('moveChildren should move the declarations of the source into the target an
   const [media, other] = /** @type {Container} */ (supports).nodes;
 
   moveChildren(
-    state,
-    /** @type {Container} */ (media),
-    /** @type {Container} */ (other)
+    /** @type {BlockRecord} */ (
+      state.records.blockOf(/** @type {Container} */ (media))
+    ),
+    /** @type {BlockRecord} */ (
+      state.records.blockOf(/** @type {Container} */ (other))
+    )
   );
   // The source keeps its emptied block until the pair is joined, so the
   // ancestors are read once the source is removed.
-  remove(state, other);
+  remove(state.records.blockOf(/** @type {Container} */ (other)));
   writeBack(state.records.blocks());
 
   assert.deepEqual(treeProps(media), ['color', 'width']);
@@ -86,9 +91,12 @@ test('moveChildren should leave the source container holding no children', () =>
   );
   const [media, other] = /** @type {Container} */ (root).nodes;
   moveChildren(
-    state,
-    /** @type {Container} */ (media),
-    /** @type {Container} */ (other)
+    /** @type {BlockRecord} */ (
+      state.records.blockOf(/** @type {Container} */ (media))
+    ),
+    /** @type {BlockRecord} */ (
+      state.records.blockOf(/** @type {Container} */ (other))
+    )
   );
   writeBack(state.records.blocks());
   assert.deepEqual(/** @type {Container} */ (other).nodes, []);
@@ -101,7 +109,7 @@ test('remove should drop the declarations of the removed node from its ancestors
   const [supports] = /** @type {Container} */ (root.nodes);
   const [, removed] = /** @type {Container} */ (supports).nodes;
 
-  remove(state, removed);
+  remove(state.records.blockOf(/** @type {Container} */ (removed)));
   writeBack(state.records.blocks());
 
   assert.deepEqual(treeProps(supports), ['color']);
@@ -110,13 +118,13 @@ test('remove should drop the declarations of the removed node from its ancestors
 test('remove should take the node out of the records of its parent at once', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
   const [first, second] = /** @type {Rule[]} */ (root.nodes);
-  remove(state, first);
+  remove(state.meta(first));
   assert.deepEqual(state.records.root.liveChildren(), [second]);
 });
 
 test('writeBack should drop the removed nodes from the child list of the parent', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
-  remove(state, root.first);
+  remove(state.meta(root.first));
   writeBack(state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['b', 'c']);
 });
@@ -124,7 +132,7 @@ test('writeBack should drop the removed nodes from the child list of the parent'
 test('takePlaceOf should place the earlier node where the later one stood', () => {
   const { root, state } = setup('a{color:red}\n\nb{color:blue}');
   const [earlier, later] = /** @type {Rule[]} */ (root.nodes);
-  takePlaceOf(state, root, earlier, later);
+  takePlaceOf(state, root, state.meta(earlier), state.meta(later));
   writeBack(state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['a']);
 });
@@ -132,7 +140,7 @@ test('takePlaceOf should place the earlier node where the later one stood', () =
 test('takePlaceOf should keep the whitespace before the later node', () => {
   const { root, state } = setup('a{color:red}\n\nb{color:blue}');
   const [earlier, later] = /** @type {Rule[]} */ (root.nodes);
-  takePlaceOf(state, root, earlier, later);
+  takePlaceOf(state, root, state.meta(earlier), state.meta(later));
   writeBack(state.records.blocks());
   assert.equal(root.toString(), '\n\na{color:red}');
 });
@@ -140,8 +148,8 @@ test('takePlaceOf should keep the whitespace before the later node', () => {
 test('takePlaceOf should place the earlier node after a removal in the same parent', () => {
   const { root, state } = setup('x{color:red}\na{color:red}\nb{color:red}');
   const [removed, earlier, later] = /** @type {Rule[]} */ (root.nodes);
-  remove(state, removed);
-  takePlaceOf(state, root, earlier, later);
+  remove(state.meta(removed));
+  takePlaceOf(state, root, state.meta(earlier), state.meta(later));
   writeBack(state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['a']);
 });
@@ -149,8 +157,8 @@ test('takePlaceOf should place the earlier node after a removal in the same pare
 test('takePlaceOf should hand the leading whitespace of a removed first root child to the next child', () => {
   const { root, state } = setup('x{color:red}\na{color:red}\nb{color:red}');
   const [removed, earlier, later] = /** @type {Rule[]} */ (root.nodes);
-  remove(state, removed);
-  takePlaceOf(state, root, earlier, later);
+  remove(state.meta(removed));
+  takePlaceOf(state, root, state.meta(earlier), state.meta(later));
   writeBack(state.records.blocks());
   assert.equal(root.toString(), '\na{color:red}');
 });
