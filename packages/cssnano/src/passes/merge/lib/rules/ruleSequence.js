@@ -1,5 +1,4 @@
 import DeclarationScan from './declarationScan.js';
-import DroppableBlocks from './droppableBlocks.js';
 import { BlockRecord, Slot } from './blockRecords.js';
 import { replaceChildren } from './treeEdits.js';
 
@@ -60,9 +59,6 @@ export default class RuleSequence {
    * @type {ChildNode | undefined}
    */
   #rootHead;
-
-  /** @type {DroppableBlocks} */
-  #blocks = new DroppableBlocks();
 
   /** @type {DeclarationScan} */
   #scan = new DeclarationScan();
@@ -133,7 +129,8 @@ export default class RuleSequence {
     const target = first.slot.block;
     const source = second.slot.block;
     if (target === source) return false;
-    this.#blocks.moved(source, target);
+    source.changed(-1);
+    target.changed(1);
     second.slot = target.moveRule(second.rule, second.slot, this.#records);
     this.#changed.add(target).add(source);
     return true;
@@ -155,8 +152,8 @@ export default class RuleSequence {
     const secondSlot = second.slot;
     // Both rules may share a slot after an earlier partial merge, so each is
     // replaced where it stands.
-    this.#blocks.changed(firstSlot.block, placement.first.length - 1);
-    this.#blocks.changed(secondSlot.block, placement.second.length - 1);
+    firstSlot.block.changed(placement.first.length - 1);
+    secondSlot.block.changed(placement.second.length - 1);
     firstSlot.substitute(first.rule, placement.first, this.#records);
     secondSlot.substitute(second.rule, placement.second, this.#records);
     this.#changed.add(firstSlot.block).add(secondSlot.block);
@@ -170,7 +167,7 @@ export default class RuleSequence {
     for (const rules of placement.following ?? []) {
       const link = /** @type {RuleLink} */ (following);
       following = link.next;
-      this.#blocks.changed(link.slot.block, rules.length - 1);
+      link.slot.block.changed(rules.length - 1);
       link.slot.substitute(link.rule, rules, this.#records);
       tail = linkAfter(tail, rules, link.slot);
     }
