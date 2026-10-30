@@ -194,7 +194,7 @@ export const mutations = [
   },
   {
     name: 'the records check accepts a rule record that names another slot',
-    target: source('treeEdits.js'),
+    target: source('writeBack.js'),
     find: '  if (meta.slot !== slot) throw new Error(OUT_OF_STEP);\n',
     replace: '',
   },

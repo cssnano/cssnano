@@ -5,10 +5,8 @@ import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistenc
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { assertRecordsWellFormed } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
-import {
-  assertRecordsMatchTree,
-  buildRecords,
-} from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 
 /** @import {BlockRecord, Slot} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {Root} from 'postcss' */

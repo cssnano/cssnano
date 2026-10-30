@@ -1,8 +1,8 @@
 import DeclarationScan from './declarationScan.js';
 import { BlockRecord, Slot } from './blockRecords.js';
-import { replaceChildren } from './treeEdits.js';
+import { writeBack } from './writeBack.js';
 
-/** @import {ChildNode, Container, Rule} from 'postcss' */
+/** @import {ChildNode, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
 
@@ -199,11 +199,6 @@ export default class RuleSequence {
       if (!emptied.has(parent)) changed.add(parent);
       changed.delete(block);
     }
-    const rebuilt = Array.from(changed, (block) => ({
-      container: /** @type {Container} */ (block.node),
-      children: block.liveChildren(),
-      head: block === this.#records.root ? this.#rootHead : undefined,
-    }));
-    replaceChildren(rebuilt);
+    writeBack(changed, this.#rootHead);
   }
 }

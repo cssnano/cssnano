@@ -3,7 +3,8 @@ import MergeState from './mergeState.js';
 import { joinNonAdjacent } from './nonAdjacentMerge.js';
 import runScan from './scan.js';
 import { assertNoOverDuplication } from './overDuplication.js';
-import { assertRecordsMatchTree, buildRecords } from './treeEdits.js';
+import { buildRecords } from './treeEdits.js';
+import { assertRecordsMatchTree } from './writeBack.js';
 import { assertRecordsWellFormed } from './recordsCheck.js';
 
 const ROUNDS = 'runMerge repeats past its bound on rounds';
