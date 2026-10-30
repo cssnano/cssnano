@@ -114,6 +114,7 @@ test('liveChildren should equal the children of the stylesheet after a sweep dro
     '@media print{a{color:red}}@media print{a{color:red}}'
   );
   runScan(state);
+  writeBack(state.records.blocks());
   assert.deepEqual(state.records.root.liveChildren(), root.nodes);
 });
 

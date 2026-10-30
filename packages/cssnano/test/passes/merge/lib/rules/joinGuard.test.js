@@ -135,3 +135,22 @@ test('a rule that a join removes has no parent after write-back', () => {
   writeBack(liveBlocks(state.records.root));
   assert.equal(removed.parent, undefined);
 });
+
+test('runScan should merge a pair of adjacent rules without reading the tree', () => {
+  const root = postcss.parse('a{color:red}b{color:red}');
+  const state = new MergeState(['chrome 120'], createRunContext());
+  state.records = buildRecords(root, state);
+  const restore = armGuard(root);
+  try {
+    assert.doesNotThrow(() => runScan(state));
+  } finally {
+    restore();
+  }
+});
+
+test('runScan should leave the child list of the stylesheet as it was until write-back', () => {
+  const { root, state } = scanned('a{color:red}b{color:red}');
+  assert.equal(root.nodes.length, 2);
+  writeBack(liveBlocks(state.records.root));
+  assert.equal(root.nodes.length, 1);
+});

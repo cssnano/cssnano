@@ -212,7 +212,7 @@ export default function runScan(mergeState) {
       current = resumeAfter(replacement, merged.placement, lookaheadStart);
       lookaheadStart = null;
     }
-    sequence.write();
+    sequence.finish();
     if (before) {
       assertSweepLowers(before, sweepPotential(mergeState.records), moved);
     }
