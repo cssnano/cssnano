@@ -336,6 +336,19 @@ export class BlockRecords {
     return record;
   }
 
+  /**
+   * The entry a live child of a block stands as: the record of a rule, the
+   * record of an at-rule with a block, or the node itself.
+   *
+   * @param {ChildNode} node
+   * @return {RuleRecord | BlockRecord | ChildNode}
+   */
+  entryOf(node) {
+    if (node.type === 'rule') return this.metaOf(node);
+    if (node.type === 'atrule') return this.#blocks.get(node) ?? node;
+    return node;
+  }
+
   /** @param {Rule} rule @return {RuleRecord | undefined} */
   recordOf(rule) {
     return this.#metas.get(rule);

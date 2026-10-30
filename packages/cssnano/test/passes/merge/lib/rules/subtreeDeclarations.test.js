@@ -21,7 +21,7 @@ function declarationsOf(css) {
   const block = state.records.blockOf(
     /** @type {import('postcss').AtRule} */ (root.first)
   );
-  return subtreeDeclarations(block, state.records);
+  return subtreeDeclarations(block);
 }
 
 test('subtreeDeclarations should list the declarations of a block at any depth, in document order', () => {
@@ -63,7 +63,7 @@ test('subtreeDeclarations should see the declarations that an edit adds, since n
     root.nodes
   );
   const block = state.records.blockOf(first);
-  assert.equal(subtreeDeclarations(block, state.records)?.length, 1);
-  moveChildren(state, first, second);
-  assert.equal(subtreeDeclarations(block, state.records)?.length, 2);
+  assert.equal(subtreeDeclarations(block)?.length, 1);
+  moveChildren(block, state.records.blockOf(second));
+  assert.equal(subtreeDeclarations(block)?.length, 2);
 });

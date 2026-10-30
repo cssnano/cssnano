@@ -59,7 +59,7 @@ test('last-write index with an unknown target element counts writes to every ele
 test('last-write index reports a barrier for any target element', () => {
   const index = new LastWriteIndex(new PropertyTable());
   const { node, records } = firstNodeWithRecords('@layer x{}');
-  index.recordNode(node, 1, unknownElements, records);
+  index.recordNode(records.entryOf(node), 1, unknownElements);
   assert.equal(index.conflictsSince([], 0, ['h1']), true);
 });
 
@@ -85,7 +85,7 @@ test('last-write index keeps a write at the queried position out of the answer f
 test('last-write index recordNode records each rule declaration under its element keys', () => {
   const index = new LastWriteIndex(new PropertyTable());
   const { node, records } = firstNodeWithRecords('h2{color:red}');
-  index.recordNode(node, 1, () => ['h2'], records);
+  index.recordNode(records.entryOf(node), 1, () => ['h2']);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h1']), false);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h2']), true);
 });

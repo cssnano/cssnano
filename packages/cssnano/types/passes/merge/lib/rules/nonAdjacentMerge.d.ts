@@ -1,6 +1,5 @@
 import { BlockRecord } from './blockRecords.js';
 import type { Container, Declaration } from 'postcss';
-import type { BlockRecords } from './blockRecords.js';
 import type MergeState from './mergeState.js';
 /**
  * The declarations of a block at any depth, in document order, or null when
@@ -8,10 +7,9 @@ import type MergeState from './mergeState.js';
  * answer is not stored, so an edit cannot leave it stale.
  *
  * @param {BlockRecord} block
- * @param {BlockRecords} records
  * @return {Declaration[] | null}
  */
-export declare function subtreeDeclarations(block: BlockRecord, records: BlockRecords): Declaration[] | null;
+export declare function subtreeDeclarations(block: BlockRecord): Declaration[] | null;
 /**
  * Joins siblings that apply under the same circumstances across any nodes
  * between them that set no conflicting property, in every container except
