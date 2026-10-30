@@ -90,6 +90,14 @@ export class BlockRecord {
   leadingWhitespace = undefined;
 
   /**
+   * Where the first live entry stood when last looked up. A dead entry never
+   * becomes live again, so the lookup resumes here rather than at the start.
+   *
+   * @type {number}
+   */
+  #firstLive = 0;
+
+  /**
    * @param {Container} node
    * @param {BlockRecord | null} parent
    * @param {number} position
@@ -108,7 +116,9 @@ export class BlockRecord {
    * @return {ChildNode | undefined}
    */
   firstLiveChild() {
-    for (const entry of this.children) {
+    const { children } = this;
+    for (; this.#firstLive < children.length; this.#firstLive++) {
+      const entry = children[this.#firstLive];
       if (entry instanceof Slot) {
         if (entry.rules.length > 0) return entry.rules[0];
       } else if (entry instanceof BlockRecord) {
