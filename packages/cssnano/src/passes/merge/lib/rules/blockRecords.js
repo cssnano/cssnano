@@ -214,7 +214,8 @@ export function countDeclarations(rule) {
   return count;
 }
 
-const POTENTIAL = 'a sweep raised its potential, or moved a rule without lowering it';
+const POTENTIAL =
+  'a sweep raised its potential, or moved a rule without lowering it';
 
 /**
  * The potential that a sweep never raises: the declarations of the live rules
