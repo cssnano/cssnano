@@ -25,8 +25,8 @@ export default function runMerge(root, browsers, context = createRunContext()) {
   // partial merge is the only rewrite that adds a node, one net, and it
   // removes at least one declaration, as does a trimming join. So at most D
   // rewrites add a node or withdraw a declaration, and at most N + D joins
-  // remove a node or withdraw one. The bound on sweeps per round is open
-  // (see `runScan`), so the cost of the whole loop is not bounded in N.
+  // remove a node or withdraw one. The sweeps per round are bounded by
+  // `sweepPotential`, which is finite, though too large to enforce as a cap.
   const mergeState = new MergeState(browsers, context);
   mergeState.records = buildRecords(root, mergeState);
   const { maxRounds } = mergeState.records;
