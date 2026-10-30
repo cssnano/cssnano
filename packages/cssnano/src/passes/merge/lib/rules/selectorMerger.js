@@ -38,7 +38,7 @@ export default function runMerge(root, browsers, context = createRunContext()) {
     runScan(mergeState);
     assertRecordsWellFormed(mergeState);
     assertNoOverDuplication(mergeState.records);
-    joined = joinNonAdjacent(root, mergeState);
+    joined = joinNonAdjacent(mergeState.records.root, mergeState);
     assertRecordsWellFormed(mergeState);
     assertNoOverDuplication(mergeState.records);
   } while (joined);
