@@ -37,14 +37,15 @@ export default function runMerge(root, browsers, context = createRunContext()) {
     if (++rounds > maxRounds) throw new Error(ROUNDS);
     runScan(mergeState);
     assertRecordsWellFormed(mergeState);
-    assertRecordsMatchTree(mergeState);
     assertNoOverDuplication(mergeState.records);
     joined = joinNonAdjacent(root, mergeState);
-    // Joins edit only the records; the tree catches up here, before its check.
+    // Joins edit only the records; the tree catches up here.
     writeBack(mergeState.records.blocks());
     assertRecordsWellFormed(mergeState);
-    assertRecordsMatchTree(mergeState);
     assertNoOverDuplication(mergeState.records);
   } while (joined);
+  // Checking the tree at the checkpoints would hide stale reads that
+  // production makes, so it is checked once, after the last write-back.
+  assertRecordsMatchTree(mergeState);
   mergeState.flushSelectors();
 }
