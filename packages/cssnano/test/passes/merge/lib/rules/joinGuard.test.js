@@ -107,7 +107,7 @@ test('joinNonAdjacent should join a selector repeated after another rule without
   const restore = armGuard(root);
   let joined;
   try {
-    joined = joinNonAdjacent(root, state);
+    joined = joinNonAdjacent(state.records.root, state);
   } finally {
     restore();
   }
@@ -121,7 +121,7 @@ test('joinNonAdjacent should move an at-rule block into an earlier one without r
   const restore = armGuard(root);
   let joined;
   try {
-    joined = joinNonAdjacent(root, state);
+    joined = joinNonAdjacent(state.records.root, state);
   } finally {
     restore();
   }
@@ -131,7 +131,7 @@ test('joinNonAdjacent should move an at-rule block into an earlier one without r
 test('a rule that a join removes has no parent after write-back', () => {
   const { root, state } = scanned('a{color:red}b{color:blue}a{margin:0}');
   const [, , removed] = root.nodes;
-  joinNonAdjacent(root, state);
+  joinNonAdjacent(state.records.root, state);
   writeBack(liveBlocks(state.records.root));
   assert.equal(removed.parent, undefined);
 });

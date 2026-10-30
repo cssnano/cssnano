@@ -4,6 +4,7 @@ import RepeatScan from './repeatScan.js';
 import { filterRuleIntersections } from './declarations.js';
 import { isKeyframes } from './sameContainer.js';
 import { removeDeclarations, removeRules } from './treeEdits.js';
+import { RuleRecord } from './ruleRecord.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
@@ -99,20 +100,18 @@ function joinGain(group, later, mergeState) {
  * rule, the group, keeps its position and its declarations, so it can take
  * further rules.
  *
- * @param {Container} parent
+ * @param {BlockRecord} block
  * @param {MergeState} mergeState
  * @return {boolean}
  */
-export default function joinByDeclarations(parent, mergeState) {
-  if (isKeyframes(parent)) return false;
-  const nodes = /** @type {BlockRecord} */ (
-    mergeState.records.blockOf(parent)
-  ).liveChildren();
-  const keyLists = nodes.map((node) =>
-    node.type === 'rule' &&
-    mergeState.meta(node).block === null &&
-    isDeclarationRule(node)
-      ? mergeState.declarationKeysOf(node)
+export default function joinByDeclarations(block, mergeState) {
+  if (isKeyframes(block.node)) return false;
+  const entries = block.liveEntries();
+  const keyLists = entries.map((entry) =>
+    entry instanceof RuleRecord &&
+    entry.block === null &&
+    isDeclarationRule(entry.node)
+      ? mergeState.declarationKeysOf(entry.node)
       : null
   );
   // Rules can only join where they share a declaration.
@@ -137,16 +136,16 @@ export default function joinByDeclarations(parent, mergeState) {
   // removing each one splices the parent's array, which takes quadratic time.
   /** @type {Set<Rule>} */
   const emptied = new Set();
-  for (let position = scan.start; position < nodes.length; position++) {
-    const node = nodes[position];
+  for (let position = scan.start; position < entries.length; position++) {
+    const entry = entries[position];
     if (keyLists[position]) {
-      const rule = /** @type {Rule} */ (node);
+      const rule = /** @type {RuleRecord} */ (entry).node;
       const outcome = joinIntoGroup(rule);
       if (outcome === 'emptied') continue;
       // A trimmed rule's record took its remaining declarations, so its keys are new.
       register(rule, position, mergeState.declarationKeysOf(rule).keys);
     }
-    index.recordNode(mergeState.records.entryOf(node), position, keysOf);
+    index.recordNode(entry, position, keysOf);
   }
   for (const rule of grown) mergeState.spellSelectors(rule);
   removeRules(mergeState, emptied);
