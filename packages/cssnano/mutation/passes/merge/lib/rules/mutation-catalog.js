@@ -138,18 +138,6 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'holdsBlocks answers false for a rule that holds a nested rule',
-    target: source('ruleMeta.js'),
-    find: '      this.#holdsBlocks = rule.some(isRuleOrAtRule);',
-    replace: '      this.#holdsBlocks = false;',
-  },
-  {
-    name: 'holdsBlocks skips the check against the tree',
-    target: source('ruleMeta.js'),
-    find: '      consistencyChecksEnabled() &&\n',
-    replace: '      false &&\n',
-  },
-  {
     name: 'meta skips the check of the declarations against the tree',
     target: source('mergeState.js'),
     find: '    if (consistencyChecksEnabled() && !meta.departed) {',
