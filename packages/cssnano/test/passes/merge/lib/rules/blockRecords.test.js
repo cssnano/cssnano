@@ -293,3 +293,35 @@ test('runScan should keep the declaration and rule counts and lower the parent c
   assert.deepEqual(potentialBefore, [2, 2, 3]);
   assert.deepEqual(potentialAfter, [2, 2, 2]);
 });
+
+test('changed should count a droppable parent down when its last live child empties', () => {
+  const root = new BlockRecord(postcss.root(), null, 0, false);
+  const outer = new BlockRecord(
+    postcss.atRule({ name: 'layer' }),
+    root,
+    0,
+    true
+  );
+  const inner = new BlockRecord(
+    postcss.atRule({ name: 'layer' }),
+    outer,
+    0,
+    true
+  );
+  outer.remaining = 1;
+  inner.remaining = 1;
+  inner.changed(-1);
+  assert.equal(outer.remaining, 0);
+});
+
+test('changed should leave a block that no sweep tracks untouched', () => {
+  const root = new BlockRecord(postcss.root(), null, 0, false);
+  const block = new BlockRecord(
+    postcss.atRule({ name: 'layer' }),
+    root,
+    0,
+    true
+  );
+  block.changed(1);
+  assert.equal(block.remaining, null);
+});
