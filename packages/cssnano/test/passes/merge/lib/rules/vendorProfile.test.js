@@ -4,9 +4,9 @@ import postcss from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 import { VendorPrefixSummary } from '../../../../../src/passes/merge/lib/rules/vendorPrefixSummary.js';
 import {
-  RuleMeta,
+  RuleRecord,
   getDecls,
-} from '../../../../../src/passes/merge/lib/rules/ruleMeta.js';
+} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { createSelectorLookup } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
 
 const lookup = createSelectorLookup(['chrome 120']);
@@ -137,55 +137,58 @@ function ruleWith(selector) {
 
 /**
  * @param {import('postcss').Rule} rule
- * @return {RuleMeta} the record of a rule with the declarations it has
+ * @return {RuleRecord} the record of a rule with the declarations it has
  */
 function metaOf(rule) {
-  return new RuleMeta(rule.selectors, getDecls(rule));
+  return new RuleRecord(rule.selectors, getDecls(rule));
 }
 
 test('getVendorProfile should match the list profile after addSelectors grows a rule whose profile was already computed', () => {
   const rule = ruleWith('.a');
-  const meta = metaOf(rule);
-  meta.vendorProfile(lookup);
-  meta.addSelectors(['::-webkit-scrollbar', '.b'], lookup);
-  assert.deepEqual(meta.vendorProfile(lookup), profileOf(meta.selectors));
+  const record = metaOf(rule);
+  record.vendorProfile(lookup);
+  record.addSelectors(['::-webkit-scrollbar', '.b'], lookup);
+  assert.deepEqual(record.vendorProfile(lookup), profileOf(record.selectors));
 });
 
 test('getVendorProfile should match the list profile after setSelectors replaces the list of a rule whose profile was already computed', () => {
   const rule = ruleWith('.a');
-  const meta = metaOf(rule);
-  meta.vendorProfile(lookup);
-  meta.setSelectors(['::-moz-selection']);
-  assert.deepEqual(meta.vendorProfile(lookup), profileOf(['::-moz-selection']));
+  const record = metaOf(rule);
+  record.vendorProfile(lookup);
+  record.setSelectors(['::-moz-selection']);
+  assert.deepEqual(
+    record.vendorProfile(lookup),
+    profileOf(['::-moz-selection'])
+  );
 });
 
 test('getVendorProfile should match the list profile after setSelectors receives the combined profile of the new list', () => {
-  const meta = metaOf(ruleWith('.a'));
+  const record = metaOf(ruleWith('.a'));
   const selectors = ['.a', '::-moz-x'];
-  meta.setSelectors(
+  record.setSelectors(
     selectors,
     profileOf(['.a']).concat(profileOf(['::-moz-x']))
   );
-  assert.deepEqual(meta.vendorProfile(lookup), profileOf(selectors));
+  assert.deepEqual(record.vendorProfile(lookup), profileOf(selectors));
 });
 
 test('getSelectorText should list the selectors added by addSelectors after the text was already read', () => {
-  const meta = metaOf(ruleWith('.a'));
-  meta.selectorText();
-  meta.addSelectors(['.b', '.c'], lookup);
-  assert.equal(meta.selectorText(), '.a,.b,.c');
+  const record = metaOf(ruleWith('.a'));
+  record.selectorText();
+  record.addSelectors(['.b', '.c'], lookup);
+  assert.equal(record.selectorText(), '.a,.b,.c');
 });
 
 test('getSelectorText should list the selectors set by setSelectors after the text was already read', () => {
-  const meta = metaOf(ruleWith('.a'));
-  meta.selectorText();
-  meta.setSelectors(['.x', '.y']);
-  assert.equal(meta.selectorText(), '.x,.y');
+  const record = metaOf(ruleWith('.a'));
+  record.selectorText();
+  record.setSelectors(['.x', '.y']);
+  assert.equal(record.selectorText(), '.x,.y');
 });
 
 test('getSelectorText should keep a comma inside :is() within one selector', () => {
-  const meta = metaOf(ruleWith(':is(a,b),c'));
-  assert.equal(meta.selectorText(), ':is(a,b),c');
+  const record = metaOf(ruleWith(':is(a,b),c'));
+  assert.equal(record.selectorText(), ':is(a,b),c');
 });
 
 test('createSelectorLookup should report no vendor prefix for a class whose name contains -moz-', () => {

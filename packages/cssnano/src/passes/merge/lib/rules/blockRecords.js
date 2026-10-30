@@ -1,5 +1,5 @@
 /** @import {ChildNode, Container, Rule} from 'postcss' */
-import { RuleMeta, isDeclaration } from './ruleMeta.js';
+import { RuleRecord, isDeclaration } from './ruleRecord.js';
 
 /**
  * One position among the children of a block. `rules` are the rules that
@@ -234,11 +234,11 @@ export class BlockRecord {
         if (entry.rules.length === 0) continue;
         const slot = new Slot(this, this.children.length, entry.rules);
         for (const rule of entry.rules) {
-          const meta = records.metaOf(rule);
-          meta.place(slot);
-          if (meta.block) {
-            meta.block.parent = this;
-            meta.block.position = slot.position;
+          const record = records.metaOf(rule);
+          record.place(slot);
+          if (record.block) {
+            record.block.parent = this;
+            record.block.position = slot.position;
           }
         }
         this.children.push(slot);
@@ -260,11 +260,11 @@ export class BlockRecord {
  * its rule holds.
  *
  * @param {Rule} rule
- * @param {RuleMeta} meta
+ * @param {RuleRecord} record
  * @return {void}
  */
-export function assertDeclarationsFresh(rule, meta) {
-  const kept = meta.declarations;
+export function assertDeclarationsFresh(rule, record) {
+  const kept = record.declarations;
   const fresh = rule.nodes.filter(isDeclaration);
   const same =
     kept.length === fresh.length && kept.every((node, i) => node === fresh[i]);
@@ -282,7 +282,7 @@ export class BlockRecords {
   /** @type {Map<Container, BlockRecord>} */
   #blocks = new Map();
 
-  /** @type {Map<Rule, RuleMeta>} the record of each rule, by rule */
+  /** @type {Map<Rule, RuleRecord>} the record of each rule, by rule */
   #metas = new Map();
 
   /** @type {Map<string, number> | null} declarations the input wrote, under checks */
@@ -330,27 +330,31 @@ export class BlockRecords {
    * Gives a rule its record, built from its current declarations.
    *
    * @param {Rule} rule
-   * @return {RuleMeta}
+   * @return {RuleRecord}
    */
   recordRule(rule) {
-    const meta = new RuleMeta(rule.selectors, rule.nodes.filter(isDeclaration));
-    this.#metas.set(rule, meta);
-    return meta;
+    const record = new RuleRecord(
+      rule.selectors,
+      rule.nodes.filter(isDeclaration)
+    );
+    this.#metas.set(rule, record);
+    return record;
   }
 
-  /** @param {Rule} rule @return {RuleMeta | undefined} */
+  /** @param {Rule} rule @return {RuleRecord | undefined} */
   recordOf(rule) {
     return this.#metas.get(rule);
   }
 
   /**
    * @param {Rule} rule
-   * @return {RuleMeta}
+   * @return {RuleRecord}
    * @throws {Error} when the rule has no record
    */
   metaOf(rule) {
-    const meta = this.#metas.get(rule);
-    if (meta === undefined) throw new Error('read of a rule without a record');
-    return meta;
+    const record = this.#metas.get(rule);
+    if (record === undefined)
+      throw new Error('read of a rule without a record');
+    return record;
   }
 }

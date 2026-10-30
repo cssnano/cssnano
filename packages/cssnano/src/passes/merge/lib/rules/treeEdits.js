@@ -3,13 +3,13 @@ import { BlockRecord, BlockRecords, Slot } from './blockRecords.js';
 import { countDeclarations } from './sweepPotential.js';
 import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
-import { getDecls } from './ruleMeta.js';
+import { getDecls } from './ruleRecord.js';
 import { tallyDeclarations } from './overDuplication.js';
 
 /** @import {AtRule, ChildNode, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {PropertyWrites} from './lastWriteIndex.js' */
 /** @import MergeState from './mergeState.js' */
-/** @import {RuleMeta} from './ruleMeta.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 /**
  * The only edits that rule merging makes to the live tree. Each one clears the
@@ -33,7 +33,7 @@ const BLOCK_DECLARATION_EDIT =
  * Under consistency checks, throws when a declaration edit reaches a rule that
  * holds a block, whose declarations stand in its block record.
  *
- * @param {RuleMeta} record
+ * @param {RuleRecord} record
  * @return {void}
  */
 function checkNoBlock(record) {
@@ -65,12 +65,12 @@ export function buildRecords(root, mergeState) {
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
         const slot = new Slot(block, index, [child]);
-        const meta = records.recordRule(child);
-        meta.place(slot);
+        const record = records.recordRule(child);
+        record.place(slot);
         block.children.push(slot);
         if (child.nodes.some(isRuleOrAtRule)) {
           const nested = new BlockRecord(child, block, index, false);
-          meta.setBlock(nested);
+          record.setBlock(nested);
           fill(nested);
         } else {
           declarations += countDeclarations(child);
@@ -253,10 +253,10 @@ export function removeRules(mergeState, rules) {
   const { root } = mergeState.records;
   const leadsRoot = rules.has(/** @type {Rule} */ (root.firstLiveChild()));
   for (const rule of rules) {
-    const meta = mergeState.meta(rule);
-    const slot = /** @type {Slot} */ (meta.slot);
+    const record = mergeState.meta(rule);
+    const slot = /** @type {Slot} */ (record.slot);
     slot.rules.splice(slot.rules.indexOf(rule), 1);
-    meta.depart();
+    record.depart();
   }
   // Unlike `remove`, the rest keep their own whitespace, so the first of them
   // takes its own as the leading whitespace of the stylesheet.

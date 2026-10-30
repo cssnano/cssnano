@@ -2,16 +2,16 @@ import type { Declaration, Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { TextTable } from '../../../../values/textTable.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
-import type { RuleMeta } from './ruleMeta.js';
-import type { RuleDeclarationKeys } from './ruleMeta.js';
+import type { RuleRecord } from './ruleRecord.js';
+import type { RuleDeclarationKeys } from './ruleRecord.js';
 import type { BlockRecord, BlockRecords } from './blockRecords.js';
 /** @import {Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {RuleMeta} from './ruleMeta.js' */
-/** @import {RuleDeclarationKeys} from './ruleMeta.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {RuleDeclarationKeys} from './ruleRecord.js' */
 /** @import {BlockRecord, BlockRecords, Slot} from './blockRecords.js' */
 /**
  * The state shared by every merge of one stylesheet.
@@ -43,9 +43,9 @@ export default class MergeState {
      * a record whose declarations differ from the tree throws.
      *
      * @param {Rule} rule
-     * @return {RuleMeta}
+     * @return {RuleRecord}
      */
-    meta(rule: Rule): RuleMeta;
+    meta(rule: Rule): RuleRecord;
     /**
      * The elements the rule can match. An arrow function, so it passes as a
      * callback without a closure per call.

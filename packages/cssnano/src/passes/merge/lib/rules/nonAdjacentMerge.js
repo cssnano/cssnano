@@ -4,7 +4,7 @@ import joinByDeclarations from './declarationJoin.js';
 import { writesOf } from './ruleRewrite.js';
 import RepeatScan from './repeatScan.js';
 import { BlockRecord, Slot } from './blockRecords.js';
-import { getDecls } from './ruleMeta.js';
+import { getDecls } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
 import {
   appendToDeclarations,

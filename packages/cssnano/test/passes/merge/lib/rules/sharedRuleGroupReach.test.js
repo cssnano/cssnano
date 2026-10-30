@@ -67,18 +67,18 @@ function groupsOf(css) {
   for (const [i, first] of links.entries()) {
     const second = links[i + 1];
     if (!second) break;
-    const metaFirst = mergeState.meta(first.rule);
-    const metaSecond = mergeState.meta(second.rule);
+    const recordFirst = mergeState.meta(first.rule);
+    const recordSecond = mergeState.meta(second.rule);
     const shared = intersect(
-      metaFirst.declarations,
+      recordFirst.declarations,
       mergeState.declarationKeysOf(second.rule).keySet,
       mergeState.declarationKey
     );
     if (shared.length === 0) continue;
     const { claimedEarlierIndices, claimedIndices } = filterRuleIntersections(
       shared,
-      [...metaFirst.declarations],
-      [...metaSecond.declarations],
+      [...recordFirst.declarations],
+      [...recordSecond.declarations],
       mergeState.properties
     );
     if (claimedEarlierIndices.size === 0) continue;

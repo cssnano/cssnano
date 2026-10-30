@@ -31,7 +31,7 @@ export function isDeclaration(node) {
  * The selector list of a rule with what is derived from it. Every field is
  * set up front so all instances share one object layout.
  */
-export class RuleMeta {
+export class RuleRecord {
   /** @type {string[]} */
   #selectors;
   /** @type {Declaration[]} */
@@ -240,7 +240,7 @@ export class RuleMeta {
    * Lists of different lengths differ in text too, since a selector holds no
    * top-level comma, so the text of long lists is joined only when needed.
    *
-   * @param {RuleMeta} other
+   * @param {RuleRecord} other
    * @return {boolean}
    */
   hasSameSelectors(other) {
@@ -294,7 +294,7 @@ export class RuleMeta {
    * texts: copying or re-joining a long list on every merge would take
    * quadratic time.
    *
-   * @param {RuleMeta} earlier left unusable
+   * @param {RuleRecord} earlier left unusable
    * @param {SelectorLookup} lookup
    * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
    */

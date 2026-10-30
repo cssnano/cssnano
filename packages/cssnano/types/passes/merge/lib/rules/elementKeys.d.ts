@@ -1,6 +1,6 @@
 import type { RangePiece } from '../../../../values/joinRanges.js';
 /**
- * The key of one selector, as `RuleMeta#elementKeys` lists it, or null when a
+ * The key of one selector, as `RuleRecord#elementKeys` lists it, or null when a
  * type name cannot describe its element, as with classes, pseudo-classes and
  * escapes. Two different names cannot match one element. A token range of
  * the selector, when given, gives the key without tokenizing its text.

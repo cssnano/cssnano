@@ -53,20 +53,20 @@ function isRuleOrAtRule(node) {
  * @return {void}
  */
 function checkRuleRecord(mergeState, block, slot, rule) {
-  const meta = mergeState.meta(rule);
-  if (meta.slot !== slot) throw new Error(OUT_OF_STEP);
-  if ((meta.block !== null) !== rule.nodes.some(isRuleOrAtRule)) {
+  const record = mergeState.meta(rule);
+  if (record.slot !== slot) throw new Error(OUT_OF_STEP);
+  if ((record.block !== null) !== rule.nodes.some(isRuleOrAtRule)) {
     throw new Error(OUT_OF_STEP);
   }
-  if (meta.block) {
+  if (record.block) {
     if (
-      meta.block.parent !== block ||
-      meta.block.node !== rule ||
-      meta.block.position !== slot.position
+      record.block.parent !== block ||
+      record.block.node !== rule ||
+      record.block.position !== slot.position
     ) {
       throw new Error(OUT_OF_STEP);
     }
-    checkBlockRecord(mergeState, meta.block);
+    checkBlockRecord(mergeState, record.block);
   }
 }
 
