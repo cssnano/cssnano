@@ -20,8 +20,8 @@ import { tokensText } from '../../../../values/tokensText.js';
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {RuleMeta} from './ruleMeta.js' */
-/** @import {RuleDeclarationKeys} from './ruleMeta.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {RuleDeclarationKeys} from './ruleRecord.js' */
 /** @import {BlockRecord, BlockRecords, Slot} from './blockRecords.js' */
 
 /**
@@ -34,7 +34,7 @@ export default class MergeState {
    * @type {PropertyTable}
    */
   properties;
-  /** @type {import('./ruleMeta.js').SelectorLookup} */
+  /** @type {import('./ruleRecord.js').SelectorLookup} */
   #lookup;
   /** @type {WeakSet<Rule>} rules whose selectors are known to be compatible */
   #ruleCache;
@@ -83,14 +83,14 @@ export default class MergeState {
    * a record whose declarations differ from the tree throws.
    *
    * @param {Rule} rule
-   * @return {RuleMeta}
+   * @return {RuleRecord}
    */
   meta(rule) {
-    const meta = this.records.metaOf(rule);
-    if (consistencyChecksEnabled() && !meta.departed) {
-      assertDeclarationsFresh(rule, meta);
+    const record = this.records.metaOf(rule);
+    if (consistencyChecksEnabled() && !record.departed) {
+      assertDeclarationsFresh(rule, record);
     }
-    return meta;
+    return record;
   }
 
   /**
@@ -184,14 +184,14 @@ export default class MergeState {
    * @return {RangePiece[] | null}
    */
   piecesOf(rule) {
-    const meta = this.meta(rule);
-    if (meta.pieces === undefined) {
+    const record = this.meta(rule);
+    if (record.pieces === undefined) {
       const list = this.#textTable.stored(rule);
-      meta.setPieces(
-        list === undefined ? null : selectorPieces(list, meta.selectors)
+      record.setPieces(
+        list === undefined ? null : selectorPieces(list, record.selectors)
       );
     }
-    return /** @type {RangePiece[] | null} */ (meta.pieces);
+    return /** @type {RangePiece[] | null} */ (record.pieces);
   }
 
   /**
@@ -257,13 +257,13 @@ export default class MergeState {
    */
   flushSelectors() {
     for (const rule of this.#spelled) {
-      const meta = this.records.recordOf(rule);
+      const record = this.records.recordOf(rule);
       // A rule that left the stylesheet has nothing to store.
-      if (!meta || meta.departed) continue;
-      const pieces = meta.pieces;
+      if (!record || record.departed) continue;
+      const pieces = record.pieces;
       if (!pieces) continue;
       const list = joinRanges(pieces, [comma()]);
-      if (tokensText(list) === meta.selectorText()) {
+      if (tokensText(list) === record.selectorText()) {
         this.#textTable.write(rule, list);
       }
     }
@@ -317,22 +317,22 @@ export default class MergeState {
   ) {
     if (!sameContainer(blockA, blockB, this.#textTable)) return false;
     if (isKeyframes(blockA.node)) return false;
-    const metaA = this.meta(ruleA);
-    if (metaA.block !== null) return false;
-    const metaB = this.meta(ruleB);
-    if (metaB.block !== null) return false;
+    const recordA = this.meta(ruleA);
+    if (recordA.block !== null) return false;
+    const recordB = this.meta(ruleB);
+    if (recordB.block !== null) return false;
 
     // Compatibility holds for a concatenated list exactly when it holds for
     // each side, so a long absorbing list is never rescanned. The vendor check
     // follows it, because an incompatible selector has no known prefix.
     return (
       (this.#ruleCache.has(ruleA) ||
-        selectorsCompatible(metaA.selectors, this.#lookup, ruleA)) &&
+        selectorsCompatible(recordA.selectors, this.#lookup, ruleA)) &&
       (this.#ruleCache.has(ruleB) ||
-        selectorsCompatible(metaB.selectors, this.#lookup, ruleB)) &&
-      metaA
+        selectorsCompatible(recordB.selectors, this.#lookup, ruleB)) &&
+      recordA
         .vendorProfile(this.#lookup)
-        .allowsMerge(metaB.vendorProfile(this.#lookup))
+        .allowsMerge(recordB.vendorProfile(this.#lookup))
     );
   }
 }

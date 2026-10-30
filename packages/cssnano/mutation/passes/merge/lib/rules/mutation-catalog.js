@@ -115,14 +115,14 @@ export const mutations = [
   },
   {
     name: 'taking declarations keeps the declaration keys of the record',
-    target: source('ruleMeta.js'),
+    target: source('ruleRecord.js'),
     find: '    this.#declarations = declarations;\n    this.#declarationKeys = undefined;\n',
     replace: '    this.#declarations = declarations;\n',
   },
   {
     name: 'a removal of rules leaves the record of each removed rule live',
     target: source('treeEdits.js'),
-    find: '    meta.depart();\n',
+    find: '    record.depart();\n',
     replace: '',
   },
   {
@@ -133,14 +133,14 @@ export const mutations = [
   },
   {
     name: 'absorbing an earlier rule leaves its record live',
-    target: source('ruleMeta.js'),
+    target: source('ruleRecord.js'),
     find: '    earlier.#departed = true;\n',
     replace: '',
   },
   {
     name: 'meta skips the check of the declarations against the tree',
     target: source('mergeState.js'),
-    find: '    if (consistencyChecksEnabled() && !meta.departed) {',
+    find: '    if (consistencyChecksEnabled() && !record.departed) {',
     replace: '    if (false) {',
   },
   {
@@ -158,8 +158,8 @@ export const mutations = [
   {
     name: 'a removal of a rule set that leaves its rules in their slots',
     target: source('treeEdits.js'),
-    find: '    slot.rules.splice(slot.rules.indexOf(rule), 1);\n    meta.depart();\n',
-    replace: '    meta.depart();\n',
+    find: '    slot.rules.splice(slot.rules.indexOf(rule), 1);\n    record.depart();\n',
+    replace: '    record.depart();\n',
   },
   {
     name: 'a removal of a block that leaves its entry in place',
@@ -176,7 +176,7 @@ export const mutations = [
   {
     name: 'a move of children that leaves the moved rules on their old slots',
     target: source('blockRecords.js'),
-    find: '          meta.place(slot);\n',
+    find: '          record.place(slot);\n',
     replace: '',
   },
   {
@@ -195,7 +195,7 @@ export const mutations = [
   {
     name: 'the records check accepts a rule record that names another slot',
     target: source('writeBack.js'),
-    find: '  if (meta.slot !== slot) throw new Error(OUT_OF_STEP);\n',
+    find: '  if (record.slot !== slot) throw new Error(OUT_OF_STEP);\n',
     replace: '',
   },
 ];

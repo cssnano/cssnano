@@ -53,7 +53,7 @@ test('lib/rules should import no tree-edit primitive other than through treeEdit
 test('lib/rules should mark a rule departed only through treeEdits', () => {
   const offenders = sources
     .filter(
-      ({ name, text }) => name !== 'ruleMeta.js' && text.includes('.depart(')
+      ({ name, text }) => name !== 'ruleRecord.js' && text.includes('.depart(')
     )
     .map(({ name }) => name);
   assert.deepEqual(offenders, []);
