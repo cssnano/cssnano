@@ -2,6 +2,7 @@ import { createRunContext } from '../../../ir/runContext.js';
 import MergeState from './mergeState.js';
 import { joinNonAdjacent } from './nonAdjacentMerge.js';
 import runScan from './scan.js';
+import { assertNoOverDuplication } from './overDuplication.js';
 import { assertRecordsMatchTree, buildRecords } from './treeEdits.js';
 
 const ROUNDS = 'runMerge repeats past its bound on rounds';
@@ -34,8 +35,10 @@ export default function runMerge(root, browsers, context = createRunContext()) {
     if (++rounds > maxRounds) throw new Error(ROUNDS);
     runScan(mergeState);
     assertRecordsMatchTree(mergeState);
+    assertNoOverDuplication(mergeState.records);
     joined = joinNonAdjacent(root, mergeState);
     assertRecordsMatchTree(mergeState);
+    assertNoOverDuplication(mergeState.records);
   } while (joined);
   mergeState.flushSelectors();
 }

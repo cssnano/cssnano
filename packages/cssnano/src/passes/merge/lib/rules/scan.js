@@ -4,7 +4,7 @@ import {
   mergeSharedDeclarations,
 } from './merge.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { assertSweepLowers, sweepPotential } from './blockRecords.js';
+import { assertSweepLowers, sweepPotential } from './sweepPotential.js';
 import { earliestPairReaching } from './sharedRuleGroup.js';
 import RuleSequence from './ruleSequence.js';
 import { sameContainer } from './sameContainer.js';
