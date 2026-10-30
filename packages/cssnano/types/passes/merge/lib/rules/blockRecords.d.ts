@@ -1,7 +1,6 @@
 import type { ChildNode, Container, Rule } from 'postcss';
-import type MergeState from './mergeState.js';
 /** @import {ChildNode, Container, Rule} from 'postcss' */
-/** @import MergeState from './mergeState.js' */
+import { RuleMeta } from './ruleMeta.js';
 /**
  * One position among the children of a block. `rules` are the rules that
  * stand there now, in order, so the slot is empty once every rule left.
@@ -145,6 +144,15 @@ export declare function sweepPotential(records: BlockRecords): [number, number, 
  */
 export declare function assertSweepLowers(before: [number, number, number], after: [number, number, number], moved: boolean): void;
 /**
+ * Under consistency checks, throws when a record names other declarations than
+ * its rule holds.
+ *
+ * @param {Rule} rule
+ * @param {RuleMeta} meta
+ * @return {void}
+ */
+export declare function assertDeclarationsFresh(rule: Rule, meta: RuleMeta): void;
+/**
  * The records of one run: the block of each container, and the rule records
  * the run keeps in step with the tree.
  */
@@ -159,11 +167,8 @@ export declare class BlockRecords {
      * @type {number}
      */
     maxRounds: number;
-    /**
-     * @param {MergeState} mergeState
-     * @param {BlockRecord} root the record of the stylesheet
-     */
-    constructor(mergeState: MergeState, root: BlockRecord);
+    /** @param {BlockRecord} root the record of the stylesheet */
+    constructor(root: BlockRecord);
     /**
      * @param {BlockRecord} block
      * @return {void}
@@ -175,9 +180,19 @@ export declare class BlockRecords {
      */
     blockOf(node: Container): BlockRecord | undefined;
     /**
+     * Gives a rule its record, built from its current declarations.
+     *
      * @param {Rule} rule
-     * @return {import('./ruleMeta.js').RuleMeta} the record of the rule
+     * @return {RuleMeta}
      */
-    metaOf(rule: Rule): import('./ruleMeta.js').RuleMeta;
+    recordRule(rule: Rule): RuleMeta;
+    /** @param {Rule} rule @return {RuleMeta | undefined} */
+    recordOf(rule: Rule): RuleMeta | undefined;
+    /**
+     * @param {Rule} rule
+     * @return {RuleMeta}
+     * @throws {Error} when the rule has no record
+     */
+    metaOf(rule: Rule): RuleMeta;
 }
 //# sourceMappingURL=blockRecords.d.ts.map

@@ -18,6 +18,11 @@ export type SelectorLookup = (selector: string, rule?: import('postcss').Rule, i
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { BlockRecord, Slot } from './blockRecords.js';
 /**
+ * @param {import('postcss').ChildNode} node
+ * @return {node is Declaration}
+ */
+export declare function isDeclaration(node: import('postcss').ChildNode): node is Declaration;
+/**
  * The selector list of a rule with what is derived from it. Every field is
  * set up front so all instances share one object layout.
  */
@@ -131,12 +136,6 @@ export declare class RuleMeta {
     /** Marks the record of a rule that left the stylesheet, so a later read throws. */
     depart(): void;
 }
-/**
- * @param {Rule} rule
- * @param {WeakMap<Rule, RuleMeta>} [ruleMeta]
- * @return {RuleMeta}
- */
-export declare function getMeta(rule: Rule, ruleMeta?: WeakMap<Rule, RuleMeta>): RuleMeta;
 /** @param {Rule} rule @return {Declaration[]} */
 export declare function getDecls(rule: Rule): Declaration[];
 //# sourceMappingURL=ruleMeta.d.ts.map

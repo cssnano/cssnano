@@ -3,7 +3,10 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 import { VendorPrefixSummary } from '../../../../../src/passes/merge/lib/rules/vendorPrefixSummary.js';
-import { getMeta } from '../../../../../src/passes/merge/lib/rules/ruleMeta.js';
+import {
+  RuleMeta,
+  getDecls,
+} from '../../../../../src/passes/merge/lib/rules/ruleMeta.js';
 import { createSelectorLookup } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
 
 const lookup = createSelectorLookup(['chrome 120']);
@@ -132,10 +135,17 @@ function ruleWith(selector) {
   return postcss.parse(`${selector}{color:red}`).first;
 }
 
+/**
+ * @param {import('postcss').Rule} rule
+ * @return {RuleMeta} the record of a rule with the declarations it has
+ */
+function metaOf(rule) {
+  return new RuleMeta(rule.selectors, getDecls(rule));
+}
+
 test('getVendorProfile should match the list profile after addSelectors grows a rule whose profile was already computed', () => {
   const rule = ruleWith('.a');
-  const ruleMeta = new WeakMap();
-  const meta = getMeta(rule, ruleMeta);
+  const meta = metaOf(rule);
   meta.vendorProfile(lookup);
   meta.addSelectors(['::-webkit-scrollbar', '.b'], lookup);
   assert.deepEqual(meta.vendorProfile(lookup), profileOf(meta.selectors));
@@ -143,15 +153,14 @@ test('getVendorProfile should match the list profile after addSelectors grows a 
 
 test('getVendorProfile should match the list profile after setSelectors replaces the list of a rule whose profile was already computed', () => {
   const rule = ruleWith('.a');
-  const ruleMeta = new WeakMap();
-  const meta = getMeta(rule, ruleMeta);
+  const meta = metaOf(rule);
   meta.vendorProfile(lookup);
   meta.setSelectors(['::-moz-selection']);
   assert.deepEqual(meta.vendorProfile(lookup), profileOf(['::-moz-selection']));
 });
 
 test('getVendorProfile should match the list profile after setSelectors receives the combined profile of the new list', () => {
-  const meta = getMeta(ruleWith('.a'), new WeakMap());
+  const meta = metaOf(ruleWith('.a'));
   const selectors = ['.a', '::-moz-x'];
   meta.setSelectors(
     selectors,
@@ -161,21 +170,21 @@ test('getVendorProfile should match the list profile after setSelectors receives
 });
 
 test('getSelectorText should list the selectors added by addSelectors after the text was already read', () => {
-  const meta = getMeta(ruleWith('.a'), new WeakMap());
+  const meta = metaOf(ruleWith('.a'));
   meta.selectorText();
   meta.addSelectors(['.b', '.c'], lookup);
   assert.equal(meta.selectorText(), '.a,.b,.c');
 });
 
 test('getSelectorText should list the selectors set by setSelectors after the text was already read', () => {
-  const meta = getMeta(ruleWith('.a'), new WeakMap());
+  const meta = metaOf(ruleWith('.a'));
   meta.selectorText();
   meta.setSelectors(['.x', '.y']);
   assert.equal(meta.selectorText(), '.x,.y');
 });
 
 test('getSelectorText should keep a comma inside :is() within one selector', () => {
-  const meta = getMeta(ruleWith(':is(a,b),c'), new WeakMap());
+  const meta = metaOf(ruleWith(':is(a,b),c'));
   assert.equal(meta.selectorText(), ':is(a,b),c');
 });
 
@@ -232,26 +241,26 @@ test('createSelectorLookup should scan a selector only once when it repeats', ()
 });
 
 test('hasSameSelectors should hold for rules whose lists are equal', () => {
-  const a = getMeta(ruleWith('.a,.b'), new WeakMap());
-  const b = getMeta(ruleWith('.a,.b'), new WeakMap());
+  const a = metaOf(ruleWith('.a,.b'));
+  const b = metaOf(ruleWith('.a,.b'));
   assert.equal(a.hasSameSelectors(b), true);
 });
 
 test('hasSameSelectors should fail for lists of equal length that differ', () => {
-  const a = getMeta(ruleWith('.a,.b'), new WeakMap());
-  const b = getMeta(ruleWith('.a,.c'), new WeakMap());
+  const a = metaOf(ruleWith('.a,.b'));
+  const b = metaOf(ruleWith('.a,.c'));
   assert.equal(a.hasSameSelectors(b), false);
 });
 
 test('hasSameSelectors should tell :is(a,b) from the list a,b, because a nested comma is not a list separator', () => {
-  const a = getMeta(ruleWith(':is(a,b)'), new WeakMap());
-  const b = getMeta(ruleWith('a,b'), new WeakMap());
+  const a = metaOf(ruleWith(':is(a,b)'));
+  const b = metaOf(ruleWith('a,b'));
   assert.equal(a.hasSameSelectors(b), false);
 });
 
 test('hasSameSelectors should follow a list that grew after the two lists were compared', () => {
-  const a = getMeta(ruleWith('.a'), new WeakMap());
-  const b = getMeta(ruleWith('.a'), new WeakMap());
+  const a = metaOf(ruleWith('.a'));
+  const b = metaOf(ruleWith('.a'));
   assert.equal(a.hasSameSelectors(b), true);
   a.addSelectors(['.c'], lookup);
   b.addSelectors(['.d'], lookup);
@@ -259,8 +268,8 @@ test('hasSameSelectors should follow a list that grew after the two lists were c
 });
 
 test('absorbEarlier should list the selectors of the earlier rule first', () => {
-  const earlier = getMeta(ruleWith('.a,.b'), new WeakMap());
-  const later = getMeta(ruleWith('.c'), new WeakMap());
+  const earlier = metaOf(ruleWith('.a,.b'));
+  const later = metaOf(ruleWith('.c'));
   later.absorbEarlier(earlier, lookup);
   assert.deepEqual(
     [later.selectors, later.selectorText()],
@@ -269,8 +278,8 @@ test('absorbEarlier should list the selectors of the earlier rule first', () => 
 });
 
 test('absorbEarlier should give the profile of the combined list', () => {
-  const earlier = getMeta(ruleWith('.a'), new WeakMap());
-  const later = getMeta(ruleWith('::-moz-x'), new WeakMap());
+  const earlier = metaOf(ruleWith('.a'));
+  const later = metaOf(ruleWith('::-moz-x'));
   later.absorbEarlier(earlier, lookup);
   assert.deepEqual(later.vendorProfile(lookup), profileOf(['.a', '::-moz-x']));
 });

@@ -4,7 +4,10 @@ import postcss from 'postcss';
 import { PropertyTable } from '../../../src/passes/ir/propertyTable.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
-import { appendToDeclarations } from '../../../src/passes/merge/lib/rules/treeEdits.js';
+import {
+  appendToDeclarations,
+  buildRecords,
+} from '../../../src/passes/merge/lib/rules/treeEdits.js';
 
 // The incoming rule keeps its emptied block `b{}` until a later sweep drops it,
 // so the tree reads the joined declarations on `a` alone.
@@ -17,8 +20,10 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
     media.nodes
   );
   const kept = [...receiving.nodes];
+  const mergeState = new MergeState(['chrome 120']);
+  mergeState.records = buildRecords(root, mergeState);
   appendToDeclarations(
-    new MergeState(['chrome 120']),
+    mergeState,
     receiving,
     /** @type {import('postcss').Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),

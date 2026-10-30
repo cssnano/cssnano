@@ -133,6 +133,10 @@ export function buildMergedRule(
       decl.remove();
     }
   });
+  // The clones hold their final declarations, so their records are built now.
+  mergeState.records.recordRule(receivingBlock);
+  mergeState.records.recordRule(firstClone);
+  mergeState.records.recordRule(secondClone);
   mergeState.markCompatible(receivingBlock);
   if (secondClone.nodes.length) mergeState.markCompatible(secondClone);
   /** @type {Placement} */
@@ -152,6 +156,7 @@ export function buildMergedRule(
       leftover.walkDecls((decl) => {
         if (claimed.has(index++)) decl.remove();
       });
+      mergeState.records.recordRule(leftover);
       if (!leftover.nodes.length) return [];
       mergeState.markCompatible(leftover);
       return [leftover];

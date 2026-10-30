@@ -39,12 +39,14 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
   // its declarations.
   removeDeclarations(mergeState, q, [/** @type {Declaration} */ (q.first)]);
   const kept = mergeState.meta(q).declarations;
+  const incoming = /** @type {Rule} */ (postcss.parse('x{width:1px}').first);
+  mergeState.records.recordRule(incoming);
   appendToDeclarations(
     mergeState,
     q,
     kept,
     writesOf(kept, mergeState.properties),
-    /** @type {Rule} */ (postcss.parse('x{width:1px}').first)
+    incoming
   );
   assert.equal(joinNonAdjacent(root, mergeState), true);
   assert.equal(root.toString(), '@media (x){@media (y){p,q{width:1px}}}');

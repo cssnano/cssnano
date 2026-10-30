@@ -23,7 +23,7 @@ const noElementKeys = Object.freeze([]);
  * @param {import('postcss').ChildNode} node
  * @return {node is Declaration}
  */
-function isDeclaration(node) {
+export function isDeclaration(node) {
   return node.type === 'decl';
 }
 
@@ -337,26 +337,6 @@ export class RuleMeta {
   #assertLive() {
     if (this.#departed) throw new Error('read of a departed rule record');
   }
-}
-
-/**
- * @param {Rule} rule
- * @param {WeakMap<Rule, RuleMeta>} [ruleMeta]
- * @return {RuleMeta}
- */
-export function getMeta(rule, ruleMeta) {
-  if (ruleMeta && rule) {
-    let meta = ruleMeta.get(rule);
-    if (!meta && rule.nodes) {
-      meta = new RuleMeta(rule.selectors, rule.nodes.filter(isDeclaration));
-      ruleMeta.set(rule, meta);
-    }
-    return meta ?? new RuleMeta([], []);
-  }
-  return new RuleMeta(
-    rule?.selectors ?? [],
-    rule?.nodes?.filter(isDeclaration) ?? []
-  );
 }
 
 /** @param {Rule} rule @return {Declaration[]} */

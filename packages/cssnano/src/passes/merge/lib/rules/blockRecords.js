@@ -1,7 +1,7 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
-/** @import MergeState from './mergeState.js' */
+import { RuleMeta, isDeclaration } from './ruleMeta.js';
 
 /**
  * One position among the children of a block. `rules` are the rules that
@@ -312,6 +312,22 @@ export function assertSweepLowers(before, after, moved) {
 }
 
 /**
+ * Under consistency checks, throws when a record names other declarations than
+ * its rule holds.
+ *
+ * @param {Rule} rule
+ * @param {RuleMeta} meta
+ * @return {void}
+ */
+export function assertDeclarationsFresh(rule, meta) {
+  const kept = meta.declarations;
+  const fresh = rule.nodes.filter(isDeclaration);
+  const same =
+    kept.length === fresh.length && kept.every((node, i) => node === fresh[i]);
+  if (!same) throw new Error('stale declarations of a rule record');
+}
+
+/**
  * The records of one run: the block of each container, and the rule records
  * the run keeps in step with the tree.
  */
@@ -322,8 +338,8 @@ export class BlockRecords {
   /** @type {Map<Container, BlockRecord>} */
   #blocks = new Map();
 
-  /** @type {MergeState} */
-  #mergeState;
+  /** @type {Map<Rule, RuleMeta>} the record of each rule, by rule */
+  #metas = new Map();
 
   /**
    * The most rounds a run may take before it throws. Set from the counts of
@@ -333,12 +349,8 @@ export class BlockRecords {
    */
   maxRounds = Infinity;
 
-  /**
-   * @param {MergeState} mergeState
-   * @param {BlockRecord} root the record of the stylesheet
-   */
-  constructor(mergeState, root) {
-    this.#mergeState = mergeState;
+  /** @param {BlockRecord} root the record of the stylesheet */
+  constructor(root) {
     this.root = root;
   }
 
@@ -359,10 +371,30 @@ export class BlockRecords {
   }
 
   /**
+   * Gives a rule its record, built from its current declarations.
+   *
    * @param {Rule} rule
-   * @return {import('./ruleMeta.js').RuleMeta} the record of the rule
+   * @return {RuleMeta}
+   */
+  recordRule(rule) {
+    const meta = new RuleMeta(rule.selectors, rule.nodes.filter(isDeclaration));
+    this.#metas.set(rule, meta);
+    return meta;
+  }
+
+  /** @param {Rule} rule @return {RuleMeta | undefined} */
+  recordOf(rule) {
+    return this.#metas.get(rule);
+  }
+
+  /**
+   * @param {Rule} rule
+   * @return {RuleMeta}
+   * @throws {Error} when the rule has no record
    */
   metaOf(rule) {
-    return this.#mergeState.meta(rule);
+    const meta = this.#metas.get(rule);
+    if (meta === undefined) throw new Error('read of a rule without a record');
+    return meta;
   }
 }

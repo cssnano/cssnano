@@ -39,7 +39,7 @@ export default class MergeState {
      */
     constructor(browsers: readonly string[], context?: import('../../../ir/runContext.js').RunContext);
     /**
-     * The record of the rule, made on the first read. Under consistency checks
+     * The record of the rule, which the records hold. Under consistency checks
      * a record whose declarations differ from the tree throws.
      *
      * @param {Rule} rule

@@ -175,6 +175,8 @@ test('Slot#substitute should replace the rule in its slot and place the replacem
   const slot = /** @type {Slot} */ (state.meta(rule).slot);
   const replacement = postcss.rule({ selector: 'b' });
   media.append(replacement);
+  // A replacement comes with the record that `ruleRewrite` builds for a clone.
+  state.records.recordRule(replacement);
   slot.substitute(rule, [replacement], state.records);
   assert.deepEqual(slot.rules, [replacement]);
   assert.equal(state.meta(replacement).slot, slot);
