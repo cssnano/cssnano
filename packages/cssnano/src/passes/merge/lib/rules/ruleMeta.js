@@ -1,4 +1,3 @@
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { elementKeyOf } from './elementKeys.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 
@@ -29,14 +28,6 @@ function isDeclaration(node) {
 }
 
 /**
- * @param {import('postcss').ChildNode} node
- * @return {boolean}
- */
-function isRuleOrAtRule(node) {
-  return node.type === 'rule' || node.type === 'atrule';
-}
-
-/**
  * The selector list of a rule with what is derived from it. Every field is
  * set up front so all instances share one object layout.
  */
@@ -57,8 +48,6 @@ export class RuleMeta {
   #pieces;
   /** @type {boolean} set once the rule has left the stylesheet */
   #departed = false;
-  /** @type {boolean | undefined} whether the rule holds a rule or an at-rule, read once */
-  #holdsBlocks;
   /** @type {Slot | undefined} the slot the rule stands in, once placed */
   #slot;
   /** @type {BlockRecord | null} the record of the rule's children, when it holds a rule or an at-rule */
@@ -76,7 +65,6 @@ export class RuleMeta {
     this.#declarationKeys = undefined;
     this.#elementKeys = undefined;
     this.#pieces = undefined;
-    this.#holdsBlocks = undefined;
     this.#slot = undefined;
   }
 
@@ -169,27 +157,6 @@ export class RuleMeta {
       this.#declarationKeys = { keys, keySet: new Set(keys) };
     }
     return this.#declarationKeys;
-  }
-
-  /**
-   * Whether the rule holds a rule or an at-rule. The answer is read once and
-   * kept: merging adds only declarations and comments to a rule that holds no
-   * block, and `canMerge` never merges one that holds a block.
-   *
-   * @param {Rule} rule the rule this record describes
-   * @return {boolean}
-   */
-  holdsBlocks(rule) {
-    this.#assertLive();
-    if (this.#holdsBlocks === undefined) {
-      this.#holdsBlocks = rule.some(isRuleOrAtRule);
-    } else if (
-      consistencyChecksEnabled() &&
-      this.#holdsBlocks !== rule.some(isRuleOrAtRule)
-    ) {
-      throw new Error('stale holdsBlocks of a rule record');
-    }
-    return this.#holdsBlocks;
   }
 
   /**

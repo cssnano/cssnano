@@ -132,20 +132,6 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
   assert.equal(state.canMerge(receiving, other), true);
 });
 
-test('canMerge should reject a rule with a nested rule that the tree gained after a read', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    const { state } = createState();
-    const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-    assert.equal(state.canMerge(root.first, root.last), true);
-    root.first.append(postcss.rule({ selector: '&:hover' }));
-    assert.throws(() => state.canMerge(root.first, root.last), /stale/v);
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
-});
-
 test('meta should throw when a declaration left the rule without a tree edit', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);

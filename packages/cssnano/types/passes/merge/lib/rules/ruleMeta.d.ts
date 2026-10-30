@@ -76,15 +76,6 @@ export declare class RuleMeta {
      */
     declarationKeys(keyOf: (declaration: Declaration) => number): RuleDeclarationKeys;
     /**
-     * Whether the rule holds a rule or an at-rule. The answer is read once and
-     * kept: merging adds only declarations and comments to a rule that holds no
-     * block, and `canMerge` never merges one that holds a block.
-     *
-     * @param {Rule} rule the rule this record describes
-     * @return {boolean}
-     */
-    holdsBlocks(rule: Rule): boolean;
-    /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}
      */

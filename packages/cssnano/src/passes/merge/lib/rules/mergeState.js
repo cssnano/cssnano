@@ -321,9 +321,9 @@ export default class MergeState {
     if (!sameContainer(blockA, blockB, this.#textTable)) return false;
     if (isKeyframes(blockA.node)) return false;
     const metaA = this.meta(ruleA);
-    if (metaA.holdsBlocks(ruleA)) return false;
+    if (metaA.block !== null) return false;
     const metaB = this.meta(ruleB);
-    if (metaB.holdsBlocks(ruleB)) return false;
+    if (metaB.block !== null) return false;
 
     // Compatibility holds for a concatenated list exactly when it holds for
     // each side, so a long absorbing list is never rescanned. The vendor check
