@@ -16,6 +16,7 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
+/** @import {Slot} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
 // The records of the rules an edit touches stay readable, or, for a rule that
 // left the stylesheet, are marked departed. Consistency checks compare each
@@ -239,4 +240,11 @@ test('removeDeclarations should throw when the rule holds a block', () => {
       ]),
     /holds a block/v
   );
+});
+
+test('buildRecords should give each slot the record of its rule, which names the slot', () => {
+  const { root, state } = setup('a{color:red}b{width:1px}');
+  const [first] = /** @type {Slot[]} */ (state.records.root.children);
+  assert.equal(first.rules[0], state.meta(/** @type {Rule} */ (root.first)));
+  assert.equal(first.rules[0].slot, first);
 });

@@ -1,39 +1,39 @@
 import DeclarationScan from './declarationScan.js';
 import { BlockRecord, Slot } from './blockRecords.js';
 
-/** @import {ChildNode, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
 
 /**
  * A doubly linked list lets the scan replace a merged pair in constant time.
  *
- * @typedef {{rule: Rule, slot: Slot, prev: RuleLink | null, next: RuleLink | null}} RuleLink
+ * @typedef {{record: RuleRecord, slot: Slot, prev: RuleLink | null, next: RuleLink | null}} RuleLink
  */
 
 /**
  * The rules that stand in the slots of a pair after it is merged.
  *
  * @typedef {object} Placement
- * @property {Rule[]} first replaces the earlier rule, in its slot
- * @property {Rule[]} second replaces the later rule, in its slot
- * @property {Rule[][]} [following] replaces each rule after the later one that
- * joined the merge, in its slot
+ * @property {RuleRecord[]} first replaces the earlier rule, in its slot
+ * @property {RuleRecord[]} second replaces the later rule, in its slot
+ * @property {RuleRecord[][]} [following] replaces each rule after the later one
+ * that joined the merge, in its slot
  */
 
 /**
  * Chains a link for each rule, in order, after `previous`.
  *
  * @param {RuleLink} previous
- * @param {Rule[]} rules
+ * @param {RuleRecord[]} records
  * @param {Slot} slot
  * @return {RuleLink} the last link, or `previous` when there are no rules
  */
-function linkAfter(previous, rules, slot) {
+function linkAfter(previous, records, slot) {
   let tail = previous;
-  for (const rule of rules) {
+  for (const record of records) {
     /** @type {RuleLink} */
-    const link = { rule, slot, prev: tail, next: null };
+    const link = { record, slot, prev: tail, next: null };
     tail.next = link;
     tail = link;
   }
@@ -48,9 +48,6 @@ export default class RuleSequence {
   /** @type {RuleLink} a sentinel that precedes the first rule */
   head = /** @type {RuleLink} */ ({ prev: null, next: null });
 
-  /** @type {BlockRecords} */
-  #records;
-
   /** @type {DeclarationScan} */
   #scan = new DeclarationScan();
 
@@ -59,20 +56,19 @@ export default class RuleSequence {
 
   /** @param {BlockRecords} records */
   constructor(records) {
-    this.#records = records;
     let tail = this.head;
     /** @param {BlockRecord} block */
     const collect = (block) => {
       let live = 0;
       for (const entry of block.children) {
         if (entry instanceof Slot) {
-          for (const rule of entry.rules) {
+          for (const record of entry.rules) {
             /** @type {RuleLink} */
-            const link = { rule, slot: entry, prev: tail, next: null };
+            const link = { record, slot: entry, prev: tail, next: null };
             tail.next = link;
             tail = link;
             live++;
-            const nested = records.metaOf(rule).block;
+            const nested = record.block;
             if (nested) collect(nested);
           }
         } else if (entry instanceof BlockRecord) {
@@ -118,7 +114,7 @@ export default class RuleSequence {
     if (target === source) return false;
     source.changed(-1);
     target.changed(1);
-    second.slot = target.moveRule(second.rule, second.slot, this.#records);
+    second.slot = target.moveRule(second.record, second.slot);
     return true;
   }
 
@@ -140,8 +136,8 @@ export default class RuleSequence {
     // replaced where it stands.
     firstSlot.block.changed(placement.first.length - 1);
     secondSlot.block.changed(placement.second.length - 1);
-    firstSlot.substitute(first.rule, placement.first, this.#records);
-    secondSlot.substitute(second.rule, placement.second, this.#records);
+    firstSlot.substitute(first.record, placement.first);
+    secondSlot.substitute(second.record, placement.second);
 
     let tail = linkAfter(
       linkAfter(before, placement.first, firstSlot),
@@ -153,7 +149,7 @@ export default class RuleSequence {
       const link = /** @type {RuleLink} */ (following);
       following = link.next;
       link.slot.block.changed(rules.length - 1);
-      link.slot.substitute(link.rule, rules, this.#records);
+      link.slot.substitute(link.record, rules);
       tail = linkAfter(tail, rules, link.slot);
     }
     tail.next = following;

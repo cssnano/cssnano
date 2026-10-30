@@ -67,11 +67,11 @@ function groupsOf(css) {
   for (const [i, first] of links.entries()) {
     const second = links[i + 1];
     if (!second) break;
-    const recordFirst = mergeState.meta(first.rule);
-    const recordSecond = mergeState.meta(second.rule);
+    const recordFirst = mergeState.meta(first.record.node);
+    const recordSecond = mergeState.meta(second.record.node);
     const shared = intersect(
       recordFirst.declarations,
-      mergeState.declarationKeysOf(second.rule).keySet,
+      mergeState.declarationKeysOf(second.record.node).keySet,
       mergeState.declarationKey
     );
     if (shared.length === 0) continue;
@@ -87,7 +87,7 @@ function groupsOf(css) {
       0
     );
     const group = findGroup(
-      first.rule,
+      first.record.node,
       second,
       claimedEarlierIndices,
       claimedIndices,
@@ -163,7 +163,7 @@ test('earliestPairReaching should reach the first rule of the pair from the last
 test('findGroup should form a group whose second rule holds a comment in the generated stylesheets, so the property below covers that pair', () => {
   assert.ok(
     allGroups({ comments: true }).some(({ second }) =>
-      second.rule.nodes.some((node) => node.type === 'comment')
+      second.record.node.nodes.some((node) => node.type === 'comment')
     )
   );
 });
