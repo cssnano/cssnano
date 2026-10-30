@@ -1,7 +1,7 @@
-/** @import {ChildNode, Container, Rule} from 'postcss' */
-/** @import MergeState from './mergeState.js' */
 import type { ChildNode, Container, Rule } from 'postcss';
 import type MergeState from './mergeState.js';
+/** @import {ChildNode, Container, Rule} from 'postcss' */
+/** @import MergeState from './mergeState.js' */
 /**
  * One position among the children of a block. `rules` are the rules that
  * stand there now, in order, so the slot is empty once every rule left.
@@ -109,6 +109,28 @@ export declare class BlockRecord {
  * @return {number} the declarations the rule holds, without copying them
  */
 export declare function countDeclarations(rule: Rule): number;
+/**
+ * The potential that a sweep never raises: the declarations of the live rules
+ * that hold no block, then those rules, then the sum over them of the number
+ * of the block each stands in. Blocks are numbered in document order, dropped
+ * ones included, and nothing is stored between calls.
+ *
+ * @param {BlockRecords} records
+ * @return {[number, number, number]}
+ */
+export declare function sweepPotential(records: BlockRecords): [number, number, number];
+/**
+ * Under consistency checks, throws when a sweep raised the potential, or moved
+ * a rule and left the potential equal. A move lowers the parent count because
+ * `sameContainer` matches whole ancestor chains, so neither parent contains
+ * the other and the earlier parent comes first in document order.
+ *
+ * @param {[number, number, number]} before
+ * @param {[number, number, number]} after
+ * @param {boolean} moved whether the sweep moved a rule to another parent
+ * @return {void}
+ */
+export declare function assertSweepLowers(before: [number, number, number], after: [number, number, number], moved: boolean): void;
 /**
  * The records of one run: the block of each container, and the rule records
  * the run keeps in step with the tree.
