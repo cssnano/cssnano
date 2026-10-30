@@ -198,6 +198,13 @@ export const mutations = [
     replace: '',
   },
   {
+    name: 'move into the later parent',
+    target: source('ruleSequence.js'),
+    find: '    const target = first.slot.block;\n    const source = second.slot.block;\n    if (target === source) return false;\n    this.#blocks.moved(source, target);\n    second.slot = target.moveRule(second.rule, second.slot, this.#records);',
+    replace:
+      '    const target = second.slot.block;\n    const source = first.slot.block;\n    if (target === source) return false;\n    this.#blocks.moved(source, target);\n    first.slot = target.moveRule(first.rule, first.slot, this.#records);',
+  },
+  {
     name: 'the records check accepts a rule record that names another slot',
     target: source('treeEdits.js'),
     find: '  if (meta.slot !== slot) throw new Error(OUT_OF_STEP);\n',
