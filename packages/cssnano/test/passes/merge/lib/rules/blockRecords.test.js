@@ -122,6 +122,43 @@ test('liveChildren should equal the children of the stylesheet after a join remo
   assert.deepEqual(state.records.root.liveChildren(), root.nodes);
 });
 
+/**
+ * The live child count of the stylesheet before and after one `joinNonAdjacent`.
+ *
+ * @param {string} css
+ * @return {{was: number, now: number}}
+ */
+function liveCountAround(css) {
+  const { root, state } = setup(css);
+  const was = state.records.root.liveChildren().length;
+  joinNonAdjacent(root, state);
+  return { was, now: state.records.root.liveChildren().length };
+}
+
+test('joinNonAdjacent should leave fewer live children when a rule joins the rule before it', () => {
+  const { was, now } = liveCountAround('a{color:red}a{width:1px}');
+  assert.ok(now < was);
+});
+
+test('joinNonAdjacent should leave fewer live children when a rule moves down onto a later rule', () => {
+  const { was, now } = liveCountAround('a{color:red}b{width:2px}a{width:3px}');
+  assert.ok(now < was);
+});
+
+test('joinNonAdjacent should leave fewer live children when a block joins the block before it', () => {
+  const { was, now } = liveCountAround(
+    '@media print{a{color:red}}@media print{b{width:1px}}'
+  );
+  assert.ok(now < was);
+});
+
+test('joinNonAdjacent should leave fewer live children when a block moves down onto a later block', () => {
+  const { was, now } = liveCountAround(
+    '@media print{a{color:red}}b{width:2px}@media print{c{width:3px}}'
+  );
+  assert.ok(now < was);
+});
+
 test('liveChildren should return a fresh array of the children, not the entries', () => {
   const { state } = setup('a{color:red}');
   const children = state.records.root.liveChildren();
