@@ -4,7 +4,7 @@ import { joinNonAdjacent } from './nonAdjacentMerge.js';
 import runScan from './scan.js';
 import { assertNoOverDuplication } from './overDuplication.js';
 import { buildRecords } from './treeEdits.js';
-import { assertRecordsMatchTree } from './writeBack.js';
+import { assertRecordsMatchTree, writeBack } from './writeBack.js';
 import { assertRecordsWellFormed } from './recordsCheck.js';
 
 const ROUNDS = 'runMerge repeats past its bound on rounds';
@@ -40,6 +40,8 @@ export default function runMerge(root, browsers, context = createRunContext()) {
     assertRecordsMatchTree(mergeState);
     assertNoOverDuplication(mergeState.records);
     joined = joinNonAdjacent(root, mergeState);
+    // Joins edit only the records; the tree catches up here, before its check.
+    writeBack(mergeState.records.blocks());
     assertRecordsWellFormed(mergeState);
     assertRecordsMatchTree(mergeState);
     assertNoOverDuplication(mergeState.records);

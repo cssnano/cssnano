@@ -163,6 +163,12 @@ export declare class BlockRecords {
      */
     blockOf(node: Container): BlockRecord | undefined;
     /**
+     * The records of every block the run added, dropped ones included.
+     *
+     * @return {IterableIterator<BlockRecord>}
+     */
+    blocks(): IterableIterator<BlockRecord>;
+    /**
      * Gives a rule its record, built from its current declarations.
      *
      * @param {Rule} rule

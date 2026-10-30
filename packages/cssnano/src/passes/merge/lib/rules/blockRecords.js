@@ -318,6 +318,15 @@ export class BlockRecords {
   }
 
   /**
+   * The records of every block the run added, dropped ones included.
+   *
+   * @return {IterableIterator<BlockRecord>}
+   */
+  blocks() {
+    return this.#blocks.values();
+  }
+
+  /**
    * Gives a rule its record, built from its current declarations.
    *
    * @param {Rule} rule
