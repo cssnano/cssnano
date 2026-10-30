@@ -4,8 +4,10 @@ import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
+  assertSweepLowers,
   BlockRecord,
   Slot,
+  sweepPotential,
 } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
@@ -261,4 +263,33 @@ test('a sweep should keep the positions the records hold rather than resetting t
   state.records.root.children[1].position = 5;
   new RuleSequence(state.records);
   assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
+});
+
+test('assertSweepLowers should throw when a sweep moved a rule and the potential stayed equal', () => {
+  assert.throws(
+    () => assertSweepLowers([2, 2, 3], [2, 2, 3], true),
+    /potential/v
+  );
+});
+
+test('assertSweepLowers should throw when a sweep raised the potential', () => {
+  assert.throws(
+    () => assertSweepLowers([2, 2, 3], [2, 3, 2], false),
+    /potential/v
+  );
+});
+
+test('assertSweepLowers should accept a move that lowers the parent count alone', () => {
+  assert.doesNotThrow(() => assertSweepLowers([2, 2, 3], [2, 2, 2], true));
+});
+
+test('runScan should keep the declaration and rule counts and lower the parent count of a pure move', () => {
+  const { state } = setup(
+    '@media print{.a{color:red}}@media print{.b{color:blue}}'
+  );
+  const before = sweepPotential(state.records);
+  runScan(state);
+  const after = sweepPotential(state.records);
+  assert.deepEqual(before, [2, 2, 3]);
+  assert.deepEqual(after, [2, 2, 2]);
 });
