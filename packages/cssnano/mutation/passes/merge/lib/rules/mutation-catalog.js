@@ -146,14 +146,14 @@ export const mutations = [
   {
     name: 'a takePlaceOf that leaves the rule record on its old slot',
     target: source('treeEdits.js'),
-    find: '    record.place(laterSlot);\n',
+    find: '    rule.place(laterSlot);\n',
     replace: '',
   },
   {
     name: 'a removal of a rule that leaves it in its slot',
     target: source('treeEdits.js'),
-    find: '    const record = mergeState.meta(node);\n    const slot = /** @type {Slot} */ (record.slot);\n    slot.rules.splice(slot.rules.indexOf(record), 1);\n',
-    replace: '    const record = mergeState.meta(node);\n    const slot = /** @type {Slot} */ (record.slot);\n',
+    find: '    const slot = /** @type {Slot} */ (entry.slot);\n    slot.rules.splice(slot.rules.indexOf(entry), 1);\n',
+    replace: '    const slot = /** @type {Slot} */ (entry.slot);\n',
   },
   {
     name: 'a removal of a rule set that leaves its rules in their slots',

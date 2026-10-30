@@ -146,7 +146,7 @@ export default function joinByDeclarations(parent, mergeState) {
       // A trimmed rule's record took its remaining declarations, so its keys are new.
       register(rule, position, mergeState.declarationKeysOf(rule).keys);
     }
-    index.recordNode(node, position, keysOf, mergeState.records);
+    index.recordNode(mergeState.records.entryOf(node), position, keysOf);
   }
   for (const rule of grown) mergeState.spellSelectors(rule);
   removeRules(mergeState, emptied);

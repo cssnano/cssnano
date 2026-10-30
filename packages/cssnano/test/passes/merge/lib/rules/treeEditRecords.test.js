@@ -207,7 +207,12 @@ test('takePlaceOf should move the record of the earlier rule into the slot of th
     /** @type {Container} */ (media).nodes
   );
   const laterSlot = state.meta(later).slot;
-  takePlaceOf(state, /** @type {Container} */ (media), earlier, later);
+  takePlaceOf(
+    state,
+    /** @type {Container} */ (media),
+    state.meta(earlier),
+    state.meta(later)
+  );
   assert.equal(state.meta(earlier).slot, laterSlot);
 });
 

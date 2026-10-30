@@ -3,13 +3,12 @@ import { BlockRecord, BlockRecords, Slot } from './blockRecords.js';
 import { countDeclarations } from './sweepPotential.js';
 import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
-import { getDecls } from './ruleRecord.js';
+import { RuleRecord, getDecls } from './ruleRecord.js';
 import { tallyDeclarations } from './overDuplication.js';
 
 /** @import {AtRule, ChildNode, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {PropertyWrites} from './lastWriteIndex.js' */
 /** @import MergeState from './mergeState.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
 
 /**
  * The only edits that rule merging makes to the live tree. Each one clears the
@@ -103,32 +102,27 @@ export function buildRecords(root, mergeState) {
  * PostCSS child lists catch up at write-back. `from` is left empty, so the
  * caller removes or replaces it.
  *
- * @param {MergeState} mergeState
- * @param {Container} into
- * @param {Container} from
+ * @param {BlockRecord} into
+ * @param {BlockRecord} from
  * @return {void}
  */
-export function moveChildren(mergeState, into, from) {
-  const { records } = mergeState;
-  const target = /** @type {BlockRecord} */ (records.blockOf(into));
-  target.adopt(/** @type {BlockRecord} */ (records.blockOf(from)));
+export function moveChildren(into, from) {
+  into.adopt(from);
 }
 
 /**
- * Takes `node` out of its parent's records at once. The PostCSS child list
- * catches up at write-back.
+ * Takes a rule or an at-rule out of its parent's records at once. The PostCSS
+ * child list catches up at write-back.
  *
- * @param {MergeState} mergeState
- * @param {Rule | AtRule} node
+ * @param {RuleRecord | BlockRecord} entry the record of the rule, or the block of the at-rule
  * @return {void}
  */
-export function remove(mergeState, node) {
-  if (node.type === 'rule') {
-    const record = mergeState.meta(node);
-    const slot = /** @type {Slot} */ (record.slot);
-    slot.rules.splice(slot.rules.indexOf(record), 1);
+export function remove(entry) {
+  if (entry instanceof RuleRecord) {
+    const slot = /** @type {Slot} */ (entry.slot);
+    slot.rules.splice(slot.rules.indexOf(entry), 1);
   } else {
-    emptyEntry(/** @type {BlockRecord} */ (mergeState.records.blockOf(node)));
+    emptyEntry(entry);
   }
 }
 
@@ -152,38 +146,34 @@ function emptyEntry(block) {
  *
  * @param {MergeState} mergeState
  * @param {Container} parent
- * @param {Rule | AtRule} earlier
- * @param {Rule | AtRule} later
+ * @param {RuleRecord | BlockRecord} earlier the record of a rule, or the block of an at-rule
+ * @param {RuleRecord | BlockRecord} later the record of a rule, or the block of an at-rule, of the same kind
  * @return {void}
  */
 export function takePlaceOf(mergeState, parent, earlier, later) {
   // The first child of the stylesheet leaves its place, so the whitespace it
   // held passes to the child after it, which `later` gave to `earlier`.
   const { root } = mergeState.records;
-  if (parent.type === 'root' && root.firstLiveChild() === earlier) {
-    root.leadingWhitespace = later.raws.before;
+  if (parent.type === 'root' && root.firstLiveChild() === earlier.node) {
+    root.leadingWhitespace = later.node.raws.before;
   }
-  if (later.type === 'rule') {
-    const rule = /** @type {Rule} */ (earlier);
-    const replaced = mergeState.meta(/** @type {Rule} */ (later));
-    const record = mergeState.meta(rule);
-    const laterSlot = /** @type {Slot} */ (replaced.slot);
-    const earlierSlot = /** @type {Slot} */ (record.slot);
-    earlierSlot.rules.splice(earlierSlot.rules.indexOf(record), 1);
-    laterSlot.rules.splice(laterSlot.rules.indexOf(replaced), 1, record);
-    record.place(laterSlot);
+  if (later instanceof RuleRecord) {
+    const rule = /** @type {RuleRecord} */ (earlier);
+    const laterSlot = /** @type {Slot} */ (later.slot);
+    const earlierSlot = /** @type {Slot} */ (rule.slot);
+    earlierSlot.rules.splice(earlierSlot.rules.indexOf(rule), 1);
+    laterSlot.rules.splice(laterSlot.rules.indexOf(later), 1, rule);
+    rule.place(laterSlot);
   } else {
-    const { records } = mergeState;
-    const block = /** @type {BlockRecord} */ (records.blockOf(earlier));
-    const laterBlock = /** @type {BlockRecord} */ (records.blockOf(later));
+    const block = /** @type {BlockRecord} */ (earlier);
     const holder = /** @type {BlockRecord} */ (block.parent);
     const from = block.position;
-    const to = laterBlock.position;
+    const to = later.position;
     holder.children[to] = block;
     block.position = to;
     holder.children[from] = new Slot(holder, from, []);
   }
-  earlier.raws.before = later.raws.before;
+  earlier.node.raws.before = later.node.raws.before;
 }
 
 /**

@@ -1,5 +1,6 @@
 import cssnanoUtils from '#utils';
 import { BlockRecord, Slot } from './blockRecords.js';
+import { RuleRecord } from './ruleRecord.js';
 
 /** @import {AtRule, ChildNode, Declaration, Rule} from 'postcss' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
@@ -234,61 +235,63 @@ export default class LastWriteIndex {
    * a barrier, since moving anything across it is not known to preserve the
    * cascade.
    *
-   * @param {ChildNode} node
+   * @param {ChildNode | RuleRecord | BlockRecord} entry the node, or the record
+   * of a rule or of an at-rule with a block, as `BlockRecords#entryOf` gives
    * @param {number} position
    * @param {(rule: Rule) => string[] | null} keysOf
-   * @param {BlockRecords} records the children of a block come from its record
    * @return {void}
    */
-  recordNode(node, position, keysOf, records) {
-    this.#recordNode(node, position, null, keysOf, records);
+  recordNode(entry, position, keysOf) {
+    this.#recordNode(entry, position, null, keysOf);
   }
 
   /**
-   * @param {ChildNode} node
+   * @param {ChildNode | RuleRecord | BlockRecord} entry
    * @param {number} position
    * @param {string[] | null} keys
    * @param {(rule: Rule) => string[] | null} keysOf
-   * @param {BlockRecords} records
    */
-  #recordNode(node, position, keys, keysOf, records) {
-    if (node.type === 'decl') {
-      this.record(node, position, keys);
-    } else if (node.type === 'atrule' && !isConditionalGroupRule(node)) {
-      this.#lastBarrier = Math.max(this.#lastBarrier, position);
-    } else if (node.type === 'rule' || node.type === 'atrule') {
-      const own =
-        node.type === 'rule' ? keysOf(/** @type {Rule} */ (node)) : keys;
-      const block =
-        node.type === 'rule'
-          ? records.metaOf(node).block
-          : records.blockOf(/** @type {AtRule} */ (node));
-      if (!block) {
-        // A rule without a block holds declarations and comments only.
-        if (node.type === 'rule') {
-          for (const child of node.nodes)
-            this.#recordNode(child, position, own, keysOf, records);
-        }
+  #recordNode(entry, position, keys, keysOf) {
+    if (entry instanceof RuleRecord) {
+      const own = keysOf(entry.node);
+      const block = entry.block;
+      if (block) {
+        this.#recordBlock(block, position, own, keysOf);
         return;
       }
-      // Walks the entries in place, since a copy of the children would cost an
-      // allocation at every block.
-      for (const entry of block.children) {
-        if (entry instanceof Slot) {
-          for (const record of entry.rules)
-            this.#recordNode(record.node, position, own, keysOf, records);
-        } else if (entry instanceof BlockRecord) {
-          if (!entry.dropped)
-            this.#recordNode(
-              /** @type {ChildNode} */ (entry.node),
-              position,
-              own,
-              keysOf,
-              records
-            );
-        } else {
-          this.#recordNode(entry, position, own, keysOf, records);
-        }
+      // A rule without a block holds declarations and comments only.
+      for (const child of entry.node.nodes)
+        this.#recordNode(child, position, own, keysOf);
+    } else if (entry instanceof BlockRecord) {
+      // Only an at-rule has a block record among the entries.
+      if (isConditionalGroupRule(/** @type {AtRule} */ (entry.node))) {
+        this.#recordBlock(entry, position, keys, keysOf);
+      } else {
+        this.#lastBarrier = Math.max(this.#lastBarrier, position);
+      }
+    } else if (entry.type === 'decl') {
+      this.record(entry, position, keys);
+    } else if (entry.type === 'atrule' && !isConditionalGroupRule(entry)) {
+      this.#lastBarrier = Math.max(this.#lastBarrier, position);
+    }
+  }
+
+  /**
+   * Records the writes of every live entry of a block, in place, since a copy
+   * of the children would cost an allocation at every block.
+   *
+   * @param {BlockRecord} block
+   * @param {number} position
+   * @param {string[] | null} keys
+   * @param {(rule: Rule) => string[] | null} keysOf
+   */
+  #recordBlock(block, position, keys, keysOf) {
+    for (const entry of block.children) {
+      if (entry instanceof Slot) {
+        for (const record of entry.rules)
+          this.#recordNode(record, position, keys, keysOf);
+      } else if (!(entry instanceof BlockRecord && entry.dropped)) {
+        this.#recordNode(entry, position, keys, keysOf);
       }
     }
   }
