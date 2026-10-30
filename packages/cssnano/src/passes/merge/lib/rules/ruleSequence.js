@@ -1,6 +1,5 @@
 import DeclarationScan from './declarationScan.js';
 import { BlockRecord, Slot } from './blockRecords.js';
-import { writeBack } from './writeBack.js';
 
 /** @import {ChildNode, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -43,7 +42,7 @@ function linkAfter(previous, rules, slot) {
 
 /**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
- * other rules, rewritten in the block records and written back once.
+ * other rules, rewritten in the block records.
  */
 export default class RuleSequence {
   /** @type {RuleLink} a sentinel that precedes the first rule */
@@ -54,9 +53,6 @@ export default class RuleSequence {
 
   /** @type {DeclarationScan} */
   #scan = new DeclarationScan();
-
-  /** @type {Set<BlockRecord>} blocks whose children differ from the stylesheet */
-  #changed = new Set();
 
   /** @type {BlockRecord[]} droppable blocks tracked by this sweep */
   #tracked = [];
@@ -123,7 +119,6 @@ export default class RuleSequence {
     source.changed(-1);
     target.changed(1);
     second.slot = target.moveRule(second.rule, second.slot, this.#records);
-    this.#changed.add(target).add(source);
     return true;
   }
 
@@ -147,7 +142,6 @@ export default class RuleSequence {
     secondSlot.block.changed(placement.second.length - 1);
     firstSlot.substitute(first.rule, placement.first, this.#records);
     secondSlot.substitute(second.rule, placement.second, this.#records);
-    this.#changed.add(firstSlot.block).add(secondSlot.block);
 
     let tail = linkAfter(
       linkAfter(before, placement.first, firstSlot),
@@ -168,28 +162,16 @@ export default class RuleSequence {
   }
 
   /**
-   * Writes the sequence into the stylesheet, rebuilding each changed container
-   * once from its records.
+   * Ends the sweep: drops the blocks it emptied. The stylesheet is not touched;
+   * `runMerge` writes the records back once.
    *
    * @return {void}
    */
-  write() {
-    // A block which has become empty can be safely ignored, but keeping it would
-    // make every later pair walk across it. Rebuild its parent without it,
-    // which avoids searching the children of the parent once per removed
-    // block.
-    /** @type {Set<BlockRecord>} */
-    const emptied = new Set();
+  finish() {
+    // A block which has become empty can be safely ignored, but keeping it
+    // would make every later pair walk across it.
     for (const block of this.#tracked) {
-      if (block.remaining === 0) emptied.add(block);
+      if (block.remaining === 0) block.dropped = true;
     }
-    for (const block of emptied) block.dropped = true;
-    const changed = new Set(this.#changed);
-    for (const block of emptied) {
-      const parent = /** @type {BlockRecord} */ (block.parent);
-      if (!emptied.has(parent)) changed.add(parent);
-      changed.delete(block);
-    }
-    writeBack(changed);
   }
 }

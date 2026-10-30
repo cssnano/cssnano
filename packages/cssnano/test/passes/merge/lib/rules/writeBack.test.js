@@ -6,7 +6,10 @@ import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import {
+  assertRecordsMatchTree,
+  writeBack,
+} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 
 /** @import {Container, Root} from 'postcss' */
 
@@ -32,10 +35,10 @@ test('a second write-back should leave the child array of a block that already m
   const sequence = new RuleSequence(state.records);
   const first = /** @type {any} */ (sequence.head.next);
   sequence.moveIntoParent(first, first.next);
-  sequence.write();
+  writeBack(state.records.blocks());
   const media = /** @type {Container} */ (root.first);
   const kept = media.nodes;
-  sequence.write();
+  writeBack(state.records.blocks());
   assert.equal(media.nodes, kept);
   assert.doesNotThrow(() => assertRecordsMatchTree(state));
 });

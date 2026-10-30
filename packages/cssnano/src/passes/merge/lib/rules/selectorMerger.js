@@ -39,13 +39,13 @@ export default function runMerge(root, browsers, context = createRunContext()) {
     assertRecordsWellFormed(mergeState);
     assertNoOverDuplication(mergeState.records);
     joined = joinNonAdjacent(root, mergeState);
-    // Joins edit only the records; the tree catches up here.
-    writeBack(mergeState.records.blocks());
     assertRecordsWellFormed(mergeState);
     assertNoOverDuplication(mergeState.records);
   } while (joined);
-  // Checking the tree at the checkpoints would hide stale reads that
-  // production makes, so it is checked once, after the last write-back.
+  // Sweeps and joins edit only the records, so the tree catches up once. It
+  // is checked here and not at the checkpoints, which would hide stale reads
+  // that production makes.
+  writeBack(mergeState.records.blocks());
   assertRecordsMatchTree(mergeState);
   mergeState.flushSelectors();
 }
