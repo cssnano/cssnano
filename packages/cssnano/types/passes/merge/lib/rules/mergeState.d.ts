@@ -69,15 +69,6 @@ export default class MergeState {
      */
     declarationKeysOf(rule: Rule): RuleDeclarationKeys;
     /**
-     * Records that every selector of the rule is compatible with the target
-     * browsers, so `canMerge` does not check them again. The caller must have
-     * established it: a rule built from selectors that passed `canMerge`
-     * qualifies, since a list is compatible exactly when each selector is.
-     *
-     * @param {Rule} rule
-     */
-    markCompatible(rule: Rule): void;
-    /**
      * Reports a rule a merge created, when the run collects them, so the driver
      * canonicalizes it. A rule no run collects is left alone.
      *

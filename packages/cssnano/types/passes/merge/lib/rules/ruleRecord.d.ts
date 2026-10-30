@@ -89,6 +89,14 @@ export declare class RuleRecord {
      */
     vendorProfile(lookup: SelectorLookup): VendorPrefixSummary;
     /**
+     * Whether every selector is compatible with the target browsers. It is read
+     * once and then kept: a grown list ANDs in the answer for its new selectors.
+     *
+     * @param {SelectorLookup} lookup
+     * @return {boolean}
+     */
+    compatible(lookup: SelectorLookup): boolean;
+    /**
      * The elements the selector list can match, as `elementKeyOf` in
      * `elementKeys.js` describes them, or null when any selector has no key or
      * there are none, which must not read as a rule that writes to no element.
