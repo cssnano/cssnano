@@ -357,3 +357,33 @@ test('assertNoOverDuplication should throw when a declaration is written more of
     /more often than the input/v
   );
 });
+
+/**
+ * @param {number} count
+ * @return {number} the entries read by `count` calls of firstLiveChild on a
+ * block whose first `count` entries are empty slots
+ */
+function entriesReadByFirstLiveChild(count) {
+  const root = postcss.parse('a{color:red}');
+  const block = new BlockRecord(root, null, 0, false);
+  const entries = Array.from(
+    { length: count },
+    (_, i) => new Slot(block, i, [])
+  );
+  entries.push(new Slot(block, count, [/** @type {Rule} */ (root.first)]));
+  let reads = 0;
+  block.children = new Proxy(entries, {
+    get(target, key, receiver) {
+      if (typeof key === 'string' && Number.isInteger(Number(key))) reads++;
+      return Reflect.get(target, key, receiver);
+    },
+  });
+  for (let call = 0; call < count; call++) block.firstLiveChild();
+  return reads;
+}
+
+test('firstLiveChild should read the entries before the first live one a linear number of times across calls', () => {
+  const ratio =
+    entriesReadByFirstLiveChild(4000) / entriesReadByFirstLiveChild(1000);
+  assert.ok(ratio < 8, `4× size read ratio ${ratio.toFixed(2)}`);
+});
