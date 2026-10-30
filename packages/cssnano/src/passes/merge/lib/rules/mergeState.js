@@ -1,7 +1,4 @@
-import {
-  createSelectorLookup,
-  selectorsCompatible,
-} from './ensureCompatibility.js';
+import { createSelectorLookup } from './ensureCompatibility.js';
 import { createElementKeyLookup } from './elementKeys.js';
 import { comma } from '../../../../values/punctuationTokens.js';
 import { createRunContext } from '../../../ir/runContext.js';
@@ -36,8 +33,6 @@ export default class MergeState {
   properties;
   /** @type {import('./ruleRecord.js').SelectorLookup} */
   #lookup;
-  /** @type {WeakSet<Rule>} rules whose selectors are known to be compatible */
-  #ruleCache;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
   #declarations;
   /** @type {(selector: string, piece?: RangePiece | null) => string | null} */
@@ -71,7 +66,6 @@ export default class MergeState {
       context.selectorCompatibility,
       context.textTable
     );
-    this.#ruleCache = context.compatibleRules;
     this.#declarations = context.declarations;
     this.properties = context.properties;
     this.#createdBlocks = context.createdBlocks;
@@ -121,18 +115,6 @@ export default class MergeState {
    */
   declarationKeysOf(rule) {
     return this.meta(rule).declarationKeys(this.declarationKey);
-  }
-
-  /**
-   * Records that every selector of the rule is compatible with the target
-   * browsers, so `canMerge` does not check them again. The caller must have
-   * established it: a rule built from selectors that passed `canMerge`
-   * qualifies, since a list is compatible exactly when each selector is.
-   *
-   * @param {Rule} rule
-   */
-  markCompatible(rule) {
-    this.#ruleCache.add(rule);
   }
 
   /**
@@ -322,14 +304,11 @@ export default class MergeState {
     const recordB = this.meta(ruleB);
     if (recordB.block !== null) return false;
 
-    // Compatibility holds for a concatenated list exactly when it holds for
-    // each side, so a long absorbing list is never rescanned. The vendor check
-    // follows it, because an incompatible selector has no known prefix.
+    // The vendor check follows compatibility, because an incompatible selector
+    // has no known prefix.
     return (
-      (this.#ruleCache.has(ruleA) ||
-        selectorsCompatible(recordA.selectors, this.#lookup, ruleA)) &&
-      (this.#ruleCache.has(ruleB) ||
-        selectorsCompatible(recordB.selectors, this.#lookup, ruleB)) &&
+      recordA.compatible(this.#lookup) &&
+      recordB.compatible(this.#lookup) &&
       recordA
         .vendorProfile(this.#lookup)
         .allowsMerge(recordB.vendorProfile(this.#lookup))

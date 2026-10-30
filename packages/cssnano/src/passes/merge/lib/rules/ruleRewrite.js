@@ -137,8 +137,6 @@ export function buildMergedRule(
   mergeState.records.recordRule(receivingBlock);
   mergeState.records.recordRule(firstClone);
   mergeState.records.recordRule(secondClone);
-  mergeState.markCompatible(receivingBlock);
-  if (secondClone.nodes.length) mergeState.markCompatible(secondClone);
   /** @type {Placement} */
   const placement = {
     first: [firstClone].filter((rule) => rule.nodes.length),
@@ -158,7 +156,6 @@ export function buildMergedRule(
       });
       mergeState.records.recordRule(leftover);
       if (!leftover.nodes.length) return [];
-      mergeState.markCompatible(leftover);
       return [leftover];
     });
   }

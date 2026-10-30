@@ -8,8 +8,35 @@ import {
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 
 const lookup = () => ({});
+const lookupB = (selector) => ({ compatible: selector !== 'b' });
 const keyOf = (declaration) => declaration.prop.length;
 const declarationsOf = (css) => postcss.parse(css).first.nodes;
+
+test('compatible should look up each selector once across repeated reads', () => {
+  const record = new RuleRecord(postcss.rule(), ['a', 'b'], []);
+  const looked = [];
+  const lookupOnce = (selector) => {
+    looked.push(selector);
+    return { compatible: true };
+  };
+  record.compatible(lookupOnce);
+  record.compatible(lookupOnce);
+  assert.deepEqual(looked, ['a', 'b']);
+});
+
+test('compatible should be false once addSelectors adds an incompatible selector', () => {
+  const record = new RuleRecord(postcss.rule(), ['a'], []);
+  assert.equal(record.compatible(lookupB), true);
+  record.addSelectors(['b'], lookupB);
+  assert.equal(record.compatible(lookupB), false);
+});
+
+test('compatible should be false after absorbEarlier takes an incompatible earlier rule', () => {
+  const later = new RuleRecord(postcss.rule(), ['a'], []);
+  const earlier = new RuleRecord(postcss.rule(), ['b'], []);
+  later.absorbEarlier(earlier, lookupB);
+  assert.equal(later.compatible(lookupB), false);
+});
 
 test('recordRule should give the record of a rule the rule as its node', () => {
   const rule = postcss.parse('a{color:red}').first;

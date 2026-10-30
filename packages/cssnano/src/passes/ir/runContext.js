@@ -14,7 +14,6 @@ import { TextTable } from '../../values/textTable.js';
  *   declarations: DeclarationKeys,
  *   createdBlocks: Set<Rule> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
- *   compatibleRules: WeakSet<Rule>,
  *   textTable: TextTable,
  * }} RunContext
  */
@@ -33,7 +32,6 @@ export function createRunContext(textTable = new TextTable()) {
     declarations: new DeclarationKeys(),
     createdBlocks: null,
     selectorCompatibility: new Map(),
-    compatibleRules: new WeakSet(),
     textTable,
   };
 }

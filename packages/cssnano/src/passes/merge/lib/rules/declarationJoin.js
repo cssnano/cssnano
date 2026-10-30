@@ -236,7 +236,6 @@ export default function joinByDeclarations(parent, mergeState) {
     if (listed) recordGained(group, gained);
     grown.add(group.rule);
     const outcome = withdraw(later, laterDeclarations, claimed);
-    mergeState.markCompatible(group.rule);
     return outcome;
   }
 

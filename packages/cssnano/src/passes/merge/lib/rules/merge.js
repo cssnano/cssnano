@@ -86,7 +86,6 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
   mergeState.absorbEarlier(second, first);
   mergeState.spellSelectors(second);
   depart(mergeState, first);
-  mergeState.markCompatible(second);
   return { first: [], second: [second] };
 }
 
