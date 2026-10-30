@@ -287,9 +287,9 @@ test('runScan should keep the declaration and rule counts and lower the parent c
   const { state } = setup(
     '@media print{.a{color:red}}@media print{.b{color:blue}}'
   );
-  const before = sweepPotential(state.records);
+  const potentialBefore = sweepPotential(state.records);
   runScan(state);
-  const after = sweepPotential(state.records);
-  assert.deepEqual(before, [2, 2, 3]);
-  assert.deepEqual(after, [2, 2, 2]);
+  const potentialAfter = sweepPotential(state.records);
+  assert.deepEqual(potentialBefore, [2, 2, 3]);
+  assert.deepEqual(potentialAfter, [2, 2, 2]);
 });
