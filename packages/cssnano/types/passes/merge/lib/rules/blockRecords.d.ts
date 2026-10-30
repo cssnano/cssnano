@@ -71,6 +71,12 @@ export declare class BlockRecord {
      */
     firstLiveChild(): ChildNode | undefined;
     /**
+     * The number of children the block holds now, counted without copying them.
+     *
+     * @return {number}
+     */
+    liveCount(): number;
+    /**
      * The children the block holds now, in order: the rules of its slots, and
      * the nodes of its other entries, except a block that was dropped.
      *
@@ -99,6 +105,11 @@ export declare class BlockRecord {
     adopt(source: BlockRecord, records: BlockRecords): void;
 }
 /**
+ * @param {Rule} rule
+ * @return {number} the declarations the rule holds, without copying them
+ */
+export declare function countDeclarations(rule: Rule): number;
+/**
  * The records of one run: the block of each container, and the rule records
  * the run keeps in step with the tree.
  */
@@ -106,6 +117,13 @@ export declare class BlockRecords {
     #private;
     /** @type {BlockRecord} the record of the stylesheet */
     root: BlockRecord;
+    /**
+     * The most rounds a run may take before it throws. Set from the counts of
+     * rules, at-rules and declarations when the records are built.
+     *
+     * @type {number}
+     */
+    maxRounds: number;
     /**
      * @param {MergeState} mergeState
      * @param {BlockRecord} root the record of the stylesheet
