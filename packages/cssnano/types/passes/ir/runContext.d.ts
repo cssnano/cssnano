@@ -2,7 +2,6 @@ import { DeclarationKeys } from './declarationKey.js';
 import { PropertyTable } from './propertyTable.js';
 import { TextTable } from '../../values/textTable.js';
 import type { SelectorInfo } from '../merge/lib/rules/ensureCompatibility.js';
-import type { RuleMeta } from '../merge/lib/rules/ruleMeta.js';
 import type { Rule } from 'postcss';
 export type RunContext = {
     properties: PropertyTable;
@@ -10,11 +9,9 @@ export type RunContext = {
     createdBlocks: Set<Rule> | null;
     selectorCompatibility: Map<string, SelectorInfo>;
     compatibleRules: WeakSet<Rule>;
-    ruleMeta: WeakMap<Rule, RuleMeta>;
     textTable: TextTable;
 };
 /** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
-/** @import {RuleMeta} from '../merge/lib/rules/ruleMeta.js' */
 /** @import {Rule} from 'postcss' */
 /**
  * The state one run of the merge pass shares across its transforms. Nothing in
@@ -26,7 +23,6 @@ export type RunContext = {
  *   createdBlocks: Set<Rule> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
  *   compatibleRules: WeakSet<Rule>,
- *   ruleMeta: WeakMap<Rule, RuleMeta>,
  *   textTable: TextTable,
  * }} RunContext
  */

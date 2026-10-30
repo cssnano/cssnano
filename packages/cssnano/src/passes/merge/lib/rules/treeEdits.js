@@ -57,10 +57,7 @@ function checkNoBlock(record) {
  */
 export function buildRecords(root, mergeState) {
   const { textTable } = mergeState;
-  const records = new BlockRecords(
-    mergeState,
-    new BlockRecord(root, null, 0, false)
-  );
+  const records = new BlockRecords(new BlockRecord(root, null, 0, false));
   let nodes = 0;
   let declarations = 0;
   /** @param {BlockRecord} block */
@@ -71,7 +68,7 @@ export function buildRecords(root, mergeState) {
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
         const slot = new Slot(block, index, [child]);
-        const meta = mergeState.meta(child);
+        const meta = records.recordRule(child);
         meta.place(slot);
         block.children.push(slot);
         if (child.nodes.some(isRuleOrAtRule)) {
