@@ -4,11 +4,13 @@ import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
-  assertSweepLowers,
   BlockRecord,
   Slot,
-  sweepPotential,
 } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import {
+  assertSweepLowers,
+  sweepPotential,
+} from '../../../../../src/passes/merge/lib/rules/sweepPotential.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   assertRecordsMatchTree,
@@ -17,6 +19,7 @@ import {
   remove,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { assertNoOverDuplication } from '../../../../../src/passes/merge/lib/rules/overDuplication.js';
 import { mergePass } from '../../../../../src/passes/merge/index.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
@@ -326,4 +329,30 @@ test('changed should leave a block that no sweep tracks untouched', () => {
   );
   block.changed(1);
   assert.equal(block.remaining, null);
+});
+
+test('assertNoOverDuplication should accept records built from a stylesheet that repeats a declaration', () => {
+  const { state } = setup('a{color:red}b{color:red}');
+  assert.doesNotThrow(() => assertNoOverDuplication(state.records));
+});
+
+test('assertNoOverDuplication should throw when the records reach a rule twice', () => {
+  const { root, state } = setup('a{color:red}b{width:1px}');
+  const [, second] = /** @type {Slot[]} */ (state.records.root.children);
+  second.rules.push(/** @type {Rule} */ (root.first));
+  assert.throws(
+    () => assertNoOverDuplication(state.records),
+    /reach a node twice/v
+  );
+});
+
+test('assertNoOverDuplication should throw when a declaration is written more often than the input wrote it', () => {
+  const { root, state } = setup('a{color:red}');
+  /** @type {Rule} */ (root.first).append(
+    postcss.decl({ prop: 'color', value: 'red' })
+  );
+  assert.throws(
+    () => assertNoOverDuplication(state.records),
+    /more often than the input/v
+  );
 });
