@@ -1,14 +1,11 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { applyChildEdits, detach } from '../deferredChildEdits.js';
-import {
-  BlockRecord,
-  BlockRecords,
-  Slot,
-  countDeclarations,
-} from './blockRecords.js';
+import { BlockRecord, BlockRecords, Slot } from './blockRecords.js';
+import { countDeclarations } from './sweepPotential.js';
 import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
 import { getDecls } from './ruleMeta.js';
+import { tallyDeclarations } from './overDuplication.js';
 
 /** @import {AtRule, ChildNode, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {PropertyWrites} from './lastWriteIndex.js' */
@@ -94,6 +91,8 @@ export function buildRecords(root, mergeState) {
     }
   };
   fill(records.root);
+  if (consistencyChecksEnabled())
+    records.inputWrites = tallyDeclarations(records);
   // N + D + 1 rounds bound a run, see `runMerge`.
   records.maxRounds = nodes + declarations + 1;
   return records;
