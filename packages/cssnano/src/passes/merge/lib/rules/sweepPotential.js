@@ -38,12 +38,12 @@ export function sweepPotential(records) {
     const id = number++;
     for (const entry of block.children) {
       if (entry instanceof Slot) {
-        for (const rule of entry.rules) {
-          const nested = records.metaOf(rule).block;
+        for (const record of entry.rules) {
+          const nested = record.block;
           if (nested) {
             visit(nested);
           } else {
-            declarations += countDeclarations(rule);
+            declarations += countDeclarations(record.node);
             rules++;
             parents += id;
           }

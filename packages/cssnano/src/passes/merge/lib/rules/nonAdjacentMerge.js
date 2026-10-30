@@ -54,8 +54,8 @@ function collectFrom(node, declarations, records) {
 function collectDeclarations(block, declarations, records) {
   for (const entry of block.children) {
     if (entry instanceof Slot) {
-      for (const rule of entry.rules) {
-        if (!collectFrom(rule, declarations, records)) return false;
+      for (const record of entry.rules) {
+        if (!collectFrom(record.node, declarations, records)) return false;
       }
     } else if (!(entry instanceof BlockRecord && entry.dropped)) {
       const node = entry instanceof BlockRecord ? entry.node : entry;

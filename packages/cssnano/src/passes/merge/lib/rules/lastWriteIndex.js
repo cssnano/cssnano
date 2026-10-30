@@ -275,8 +275,8 @@ export default class LastWriteIndex {
       // allocation at every block.
       for (const entry of block.children) {
         if (entry instanceof Slot) {
-          for (const rule of entry.rules)
-            this.#recordNode(rule, position, own, keysOf, records);
+          for (const record of entry.rules)
+            this.#recordNode(record.node, position, own, keysOf, records);
         } else if (entry instanceof BlockRecord) {
           if (!entry.dropped)
             this.#recordNode(

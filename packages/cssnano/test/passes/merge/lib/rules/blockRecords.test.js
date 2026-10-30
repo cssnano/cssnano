@@ -54,9 +54,9 @@ test('buildRecords should hold each rule of a block in its own slot, in order', 
   const [first, second] = media.children;
   assert.ok(first instanceof Slot);
   assert.ok(second instanceof Slot);
-  assert.equal(first.rules[0].selector, 'a');
-  assert.equal(second.rules[0].selector, 'b');
-  assert.equal(state.meta(first.rules[0]).slot, first);
+  assert.equal(first.rules[0].node.selector, 'a');
+  assert.equal(second.rules[0].node.selector, 'b');
+  assert.equal(first.rules[0].slot, first);
 });
 
 test('buildRecords should give a rule that holds a rule a block record for its children', () => {
@@ -86,7 +86,7 @@ test('assertRecordsMatchTree should throw when a rule record names a slot the ru
     state.records.blockOf(/** @type {any} */ (root.first))
   );
   const [first, second] = /** @type {Slot[]} */ (media.children);
-  state.meta(first.rules[0]).place(second);
+  first.rules[0].place(second);
   assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
 });
 
@@ -186,10 +186,10 @@ test('Slot#substitute should replace the rule in its slot and place the replacem
   const replacement = postcss.rule({ selector: 'b' });
   media.append(replacement);
   // A replacement comes with the record that `ruleRewrite` builds for a clone.
-  state.records.recordRule(replacement);
-  slot.substitute(rule, [replacement], state.records);
-  assert.deepEqual(slot.rules, [replacement]);
-  assert.equal(state.meta(replacement).slot, slot);
+  const record = state.records.recordRule(replacement);
+  slot.substitute(state.meta(rule), [record]);
+  assert.deepEqual(slot.rules, [record]);
+  assert.equal(record.slot, slot);
 });
 
 test('moveRule should place the record of the moved rule in a new slot at the end of the target', () => {
@@ -198,7 +198,7 @@ test('moveRule should place the record of the moved rule in a new slot at the en
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
   const from = /** @type {Slot} */ (state.meta(rule).slot);
   const target = state.records.root;
-  const slot = target.moveRule(rule, from, state.records);
+  const slot = target.moveRule(state.meta(rule), from);
   assert.equal(state.meta(rule).slot, slot);
   assert.equal(slot.block, target);
   assert.equal(target.children.at(-1), slot);
@@ -209,7 +209,7 @@ test('moveRule should leave the rule out of the slot it came from', () => {
   const [media] = /** @type {Root} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
   const from = /** @type {Slot} */ (state.meta(rule).slot);
-  state.records.root.moveRule(rule, from, state.records);
+  state.records.root.moveRule(state.meta(rule), from);
   assert.deepEqual(from.rules, []);
 });
 
@@ -260,7 +260,7 @@ test('an entry should hold its index as position after a rule moves to the end o
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
   const from = /** @type {Slot} */ (state.meta(rule).slot);
-  state.records.root.moveRule(rule, from, state.records);
+  state.records.root.moveRule(state.meta(rule), from);
   assert.equal(positionsMatchIndex(state.records.root), true);
 });
 
@@ -346,7 +346,7 @@ test('assertNoOverDuplication should accept records built from a stylesheet that
 test('assertNoOverDuplication should throw when the records reach a rule twice', () => {
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [, second] = /** @type {Slot[]} */ (state.records.root.children);
-  second.rules.push(/** @type {Rule} */ (root.first));
+  second.rules.push(state.meta(/** @type {Rule} */ (root.first)));
   assert.throws(
     () => assertNoOverDuplication(state.records),
     /reach a node twice/v

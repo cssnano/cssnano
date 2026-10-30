@@ -1,8 +1,8 @@
 import { BlockRecord, Slot } from './blockRecords.js';
-import type { Rule } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
+import type { RuleRecord } from './ruleRecord.js';
 export type RuleLink = {
-    rule: Rule;
+    record: RuleRecord;
     slot: Slot;
     prev: RuleLink | null;
     next: RuleLink | null;
@@ -11,16 +11,16 @@ export type Placement = {
     /**
      * replaces the earlier rule, in its slot
      */
-    first: Rule[];
+    first: RuleRecord[];
     /**
      * replaces the later rule, in its slot
      */
-    second: Rule[];
+    second: RuleRecord[];
     /**
-     * replaces each rule after the later one that
-     * joined the merge, in its slot
+     * replaces each rule after the later one
+     * that joined the merge, in its slot
      */
-    following?: Rule[][];
+    following?: RuleRecord[][];
 };
 /**
  * Every rule of a stylesheet in stylesheet order, including rules nested in

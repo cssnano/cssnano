@@ -59,10 +59,12 @@ export default function runScan(mergeState) {
    * @return {number} NO_BENEFIT when merging the pair cannot rewrite anything
    */
   const mergeBenefit = (first, second) => {
-    const a = mergeState.declarationKeysOf(first.rule);
-    const b = mergeState.declarationKeysOf(second.rule);
+    const a = mergeState.declarationKeysOf(first.record.node);
+    const b = mergeState.declarationKeysOf(second.record.node);
     if (
-      mergeState.meta(first.rule).hasSameSelectors(mergeState.meta(second.rule))
+      mergeState
+        .meta(first.record.node)
+        .hasSameSelectors(mergeState.meta(second.record.node))
     )
       return a.keys.length + b.keys.length;
     const [smaller, larger] =
@@ -90,7 +92,7 @@ export default function runScan(mergeState) {
 
   /** @param {RuleLink} first @param {RuleLink} second */
   const pairBenefit = (first, second) =>
-    unmergeablePairs.get(first.rule) === second.rule
+    unmergeablePairs.get(first.record.node) === second.record.node
       ? NO_BENEFIT
       : mergeBenefit(first, second);
 
@@ -107,8 +109,8 @@ export default function runScan(mergeState) {
   const mergePair = (sequence, first, second) => {
     if (
       !mergeState.canMerge(
-        first.rule,
-        second.rule,
+        first.record.node,
+        second.record.node,
         first.slot.block,
         second.slot.block
       ) ||
@@ -118,11 +120,19 @@ export default function runScan(mergeState) {
     }
     const moved = sequence.moveIntoParent(first, second);
     const placement =
-      mergeMatchingDeclarations(first.rule, second.rule, mergeState) ??
-      mergeMatchingSelectors(first.rule, second.rule, mergeState) ??
+      mergeMatchingDeclarations(
+        first.record.node,
+        second.record.node,
+        mergeState
+      ) ??
+      mergeMatchingSelectors(
+        first.record.node,
+        second.record.node,
+        mergeState
+      ) ??
       mergeSharedDeclarations(
-        first.rule,
-        second.rule,
+        first.record.node,
+        second.record.node,
         mergeState,
         second,
         sequence,
@@ -130,7 +140,7 @@ export default function runScan(mergeState) {
       );
     if (placement) return { placement, moved };
     return moved
-      ? { placement: { first: [first.rule], second: [second.rule] }, moved }
+      ? { placement: { first: [first.record], second: [second.record] }, moved }
       : null;
   };
 
@@ -156,7 +166,7 @@ export default function runScan(mergeState) {
     let resume = replacement;
     if (lookaheadStart) {
       resume = lookaheadStart;
-    } else if (before.rule) {
+    } else if (before.record) {
       resume = before;
     }
     earliest.link = null;
@@ -198,7 +208,7 @@ export default function runScan(mergeState) {
         benefit === NO_BENEFIT ? null : mergePair(sequence, current, second);
       if (!merged) {
         if (lookaheadStart && benefit !== NO_BENEFIT) {
-          unmergeablePairs.set(current.rule, second.rule);
+          unmergeablePairs.set(current.record.node, second.record.node);
           current = lookaheadStart;
         } else {
           current = second;

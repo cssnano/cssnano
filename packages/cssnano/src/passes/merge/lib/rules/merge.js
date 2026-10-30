@@ -81,12 +81,12 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
   // and a selector list that repeats the selector is longer than one rule.
   if (mergeState.meta(first).hasSameSelectors(mergeState.meta(second))) {
     depart(mergeState, second);
-    return { first: [first], second: [] };
+    return { first: [mergeState.meta(first)], second: [] };
   }
   mergeState.absorbEarlier(second, first);
   mergeState.spellSelectors(second);
   depart(mergeState, first);
-  return { first: [], second: [second] };
+  return { first: [], second: [mergeState.meta(second)] };
 }
 
 /**
@@ -108,7 +108,7 @@ export function mergeMatchingSelectors(first, second, mergeState) {
     writesOf(kept, mergeState.properties),
     second
   );
-  return { first: [first], second: [] };
+  return { first: [mergeState.meta(first)], second: [] };
 }
 
 /**

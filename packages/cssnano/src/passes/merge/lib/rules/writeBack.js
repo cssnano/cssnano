@@ -4,6 +4,7 @@ import { BlockRecord, Slot } from './blockRecords.js';
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {BlockRecord as Block} from './blockRecords.js' */
 /** @import MergeState from './mergeState.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 
@@ -21,8 +22,8 @@ function differs(block) {
   let at = 0;
   for (const entry of block.children) {
     if (entry instanceof Slot) {
-      for (const rule of entry.rules) {
-        if (nodes[at++] !== rule) return true;
+      for (const record of entry.rules) {
+        if (nodes[at++] !== record.node) return true;
       }
     } else if (entry instanceof BlockRecord) {
       if (entry.dropped) continue;
@@ -49,11 +50,13 @@ function isRuleOrAtRule(node) {
  * @param {MergeState} mergeState
  * @param {Block} block the block holding the slot
  * @param {Slot} slot
- * @param {Rule} rule
+ * @param {RuleRecord} record
  * @return {void}
  */
-function checkRuleRecord(mergeState, block, slot, rule) {
-  const record = mergeState.meta(rule);
+function checkRuleRecord(mergeState, block, slot, record) {
+  const rule = record.node;
+  // Keeps the freshness check of the declarations, which `meta` makes.
+  mergeState.meta(rule);
   if (record.slot !== slot) throw new Error(OUT_OF_STEP);
   if ((record.block !== null) !== rule.nodes.some(isRuleOrAtRule)) {
     throw new Error(OUT_OF_STEP);
@@ -82,8 +85,8 @@ function checkBlockRecord(mergeState, block) {
   if (differs(block)) throw new Error(OUT_OF_STEP);
   for (const entry of block.children) {
     if (entry instanceof Slot) {
-      for (const rule of entry.rules) {
-        checkRuleRecord(mergeState, block, entry, rule);
+      for (const record of entry.rules) {
+        checkRuleRecord(mergeState, block, entry, record);
       }
     } else if (entry instanceof BlockRecord && !entry.dropped) {
       checkBlockRecord(mergeState, entry);
