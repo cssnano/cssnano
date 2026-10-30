@@ -24,7 +24,7 @@ export type Placement = {
 };
 /**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
- * other rules, rewritten in the block records and written back once.
+ * other rules, rewritten in the block records.
  */
 export default class RuleSequence {
     #private;
@@ -60,11 +60,11 @@ export default class RuleSequence {
      */
     replacePair(first: RuleLink, placement: Placement): RuleLink;
     /**
-     * Writes the sequence into the stylesheet, rebuilding each changed container
-     * once from its records.
+     * Ends the sweep: drops the blocks it emptied. The stylesheet is not touched;
+     * `runMerge` writes the records back once.
      *
      * @return {void}
      */
-    write(): void;
+    finish(): void;
 }
 //# sourceMappingURL=ruleSequence.d.ts.map
