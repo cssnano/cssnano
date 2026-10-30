@@ -3,6 +3,8 @@ import {
   mergeMatchingSelectors,
   mergeSharedDeclarations,
 } from './merge.js';
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
+import { assertSweepLowers, sweepPotential } from './blockRecords.js';
 import { earliestPairReaching } from './sharedRuleGroup.js';
 import RuleSequence from './ruleSequence.js';
 import { sameContainer } from './sameContainer.js';
@@ -172,6 +174,9 @@ export default function runScan(mergeState) {
   let moved;
   do {
     moved = false;
+    const before = consistencyChecksEnabled()
+      ? sweepPotential(mergeState.records)
+      : null;
     const sequence = new RuleSequence(mergeState.records);
     const list = sequence.head;
     let current = list.next ?? list;
@@ -208,6 +213,9 @@ export default function runScan(mergeState) {
       lookaheadStart = null;
     }
     sequence.write();
+    if (before) {
+      assertSweepLowers(before, sweepPotential(mergeState.records), moved);
+    }
     // A move changes which rules share a parent, so rules the sweep already
     // passed may now merge.
   } while (moved);
