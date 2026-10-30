@@ -72,10 +72,14 @@ function overridesShared(nodes, claimed, shared, table) {
  * @return {link is RuleLink}
  */
 function repeatsShared(link, parent, firstKeys, sharedIndices, mergeState) {
-  if (!link || link.slot.block !== parent || !isDeclarationRule(link.rule)) {
+  if (
+    !link ||
+    link.slot.block !== parent ||
+    !isDeclarationRule(link.record.node)
+  ) {
     return false;
   }
-  const { keySet } = mergeState.declarationKeysOf(link.rule);
+  const { keySet } = mergeState.declarationKeysOf(link.record.node);
   for (const index of sharedIndices) {
     if (!keySet.has(firstKeys[index])) return false;
   }
@@ -149,7 +153,7 @@ export function findGroup(
     .declarations.filter((_, index) => claimedEarlierIndices.has(index));
   if (
     overridesShared(
-      second.rule.nodes,
+      second.record.node.nodes,
       claimedIndices,
       shared,
       mergeState.properties
@@ -158,7 +162,7 @@ export function findGroup(
     return null;
 
   const listed = new Set(mergeState.meta(first).selectors);
-  for (const selector of mergeState.meta(second.rule).selectors) {
+  for (const selector of mergeState.meta(second.record.node).selectors) {
     listed.add(selector);
   }
   const listedBefore = listed.size;
@@ -166,7 +170,7 @@ export function findGroup(
   const candidates = [];
   /** @type {Follower[]} */
   const followers = [];
-  const members = [first, second.rule];
+  const members = [first, second.record.node];
   let blocked = false;
   let best = delta;
   let size = 0;
@@ -178,14 +182,14 @@ export function findGroup(
     repeatsShared(link, parent, firstKeys, claimedEarlierIndices, mergeState);
     link = link.next, seen++
   ) {
-    const selectors = mergeState.meta(link.rule).selectors;
+    const selectors = mergeState.meta(link.record.node).selectors;
     for (const selector of selectors) {
       if (listed.has(selector)) continue;
       listed.add(selector);
       running += 1 + selector.length;
     }
     running -= sharedBytes;
-    if (link.rule.nodes.length === shared.length) {
+    if (link.record.node.nodes.length === shared.length) {
       running -= selectorsLength(selectors) + 1;
     }
     candidates.push(link);
@@ -198,7 +202,7 @@ export function findGroup(
     while (!blocked && followers.length < candidates.length) {
       const index = followers.length;
       const candidate = candidates[index];
-      const later = candidate.rule;
+      const later = candidate.record.node;
       const claimed = claimRepeats(
         shared,
         /** @type {Declaration[]} */ (later.nodes),
@@ -276,13 +280,13 @@ export function earliestPairReaching(
   earliest
 ) {
   const parent = link.slot.block;
-  const own = mergeState.declarationKeysOf(link.rule);
+  const own = mergeState.declarationKeysOf(link.record.node);
   let passed = false;
   let member = link;
   for (let depth = 1; ; depth++) {
     const prev = /** @type {RuleLink} */ (member.prev);
-    if (!prev.rule) break;
-    const other = mergeState.declarationKeysOf(prev.rule);
+    if (!prev.record) break;
+    const other = mergeState.declarationKeysOf(prev.record.node);
     if (depth === 1) {
       // Seed from the smaller key list, which bounds the first intersection.
       const [from, to] =

@@ -10,24 +10,23 @@ export declare class Slot {
     block: BlockRecord;
     /** @type {number} where the slot stands among the children of `block` */
     position: number;
-    /** @type {Rule[]} */
-    rules: Rule[];
+    /** @type {RuleRecord[]} */
+    rules: RuleRecord[];
     /**
      * @param {BlockRecord} block
      * @param {number} position
-     * @param {Rule[]} rules
+     * @param {RuleRecord[]} rules
      */
-    constructor(block: BlockRecord, position: number, rules: Rule[]);
+    constructor(block: BlockRecord, position: number, rules: RuleRecord[]);
     /**
-     * Replaces `rule` in the slot with `replacements`, and places each of them
+     * Replaces `record` in the slot with `replacements`, and places each of them
      * here.
      *
-     * @param {Rule} rule the rule that stands in the slot and is replaced
-     * @param {Rule[]} replacements
-     * @param {BlockRecords} records
+     * @param {RuleRecord} record the record that stands in the slot and is replaced
+     * @param {RuleRecord[]} replacements
      * @return {void}
      */
-    substitute(rule: Rule, replacements: Rule[], records: BlockRecords): void;
+    substitute(record: RuleRecord, replacements: RuleRecord[]): void;
 }
 /**
  * The record of a container that the merge visits: the stylesheet, an at-rule
@@ -104,25 +103,23 @@ export declare class BlockRecord {
      */
     liveChildren(): ChildNode[];
     /**
-     * Moves `rule` out of `from` into a new slot after the last child of this
+     * Moves `record` out of `from` into a new slot after the last child of this
      * block.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      * @param {Slot} from
-     * @param {BlockRecords} records
-     * @return {Slot} the slot that now holds `rule`
+     * @return {Slot} the slot that now holds `record`
      */
-    moveRule(rule: Rule, from: Slot, records: BlockRecords): Slot;
+    moveRule(record: RuleRecord, from: Slot): Slot;
     /**
      * Takes the children of `source` after its own. Each rule gets a slot here,
      * and each block a rule holds gets this block as its parent. `source` is
      * left with no children, since the caller removes it.
      *
      * @param {BlockRecord} source
-     * @param {BlockRecords} records
      * @return {void}
      */
-    adopt(source: BlockRecord, records: BlockRecords): void;
+    adopt(source: BlockRecord): void;
 }
 /**
  * Under consistency checks, throws when a record names other declarations than

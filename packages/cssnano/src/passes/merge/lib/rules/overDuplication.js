@@ -58,7 +58,7 @@ export function tallyDeclarations(records) {
   const walk = (block) => {
     for (const entry of block.children) {
       if (entry instanceof Slot) {
-        for (const rule of entry.rules) visitRule(rule);
+        for (const record of entry.rules) visitRule(record.node);
       } else if (entry instanceof BlockRecord) {
         reach(entry.node);
         walk(entry);

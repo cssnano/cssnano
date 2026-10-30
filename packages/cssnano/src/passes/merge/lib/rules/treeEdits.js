@@ -64,8 +64,8 @@ export function buildRecords(root, mergeState) {
       const index = block.children.length;
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
-        const slot = new Slot(block, index, [child]);
         const record = records.recordRule(child);
+        const slot = new Slot(block, index, [record]);
         record.place(slot);
         block.children.push(slot);
         if (child.nodes.some(isRuleOrAtRule)) {
@@ -111,7 +111,7 @@ export function buildRecords(root, mergeState) {
 export function moveChildren(mergeState, into, from) {
   const { records } = mergeState;
   const target = /** @type {BlockRecord} */ (records.blockOf(into));
-  target.adopt(/** @type {BlockRecord} */ (records.blockOf(from)), records);
+  target.adopt(/** @type {BlockRecord} */ (records.blockOf(from)));
 }
 
 /**
@@ -124,8 +124,9 @@ export function moveChildren(mergeState, into, from) {
  */
 export function remove(mergeState, node) {
   if (node.type === 'rule') {
-    const slot = /** @type {Slot} */ (mergeState.meta(node).slot);
-    slot.rules.splice(slot.rules.indexOf(node), 1);
+    const record = mergeState.meta(node);
+    const slot = /** @type {Slot} */ (record.slot);
+    slot.rules.splice(slot.rules.indexOf(record), 1);
   } else {
     emptyEntry(/** @type {BlockRecord} */ (mergeState.records.blockOf(node)));
   }
@@ -164,12 +165,13 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
   }
   if (later.type === 'rule') {
     const rule = /** @type {Rule} */ (earlier);
-    const replaced = /** @type {Rule} */ (later);
-    const laterSlot = /** @type {Slot} */ (mergeState.meta(replaced).slot);
-    const earlierSlot = /** @type {Slot} */ (mergeState.meta(rule).slot);
-    earlierSlot.rules.splice(earlierSlot.rules.indexOf(rule), 1);
-    laterSlot.rules.splice(laterSlot.rules.indexOf(replaced), 1, rule);
-    mergeState.meta(rule).place(laterSlot);
+    const replaced = mergeState.meta(/** @type {Rule} */ (later));
+    const record = mergeState.meta(rule);
+    const laterSlot = /** @type {Slot} */ (replaced.slot);
+    const earlierSlot = /** @type {Slot} */ (record.slot);
+    earlierSlot.rules.splice(earlierSlot.rules.indexOf(record), 1);
+    laterSlot.rules.splice(laterSlot.rules.indexOf(replaced), 1, record);
+    record.place(laterSlot);
   } else {
     const { records } = mergeState;
     const block = /** @type {BlockRecord} */ (records.blockOf(earlier));
@@ -255,7 +257,7 @@ export function removeRules(mergeState, rules) {
   for (const rule of rules) {
     const record = mergeState.meta(rule);
     const slot = /** @type {Slot} */ (record.slot);
-    slot.rules.splice(slot.rules.indexOf(rule), 1);
+    slot.rules.splice(slot.rules.indexOf(record), 1);
     record.depart();
   }
   // Unlike `remove`, the rest keep their own whitespace, so the first of them

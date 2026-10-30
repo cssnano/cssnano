@@ -134,13 +134,15 @@ export function buildMergedRule(
     }
   });
   // The clones hold their final declarations, so their records are built now.
-  mergeState.records.recordRule(receivingBlock);
-  mergeState.records.recordRule(firstClone);
-  mergeState.records.recordRule(secondClone);
+  const receivingRecord = mergeState.records.recordRule(receivingBlock);
+  const firstRecord = mergeState.records.recordRule(firstClone);
+  const secondRecord = mergeState.records.recordRule(secondClone);
   /** @type {Placement} */
   const placement = {
-    first: [firstClone].filter((rule) => rule.nodes.length),
-    second: [receivingBlock, secondClone].filter((rule) => rule.nodes.length),
+    first: [firstRecord].filter((record) => record.node.nodes.length),
+    second: [receivingRecord, secondRecord].filter(
+      (record) => record.node.nodes.length
+    ),
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
@@ -154,9 +156,9 @@ export function buildMergedRule(
       leftover.walkDecls((decl) => {
         if (claimed.has(index++)) decl.remove();
       });
-      mergeState.records.recordRule(leftover);
+      const leftoverRecord = mergeState.records.recordRule(leftover);
       if (!leftover.nodes.length) return [];
-      return [leftover];
+      return [leftoverRecord];
     });
   }
   return placement;

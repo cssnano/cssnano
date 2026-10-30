@@ -146,19 +146,19 @@ export const mutations = [
   {
     name: 'a takePlaceOf that leaves the rule record on its old slot',
     target: source('treeEdits.js'),
-    find: '    mergeState.meta(rule).place(laterSlot);\n',
+    find: '    record.place(laterSlot);\n',
     replace: '',
   },
   {
     name: 'a removal of a rule that leaves it in its slot',
     target: source('treeEdits.js'),
-    find: '    slot.rules.splice(slot.rules.indexOf(node), 1);\n',
-    replace: '',
+    find: '    const record = mergeState.meta(node);\n    const slot = /** @type {Slot} */ (record.slot);\n    slot.rules.splice(slot.rules.indexOf(record), 1);\n',
+    replace: '    const record = mergeState.meta(node);\n    const slot = /** @type {Slot} */ (record.slot);\n',
   },
   {
     name: 'a removal of a rule set that leaves its rules in their slots',
     target: source('treeEdits.js'),
-    find: '    slot.rules.splice(slot.rules.indexOf(rule), 1);\n    record.depart();\n',
+    find: '    slot.rules.splice(slot.rules.indexOf(record), 1);\n    record.depart();\n',
     replace: '    record.depart();\n',
   },
   {
@@ -182,15 +182,15 @@ export const mutations = [
   {
     name: 'a sweep move that leaves the moved rule on its old slot',
     target: source('blockRecords.js'),
-    find: '    records.metaOf(rule).place(slot);\n',
-    replace: '',
+    find: '    this.children.push(slot);\n    record.place(slot);\n    return slot;\n',
+    replace: '    this.children.push(slot);\n    return slot;\n',
   },
   {
     name: 'move into the later parent',
     target: source('ruleSequence.js'),
-    find: '    const target = first.slot.block;\n    const source = second.slot.block;\n    if (target === source) return false;\n    source.changed(-1);\n    target.changed(1);\n    second.slot = target.moveRule(second.rule, second.slot, this.#records);',
+    find: '    const target = first.slot.block;\n    const source = second.slot.block;\n    if (target === source) return false;\n    source.changed(-1);\n    target.changed(1);\n    second.slot = target.moveRule(second.record, second.slot);',
     replace:
-      '    const target = second.slot.block;\n    const source = first.slot.block;\n    if (target === source) return false;\n    source.changed(-1);\n    target.changed(1);\n    first.slot = target.moveRule(first.rule, first.slot, this.#records);',
+      '    const target = second.slot.block;\n    const source = first.slot.block;\n    if (target === source) return false;\n    source.changed(-1);\n    target.changed(1);\n    first.slot = target.moveRule(first.record, first.slot);',
   },
   {
     name: 'the records check accepts a rule record that names another slot',
