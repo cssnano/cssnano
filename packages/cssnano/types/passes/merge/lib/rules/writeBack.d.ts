@@ -39,7 +39,8 @@ export type Rebuilt = {
 export declare function replaceChildren(rebuilt: Rebuilt[]): void;
 /**
  * Gives each block whose live children differ from its container the children
- * the records hold. A block that already matches keeps its child list.
+ * the records hold. A block that already matches, or was dropped, keeps its
+ * child list.
  *
  * @param {Iterable<Block>} blocks
  * @return {void}

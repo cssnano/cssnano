@@ -8,7 +8,6 @@ import { getDecls } from './ruleMeta.js';
 import { isKeyframes } from './sameContainer.js';
 import {
   appendToDeclarations,
-  flushRemovals,
   moveChildren,
   remove,
   takePlaceOf,
@@ -214,7 +213,6 @@ function joinBlocksBackward(parent, mergeState) {
     if (at === position)
       index.recordNode(node, last - position, keysOf, mergeState.records);
   }
-  flushRemovals(parent);
   return joined;
 
   /**
@@ -309,9 +307,6 @@ function joinInParent(parent, mergeState, rules) {
     }
     index.recordNode(node, position, keysOf, mergeState.records);
   }
-  // PostCSS finds a child by scanning its parent, so the rules that moved up
-  // leave the parent in one rebuild.
-  flushRemovals(parent);
   return joined;
 
   /**

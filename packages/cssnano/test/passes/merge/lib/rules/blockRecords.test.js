@@ -18,7 +18,10 @@ import {
   remove,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import {
+  assertRecordsMatchTree,
+  writeBack,
+} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import { assertRecordsWellFormed } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 import { assertNoOverDuplication } from '../../../../../src/passes/merge/lib/rules/overDuplication.js';
 import { mergePass } from '../../../../../src/passes/merge/index.js';
@@ -119,12 +122,14 @@ test('liveChildren should equal the children of the stylesheet after a join move
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   joinNonAdjacent(root, state);
+  writeBack(state.records.blocks());
   assert.deepEqual(state.records.root.liveChildren(), root.nodes);
 });
 
 test('liveChildren should equal the children of the stylesheet after a join removes a rule', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
   joinNonAdjacent(root, state);
+  writeBack(state.records.blocks());
   assert.deepEqual(state.records.root.liveChildren(), root.nodes);
 });
 

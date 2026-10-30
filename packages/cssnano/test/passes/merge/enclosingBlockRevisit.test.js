@@ -5,6 +5,7 @@ import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
+import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
 import {
   appendToDeclarations,
   buildRecords,
@@ -49,5 +50,6 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
     incoming
   );
   assert.equal(joinNonAdjacent(root, mergeState), true);
+  writeBack(mergeState.records.blocks());
   assert.equal(root.toString(), '@media (x){@media (y){p,q{width:1px}}}');
 });

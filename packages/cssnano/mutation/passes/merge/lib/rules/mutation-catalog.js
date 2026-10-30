@@ -122,7 +122,7 @@ export const mutations = [
   {
     name: 'a removal of rules leaves the record of each removed rule live',
     target: source('treeEdits.js'),
-    find: '    mergeState.meta(/** @type {Rule} */ (node)).depart();\n',
+    find: '    meta.depart();\n',
     replace: '',
   },
   {
@@ -158,8 +158,8 @@ export const mutations = [
   {
     name: 'a removal of a rule set that leaves its rules in their slots',
     target: source('treeEdits.js'),
-    find: '    slot.rules.splice(slot.rules.indexOf(rule), 1);\n  }\n',
-    replace: '  }\n',
+    find: '    slot.rules.splice(slot.rules.indexOf(rule), 1);\n    meta.depart();\n',
+    replace: '    meta.depart();\n',
   },
   {
     name: 'a removal of a block that leaves its entry in place',
