@@ -98,81 +98,6 @@ export function buildRecords(root, mergeState) {
   return records;
 }
 
-const OUT_OF_STEP = 'block record out of step with the tree';
-
-/**
- * Throws when the record of a rule does not name its slot, or does not hold
- * the block of the rule's children that the tree has.
- *
- * @param {MergeState} mergeState
- * @param {BlockRecord} block the block holding the slot
- * @param {Slot} slot
- * @param {Rule} rule
- * @return {void}
- */
-function checkRuleRecord(mergeState, block, slot, rule) {
-  const meta = mergeState.meta(rule);
-  if (meta.slot !== slot) throw new Error(OUT_OF_STEP);
-  if ((meta.block !== null) !== rule.nodes.some(isRuleOrAtRule)) {
-    throw new Error(OUT_OF_STEP);
-  }
-  if (meta.block) {
-    if (
-      meta.block.parent !== block ||
-      meta.block.node !== rule ||
-      meta.block.position !== slot.position
-    ) {
-      throw new Error(OUT_OF_STEP);
-    }
-    checkBlockRecord(mergeState, meta.block);
-  }
-}
-
-/**
- * Throws when the children of a block record are not the nodes its container
- * holds, in order.
- *
- * @param {MergeState} mergeState
- * @param {BlockRecord} block
- * @return {void}
- */
-function checkBlockRecord(mergeState, block) {
-  const nodes = /** @type {ChildNode[]} */ (block.node.nodes);
-  let at = 0;
-  for (const [index, entry] of block.children.entries()) {
-    const placed = entry instanceof Slot || entry instanceof BlockRecord;
-    if (placed && entry.position !== index) throw new Error(OUT_OF_STEP);
-    if (entry instanceof Slot) {
-      for (const rule of entry.rules) {
-        if (nodes[at++] !== rule) throw new Error(OUT_OF_STEP);
-        checkRuleRecord(mergeState, block, entry, rule);
-      }
-    } else if (entry instanceof BlockRecord) {
-      if (entry.dropped) continue;
-      if (entry.parent !== block || nodes[at++] !== entry.node) {
-        throw new Error(OUT_OF_STEP);
-      }
-      checkBlockRecord(mergeState, entry);
-    } else if (nodes[at++] !== entry) {
-      throw new Error(OUT_OF_STEP);
-    }
-  }
-  if (at !== nodes.length) throw new Error(OUT_OF_STEP);
-}
-
-/**
- * Under consistency checks, throws when the records and the tree disagree:
- * each block must hold the nodes its container holds, in order, and each rule
- * must stand in the slot its record names.
- *
- * @param {MergeState} mergeState
- * @return {void}
- */
-export function assertRecordsMatchTree(mergeState) {
-  if (!consistencyChecksEnabled()) return;
-  checkBlockRecord(mergeState, mergeState.records.root);
-}
-
 /**
  * Appends the children of `from` to `into`, after its own. `from` is left
  * empty, so the caller removes or replaces it.
@@ -345,41 +270,6 @@ export function removeRules(mergeState, parent, rules) {
   });
   parent.removeAll();
   parent.append(kept);
-}
-
-/**
- * @typedef {object} Rebuilt
- * @property {Container} container
- * @property {ChildNode[]} children the children the container takes
- * @property {ChildNode | undefined} head the first child the root held before,
- * or undefined for any other container
- */
-
-/**
- * Gives each container its children, after every container has been emptied,
- * so a child that moves between two of them keeps the parent it is given.
- *
- * @param {Rebuilt[]} rebuilt
- * @return {void}
- */
-export function replaceChildren(rebuilt) {
-  for (const { container } of rebuilt) {
-    container.removeAll();
-  }
-  for (const { container, children, head } of rebuilt) {
-    // A rule kept from the source still points at its former container.
-    for (const node of children) node.parent = undefined;
-    container.append(children);
-    // Removing the first child of a root hands its whitespace to the next.
-    if (
-      container.type === 'root' &&
-      head &&
-      children.length &&
-      children[0] !== head
-    ) {
-      children[0].raws.before = head.raws.before;
-    }
-  }
 }
 
 /**

@@ -7,13 +7,15 @@ import { resolveTargets } from '../../../../../src/utils/browserTargets.js';
 
 // The modules that may edit the live tree directly. Every other module in
 // `lib/rules/` edits through `treeEdits.js`, which clears the caches an edit
-// makes stale.
+// makes stale. `writeBack.js` gives the blocks their child lists at the end of
+// a sweep.
+const treeEditors = new Set(['treeEdits.js', 'writeBack.js']);
 const rulesDirectory = new URL(
   '../../../../../src/passes/merge/lib/rules/',
   import.meta.url
 );
 const sources = readdirSync(rulesDirectory)
-  .filter((name) => name.endsWith('.js') && name !== 'treeEdits.js')
+  .filter((name) => name.endsWith('.js') && !treeEditors.has(name))
   .map((name) => ({
     name,
     text: readFileSync(new URL(name, rulesDirectory), 'utf8'),
@@ -199,7 +201,7 @@ test("lib/rules should read a block's children and a rule's parent only through 
   // read of a rule's parent does not reach the tree.
   const readers = mergeReaders().filter(
     (name) =>
-      name !== 'treeEdits.js' &&
+      !treeEditors.has(name) &&
       name !== 'blockRecords.js' &&
       !cloneEditors.has(name)
   );
