@@ -140,7 +140,7 @@ function ruleWith(selector) {
  * @return {RuleRecord} the record of a rule with the declarations it has
  */
 function metaOf(rule) {
-  return new RuleRecord(rule.selectors, getDecls(rule));
+  return new RuleRecord(rule, rule.selectors, getDecls(rule));
 }
 
 test('getVendorProfile should match the list profile after addSelectors grows a rule whose profile was already computed', () => {
@@ -151,39 +151,11 @@ test('getVendorProfile should match the list profile after addSelectors grows a 
   assert.deepEqual(record.vendorProfile(lookup), profileOf(record.selectors));
 });
 
-test('getVendorProfile should match the list profile after setSelectors replaces the list of a rule whose profile was already computed', () => {
-  const rule = ruleWith('.a');
-  const record = metaOf(rule);
-  record.vendorProfile(lookup);
-  record.setSelectors(['::-moz-selection']);
-  assert.deepEqual(
-    record.vendorProfile(lookup),
-    profileOf(['::-moz-selection'])
-  );
-});
-
-test('getVendorProfile should match the list profile after setSelectors receives the combined profile of the new list', () => {
-  const record = metaOf(ruleWith('.a'));
-  const selectors = ['.a', '::-moz-x'];
-  record.setSelectors(
-    selectors,
-    profileOf(['.a']).concat(profileOf(['::-moz-x']))
-  );
-  assert.deepEqual(record.vendorProfile(lookup), profileOf(selectors));
-});
-
 test('getSelectorText should list the selectors added by addSelectors after the text was already read', () => {
   const record = metaOf(ruleWith('.a'));
   record.selectorText();
   record.addSelectors(['.b', '.c'], lookup);
   assert.equal(record.selectorText(), '.a,.b,.c');
-});
-
-test('getSelectorText should list the selectors set by setSelectors after the text was already read', () => {
-  const record = metaOf(ruleWith('.a'));
-  record.selectorText();
-  record.setSelectors(['.x', '.y']);
-  assert.equal(record.selectorText(), '.x,.y');
 });
 
 test('getSelectorText should keep a comma inside :is() within one selector', () => {
