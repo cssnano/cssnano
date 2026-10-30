@@ -3,7 +3,6 @@ import { PropertyTable } from './propertyTable.js';
 import { TextTable } from '../../values/textTable.js';
 
 /** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
-/** @import {RuleMeta} from '../merge/lib/rules/ruleMeta.js' */
 /** @import {Rule} from 'postcss' */
 
 /**
@@ -16,7 +15,6 @@ import { TextTable } from '../../values/textTable.js';
  *   createdBlocks: Set<Rule> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
  *   compatibleRules: WeakSet<Rule>,
- *   ruleMeta: WeakMap<Rule, RuleMeta>,
  *   textTable: TextTable,
  * }} RunContext
  */
@@ -36,7 +34,6 @@ export function createRunContext(textTable = new TextTable()) {
     createdBlocks: null,
     selectorCompatibility: new Map(),
     compatibleRules: new WeakSet(),
-    ruleMeta: new WeakMap(),
     textTable,
   };
 }

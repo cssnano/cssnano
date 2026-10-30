@@ -5,8 +5,8 @@ import {
 import { createElementKeyLookup } from './elementKeys.js';
 import { comma } from '../../../../values/punctuationTokens.js';
 import { createRunContext } from '../../../ir/runContext.js';
-import { getDecls, getMeta } from './ruleMeta.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
+import { assertDeclarationsFresh } from './blockRecords.js';
 import { isKeyframes, sameContainer } from './sameContainer.js';
 import { joinRanges } from '../../../../values/joinRanges.js';
 import {
@@ -38,8 +38,6 @@ export default class MergeState {
   #lookup;
   /** @type {WeakSet<Rule>} rules whose selectors are known to be compatible */
   #ruleCache;
-  /** @type {WeakMap<Rule, RuleMeta>} */
-  #ruleMeta;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
   #declarations;
   /** @type {(selector: string, piece?: RangePiece | null) => string | null} */
@@ -74,7 +72,6 @@ export default class MergeState {
       context.textTable
     );
     this.#ruleCache = context.compatibleRules;
-    this.#ruleMeta = context.ruleMeta;
     this.#declarations = context.declarations;
     this.properties = context.properties;
     this.#createdBlocks = context.createdBlocks;
@@ -82,14 +79,14 @@ export default class MergeState {
   }
 
   /**
-   * The record of the rule, made on the first read. Under consistency checks
+   * The record of the rule, which the records hold. Under consistency checks
    * a record whose declarations differ from the tree throws.
    *
    * @param {Rule} rule
    * @return {RuleMeta}
    */
   meta(rule) {
-    const meta = getMeta(rule, this.#ruleMeta);
+    const meta = this.records.metaOf(rule);
     if (consistencyChecksEnabled() && !meta.departed) {
       assertDeclarationsFresh(rule, meta);
     }
@@ -260,7 +257,7 @@ export default class MergeState {
    */
   flushSelectors() {
     for (const rule of this.#spelled) {
-      const meta = this.#ruleMeta.get(rule);
+      const meta = this.records.recordOf(rule);
       // A rule that left the stylesheet has nothing to store.
       if (!meta || meta.departed) continue;
       const pieces = meta.pieces;
@@ -338,19 +335,6 @@ export default class MergeState {
         .allowsMerge(metaB.vendorProfile(this.#lookup))
     );
   }
-}
-
-/**
- * @param {Rule} rule
- * @param {RuleMeta} meta
- * @return {void}
- */
-function assertDeclarationsFresh(rule, meta) {
-  const kept = meta.declarations;
-  const fresh = getDecls(rule);
-  const same =
-    kept.length === fresh.length && kept.every((node, i) => node === fresh[i]);
-  if (!same) throw new Error('stale declarations of a rule record');
 }
 
 /**
