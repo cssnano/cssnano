@@ -64,35 +64,39 @@ test('absorbEarlier should leave the record of the later rule readable', () => {
   assert.equal(state.meta(root.last).departed, false);
 });
 
-// Marking a rule only spares `canMerge` the compatibility check of its
-// selectors; the vendor prefix check still decides, and an incompatible
-// selector has an unknown prefix that blocks every merge by itself.
-test('canMerge should still accept a pair of compatible rules after one is marked compatible', () => {
+test('canMerge should accept a pair of compatible rules', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-  state.markCompatible(root.first);
   assert.equal(state.canMerge(root.first, root.last), true);
 });
 
-test('canMerge should still reject a pair with different vendor prefixes after one is marked compatible', () => {
+test('canMerge should reject a pair with different vendor prefixes', () => {
   const state = createState();
   const root = withRecords(
     state,
     postcss.parse('a::-moz-selection{color:red}b{color:red}')
   );
   assert.equal(state.canMerge(root.first, root.last), false);
-  state.markCompatible(root.first);
-  assert.equal(state.canMerge(root.first, root.last), false);
 });
 
-test('canMerge should still reject a rule with an unsupported selector after it is marked compatible', () => {
+test('canMerge should reject a rule with an unsupported selector', () => {
   const state = new MergeState(['ie 9']);
   const root = withRecords(
     state,
     postcss.parse('a:has(b){color:red}c{color:red}')
   );
-  state.markCompatible(root.first);
   assert.equal(state.canMerge(root.first, root.last), false);
+});
+
+test('canMerge should reject a rule that gained an unsupported selector after it could merge', () => {
+  const state = new MergeState(['ie 9']);
+  const root = withRecords(
+    state,
+    postcss.parse('a{color:red}b{color:red}c:has(d){color:red}')
+  );
+  assert.equal(state.canMerge(root.first, root.nodes[1]), true);
+  state.addSelectors(root.first, ['c:has(d)'], root.last);
+  assert.equal(state.canMerge(root.first, root.nodes[1]), false);
 });
 
 test('canMerge should reject a rule that holds a nested rule', () => {

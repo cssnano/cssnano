@@ -8,7 +8,6 @@ export type RunContext = {
     declarations: DeclarationKeys;
     createdBlocks: Set<Rule> | null;
     selectorCompatibility: Map<string, SelectorInfo>;
-    compatibleRules: WeakSet<Rule>;
     textTable: TextTable;
 };
 /** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
@@ -22,7 +21,6 @@ export type RunContext = {
  *   declarations: DeclarationKeys,
  *   createdBlocks: Set<Rule> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
- *   compatibleRules: WeakSet<Rule>,
  *   textTable: TextTable,
  * }} RunContext
  */

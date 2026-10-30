@@ -1,4 +1,5 @@
 import { elementKeyOf } from './elementKeys.js';
+import { selectorsCompatible } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 
 /** @import {Declaration, Rule} from 'postcss' */
@@ -48,6 +49,8 @@ export class RuleRecord {
   #elementKeys;
   /** @type {RangePiece[] | null | undefined} the token range of each selector, one per selector; null when unknown */
   #pieces;
+  /** @type {boolean | undefined} whether every selector is compatible with the target browsers, once read */
+  #compatible;
   /** @type {boolean} set once the rule has left the stylesheet */
   #departed = false;
   /** @type {Slot | undefined} the slot the rule stands in, once placed */
@@ -69,6 +72,7 @@ export class RuleRecord {
     this.#declarationKeys = undefined;
     this.#elementKeys = undefined;
     this.#pieces = undefined;
+    this.#compatible = undefined;
     this.#slot = undefined;
   }
 
@@ -184,6 +188,23 @@ export class RuleRecord {
   }
 
   /**
+   * Whether every selector is compatible with the target browsers. It is read
+   * once and then kept: a grown list ANDs in the answer for its new selectors.
+   *
+   * @param {SelectorLookup} lookup
+   * @return {boolean}
+   */
+  compatible(lookup) {
+    this.#assertLive();
+    this.#compatible ??= selectorsCompatible(
+      this.#selectors,
+      lookup,
+      this.#node
+    );
+    return this.#compatible;
+  }
+
+  /**
    * The elements the selector list can match, as `elementKeyOf` in
    * `elementKeys.js` describes them, or null when any selector has no key or
    * there are none, which must not read as a rule that writes to no element.
@@ -279,6 +300,9 @@ export class RuleRecord {
       this.#vendor?.add(lookup(selector));
     }
     this.#pieces = pieces;
+    if (this.#compatible) {
+      this.#compatible = selectorsCompatible(selectors, lookup, this.#node);
+    }
     return this.#gainElementKeys(from, keyOf);
   }
 
@@ -296,6 +320,8 @@ export class RuleRecord {
   absorbEarlier(earlier, lookup, keyOf = elementKeyOf) {
     this.#assertLive();
     earlier.#assertLive();
+    // Both answers are read before the lists join, while each list is its own.
+    const compatible = earlier.compatible(lookup) && this.compatible(lookup);
     const text = `${earlier.selectorText()},${this.selectorText()}`;
     const vendor = earlier
       .vendorProfile(lookup)
@@ -320,6 +346,7 @@ export class RuleRecord {
     // from a long list would repeat on every merge.
     this.#elementKeys = earlier.#elementKeys;
     this.#addElementKeys(from, keyOf);
+    this.#compatible = compatible;
     earlier.#departed = true;
   }
 
