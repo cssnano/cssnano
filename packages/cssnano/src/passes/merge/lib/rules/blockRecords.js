@@ -334,6 +334,7 @@ export class BlockRecords {
    */
   recordRule(rule) {
     const record = new RuleRecord(
+      rule,
       rule.selectors,
       rule.nodes.filter(isDeclaration)
     );

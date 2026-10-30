@@ -32,6 +32,8 @@ export function isDeclaration(node) {
  * set up front so all instances share one object layout.
  */
 export class RuleRecord {
+  /** @type {Rule} */
+  #node;
   /** @type {string[]} */
   #selectors;
   /** @type {Declaration[]} */
@@ -54,10 +56,12 @@ export class RuleRecord {
   #block = null;
 
   /**
+   * @param {Rule} node the rule the record describes
    * @param {string[]} selectors
    * @param {Declaration[]} declarations
    */
-  constructor(selectors, declarations) {
+  constructor(node, selectors, declarations) {
+    this.#node = node;
     this.#selectors = selectors;
     this.#declarations = declarations;
     this.#vendor = undefined;
@@ -66,6 +70,11 @@ export class RuleRecord {
     this.#elementKeys = undefined;
     this.#pieces = undefined;
     this.#slot = undefined;
+  }
+
+  /** @return {Rule} the rule the record describes, which the record never changes */
+  get node() {
+    return this.#node;
   }
 
   /**
@@ -271,20 +280,6 @@ export class RuleRecord {
     }
     this.#pieces = pieces;
     return this.#gainElementKeys(from, keyOf);
-  }
-
-  /**
-   * @param {string[]} selectors replaces the rule's selector list
-   * @param {VendorPrefixSummary} [vendor] the profile of `selectors` when the caller
-   * already knows it; otherwise it is derived on the next `vendorProfile`
-   */
-  setSelectors(selectors, vendor) {
-    this.#assertLive();
-    this.#selectors = selectors;
-    this.#selectorText = undefined;
-    this.#vendor = vendor;
-    this.#elementKeys = undefined;
-    this.#pieces = undefined;
   }
 
   /**

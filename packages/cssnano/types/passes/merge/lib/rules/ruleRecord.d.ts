@@ -29,10 +29,13 @@ export declare function isDeclaration(node: import('postcss').ChildNode): node i
 export declare class RuleRecord {
     #private;
     /**
+     * @param {Rule} node the rule the record describes
      * @param {string[]} selectors
      * @param {Declaration[]} declarations
      */
-    constructor(selectors: string[], declarations: Declaration[]);
+    constructor(node: Rule, selectors: string[], declarations: Declaration[]);
+    /** @return {Rule} the rule the record describes, which the record never changes */
+    get node(): Rule;
     /**
      * The slot the rule stands in. It stays readable after the rule departs, so
      * an edit can still find where the rule stood.
@@ -115,12 +118,6 @@ export declare class RuleRecord {
      * those listed, or null when the rule's elements are not listed
      */
     addSelectors(selectors: string[], lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null, pieces?: RangePiece[] | null): readonly string[] | null;
-    /**
-     * @param {string[]} selectors replaces the rule's selector list
-     * @param {VendorPrefixSummary} [vendor] the profile of `selectors` when the caller
-     * already knows it; otherwise it is derived on the next `vendorProfile`
-     */
-    setSelectors(selectors: string[], vendor?: VendorPrefixSummary): void;
     /**
      * Takes the place of a rule that is dropped and stood before this one, so
      * its selectors come first. The dropped rule's list grows in place and
