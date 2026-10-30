@@ -3,7 +3,7 @@ import {
   intersect,
   sameDeclarationsAndOrder,
 } from './declarations.js';
-import { getDecls } from './ruleMeta.js';
+import { getDecls } from './ruleRecord.js';
 import { buildMergedRule, writesOf } from './ruleRewrite.js';
 import { appendToDeclarations, depart } from './treeEdits.js';
 
@@ -30,18 +30,18 @@ function partialMerge(
   sequence,
   outsideDeclarations
 ) {
-  const metaFirst = mergeState.meta(first);
-  const metaSecond = mergeState.meta(second);
+  const recordFirst = mergeState.meta(first);
+  const recordSecond = mergeState.meta(second);
   let intersection = intersect(
-    metaFirst.declarations,
+    recordFirst.declarations,
     mergeState.declarationKeysOf(second).keySet,
     mergeState.declarationKey
   );
   if (intersection.length === 0) return null;
   const filtered = filterRuleIntersections(
     intersection,
-    [...metaFirst.declarations],
-    [...metaSecond.declarations],
+    [...recordFirst.declarations],
+    [...recordSecond.declarations],
     mergeState.properties
   );
   intersection = filtered.intersection;

@@ -1,6 +1,6 @@
 import type { ChildNode, Container, Rule } from 'postcss';
 /** @import {ChildNode, Container, Rule} from 'postcss' */
-import { RuleMeta } from './ruleMeta.js';
+import { RuleRecord } from './ruleRecord.js';
 /**
  * One position among the children of a block. `rules` are the rules that
  * stand there now, in order, so the slot is empty once every rule left.
@@ -129,10 +129,10 @@ export declare class BlockRecord {
  * its rule holds.
  *
  * @param {Rule} rule
- * @param {RuleMeta} meta
+ * @param {RuleRecord} record
  * @return {void}
  */
-export declare function assertDeclarationsFresh(rule: Rule, meta: RuleMeta): void;
+export declare function assertDeclarationsFresh(rule: Rule, record: RuleRecord): void;
 /**
  * The records of one run: the block of each container, and the rule records
  * the run keeps in step with the tree.
@@ -172,16 +172,16 @@ export declare class BlockRecords {
      * Gives a rule its record, built from its current declarations.
      *
      * @param {Rule} rule
-     * @return {RuleMeta}
+     * @return {RuleRecord}
      */
-    recordRule(rule: Rule): RuleMeta;
-    /** @param {Rule} rule @return {RuleMeta | undefined} */
-    recordOf(rule: Rule): RuleMeta | undefined;
+    recordRule(rule: Rule): RuleRecord;
+    /** @param {Rule} rule @return {RuleRecord | undefined} */
+    recordOf(rule: Rule): RuleRecord | undefined;
     /**
      * @param {Rule} rule
-     * @return {RuleMeta}
+     * @return {RuleRecord}
      * @throws {Error} when the rule has no record
      */
-    metaOf(rule: Rule): RuleMeta;
+    metaOf(rule: Rule): RuleRecord;
 }
 //# sourceMappingURL=blockRecords.d.ts.map

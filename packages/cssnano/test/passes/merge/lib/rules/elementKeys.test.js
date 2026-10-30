@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { RuleMeta } from '../../../../../src/passes/merge/lib/rules/ruleMeta.js';
+import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 
 // The keys of a rule's selectors, as the merge reads them.
 /** @param {string[]} selectors */
-const elementKeys = (selectors) => new RuleMeta(selectors, []).elementKeys();
+const elementKeys = (selectors) => new RuleRecord(selectors, []).elementKeys();
 
 test('element key of a type selector is its lowercase name', () => {
   assert.deepEqual(elementKeys(['H1']), ['h1']);

@@ -26,7 +26,7 @@ export declare function isDeclaration(node: import('postcss').ChildNode): node i
  * The selector list of a rule with what is derived from it. Every field is
  * set up front so all instances share one object layout.
  */
-export declare class RuleMeta {
+export declare class RuleRecord {
     #private;
     /**
      * @param {string[]} selectors
@@ -101,10 +101,10 @@ export declare class RuleMeta {
      * Lists of different lengths differ in text too, since a selector holds no
      * top-level comma, so the text of long lists is joined only when needed.
      *
-     * @param {RuleMeta} other
+     * @param {RuleRecord} other
      * @return {boolean}
      */
-    hasSameSelectors(other: RuleMeta): boolean;
+    hasSameSelectors(other: RuleRecord): boolean;
     /**
      * @param {string[]} selectors appended to the rule's selector list
      * @param {SelectorLookup} lookup
@@ -128,14 +128,14 @@ export declare class RuleMeta {
      * texts: copying or re-joining a long list on every merge would take
      * quadratic time.
      *
-     * @param {RuleMeta} earlier left unusable
+     * @param {RuleRecord} earlier left unusable
      * @param {SelectorLookup} lookup
      * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
      */
-    absorbEarlier(earlier: RuleMeta, lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null): void;
+    absorbEarlier(earlier: RuleRecord, lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null): void;
     /** Marks the record of a rule that left the stylesheet, so a later read throws. */
     depart(): void;
 }
 /** @param {Rule} rule @return {Declaration[]} */
 export declare function getDecls(rule: Rule): Declaration[];
-//# sourceMappingURL=ruleMeta.d.ts.map
+//# sourceMappingURL=ruleRecord.d.ts.map
