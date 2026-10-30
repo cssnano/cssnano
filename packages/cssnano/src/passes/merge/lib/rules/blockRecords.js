@@ -109,6 +109,23 @@ export class BlockRecord {
   }
 
   /**
+   * The number of children the block holds now, counted without copying them.
+   *
+   * @return {number}
+   */
+  liveCount() {
+    let count = 0;
+    for (const entry of this.children) {
+      if (entry instanceof Slot) {
+        count += entry.rules.length;
+      } else if (!(entry instanceof BlockRecord && entry.dropped)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /**
    * The children the block holds now, in order: the rules of its slots, and
    * the nodes of its other entries, except a block that was dropped.
    *
@@ -184,6 +201,18 @@ export class BlockRecord {
 }
 
 /**
+ * @param {Rule} rule
+ * @return {number} the declarations the rule holds, without copying them
+ */
+export function countDeclarations(rule) {
+  let count = 0;
+  for (const node of rule.nodes) {
+    if (node.type === 'decl') count++;
+  }
+  return count;
+}
+
+/**
  * The records of one run: the block of each container, and the rule records
  * the run keeps in step with the tree.
  */
@@ -196,6 +225,14 @@ export class BlockRecords {
 
   /** @type {MergeState} */
   #mergeState;
+
+  /**
+   * The most rounds a run may take before it throws. Set from the counts of
+   * rules, at-rules and declarations when the records are built.
+   *
+   * @type {number}
+   */
+  maxRounds = Infinity;
 
   /**
    * @param {MergeState} mergeState

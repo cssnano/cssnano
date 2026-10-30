@@ -4,6 +4,8 @@ import { joinNonAdjacent } from './nonAdjacentMerge.js';
 import runScan from './scan.js';
 import { assertRecordsMatchTree, buildRecords } from './treeEdits.js';
 
+const ROUNDS = 'runMerge repeats past its bound on rounds';
+
 /**
  * @param {import('postcss').Root} root
  * @param {readonly string[]} browsers
@@ -25,8 +27,11 @@ export default function runMerge(root, browsers, context = createRunContext()) {
   // (see `runScan`), so the cost of the whole loop is not bounded in N.
   const mergeState = new MergeState(browsers, context);
   mergeState.records = buildRecords(root, mergeState);
+  const { maxRounds } = mergeState.records;
   let joined;
+  let rounds = 0;
   do {
+    if (++rounds > maxRounds) throw new Error(ROUNDS);
     runScan(mergeState);
     assertRecordsMatchTree(mergeState);
     joined = joinNonAdjacent(root, mergeState);

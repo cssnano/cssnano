@@ -3,6 +3,7 @@ import LastWriteIndex, { isConditionalGroupRule } from './lastWriteIndex.js';
 import joinByDeclarations from './declarationJoin.js';
 import { writesOf } from './ruleRewrite.js';
 import RepeatScan from './repeatScan.js';
+import { BlockRecord, Slot } from './blockRecords.js';
 import { getDecls } from './ruleMeta.js';
 import { isKeyframes } from './sameContainer.js';
 import {
@@ -17,27 +18,50 @@ const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {AtRule, Container, ChildNode, Declaration, Rule} from 'postcss' */
 /** @import {PropertyWrites} from './lastWriteIndex.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /** @import MergeState from './mergeState.js' */
 
 /**
- * @param {Container} node
+ * @param {ChildNode} node
  * @param {Declaration[]} declarations grown in place
+ * @param {BlockRecords} records
+ * @return {boolean} see `collectDeclarations`
+ */
+function collectFrom(node, declarations, records) {
+  if (node.type === 'decl') {
+    declarations.push(node);
+  } else if (node.type === 'atrule') {
+    if (!isConditionalGroupRule(node)) return false;
+    const block = records.blockOf(node);
+    if (block) return collectDeclarations(block, declarations, records);
+  } else if (node.type === 'rule') {
+    const { block } = records.metaOf(node);
+    if (block) return collectDeclarations(block, declarations, records);
+    // A rule without a block holds declarations and comments only.
+    for (const child of node.nodes) {
+      if (child.type === 'decl') declarations.push(child);
+    }
+  }
+  return true;
+}
+
+/**
+ * @param {BlockRecord} block
+ * @param {Declaration[]} declarations grown in place
+ * @param {BlockRecords} records
  * @return {boolean} false when the subtree holds an at-rule outside the
  * conditional groups
  */
-function collectDeclarations(node, declarations) {
-  for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
-    if (child.type === 'decl') {
-      declarations.push(child);
-    } else if (child.type === 'atrule' && !isConditionalGroupRule(child)) {
-      return false;
-    } else if (
-      'nodes' in child &&
-      child.nodes &&
-      !collectDeclarations(child, declarations)
-    ) {
-      return false;
+function collectDeclarations(block, declarations, records) {
+  for (const entry of block.children) {
+    if (entry instanceof Slot) {
+      for (const rule of entry.rules) {
+        if (!collectFrom(rule, declarations, records)) return false;
+      }
+    } else if (!(entry instanceof BlockRecord && entry.dropped)) {
+      const node = entry instanceof BlockRecord ? entry.node : entry;
+      if (!collectFrom(/** @type {ChildNode} */ (node), declarations, records))
+        return false;
     }
   }
   return true;
@@ -49,12 +73,15 @@ function collectDeclarations(node, declarations) {
  * answer is not stored, so an edit cannot leave it stale.
  *
  * @param {BlockRecord} block
+ * @param {BlockRecords} records
  * @return {Declaration[] | null}
  */
-export function subtreeDeclarations(block) {
+export function subtreeDeclarations(block, records) {
   /** @type {Declaration[]} */
   const declarations = [];
-  return collectDeclarations(block.node, declarations) ? declarations : null;
+  return collectDeclarations(block, declarations, records)
+    ? declarations
+    : null;
 }
 
 /**
@@ -63,9 +90,9 @@ export function subtreeDeclarations(block) {
  * @return {Declaration[] | null} see `subtreeDeclarations`
  */
 function subtreeOf(mergeState, node) {
-  return subtreeDeclarations(
-    /** @type {BlockRecord} */ (mergeState.records.blockOf(node))
-  );
+  const { records } = mergeState;
+  const block = /** @type {BlockRecord} */ (records.blockOf(node));
+  return subtreeDeclarations(block, records);
 }
 
 /**
@@ -81,7 +108,8 @@ function joinKey(node, joinRules, mergeState) {
   if (node.type === 'rule') {
     return joinRules ? `{${mergeState.meta(node).selectorText()}` : null;
   }
-  return isConditionalGroupRule(node) && node.nodes
+  // `@font-face` and `@page` have records too, so the name decides.
+  return isConditionalGroupRule(node) && mergeState.records.blockOf(node)
     ? `@${asciiLowerCase(node.name)} ${node.params}`
     : null;
 }
@@ -118,21 +146,22 @@ function joinKey(node, joinRules, mergeState) {
  * @return {boolean} whether anything was joined
  */
 export function joinNonAdjacent(root, mergeState) {
+  // Each join removes a live child of `root`, so L + 1 passes bound the loop.
+  const block = /** @type {BlockRecord} */ (mergeState.records.blockOf(root));
+  let budget = block.liveCount() + 1;
   let joined = joinInParent(root, mergeState, true);
-  // A forward pass resolves a chain of blocks that move up, and a backward
-  // pass a chain that moves down, each in one pass. A pass that joins nothing
-  // saw the tree unchanged, so a pass the other way would join nothing too.
+  // A forward pass resolves a chain of blocks that move up, a backward pass one
+  // that moves down. A pass that joins nothing saw the tree unchanged.
   for (let again = joined, backward = true; again; backward = !backward) {
+    if (budget-- === 0) throw new Error('joins repeat past their bound');
     again = backward
       ? joinBlocksBackward(root, mergeState)
       : joinInParent(root, mergeState, false);
   }
   joined = joinByDeclarations(root, mergeState) || joined;
-  for (const child of /** @type {ChildNode[]} */ (root.nodes)) {
-    if (child.type === 'atrule' && child.nodes) {
-      joined = joinNonAdjacent(child, mergeState) || joined;
-    }
-  }
+  for (const entry of block.children)
+    if (entry instanceof BlockRecord && !entry.dropped)
+      joined = joinNonAdjacent(entry.node, mergeState) || joined;
   return joined;
 }
 
@@ -148,7 +177,9 @@ export function joinNonAdjacent(root, mergeState) {
  */
 function joinBlocksBackward(parent, mergeState) {
   // A snapshot, since joining removes nodes from the parent.
-  const nodes = /** @type {ChildNode[]} */ (parent.nodes).slice();
+  const nodes = /** @type {BlockRecord} */ (
+    mergeState.records.blockOf(parent)
+  ).liveChildren();
   const last = nodes.length - 1;
   const keys = nodes.map((node) => joinKey(node, false, mergeState));
   const scan = new RepeatScan();
@@ -222,7 +253,9 @@ function joinBlocksBackward(parent, mergeState) {
 function joinInParent(parent, mergeState, rules) {
   const joinRules = rules && !isKeyframes(parent);
   // A snapshot, since joining removes nodes from the parent.
-  const nodes = /** @type {ChildNode[]} */ (parent.nodes).slice();
+  const nodes = /** @type {BlockRecord} */ (
+    mergeState.records.blockOf(parent)
+  ).liveChildren();
   const keys = nodes.map((node) => joinKey(node, joinRules, mergeState));
   const scan = new RepeatScan();
   for (const [i, key] of keys.entries()) {

@@ -1,6 +1,11 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { applyChildEdits, detach } from '../deferredChildEdits.js';
-import { BlockRecord, BlockRecords, Slot } from './blockRecords.js';
+import {
+  BlockRecord,
+  BlockRecords,
+  Slot,
+  countDeclarations,
+} from './blockRecords.js';
 import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
 import { getDecls } from './ruleMeta.js';
@@ -56,11 +61,14 @@ export function buildRecords(root, mergeState) {
     mergeState,
     new BlockRecord(root, null, 0, false)
   );
+  let nodes = 0;
+  let declarations = 0;
   /** @param {BlockRecord} block */
   const fill = (block) => {
     records.add(block);
     for (const child of /** @type {ChildNode[]} */ (block.node.nodes)) {
       const index = block.children.length;
+      if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
         const slot = new Slot(block, index, [child]);
         const meta = mergeState.meta(child);
@@ -70,6 +78,8 @@ export function buildRecords(root, mergeState) {
           const nested = new BlockRecord(child, block, index, false);
           meta.setBlock(nested);
           fill(nested);
+        } else {
+          declarations += countDeclarations(child);
         }
       } else if (child.type === 'atrule' && child.nodes) {
         const nested = new BlockRecord(
@@ -81,11 +91,14 @@ export function buildRecords(root, mergeState) {
         block.children.push(nested);
         fill(nested);
       } else {
+        if (child.type === 'decl') declarations++;
         block.children.push(child);
       }
     }
   };
   fill(records.root);
+  // N + D + 1 rounds bound a run, see `runMerge`.
+  records.maxRounds = nodes + declarations + 1;
   return records;
 }
 
