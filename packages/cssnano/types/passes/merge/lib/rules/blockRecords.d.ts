@@ -61,6 +61,14 @@ export declare class BlockRecord {
     /** @type {boolean} whether a sweep removed the block for being empty */
     dropped: boolean;
     /**
+     * The whitespace before the first child of the stylesheet, which PostCSS
+     * hands on when that child is removed. Only the record of the stylesheet
+     * holds it.
+     *
+     * @type {string | undefined}
+     */
+    leadingWhitespace: string | undefined;
+    /**
      * @param {Container} node
      * @param {BlockRecord | null} parent
      * @param {number} position

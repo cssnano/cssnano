@@ -81,6 +81,15 @@ export class BlockRecord {
   dropped = false;
 
   /**
+   * The whitespace before the first child of the stylesheet, which PostCSS
+   * hands on when that child is removed. Only the record of the stylesheet
+   * holds it.
+   *
+   * @type {string | undefined}
+   */
+  leadingWhitespace = undefined;
+
+  /**
    * @param {Container} node
    * @param {BlockRecord | null} parent
    * @param {number} position

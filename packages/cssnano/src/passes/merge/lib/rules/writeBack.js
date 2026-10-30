@@ -108,8 +108,8 @@ export function assertRecordsMatchTree(mergeState) {
  * @typedef {object} Rebuilt
  * @property {Container} container
  * @property {ChildNode[]} children the children the container takes
- * @property {ChildNode | undefined} head the first child the root held before,
- * or undefined for any other container
+ * @property {string | undefined} leading the whitespace the first child of a
+ * root takes, or undefined for any other container
  */
 
 /**
@@ -123,18 +123,14 @@ export function replaceChildren(rebuilt) {
   for (const { container } of rebuilt) {
     container.removeAll();
   }
-  for (const { container, children, head } of rebuilt) {
+  for (const { container, children, leading } of rebuilt) {
     // A rule kept from the source still points at its former container.
     for (const node of children) node.parent = undefined;
     container.append(children);
-    // Removing the first child of a root hands its whitespace to the next.
-    if (
-      container.type === 'root' &&
-      head &&
-      children.length &&
-      children[0] !== head
-    ) {
-      children[0].raws.before = head.raws.before;
+    // Appending rewrites the whitespace of the nodes it places, so the first
+    // child of a root takes the leading whitespace after the append.
+    if (leading !== undefined && children.length) {
+      children[0].raws.before = leading;
     }
   }
 }
@@ -144,11 +140,9 @@ export function replaceChildren(rebuilt) {
  * the records hold. A block that already matches keeps its child list.
  *
  * @param {Iterable<Block>} blocks
- * @param {ChildNode | undefined} rootHead the first child of the stylesheet
- * before the sweep, handed on if the stylesheet is rebuilt
  * @return {void}
  */
-export function writeBack(blocks, rootHead) {
+export function writeBack(blocks) {
   /** @type {Rebuilt[]} */
   const rebuilt = [];
   for (const block of blocks) {
@@ -156,7 +150,7 @@ export function writeBack(blocks, rootHead) {
     rebuilt.push({
       container: /** @type {Container} */ (block.node),
       children: block.liveChildren(),
-      head: block.parent === null ? rootHead : undefined,
+      leading: block.parent === null ? block.leadingWhitespace : undefined,
     });
   }
   replaceChildren(rebuilt);

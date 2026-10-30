@@ -52,14 +52,6 @@ export default class RuleSequence {
   /** @type {BlockRecords} */
   #records;
 
-  /**
-   * The first child of the stylesheet when the sweep starts, which the
-   * whitespace of the stylesheet is handed on from if it is removed.
-   *
-   * @type {ChildNode | undefined}
-   */
-  #rootHead;
-
   /** @type {DeclarationScan} */
   #scan = new DeclarationScan();
 
@@ -72,7 +64,6 @@ export default class RuleSequence {
   /** @param {BlockRecords} records */
   constructor(records) {
     this.#records = records;
-    this.#rootHead = records.root.firstLiveChild();
     let tail = this.head;
     /** @param {BlockRecord} block */
     const collect = (block) => {
@@ -199,6 +190,6 @@ export default class RuleSequence {
       if (!emptied.has(parent)) changed.add(parent);
       changed.delete(block);
     }
-    writeBack(changed, this.#rootHead);
+    writeBack(changed);
   }
 }

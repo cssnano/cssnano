@@ -55,6 +55,7 @@ function checkNoBlock(record) {
 export function buildRecords(root, mergeState) {
   const { textTable } = mergeState;
   const records = new BlockRecords(new BlockRecord(root, null, 0, false));
+  records.root.leadingWhitespace = root.first?.raws.before;
   let nodes = 0;
   let declarations = 0;
   /** @param {BlockRecord} block */
@@ -168,6 +169,12 @@ export function flushRemovals(parent) {
  */
 export function takePlaceOf(mergeState, parent, earlier, later) {
   applyChildEdits(parent);
+  // The first child of the stylesheet leaves its place, so the whitespace it
+  // held passes to the child after it, which `later` gave to `earlier`.
+  const { root } = mergeState.records;
+  if (parent.type === 'root' && root.firstLiveChild() === earlier) {
+    root.leadingWhitespace = later.raws.before;
+  }
   if (later.type === 'rule') {
     const rule = /** @type {Rule} */ (earlier);
     const replaced = /** @type {Rule} */ (later);

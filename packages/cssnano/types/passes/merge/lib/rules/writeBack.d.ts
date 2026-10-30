@@ -17,17 +17,17 @@ export type Rebuilt = {
      */
     children: ChildNode[];
     /**
-     * the first child the root held before,
-     * or undefined for any other container
+     * the whitespace the first child of a
+     * root takes, or undefined for any other container
      */
-    head: ChildNode | undefined;
+    leading: string | undefined;
 };
 /**
  * @typedef {object} Rebuilt
  * @property {Container} container
  * @property {ChildNode[]} children the children the container takes
- * @property {ChildNode | undefined} head the first child the root held before,
- * or undefined for any other container
+ * @property {string | undefined} leading the whitespace the first child of a
+ * root takes, or undefined for any other container
  */
 /**
  * Gives each container its children, after every container has been emptied,
@@ -42,9 +42,7 @@ export declare function replaceChildren(rebuilt: Rebuilt[]): void;
  * the records hold. A block that already matches keeps its child list.
  *
  * @param {Iterable<Block>} blocks
- * @param {ChildNode | undefined} rootHead the first child of the stylesheet
- * before the sweep, handed on if the stylesheet is rebuilt
  * @return {void}
  */
-export declare function writeBack(blocks: Iterable<Block>, rootHead: ChildNode | undefined): void;
+export declare function writeBack(blocks: Iterable<Block>): void;
 //# sourceMappingURL=writeBack.d.ts.map
