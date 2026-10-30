@@ -13,8 +13,9 @@ import type MergeState from './mergeState.js';
  */
 export declare function buildRecords(root: Root, mergeState: MergeState): BlockRecords;
 /**
- * Appends the children of `from` to `into`, after its own. `from` is left
- * empty, so the caller removes or replaces it.
+ * Appends the children of `from` to `into`, after its own, in the records. The
+ * PostCSS child lists catch up at write-back. `from` is left empty, so the
+ * caller removes or replaces it.
  *
  * @param {MergeState} mergeState
  * @param {Container} into
@@ -23,21 +24,14 @@ export declare function buildRecords(root: Root, mergeState: MergeState): BlockR
  */
 export declare function moveChildren(mergeState: MergeState, into: Container, from: Container): void;
 /**
- * Takes `node` out of its parent at once. The parent's child list catches up at
- * the next `takePlaceOf` or `flushRemovals`.
+ * Takes `node` out of its parent's records at once. The PostCSS child list
+ * catches up at write-back.
  *
  * @param {MergeState} mergeState
  * @param {Rule | AtRule} node
  * @return {void}
  */
 export declare function remove(mergeState: MergeState, node: Rule | AtRule): void;
-/**
- * Applies the pending removals of `parent`, so its child list is current.
- *
- * @param {Container} parent
- * @return {void}
- */
-export declare function flushRemovals(parent: Container): void;
 /**
  * Moves `earlier`, which already holds the joined content, to the place of
  * `later`, so the joined node takes the later position and keeps the
@@ -75,14 +69,14 @@ export declare function appendToDeclarations(mergeState: MergeState, receiving: 
  */
 export declare function removeDeclarations(mergeState: MergeState, rule: Rule, declarations: Declaration[]): void;
 /**
- * Removes `rules` from `parent` with one pass over its children.
+ * Removes `rules` from the records of their parent. The PostCSS child list
+ * catches up at write-back.
  *
  * @param {MergeState} mergeState
- * @param {Container} parent
  * @param {Set<Rule>} rules
  * @return {void}
  */
-export declare function removeRules(mergeState: MergeState, parent: Container, rules: Set<Rule>): void;
+export declare function removeRules(mergeState: MergeState, rules: Set<Rule>): void;
 /**
  * Marks a rule that a placement drops as departed. The rule leaves the tree
  * when `replaceChildren` applies the placement, and reading its record throws

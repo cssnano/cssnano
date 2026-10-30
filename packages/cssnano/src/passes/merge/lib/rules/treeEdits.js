@@ -1,5 +1,4 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { applyChildEdits, detach } from '../deferredChildEdits.js';
 import { BlockRecord, BlockRecords, Slot } from './blockRecords.js';
 import { countDeclarations } from './sweepPotential.js';
 import { declarationIsEqual } from './declarations.js';
@@ -100,8 +99,9 @@ export function buildRecords(root, mergeState) {
 }
 
 /**
- * Appends the children of `from` to `into`, after its own. `from` is left
- * empty, so the caller removes or replaces it.
+ * Appends the children of `from` to `into`, after its own, in the records. The
+ * PostCSS child lists catch up at write-back. `from` is left empty, so the
+ * caller removes or replaces it.
  *
  * @param {MergeState} mergeState
  * @param {Container} into
@@ -112,12 +112,11 @@ export function moveChildren(mergeState, into, from) {
   const { records } = mergeState;
   const target = /** @type {BlockRecord} */ (records.blockOf(into));
   target.adopt(/** @type {BlockRecord} */ (records.blockOf(from)), records);
-  into.append(/** @type {ChildNode[]} */ (from.nodes).slice());
 }
 
 /**
- * Takes `node` out of its parent at once. The parent's child list catches up at
- * the next `takePlaceOf` or `flushRemovals`.
+ * Takes `node` out of its parent's records at once. The PostCSS child list
+ * catches up at write-back.
  *
  * @param {MergeState} mergeState
  * @param {Rule | AtRule} node
@@ -130,7 +129,6 @@ export function remove(mergeState, node) {
   } else {
     emptyEntry(/** @type {BlockRecord} */ (mergeState.records.blockOf(node)));
   }
-  detach(node);
 }
 
 /**
@@ -147,16 +145,6 @@ function emptyEntry(block) {
 }
 
 /**
- * Applies the pending removals of `parent`, so its child list is current.
- *
- * @param {Container} parent
- * @return {void}
- */
-export function flushRemovals(parent) {
-  applyChildEdits(parent);
-}
-
-/**
  * Moves `earlier`, which already holds the joined content, to the place of
  * `later`, so the joined node takes the later position and keeps the
  * whitespace before `later`.
@@ -168,7 +156,6 @@ export function flushRemovals(parent) {
  * @return {void}
  */
 export function takePlaceOf(mergeState, parent, earlier, later) {
-  applyChildEdits(parent);
   // The first child of the stylesheet leaves its place, so the whitespace it
   // held passes to the child after it, which `later` gave to `earlier`.
   const { root } = mergeState.records;
@@ -195,8 +182,6 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
     holder.children[from] = new Slot(holder, from, []);
   }
   earlier.raws.before = later.raws.before;
-  earlier.remove();
-  later.replaceWith(earlier);
 }
 
 /**
@@ -257,26 +242,25 @@ export function removeDeclarations(mergeState, rule, declarations) {
 }
 
 /**
- * Removes `rules` from `parent` with one pass over its children.
+ * Removes `rules` from the records of their parent. The PostCSS child list
+ * catches up at write-back.
  *
  * @param {MergeState} mergeState
- * @param {Container} parent
  * @param {Set<Rule>} rules
  * @return {void}
  */
-export function removeRules(mergeState, parent, rules) {
-  if (rules.size === 0) return;
+export function removeRules(mergeState, rules) {
+  const { root } = mergeState.records;
+  const leadsRoot = rules.has(/** @type {Rule} */ (root.firstLiveChild()));
   for (const rule of rules) {
-    const slot = /** @type {Slot} */ (mergeState.meta(rule).slot);
+    const meta = mergeState.meta(rule);
+    const slot = /** @type {Slot} */ (meta.slot);
     slot.rules.splice(slot.rules.indexOf(rule), 1);
+    meta.depart();
   }
-  const kept = /** @type {ChildNode[]} */ (parent.nodes).filter((node) => {
-    if (!rules.has(/** @type {Rule} */ (node))) return true;
-    mergeState.meta(/** @type {Rule} */ (node)).depart();
-    return false;
-  });
-  parent.removeAll();
-  parent.append(kept);
+  // Unlike `remove`, the rest keep their own whitespace, so the first of them
+  // takes its own as the leading whitespace of the stylesheet.
+  if (leadsRoot) root.leadingWhitespace = root.firstLiveChild()?.raws.before;
 }
 
 /**

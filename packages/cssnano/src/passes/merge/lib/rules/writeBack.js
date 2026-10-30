@@ -137,7 +137,8 @@ export function replaceChildren(rebuilt) {
 
 /**
  * Gives each block whose live children differ from its container the children
- * the records hold. A block that already matches keeps its child list.
+ * the records hold. A block that already matches, or was dropped, keeps its
+ * child list.
  *
  * @param {Iterable<Block>} blocks
  * @return {void}
@@ -146,7 +147,7 @@ export function writeBack(blocks) {
   /** @type {Rebuilt[]} */
   const rebuilt = [];
   for (const block of blocks) {
-    if (!differs(block)) continue;
+    if (block.dropped || !differs(block)) continue;
     rebuilt.push({
       container: /** @type {Container} */ (block.node),
       children: block.liveChildren(),

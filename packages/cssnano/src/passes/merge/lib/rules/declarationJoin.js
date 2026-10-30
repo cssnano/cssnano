@@ -149,7 +149,7 @@ export default function joinByDeclarations(parent, mergeState) {
     index.recordNode(node, position, keysOf, mergeState.records);
   }
   for (const rule of grown) mergeState.spellSelectors(rule);
-  removeRules(mergeState, parent, emptied);
+  removeRules(mergeState, emptied);
   return grown.size > 0;
 
   /**
