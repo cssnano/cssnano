@@ -31,7 +31,7 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
     '@media (x){@media (y){p{width:1px}q{height:2px}}}'
   );
   const mergeState = mergeStateOf(root);
-  assert.equal(joinNonAdjacent(root, mergeState), false);
+  assert.equal(joinNonAdjacent(mergeState.records.root, mergeState), false);
   const inner = /** @type {AtRule} */ (
     /** @type {AtRule} */ (root.first).first
   );
@@ -49,7 +49,7 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
     writesOf(kept, mergeState.properties),
     incoming
   );
-  assert.equal(joinNonAdjacent(root, mergeState), true);
+  assert.equal(joinNonAdjacent(mergeState.records.root, mergeState), true);
   writeBack(mergeState.records.blocks());
   assert.equal(root.toString(), '@media (x){@media (y){p,q{width:1px}}}');
 });

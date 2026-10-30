@@ -122,14 +122,14 @@ test('liveChildren should equal the children of the stylesheet after a join move
   const { root, state } = setup(
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
-  joinNonAdjacent(root, state);
+  joinNonAdjacent(state.records.root, state);
   writeBack(state.records.blocks());
   assert.deepEqual(state.records.root.liveChildren(), root.nodes);
 });
 
 test('liveChildren should equal the children of the stylesheet after a join removes a rule', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
-  joinNonAdjacent(root, state);
+  joinNonAdjacent(state.records.root, state);
   writeBack(state.records.blocks());
   assert.deepEqual(state.records.root.liveChildren(), root.nodes);
 });
@@ -141,9 +141,9 @@ test('liveChildren should equal the children of the stylesheet after a join remo
  * @return {{was: number, now: number}}
  */
 function liveCountAround(css) {
-  const { root, state } = setup(css);
+  const { state } = setup(css);
   const was = state.records.root.liveChildren().length;
-  joinNonAdjacent(root, state);
+  joinNonAdjacent(state.records.root, state);
   return { was, now: state.records.root.liveChildren().length };
 }
 

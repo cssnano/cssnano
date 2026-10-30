@@ -96,6 +96,14 @@ export declare class BlockRecord {
      */
     changed(change: number): void;
     /**
+     * The entries the block holds now, in order: the record of each rule, the
+     * record of each at-rule block, and the node of anything else. A block that
+     * was dropped is left out.
+     *
+     * @return {(RuleRecord | BlockRecord | ChildNode)[]}
+     */
+    liveEntries(): (RuleRecord | BlockRecord | ChildNode)[];
+    /**
      * The children the block holds now, in order: the rules of its slots, and
      * the nodes of its other entries, except a block that was dropped.
      *

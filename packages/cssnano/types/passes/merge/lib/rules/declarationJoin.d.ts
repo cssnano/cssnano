@@ -1,6 +1,7 @@
 import type { PropertyTable } from '../../../ir/propertyTable.js';
-import type { ChildNode, Container, Declaration, Rule } from 'postcss';
+import type { ChildNode, Declaration, Rule } from 'postcss';
 import type MergeState from './mergeState.js';
+import type { BlockRecord } from './blockRecords.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
@@ -49,9 +50,9 @@ export type Group = {
  * rule, the group, keeps its position and its declarations, so it can take
  * further rules.
  *
- * @param {Container} parent
+ * @param {BlockRecord} block
  * @param {MergeState} mergeState
  * @return {boolean}
  */
-export default function joinByDeclarations(parent: Container, mergeState: MergeState): boolean;
+export default function joinByDeclarations(block: BlockRecord, mergeState: MergeState): boolean;
 //# sourceMappingURL=declarationJoin.d.ts.map

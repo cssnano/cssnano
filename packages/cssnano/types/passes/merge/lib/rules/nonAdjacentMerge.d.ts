@@ -1,5 +1,5 @@
 import { BlockRecord } from './blockRecords.js';
-import type { Container, Declaration } from 'postcss';
+import type { Declaration } from 'postcss';
 import type MergeState from './mergeState.js';
 /**
  * The declarations of a block at any depth, in document order, or null when
@@ -37,9 +37,9 @@ export declare function subtreeDeclarations(block: BlockRecord): Declaration[] |
  * would have merged more selectors, so the scan must see every rule before
  * any join.
  *
- * @param {Container} root
+ * @param {BlockRecord} block the record of the container
  * @param {MergeState} mergeState
  * @return {boolean} whether anything was joined
  */
-export declare function joinNonAdjacent(root: Container, mergeState: MergeState): boolean;
+export declare function joinNonAdjacent(block: BlockRecord, mergeState: MergeState): boolean;
 //# sourceMappingURL=nonAdjacentMerge.d.ts.map

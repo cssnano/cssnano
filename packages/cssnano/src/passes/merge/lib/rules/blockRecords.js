@@ -178,6 +178,26 @@ export class BlockRecord {
   }
 
   /**
+   * The entries the block holds now, in order: the record of each rule, the
+   * record of each at-rule block, and the node of anything else. A block that
+   * was dropped is left out.
+   *
+   * @return {(RuleRecord | BlockRecord | ChildNode)[]}
+   */
+  liveEntries() {
+    /** @type {(RuleRecord | BlockRecord | ChildNode)[]} */
+    const entries = [];
+    for (const entry of this.children) {
+      if (entry instanceof Slot) {
+        for (const record of entry.rules) entries.push(record);
+      } else if (!(entry instanceof BlockRecord && entry.dropped)) {
+        entries.push(entry);
+      }
+    }
+    return entries;
+  }
+
+  /**
    * The children the block holds now, in order: the rules of its slots, and
    * the nodes of its other entries, except a block that was dropped.
    *
