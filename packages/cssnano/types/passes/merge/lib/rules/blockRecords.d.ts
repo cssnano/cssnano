@@ -11,18 +11,18 @@ import { RuleRecord } from './ruleRecord.js';
  * stand there now, in order, so the slot is empty once every rule left.
  */
 export declare class Slot {
-    /** @type {BlockRecord} the block the slot stands in */
-    block: BlockRecord;
+    /** @type {number} the index of the block the slot stands in */
+    block: number;
     /** @type {number} where the slot stands among the children of `block` */
     position: number;
     /** @type {RuleRecord[]} */
     rules: RuleRecord[];
     /**
-     * @param {BlockRecord} block
+     * @param {number} block the index of the block the slot stands in
      * @param {number} position
      * @param {RuleRecord[]} rules
      */
-    constructor(block: BlockRecord, position: number, rules: RuleRecord[]);
+    constructor(block: number, position: number, rules: RuleRecord[]);
     /**
      * Replaces `record` in the slot with `replacements`, and places each of them
      * here.
@@ -44,8 +44,8 @@ export declare class BlockRecord {
     #private;
     /** @type {Container} */
     node: Container;
-    /** @type {BlockRecord | null} the block whose children hold this one's entry */
-    parent: BlockRecord | null;
+    /** @type {number} the index of the block whose children hold this one's entry, -1 for the stylesheet */
+    parent: number;
     /** @type {number} where the entry stands among the children of `parent` */
     position: number;
     /** @type {boolean} whether the block applies nothing once it is empty */
@@ -76,11 +76,11 @@ export declare class BlockRecord {
     leadingWhitespace: string | undefined;
     /**
      * @param {Container} node
-     * @param {BlockRecord | null} parent
+     * @param {number} parent the index of the block whose children hold this one's entry, -1 for the stylesheet
      * @param {number} position
      * @param {boolean} droppable
      */
-    constructor(node: Container, parent: BlockRecord | null, position: number, droppable: boolean);
+    constructor(node: Container, parent: number, position: number, droppable: boolean);
     /**
      * The first child the block holds now, without copying the child list.
      *
@@ -93,15 +93,6 @@ export declare class BlockRecord {
      * @return {number}
      */
     liveCount(): number;
-    /**
-     * Accounts for the block gaining `change` live children, or losing them when
-     * negative. A droppable block that is tracked and goes empty tells its
-     * parent, which may go empty in turn.
-     *
-     * @param {number} change
-     * @return {void}
-     */
-    changed(change: number): void;
     /**
      * The entries the block holds now, in order: the record of each rule, the
      * record of each at-rule block, and the node of anything else. A block that
@@ -165,7 +156,7 @@ export declare class BlockRecords {
      */
     add(block: BlockRecord): void;
     /**
-     * @param {number} index an index that `add` gave
+     * @param {number} index an index that `add` gave, or -1 for no block
      * @return {BlockRecord | undefined}
      */
     block(index: number): BlockRecord | undefined;
@@ -180,6 +171,16 @@ export declare class BlockRecords {
      * @return {IterableIterator<BlockRecord>}
      */
     blocks(): IterableIterator<BlockRecord>;
+    /**
+     * Accounts for the block at `index` gaining `change` live children, or losing
+     * them when negative. A droppable block that is tracked and goes empty tells
+     * its parent, which may go empty in turn.
+     *
+     * @param {number} index
+     * @param {number} change
+     * @return {void}
+     */
+    changed(index: number, change: number): void;
     /**
      * Builds the record of a declaration that is a child of a block.
      *

@@ -65,7 +65,7 @@ function checkRuleRecord(mergeState, block, slot, record) {
   }
   if (record.block) {
     if (
-      record.block.parent !== block ||
+      record.block.parent !== block.index ||
       record.block.node !== rule ||
       record.block.position !== slot.position
     ) {
@@ -178,7 +178,7 @@ export function writeBack(blocks) {
       rebuilt.push({
         container: /** @type {Container} */ (block.node),
         children: block.liveChildren(),
-        leading: block.parent === null ? block.leadingWhitespace : undefined,
+        leading: block.parent === -1 ? block.leadingWhitespace : undefined,
       });
     }
     for (const entry of block.children) {

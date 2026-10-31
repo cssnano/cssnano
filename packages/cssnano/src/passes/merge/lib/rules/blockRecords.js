@@ -12,7 +12,7 @@ import { RuleRecord, isDeclaration } from './ruleRecord.js';
  * stand there now, in order, so the slot is empty once every rule left.
  */
 export class Slot {
-  /** @type {BlockRecord} the block the slot stands in */
+  /** @type {number} the index of the block the slot stands in */
   block;
 
   /** @type {number} where the slot stands among the children of `block` */
@@ -22,7 +22,7 @@ export class Slot {
   rules;
 
   /**
-   * @param {BlockRecord} block
+   * @param {number} block the index of the block the slot stands in
    * @param {number} position
    * @param {RuleRecord[]} rules
    */
@@ -57,7 +57,7 @@ export class BlockRecord {
   /** @type {Container} */
   node;
 
-  /** @type {BlockRecord | null} the block whose children hold this one's entry */
+  /** @type {number} the index of the block whose children hold this one's entry, -1 for the stylesheet */
   parent;
 
   /** @type {number} where the entry stands among the children of `parent` */
@@ -105,7 +105,7 @@ export class BlockRecord {
 
   /**
    * @param {Container} node
-   * @param {BlockRecord | null} parent
+   * @param {number} parent the index of the block whose children hold this one's entry, -1 for the stylesheet
    * @param {number} position
    * @param {boolean} droppable
    */
@@ -153,39 +153,6 @@ export class BlockRecord {
       }
     }
     return count;
-  }
-
-  /**
-   * Accounts for the block gaining `change` live children, or losing them when
-   * negative. A droppable block that is tracked and goes empty tells its
-   * parent, which may go empty in turn.
-   *
-   * @param {number} change
-   * @return {void}
-   */
-  changed(change) {
-    const count = this.remaining;
-    if (count === null) return;
-    this.remaining = count + change;
-    // A block already empty has told its parent; telling it again would
-    // undercount the parent.
-    if (count > 0 && count + change === 0) this.#climb();
-  }
-
-  /**
-   * Tells the parent of a block that just lost its last child. Only a
-   * droppable parent is climbed to: a style rule or any other at-rule stays.
-   *
-   * @return {void}
-   */
-  #climb() {
-    const parent = this.parent;
-    if (!parent || !parent.droppable) return;
-    const known = parent.remaining;
-    // A parent that is empty in the source is not tracked, and holds no child.
-    if (known === null) return;
-    parent.remaining = known - 1;
-    if (known === 1) parent.#climb();
   }
 
   /**
@@ -242,7 +209,7 @@ export class BlockRecord {
    */
   moveRule(record, from) {
     from.rules.splice(from.rules.indexOf(record), 1);
-    const slot = new Slot(this, this.children.length, [record]);
+    const slot = new Slot(this.index, this.children.length, [record]);
     this.children.push(slot);
     record.place(slot);
     return slot;
@@ -260,18 +227,18 @@ export class BlockRecord {
     for (const entry of source.children) {
       if (entry instanceof Slot) {
         if (entry.rules.length === 0) continue;
-        const slot = new Slot(this, this.children.length, entry.rules);
+        const slot = new Slot(this.index, this.children.length, entry.rules);
         for (const record of entry.rules) {
           record.place(slot);
           if (record.block) {
-            record.block.parent = this;
+            record.block.parent = this.index;
             record.block.position = slot.position;
           }
         }
         this.children.push(slot);
       } else if (entry instanceof BlockRecord) {
         if (entry.dropped) continue;
-        entry.parent = this;
+        entry.parent = this.index;
         entry.position = this.children.length;
         this.children.push(entry);
       } else {
@@ -326,7 +293,7 @@ export class BlockRecords {
   }
 
   /**
-   * @param {number} index an index that `add` gave
+   * @param {number} index an index that `add` gave, or -1 for no block
    * @return {BlockRecord | undefined}
    */
   block(index) {
@@ -348,6 +315,42 @@ export class BlockRecords {
    */
   blocks() {
     return this.#blocks.values();
+  }
+
+  /**
+   * Accounts for the block at `index` gaining `change` live children, or losing
+   * them when negative. A droppable block that is tracked and goes empty tells
+   * its parent, which may go empty in turn.
+   *
+   * @param {number} index
+   * @param {number} change
+   * @return {void}
+   */
+  changed(index, change) {
+    const block = this.#blocks[index];
+    const count = block.remaining;
+    if (count === null) return;
+    block.remaining = count + change;
+    // A block already empty has told its parent; telling it again would
+    // undercount the parent.
+    if (count > 0 && count + change === 0) this.#climb(block);
+  }
+
+  /**
+   * Tells the parent of a block that just lost its last child. Only a
+   * droppable parent is climbed to: a style rule or any other at-rule stays.
+   *
+   * @param {BlockRecord} block
+   * @return {void}
+   */
+  #climb(block) {
+    const parent = this.block(block.parent);
+    if (!parent || !parent.droppable) return;
+    const known = parent.remaining;
+    // A parent that is empty in the source is not tracked, and holds no child.
+    if (known === null) return;
+    parent.remaining = known - 1;
+    if (known === 1) this.#climb(parent);
   }
 
   /**

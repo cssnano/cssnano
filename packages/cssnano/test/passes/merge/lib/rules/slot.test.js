@@ -51,7 +51,7 @@ test('moveRule should place the record of the moved rule in a new slot at the en
   const target = state.records.root;
   const slot = target.moveRule(ruleRecordOf(state.records, rule), from);
   assert.equal(ruleRecordOf(state.records, rule).slot, slot);
-  assert.equal(slot.block, target);
+  assert.equal(slot.block, target.index);
   assert.equal(target.children.at(-1), slot);
 });
 

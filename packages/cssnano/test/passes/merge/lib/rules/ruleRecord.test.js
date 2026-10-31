@@ -66,7 +66,7 @@ test('compatible should be false after absorbEarlier takes an incompatible earli
 test('recordRule should give the record of a rule the rule as its node', () => {
   const rule = postcss.parse('a{color:red}').first;
   const records = new BlockRecords(
-    new BlockRecord(postcss.root(), null, 0, false)
+    new BlockRecord(postcss.root(), -1, 0, false)
   );
   assert.equal(records.recordRule(rule, properties, declarationIds).node, rule);
 });
@@ -322,21 +322,21 @@ test('assertFresh should throw under consistency checks when a comment was added
 test('childCount should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, null, 0, false));
+  record.setBlock(new BlockRecord(rule, -1, 0, false));
   assert.throws(() => record.childCount(), /block/v);
 });
 
 test('holdsOnlyDeclarations should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, null, 0, false));
+  record.setBlock(new BlockRecord(rule, -1, 0, false));
   assert.throws(() => record.holdsOnlyDeclarations(), /block/v);
 });
 
 test('append should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, null, 0, false));
+  record.setBlock(new BlockRecord(rule, -1, 0, false));
   assert.throws(
     () =>
       record.append(
@@ -349,7 +349,7 @@ test('append should throw on a rule that holds a block', () => {
 test('declarations should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, null, 0, false));
+  record.setBlock(new BlockRecord(rule, -1, 0, false));
   assert.throws(() => record.declarations, /block/v);
 });
 

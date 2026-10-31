@@ -17,10 +17,11 @@ export declare function buildRecords(root: Root, mergeState: MergeState): BlockR
  * Takes a rule or an at-rule out of its parent's records at once. The PostCSS
  * child list catches up at write-back.
  *
+ * @param {BlockRecords} records
  * @param {RuleRecord | BlockRecord} entry the record of the rule, or the block of the at-rule
  * @return {void}
  */
-export declare function remove(entry: RuleRecord | BlockRecord): void;
+export declare function remove(records: BlockRecords, entry: RuleRecord | BlockRecord): void;
 /**
  * Moves `earlier`, which already holds the joined content, to the place of
  * `later`, so the joined node takes the later position and keeps the

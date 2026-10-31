@@ -230,6 +230,16 @@ export default class MergeState {
    * @return {BlockRecord}
    */
   blockOf(record) {
+    return /** @type {BlockRecord} */ (
+      this.records.block(this.#blockIndexOf(record))
+    );
+  }
+
+  /**
+   * @param {RuleRecord} record
+   * @return {number} the index of the block the rule stands in
+   */
+  #blockIndexOf(record) {
     if (record.departed) throw new Error('block of a departed rule record');
     return /** @type {Slot} */ (record.slot).block;
   }
@@ -240,18 +250,21 @@ export default class MergeState {
    *
    * @param {RuleRecord} recordA
    * @param {RuleRecord} recordB
-   * @param {BlockRecord} [blockA]
-   * @param {BlockRecord} [blockB]
+   * @param {number} [blockA] the index of the block the first rule stands in
+   * @param {number} [blockB] the index of the block the second rule stands in
    * @return {boolean}
    */
   canMerge(
     recordA,
     recordB,
-    blockA = this.blockOf(recordA),
-    blockB = this.blockOf(recordB)
+    blockA = this.#blockIndexOf(recordA),
+    blockB = this.#blockIndexOf(recordB)
   ) {
-    if (!sameContainer(blockA, blockB, this.#textTable)) return false;
-    if (isKeyframes(blockA.node)) return false;
+    const containerA = /** @type {BlockRecord} */ (this.records.block(blockA));
+    const containerB = this.records.block(blockB);
+    if (!sameContainer(this.records, containerA, containerB, this.#textTable))
+      return false;
+    if (isKeyframes(containerA.node)) return false;
     if (recordA.block !== null) return false;
     if (recordB.block !== null) return false;
 

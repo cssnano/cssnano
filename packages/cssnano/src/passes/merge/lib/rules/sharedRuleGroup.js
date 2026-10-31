@@ -66,7 +66,7 @@ function overridesShared(declarations, claimed, shared) {
  * the shared rule does, and sets every shared declaration.
  *
  * @param {RuleLink | null} link
- * @param {BlockRecord} parent
+ * @param {number} parent the index of the block the rules stand in
  * @param {number[]} firstKeys the declaration keys of the earlier rule
  * @param {Set<number>} sharedIndices where the shared declarations stand in it
  * @return {link is RuleLink}
@@ -85,7 +85,7 @@ function repeatsShared(link, parent, firstKeys, sharedIndices) {
 /**
  * @param {RuleRecord[]} members
  * @param {RuleRecord} later
- * @param {BlockRecord} parent
+ * @param {number} parent the index of the block the rules stand in
  * @param {import('./mergeState.js').default} mergeState
  * @return {boolean} whether `later` can share a selector list with every member
  */

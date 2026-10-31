@@ -208,7 +208,7 @@ function joinBlocksBackward(block, mergeState) {
     if (!laterEntries) return null;
     if (!index.conflictsSinceIn(laterEntries, laterPosition, keysOf)) {
       earlier.adopt(later);
-      remove(later);
+      remove(mergeState.records, later);
       return 'up';
     }
     // The earlier block's content stays first, so source order is kept.
@@ -323,7 +323,7 @@ function joinInParent(block, mergeState, rules) {
     if (!index.conflictsSinceIn([later], earlierPosition, keysOf)) {
       index.moveWrites([later], earlierPosition, keysOf);
       receive(earlier, later);
-      remove(later);
+      remove(mergeState.records, later);
       return 'up';
     }
     if (!index.conflictsSinceIn([earlier], earlierPosition, keysOf)) {
@@ -349,7 +349,7 @@ function joinInParent(block, mergeState, rules) {
     if (!index.conflictsSinceIn(laterEntries, earlierPosition, keysOf)) {
       index.moveWrites(laterEntries, earlierPosition, keysOf);
       earlier.adopt(later);
-      remove(later);
+      remove(mergeState.records, later);
       return 'up';
     }
     // The earlier block's content stays first, so source order is kept.

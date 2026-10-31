@@ -71,7 +71,10 @@ test('adopt should move the declarations of the source into the target and its a
   );
   // The source keeps its emptied block until the pair is joined, so the
   // ancestors are read once the source is removed.
-  remove(blockRecordOf(state.records, /** @type {Container} */ (other)));
+  remove(
+    state.records,
+    blockRecordOf(state.records, /** @type {Container} */ (other))
+  );
   writeBack(state.records.blocks());
 
   assert.deepEqual(treeProps(media), ['color', 'width']);
@@ -97,7 +100,10 @@ test('remove should drop the declarations of the removed node from its ancestors
   const [supports] = /** @type {Container} */ (root.nodes);
   const [, removed] = /** @type {Container} */ (supports).nodes;
 
-  remove(blockRecordOf(state.records, /** @type {Container} */ (removed)));
+  remove(
+    state.records,
+    blockRecordOf(state.records, /** @type {Container} */ (removed))
+  );
   writeBack(state.records.blocks());
 
   assert.deepEqual(treeProps(supports), ['color']);
@@ -106,13 +112,13 @@ test('remove should drop the declarations of the removed node from its ancestors
 test('remove should take the node out of the records of its parent at once', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
   const [first, second] = /** @type {Rule[]} */ (root.nodes);
-  remove(ruleRecordOf(state.records, first));
+  remove(state.records, ruleRecordOf(state.records, first));
   assert.deepEqual(state.records.root.liveChildren(), [second]);
 });
 
 test('writeBack should drop the removed nodes from the child list of the parent', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
-  remove(ruleRecordOf(state.records, root.first));
+  remove(state.records, ruleRecordOf(state.records, root.first));
   writeBack(state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['b', 'c']);
 });
@@ -146,7 +152,7 @@ test('takePlaceOf should keep the whitespace before the later node', () => {
 test('takePlaceOf should place the earlier node after a removal in the same parent', () => {
   const { root, state } = setup('x{color:red}\na{color:red}\nb{color:red}');
   const [removed, earlier, later] = /** @type {Rule[]} */ (root.nodes);
-  remove(ruleRecordOf(state.records, removed));
+  remove(state.records, ruleRecordOf(state.records, removed));
   takePlaceOf(
     state,
     root,
@@ -160,7 +166,7 @@ test('takePlaceOf should place the earlier node after a removal in the same pare
 test('takePlaceOf should hand the leading whitespace of a removed first root child to the next child', () => {
   const { root, state } = setup('x{color:red}\na{color:red}\nb{color:red}');
   const [removed, earlier, later] = /** @type {Rule[]} */ (root.nodes);
-  remove(ruleRecordOf(state.records, removed));
+  remove(state.records, ruleRecordOf(state.records, removed));
   takePlaceOf(
     state,
     root,

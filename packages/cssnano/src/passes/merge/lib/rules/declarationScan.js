@@ -4,6 +4,7 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecord as Block} from './blockRecords.js' */
 /** @import {RuleLink} from './ruleSequence.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 
 /**
  * True if a declaration of `block` or of an at-rule inside it, rather than of
@@ -47,12 +48,20 @@ function isEmptied(entry) {
  * between two rules.
  */
 export default class DeclarationScan {
+  /** @type {BlockRecords} */
+  #records;
+
   /**
    * @type {Map<Slot | Block | DeclarationRecord | ChildNode, number>} for a slot that holds no
    * rule, or a block that left none, the index of a later sibling before which
    * no live node stands
    */
   #skips = new Map();
+
+  /** @param {BlockRecords} records the arena that the blocks of the links index */
+  constructor(records) {
+    this.#records = records;
+  }
 
   /**
    * True if a declaration outside both rules lies between them. CSS Nesting
@@ -72,10 +81,10 @@ export default class DeclarationScan {
    * @return {boolean}
    */
   declarationBetween(first, second, outsideDeclarations) {
-    /** @type {Block | null} */
-    let enclosing = first.slot.block;
+    /** @type {Block | undefined} */
+    let enclosing = this.#records.block(first.slot.block);
     while (enclosing && enclosing.node.type !== 'rule') {
-      enclosing = enclosing.parent;
+      enclosing = this.#records.block(enclosing.parent);
     }
     if (!enclosing) return false;
     let hasOutside = outsideDeclarations.get(enclosing);
@@ -85,7 +94,7 @@ export default class DeclarationScan {
     }
     if (!hasOutside) return false;
 
-    let block = first.slot.block;
+    let block = /** @type {Block} */ (this.#records.block(first.slot.block));
     let index = first.slot.position;
     // The rules after `first` in its slot come next; `first` holds only
     // declarations and comments, so its own contents are skipped.
@@ -107,7 +116,7 @@ export default class DeclarationScan {
       } else if (!entry) {
         if (block === enclosing) return false;
         index = block.position;
-        block = /** @type {Block} */ (block.parent);
+        block = /** @type {Block} */ (this.#records.block(block.parent));
       }
       index++;
       offset = 0;

@@ -123,10 +123,10 @@ export default class MergeState {
      *
      * @param {RuleRecord} recordA
      * @param {RuleRecord} recordB
-     * @param {BlockRecord} [blockA]
-     * @param {BlockRecord} [blockB]
+     * @param {number} [blockA] the index of the block the first rule stands in
+     * @param {number} [blockB] the index of the block the second rule stands in
      * @return {boolean}
      */
-    canMerge(recordA: RuleRecord, recordB: RuleRecord, blockA?: BlockRecord, blockB?: BlockRecord): boolean;
+    canMerge(recordA: RuleRecord, recordB: RuleRecord, blockA?: number, blockB?: number): boolean;
 }
 //# sourceMappingURL=mergeState.d.ts.map
