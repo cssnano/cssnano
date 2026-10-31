@@ -39,7 +39,7 @@ export default class MergeState {
   #elementKeyOf = createElementKeyLookup();
   /** @type {TextTable} */
   #textTable;
-  /** @type {Set<Rule>} rules whose selector text is set, and whose tokens are stored at the end of the run */
+  /** @type {Set<RuleRecord>} rules whose selector text is set, and whose tokens are stored at the end of the run */
   #spelled = new Set();
   /** @type {Set<Rule> | null} */
   #createdBlocks;
@@ -91,13 +91,23 @@ export default class MergeState {
    * The elements the rule can match. An arrow function, so it passes as a
    * callback without a closure per call.
    *
+   * @param {RuleRecord} record
+   * @return {string[] | null}
+   */
+  elementKeysOf = (record) => {
+    this.piecesOf(record);
+    return record.elementKeys(this.#elementKeyOf);
+  };
+
+  /**
+   * The elements of the rule that stands at a node, as `elementKeysOf` gives
+   * them. An arrow function, for the callers that hold only the nodes of
+   * declarations.
+   *
    * @param {Rule} rule
    * @return {string[] | null}
    */
-  elementKeysOf = (rule) => {
-    this.piecesOf(rule);
-    return this.meta(rule).elementKeys(this.#elementKeyOf);
-  };
+  elementKeysOfNode = (rule) => this.elementKeysOf(this.meta(rule));
 
   /**
    * Numbers declarations so equal ones, with the same property, value,
@@ -131,15 +141,15 @@ export default class MergeState {
    * Appends selectors of `source` to the rule's selector list, keeping its
    * vendor prefix profile and its token ranges in step.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    * @param {string[]} selectors some of the selectors of `source`, in the
    * order of their first occurrence there
-   * @param {Rule} source
+   * @param {RuleRecord} source
    * @return {readonly string[] | null} the element keys the selectors add, or
    * null when the rule's elements are not listed
    */
-  addSelectors(rule, selectors, source) {
-    const own = this.piecesOf(rule);
+  addSelectors(record, selectors, source) {
+    const own = this.piecesOf(record);
     const from = own === null ? null : this.piecesOf(source);
     const pieces =
       from === null
@@ -147,10 +157,10 @@ export default class MergeState {
         : appendPieces(
             /** @type {RangePiece[]} */ (own),
             selectors,
-            this.meta(source).selectors,
+            source.selectors,
             from
           );
-    return this.meta(rule).addSelectors(
+    return record.addSelectors(
       selectors,
       this.#lookup,
       this.#elementKeyOf,
@@ -162,13 +172,12 @@ export default class MergeState {
    * The token range of each selector of the rule, read from the text table
    * without tokenizing, or null when the table does not hold them.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    * @return {RangePiece[] | null}
    */
-  piecesOf(rule) {
-    const record = this.meta(rule);
+  piecesOf(record) {
     if (record.pieces === undefined) {
-      const list = this.#textTable.stored(rule);
+      const list = this.#textTable.stored(record.node);
       record.setPieces(
         list === undefined ? null : selectorPieces(list, record.selectors)
       );
@@ -180,11 +189,11 @@ export default class MergeState {
    * Sets the selector text of a rule from its list. Its tokens are stored at
    * the end of the run, so a chain of merges into one rule stores them once.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    */
-  spellSelectors(rule) {
-    this.#textTable.setText(rule, this.meta(rule).selectorText());
-    this.#spelled.add(rule);
+  spellSelectors(record) {
+    this.#textTable.setText(record.node, record.selectorText());
+    this.#spelled.add(record);
   }
 
   /**
@@ -198,7 +207,11 @@ export default class MergeState {
   storeClone(rule, clone) {
     const source = this.#textTable.stored(rule);
     if (source === undefined) return;
-    this.#storePieces(clone, this.piecesOf(rule), separatorOf(source));
+    this.#storePieces(
+      clone,
+      this.piecesOf(this.meta(rule)),
+      separatorOf(source)
+    );
   }
 
   /**
@@ -210,8 +223,8 @@ export default class MergeState {
    * @param {Rule} second
    */
   storeJoined(rule, first, second) {
-    const earlier = this.piecesOf(first);
-    const later = this.piecesOf(second);
+    const earlier = this.piecesOf(this.meta(first));
+    const later = this.piecesOf(this.meta(second));
     if (earlier === null || later === null) return;
     this.#storePieces(rule, earlier.concat(later), [comma()]);
   }
@@ -238,15 +251,14 @@ export default class MergeState {
    * reader tokenizes it.
    */
   flushSelectors() {
-    for (const rule of this.#spelled) {
-      const record = this.records.recordOf(rule);
+    for (const record of this.#spelled) {
       // A rule that left the stylesheet has nothing to store.
-      if (!record || record.departed) continue;
+      if (record.departed) continue;
       const pieces = record.pieces;
       if (!pieces) continue;
       const list = joinRanges(pieces, [comma()]);
       if (tokensText(list) === record.selectorText()) {
-        this.#textTable.write(rule, list);
+        this.#textTable.write(record.node, list);
       }
     }
     this.#spelled.clear();
@@ -256,18 +268,14 @@ export default class MergeState {
    * Gives `later` the selectors of `earlier`, which stands before it and is
    * dropped by the caller.
    *
-   * @param {Rule} later
-   * @param {Rule} earlier
+   * @param {RuleRecord} later
+   * @param {RuleRecord} earlier
    */
   absorbEarlier(later, earlier) {
     // Both lists of pieces are known before the absorb joins them.
     this.piecesOf(earlier);
     this.piecesOf(later);
-    this.meta(later).absorbEarlier(
-      this.meta(earlier),
-      this.#lookup,
-      this.#elementKeyOf
-    );
+    later.absorbEarlier(earlier, this.#lookup, this.#elementKeyOf);
   }
 
   /**

@@ -69,10 +69,10 @@ export default class LastWriteIndex {
      * @param {ChildNode | RuleRecord | BlockRecord} entry the node, or the record
      * of a rule or of an at-rule with a block, as `BlockRecords#entryOf` gives
      * @param {number} position
-     * @param {(rule: Rule) => string[] | null} keysOf
+     * @param {(record: RuleRecord) => string[] | null} keysOf
      * @return {void}
      */
-    recordNode(entry: ChildNode | RuleRecord | BlockRecord, position: number, keysOf: (rule: Rule) => string[] | null): void;
+    recordNode(entry: ChildNode | RuleRecord | BlockRecord, position: number, keysOf: (record: RuleRecord) => string[] | null): void;
     /**
      * Whether a write after `position` conflicts with one of `declarations`,
      * counting only writes that can set an element in `elements`, the non-empty

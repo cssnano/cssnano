@@ -151,7 +151,7 @@ export default function joinByDeclarations(block, mergeState) {
     }
     index.recordNode(entry, position, keysOf);
   }
-  for (const rule of grown) mergeState.spellSelectors(rule);
+  for (const rule of grown) mergeState.spellSelectors(mergeState.meta(rule));
   removeRules(mergeState, emptied);
   return grown.size > 0;
 
@@ -185,7 +185,7 @@ export default function joinByDeclarations(block, mergeState) {
     const laterDeclarations = /** @type {Declaration[]} */ (later.nodes);
     const laterSet = mergeState.declarationKeysOf(later).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
-    const laterKeys = keysOf(later);
+    const laterKeys = keysOf(laterRecord);
     /** @type {{group: Group, claimed: Set<number>, added: string[], gain: number} | null} */
     let best = null;
     for (const id of laterSet) {
@@ -234,8 +234,9 @@ export default function joinByDeclarations(block, mergeState) {
     }
     if (!best) return null;
     const { group, claimed, added } = best;
-    const listed = keysOf(group.rule) !== null;
-    const gained = mergeState.addSelectors(group.rule, added, later);
+    const groupRecord = mergeState.meta(group.rule);
+    const listed = keysOf(groupRecord) !== null;
+    const gained = mergeState.addSelectors(groupRecord, added, laterRecord);
     for (const selector of added) group.selectors?.add(selector);
     if (listed) recordGained(group, gained);
     grown.add(group.rule);

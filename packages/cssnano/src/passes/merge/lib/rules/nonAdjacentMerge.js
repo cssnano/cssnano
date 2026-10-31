@@ -172,6 +172,7 @@ function joinBlocksBackward(block, mergeState) {
 
   const index = new LastWriteIndex(mergeState.properties);
   const keysOf = mergeState.elementKeysOf;
+  const keysOfNode = mergeState.elementKeysOfNode;
   /** @type {Map<string, {block: BlockRecord, position: number}>} */
   const next = new Map();
   let joined = false;
@@ -208,7 +209,7 @@ function joinBlocksBackward(block, mergeState) {
   function joinBlock(earlier, later, laterPosition) {
     const declarations = subtreeDeclarations(later);
     if (!declarations) return null;
-    if (!index.conflictsSinceIn(declarations, laterPosition, keysOf)) {
+    if (!index.conflictsSinceIn(declarations, laterPosition, keysOfNode)) {
       moveChildren(earlier, later);
       remove(later);
       return 'up';
@@ -216,8 +217,10 @@ function joinBlocksBackward(block, mergeState) {
     // The earlier block's content stays first, so source order is kept.
     const earlierDeclarations = subtreeDeclarations(earlier);
     if (!earlierDeclarations) return null;
-    if (!index.conflictsSinceIn(earlierDeclarations, laterPosition, keysOf)) {
-      index.moveWrites(earlierDeclarations, laterPosition, keysOf);
+    if (
+      !index.conflictsSinceIn(earlierDeclarations, laterPosition, keysOfNode)
+    ) {
+      index.moveWrites(earlierDeclarations, laterPosition, keysOfNode);
       moveChildren(earlier, later);
       takePlaceOf(mergeState, block.node, earlier, later);
       return 'down';
@@ -245,6 +248,7 @@ function joinInParent(block, mergeState, rules) {
 
   const index = new LastWriteIndex(mergeState.properties);
   const keysOf = mergeState.elementKeysOf;
+  const keysOfNode = mergeState.elementKeysOfNode;
   /** @type {Map<string, {entry: RuleRecord | BlockRecord, position: number}>} */
   const latest = new Map();
   // Every rule with a selector joins the first rule with that selector, so
@@ -324,18 +328,22 @@ function joinInParent(block, mergeState, rules) {
     const laterDeclarations = getDecls(later.node);
     // Writes are recorded before the rewrite, while both rules still hold their
     // declarations and cached element keys. Equal selectors give equal keys.
-    if (!index.conflictsSinceIn(laterDeclarations, earlierPosition, keysOf)) {
-      index.moveWrites(laterDeclarations, earlierPosition, keysOf);
+    if (
+      !index.conflictsSinceIn(laterDeclarations, earlierPosition, keysOfNode)
+    ) {
+      index.moveWrites(laterDeclarations, earlierPosition, keysOfNode);
       receive(earlier, later);
       remove(later);
       return 'up';
     }
     const earlierDeclarations = mergeState.meta(earlier.node).declarations;
-    if (!index.conflictsSinceIn(earlierDeclarations, earlierPosition, keysOf)) {
+    if (
+      !index.conflictsSinceIn(earlierDeclarations, earlierPosition, keysOfNode)
+    ) {
       index.moveWrites(
         [...earlierDeclarations, ...laterDeclarations],
         laterPosition,
-        keysOf
+        keysOfNode
       );
       receive(earlier, later);
       // A move edits the parent at once, after the pending removals.
@@ -355,22 +363,24 @@ function joinInParent(block, mergeState, rules) {
   function joinBlock(earlier, later, earlierPosition, laterPosition) {
     const declarations = subtreeDeclarations(later);
     if (!declarations) return null;
-    if (!index.conflictsSinceIn(declarations, earlierPosition, keysOf)) {
+    if (!index.conflictsSinceIn(declarations, earlierPosition, keysOfNode)) {
       moveChildren(earlier, later);
       remove(later);
-      index.moveWrites(declarations, earlierPosition, keysOf);
+      index.moveWrites(declarations, earlierPosition, keysOfNode);
       return 'up';
     }
     // The earlier block's content stays first, so source order is kept.
     const earlierDeclarations = subtreeDeclarations(earlier);
     if (!earlierDeclarations) return null;
-    if (!index.conflictsSinceIn(earlierDeclarations, earlierPosition, keysOf)) {
+    if (
+      !index.conflictsSinceIn(earlierDeclarations, earlierPosition, keysOfNode)
+    ) {
       moveChildren(earlier, later);
       takePlaceOf(mergeState, block.node, earlier, later);
       index.moveWrites(
         [...earlierDeclarations, ...declarations],
         laterPosition,
-        keysOf
+        keysOfNode
       );
       return 'down';
     }
