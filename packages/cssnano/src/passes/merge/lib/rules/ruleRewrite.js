@@ -125,32 +125,28 @@ export function buildMergedRule(
     [...firstSelectors, ...secondSelectors, ...(group?.added ?? [])].join()
   );
   if (!group) mergeState.storeJoined(receivingBlock, first, second);
-  const firstClone = first.node.clone({ selectors: firstSelectors });
+  // The merged rule takes the declarations of the earlier rule themselves.
+  const receivingRecord = mergeState.records.recordRule(receivingBlock, []);
+  for (const declaration of first.takeDeclarationsAt(claimedEarlierIndices)) {
+    receivingRecord.append(declaration);
+  }
+  const firstLeftover = first.node.clone({ selectors: firstSelectors });
   const secondClone = second.node.clone({ selectors: secondSelectors });
-  mergeState.storeClone(first, firstClone);
+  mergeState.storeClone(first, firstLeftover);
   mergeState.storeClone(second, secondClone);
   mergeState.reportCreated(receivingBlock);
-  mergeState.reportCreated(firstClone);
+  mergeState.reportCreated(firstLeftover);
   mergeState.reportCreated(secondClone);
   // Index-based removal matches duplicates positionally, symmetric to how
   // `claimedIndices` selects declarations in the later rule. Each clone
   // declaration takes a copy of its source's record, so the keys carry over.
   const firstRecords = first.declarations;
   /** @type {DeclarationRecord[]} */
-  const receivingDeclarations = [];
-  /** @type {DeclarationRecord[]} */
   const firstKept = [];
   let earlierIndex = 0;
-  firstClone.walkDecls((decl) => {
+  firstLeftover.walkDecls((decl) => {
     inheritSupport(firstRecords[earlierIndex].node, decl, mergeState.textTable);
-    const copy = firstRecords[earlierIndex].copy(decl);
-    if (claimedEarlierIndices.has(earlierIndex++)) {
-      decl.remove();
-      receivingBlock.append(decl);
-      receivingDeclarations.push(copy);
-    } else {
-      firstKept.push(copy);
-    }
+    firstKept.push(firstRecords[earlierIndex++].copy(decl));
   });
   const secondRecords = second.declarations;
   /** @type {DeclarationRecord[]} */
@@ -166,11 +162,7 @@ export function buildMergedRule(
     }
   });
   // The clones hold their final declarations, so their records are built now.
-  const receivingRecord = mergeState.records.recordRule(
-    receivingBlock,
-    receivingDeclarations
-  );
-  const firstRecord = mergeState.records.recordRule(firstClone, firstKept);
+  const firstRecord = mergeState.records.recordRule(firstLeftover, firstKept);
   const secondRecord = mergeState.records.recordRule(secondClone, secondKept);
   /** @type {Placement} */
   const placement = {

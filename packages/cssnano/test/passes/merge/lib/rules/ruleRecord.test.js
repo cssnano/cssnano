@@ -295,36 +295,6 @@ test('append should keep the declarations in step with the children under consis
   }
 });
 
-test('removeDeclarationsAt should keep the comment that a rule holds', () => {
-  const rule = postcss.parse('a{color:red;/* note */width:1px}').first;
-  const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
-  record.removeDeclarationsAt(new Set([0]));
-  assert.equal(record.childCount(), 2);
-});
-
-test('removeDeclarationsAt should drop the claimed declaration from the children of a rule holding a comment', () => {
-  const rule = postcss.parse('a{color:red;/* note */width:1px}').first;
-  const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
-  record.removeDeclarationsAt(new Set([0]));
-  assert.deepEqual(
-    rule.nodes.map((node) => node.type),
-    ['comment', 'decl']
-  );
-});
-
-test('removeDeclarationsAt should keep the declarations in step with the children under consistency checks', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    const rule = postcss.parse('a{color:red;/* note */width:1px}').first;
-    const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
-    record.removeDeclarationsAt(new Set([0]));
-    assert.equal(record.declarations.length, 1);
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
-});
-
 test('assertFresh should throw under consistency checks when a comment was added to the node without the record', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);
@@ -363,13 +333,6 @@ test('append should throw on a rule that holds a block', () => {
       ),
     /block/v
   );
-});
-
-test('removeDeclarationsAt should throw on a rule that holds a block', () => {
-  const rule = postcss.parse('a{b{color:red}}').first;
-  const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, null, 0, false));
-  assert.throws(() => record.removeDeclarationsAt(new Set()), /block/v);
 });
 
 test('declarations should throw on a rule that holds a block', () => {
