@@ -10,13 +10,16 @@ const { asciiLowerCase } = cssnanoUtils;
 /** @import {Declaration} from 'postcss' */
 
 /**
+ * Two declarations are equal when they print the same; `important: false`
+ * and an unset flag both print without `!important`.
+ *
  * @param {Declaration} a
  * @param {Declaration} b
  * @return {boolean}
  */
 export function declarationIsEqual(a, b) {
   return (
-    a.important === b.important &&
+    (a.important === true) === (b.important === true) &&
     propertyNameKey(a.prop) === propertyNameKey(b.prop) &&
     a.value === b.value &&
     hackPrefixOf(a) === hackPrefixOf(b)

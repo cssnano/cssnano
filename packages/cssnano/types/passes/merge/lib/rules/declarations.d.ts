@@ -2,6 +2,9 @@ import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { Declaration } from 'postcss';
 /** @import {Declaration} from 'postcss' */
 /**
+ * Two declarations are equal when they print the same; `important: false`
+ * and an unset flag both print without `!important`.
+ *
  * @param {Declaration} a
  * @param {Declaration} b
  * @return {boolean}
