@@ -1,7 +1,7 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord, Slot } from './blockRecords.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
-/** @import {Declaration} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 
@@ -13,7 +13,8 @@ const OVER_WRITTEN =
  * The key by which a declaration is counted: its property, value and
  * `!important` flag, so a copy of a declaration counts as the same one.
  *
- * @param {Declaration} node
+ * @param {{prop: string, value: string, important?: boolean}} node a
+ * declaration record, or a PostCSS declaration
  * @return {string}
  */
 function declarationKey(node) {
@@ -38,9 +39,9 @@ export function tallyDeclarations(records) {
     if (reached.has(node)) throw new Error(TWICE);
     reached.add(node);
   };
-  /** @param {Declaration} node */
-  const count = (node) => {
-    const key = declarationKey(node);
+  /** @param {DeclarationRecord} declaration */
+  const count = (declaration) => {
+    const key = declarationKey(declaration);
     written.set(key, (written.get(key) ?? 0) + 1);
   };
   /** @param {RuleRecord} record */
@@ -51,9 +52,7 @@ export function tallyDeclarations(records) {
       walk(nested);
       return;
     }
-    for (const node of record.node.nodes) {
-      if (node.type === 'decl') count(node);
-    }
+    for (const declaration of record.declarations) count(declaration);
   };
   /** @param {BlockRecord} block */
   const walk = (block) => {
@@ -65,7 +64,7 @@ export function tallyDeclarations(records) {
         walk(entry);
       } else {
         reach(entry);
-        if (entry.type === 'decl') count(entry);
+        if (entry instanceof DeclarationRecord) count(entry);
       }
     }
   };

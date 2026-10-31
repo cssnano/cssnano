@@ -88,8 +88,10 @@ export function buildRecords(root, mergeState) {
         );
         block.children.push(nested);
         fill(nested);
+      } else if (child.type === 'decl') {
+        declarations++;
+        block.children.push(records.declarationRecord(child));
       } else {
-        if (child.type === 'decl') declarations++;
         block.children.push(child);
       }
     }

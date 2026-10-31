@@ -4,6 +4,7 @@ import joinByDeclarations from './declarationJoin.js';
 import { writesOf } from './ruleRewrite.js';
 import RepeatScan from './repeatScan.js';
 import { BlockRecord, Slot } from './blockRecords.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
 import {
@@ -15,13 +16,13 @@ import {
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {AtRule, Container, ChildNode, Declaration, Rule} from 'postcss' */
+/** @import {AtRule, Container, ChildNode, Rule} from 'postcss' */
 /** @import {PropertyWrites} from './lastWriteIndex.js' */
 /** @import MergeState from './mergeState.js' */
 
 /**
- * @param {ChildNode | RuleRecord | BlockRecord} entry
- * @param {(RuleRecord | Declaration)[]} entries grown in place
+ * @param {ChildNode | DeclarationRecord | RuleRecord | BlockRecord} entry
+ * @param {(RuleRecord | DeclarationRecord)[]} entries grown in place
  * @return {boolean} see `collectEntries`
  */
 function collectFrom(entry, entries) {
@@ -33,7 +34,7 @@ function collectFrom(entry, entries) {
     if (!isConditionalGroupRule(/** @type {AtRule} */ (entry.node)))
       return false;
     return collectEntries(entry, entries);
-  } else if (entry.type === 'decl') {
+  } else if (entry instanceof DeclarationRecord) {
     entries.push(entry);
   } else if (entry.type === 'atrule' && !isConditionalGroupRule(entry)) {
     return false;
@@ -43,7 +44,7 @@ function collectFrom(entry, entries) {
 
 /**
  * @param {BlockRecord} block
- * @param {(RuleRecord | Declaration)[]} entries grown in place
+ * @param {(RuleRecord | DeclarationRecord)[]} entries grown in place
  * @return {boolean} false when the subtree holds an at-rule outside the
  * conditional groups
  */
@@ -57,7 +58,7 @@ function collectEntries(block, entries) {
       }
     } else if (entry instanceof BlockRecord) {
       if (!entry.dropped && !collectFrom(entry, entries)) return false;
-    } else if (!ruleOwned || entry.type !== 'decl') {
+    } else if (!ruleOwned || !(entry instanceof DeclarationRecord)) {
       if (!collectFrom(entry, entries)) return false;
     }
   }
@@ -71,10 +72,10 @@ function collectEntries(block, entries) {
  * it stale.
  *
  * @param {BlockRecord} block
- * @return {(RuleRecord | Declaration)[] | null}
+ * @return {(RuleRecord | DeclarationRecord)[] | null}
  */
 export function subtreeEntries(block) {
-  /** @type {(RuleRecord | Declaration)[]} */
+  /** @type {(RuleRecord | DeclarationRecord)[]} */
   const entries = [];
   return collectEntries(block, entries) ? entries : null;
 }
@@ -83,7 +84,7 @@ export function subtreeEntries(block) {
  * The key under which a live entry can join an earlier sibling, or null if it
  * cannot join any.
  *
- * @param {RuleRecord | BlockRecord | ChildNode} entry
+ * @param {RuleRecord | BlockRecord | DeclarationRecord | ChildNode} entry
  * @param {boolean} joinRules
  * @return {string | null}
  */

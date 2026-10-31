@@ -1,5 +1,6 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord, Slot } from './blockRecords.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {BlockRecord as Block} from './blockRecords.js' */
@@ -27,6 +28,8 @@ function differs(block) {
       }
     } else if (entry instanceof BlockRecord) {
       if (entry.dropped) continue;
+      if (nodes[at++] !== entry.node) return true;
+    } else if (entry instanceof DeclarationRecord) {
       if (nodes[at++] !== entry.node) return true;
     } else if (nodes[at++] !== entry) {
       return true;

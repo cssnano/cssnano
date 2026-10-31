@@ -1,4 +1,5 @@
 import { BlockRecord, Slot } from './blockRecords.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecord as Block} from './blockRecords.js' */
@@ -23,7 +24,7 @@ function hasDeclarationOutsideRules(block) {
       ) {
         return true;
       }
-    } else if (entry.type === 'decl') {
+    } else if (entry instanceof DeclarationRecord) {
       return true;
     }
   }
@@ -33,7 +34,7 @@ function hasDeclarationOutsideRules(block) {
 /**
  * True for a slot that holds no rule, or a block that a sweep emptied.
  *
- * @param {Slot | Block | ChildNode} entry
+ * @param {Slot | Block | DeclarationRecord | ChildNode} entry
  * @return {boolean}
  */
 function isEmptied(entry) {
@@ -47,7 +48,7 @@ function isEmptied(entry) {
  */
 export default class DeclarationScan {
   /**
-   * @type {Map<Slot | Block | ChildNode, number>} for a slot that holds no
+   * @type {Map<Slot | Block | DeclarationRecord | ChildNode, number>} for a slot that holds no
    * rule, or a block that left none, the index of a later sibling before which
    * no live node stands
    */
@@ -101,11 +102,10 @@ export default class DeclarationScan {
           offset = 0;
           continue;
         }
-      } else if (entry) {
-        if (entry.type === 'decl') return true;
-      } else if (block === enclosing) {
-        return false;
-      } else {
+      } else if (entry instanceof DeclarationRecord) {
+        return true;
+      } else if (!entry) {
+        if (block === enclosing) return false;
         index = block.position;
         block = /** @type {Block} */ (block.parent);
       }
