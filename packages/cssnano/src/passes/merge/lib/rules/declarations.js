@@ -1,4 +1,4 @@
-import { PropertyWrites } from './lastWriteIndex.js';
+import { PropertyWrites } from './propertyWrites.js';
 import { WritePositions } from './writePositions.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 

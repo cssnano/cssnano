@@ -1,7 +1,9 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { BlockRecord, Slot } from './blockRecords.js';
+import { Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 const POTENTIAL =
   'a sweep raised its potential, or moved a rule without lowering it';
@@ -25,10 +27,11 @@ export function sweepPotential(records) {
     const id = number++;
     for (const entry of block.children) {
       if (entry instanceof Slot) {
-        for (const record of entry.rules) {
+        for (const index of entry.rules) {
+          const record = /** @type {RuleRecord} */ (records.rule(index));
           const nested = record.block;
-          if (nested) {
-            visit(nested);
+          if (nested !== -1) {
+            visit(/** @type {BlockRecord} */ (records.block(nested)));
           } else {
             declarations += record.declarations.length;
             rules++;

@@ -4,15 +4,17 @@ import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
-  BlockRecord,
+  BlockRecords,
   Slot,
 } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { ruleRecordOf } from './liveRecords.js';
 
 /** @import {Root, Rule} from 'postcss' */
+/** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
 
 before(() => enableConsistencyChecks(true));
 after(() => enableConsistencyChecks(false));
@@ -32,22 +34,26 @@ function setup(css) {
 /**
  * Every block record reached from `block` through its slots and nested blocks.
  *
+ * @param {BlockRecords} records
  * @param {BlockRecord} block
  * @param {BlockRecord[]} found
  * @return {BlockRecord[]}
  */
-function reachedBlocks(block, found = [block]) {
+function reachedBlocks(records, block, found = [block]) {
   for (const entry of block.children) {
     if (entry instanceof Slot) {
-      for (const record of entry.rules) {
-        if (record.block) {
-          found.push(record.block);
-          reachedBlocks(record.block, found);
+      for (const index of entry.rules) {
+        const { block: nested } = /** @type {RuleRecord} */ (
+          records.rule(index)
+        );
+        if (nested !== -1) {
+          found.push(/** @type {BlockRecord} */ (records.block(nested)));
+          reachedBlocks(records, records.block(nested), found);
         }
       }
     } else if (entry instanceof BlockRecord) {
       found.push(entry);
-      reachedBlocks(entry, found);
+      reachedBlocks(records, entry, found);
     }
   }
   return found;
@@ -90,7 +96,7 @@ test('blocks() should hold every block reached from the stylesheet record, each 
     '@media (x){@media (y){p{width:1px}q{height:2px}}}a{color:red;b{width:1px}}'
   );
   const { records } = state;
-  const reached = reachedBlocks(records.root);
+  const reached = reachedBlocks(records, records.root);
   const indexed = [...records.blocks()];
   assert.equal(reached.length, indexed.length);
   for (const block of reached) {
@@ -103,16 +109,21 @@ test('blocks() should hold every block reached from the stylesheet record, each 
  * Whether `holder` holds the entry of `block`: the block itself, or a rule
  * whose nested block it is.
  *
+ * @param {BlockRecords} records
  * @param {BlockRecord} holder
  * @param {BlockRecord} block
  * @return {boolean}
  */
-function holds(holder, block) {
+function holds(records, holder, block) {
   return holder.children.some(
     (entry) =>
       entry === block ||
       (entry instanceof Slot &&
-        entry.rules.some((rule) => rule.block === block))
+        entry.rules.some(
+          (index) =>
+            /** @type {RuleRecord} */ (records.rule(index)).block ===
+            block.index
+        ))
   );
 }
 
@@ -122,9 +133,9 @@ test('a block should name the block that holds its entry by index, -1 for the st
   );
   const { records } = state;
   assert.equal(records.root.parent, -1);
-  for (const block of reachedBlocks(records.root)) {
+  for (const block of reachedBlocks(records, records.root)) {
     if (block !== records.root) {
-      assert.ok(holds(records.block(block.parent), block));
+      assert.ok(holds(records, records.block(block.parent), block));
     }
   }
 });
@@ -132,7 +143,7 @@ test('a block should name the block that holds its entry by index, -1 for the st
 test('a slot should name its block by index and stand at its position in that block', () => {
   const { state } = setup('@media (x){p{width:1px}q{height:2px}}a{color:red}');
   const { records } = state;
-  for (const block of reachedBlocks(records.root)) {
+  for (const block of reachedBlocks(records, records.root)) {
     for (const [position, entry] of block.children.entries()) {
       if (entry instanceof Slot) {
         assert.equal(records.block(entry.block), block);
@@ -152,4 +163,43 @@ test('changed should tell the parent by index once a droppable block goes empty'
   records.changed(inner.index, -1);
   assert.equal(inner.remaining, 0);
   assert.equal(outer.remaining, 0);
+});
+
+test('changed should count a droppable parent down when its last live child empties', () => {
+  const root = new BlockRecord(postcss.root(), -1, 0, false);
+  const records = new BlockRecords(root);
+  records.add(root);
+  const outer = new BlockRecord(
+    postcss.atRule({ name: 'layer' }),
+    root.index,
+    0,
+    true
+  );
+  records.add(outer);
+  const inner = new BlockRecord(
+    postcss.atRule({ name: 'layer' }),
+    outer.index,
+    0,
+    true
+  );
+  records.add(inner);
+  outer.remaining = 1;
+  inner.remaining = 1;
+  records.changed(inner.index, -1);
+  assert.equal(outer.remaining, 0);
+});
+
+test('changed should leave a block that no sweep tracks untouched', () => {
+  const root = new BlockRecord(postcss.root(), -1, 0, false);
+  const records = new BlockRecords(root);
+  records.add(root);
+  const block = new BlockRecord(
+    postcss.atRule({ name: 'layer' }),
+    root.index,
+    0,
+    true
+  );
+  records.add(block);
+  records.changed(block.index, 1);
+  assert.equal(block.remaining, null);
 });

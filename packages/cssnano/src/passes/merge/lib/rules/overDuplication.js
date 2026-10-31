@@ -1,5 +1,6 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { BlockRecord, Slot } from './blockRecords.js';
+import { Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -48,8 +49,8 @@ export function tallyDeclarations(records) {
   const visitRule = (record) => {
     reach(record.node);
     const nested = record.block;
-    if (nested) {
-      walk(nested);
+    if (nested !== -1) {
+      walk(/** @type {BlockRecord} */ (records.block(nested)));
       return;
     }
     for (const declaration of record.declarations) count(declaration);
@@ -58,7 +59,9 @@ export function tallyDeclarations(records) {
   const walk = (block) => {
     for (const entry of block.children) {
       if (entry instanceof Slot) {
-        for (const record of entry.rules) visitRule(record);
+        for (const index of entry.rules) {
+          visitRule(/** @type {RuleRecord} */ (records.rule(index)));
+        }
       } else if (entry instanceof BlockRecord) {
         reach(entry.node);
         walk(entry);

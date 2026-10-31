@@ -1,4 +1,5 @@
-import { BlockRecord, Slot } from './blockRecords.js';
+import { Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { RuleRecord } from './ruleRecord.js';
 export type RuleLink = {

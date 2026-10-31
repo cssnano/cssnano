@@ -1,4 +1,4 @@
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
@@ -9,21 +9,23 @@ import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord
  * block record of an at-rule. Searches the live tree, so a rule that left the
  * stylesheet is not found.
  *
+ * @param {BlockRecords} records
  * @param {BlockRecord} block
  * @param {object} node
  * @return {RuleRecord | BlockRecord | undefined}
  */
-function liveEntryOf(block, node) {
-  for (const entry of block.liveEntries()) {
+function liveEntryOf(records, block, node) {
+  for (const entry of records.liveEntries(block.index)) {
     if (entry instanceof RuleRecord) {
       if (entry.node === node) return entry;
-      if (entry.block) {
-        const found = liveEntryOf(entry.block, node);
+      if (entry.block !== -1) {
+        const nested = /** @type {BlockRecord} */ (records.block(entry.block));
+        const found = liveEntryOf(records, nested, node);
         if (found) return found;
       }
     } else if (entry instanceof BlockRecord) {
       if (entry.node === node) return entry;
-      const found = liveEntryOf(entry, node);
+      const found = liveEntryOf(records, entry, node);
       if (found) return found;
     }
   }
@@ -39,7 +41,7 @@ function liveEntryOf(block, node) {
  * @throws {Error} when no live entry holds the rule
  */
 export function ruleRecordOf(records, rule) {
-  const found = liveEntryOf(records.root, rule);
+  const found = liveEntryOf(records, records.root, rule);
   if (found instanceof RuleRecord) return found;
   throw new Error('no live rule record for the rule');
 }
@@ -69,8 +71,10 @@ export function entryOf(records, node) {
  */
 export function blockRecordOf(records, node) {
   if (node === records.root.node) return records.root;
-  const found = liveEntryOf(records.root, node);
-  if (found instanceof RuleRecord && found.block) return found.block;
+  const found = liveEntryOf(records, records.root, node);
+  if (found instanceof RuleRecord && found.block !== -1) {
+    return /** @type {BlockRecord} */ (records.block(found.block));
+  }
   if (found instanceof BlockRecord) return found;
   throw new Error('no live block record for the container');
 }

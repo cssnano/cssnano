@@ -22,7 +22,7 @@ function linkCount(placement) {
 }
 
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {Placement, RuleLink} from './ruleSequence.js' */
 
@@ -59,8 +59,8 @@ export default function runScan(mergeState) {
    * @return {number} NO_BENEFIT when merging the pair cannot rewrite anything
    */
   const mergeBenefit = (first, second) => {
-    const a = first.record.declarationKeys();
-    const b = second.record.declarationKeys();
+    const a = first.record.declarationKeys(mergeState.records);
+    const b = second.record.declarationKeys(mergeState.records);
     if (first.record.hasSameSelectors(second.record))
       return a.keys.length + b.keys.length;
     const [smaller, larger] =

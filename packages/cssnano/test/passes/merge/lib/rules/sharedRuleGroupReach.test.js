@@ -69,7 +69,7 @@ function groupsOf(css) {
     if (!second) break;
     const shared = intersect(
       first.record.declarations,
-      second.record.declarationKeys().keySet
+      second.record.declarationKeys(mergeState.records).keySet
     );
     if (shared.length === 0) continue;
     const { claimedEarlierIndices, claimedIndices } = filterRuleIntersections(

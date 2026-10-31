@@ -273,8 +273,8 @@ test('declarationKeys of a record should give equal declarations of different ru
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
   assert.deepEqual(
-    ruleRecordOf(state.records, root.first).declarationKeys().keys,
-    ruleRecordOf(state.records, root.last).declarationKeys().keys
+    ruleRecordOf(state.records, root.first).declarationKeys(state.records).keys,
+    ruleRecordOf(state.records, root.last).declarationKeys(state.records).keys
   );
 });
 
@@ -282,7 +282,7 @@ test('declarationKeys of a record should return the cached keys of an unchanged 
   const state = createState();
   const rule = withRecords(state, postcss.parse('a{color:red}')).first;
   assert.equal(
-    ruleRecordOf(state.records, rule).declarationKeys(),
-    ruleRecordOf(state.records, rule).declarationKeys()
+    ruleRecordOf(state.records, rule).declarationKeys(state.records),
+    ruleRecordOf(state.records, rule).declarationKeys(state.records)
   );
 });

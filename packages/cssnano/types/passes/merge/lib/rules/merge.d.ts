@@ -1,9 +1,9 @@
 import type { RuleRecord } from './ruleRecord.js';
-import type { BlockRecord } from './blockRecords.js';
+import type { BlockRecord } from './blockRecord.js';
 import type RuleSequence, { Placement, RuleLink } from './ruleSequence.js';
 import type MergeState from './mergeState.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /** @import MergeState from './mergeState.js' */
 /**

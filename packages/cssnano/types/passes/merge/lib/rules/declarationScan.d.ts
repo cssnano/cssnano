@@ -1,4 +1,4 @@
-import type { BlockRecord as Block } from './blockRecords.js';
+import type { BlockRecord as Block } from './blockRecord.js';
 import type { RuleLink } from './ruleSequence.js';
 import type { BlockRecords } from './blockRecords.js';
 /**

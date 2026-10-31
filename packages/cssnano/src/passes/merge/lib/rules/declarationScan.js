@@ -1,8 +1,9 @@
-import { BlockRecord, Slot } from './blockRecords.js';
+import { Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {ChildNode} from 'postcss' */
-/** @import {BlockRecord as Block} from './blockRecords.js' */
+/** @import {BlockRecord as Block} from './blockRecord.js' */
 /** @import {RuleLink} from './ruleSequence.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
@@ -98,12 +99,12 @@ export default class DeclarationScan {
     let index = first.slot.position;
     // The rules after `first` in its slot come next; `first` holds only
     // declarations and comments, so its own contents are skipped.
-    let offset = first.slot.rules.indexOf(first.record) + 1;
+    let offset = first.slot.rules.indexOf(first.record.index) + 1;
     for (;;) {
       index = this.#skipEmptied(block, index);
       const entry = block.children[index];
       if (entry instanceof Slot) {
-        if (entry.rules.includes(second.record, offset)) return false;
+        if (entry.rules.includes(second.record.index, offset)) return false;
       } else if (entry instanceof BlockRecord) {
         if (entry.children.length > 0) {
           block = entry;

@@ -59,7 +59,7 @@ test('an unedited rule keeps its node array through a write-back of another rule
   const [a, b] = twoRules(root);
   const kept = a.nodes;
   ruleRecordOf(state.records, b).removeDeclarationsAt(new Set([0]));
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.equal(a.nodes, kept);
 });
 
@@ -84,7 +84,7 @@ test('a receiving rule keeps its node unchanged until write-back', () => {
   const to = ruleRecordOf(state.records, b);
   for (const child of from.takeDeclarationsAt(new Set([0]))) to.append(child);
   assert.equal(b.nodes.length, 1);
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.equal(b.nodes.length, 2);
 });
 
@@ -94,7 +94,7 @@ test('a declaration handed to another rule has that rule as parent after write-b
   const from = ruleRecordOf(state.records, a);
   const to = ruleRecordOf(state.records, b);
   for (const child of from.takeDeclarationsAt(new Set([0]))) to.append(child);
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.equal(/** @type {Declaration} */ (b.last).prop, 'color');
   assert.equal(b.last.parent, b);
 });
@@ -143,7 +143,7 @@ test('a departed rule leaves the tree at write-back', () => {
     incoming
   );
   removeRules(state, new Set([incoming]));
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.deepEqual(root.nodes, [b]);
   assert.equal(a.parent, undefined);
 });
@@ -160,14 +160,14 @@ test('a departed rule keeps its child array, since write-back does not empty it'
     incoming
   );
   removeRules(state, new Set([incoming]));
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.equal(a.nodes.length, 1);
 });
 
 test('a rule whose child points to another container fails the consistency check', () => {
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [a, b] = twoRules(root);
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   /** @type {ChildNode} */ (a.first).parent = b;
   assert.throws(() => assertRecordsMatchTree(state));
 });

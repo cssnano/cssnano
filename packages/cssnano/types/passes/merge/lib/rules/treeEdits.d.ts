@@ -1,7 +1,8 @@
-import { BlockRecord, BlockRecords } from './blockRecords.js';
+import { BlockRecords } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import type { Container, Root } from 'postcss';
-import type { PropertyWrites } from './lastWriteIndex.js';
+import type { PropertyWrites } from './propertyWrites.js';
 import type MergeState from './mergeState.js';
 /**
  * Builds the records of a stylesheet from its tree, once per run. Each rule

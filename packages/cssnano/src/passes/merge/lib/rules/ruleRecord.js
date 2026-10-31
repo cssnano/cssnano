@@ -19,7 +19,8 @@ import {
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
 /** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
-/** @import {BlockRecord, Slot} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 
 const BLOCK_HOLDER = 'a rule that holds a block';
 const STALE = 'stale declarations of a rule record';
@@ -46,10 +47,12 @@ export class RuleRecord extends SelectorList {
   #declarationKeys;
   /** @type {boolean} set once the rule has left the stylesheet */
   #departed = false;
-  /** @type {Slot | undefined} the slot the rule stands in, once placed */
-  #slot;
-  /** @type {BlockRecord | null} the record of the rule's children, when it holds a rule or an at-rule */
-  #block = null;
+  /** @type {number} the index of the block whose slot holds the rule, -1 until placed */
+  #slotBlock = -1;
+  /** @type {number} where the rule's slot stands among the children of that block */
+  #slotPosition = -1;
+  /** @type {number} the index of the record of the rule's children, -1 when it holds neither a rule nor an at-rule */
+  #block = -1;
   /** @type {boolean} set once a child is added or removed, which the node takes at write-back */
   #edited = false;
   /** @type {number} the place of the record in the arena of its records, -1 until added */
@@ -65,25 +68,33 @@ export class RuleRecord extends SelectorList {
     this.#declarations = declarations;
     this.#entries = childEntries(node, declarations);
     this.#declarationKeys = undefined;
-    this.#slot = undefined;
   }
 
-  /** @return {Slot | undefined} the slot the rule stands in, readable after departure */
-  get slot() {
-    return this.#slot;
+  /** @return {number} the index of the block whose slot holds the rule, readable after departure */
+  get slotBlock() {
+    return this.#slotBlock;
   }
 
-  /** @return {BlockRecord | null} the record of the children, when the rule holds a rule or an at-rule */
+  /** @return {number} where the rule's slot stands among the children of its block */
+  get slotPosition() {
+    return this.#slotPosition;
+  }
+
+  /** @return {number} the index of the record of the rule's children, -1 when there is none */
   get block() {
     return this.#block;
   }
 
-  /** @param {Slot} slot the slot the rule now stands in */
-  place(slot) {
-    this.#slot = slot;
+  /**
+   * @param {number} block the index of the block whose slot now holds the rule
+   * @param {number} position where that slot stands among the block's children
+   */
+  place(block, position) {
+    this.#slotBlock = block;
+    this.#slotPosition = position;
   }
 
-  /** @param {BlockRecord} block the record of the rule's children */
+  /** @param {number} block the index of the record of the rule's children */
   setBlock(block) {
     this.#block = block;
   }
@@ -164,13 +175,17 @@ export class RuleRecord extends SelectorList {
   /**
    * The ids of the declarations, which a block holder keeps in its block.
    *
+   * @param {BlockRecords} records the arena that holds the rule's block
    * @return {RuleDeclarationKeys}
    */
-  declarationKeys() {
+  declarationKeys(records) {
     this.#assertLive();
     if (!this.#declarationKeys) {
       const keys = [];
-      const list = this.#block ? this.#block.children : this.#declarations;
+      const list =
+        this.#block === -1
+          ? this.#declarations
+          : /** @type {BlockRecord} */ (records.block(this.#block)).children;
       for (const entry of list) {
         if (entry instanceof DeclarationRecord) keys.push(entry.id);
       }
@@ -304,7 +319,7 @@ export class RuleRecord extends SelectorList {
    */
   #assertChildren() {
     this.#assertLive();
-    if (this.#block) throw new Error(BLOCK_HOLDER);
+    if (this.#block !== -1) throw new Error(BLOCK_HOLDER);
   }
 
   /**
@@ -315,7 +330,7 @@ export class RuleRecord extends SelectorList {
    * @throws {Error} when the declarations are stale
    */
   assertFresh() {
-    if (!consistencyChecksEnabled() || this.#block) return;
+    if (!consistencyChecksEnabled() || this.#block !== -1) return;
     if (!matchesNode(this.node, this.#entries, this.#declarations)) {
       throw new Error(STALE);
     }

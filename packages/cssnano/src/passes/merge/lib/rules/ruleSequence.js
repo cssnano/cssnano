@@ -1,5 +1,6 @@
 import DeclarationScan from './declarationScan.js';
-import { BlockRecord, Slot } from './blockRecords.js';
+import { Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -20,6 +21,14 @@ import { BlockRecord, Slot } from './blockRecords.js';
  * @property {RuleRecord[][]} [following] replaces each rule after the later one
  * that joined the merge, in its slot
  */
+
+/**
+ * @param {RuleRecord[]} records
+ * @return {number[]} the index of each rule
+ */
+function indicesOf(records) {
+  return records.map((record) => record.index);
+}
 
 /**
  * Chains a link for each rule, in order, after `previous`.
@@ -67,14 +76,17 @@ export default class RuleSequence {
       let live = 0;
       for (const entry of block.children) {
         if (entry instanceof Slot) {
-          for (const record of entry.rules) {
+          for (const index of entry.rules) {
+            const record = /** @type {RuleRecord} */ (records.rule(index));
             /** @type {RuleLink} */
             const link = { record, slot: entry, prev: tail, next: null };
             tail.next = link;
             tail = link;
             live++;
             const nested = record.block;
-            if (nested) collect(nested);
+            if (nested !== -1) {
+              collect(/** @type {BlockRecord} */ (records.block(nested)));
+            }
           }
         } else if (entry instanceof BlockRecord) {
           if (entry.dropped) continue;
@@ -119,8 +131,7 @@ export default class RuleSequence {
     if (target === source) return false;
     this.#records.changed(source, -1);
     this.#records.changed(target, 1);
-    const holder = /** @type {BlockRecord} */ (this.#records.block(target));
-    second.slot = holder.moveRule(second.record, second.slot);
+    second.slot = this.#records.moveRule(target, second.record.index);
     return true;
   }
 
@@ -142,8 +153,16 @@ export default class RuleSequence {
     // replaced where it stands.
     this.#records.changed(firstSlot.block, placement.first.length - 1);
     this.#records.changed(secondSlot.block, placement.second.length - 1);
-    firstSlot.substitute(first.record, placement.first);
-    secondSlot.substitute(second.record, placement.second);
+    this.#records.substitute(
+      firstSlot,
+      first.record.index,
+      indicesOf(placement.first)
+    );
+    this.#records.substitute(
+      secondSlot,
+      second.record.index,
+      indicesOf(placement.second)
+    );
 
     let tail = linkAfter(
       linkAfter(before, placement.first, firstSlot),
@@ -155,7 +174,7 @@ export default class RuleSequence {
       const link = /** @type {RuleLink} */ (following);
       following = link.next;
       this.#records.changed(link.slot.block, rules.length - 1);
-      link.slot.substitute(link.record, rules);
+      this.#records.substitute(link.slot, link.record.index, indicesOf(rules));
       tail = linkAfter(tail, rules, link.slot);
     }
     tail.next = following;

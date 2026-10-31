@@ -42,7 +42,7 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   const kept = [...receiving.declarations];
   appendToDeclarations(state, receiving, writesOf(kept), incoming);
   assert.equal(receiving.declarations.at(-1), moved);
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.equal(moved.node.parent, receiving.node);
 });
 
@@ -68,7 +68,7 @@ test('a rule record reads its declaration keys from the ids of its records', () 
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = ruleRecordOf(state.records, root.first);
   assert.deepEqual(
-    rule.declarationKeys().keys,
+    rule.declarationKeys(state.records).keys,
     rule.declarations.map((declaration) => declaration.id)
   );
 });
@@ -86,13 +86,10 @@ test('assertRecordsMatchTree throws under consistency checks when a declaration 
 test('a declaration in a rule that holds a block is a declaration record in its block entries, and its node in the live children', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
-  const block =
-    /** @type {import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecord} */ (
-      rule.block
-    );
-  const [color] = block.liveEntries();
+  const block = state.records.block(rule.block);
+  const [color] = state.records.liveEntries(block.index);
   assert.ok(color instanceof DeclarationRecord);
-  assert.equal(block.liveChildren()[0], root.first.first);
+  assert.equal(state.records.liveChildren(block.index)[0], root.first.first);
   assert.equal(color.node, root.first.first);
 });
 
@@ -105,15 +102,12 @@ test('declarations should throw on a rule that holds a block, whose declarations
 test('declarationKeys of a rule that holds a block are the ids of its block declarations', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
-  const block =
-    /** @type {import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecord} */ (
-      rule.block
-    );
-  const ids = block
-    .liveEntries()
+  const block = state.records.block(rule.block);
+  const ids = state.records
+    .liveEntries(block.index)
     .filter((entry) => entry instanceof DeclarationRecord)
     .map((entry) => entry.id);
-  assert.deepEqual(rule.declarationKeys().keys, ids);
+  assert.deepEqual(rule.declarationKeys(state.records).keys, ids);
 });
 
 test('canMerge should refuse a rule that holds a block against a rule it could otherwise join', () => {

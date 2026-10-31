@@ -18,7 +18,7 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
 
-/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 
 /** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
 
@@ -66,8 +66,9 @@ test('adopt should move the declarations of the source into the target and its a
   const [supports] = /** @type {Container} */ (root.nodes);
   const [media, other] = /** @type {Container} */ (supports).nodes;
 
-  blockRecordOf(state.records, /** @type {Container} */ (media)).adopt(
-    blockRecordOf(state.records, /** @type {Container} */ (other))
+  state.records.adopt(
+    blockRecordOf(state.records, /** @type {Container} */ (media)).index,
+    blockRecordOf(state.records, /** @type {Container} */ (other)).index
   );
   // The source keeps its emptied block until the pair is joined, so the
   // ancestors are read once the source is removed.
@@ -75,7 +76,7 @@ test('adopt should move the declarations of the source into the target and its a
     state.records,
     blockRecordOf(state.records, /** @type {Container} */ (other))
   );
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
 
   assert.deepEqual(treeProps(media), ['color', 'width']);
   assert.deepEqual(treeProps(supports), ['color', 'width']);
@@ -86,10 +87,11 @@ test('adopt should leave the source container holding no children', () => {
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   const [media, other] = /** @type {Container} */ (root).nodes;
-  blockRecordOf(state.records, /** @type {Container} */ (media)).adopt(
-    blockRecordOf(state.records, /** @type {Container} */ (other))
+  state.records.adopt(
+    blockRecordOf(state.records, /** @type {Container} */ (media)).index,
+    blockRecordOf(state.records, /** @type {Container} */ (other)).index
   );
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.deepEqual(/** @type {Container} */ (other).nodes, []);
 });
 
@@ -104,7 +106,7 @@ test('remove should drop the declarations of the removed node from its ancestors
     state.records,
     blockRecordOf(state.records, /** @type {Container} */ (removed))
   );
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
 
   assert.deepEqual(treeProps(supports), ['color']);
 });
@@ -113,13 +115,15 @@ test('remove should take the node out of the records of its parent at once', () 
   const { root, state } = setup('a{color:red}b{color:red}');
   const [first, second] = /** @type {Rule[]} */ (root.nodes);
   remove(state.records, ruleRecordOf(state.records, first));
-  assert.deepEqual(state.records.root.liveChildren(), [second]);
+  assert.deepEqual(state.records.liveChildren(state.records.root.index), [
+    second,
+  ]);
 });
 
 test('writeBack should drop the removed nodes from the child list of the parent', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
   remove(state.records, ruleRecordOf(state.records, root.first));
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['b', 'c']);
 });
 
@@ -132,7 +136,7 @@ test('takePlaceOf should place the earlier node where the later one stood', () =
     ruleRecordOf(state.records, earlier),
     ruleRecordOf(state.records, later)
   );
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['a']);
 });
 
@@ -145,7 +149,7 @@ test('takePlaceOf should keep the whitespace before the later node', () => {
     ruleRecordOf(state.records, earlier),
     ruleRecordOf(state.records, later)
   );
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.equal(root.toString(), '\n\na{color:red}');
 });
 
@@ -159,7 +163,7 @@ test('takePlaceOf should place the earlier node after a removal in the same pare
     ruleRecordOf(state.records, earlier),
     ruleRecordOf(state.records, later)
   );
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['a']);
 });
 
@@ -173,7 +177,7 @@ test('takePlaceOf should hand the leading whitespace of a removed first root chi
     ruleRecordOf(state.records, earlier),
     ruleRecordOf(state.records, later)
   );
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.equal(root.toString(), '\na{color:red}');
 });
 
@@ -197,7 +201,7 @@ test('removeDeclarationsAt should keep the declarations that are not removed', (
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.deepEqual(treeProps(rule), ['width']);
 });
 
@@ -205,7 +209,7 @@ test('removeRules should keep the rules it does not remove', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
   const [, removed] = /** @type {Rule[]} */ (root.nodes);
   removeRules(state, new Set([ruleRecordOf(state.records, removed)]));
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['a', 'c']);
 });
 
@@ -215,7 +219,7 @@ test('removeRules should keep the leading whitespace of the rule after a removed
   const { root, state } = setup('a{color:red}\nb{color:red}');
   const [removed] = /** @type {Rule[]} */ (root.nodes);
   removeRules(state, new Set([ruleRecordOf(state.records, removed)]));
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
   assert.equal(root.toString(), '\nb{color:red}');
 });
 
@@ -281,7 +285,7 @@ test('removeDeclarationsAt should drop the removed declarations from the rule an
   const rule = /** @type {Rule} */ (/** @type {Container} */ (media).first);
 
   ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
 
   assert.deepEqual(treeProps(media), ['width']);
 });
@@ -294,7 +298,7 @@ test('removeRules should drop the declarations of the removed rules from the par
   );
 
   removeRules(state, new Set([ruleRecordOf(state.records, removed)]));
-  writeBack(state.records.blocks());
+  writeBack(state.records, state.records.blocks());
 
   assert.deepEqual(treeProps(media), ['width']);
 });

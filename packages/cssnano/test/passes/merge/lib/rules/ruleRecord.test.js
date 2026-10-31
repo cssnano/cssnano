@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import {
-  BlockRecord,
-  BlockRecords,
-} from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecords } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import {
   RuleRecord,
   isDeclaration,
@@ -22,6 +20,10 @@ const lookup = () => ({});
 const lookupB = (selector) => ({ compatible: selector !== 'b' });
 const properties = new PropertyTable();
 const declarationIds = new DeclarationKeys();
+/** An arena for the calls that read no nested block. */
+const noBlocks = new BlockRecords(
+  new BlockRecord(postcss.root(), -1, 0, false)
+);
 /**
  * The declaration records of `rule`, as the run builds them.
  *
@@ -74,29 +76,32 @@ test('recordRule should give the record of a rule the rule as its node', () => {
 test('declarationKeys should list the id of each declaration in order', () => {
   const record = recordOf('a{color:red;top:0}');
   const [color, top] = record.declarations;
-  assert.deepEqual(record.declarationKeys().keys, [color.id, top.id]);
+  assert.deepEqual(record.declarationKeys(noBlocks).keys, [color.id, top.id]);
 });
 
 test('declarationKeys should offer the same keys as a set for membership tests', () => {
   const record = recordOf('a{color:red;top:0}');
   assert.deepEqual(
-    record.declarationKeys().keySet,
+    record.declarationKeys(noBlocks).keySet,
     new Set(record.declarations.map((declaration) => declaration.id))
   );
 });
 
 test('declarationKeys should return the cached keys while the declarations are unchanged', () => {
   const record = recordOf('a{color:red}');
-  assert.equal(record.declarationKeys(), record.declarationKeys());
+  assert.equal(
+    record.declarationKeys(noBlocks),
+    record.declarationKeys(noBlocks)
+  );
 });
 
 test('append should make declarationKeys reflect the appended declaration', () => {
   const rule = postcss.parse('a{color:red}').first;
   const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
-  record.declarationKeys();
+  record.declarationKeys(noBlocks);
   record.append(declarationOf(postcss.decl({ prop: 'top', value: '0' })));
   assert.deepEqual(
-    record.declarationKeys().keys,
+    record.declarationKeys(noBlocks).keys,
     record.declarations.map((declaration) => declaration.id)
   );
   assert.equal(record.declarations.length, 2);
@@ -104,17 +109,17 @@ test('append should make declarationKeys reflect the appended declaration', () =
 
 test('addSelectors should keep the cached declaration keys since it leaves the declarations alone', () => {
   const record = recordOf('a{color:red}');
-  const keys = record.declarationKeys();
+  const keys = record.declarationKeys(noBlocks);
   record.addSelectors(['b'], lookup);
-  assert.equal(record.declarationKeys(), keys);
+  assert.equal(record.declarationKeys(noBlocks), keys);
 });
 
 test('absorbEarlier should keep the cached declaration keys since it leaves the declarations alone', () => {
   const record = recordOf('b{color:red}');
   const earlier = recordOf('a{color:red}');
-  const keys = record.declarationKeys();
+  const keys = record.declarationKeys(noBlocks);
   record.absorbEarlier(earlier, lookup);
-  assert.equal(record.declarationKeys(), keys);
+  assert.equal(record.declarationKeys(noBlocks), keys);
 });
 
 test('elementKeys should list the distinct element of each selector', () => {
@@ -322,21 +327,21 @@ test('assertFresh should throw under consistency checks when a comment was added
 test('childCount should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, -1, 0, false));
+  record.setBlock(0); // any index: these tests never read the block
   assert.throws(() => record.childCount(), /block/v);
 });
 
 test('holdsOnlyDeclarations should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, -1, 0, false));
+  record.setBlock(0); // any index: these tests never read the block
   assert.throws(() => record.holdsOnlyDeclarations(), /block/v);
 });
 
 test('append should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, -1, 0, false));
+  record.setBlock(0); // any index: these tests never read the block
   assert.throws(
     () =>
       record.append(
@@ -349,7 +354,7 @@ test('append should throw on a rule that holds a block', () => {
 test('declarations should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, -1, 0, false));
+  record.setBlock(0); // any index: these tests never read the block
   assert.throws(() => record.declarations, /block/v);
 });
 

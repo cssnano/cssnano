@@ -1,11 +1,12 @@
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
-import { PropertyWrites } from './lastWriteIndex.js';
+import { PropertyWrites } from './propertyWrites.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {ChildNode} from 'postcss' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 
 /** @param {string[]} selectors @return {number} */
@@ -69,13 +70,14 @@ function overridesShared(declarations, claimed, shared) {
  * @param {number} parent the index of the block the rules stand in
  * @param {number[]} firstKeys the declaration keys of the earlier rule
  * @param {Set<number>} sharedIndices where the shared declarations stand in it
+ * @param {BlockRecords} records the arena that holds the rules' blocks
  * @return {link is RuleLink}
  */
-function repeatsShared(link, parent, firstKeys, sharedIndices) {
+function repeatsShared(link, parent, firstKeys, sharedIndices, records) {
   if (!link || link.slot.block !== parent || !isDeclarationRule(link.record)) {
     return false;
   }
-  const { keySet } = link.record.declarationKeys();
+  const { keySet } = link.record.declarationKeys(records);
   for (const index of sharedIndices) {
     if (!keySet.has(firstKeys[index])) return false;
   }
@@ -133,8 +135,16 @@ export function findGroup(
   outsideDeclarations
 ) {
   const parent = second.slot.block;
-  const firstKeys = first.declarationKeys().keys;
-  if (!repeatsShared(second.next, parent, firstKeys, claimedEarlierIndices))
+  const firstKeys = first.declarationKeys(mergeState.records).keys;
+  if (
+    !repeatsShared(
+      second.next,
+      parent,
+      firstKeys,
+      claimedEarlierIndices,
+      mergeState.records
+    )
+  )
     return null;
   const shared = first.declarations.filter((_, index) =>
     claimedEarlierIndices.has(index)
@@ -160,7 +170,13 @@ export function findGroup(
   for (
     let link = /** @type {RuleLink | null} */ (second.next), seen = 0;
     seen < SHARING_WINDOW &&
-    repeatsShared(link, parent, firstKeys, claimedEarlierIndices);
+    repeatsShared(
+      link,
+      parent,
+      firstKeys,
+      claimedEarlierIndices,
+      mergeState.records
+    );
     link = link.next, seen++
   ) {
     const selectors = link.record.selectors;
@@ -222,7 +238,7 @@ export function findGroup(
  * @return {Set<number> | null}
  */
 function claimedBy(shared, later) {
-  return later.block ? null : claimRepeats(shared, later.declarations);
+  return later.block !== -1 ? null : claimRepeats(shared, later.declarations);
 }
 
 /**
@@ -264,13 +280,13 @@ export function earliestPairReaching(
   earliest
 ) {
   const parent = link.slot.block;
-  const own = link.record.declarationKeys();
+  const own = link.record.declarationKeys(mergeState.records);
   let passed = false;
   let member = link;
   for (let depth = 1; ; depth++) {
     const prev = /** @type {RuleLink} */ (member.prev);
     if (!prev.record) break;
-    const other = prev.record.declarationKeys();
+    const other = prev.record.declarationKeys(mergeState.records);
     if (depth === 1) {
       // Seed from the smaller key list, which bounds the first intersection.
       const [from, to] =

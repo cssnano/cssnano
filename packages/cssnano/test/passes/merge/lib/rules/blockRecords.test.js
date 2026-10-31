@@ -4,10 +4,10 @@ import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
-  BlockRecord,
   BlockRecords,
   Slot,
 } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import {
   assertSweepLowers,
   sweepPotential,
@@ -55,15 +55,15 @@ test('buildRecords should hold each rule of a block in its own slot, in order', 
   const [first, second] = media.children;
   assert.ok(first instanceof Slot);
   assert.ok(second instanceof Slot);
-  assert.equal(first.rules[0].node.selector, 'a');
-  assert.equal(second.rules[0].node.selector, 'b');
-  assert.equal(first.rules[0].slot, first);
+  assert.equal(state.records.rule(first.rules[0]).node.selector, 'a');
+  assert.equal(state.records.rule(second.rules[0]).node.selector, 'b');
+  assert.equal(state.records.slotOf(state.records.rule(first.rules[0])), first);
 });
 
 test('buildRecords should give a rule that holds a rule a block record for its children', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = /** @type {Rule} */ (root.first);
-  const block = ruleRecordOf(state.records, rule).block;
+  const block = state.records.block(ruleRecordOf(state.records, rule).block);
   assert.ok(block instanceof BlockRecord);
   assert.equal(block.node, rule);
   assert.equal(block.parent, state.records.root.index);
@@ -71,7 +71,7 @@ test('buildRecords should give a rule that holds a rule a block record for its c
 
 test('buildRecords should leave a rule with only declarations without a block record', () => {
   const { root, state } = setup('a{color:red}');
-  assert.equal(ruleRecordOf(state.records, root.first).block, null);
+  assert.equal(ruleRecordOf(state.records, root.first).block, -1);
 });
 
 test('assertRecordsMatchTree should accept records built from a stylesheet', () => {
@@ -87,7 +87,7 @@ test('assertRecordsMatchTree should throw when a rule record names a slot the ru
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
   const [first, second] = /** @type {Slot[]} */ (media.children);
-  first.rules[0].place(second);
+  state.records.rule(first.rules[0]).place(second.block, second.position);
   assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
 });
 
@@ -115,8 +115,11 @@ test('liveChildren should equal the children of the stylesheet after a sweep dro
     '@media print{a{color:red}}@media print{a{color:red}}'
   );
   runScan(state);
-  writeBack(state.records.blocks());
-  assert.deepEqual(state.records.root.liveChildren(), root.nodes);
+  writeBack(state.records, state.records.blocks());
+  assert.deepEqual(
+    state.records.liveChildren(state.records.root.index),
+    root.nodes
+  );
 });
 
 test('liveChildren should equal the children of the stylesheet after a join moves a block', () => {
@@ -124,15 +127,21 @@ test('liveChildren should equal the children of the stylesheet after a join move
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   joinNonAdjacent(state.records.root, state);
-  writeBack(state.records.blocks());
-  assert.deepEqual(state.records.root.liveChildren(), root.nodes);
+  writeBack(state.records, state.records.blocks());
+  assert.deepEqual(
+    state.records.liveChildren(state.records.root.index),
+    root.nodes
+  );
 });
 
 test('liveChildren should equal the children of the stylesheet after a join removes a rule', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
   joinNonAdjacent(state.records.root, state);
-  writeBack(state.records.blocks());
-  assert.deepEqual(state.records.root.liveChildren(), root.nodes);
+  writeBack(state.records, state.records.blocks());
+  assert.deepEqual(
+    state.records.liveChildren(state.records.root.index),
+    root.nodes
+  );
 });
 
 /**
@@ -143,9 +152,12 @@ test('liveChildren should equal the children of the stylesheet after a join remo
  */
 function liveCountAround(css) {
   const { state } = setup(css);
-  const was = state.records.root.liveChildren().length;
+  const was = state.records.liveChildren(state.records.root.index).length;
   joinNonAdjacent(state.records.root, state);
-  return { was, now: state.records.root.liveChildren().length };
+  return {
+    was,
+    now: state.records.liveChildren(state.records.root.index).length,
+  };
 }
 
 test('joinNonAdjacent should leave fewer live children when a rule joins the rule before it', () => {
@@ -174,9 +186,9 @@ test('joinNonAdjacent should leave fewer live children when a block moves down o
 
 test('liveChildren should return a fresh array of the children, not the entries', () => {
   const { state } = setup('a{color:red}');
-  const children = state.records.root.liveChildren();
+  const children = state.records.liveChildren(state.records.root.index);
   children.length = 0;
-  assert.equal(state.records.root.liveChildren().length, 1);
+  assert.equal(state.records.liveChildren(state.records.root.index).length, 1);
 });
 
 /**
@@ -199,8 +211,9 @@ test('an entry should hold its index as position after a move of children', () =
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   const [first, second] = /** @type {Container} */ (root).nodes;
-  blockRecordOf(state.records, first).adopt(
-    blockRecordOf(state.records, second)
+  state.records.adopt(
+    blockRecordOf(state.records, first).index,
+    blockRecordOf(state.records, second).index
   );
   assert.equal(positionsMatchIndex(blockRecordOf(state.records, first)), true);
 });
@@ -232,8 +245,10 @@ test('an entry should hold its index as position after a rule moves to the end o
   const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
-  const from = /** @type {Slot} */ (ruleRecordOf(state.records, rule).slot);
-  state.records.root.moveRule(ruleRecordOf(state.records, rule), from);
+  state.records.moveRule(
+    state.records.root.index,
+    ruleRecordOf(state.records, rule).index
+  );
   assert.equal(positionsMatchIndex(state.records.root), true);
 });
 
@@ -279,45 +294,6 @@ test('runScan should keep the declaration and rule counts and lower the parent c
   assert.deepEqual(potentialAfter, [2, 2, 2]);
 });
 
-test('changed should count a droppable parent down when its last live child empties', () => {
-  const root = new BlockRecord(postcss.root(), -1, 0, false);
-  const records = new BlockRecords(root);
-  records.add(root);
-  const outer = new BlockRecord(
-    postcss.atRule({ name: 'layer' }),
-    root.index,
-    0,
-    true
-  );
-  records.add(outer);
-  const inner = new BlockRecord(
-    postcss.atRule({ name: 'layer' }),
-    outer.index,
-    0,
-    true
-  );
-  records.add(inner);
-  outer.remaining = 1;
-  inner.remaining = 1;
-  records.changed(inner.index, -1);
-  assert.equal(outer.remaining, 0);
-});
-
-test('changed should leave a block that no sweep tracks untouched', () => {
-  const root = new BlockRecord(postcss.root(), -1, 0, false);
-  const records = new BlockRecords(root);
-  records.add(root);
-  const block = new BlockRecord(
-    postcss.atRule({ name: 'layer' }),
-    root.index,
-    0,
-    true
-  );
-  records.add(block);
-  records.changed(block.index, 1);
-  assert.equal(block.remaining, null);
-});
-
 test('assertNoOverDuplication should accept records built from a stylesheet that repeats a declaration', () => {
   const { state } = setup('a{color:red}b{color:red}');
   assert.doesNotThrow(() => assertNoOverDuplication(state.records));
@@ -327,7 +303,7 @@ test('assertNoOverDuplication should throw when the records reach a rule twice',
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [, second] = /** @type {Slot[]} */ (state.records.root.children);
   second.rules.push(
-    ruleRecordOf(state.records, /** @type {Rule} */ (root.first))
+    ruleRecordOf(state.records, /** @type {Rule} */ (root.first)).index
   );
   assert.throws(
     () => assertNoOverDuplication(state.records),
@@ -360,15 +336,20 @@ test('assertNoOverDuplication should throw when a declaration is written more of
  */
 function entriesReadByFirstLiveChild(count) {
   const root = postcss.parse('a{color:red}');
-  const block = new BlockRecord(root, -1, 0, false);
-  new BlockRecords(block).add(block);
+  const state = new MergeState(['chrome 120'], createRunContext());
+  const records = new BlockRecords(new BlockRecord(root, -1, 0, false));
+  records.add(records.root);
+  const block = records.root;
+  const rule = records.recordRule(
+    /** @type {Rule} */ (root.first),
+    state.properties,
+    state.declarationIds
+  );
   const entries = Array.from(
     { length: count },
     (_, i) => new Slot(block.index, i, [])
   );
-  entries.push(
-    new Slot(block.index, count, [/** @type {Rule} */ (root.first)])
-  );
+  entries.push(new Slot(block.index, count, [rule.index]));
   let reads = 0;
   block.children = new Proxy(entries, {
     get(target, key, receiver) {
@@ -376,7 +357,7 @@ function entriesReadByFirstLiveChild(count) {
       return Reflect.get(target, key, receiver);
     },
   });
-  for (let call = 0; call < count; call++) block.firstLiveChild();
+  for (let call = 0; call < count; call++) records.firstLiveChild(block.index);
   return reads;
 }
 

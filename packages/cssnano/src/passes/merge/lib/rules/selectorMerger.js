@@ -45,7 +45,7 @@ export default function runMerge(root, browsers, context = createRunContext()) {
   // Sweeps and joins edit only the records, so the tree catches up once. It
   // is checked here and not at the checkpoints, which would hide stale reads
   // that production makes.
-  writeBack(mergeState.records.blocks());
+  writeBack(mergeState.records, mergeState.records.blocks());
   assertRecordsMatchTree(mergeState);
   mergeState.flushSelectors();
 }

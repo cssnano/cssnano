@@ -13,7 +13,8 @@ import { tokensText } from '../../../../values/tokensText.js';
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord, BlockRecords, Slot} from './blockRecords.js' */
+/** @import {BlockRecords, Slot} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 
 /**
  * The state shared by every merge of one stylesheet.
@@ -241,7 +242,7 @@ export default class MergeState {
    */
   #blockIndexOf(record) {
     if (record.departed) throw new Error('block of a departed rule record');
-    return /** @type {Slot} */ (record.slot).block;
+    return record.slotBlock;
   }
 
   /**
@@ -265,8 +266,8 @@ export default class MergeState {
     if (!sameContainer(this.records, containerA, containerB, this.#textTable))
       return false;
     if (isKeyframes(containerA.node)) return false;
-    if (recordA.block !== null) return false;
-    if (recordB.block !== null) return false;
+    if (recordA.block !== -1) return false;
+    if (recordB.block !== -1) return false;
 
     // The vendor check follows compatibility, because an incompatible selector
     // has no known prefix.

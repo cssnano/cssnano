@@ -1,11 +1,12 @@
 import type { RuleRecord } from './ruleRecord.js';
-import type { BlockRecord } from './blockRecords.js';
+import type { BlockRecord } from './blockRecord.js';
 import type RuleSequence, { RuleLink } from './ruleSequence.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {ChildNode} from 'postcss' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /** @param {string[]} selectors @return {number} */
 export declare function selectorsLength(selectors: string[]): number;

@@ -1,5 +1,6 @@
 import type { TextTable } from '../../../../values/textTable.js';
-import type { BlockRecord, BlockRecords } from './blockRecords.js';
+import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecord } from './blockRecord.js';
 /**
  * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
  * cascaded by position.
