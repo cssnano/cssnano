@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   assertCoverage,
@@ -7,6 +7,10 @@ import {
   report,
 } from '../../../../../script/passes/merge/rules/fuzz.js';
 import { runFuzz } from '../../../../../../../util/fuzzRunner.js';
+import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
+
+before(() => enableConsistencyChecks(true));
+after(() => enableConsistencyChecks(false));
 
 function fuzz(seed, count) {
   return runFuzz({
