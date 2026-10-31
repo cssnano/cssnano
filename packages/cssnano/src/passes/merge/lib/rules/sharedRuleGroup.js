@@ -72,11 +72,7 @@ function overridesShared(declarations, claimed, shared) {
  * @return {link is RuleLink}
  */
 function repeatsShared(link, parent, firstKeys, sharedIndices) {
-  if (
-    !link ||
-    link.slot.block !== parent ||
-    !isDeclarationRule(link.record.node)
-  ) {
+  if (!link || link.slot.block !== parent || !isDeclarationRule(link.record)) {
     return false;
   }
   const { keySet } = link.record.declarationKeys();
@@ -174,7 +170,7 @@ export function findGroup(
       running += 1 + selector.length;
     }
     running -= sharedBytes;
-    if (link.record.node.nodes.length === shared.length) {
+    if (link.record.childCount() === shared.length) {
       running -= selectorsLength(selectors) + 1;
     }
     candidates.push(link);

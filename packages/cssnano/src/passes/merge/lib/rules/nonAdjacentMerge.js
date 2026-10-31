@@ -306,13 +306,12 @@ function joinInParent(block, mergeState, rules) {
    * @return {void}
    */
   function receive(earlier, later) {
-    const kept = earlier.declarations;
     let writes = received.get(earlier);
     if (!writes) {
-      writes = writesOf(kept);
+      writes = writesOf(earlier.declarations);
       received.set(earlier, writes);
     }
-    appendToDeclarations(mergeState, earlier, kept, writes, later);
+    appendToDeclarations(mergeState, earlier, writes, later);
   }
 
   /**

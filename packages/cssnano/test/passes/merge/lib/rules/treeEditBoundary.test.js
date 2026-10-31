@@ -22,8 +22,14 @@ const sources = readdirSync(rulesDirectory)
   }));
 
 // `ruleRewrite.js` builds the clones `partialMerge` makes, which are not in the
-// stylesheet yet, so it may edit them directly.
-const cloneEditors = new Set(['ruleRewrite.js']);
+// stylesheet yet, so it may edit them directly. `ruleRecord.js` holds the entry
+// methods that edit a rule's children, and edits each node with its records,
+// through the helpers of `ruleChildren.js`.
+const cloneEditors = new Set([
+  'ruleRewrite.js',
+  'ruleRecord.js',
+  'ruleChildren.js',
+]);
 
 const forbiddenImports = new Set(['detach', 'insertAfter', 'applyChildEdits']);
 

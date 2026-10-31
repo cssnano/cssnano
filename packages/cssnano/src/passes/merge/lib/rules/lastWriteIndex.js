@@ -351,8 +351,12 @@ export default class LastWriteIndex {
     if (this.#lastBarrier > position) return true;
     for (const entry of entries) {
       if (entry instanceof RuleRecord) {
-        for (const declaration of entry.allDeclarations()) {
-          if (this.#conflictsWith(declaration.keys, position, elements)) {
+        const list = entry.block ? entry.block.children : entry.declarations;
+        for (const declaration of list) {
+          if (
+            declaration instanceof DeclarationRecord &&
+            this.#conflictsWith(declaration.keys, position, elements)
+          ) {
             return true;
           }
         }
@@ -378,8 +382,11 @@ export default class LastWriteIndex {
       if (entry instanceof RuleRecord) {
         // `record` only reads the keys, so the record's own list is passed as is.
         const keys = keysOf(entry);
-        for (const declaration of entry.allDeclarations()) {
-          this.record(declaration.keys, position, keys?.length ? keys : null);
+        const list = entry.block ? entry.block.children : entry.declarations;
+        for (const declaration of list) {
+          if (declaration instanceof DeclarationRecord) {
+            this.record(declaration.keys, position, keys?.length ? keys : null);
+          }
         }
       } else {
         this.record(entry.keys, position, null);

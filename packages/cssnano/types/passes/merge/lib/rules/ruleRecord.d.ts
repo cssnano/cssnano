@@ -1,33 +1,26 @@
-import { VendorPrefixSummary } from './vendorPrefixSummary.js';
+import { SelectorList } from './selectorList.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { ChildNode } from 'postcss';
 import type { Declaration, Rule } from 'postcss';
 export type RuleDeclarationKeys = {
     keys: number[];
     keySet: Set<number>;
 };
-export type RuleElementKeys = {
-    /**
-     * the distinct keys, in order of first appearance
-     */
-    list: string[];
-    /**
-     * the same keys, for membership tests
-     */
-    seen: Set<string>;
-};
-export type SelectorLookup = (selector: string, rule?: import('postcss').Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo;
 import type { RangePiece } from '../../../../values/joinRanges.js';
+import type { ElementKeyOf, SelectorLookup } from './selectorList.js';
+import type { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { BlockRecord, Slot } from './blockRecords.js';
 /**
- * @param {import('postcss').ChildNode} node
+ * @param {ChildNode} node
  * @return {node is Declaration}
  */
-export declare function isDeclaration(node: import('postcss').ChildNode): node is Declaration;
+export declare function isDeclaration(node: ChildNode): node is Declaration;
 /**
- * The selector list of a rule with what is derived from it. Every field is
- * set up front so all instances share one object layout.
+ * What the merge knows of a rule: its selector list, which the base class
+ * derives facts from, its children, and where it stands. Every field is set up
+ * front so all instances share one object layout.
  */
-export declare class RuleRecord {
+export declare class RuleRecord extends SelectorList {
     #private;
     /**
      * @param {Rule} node the rule the record describes
@@ -35,21 +28,9 @@ export declare class RuleRecord {
      * @param {DeclarationRecord[]} declarations
      */
     constructor(node: Rule, selectors: string[], declarations: DeclarationRecord[]);
-    /** @return {Rule} the rule the record describes, which the record never changes */
-    get node(): Rule;
-    /**
-     * The slot the rule stands in. It stays readable after the rule departs, so
-     * an edit can still find where the rule stood.
-     *
-     * @return {Slot | undefined}
-     */
+    /** @return {Slot | undefined} the slot the rule stands in, readable after departure */
     get slot(): Slot | undefined;
-    /**
-     * The record of the rule's children, or null when it holds no rule or
-     * at-rule. Readable after departure, as `slot` is.
-     *
-     * @return {BlockRecord | null}
-     */
+    /** @return {BlockRecord | null} the record of the children, when the rule holds a rule or an at-rule */
     get block(): BlockRecord | null;
     /** @param {Slot} slot the slot the rule now stands in */
     place(slot: Slot): void;
@@ -59,59 +40,56 @@ export declare class RuleRecord {
     get departed(): boolean;
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
-    /** @return {DeclarationRecord[]} @throws {Error} when the rule holds a block */
+    /** @return {DeclarationRecord[]} the declarations, without comments */
     get declarations(): DeclarationRecord[];
-    /**
-     * @return {RangePiece[] | null | undefined} undefined until the caller
-     * sets them, and null when the token ranges of the selectors are not known
-     */
+    /** @return {readonly (DeclarationRecord | ChildNode)[]} every child, comments included */
+    get children(): readonly (DeclarationRecord | ChildNode)[];
+    /** @return {number} the children, comments included */
+    childCount(): number;
+    /** @return {boolean} whether every child is a declaration, as an empty rule is */
+    holdsOnlyDeclarations(): boolean;
+    /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
     get pieces(): RangePiece[] | null | undefined;
     /** @param {RangePiece[] | null} pieces one per selector, or null */
     setPieces(pieces: RangePiece[] | null): void;
     /**
-     * Takes the declarations of the rule as its own list, which the caller
-     * keeps extending in place. The keys are derived again on the next read.
+     * Appends a child to the node and to the records.
      *
-     * @param {DeclarationRecord[]} declarations
+     * @param {DeclarationRecord | ChildNode} child
+     * @return {void}
      */
-    takeDeclarations(declarations: DeclarationRecord[]): void;
-    /** @return {readonly DeclarationRecord[]} the own list, or the block's declarations */
-    allDeclarations(): readonly DeclarationRecord[];
+    append(child: DeclarationRecord | ChildNode): void;
     /**
-     * The ids of the declarations, so equal declarations share a key.
+     * The ids of the declarations, which a block holder keeps in its block.
      *
      * @return {RuleDeclarationKeys}
      */
     declarationKeys(): RuleDeclarationKeys;
+    /**
+     * Removes the declarations at `claimed` from the node and the records.
+     *
+     * @param {Set<number>} claimed the positions of the declarations that leave
+     * @return {void}
+     */
+    removeDeclarationsAt(claimed: Set<number>): void;
     /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}
      */
     vendorProfile(lookup: SelectorLookup): VendorPrefixSummary;
     /**
-     * Whether every selector is compatible with the target browsers. It is read
-     * once and then kept: a grown list ANDs in the answer for its new selectors.
-     *
      * @param {SelectorLookup} lookup
-     * @return {boolean}
+     * @return {boolean} whether every selector is compatible with the target browsers
      */
     compatible(lookup: SelectorLookup): boolean;
     /**
-     * The elements the selector list can match, as `elementKeyOf` in
-     * `elementKeys.js` describes them, or null when any selector has no key or
-     * there are none, which must not read as a rule that writes to no element.
-     * A caller must not hold the list across a change to the rule.
-     *
-     * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf] the key of one selector
-     * @return {string[] | null}
+     * @param {ElementKeyOf} [keyOf]
+     * @return {string[] | null} see `SelectorList#elementKeys`
      */
-    elementKeys(keyOf?: (selector: string, piece: RangePiece | null) => string | null): string[] | null;
+    elementKeys(keyOf?: ElementKeyOf): string[] | null;
     /** @return {string} */
     selectorText(): string;
     /**
-     * Lists of different lengths differ in text too, since a selector holds no
-     * top-level comma, so the text of long lists is joined only when needed.
-     *
      * @param {RuleRecord} other
      * @return {boolean}
      */
@@ -119,25 +97,19 @@ export declare class RuleRecord {
     /**
      * @param {string[]} selectors appended to the rule's selector list
      * @param {SelectorLookup} lookup
-     * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
-     * @param {RangePiece[] | null} [pieces] the token range of each selector of
-     * the rule after the call, or null when they are not known
-     * @return {readonly string[] | null} the element keys the selectors add to
-     * those listed, or null when the rule's elements are not listed
+     * @param {ElementKeyOf} [keyOf]
+     * @param {RangePiece[] | null} [pieces]
+     * @return {readonly string[] | null} see `SelectorList#add`
      */
-    addSelectors(selectors: string[], lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null, pieces?: RangePiece[] | null): readonly string[] | null;
+    addSelectors(selectors: string[], lookup: SelectorLookup, keyOf?: ElementKeyOf, pieces?: RangePiece[] | null): readonly string[] | null;
     /**
-     * Takes the place of a rule that is dropped and stood before this one, so
-     * its selectors come first. The dropped rule's list grows in place and
-     * passes to this one, and the joined text is concatenated from the two
-     * texts: copying or re-joining a long list on every merge would take
-     * quadratic time.
+     * Takes the place of a rule that is dropped and stood before this one.
      *
      * @param {RuleRecord} earlier left unusable
      * @param {SelectorLookup} lookup
-     * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
+     * @param {ElementKeyOf} [keyOf]
      */
-    absorbEarlier(earlier: RuleRecord, lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null): void;
+    absorbEarlier(earlier: RuleRecord, lookup: SelectorLookup, keyOf?: ElementKeyOf): void;
     /** Marks the record of a rule that left the stylesheet, so a later read throws. */
     depart(): void;
     /**

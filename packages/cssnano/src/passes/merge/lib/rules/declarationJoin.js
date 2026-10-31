@@ -16,13 +16,13 @@ import { RuleRecord } from './ruleRecord.js';
  * A rule made only of declarations. Comments and nested rules would be
  * stranded or reordered by moving declarations out of the rule.
  *
- * @param {ChildNode} node
- * @return {node is Rule}
+ * @param {RuleRecord} record
+ * @return {boolean}
  */
-export const isDeclarationRule = (node) =>
-  node.type === 'rule' &&
-  node.nodes.length > 0 &&
-  node.nodes.every((child) => child.type === 'decl');
+export const isDeclarationRule = (record) =>
+  record.block === null &&
+  record.childCount() > 0 &&
+  record.holdsOnlyDeclarations();
 
 /**
  * The positions in `later` of declarations that repeat every one of
@@ -82,7 +82,7 @@ function joinGain(group, later) {
     (selector) => !listed.has(selector)
   );
   const removed =
-    group.declarations.length === later.node.nodes.length
+    group.declarations.length === later.childCount()
       ? group.bytes + listLength(laterSelectors)
       : group.bytes;
   return { added, gain: removed - listLength(added) };
@@ -104,9 +104,7 @@ export default function joinByDeclarations(block, mergeState) {
   if (isKeyframes(block.node)) return false;
   const entries = block.liveEntries();
   const keyLists = entries.map((entry) =>
-    entry instanceof RuleRecord &&
-    entry.block === null &&
-    isDeclarationRule(entry.node)
+    entry instanceof RuleRecord && isDeclarationRule(entry)
       ? entry.declarationKeys()
       : null
   );

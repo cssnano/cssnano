@@ -1,12 +1,4 @@
-import type { Rule } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
-/** @import {Rule} from 'postcss' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/**
- * @param {Rule} rule
- * @return {number} the declarations the rule holds, without copying them
- */
-export declare function countDeclarations(rule: Rule): number;
 /**
  * The potential that a sweep never raises: the declarations of the live rules
  * that hold no block, then those rules, then the sum over them of the number

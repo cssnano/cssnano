@@ -138,3 +138,35 @@ export function createElementKeyLookup(cache = new Map()) {
     return key;
   };
 }
+
+/**
+ * The distinct element keys of a selector list, in order of first appearance,
+ * with the same keys as a set for membership tests.
+ *
+ * @typedef {object} RuleElementKeys
+ * @property {string[]} list
+ * @property {Set<string>} seen
+ */
+
+/**
+ * Adds the keys of the selectors from index `from` on to `keys`, each with its
+ * token range when the rule holds one.
+ *
+ * @param {RuleElementKeys} keys
+ * @param {string[]} selectors
+ * @param {number} from
+ * @param {RangePiece[] | null | undefined} pieces one per selector, or unknown
+ * @param {(selector: string, piece: RangePiece | null) => string | null} keyOf
+ * @return {boolean} false when a selector has no key, so the elements are unknown
+ */
+export function addElementKeys(keys, selectors, from, pieces, keyOf) {
+  for (let index = from; index < selectors.length; index++) {
+    const key = keyOf(selectors[index], pieces?.[index] ?? null);
+    if (key === null) return false;
+    if (!keys.seen.has(key)) {
+      keys.seen.add(key);
+      keys.list.push(key);
+    }
+  }
+  return true;
+}

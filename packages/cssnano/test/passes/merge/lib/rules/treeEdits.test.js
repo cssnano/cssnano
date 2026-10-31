@@ -193,7 +193,6 @@ test('appendToDeclarations should move the declarations of the incoming rule int
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );

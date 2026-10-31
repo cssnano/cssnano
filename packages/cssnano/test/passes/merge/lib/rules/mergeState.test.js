@@ -194,7 +194,6 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );

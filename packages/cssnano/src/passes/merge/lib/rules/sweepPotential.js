@@ -1,20 +1,7 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord, Slot } from './blockRecords.js';
 
-/** @import {Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
-
-/**
- * @param {Rule} rule
- * @return {number} the declarations the rule holds, without copying them
- */
-export function countDeclarations(rule) {
-  let count = 0;
-  for (const node of rule.nodes) {
-    if (node.type === 'decl') count++;
-  }
-  return count;
-}
 
 const POTENTIAL =
   'a sweep raised its potential, or moved a rule without lowering it';
@@ -43,7 +30,7 @@ export function sweepPotential(records) {
           if (nested) {
             visit(nested);
           } else {
-            declarations += countDeclarations(record.node);
+            declarations += record.declarations.length;
             rules++;
             parents += id;
           }

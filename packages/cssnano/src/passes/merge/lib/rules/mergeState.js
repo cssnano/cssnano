@@ -28,7 +28,7 @@ export default class MergeState {
    * @type {PropertyTable}
    */
   properties;
-  /** @type {import('./ruleRecord.js').SelectorLookup} */
+  /** @type {import('./selectorList.js').SelectorLookup} */
   #lookup;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
   #declarations;

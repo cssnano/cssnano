@@ -1,7 +1,6 @@
 import { BlockRecord, BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
 import type { Container, Root } from 'postcss';
-import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { PropertyWrites } from './lastWriteIndex.js';
 import type MergeState from './mergeState.js';
 /**
@@ -45,20 +44,19 @@ export declare function remove(entry: RuleRecord | BlockRecord): void;
  */
 export declare function takePlaceOf(mergeState: MergeState, parent: Container, earlier: RuleRecord | BlockRecord, later: RuleRecord | BlockRecord): void;
 /**
- * Appends the content of `incoming` to `receiving`. A declaration of
- * `incoming` is redundant only when the last declaration of `receiving` that
- * can set the same property already has an identical value. Otherwise it
- * revives an overridden value or overrides intermediate declarations, so
- * appending it is required to preserve the cascade result.
+ * Appends the children of `incoming` to `receiving`, comments included. A
+ * declaration of `incoming` is redundant only when the last declaration of
+ * `receiving` that can set the same property already has an identical value.
+ * Otherwise it revives an overridden value or overrides intermediate
+ * declarations, so appending it is required to preserve the cascade result.
  *
  * @param {MergeState} mergeState
  * @param {RuleRecord} receiving
- * @param {DeclarationRecord[]} kept the declarations of `receiving`, extended in place
- * @param {PropertyWrites} index the writes of `kept`, extended in place
+ * @param {PropertyWrites} index the writes of the declarations of `receiving`, extended in place
  * @param {RuleRecord} incoming
  * @return {void}
  */
-export declare function appendToDeclarations(mergeState: MergeState, receiving: RuleRecord, kept: DeclarationRecord[], index: PropertyWrites, incoming: RuleRecord): void;
+export declare function appendToDeclarations(mergeState: MergeState, receiving: RuleRecord, index: PropertyWrites, incoming: RuleRecord): void;
 /**
  * Removes the declarations at `claimed` from `record`'s rule, which keeps the
  * others.

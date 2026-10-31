@@ -1,8 +1,14 @@
-import { elementKeyOf } from './elementKeys.js';
-import { selectorsCompatible } from './ensureCompatibility.js';
-import { VendorPrefixSummary } from './vendorPrefixSummary.js';
+import { SelectorList } from './selectorList.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import {
+  childEntries,
+  inheritWhitespace,
+  matchesNode,
+  removeClaimed,
+} from './ruleChildren.js';
+
+/** @import {ChildNode} from 'postcss' */
 
 /** @import {Declaration, Rule} from 'postcss' */
 /**
@@ -10,20 +16,16 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
  * @property {number[]} keys
  * @property {Set<number>} keySet
  */
-/**
- * @typedef {object} RuleElementKeys
- * @property {string[]} list the distinct keys, in order of first appearance
- * @property {Set<string>} seen the same keys, for membership tests
- */
-/** @typedef {(selector: string, rule?: import('postcss').Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
+/** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
+/** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {BlockRecord, Slot} from './blockRecords.js' */
 
-/** @type {readonly string[]} */
-const noElementKeys = Object.freeze([]);
+const BLOCK_HOLDER = 'a rule that holds a block';
+const STALE = 'stale declarations of a rule record';
 
 /**
- * @param {import('postcss').ChildNode} node
+ * @param {ChildNode} node
  * @return {node is Declaration}
  */
 export function isDeclaration(node) {
@@ -31,35 +33,23 @@ export function isDeclaration(node) {
 }
 
 /**
- * The selector list of a rule with what is derived from it. Every field is
- * set up front so all instances share one object layout.
+ * What the merge knows of a rule: its selector list, which the base class
+ * derives facts from, its children, and where it stands. Every field is set up
+ * front so all instances share one object layout.
  */
-export class RuleRecord {
-  /** @type {Rule} */
-  #node;
-  /** @type {string[]} */
-  #selectors;
+export class RuleRecord extends SelectorList {
   /** @type {DeclarationRecord[]} the declarations of the rule, in order */
   #declarations;
-  /** @type {VendorPrefixSummary | undefined} derived from the selector list */
-  #vendor;
-  /** @type {string | undefined} the selector list joined by commas, once known */
-  #selectorText;
+  /** @type {(DeclarationRecord | ChildNode)[] | null} every child, once a comment is held; null when they are the declarations */
+  #entries;
   /** @type {RuleDeclarationKeys | undefined} derived from the declarations */
   #declarationKeys;
-  /** @type {RuleElementKeys | null | undefined} derived from the selector list; null when a selector has no element key */
-  #elementKeys;
-  /** @type {RangePiece[] | null | undefined} the token range of each selector, one per selector; null when unknown */
-  #pieces;
-  /** @type {boolean | undefined} whether every selector is compatible with the target browsers, once read */
-  #compatible;
   /** @type {boolean} set once the rule has left the stylesheet */
   #departed = false;
   /** @type {Slot | undefined} the slot the rule stands in, once placed */
   #slot;
   /** @type {BlockRecord | null} the record of the rule's children, when it holds a rule or an at-rule */
   #block = null;
-  /** @type {DeclarationRecord[] | undefined} */ #blockDeclarations;
 
   /**
    * @param {Rule} node the rule the record describes
@@ -67,39 +57,19 @@ export class RuleRecord {
    * @param {DeclarationRecord[]} declarations
    */
   constructor(node, selectors, declarations) {
-    this.#node = node;
-    this.#selectors = selectors;
+    super(node, selectors);
     this.#declarations = declarations;
-    this.#vendor = undefined;
-    this.#selectorText = undefined;
+    this.#entries = childEntries(node, declarations);
     this.#declarationKeys = undefined;
-    this.#elementKeys = undefined;
-    this.#pieces = undefined;
-    this.#compatible = undefined;
     this.#slot = undefined;
   }
 
-  /** @return {Rule} the rule the record describes, which the record never changes */
-  get node() {
-    return this.#node;
-  }
-
-  /**
-   * The slot the rule stands in. It stays readable after the rule departs, so
-   * an edit can still find where the rule stood.
-   *
-   * @return {Slot | undefined}
-   */
+  /** @return {Slot | undefined} the slot the rule stands in, readable after departure */
   get slot() {
     return this.#slot;
   }
 
-  /**
-   * The record of the rule's children, or null when it holds no rule or
-   * at-rule. Readable after departure, as `slot` is.
-   *
-   * @return {BlockRecord | null}
-   */
+  /** @return {BlockRecord | null} the record of the children, when the rule holds a rule or an at-rule */
   get block() {
     return this.#block;
   }
@@ -122,56 +92,70 @@ export class RuleRecord {
   /** @return {string[]} change it only through the methods of this class */
   get selectors() {
     this.#assertLive();
-    return this.#selectors;
+    return super.selectors;
   }
 
-  /** @return {DeclarationRecord[]} @throws {Error} when the rule holds a block */
+  /** @return {DeclarationRecord[]} the declarations, without comments */
   get declarations() {
-    this.#assertLive();
-    if (this.#block) throw new Error('a rule that holds a block');
+    this.#assertChildren();
     this.assertFresh();
     return this.#declarations;
   }
 
-  /**
-   * @return {RangePiece[] | null | undefined} undefined until the caller
-   * sets them, and null when the token ranges of the selectors are not known
-   */
+  /** @return {readonly (DeclarationRecord | ChildNode)[]} every child, comments included */
+  get children() {
+    this.#assertChildren();
+    this.assertFresh();
+    return this.#entries ?? this.#declarations;
+  }
+
+  /** @return {number} the children, comments included */
+  childCount() {
+    this.#assertChildren();
+    return (this.#entries ?? this.#declarations).length;
+  }
+
+  /** @return {boolean} whether every child is a declaration, as an empty rule is */
+  holdsOnlyDeclarations() {
+    this.#assertChildren();
+    return this.#entries === null;
+  }
+
+  /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
   get pieces() {
     this.#assertLive();
-    return this.#pieces;
+    return super.pieces;
   }
 
   /** @param {RangePiece[] | null} pieces one per selector, or null */
   setPieces(pieces) {
     this.#assertLive();
-    this.#pieces = pieces;
+    super.setPieces(pieces);
   }
 
   /**
-   * Takes the declarations of the rule as its own list, which the caller
-   * keeps extending in place. The keys are derived again on the next read.
+   * Appends a child to the node and to the records.
    *
-   * @param {DeclarationRecord[]} declarations
+   * @param {DeclarationRecord | ChildNode} child
+   * @return {void}
    */
-  takeDeclarations(declarations) {
-    this.#assertLive();
-    this.#declarations = declarations;
+  append(child) {
+    this.#assertChildren();
+    const isDeclarationChild = child instanceof DeclarationRecord;
+    const node = isDeclarationChild ? child.node : child;
+    inheritWhitespace(node, (this.#entries ?? this.#declarations).at(-1));
+    this.node.append(node);
+    if (isDeclarationChild) this.#declarations.push(child);
+    if (this.#entries) {
+      this.#entries.push(child);
+    } else if (!isDeclarationChild) {
+      this.#entries = [...this.#declarations, child];
+    }
     this.#declarationKeys = undefined;
   }
 
-  /** @return {readonly DeclarationRecord[]} the own list, or the block's declarations */
-  allDeclarations() {
-    this.#assertLive();
-    if (!this.#block) return this.declarations;
-    this.#blockDeclarations ??= this.#block.children.filter(
-      (entry) => entry instanceof DeclarationRecord
-    );
-    return this.#blockDeclarations;
-  }
-
   /**
-   * The ids of the declarations, so equal declarations share a key.
+   * The ids of the declarations, which a block holder keeps in its block.
    *
    * @return {RuleDeclarationKeys}
    */
@@ -179,11 +163,29 @@ export class RuleRecord {
     this.#assertLive();
     if (!this.#declarationKeys) {
       const keys = [];
-      for (const declaration of this.allDeclarations())
-        keys.push(declaration.id);
+      const list = this.#block ? this.#block.children : this.#declarations;
+      for (const entry of list) {
+        if (entry instanceof DeclarationRecord) keys.push(entry.id);
+      }
       this.#declarationKeys = { keys, keySet: new Set(keys) };
     }
     return this.#declarationKeys;
+  }
+
+  /**
+   * Removes the declarations at `claimed` from the node and the records.
+   *
+   * @param {Set<number>} claimed the positions of the declarations that leave
+   * @return {void}
+   */
+  removeDeclarationsAt(claimed) {
+    this.#assertChildren();
+    removeClaimed(
+      this.#entries ?? this.#declarations,
+      this.#declarations,
+      claimed
+    );
+    this.#declarationKeys = undefined;
   }
 
   /**
@@ -192,175 +194,66 @@ export class RuleRecord {
    */
   vendorProfile(lookup) {
     this.#assertLive();
-    if (this.#vendor === undefined) {
-      // A loop, since `map` would pass each index to a lookup that takes a rule.
-      const infos = [];
-      for (const selector of this.#selectors) infos.push(lookup(selector));
-      this.#vendor = VendorPrefixSummary.of(infos);
-    }
-    return this.#vendor;
+    return super.vendorProfile(lookup);
   }
 
   /**
-   * Whether every selector is compatible with the target browsers. It is read
-   * once and then kept: a grown list ANDs in the answer for its new selectors.
-   *
    * @param {SelectorLookup} lookup
-   * @return {boolean}
+   * @return {boolean} whether every selector is compatible with the target browsers
    */
   compatible(lookup) {
     this.#assertLive();
-    this.#compatible ??= selectorsCompatible(
-      this.#selectors,
-      lookup,
-      this.#node
-    );
-    return this.#compatible;
+    return super.compatible(lookup);
   }
 
   /**
-   * The elements the selector list can match, as `elementKeyOf` in
-   * `elementKeys.js` describes them, or null when any selector has no key or
-   * there are none, which must not read as a rule that writes to no element.
-   * A caller must not hold the list across a change to the rule.
-   *
-   * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf] the key of one selector
-   * @return {string[] | null}
+   * @param {ElementKeyOf} [keyOf]
+   * @return {string[] | null} see `SelectorList#elementKeys`
    */
-  elementKeys(keyOf = elementKeyOf) {
+  elementKeys(keyOf) {
     this.#assertLive();
-    if (this.#elementKeys === undefined) {
-      this.#elementKeys = { list: [], seen: new Set() };
-      this.#addElementKeys(0, keyOf);
-    }
-    return this.#elementKeys?.list.length ? this.#elementKeys.list : null;
-  }
-
-  /**
-   * Adds the keys of the selectors from index `from` on, each with its token
-   * range when the rule holds one.
-   *
-   * @param {number} from
-   * @param {(selector: string, piece: RangePiece | null) => string | null} keyOf
-   */
-  #addElementKeys(from, keyOf) {
-    const keys = this.#elementKeys;
-    if (!keys) return;
-    const selectors = this.#selectors;
-    for (let index = from; index < selectors.length; index++) {
-      const key = keyOf(selectors[index], this.#pieces?.[index] ?? null);
-      if (key === null) {
-        this.#elementKeys = null;
-        return;
-      }
-      if (!keys.seen.has(key)) {
-        keys.seen.add(key);
-        keys.list.push(key);
-      }
-    }
-  }
-
-  /**
-   * @param {number} from
-   * @param {(selector: string, piece: RangePiece | null) => string | null} keyOf
-   * @return {readonly string[] | null}
-   */
-  #gainElementKeys(from, keyOf) {
-    const listed = this.#elementKeys?.list.length;
-    this.#addElementKeys(from, keyOf);
-    const list = this.#elementKeys?.list;
-    if (listed === undefined || list === undefined) return null;
-    return list.length === listed ? noElementKeys : list.slice(listed);
+    return super.elementKeys(keyOf);
   }
 
   /** @return {string} */
   selectorText() {
     this.#assertLive();
-    this.#selectorText ??= this.#selectors.join(',');
-    return this.#selectorText;
+    return super.selectorText();
   }
 
   /**
-   * Lists of different lengths differ in text too, since a selector holds no
-   * top-level comma, so the text of long lists is joined only when needed.
-   *
    * @param {RuleRecord} other
    * @return {boolean}
    */
   hasSameSelectors(other) {
     this.#assertLive();
     other.#assertLive();
-    return (
-      this.#selectors.length === other.#selectors.length &&
-      this.selectorText() === other.selectorText()
-    );
+    return super.hasSameSelectors(other);
   }
 
   /**
    * @param {string[]} selectors appended to the rule's selector list
    * @param {SelectorLookup} lookup
-   * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
-   * @param {RangePiece[] | null} [pieces] the token range of each selector of
-   * the rule after the call, or null when they are not known
-   * @return {readonly string[] | null} the element keys the selectors add to
-   * those listed, or null when the rule's elements are not listed
+   * @param {ElementKeyOf} [keyOf]
+   * @param {RangePiece[] | null} [pieces]
+   * @return {readonly string[] | null} see `SelectorList#add`
    */
-  addSelectors(selectors, lookup, keyOf = elementKeyOf, pieces = null) {
+  addSelectors(selectors, lookup, keyOf, pieces) {
     this.#assertLive();
-    this.#selectorText = undefined;
-    const from = this.#selectors.length;
-    for (const selector of selectors) {
-      this.#selectors.push(selector);
-      this.#vendor?.add(lookup(selector));
-    }
-    this.#pieces = pieces;
-    if (this.#compatible) {
-      this.#compatible = selectorsCompatible(selectors, lookup, this.#node);
-    }
-    return this.#gainElementKeys(from, keyOf);
+    return super.addSelectors(selectors, lookup, keyOf, pieces);
   }
 
   /**
-   * Takes the place of a rule that is dropped and stood before this one, so
-   * its selectors come first. The dropped rule's list grows in place and
-   * passes to this one, and the joined text is concatenated from the two
-   * texts: copying or re-joining a long list on every merge would take
-   * quadratic time.
+   * Takes the place of a rule that is dropped and stood before this one.
    *
    * @param {RuleRecord} earlier left unusable
    * @param {SelectorLookup} lookup
-   * @param {(selector: string, piece: RangePiece | null) => string | null} [keyOf]
+   * @param {ElementKeyOf} [keyOf]
    */
-  absorbEarlier(earlier, lookup, keyOf = elementKeyOf) {
+  absorbEarlier(earlier, lookup, keyOf) {
     this.#assertLive();
     earlier.#assertLive();
-    // Both answers are read before the lists join, while each list is its own.
-    const compatible = earlier.compatible(lookup) && this.compatible(lookup);
-    const text = `${earlier.selectorText()},${this.selectorText()}`;
-    const vendor = earlier
-      .vendorProfile(lookup)
-      .concat(this.vendorProfile(lookup));
-    const selectors = earlier.#selectors;
-    const from = selectors.length;
-    const own = this.#selectors;
-    for (const selector of own) selectors.push(selector);
-    this.#selectors = selectors;
-    this.#selectorText = text;
-    this.#vendor = vendor;
-    // Grows the earlier rule's pieces in place, as its selectors grow.
-    const earlierPieces = earlier.#pieces;
-    const ownPieces = this.#pieces;
-    if (earlierPieces && ownPieces) {
-      for (const piece of ownPieces) earlierPieces.push(piece);
-      this.#pieces = earlierPieces;
-    } else {
-      this.#pieces = null;
-    }
-    // Extends the earlier rule's keys only if they are known: deriving them
-    // from a long list would repeat on every merge.
-    this.#elementKeys = earlier.#elementKeys;
-    this.#addElementKeys(from, keyOf);
-    this.#compatible = compatible;
+    super.absorbEarlier(earlier, lookup, keyOf);
     earlier.#departed = true;
   }
 
@@ -375,6 +268,15 @@ export class RuleRecord {
   }
 
   /**
+   * @throws {Error} when the rule has left the stylesheet, or holds a block
+   * whose children stand in its block record
+   */
+  #assertChildren() {
+    this.#assertLive();
+    if (this.#block) throw new Error(BLOCK_HOLDER);
+  }
+
+  /**
    * Under consistency checks, throws when the declarations held differ from
    * those the rule holds now, in node or in the facts a record keeps, which an
    * edit that skipped its bookkeeping leaves.
@@ -383,18 +285,8 @@ export class RuleRecord {
    */
   assertFresh() {
     if (!consistencyChecksEnabled() || this.#block) return;
-    const kept = this.#declarations;
-    const fresh = this.#node.nodes.filter(isDeclaration);
-    let same = kept.length === fresh.length;
-    for (let index = 0; same && index < kept.length; index++) {
-      const record = kept[index];
-      const node = fresh[index];
-      same =
-        record.node === node &&
-        record.prop === node.prop &&
-        record.value === node.value &&
-        record.important === (node.important === true);
+    if (!matchesNode(this.node, this.#entries, this.#declarations)) {
+      throw new Error(STALE);
     }
-    if (!same) throw new Error('stale declarations of a rule record');
   }
 }

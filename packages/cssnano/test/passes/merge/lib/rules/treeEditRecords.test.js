@@ -47,7 +47,6 @@ test('appendToDeclarations should mark the record of the incoming rule departed'
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
@@ -64,7 +63,6 @@ test('appendToDeclarations should leave the record of the receiving rule readabl
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
@@ -82,36 +80,33 @@ test('appendToDeclarations should keep the record of the receiving rule', () => 
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
   assert.equal(ruleRecordOf(state.records, receiving), record);
 });
 
-test('appendToDeclarations should give the record of the receiving rule the kept declarations', () => {
+test('appendToDeclarations should extend the declarations list the receiving record holds', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const [media] = /** @type {Container} */ (root).nodes;
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  ruleRecordOf(state.records, receiving);
-  const kept = [...ruleRecordOf(state.records, receiving).declarations];
+  const list = ruleRecordOf(state.records, receiving).declarations;
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    kept,
-    writesOf(kept),
+    writesOf(list),
     ruleRecordOf(state.records, incoming)
   );
-  assert.equal(ruleRecordOf(state.records, receiving).declarations, kept);
+  assert.equal(ruleRecordOf(state.records, receiving).declarations, list);
   assert.deepEqual(
     ruleRecordOf(state.records, receiving).declarations.map((d) => d.prop),
     ['color', 'width']
   );
 });
 
-test('appendToDeclarations should give the record of the receiving rule keys for the kept declarations', () => {
+test('appendToDeclarations should give the record of the receiving rule keys for the declarations it holds', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const [media] = /** @type {Container} */ (root).nodes;
   const [receiving, incoming] = /** @type {Rule[]} */ (
@@ -122,13 +117,12 @@ test('appendToDeclarations should give the record of the receiving rule keys for
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
   assert.deepEqual(
     ruleRecordOf(state.records, receiving).declarationKeys().keys,
-    kept.map((d) => d.id)
+    ruleRecordOf(state.records, receiving).declarations.map((d) => d.id)
   );
 });
 
@@ -231,7 +225,6 @@ test('appendToDeclarations should throw when the receiving rule holds a block', 
       appendToDeclarations(
         state,
         ruleRecordOf(state.records, receiving),
-        kept,
         writesOf(kept),
         ruleRecordOf(state.records, incoming)
       ),

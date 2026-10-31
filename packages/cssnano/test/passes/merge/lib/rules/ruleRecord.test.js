@@ -92,13 +92,11 @@ test('declarationKeys should return the cached keys while the declarations are u
   assert.equal(record.declarationKeys(), record.declarationKeys());
 });
 
-test('takeDeclarations should make declarationKeys reflect the new declarations', () => {
+test('append should make declarationKeys reflect the appended declaration', () => {
   const rule = postcss.parse('a{color:red}').first;
   const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
   record.declarationKeys();
-  // The tree edit changes the rule first, then the record takes its declarations.
-  rule.append(postcss.decl({ prop: 'top', value: '0' }));
-  record.takeDeclarations(recordsOf(rule));
+  record.append(declarationOf(postcss.decl({ prop: 'top', value: '0' })));
   assert.deepEqual(
     record.declarationKeys().keys,
     record.declarations.map((declaration) => declaration.id)
