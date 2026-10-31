@@ -1,13 +1,6 @@
-import { Slot } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { RuleRecord } from './ruleRecord.js';
-export type RuleLink = {
-    record: RuleRecord;
-    slot: Slot;
-    prev: RuleLink | null;
-    next: RuleLink | null;
-};
 export type Placement = {
     /**
      * replaces the earlier rule, in its slot
@@ -25,41 +18,54 @@ export type Placement = {
 };
 /**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
- * other rules, rewritten in the block records.
+ * other rules, rewritten in the block records. The order is two arrays indexed
+ * by rule: each rule names the rule before it and the rule after it, with -1 at
+ * either end. A rule made during the sweep takes an index past the arrays,
+ * which they grow to hold.
  */
 export default class RuleSequence {
     #private;
-    /** @type {RuleLink} a sentinel that precedes the first rule */
-    head: RuleLink;
+    /** @type {number} the index of the first rule, -1 when there is none */
+    head: number;
     /** @param {BlockRecords} records */
     constructor(records: BlockRecords);
     /**
-     * @param {RuleLink} first
-     * @param {RuleLink} second
+     * @param {number} index
+     * @return {number} the index of the rule after the rule at `index`, -1 at the end
+     */
+    nextOf(index: number): number;
+    /**
+     * @param {number} index
+     * @return {number} the index of the rule before the rule at `index`, -1 at the start
+     */
+    prevOf(index: number): number;
+    /**
+     * @param {RuleRecord} first
+     * @param {RuleRecord} second
      * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations see
      * `DeclarationScan#declarationBetween`
      * @return {boolean} whether a declaration outside both rules lies between them
      */
-    declarationBetween(first: RuleLink, second: RuleLink, outsideDeclarations: WeakMap<BlockRecord, boolean>): boolean;
+    declarationBetween(first: RuleRecord, second: RuleRecord, outsideDeclarations: WeakMap<BlockRecord, boolean>): boolean;
     /**
-     * Moves the rule of `second` to the end of the parent of `first`. It follows
-     * `first` and holds no nested rules, so passing the rest of that parent
-     * leaves the order of the rules unchanged.
+     * Moves the rule at `second` to the end of the parent of the rule at `first`.
+     * It follows `first` and holds no nested rules, so passing the rest of that
+     * parent leaves the order of the rules unchanged.
      *
-     * @param {RuleLink} first
-     * @param {RuleLink} second
+     * @param {number} first
+     * @param {number} second
      * @return {boolean} whether the parents differed
      */
-    moveIntoParent(first: RuleLink, second: RuleLink): boolean;
+    moveIntoParent(first: number, second: number): boolean;
     /**
-     * Replaces the pair `first` and the link after it, and the links after
+     * Replaces the pair at `first` and the rule after it, and the rules after
      * those that joined, with the `placement` rules.
      *
-     * @param {RuleLink} first
+     * @param {number} first
      * @param {Placement} placement
-     * @return {RuleLink} the link of the first replacement
+     * @return {number} the index of the first replacement
      */
-    replacePair(first: RuleLink, placement: Placement): RuleLink;
+    replacePair(first: number, placement: Placement): number;
     /**
      * Ends the sweep: drops the blocks it emptied. The stylesheet is not touched;
      * `runMerge` writes the records back once.

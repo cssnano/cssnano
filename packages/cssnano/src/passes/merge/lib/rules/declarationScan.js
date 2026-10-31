@@ -3,7 +3,7 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecord as Block} from './blockRecord.js' */
-/** @import {RuleLink} from './ruleSequence.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
 /**
@@ -76,8 +76,8 @@ export default class DeclarationScan {
    * differs from the stylesheet for rules that moved, and is short because it
    * starts at `first`.
    *
-   * @param {RuleLink} first
-   * @param {RuleLink} second
+   * @param {RuleRecord} first
+   * @param {RuleRecord} second
    * @param {WeakMap<Block, boolean>} outsideDeclarations whether a rule has
    * a declaration outside its nested rules, valid for the whole scan: rewrites
    * move declarations between rules but never create one outside them
@@ -85,7 +85,7 @@ export default class DeclarationScan {
    */
   declarationBetween(first, second, outsideDeclarations) {
     /** @type {Block | undefined} */
-    let enclosing = this.#records.block(first.slot.block);
+    let enclosing = this.#records.block(first.slotBlock);
     while (enclosing && enclosing.node.type !== 'rule') {
       enclosing = this.#records.block(enclosing.parent);
     }
@@ -97,16 +97,16 @@ export default class DeclarationScan {
     }
     if (!hasOutside) return false;
 
-    let block = /** @type {Block} */ (this.#records.block(first.slot.block));
-    let index = first.slot.position;
+    let block = /** @type {Block} */ (this.#records.block(first.slotBlock));
+    let index = first.slotPosition;
     // The rules after `first` in its slot come next; `first` holds only
     // declarations and comments, so its own contents are skipped.
-    let offset = first.slot.rules.indexOf(first.record.index) + 1;
+    let offset = this.#records.slotOf(first).rules.indexOf(first.index) + 1;
     for (;;) {
       index = this.#skipEmptied(block, index);
       const entry = block.children[index];
       if (entry instanceof Slot) {
-        if (entry.rules.includes(second.record.index, offset)) return false;
+        if (entry.rules.includes(second.index, offset)) return false;
       } else if (typeof entry === 'number') {
         const nested = /** @type {Block} */ (this.#records.block(entry));
         if (nested.children.length > 0) {

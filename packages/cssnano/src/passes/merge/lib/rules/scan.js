@@ -24,7 +24,7 @@ function linkCount(placement) {
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
-/** @import {Placement, RuleLink} from './ruleSequence.js' */
+/** @import {Placement} from './ruleSequence.js' */
 
 /**
  * Merges neighboring rules in left-to-right sweeps, trying the pair that
@@ -48,21 +48,24 @@ function linkCount(placement) {
  * @return {void}
  */
 export default function runScan(mergeState) {
+  /** @param {number} index @return {RuleRecord} */
+  const rule = (index) =>
+    /** @type {RuleRecord} */ (mergeState.records.rule(index));
+
   /**
    * Orders pairs for merging. For equal selectors it is the number of
    * declarations in both rules, since the selector is written once. Otherwise
    * it is the number of declarations the rules share, or 0 when only a move
    * into an equivalent parent or the removal of empty rules applies.
    *
-   * @param {RuleLink} first
-   * @param {RuleLink} second
+   * @param {RuleRecord} first
+   * @param {RuleRecord} second
    * @return {number} NO_BENEFIT when merging the pair cannot rewrite anything
    */
   const mergeBenefit = (first, second) => {
-    const a = first.record.declarationKeys(mergeState.records);
-    const b = second.record.declarationKeys(mergeState.records);
-    if (first.record.hasSameSelectors(second.record))
-      return a.keys.length + b.keys.length;
+    const a = first.declarationKeys(mergeState.records);
+    const b = second.declarationKeys(mergeState.records);
+    if (first.hasSameSelectors(second)) return a.keys.length + b.keys.length;
     const [smaller, larger] =
       a.keys.length <= b.keys.length ? [a, b.keySet] : [b, a.keySet];
     let shared = 0;
@@ -72,11 +75,11 @@ export default function runScan(mergeState) {
     if (shared > 0) return shared;
     const rewritesStructure =
       (a.keys.length === 0 && b.keys.length === 0) ||
-      (first.slot.block !== second.slot.block &&
+      (first.slotBlock !== second.slotBlock &&
         sameContainer(
           mergeState.records,
-          mergeState.blockOf(first.record),
-          mergeState.blockOf(second.record),
+          mergeState.blockOf(first),
+          mergeState.blockOf(second),
           mergeState.textTable
         ));
     return rewritesStructure ? 0 : NO_BENEFIT;
@@ -87,87 +90,91 @@ export default function runScan(mergeState) {
   /** @type {Map<RuleRecord, RuleRecord>} */
   const unmergeablePairs = new Map();
 
-  /** @param {RuleLink} first @param {RuleLink} second */
+  /** @param {number} first @param {number} second */
   const pairBenefit = (first, second) =>
-    unmergeablePairs.get(first.record) === second.record
+    unmergeablePairs.get(rule(first)) === rule(second)
       ? NO_BENEFIT
-      : mergeBenefit(first, second);
+      : mergeBenefit(rule(first), rule(second));
 
   /** @type {WeakMap<BlockRecord, boolean>} */
   const outsideDeclarations = new WeakMap();
 
   /**
    * @param {RuleSequence} sequence
-   * @param {RuleLink} first
-   * @param {RuleLink} second
+   * @param {number} first
+   * @param {number} second
    * @return {{placement: Placement, moved: boolean} | null} the rules that
    * now stand in place of the pair, or null when nothing changed
    */
   const mergePair = (sequence, first, second) => {
+    const a = rule(first);
+    const b = rule(second);
     if (
-      !mergeState.canMerge(
-        first.record,
-        second.record,
-        first.slot.block,
-        second.slot.block
-      ) ||
-      sequence.declarationBetween(first, second, outsideDeclarations)
+      !mergeState.canMerge(a, b, a.slotBlock, b.slotBlock) ||
+      sequence.declarationBetween(a, b, outsideDeclarations)
     ) {
       return null;
     }
     const moved = sequence.moveIntoParent(first, second);
     const placement =
-      mergeMatchingDeclarations(first.record, second.record, mergeState) ??
-      mergeMatchingSelectors(first.record, second.record, mergeState) ??
+      mergeMatchingDeclarations(a, b, mergeState) ??
+      mergeMatchingSelectors(a, b, mergeState) ??
       mergeSharedDeclarations(
-        first.record,
-        second.record,
+        a,
+        b,
         mergeState,
         second,
         sequence,
         outsideDeclarations
       );
     if (placement) return { placement, moved };
-    return moved
-      ? { placement: { first: [first.record], second: [second.record] }, moved }
-      : null;
+    return moved ? { placement: { first: [a], second: [b] }, moved } : null;
   };
 
   /** @type {number[]} */
   const scratch = [];
-  /** @type {{link: RuleLink | null, distance: number}} */
-  const earliest = { link: null, distance: 0 };
+  /** @type {{link: number, distance: number}} */
+  const earliest = { link: -1, distance: 0 };
 
   /**
-   * The link where the sweep resumes after a rewrite. The normal resume point
+   * The rule where the sweep resumes after a rewrite. The normal resume point
    * is the lookahead, the rule before the new rules, or the first new rule.
    * The rewrite can also change a pair before it, up to the reach of a group
    * (see `earliestPairReaching`), so the sweep resumes at the earliest such pair.
    *
-   * @param {RuleLink} replacement the first link of the new rules
+   * @param {RuleSequence} sequence
+   * @param {number} replacement the first of the new rules
    * @param {Placement} placement
-   * @param {RuleLink | null} lookaheadStart a link before the replaced pair,
+   * @param {number} lookaheadStart a rule before the replaced pair, -1 for none,
    * since the lookahead moves past it
-   * @return {RuleLink}
+   * @return {number}
    */
-  const resumeAfter = (replacement, placement, lookaheadStart) => {
-    const before = /** @type {RuleLink} */ (replacement.prev);
+  const resumeAfter = (sequence, replacement, placement, lookaheadStart) => {
+    const before = sequence.prevOf(replacement);
     let resume = replacement;
-    if (lookaheadStart) {
+    if (lookaheadStart !== -1) {
       resume = lookaheadStart;
-    } else if (before.record) {
+    } else if (before !== -1) {
       resume = before;
     }
-    earliest.link = null;
+    earliest.link = -1;
     let link = replacement;
     const count = linkCount(placement);
     for (let index = 0; index < count; index++) {
       // The walk from the `index`th new rule starts `index` links after the
       // first one, so its distance is measured from the first.
-      earliestPairReaching(link, resume, index, scratch, mergeState, earliest);
-      link = /** @type {RuleLink} */ (link.next);
+      earliestPairReaching(
+        sequence,
+        link,
+        resume,
+        index,
+        scratch,
+        mergeState,
+        earliest
+      );
+      link = sequence.nextOf(link);
     }
-    return earliest.link ?? resume;
+    return earliest.link === -1 ? resume : earliest.link;
   };
 
   let moved;
@@ -177,18 +184,24 @@ export default function runScan(mergeState) {
       ? sweepPotential(mergeState.records)
       : null;
     const sequence = new RuleSequence(mergeState.records);
-    const list = sequence.head;
-    let current = list.next ?? list;
-    /** @type {RuleLink | null} */
-    let lookaheadStart = null;
-    for (let second = current.next; second; second = current.next) {
+    let current = sequence.head;
+    let lookaheadStart = -1;
+    for (
+      let second = sequence.nextOf(current);
+      second !== -1;
+      second = sequence.nextOf(current)
+    ) {
       let benefit = pairBenefit(current, second);
       // Move on to the next pair while it shares strictly more declarations,
       // then come back to `lookaheadStart` so the skipped pairs are tried.
-      for (let third = second.next; third; third = second.next) {
+      for (
+        let third = sequence.nextOf(second);
+        third !== -1;
+        third = sequence.nextOf(second)
+      ) {
         const ahead = pairBenefit(second, third);
         if (ahead <= benefit) break;
-        lookaheadStart ??= current;
+        if (lookaheadStart === -1) lookaheadStart = current;
         current = second;
         second = third;
         benefit = ahead;
@@ -196,20 +209,25 @@ export default function runScan(mergeState) {
       const merged =
         benefit === NO_BENEFIT ? null : mergePair(sequence, current, second);
       if (!merged) {
-        if (lookaheadStart && benefit !== NO_BENEFIT) {
-          unmergeablePairs.set(current.record, second.record);
+        if (lookaheadStart !== -1 && benefit !== NO_BENEFIT) {
+          unmergeablePairs.set(rule(current), rule(second));
           current = lookaheadStart;
         } else {
           current = second;
         }
-        lookaheadStart = null;
+        lookaheadStart = -1;
         continue;
       }
       moved ||= merged.moved;
       unmergeablePairs.clear();
       const replacement = sequence.replacePair(current, merged.placement);
-      current = resumeAfter(replacement, merged.placement, lookaheadStart);
-      lookaheadStart = null;
+      current = resumeAfter(
+        sequence,
+        replacement,
+        merged.placement,
+        lookaheadStart
+      );
+      lookaheadStart = -1;
     }
     sequence.finish();
     if (before) {

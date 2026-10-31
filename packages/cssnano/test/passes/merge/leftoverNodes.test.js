@@ -76,18 +76,15 @@ test('the record of a rule whose declarations all merge away is marked departed'
   const mergeState = new MergeState(['Chrome 120']);
   mergeState.records = buildRecords(root, mergeState);
   const sequence = new RuleSequence(mergeState.records);
-  const first =
-    /** @type {import('../../../src/passes/merge/lib/rules/ruleSequence.js').RuleLink} */ (
-      sequence.head.next
-    );
-  const second = /** @type {typeof first} */ (first.next);
+  const first = sequence.head;
+  const second = sequence.nextOf(first);
   mergeSharedDeclarations(
-    first.record,
-    second.record,
+    mergeState.records.rule(first),
+    mergeState.records.rule(second),
     mergeState,
     second,
     sequence,
     new WeakMap()
   );
-  assert.throws(() => first.record.declarations, /departed/v);
+  assert.throws(() => mergeState.records.rule(first).declarations, /departed/v);
 });

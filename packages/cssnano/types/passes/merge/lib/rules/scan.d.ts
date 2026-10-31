@@ -2,7 +2,7 @@ import type MergeState from './mergeState.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
-/** @import {Placement, RuleLink} from './ruleSequence.js' */
+/** @import {Placement} from './ruleSequence.js' */
 /**
  * Merges neighboring rules in left-to-right sweeps, trying the pair that
  * shares the most declarations first and the earlier pair on a tie. That

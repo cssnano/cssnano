@@ -7,7 +7,7 @@ import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
-/** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
+/** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import MergeState from './mergeState.js' */
 
 /**
@@ -74,7 +74,7 @@ export function writesOf(declarations) {
  * @param {Set<number>} claimedEarlierIndices
  * @param {Set<number>} claimedIndices
  * @param {import('./mergeState.js').default} mergeState
- * @param {RuleLink} secondLink where `second` stands in the sweep
+ * @param {number} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
  * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
  * @return {Placement | null} null when the output would not get shorter

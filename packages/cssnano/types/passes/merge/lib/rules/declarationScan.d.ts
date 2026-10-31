@@ -1,5 +1,5 @@
 import type { BlockRecord as Block } from './blockRecord.js';
-import type { RuleLink } from './ruleSequence.js';
+import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 /**
  * Walks the stylesheet in the order it will be written to find declarations
@@ -19,13 +19,13 @@ export default class DeclarationScan {
      * differs from the stylesheet for rules that moved, and is short because it
      * starts at `first`.
      *
-     * @param {RuleLink} first
-     * @param {RuleLink} second
+     * @param {RuleRecord} first
+     * @param {RuleRecord} second
      * @param {WeakMap<Block, boolean>} outsideDeclarations whether a rule has
      * a declaration outside its nested rules, valid for the whole scan: rewrites
      * move declarations between rules but never create one outside them
      * @return {boolean}
      */
-    declarationBetween(first: RuleLink, second: RuleLink, outsideDeclarations: WeakMap<Block, boolean>): boolean;
+    declarationBetween(first: RuleRecord, second: RuleRecord, outsideDeclarations: WeakMap<Block, boolean>): boolean;
 }
 //# sourceMappingURL=declarationScan.d.ts.map
