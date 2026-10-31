@@ -172,10 +172,10 @@ test('appendToDeclarations should move the declarations of the incoming rule int
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
-    receiving,
+    state.meta(receiving),
     /** @type {Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),
-    incoming
+    state.meta(incoming)
   );
   assert.deepEqual(treeProps(media), ['color', 'width']);
 });
@@ -183,14 +183,16 @@ test('appendToDeclarations should move the declarations of the incoming rule int
 test('removeDeclarations should keep the declarations that are not removed', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  removeDeclarations(state, rule, [/** @type {Declaration} */ (rule.first)]);
+  removeDeclarations(state, state.meta(rule), [
+    /** @type {Declaration} */ (rule.first),
+  ]);
   assert.deepEqual(treeProps(rule), ['width']);
 });
 
 test('removeRules should keep the rules it does not remove', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
   const [, removed] = /** @type {Rule[]} */ (root.nodes);
-  removeRules(state, new Set([removed]));
+  removeRules(state, new Set([state.meta(removed)]));
   writeBack(state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['a', 'c']);
 });
@@ -200,7 +202,7 @@ test('removeRules should keep the rules it does not remove', () => {
 test('removeRules should keep the leading whitespace of the rule after a removed first root child', () => {
   const { root, state } = setup('a{color:red}\nb{color:red}');
   const [removed] = /** @type {Rule[]} */ (root.nodes);
-  removeRules(state, new Set([removed]));
+  removeRules(state, new Set([state.meta(removed)]));
   writeBack(state.records.blocks());
   assert.equal(root.toString(), '\nb{color:red}');
 });
@@ -266,7 +268,9 @@ test('removeDeclarations should drop the removed declarations from the rule and 
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {Container} */ (media).first);
 
-  removeDeclarations(state, rule, [/** @type {Declaration} */ (rule.first)]);
+  removeDeclarations(state, state.meta(rule), [
+    /** @type {Declaration} */ (rule.first),
+  ]);
 
   assert.deepEqual(treeProps(media), ['width']);
 });
@@ -278,7 +282,7 @@ test('removeRules should drop the declarations of the removed rules from the par
     /** @type {Container} */ (media).nodes
   );
 
-  removeRules(state, new Set([removed]));
+  removeRules(state, new Set([state.meta(removed)]));
   writeBack(state.records.blocks());
 
   assert.deepEqual(treeProps(media), ['width']);

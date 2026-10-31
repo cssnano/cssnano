@@ -98,19 +98,19 @@ export const mutations = [
   {
     name: 'an append leaves the record of the incoming rule live',
     target: source('treeEdits.js'),
-    find: '  departing.depart();\n',
+    find: '  incoming.depart();\n',
     replace: '',
   },
   {
     name: 'an append leaves the record of the receiving rule without its kept declarations',
     target: source('treeEdits.js'),
-    find: '  record.takeDeclarations(kept);\n',
+    find: '  receiving.takeDeclarations(kept);\n',
     replace: '',
   },
   {
     name: 'a removal of declarations leaves the record with the declarations it had',
     target: source('treeEdits.js'),
-    find: '  record.takeDeclarations(getDecls(rule));\n',
+    find: '  record.takeDeclarations(getDecls(record.node));\n',
     replace: '',
   },
   {
@@ -128,8 +128,8 @@ export const mutations = [
   {
     name: 'departing a rule leaves its record live',
     target: source('treeEdits.js'),
-    find: 'export function depart(mergeState, rule) {\n  mergeState.meta(rule).depart();',
-    replace: 'export function depart(mergeState, rule) {\n  void mergeState;',
+    find: 'export function depart(mergeState, record) {\n  record.depart();',
+    replace: 'export function depart(mergeState, record) {\n  void mergeState;',
   },
   {
     name: 'absorbing an earlier rule leaves its record live',

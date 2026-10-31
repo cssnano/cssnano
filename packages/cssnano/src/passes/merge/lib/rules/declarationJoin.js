@@ -134,16 +134,20 @@ export default function joinByDeclarations(block, mergeState) {
   const grown = new Set();
   // Rules that gave up every declaration, detached together at the end:
   // removing each one splices the parent's array, which takes quadratic time.
-  /** @type {Set<Rule>} */
+  /** @type {Set<RuleRecord>} */
   const emptied = new Set();
   for (let position = scan.start; position < entries.length; position++) {
     const entry = entries[position];
     if (keyLists[position]) {
-      const rule = /** @type {RuleRecord} */ (entry).node;
-      const outcome = joinIntoGroup(rule);
+      const record = /** @type {RuleRecord} */ (entry);
+      const outcome = joinIntoGroup(record);
       if (outcome === 'emptied') continue;
       // A trimmed rule's record took its remaining declarations, so its keys are new.
-      register(rule, position, mergeState.declarationKeysOf(rule).keys);
+      register(
+        record.node,
+        position,
+        mergeState.declarationKeysOf(record.node).keys
+      );
     }
     index.recordNode(entry, position, keysOf);
   }
@@ -172,11 +176,12 @@ export default function joinByDeclarations(block, mergeState) {
   }
 
   /**
-   * @param {Rule} later
+   * @param {RuleRecord} laterRecord
    * @return {'emptied' | 'trimmed' | null} whether the rule gave up all its
    * declarations, some of them, or joined no group
    */
-  function joinIntoGroup(later) {
+  function joinIntoGroup(laterRecord) {
+    const later = laterRecord.node;
     const laterDeclarations = /** @type {Declaration[]} */ (later.nodes);
     const laterSet = mergeState.declarationKeysOf(later).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
@@ -234,7 +239,7 @@ export default function joinByDeclarations(block, mergeState) {
     for (const selector of added) group.selectors?.add(selector);
     if (listed) recordGained(group, gained);
     grown.add(group.rule);
-    const outcome = withdraw(later, laterDeclarations, claimed);
+    const outcome = withdraw(laterRecord, laterDeclarations, claimed);
     return outcome;
   }
 
@@ -254,7 +259,7 @@ export default function joinByDeclarations(block, mergeState) {
   }
 
   /**
-   * @param {Rule} later
+   * @param {RuleRecord} later
    * @param {Declaration[]} declarations
    * @param {Set<number>} claimed indices of the declarations that leave
    * @return {'emptied' | 'trimmed'}
