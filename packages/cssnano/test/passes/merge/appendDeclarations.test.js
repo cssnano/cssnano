@@ -24,10 +24,10 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
   mergeState.records = buildRecords(root, mergeState);
   appendToDeclarations(
     mergeState,
-    mergeState.meta(receiving),
+    mergeState.records.metaOf(receiving),
     /** @type {import('postcss').Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),
-    mergeState.meta(incoming)
+    mergeState.records.metaOf(incoming)
   );
 
   assert.equal(root.toString(), '@media print{a{color:red;width:1px}b{}}');

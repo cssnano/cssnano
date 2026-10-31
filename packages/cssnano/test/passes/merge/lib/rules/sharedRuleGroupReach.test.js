@@ -67,18 +67,16 @@ function groupsOf(css) {
   for (const [i, first] of links.entries()) {
     const second = links[i + 1];
     if (!second) break;
-    const recordFirst = mergeState.meta(first.record.node);
-    const recordSecond = mergeState.meta(second.record.node);
     const shared = intersect(
-      recordFirst.declarations,
+      first.record.declarations,
       mergeState.declarationKeysOf(second.record).keySet,
       mergeState.declarationKey
     );
     if (shared.length === 0) continue;
     const { claimedEarlierIndices, claimedIndices } = filterRuleIntersections(
       shared,
-      [...recordFirst.declarations],
-      [...recordSecond.declarations],
+      [...first.record.declarations],
+      [...second.record.declarations],
       mergeState.properties
     );
     if (claimedEarlierIndices.size === 0) continue;
@@ -87,7 +85,7 @@ function groupsOf(css) {
       0
     );
     const group = findGroup(
-      first.record.node,
+      first.record,
       second,
       claimedEarlierIndices,
       claimedIndices,

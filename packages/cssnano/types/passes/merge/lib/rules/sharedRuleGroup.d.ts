@@ -1,15 +1,16 @@
-import type { Rule } from 'postcss';
+import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecord } from './blockRecords.js';
 import type RuleSequence, { RuleLink } from './ruleSequence.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {ChildNode, Declaration, Rule} from 'postcss' */
+/** @import {ChildNode, Declaration} from 'postcss' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /** @param {string[]} selectors @return {number} */
 export declare function selectorsLength(selectors: string[]): number;
 export declare const SHARING_WINDOW = 10;
 export type Follower = {
-    rule: Rule;
+    rule: RuleRecord;
     /**
      * where it repeats the shared declarations
      */
@@ -37,7 +38,7 @@ export type Group = {
  * rule after it. What a rule saves follows from lengths alone, so those
  * checks run only for a prefix that would pay.
  *
- * @param {Rule} first
+ * @param {RuleRecord} first
  * @param {RuleLink} second
  * @param {Set<number>} claimedEarlierIndices where the shared declarations stand in `first`
  * @param {Set<number>} claimedIndices where they stand in `second`
@@ -49,7 +50,7 @@ export type Group = {
  * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
  * @return {Group | null}
  */
-export declare function findGroup(first: Rule, second: RuleLink, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: WeakMap<BlockRecord, boolean>): Group | null;
+export declare function findGroup(first: RuleRecord, second: RuleLink, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: WeakMap<BlockRecord, boolean>): Group | null;
 /**
  * Records in `earliest` the farthest pair before `resume` that a rewrite at
  * `link` can change, if it is farther than the recorded pair. A later rule

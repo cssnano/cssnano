@@ -7,14 +7,14 @@ import { getDecls } from './ruleRecord.js';
 import { buildMergedRule, writesOf } from './ruleRewrite.js';
 import { appendToDeclarations, depart } from './treeEdits.js';
 
-/** @import {Rule} from 'postcss' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /** @import MergeState from './mergeState.js' */
 
 /**
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {MergeState} mergeState
  * @param {RuleLink} secondLink
  * @param {RuleSequence} sequence
@@ -30,18 +30,16 @@ function partialMerge(
   sequence,
   outsideDeclarations
 ) {
-  const recordFirst = mergeState.meta(first);
-  const recordSecond = mergeState.meta(second);
   let intersection = intersect(
-    recordFirst.declarations,
-    mergeState.declarationKeysOf(mergeState.meta(second)).keySet,
+    first.declarations,
+    mergeState.declarationKeysOf(second).keySet,
     mergeState.declarationKey
   );
   if (intersection.length === 0) return null;
   const filtered = filterRuleIntersections(
     intersection,
-    [...recordFirst.declarations],
-    [...recordSecond.declarations],
+    [...first.declarations],
+    [...second.declarations],
     mergeState.properties
   );
   intersection = filtered.intersection;
@@ -62,61 +60,56 @@ function partialMerge(
  * Rules with the same declarations in the same order become one rule with
  * both selectors.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {MergeState} mergeState
  * @return {Placement | null}
  */
 export function mergeMatchingDeclarations(first, second, mergeState) {
   if (
-    !first.nodes.every((node) => node.type === 'decl') ||
-    !second.nodes.every((node) => node.type === 'decl') ||
-    !sameDeclarationsAndOrder(
-      mergeState.meta(second).declarations,
-      mergeState.meta(first).declarations
-    )
+    !first.node.nodes.every((node) => node.type === 'decl') ||
+    !second.node.nodes.every((node) => node.type === 'decl') ||
+    !sameDeclarationsAndOrder(second.declarations, first.declarations)
   )
     return null;
   // Repeating the same declarations under the same selector changes nothing,
   // and a selector list that repeats the selector is longer than one rule.
-  if (mergeState.meta(first).hasSameSelectors(mergeState.meta(second))) {
-    depart(mergeState, mergeState.meta(second));
-    return { first: [mergeState.meta(first)], second: [] };
+  if (first.hasSameSelectors(second)) {
+    depart(mergeState, second);
+    return { first: [first], second: [] };
   }
-  const later = mergeState.meta(second);
-  mergeState.absorbEarlier(later, mergeState.meta(first));
-  mergeState.spellSelectors(later);
-  depart(mergeState, mergeState.meta(first));
-  return { first: [], second: [later] };
+  mergeState.absorbEarlier(second, first);
+  mergeState.spellSelectors(second);
+  depart(mergeState, first);
+  return { first: [], second: [second] };
 }
 
 /**
  * Rules with the same selector become one rule with both declaration lists.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {MergeState} mergeState
  * @return {Placement | null}
  */
 export function mergeMatchingSelectors(first, second, mergeState) {
-  if (!mergeState.meta(first).hasSameSelectors(mergeState.meta(second)))
-    return null;
-  const kept = getDecls(first);
+  if (!first.hasSameSelectors(second)) return null;
+  const kept = getDecls(first.node);
   appendToDeclarations(
     mergeState,
-    mergeState.meta(first),
+    first,
     kept,
     writesOf(kept, mergeState.properties),
-    mergeState.meta(second)
+    second
   );
-  return { first: [mergeState.meta(first)], second: [] };
+  return { first: [first], second: [] };
 }
 
 /**
  * Rules that share declarations hand them to a rule of their own.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {MergeState} mergeState
  * @param {RuleLink} secondLink
  * @param {RuleSequence} sequence
@@ -142,7 +135,7 @@ export function mergeSharedDeclarations(
   );
   if (!placement) return null;
   // The rules that replace the pair are described afresh when needed.
-  depart(mergeState, mergeState.meta(first));
-  depart(mergeState, mergeState.meta(second));
+  depart(mergeState, first);
+  depart(mergeState, second);
   return placement;
 }

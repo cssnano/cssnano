@@ -52,7 +52,7 @@ function listLength(selectors) {
 
 /**
  * @typedef {object} Group
- * @property {Rule} rule
+ * @property {RuleRecord} rule
  * @property {number} position
  * @property {Declaration[]} declarations
  * @property {number[]} keys declaration keys, in order
@@ -67,26 +67,23 @@ function listLength(selectors) {
  * selector and braces, so that join always shortens the output.
  *
  * @param {Group} group
- * @param {Rule} later
- * @param {MergeState} mergeState
+ * @param {RuleRecord} later
  * @return {{added: string[], gain: number}}
  */
-function joinGain(group, later, mergeState) {
+function joinGain(group, later) {
   if (group.bytes < 0) {
     group.bytes = group.declarations.reduce(
       (total, declaration) => total + minifiedLength(declaration),
       0
     );
   }
-  const listed = (group.selectors ??= new Set(
-    mergeState.meta(group.rule).selectors
-  ));
-  const laterSelectors = mergeState.meta(later).selectors;
+  const listed = (group.selectors ??= new Set(group.rule.selectors));
+  const laterSelectors = later.selectors;
   const added = [...new Set(laterSelectors)].filter(
     (selector) => !listed.has(selector)
   );
   const removed =
-    group.declarations.length === later.nodes.length
+    group.declarations.length === later.node.nodes.length
       ? group.bytes + listLength(laterSelectors)
       : group.bytes;
   return { added, gain: removed - listLength(added) };
@@ -130,7 +127,7 @@ export default function joinByDeclarations(block, mergeState) {
   const groups = new Map();
   // Rules whose selector lists grew; their text is written once at the end,
   // since rewriting a long list on every join would cost quadratic time.
-  /** @type {Set<Rule>} */
+  /** @type {Set<RuleRecord>} */
   const grown = new Set();
   // Rules that gave up every declaration, detached together at the end:
   // removing each one splices the parent's array, which takes quadratic time.
@@ -143,20 +140,16 @@ export default function joinByDeclarations(block, mergeState) {
       const outcome = joinIntoGroup(record);
       if (outcome === 'emptied') continue;
       // A trimmed rule's record took its remaining declarations, so its keys are new.
-      register(
-        record.node,
-        position,
-        mergeState.declarationKeysOf(record).keys
-      );
+      register(record, position, mergeState.declarationKeysOf(record).keys);
     }
     index.recordNode(entry, position, keysOf);
   }
-  for (const rule of grown) mergeState.spellSelectors(mergeState.meta(rule));
+  for (const record of grown) mergeState.spellSelectors(record);
   removeRules(mergeState, emptied);
   return grown.size > 0;
 
   /**
-   * @param {Rule} rule
+   * @param {RuleRecord} rule
    * @param {number} position
    * @param {number[]} keys
    */
@@ -165,7 +158,7 @@ export default function joinByDeclarations(block, mergeState) {
     const group = {
       rule,
       position,
-      declarations: /** @type {Declaration[]} */ (rule.nodes),
+      declarations: /** @type {Declaration[]} */ (rule.node.nodes),
       keys,
       selectors: null,
       bytes: -1,
@@ -208,7 +201,7 @@ export default function joinByDeclarations(block, mergeState) {
         ) {
           continue;
         }
-        const { added, gain } = joinGain(group, later, mergeState);
+        const { added, gain } = joinGain(group, laterRecord);
         // A join that breaks even still takes the shared declarations out of
         // the way of later rules that can join the group. On a tie, the
         // nearest group has the least to cross.
@@ -228,14 +221,13 @@ export default function joinByDeclarations(block, mergeState) {
         if (!claimedIndices) continue;
         const claimed = [...claimedIndices].map((j) => laterDeclarations[j]);
         if (index.conflictsSince(claimed, group.position, laterKeys)) continue;
-        if (!mergeState.canMerge(mergeState.meta(group.rule), laterRecord))
-          continue;
+        if (!mergeState.canMerge(group.rule, laterRecord)) continue;
         best = { group, claimed: claimedIndices, added, gain };
       }
     }
     if (!best) return null;
     const { group, claimed, added } = best;
-    const groupRecord = mergeState.meta(group.rule);
+    const groupRecord = group.rule;
     const listed = keysOf(groupRecord) !== null;
     const gained = mergeState.addSelectors(groupRecord, added, laterRecord);
     for (const selector of added) group.selectors?.add(selector);

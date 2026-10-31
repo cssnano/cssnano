@@ -44,8 +44,8 @@ async function blockPair(css, firstPath, secondPath) {
     return node;
   };
   return [
-    state.meta(resolve(firstPath)).slot.block,
-    state.meta(resolve(secondPath)).slot.block,
+    state.records.metaOf(resolve(firstPath)).slot.block,
+    state.records.metaOf(resolve(secondPath)).slot.block,
   ];
 }
 
@@ -207,8 +207,8 @@ test('sameContainer does not hold for anonymous @layer blocks whose params are o
   const state = recordsOf(root);
   assert.notStrictEqual(
     sameContainer(
-      state.meta(h1).slot.block,
-      state.meta(h2).slot.block,
+      state.records.metaOf(h1).slot.block,
+      state.records.metaOf(h2).slot.block,
       textTable
     ),
     true
@@ -233,8 +233,8 @@ test('sameContainer holds for named @layer blocks with identical comments and na
   const state = recordsOf(root);
   assert.strictEqual(
     sameContainer(
-      state.meta(h1).slot.block,
-      state.meta(h2).slot.block,
+      state.records.metaOf(h1).slot.block,
+      state.records.metaOf(h2).slot.block,
       textTable
     ),
     true

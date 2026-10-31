@@ -118,13 +118,13 @@ test('remove should drop the declarations of the removed node from its ancestors
 test('remove should take the node out of the records of its parent at once', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
   const [first, second] = /** @type {Rule[]} */ (root.nodes);
-  remove(state.meta(first));
+  remove(state.records.metaOf(first));
   assert.deepEqual(state.records.root.liveChildren(), [second]);
 });
 
 test('writeBack should drop the removed nodes from the child list of the parent', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
-  remove(state.meta(root.first));
+  remove(state.records.metaOf(root.first));
   writeBack(state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['b', 'c']);
 });
@@ -132,7 +132,12 @@ test('writeBack should drop the removed nodes from the child list of the parent'
 test('takePlaceOf should place the earlier node where the later one stood', () => {
   const { root, state } = setup('a{color:red}\n\nb{color:blue}');
   const [earlier, later] = /** @type {Rule[]} */ (root.nodes);
-  takePlaceOf(state, root, state.meta(earlier), state.meta(later));
+  takePlaceOf(
+    state,
+    root,
+    state.records.metaOf(earlier),
+    state.records.metaOf(later)
+  );
   writeBack(state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['a']);
 });
@@ -140,7 +145,12 @@ test('takePlaceOf should place the earlier node where the later one stood', () =
 test('takePlaceOf should keep the whitespace before the later node', () => {
   const { root, state } = setup('a{color:red}\n\nb{color:blue}');
   const [earlier, later] = /** @type {Rule[]} */ (root.nodes);
-  takePlaceOf(state, root, state.meta(earlier), state.meta(later));
+  takePlaceOf(
+    state,
+    root,
+    state.records.metaOf(earlier),
+    state.records.metaOf(later)
+  );
   writeBack(state.records.blocks());
   assert.equal(root.toString(), '\n\na{color:red}');
 });
@@ -148,8 +158,13 @@ test('takePlaceOf should keep the whitespace before the later node', () => {
 test('takePlaceOf should place the earlier node after a removal in the same parent', () => {
   const { root, state } = setup('x{color:red}\na{color:red}\nb{color:red}');
   const [removed, earlier, later] = /** @type {Rule[]} */ (root.nodes);
-  remove(state.meta(removed));
-  takePlaceOf(state, root, state.meta(earlier), state.meta(later));
+  remove(state.records.metaOf(removed));
+  takePlaceOf(
+    state,
+    root,
+    state.records.metaOf(earlier),
+    state.records.metaOf(later)
+  );
   writeBack(state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['a']);
 });
@@ -157,8 +172,13 @@ test('takePlaceOf should place the earlier node after a removal in the same pare
 test('takePlaceOf should hand the leading whitespace of a removed first root child to the next child', () => {
   const { root, state } = setup('x{color:red}\na{color:red}\nb{color:red}');
   const [removed, earlier, later] = /** @type {Rule[]} */ (root.nodes);
-  remove(state.meta(removed));
-  takePlaceOf(state, root, state.meta(earlier), state.meta(later));
+  remove(state.records.metaOf(removed));
+  takePlaceOf(
+    state,
+    root,
+    state.records.metaOf(earlier),
+    state.records.metaOf(later)
+  );
   writeBack(state.records.blocks());
   assert.equal(root.toString(), '\na{color:red}');
 });
@@ -172,10 +192,10 @@ test('appendToDeclarations should move the declarations of the incoming rule int
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
-    state.meta(receiving),
+    state.records.metaOf(receiving),
     /** @type {Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),
-    state.meta(incoming)
+    state.records.metaOf(incoming)
   );
   assert.deepEqual(treeProps(media), ['color', 'width']);
 });
@@ -183,7 +203,7 @@ test('appendToDeclarations should move the declarations of the incoming rule int
 test('removeDeclarations should keep the declarations that are not removed', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  removeDeclarations(state, state.meta(rule), [
+  removeDeclarations(state, state.records.metaOf(rule), [
     /** @type {Declaration} */ (rule.first),
   ]);
   assert.deepEqual(treeProps(rule), ['width']);
@@ -192,7 +212,7 @@ test('removeDeclarations should keep the declarations that are not removed', () 
 test('removeRules should keep the rules it does not remove', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
   const [, removed] = /** @type {Rule[]} */ (root.nodes);
-  removeRules(state, new Set([state.meta(removed)]));
+  removeRules(state, new Set([state.records.metaOf(removed)]));
   writeBack(state.records.blocks());
   assert.deepEqual(selectorsOf(root), ['a', 'c']);
 });
@@ -202,7 +222,7 @@ test('removeRules should keep the rules it does not remove', () => {
 test('removeRules should keep the leading whitespace of the rule after a removed first root child', () => {
   const { root, state } = setup('a{color:red}\nb{color:red}');
   const [removed] = /** @type {Rule[]} */ (root.nodes);
-  removeRules(state, new Set([state.meta(removed)]));
+  removeRules(state, new Set([state.records.metaOf(removed)]));
   writeBack(state.records.blocks());
   assert.equal(root.toString(), '\nb{color:red}');
 });
@@ -268,7 +288,7 @@ test('removeDeclarations should drop the removed declarations from the rule and 
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {Container} */ (media).first);
 
-  removeDeclarations(state, state.meta(rule), [
+  removeDeclarations(state, state.records.metaOf(rule), [
     /** @type {Declaration} */ (rule.first),
   ]);
 
@@ -282,7 +302,7 @@ test('removeRules should drop the declarations of the removed rules from the par
     /** @type {Container} */ (media).nodes
   );
 
-  removeRules(state, new Set([state.meta(removed)]));
+  removeRules(state, new Set([state.records.metaOf(removed)]));
   writeBack(state.records.blocks());
 
   assert.deepEqual(treeProps(media), ['width']);

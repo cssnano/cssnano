@@ -1,5 +1,5 @@
 import type MergeState from './mergeState.js';
-/** @import {Rule} from 'postcss' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {Placement, RuleLink} from './ruleSequence.js' */

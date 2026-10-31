@@ -4,7 +4,8 @@ import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 import { depart } from './treeEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
-/** @import {Declaration, Rule} from 'postcss' */
+/** @import {Declaration} from 'postcss' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 
@@ -36,8 +37,8 @@ export function writesOf(declarations, table) {
  * of the source, which a minifier removes, so a merge that pays only in
  * source bytes would grow the output.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {Set<number>} claimedEarlierIndices
  * @param {Set<number>} claimedIndices
  * @param {import('./mergeState.js').default} mergeState
@@ -56,9 +57,9 @@ export function buildMergedRule(
   sequence,
   outsideDeclarations
 ) {
-  const firstSelectors = mergeState.meta(first).selectors;
-  const secondSelectors = mergeState.meta(second).selectors;
-  const firstDeclarations = mergeState.meta(first).declarations;
+  const firstSelectors = first.selectors;
+  const secondSelectors = second.selectors;
+  const firstDeclarations = first.declarations;
   let sharedBytes = 0;
   // A later plugin, such as Autoprefixer, removes an outdated prefixed
   // declaration from the rule that sets it, which a shared rule leaves alone.
@@ -78,10 +79,10 @@ export function buildMergedRule(
     selectorsLength(secondSelectors) +
     2 -
     sharedBytes;
-  if (first.nodes.length === claimedEarlierIndices.size) {
+  if (first.node.nodes.length === claimedEarlierIndices.size) {
     delta -= selectorsLength(firstSelectors) + 1;
   }
-  if (second.nodes.length === claimedIndices.size) {
+  if (second.node.nodes.length === claimedIndices.size) {
     delta -= selectorsLength(secondSelectors) + 1;
   }
   // A pair that shortens the output merges alone: the rules after it may
@@ -103,7 +104,7 @@ export function buildMergedRule(
         );
   if (delta >= 0 && !group) return null;
 
-  const receivingBlock = second.clone();
+  const receivingBlock = second.node.clone();
   receivingBlock.selector = [
     ...firstSelectors,
     ...secondSelectors,
@@ -111,8 +112,8 @@ export function buildMergedRule(
   ].join();
   if (!group) mergeState.storeJoined(receivingBlock, first, second);
   receivingBlock.nodes = [];
-  const firstClone = first.clone({ selectors: firstSelectors });
-  const secondClone = second.clone({ selectors: secondSelectors });
+  const firstClone = first.node.clone({ selectors: firstSelectors });
+  const secondClone = second.node.clone({ selectors: secondSelectors });
   mergeState.storeClone(first, firstClone);
   mergeState.storeClone(second, secondClone);
   mergeState.reportCreated(receivingBlock);
@@ -146,12 +147,10 @@ export function buildMergedRule(
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
-      const leftover = rule.clone({
-        selectors: mergeState.meta(rule).selectors,
-      });
+      const leftover = rule.node.clone({ selectors: rule.selectors });
       mergeState.storeClone(rule, leftover);
       mergeState.reportCreated(leftover);
-      depart(mergeState, mergeState.meta(rule));
+      depart(mergeState, rule);
       let index = 0;
       leftover.walkDecls((decl) => {
         if (claimed.has(index++)) decl.remove();
