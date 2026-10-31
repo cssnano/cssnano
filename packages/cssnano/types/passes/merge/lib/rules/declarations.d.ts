@@ -1,5 +1,5 @@
-import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /**
  * Two declarations are equal when they print the same, which their ids tell:
  * the same property name, value, importance and hack prefix.
@@ -27,10 +27,9 @@ export declare function sameDeclarationsAndOrder(a: DeclarationRecord[], b: Decl
  * @param {DeclarationRecord[]} hoistCandidates
  * @param {DeclarationRecord[]} earlierRuleDeclarations
  * @param {DeclarationRecord[]} laterRuleDeclarations
- * @param {PropertyTable} table
  * @return {{intersection: DeclarationRecord[], claimedIndices: Set<number>, claimedEarlierIndices: Set<number>}}
  */
-export declare function filterRuleIntersections(hoistCandidates: DeclarationRecord[], earlierRuleDeclarations: DeclarationRecord[], laterRuleDeclarations: DeclarationRecord[], table: PropertyTable): {
+export declare function filterRuleIntersections(hoistCandidates: DeclarationRecord[], earlierRuleDeclarations: DeclarationRecord[], laterRuleDeclarations: DeclarationRecord[]): {
     intersection: DeclarationRecord[];
     claimedIndices: Set<number>;
     claimedEarlierIndices: Set<number>;

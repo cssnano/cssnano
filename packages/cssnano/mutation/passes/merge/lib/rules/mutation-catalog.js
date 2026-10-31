@@ -78,12 +78,6 @@ export const mutations = [
     replace: '      moveChildren(earlier, later);',
   },
   {
-    name: 'ignore !important when comparing declarations',
-    target: source('declarations.js'),
-    find: '    (a.important === true) === (b.important === true) &&\n',
-    replace: '',
-  },
-  {
     name: 'ignore !important in the declaration key',
     target: irSource('declarationKey.js'),
     find: '    trie = step(trie, declaration.important === true);\n',

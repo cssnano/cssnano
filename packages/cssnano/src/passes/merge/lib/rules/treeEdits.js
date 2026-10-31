@@ -212,12 +212,12 @@ export function appendToDeclarations(
   for (const node of incoming.node.nodes.slice()) {
     if (node.type === 'decl') {
       const record = records[next++];
-      const last = index.lastConflict(record);
+      const last = index.lastConflict(record.keys);
       if (last !== -1 && declarationIsEqual(kept[last], record)) {
         node.remove();
         continue;
       }
-      index.record(record, kept.length);
+      index.record(record.keys, kept.length);
       kept.push(record);
     }
     rule.append(node);

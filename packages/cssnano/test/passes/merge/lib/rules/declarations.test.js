@@ -4,7 +4,10 @@ import postcss from 'postcss';
 import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
 import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
-import { declarationIsEqual } from '../../../../../src/passes/merge/lib/rules/declarations.js';
+import {
+  declarationIsEqual,
+  filterRuleIntersections,
+} from '../../../../../src/passes/merge/lib/rules/declarations.js';
 
 const properties = new PropertyTable();
 const declarationIds = new DeclarationKeys();
@@ -36,4 +39,42 @@ test('declarationIsEqual still tells an important declaration from an unset one'
   const unset = recordOf('border-radius:1px');
   const important = recordOf('border-radius:1px!important');
   assert.equal(declarationIsEqual(unset, important), false);
+});
+
+/**
+ * The declaration records of the rule in `css`, in order.
+ *
+ * @param {string} css
+ * @return {import('../../../../../src/passes/ir/declarationRecord.js').DeclarationRecord[]}
+ */
+function recordsOf(css) {
+  const rule = postcss.parse(css).first;
+  return rule.nodes.map((node) =>
+    recordDeclaration(
+      /** @type {import('postcss').Declaration} */ (node),
+      properties,
+      declarationIds
+    )
+  );
+}
+
+test('filterRuleIntersections refuses to hoist a color declaration that a later all resets', () => {
+  const earlier = recordsOf('a{color:red}');
+  const later = recordsOf('b{color:red;all:initial}');
+  const { intersection } = filterRuleIntersections(earlier, earlier, later);
+  assert.equal(intersection.length, 0);
+});
+
+test('filterRuleIntersections hoists a direction declaration that a later all does not reset', () => {
+  const earlier = recordsOf('a{direction:rtl}');
+  const later = recordsOf('b{direction:rtl;all:initial}');
+  const { intersection } = filterRuleIntersections(earlier, earlier, later);
+  assert.equal(intersection.length, 1);
+});
+
+test('filterRuleIntersections hoists a custom property declaration that a later all does not reset', () => {
+  const earlier = recordsOf('a{--x:1}');
+  const later = recordsOf('b{--x:1;all:initial}');
+  const { intersection } = filterRuleIntersections(earlier, earlier, later);
+  assert.equal(intersection.length, 1);
 });

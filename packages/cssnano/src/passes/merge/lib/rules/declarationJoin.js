@@ -31,15 +31,13 @@ export const isDeclarationRule = (node) =>
  *
  * @param {DeclarationRecord[]} declarations
  * @param {DeclarationRecord[]} later
- * @param {PropertyTable} table
  * @return {Set<number> | null}
  */
-export function claimRepeats(declarations, later, table) {
+export function claimRepeats(declarations, later) {
   const { intersection, claimedIndices } = filterRuleIntersections(
     declarations,
     declarations,
-    later,
-    table
+    later
   );
   return intersection.length === declarations.length ? claimedIndices : null;
 }
@@ -120,7 +118,7 @@ export default function joinByDeclarations(block, mergeState) {
   }
   if (scan.start === Infinity) return false;
 
-  const index = new LastWriteIndex(mergeState.properties);
+  const index = new LastWriteIndex();
   const keysOf = mergeState.elementKeysOf;
   // Groups by their first declaration, in document order: a rule that
   // repeats a group's declarations repeats that one too.
@@ -215,8 +213,7 @@ export default function joinByDeclarations(block, mergeState) {
         }
         const claimedIndices = claimRepeats(
           group.declarations,
-          laterDeclarations,
-          mergeState.properties
+          laterDeclarations
         );
         if (!claimedIndices) continue;
         const claimed = [...claimedIndices].map((j) => laterDeclarations[j]);
@@ -249,7 +246,7 @@ export default function joinByDeclarations(block, mergeState) {
   function recordGained(group, gained) {
     if (gained?.length === 0) return;
     for (const declaration of group.declarations)
-      index.record(declaration, group.position, gained);
+      index.record(declaration.keys, group.position, gained);
   }
 
   /**

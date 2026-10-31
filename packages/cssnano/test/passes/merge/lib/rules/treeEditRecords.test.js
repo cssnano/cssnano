@@ -3,7 +3,6 @@ import { after, before, test } from 'node:test';
 import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
@@ -49,7 +48,7 @@ test('appendToDeclarations should mark the record of the incoming rule departed'
     state,
     ruleRecordOf(state.records, receiving),
     kept,
-    writesOf(kept, new PropertyTable()),
+    writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
   assert.throws(() => record.declarations, /departed/v);
@@ -66,7 +65,7 @@ test('appendToDeclarations should leave the record of the receiving rule readabl
     state,
     ruleRecordOf(state.records, receiving),
     kept,
-    writesOf(kept, new PropertyTable()),
+    writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
   assert.equal(ruleRecordOf(state.records, receiving).departed, false);
@@ -84,7 +83,7 @@ test('appendToDeclarations should keep the record of the receiving rule', () => 
     state,
     ruleRecordOf(state.records, receiving),
     kept,
-    writesOf(kept, new PropertyTable()),
+    writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
   assert.equal(ruleRecordOf(state.records, receiving), record);
@@ -102,7 +101,7 @@ test('appendToDeclarations should give the record of the receiving rule the kept
     state,
     ruleRecordOf(state.records, receiving),
     kept,
-    writesOf(kept, new PropertyTable()),
+    writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
   assert.equal(ruleRecordOf(state.records, receiving).declarations, kept);
@@ -124,7 +123,7 @@ test('appendToDeclarations should give the record of the receiving rule keys for
     state,
     ruleRecordOf(state.records, receiving),
     kept,
-    writesOf(kept, new PropertyTable()),
+    writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
   assert.deepEqual(
@@ -225,14 +224,14 @@ test('appendToDeclarations should throw when the receiving rule holds a block', 
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (root).nodes
   );
-  const kept = /** @type {Declaration[]} */ ([receiving.first]);
+  const kept = [...ruleRecordOf(state.records, receiving).declarations];
   assert.throws(
     () =>
       appendToDeclarations(
         state,
         ruleRecordOf(state.records, receiving),
         kept,
-        writesOf(kept, new PropertyTable()),
+        writesOf(kept),
         ruleRecordOf(state.records, incoming)
       ),
     /holds a block/v

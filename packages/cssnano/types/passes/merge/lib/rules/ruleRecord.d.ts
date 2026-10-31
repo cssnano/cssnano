@@ -148,6 +148,4 @@ export declare class RuleRecord {
      */
     assertFresh(): void;
 }
-/** @param {Rule} rule @return {Declaration[]} */
-export declare function getDecls(rule: Rule): Declaration[];
 //# sourceMappingURL=ruleRecord.d.ts.map

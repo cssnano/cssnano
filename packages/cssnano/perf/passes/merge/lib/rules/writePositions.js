@@ -19,14 +19,16 @@ const names = [
   ]),
 ].filter((name) => name !== 'all');
 
+const table = new PropertyTable();
+
 /**
  * @param {string[]} writes
  * @return {WritePositions}
  */
 function indexOf(writes) {
-  const index = new WritePositions(new PropertyTable());
+  const index = new WritePositions();
   for (const [position, prop] of writes.entries()) {
-    index.record({ prop }, position);
+    index.record(table.keysOf(prop), position);
   }
   return index;
 }
@@ -41,12 +43,12 @@ test('write positions find the earliest unclaimed write that conflicts, as isCon
     const firstClaimed = indexOf(writes);
     for (const queried of names) {
       assert.strictEqual(
-        unclaimed.firstUnclaimed({ prop: queried }, new Set()),
+        unclaimed.firstUnclaimed(table.keysOf(queried), new Set()),
         isConflictingProp(queried, written) ? 0 : -1,
         `${queried} against ${written}`
       );
       assert.strictEqual(
-        firstClaimed.firstUnclaimed({ prop: queried }, new Set([0])),
+        firstClaimed.firstUnclaimed(table.keysOf(queried), new Set([0])),
         isConflictingProp(queried, written) ? 1 : -1,
         `${queried} against ${written}, with the first write claimed`
       );

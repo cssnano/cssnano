@@ -51,7 +51,7 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
     mergeState,
     ruleRecordOf(mergeState.records, q),
     kept,
-    writesOf(kept, mergeState.properties),
+    writesOf(kept),
     incomingRecord
   );
   assert.equal(joinNonAdjacent(mergeState.records.root, mergeState), true);

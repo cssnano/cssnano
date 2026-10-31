@@ -1,5 +1,4 @@
 import { RuleRecord } from './ruleRecord.js';
-import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { ChildNode, Rule } from 'postcss';
 import type MergeState from './mergeState.js';
@@ -24,10 +23,9 @@ export declare const isDeclarationRule: (node: ChildNode) => node is Rule;
  *
  * @param {DeclarationRecord[]} declarations
  * @param {DeclarationRecord[]} later
- * @param {PropertyTable} table
  * @return {Set<number> | null}
  */
-export declare function claimRepeats(declarations: DeclarationRecord[], later: DeclarationRecord[], table: PropertyTable): Set<number> | null;
+export declare function claimRepeats(declarations: DeclarationRecord[], later: DeclarationRecord[]): Set<number> | null;
 export type Group = {
     rule: RuleRecord;
     position: number;

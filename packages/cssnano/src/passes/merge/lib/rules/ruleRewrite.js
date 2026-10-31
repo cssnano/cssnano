@@ -13,15 +13,13 @@ import { depart } from './treeEdits.js';
  * The writes of a rule's declarations, numbered by their position.
  *
  * @param {DeclarationRecord[]} declarations
- * @param {PropertyTable} table
  * @return {PropertyWrites}
  */
-export function writesOf(declarations, table) {
-  // Rewrites compare whole rules and never ask about one element, so a plain
-  // property table is enough.
-  const index = new PropertyWrites(table);
+export function writesOf(declarations) {
+  // Rewrites compare whole rules and never ask about one element.
+  const index = new PropertyWrites();
   for (const [position, declaration] of declarations.entries()) {
-    index.record(declaration, position);
+    index.record(declaration.keys, position);
   }
   return index;
 }

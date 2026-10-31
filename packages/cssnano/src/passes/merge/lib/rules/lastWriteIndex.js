@@ -4,7 +4,7 @@ import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {AtRule, ChildNode, Rule} from 'postcss' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+/** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
 // Conditional group rules hold ordinary rules whose declarations cascade as
@@ -93,13 +93,11 @@ class SegmentIndex {
 }
 
 /**
- * The latest position at which each property was declared, for one property
- * table: the answers match `isConflictingProp`, in time linear in the number
- * of longhands the property expands to.
+ * The latest position at which each property was declared: the answers match
+ * `isConflictingProp`, in time linear in the number of longhands the property
+ * expands to.
  */
 export class PropertyWrites {
-  /** @type {PropertyTable} */
-  #table;
   /** @type {Map<string | number, number>} */
   #lastCustom = new Map();
   /** @type {Map<string | number, number>} */
@@ -118,17 +116,11 @@ export class PropertyWrites {
   // `unicode-bidi` and custom properties.
   #lastResettable = -1;
 
-  /** @param {PropertyTable} table keys every declaration this index sees */
-  constructor(table) {
-    this.#table = table;
-  }
-
   /**
-   * @param {{prop: string}} declaration
+   * @param {PropertyKeys} keys the keys of a declaration's property name
    * @param {number} position
    */
-  record(declaration, position) {
-    const keys = this.#table.keysOf(declaration.prop);
+  record(keys, position) {
     if (keys.custom) {
       raise(this.#lastCustom, keys.key, position);
       return;
@@ -151,13 +143,12 @@ export class PropertyWrites {
   }
 
   /**
-   * Position of the newest write that conflicts with `declaration`, or -1.
+   * Position of the newest write that conflicts with the property, or -1.
    *
-   * @param {{prop: string}} declaration
+   * @param {PropertyKeys} keys
    * @return {number}
    */
-  lastConflict(declaration) {
-    const keys = this.#table.keysOf(declaration.prop);
+  lastConflict(keys) {
     if (keys.custom) return this.#lastCustom.get(keys.key) ?? -1;
     if (keys.all) return this.#lastResettable;
     let newest = Math.max(
@@ -189,8 +180,6 @@ export class PropertyWrites {
  * declaration at position p does not count as appearing after p.
  */
 export default class LastWriteIndex {
-  /** @type {PropertyTable} */
-  #table;
   /** @type {PropertyWrites} */
   #all;
   /** @type {PropertyWrites} */
@@ -201,32 +190,30 @@ export default class LastWriteIndex {
   // Reused by conflictsSinceIn, so a check allocates no set of its own.
   #elementScratch = /** @type {Set<string>} */ (new Set());
 
-  /** @param {PropertyTable} table keys every declaration this index sees */
-  constructor(table) {
-    this.#table = table;
-    this.#all = new PropertyWrites(table);
-    this.#unknownElement = new PropertyWrites(table);
+  constructor() {
+    this.#all = new PropertyWrites();
+    this.#unknownElement = new PropertyWrites();
   }
 
   /**
-   * @param {{prop: string}} declaration
+   * @param {PropertyKeys} keys the keys of a declaration's property name
    * @param {number} position
-   * @param {readonly string[] | null} [keys] element keys of the writing rule,
-   * or null when they are unknown
+   * @param {readonly string[] | null} [elements] element keys of the writing
+   * rule, or null when they are unknown
    */
-  record(declaration, position, keys = null) {
-    this.#all.record(declaration, position);
-    if (keys === null) {
-      this.#unknownElement.record(declaration, position);
+  record(keys, position, elements = null) {
+    this.#all.record(keys, position);
+    if (elements === null) {
+      this.#unknownElement.record(keys, position);
       return;
     }
-    for (const key of keys) {
-      let writes = this.#byElement.get(key);
+    for (const element of elements) {
+      let writes = this.#byElement.get(element);
       if (!writes) {
-        writes = new PropertyWrites(this.#table);
-        this.#byElement.set(key, writes);
+        writes = new PropertyWrites();
+        this.#byElement.set(element, writes);
       }
-      writes.record(declaration, position);
+      writes.record(keys, position);
     }
   }
 
@@ -261,7 +248,7 @@ export default class LastWriteIndex {
       }
       // A rule without a block writes its declarations only.
       for (const declaration of entry.declarations)
-        this.record(declaration, position, own);
+        this.record(declaration.keys, position, own);
     } else if (entry instanceof BlockRecord) {
       // Only an at-rule has a block record among the entries.
       if (isConditionalGroupRule(/** @type {AtRule} */ (entry.node))) {
@@ -270,7 +257,7 @@ export default class LastWriteIndex {
         this.#lastBarrier = Math.max(this.#lastBarrier, position);
       }
     } else if (entry instanceof DeclarationRecord) {
-      this.record(entry, position, keys);
+      this.record(entry.keys, position, keys);
     } else if (entry.type === 'atrule' && !isConditionalGroupRule(entry)) {
       this.#lastBarrier = Math.max(this.#lastBarrier, position);
     }
@@ -301,7 +288,7 @@ export default class LastWriteIndex {
    * counting only writes that can set an element in `elements`, the non-empty
    * element keys of the rules moving to `position`. Null counts every write.
    *
-   * @param {{prop: string}[]} declarations
+   * @param {DeclarationRecord[]} declarations
    * @param {number} position
    * @param {Iterable<string> | null} [elements]
    * @return {boolean}
@@ -310,25 +297,25 @@ export default class LastWriteIndex {
     if (this.#lastBarrier > position) return true;
     // Plain loops, so the check allocates nothing per call.
     for (const declaration of declarations) {
-      if (this.#conflictsWith(declaration, position, elements)) return true;
+      if (this.#conflictsWith(declaration.keys, position, elements))
+        return true;
     }
     return false;
   }
 
   /**
-   * @param {{prop: string}} declaration
+   * @param {PropertyKeys} keys
    * @param {number} position
    * @param {Iterable<string> | null} elements the element keys, or null for
    * every element
    * @return {boolean}
    */
-  #conflictsWith(declaration, position, elements) {
-    if (elements === null)
-      return this.#all.lastConflict(declaration) > position;
-    if (this.#unknownElement.lastConflict(declaration) > position) return true;
-    for (const key of elements) {
-      const writes = this.#byElement.get(key);
-      if (writes && writes.lastConflict(declaration) > position) return true;
+  #conflictsWith(keys, position, elements) {
+    if (elements === null) return this.#all.lastConflict(keys) > position;
+    if (this.#unknownElement.lastConflict(keys) > position) return true;
+    for (const element of elements) {
+      const writes = this.#byElement.get(element);
+      if (writes && writes.lastConflict(keys) > position) return true;
     }
     return false;
   }
@@ -365,9 +352,11 @@ export default class LastWriteIndex {
     for (const entry of entries) {
       if (entry instanceof RuleRecord) {
         for (const declaration of entry.declarations) {
-          if (this.#conflictsWith(declaration, position, elements)) return true;
+          if (this.#conflictsWith(declaration.keys, position, elements)) {
+            return true;
+          }
         }
-      } else if (this.#conflictsWith(entry, position, elements)) {
+      } else if (this.#conflictsWith(entry.keys, position, elements)) {
         return true;
       }
     }
@@ -390,10 +379,10 @@ export default class LastWriteIndex {
         // `record` only reads the keys, so the record's own list is passed as is.
         const keys = keysOf(entry);
         for (const declaration of entry.declarations) {
-          this.record(declaration, position, keys?.length ? keys : null);
+          this.record(declaration.keys, position, keys?.length ? keys : null);
         }
       } else {
-        this.record(entry, position, null);
+        this.record(entry.keys, position, null);
       }
     }
   }

@@ -27,25 +27,24 @@ export const SHARING_WINDOW = 10;
 const PAIR_REACH = SHARING_WINDOW + 1;
 
 /**
- * Whether a declaration among `nodes`, other than the `claimed` ones, sets a
- * property of `shared`. Standing after the shared rule, it blocks every
+ * Whether a declaration among `declarations`, other than the `claimed` ones,
+ * sets a property of `shared`. Standing after the shared rule, it blocks every
  * later rule from handing over the shared declarations.
  *
- * @param {ChildNode[]} nodes
- * @param {Set<number> | null} claimed positions among the declarations
+ * @param {DeclarationRecord[]} declarations the declarations of the rule
+ * @param {Set<number> | null | undefined} claimed positions among the declarations
  * @param {DeclarationRecord[]} shared
- * @param {PropertyTable} table
  * @return {boolean}
  */
-function overridesShared(nodes, claimed, shared, table) {
-  const sharedWrites = new PropertyWrites(table);
+function overridesShared(declarations, claimed, shared) {
+  const sharedWrites = new PropertyWrites();
   for (const declaration of shared) {
-    sharedWrites.record(declaration, 0);
+    sharedWrites.record(declaration.keys, 0);
   }
   let position = 0;
-  for (const node of nodes) {
-    if (node.type !== 'decl' || claimed?.has(position++)) continue;
-    if (sharedWrites.lastConflict(node) !== -1) return true;
+  for (const declaration of declarations) {
+    if (claimed?.has(position++)) continue;
+    if (sharedWrites.lastConflict(declaration.keys) !== -1) return true;
   }
   return false;
 }
@@ -144,14 +143,7 @@ export function findGroup(
   const shared = first.declarations.filter((_, index) =>
     claimedEarlierIndices.has(index)
   );
-  if (
-    overridesShared(
-      second.record.node.nodes,
-      claimedIndices,
-      shared,
-      mergeState.properties
-    )
-  )
+  if (overridesShared(second.record.declarations, claimedIndices, shared))
     return null;
 
   const listed = new Set(first.selectors);
@@ -196,11 +188,7 @@ export function findGroup(
       const index = followers.length;
       const candidate = candidates[index];
       const later = candidate.record;
-      const claimed = claimRepeats(
-        shared,
-        later.declarations,
-        mergeState.properties
-      );
+      const claimed = claimRepeats(shared, later.declarations);
       if (
         !claimed ||
         sequence.declarationBetween(
@@ -214,12 +202,7 @@ export function findGroup(
       }
       followers.push({ rule: later, claimed });
       members.push(later);
-      blocked = overridesShared(
-        later.node.nodes,
-        claimed,
-        shared,
-        mergeState.properties
-      );
+      blocked = overridesShared(later.declarations, claimed, shared);
     }
     if (followers.length < candidates.length) break;
     best = running;

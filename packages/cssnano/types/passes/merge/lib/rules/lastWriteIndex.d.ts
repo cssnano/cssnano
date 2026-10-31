@@ -2,37 +2,31 @@ import { BlockRecord } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { AtRule, ChildNode } from 'postcss';
-import type { PropertyTable } from '../../../ir/propertyTable.js';
+import type { PropertyKeys } from '../../../ir/propertyTable.js';
 /**
  * @param {ChildNode} node
  * @return {node is AtRule}
  */
 export declare function isConditionalGroupRule(node: ChildNode): node is AtRule;
 /**
- * The latest position at which each property was declared, for one property
- * table: the answers match `isConflictingProp`, in time linear in the number
- * of longhands the property expands to.
+ * The latest position at which each property was declared: the answers match
+ * `isConflictingProp`, in time linear in the number of longhands the property
+ * expands to.
  */
 export declare class PropertyWrites {
     #private;
-    /** @param {PropertyTable} table keys every declaration this index sees */
-    constructor(table: PropertyTable);
     /**
-     * @param {{prop: string}} declaration
+     * @param {PropertyKeys} keys the keys of a declaration's property name
      * @param {number} position
      */
-    record(declaration: {
-        prop: string;
-    }, position: number): void;
+    record(keys: PropertyKeys, position: number): void;
     /**
-     * Position of the newest write that conflicts with `declaration`, or -1.
+     * Position of the newest write that conflicts with the property, or -1.
      *
-     * @param {{prop: string}} declaration
+     * @param {PropertyKeys} keys
      * @return {number}
      */
-    lastConflict(declaration: {
-        prop: string;
-    }): number;
+    lastConflict(keys: PropertyKeys): number;
 }
 /**
  * A table of the latest position at which each property was declared among
@@ -50,17 +44,14 @@ export declare class PropertyWrites {
  */
 export default class LastWriteIndex {
     #private;
-    /** @param {PropertyTable} table keys every declaration this index sees */
-    constructor(table: PropertyTable);
+    constructor();
     /**
-     * @param {{prop: string}} declaration
+     * @param {PropertyKeys} keys the keys of a declaration's property name
      * @param {number} position
-     * @param {readonly string[] | null} [keys] element keys of the writing rule,
-     * or null when they are unknown
+     * @param {readonly string[] | null} [elements] element keys of the writing
+     * rule, or null when they are unknown
      */
-    record(declaration: {
-        prop: string;
-    }, position: number, keys?: readonly string[] | null): void;
+    record(keys: PropertyKeys, position: number, elements?: readonly string[] | null): void;
     /**
      * Record every write a child of the parent makes, under the element keys
      * `keysOf` gives its rule. An at-rule that is not a conditional group rule is
@@ -79,14 +70,12 @@ export default class LastWriteIndex {
      * counting only writes that can set an element in `elements`, the non-empty
      * element keys of the rules moving to `position`. Null counts every write.
      *
-     * @param {{prop: string}[]} declarations
+     * @param {DeclarationRecord[]} declarations
      * @param {number} position
      * @param {Iterable<string> | null} [elements]
      * @return {boolean}
      */
-    conflictsSince(declarations: {
-        prop: string;
-    }[], position: number, elements?: Iterable<string> | null): boolean;
+    conflictsSince(declarations: DeclarationRecord[], position: number, elements?: Iterable<string> | null): boolean;
     /**
      * `conflictsSince` for entries that move with their rules: rule records,
      * whose declarations take the keys `keysOf` gives, and bare declarations,
