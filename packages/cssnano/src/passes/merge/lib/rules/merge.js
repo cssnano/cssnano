@@ -36,8 +36,8 @@ function partialMerge(
   if (intersection.length === 0) return null;
   const filtered = filterRuleIntersections(
     intersection,
-    [...first.declarations],
-    [...second.declarations]
+    first.declarations,
+    second.declarations
   );
   intersection = filtered.intersection;
   if (intersection.length === 0) return null;
