@@ -21,8 +21,8 @@ const sources = readdirSync(rulesDirectory)
     text: readFileSync(new URL(name, rulesDirectory), 'utf8'),
   }));
 
-// `ruleRewrite.js` builds the clones `partialMerge` makes, which are not in the
-// stylesheet yet, so it may edit them directly. `ruleRecord.js` holds the entry
+// `ruleRewrite.js` appends to the record of the merged rule it creates, a call
+// the pattern cannot tell from a node edit. `ruleRecord.js` holds the entry
 // methods that edit a rule's children, and edits each node with its records,
 // through the helpers of `ruleChildren.js`.
 const cloneEditors = new Set([
