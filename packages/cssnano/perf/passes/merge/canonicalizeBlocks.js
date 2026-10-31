@@ -12,6 +12,7 @@ import { clearSupportCache } from '../../../src/passes/merge/lib/longhand/syntax
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { minifiedLength } from '../../../src/passes/ir/minifiedLength.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
+import { TextTable } from '../../../src/values/textTable.js';
 
 const fixtures = new URL('../../../../../frameworks/', import.meta.url);
 const browsers = resolveTargets({}, undefined);
@@ -42,7 +43,8 @@ test('canonicalizing a framework block twice gives the same block and never a lo
     const context = longhandContext(
       placeShorthands,
       boxSupport,
-      pairShorthands
+      pairShorthands,
+      new TextTable()
     );
     try {
       withTargetSupport(features, () => {
