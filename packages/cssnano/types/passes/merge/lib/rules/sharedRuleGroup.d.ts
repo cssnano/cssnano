@@ -2,7 +2,8 @@ import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecord } from './blockRecords.js';
 import type RuleSequence, { RuleLink } from './ruleSequence.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {ChildNode, Declaration} from 'postcss' */
+/** @import {ChildNode} from 'postcss' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */

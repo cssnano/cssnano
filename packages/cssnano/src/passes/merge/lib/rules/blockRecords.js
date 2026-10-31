@@ -1,4 +1,8 @@
 /** @import {ChildNode, Container, Rule} from 'postcss' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
+/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+import { recordDeclaration } from '../../../ir/declarationRecord.js';
 import { RuleRecord, isDeclaration } from './ruleRecord.js';
 
 /**
@@ -291,9 +295,21 @@ export class BlockRecords {
    */
   maxRounds = Infinity;
 
-  /** @param {BlockRecord} root the record of the stylesheet */
-  constructor(root) {
+  /** @type {PropertyTable} */
+  #properties;
+
+  /** @type {DeclarationKeys} */
+  #declarations;
+
+  /**
+   * @param {BlockRecord} root the record of the stylesheet
+   * @param {PropertyTable} properties the keys of the property names
+   * @param {DeclarationKeys} declarations the ids of the declarations
+   */
+  constructor(root, properties, declarations) {
     this.root = root;
+    this.#properties = properties;
+    this.#declarations = declarations;
   }
 
   /**
@@ -314,17 +330,28 @@ export class BlockRecords {
   }
 
   /**
-   * Builds the record of a rule from its current declarations. Nothing stores
-   * it: the slot the caller places it in is what holds it.
+   * Builds the record of a rule. Nothing stores it: the slot the caller places
+   * it in is what holds it.
    *
    * @param {Rule} rule
+   * @param {DeclarationRecord[] | null} [declarations] the records of the
+   * rule's declarations, in order, when the caller holds them already, such as
+   * the copies a clone takes; null to record each declaration of the rule
    * @return {RuleRecord}
    */
-  recordRule(rule) {
-    return new RuleRecord(
-      rule,
-      rule.selectors,
-      rule.nodes.filter(isDeclaration)
-    );
+  recordRule(rule, declarations = null) {
+    if (declarations !== null) {
+      return new RuleRecord(rule, rule.selectors, declarations);
+    }
+    // A loop, since `filter` and `map` would each allocate a list of nodes.
+    const records = [];
+    for (const node of rule.nodes) {
+      if (isDeclaration(node)) {
+        records.push(
+          recordDeclaration(node, this.#properties, this.#declarations)
+        );
+      }
+    }
+    return new RuleRecord(rule, rule.selectors, records);
   }
 }

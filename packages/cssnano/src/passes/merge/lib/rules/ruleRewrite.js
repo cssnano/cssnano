@@ -4,7 +4,7 @@ import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 import { depart } from './treeEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
-/** @import {Declaration} from 'postcss' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
@@ -12,7 +12,7 @@ import { depart } from './treeEdits.js';
 /**
  * The writes of a rule's declarations, numbered by their position.
  *
- * @param {Declaration[]} declarations
+ * @param {DeclarationRecord[]} declarations
  * @param {PropertyTable} table
  * @return {PropertyWrites}
  */
@@ -120,24 +120,43 @@ export function buildMergedRule(
   mergeState.reportCreated(firstClone);
   mergeState.reportCreated(secondClone);
   // Index-based removal matches duplicates positionally, symmetric to how
-  // `claimedIndices` selects declarations in the later rule.
+  // `claimedIndices` selects declarations in the later rule. Each clone
+  // declaration takes a copy of its source's record, so the keys carry over.
+  const firstRecords = first.declarations;
+  /** @type {DeclarationRecord[]} */
+  const receivingDeclarations = [];
+  /** @type {DeclarationRecord[]} */
+  const firstKept = [];
   let earlierIndex = 0;
   firstClone.walkDecls((decl) => {
+    const copy = firstRecords[earlierIndex].copy(decl);
     if (claimedEarlierIndices.has(earlierIndex++)) {
       decl.remove();
       receivingBlock.append(decl);
+      receivingDeclarations.push(copy);
+    } else {
+      firstKept.push(copy);
     }
   });
+  const secondRecords = second.declarations;
+  /** @type {DeclarationRecord[]} */
+  const secondKept = [];
   let laterIndex = 0;
   secondClone.walkDecls((decl) => {
+    const copy = secondRecords[laterIndex].copy(decl);
     if (claimedIndices.has(laterIndex++)) {
       decl.remove();
+    } else {
+      secondKept.push(copy);
     }
   });
   // The clones hold their final declarations, so their records are built now.
-  const receivingRecord = mergeState.records.recordRule(receivingBlock);
-  const firstRecord = mergeState.records.recordRule(firstClone);
-  const secondRecord = mergeState.records.recordRule(secondClone);
+  const receivingRecord = mergeState.records.recordRule(
+    receivingBlock,
+    receivingDeclarations
+  );
+  const firstRecord = mergeState.records.recordRule(firstClone, firstKept);
+  const secondRecord = mergeState.records.recordRule(secondClone, secondKept);
   /** @type {Placement} */
   const placement = {
     first: [firstRecord].filter((record) => record.node.nodes.length),
@@ -150,12 +169,17 @@ export function buildMergedRule(
       const leftover = rule.node.clone({ selectors: rule.selectors });
       mergeState.storeClone(rule, leftover);
       mergeState.reportCreated(leftover);
+      const records = rule.declarations;
       depart(mergeState, rule);
+      /** @type {DeclarationRecord[]} */
+      const kept = [];
       let index = 0;
       leftover.walkDecls((decl) => {
+        const copy = records[index].copy(decl);
         if (claimed.has(index++)) decl.remove();
+        else kept.push(copy);
       });
-      const leftoverRecord = mergeState.records.recordRule(leftover);
+      const leftoverRecord = mergeState.records.recordRule(leftover, kept);
       if (!leftover.nodes.length) return [];
       return [leftoverRecord];
     });

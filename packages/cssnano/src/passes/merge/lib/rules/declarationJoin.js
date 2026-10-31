@@ -6,8 +6,9 @@ import { isKeyframes } from './sameContainer.js';
 import { removeDeclarations, removeRules } from './treeEdits.js';
 import { RuleRecord } from './ruleRecord.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
-/** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
+/** @import {ChildNode, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 
@@ -28,8 +29,8 @@ export const isDeclarationRule = (node) =>
  * `declarations`, or null when a repeat does not stand first for its
  * property, since removing it would then change what `later` sets.
  *
- * @param {Declaration[]} declarations
- * @param {Declaration[]} later
+ * @param {DeclarationRecord[]} declarations
+ * @param {DeclarationRecord[]} later
  * @param {PropertyTable} table
  * @return {Set<number> | null}
  */
@@ -54,7 +55,7 @@ function listLength(selectors) {
  * @typedef {object} Group
  * @property {RuleRecord} rule
  * @property {number} position
- * @property {Declaration[]} declarations
+ * @property {DeclarationRecord[]} declarations
  * @property {number[]} keys declaration keys, in order
  * @property {Set<string> | null} selectors listed selectors, built on demand
  * @property {number} bytes declaration bytes, each with its separator, or -1
@@ -108,7 +109,7 @@ export default function joinByDeclarations(block, mergeState) {
     entry instanceof RuleRecord &&
     entry.block === null &&
     isDeclarationRule(entry.node)
-      ? mergeState.declarationKeysOf(entry)
+      ? entry.declarationKeys()
       : null
   );
   // Rules can only join where they share a declaration.
@@ -140,7 +141,7 @@ export default function joinByDeclarations(block, mergeState) {
       const outcome = joinIntoGroup(record);
       if (outcome === 'emptied') continue;
       // A trimmed rule's record took its remaining declarations, so its keys are new.
-      register(record, position, mergeState.declarationKeysOf(record).keys);
+      register(record, position, record.declarationKeys().keys);
     }
     index.recordNode(entry, position, keysOf);
   }
@@ -158,7 +159,7 @@ export default function joinByDeclarations(block, mergeState) {
     const group = {
       rule,
       position,
-      declarations: /** @type {Declaration[]} */ (rule.node.nodes),
+      declarations: rule.declarations,
       keys,
       selectors: null,
       bytes: -1,
@@ -174,9 +175,8 @@ export default function joinByDeclarations(block, mergeState) {
    * declarations, some of them, or joined no group
    */
   function joinIntoGroup(laterRecord) {
-    const later = laterRecord.node;
-    const laterDeclarations = /** @type {Declaration[]} */ (later.nodes);
-    const laterSet = mergeState.declarationKeysOf(laterRecord).keySet;
+    const laterDeclarations = laterRecord.declarations;
+    const laterSet = laterRecord.declarationKeys().keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
     const laterKeys = keysOf(laterRecord);
     /** @type {{group: Group, claimed: Set<number>, added: string[], gain: number} | null} */
@@ -233,7 +233,7 @@ export default function joinByDeclarations(block, mergeState) {
     for (const selector of added) group.selectors?.add(selector);
     if (listed) recordGained(group, gained);
     grown.add(group.rule);
-    const outcome = withdraw(laterRecord, laterDeclarations, claimed);
+    const outcome = withdraw(laterRecord, claimed);
     return outcome;
   }
 
@@ -254,20 +254,17 @@ export default function joinByDeclarations(block, mergeState) {
 
   /**
    * @param {RuleRecord} later
-   * @param {Declaration[]} declarations
    * @param {Set<number>} claimed indices of the declarations that leave
    * @return {'emptied' | 'trimmed'}
    */
-  function withdraw(later, declarations, claimed) {
+  function withdraw(later, claimed) {
     // The group's writes already stand at its position, so the declarations
     // that leave `later` record nothing.
-    if (claimed.size === declarations.length) {
+    if (claimed.size === later.declarations.length) {
       emptied.add(later);
       return 'emptied';
     }
-    // Removing shifts positions, so the nodes are picked first.
-    const leaving = [...claimed].map((j) => declarations[j]);
-    removeDeclarations(mergeState, later, leaving);
+    removeDeclarations(mergeState, later, claimed);
     return 'trimmed';
   }
 }

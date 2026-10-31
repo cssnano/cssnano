@@ -20,13 +20,13 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
   const [receiving, incoming] = /** @type {import('postcss').Rule[]} */ (
     media.nodes
   );
-  const kept = [...receiving.nodes];
   const mergeState = new MergeState(['chrome 120']);
   mergeState.records = buildRecords(root, mergeState);
+  const kept = [...ruleRecordOf(mergeState.records, receiving).declarations];
   appendToDeclarations(
     mergeState,
     ruleRecordOf(mergeState.records, receiving),
-    /** @type {import('postcss').Declaration[]} */ (kept),
+    kept,
     writesOf(kept, new PropertyTable()),
     ruleRecordOf(mergeState.records, incoming)
   );

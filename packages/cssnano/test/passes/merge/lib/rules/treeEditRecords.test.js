@@ -44,11 +44,11 @@ test('appendToDeclarations should mark the record of the incoming rule departed'
     /** @type {Container} */ (media).nodes
   );
   const record = ruleRecordOf(state.records, incoming);
-  const kept = [...receiving.nodes];
+  const kept = [...ruleRecordOf(state.records, receiving).declarations];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    /** @type {Declaration[]} */ (kept),
+    kept,
     writesOf(kept, new PropertyTable()),
     ruleRecordOf(state.records, incoming)
   );
@@ -61,11 +61,11 @@ test('appendToDeclarations should leave the record of the receiving rule readabl
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const kept = [...receiving.nodes];
+  const kept = [...ruleRecordOf(state.records, receiving).declarations];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    /** @type {Declaration[]} */ (kept),
+    kept,
     writesOf(kept, new PropertyTable()),
     ruleRecordOf(state.records, incoming)
   );
@@ -79,11 +79,11 @@ test('appendToDeclarations should keep the record of the receiving rule', () => 
     /** @type {Container} */ (media).nodes
   );
   const record = ruleRecordOf(state.records, receiving);
-  const kept = [...receiving.nodes];
+  const kept = [...ruleRecordOf(state.records, receiving).declarations];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    /** @type {Declaration[]} */ (kept),
+    kept,
     writesOf(kept, new PropertyTable()),
     ruleRecordOf(state.records, incoming)
   );
@@ -97,11 +97,11 @@ test('appendToDeclarations should give the record of the receiving rule the kept
     /** @type {Container} */ (media).nodes
   );
   ruleRecordOf(state.records, receiving);
-  const kept = [...receiving.nodes];
+  const kept = [...ruleRecordOf(state.records, receiving).declarations];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    /** @type {Declaration[]} */ (kept),
+    kept,
     writesOf(kept, new PropertyTable()),
     ruleRecordOf(state.records, incoming)
   );
@@ -118,18 +118,18 @@ test('appendToDeclarations should give the record of the receiving rule keys for
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  state.declarationKeysOf(ruleRecordOf(state.records, receiving));
-  const kept = [...receiving.nodes];
+  ruleRecordOf(state.records, receiving).declarationKeys();
+  const kept = [...ruleRecordOf(state.records, receiving).declarations];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    /** @type {Declaration[]} */ (kept),
+    kept,
     writesOf(kept, new PropertyTable()),
     ruleRecordOf(state.records, incoming)
   );
   assert.deepEqual(
-    state.declarationKeysOf(ruleRecordOf(state.records, receiving)).keys,
-    kept.map((d) => state.declarationKey(/** @type {Declaration} */ (d)))
+    ruleRecordOf(state.records, receiving).declarationKeys().keys,
+    kept.map((d) => d.id)
   );
 });
 
@@ -137,9 +137,7 @@ test('removeDeclarations should keep the record of the rule', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
-  removeDeclarations(state, ruleRecordOf(state.records, rule), [
-    /** @type {Declaration} */ (rule.first),
-  ]);
+  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
   assert.equal(ruleRecordOf(state.records, rule), record);
 });
 
@@ -147,9 +145,7 @@ test('removeDeclarations should leave the record with the declarations that rema
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   ruleRecordOf(state.records, rule);
-  removeDeclarations(state, ruleRecordOf(state.records, rule), [
-    /** @type {Declaration} */ (rule.first),
-  ]);
+  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
   assert.deepEqual(
     ruleRecordOf(state.records, rule).declarations.map((d) => d.prop),
     ['width']
@@ -159,23 +155,18 @@ test('removeDeclarations should leave the record with the declarations that rema
 test('removeDeclarations should give the record keys for the declarations that remain', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  state.declarationKeysOf(ruleRecordOf(state.records, rule));
-  removeDeclarations(state, ruleRecordOf(state.records, rule), [
-    /** @type {Declaration} */ (rule.first),
+  ruleRecordOf(state.records, rule).declarationKeys();
+  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
+  assert.deepEqual(ruleRecordOf(state.records, rule).declarationKeys().keys, [
+    state.declarationIds.keyOf(/** @type {Declaration} */ (rule.first)),
   ]);
-  assert.deepEqual(
-    state.declarationKeysOf(ruleRecordOf(state.records, rule)).keys,
-    [state.declarationKey(/** @type {Declaration} */ (rule.first))]
-  );
 });
 
 test('removeDeclarations should keep the element keys of the record', () => {
   const { root, state } = setup('a,b{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   state.elementKeysOf(ruleRecordOf(state.records, rule));
-  removeDeclarations(state, ruleRecordOf(state.records, rule), [
-    /** @type {Declaration} */ (rule.first),
-  ]);
+  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
   assert.deepEqual(state.elementKeysOf(ruleRecordOf(state.records, rule)), [
     'a',
     'b',
@@ -253,9 +244,11 @@ test('removeDeclarations should throw when the rule holds a block', () => {
   const [rule] = /** @type {Rule[]} */ (/** @type {Container} */ (root).nodes);
   assert.throws(
     () =>
-      removeDeclarations(state, ruleRecordOf(state.records, rule), [
-        /** @type {Declaration} */ (rule.first),
-      ]),
+      removeDeclarations(
+        state,
+        ruleRecordOf(state.records, rule),
+        new Set([0])
+      ),
     /holds a block/v
   );
 });

@@ -3,10 +3,11 @@ import { BlockRecord, BlockRecords, Slot } from './blockRecords.js';
 import { countDeclarations } from './sweepPotential.js';
 import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
-import { RuleRecord, getDecls } from './ruleRecord.js';
+import { RuleRecord } from './ruleRecord.js';
 import { tallyDeclarations } from './overDuplication.js';
 
-/** @import {AtRule, ChildNode, Container, Declaration, Root, Rule} from 'postcss' */
+/** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {PropertyWrites} from './lastWriteIndex.js' */
 /** @import MergeState from './mergeState.js' */
 
@@ -52,7 +53,11 @@ function checkNoBlock(record) {
  */
 export function buildRecords(root, mergeState) {
   const { textTable } = mergeState;
-  const records = new BlockRecords(new BlockRecord(root, null, 0, false));
+  const records = new BlockRecords(
+    new BlockRecord(root, null, 0, false),
+    mergeState.properties,
+    mergeState.declarationIds
+  );
   records.root.leadingWhitespace = root.first?.raws.before;
   let nodes = 0;
   let declarations = 0;
@@ -185,7 +190,7 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
  *
  * @param {MergeState} mergeState
  * @param {RuleRecord} receiving
- * @param {Declaration[]} kept the declarations of `receiving`, extended in place
+ * @param {DeclarationRecord[]} kept the declarations of `receiving`, extended in place
  * @param {PropertyWrites} index the writes of `kept`, extended in place
  * @param {RuleRecord} incoming
  * @return {void}
@@ -199,15 +204,19 @@ export function appendToDeclarations(
 ) {
   checkNoBlock(receiving);
   const { node: rule } = receiving;
+  // The declaration nodes of `incoming` pair with its records in order.
+  const records = incoming.declarations;
+  let next = 0;
   for (const node of incoming.node.nodes.slice()) {
     if (node.type === 'decl') {
-      const last = index.lastConflict(node);
-      if (last !== -1 && declarationIsEqual(kept[last], node)) {
+      const record = records[next++];
+      const last = index.lastConflict(record);
+      if (last !== -1 && declarationIsEqual(kept[last], record)) {
         node.remove();
         continue;
       }
-      index.record(node, kept.length);
-      kept.push(node);
+      index.record(record, kept.length);
+      kept.push(record);
     }
     rule.append(node);
   }
@@ -216,17 +225,23 @@ export function appendToDeclarations(
 }
 
 /**
- * Removes `declarations` from `record`'s rule, which keeps the others.
+ * Removes the declarations at `claimed` from `record`'s rule, which keeps the
+ * others.
  *
  * @param {MergeState} mergeState
  * @param {RuleRecord} record
- * @param {Declaration[]} declarations
+ * @param {Set<number>} claimed the positions of the declarations that leave
  * @return {void}
  */
-export function removeDeclarations(mergeState, record, declarations) {
+export function removeDeclarations(mergeState, record, claimed) {
   checkNoBlock(record);
-  for (const declaration of declarations) declaration.remove();
-  record.takeDeclarations(getDecls(record.node));
+  const kept = [];
+  let index = 0;
+  for (const declaration of record.declarations) {
+    if (claimed.has(index++)) declaration.node.remove();
+    else kept.push(declaration);
+  }
+  record.takeDeclarations(kept);
 }
 
 /**

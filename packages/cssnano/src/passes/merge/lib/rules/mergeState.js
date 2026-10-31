@@ -16,7 +16,6 @@ import { tokensText } from '../../../../values/tokensText.js';
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {RuleDeclarationKeys} from './ruleRecord.js' */
 /** @import {BlockRecord, BlockRecords, Slot} from './blockRecords.js' */
 
 /**
@@ -83,21 +82,13 @@ export default class MergeState {
   };
 
   /**
-   * Numbers declarations so equal ones, with the same property, value,
-   * importance and hack prefix, share a key for the whole run. An arrow
-   * function, so it passes as a callback without a closure per call.
+   * The ids of the run's declarations: equal declarations, with the same
+   * property, value, importance and hack prefix, share an id.
    *
-   * @param {Declaration} declaration
-   * @return {number}
+   * @return {import('../../../ir/declarationKey.js').DeclarationKeys}
    */
-  declarationKey = (declaration) => this.#declarations.keyOf(declaration);
-
-  /**
-   * @param {RuleRecord} record
-   * @return {RuleDeclarationKeys}
-   */
-  declarationKeysOf(record) {
-    return record.declarationKeys(this.declarationKey);
+  get declarationIds() {
+    return this.#declarations;
   }
 
   /**

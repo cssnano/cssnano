@@ -1,46 +1,38 @@
 import cssnanoUtils from '#utils';
-import { hackPrefixOf } from '../../../ir/declarationKey.js';
-import { isAllName, propertyNameKey } from '../../../ir/propertyName.js';
+import { isAllName } from '../../../ir/propertyName.js';
 import { PropertyWrites } from './lastWriteIndex.js';
 import { WritePositions } from './writePositions.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {Declaration} from 'postcss' */
-
 /**
- * Two declarations are equal when they print the same; `important: false`
- * and an unset flag both print without `!important`.
+ * Two declarations are equal when they print the same, which their ids tell:
+ * the same property name, value, importance and hack prefix.
  *
- * @param {Declaration} a
- * @param {Declaration} b
+ * @param {DeclarationRecord} a
+ * @param {DeclarationRecord} b
  * @return {boolean}
  */
 export function declarationIsEqual(a, b) {
-  return (
-    (a.important === true) === (b.important === true) &&
-    propertyNameKey(a.prop) === propertyNameKey(b.prop) &&
-    a.value === b.value &&
-    hackPrefixOf(a) === hackPrefixOf(b)
-  );
+  return a.id === b.id;
 }
 
 /**
- * The declarations of `declarations` whose key is in `keySet`, in their order.
+ * The declarations of `declarations` whose id is in `keySet`, in their order.
  *
- * @param {Declaration[]} declarations
- * @param {Set<number>} keySet the keys of the other rule's declarations
- * @param {(declaration: Declaration) => number} keyOf
- * @return {Declaration[]}
+ * @param {DeclarationRecord[]} declarations
+ * @param {Set<number>} keySet the ids of the other rule's declarations
+ * @return {DeclarationRecord[]}
  */
-export function intersect(declarations, keySet, keyOf) {
-  return declarations.filter((declaration) => keySet.has(keyOf(declaration)));
+export function intersect(declarations, keySet) {
+  return declarations.filter((declaration) => keySet.has(declaration.id));
 }
 
 /**
- * @param {Declaration[]} a
- * @param {Declaration[]} b
+ * @param {DeclarationRecord[]} a
+ * @param {DeclarationRecord[]} b
  * @return {boolean}
  */
 export function sameDeclarationsAndOrder(a, b) {
@@ -73,7 +65,7 @@ function resettableByAll(prop) {
  * conflicts with it, and the claim must be an equal declaration.
  */
 class LaterClaims {
-  /** @type {Declaration[]} */
+  /** @type {DeclarationRecord[]} */
   #declarations;
   /** @type {WritePositions} */
   #writes;
@@ -82,7 +74,7 @@ class LaterClaims {
   #hasAll = false;
 
   /**
-   * @param {Declaration[]} declarations
+   * @param {DeclarationRecord[]} declarations
    * @param {PropertyTable} table
    */
   constructor(declarations, table) {
@@ -102,7 +94,7 @@ class LaterClaims {
   }
 
   /**
-   * @param {Declaration} candidate
+   * @param {DeclarationRecord} candidate
    * @return {boolean} whether the candidate claims an equal later declaration
    */
   claim(candidate) {
@@ -134,11 +126,11 @@ class LaterClaims {
  * the earlier rule's declarations by reference, so this one backward pass
  * decides every candidate.
  *
- * @param {Declaration[]} candidates
- * @param {Declaration[]} earlierRuleDeclarations
- * @param {Declaration[]} laterRuleDeclarations
+ * @param {DeclarationRecord[]} candidates
+ * @param {DeclarationRecord[]} earlierRuleDeclarations
+ * @param {DeclarationRecord[]} laterRuleDeclarations
  * @param {PropertyTable} table
- * @return {{survivors: Declaration[], claimedIndices: Set<number>, earlierIndices: Set<number>}}
+ * @return {{survivors: DeclarationRecord[], claimedIndices: Set<number>, earlierIndices: Set<number>}}
  */
 function filterRound(
   candidates,
@@ -147,7 +139,7 @@ function filterRound(
   table
 ) {
   const candidateSet = new Set(candidates);
-  /** @type {Map<Declaration, number>} */
+  /** @type {Map<DeclarationRecord, number>} */
   const earlierIndexOf = new Map();
   const hoistable = new Set();
   // The non-candidates after the current position. A candidate is blocked by
@@ -166,7 +158,7 @@ function filterRound(
   }
 
   const claims = new LaterClaims(laterRuleDeclarations, table);
-  /** @type {Declaration[]} */
+  /** @type {DeclarationRecord[]} */
   const survivors = [];
   for (const candidate of candidates) {
     if (hoistable.has(candidate) && claims.claim(candidate)) {
@@ -185,11 +177,11 @@ function filterRound(
 }
 
 /**
- * @param {Declaration[]} hoistCandidates
- * @param {Declaration[]} earlierRuleDeclarations
- * @param {Declaration[]} laterRuleDeclarations
+ * @param {DeclarationRecord[]} hoistCandidates
+ * @param {DeclarationRecord[]} earlierRuleDeclarations
+ * @param {DeclarationRecord[]} laterRuleDeclarations
  * @param {PropertyTable} table
- * @return {{intersection: Declaration[], claimedIndices: Set<number>, claimedEarlierIndices: Set<number>}}
+ * @return {{intersection: DeclarationRecord[], claimedIndices: Set<number>, claimedEarlierIndices: Set<number>}}
  */
 export function filterRuleIntersections(
   hoistCandidates,
