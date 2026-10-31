@@ -83,16 +83,6 @@ export default class MergeState {
   };
 
   /**
-   * The elements of the rule that stands at a node, as `elementKeysOf` gives
-   * them. An arrow function, for the callers that hold only the nodes of
-   * declarations.
-   *
-   * @param {Rule} rule
-   * @return {string[] | null}
-   */
-  elementKeysOfNode = (rule) => this.elementKeysOf(this.records.metaOf(rule));
-
-  /**
    * Numbers declarations so equal ones, with the same property, value,
    * importance and hack prefix, share a key for the whole run. An arrow
    * function, so it passes as a callback without a closure per call.

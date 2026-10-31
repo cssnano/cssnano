@@ -1,6 +1,6 @@
 import { BlockRecord } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
-import type { AtRule, ChildNode, Declaration, Rule } from 'postcss';
+import type { AtRule, ChildNode, Declaration } from 'postcss';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 /**
  * @param {ChildNode} node
@@ -87,25 +87,26 @@ export default class LastWriteIndex {
         prop: string;
     }[], position: number, elements?: Iterable<string> | null): boolean;
     /**
-     * `conflictsSince` for declarations that move with their rules, whose
-     * elements are the union of the keys `keysOf` gives their rules. A
-     * declaration with unknown elements counts every write.
+     * `conflictsSince` for entries that move with their rules: rule records,
+     * whose declarations take the keys `keysOf` gives, and bare declarations,
+     * which count every write. Unknown keys count every write.
      *
-     * @param {Declaration[]} declarations
+     * @param {(RuleRecord | Declaration)[]} entries
      * @param {number} position
-     * @param {(rule: Rule) => string[] | null} keysOf
+     * @param {(record: RuleRecord) => string[] | null} keysOf
      * @return {boolean}
      */
-    conflictsSinceIn(declarations: Declaration[], position: number, keysOf: (rule: Rule) => string[] | null): boolean;
+    conflictsSinceIn(entries: (RuleRecord | Declaration)[], position: number, keysOf: (record: RuleRecord) => string[] | null): boolean;
     /**
-     * Declarations that moved to `position` are written there now. Every
+     * Entries that moved to `position` are written there now: each rule record
+     * writes its declarations under the element keys `keysOf` gives it. Every
      * entry only ever moves forward, so a later write to the same property
      * is kept.
      *
-     * @param {Declaration[]} declarations
+     * @param {(RuleRecord | Declaration)[]} entries
      * @param {number} position
-     * @param {(rule: Rule) => string[] | null} keysOf
+     * @param {(record: RuleRecord) => string[] | null} keysOf
      */
-    moveWrites(declarations: Declaration[], position: number, keysOf: (rule: Rule) => string[] | null): void;
+    moveWrites(entries: (RuleRecord | Declaration)[], position: number, keysOf: (record: RuleRecord) => string[] | null): void;
 }
 //# sourceMappingURL=lastWriteIndex.d.ts.map

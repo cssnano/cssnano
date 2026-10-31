@@ -91,48 +91,63 @@ test('last-write index recordNode records each rule declaration under its elemen
 });
 
 /**
- * A declaration in a rule that matches the given element keys.
+ * The element keys of a rule record: its selectors, or null for `*`, whose
+ * element is unknown.
  *
- * @param {string} prop
- * @param {string[] | null} keys
+ * @param {import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord} record
+ * @return {string[] | null}
  */
-const declIn = (prop, keys) => {
-  const parent = { type: 'rule', keys };
-  return { prop, parent };
-};
-/** @param {{type: string, keys: string[] | null}} rule */
-const keysOfRule = (rule) => rule.keys;
+const keysOfRule = (record) =>
+  record.selectors.includes('*') ? null : record.selectors;
 
-test('last-write index conflictsSinceIn counts only writes to the element of the declaration rule', () => {
+/**
+ * The live entries of the stylesheet of `css`.
+ *
+ * @param {string} css
+ */
+function entriesOf(css) {
+  const root = postcss.parse(css);
+  const mergeState = new MergeState(['chrome 120'], createRunContext());
+  mergeState.records = buildRecords(root, mergeState);
+  return mergeState.records.root.liveEntries();
+}
+
+test('last-write index conflictsSinceIn ignores a write to an element other than the rule of the declaration', () => {
   const index = new LastWriteIndex(new PropertyTable());
   index.record(decl('color'), 1, ['h2']);
-  const declarations = [declIn('color', ['h1'])];
-  assert.equal(index.conflictsSinceIn(declarations, 0, keysOfRule), false);
+  assert.equal(
+    index.conflictsSinceIn(entriesOf('h1{color:red}'), 0, keysOfRule),
+    false
+  );
 });
 
-test('last-write index conflictsSinceIn reports a write to the element of the declaration rule', () => {
+test('last-write index conflictsSinceIn reports a write to the element of the rule of the declaration', () => {
   const index = new LastWriteIndex(new PropertyTable());
   index.record(decl('color'), 1, ['h1']);
-  const declarations = [declIn('color', ['h1'])];
-  assert.equal(index.conflictsSinceIn(declarations, 0, keysOfRule), true);
+  assert.equal(
+    index.conflictsSinceIn(entriesOf('h1{color:red}'), 0, keysOfRule),
+    true
+  );
 });
 
-test('last-write index conflictsSinceIn reports a write to the element of any rule that holds a declaration', () => {
+test('last-write index conflictsSinceIn reports a write to the element of any rule among the entries', () => {
   const index = new LastWriteIndex(new PropertyTable());
   index.record(decl('color'), 1, ['p']);
-  const declarations = [declIn('top', ['h1']), declIn('color', ['p'])];
-  assert.equal(index.conflictsSinceIn(declarations, 0, keysOfRule), true);
+  const entries = entriesOf('h1{top:0}p{color:red}');
+  assert.equal(index.conflictsSinceIn(entries, 0, keysOfRule), true);
 });
 
-test('last-write index conflictsSinceIn counts every write when a declaration has an unknown element', () => {
+test('last-write index conflictsSinceIn counts every write when a rule among the entries has an unknown element', () => {
   const index = new LastWriteIndex(new PropertyTable());
   index.record(decl('color'), 1, ['h2']);
-  const declarations = [declIn('color', ['h1']), declIn('color', null)];
-  assert.equal(index.conflictsSinceIn(declarations, 0, keysOfRule), true);
+  const entries = entriesOf('h1{color:red}*{top:0}');
+  assert.equal(index.conflictsSinceIn(entries, 0, keysOfRule), true);
 });
 
-test('last-write index conflictsSinceIn counts every write for a declaration outside a rule', () => {
+test('last-write index conflictsSinceIn counts every write for a bare declaration of a conditional block', () => {
   const index = new LastWriteIndex(new PropertyTable());
   index.record(decl('color'), 1, ['h2']);
-  assert.equal(index.conflictsSinceIn([decl('color')], 0, keysOfRule), true);
+  const { node, records } = firstNodeWithRecords('@media print{color:red}');
+  const entries = records.entryOf(node).liveEntries();
+  assert.equal(index.conflictsSinceIn(entries, 0, keysOfRule), true);
 });
