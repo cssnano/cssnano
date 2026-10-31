@@ -117,7 +117,7 @@ test('appendToDeclarations should give the record of the receiving rule keys for
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  state.declarationKeysOf(receiving);
+  state.declarationKeysOf(state.meta(receiving));
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
@@ -127,7 +127,7 @@ test('appendToDeclarations should give the record of the receiving rule keys for
     state.meta(incoming)
   );
   assert.deepEqual(
-    state.declarationKeysOf(receiving).keys,
+    state.declarationKeysOf(state.meta(receiving)).keys,
     kept.map((d) => state.declarationKey(/** @type {Declaration} */ (d)))
   );
 });
@@ -158,11 +158,11 @@ test('removeDeclarations should leave the record with the declarations that rema
 test('removeDeclarations should give the record keys for the declarations that remain', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  state.declarationKeysOf(rule);
+  state.declarationKeysOf(state.meta(rule));
   removeDeclarations(state, state.meta(rule), [
     /** @type {Declaration} */ (rule.first),
   ]);
-  assert.deepEqual(state.declarationKeysOf(rule).keys, [
+  assert.deepEqual(state.declarationKeysOf(state.meta(rule)).keys, [
     state.declarationKey(/** @type {Declaration} */ (rule.first)),
   ]);
 });

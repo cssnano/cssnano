@@ -79,7 +79,7 @@ function repeatsShared(link, parent, firstKeys, sharedIndices, mergeState) {
   ) {
     return false;
   }
-  const { keySet } = mergeState.declarationKeysOf(link.record.node);
+  const { keySet } = mergeState.declarationKeysOf(link.record);
   for (const index of sharedIndices) {
     if (!keySet.has(firstKeys[index])) return false;
   }
@@ -95,7 +95,15 @@ function repeatsShared(link, parent, firstKeys, sharedIndices, mergeState) {
  */
 function mergesWithAll(members, later, parent, mergeState) {
   for (const member of members) {
-    if (!mergeState.canMerge(member, later, parent, parent)) return false;
+    if (
+      !mergeState.canMerge(
+        mergeState.meta(member),
+        mergeState.meta(later),
+        parent,
+        parent
+      )
+    )
+      return false;
   }
   return true;
 }
@@ -137,7 +145,7 @@ export function findGroup(
   outsideDeclarations
 ) {
   const parent = second.slot.block;
-  const firstKeys = mergeState.declarationKeysOf(first).keys;
+  const firstKeys = mergeState.declarationKeysOf(mergeState.meta(first)).keys;
   if (
     !repeatsShared(
       second.next,
@@ -280,13 +288,13 @@ export function earliestPairReaching(
   earliest
 ) {
   const parent = link.slot.block;
-  const own = mergeState.declarationKeysOf(link.record.node);
+  const own = mergeState.declarationKeysOf(link.record);
   let passed = false;
   let member = link;
   for (let depth = 1; ; depth++) {
     const prev = /** @type {RuleLink} */ (member.prev);
     if (!prev.record) break;
-    const other = mergeState.declarationKeysOf(prev.record.node);
+    const other = mergeState.declarationKeysOf(prev.record);
     if (depth === 1) {
       // Seed from the smaller key list, which bounds the first intersection.
       const [from, to] =

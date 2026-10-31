@@ -2,8 +2,6 @@ import { createSelectorLookup } from './ensureCompatibility.js';
 import { createElementKeyLookup } from './elementKeys.js';
 import { comma } from '../../../../values/punctuationTokens.js';
 import { createRunContext } from '../../../ir/runContext.js';
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { assertDeclarationsFresh } from './blockRecords.js';
 import { isKeyframes, sameContainer } from './sameContainer.js';
 import { joinRanges } from '../../../../values/joinRanges.js';
 import {
@@ -80,11 +78,7 @@ export default class MergeState {
    * @return {RuleRecord}
    */
   meta(rule) {
-    const record = this.records.metaOf(rule);
-    if (consistencyChecksEnabled() && !record.departed) {
-      assertDeclarationsFresh(rule, record);
-    }
-    return record;
+    return this.records.metaOf(rule);
   }
 
   /**
@@ -120,11 +114,11 @@ export default class MergeState {
   declarationKey = (declaration) => this.#declarations.keyOf(declaration);
 
   /**
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    * @return {RuleDeclarationKeys}
    */
-  declarationKeysOf(rule) {
-    return this.meta(rule).declarationKeys(this.declarationKey);
+  declarationKeysOf(record) {
+    return record.declarationKeys(this.declarationKey);
   }
 
   /**
@@ -282,34 +276,32 @@ export default class MergeState {
    * The block whose child list holds the rule's slot. It is where the rule
    * stands, which can differ from its PostCSS parent during a sweep.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    * @return {BlockRecord}
    */
-  blockOf(rule) {
-    return /** @type {Slot} */ (this.meta(rule).slot).block;
+  blockOf(record) {
+    return /** @type {Slot} */ (record.slot).block;
   }
 
   /**
    * Whether the rules can be merged. `blockA` and `blockB` are the blocks
    * the rules stand in.
    *
-   * @param {Rule} ruleA
-   * @param {Rule} ruleB
+   * @param {RuleRecord} recordA
+   * @param {RuleRecord} recordB
    * @param {BlockRecord} [blockA]
    * @param {BlockRecord} [blockB]
    * @return {boolean}
    */
   canMerge(
-    ruleA,
-    ruleB,
-    blockA = this.blockOf(ruleA),
-    blockB = this.blockOf(ruleB)
+    recordA,
+    recordB,
+    blockA = this.blockOf(recordA),
+    blockB = this.blockOf(recordB)
   ) {
     if (!sameContainer(blockA, blockB, this.#textTable)) return false;
     if (isKeyframes(blockA.node)) return false;
-    const recordA = this.meta(ruleA);
     if (recordA.block !== null) return false;
-    const recordB = this.meta(ruleB);
     if (recordB.block !== null) return false;
 
     // The vendor check follows compatibility, because an incompatible selector

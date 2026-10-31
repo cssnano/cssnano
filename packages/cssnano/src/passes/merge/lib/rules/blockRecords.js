@@ -270,22 +270,6 @@ export class BlockRecord {
 }
 
 /**
- * Under consistency checks, throws when a record names other declarations than
- * its rule holds.
- *
- * @param {Rule} rule
- * @param {RuleRecord} record
- * @return {void}
- */
-export function assertDeclarationsFresh(rule, record) {
-  const kept = record.declarations;
-  const fresh = rule.nodes.filter(isDeclaration);
-  const same =
-    kept.length === fresh.length && kept.every((node, i) => node === fresh[i]);
-  if (!same) throw new Error('stale declarations of a rule record');
-}
-
-/**
  * The records of one run: the block of each container, and the rule records
  * the run keeps in step with the tree.
  */
