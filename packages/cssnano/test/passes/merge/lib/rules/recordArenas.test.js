@@ -51,9 +51,10 @@ function reachedBlocks(records, block, found = [block]) {
           reachedBlocks(records, records.block(nested), found);
         }
       }
-    } else if (entry instanceof BlockRecord) {
-      found.push(entry);
-      reachedBlocks(records, entry, found);
+    } else if (typeof entry === 'number') {
+      const nested = /** @type {BlockRecord} */ (records.block(entry));
+      found.push(nested);
+      reachedBlocks(records, nested, found);
     }
   }
   return found;
@@ -117,7 +118,7 @@ test('blocks() should hold every block reached from the stylesheet record, each 
 function holds(records, holder, block) {
   return holder.children.some(
     (entry) =>
-      entry === block ||
+      entry === block.index ||
       (entry instanceof Slot &&
         entry.rules.some(
           (index) =>
@@ -202,4 +203,14 @@ test('changed should leave a block that no sweep tracks untouched', () => {
   records.add(block);
   records.changed(block.index, 1);
   assert.equal(block.remaining, null);
+});
+
+test('a nested at-rule block should be a number in its parent children, naming the block by index', () => {
+  const { state } = setup('@media (x){@media (y){p{width:1px}}}');
+  const { records } = state;
+  const [entry] = records.root.children;
+  assert.equal(typeof entry, 'number');
+  const nested = records.block(/** @type {number} */ (entry));
+  assert.equal(nested.index, entry);
+  assert.equal(nested.parent, records.root.index);
 });

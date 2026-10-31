@@ -195,15 +195,20 @@ test('liveChildren should return a fresh array of the children, not the entries'
  * Whether each slot and nested record of a block holds its index among the
  * entries as position. A raw node has no position.
  *
+ * @param {BlockRecords} records
  * @param {BlockRecord} block
  * @return {boolean}
  */
-function positionsMatchIndex(block) {
-  return block.children.every(
-    (entry, index) =>
-      !(entry instanceof Slot || entry instanceof BlockRecord) ||
-      entry.position === index
-  );
+function positionsMatchIndex(records, block) {
+  return block.children.every((entry, index) => {
+    if (entry instanceof Slot) return entry.position === index;
+    if (typeof entry === 'number') {
+      return (
+        /** @type {BlockRecord} */ (records.block(entry)).position === index
+      );
+    }
+    return true;
+  });
 }
 
 test('an entry should hold its index as position after a move of children', () => {
@@ -215,7 +220,10 @@ test('an entry should hold its index as position after a move of children', () =
     blockRecordOf(state.records, first).index,
     blockRecordOf(state.records, second).index
   );
-  assert.equal(positionsMatchIndex(blockRecordOf(state.records, first)), true);
+  assert.equal(
+    positionsMatchIndex(state.records, blockRecordOf(state.records, first)),
+    true
+  );
 });
 
 test('an entry should hold its index as position after a join takes the place of a block', () => {
@@ -229,7 +237,7 @@ test('an entry should hold its index as position after a join takes the place of
     blockRecordOf(state.records, earlier),
     blockRecordOf(state.records, later)
   );
-  assert.equal(positionsMatchIndex(state.records.root), true);
+  assert.equal(positionsMatchIndex(state.records, state.records.root), true);
 });
 
 test('an entry should hold its index as position after a removal of a block', () => {
@@ -238,7 +246,7 @@ test('an entry should hold its index as position after a removal of a block', ()
   );
   const [, media] = /** @type {Container} */ (root).nodes;
   remove(state.records, blockRecordOf(state.records, media));
-  assert.equal(positionsMatchIndex(state.records.root), true);
+  assert.equal(positionsMatchIndex(state.records, state.records.root), true);
 });
 
 test('an entry should hold its index as position after a rule moves to the end of a block', () => {
@@ -249,7 +257,7 @@ test('an entry should hold its index as position after a rule moves to the end o
     state.records.root.index,
     ruleRecordOf(state.records, rule).index
   );
-  assert.equal(positionsMatchIndex(state.records.root), true);
+  assert.equal(positionsMatchIndex(state.records, state.records.root), true);
 });
 
 test('assertRecordsWellFormed should throw when an entry holds a position other than its index', () => {

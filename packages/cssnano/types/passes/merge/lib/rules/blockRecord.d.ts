@@ -7,8 +7,8 @@ import type { Slot } from './blockRecords.js';
 /**
  * The record of a container that the merge visits: the stylesheet, an at-rule
  * with a block, or a rule that holds rules or at-rules. `children` has one
- * entry per child, in order: a slot for a rule, the record of a nested
- * at-rule, or the PostCSS node of anything else. Entries are never spliced
+ * entry per child, in order: a slot for a rule, the index of the record of a
+ * nested at-rule, or the PostCSS node of anything else. Entries are never spliced
  * out, so a removed entry is left in place and skipped.
  */
 export declare class BlockRecord {
@@ -20,8 +20,8 @@ export declare class BlockRecord {
     position: number;
     /** @type {boolean} whether the block applies nothing once it is empty */
     droppable: boolean;
-    /** @type {(Slot | BlockRecord | DeclarationRecord | ChildNode)[]} */
-    children: (Slot | BlockRecord | DeclarationRecord | ChildNode)[];
+    /** @type {(Slot | number | DeclarationRecord | ChildNode)[]} */
+    children: (Slot | number | DeclarationRecord | ChildNode)[];
     /**
      * The live children of a droppable block during a sweep, or null while the
      * block is not tracked. Dropping an emptied `@layer` is safe because a rule

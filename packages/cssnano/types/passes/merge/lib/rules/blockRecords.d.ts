@@ -6,7 +6,8 @@ import type { PropertyTable } from '../../../ir/propertyTable.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
-import { BlockRecord } from './blockRecord.js';
+import type { BlockRecord } from './blockRecord.js';
+/** @import {BlockRecord} from './blockRecord.js' */
 /**
  * One position among the children of a block. `rules` are the indices of the
  * rules that stand there now, in order, so the slot is empty once every rule

@@ -1,5 +1,4 @@
 import { Slot } from './blockRecords.js';
-import { BlockRecord } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {ChildNode} from 'postcss' */
@@ -12,17 +11,19 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
  * a nested rule, exists. Only such declarations can separate two neighboring
  * rules.
  *
+ * @param {BlockRecords} records
  * @param {Block} block
  * @return {boolean}
  */
-function hasDeclarationOutsideRules(block) {
+function hasDeclarationOutsideRules(records, block) {
   for (const entry of block.children) {
     if (entry instanceof Slot) continue;
-    if (entry instanceof BlockRecord) {
+    if (typeof entry === 'number') {
+      const nested = /** @type {Block} */ (records.block(entry));
       if (
-        !entry.dropped &&
-        entry.node.type === 'atrule' &&
-        hasDeclarationOutsideRules(entry)
+        !nested.dropped &&
+        nested.node.type === 'atrule' &&
+        hasDeclarationOutsideRules(records, nested)
       ) {
         return true;
       }
@@ -36,12 +37,13 @@ function hasDeclarationOutsideRules(block) {
 /**
  * True for a slot that holds no rule, or a block that a sweep emptied.
  *
- * @param {Slot | Block | DeclarationRecord | ChildNode} entry
+ * @param {BlockRecords} records
+ * @param {Slot | number | DeclarationRecord | ChildNode} entry
  * @return {boolean}
  */
-function isEmptied(entry) {
+function isEmptied(records, entry) {
   if (entry instanceof Slot) return entry.rules.length === 0;
-  return entry instanceof BlockRecord && entry.remaining === 0;
+  return typeof entry === 'number' && records.block(entry)?.remaining === 0;
 }
 
 /**
@@ -53,7 +55,7 @@ export default class DeclarationScan {
   #records;
 
   /**
-   * @type {Map<Slot | Block | DeclarationRecord | ChildNode, number>} for a slot that holds no
+   * @type {Map<Slot | number | DeclarationRecord | ChildNode, number>} for a slot that holds no
    * rule, or a block that left none, the index of a later sibling before which
    * no live node stands
    */
@@ -90,7 +92,7 @@ export default class DeclarationScan {
     if (!enclosing) return false;
     let hasOutside = outsideDeclarations.get(enclosing);
     if (hasOutside === undefined) {
-      hasOutside = hasDeclarationOutsideRules(enclosing);
+      hasOutside = hasDeclarationOutsideRules(this.#records, enclosing);
       outsideDeclarations.set(enclosing, hasOutside);
     }
     if (!hasOutside) return false;
@@ -105,9 +107,10 @@ export default class DeclarationScan {
       const entry = block.children[index];
       if (entry instanceof Slot) {
         if (entry.rules.includes(second.record.index, offset)) return false;
-      } else if (entry instanceof BlockRecord) {
-        if (entry.children.length > 0) {
-          block = entry;
+      } else if (typeof entry === 'number') {
+        const nested = /** @type {Block} */ (this.#records.block(entry));
+        if (nested.children.length > 0) {
+          block = nested;
           index = 0;
           offset = 0;
           continue;
@@ -137,11 +140,12 @@ export default class DeclarationScan {
    */
   #skipEmptied(block, index) {
     const { children } = block;
-    const length = children.length;
+    const { length } = children;
+    const records = this.#records;
     let end = index;
     while (end < length) {
       const entry = children[end];
-      if (!isEmptied(entry)) break;
+      if (!isEmptied(records, entry)) break;
       end = this.#skips.get(entry) ?? end + 1;
     }
     for (let at = index; at < end;) {
