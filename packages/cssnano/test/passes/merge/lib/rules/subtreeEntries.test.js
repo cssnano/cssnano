@@ -36,7 +36,7 @@ function entriesOf(css) {
 function propsOf(entries) {
   return entries?.flatMap((entry) =>
     entry instanceof RuleRecord
-      ? entry.declarations.map((declaration) => declaration.prop)
+      ? entry.allDeclarations().map((declaration) => declaration.prop)
       : [entry.prop]
   );
 }

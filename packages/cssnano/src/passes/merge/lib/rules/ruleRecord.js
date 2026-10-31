@@ -2,9 +2,9 @@ import { elementKeyOf } from './elementKeys.js';
 import { selectorsCompatible } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {Declaration, Rule} from 'postcss' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /**
  * @typedef {object} RuleDeclarationKeys
  * @property {number[]} keys
@@ -59,6 +59,7 @@ export class RuleRecord {
   #slot;
   /** @type {BlockRecord | null} the record of the rule's children, when it holds a rule or an at-rule */
   #block = null;
+  /** @type {DeclarationRecord[] | undefined} */ #blockDeclarations;
 
   /**
    * @param {Rule} node the rule the record describes
@@ -124,9 +125,10 @@ export class RuleRecord {
     return this.#selectors;
   }
 
-  /** @return {DeclarationRecord[]} */
+  /** @return {DeclarationRecord[]} @throws {Error} when the rule holds a block */
   get declarations() {
     this.#assertLive();
+    if (this.#block) throw new Error('a rule that holds a block');
     this.assertFresh();
     return this.#declarations;
   }
@@ -158,21 +160,27 @@ export class RuleRecord {
     this.#declarationKeys = undefined;
   }
 
+  /** @return {readonly DeclarationRecord[]} the own list, or the block's declarations */
+  allDeclarations() {
+    this.#assertLive();
+    if (!this.#block) return this.declarations;
+    this.#blockDeclarations ??= this.#block.children.filter(
+      (entry) => entry instanceof DeclarationRecord
+    );
+    return this.#blockDeclarations;
+  }
+
   /**
-   * The ids of the declarations, so equal declarations share a key. The keys
-   * last until the declarations change; adding selectors leaves them valid.
+   * The ids of the declarations, so equal declarations share a key.
    *
    * @return {RuleDeclarationKeys}
    */
   declarationKeys() {
     this.#assertLive();
-    this.assertFresh();
     if (!this.#declarationKeys) {
-      // A loop, since `map` would pass each index to a callback.
       const keys = [];
-      for (const declaration of this.#declarations) {
+      for (const declaration of this.allDeclarations())
         keys.push(declaration.id);
-      }
       this.#declarationKeys = { keys, keySet: new Set(keys) };
     }
     return this.#declarationKeys;
@@ -374,7 +382,7 @@ export class RuleRecord {
    * @throws {Error} when the declarations are stale
    */
   assertFresh() {
-    if (!consistencyChecksEnabled()) return;
+    if (!consistencyChecksEnabled() || this.#block) return;
     const kept = this.#declarations;
     const fresh = this.#node.nodes.filter(isDeclaration);
     let same = kept.length === fresh.length;

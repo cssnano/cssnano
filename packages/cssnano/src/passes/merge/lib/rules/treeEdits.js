@@ -68,11 +68,13 @@ export function buildRecords(root, mergeState) {
       const index = block.children.length;
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
-        const record = records.recordRule(child);
+        // A rule that holds a block keeps its declarations as block entries.
+        const holds = child.nodes.some(isRuleOrAtRule);
+        const record = records.recordRule(child, holds ? [] : null);
         const slot = new Slot(block, index, [record]);
         record.place(slot);
         block.children.push(slot);
-        if (child.nodes.some(isRuleOrAtRule)) {
+        if (holds) {
           const nested = new BlockRecord(child, block, index, false);
           record.setBlock(nested);
           fill(nested);

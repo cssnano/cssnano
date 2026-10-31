@@ -224,7 +224,8 @@ test('appendToDeclarations should throw when the receiving rule holds a block', 
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (root).nodes
   );
-  const kept = [...ruleRecordOf(state.records, receiving).declarations];
+  // The receiving rule holds no declarations of its own, so `kept` is empty.
+  const kept = [];
   assert.throws(
     () =>
       appendToDeclarations(

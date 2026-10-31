@@ -104,3 +104,31 @@ test('a declaration in a rule that holds a block is a declaration record in its 
   assert.equal(block.liveChildren()[0], root.first.first);
   assert.equal(color.node, root.first.first);
 });
+
+test('declarations should throw on a rule that holds a block, whose declarations are its block entries', () => {
+  const { root, state } = setup('a{color:red;b{width:1px}}');
+  const rule = ruleRecordOf(state.records, root.first);
+  assert.throws(() => rule.declarations, /holds a block/v);
+});
+
+test('declarationKeys of a rule that holds a block are the ids of its block declarations', () => {
+  const { root, state } = setup('a{color:red;b{width:1px}}');
+  const rule = ruleRecordOf(state.records, root.first);
+  const block =
+    /** @type {import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecord} */ (
+      rule.block
+    );
+  const ids = block
+    .liveEntries()
+    .filter((entry) => entry instanceof DeclarationRecord)
+    .map((entry) => entry.id);
+  assert.deepEqual(rule.declarationKeys().keys, ids);
+});
+
+test('canMerge should refuse a rule that holds a block against a rule it could otherwise join', () => {
+  const { root, state } = setup('a{color:red;b{width:1px}}c{color:red}');
+  const holder = ruleRecordOf(state.records, root.first);
+  const leaf = ruleRecordOf(state.records, root.last);
+  assert.equal(state.canMerge(holder, leaf), false);
+  assert.equal(state.canMerge(leaf, holder), false);
+});
