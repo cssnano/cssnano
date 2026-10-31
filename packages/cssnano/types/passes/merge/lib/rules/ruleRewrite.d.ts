@@ -1,10 +1,12 @@
 import { PropertyWrites } from './lastWriteIndex.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
-import type { Declaration, Rule } from 'postcss';
+import type { Declaration } from 'postcss';
+import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecord } from './blockRecords.js';
 import type RuleSequence, { Placement, RuleLink } from './ruleSequence.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {Declaration, Rule} from 'postcss' */
+/** @import {Declaration} from 'postcss' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /**
@@ -26,8 +28,8 @@ export declare function writesOf(declarations: Declaration[], table: PropertyTab
  * of the source, which a minifier removes, so a merge that pays only in
  * source bytes would grow the output.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {Set<number>} claimedEarlierIndices
  * @param {Set<number>} claimedIndices
  * @param {import('./mergeState.js').default} mergeState
@@ -36,5 +38,5 @@ export declare function writesOf(declarations: Declaration[], table: PropertyTab
  * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
  * @return {Placement | null} null when the output would not get shorter
  */
-export declare function buildMergedRule(first: Rule, second: Rule, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, mergeState: import('./mergeState.js').default, secondLink: RuleLink, sequence: RuleSequence, outsideDeclarations: WeakMap<BlockRecord, boolean>): Placement | null;
+export declare function buildMergedRule(first: RuleRecord, second: RuleRecord, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, mergeState: import('./mergeState.js').default, secondLink: RuleLink, sequence: RuleSequence, outsideDeclarations: WeakMap<BlockRecord, boolean>): Placement | null;
 //# sourceMappingURL=ruleRewrite.d.ts.map

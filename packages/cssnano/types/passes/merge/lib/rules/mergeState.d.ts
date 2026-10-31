@@ -39,14 +39,6 @@ export default class MergeState {
      */
     constructor(browsers: readonly string[], context?: import('../../../ir/runContext.js').RunContext);
     /**
-     * The record of the rule, which the records hold. Under consistency checks
-     * a record whose declarations differ from the tree throws.
-     *
-     * @param {Rule} rule
-     * @return {RuleRecord}
-     */
-    meta(rule: Rule): RuleRecord;
-    /**
      * The elements the rule can match. An arrow function, so it passes as a
      * callback without a closure per call.
      *
@@ -112,23 +104,23 @@ export default class MergeState {
      */
     spellSelectors(record: RuleRecord): void;
     /**
-     * Stores the tokens of a copy of `rule` made with the rule's selectors. The
-     * copy's text is the one PostCSS joined, so the tokens are stored only when
-     * they spell it.
+     * Stores the tokens of a copy of the record's rule made with its selectors.
+     * The copy's text is the one PostCSS joined, so the tokens are stored only
+     * when they spell it.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      * @param {Rule} clone
      */
-    storeClone(rule: Rule, clone: Rule): void;
+    storeClone(record: RuleRecord, clone: Rule): void;
     /**
      * Stores the tokens of a rule joined from the selectors of `first` and
      * `second`, in that order, with a comma between each, as `join()` writes it.
      *
      * @param {Rule} rule
-     * @param {Rule} first
-     * @param {Rule} second
+     * @param {RuleRecord} first
+     * @param {RuleRecord} second
      */
-    storeJoined(rule: Rule, first: Rule, second: Rule): void;
+    storeJoined(rule: Rule, first: RuleRecord, second: RuleRecord): void;
     /**
      * Stores the tokens of every rule `spellSelectors` set, joined from the
      * pieces its list holds. A rule without pieces keeps its text only, and a
@@ -145,7 +137,8 @@ export default class MergeState {
     absorbEarlier(later: RuleRecord, earlier: RuleRecord): void;
     /**
      * The block whose child list holds the rule's slot. It is where the rule
-     * stands, which can differ from its PostCSS parent during a sweep.
+     * stands, which can differ from its PostCSS parent during a sweep. A rule
+     * that left the stylesheet stands in no block.
      *
      * @param {RuleRecord} record
      * @return {BlockRecord}

@@ -42,14 +42,14 @@ test('appendToDeclarations should mark the record of the incoming rule departed'
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const record = state.meta(incoming);
+  const record = state.records.metaOf(incoming);
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
-    state.meta(receiving),
+    state.records.metaOf(receiving),
     /** @type {Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),
-    state.meta(incoming)
+    state.records.metaOf(incoming)
   );
   assert.throws(() => record.declarations, /departed/v);
 });
@@ -63,12 +63,12 @@ test('appendToDeclarations should leave the record of the receiving rule readabl
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
-    state.meta(receiving),
+    state.records.metaOf(receiving),
     /** @type {Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),
-    state.meta(incoming)
+    state.records.metaOf(incoming)
   );
-  assert.equal(state.meta(receiving).departed, false);
+  assert.equal(state.records.metaOf(receiving).departed, false);
 });
 
 test('appendToDeclarations should keep the record of the receiving rule', () => {
@@ -77,16 +77,16 @@ test('appendToDeclarations should keep the record of the receiving rule', () => 
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const record = state.meta(receiving);
+  const record = state.records.metaOf(receiving);
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
-    state.meta(receiving),
+    state.records.metaOf(receiving),
     /** @type {Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),
-    state.meta(incoming)
+    state.records.metaOf(incoming)
   );
-  assert.equal(state.meta(receiving), record);
+  assert.equal(state.records.metaOf(receiving), record);
 });
 
 test('appendToDeclarations should give the record of the receiving rule the kept declarations', () => {
@@ -95,18 +95,18 @@ test('appendToDeclarations should give the record of the receiving rule the kept
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  state.meta(receiving);
+  state.records.metaOf(receiving);
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
-    state.meta(receiving),
+    state.records.metaOf(receiving),
     /** @type {Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),
-    state.meta(incoming)
+    state.records.metaOf(incoming)
   );
-  assert.equal(state.meta(receiving).declarations, kept);
+  assert.equal(state.records.metaOf(receiving).declarations, kept);
   assert.deepEqual(
-    state.meta(receiving).declarations.map((d) => d.prop),
+    state.records.metaOf(receiving).declarations.map((d) => d.prop),
     ['color', 'width']
   );
 });
@@ -117,17 +117,17 @@ test('appendToDeclarations should give the record of the receiving rule keys for
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  state.declarationKeysOf(state.meta(receiving));
+  state.declarationKeysOf(state.records.metaOf(receiving));
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
-    state.meta(receiving),
+    state.records.metaOf(receiving),
     /** @type {Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),
-    state.meta(incoming)
+    state.records.metaOf(incoming)
   );
   assert.deepEqual(
-    state.declarationKeysOf(state.meta(receiving)).keys,
+    state.declarationKeysOf(state.records.metaOf(receiving)).keys,
     kept.map((d) => state.declarationKey(/** @type {Declaration} */ (d)))
   );
 });
@@ -135,22 +135,22 @@ test('appendToDeclarations should give the record of the receiving rule keys for
 test('removeDeclarations should keep the record of the rule', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  const record = state.meta(rule);
-  removeDeclarations(state, state.meta(rule), [
+  const record = state.records.metaOf(rule);
+  removeDeclarations(state, state.records.metaOf(rule), [
     /** @type {Declaration} */ (rule.first),
   ]);
-  assert.equal(state.meta(rule), record);
+  assert.equal(state.records.metaOf(rule), record);
 });
 
 test('removeDeclarations should leave the record with the declarations that remain', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  state.meta(rule);
-  removeDeclarations(state, state.meta(rule), [
+  state.records.metaOf(rule);
+  removeDeclarations(state, state.records.metaOf(rule), [
     /** @type {Declaration} */ (rule.first),
   ]);
   assert.deepEqual(
-    state.meta(rule).declarations.map((d) => d.prop),
+    state.records.metaOf(rule).declarations.map((d) => d.prop),
     ['width']
   );
 });
@@ -158,11 +158,11 @@ test('removeDeclarations should leave the record with the declarations that rema
 test('removeDeclarations should give the record keys for the declarations that remain', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  state.declarationKeysOf(state.meta(rule));
-  removeDeclarations(state, state.meta(rule), [
+  state.declarationKeysOf(state.records.metaOf(rule));
+  removeDeclarations(state, state.records.metaOf(rule), [
     /** @type {Declaration} */ (rule.first),
   ]);
-  assert.deepEqual(state.declarationKeysOf(state.meta(rule)).keys, [
+  assert.deepEqual(state.declarationKeysOf(state.records.metaOf(rule)).keys, [
     state.declarationKey(/** @type {Declaration} */ (rule.first)),
   ]);
 });
@@ -170,41 +170,41 @@ test('removeDeclarations should give the record keys for the declarations that r
 test('removeDeclarations should keep the element keys of the record', () => {
   const { root, state } = setup('a,b{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  state.elementKeysOf(state.meta(rule));
-  removeDeclarations(state, state.meta(rule), [
+  state.elementKeysOf(state.records.metaOf(rule));
+  removeDeclarations(state, state.records.metaOf(rule), [
     /** @type {Declaration} */ (rule.first),
   ]);
-  assert.deepEqual(state.elementKeysOf(state.meta(rule)), ['a', 'b']);
+  assert.deepEqual(state.elementKeysOf(state.records.metaOf(rule)), ['a', 'b']);
 });
 
 test('removeRules should mark the record of each rule it removes departed', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
   const [, removed] = /** @type {Rule[]} */ (root.nodes);
-  const record = state.meta(removed);
-  removeRules(state, new Set([state.meta(removed)]));
+  const record = state.records.metaOf(removed);
+  removeRules(state, new Set([state.records.metaOf(removed)]));
   assert.throws(() => record.declarations, /departed/v);
 });
 
 test('removeRules should leave the record of a rule it keeps readable', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
   const [kept, removed] = /** @type {Rule[]} */ (root.nodes);
-  state.meta(kept);
-  removeRules(state, new Set([state.meta(removed)]));
-  assert.equal(state.meta(kept).departed, false);
+  state.records.metaOf(kept);
+  removeRules(state, new Set([state.records.metaOf(removed)]));
+  assert.equal(state.records.metaOf(kept).departed, false);
 });
 
 test('depart should mark the record of the rule departed', () => {
   const { root, state } = setup('a{color:red}');
   const rule = /** @type {Rule} */ (root.first);
-  const record = state.meta(rule);
-  depart(state, state.meta(rule));
+  const record = state.records.metaOf(rule);
+  depart(state, state.records.metaOf(rule));
   assert.throws(() => record.selectors, /departed/v);
 });
 
 test('depart should leave the rule in the tree', () => {
   const { root, state } = setup('a{color:red}');
   const rule = /** @type {Rule} */ (root.first);
-  depart(state, state.meta(rule));
+  depart(state, state.records.metaOf(rule));
   assert.equal(rule.parent, root);
 });
 
@@ -214,14 +214,14 @@ test('takePlaceOf should move the record of the earlier rule into the slot of th
   const [earlier, later] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const laterSlot = state.meta(later).slot;
+  const laterSlot = state.records.metaOf(later).slot;
   takePlaceOf(
     state,
     /** @type {Container} */ (media),
-    state.meta(earlier),
-    state.meta(later)
+    state.records.metaOf(earlier),
+    state.records.metaOf(later)
   );
-  assert.equal(state.meta(earlier).slot, laterSlot);
+  assert.equal(state.records.metaOf(earlier).slot, laterSlot);
 });
 
 test('appendToDeclarations should throw when the receiving rule holds a block', () => {
@@ -234,10 +234,10 @@ test('appendToDeclarations should throw when the receiving rule holds a block', 
     () =>
       appendToDeclarations(
         state,
-        state.meta(receiving),
+        state.records.metaOf(receiving),
         kept,
         writesOf(kept, new PropertyTable()),
-        state.meta(incoming)
+        state.records.metaOf(incoming)
       ),
     /holds a block/v
   );
@@ -248,7 +248,7 @@ test('removeDeclarations should throw when the rule holds a block', () => {
   const [rule] = /** @type {Rule[]} */ (/** @type {Container} */ (root).nodes);
   assert.throws(
     () =>
-      removeDeclarations(state, state.meta(rule), [
+      removeDeclarations(state, state.records.metaOf(rule), [
         /** @type {Declaration} */ (rule.first),
       ]),
     /holds a block/v
@@ -258,6 +258,9 @@ test('removeDeclarations should throw when the rule holds a block', () => {
 test('buildRecords should give each slot the record of its rule, which names the slot', () => {
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [first] = /** @type {Slot[]} */ (state.records.root.children);
-  assert.equal(first.rules[0], state.meta(/** @type {Rule} */ (root.first)));
+  assert.equal(
+    first.rules[0],
+    state.records.metaOf(/** @type {Rule} */ (root.first))
+  );
   assert.equal(first.rules[0].slot, first);
 });
