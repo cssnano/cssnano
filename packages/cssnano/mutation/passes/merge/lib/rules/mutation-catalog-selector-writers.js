@@ -36,11 +36,6 @@ export const mutations = [
     replace: '    void record;',
   },
   {
-    name: 'drop the token ranges a clone keeps, so its element keys tokenize',
-    find: '    this.#storePieces(clone, this.piecesOf(record), separatorOf(source));',
-    replace: '    this.#storePieces(clone, null, separatorOf(source));',
-  },
-  {
     name: 'drop the token ranges of the selectors a rule gains by repeated declarations',
     find: '    const from = own === null ? null : this.piecesOf(source);',
     replace: '    const from = null;',

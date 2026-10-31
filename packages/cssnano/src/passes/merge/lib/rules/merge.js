@@ -125,9 +125,5 @@ export function mergeSharedDeclarations(
     sequence,
     outsideDeclarations
   );
-  if (!placement) return null;
-  // The rules that replace the pair are described afresh when needed.
-  depart(mergeState, first);
-  depart(mergeState, second);
   return placement;
 }

@@ -38,24 +38,6 @@ export class DeclarationRecord {
     this.keys = keys;
     this.id = id;
   }
-
-  /**
-   * The record of a copy of this declaration, such as a clone. The copy keeps
-   * the facts and the keys, and looks up nothing.
-   *
-   * @param {Declaration} node the copy
-   * @return {DeclarationRecord}
-   */
-  copy(node) {
-    return new DeclarationRecord(
-      node,
-      this.prop,
-      this.value,
-      this.important,
-      this.keys,
-      this.id
-    );
-  }
 }
 
 /**

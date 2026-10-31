@@ -1,6 +1,5 @@
 import postcss from 'postcss';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
-import { inheritSupport } from '../longhand/isFallback.js';
 import { PropertyWrites } from './lastWriteIndex.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 import { depart } from './treeEdits.js';
@@ -10,6 +9,7 @@ import { depart } from './treeEdits.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
+/** @import MergeState from './mergeState.js' */
 
 /**
  * A rule with the source's raws, position and selector but no children, so
@@ -25,6 +25,24 @@ function shellOf(source, selector) {
     raws: structuredClone(source.raws),
     source: source.source,
   });
+}
+
+/**
+ * The rules a rule leaves in its place: the rule itself while it keeps a
+ * child, which the record reports so the second round canonicalizes it, and
+ * nothing once it holds no child, when it departs.
+ *
+ * @param {MergeState} mergeState
+ * @param {RuleRecord} record
+ * @return {RuleRecord[]}
+ */
+function leftoverOf(mergeState, record) {
+  if (!record.childCount()) {
+    depart(mergeState, record);
+    return [];
+  }
+  mergeState.reportCreated(record.node);
+  return [record];
 }
 
 /**
@@ -125,71 +143,26 @@ export function buildMergedRule(
     [...firstSelectors, ...secondSelectors, ...(group?.added ?? [])].join()
   );
   if (!group) mergeState.storeJoined(receivingBlock, first, second);
+  mergeState.reportCreated(receivingBlock);
   // The merged rule takes the declarations of the earlier rule themselves.
   const receivingRecord = mergeState.records.recordRule(receivingBlock, []);
   for (const declaration of first.takeDeclarationsAt(claimedEarlierIndices)) {
     receivingRecord.append(declaration);
   }
-  const firstLeftover = first.node.clone({ selectors: firstSelectors });
-  const secondClone = second.node.clone({ selectors: secondSelectors });
-  mergeState.storeClone(first, firstLeftover);
-  mergeState.storeClone(second, secondClone);
-  mergeState.reportCreated(receivingBlock);
-  mergeState.reportCreated(firstLeftover);
-  mergeState.reportCreated(secondClone);
-  // Index-based removal matches duplicates positionally, symmetric to how
-  // `claimedIndices` selects declarations in the later rule. Each clone
-  // declaration takes a copy of its source's record, so the keys carry over.
-  const firstRecords = first.declarations;
-  /** @type {DeclarationRecord[]} */
-  const firstKept = [];
-  let earlierIndex = 0;
-  firstLeftover.walkDecls((decl) => {
-    inheritSupport(firstRecords[earlierIndex].node, decl, mergeState.textTable);
-    firstKept.push(firstRecords[earlierIndex++].copy(decl));
-  });
-  const secondRecords = second.declarations;
-  /** @type {DeclarationRecord[]} */
-  const secondKept = [];
-  let laterIndex = 0;
-  secondClone.walkDecls((decl) => {
-    inheritSupport(secondRecords[laterIndex].node, decl, mergeState.textTable);
-    const copy = secondRecords[laterIndex].copy(decl);
-    if (claimedIndices.has(laterIndex++)) {
-      decl.remove();
-    } else {
-      secondKept.push(copy);
-    }
-  });
-  // The clones hold their final declarations, so their records are built now.
-  const firstRecord = mergeState.records.recordRule(firstLeftover, firstKept);
-  const secondRecord = mergeState.records.recordRule(secondClone, secondKept);
+  const firstLeftover = leftoverOf(mergeState, first);
+  second.removeDeclarationsAt(claimedIndices);
+  const secondLeftover = leftoverOf(mergeState, second);
   /** @type {Placement} */
   const placement = {
-    first: [firstRecord].filter((record) => record.childCount()),
-    second: [receivingRecord, secondRecord].filter((record) =>
+    first: firstLeftover,
+    second: [receivingRecord, ...secondLeftover].filter((record) =>
       record.childCount()
     ),
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
-      const leftover = rule.node.clone({ selectors: rule.selectors });
-      mergeState.storeClone(rule, leftover);
-      mergeState.reportCreated(leftover);
-      const records = rule.declarations;
-      depart(mergeState, rule);
-      /** @type {DeclarationRecord[]} */
-      const kept = [];
-      let index = 0;
-      leftover.walkDecls((decl) => {
-        inheritSupport(records[index].node, decl, mergeState.textTable);
-        const copy = records[index].copy(decl);
-        if (claimed.has(index++)) decl.remove();
-        else kept.push(copy);
-      });
-      const leftoverRecord = mergeState.records.recordRule(leftover, kept);
-      if (!leftoverRecord.childCount()) return [];
-      return [leftoverRecord];
+      rule.removeDeclarationsAt(claimed);
+      return leftoverOf(mergeState, rule);
     });
   }
   return placement;

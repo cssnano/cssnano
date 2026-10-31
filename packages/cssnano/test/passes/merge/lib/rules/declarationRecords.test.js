@@ -42,19 +42,6 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   assert.equal(moved.node.parent, receiving.node);
 });
 
-test('a declaration record copy keeps the id and keys of its source and takes the node it is given', () => {
-  const properties = new PropertyTable();
-  const node = postcss.decl({ prop: 'color', value: 'red' });
-  const source = recordDeclaration(node, properties, new DeclarationKeys());
-  const clone = postcss.decl({ prop: 'color', value: 'red' });
-  const copy = source.copy(clone);
-  assert.ok(copy instanceof DeclarationRecord);
-  assert.notEqual(copy, source);
-  assert.equal(copy.node, clone);
-  assert.equal(copy.id, source.id);
-  assert.equal(copy.keys, source.keys);
-});
-
 test('recordDeclaration gives an important declaration an id that differs from an unset one', () => {
   const properties = new PropertyTable();
   const keys = new DeclarationKeys();
