@@ -41,7 +41,11 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
   ruleRecordOf(mergeState.records, q).removeDeclarationsAt(new Set([0]));
   const kept = ruleRecordOf(mergeState.records, q).declarations;
   const incoming = /** @type {Rule} */ (postcss.parse('x{width:1px}').first);
-  const incomingRecord = mergeState.records.recordRule(incoming);
+  const incomingRecord = mergeState.records.recordRule(
+    incoming,
+    mergeState.properties,
+    mergeState.declarationIds
+  );
   appendToDeclarations(
     mergeState,
     ruleRecordOf(mergeState.records, q),

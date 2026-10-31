@@ -36,11 +36,7 @@ function isRuleOrAtRule(node) {
  */
 export function buildRecords(root, mergeState) {
   const { textTable } = mergeState;
-  const records = new BlockRecords(
-    new BlockRecord(root, null, 0, false),
-    mergeState.properties,
-    mergeState.declarationIds
-  );
+  const records = new BlockRecords(new BlockRecord(root, null, 0, false));
   records.root.leadingWhitespace = root.first?.raws.before;
   let nodes = 0;
   let declarations = 0;
@@ -53,7 +49,12 @@ export function buildRecords(root, mergeState) {
       if (child.type === 'rule') {
         // A rule that holds a block keeps its declarations as block entries.
         const holds = child.nodes.some(isRuleOrAtRule);
-        const record = records.recordRule(child, holds ? [] : null);
+        const record = records.recordRule(
+          child,
+          mergeState.properties,
+          mergeState.declarationIds,
+          holds ? [] : null
+        );
         const slot = new Slot(block, index, [record]);
         record.place(slot);
         block.children.push(slot);
@@ -75,7 +76,13 @@ export function buildRecords(root, mergeState) {
         fill(nested);
       } else if (child.type === 'decl') {
         declarations++;
-        block.children.push(records.declarationRecord(child));
+        block.children.push(
+          records.declarationRecord(
+            child,
+            mergeState.properties,
+            mergeState.declarationIds
+          )
+        );
       } else {
         block.children.push(child);
       }

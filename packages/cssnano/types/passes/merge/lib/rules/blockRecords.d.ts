@@ -64,6 +64,8 @@ export declare class BlockRecord {
     remaining: number | null;
     /** @type {boolean} whether a sweep removed the block for being empty */
     dropped: boolean;
+    /** @type {number} the place of the block in the arena of its records, -1 until added */
+    index: number;
     /**
      * The whitespace before the first child of the stylesheet, which PostCSS
      * hands on when that child is removed. Only the record of the stylesheet
@@ -153,15 +155,25 @@ export declare class BlockRecords {
     maxRounds: number;
     /**
      * @param {BlockRecord} root the record of the stylesheet
-     * @param {PropertyTable} properties the keys of the property names
-     * @param {DeclarationKeys} declarations the ids of the declarations
      */
-    constructor(root: BlockRecord, properties: PropertyTable, declarations: DeclarationKeys);
+    constructor(root: BlockRecord);
     /**
+     * Adds a block record to the arena, which gives it the next index.
+     *
      * @param {BlockRecord} block
      * @return {void}
      */
     add(block: BlockRecord): void;
+    /**
+     * @param {number} index an index that `add` gave
+     * @return {BlockRecord | undefined}
+     */
+    block(index: number): BlockRecord | undefined;
+    /**
+     * @param {number} index an index that `recordRule` gave
+     * @return {RuleRecord | undefined}
+     */
+    rule(index: number): RuleRecord | undefined;
     /**
      * The records of every block the run added, dropped ones included.
      *
@@ -172,20 +184,24 @@ export declare class BlockRecords {
      * Builds the record of a declaration that is a child of a block.
      *
      * @param {import('postcss').Declaration} node
+     * @param {PropertyTable} properties the keys of the property names
+     * @param {DeclarationKeys} declarations the ids of the declarations
      * @return {DeclarationRecord}
      */
-    declarationRecord(node: import('postcss').Declaration): DeclarationRecord;
+    declarationRecord(node: import('postcss').Declaration, properties: PropertyTable, declarations: DeclarationKeys): DeclarationRecord;
     /**
-     * Builds the record of a rule. Nothing stores it: the slot the caller places
-     * it in is what holds it.
+     * Builds the record of a rule and adds it to the arena, which gives it the
+     * next index. The slot the caller places it in is what holds it.
      *
      * @param {Rule} rule
-     * @param {DeclarationRecord[] | null} [declarations] the records of the
-     * rule's declarations, in order, when the caller holds them already, such as
-     * the records a rule hands to a new rule; null to record each declaration of
-     * the rule
+     * @param {PropertyTable} properties the keys of the property names
+     * @param {DeclarationKeys} declarations the ids of the declarations
+     * @param {DeclarationRecord[] | null} [records] the records of the rule's
+     * declarations, in order, when the caller holds them already, such as the
+     * records a rule hands to a new rule; null to record each declaration of the
+     * rule
      * @return {RuleRecord}
      */
-    recordRule(rule: Rule, declarations?: DeclarationRecord[] | null): RuleRecord;
+    recordRule(rule: Rule, properties: PropertyTable, declarations: DeclarationKeys, records?: DeclarationRecord[] | null): RuleRecord;
 }
 //# sourceMappingURL=blockRecords.d.ts.map

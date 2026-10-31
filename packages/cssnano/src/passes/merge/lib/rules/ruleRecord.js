@@ -52,6 +52,8 @@ export class RuleRecord extends SelectorList {
   #block = null;
   /** @type {boolean} set once a child is added or removed, which the node takes at write-back */
   #edited = false;
+  /** @type {number} the place of the record in the arena of its records, -1 until added */
+  index = -1;
 
   /**
    * @param {Rule} node the rule the record describes

@@ -143,7 +143,12 @@ export function buildMergedRule(
   if (!group) mergeState.storeJoined(receivingBlock, first, second);
   mergeState.reportCreated(receivingBlock);
   // The merged rule takes the declarations of the earlier rule themselves.
-  const receivingRecord = mergeState.records.recordRule(receivingBlock, []);
+  const receivingRecord = mergeState.records.recordRule(
+    receivingBlock,
+    mergeState.properties,
+    mergeState.declarationIds,
+    []
+  );
   for (const declaration of first.takeDeclarationsAt(claimedEarlierIndices)) {
     receivingRecord.append(declaration);
   }

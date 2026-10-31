@@ -66,11 +66,9 @@ test('compatible should be false after absorbEarlier takes an incompatible earli
 test('recordRule should give the record of a rule the rule as its node', () => {
   const rule = postcss.parse('a{color:red}').first;
   const records = new BlockRecords(
-    new BlockRecord(postcss.root(), null, 0, false),
-    properties,
-    declarationIds
+    new BlockRecord(postcss.root(), null, 0, false)
   );
-  assert.equal(records.recordRule(rule).node, rule);
+  assert.equal(records.recordRule(rule, properties, declarationIds).node, rule);
 });
 
 test('declarationKeys should list the id of each declaration in order', () => {
