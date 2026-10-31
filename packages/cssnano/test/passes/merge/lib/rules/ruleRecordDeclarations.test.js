@@ -33,14 +33,15 @@ test('removeDeclarationsAt should keep the comment that a rule holds', () => {
   assert.equal(record.childCount(), 2);
 });
 
-test('removeDeclarationsAt should drop the claimed declaration from the children of a rule holding a comment', () => {
+test('removeDeclarationsAt should leave the nodes of a rule holding a comment as they were, until write-back', () => {
   const rule = postcss.parse('a{color:red;/* note */width:1px}').first;
   const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
   record.removeDeclarationsAt(new Set([0]));
   assert.deepEqual(
     rule.nodes.map((node) => node.type),
-    ['comment', 'decl']
+    ['decl', 'comment', 'decl']
   );
+  assert.equal(record.edited, true);
 });
 
 test('removeDeclarationsAt should keep the declarations in step with the children under consistency checks', () => {
@@ -66,13 +67,13 @@ test('takeDeclarationsAt should return the records of the claimed declarations i
   ]);
 });
 
-test('takeDeclarationsAt should take the claimed declaration nodes out of the rule', () => {
+test('takeDeclarationsAt should leave the taken declaration nodes in the rule until write-back', () => {
   const rule = postcss.parse('a{color:red;width:1px;height:2px}').first;
   const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
   record.takeDeclarationsAt(new Set([0, 2]));
   assert.deepEqual(
     rule.nodes.map((node) => node.prop),
-    ['width']
+    ['color', 'width', 'height']
   );
 });
 

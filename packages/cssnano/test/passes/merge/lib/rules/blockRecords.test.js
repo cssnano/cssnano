@@ -14,7 +14,6 @@ import {
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   buildRecords,
-  moveChildren,
   remove,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
@@ -199,8 +198,7 @@ test('an entry should hold its index as position after a move of children', () =
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   const [first, second] = /** @type {Container} */ (root).nodes;
-  moveChildren(
-    blockRecordOf(state.records, first),
+  blockRecordOf(state.records, first).adopt(
     blockRecordOf(state.records, second)
   );
   assert.equal(positionsMatchIndex(blockRecordOf(state.records, first)), true);

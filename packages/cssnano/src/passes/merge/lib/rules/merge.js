@@ -4,7 +4,7 @@ import {
   sameDeclarationsAndOrder,
 } from './declarations.js';
 import { buildMergedRule, writesOf } from './ruleRewrite.js';
-import { appendToDeclarations, depart } from './treeEdits.js';
+import { appendToDeclarations } from './treeEdits.js';
 
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
@@ -32,12 +32,12 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
   // Repeating the same declarations under the same selector changes nothing,
   // and a selector list that repeats the selector is longer than one rule.
   if (first.hasSameSelectors(second)) {
-    depart(mergeState, second);
+    second.depart();
     return { first: [first], second: [] };
   }
   mergeState.absorbEarlier(second, first);
   mergeState.spellSelectors(second);
-  depart(mergeState, first);
+  first.depart();
   return { first: [], second: [second] };
 }
 

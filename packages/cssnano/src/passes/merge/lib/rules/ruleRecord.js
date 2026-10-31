@@ -50,6 +50,8 @@ export class RuleRecord extends SelectorList {
   #slot;
   /** @type {BlockRecord | null} the record of the rule's children, when it holds a rule or an at-rule */
   #block = null;
+  /** @type {boolean} set once a child is added or removed, which the node takes at write-back */
+  #edited = false;
 
   /**
    * @param {Rule} node the rule the record describes
@@ -84,6 +86,11 @@ export class RuleRecord extends SelectorList {
     this.#block = block;
   }
 
+  /** @return {boolean} whether a child was added or removed since the record was made */
+  get edited() {
+    return this.#edited;
+  }
+
   /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
   get departed() {
     return this.#departed;
@@ -98,14 +105,12 @@ export class RuleRecord extends SelectorList {
   /** @return {DeclarationRecord[]} the declarations, without comments */
   get declarations() {
     this.#assertChildren();
-    this.assertFresh();
     return this.#declarations;
   }
 
   /** @return {readonly (DeclarationRecord | ChildNode)[]} every child, comments included */
   get children() {
     this.#assertChildren();
-    this.assertFresh();
     return this.#entries ?? this.#declarations;
   }
 
@@ -134,7 +139,7 @@ export class RuleRecord extends SelectorList {
   }
 
   /**
-   * Appends a child to the node and to the records.
+   * Appends a child to the records. The node takes it at write-back.
    *
    * @param {DeclarationRecord | ChildNode} child
    * @return {void}
@@ -144,7 +149,7 @@ export class RuleRecord extends SelectorList {
     const isDeclarationChild = child instanceof DeclarationRecord;
     const node = isDeclarationChild ? child.node : child;
     inheritWhitespace(node, (this.#entries ?? this.#declarations).at(-1));
-    this.node.append(node);
+    this.#edited = true;
     if (isDeclarationChild) this.#declarations.push(child);
     if (this.#entries) {
       this.#entries.push(child);
@@ -173,7 +178,8 @@ export class RuleRecord extends SelectorList {
   }
 
   /**
-   * Removes the declarations at `claimed` from the node and the records.
+   * Removes the declarations at `claimed` from the records. The node drops
+   * them at write-back.
    *
    * @param {Set<number>} claimed the positions of the declarations that leave
    * @return {void}
@@ -186,11 +192,12 @@ export class RuleRecord extends SelectorList {
       claimed
     );
     this.#declarationKeys = undefined;
+    if (claimed.size) this.#edited = true;
   }
 
   /**
    * Removes the declarations at `claimed` as `removeDeclarationsAt` does, and
-   * hands over their records and nodes for another rule to append.
+   * hands over their records for another rule to append.
    *
    * @param {Set<number>} claimed the positions of the declarations that leave
    * @return {DeclarationRecord[]} the removed records, in order
@@ -206,6 +213,7 @@ export class RuleRecord extends SelectorList {
       taken
     );
     this.#declarationKeys = undefined;
+    if (claimed.size) this.#edited = true;
     return taken;
   }
 
@@ -298,9 +306,9 @@ export class RuleRecord extends SelectorList {
   }
 
   /**
-   * Under consistency checks, throws when the declarations held differ from
-   * those the rule holds now, in node or in the facts a record keeps, which an
-   * edit that skipped its bookkeeping leaves.
+   * Under consistency checks, throws when the children the node holds differ
+   * from those the record holds, in node or in the facts a record keeps. Call
+   * it once the node has taken the edits, at write-back.
    *
    * @throws {Error} when the declarations are stale
    */

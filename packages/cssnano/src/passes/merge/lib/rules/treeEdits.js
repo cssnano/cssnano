@@ -11,10 +11,10 @@ import { tallyDeclarations } from './overDuplication.js';
 /** @import MergeState from './mergeState.js' */
 
 /**
- * The only edits that rule merging makes to the live tree. Each one clears the
- * block summaries of the nodes it changes and updates the records it touches,
- * so a join cannot leave a stale answer behind. Lib code outside this module
- * edits through these names.
+ * The edits that rule merging makes to the records of the stylesheet. Each one
+ * updates the records it touches, so a join cannot leave a stale answer
+ * behind. The PostCSS nodes catch up at write-back, which rebuilds the child
+ * lists that changed. Lib code outside this module edits through these names.
  */
 
 /**
@@ -87,19 +87,6 @@ export function buildRecords(root, mergeState) {
   // N + D + 1 rounds bound a run, see `runMerge`.
   records.maxRounds = nodes + declarations + 1;
   return records;
-}
-
-/**
- * Appends the children of `from` to `into`, after its own, in the records. The
- * PostCSS child lists catch up at write-back. `from` is left empty, so the
- * caller removes or replaces it.
- *
- * @param {BlockRecord} into
- * @param {BlockRecord} from
- * @return {void}
- */
-export function moveChildren(into, from) {
-  into.adopt(from);
 }
 
 /**
@@ -187,28 +174,12 @@ export function appendToDeclarations(mergeState, receiving, index, incoming) {
   for (const child of incoming.children) {
     if (child instanceof DeclarationRecord) {
       const last = index.lastConflict(child.keys);
-      if (last !== -1 && declarationIsEqual(kept[last], child)) {
-        child.node.remove();
-        continue;
-      }
+      if (last !== -1 && declarationIsEqual(kept[last], child)) continue;
       index.record(child.keys, kept.length);
     }
     receiving.append(child);
   }
   incoming.depart();
-}
-
-/**
- * Removes the declarations at `claimed` from `record`'s rule, which keeps the
- * others.
- *
- * @param {MergeState} mergeState
- * @param {RuleRecord} record
- * @param {Set<number>} claimed the positions of the declarations that leave
- * @return {void}
- */
-export function removeDeclarations(mergeState, record, claimed) {
-  record.removeDeclarationsAt(claimed);
 }
 
 /**
@@ -232,17 +203,4 @@ export function removeRules(mergeState, records) {
   // Unlike `remove`, the rest keep their own whitespace, so the first of them
   // takes its own as the leading whitespace of the stylesheet.
   if (leadsRoot) root.leadingWhitespace = root.firstLiveChild()?.raws.before;
-}
-
-/**
- * Marks a rule that a placement drops as departed. The rule leaves the tree
- * when `replaceChildren` applies the placement, and reading its record throws
- * from now on.
- *
- * @param {MergeState} mergeState
- * @param {RuleRecord} record
- * @return {void}
- */
-export function depart(mergeState, record) {
-  record.depart();
 }

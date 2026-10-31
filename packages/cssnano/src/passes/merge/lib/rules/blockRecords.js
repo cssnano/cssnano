@@ -352,7 +352,8 @@ export class BlockRecords {
    * @param {Rule} rule
    * @param {DeclarationRecord[] | null} [declarations] the records of the
    * rule's declarations, in order, when the caller holds them already, such as
-   * the copies a clone takes; null to record each declaration of the rule
+   * the records a rule hands to a new rule; null to record each declaration of
+   * the rule
    * @return {RuleRecord}
    */
   recordRule(rule, declarations = null) {

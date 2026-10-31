@@ -74,8 +74,8 @@ export const mutations = [
   {
     name: 'forget the writes of a block moved down in the backward pass',
     target: source('nonAdjacentMerge.js'),
-    find: '      index.moveWrites(earlierEntries, laterPosition, keysOf);\n      moveChildren(earlier, later);',
-    replace: '      moveChildren(earlier, later);',
+    find: '      index.moveWrites(earlierEntries, laterPosition, keysOf);\n      earlier.adopt(later);',
+    replace: '      earlier.adopt(later);',
   },
   {
     name: 'ignore !important in the declaration key',
@@ -108,10 +108,10 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'departing a rule leaves its record live',
-    target: source('treeEdits.js'),
-    find: 'export function depart(mergeState, record) {\n  record.depart();',
-    replace: 'export function depart(mergeState, record) {\n  void mergeState;',
+    name: 'a merged-away rule with a shared selector leaves its record live',
+    target: source('merge.js'),
+    find: '    second.depart();\n',
+    replace: '',
   },
   {
     name: 'absorbing an earlier rule leaves its record live',
@@ -187,10 +187,54 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'taking declarations leaves the taken node in the rule',
+    name: 'taking declarations removes the taken node at once',
     target: source('ruleChildren.js'),
-    find: '        child.node.remove();\n        taken?.push(child);',
-    replace: '        taken?.push(child);',
+    find: '        taken?.push(child);\n',
+    replace: '        child.node.remove();\n        taken?.push(child);\n',
+  },
+  {
+    name: 'an append edits the node of the rule at once',
+    target: source('ruleRecord.js'),
+    find: '    this.#edited = true;\n    if (isDeclarationChild)',
+    replace:
+      '    this.#edited = true;\n    this.node.append(node);\n    if (isDeclarationChild)',
+  },
+  {
+    name: 'an append leaves the rule record unedited',
+    target: source('ruleRecord.js'),
+    find: '    this.#edited = true;\n    if (isDeclarationChild)',
+    replace: '    if (isDeclarationChild)',
+  },
+  {
+    name: 'a removal of declarations leaves the rule record unedited',
+    target: source('ruleRecord.js'),
+    find: '    if (claimed.size) this.#edited = true;\n  }\n',
+    replace: '  }\n',
+  },
+  {
+    name: 'a taking of declarations leaves the rule record unedited',
+    target: source('ruleRecord.js'),
+    find: '    if (claimed.size) this.#edited = true;\n    return taken;',
+    replace: '    return taken;',
+  },
+  {
+    name: 'write-back keeps the parent of a child that moves between rules',
+    target: source('writeBack.js'),
+    find: '    for (const node of children) node.parent = undefined;\n',
+    replace: '',
+  },
+  {
+    name: 'write-back appends to a rule that keeps its old children',
+    target: source('writeBack.js'),
+    find: '    container.removeAll();\n  }\n  for (const { container, children, leading } of rebuilt) {',
+    replace:
+      "    if (container.type !== 'rule') container.removeAll();\n  }\n  for (const { container, children, leading } of rebuilt) {",
+  },
+  {
+    name: 'write-back leaves a departed rule in its block',
+    target: source('writeBack.js'),
+    find: '  if (block.liveCount() !== nodes.length) return true;\n',
+    replace: '',
   },
   {
     name: 'taking declarations keeps the declaration keys of the record',

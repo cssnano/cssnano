@@ -33,6 +33,7 @@ export declare function inheritWhitespace(node: ChildNode, last: DeclarationReco
 /**
  * Removes the declarations at `claimed` from the children and from the
  * declarations, compacting both lists in one pass. Comments stay in order.
+ * The nodes are left as they are, for write-back to drop.
  *
  * @param {(DeclarationRecord | ChildNode)[]} children the entries, or the declarations when there are no comments
  * @param {DeclarationRecord[]} declarations

@@ -6,7 +6,6 @@ import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.
 import {
   appendToDeclarations,
   buildRecords,
-  depart,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
@@ -206,7 +205,7 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
   );
 });
 
-test('declarations should throw when a declaration left the rule without a tree edit', () => {
+test('assertFresh should throw when a declaration left the rule without a tree edit', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);
   try {
@@ -215,7 +214,7 @@ test('declarations should throw when a declaration left the rule without a tree 
     const rule = /** @type {import('postcss').Rule} */ (root.first);
     const record = ruleRecordOf(state.records, rule);
     rule.first.remove();
-    assert.throws(() => record.declarations, /stale/v);
+    assert.throws(() => record.assertFresh(), /stale/v);
   } finally {
     enableConsistencyChecks(wasEnabled);
   }
@@ -228,7 +227,7 @@ test('blockOf should throw for a departed record, since its rule stands in no bl
     state.records,
     /** @type {import('postcss').Rule} */ (root.first)
   );
-  depart(state, record);
+  record.depart();
   assert.throws(() => state.blockOf(record), /departed/v);
 });
 

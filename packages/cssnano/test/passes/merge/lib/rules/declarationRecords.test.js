@@ -14,7 +14,10 @@ import {
   appendToDeclarations,
   buildRecords,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import {
+  assertRecordsMatchTree,
+  writeBack,
+} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import { ruleRecordOf } from './liveRecords.js';
 
 before(() => enableConsistencyChecks(true));
@@ -39,6 +42,7 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   const kept = [...receiving.declarations];
   appendToDeclarations(state, receiving, writesOf(kept), incoming);
   assert.equal(receiving.declarations.at(-1), moved);
+  writeBack(state.records.blocks());
   assert.equal(moved.node.parent, receiving.node);
 });
 

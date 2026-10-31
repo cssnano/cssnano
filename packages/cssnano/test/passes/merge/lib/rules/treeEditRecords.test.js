@@ -8,8 +8,6 @@ import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.
 import {
   appendToDeclarations,
   buildRecords,
-  depart,
-  removeDeclarations,
   removeRules,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
@@ -126,40 +124,40 @@ test('appendToDeclarations should give the record of the receiving rule keys for
   );
 });
 
-test('removeDeclarations should keep the record of the rule', () => {
+test('removeDeclarationsAt should keep the record of the rule', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
-  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
+  ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
   assert.equal(ruleRecordOf(state.records, rule), record);
 });
 
-test('removeDeclarations should leave the record with the declarations that remain', () => {
+test('removeDeclarationsAt should leave the record with the declarations that remain', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   ruleRecordOf(state.records, rule);
-  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
+  ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
   assert.deepEqual(
     ruleRecordOf(state.records, rule).declarations.map((d) => d.prop),
     ['width']
   );
 });
 
-test('removeDeclarations should give the record keys for the declarations that remain', () => {
+test('removeDeclarationsAt should give the record keys for the declarations that remain', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   ruleRecordOf(state.records, rule).declarationKeys();
-  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
+  ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
   assert.deepEqual(ruleRecordOf(state.records, rule).declarationKeys().keys, [
-    state.declarationIds.keyOf(/** @type {Declaration} */ (rule.first)),
+    state.declarationIds.keyOf(/** @type {Declaration} */ (rule.last)),
   ]);
 });
 
-test('removeDeclarations should keep the element keys of the record', () => {
+test('removeDeclarationsAt should keep the element keys of the record', () => {
   const { root, state } = setup('a,b{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   state.elementKeysOf(ruleRecordOf(state.records, rule));
-  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
+  ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
   assert.deepEqual(state.elementKeysOf(ruleRecordOf(state.records, rule)), [
     'a',
     'b',
@@ -186,14 +184,14 @@ test('depart should mark the record of the rule departed', () => {
   const { root, state } = setup('a{color:red}');
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
-  depart(state, ruleRecordOf(state.records, rule));
+  ruleRecordOf(state.records, rule).depart();
   assert.throws(() => record.selectors, /departed/v);
 });
 
 test('depart should leave the rule in the tree', () => {
   const { root, state } = setup('a{color:red}');
   const rule = /** @type {Rule} */ (root.first);
-  depart(state, ruleRecordOf(state.records, rule));
+  ruleRecordOf(state.records, rule).depart();
   assert.equal(rule.parent, root);
 });
 
@@ -232,16 +230,11 @@ test('appendToDeclarations should throw when the receiving rule holds a block', 
   );
 });
 
-test('removeDeclarations should throw when the rule holds a block', () => {
+test('removeDeclarationsAt should throw when the rule holds a block', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const [rule] = /** @type {Rule[]} */ (/** @type {Container} */ (root).nodes);
   assert.throws(
-    () =>
-      removeDeclarations(
-        state,
-        ruleRecordOf(state.records, rule),
-        new Set([0])
-      ),
+    () => ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0])),
     /holds a block/v
   );
 });

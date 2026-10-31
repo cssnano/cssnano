@@ -90,6 +90,7 @@ export function inheritWhitespace(node, last) {
 /**
  * Removes the declarations at `claimed` from the children and from the
  * declarations, compacting both lists in one pass. Comments stay in order.
+ * The nodes are left as they are, for write-back to drop.
  *
  * @param {(DeclarationRecord | ChildNode)[]} children the entries, or the declarations when there are no comments
  * @param {DeclarationRecord[]} declarations
@@ -104,7 +105,6 @@ export function removeClaimed(children, declarations, claimed, taken) {
   for (const child of children) {
     if (child instanceof DeclarationRecord) {
       if (claimed.has(position++)) {
-        child.node.remove();
         taken?.push(child);
         continue;
       }

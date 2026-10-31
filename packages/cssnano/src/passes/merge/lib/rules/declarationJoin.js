@@ -3,7 +3,7 @@ import LastWriteIndex from './lastWriteIndex.js';
 import RepeatScan from './repeatScan.js';
 import { filterRuleIntersections } from './declarations.js';
 import { isKeyframes } from './sameContainer.js';
-import { removeDeclarations, removeRules } from './treeEdits.js';
+import { removeRules } from './treeEdits.js';
 import { RuleRecord } from './ruleRecord.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
@@ -259,7 +259,7 @@ export default function joinByDeclarations(block, mergeState) {
       emptied.add(later);
       return 'emptied';
     }
-    removeDeclarations(mergeState, later, claimed);
+    later.removeDeclarationsAt(claimed);
     return 'trimmed';
   }
 }

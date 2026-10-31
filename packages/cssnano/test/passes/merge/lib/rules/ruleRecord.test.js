@@ -209,14 +209,14 @@ test('addSelectors should return null when the element keys were never read, sin
   assert.equal(record.addSelectors(['p'], lookup), null);
 });
 
-test('declarations should throw under consistency checks once the rule gained a declaration', () => {
+test('assertFresh should throw under consistency checks once the rule gained a declaration', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);
   try {
     const rule = postcss.parse('a{color:red}').first;
     const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
     rule.append(postcss.decl({ prop: 'width', value: '1px' }));
-    assert.throws(() => record.declarations, /stale/v);
+    assert.throws(() => record.assertFresh(), /stale/v);
   } finally {
     enableConsistencyChecks(wasEnabled);
   }
@@ -295,6 +295,19 @@ test('append should keep the declarations in step with the children under consis
   }
 });
 
+test('declarations should read the records under consistency checks, before write-back brings the node in step', () => {
+  const wasEnabled = consistencyChecksEnabled();
+  enableConsistencyChecks(true);
+  try {
+    const rule = postcss.parse('a{color:red}').first;
+    const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
+    record.removeDeclarationsAt(new Set([0]));
+    assert.equal(record.declarations.length, 0);
+  } finally {
+    enableConsistencyChecks(wasEnabled);
+  }
+});
+
 test('assertFresh should throw under consistency checks when a comment was added to the node without the record', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);
@@ -302,7 +315,7 @@ test('assertFresh should throw under consistency checks when a comment was added
     const rule = postcss.parse('a{color:red}').first;
     const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
     rule.append(postcss.comment({ text: 'note' }));
-    assert.throws(() => record.declarations, /stale/v);
+    assert.throws(() => record.assertFresh(), /stale/v);
   } finally {
     enableConsistencyChecks(wasEnabled);
   }
