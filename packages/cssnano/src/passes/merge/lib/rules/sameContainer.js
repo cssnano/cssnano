@@ -3,7 +3,8 @@ import cssnanoUtils from '#utils';
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /** @import {TextTable} from '../../../../values/textTable.js' */
-/** @import {BlockRecord, BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 
 /**
  * @param {import('postcss').AnyNode} nodeA

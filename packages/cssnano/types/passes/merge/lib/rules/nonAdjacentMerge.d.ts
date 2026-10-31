@@ -1,17 +1,19 @@
-import { BlockRecord } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import type MergeState from './mergeState.js';
+import type { BlockRecords } from './blockRecords.js';
 /**
  * The rule records and bare declarations of a block at any depth, in
  * document order, or null when the block holds an at-rule whose place in the
  * cascade is not modelled. The answer is not stored, so an edit cannot leave
  * it stale.
  *
+ * @param {BlockRecords} records
  * @param {BlockRecord} block
  * @return {(RuleRecord | DeclarationRecord)[] | null}
  */
-export declare function subtreeEntries(block: BlockRecord): (RuleRecord | DeclarationRecord)[] | null;
+export declare function subtreeEntries(records: BlockRecords, block: BlockRecord): (RuleRecord | DeclarationRecord)[] | null;
 /**
  * Joins siblings that apply under the same circumstances across any nodes
  * between them that set no conflicting property, in every container except

@@ -9,6 +9,8 @@ import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdit
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { entryOf } from './liveRecords.js';
 
+/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
+
 /**
  * The entries under the first at-rule of `css`, read from its record.
  *
@@ -22,7 +24,10 @@ function entriesOf(css) {
     state.records,
     /** @type {import('postcss').AtRule} */ (root.first)
   );
-  return subtreeEntries(block);
+  return {
+    records: state.records,
+    entries: subtreeEntries(state.records, block),
+  };
 }
 
 /**
@@ -31,10 +36,13 @@ function entriesOf(css) {
  *
  * @param {import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord[] | import('postcss').Declaration[] | null} entries
  */
-function propsOf(entries) {
+function propsOf({ records, entries }) {
   return entries?.flatMap((entry) =>
     entry instanceof RuleRecord
-      ? (entry.block ? entry.block.children : entry.declarations)
+      ? (entry.block === -1
+          ? entry.declarations
+          : /** @type {BlockRecord} */ (records.block(entry.block)).children
+        )
           .filter((child) => child instanceof DeclarationRecord)
           .map((declaration) => declaration.prop)
       : [entry.prop]
@@ -49,7 +57,7 @@ test('subtreeEntries should list the rule records and declarations of a block at
 });
 
 test('subtreeEntries should list a rule that holds a rule as its own record, not as bare declarations', () => {
-  const entries = entriesOf('@media print{a{color:red;b{width:1px}}}');
+  const { entries } = entriesOf('@media print{a{color:red;b{width:1px}}}');
   assert.deepEqual(
     entries?.map((entry) => entry instanceof RuleRecord),
     [true, true]
@@ -68,12 +76,15 @@ test('subtreeEntries should keep the declarations of a conditional at-rule insid
 });
 
 test('subtreeEntries should return null when the block directly holds an at-rule the cascade does not model', () => {
-  assert.equal(entriesOf('@media print{@font-face{font-family:x}}'), null);
+  assert.equal(
+    entriesOf('@media print{@font-face{font-family:x}}').entries,
+    null
+  );
 });
 
 test('subtreeEntries should return null when a rule of the block holds an at-rule the cascade does not model', () => {
   assert.equal(
-    entriesOf('@media print{a{color:red;@font-face{font-family:x}}}'),
+    entriesOf('@media print{a{color:red;@font-face{font-family:x}}}').entries,
     null
   );
 });
@@ -88,7 +99,15 @@ test('subtreeEntries should see the declarations that an edit adds, since nothin
     root.nodes
   );
   const block = entryOf(state.records, first);
-  assert.equal(propsOf(subtreeEntries(block))?.length, 1);
-  block.adopt(entryOf(state.records, second));
-  assert.equal(propsOf(subtreeEntries(block))?.length, 2);
+  const propsNow = () =>
+    propsOf({
+      records: state.records,
+      entries: subtreeEntries(state.records, block),
+    });
+  assert.equal(propsNow()?.length, 1);
+  state.records.adopt(
+    block.index,
+    /** @type {BlockRecord} */ (entryOf(state.records, second)).index
+  );
+  assert.equal(propsNow()?.length, 2);
 });

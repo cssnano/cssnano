@@ -1,33 +1,14 @@
-import { BlockRecord } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { AtRule, ChildNode } from 'postcss';
 import type { PropertyKeys } from '../../../ir/propertyTable.js';
+import type { BlockRecords } from './blockRecords.js';
 /**
  * @param {ChildNode} node
  * @return {node is AtRule}
  */
 export declare function isConditionalGroupRule(node: ChildNode): node is AtRule;
-/**
- * The latest position at which each property was declared: the answers match
- * `isConflictingProp`, in time linear in the number of longhands the property
- * expands to.
- */
-export declare class PropertyWrites {
-    #private;
-    /**
-     * @param {PropertyKeys} keys the keys of a declaration's property name
-     * @param {number} position
-     */
-    record(keys: PropertyKeys, position: number): void;
-    /**
-     * Position of the newest write that conflicts with the property, or -1.
-     *
-     * @param {PropertyKeys} keys
-     * @return {number}
-     */
-    lastConflict(keys: PropertyKeys): number;
-}
 /**
  * A table of the latest position at which each property was declared among
  * the children of one parent, visited in document order. It tells whether a
@@ -44,7 +25,8 @@ export declare class PropertyWrites {
  */
 export default class LastWriteIndex {
     #private;
-    constructor();
+    /** @param {BlockRecords} records the arena that holds the blocks and rules the entries name */
+    constructor(records: BlockRecords);
     /**
      * @param {PropertyKeys} keys the keys of a declaration's property name
      * @param {number} position

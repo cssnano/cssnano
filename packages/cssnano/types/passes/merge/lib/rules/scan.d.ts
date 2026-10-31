@@ -1,6 +1,6 @@
 import type MergeState from './mergeState.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {Placement, RuleLink} from './ruleSequence.js' */
 /**

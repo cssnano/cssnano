@@ -9,7 +9,8 @@ import { repositoryFile } from '../../../../../../../util/testHelpers.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
 
-/** @import {BlockRecord, BlockRecords, Slot} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecords, Slot} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import {Rule} from 'postcss' */
 
 const textTable = new TextTable();
@@ -22,8 +23,9 @@ const emptyRecords = recordsOf(postcss.root()).records;
  * @return {BlockRecord} the block the rule stands in
  */
 function blockOf(records, rule) {
-  const slot = /** @type {Slot} */ (ruleRecordOf(records, rule).slot);
-  return /** @type {BlockRecord} */ (records.block(slot.block));
+  return /** @type {BlockRecord} */ (
+    records.block(ruleRecordOf(records, rule).slotBlock)
+  );
 }
 
 /**

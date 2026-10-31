@@ -1,5 +1,6 @@
 import type { ChildNode, Container } from 'postcss';
-import type { BlockRecord as Block } from './blockRecords.js';
+import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecord as Block } from './blockRecord.js';
 import type MergeState from './mergeState.js';
 /**
  * Under consistency checks, throws when the records and the tree disagree:
@@ -43,8 +44,9 @@ export declare function replaceChildren(rebuilt: Rebuilt[]): void;
  * block that already matches, or was dropped, keeps its child list, and so
  * does a rule that no edit touched.
  *
+ * @param {BlockRecords} records
  * @param {Iterable<Block>} blocks
  * @return {void}
  */
-export declare function writeBack(blocks: Iterable<Block>): void;
+export declare function writeBack(records: BlockRecords, blocks: Iterable<Block>): void;
 //# sourceMappingURL=writeBack.d.ts.map

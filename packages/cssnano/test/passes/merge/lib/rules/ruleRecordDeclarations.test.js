@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecords } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import {
   RuleRecord,
   isDeclaration,
@@ -25,6 +26,11 @@ const recordsOf = (rule) =>
   rule.nodes
     .filter(isDeclaration)
     .map((node) => recordDeclaration(node, properties, declarationIds));
+
+/** An arena for the calls that read no nested block. */
+const noBlocks = new BlockRecords(
+  new BlockRecord(postcss.root(), -1, 0, false)
+);
 
 test('removeDeclarationsAt should keep the comment that a rule holds', () => {
   const rule = postcss.parse('a{color:red;/* note */width:1px}').first;
@@ -105,30 +111,30 @@ test('removeDeclarationsAt should drop the keys of the removed declarations from
   const rule = postcss.parse('a{color:red;width:1px}').first;
   const records = recordsOf(rule);
   const record = new RuleRecord(rule, rule.selectors, [...records]);
-  record.declarationKeys();
+  record.declarationKeys(noBlocks);
   record.removeDeclarationsAt(new Set([0]));
-  assert.deepEqual(record.declarationKeys().keys, [records[1].id]);
+  assert.deepEqual(record.declarationKeys(noBlocks).keys, [records[1].id]);
 });
 
 test('takeDeclarationsAt should drop the keys of the taken declarations from the declaration keys', () => {
   const rule = postcss.parse('a{color:red;width:1px}').first;
   const records = recordsOf(rule);
   const record = new RuleRecord(rule, rule.selectors, [...records]);
-  record.declarationKeys();
+  record.declarationKeys(noBlocks);
   record.takeDeclarationsAt(new Set([0]));
-  assert.deepEqual(record.declarationKeys().keys, [records[1].id]);
+  assert.deepEqual(record.declarationKeys(noBlocks).keys, [records[1].id]);
 });
 
 test('takeDeclarationsAt should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, -1, 0, false));
+  record.setBlock(0); // any index: these tests never read the block
   assert.throws(() => record.takeDeclarationsAt(new Set()), /block/v);
 });
 
 test('removeDeclarationsAt should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, -1, 0, false));
+  record.setBlock(0); // any index: these tests never read the block
   assert.throws(() => record.removeDeclarationsAt(new Set()), /block/v);
 });

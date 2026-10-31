@@ -13,7 +13,7 @@ test('liveEntries should yield the rule record, the at-rule block record and the
   const state = new MergeState(['chrome 120'], createRunContext());
   state.records = buildRecords(root, state);
   const [rule, media, comment] = root.nodes;
-  const entries = state.records.root.liveEntries();
+  const entries = state.records.liveEntries(state.records.root.index);
   assert.equal(entries.length, 3);
   assert.equal(
     entries[0],

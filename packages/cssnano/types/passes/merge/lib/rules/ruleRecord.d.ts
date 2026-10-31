@@ -9,7 +9,7 @@ export type RuleDeclarationKeys = {
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { ElementKeyOf, SelectorLookup } from './selectorList.js';
 import type { VendorPrefixSummary } from './vendorPrefixSummary.js';
-import type { BlockRecord, Slot } from './blockRecords.js';
+import type { BlockRecords } from './blockRecords.js';
 /**
  * @param {ChildNode} node
  * @return {node is Declaration}
@@ -30,14 +30,19 @@ export declare class RuleRecord extends SelectorList {
      * @param {DeclarationRecord[]} declarations
      */
     constructor(node: Rule, selectors: string[], declarations: DeclarationRecord[]);
-    /** @return {Slot | undefined} the slot the rule stands in, readable after departure */
-    get slot(): Slot | undefined;
-    /** @return {BlockRecord | null} the record of the children, when the rule holds a rule or an at-rule */
-    get block(): BlockRecord | null;
-    /** @param {Slot} slot the slot the rule now stands in */
-    place(slot: Slot): void;
-    /** @param {BlockRecord} block the record of the rule's children */
-    setBlock(block: BlockRecord): void;
+    /** @return {number} the index of the block whose slot holds the rule, readable after departure */
+    get slotBlock(): number;
+    /** @return {number} where the rule's slot stands among the children of its block */
+    get slotPosition(): number;
+    /** @return {number} the index of the record of the rule's children, -1 when there is none */
+    get block(): number;
+    /**
+     * @param {number} block the index of the block whose slot now holds the rule
+     * @param {number} position where that slot stands among the block's children
+     */
+    place(block: number, position: number): void;
+    /** @param {number} block the index of the record of the rule's children */
+    setBlock(block: number): void;
     /** @return {boolean} whether a child was added or removed since the record was made */
     get edited(): boolean;
     /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
@@ -66,9 +71,10 @@ export declare class RuleRecord extends SelectorList {
     /**
      * The ids of the declarations, which a block holder keeps in its block.
      *
+     * @param {BlockRecords} records the arena that holds the rule's block
      * @return {RuleDeclarationKeys}
      */
-    declarationKeys(): RuleDeclarationKeys;
+    declarationKeys(records: BlockRecords): RuleDeclarationKeys;
     /**
      * Removes the declarations at `claimed` from the records. The node drops
      * them at write-back.

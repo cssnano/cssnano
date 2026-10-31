@@ -1,13 +1,14 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { BlockRecord, BlockRecords, Slot } from './blockRecords.js';
+import { BlockRecords, Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
 import { RuleRecord } from './ruleRecord.js';
 import { tallyDeclarations } from './overDuplication.js';
 
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
-/** @import {PropertyWrites} from './lastWriteIndex.js' */
+/** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
 
 /**
@@ -55,13 +56,13 @@ export function buildRecords(root, mergeState) {
           mergeState.declarationIds,
           holds ? [] : null
         );
-        const slot = new Slot(block.index, index, [record]);
-        record.place(slot);
+        const slot = new Slot(block.index, index, [record.index]);
+        record.place(block.index, index);
         block.children.push(slot);
         if (holds) {
           const nested = new BlockRecord(child, block.index, index, false);
-          record.setBlock(nested);
           fill(nested);
+          record.setBlock(nested.index);
         } else {
           declarations += record.declarations.length;
         }
@@ -106,8 +107,8 @@ export function buildRecords(root, mergeState) {
  */
 export function remove(records, entry) {
   if (entry instanceof RuleRecord) {
-    const slot = /** @type {Slot} */ (entry.slot);
-    slot.rules.splice(slot.rules.indexOf(entry), 1);
+    const slot = records.slotOf(entry);
+    slot.rules.splice(slot.rules.indexOf(entry.index), 1);
   } else {
     emptyEntry(records, entry);
   }
@@ -141,17 +142,21 @@ function emptyEntry(records, block) {
 export function takePlaceOf(mergeState, parent, earlier, later) {
   // The first child of the stylesheet leaves its place, so the whitespace it
   // held passes to the child after it, which `later` gave to `earlier`.
-  const { root } = mergeState.records;
-  if (parent.type === 'root' && root.firstLiveChild() === earlier.node) {
+  const { records } = mergeState;
+  const { root } = records;
+  if (
+    parent.type === 'root' &&
+    records.firstLiveChild(root.index) === earlier.node
+  ) {
     root.leadingWhitespace = later.node.raws.before;
   }
   if (later instanceof RuleRecord) {
     const rule = /** @type {RuleRecord} */ (earlier);
-    const laterSlot = /** @type {Slot} */ (later.slot);
-    const earlierSlot = /** @type {Slot} */ (rule.slot);
-    earlierSlot.rules.splice(earlierSlot.rules.indexOf(rule), 1);
-    laterSlot.rules.splice(laterSlot.rules.indexOf(later), 1, rule);
-    rule.place(laterSlot);
+    const laterSlot = records.slotOf(later);
+    const earlierSlot = records.slotOf(rule);
+    earlierSlot.rules.splice(earlierSlot.rules.indexOf(rule.index), 1);
+    laterSlot.rules.splice(laterSlot.rules.indexOf(later.index), 1, rule.index);
+    rule.place(laterSlot.block, laterSlot.position);
   } else {
     const block = /** @type {BlockRecord} */ (earlier);
     const holder = /** @type {BlockRecord} */ (
@@ -202,16 +207,19 @@ export function appendToDeclarations(mergeState, receiving, index, incoming) {
  * @return {void}
  */
 export function removeRules(mergeState, records) {
-  const { root } = mergeState.records;
-  const first = root.firstLiveChild();
+  const arena = mergeState.records;
+  const { root } = arena;
+  const first = arena.firstLiveChild(root.index);
   let leadsRoot = false;
   for (const record of records) {
     leadsRoot ||= record.node === first;
-    const slot = /** @type {Slot} */ (record.slot);
-    slot.rules.splice(slot.rules.indexOf(record), 1);
+    const slot = arena.slotOf(record);
+    slot.rules.splice(slot.rules.indexOf(record.index), 1);
     record.depart();
   }
   // Unlike `remove`, the rest keep their own whitespace, so the first of them
   // takes its own as the leading whitespace of the stylesheet.
-  if (leadsRoot) root.leadingWhitespace = root.firstLiveChild()?.raws.before;
+  if (leadsRoot) {
+    root.leadingWhitespace = arena.firstLiveChild(root.index)?.raws.before;
+  }
 }

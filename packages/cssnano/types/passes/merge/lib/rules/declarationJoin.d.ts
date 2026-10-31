@@ -1,12 +1,12 @@
 import { RuleRecord } from './ruleRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type MergeState from './mergeState.js';
-import type { BlockRecord } from './blockRecords.js';
+import type { BlockRecord } from './blockRecord.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {ChildNode, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /**
  * A rule made only of declarations. Comments and nested rules would be
  * stranded or reordered by moving declarations out of the rule.

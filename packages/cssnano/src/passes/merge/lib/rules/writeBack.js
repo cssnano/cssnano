@@ -1,9 +1,11 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { BlockRecord, Slot } from './blockRecords.js';
+import { Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
-/** @import {BlockRecord as Block} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord as Block} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 
@@ -14,16 +16,18 @@ const OUT_OF_STEP = 'block record out of step with the tree';
  * holds. Compares in order and stops at the first difference, without building
  * the list of live children.
  *
+ * @param {BlockRecords} records
  * @param {Block} block
  * @return {boolean}
  */
-function differs(block) {
+function differs(records, block) {
   const nodes = /** @type {ChildNode[]} */ (block.node.nodes);
-  if (block.liveCount() !== nodes.length) return true;
+  if (records.liveCount(block.index) !== nodes.length) return true;
   let at = 0;
   for (const entry of block.children) {
     if (entry instanceof Slot) {
-      for (const record of entry.rules) {
+      for (const index of entry.rules) {
+        const record = /** @type {RuleRecord} */ (records.rule(index));
         if (nodes[at++] !== record.node) return true;
       }
     } else if (entry instanceof BlockRecord) {
@@ -59,19 +63,24 @@ function isRuleOrAtRule(node) {
 function checkRuleRecord(mergeState, block, slot, record) {
   const rule = record.node;
   record.assertFresh();
-  if (record.slot !== slot) throw new Error(OUT_OF_STEP);
-  if ((record.block !== null) !== rule.nodes.some(isRuleOrAtRule)) {
+  if (mergeState.records.slotOf(record) !== slot) {
     throw new Error(OUT_OF_STEP);
   }
-  if (record.block) {
+  if ((record.block !== -1) !== rule.nodes.some(isRuleOrAtRule)) {
+    throw new Error(OUT_OF_STEP);
+  }
+  if (record.block !== -1) {
+    const nested = /** @type {BlockRecord} */ (
+      mergeState.records.block(record.block)
+    );
     if (
-      record.block.parent !== block.index ||
-      record.block.node !== rule ||
-      record.block.position !== slot.position
+      nested.parent !== block.index ||
+      nested.node !== rule ||
+      nested.position !== slot.position
     ) {
       throw new Error(OUT_OF_STEP);
     }
-    checkBlockRecord(mergeState, record.block);
+    checkBlockRecord(mergeState, nested);
   } else {
     for (const child of record.children) {
       const node = child instanceof DeclarationRecord ? child.node : child;
@@ -89,10 +98,13 @@ function checkRuleRecord(mergeState, block, slot, record) {
  * @return {void}
  */
 function checkBlockRecord(mergeState, block) {
-  if (differs(block)) throw new Error(OUT_OF_STEP);
+  if (differs(mergeState.records, block)) throw new Error(OUT_OF_STEP);
   for (const entry of block.children) {
     if (entry instanceof Slot) {
-      for (const record of entry.rules) {
+      for (const index of entry.rules) {
+        const record = /** @type {RuleRecord} */ (
+          mergeState.records.rule(index)
+        );
         checkRuleRecord(mergeState, block, entry, record);
       }
     } else if (entry instanceof BlockRecord && !entry.dropped) {
@@ -166,25 +178,27 @@ function nodesOf(record) {
  * block that already matches, or was dropped, keeps its child list, and so
  * does a rule that no edit touched.
  *
+ * @param {BlockRecords} records
  * @param {Iterable<Block>} blocks
  * @return {void}
  */
-export function writeBack(blocks) {
+export function writeBack(records, blocks) {
   /** @type {Rebuilt[]} */
   const rebuilt = [];
   for (const block of blocks) {
     if (block.dropped) continue;
-    if (differs(block)) {
+    if (differs(records, block)) {
       rebuilt.push({
         container: /** @type {Container} */ (block.node),
-        children: block.liveChildren(),
+        children: records.liveChildren(block.index),
         leading: block.parent === -1 ? block.leadingWhitespace : undefined,
       });
     }
     for (const entry of block.children) {
       if (!(entry instanceof Slot)) continue;
-      for (const record of entry.rules) {
-        if (record.edited && !record.block) {
+      for (const index of entry.rules) {
+        const record = /** @type {RuleRecord} */ (records.rule(index));
+        if (record.edited && record.block === -1) {
           rebuilt.push({
             container: /** @type {Container} */ (record.node),
             children: nodesOf(record),

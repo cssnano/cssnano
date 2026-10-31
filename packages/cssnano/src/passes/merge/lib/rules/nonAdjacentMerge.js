@@ -3,7 +3,8 @@ import LastWriteIndex, { isConditionalGroupRule } from './lastWriteIndex.js';
 import joinByDeclarations from './declarationJoin.js';
 import { writesOf } from './ruleRewrite.js';
 import RepeatScan from './repeatScan.js';
-import { BlockRecord, Slot } from './blockRecords.js';
+import { Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
@@ -12,23 +13,31 @@ import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {AtRule, Container, ChildNode, Rule} from 'postcss' */
-/** @import {PropertyWrites} from './lastWriteIndex.js' */
+/** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 
 /**
  * @param {ChildNode | DeclarationRecord | RuleRecord | BlockRecord} entry
+ * @param {BlockRecords} records
  * @param {(RuleRecord | DeclarationRecord)[]} entries grown in place
  * @return {boolean} see `collectEntries`
  */
-function collectFrom(entry, entries) {
+function collectFrom(records, entry, entries) {
   if (entry instanceof RuleRecord) {
     entries.push(entry);
     const { block } = entry;
-    return block ? collectEntries(block, entries) : true;
+    return block === -1
+      ? true
+      : collectEntries(
+          records,
+          /** @type {BlockRecord} */ (records.block(block)),
+          entries
+        );
   } else if (entry instanceof BlockRecord) {
     if (!isConditionalGroupRule(/** @type {AtRule} */ (entry.node)))
       return false;
-    return collectEntries(entry, entries);
+    return collectEntries(records, entry, entries);
   } else if (entry instanceof DeclarationRecord) {
     entries.push(entry);
   } else if (entry.type === 'atrule' && !isConditionalGroupRule(entry)) {
@@ -38,23 +47,25 @@ function collectFrom(entry, entries) {
 }
 
 /**
+ * @param {BlockRecords} records
  * @param {BlockRecord} block
  * @param {(RuleRecord | DeclarationRecord)[]} entries grown in place
  * @return {boolean} false when the subtree holds an at-rule outside the
  * conditional groups
  */
-function collectEntries(block, entries) {
+function collectEntries(records, block, entries) {
   // The declarations of a rule stand in its record, so its block skips them.
   const ruleOwned = block.node.type === 'rule';
   for (const entry of block.children) {
     if (entry instanceof Slot) {
-      for (const record of entry.rules) {
-        if (!collectFrom(record, entries)) return false;
+      for (const index of entry.rules) {
+        const record = /** @type {RuleRecord} */ (records.rule(index));
+        if (!collectFrom(records, record, entries)) return false;
       }
     } else if (entry instanceof BlockRecord) {
-      if (!entry.dropped && !collectFrom(entry, entries)) return false;
+      if (!entry.dropped && !collectFrom(records, entry, entries)) return false;
     } else if (!ruleOwned || !(entry instanceof DeclarationRecord)) {
-      if (!collectFrom(entry, entries)) return false;
+      if (!collectFrom(records, entry, entries)) return false;
     }
   }
   return true;
@@ -66,13 +77,14 @@ function collectEntries(block, entries) {
  * cascade is not modelled. The answer is not stored, so an edit cannot leave
  * it stale.
  *
+ * @param {BlockRecords} records
  * @param {BlockRecord} block
  * @return {(RuleRecord | DeclarationRecord)[] | null}
  */
-export function subtreeEntries(block) {
+export function subtreeEntries(records, block) {
   /** @type {(RuleRecord | DeclarationRecord)[]} */
   const entries = [];
-  return collectEntries(block, entries) ? entries : null;
+  return collectEntries(records, block, entries) ? entries : null;
 }
 
 /**
@@ -129,7 +141,7 @@ function joinKey(entry, joinRules) {
  */
 export function joinNonAdjacent(block, mergeState) {
   // Each join removes a live child of `block`, so L + 1 passes bound the loop.
-  let budget = block.liveCount() + 1;
+  let budget = mergeState.records.liveCount(block.index) + 1;
   let joined = joinInParent(block, mergeState, true);
   // A forward pass resolves a chain of blocks that move up, a backward pass one
   // that moves down. A pass that joins nothing saw the tree unchanged.
@@ -158,7 +170,7 @@ export function joinNonAdjacent(block, mergeState) {
  */
 function joinBlocksBackward(block, mergeState) {
   // A snapshot, since joining removes entries from the block.
-  const entries = block.liveEntries();
+  const entries = mergeState.records.liveEntries(block.index);
   const last = entries.length - 1;
   const keys = entries.map((entry) => joinKey(entry, false));
   const scan = new RepeatScan();
@@ -168,7 +180,7 @@ function joinBlocksBackward(block, mergeState) {
   }
   if (scan.start === Infinity) return false;
 
-  const index = new LastWriteIndex();
+  const index = new LastWriteIndex(mergeState.records);
   const keysOf = mergeState.elementKeysOf;
   /** @type {Map<string, {block: BlockRecord, position: number}>} */
   const next = new Map();
@@ -204,19 +216,19 @@ function joinBlocksBackward(block, mergeState) {
    * @return {'up' | 'down' | null} where the joined block stands
    */
   function joinBlock(earlier, later, laterPosition) {
-    const laterEntries = subtreeEntries(later);
+    const laterEntries = subtreeEntries(mergeState.records, later);
     if (!laterEntries) return null;
     if (!index.conflictsSinceIn(laterEntries, laterPosition, keysOf)) {
-      earlier.adopt(later);
+      mergeState.records.adopt(earlier.index, later.index);
       remove(mergeState.records, later);
       return 'up';
     }
     // The earlier block's content stays first, so source order is kept.
-    const earlierEntries = subtreeEntries(earlier);
+    const earlierEntries = subtreeEntries(mergeState.records, earlier);
     if (!earlierEntries) return null;
     if (!index.conflictsSinceIn(earlierEntries, laterPosition, keysOf)) {
       index.moveWrites(earlierEntries, laterPosition, keysOf);
-      earlier.adopt(later);
+      mergeState.records.adopt(earlier.index, later.index);
       takePlaceOf(mergeState, block.node, earlier, later);
       return 'down';
     }
@@ -233,7 +245,7 @@ function joinBlocksBackward(block, mergeState) {
 function joinInParent(block, mergeState, rules) {
   const joinRules = rules && !isKeyframes(block.node);
   // A snapshot, since joining removes entries from the block.
-  const entries = block.liveEntries();
+  const entries = mergeState.records.liveEntries(block.index);
   const keys = entries.map((entry) => joinKey(entry, joinRules));
   const scan = new RepeatScan();
   for (const [i, key] of keys.entries()) {
@@ -241,7 +253,7 @@ function joinInParent(block, mergeState, rules) {
   }
   if (scan.start === Infinity) return false;
 
-  const index = new LastWriteIndex();
+  const index = new LastWriteIndex(mergeState.records);
   const keysOf = mergeState.elementKeysOf;
   /** @type {Map<string, {entry: RuleRecord | BlockRecord, position: number}>} */
   const latest = new Map();
@@ -344,21 +356,21 @@ function joinInParent(block, mergeState, rules) {
    * @return {'up' | 'down' | null} where the joined block stands
    */
   function joinBlock(earlier, later, earlierPosition, laterPosition) {
-    const laterEntries = subtreeEntries(later);
+    const laterEntries = subtreeEntries(mergeState.records, later);
     if (!laterEntries) return null;
     if (!index.conflictsSinceIn(laterEntries, earlierPosition, keysOf)) {
       index.moveWrites(laterEntries, earlierPosition, keysOf);
-      earlier.adopt(later);
+      mergeState.records.adopt(earlier.index, later.index);
       remove(mergeState.records, later);
       return 'up';
     }
     // The earlier block's content stays first, so source order is kept.
-    const earlierEntries = subtreeEntries(earlier);
+    const earlierEntries = subtreeEntries(mergeState.records, earlier);
     if (!earlierEntries) return null;
     if (!index.conflictsSinceIn(earlierEntries, earlierPosition, keysOf)) {
       index.moveWrites(earlierEntries, laterPosition, keysOf);
       index.moveWrites(laterEntries, laterPosition, keysOf);
-      earlier.adopt(later);
+      mergeState.records.adopt(earlier.index, later.index);
       takePlaceOf(mergeState, block.node, earlier, later);
       return 'down';
     }

@@ -1,4 +1,4 @@
-import type { ChildNode, Container, Rule } from 'postcss';
+import type { ChildNode, Rule } from 'postcss';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 /** @import {ChildNode, Container, Rule} from 'postcss' */
@@ -6,130 +6,31 @@ import type { PropertyTable } from '../../../ir/propertyTable.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
+import { BlockRecord } from './blockRecord.js';
 /**
- * One position among the children of a block. `rules` are the rules that
- * stand there now, in order, so the slot is empty once every rule left.
+ * One position among the children of a block. `rules` are the indices of the
+ * rules that stand there now, in order, so the slot is empty once every rule
+ * left.
  */
 export declare class Slot {
     /** @type {number} the index of the block the slot stands in */
     block: number;
     /** @type {number} where the slot stands among the children of `block` */
     position: number;
-    /** @type {RuleRecord[]} */
-    rules: RuleRecord[];
+    /** @type {number[]} the indices of the rules in the slot */
+    rules: number[];
     /**
      * @param {number} block the index of the block the slot stands in
      * @param {number} position
-     * @param {RuleRecord[]} rules
+     * @param {number[]} rules
      */
-    constructor(block: number, position: number, rules: RuleRecord[]);
-    /**
-     * Replaces `record` in the slot with `replacements`, and places each of them
-     * here.
-     *
-     * @param {RuleRecord} record the record that stands in the slot and is replaced
-     * @param {RuleRecord[]} replacements
-     * @return {void}
-     */
-    substitute(record: RuleRecord, replacements: RuleRecord[]): void;
-}
-/**
- * The record of a container that the merge visits: the stylesheet, an at-rule
- * with a block, or a rule that holds rules or at-rules. `children` has one
- * entry per child, in order: a slot for a rule, the record of a nested
- * at-rule, or the PostCSS node of anything else. Entries are never spliced
- * out, so a removed entry is left in place and skipped.
- */
-export declare class BlockRecord {
-    #private;
-    /** @type {Container} */
-    node: Container;
-    /** @type {number} the index of the block whose children hold this one's entry, -1 for the stylesheet */
-    parent: number;
-    /** @type {number} where the entry stands among the children of `parent` */
-    position: number;
-    /** @type {boolean} whether the block applies nothing once it is empty */
-    droppable: boolean;
-    /** @type {(Slot | BlockRecord | DeclarationRecord | ChildNode)[]} */
-    children: (Slot | BlockRecord | DeclarationRecord | ChildNode)[];
-    /**
-     * The live children of a droppable block during a sweep, or null while the
-     * block is not tracked. Dropping an emptied `@layer` is safe because a rule
-     * moves only into an equivalent earlier block, which already orders the
-     * layer. A block empty at sweep start is untracked because it may be the
-     * first statement that orders its layer.
-     *
-     * @type {number | null}
-     */
-    remaining: number | null;
-    /** @type {boolean} whether a sweep removed the block for being empty */
-    dropped: boolean;
-    /** @type {number} the place of the block in the arena of its records, -1 until added */
-    index: number;
-    /**
-     * The whitespace before the first child of the stylesheet, which PostCSS
-     * hands on when that child is removed. Only the record of the stylesheet
-     * holds it.
-     *
-     * @type {string | undefined}
-     */
-    leadingWhitespace: string | undefined;
-    /**
-     * @param {Container} node
-     * @param {number} parent the index of the block whose children hold this one's entry, -1 for the stylesheet
-     * @param {number} position
-     * @param {boolean} droppable
-     */
-    constructor(node: Container, parent: number, position: number, droppable: boolean);
-    /**
-     * The first child the block holds now, without copying the child list.
-     *
-     * @return {ChildNode | undefined}
-     */
-    firstLiveChild(): ChildNode | undefined;
-    /**
-     * The number of children the block holds now, counted without copying them.
-     *
-     * @return {number}
-     */
-    liveCount(): number;
-    /**
-     * The entries the block holds now, in order: the record of each rule, the
-     * record of each at-rule block, and the node of anything else. A block that
-     * was dropped is left out.
-     *
-     * @return {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]}
-     */
-    liveEntries(): (RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[];
-    /**
-     * The children the block holds now, in order: the rules of its slots, and
-     * the nodes of its other entries, except a block that was dropped.
-     *
-     * @return {ChildNode[]}
-     */
-    liveChildren(): ChildNode[];
-    /**
-     * Moves `record` out of `from` into a new slot after the last child of this
-     * block.
-     *
-     * @param {RuleRecord} record
-     * @param {Slot} from
-     * @return {Slot} the slot that now holds `record`
-     */
-    moveRule(record: RuleRecord, from: Slot): Slot;
-    /**
-     * Takes the children of `source` after its own. Each rule gets a slot here,
-     * and each block a rule holds gets this block as its parent. `source` is
-     * left with no children, since the caller removes it.
-     *
-     * @param {BlockRecord} source
-     * @return {void}
-     */
-    adopt(source: BlockRecord): void;
+    constructor(block: number, position: number, rules: number[]);
 }
 /**
  * The records of one run: the stylesheet's block, and every block record the
- * run added. Rule records are reached through the slots that hold them.
+ * run added, and every rule record recorded. A block names its parent and a
+ * rule names its slot by index, so every edit that touches more than one
+ * record is a method here.
  */
 export declare class BlockRecords {
     #private;
@@ -172,6 +73,13 @@ export declare class BlockRecords {
      */
     blocks(): IterableIterator<BlockRecord>;
     /**
+     * The slot a placed rule stands in.
+     *
+     * @param {RuleRecord} record
+     * @return {Slot}
+     */
+    slotOf(record: RuleRecord): Slot;
+    /**
      * Accounts for the block at `index` gaining `change` live children, or losing
      * them when negative. A droppable block that is tracked and goes empty tells
      * its parent, which may go empty in turn.
@@ -181,6 +89,69 @@ export declare class BlockRecords {
      * @return {void}
      */
     changed(index: number, change: number): void;
+    /**
+     * The first child the block at `index` holds now, without copying the child
+     * list.
+     *
+     * @param {number} index
+     * @return {ChildNode | undefined}
+     */
+    firstLiveChild(index: number): ChildNode | undefined;
+    /**
+     * The number of children the block at `index` holds now, counted without
+     * copying them.
+     *
+     * @param {number} index
+     * @return {number}
+     */
+    liveCount(index: number): number;
+    /**
+     * The entries the block at `index` holds now, in order: the record of each
+     * rule, the record of each at-rule block, and the node of anything else. A
+     * block that was dropped is left out.
+     *
+     * @param {number} index
+     * @return {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]}
+     */
+    liveEntries(index: number): (RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[];
+    /**
+     * The children the block at `index` holds now, in order: the rules of its
+     * slots, and the nodes of its other entries, except a block that was dropped.
+     *
+     * @param {number} index
+     * @return {ChildNode[]}
+     */
+    liveChildren(index: number): ChildNode[];
+    /**
+     * Replaces the rule `record` in `slot` with the rules `replacements`, and
+     * places each of them in the slot.
+     *
+     * @param {Slot} slot the slot that holds `record` and is given the replacements
+     * @param {number} record the index of the rule that stands in the slot and is replaced
+     * @param {number[]} replacements
+     * @return {void}
+     */
+    substitute(slot: Slot, record: number, replacements: number[]): void;
+    /**
+     * Moves the rule `record` out of its slot into a new slot after the last
+     * child of the block at `target`.
+     *
+     * @param {number} target the index of the block that takes the rule
+     * @param {number} record the index of the rule
+     * @return {Slot} the slot that now holds the rule
+     */
+    moveRule(target: number, record: number): Slot;
+    /**
+     * Takes the children of the block at `source` after those of the block at
+     * `target`. Each rule gets a slot in `target`, and each block a rule holds
+     * gets `target` as its parent. `source` is left with no children, since the
+     * caller removes it.
+     *
+     * @param {number} target
+     * @param {number} source
+     * @return {void}
+     */
+    adopt(target: number, source: number): void;
     /**
      * Builds the record of a declaration that is a child of a block.
      *

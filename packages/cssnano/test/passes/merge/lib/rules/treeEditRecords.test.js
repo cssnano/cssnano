@@ -110,7 +110,7 @@ test('appendToDeclarations should give the record of the receiving rule keys for
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  ruleRecordOf(state.records, receiving).declarationKeys();
+  ruleRecordOf(state.records, receiving).declarationKeys(state.records);
   const kept = [...ruleRecordOf(state.records, receiving).declarations];
   appendToDeclarations(
     state,
@@ -119,7 +119,7 @@ test('appendToDeclarations should give the record of the receiving rule keys for
     ruleRecordOf(state.records, incoming)
   );
   assert.deepEqual(
-    ruleRecordOf(state.records, receiving).declarationKeys().keys,
+    ruleRecordOf(state.records, receiving).declarationKeys(state.records).keys,
     ruleRecordOf(state.records, receiving).declarations.map((d) => d.id)
   );
 });
@@ -146,11 +146,12 @@ test('removeDeclarationsAt should leave the record with the declarations that re
 test('removeDeclarationsAt should give the record keys for the declarations that remain', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  ruleRecordOf(state.records, rule).declarationKeys();
+  ruleRecordOf(state.records, rule).declarationKeys(state.records);
   ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
-  assert.deepEqual(ruleRecordOf(state.records, rule).declarationKeys().keys, [
-    state.declarationIds.keyOf(/** @type {Declaration} */ (rule.last)),
-  ]);
+  assert.deepEqual(
+    ruleRecordOf(state.records, rule).declarationKeys(state.records).keys,
+    [state.declarationIds.keyOf(/** @type {Declaration} */ (rule.last))]
+  );
 });
 
 test('removeDeclarationsAt should keep the element keys of the record', () => {
@@ -243,8 +244,8 @@ test('buildRecords should give each slot the record of its rule, which names the
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [first] = /** @type {Slot[]} */ (state.records.root.children);
   assert.equal(
-    first.rules[0],
+    state.records.rule(first.rules[0]),
     ruleRecordOf(state.records, /** @type {Rule} */ (root.first))
   );
-  assert.equal(first.rules[0].slot, first);
+  assert.equal(state.records.slotOf(state.records.rule(first.rules[0])), first);
 });

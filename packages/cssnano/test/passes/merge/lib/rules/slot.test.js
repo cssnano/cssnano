@@ -29,7 +29,7 @@ test('Slot#substitute should replace the rule in its slot and place the replacem
   const { root, state } = setup('@media print{a{color:red}}');
   const [media] = /** @type {Root} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
-  const slot = /** @type {Slot} */ (ruleRecordOf(state.records, rule).slot);
+  const slot = state.records.slotOf(ruleRecordOf(state.records, rule));
   const replacement = postcss.rule({ selector: 'b' });
   media.append(replacement);
   // A replacement comes with the record that `ruleRewrite` builds for a clone.
@@ -38,19 +38,23 @@ test('Slot#substitute should replace the rule in its slot and place the replacem
     state.properties,
     state.declarationIds
   );
-  slot.substitute(ruleRecordOf(state.records, rule), [record]);
-  assert.deepEqual(slot.rules, [record]);
-  assert.equal(record.slot, slot);
+  state.records.substitute(slot, ruleRecordOf(state.records, rule).index, [
+    record.index,
+  ]);
+  assert.deepEqual(slot.rules, [record.index]);
+  assert.equal(state.records.slotOf(record), slot);
 });
 
 test('moveRule should place the record of the moved rule in a new slot at the end of the target', () => {
   const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
   const [media] = /** @type {Root} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
-  const from = /** @type {Slot} */ (ruleRecordOf(state.records, rule).slot);
   const target = state.records.root;
-  const slot = target.moveRule(ruleRecordOf(state.records, rule), from);
-  assert.equal(ruleRecordOf(state.records, rule).slot, slot);
+  const slot = state.records.moveRule(
+    target.index,
+    ruleRecordOf(state.records, rule).index
+  );
+  assert.equal(state.records.slotOf(ruleRecordOf(state.records, rule)), slot);
   assert.equal(slot.block, target.index);
   assert.equal(target.children.at(-1), slot);
 });
@@ -59,7 +63,10 @@ test('moveRule should leave the rule out of the slot it came from', () => {
   const { root, state } = setup('@media print{a{color:red}}');
   const [media] = /** @type {Root} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
-  const from = /** @type {Slot} */ (ruleRecordOf(state.records, rule).slot);
-  state.records.root.moveRule(ruleRecordOf(state.records, rule), from);
+  const from = state.records.slotOf(ruleRecordOf(state.records, rule));
+  state.records.moveRule(
+    state.records.root.index,
+    ruleRecordOf(state.records, rule).index
+  );
   assert.deepEqual(from.rules, []);
 });

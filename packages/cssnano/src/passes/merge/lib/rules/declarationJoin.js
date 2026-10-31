@@ -10,7 +10,7 @@ import { RuleRecord } from './ruleRecord.js';
 
 /** @import {ChildNode, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 
 /**
  * A rule made only of declarations. Comments and nested rules would be
@@ -20,7 +20,7 @@ import { RuleRecord } from './ruleRecord.js';
  * @return {boolean}
  */
 export const isDeclarationRule = (record) =>
-  record.block === null &&
+  record.block === -1 &&
   record.childCount() > 0 &&
   record.holdsOnlyDeclarations();
 
@@ -102,10 +102,10 @@ function joinGain(group, later) {
  */
 export default function joinByDeclarations(block, mergeState) {
   if (isKeyframes(block.node)) return false;
-  const entries = block.liveEntries();
+  const entries = mergeState.records.liveEntries(block.index);
   const keyLists = entries.map((entry) =>
     entry instanceof RuleRecord && isDeclarationRule(entry)
-      ? entry.declarationKeys()
+      ? entry.declarationKeys(mergeState.records)
       : null
   );
   // Rules can only join where they share a declaration.
@@ -116,7 +116,7 @@ export default function joinByDeclarations(block, mergeState) {
   }
   if (scan.start === Infinity) return false;
 
-  const index = new LastWriteIndex();
+  const index = new LastWriteIndex(mergeState.records);
   const keysOf = mergeState.elementKeysOf;
   // Groups by their first declaration, in document order: a rule that
   // repeats a group's declarations repeats that one too.
@@ -137,7 +137,11 @@ export default function joinByDeclarations(block, mergeState) {
       const outcome = joinIntoGroup(record);
       if (outcome === 'emptied') continue;
       // A trimmed rule's record took its remaining declarations, so its keys are new.
-      register(record, position, record.declarationKeys().keys);
+      register(
+        record,
+        position,
+        record.declarationKeys(mergeState.records).keys
+      );
     }
     index.recordNode(entry, position, keysOf);
   }
@@ -172,7 +176,7 @@ export default function joinByDeclarations(block, mergeState) {
    */
   function joinIntoGroup(laterRecord) {
     const laterDeclarations = laterRecord.declarations;
-    const laterSet = laterRecord.declarationKeys().keySet;
+    const laterSet = laterRecord.declarationKeys(mergeState.records).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
     const laterKeys = keysOf(laterRecord);
     /** @type {{group: Group, claimed: Set<number>, added: string[], gain: number} | null} */

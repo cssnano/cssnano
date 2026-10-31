@@ -9,7 +9,8 @@ import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdit
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import { blockRecordOf } from './liveRecords.js';
 
-/** @import {BlockRecord, Slot} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {Slot} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import {Root} from 'postcss' */
 
 before(() => enableConsistencyChecks(true));

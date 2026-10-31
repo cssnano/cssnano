@@ -3,14 +3,16 @@ import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { TextTable } from '../../../../values/textTable.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleRecord } from './ruleRecord.js';
-import type { BlockRecord, BlockRecords } from './blockRecords.js';
+import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecord } from './blockRecord.js';
 /** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord, BlockRecords, Slot} from './blockRecords.js' */
+/** @import {BlockRecords, Slot} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /**
  * The state shared by every merge of one stylesheet.
  */

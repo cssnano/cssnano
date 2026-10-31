@@ -1,12 +1,12 @@
 import postcss from 'postcss';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
-import { PropertyWrites } from './lastWriteIndex.js';
+import { PropertyWrites } from './propertyWrites.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /** @import MergeState from './mergeState.js' */
 

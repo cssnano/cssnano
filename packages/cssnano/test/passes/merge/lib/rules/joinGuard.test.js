@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
@@ -132,7 +132,7 @@ test('a rule that a join removes has no parent after write-back', () => {
   const { root, state } = scanned('a{color:red}b{color:blue}a{margin:0}');
   const [, , removed] = root.nodes;
   joinNonAdjacent(state.records.root, state);
-  writeBack(liveBlocks(state.records.root));
+  writeBack(state.records, liveBlocks(state.records.root));
   assert.equal(removed.parent, undefined);
 });
 
@@ -151,6 +151,6 @@ test('runScan should merge a pair of adjacent rules without reading the tree', (
 test('runScan should leave the child list of the stylesheet as it was until write-back', () => {
   const { root, state } = scanned('a{color:red}b{color:red}');
   assert.equal(root.nodes.length, 2);
-  writeBack(liveBlocks(state.records.root));
+  writeBack(state.records, liveBlocks(state.records.root));
   assert.equal(root.nodes.length, 1);
 });
