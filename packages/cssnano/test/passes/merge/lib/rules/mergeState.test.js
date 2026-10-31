@@ -67,7 +67,10 @@ test('absorbEarlier should leave the record of the later rule readable', () => {
 test('canMerge should accept a pair of compatible rules', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-  assert.equal(state.canMerge(root.first, root.last), true);
+  assert.equal(
+    state.canMerge(state.meta(root.first), state.meta(root.last)),
+    true
+  );
 });
 
 test('canMerge should reject a pair with different vendor prefixes', () => {
@@ -76,7 +79,10 @@ test('canMerge should reject a pair with different vendor prefixes', () => {
     state,
     postcss.parse('a::-moz-selection{color:red}b{color:red}')
   );
-  assert.equal(state.canMerge(root.first, root.last), false);
+  assert.equal(
+    state.canMerge(state.meta(root.first), state.meta(root.last)),
+    false
+  );
 });
 
 test('canMerge should reject a rule with an unsupported selector', () => {
@@ -85,7 +91,10 @@ test('canMerge should reject a rule with an unsupported selector', () => {
     state,
     postcss.parse('a:has(b){color:red}c{color:red}')
   );
-  assert.equal(state.canMerge(root.first, root.last), false);
+  assert.equal(
+    state.canMerge(state.meta(root.first), state.meta(root.last)),
+    false
+  );
 });
 
 test('canMerge should reject a rule that gained an unsupported selector after it could merge', () => {
@@ -94,13 +103,19 @@ test('canMerge should reject a rule that gained an unsupported selector after it
     state,
     postcss.parse('a{color:red}b{color:red}c:has(d){color:red}')
   );
-  assert.equal(state.canMerge(root.first, root.nodes[1]), true);
+  assert.equal(
+    state.canMerge(state.meta(root.first), state.meta(root.nodes[1])),
+    true
+  );
   state.addSelectors(
     state.meta(root.first),
     ['c:has(d)'],
     state.meta(root.last)
   );
-  assert.equal(state.canMerge(root.first, root.nodes[1]), false);
+  assert.equal(
+    state.canMerge(state.meta(root.first), state.meta(root.nodes[1])),
+    false
+  );
 });
 
 test('canMerge should reject a rule that holds a nested rule', () => {
@@ -109,7 +124,10 @@ test('canMerge should reject a rule that holds a nested rule', () => {
     state,
     postcss.parse('a{color:red;&:hover{width:1px}}b{color:red}')
   );
-  assert.equal(state.canMerge(root.first, root.last), false);
+  assert.equal(
+    state.canMerge(state.meta(root.first), state.meta(root.last)),
+    false
+  );
 });
 
 test('canMerge should keep accepting a rule after declarations join it', () => {
@@ -121,7 +139,7 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
   const [receiving, incoming, other] = /** @type {import('postcss').Rule[]} */ (
     root.nodes
   );
-  assert.equal(state.canMerge(receiving, other), true);
+  assert.equal(state.canMerge(state.meta(receiving), state.meta(other)), true);
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
@@ -130,19 +148,19 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
     writesOf(kept, state.properties),
     state.meta(incoming)
   );
-  assert.equal(state.canMerge(receiving, other), true);
+  assert.equal(state.canMerge(state.meta(receiving), state.meta(other)), true);
 });
 
-test('meta should throw when a declaration left the rule without a tree edit', () => {
+test('declarations should throw when a declaration left the rule without a tree edit', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);
   try {
     const state = createState();
     const root = withRecords(state, postcss.parse('a{color:red;width:1px}'));
     const rule = /** @type {import('postcss').Rule} */ (root.first);
-    state.meta(rule);
+    const record = state.meta(rule);
     rule.first.remove();
-    assert.throws(() => state.meta(rule), /stale/v);
+    assert.throws(() => record.declarations, /stale/v);
   } finally {
     enableConsistencyChecks(wasEnabled);
   }
@@ -188,13 +206,16 @@ test('declarationKeysOf should give equal declarations of different rules the sa
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
   assert.deepEqual(
-    state.declarationKeysOf(root.first).keys,
-    state.declarationKeysOf(root.last).keys
+    state.declarationKeysOf(state.meta(root.first)).keys,
+    state.declarationKeysOf(state.meta(root.last)).keys
   );
 });
 
 test('declarationKeysOf should return the cached keys of an unchanged rule', () => {
   const state = createState();
   const rule = withRecords(state, postcss.parse('a{color:red}')).first;
-  assert.equal(state.declarationKeysOf(rule), state.declarationKeysOf(rule));
+  assert.equal(
+    state.declarationKeysOf(state.meta(rule)),
+    state.declarationKeysOf(state.meta(rule))
+  );
 });

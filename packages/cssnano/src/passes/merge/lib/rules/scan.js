@@ -59,8 +59,8 @@ export default function runScan(mergeState) {
    * @return {number} NO_BENEFIT when merging the pair cannot rewrite anything
    */
   const mergeBenefit = (first, second) => {
-    const a = mergeState.declarationKeysOf(first.record.node);
-    const b = mergeState.declarationKeysOf(second.record.node);
+    const a = mergeState.declarationKeysOf(first.record);
+    const b = mergeState.declarationKeysOf(second.record);
     if (
       mergeState
         .meta(first.record.node)
@@ -109,8 +109,8 @@ export default function runScan(mergeState) {
   const mergePair = (sequence, first, second) => {
     if (
       !mergeState.canMerge(
-        first.record.node,
-        second.record.node,
+        first.record,
+        second.record,
         first.slot.block,
         second.slot.block
       ) ||

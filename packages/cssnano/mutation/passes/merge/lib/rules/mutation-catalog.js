@@ -68,8 +68,8 @@ export const mutations = [
   {
     name: 'move a block down in the backward pass across a conflicting write',
     target: source('nonAdjacentMerge.js'),
-    find: '    if (!index.conflictsSinceIn(earlierDeclarations, laterPosition, keysOfNode)) {',
-    replace: '    if (true) {',
+    find: '      !index.conflictsSinceIn(earlierDeclarations, laterPosition, keysOfNode)\n',
+    replace: '      true\n',
   },
   {
     name: 'forget the writes of a block moved down in the backward pass',
@@ -138,10 +138,10 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'meta skips the check of the declarations against the tree',
-    target: source('mergeState.js'),
-    find: '    if (consistencyChecksEnabled() && !record.departed) {',
-    replace: '    if (false) {',
+    name: 'a rule record skips the check of its declarations against the tree',
+    target: source('ruleRecord.js'),
+    find: '    if (!consistencyChecksEnabled()) return;',
+    replace: '    return;',
   },
   {
     name: 'a takePlaceOf that leaves the rule record on its old slot',

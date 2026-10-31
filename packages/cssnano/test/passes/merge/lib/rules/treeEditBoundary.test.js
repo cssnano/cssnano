@@ -196,13 +196,17 @@ test('the boundary guard should record reads from lib/rules during the merge', (
   assert.notDeepEqual(mergeReaders(), []);
 });
 
-test("lib/rules should read a block's children and a rule's parent only through treeEdits and blockRecords", () => {
+test("lib/rules should read a block's children and a rule's parent only through treeEdits and the records", () => {
   // A clone reads its source's `parent` only to skip it, so a clone editor's
-  // read of a rule's parent does not reach the tree.
+  // read of a rule's parent does not reach the tree. A rule record reads its
+  // rule's children only to check its declarations under consistency checks.
+  // `ruleRecord.js` reads a rule's children only to check its declarations,
+  // which it does under consistency checks alone.
   const readers = mergeReaders().filter(
     (name) =>
       !treeEditors.has(name) &&
       name !== 'blockRecords.js' &&
+      name !== 'ruleRecord.js' &&
       !cloneEditors.has(name)
   );
   assert.deepEqual(readers, outsideReaders);

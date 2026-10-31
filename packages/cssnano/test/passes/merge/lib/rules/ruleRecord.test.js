@@ -5,12 +5,23 @@ import {
   BlockRecord,
   BlockRecords,
 } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import {
+  RuleRecord,
+  isDeclaration,
+} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import {
+  consistencyChecksEnabled,
+  enableConsistencyChecks,
+} from '../../../../../src/passes/ir/consistencyChecks.js';
 
 const lookup = () => ({});
 const lookupB = (selector) => ({ compatible: selector !== 'b' });
 const keyOf = (declaration) => declaration.prop.length;
-const declarationsOf = (css) => postcss.parse(css).first.nodes;
+/** A record of the rule in `css`, holding the declarations the rule holds. */
+const recordOf = (css) => {
+  const rule = postcss.parse(css).first;
+  return new RuleRecord(rule, rule.selectors, rule.nodes.filter(isDeclaration));
+};
 
 test('compatible should look up each selector once across repeated reads', () => {
   const record = new RuleRecord(postcss.rule(), ['a', 'b'], []);
@@ -47,65 +58,44 @@ test('recordRule should give the record of a rule the rule as its node', () => {
 });
 
 test('declarationKeys should list the key of each declaration in order', () => {
-  const record = new RuleRecord(
-    postcss.rule(),
-    ['a'],
-    declarationsOf('a{color:red;top:0}')
-  );
+  const record = recordOf('a{color:red;top:0}');
   assert.deepEqual(record.declarationKeys(keyOf).keys, [5, 3]);
 });
 
 test('declarationKeys should offer the same keys as a set for membership tests', () => {
-  const record = new RuleRecord(
-    postcss.rule(),
-    ['a'],
-    declarationsOf('a{color:red;top:0}')
-  );
+  const record = recordOf('a{color:red;top:0}');
   assert.deepEqual(record.declarationKeys(keyOf).keySet, new Set([5, 3]));
 });
 
 test('declarationKeys should return the cached keys while the declarations are unchanged', () => {
-  const record = new RuleRecord(
-    postcss.rule(),
-    ['a'],
-    declarationsOf('a{color:red}')
-  );
+  const record = recordOf('a{color:red}');
   assert.equal(record.declarationKeys(keyOf), record.declarationKeys(keyOf));
 });
 
 test('takeDeclarations should make declarationKeys reflect the new declarations', () => {
+  const rule = postcss.parse('a{color:red}').first;
   const record = new RuleRecord(
-    postcss.rule(),
-    ['a'],
-    declarationsOf('a{color:red}')
+    rule,
+    rule.selectors,
+    rule.nodes.filter(isDeclaration)
   );
   record.declarationKeys(keyOf);
-  record.takeDeclarations(declarationsOf('a{color:red;top:0}'));
+  // The tree edit changes the rule first, then the record takes its declarations.
+  rule.append(postcss.decl({ prop: 'top', value: '0' }));
+  record.takeDeclarations(rule.nodes.filter(isDeclaration));
   assert.deepEqual(record.declarationKeys(keyOf).keys, [5, 3]);
 });
 
 test('addSelectors should keep the cached declaration keys since it leaves the declarations alone', () => {
-  const record = new RuleRecord(
-    postcss.rule(),
-    ['a'],
-    declarationsOf('a{color:red}')
-  );
+  const record = recordOf('a{color:red}');
   const keys = record.declarationKeys(keyOf);
   record.addSelectors(['b'], lookup);
   assert.equal(record.declarationKeys(keyOf), keys);
 });
 
 test('absorbEarlier should keep the cached declaration keys since it leaves the declarations alone', () => {
-  const record = new RuleRecord(
-    postcss.rule(),
-    ['b'],
-    declarationsOf('b{color:red}')
-  );
-  const earlier = new RuleRecord(
-    postcss.rule(),
-    ['a'],
-    declarationsOf('a{color:red}')
-  );
+  const record = recordOf('b{color:red}');
+  const earlier = recordOf('a{color:red}');
   const keys = record.declarationKeys(keyOf);
   record.absorbEarlier(earlier, lookup);
   assert.equal(record.declarationKeys(keyOf), keys);
@@ -199,4 +189,21 @@ test('addSelectors should return null when a new selector has no element key, si
 test('addSelectors should return null when the element keys were never read, since none are listed to extend', () => {
   const record = new RuleRecord(postcss.rule(), ['h1'], []);
   assert.equal(record.addSelectors(['p'], lookup), null);
+});
+
+test('declarations should throw under consistency checks once the rule gained a declaration', () => {
+  const wasEnabled = consistencyChecksEnabled();
+  enableConsistencyChecks(true);
+  try {
+    const rule = postcss.parse('a{color:red}').first;
+    const record = new RuleRecord(
+      rule,
+      rule.selectors,
+      rule.nodes.filter(isDeclaration)
+    );
+    rule.append(postcss.decl({ prop: 'width', value: '1px' }));
+    assert.throws(() => record.declarations, /stale/v);
+  } finally {
+    enableConsistencyChecks(wasEnabled);
+  }
 });

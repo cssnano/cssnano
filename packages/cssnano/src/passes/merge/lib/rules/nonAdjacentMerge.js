@@ -307,7 +307,7 @@ function joinInParent(block, mergeState, rules) {
    * @return {void}
    */
   function receive(earlier, later) {
-    const kept = mergeState.meta(earlier.node).declarations;
+    const kept = earlier.declarations;
     let writes = received.get(earlier);
     if (!writes) {
       writes = writesOf(kept, mergeState.properties);
@@ -324,7 +324,7 @@ function joinInParent(block, mergeState, rules) {
    * @return {'up' | 'down' | null} where the joined rule stands
    */
   function joinRule(earlier, later, earlierPosition, laterPosition) {
-    if (!mergeState.canMerge(earlier.node, later.node)) return null;
+    if (!mergeState.canMerge(earlier, later)) return null;
     const laterDeclarations = getDecls(later.node);
     // Writes are recorded before the rewrite, while both rules still hold their
     // declarations and cached element keys. Equal selectors give equal keys.
@@ -336,7 +336,7 @@ function joinInParent(block, mergeState, rules) {
       remove(later);
       return 'up';
     }
-    const earlierDeclarations = mergeState.meta(earlier.node).declarations;
+    const earlierDeclarations = earlier.declarations;
     if (
       !index.conflictsSinceIn(earlierDeclarations, earlierPosition, keysOfNode)
     ) {

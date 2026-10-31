@@ -1,6 +1,7 @@
 import { elementKeyOf } from './elementKeys.js';
 import { selectorsCompatible } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 
 /** @import {Declaration, Rule} from 'postcss' */
 /**
@@ -125,6 +126,7 @@ export class RuleRecord {
   /** @return {Declaration[]} */
   get declarations() {
     this.#assertLive();
+    this.assertFresh();
     return this.#declarations;
   }
 
@@ -165,6 +167,7 @@ export class RuleRecord {
    */
   declarationKeys(keyOf) {
     this.#assertLive();
+    this.assertFresh();
     if (!this.#declarationKeys) {
       const keys = this.#declarations.map(keyOf);
       this.#declarationKeys = { keys, keySet: new Set(keys) };
@@ -358,6 +361,22 @@ export class RuleRecord {
   /** @throws {Error} when the rule this record describes has left the stylesheet */
   #assertLive() {
     if (this.#departed) throw new Error('read of a departed rule record');
+  }
+
+  /**
+   * Under consistency checks, throws when the declarations held differ from
+   * those the rule holds now, which an edit that skipped its bookkeeping leaves.
+   *
+   * @throws {Error} when the declarations are stale
+   */
+  assertFresh() {
+    if (!consistencyChecksEnabled()) return;
+    const kept = this.#declarations;
+    const fresh = this.#node.nodes.filter(isDeclaration);
+    const same =
+      kept.length === fresh.length &&
+      kept.every((node, i) => node === fresh[i]);
+    if (!same) throw new Error('stale declarations of a rule record');
   }
 }
 

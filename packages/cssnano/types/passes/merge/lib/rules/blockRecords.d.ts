@@ -130,15 +130,6 @@ export declare class BlockRecord {
     adopt(source: BlockRecord): void;
 }
 /**
- * Under consistency checks, throws when a record names other declarations than
- * its rule holds.
- *
- * @param {Rule} rule
- * @param {RuleRecord} record
- * @return {void}
- */
-export declare function assertDeclarationsFresh(rule: Rule, record: RuleRecord): void;
-/**
  * The records of one run: the block of each container, and the rule records
  * the run keeps in step with the tree.
  */

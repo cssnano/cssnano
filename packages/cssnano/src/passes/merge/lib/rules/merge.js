@@ -34,7 +34,7 @@ function partialMerge(
   const recordSecond = mergeState.meta(second);
   let intersection = intersect(
     recordFirst.declarations,
-    mergeState.declarationKeysOf(second).keySet,
+    mergeState.declarationKeysOf(mergeState.meta(second)).keySet,
     mergeState.declarationKey
   );
   if (intersection.length === 0) return null;

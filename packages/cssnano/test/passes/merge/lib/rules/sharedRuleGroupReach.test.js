@@ -71,7 +71,7 @@ function groupsOf(css) {
     const recordSecond = mergeState.meta(second.record.node);
     const shared = intersect(
       recordFirst.declarations,
-      mergeState.declarationKeysOf(second.record.node).keySet,
+      mergeState.declarationKeysOf(second.record).keySet,
       mergeState.declarationKey
     );
     if (shared.length === 0) continue;

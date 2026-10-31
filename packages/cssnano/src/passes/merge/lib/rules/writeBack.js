@@ -55,8 +55,7 @@ function isRuleOrAtRule(node) {
  */
 function checkRuleRecord(mergeState, block, slot, record) {
   const rule = record.node;
-  // Keeps the freshness check of the declarations, which `meta` makes.
-  mergeState.meta(rule);
+  record.assertFresh();
   if (record.slot !== slot) throw new Error(OUT_OF_STEP);
   if ((record.block !== null) !== rule.nodes.some(isRuleOrAtRule)) {
     throw new Error(OUT_OF_STEP);

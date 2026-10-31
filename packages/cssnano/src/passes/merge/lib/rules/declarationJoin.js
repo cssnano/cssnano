@@ -111,7 +111,7 @@ export default function joinByDeclarations(block, mergeState) {
     entry instanceof RuleRecord &&
     entry.block === null &&
     isDeclarationRule(entry.node)
-      ? mergeState.declarationKeysOf(entry.node)
+      ? mergeState.declarationKeysOf(entry)
       : null
   );
   // Rules can only join where they share a declaration.
@@ -146,7 +146,7 @@ export default function joinByDeclarations(block, mergeState) {
       register(
         record.node,
         position,
-        mergeState.declarationKeysOf(record.node).keys
+        mergeState.declarationKeysOf(record).keys
       );
     }
     index.recordNode(entry, position, keysOf);
@@ -183,7 +183,7 @@ export default function joinByDeclarations(block, mergeState) {
   function joinIntoGroup(laterRecord) {
     const later = laterRecord.node;
     const laterDeclarations = /** @type {Declaration[]} */ (later.nodes);
-    const laterSet = mergeState.declarationKeysOf(later).keySet;
+    const laterSet = mergeState.declarationKeysOf(laterRecord).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
     const laterKeys = keysOf(laterRecord);
     /** @type {{group: Group, claimed: Set<number>, added: string[], gain: number} | null} */
@@ -228,7 +228,8 @@ export default function joinByDeclarations(block, mergeState) {
         if (!claimedIndices) continue;
         const claimed = [...claimedIndices].map((j) => laterDeclarations[j]);
         if (index.conflictsSince(claimed, group.position, laterKeys)) continue;
-        if (!mergeState.canMerge(group.rule, later)) continue;
+        if (!mergeState.canMerge(mergeState.meta(group.rule), laterRecord))
+          continue;
         best = { group, claimed: claimedIndices, added, gain };
       }
     }

@@ -140,6 +140,13 @@ export declare class RuleRecord {
     absorbEarlier(earlier: RuleRecord, lookup: SelectorLookup, keyOf?: (selector: string, piece: RangePiece | null) => string | null): void;
     /** Marks the record of a rule that left the stylesheet, so a later read throws. */
     depart(): void;
+    /**
+     * Under consistency checks, throws when the declarations held differ from
+     * those the rule holds now, which an edit that skipped its bookkeeping leaves.
+     *
+     * @throws {Error} when the declarations are stale
+     */
+    assertFresh(): void;
 }
 /** @param {Rule} rule @return {Declaration[]} */
 export declare function getDecls(rule: Rule): Declaration[];

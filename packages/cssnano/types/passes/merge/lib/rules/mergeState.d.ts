@@ -73,10 +73,10 @@ export default class MergeState {
      */
     declarationKey: (declaration: Declaration) => number;
     /**
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      * @return {RuleDeclarationKeys}
      */
-    declarationKeysOf(rule: Rule): RuleDeclarationKeys;
+    declarationKeysOf(record: RuleRecord): RuleDeclarationKeys;
     /**
      * Reports a rule a merge created, when the run collects them, so the driver
      * canonicalizes it. A rule no run collects is left alone.
@@ -147,20 +147,20 @@ export default class MergeState {
      * The block whose child list holds the rule's slot. It is where the rule
      * stands, which can differ from its PostCSS parent during a sweep.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      * @return {BlockRecord}
      */
-    blockOf(rule: Rule): BlockRecord;
+    blockOf(record: RuleRecord): BlockRecord;
     /**
      * Whether the rules can be merged. `blockA` and `blockB` are the blocks
      * the rules stand in.
      *
-     * @param {Rule} ruleA
-     * @param {Rule} ruleB
+     * @param {RuleRecord} recordA
+     * @param {RuleRecord} recordB
      * @param {BlockRecord} [blockA]
      * @param {BlockRecord} [blockB]
      * @return {boolean}
      */
-    canMerge(ruleA: Rule, ruleB: Rule, blockA?: BlockRecord, blockB?: BlockRecord): boolean;
+    canMerge(recordA: RuleRecord, recordB: RuleRecord, blockA?: BlockRecord, blockB?: BlockRecord): boolean;
 }
 //# sourceMappingURL=mergeState.d.ts.map
