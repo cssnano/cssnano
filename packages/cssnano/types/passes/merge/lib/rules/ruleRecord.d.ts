@@ -1,6 +1,6 @@
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { Declaration, Rule } from 'postcss';
-import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 export type RuleDeclarationKeys = {
     keys: number[];
     keySet: Set<number>;
@@ -59,7 +59,7 @@ export declare class RuleRecord {
     get departed(): boolean;
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
-    /** @return {DeclarationRecord[]} */
+    /** @return {DeclarationRecord[]} @throws {Error} when the rule holds a block */
     get declarations(): DeclarationRecord[];
     /**
      * @return {RangePiece[] | null | undefined} undefined until the caller
@@ -75,9 +75,10 @@ export declare class RuleRecord {
      * @param {DeclarationRecord[]} declarations
      */
     takeDeclarations(declarations: DeclarationRecord[]): void;
+    /** @return {readonly DeclarationRecord[]} the own list, or the block's declarations */
+    allDeclarations(): readonly DeclarationRecord[];
     /**
-     * The ids of the declarations, so equal declarations share a key. The keys
-     * last until the declarations change; adding selectors leaves them valid.
+     * The ids of the declarations, so equal declarations share a key.
      *
      * @return {RuleDeclarationKeys}
      */

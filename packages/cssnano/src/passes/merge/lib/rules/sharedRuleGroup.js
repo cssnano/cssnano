@@ -188,7 +188,7 @@ export function findGroup(
       const index = followers.length;
       const candidate = candidates[index];
       const later = candidate.record;
-      const claimed = claimRepeats(shared, later.declarations);
+      const claimed = claimedBy(shared, later);
       if (
         !claimed ||
         sequence.declarationBetween(
@@ -215,6 +215,18 @@ export function findGroup(
     followers: followers.slice(0, size),
     added: [...listed].slice(listedBefore, listedAtBest),
   };
+}
+
+/**
+ * The positions of the declarations of `later` that repeat `shared`, or null
+ * when `later` cannot join: a rule that holds a block never joins.
+ *
+ * @param {DeclarationRecord[]} shared
+ * @param {RuleRecord} later
+ * @return {Set<number> | null}
+ */
+function claimedBy(shared, later) {
+  return later.block ? null : claimRepeats(shared, later.declarations);
 }
 
 /**
