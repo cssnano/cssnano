@@ -122,13 +122,13 @@ test('takeDeclarationsAt should drop the keys of the taken declarations from the
 test('takeDeclarationsAt should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, null, 0, false));
+  record.setBlock(new BlockRecord(rule, -1, 0, false));
   assert.throws(() => record.takeDeclarationsAt(new Set()), /block/v);
 });
 
 test('removeDeclarationsAt should throw on a rule that holds a block', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(new BlockRecord(rule, null, 0, false));
+  record.setBlock(new BlockRecord(rule, -1, 0, false));
   assert.throws(() => record.removeDeclarationsAt(new Set()), /block/v);
 });

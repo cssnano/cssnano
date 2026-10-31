@@ -48,14 +48,19 @@ export default class RuleSequence {
   /** @type {RuleLink} a sentinel that precedes the first rule */
   head = /** @type {RuleLink} */ ({ prev: null, next: null });
 
+  /** @type {BlockRecords} */
+  #records;
+
   /** @type {DeclarationScan} */
-  #scan = new DeclarationScan();
+  #scan;
 
   /** @type {BlockRecord[]} droppable blocks tracked by this sweep */
   #tracked = [];
 
   /** @param {BlockRecords} records */
   constructor(records) {
+    this.#records = records;
+    this.#scan = new DeclarationScan(records);
     let tail = this.head;
     /** @param {BlockRecord} block */
     const collect = (block) => {
@@ -112,9 +117,10 @@ export default class RuleSequence {
     const target = first.slot.block;
     const source = second.slot.block;
     if (target === source) return false;
-    source.changed(-1);
-    target.changed(1);
-    second.slot = target.moveRule(second.record, second.slot);
+    this.#records.changed(source, -1);
+    this.#records.changed(target, 1);
+    const holder = /** @type {BlockRecord} */ (this.#records.block(target));
+    second.slot = holder.moveRule(second.record, second.slot);
     return true;
   }
 
@@ -134,8 +140,8 @@ export default class RuleSequence {
     const secondSlot = second.slot;
     // Both rules may share a slot after an earlier partial merge, so each is
     // replaced where it stands.
-    firstSlot.block.changed(placement.first.length - 1);
-    secondSlot.block.changed(placement.second.length - 1);
+    this.#records.changed(firstSlot.block, placement.first.length - 1);
+    this.#records.changed(secondSlot.block, placement.second.length - 1);
     firstSlot.substitute(first.record, placement.first);
     secondSlot.substitute(second.record, placement.second);
 
@@ -148,7 +154,7 @@ export default class RuleSequence {
     for (const rules of placement.following ?? []) {
       const link = /** @type {RuleLink} */ (following);
       following = link.next;
-      link.slot.block.changed(rules.length - 1);
+      this.#records.changed(link.slot.block, rules.length - 1);
       link.slot.substitute(link.record, rules);
       tail = linkAfter(tail, rules, link.slot);
     }

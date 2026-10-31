@@ -3,7 +3,7 @@ import cssnanoUtils from '#utils';
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /** @import {TextTable} from '../../../../values/textTable.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
+/** @import {BlockRecord, BlockRecords} from './blockRecords.js' */
 
 /**
  * @param {import('postcss').AnyNode} nodeA
@@ -64,13 +64,14 @@ export function isKeyframes(container) {
  * and so are their enclosing blocks up to the stylesheet. Either may be null,
  * for a block that has no record.
  *
+ * @param {BlockRecords} records the arena that holds the enclosing blocks
  * @param {BlockRecord | null | undefined} blockA
  * @param {BlockRecord | null | undefined} blockB
  * @param {TextTable} textTable the selector tokens the walk stored, which give
  *   each layer's prelude when it has a comment
  * @return {boolean}
  */
-export function sameContainer(blockA, blockB, textTable) {
+export function sameContainer(records, blockA, blockB, textTable) {
   if (!blockA || !blockB) {
     return !blockA && !blockB;
   }
@@ -79,6 +80,12 @@ export function sameContainer(blockA, blockB, textTable) {
       /** @type {import('postcss').AnyNode} */ (blockA.node),
       /** @type {import('postcss').AnyNode} */ (blockB.node),
       textTable
-    ) && sameContainer(blockA.parent, blockB.parent, textTable)
+    ) &&
+    sameContainer(
+      records,
+      records.block(blockA.parent),
+      records.block(blockB.parent),
+      textTable
+    )
   );
 }

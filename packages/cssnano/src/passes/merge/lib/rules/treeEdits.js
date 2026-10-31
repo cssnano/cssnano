@@ -36,7 +36,7 @@ function isRuleOrAtRule(node) {
  */
 export function buildRecords(root, mergeState) {
   const { textTable } = mergeState;
-  const records = new BlockRecords(new BlockRecord(root, null, 0, false));
+  const records = new BlockRecords(new BlockRecord(root, -1, 0, false));
   records.root.leadingWhitespace = root.first?.raws.before;
   let nodes = 0;
   let declarations = 0;
@@ -55,11 +55,11 @@ export function buildRecords(root, mergeState) {
           mergeState.declarationIds,
           holds ? [] : null
         );
-        const slot = new Slot(block, index, [record]);
+        const slot = new Slot(block.index, index, [record]);
         record.place(slot);
         block.children.push(slot);
         if (holds) {
-          const nested = new BlockRecord(child, block, index, false);
+          const nested = new BlockRecord(child, block.index, index, false);
           record.setBlock(nested);
           fill(nested);
         } else {
@@ -68,7 +68,7 @@ export function buildRecords(root, mergeState) {
       } else if (child.type === 'atrule' && child.nodes) {
         const nested = new BlockRecord(
           child,
-          block,
+          block.index,
           index,
           isDroppableWhenEmpty(child, textTable)
         );
@@ -100,15 +100,16 @@ export function buildRecords(root, mergeState) {
  * Takes a rule or an at-rule out of its parent's records at once. The PostCSS
  * child list catches up at write-back.
  *
+ * @param {BlockRecords} records
  * @param {RuleRecord | BlockRecord} entry the record of the rule, or the block of the at-rule
  * @return {void}
  */
-export function remove(entry) {
+export function remove(records, entry) {
   if (entry instanceof RuleRecord) {
     const slot = /** @type {Slot} */ (entry.slot);
     slot.rules.splice(slot.rules.indexOf(entry), 1);
   } else {
-    emptyEntry(entry);
+    emptyEntry(records, entry);
   }
 }
 
@@ -116,13 +117,14 @@ export function remove(entry) {
  * Replaces the entry of a block with an empty slot, so the entry is skipped
  * from now on.
  *
+ * @param {BlockRecords} records
  * @param {BlockRecord} block
  * @return {void}
  */
-function emptyEntry(block) {
-  const holder = /** @type {BlockRecord} */ (block.parent);
+function emptyEntry(records, block) {
+  const holder = /** @type {BlockRecord} */ (records.block(block.parent));
   const { position } = block;
-  holder.children[position] = new Slot(holder, position, []);
+  holder.children[position] = new Slot(holder.index, position, []);
 }
 
 /**
@@ -152,12 +154,14 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
     rule.place(laterSlot);
   } else {
     const block = /** @type {BlockRecord} */ (earlier);
-    const holder = /** @type {BlockRecord} */ (block.parent);
+    const holder = /** @type {BlockRecord} */ (
+      mergeState.records.block(block.parent)
+    );
     const from = block.position;
     const to = later.position;
     holder.children[to] = block;
     block.position = to;
-    holder.children[from] = new Slot(holder, from, []);
+    holder.children[from] = new Slot(holder.index, from, []);
   }
   earlier.node.raws.before = later.node.raws.before;
 }

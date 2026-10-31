@@ -1,5 +1,5 @@
 import type { TextTable } from '../../../../values/textTable.js';
-import type { BlockRecord } from './blockRecords.js';
+import type { BlockRecord, BlockRecords } from './blockRecords.js';
 /**
  * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
  * cascaded by position.
@@ -13,11 +13,12 @@ export declare function isKeyframes(container: import('postcss').Container | und
  * and so are their enclosing blocks up to the stylesheet. Either may be null,
  * for a block that has no record.
  *
+ * @param {BlockRecords} records the arena that holds the enclosing blocks
  * @param {BlockRecord | null | undefined} blockA
  * @param {BlockRecord | null | undefined} blockB
  * @param {TextTable} textTable the selector tokens the walk stored, which give
  *   each layer's prelude when it has a comment
  * @return {boolean}
  */
-export declare function sameContainer(blockA: BlockRecord | null | undefined, blockB: BlockRecord | null | undefined, textTable: TextTable): boolean;
+export declare function sameContainer(records: BlockRecords, blockA: BlockRecord | null | undefined, blockB: BlockRecord | null | undefined, textTable: TextTable): boolean;
 //# sourceMappingURL=sameContainer.d.ts.map

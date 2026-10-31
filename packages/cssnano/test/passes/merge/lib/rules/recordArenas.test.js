@@ -8,6 +8,7 @@ import {
   Slot,
 } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
+import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { ruleRecordOf } from './liveRecords.js';
 
@@ -96,4 +97,59 @@ test('blocks() should hold every block reached from the stylesheet record, each 
     assert.ok(indexed.includes(block));
     assert.equal(records.block(block.index), block);
   }
+});
+
+/**
+ * Whether `holder` holds the entry of `block`: the block itself, or a rule
+ * whose nested block it is.
+ *
+ * @param {BlockRecord} holder
+ * @param {BlockRecord} block
+ * @return {boolean}
+ */
+function holds(holder, block) {
+  return holder.children.some(
+    (entry) =>
+      entry === block ||
+      (entry instanceof Slot &&
+        entry.rules.some((rule) => rule.block === block))
+  );
+}
+
+test('a block should name the block that holds its entry by index, -1 for the stylesheet', () => {
+  const { state } = setup(
+    '@media (x){@media (y){p{width:1px}}}a{color:red;b{width:1px}}'
+  );
+  const { records } = state;
+  assert.equal(records.root.parent, -1);
+  for (const block of reachedBlocks(records.root)) {
+    if (block !== records.root) {
+      assert.ok(holds(records.block(block.parent), block));
+    }
+  }
+});
+
+test('a slot should name its block by index and stand at its position in that block', () => {
+  const { state } = setup('@media (x){p{width:1px}q{height:2px}}a{color:red}');
+  const { records } = state;
+  for (const block of reachedBlocks(records.root)) {
+    for (const [position, entry] of block.children.entries()) {
+      if (entry instanceof Slot) {
+        assert.equal(records.block(entry.block), block);
+        assert.equal(entry.position, position);
+      }
+    }
+  }
+});
+
+test('changed should tell the parent by index once a droppable block goes empty', () => {
+  const { state } = setup('@layer outer{@layer inner{a{color:red}}}');
+  const { records } = state;
+  // The stylesheet is block 0, so the outer and inner at-rules are 1 and 2.
+  const outer = /** @type {BlockRecord} */ (records.block(1));
+  const inner = /** @type {BlockRecord} */ (records.block(2));
+  new RuleSequence(records);
+  records.changed(inner.index, -1);
+  assert.equal(inner.remaining, 0);
+  assert.equal(outer.remaining, 0);
 });

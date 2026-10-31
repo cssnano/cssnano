@@ -1,11 +1,14 @@
 import type { BlockRecord as Block } from './blockRecords.js';
 import type { RuleLink } from './ruleSequence.js';
+import type { BlockRecords } from './blockRecords.js';
 /**
  * Walks the stylesheet in the order it will be written to find declarations
  * between two rules.
  */
 export default class DeclarationScan {
     #private;
+    /** @param {BlockRecords} records the arena that the blocks of the links index */
+    constructor(records: BlockRecords);
     /**
      * True if a declaration outside both rules lies between them. CSS Nesting
      * keeps a declaration that follows nested rules in source order, so neither

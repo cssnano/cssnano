@@ -15,16 +15,18 @@ const OUT_OF_STEP = 'block record out of step with the tree';
 function checkBlockStructure(block) {
   for (const [index, entry] of block.children.entries()) {
     if (entry instanceof Slot) {
-      if (entry.block !== block || entry.position !== index) {
+      if (entry.block !== block.index || entry.position !== index) {
         throw new Error(OUT_OF_STEP);
       }
       for (const record of entry.rules) {
         const nested = record.block;
-        if (nested && nested.parent !== block) throw new Error(OUT_OF_STEP);
+        if (nested && nested.parent !== block.index) {
+          throw new Error(OUT_OF_STEP);
+        }
         if (nested) checkBlockStructure(nested);
       }
     } else if (entry instanceof BlockRecord) {
-      if (entry.parent !== block || entry.position !== index) {
+      if (entry.parent !== block.index || entry.position !== index) {
         throw new Error(OUT_OF_STEP);
       }
       if (entry.dropped) {

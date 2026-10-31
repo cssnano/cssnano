@@ -5,6 +5,7 @@ import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistenc
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
   BlockRecord,
+  BlockRecords,
   Slot,
 } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
 import {
@@ -65,7 +66,7 @@ test('buildRecords should give a rule that holds a rule a block record for its c
   const block = ruleRecordOf(state.records, rule).block;
   assert.ok(block instanceof BlockRecord);
   assert.equal(block.node, rule);
-  assert.equal(block.parent, state.records.root);
+  assert.equal(block.parent, state.records.root.index);
 });
 
 test('buildRecords should leave a rule with only declarations without a block record', () => {
@@ -223,7 +224,7 @@ test('an entry should hold its index as position after a removal of a block', ()
     'a{color:red}@media print{b{width:1px}}c{height:1px}'
   );
   const [, media] = /** @type {Container} */ (root).nodes;
-  remove(blockRecordOf(state.records, media));
+  remove(state.records, blockRecordOf(state.records, media));
   assert.equal(positionsMatchIndex(state.records.root), true);
 });
 
@@ -279,34 +280,41 @@ test('runScan should keep the declaration and rule counts and lower the parent c
 });
 
 test('changed should count a droppable parent down when its last live child empties', () => {
-  const root = new BlockRecord(postcss.root(), null, 0, false);
+  const root = new BlockRecord(postcss.root(), -1, 0, false);
+  const records = new BlockRecords(root);
+  records.add(root);
   const outer = new BlockRecord(
     postcss.atRule({ name: 'layer' }),
-    root,
+    root.index,
     0,
     true
   );
+  records.add(outer);
   const inner = new BlockRecord(
     postcss.atRule({ name: 'layer' }),
-    outer,
+    outer.index,
     0,
     true
   );
+  records.add(inner);
   outer.remaining = 1;
   inner.remaining = 1;
-  inner.changed(-1);
+  records.changed(inner.index, -1);
   assert.equal(outer.remaining, 0);
 });
 
 test('changed should leave a block that no sweep tracks untouched', () => {
-  const root = new BlockRecord(postcss.root(), null, 0, false);
+  const root = new BlockRecord(postcss.root(), -1, 0, false);
+  const records = new BlockRecords(root);
+  records.add(root);
   const block = new BlockRecord(
     postcss.atRule({ name: 'layer' }),
-    root,
+    root.index,
     0,
     true
   );
-  block.changed(1);
+  records.add(block);
+  records.changed(block.index, 1);
   assert.equal(block.remaining, null);
 });
 
@@ -352,12 +360,15 @@ test('assertNoOverDuplication should throw when a declaration is written more of
  */
 function entriesReadByFirstLiveChild(count) {
   const root = postcss.parse('a{color:red}');
-  const block = new BlockRecord(root, null, 0, false);
+  const block = new BlockRecord(root, -1, 0, false);
+  new BlockRecords(block).add(block);
   const entries = Array.from(
     { length: count },
-    (_, i) => new Slot(block, i, [])
+    (_, i) => new Slot(block.index, i, [])
   );
-  entries.push(new Slot(block, count, [/** @type {Rule} */ (root.first)]));
+  entries.push(
+    new Slot(block.index, count, [/** @type {Rule} */ (root.first)])
+  );
   let reads = 0;
   block.children = new Proxy(entries, {
     get(target, key, receiver) {
