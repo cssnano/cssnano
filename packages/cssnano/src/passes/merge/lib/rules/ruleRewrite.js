@@ -1,5 +1,6 @@
 import postcss from 'postcss';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
+import { inheritSupport } from '../longhand/isFallback.js';
 import { PropertyWrites } from './lastWriteIndex.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 import { depart } from './treeEdits.js';
@@ -141,6 +142,7 @@ export function buildMergedRule(
   const firstKept = [];
   let earlierIndex = 0;
   firstClone.walkDecls((decl) => {
+    inheritSupport(firstRecords[earlierIndex].node, decl, mergeState.textTable);
     const copy = firstRecords[earlierIndex].copy(decl);
     if (claimedEarlierIndices.has(earlierIndex++)) {
       decl.remove();
@@ -155,6 +157,7 @@ export function buildMergedRule(
   const secondKept = [];
   let laterIndex = 0;
   secondClone.walkDecls((decl) => {
+    inheritSupport(secondRecords[laterIndex].node, decl, mergeState.textTable);
     const copy = secondRecords[laterIndex].copy(decl);
     if (claimedIndices.has(laterIndex++)) {
       decl.remove();
@@ -187,6 +190,7 @@ export function buildMergedRule(
       const kept = [];
       let index = 0;
       leftover.walkDecls((decl) => {
+        inheritSupport(records[index].node, decl, mergeState.textTable);
         const copy = records[index].copy(decl);
         if (claimed.has(index++)) decl.remove();
         else kept.push(copy);
