@@ -12,48 +12,6 @@ import { appendToDeclarations, depart } from './treeEdits.js';
 /** @import MergeState from './mergeState.js' */
 
 /**
- * @param {RuleRecord} first
- * @param {RuleRecord} second
- * @param {MergeState} mergeState
- * @param {RuleLink} secondLink
- * @param {RuleSequence} sequence
- * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
- * @return {Placement | null} the rules that replace the pair, or null when
- * sharing the declarations would not make the output shorter
- */
-function partialMerge(
-  first,
-  second,
-  mergeState,
-  secondLink,
-  sequence,
-  outsideDeclarations
-) {
-  let intersection = intersect(
-    first.declarations,
-    second.declarationKeys().keySet
-  );
-  if (intersection.length === 0) return null;
-  const filtered = filterRuleIntersections(
-    intersection,
-    first.declarations,
-    second.declarations
-  );
-  intersection = filtered.intersection;
-  if (intersection.length === 0) return null;
-  return buildMergedRule(
-    first,
-    second,
-    filtered.claimedEarlierIndices,
-    filtered.claimedIndices,
-    mergeState,
-    secondLink,
-    sequence,
-    outsideDeclarations
-  );
-}
-
-/**
  * Rules with the same declarations in the same order become one rule with
  * both selectors.
  *
@@ -106,8 +64,8 @@ export function mergeMatchingSelectors(first, second, mergeState) {
  * @param {RuleLink} secondLink
  * @param {RuleSequence} sequence
  * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
- * @return {Placement | null} null when sharing the declarations would not
- * make the output shorter
+ * @return {Placement | null} the rules that replace the pair, or null when
+ * sharing the declarations would not make the output shorter
  */
 export function mergeSharedDeclarations(
   first,
@@ -117,13 +75,26 @@ export function mergeSharedDeclarations(
   sequence,
   outsideDeclarations
 ) {
-  const placement = partialMerge(
+  let intersection = intersect(
+    first.declarations,
+    second.declarationKeys().keySet
+  );
+  if (intersection.length === 0) return null;
+  const filtered = filterRuleIntersections(
+    intersection,
+    first.declarations,
+    second.declarations
+  );
+  intersection = filtered.intersection;
+  if (intersection.length === 0) return null;
+  return buildMergedRule(
     first,
     second,
+    filtered.claimedEarlierIndices,
+    filtered.claimedIndices,
     mergeState,
     secondLink,
     sequence,
     outsideDeclarations
   );
-  return placement;
 }

@@ -17,8 +17,8 @@ export const target = source('ruleRewrite.js');
 export const test = new URL('../../../test/passes/merge/*.js', import.meta.url)
   .href;
 
-// One mutant per report site: the rule that `buildMergedRule` creates is no
-// longer reported, so the driver's second round may skip it.
+// The rule that `buildMergedRule` creates is no longer reported, so the
+// driver's second round may skip it; a leftover departs or stays wrongly.
 export const mutations = [
   {
     name: 'skip reporting the receiving block',
@@ -26,18 +26,12 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'skip reporting a kept leftover',
-    find: '  mergeState.reportCreated(record.node);\n',
-    replace: '',
-  },
-  {
     name: 'depart a leftover that keeps a child',
-    find: '  mergeState.reportCreated(record.node);\n  return [record];',
-    replace:
-      '  mergeState.reportCreated(record.node);\n  depart(mergeState, record);\n  return [record];',
+    find: '  }\n  return [record];',
+    replace: '  }\n  depart(mergeState, record);\n  return [record];',
   },
   {
-    name: 'keep a leftover that holds no child in the tree',
+    name: 'leave the record of a leftover with no child readable',
     find: '    depart(mergeState, record);\n    return [];',
     replace: '    return [];',
   },

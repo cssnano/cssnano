@@ -29,8 +29,9 @@ function shellOf(source, selector) {
 
 /**
  * The rules a rule leaves in its place: the rule itself while it keeps a
- * child, which the record reports so the second round canonicalizes it, and
- * nothing once it holds no child, when it departs.
+ * child, and nothing once it holds no child, when it departs. A kept rule
+ * needs no report: only a rule that held a declaration in the first round
+ * reaches a merge, so the second round already has it.
  *
  * @param {MergeState} mergeState
  * @param {RuleRecord} record
@@ -41,7 +42,6 @@ function leftoverOf(mergeState, record) {
     depart(mergeState, record);
     return [];
   }
-  mergeState.reportCreated(record.node);
   return [record];
 }
 

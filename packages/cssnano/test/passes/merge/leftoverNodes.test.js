@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import merge, { transformPlugin } from '#passes/merge';
+import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
+import { mergeSharedDeclarations } from '../../../src/passes/merge/lib/rules/merge.js';
+import RuleSequence from '../../../src/passes/merge/lib/rules/ruleSequence.js';
+import { buildRecords } from '../../../src/passes/merge/lib/rules/treeEdits.js';
 
 const plugin = transformPlugin('mergeRules');
 
@@ -65,4 +69,25 @@ test('a leftover that a join gave longhands is canonicalized in the second round
     { from: undefined }
   );
   assert.equal(result.css, 'a{margin:1px;padding:0}a,b{color:red}b{width:1px}');
+});
+
+test('the record of a rule whose declarations all merge away is marked departed', () => {
+  const root = postcss.parse('a{color:red}b{color:red;padding:0}');
+  const mergeState = new MergeState(['Chrome 120']);
+  mergeState.records = buildRecords(root, mergeState);
+  const sequence = new RuleSequence(mergeState.records);
+  const first =
+    /** @type {import('../../../src/passes/merge/lib/rules/ruleSequence.js').RuleLink} */ (
+      sequence.head.next
+    );
+  const second = /** @type {typeof first} */ (first.next);
+  mergeSharedDeclarations(
+    first.record,
+    second.record,
+    mergeState,
+    second,
+    sequence,
+    new WeakMap()
+  );
+  assert.throws(() => first.record.declarations, /departed/v);
 });
