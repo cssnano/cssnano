@@ -2,7 +2,8 @@ import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
 import { PropertyWrites } from './lastWriteIndex.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
-/** @import {ChildNode, Declaration, Rule} from 'postcss' */
+/** @import {ChildNode, Declaration} from 'postcss' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 
@@ -50,7 +51,7 @@ function overridesShared(nodes, claimed, shared, table) {
 
 /**
  * @typedef {object} Follower
- * @property {Rule} rule
+ * @property {RuleRecord} rule
  * @property {Set<number>} claimed where it repeats the shared declarations
  */
 
@@ -87,23 +88,15 @@ function repeatsShared(link, parent, firstKeys, sharedIndices, mergeState) {
 }
 
 /**
- * @param {Rule[]} members
- * @param {Rule} later
+ * @param {RuleRecord[]} members
+ * @param {RuleRecord} later
  * @param {BlockRecord} parent
  * @param {import('./mergeState.js').default} mergeState
  * @return {boolean} whether `later` can share a selector list with every member
  */
 function mergesWithAll(members, later, parent, mergeState) {
   for (const member of members) {
-    if (
-      !mergeState.canMerge(
-        mergeState.meta(member),
-        mergeState.meta(later),
-        parent,
-        parent
-      )
-    )
-      return false;
+    if (!mergeState.canMerge(member, later, parent, parent)) return false;
   }
   return true;
 }
@@ -120,7 +113,7 @@ function mergesWithAll(members, later, parent, mergeState) {
  * rule after it. What a rule saves follows from lengths alone, so those
  * checks run only for a prefix that would pay.
  *
- * @param {Rule} first
+ * @param {RuleRecord} first
  * @param {RuleLink} second
  * @param {Set<number>} claimedEarlierIndices where the shared declarations stand in `first`
  * @param {Set<number>} claimedIndices where they stand in `second`
@@ -145,7 +138,7 @@ export function findGroup(
   outsideDeclarations
 ) {
   const parent = second.slot.block;
-  const firstKeys = mergeState.declarationKeysOf(mergeState.meta(first)).keys;
+  const firstKeys = mergeState.declarationKeysOf(first).keys;
   if (
     !repeatsShared(
       second.next,
@@ -156,9 +149,9 @@ export function findGroup(
     )
   )
     return null;
-  const shared = mergeState
-    .meta(first)
-    .declarations.filter((_, index) => claimedEarlierIndices.has(index));
+  const shared = first.declarations.filter((_, index) =>
+    claimedEarlierIndices.has(index)
+  );
   if (
     overridesShared(
       second.record.node.nodes,
@@ -169,8 +162,8 @@ export function findGroup(
   )
     return null;
 
-  const listed = new Set(mergeState.meta(first).selectors);
-  for (const selector of mergeState.meta(second.record.node).selectors) {
+  const listed = new Set(first.selectors);
+  for (const selector of second.record.selectors) {
     listed.add(selector);
   }
   const listedBefore = listed.size;
@@ -178,7 +171,7 @@ export function findGroup(
   const candidates = [];
   /** @type {Follower[]} */
   const followers = [];
-  const members = [first, second.record.node];
+  const members = [first, second.record];
   let blocked = false;
   let best = delta;
   let size = 0;
@@ -190,7 +183,7 @@ export function findGroup(
     repeatsShared(link, parent, firstKeys, claimedEarlierIndices, mergeState);
     link = link.next, seen++
   ) {
-    const selectors = mergeState.meta(link.record.node).selectors;
+    const selectors = link.record.selectors;
     for (const selector of selectors) {
       if (listed.has(selector)) continue;
       listed.add(selector);
@@ -210,10 +203,10 @@ export function findGroup(
     while (!blocked && followers.length < candidates.length) {
       const index = followers.length;
       const candidate = candidates[index];
-      const later = candidate.record.node;
+      const later = candidate.record;
       const claimed = claimRepeats(
         shared,
-        /** @type {Declaration[]} */ (later.nodes),
+        /** @type {Declaration[]} */ (later.node.nodes),
         mergeState.properties
       );
       if (
@@ -230,7 +223,7 @@ export function findGroup(
       followers.push({ rule: later, claimed });
       members.push(later);
       blocked = overridesShared(
-        later.nodes,
+        later.node.nodes,
         claimed,
         shared,
         mergeState.properties

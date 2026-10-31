@@ -71,17 +71,6 @@ export default class MergeState {
   }
 
   /**
-   * The record of the rule, which the records hold. Under consistency checks
-   * a record whose declarations differ from the tree throws.
-   *
-   * @param {Rule} rule
-   * @return {RuleRecord}
-   */
-  meta(rule) {
-    return this.records.metaOf(rule);
-  }
-
-  /**
    * The elements the rule can match. An arrow function, so it passes as a
    * callback without a closure per call.
    *
@@ -101,7 +90,7 @@ export default class MergeState {
    * @param {Rule} rule
    * @return {string[] | null}
    */
-  elementKeysOfNode = (rule) => this.elementKeysOf(this.meta(rule));
+  elementKeysOfNode = (rule) => this.elementKeysOf(this.records.metaOf(rule));
 
   /**
    * Numbers declarations so equal ones, with the same property, value,
@@ -191,21 +180,17 @@ export default class MergeState {
   }
 
   /**
-   * Stores the tokens of a copy of `rule` made with the rule's selectors. The
-   * copy's text is the one PostCSS joined, so the tokens are stored only when
-   * they spell it.
+   * Stores the tokens of a copy of the record's rule made with its selectors.
+   * The copy's text is the one PostCSS joined, so the tokens are stored only
+   * when they spell it.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    * @param {Rule} clone
    */
-  storeClone(rule, clone) {
-    const source = this.#textTable.stored(rule);
+  storeClone(record, clone) {
+    const source = this.#textTable.stored(record.node);
     if (source === undefined) return;
-    this.#storePieces(
-      clone,
-      this.piecesOf(this.meta(rule)),
-      separatorOf(source)
-    );
+    this.#storePieces(clone, this.piecesOf(record), separatorOf(source));
   }
 
   /**
@@ -213,12 +198,12 @@ export default class MergeState {
    * `second`, in that order, with a comma between each, as `join()` writes it.
    *
    * @param {Rule} rule
-   * @param {Rule} first
-   * @param {Rule} second
+   * @param {RuleRecord} first
+   * @param {RuleRecord} second
    */
   storeJoined(rule, first, second) {
-    const earlier = this.piecesOf(this.meta(first));
-    const later = this.piecesOf(this.meta(second));
+    const earlier = this.piecesOf(first);
+    const later = this.piecesOf(second);
     if (earlier === null || later === null) return;
     this.#storePieces(rule, earlier.concat(later), [comma()]);
   }
@@ -274,12 +259,14 @@ export default class MergeState {
 
   /**
    * The block whose child list holds the rule's slot. It is where the rule
-   * stands, which can differ from its PostCSS parent during a sweep.
+   * stands, which can differ from its PostCSS parent during a sweep. A rule
+   * that left the stylesheet stands in no block.
    *
    * @param {RuleRecord} record
    * @return {BlockRecord}
    */
   blockOf(record) {
+    if (record.departed) throw new Error('block of a departed rule record');
     return /** @type {Slot} */ (record.slot).block;
   }
 

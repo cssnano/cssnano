@@ -6,6 +6,7 @@ import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.
 import {
   appendToDeclarations,
   buildRecords,
+  depart,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
@@ -30,45 +31,65 @@ const withRecords = (state, root) => {
 test('addSelectors should keep the record of the rule', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b,c{color:red}'));
-  const record = state.meta(root.first);
-  state.addSelectors(state.meta(root.first), ['b', 'c'], state.meta(root.last));
-  assert.equal(state.meta(root.first), record);
+  const record = state.records.metaOf(root.first);
+  state.addSelectors(
+    state.records.metaOf(root.first),
+    ['b', 'c'],
+    state.records.metaOf(root.last)
+  );
+  assert.equal(state.records.metaOf(root.first), record);
 });
 
 test('addSelectors should append the selectors to the rule description', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b,c{color:red}'));
-  state.addSelectors(state.meta(root.first), ['b', 'c'], state.meta(root.last));
-  assert.deepEqual(state.meta(root.first).selectors, ['a', 'b', 'c']);
+  state.addSelectors(
+    state.records.metaOf(root.first),
+    ['b', 'c'],
+    state.records.metaOf(root.last)
+  );
+  assert.deepEqual(state.records.metaOf(root.first).selectors, ['a', 'b', 'c']);
 });
 
 test('absorbEarlier should list the earlier rule selectors first', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-  state.absorbEarlier(state.meta(root.last), state.meta(root.first));
-  assert.deepEqual(state.meta(root.last).selectors, ['a', 'b']);
+  state.absorbEarlier(
+    state.records.metaOf(root.last),
+    state.records.metaOf(root.first)
+  );
+  assert.deepEqual(state.records.metaOf(root.last).selectors, ['a', 'b']);
 });
 
 test('absorbEarlier should mark the record of the earlier rule departed', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-  const record = state.meta(root.first);
-  state.absorbEarlier(state.meta(root.last), state.meta(root.first));
+  const record = state.records.metaOf(root.first);
+  state.absorbEarlier(
+    state.records.metaOf(root.last),
+    state.records.metaOf(root.first)
+  );
   assert.throws(() => record.selectors, /departed/v);
 });
 
 test('absorbEarlier should leave the record of the later rule readable', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-  state.absorbEarlier(state.meta(root.last), state.meta(root.first));
-  assert.equal(state.meta(root.last).departed, false);
+  state.absorbEarlier(
+    state.records.metaOf(root.last),
+    state.records.metaOf(root.first)
+  );
+  assert.equal(state.records.metaOf(root.last).departed, false);
 });
 
 test('canMerge should accept a pair of compatible rules', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
   assert.equal(
-    state.canMerge(state.meta(root.first), state.meta(root.last)),
+    state.canMerge(
+      state.records.metaOf(root.first),
+      state.records.metaOf(root.last)
+    ),
     true
   );
 });
@@ -80,7 +101,10 @@ test('canMerge should reject a pair with different vendor prefixes', () => {
     postcss.parse('a::-moz-selection{color:red}b{color:red}')
   );
   assert.equal(
-    state.canMerge(state.meta(root.first), state.meta(root.last)),
+    state.canMerge(
+      state.records.metaOf(root.first),
+      state.records.metaOf(root.last)
+    ),
     false
   );
 });
@@ -92,7 +116,10 @@ test('canMerge should reject a rule with an unsupported selector', () => {
     postcss.parse('a:has(b){color:red}c{color:red}')
   );
   assert.equal(
-    state.canMerge(state.meta(root.first), state.meta(root.last)),
+    state.canMerge(
+      state.records.metaOf(root.first),
+      state.records.metaOf(root.last)
+    ),
     false
   );
 });
@@ -104,16 +131,22 @@ test('canMerge should reject a rule that gained an unsupported selector after it
     postcss.parse('a{color:red}b{color:red}c:has(d){color:red}')
   );
   assert.equal(
-    state.canMerge(state.meta(root.first), state.meta(root.nodes[1])),
+    state.canMerge(
+      state.records.metaOf(root.first),
+      state.records.metaOf(root.nodes[1])
+    ),
     true
   );
   state.addSelectors(
-    state.meta(root.first),
+    state.records.metaOf(root.first),
     ['c:has(d)'],
-    state.meta(root.last)
+    state.records.metaOf(root.last)
   );
   assert.equal(
-    state.canMerge(state.meta(root.first), state.meta(root.nodes[1])),
+    state.canMerge(
+      state.records.metaOf(root.first),
+      state.records.metaOf(root.nodes[1])
+    ),
     false
   );
 });
@@ -125,7 +158,10 @@ test('canMerge should reject a rule that holds a nested rule', () => {
     postcss.parse('a{color:red;&:hover{width:1px}}b{color:red}')
   );
   assert.equal(
-    state.canMerge(state.meta(root.first), state.meta(root.last)),
+    state.canMerge(
+      state.records.metaOf(root.first),
+      state.records.metaOf(root.last)
+    ),
     false
   );
 });
@@ -139,16 +175,28 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
   const [receiving, incoming, other] = /** @type {import('postcss').Rule[]} */ (
     root.nodes
   );
-  assert.equal(state.canMerge(state.meta(receiving), state.meta(other)), true);
+  assert.equal(
+    state.canMerge(
+      state.records.metaOf(receiving),
+      state.records.metaOf(other)
+    ),
+    true
+  );
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
-    state.meta(receiving),
+    state.records.metaOf(receiving),
     /** @type {import('postcss').Declaration[]} */ (kept),
     writesOf(kept, state.properties),
-    state.meta(incoming)
+    state.records.metaOf(incoming)
   );
-  assert.equal(state.canMerge(state.meta(receiving), state.meta(other)), true);
+  assert.equal(
+    state.canMerge(
+      state.records.metaOf(receiving),
+      state.records.metaOf(other)
+    ),
+    true
+  );
 });
 
 test('declarations should throw when a declaration left the rule without a tree edit', () => {
@@ -158,7 +206,7 @@ test('declarations should throw when a declaration left the rule without a tree 
     const state = createState();
     const root = withRecords(state, postcss.parse('a{color:red;width:1px}'));
     const rule = /** @type {import('postcss').Rule} */ (root.first);
-    const record = state.meta(rule);
+    const record = state.records.metaOf(rule);
     rule.first.remove();
     assert.throws(() => record.declarations, /stale/v);
   } finally {
@@ -166,11 +214,21 @@ test('declarations should throw when a declaration left the rule without a tree 
   }
 });
 
-test('meta should throw for a rule the records do not hold', () => {
+test('metaOf should throw for a rule the records do not hold', () => {
   const state = createState();
   withRecords(state, postcss.parse('a{color:red}'));
   const stranger = postcss.parse('b{color:red}').first;
-  assert.throws(() => state.meta(stranger), /without a record/v);
+  assert.throws(() => state.records.metaOf(stranger), /without a record/v);
+});
+
+test('blockOf should throw for a departed record, since its rule stands in no block', () => {
+  const state = createState();
+  const root = withRecords(state, postcss.parse('a{color:red}'));
+  const record = state.records.metaOf(
+    /** @type {import('postcss').Rule} */ (root.first)
+  );
+  depart(state, record);
+  assert.throws(() => state.blockOf(record), /departed/v);
 });
 
 const declarationsOf = (css) => postcss.parse(css).first.nodes;
@@ -206,8 +264,8 @@ test('declarationKeysOf should give equal declarations of different rules the sa
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
   assert.deepEqual(
-    state.declarationKeysOf(state.meta(root.first)).keys,
-    state.declarationKeysOf(state.meta(root.last)).keys
+    state.declarationKeysOf(state.records.metaOf(root.first)).keys,
+    state.declarationKeysOf(state.records.metaOf(root.last)).keys
   );
 });
 
@@ -215,7 +273,7 @@ test('declarationKeysOf should return the cached keys of an unchanged rule', () 
   const state = createState();
   const rule = withRecords(state, postcss.parse('a{color:red}')).first;
   assert.equal(
-    state.declarationKeysOf(state.meta(rule)),
-    state.declarationKeysOf(state.meta(rule))
+    state.declarationKeysOf(state.records.metaOf(rule)),
+    state.declarationKeysOf(state.records.metaOf(rule))
   );
 });

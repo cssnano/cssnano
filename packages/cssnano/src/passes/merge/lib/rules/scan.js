@@ -21,7 +21,7 @@ function linkCount(placement) {
   return count;
 }
 
-/** @import {Rule} from 'postcss' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {Placement, RuleLink} from './ruleSequence.js' */
@@ -61,11 +61,7 @@ export default function runScan(mergeState) {
   const mergeBenefit = (first, second) => {
     const a = mergeState.declarationKeysOf(first.record);
     const b = mergeState.declarationKeysOf(second.record);
-    if (
-      mergeState
-        .meta(first.record.node)
-        .hasSameSelectors(mergeState.meta(second.record.node))
-    )
+    if (first.record.hasSameSelectors(second.record))
       return a.keys.length + b.keys.length;
     const [smaller, larger] =
       a.keys.length <= b.keys.length ? [a, b.keySet] : [b, a.keySet];
@@ -87,12 +83,12 @@ export default function runScan(mergeState) {
 
   // Pairs that passed `canMerge` as the best candidate but rewrote nothing;
   // they are skipped until another rewrite can change the outcome.
-  /** @type {Map<Rule, Rule>} */
+  /** @type {Map<RuleRecord, RuleRecord>} */
   const unmergeablePairs = new Map();
 
   /** @param {RuleLink} first @param {RuleLink} second */
   const pairBenefit = (first, second) =>
-    unmergeablePairs.get(first.record.node) === second.record.node
+    unmergeablePairs.get(first.record) === second.record
       ? NO_BENEFIT
       : mergeBenefit(first, second);
 
@@ -120,19 +116,11 @@ export default function runScan(mergeState) {
     }
     const moved = sequence.moveIntoParent(first, second);
     const placement =
-      mergeMatchingDeclarations(
-        first.record.node,
-        second.record.node,
-        mergeState
-      ) ??
-      mergeMatchingSelectors(
-        first.record.node,
-        second.record.node,
-        mergeState
-      ) ??
+      mergeMatchingDeclarations(first.record, second.record, mergeState) ??
+      mergeMatchingSelectors(first.record, second.record, mergeState) ??
       mergeSharedDeclarations(
-        first.record.node,
-        second.record.node,
+        first.record,
+        second.record,
         mergeState,
         second,
         sequence,
@@ -208,7 +196,7 @@ export default function runScan(mergeState) {
         benefit === NO_BENEFIT ? null : mergePair(sequence, current, second);
       if (!merged) {
         if (lookaheadStart && benefit !== NO_BENEFIT) {
-          unmergeablePairs.set(current.record.node, second.record.node);
+          unmergeablePairs.set(current.record, second.record);
           current = lookaheadStart;
         } else {
           current = second;
