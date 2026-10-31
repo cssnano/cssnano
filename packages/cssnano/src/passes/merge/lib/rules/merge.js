@@ -80,12 +80,12 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
   // Repeating the same declarations under the same selector changes nothing,
   // and a selector list that repeats the selector is longer than one rule.
   if (mergeState.meta(first).hasSameSelectors(mergeState.meta(second))) {
-    depart(mergeState, second);
+    depart(mergeState, mergeState.meta(second));
     return { first: [mergeState.meta(first)], second: [] };
   }
   mergeState.absorbEarlier(second, first);
   mergeState.spellSelectors(second);
-  depart(mergeState, first);
+  depart(mergeState, mergeState.meta(first));
   return { first: [], second: [mergeState.meta(second)] };
 }
 
@@ -103,10 +103,10 @@ export function mergeMatchingSelectors(first, second, mergeState) {
   const kept = getDecls(first);
   appendToDeclarations(
     mergeState,
-    first,
+    mergeState.meta(first),
     kept,
     writesOf(kept, mergeState.properties),
-    second
+    mergeState.meta(second)
   );
   return { first: [mergeState.meta(first)], second: [] };
 }
@@ -141,7 +141,7 @@ export function mergeSharedDeclarations(
   );
   if (!placement) return null;
   // The rules that replace the pair are described afresh when needed.
-  depart(mergeState, first);
-  depart(mergeState, second);
+  depart(mergeState, mergeState.meta(first));
+  depart(mergeState, mergeState.meta(second));
   return placement;
 }

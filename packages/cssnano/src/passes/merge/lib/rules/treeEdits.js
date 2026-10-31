@@ -184,10 +184,10 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
  * appending it is required to preserve the cascade result.
  *
  * @param {MergeState} mergeState
- * @param {Rule} receiving
+ * @param {RuleRecord} receiving
  * @param {Declaration[]} kept the declarations of `receiving`, extended in place
  * @param {PropertyWrites} index the writes of `kept`, extended in place
- * @param {Rule} incoming
+ * @param {RuleRecord} incoming
  * @return {void}
  */
 export function appendToDeclarations(
@@ -197,11 +197,9 @@ export function appendToDeclarations(
   index,
   incoming
 ) {
-  const record = mergeState.meta(receiving);
-  checkNoBlock(record);
-  // Read before the loop empties `incoming`, while its record still matches it.
-  const departing = mergeState.meta(incoming);
-  for (const node of incoming.nodes.slice()) {
+  checkNoBlock(receiving);
+  const { node: rule } = receiving;
+  for (const node of incoming.node.nodes.slice()) {
     if (node.type === 'decl') {
       const last = index.lastConflict(node);
       if (last !== -1 && declarationIsEqual(kept[last], node)) {
@@ -211,41 +209,40 @@ export function appendToDeclarations(
       index.record(node, kept.length);
       kept.push(node);
     }
-    receiving.append(node);
+    rule.append(node);
   }
-  record.takeDeclarations(kept);
-  departing.depart();
+  receiving.takeDeclarations(kept);
+  incoming.depart();
 }
 
 /**
- * Removes `declarations` from `rule`, which keeps the others.
+ * Removes `declarations` from `record`'s rule, which keeps the others.
  *
  * @param {MergeState} mergeState
- * @param {Rule} rule
+ * @param {RuleRecord} record
  * @param {Declaration[]} declarations
  * @return {void}
  */
-export function removeDeclarations(mergeState, rule, declarations) {
-  // Read before the removal, while the record still matches the rule.
-  const record = mergeState.meta(rule);
+export function removeDeclarations(mergeState, record, declarations) {
   checkNoBlock(record);
   for (const declaration of declarations) declaration.remove();
-  record.takeDeclarations(getDecls(rule));
+  record.takeDeclarations(getDecls(record.node));
 }
 
 /**
- * Removes `rules` from the records of their parent. The PostCSS child list
+ * Removes `records` from the records of their parent. The PostCSS child list
  * catches up at write-back.
  *
  * @param {MergeState} mergeState
- * @param {Set<Rule>} rules
+ * @param {Set<RuleRecord>} records
  * @return {void}
  */
-export function removeRules(mergeState, rules) {
+export function removeRules(mergeState, records) {
   const { root } = mergeState.records;
-  const leadsRoot = rules.has(/** @type {Rule} */ (root.firstLiveChild()));
-  for (const rule of rules) {
-    const record = mergeState.meta(rule);
+  const first = root.firstLiveChild();
+  let leadsRoot = false;
+  for (const record of records) {
+    leadsRoot ||= record.node === first;
     const slot = /** @type {Slot} */ (record.slot);
     slot.rules.splice(slot.rules.indexOf(record), 1);
     record.depart();
@@ -261,9 +258,9 @@ export function removeRules(mergeState, rules) {
  * from now on.
  *
  * @param {MergeState} mergeState
- * @param {Rule} rule
+ * @param {RuleRecord} record
  * @return {void}
  */
-export function depart(mergeState, rule) {
-  mergeState.meta(rule).depart();
+export function depart(mergeState, record) {
+  record.depart();
 }

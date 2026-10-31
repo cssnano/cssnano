@@ -121,10 +121,10 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
   const kept = [...receiving.nodes];
   appendToDeclarations(
     state,
-    receiving,
+    state.meta(receiving),
     /** @type {import('postcss').Declaration[]} */ (kept),
     writesOf(kept, state.properties),
-    incoming
+    state.meta(incoming)
   );
   assert.equal(state.canMerge(receiving, other), true);
 });

@@ -1,6 +1,6 @@
 import { BlockRecord, BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
-import type { Container, Declaration, Root, Rule } from 'postcss';
+import type { Container, Declaration, Root } from 'postcss';
 import type { PropertyWrites } from './lastWriteIndex.js';
 import type MergeState from './mergeState.js';
 /**
@@ -51,39 +51,39 @@ export declare function takePlaceOf(mergeState: MergeState, parent: Container, e
  * appending it is required to preserve the cascade result.
  *
  * @param {MergeState} mergeState
- * @param {Rule} receiving
+ * @param {RuleRecord} receiving
  * @param {Declaration[]} kept the declarations of `receiving`, extended in place
  * @param {PropertyWrites} index the writes of `kept`, extended in place
- * @param {Rule} incoming
+ * @param {RuleRecord} incoming
  * @return {void}
  */
-export declare function appendToDeclarations(mergeState: MergeState, receiving: Rule, kept: Declaration[], index: PropertyWrites, incoming: Rule): void;
+export declare function appendToDeclarations(mergeState: MergeState, receiving: RuleRecord, kept: Declaration[], index: PropertyWrites, incoming: RuleRecord): void;
 /**
- * Removes `declarations` from `rule`, which keeps the others.
+ * Removes `declarations` from `record`'s rule, which keeps the others.
  *
  * @param {MergeState} mergeState
- * @param {Rule} rule
+ * @param {RuleRecord} record
  * @param {Declaration[]} declarations
  * @return {void}
  */
-export declare function removeDeclarations(mergeState: MergeState, rule: Rule, declarations: Declaration[]): void;
+export declare function removeDeclarations(mergeState: MergeState, record: RuleRecord, declarations: Declaration[]): void;
 /**
- * Removes `rules` from the records of their parent. The PostCSS child list
+ * Removes `records` from the records of their parent. The PostCSS child list
  * catches up at write-back.
  *
  * @param {MergeState} mergeState
- * @param {Set<Rule>} rules
+ * @param {Set<RuleRecord>} records
  * @return {void}
  */
-export declare function removeRules(mergeState: MergeState, rules: Set<Rule>): void;
+export declare function removeRules(mergeState: MergeState, records: Set<RuleRecord>): void;
 /**
  * Marks a rule that a placement drops as departed. The rule leaves the tree
  * when `replaceChildren` applies the placement, and reading its record throws
  * from now on.
  *
  * @param {MergeState} mergeState
- * @param {Rule} rule
+ * @param {RuleRecord} record
  * @return {void}
  */
-export declare function depart(mergeState: MergeState, rule: Rule): void;
+export declare function depart(mergeState: MergeState, record: RuleRecord): void;
 //# sourceMappingURL=treeEdits.d.ts.map
