@@ -309,58 +309,92 @@ export default class LastWriteIndex {
   conflictsSince(declarations, position, elements = null) {
     if (this.#lastBarrier > position) return true;
     // Plain loops, so the check allocates nothing per call.
-    const anyElement = elements === null;
     for (const declaration of declarations) {
-      if (anyElement) {
-        if (this.#all.lastConflict(declaration) > position) return true;
-        continue;
-      }
-      if (this.#unknownElement.lastConflict(declaration) > position)
+      if (this.#conflictsWith(declaration, position, elements)) return true;
+    }
+    return false;
+  }
+
+  /**
+   * @param {{prop: string}} declaration
+   * @param {number} position
+   * @param {Iterable<string> | null} elements the element keys, or null for
+   * every element
+   * @return {boolean}
+   */
+  #conflictsWith(declaration, position, elements) {
+    if (elements === null)
+      return this.#all.lastConflict(declaration) > position;
+    if (this.#unknownElement.lastConflict(declaration) > position) return true;
+    for (const key of elements) {
+      const writes = this.#byElement.get(key);
+      if (writes && writes.lastConflict(declaration) > position) return true;
+    }
+    return false;
+  }
+
+  /**
+   * `conflictsSince` for entries that move with their rules: rule records,
+   * whose declarations take the keys `keysOf` gives, and bare declarations,
+   * which count every write. Unknown keys count every write.
+   *
+   * @param {(RuleRecord | Declaration)[]} entries
+   * @param {number} position
+   * @param {(record: RuleRecord) => string[] | null} keysOf
+   * @return {boolean}
+   */
+  conflictsSinceIn(entries, position, keysOf) {
+    const elements = this.#elementScratch;
+    elements.clear();
+    for (const entry of entries) {
+      const own = entry instanceof RuleRecord ? keysOf(entry) : null;
+      if (own === null) return this.#conflictsIn(entries, position, null);
+      for (const key of own) elements.add(key);
+    }
+    return this.#conflictsIn(entries, position, elements);
+  }
+
+  /**
+   * @param {(RuleRecord | Declaration)[]} entries
+   * @param {number} position
+   * @param {Set<string> | null} elements
+   * @return {boolean}
+   */
+  #conflictsIn(entries, position, elements) {
+    if (this.#lastBarrier > position) return true;
+    for (const entry of entries) {
+      if (entry instanceof RuleRecord) {
+        for (const declaration of entry.declarations) {
+          if (this.#conflictsWith(declaration, position, elements)) return true;
+        }
+      } else if (this.#conflictsWith(entry, position, elements)) {
         return true;
-      for (const key of elements) {
-        const writes = this.#byElement.get(key);
-        if (writes && writes.lastConflict(declaration) > position) return true;
       }
     }
     return false;
   }
 
   /**
-   * `conflictsSince` for declarations that move with their rules, whose
-   * elements are the union of the keys `keysOf` gives their rules. A
-   * declaration with unknown elements counts every write.
-   *
-   * @param {Declaration[]} declarations
-   * @param {number} position
-   * @param {(rule: Rule) => string[] | null} keysOf
-   * @return {boolean}
-   */
-  conflictsSinceIn(declarations, position, keysOf) {
-    const elements = this.#elementScratch;
-    elements.clear();
-    for (const { parent } of declarations) {
-      const own = parent?.type === 'rule' ? keysOf(parent) : null;
-      if (own === null) return this.conflictsSince(declarations, position);
-      for (const key of own) elements.add(key);
-    }
-    return this.conflictsSince(declarations, position, elements);
-  }
-
-  /**
-   * Declarations that moved to `position` are written there now. Every
+   * Entries that moved to `position` are written there now: each rule record
+   * writes its declarations under the element keys `keysOf` gives it. Every
    * entry only ever moves forward, so a later write to the same property
    * is kept.
    *
-   * @param {Declaration[]} declarations
+   * @param {(RuleRecord | Declaration)[]} entries
    * @param {number} position
-   * @param {(rule: Rule) => string[] | null} keysOf
+   * @param {(record: RuleRecord) => string[] | null} keysOf
    */
-  moveWrites(declarations, position, keysOf) {
-    for (const declaration of declarations) {
-      const parent = declaration.parent;
-      // `record` only reads the keys, so the rule's own list is passed as is.
-      const keys = parent?.type === 'rule' ? keysOf(parent) : null;
-      this.record(declaration, position, keys?.length ? keys : null);
+  moveWrites(entries, position, keysOf) {
+    for (const entry of entries) {
+      if (entry instanceof RuleRecord) {
+        // `record` only reads the keys, so the record's own list is passed as is.
+        const keys = keysOf(entry);
+        for (const declaration of entry.declarations) {
+          this.record(declaration, position, keys?.length ? keys : null);
+        }
+      } else {
+        this.record(entry, position, null);
+      }
     }
   }
 }

@@ -4,7 +4,7 @@ import joinByDeclarations from './declarationJoin.js';
 import { writesOf } from './ruleRewrite.js';
 import RepeatScan from './repeatScan.js';
 import { BlockRecord, Slot } from './blockRecords.js';
-import { RuleRecord, getDecls } from './ruleRecord.js';
+import { RuleRecord } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
 import {
   appendToDeclarations,
@@ -21,23 +21,20 @@ const { asciiLowerCase } = cssnanoUtils;
 
 /**
  * @param {ChildNode | RuleRecord | BlockRecord} entry
- * @param {Declaration[]} declarations grown in place
- * @return {boolean} see `collectDeclarations`
+ * @param {(RuleRecord | Declaration)[]} entries grown in place
+ * @return {boolean} see `collectEntries`
  */
-function collectFrom(entry, declarations) {
+function collectFrom(entry, entries) {
   if (entry instanceof RuleRecord) {
+    entries.push(entry);
     const { block } = entry;
-    if (block) return collectDeclarations(block, declarations);
-    // A rule without a block holds declarations and comments only.
-    for (const child of entry.node.nodes) {
-      if (child.type === 'decl') declarations.push(child);
-    }
+    return block ? collectEntries(block, entries) : true;
   } else if (entry instanceof BlockRecord) {
     if (!isConditionalGroupRule(/** @type {AtRule} */ (entry.node)))
       return false;
-    return collectDeclarations(entry, declarations);
+    return collectEntries(entry, entries);
   } else if (entry.type === 'decl') {
-    declarations.push(entry);
+    entries.push(entry);
   } else if (entry.type === 'atrule' && !isConditionalGroupRule(entry)) {
     return false;
   }
@@ -46,35 +43,40 @@ function collectFrom(entry, declarations) {
 
 /**
  * @param {BlockRecord} block
- * @param {Declaration[]} declarations grown in place
+ * @param {(RuleRecord | Declaration)[]} entries grown in place
  * @return {boolean} false when the subtree holds an at-rule outside the
  * conditional groups
  */
-function collectDeclarations(block, declarations) {
+function collectEntries(block, entries) {
+  // The declarations of a rule stand in its record, so its block skips them.
+  const ruleOwned = block.node.type === 'rule';
   for (const entry of block.children) {
     if (entry instanceof Slot) {
       for (const record of entry.rules) {
-        if (!collectFrom(record, declarations)) return false;
+        if (!collectFrom(record, entries)) return false;
       }
-    } else if (!(entry instanceof BlockRecord && entry.dropped)) {
-      if (!collectFrom(entry, declarations)) return false;
+    } else if (entry instanceof BlockRecord) {
+      if (!entry.dropped && !collectFrom(entry, entries)) return false;
+    } else if (!ruleOwned || entry.type !== 'decl') {
+      if (!collectFrom(entry, entries)) return false;
     }
   }
   return true;
 }
 
 /**
- * The declarations of a block at any depth, in document order, or null when
- * the block holds an at-rule whose place in the cascade is not modelled. The
- * answer is not stored, so an edit cannot leave it stale.
+ * The rule records and bare declarations of a block at any depth, in
+ * document order, or null when the block holds an at-rule whose place in the
+ * cascade is not modelled. The answer is not stored, so an edit cannot leave
+ * it stale.
  *
  * @param {BlockRecord} block
- * @return {Declaration[] | null}
+ * @return {(RuleRecord | Declaration)[] | null}
  */
-export function subtreeDeclarations(block) {
-  /** @type {Declaration[]} */
-  const declarations = [];
-  return collectDeclarations(block, declarations) ? declarations : null;
+export function subtreeEntries(block) {
+  /** @type {(RuleRecord | Declaration)[]} */
+  const entries = [];
+  return collectEntries(block, entries) ? entries : null;
 }
 
 /**
@@ -172,7 +174,6 @@ function joinBlocksBackward(block, mergeState) {
 
   const index = new LastWriteIndex(mergeState.properties);
   const keysOf = mergeState.elementKeysOf;
-  const keysOfNode = mergeState.elementKeysOfNode;
   /** @type {Map<string, {block: BlockRecord, position: number}>} */
   const next = new Map();
   let joined = false;
@@ -207,20 +208,18 @@ function joinBlocksBackward(block, mergeState) {
    * @return {'up' | 'down' | null} where the joined block stands
    */
   function joinBlock(earlier, later, laterPosition) {
-    const declarations = subtreeDeclarations(later);
-    if (!declarations) return null;
-    if (!index.conflictsSinceIn(declarations, laterPosition, keysOfNode)) {
+    const laterEntries = subtreeEntries(later);
+    if (!laterEntries) return null;
+    if (!index.conflictsSinceIn(laterEntries, laterPosition, keysOf)) {
       moveChildren(earlier, later);
       remove(later);
       return 'up';
     }
     // The earlier block's content stays first, so source order is kept.
-    const earlierDeclarations = subtreeDeclarations(earlier);
-    if (!earlierDeclarations) return null;
-    if (
-      !index.conflictsSinceIn(earlierDeclarations, laterPosition, keysOfNode)
-    ) {
-      index.moveWrites(earlierDeclarations, laterPosition, keysOfNode);
+    const earlierEntries = subtreeEntries(earlier);
+    if (!earlierEntries) return null;
+    if (!index.conflictsSinceIn(earlierEntries, laterPosition, keysOf)) {
+      index.moveWrites(earlierEntries, laterPosition, keysOf);
       moveChildren(earlier, later);
       takePlaceOf(mergeState, block.node, earlier, later);
       return 'down';
@@ -248,7 +247,6 @@ function joinInParent(block, mergeState, rules) {
 
   const index = new LastWriteIndex(mergeState.properties);
   const keysOf = mergeState.elementKeysOf;
-  const keysOfNode = mergeState.elementKeysOfNode;
   /** @type {Map<string, {entry: RuleRecord | BlockRecord, position: number}>} */
   const latest = new Map();
   // Every rule with a selector joins the first rule with that selector, so
@@ -325,26 +323,16 @@ function joinInParent(block, mergeState, rules) {
    */
   function joinRule(earlier, later, earlierPosition, laterPosition) {
     if (!mergeState.canMerge(earlier, later)) return null;
-    const laterDeclarations = getDecls(later.node);
     // Writes are recorded before the rewrite, while both rules still hold their
     // declarations and cached element keys. Equal selectors give equal keys.
-    if (
-      !index.conflictsSinceIn(laterDeclarations, earlierPosition, keysOfNode)
-    ) {
-      index.moveWrites(laterDeclarations, earlierPosition, keysOfNode);
+    if (!index.conflictsSinceIn([later], earlierPosition, keysOf)) {
+      index.moveWrites([later], earlierPosition, keysOf);
       receive(earlier, later);
       remove(later);
       return 'up';
     }
-    const earlierDeclarations = earlier.declarations;
-    if (
-      !index.conflictsSinceIn(earlierDeclarations, earlierPosition, keysOfNode)
-    ) {
-      index.moveWrites(
-        [...earlierDeclarations, ...laterDeclarations],
-        laterPosition,
-        keysOfNode
-      );
+    if (!index.conflictsSinceIn([earlier], earlierPosition, keysOf)) {
+      index.moveWrites([earlier, later], laterPosition, keysOf);
       receive(earlier, later);
       // A move edits the parent at once, after the pending removals.
       takePlaceOf(mergeState, block.node, earlier, later);
@@ -361,27 +349,22 @@ function joinInParent(block, mergeState, rules) {
    * @return {'up' | 'down' | null} where the joined block stands
    */
   function joinBlock(earlier, later, earlierPosition, laterPosition) {
-    const declarations = subtreeDeclarations(later);
-    if (!declarations) return null;
-    if (!index.conflictsSinceIn(declarations, earlierPosition, keysOfNode)) {
+    const laterEntries = subtreeEntries(later);
+    if (!laterEntries) return null;
+    if (!index.conflictsSinceIn(laterEntries, earlierPosition, keysOf)) {
+      index.moveWrites(laterEntries, earlierPosition, keysOf);
       moveChildren(earlier, later);
       remove(later);
-      index.moveWrites(declarations, earlierPosition, keysOfNode);
       return 'up';
     }
     // The earlier block's content stays first, so source order is kept.
-    const earlierDeclarations = subtreeDeclarations(earlier);
-    if (!earlierDeclarations) return null;
-    if (
-      !index.conflictsSinceIn(earlierDeclarations, earlierPosition, keysOfNode)
-    ) {
+    const earlierEntries = subtreeEntries(earlier);
+    if (!earlierEntries) return null;
+    if (!index.conflictsSinceIn(earlierEntries, earlierPosition, keysOf)) {
+      index.moveWrites(earlierEntries, laterPosition, keysOf);
+      index.moveWrites(laterEntries, laterPosition, keysOf);
       moveChildren(earlier, later);
       takePlaceOf(mergeState, block.node, earlier, later);
-      index.moveWrites(
-        [...earlierDeclarations, ...declarations],
-        laterPosition,
-        keysOfNode
-      );
       return 'down';
     }
     return null;

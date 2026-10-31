@@ -19,6 +19,9 @@ const decl = (prop) => ({ prop });
 // Element keys for writes that may reach any element.
 const unknownElements = () => null;
 
+// Element keys of a rule record: its selectors.
+const keysOfSelectors = (record) => record.selectors;
+
 /**
  * The first node of `css`, with the records of its stylesheet.
  *
@@ -173,10 +176,25 @@ test('last-write index: place-* acts as a wildcard for unknown vendor properties
   assert.equal(conflictsAfterWrite('-webkit-box-direction', 'place-x-y'), true);
 });
 
+/**
+ * The live entries of the stylesheet of `css`, a rule's or an at-rule's
+ * block being the entries of the at-rule itself.
+ *
+ * @param {string} css
+ */
+function entriesOfFirst(css) {
+  const { node, records } = firstNodeWithRecords(css);
+  return records.entryOf(node).liveEntries();
+}
+
 test('last-write index: moveWrites makes the moved declarations count from the new position', () => {
   const index = new LastWriteIndex(new PropertyTable());
   index.record(decl('color'), 1);
-  index.moveWrites([decl('width')], 5, unknownElements);
+  index.moveWrites(
+    entriesOfFirst('@media print{width:1px}'),
+    5,
+    unknownElements
+  );
   assert.equal(index.conflictsSince([decl('width')], 4), true);
   assert.equal(index.conflictsSince([decl('width')], 5), false);
 });
@@ -184,8 +202,20 @@ test('last-write index: moveWrites makes the moved declarations count from the n
 test('last-write index: moveWrites keeps a later write to the same property', () => {
   const index = new LastWriteIndex(new PropertyTable());
   index.record(decl('color'), 7);
-  index.moveWrites([decl('color')], 3, unknownElements);
+  index.moveWrites(
+    entriesOfFirst('@media print{color:red}'),
+    3,
+    unknownElements
+  );
   assert.equal(index.conflictsSince([decl('color')], 6), true);
+});
+
+test('last-write index: moveWrites records a rule entry under the element keys of its rule', () => {
+  const index = new LastWriteIndex(new PropertyTable());
+  const { records } = firstNodeWithRecords('h1{color:red}');
+  index.moveWrites(records.root.liveEntries(), 5, keysOfSelectors);
+  assert.equal(index.conflictsSince([decl('color')], 4, ['h2']), false);
+  assert.equal(index.conflictsSince([decl('color')], 4, ['h1']), true);
 });
 
 test('property writes: lastConflict returns the position of the newest conflicting write', () => {
