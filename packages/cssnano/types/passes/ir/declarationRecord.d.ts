@@ -32,14 +32,6 @@ export declare class DeclarationRecord {
      * @param {number} id
      */
     constructor(node: Declaration, prop: string, value: string, important: boolean, keys: PropertyKeys, id: number);
-    /**
-     * The record of a copy of this declaration, such as a clone. The copy keeps
-     * the facts and the keys, and looks up nothing.
-     *
-     * @param {Declaration} node the copy
-     * @return {DeclarationRecord}
-     */
-    copy(node: Declaration): DeclarationRecord;
 }
 /**
  * The record of a declaration of the run's stylesheet.

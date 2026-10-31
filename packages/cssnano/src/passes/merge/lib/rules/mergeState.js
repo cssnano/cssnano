@@ -4,10 +4,7 @@ import { comma } from '../../../../values/punctuationTokens.js';
 import { createRunContext } from '../../../ir/runContext.js';
 import { isKeyframes, sameContainer } from './sameContainer.js';
 import { joinRanges } from '../../../../values/joinRanges.js';
-import {
-  selectorPieces,
-  separatorOf,
-} from '../../../../values/selectorRanges.js';
+import { selectorPieces } from '../../../../values/selectorRanges.js';
 import { tokensText } from '../../../../values/tokensText.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
@@ -158,20 +155,6 @@ export default class MergeState {
   spellSelectors(record) {
     this.#textTable.setText(record.node, record.selectorText());
     this.#spelled.add(record);
-  }
-
-  /**
-   * Stores the tokens of a copy of the record's rule made with its selectors.
-   * The copy's text is the one PostCSS joined, so the tokens are stored only
-   * when they spell it.
-   *
-   * @param {RuleRecord} record
-   * @param {Rule} clone
-   */
-  storeClone(record, clone) {
-    const source = this.#textTable.stored(record.node);
-    if (source === undefined) return;
-    this.#storePieces(clone, this.piecesOf(record), separatorOf(source));
   }
 
   /**

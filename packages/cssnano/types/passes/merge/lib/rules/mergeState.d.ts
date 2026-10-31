@@ -86,15 +86,6 @@ export default class MergeState {
      */
     spellSelectors(record: RuleRecord): void;
     /**
-     * Stores the tokens of a copy of the record's rule made with its selectors.
-     * The copy's text is the one PostCSS joined, so the tokens are stored only
-     * when they spell it.
-     *
-     * @param {RuleRecord} record
-     * @param {Rule} clone
-     */
-    storeClone(record: RuleRecord, clone: Rule): void;
-    /**
      * Stores the tokens of a rule joined from the selectors of `first` and
      * `second`, in that order, with a comma between each, as `join()` writes it.
      *
