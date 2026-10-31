@@ -83,10 +83,11 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
     depart(mergeState, mergeState.meta(second));
     return { first: [mergeState.meta(first)], second: [] };
   }
-  mergeState.absorbEarlier(second, first);
-  mergeState.spellSelectors(second);
+  const later = mergeState.meta(second);
+  mergeState.absorbEarlier(later, mergeState.meta(first));
+  mergeState.spellSelectors(later);
   depart(mergeState, mergeState.meta(first));
-  return { first: [], second: [mergeState.meta(second)] };
+  return { first: [], second: [later] };
 }
 
 /**
