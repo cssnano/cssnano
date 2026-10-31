@@ -7,6 +7,7 @@ import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdit
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { repositoryFile } from '../../../../../../../util/testHelpers.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
 
 const textTable = new TextTable();
 
@@ -44,8 +45,8 @@ async function blockPair(css, firstPath, secondPath) {
     return node;
   };
   return [
-    state.records.metaOf(resolve(firstPath)).slot.block,
-    state.records.metaOf(resolve(secondPath)).slot.block,
+    ruleRecordOf(state.records, resolve(firstPath)).slot.block,
+    ruleRecordOf(state.records, resolve(secondPath)).slot.block,
   ];
 }
 
@@ -207,8 +208,8 @@ test('sameContainer does not hold for anonymous @layer blocks whose params are o
   const state = recordsOf(root);
   assert.notStrictEqual(
     sameContainer(
-      state.records.metaOf(h1).slot.block,
-      state.records.metaOf(h2).slot.block,
+      ruleRecordOf(state.records, h1).slot.block,
+      ruleRecordOf(state.records, h2).slot.block,
       textTable
     ),
     true
@@ -233,8 +234,8 @@ test('sameContainer holds for named @layer blocks with identical comments and na
   const state = recordsOf(root);
   assert.strictEqual(
     sameContainer(
-      state.records.metaOf(h1).slot.block,
-      state.records.metaOf(h2).slot.block,
+      ruleRecordOf(state.records, h1).slot.block,
+      ruleRecordOf(state.records, h2).slot.block,
       textTable
     ),
     true
@@ -249,8 +250,8 @@ test('sameContainer should hold for equal conditional blocks that are different 
   const state = recordsOf(root);
   assert.strictEqual(
     sameContainer(
-      state.records.blockOf(root.nodes[0]),
-      state.records.blockOf(root.nodes[1]),
+      blockRecordOf(state.records, root.nodes[0]),
+      blockRecordOf(state.records, root.nodes[1]),
       textTable
     ),
     true
@@ -265,8 +266,8 @@ test('sameContainer should not hold for blocks with different conditions', async
   const state = recordsOf(root);
   assert.strictEqual(
     sameContainer(
-      state.records.blockOf(root.nodes[0]),
-      state.records.blockOf(root.nodes[1]),
+      blockRecordOf(state.records, root.nodes[0]),
+      blockRecordOf(state.records, root.nodes[1]),
       textTable
     ),
     false
@@ -281,7 +282,7 @@ test('sameContainer should not hold when only one side is the stylesheet root', 
   assert.strictEqual(
     sameContainer(
       state.records.root,
-      state.records.blockOf(root.nodes[0]),
+      blockRecordOf(state.records, root.nodes[0]),
       textTable
     ),
     false
@@ -298,8 +299,8 @@ test('sameContainer should not hold when the outer blocks differ and the inner o
     { from: repositoryFile }
   );
   const state = recordsOf(root);
-  const first = state.records.blockOf(root.nodes[0].nodes[0]);
-  const second = state.records.blockOf(root.nodes[1].nodes[0]);
+  const first = blockRecordOf(state.records, root.nodes[0].nodes[0]);
+  const second = blockRecordOf(state.records, root.nodes[1].nodes[0]);
   assert.strictEqual(sameContainer(first, second, textTable), false);
 });
 
@@ -313,8 +314,8 @@ test('sameContainer does not fold the Kelvin sign in at-rule names, because CSS 
   const state = recordsOf(root);
   assert.strictEqual(
     sameContainer(
-      state.records.blockOf(kelvin),
-      state.records.blockOf(ascii),
+      blockRecordOf(state.records, kelvin),
+      blockRecordOf(state.records, ascii),
       textTable
     ),
     false

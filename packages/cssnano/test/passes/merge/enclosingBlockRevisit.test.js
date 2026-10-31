@@ -11,6 +11,7 @@ import {
   buildRecords,
   removeDeclarations,
 } from '../../../src/passes/merge/lib/rules/treeEdits.js';
+import { ruleRecordOf } from './lib/rules/liveRecords.js';
 
 /** @import {AtRule, Declaration, Root, Rule} from 'postcss' */
 
@@ -38,15 +39,15 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
   const q = /** @type {Rule} */ (inner.last);
   // The edit goes through treeEdits, which keeps the record of `q` in step with
   // its declarations.
-  removeDeclarations(mergeState, mergeState.records.metaOf(q), [
+  removeDeclarations(mergeState, ruleRecordOf(mergeState.records, q), [
     /** @type {Declaration} */ (q.first),
   ]);
-  const kept = mergeState.records.metaOf(q).declarations;
+  const kept = ruleRecordOf(mergeState.records, q).declarations;
   const incoming = /** @type {Rule} */ (postcss.parse('x{width:1px}').first);
   const incomingRecord = mergeState.records.recordRule(incoming);
   appendToDeclarations(
     mergeState,
-    mergeState.records.metaOf(q),
+    ruleRecordOf(mergeState.records, q),
     kept,
     writesOf(kept, mergeState.properties),
     incomingRecord

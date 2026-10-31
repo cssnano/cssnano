@@ -9,6 +9,7 @@ import {
   moveChildren,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { entryOf } from './liveRecords.js';
 
 /**
  * The entries under the first at-rule of `css`, read from its record.
@@ -19,7 +20,8 @@ function entriesOf(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext());
   state.records = buildRecords(root, state);
-  const block = state.records.entryOf(
+  const block = entryOf(
+    state.records,
     /** @type {import('postcss').AtRule} */ (root.first)
   );
   return subtreeEntries(block);
@@ -85,8 +87,8 @@ test('subtreeEntries should see the declarations that an edit adds, since nothin
   const [first, second] = /** @type {import('postcss').AtRule[]} */ (
     root.nodes
   );
-  const block = state.records.entryOf(first);
+  const block = entryOf(state.records, first);
   assert.equal(propsOf(subtreeEntries(block))?.length, 1);
-  moveChildren(block, state.records.entryOf(second));
+  moveChildren(block, entryOf(state.records, second));
   assert.equal(propsOf(subtreeEntries(block))?.length, 2);
 });

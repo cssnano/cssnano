@@ -1,8 +1,9 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord, Slot } from './blockRecords.js';
 
-/** @import {Declaration, Rule} from 'postcss' */
+/** @import {Declaration} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 const TWICE = 'the records reach a node twice';
 const OVER_WRITTEN =
@@ -42,15 +43,15 @@ export function tallyDeclarations(records) {
     const key = declarationKey(node);
     written.set(key, (written.get(key) ?? 0) + 1);
   };
-  /** @param {Rule} rule */
-  const visitRule = (rule) => {
-    reach(rule);
-    const nested = records.metaOf(rule).block;
+  /** @param {RuleRecord} record */
+  const visitRule = (record) => {
+    reach(record.node);
+    const nested = record.block;
     if (nested) {
       walk(nested);
       return;
     }
-    for (const node of rule.nodes) {
+    for (const node of record.node.nodes) {
       if (node.type === 'decl') count(node);
     }
   };
@@ -58,7 +59,7 @@ export function tallyDeclarations(records) {
   const walk = (block) => {
     for (const entry of block.children) {
       if (entry instanceof Slot) {
-        for (const record of entry.rules) visitRule(record.node);
+        for (const record of entry.rules) visitRule(record);
       } else if (entry instanceof BlockRecord) {
         reach(entry.node);
         walk(entry);

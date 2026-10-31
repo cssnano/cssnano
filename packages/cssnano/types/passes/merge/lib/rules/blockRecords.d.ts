@@ -130,8 +130,8 @@ export declare class BlockRecord {
     adopt(source: BlockRecord): void;
 }
 /**
- * The records of one run: the block of each container, and the rule records
- * the run keeps in step with the tree.
+ * The records of one run: the stylesheet's block, and every block record the
+ * run added. Rule records are reached through the slots that hold them.
  */
 export declare class BlockRecords {
     #private;
@@ -154,38 +154,18 @@ export declare class BlockRecords {
      */
     add(block: BlockRecord): void;
     /**
-     * @param {Container} node
-     * @return {BlockRecord | undefined} the record of a container, if it has one
-     */
-    blockOf(node: Container): BlockRecord | undefined;
-    /**
      * The records of every block the run added, dropped ones included.
      *
      * @return {IterableIterator<BlockRecord>}
      */
     blocks(): IterableIterator<BlockRecord>;
     /**
-     * Gives a rule its record, built from its current declarations.
+     * Builds the record of a rule from its current declarations. Nothing stores
+     * it: the slot the caller places it in is what holds it.
      *
      * @param {Rule} rule
      * @return {RuleRecord}
      */
     recordRule(rule: Rule): RuleRecord;
-    /**
-     * The entry a live child of a block stands as: the record of a rule, the
-     * record of an at-rule with a block, or the node itself.
-     *
-     * @param {ChildNode} node
-     * @return {RuleRecord | BlockRecord | ChildNode}
-     */
-    entryOf(node: ChildNode): RuleRecord | BlockRecord | ChildNode;
-    /** @param {Rule} rule @return {RuleRecord | undefined} */
-    recordOf(rule: Rule): RuleRecord | undefined;
-    /**
-     * @param {Rule} rule
-     * @return {RuleRecord}
-     * @throws {Error} when the rule has no record
-     */
-    metaOf(rule: Rule): RuleRecord;
 }
 //# sourceMappingURL=blockRecords.d.ts.map

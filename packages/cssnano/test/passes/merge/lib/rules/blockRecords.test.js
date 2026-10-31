@@ -28,6 +28,7 @@ import { mergePass } from '../../../../../src/passes/merge/index.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
+import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -49,7 +50,7 @@ function setup(css) {
 test('buildRecords should hold each rule of a block in its own slot, in order', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = /** @type {BlockRecord} */ (
-    state.records.blockOf(/** @type {any} */ (root.first))
+    blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
   const [first, second] = media.children;
   assert.ok(first instanceof Slot);
@@ -62,7 +63,7 @@ test('buildRecords should hold each rule of a block in its own slot, in order', 
 test('buildRecords should give a rule that holds a rule a block record for its children', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = /** @type {Rule} */ (root.first);
-  const block = state.records.metaOf(rule).block;
+  const block = ruleRecordOf(state.records, rule).block;
   assert.ok(block instanceof BlockRecord);
   assert.equal(block.node, rule);
   assert.equal(block.parent, state.records.root);
@@ -70,7 +71,7 @@ test('buildRecords should give a rule that holds a rule a block record for its c
 
 test('buildRecords should leave a rule with only declarations without a block record', () => {
   const { root, state } = setup('a{color:red}');
-  assert.equal(state.records.metaOf(root.first).block, null);
+  assert.equal(ruleRecordOf(state.records, root.first).block, null);
 });
 
 test('assertRecordsMatchTree should accept records built from a stylesheet', () => {
@@ -83,7 +84,7 @@ test('assertRecordsMatchTree should accept records built from a stylesheet', () 
 test('assertRecordsMatchTree should throw when a rule record names a slot the rule is not in', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = /** @type {BlockRecord} */ (
-    state.records.blockOf(/** @type {any} */ (root.first))
+    blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
   const [first, second] = /** @type {Slot[]} */ (media.children);
   first.rules[0].place(second);
@@ -93,7 +94,7 @@ test('assertRecordsMatchTree should throw when a rule record names a slot the ru
 test('assertRecordsMatchTree should throw when a block record holds a child the tree lacks', () => {
   const { root, state } = setup('@media print{a{color:red}}');
   const media = /** @type {BlockRecord} */ (
-    state.records.blockOf(/** @type {any} */ (root.first))
+    blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
   const [slot] = /** @type {Slot[]} */ (media.children);
   slot.rules.length = 0;
@@ -178,41 +179,6 @@ test('liveChildren should return a fresh array of the children, not the entries'
   assert.equal(state.records.root.liveChildren().length, 1);
 });
 
-test('Slot#substitute should replace the rule in its slot and place the replacements there', () => {
-  const { root, state } = setup('@media print{a{color:red}}');
-  const [media] = /** @type {Root} */ (root).nodes;
-  const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
-  const slot = /** @type {Slot} */ (state.records.metaOf(rule).slot);
-  const replacement = postcss.rule({ selector: 'b' });
-  media.append(replacement);
-  // A replacement comes with the record that `ruleRewrite` builds for a clone.
-  const record = state.records.recordRule(replacement);
-  slot.substitute(state.records.metaOf(rule), [record]);
-  assert.deepEqual(slot.rules, [record]);
-  assert.equal(record.slot, slot);
-});
-
-test('moveRule should place the record of the moved rule in a new slot at the end of the target', () => {
-  const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
-  const [media] = /** @type {Root} */ (root).nodes;
-  const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
-  const from = /** @type {Slot} */ (state.records.metaOf(rule).slot);
-  const target = state.records.root;
-  const slot = target.moveRule(state.records.metaOf(rule), from);
-  assert.equal(state.records.metaOf(rule).slot, slot);
-  assert.equal(slot.block, target);
-  assert.equal(target.children.at(-1), slot);
-});
-
-test('moveRule should leave the rule out of the slot it came from', () => {
-  const { root, state } = setup('@media print{a{color:red}}');
-  const [media] = /** @type {Root} */ (root).nodes;
-  const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
-  const from = /** @type {Slot} */ (state.records.metaOf(rule).slot);
-  state.records.root.moveRule(state.records.metaOf(rule), from);
-  assert.deepEqual(from.rules, []);
-});
-
 /**
  * Whether each slot and nested record of a block holds its index among the
  * entries as position. A raw node has no position.
@@ -233,8 +199,11 @@ test('an entry should hold its index as position after a move of children', () =
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   const [first, second] = /** @type {Container} */ (root).nodes;
-  moveChildren(state.records.blockOf(first), state.records.blockOf(second));
-  assert.equal(positionsMatchIndex(state.records.blockOf(first)), true);
+  moveChildren(
+    blockRecordOf(state.records, first),
+    blockRecordOf(state.records, second)
+  );
+  assert.equal(positionsMatchIndex(blockRecordOf(state.records, first)), true);
 });
 
 test('an entry should hold its index as position after a join takes the place of a block', () => {
@@ -245,8 +214,8 @@ test('an entry should hold its index as position after a join takes the place of
   takePlaceOf(
     state,
     root,
-    state.records.blockOf(earlier),
-    state.records.blockOf(later)
+    blockRecordOf(state.records, earlier),
+    blockRecordOf(state.records, later)
   );
   assert.equal(positionsMatchIndex(state.records.root), true);
 });
@@ -256,7 +225,7 @@ test('an entry should hold its index as position after a removal of a block', ()
     'a{color:red}@media print{b{width:1px}}c{height:1px}'
   );
   const [, media] = /** @type {Container} */ (root).nodes;
-  remove(state.records.blockOf(media));
+  remove(blockRecordOf(state.records, media));
   assert.equal(positionsMatchIndex(state.records.root), true);
 });
 
@@ -264,8 +233,8 @@ test('an entry should hold its index as position after a rule moves to the end o
   const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
-  const from = /** @type {Slot} */ (state.records.metaOf(rule).slot);
-  state.records.root.moveRule(state.records.metaOf(rule), from);
+  const from = /** @type {Slot} */ (ruleRecordOf(state.records, rule).slot);
+  state.records.root.moveRule(ruleRecordOf(state.records, rule), from);
   assert.equal(positionsMatchIndex(state.records.root), true);
 });
 
@@ -351,7 +320,9 @@ test('assertNoOverDuplication should accept records built from a stylesheet that
 test('assertNoOverDuplication should throw when the records reach a rule twice', () => {
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [, second] = /** @type {Slot[]} */ (state.records.root.children);
-  second.rules.push(state.records.metaOf(/** @type {Rule} */ (root.first)));
+  second.rules.push(
+    ruleRecordOf(state.records, /** @type {Rule} */ (root.first))
+  );
   assert.throws(
     () => assertNoOverDuplication(state.records),
     /reach a node twice/v

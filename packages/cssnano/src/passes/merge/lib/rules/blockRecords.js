@@ -270,18 +270,15 @@ export class BlockRecord {
 }
 
 /**
- * The records of one run: the block of each container, and the rule records
- * the run keeps in step with the tree.
+ * The records of one run: the stylesheet's block, and every block record the
+ * run added. Rule records are reached through the slots that hold them.
  */
 export class BlockRecords {
   /** @type {BlockRecord} the record of the stylesheet */
   root;
 
-  /** @type {Map<Container, BlockRecord>} */
-  #blocks = new Map();
-
-  /** @type {Map<Rule, RuleRecord>} the record of each rule, by rule */
-  #metas = new Map();
+  /** @type {BlockRecord[]} every block record added, dropped ones included */
+  #blocks = [];
 
   /** @type {Map<string, number> | null} declarations the input wrote, under checks */
   inputWrites = null;
@@ -304,15 +301,7 @@ export class BlockRecords {
    * @return {void}
    */
   add(block) {
-    this.#blocks.set(block.node, block);
-  }
-
-  /**
-   * @param {Container} node
-   * @return {BlockRecord | undefined} the record of a container, if it has one
-   */
-  blockOf(node) {
-    return this.#blocks.get(node);
+    this.#blocks.push(block);
   }
 
   /**
@@ -325,48 +314,17 @@ export class BlockRecords {
   }
 
   /**
-   * Gives a rule its record, built from its current declarations.
+   * Builds the record of a rule from its current declarations. Nothing stores
+   * it: the slot the caller places it in is what holds it.
    *
    * @param {Rule} rule
    * @return {RuleRecord}
    */
   recordRule(rule) {
-    const record = new RuleRecord(
+    return new RuleRecord(
       rule,
       rule.selectors,
       rule.nodes.filter(isDeclaration)
     );
-    this.#metas.set(rule, record);
-    return record;
-  }
-
-  /**
-   * The entry a live child of a block stands as: the record of a rule, the
-   * record of an at-rule with a block, or the node itself.
-   *
-   * @param {ChildNode} node
-   * @return {RuleRecord | BlockRecord | ChildNode}
-   */
-  entryOf(node) {
-    if (node.type === 'rule') return this.metaOf(node);
-    if (node.type === 'atrule') return this.#blocks.get(node) ?? node;
-    return node;
-  }
-
-  /** @param {Rule} rule @return {RuleRecord | undefined} */
-  recordOf(rule) {
-    return this.#metas.get(rule);
-  }
-
-  /**
-   * @param {Rule} rule
-   * @return {RuleRecord}
-   * @throws {Error} when the rule has no record
-   */
-  metaOf(rule) {
-    const record = this.#metas.get(rule);
-    if (record === undefined)
-      throw new Error('read of a rule without a record');
-    return record;
   }
 }
