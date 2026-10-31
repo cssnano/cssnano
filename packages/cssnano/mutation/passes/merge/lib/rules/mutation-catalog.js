@@ -68,14 +68,14 @@ export const mutations = [
   {
     name: 'move a block down in the backward pass across a conflicting write',
     target: source('nonAdjacentMerge.js'),
-    find: '      !index.conflictsSinceIn(earlierDeclarations, laterPosition, keysOfNode)\n',
-    replace: '      true\n',
+    find: '!index.conflictsSinceIn(earlierEntries, laterPosition, keysOf)',
+    replace: 'true',
   },
   {
     name: 'forget the writes of a block moved down in the backward pass',
     target: source('nonAdjacentMerge.js'),
-    find: '      index.moveWrites(earlierDeclarations, laterPosition, keysOfNode);',
-    replace: '',
+    find: '      index.moveWrites(earlierEntries, laterPosition, keysOf);\n      moveChildren(earlier, later);',
+    replace: '      moveChildren(earlier, later);',
   },
   {
     name: 'ignore !important when comparing declarations',

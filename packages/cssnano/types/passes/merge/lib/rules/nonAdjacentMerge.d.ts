@@ -1,15 +1,17 @@
 import { BlockRecord } from './blockRecords.js';
+import { RuleRecord } from './ruleRecord.js';
 import type { Declaration } from 'postcss';
 import type MergeState from './mergeState.js';
 /**
- * The declarations of a block at any depth, in document order, or null when
- * the block holds an at-rule whose place in the cascade is not modelled. The
- * answer is not stored, so an edit cannot leave it stale.
+ * The rule records and bare declarations of a block at any depth, in
+ * document order, or null when the block holds an at-rule whose place in the
+ * cascade is not modelled. The answer is not stored, so an edit cannot leave
+ * it stale.
  *
  * @param {BlockRecord} block
- * @return {Declaration[] | null}
+ * @return {(RuleRecord | Declaration)[] | null}
  */
-export declare function subtreeDeclarations(block: BlockRecord): Declaration[] | null;
+export declare function subtreeEntries(block: BlockRecord): (RuleRecord | Declaration)[] | null;
 /**
  * Joins siblings that apply under the same circumstances across any nodes
  * between them that set no conflicting property, in every container except
