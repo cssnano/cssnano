@@ -3,11 +3,6 @@ import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecord } from './blockRecords.js';
 import type RuleSequence, { Placement, RuleLink } from './ruleSequence.js';
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecords.js' */
-/** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /**
  * The writes of a rule's declarations, numbered by their position.
  *

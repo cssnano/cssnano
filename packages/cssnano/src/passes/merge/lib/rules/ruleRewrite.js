@@ -1,3 +1,4 @@
+import postcss from 'postcss';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { PropertyWrites } from './lastWriteIndex.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
@@ -8,6 +9,22 @@ import { depart } from './treeEdits.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
+
+/**
+ * A rule with the source's raws, position and selector but no children, so
+ * the caller fills it without cloning the source's declarations.
+ *
+ * @param {import('postcss').Rule} source
+ * @param {string} selector
+ * @return {import('postcss').Rule}
+ */
+function shellOf(source, selector) {
+  return postcss.rule({
+    selector,
+    raws: structuredClone(source.raws),
+    source: source.source,
+  });
+}
 
 /**
  * The writes of a rule's declarations, numbered by their position.
@@ -102,14 +119,11 @@ export function buildMergedRule(
         );
   if (delta >= 0 && !group) return null;
 
-  const receivingBlock = second.node.clone();
-  receivingBlock.selector = [
-    ...firstSelectors,
-    ...secondSelectors,
-    ...(group?.added ?? []),
-  ].join();
+  const receivingBlock = shellOf(
+    second.node,
+    [...firstSelectors, ...secondSelectors, ...(group?.added ?? [])].join()
+  );
   if (!group) mergeState.storeJoined(receivingBlock, first, second);
-  receivingBlock.nodes = [];
   const firstClone = first.node.clone({ selectors: firstSelectors });
   const secondClone = second.node.clone({ selectors: secondSelectors });
   mergeState.storeClone(first, firstClone);
