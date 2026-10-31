@@ -22,8 +22,8 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'store the joined selector list as text, dropping its tokens',
-    find: '        this.#textTable.write(rule, list);',
-    replace: '        this.#textTable.setText(rule, tokensText(list));',
+    find: '        this.#textTable.write(record.node, list);',
+    replace: '        this.#textTable.setText(record.node, tokensText(list));',
   },
   {
     name: 'store a clone or joined rule as text, dropping its tokens',
@@ -32,13 +32,13 @@ export const mutations = [
   },
   {
     name: 'forget the rules a merge spelled, so their tokens are never stored',
-    find: '    this.#spelled.add(rule);',
-    replace: '    void rule;',
+    find: '    this.#spelled.add(record);',
+    replace: '    void record;',
   },
   {
     name: 'drop the token ranges a clone keeps, so its element keys tokenize',
-    find: '    this.#storePieces(clone, this.piecesOf(rule), separatorOf(source));',
-    replace: '    this.#storePieces(clone, null, separatorOf(source));',
+    find: '      this.piecesOf(this.meta(rule)),',
+    replace: '      null,',
   },
   {
     name: 'drop the token ranges of the selectors a rule gains by repeated declarations',

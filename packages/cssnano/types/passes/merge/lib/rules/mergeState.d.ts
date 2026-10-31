@@ -50,10 +50,19 @@ export default class MergeState {
      * The elements the rule can match. An arrow function, so it passes as a
      * callback without a closure per call.
      *
+     * @param {RuleRecord} record
+     * @return {string[] | null}
+     */
+    elementKeysOf: (record: RuleRecord) => string[] | null;
+    /**
+     * The elements of the rule that stands at a node, as `elementKeysOf` gives
+     * them. An arrow function, for the callers that hold only the nodes of
+     * declarations.
+     *
      * @param {Rule} rule
      * @return {string[] | null}
      */
-    elementKeysOf: (rule: Rule) => string[] | null;
+    elementKeysOfNode: (rule: Rule) => string[] | null;
     /**
      * Numbers declarations so equal ones, with the same property, value,
      * importance and hack prefix, share a key for the whole run. An arrow
@@ -79,29 +88,29 @@ export default class MergeState {
      * Appends selectors of `source` to the rule's selector list, keeping its
      * vendor prefix profile and its token ranges in step.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      * @param {string[]} selectors some of the selectors of `source`, in the
      * order of their first occurrence there
-     * @param {Rule} source
+     * @param {RuleRecord} source
      * @return {readonly string[] | null} the element keys the selectors add, or
      * null when the rule's elements are not listed
      */
-    addSelectors(rule: Rule, selectors: string[], source: Rule): readonly string[] | null;
+    addSelectors(record: RuleRecord, selectors: string[], source: RuleRecord): readonly string[] | null;
     /**
      * The token range of each selector of the rule, read from the text table
      * without tokenizing, or null when the table does not hold them.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      * @return {RangePiece[] | null}
      */
-    piecesOf(rule: Rule): RangePiece[] | null;
+    piecesOf(record: RuleRecord): RangePiece[] | null;
     /**
      * Sets the selector text of a rule from its list. Its tokens are stored at
      * the end of the run, so a chain of merges into one rule stores them once.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      */
-    spellSelectors(rule: Rule): void;
+    spellSelectors(record: RuleRecord): void;
     /**
      * Stores the tokens of a copy of `rule` made with the rule's selectors. The
      * copy's text is the one PostCSS joined, so the tokens are stored only when
@@ -130,10 +139,10 @@ export default class MergeState {
      * Gives `later` the selectors of `earlier`, which stands before it and is
      * dropped by the caller.
      *
-     * @param {Rule} later
-     * @param {Rule} earlier
+     * @param {RuleRecord} later
+     * @param {RuleRecord} earlier
      */
-    absorbEarlier(later: Rule, earlier: Rule): void;
+    absorbEarlier(later: RuleRecord, earlier: RuleRecord): void;
     /**
      * The block whose child list holds the rule's slot. It is where the rule
      * stands, which can differ from its PostCSS parent during a sweep.

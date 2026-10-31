@@ -31,21 +31,21 @@ test('addSelectors should keep the record of the rule', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b,c{color:red}'));
   const record = state.meta(root.first);
-  state.addSelectors(root.first, ['b', 'c'], root.last);
+  state.addSelectors(state.meta(root.first), ['b', 'c'], state.meta(root.last));
   assert.equal(state.meta(root.first), record);
 });
 
 test('addSelectors should append the selectors to the rule description', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b,c{color:red}'));
-  state.addSelectors(root.first, ['b', 'c'], root.last);
+  state.addSelectors(state.meta(root.first), ['b', 'c'], state.meta(root.last));
   assert.deepEqual(state.meta(root.first).selectors, ['a', 'b', 'c']);
 });
 
 test('absorbEarlier should list the earlier rule selectors first', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-  state.absorbEarlier(root.last, root.first);
+  state.absorbEarlier(state.meta(root.last), state.meta(root.first));
   assert.deepEqual(state.meta(root.last).selectors, ['a', 'b']);
 });
 
@@ -53,14 +53,14 @@ test('absorbEarlier should mark the record of the earlier rule departed', () => 
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
   const record = state.meta(root.first);
-  state.absorbEarlier(root.last, root.first);
+  state.absorbEarlier(state.meta(root.last), state.meta(root.first));
   assert.throws(() => record.selectors, /departed/v);
 });
 
 test('absorbEarlier should leave the record of the later rule readable', () => {
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-  state.absorbEarlier(root.last, root.first);
+  state.absorbEarlier(state.meta(root.last), state.meta(root.first));
   assert.equal(state.meta(root.last).departed, false);
 });
 
@@ -95,7 +95,11 @@ test('canMerge should reject a rule that gained an unsupported selector after it
     postcss.parse('a{color:red}b{color:red}c:has(d){color:red}')
   );
   assert.equal(state.canMerge(root.first, root.nodes[1]), true);
-  state.addSelectors(root.first, ['c:has(d)'], root.last);
+  state.addSelectors(
+    state.meta(root.first),
+    ['c:has(d)'],
+    state.meta(root.last)
+  );
   assert.equal(state.canMerge(root.first, root.nodes[1]), false);
 });
 

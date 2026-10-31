@@ -170,11 +170,11 @@ test('removeDeclarations should give the record keys for the declarations that r
 test('removeDeclarations should keep the element keys of the record', () => {
   const { root, state } = setup('a,b{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  state.elementKeysOf(rule);
+  state.elementKeysOf(state.meta(rule));
   removeDeclarations(state, state.meta(rule), [
     /** @type {Declaration} */ (rule.first),
   ]);
-  assert.deepEqual(state.elementKeysOf(rule), ['a', 'b']);
+  assert.deepEqual(state.elementKeysOf(state.meta(rule)), ['a', 'b']);
 });
 
 test('removeRules should mark the record of each rule it removes departed', () => {

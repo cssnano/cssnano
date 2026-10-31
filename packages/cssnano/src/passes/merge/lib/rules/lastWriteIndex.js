@@ -238,7 +238,7 @@ export default class LastWriteIndex {
    * @param {ChildNode | RuleRecord | BlockRecord} entry the node, or the record
    * of a rule or of an at-rule with a block, as `BlockRecords#entryOf` gives
    * @param {number} position
-   * @param {(rule: Rule) => string[] | null} keysOf
+   * @param {(record: RuleRecord) => string[] | null} keysOf
    * @return {void}
    */
   recordNode(entry, position, keysOf) {
@@ -249,11 +249,11 @@ export default class LastWriteIndex {
    * @param {ChildNode | RuleRecord | BlockRecord} entry
    * @param {number} position
    * @param {string[] | null} keys
-   * @param {(rule: Rule) => string[] | null} keysOf
+   * @param {(record: RuleRecord) => string[] | null} keysOf
    */
   #recordNode(entry, position, keys, keysOf) {
     if (entry instanceof RuleRecord) {
-      const own = keysOf(entry.node);
+      const own = keysOf(entry);
       const block = entry.block;
       if (block) {
         this.#recordBlock(block, position, own, keysOf);
@@ -283,7 +283,7 @@ export default class LastWriteIndex {
    * @param {BlockRecord} block
    * @param {number} position
    * @param {string[] | null} keys
-   * @param {(rule: Rule) => string[] | null} keysOf
+   * @param {(record: RuleRecord) => string[] | null} keysOf
    */
   #recordBlock(block, position, keys, keysOf) {
     for (const entry of block.children) {
