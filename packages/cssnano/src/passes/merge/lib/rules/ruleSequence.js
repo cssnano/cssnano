@@ -1,16 +1,9 @@
 import DeclarationScan from './declarationScan.js';
 import { Slot } from './blockRecords.js';
-/** @import {BlockRecord} from './blockRecord.js' */
 
+/** @import {BlockRecord} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {TextTable} from '../../../../values/textTable.js' */
-
-/**
- * A doubly linked list lets the scan replace a merged pair in constant time.
- *
- * @typedef {{record: RuleRecord, slot: Slot, prev: RuleLink | null, next: RuleLink | null}} RuleLink
- */
 
 /**
  * The rules that stand in the slots of a pair after it is merged.
@@ -31,34 +24,24 @@ function indicesOf(records) {
 }
 
 /**
- * Chains a link for each rule, in order, after `previous`.
- *
- * @param {RuleLink} previous
- * @param {RuleRecord[]} records
- * @param {Slot} slot
- * @return {RuleLink} the last link, or `previous` when there are no rules
- */
-function linkAfter(previous, records, slot) {
-  let tail = previous;
-  for (const record of records) {
-    /** @type {RuleLink} */
-    const link = { record, slot, prev: tail, next: null };
-    tail.next = link;
-    tail = link;
-  }
-  return tail;
-}
-
-/**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
- * other rules, rewritten in the block records.
+ * other rules, rewritten in the block records. The order is two arrays indexed
+ * by rule: each rule names the rule before it and the rule after it, with -1 at
+ * either end. A rule made during the sweep takes an index past the arrays,
+ * which they grow to hold.
  */
 export default class RuleSequence {
-  /** @type {RuleLink} a sentinel that precedes the first rule */
-  head = /** @type {RuleLink} */ ({ prev: null, next: null });
-
   /** @type {BlockRecords} */
   #records;
+
+  /** @type {number[]} the index of the rule before each rule, -1 at the start */
+  #prev;
+
+  /** @type {number[]} the index of the rule after each rule, -1 at the end */
+  #next;
+
+  /** @type {number} the index of the first rule, -1 when there is none */
+  head = -1;
 
   /** @type {DeclarationScan} */
   #scan;
@@ -70,20 +53,21 @@ export default class RuleSequence {
   constructor(records) {
     this.#records = records;
     this.#scan = new DeclarationScan(records);
-    let tail = this.head;
+    const count = records.ruleCount();
+    this.#prev = Array.from({ length: count }, () => -1);
+    this.#next = Array.from({ length: count }, () => -1);
+    let tail = -1;
     /** @param {BlockRecord} block */
     const collect = (block) => {
       let live = 0;
       for (const entry of block.children) {
         if (entry instanceof Slot) {
           for (const index of entry.rules) {
-            const record = /** @type {RuleRecord} */ (records.rule(index));
-            /** @type {RuleLink} */
-            const link = { record, slot: entry, prev: tail, next: null };
-            tail.next = link;
-            tail = link;
+            tail = this.#link(tail, index);
             live++;
-            const nested = record.block;
+            const { block: nested } = /** @type {RuleRecord} */ (
+              records.rule(index)
+            );
             if (nested !== -1) {
               collect(/** @type {BlockRecord} */ (records.block(nested)));
             }
@@ -107,8 +91,54 @@ export default class RuleSequence {
   }
 
   /**
-   * @param {RuleLink} first
-   * @param {RuleLink} second
+   * @param {number} index
+   * @return {number} the index of the rule after the rule at `index`, -1 at the end
+   */
+  nextOf(index) {
+    return index === -1 ? -1 : this.#next[index];
+  }
+
+  /**
+   * @param {number} index
+   * @return {number} the index of the rule before the rule at `index`, -1 at the start
+   */
+  prevOf(index) {
+    return index === -1 ? -1 : this.#prev[index];
+  }
+
+  /**
+   * Links the rule at `index` after the rule at `previous`, or makes it the head
+   * when `previous` is -1. Its own link to the rule after it is reset, so the
+   * caller links that next.
+   *
+   * @param {number} previous
+   * @param {number} index
+   * @return {number} `index`
+   */
+  #link(previous, index) {
+    this.#prev[index] = previous;
+    this.#next[index] = -1;
+    if (previous === -1) this.head = index;
+    else this.#next[previous] = index;
+    return index;
+  }
+
+  /**
+   * Links each rule of `records` in order after `previous`.
+   *
+   * @param {number} previous
+   * @param {RuleRecord[]} records
+   * @return {number} the last rule linked, or `previous` when there are none
+   */
+  #linkAll(previous, records) {
+    let tail = previous;
+    for (const record of records) tail = this.#link(tail, record.index);
+    return tail;
+  }
+
+  /**
+   * @param {RuleRecord} first
+   * @param {RuleRecord} second
    * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations see
    * `DeclarationScan#declarationBetween`
    * @return {boolean} whether a declaration outside both rules lies between them
@@ -118,69 +148,70 @@ export default class RuleSequence {
   }
 
   /**
-   * Moves the rule of `second` to the end of the parent of `first`. It follows
-   * `first` and holds no nested rules, so passing the rest of that parent
-   * leaves the order of the rules unchanged.
+   * Moves the rule at `second` to the end of the parent of the rule at `first`.
+   * It follows `first` and holds no nested rules, so passing the rest of that
+   * parent leaves the order of the rules unchanged.
    *
-   * @param {RuleLink} first
-   * @param {RuleLink} second
+   * @param {number} first
+   * @param {number} second
    * @return {boolean} whether the parents differed
    */
   moveIntoParent(first, second) {
-    const target = first.slot.block;
-    const source = second.slot.block;
+    const records = this.#records;
+    const target = /** @type {RuleRecord} */ (records.rule(first)).slotBlock;
+    const source = /** @type {RuleRecord} */ (records.rule(second)).slotBlock;
     if (target === source) return false;
-    this.#records.changed(source, -1);
-    this.#records.changed(target, 1);
-    second.slot = this.#records.moveRule(target, second.record.index);
+    records.changed(source, -1);
+    records.changed(target, 1);
+    records.moveRule(target, second);
     return true;
   }
 
   /**
-   * Replaces the pair `first` and the link after it, and the links after
+   * Replaces the pair at `first` and the rule after it, and the rules after
    * those that joined, with the `placement` rules.
    *
-   * @param {RuleLink} first
+   * @param {number} first
    * @param {Placement} placement
-   * @return {RuleLink} the link of the first replacement
+   * @return {number} the index of the first replacement
    */
   replacePair(first, placement) {
-    const second = /** @type {RuleLink} */ (first.next);
-    const before = /** @type {RuleLink} */ (first.prev);
-    const after = second.next;
-    const firstSlot = first.slot;
-    const secondSlot = second.slot;
+    const records = this.#records;
+    const second = this.#next[first];
+    const before = this.#prev[first];
+    const after = this.#next[second];
+    const firstSlot = records.slotOf(
+      /** @type {RuleRecord} */ (records.rule(first))
+    );
+    const secondSlot = records.slotOf(
+      /** @type {RuleRecord} */ (records.rule(second))
+    );
     // Both rules may share a slot after an earlier partial merge, so each is
     // replaced where it stands.
-    this.#records.changed(firstSlot.block, placement.first.length - 1);
-    this.#records.changed(secondSlot.block, placement.second.length - 1);
-    this.#records.substitute(
-      firstSlot,
-      first.record.index,
-      indicesOf(placement.first)
-    );
-    this.#records.substitute(
-      secondSlot,
-      second.record.index,
-      indicesOf(placement.second)
-    );
+    records.changed(firstSlot.block, placement.first.length - 1);
+    records.changed(secondSlot.block, placement.second.length - 1);
+    records.substitute(firstSlot, first, indicesOf(placement.first));
+    records.substitute(secondSlot, second, indicesOf(placement.second));
 
-    let tail = linkAfter(
-      linkAfter(before, placement.first, firstSlot),
-      placement.second,
-      secondSlot
+    let tail = this.#linkAll(
+      this.#linkAll(before, placement.first),
+      placement.second
     );
     let following = after;
     for (const rules of placement.following ?? []) {
-      const link = /** @type {RuleLink} */ (following);
-      following = link.next;
-      this.#records.changed(link.slot.block, rules.length - 1);
-      this.#records.substitute(link.slot, link.record.index, indicesOf(rules));
-      tail = linkAfter(tail, rules, link.slot);
+      const index = following;
+      following = this.#next[index];
+      const slot = records.slotOf(
+        /** @type {RuleRecord} */ (records.rule(index))
+      );
+      records.changed(slot.block, rules.length - 1);
+      records.substitute(slot, index, indicesOf(rules));
+      tail = this.#linkAll(tail, rules);
     }
-    tail.next = following;
-    if (following) following.prev = tail;
-    return /** @type {RuleLink} */ (before.next);
+    if (tail === -1) this.head = following;
+    else this.#next[tail] = following;
+    if (following !== -1) this.#prev[following] = tail;
+    return before === -1 ? this.head : this.#next[before];
   }
 
   /**

@@ -2,7 +2,7 @@ import { PropertyWrites } from './propertyWrites.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecord } from './blockRecord.js';
-import type RuleSequence, { Placement, RuleLink } from './ruleSequence.js';
+import type RuleSequence, { Placement } from './ruleSequence.js';
 /**
  * The writes of a rule's declarations, numbered by their position.
  *
@@ -26,10 +26,10 @@ export declare function writesOf(declarations: DeclarationRecord[]): PropertyWri
  * @param {Set<number>} claimedEarlierIndices
  * @param {Set<number>} claimedIndices
  * @param {import('./mergeState.js').default} mergeState
- * @param {RuleLink} secondLink where `second` stands in the sweep
+ * @param {number} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
  * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
  * @return {Placement | null} null when the output would not get shorter
  */
-export declare function buildMergedRule(first: RuleRecord, second: RuleRecord, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, mergeState: import('./mergeState.js').default, secondLink: RuleLink, sequence: RuleSequence, outsideDeclarations: WeakMap<BlockRecord, boolean>): Placement | null;
+export declare function buildMergedRule(first: RuleRecord, second: RuleRecord, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, mergeState: import('./mergeState.js').default, secondLink: number, sequence: RuleSequence, outsideDeclarations: WeakMap<BlockRecord, boolean>): Placement | null;
 //# sourceMappingURL=ruleRewrite.d.ts.map

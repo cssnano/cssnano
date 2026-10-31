@@ -97,6 +97,13 @@ export class BlockRecords {
   }
 
   /**
+   * @return {number} the rule records recorded so far, departed ones included
+   */
+  ruleCount() {
+    return this.#rules.length;
+  }
+
+  /**
    * The records of every block the run added, dropped ones included.
    *
    * @return {IterableIterator<BlockRecord>}

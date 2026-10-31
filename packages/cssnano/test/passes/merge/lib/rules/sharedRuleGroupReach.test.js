@@ -61,21 +61,25 @@ function groupsOf(css) {
   mergeState.records = buildRecords(root, mergeState);
   const sequence = new RuleSequence(mergeState.records);
   const outsideDeclarations = new WeakMap();
+  /** @type {number[]} */
   const links = [];
-  for (let link = sequence.head.next; link; link = link.next) links.push(link);
+  for (let link = sequence.head; link !== -1; link = sequence.nextOf(link)) {
+    links.push(link);
+  }
+  const rule = (/** @type {number} */ index) => mergeState.records.rule(index);
   const found = [];
   for (const [i, first] of links.entries()) {
     const second = links[i + 1];
-    if (!second) break;
+    if (second === undefined) break;
     const shared = intersect(
-      first.record.declarations,
-      second.record.declarationKeys(mergeState.records).keySet
+      rule(first).declarations,
+      rule(second).declarationKeys(mergeState.records).keySet
     );
     if (shared.length === 0) continue;
     const { claimedEarlierIndices, claimedIndices } = filterRuleIntersections(
       shared,
-      [...first.record.declarations],
-      [...second.record.declarations]
+      [...rule(first).declarations],
+      [...rule(second).declarations]
     );
     if (claimedEarlierIndices.size === 0) continue;
     const sharedBytes = shared.reduce(
@@ -83,7 +87,7 @@ function groupsOf(css) {
       0
     );
     const group = findGroup(
-      first.record,
+      rule(first),
       second,
       claimedEarlierIndices,
       claimedIndices,
@@ -96,7 +100,7 @@ function groupsOf(css) {
     );
     if (group) found.push({ i, group });
   }
-  return { links, found, mergeState };
+  return { links, found, mergeState, sequence };
 }
 
 const seeds = Array.from({ length: 200 }, (_, i) => i + 1);
@@ -110,11 +114,14 @@ const seeds = Array.from({ length: 200 }, (_, i) => i + 1);
 function assertEveryGroupReached(options) {
   const scratch = [];
   for (const seed of seeds) {
-    const { links, found, mergeState } = groupsOf(stylesheet(seed, options));
+    const { links, found, mergeState, sequence } = groupsOf(
+      stylesheet(seed, options)
+    );
     for (const { i, group } of found) {
       const last = links[i + 1 + group.followers.length];
-      const earliest = { link: null, distance: 0 };
+      const earliest = { link: -1, distance: 0 };
       earliestPairReaching(
+        sequence,
         last,
         links[i + 1],
         0,
@@ -138,10 +145,10 @@ function assertEveryGroupReached(options) {
  */
 function allGroups(options) {
   return seeds.flatMap((seed) => {
-    const { links, found } = groupsOf(stylesheet(seed, options));
+    const { links, found, mergeState } = groupsOf(stylesheet(seed, options));
     return found.map(({ i, group }) => ({
-      first: links[i],
-      second: links[i + 1],
+      first: mergeState.records.rule(links[i]),
+      second: mergeState.records.rule(links[i + 1]),
       group,
     }));
   });
@@ -159,7 +166,7 @@ test('earliestPairReaching should reach the first rule of the pair from the last
 test('findGroup should form a group whose second rule holds a comment in the generated stylesheets, so the property below covers that pair', () => {
   assert.ok(
     allGroups({ comments: true }).some(({ second }) =>
-      second.record.node.nodes.some((node) => node.type === 'comment')
+      second.node.nodes.some((node) => node.type === 'comment')
     )
   );
 });
@@ -171,7 +178,7 @@ test('earliestPairReaching should reach the first rule of a pair whose second ru
 test('findGroup should form a group whose pair spans two equal blocks in the generated stylesheets, so the property below covers that pair', () => {
   assert.ok(
     allGroups({ blocks: true }).some(
-      ({ first, second }) => first.slot.block !== second.slot.block
+      ({ first, second }) => first.slotBlock !== second.slotBlock
     )
   );
 });

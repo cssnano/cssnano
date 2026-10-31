@@ -68,6 +68,10 @@ export declare class BlockRecords {
      */
     rule(index: number): RuleRecord | undefined;
     /**
+     * @return {number} the rule records recorded so far, departed ones included
+     */
+    ruleCount(): number;
+    /**
      * The records of every block the run added, dropped ones included.
      *
      * @return {IterableIterator<BlockRecord>}
