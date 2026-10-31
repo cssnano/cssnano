@@ -6,7 +6,7 @@ import {
   recordDeclaration,
 } from '../../../ir/declarationRecord.js';
 import { RuleRecord, isDeclaration } from './ruleRecord.js';
-import { BlockRecord } from './blockRecord.js';
+/** @import {BlockRecord} from './blockRecord.js' */
 
 /**
  * One position among the children of a block. `rules` are the indices of the
@@ -117,6 +117,14 @@ export class BlockRecords {
   }
 
   /**
+   * @param {number} index
+   * @return {boolean} whether the block at `index` was dropped by a sweep
+   */
+  #dropped(index) {
+    return /** @type {BlockRecord} */ (this.block(index)).dropped;
+  }
+
+  /**
    * Accounts for the block at `index` gaining `change` live children, or losing
    * them when negative. A droppable block that is tracked and goes empty tells
    * its parent, which may go empty in turn.
@@ -168,8 +176,9 @@ export class BlockRecords {
         if (entry.rules.length > 0) {
           return /** @type {RuleRecord} */ (this.rule(entry.rules[0])).node;
         }
-      } else if (entry instanceof BlockRecord) {
-        if (!entry.dropped) return /** @type {ChildNode} */ (entry.node);
+      } else if (typeof entry === 'number') {
+        const nested = /** @type {BlockRecord} */ (this.block(entry));
+        if (!nested.dropped) return /** @type {ChildNode} */ (nested.node);
       } else if (entry instanceof DeclarationRecord) {
         return entry.node;
       } else {
@@ -188,10 +197,11 @@ export class BlockRecords {
    */
   liveCount(index) {
     let count = 0;
-    for (const entry of this.block(index)?.children ?? []) {
+    const { children } = /** @type {BlockRecord} */ (this.block(index));
+    for (const entry of children) {
       if (entry instanceof Slot) {
         count += entry.rules.length;
-      } else if (!(entry instanceof BlockRecord && entry.dropped)) {
+      } else if (typeof entry !== 'number' || !this.#dropped(entry)) {
         count++;
       }
     }
@@ -209,12 +219,17 @@ export class BlockRecords {
   liveEntries(index) {
     /** @type {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]} */
     const entries = [];
-    for (const entry of this.block(index)?.children ?? []) {
+    const { children } = /** @type {BlockRecord} */ (this.block(index));
+    for (const entry of children) {
       if (entry instanceof Slot) {
         for (const rule of entry.rules) {
           entries.push(/** @type {RuleRecord} */ (this.rule(rule)));
         }
-      } else if (!(entry instanceof BlockRecord && entry.dropped)) {
+      } else if (typeof entry === 'number') {
+        if (!this.#dropped(entry)) {
+          entries.push(/** @type {BlockRecord} */ (this.block(entry)));
+        }
+      } else {
         entries.push(entry);
       }
     }
@@ -231,14 +246,16 @@ export class BlockRecords {
   liveChildren(index) {
     /** @type {ChildNode[]} */
     const children = [];
-    for (const entry of this.block(index)?.children ?? []) {
+    const holder = /** @type {BlockRecord} */ (this.block(index));
+    for (const entry of holder.children) {
       if (entry instanceof Slot) {
         for (const rule of entry.rules) {
           children.push(/** @type {RuleRecord} */ (this.rule(rule)).node);
         }
-      } else if (entry instanceof BlockRecord) {
-        if (!entry.dropped)
-          children.push(/** @type {ChildNode} */ (entry.node));
+      } else if (typeof entry === 'number') {
+        const nested = /** @type {BlockRecord} */ (this.block(entry));
+        if (!nested.dropped)
+          children.push(/** @type {ChildNode} */ (nested.node));
       } else if (entry instanceof DeclarationRecord) {
         children.push(entry.node);
       } else {
@@ -315,10 +332,11 @@ export class BlockRecords {
           }
         }
         holder.children.push(slot);
-      } else if (entry instanceof BlockRecord) {
-        if (entry.dropped) continue;
-        entry.parent = target;
-        entry.position = holder.children.length;
+      } else if (typeof entry === 'number') {
+        const nested = /** @type {BlockRecord} */ (this.block(entry));
+        if (nested.dropped) continue;
+        nested.parent = target;
+        nested.position = holder.children.length;
         holder.children.push(entry);
       } else {
         holder.children.push(entry);

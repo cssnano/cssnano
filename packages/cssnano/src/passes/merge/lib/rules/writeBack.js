@@ -1,6 +1,6 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { Slot } from './blockRecords.js';
-import { BlockRecord } from './blockRecord.js';
+/** @import {BlockRecord} from './blockRecord.js' */
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
@@ -30,9 +30,10 @@ function differs(records, block) {
         const record = /** @type {RuleRecord} */ (records.rule(index));
         if (nodes[at++] !== record.node) return true;
       }
-    } else if (entry instanceof BlockRecord) {
-      if (entry.dropped) continue;
-      if (nodes[at++] !== entry.node) return true;
+    } else if (typeof entry === 'number') {
+      const nested = /** @type {BlockRecord} */ (records.block(entry));
+      if (nested.dropped) continue;
+      if (nodes[at++] !== nested.node) return true;
     } else if (entry instanceof DeclarationRecord) {
       if (nodes[at++] !== entry.node) return true;
     } else if (nodes[at++] !== entry) {
@@ -107,8 +108,11 @@ function checkBlockRecord(mergeState, block) {
         );
         checkRuleRecord(mergeState, block, entry, record);
       }
-    } else if (entry instanceof BlockRecord && !entry.dropped) {
-      checkBlockRecord(mergeState, entry);
+    } else if (typeof entry === 'number') {
+      const nested = /** @type {BlockRecord} */ (
+        mergeState.records.block(entry)
+      );
+      if (!nested.dropped) checkBlockRecord(mergeState, nested);
     }
   }
 }

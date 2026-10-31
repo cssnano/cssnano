@@ -62,8 +62,10 @@ function collectEntries(records, block, entries) {
         const record = /** @type {RuleRecord} */ (records.rule(index));
         if (!collectFrom(records, record, entries)) return false;
       }
-    } else if (entry instanceof BlockRecord) {
-      if (!entry.dropped && !collectFrom(records, entry, entries)) return false;
+    } else if (typeof entry === 'number') {
+      const nested = /** @type {BlockRecord} */ (records.block(entry));
+      if (!nested.dropped && !collectFrom(records, nested, entries))
+        return false;
     } else if (!ruleOwned || !(entry instanceof DeclarationRecord)) {
       if (!collectFrom(records, entry, entries)) return false;
     }
@@ -152,9 +154,11 @@ export function joinNonAdjacent(block, mergeState) {
       : joinInParent(block, mergeState, false);
   }
   joined = joinByDeclarations(block, mergeState) || joined;
-  for (const entry of block.children)
-    if (entry instanceof BlockRecord && !entry.dropped)
-      joined = joinNonAdjacent(entry, mergeState) || joined;
+  for (const entry of block.children) {
+    if (typeof entry !== 'number') continue;
+    const nested = /** @type {BlockRecord} */ (mergeState.records.block(entry));
+    if (!nested.dropped) joined = joinNonAdjacent(nested, mergeState) || joined;
+  }
   return joined;
 }
 

@@ -1,6 +1,6 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { Slot } from './blockRecords.js';
-import { BlockRecord } from './blockRecord.js';
+/** @import {BlockRecord} from './blockRecord.js' */
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -38,8 +38,8 @@ export function sweepPotential(records) {
             parents += id;
           }
         }
-      } else if (entry instanceof BlockRecord) {
-        visit(entry);
+      } else if (typeof entry === 'number') {
+        visit(/** @type {BlockRecord} */ (records.block(entry)));
       }
     }
   };

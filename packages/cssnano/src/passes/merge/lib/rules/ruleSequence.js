@@ -1,6 +1,6 @@
 import DeclarationScan from './declarationScan.js';
 import { Slot } from './blockRecords.js';
-import { BlockRecord } from './blockRecord.js';
+/** @import {BlockRecord} from './blockRecord.js' */
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -88,10 +88,11 @@ export default class RuleSequence {
               collect(/** @type {BlockRecord} */ (records.block(nested)));
             }
           }
-        } else if (entry instanceof BlockRecord) {
-          if (entry.dropped) continue;
+        } else if (typeof entry === 'number') {
+          const nested = /** @type {BlockRecord} */ (records.block(entry));
+          if (nested.dropped) continue;
           live++;
-          collect(entry);
+          collect(nested);
         } else {
           live++;
         }

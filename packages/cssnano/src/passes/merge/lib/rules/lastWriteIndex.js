@@ -147,7 +147,10 @@ export default class LastWriteIndex {
           const record = /** @type {RuleRecord} */ (this.#records.rule(index));
           this.#recordNode(record, position, keys, keysOf);
         }
-      } else if (!(entry instanceof BlockRecord && entry.dropped)) {
+      } else if (typeof entry === 'number') {
+        const nested = /** @type {BlockRecord} */ (this.#records.block(entry));
+        if (!nested.dropped) this.#recordNode(nested, position, keys, keysOf);
+      } else {
         this.#recordNode(entry, position, keys, keysOf);
       }
     }
@@ -242,7 +245,7 @@ export default class LastWriteIndex {
    * children when it holds one, else its declarations.
    *
    * @param {RuleRecord} entry
-   * @return {readonly (DeclarationRecord | BlockRecord | Slot | ChildNode)[]}
+   * @return {readonly (DeclarationRecord | number | Slot | ChildNode)[]}
    */
   #listOf(entry) {
     if (entry.block === -1) return entry.declarations;

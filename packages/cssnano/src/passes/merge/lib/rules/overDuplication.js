@@ -1,6 +1,6 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { Slot } from './blockRecords.js';
-import { BlockRecord } from './blockRecord.js';
+/** @import {BlockRecord} from './blockRecord.js' */
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -62,9 +62,10 @@ export function tallyDeclarations(records) {
         for (const index of entry.rules) {
           visitRule(/** @type {RuleRecord} */ (records.rule(index)));
         }
-      } else if (entry instanceof BlockRecord) {
-        reach(entry.node);
-        walk(entry);
+      } else if (typeof entry === 'number') {
+        const nested = /** @type {BlockRecord} */ (records.block(entry));
+        reach(nested.node);
+        walk(nested);
       } else {
         reach(entry);
         if (entry instanceof DeclarationRecord) count(entry);

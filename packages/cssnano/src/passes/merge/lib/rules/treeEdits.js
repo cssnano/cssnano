@@ -73,8 +73,8 @@ export function buildRecords(root, mergeState) {
           index,
           isDroppableWhenEmpty(child, textTable)
         );
-        block.children.push(nested);
         fill(nested);
+        block.children.push(nested.index);
       } else if (child.type === 'decl') {
         declarations++;
         block.children.push(
@@ -164,7 +164,7 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
     );
     const from = block.position;
     const to = later.position;
-    holder.children[to] = block;
+    holder.children[to] = block.index;
     block.position = to;
     holder.children[from] = new Slot(holder.index, from, []);
   }
