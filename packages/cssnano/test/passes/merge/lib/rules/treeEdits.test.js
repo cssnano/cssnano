@@ -3,7 +3,6 @@ import { after, before, test } from 'node:test';
 import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
@@ -195,7 +194,7 @@ test('appendToDeclarations should move the declarations of the incoming rule int
     state,
     ruleRecordOf(state.records, receiving),
     kept,
-    writesOf(kept, new PropertyTable()),
+    writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
   assert.deepEqual(treeProps(media), ['color', 'width']);

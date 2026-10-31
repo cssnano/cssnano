@@ -37,8 +37,7 @@ function partialMerge(
   const filtered = filterRuleIntersections(
     intersection,
     [...first.declarations],
-    [...second.declarations],
-    mergeState.properties
+    [...second.declarations]
   );
   intersection = filtered.intersection;
   if (intersection.length === 0) return null;
@@ -93,13 +92,7 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
 export function mergeMatchingSelectors(first, second, mergeState) {
   if (!first.hasSameSelectors(second)) return null;
   const kept = [...first.declarations];
-  appendToDeclarations(
-    mergeState,
-    first,
-    kept,
-    writesOf(kept, mergeState.properties),
-    second
-  );
+  appendToDeclarations(mergeState, first, kept, writesOf(kept), second);
   return { first: [first], second: [] };
 }
 

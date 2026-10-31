@@ -1,5 +1,5 @@
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import type { PropertyTable } from '../../../ir/propertyTable.js';
+/** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
+import type { PropertyKeys } from '../../../ir/propertyTable.js';
 export type PositionList = {
     positions: number[];
     cursor: number;
@@ -14,26 +14,20 @@ export type PositionList = {
  */
 export declare class WritePositions {
     #private;
-    /** @param {PropertyTable} table keys every declaration this index sees */
-    constructor(table: PropertyTable);
     /**
-     * @param {{prop: string}} declaration
+     * @param {PropertyKeys} keys the keys of a declaration's property name
      * @param {number} position greater than every position recorded so far
      */
-    record(declaration: {
-        prop: string;
-    }, position: number): void;
+    record(keys: PropertyKeys, position: number): void;
     /**
      * The earliest unclaimed position of a write that conflicts with
      * `declaration`, or -1. Its keys are those `PropertyWrites.lastConflict`
      * reads.
      *
-     * @param {{prop: string}} declaration not `all`
+     * @param {PropertyKeys} keys of a property that is not `all`
      * @param {Set<number>} claimed
      * @return {number}
      */
-    firstUnclaimed(declaration: {
-        prop: string;
-    }, claimed: Set<number>): number;
+    firstUnclaimed(keys: PropertyKeys, claimed: Set<number>): number;
 }
 //# sourceMappingURL=writePositions.d.ts.map

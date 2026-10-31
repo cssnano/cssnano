@@ -173,7 +173,7 @@ function joinBlocksBackward(block, mergeState) {
   }
   if (scan.start === Infinity) return false;
 
-  const index = new LastWriteIndex(mergeState.properties);
+  const index = new LastWriteIndex();
   const keysOf = mergeState.elementKeysOf;
   /** @type {Map<string, {block: BlockRecord, position: number}>} */
   const next = new Map();
@@ -246,7 +246,7 @@ function joinInParent(block, mergeState, rules) {
   }
   if (scan.start === Infinity) return false;
 
-  const index = new LastWriteIndex(mergeState.properties);
+  const index = new LastWriteIndex();
   const keysOf = mergeState.elementKeysOf;
   /** @type {Map<string, {entry: RuleRecord | BlockRecord, position: number}>} */
   const latest = new Map();
@@ -309,7 +309,7 @@ function joinInParent(block, mergeState, rules) {
     const kept = earlier.declarations;
     let writes = received.get(earlier);
     if (!writes) {
-      writes = writesOf(kept, mergeState.properties);
+      writes = writesOf(kept);
       received.set(earlier, writes);
     }
     appendToDeclarations(mergeState, earlier, kept, writes, later);

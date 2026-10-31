@@ -1,4 +1,4 @@
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+/** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
 
 /**
  * The ascending positions at which one key was written, with a cursor past
@@ -126,8 +126,6 @@ class SegmentPositions {
  * move forward once. A query for `all` throws, so callers reject it first.
  */
 export class WritePositions {
-  /** @type {PropertyTable} */
-  #table;
   /** @type {Map<string | number, PositionList>} */
   #customs = new Map();
   /** @type {PositionList} */
@@ -141,17 +139,11 @@ export class WritePositions {
   #anySegments = new SegmentPositions();
   #unknownSegments = new SegmentPositions();
 
-  /** @param {PropertyTable} table keys every declaration this index sees */
-  constructor(table) {
-    this.#table = table;
-  }
-
   /**
-   * @param {{prop: string}} declaration
+   * @param {PropertyKeys} keys the keys of a declaration's property name
    * @param {number} position greater than every position recorded so far
    */
-  record(declaration, position) {
-    const keys = this.#table.keysOf(declaration.prop);
+  record(keys, position) {
     if (keys.custom) {
       appendPosition(this.#customs, keys.key, position);
       return;
@@ -174,12 +166,11 @@ export class WritePositions {
    * `declaration`, or -1. Its keys are those `PropertyWrites.lastConflict`
    * reads.
    *
-   * @param {{prop: string}} declaration not `all`
+   * @param {PropertyKeys} keys of a property that is not `all`
    * @param {Set<number>} claimed
    * @return {number}
    */
-  firstUnclaimed(declaration, claimed) {
-    const keys = this.#table.keysOf(declaration.prop);
+  firstUnclaimed(keys, claimed) {
     if (keys.custom) {
       return firstUnclaimedIn(this.#customs.get(keys.key), claimed);
     }

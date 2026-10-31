@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { PropertyTable } from '../../../src/passes/ir/propertyTable.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
@@ -27,7 +26,7 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
     mergeState,
     ruleRecordOf(mergeState.records, receiving),
     kept,
-    writesOf(kept, new PropertyTable()),
+    writesOf(kept),
     ruleRecordOf(mergeState.records, incoming)
   );
 

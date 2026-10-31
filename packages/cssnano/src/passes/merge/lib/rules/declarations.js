@@ -1,11 +1,6 @@
-import cssnanoUtils from '#utils';
-import { isAllName } from '../../../ir/propertyName.js';
 import { PropertyWrites } from './lastWriteIndex.js';
 import { WritePositions } from './writePositions.js';
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-
-const { asciiLowerCase } = cssnanoUtils;
 
 /**
  * Two declarations are equal when they print the same, which their ids tell:
@@ -43,23 +38,6 @@ export function sameDeclarationsAndOrder(a, b) {
 }
 
 /**
- * True if a declaration of `prop` can be reset by `all`, which resets every
- * property but `direction`, `unicode-bidi` and custom properties (CSS Cascading
- * and Inheritance Level 4).
- *
- * @param {string} prop
- * @return {boolean}
- */
-function resettableByAll(prop) {
-  const lowercased = asciiLowerCase(prop);
-  return (
-    lowercased !== 'direction' &&
-    lowercased !== 'unicode-bidi' &&
-    !lowercased.startsWith('--')
-  );
-}
-
-/**
  * The later rule's declarations, matched one candidate at a time. Each
  * candidate claims the first unclaimed later declaration whose property
  * conflicts with it, and the claim must be an equal declaration.
@@ -73,18 +51,14 @@ class LaterClaims {
   #claimed = new Set();
   #hasAll = false;
 
-  /**
-   * @param {DeclarationRecord[]} declarations
-   * @param {PropertyTable} table
-   */
-  constructor(declarations, table) {
+  /** @param {DeclarationRecord[]} declarations */
+  constructor(declarations) {
     this.#declarations = declarations;
-    this.#writes = new WritePositions(table);
+    this.#writes = new WritePositions();
     for (let index = 0; index < declarations.length; index++) {
-      this.#writes.record(declarations[index], index);
-      if (isAllName(declarations[index].prop)) {
-        this.#hasAll = true;
-      }
+      const { keys } = declarations[index];
+      this.#writes.record(keys, index);
+      if (!keys.custom && keys.all) this.#hasAll = true;
     }
   }
 
@@ -98,15 +72,13 @@ class LaterClaims {
    * @return {boolean} whether the candidate claims an equal later declaration
    */
   claim(candidate) {
-    // Both refusals below would fail the claim after the query, so skipping
-    // the query changes no answer.
-    if (
-      isAllName(candidate.prop) ||
-      (this.#hasAll && resettableByAll(candidate.prop))
-    ) {
+    // `all` is never claimed, and neither is a property that a later `all`
+    // resets. Refusing either before the query changes no answer.
+    const { keys } = candidate;
+    if (!keys.custom && (keys.all || (this.#hasAll && keys.subjectToAll))) {
       return false;
     }
-    const matchIndex = this.#writes.firstUnclaimed(candidate, this.#claimed);
+    const matchIndex = this.#writes.firstUnclaimed(keys, this.#claimed);
     if (matchIndex === -1) {
       return false;
     }
@@ -129,14 +101,12 @@ class LaterClaims {
  * @param {DeclarationRecord[]} candidates
  * @param {DeclarationRecord[]} earlierRuleDeclarations
  * @param {DeclarationRecord[]} laterRuleDeclarations
- * @param {PropertyTable} table
  * @return {{survivors: DeclarationRecord[], claimedIndices: Set<number>, earlierIndices: Set<number>}}
  */
 function filterRound(
   candidates,
   earlierRuleDeclarations,
-  laterRuleDeclarations,
-  table
+  laterRuleDeclarations
 ) {
   const candidateSet = new Set(candidates);
   /** @type {Map<DeclarationRecord, number>} */
@@ -144,20 +114,20 @@ function filterRound(
   const hoistable = new Set();
   // The non-candidates after the current position. A candidate is blocked by
   // any of them that conflicts with it.
-  const outside = new PropertyWrites(table);
+  const outside = new PropertyWrites();
   for (let index = earlierRuleDeclarations.length - 1; index >= 0; index--) {
     const declaration = earlierRuleDeclarations[index];
     if (!candidateSet.has(declaration)) {
-      outside.record(declaration, index);
+      outside.record(declaration.keys, index);
       continue;
     }
     earlierIndexOf.set(declaration, index);
-    if (outside.lastConflict(declaration) === -1) {
+    if (outside.lastConflict(declaration.keys) === -1) {
       hoistable.add(declaration);
     }
   }
 
-  const claims = new LaterClaims(laterRuleDeclarations, table);
+  const claims = new LaterClaims(laterRuleDeclarations);
   /** @type {DeclarationRecord[]} */
   const survivors = [];
   for (const candidate of candidates) {
@@ -180,22 +150,19 @@ function filterRound(
  * @param {DeclarationRecord[]} hoistCandidates
  * @param {DeclarationRecord[]} earlierRuleDeclarations
  * @param {DeclarationRecord[]} laterRuleDeclarations
- * @param {PropertyTable} table
  * @return {{intersection: DeclarationRecord[], claimedIndices: Set<number>, claimedEarlierIndices: Set<number>}}
  */
 export function filterRuleIntersections(
   hoistCandidates,
   earlierRuleDeclarations,
-  laterRuleDeclarations,
-  table
+  laterRuleDeclarations
 ) {
   let remainingCandidates = hoistCandidates;
   for (;;) {
     const round = filterRound(
       remainingCandidates,
       earlierRuleDeclarations,
-      laterRuleDeclarations,
-      table
+      laterRuleDeclarations
     );
     if (
       round.survivors.length === remainingCandidates.length ||

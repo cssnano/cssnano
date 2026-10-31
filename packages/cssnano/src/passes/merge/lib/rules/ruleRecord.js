@@ -390,8 +390,3 @@ export class RuleRecord {
     if (!same) throw new Error('stale declarations of a rule record');
   }
 }
-
-/** @param {Rule} rule @return {Declaration[]} */
-export function getDecls(rule) {
-  return rule.nodes.filter(isDeclaration);
-}
