@@ -33,7 +33,11 @@ test('Slot#substitute should replace the rule in its slot and place the replacem
   const replacement = postcss.rule({ selector: 'b' });
   media.append(replacement);
   // A replacement comes with the record that `ruleRewrite` builds for a clone.
-  const record = state.records.recordRule(replacement);
+  const record = state.records.recordRule(
+    replacement,
+    state.properties,
+    state.declarationIds
+  );
   slot.substitute(ruleRecordOf(state.records, rule), [record]);
   assert.deepEqual(slot.rules, [record]);
   assert.equal(record.slot, slot);

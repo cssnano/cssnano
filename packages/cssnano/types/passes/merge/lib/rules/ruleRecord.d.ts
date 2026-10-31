@@ -22,6 +22,8 @@ export declare function isDeclaration(node: ChildNode): node is Declaration;
  */
 export declare class RuleRecord extends SelectorList {
     #private;
+    /** @type {number} the place of the record in the arena of its records, -1 until added */
+    index: number;
     /**
      * @param {Rule} node the rule the record describes
      * @param {string[]} selectors

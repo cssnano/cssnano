@@ -83,6 +83,9 @@ export class BlockRecord {
   /** @type {boolean} whether a sweep removed the block for being empty */
   dropped = false;
 
+  /** @type {number} the place of the block in the arena of its records, -1 until added */
+  index = -1;
+
   /**
    * The whitespace before the first child of the stylesheet, which PostCSS
    * hands on when that child is removed. Only the record of the stylesheet
@@ -290,6 +293,9 @@ export class BlockRecords {
   /** @type {BlockRecord[]} every block record added, dropped ones included */
   #blocks = [];
 
+  /** @type {RuleRecord[]} every rule record recorded, departed ones included */
+  #rules = [];
+
   /** @type {Map<string, number> | null} declarations the input wrote, under checks */
   inputWrites = null;
 
@@ -301,29 +307,38 @@ export class BlockRecords {
    */
   maxRounds = Infinity;
 
-  /** @type {PropertyTable} */
-  #properties;
-
-  /** @type {DeclarationKeys} */
-  #declarations;
-
   /**
    * @param {BlockRecord} root the record of the stylesheet
-   * @param {PropertyTable} properties the keys of the property names
-   * @param {DeclarationKeys} declarations the ids of the declarations
    */
-  constructor(root, properties, declarations) {
+  constructor(root) {
     this.root = root;
-    this.#properties = properties;
-    this.#declarations = declarations;
   }
 
   /**
+   * Adds a block record to the arena, which gives it the next index.
+   *
    * @param {BlockRecord} block
    * @return {void}
    */
   add(block) {
+    block.index = this.#blocks.length;
     this.#blocks.push(block);
+  }
+
+  /**
+   * @param {number} index an index that `add` gave
+   * @return {BlockRecord | undefined}
+   */
+  block(index) {
+    return this.#blocks[index];
+  }
+
+  /**
+   * @param {number} index an index that `recordRule` gave
+   * @return {RuleRecord | undefined}
+   */
+  rule(index) {
+    return this.#rules[index];
   }
 
   /**
@@ -339,32 +354,41 @@ export class BlockRecords {
    * Builds the record of a declaration that is a child of a block.
    *
    * @param {import('postcss').Declaration} node
+   * @param {PropertyTable} properties the keys of the property names
+   * @param {DeclarationKeys} declarations the ids of the declarations
    * @return {DeclarationRecord}
    */
-  declarationRecord(node) {
-    return recordDeclaration(node, this.#properties, this.#declarations);
+  declarationRecord(node, properties, declarations) {
+    return recordDeclaration(node, properties, declarations);
   }
 
   /**
-   * Builds the record of a rule. Nothing stores it: the slot the caller places
-   * it in is what holds it.
+   * Builds the record of a rule and adds it to the arena, which gives it the
+   * next index. The slot the caller places it in is what holds it.
    *
    * @param {Rule} rule
-   * @param {DeclarationRecord[] | null} [declarations] the records of the
-   * rule's declarations, in order, when the caller holds them already, such as
-   * the records a rule hands to a new rule; null to record each declaration of
-   * the rule
+   * @param {PropertyTable} properties the keys of the property names
+   * @param {DeclarationKeys} declarations the ids of the declarations
+   * @param {DeclarationRecord[] | null} [records] the records of the rule's
+   * declarations, in order, when the caller holds them already, such as the
+   * records a rule hands to a new rule; null to record each declaration of the
+   * rule
    * @return {RuleRecord}
    */
-  recordRule(rule, declarations = null) {
-    if (declarations !== null) {
-      return new RuleRecord(rule, rule.selectors, declarations);
+  recordRule(rule, properties, declarations, records = null) {
+    let children = records;
+    if (children === null) {
+      // A loop, since `filter` and `map` would each allocate a list of nodes.
+      children = [];
+      for (const node of rule.nodes) {
+        if (isDeclaration(node)) {
+          children.push(this.declarationRecord(node, properties, declarations));
+        }
+      }
     }
-    // A loop, since `filter` and `map` would each allocate a list of nodes.
-    const records = [];
-    for (const node of rule.nodes) {
-      if (isDeclaration(node)) records.push(this.declarationRecord(node));
-    }
-    return new RuleRecord(rule, rule.selectors, records);
+    const record = new RuleRecord(rule, rule.selectors, children);
+    record.index = this.#rules.length;
+    this.#rules.push(record);
+    return record;
   }
 }

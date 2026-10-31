@@ -332,7 +332,13 @@ test('assertNoOverDuplication should throw when a declaration is written more of
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
   const added = postcss.decl({ prop: 'color', value: 'red' });
-  record.append(state.records.declarationRecord(added));
+  record.append(
+    state.records.declarationRecord(
+      added,
+      state.properties,
+      state.declarationIds
+    )
+  );
   assert.throws(
     () => assertNoOverDuplication(state.records),
     /more often than the input/v
