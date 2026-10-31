@@ -3,10 +3,10 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 import { VendorPrefixSummary } from '../../../../../src/passes/merge/lib/rules/vendorPrefixSummary.js';
-import {
-  RuleRecord,
-  getDecls,
-} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
+import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { createSelectorLookup } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
 
 const lookup = createSelectorLookup(['chrome 120']);
@@ -140,7 +140,12 @@ function ruleWith(selector) {
  * @return {RuleRecord} the record of a rule with the declarations it has
  */
 function metaOf(rule) {
-  return new RuleRecord(rule, rule.selectors, getDecls(rule));
+  const properties = new PropertyTable();
+  const declarationIds = new DeclarationKeys();
+  const declarations = rule.nodes
+    .filter((node) => node.type === 'decl')
+    .map((node) => recordDeclaration(node, properties, declarationIds));
+  return new RuleRecord(rule, rule.selectors, declarations);
 }
 
 test('getVendorProfile should match the list profile after addSelectors grows a rule whose profile was already computed', () => {

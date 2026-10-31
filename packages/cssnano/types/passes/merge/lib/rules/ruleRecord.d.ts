@@ -1,5 +1,6 @@
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { Declaration, Rule } from 'postcss';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 export type RuleDeclarationKeys = {
     keys: number[];
     keySet: Set<number>;
@@ -31,9 +32,9 @@ export declare class RuleRecord {
     /**
      * @param {Rule} node the rule the record describes
      * @param {string[]} selectors
-     * @param {Declaration[]} declarations
+     * @param {DeclarationRecord[]} declarations
      */
-    constructor(node: Rule, selectors: string[], declarations: Declaration[]);
+    constructor(node: Rule, selectors: string[], declarations: DeclarationRecord[]);
     /** @return {Rule} the rule the record describes, which the record never changes */
     get node(): Rule;
     /**
@@ -58,8 +59,8 @@ export declare class RuleRecord {
     get departed(): boolean;
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
-    /** @return {Declaration[]} */
-    get declarations(): Declaration[];
+    /** @return {DeclarationRecord[]} */
+    get declarations(): DeclarationRecord[];
     /**
      * @return {RangePiece[] | null | undefined} undefined until the caller
      * sets them, and null when the token ranges of the selectors are not known
@@ -71,18 +72,16 @@ export declare class RuleRecord {
      * Takes the declarations of the rule as its own list, which the caller
      * keeps extending in place. The keys are derived again on the next read.
      *
-     * @param {Declaration[]} declarations
+     * @param {DeclarationRecord[]} declarations
      */
-    takeDeclarations(declarations: Declaration[]): void;
+    takeDeclarations(declarations: DeclarationRecord[]): void;
     /**
-     * Numbers the declarations so equal ones share a key. The numbering is
-     * the caller's, and the keys last until the declarations change; adding
-     * selectors leaves them valid.
+     * The ids of the declarations, so equal declarations share a key. The keys
+     * last until the declarations change; adding selectors leaves them valid.
      *
-     * @param {(declaration: Declaration) => number} keyOf
      * @return {RuleDeclarationKeys}
      */
-    declarationKeys(keyOf: (declaration: Declaration) => number): RuleDeclarationKeys;
+    declarationKeys(): RuleDeclarationKeys;
     /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}
@@ -142,7 +141,8 @@ export declare class RuleRecord {
     depart(): void;
     /**
      * Under consistency checks, throws when the declarations held differ from
-     * those the rule holds now, which an edit that skipped its bookkeeping leaves.
+     * those the rule holds now, in node or in the facts a record keeps, which an
+     * edit that skipped its bookkeeping leaves.
      *
      * @throws {Error} when the declarations are stale
      */

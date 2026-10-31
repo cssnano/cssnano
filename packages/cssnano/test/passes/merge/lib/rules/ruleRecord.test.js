@@ -13,14 +13,27 @@ import {
   consistencyChecksEnabled,
   enableConsistencyChecks,
 } from '../../../../../src/passes/ir/consistencyChecks.js';
+import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 
 const lookup = () => ({});
 const lookupB = (selector) => ({ compatible: selector !== 'b' });
-const keyOf = (declaration) => declaration.prop.length;
+const properties = new PropertyTable();
+const declarationIds = new DeclarationKeys();
+/**
+ * The declaration records of `rule`, as the run builds them.
+ *
+ * @param {import('postcss').Rule} rule
+ */
+const recordsOf = (rule) =>
+  rule.nodes
+    .filter(isDeclaration)
+    .map((node) => recordDeclaration(node, properties, declarationIds));
 /** A record of the rule in `css`, holding the declarations the rule holds. */
 const recordOf = (css) => {
   const rule = postcss.parse(css).first;
-  return new RuleRecord(rule, rule.selectors, rule.nodes.filter(isDeclaration));
+  return new RuleRecord(rule, rule.selectors, recordsOf(rule));
 };
 
 test('compatible should look up each selector once across repeated reads', () => {
@@ -52,53 +65,59 @@ test('compatible should be false after absorbEarlier takes an incompatible earli
 test('recordRule should give the record of a rule the rule as its node', () => {
   const rule = postcss.parse('a{color:red}').first;
   const records = new BlockRecords(
-    new BlockRecord(postcss.root(), null, 0, false)
+    new BlockRecord(postcss.root(), null, 0, false),
+    properties,
+    declarationIds
   );
   assert.equal(records.recordRule(rule).node, rule);
 });
 
-test('declarationKeys should list the key of each declaration in order', () => {
+test('declarationKeys should list the id of each declaration in order', () => {
   const record = recordOf('a{color:red;top:0}');
-  assert.deepEqual(record.declarationKeys(keyOf).keys, [5, 3]);
+  const [color, top] = record.declarations;
+  assert.deepEqual(record.declarationKeys().keys, [color.id, top.id]);
 });
 
 test('declarationKeys should offer the same keys as a set for membership tests', () => {
   const record = recordOf('a{color:red;top:0}');
-  assert.deepEqual(record.declarationKeys(keyOf).keySet, new Set([5, 3]));
+  assert.deepEqual(
+    record.declarationKeys().keySet,
+    new Set(record.declarations.map((declaration) => declaration.id))
+  );
 });
 
 test('declarationKeys should return the cached keys while the declarations are unchanged', () => {
   const record = recordOf('a{color:red}');
-  assert.equal(record.declarationKeys(keyOf), record.declarationKeys(keyOf));
+  assert.equal(record.declarationKeys(), record.declarationKeys());
 });
 
 test('takeDeclarations should make declarationKeys reflect the new declarations', () => {
   const rule = postcss.parse('a{color:red}').first;
-  const record = new RuleRecord(
-    rule,
-    rule.selectors,
-    rule.nodes.filter(isDeclaration)
-  );
-  record.declarationKeys(keyOf);
+  const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
+  record.declarationKeys();
   // The tree edit changes the rule first, then the record takes its declarations.
   rule.append(postcss.decl({ prop: 'top', value: '0' }));
-  record.takeDeclarations(rule.nodes.filter(isDeclaration));
-  assert.deepEqual(record.declarationKeys(keyOf).keys, [5, 3]);
+  record.takeDeclarations(recordsOf(rule));
+  assert.deepEqual(
+    record.declarationKeys().keys,
+    record.declarations.map((declaration) => declaration.id)
+  );
+  assert.equal(record.declarations.length, 2);
 });
 
 test('addSelectors should keep the cached declaration keys since it leaves the declarations alone', () => {
   const record = recordOf('a{color:red}');
-  const keys = record.declarationKeys(keyOf);
+  const keys = record.declarationKeys();
   record.addSelectors(['b'], lookup);
-  assert.equal(record.declarationKeys(keyOf), keys);
+  assert.equal(record.declarationKeys(), keys);
 });
 
 test('absorbEarlier should keep the cached declaration keys since it leaves the declarations alone', () => {
   const record = recordOf('b{color:red}');
   const earlier = recordOf('a{color:red}');
-  const keys = record.declarationKeys(keyOf);
+  const keys = record.declarationKeys();
   record.absorbEarlier(earlier, lookup);
-  assert.equal(record.declarationKeys(keyOf), keys);
+  assert.equal(record.declarationKeys(), keys);
 });
 
 test('elementKeys should list the distinct element of each selector', () => {
@@ -196,11 +215,7 @@ test('declarations should throw under consistency checks once the rule gained a 
   enableConsistencyChecks(true);
   try {
     const rule = postcss.parse('a{color:red}').first;
-    const record = new RuleRecord(
-      rule,
-      rule.selectors,
-      rule.nodes.filter(isDeclaration)
-    );
+    const record = new RuleRecord(rule, rule.selectors, recordsOf(rule));
     rule.append(postcss.decl({ prop: 'width', value: '1px' }));
     assert.throws(() => record.declarations, /stale/v);
   } finally {

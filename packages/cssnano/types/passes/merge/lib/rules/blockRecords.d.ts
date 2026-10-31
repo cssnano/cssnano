@@ -1,5 +1,7 @@
 import type { ChildNode, Container, Rule } from 'postcss';
-/** @import {ChildNode, Container, Rule} from 'postcss' */
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { DeclarationKeys } from '../../../ir/declarationKey.js';
+import type { PropertyTable } from '../../../ir/propertyTable.js';
 import { RuleRecord } from './ruleRecord.js';
 /**
  * One position among the children of a block. `rules` are the rules that
@@ -146,8 +148,12 @@ export declare class BlockRecords {
      * @type {number}
      */
     maxRounds: number;
-    /** @param {BlockRecord} root the record of the stylesheet */
-    constructor(root: BlockRecord);
+    /**
+     * @param {BlockRecord} root the record of the stylesheet
+     * @param {PropertyTable} properties the keys of the property names
+     * @param {DeclarationKeys} declarations the ids of the declarations
+     */
+    constructor(root: BlockRecord, properties: PropertyTable, declarations: DeclarationKeys);
     /**
      * @param {BlockRecord} block
      * @return {void}
@@ -160,12 +166,15 @@ export declare class BlockRecords {
      */
     blocks(): IterableIterator<BlockRecord>;
     /**
-     * Builds the record of a rule from its current declarations. Nothing stores
-     * it: the slot the caller places it in is what holds it.
+     * Builds the record of a rule. Nothing stores it: the slot the caller places
+     * it in is what holds it.
      *
      * @param {Rule} rule
+     * @param {DeclarationRecord[] | null} [declarations] the records of the
+     * rule's declarations, in order, when the caller holds them already, such as
+     * the copies a clone takes; null to record each declaration of the rule
      * @return {RuleRecord}
      */
-    recordRule(rule: Rule): RuleRecord;
+    recordRule(rule: Rule, declarations?: DeclarationRecord[] | null): RuleRecord;
 }
 //# sourceMappingURL=blockRecords.d.ts.map

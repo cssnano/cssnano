@@ -69,7 +69,7 @@ function groupsOf(css) {
     if (!second) break;
     const shared = intersect(
       first.record.declarations,
-      mergeState.declarationKeysOf(second.record).keySet,
+      second.record.declarationKeys().keySet,
       mergeState.declarationKey
     );
     if (shared.length === 0) continue;

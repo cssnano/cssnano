@@ -110,7 +110,7 @@ export const mutations = [
   {
     name: 'a removal of declarations leaves the record with the declarations it had',
     target: source('treeEdits.js'),
-    find: '  record.takeDeclarations(getDecls(record.node));\n',
+    find: '  record.takeDeclarations(kept);\n',
     replace: '',
   },
   {

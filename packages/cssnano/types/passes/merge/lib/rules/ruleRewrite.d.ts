@@ -1,22 +1,22 @@
 import { PropertyWrites } from './lastWriteIndex.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
-import type { Declaration } from 'postcss';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecord } from './blockRecords.js';
 import type RuleSequence, { Placement, RuleLink } from './ruleSequence.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {Declaration} from 'postcss' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecords.js' */
 /** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
 /**
  * The writes of a rule's declarations, numbered by their position.
  *
- * @param {Declaration[]} declarations
+ * @param {DeclarationRecord[]} declarations
  * @param {PropertyTable} table
  * @return {PropertyWrites}
  */
-export declare function writesOf(declarations: Declaration[], table: PropertyTable): PropertyWrites;
+export declare function writesOf(declarations: DeclarationRecord[], table: PropertyTable): PropertyWrites;
 /**
  * Splits the declarations the rules set out of them into a rule with all
  * their selectors, which takes the place of the later rule of the pair,

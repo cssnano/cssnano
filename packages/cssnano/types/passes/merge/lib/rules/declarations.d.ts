@@ -1,39 +1,37 @@
 import type { PropertyTable } from '../../../ir/propertyTable.js';
-import type { Declaration } from 'postcss';
-/** @import {Declaration} from 'postcss' */
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /**
- * Two declarations are equal when they print the same; `important: false`
- * and an unset flag both print without `!important`.
+ * Two declarations are equal when they print the same, which their ids tell:
+ * the same property name, value, importance and hack prefix.
  *
- * @param {Declaration} a
- * @param {Declaration} b
+ * @param {DeclarationRecord} a
+ * @param {DeclarationRecord} b
  * @return {boolean}
  */
-export declare function declarationIsEqual(a: Declaration, b: Declaration): boolean;
+export declare function declarationIsEqual(a: DeclarationRecord, b: DeclarationRecord): boolean;
 /**
- * The declarations of `declarations` whose key is in `keySet`, in their order.
+ * The declarations of `declarations` whose id is in `keySet`, in their order.
  *
- * @param {Declaration[]} declarations
- * @param {Set<number>} keySet the keys of the other rule's declarations
- * @param {(declaration: Declaration) => number} keyOf
- * @return {Declaration[]}
+ * @param {DeclarationRecord[]} declarations
+ * @param {Set<number>} keySet the ids of the other rule's declarations
+ * @return {DeclarationRecord[]}
  */
-export declare function intersect(declarations: Declaration[], keySet: Set<number>, keyOf: (declaration: Declaration) => number): Declaration[];
+export declare function intersect(declarations: DeclarationRecord[], keySet: Set<number>): DeclarationRecord[];
 /**
- * @param {Declaration[]} a
- * @param {Declaration[]} b
+ * @param {DeclarationRecord[]} a
+ * @param {DeclarationRecord[]} b
  * @return {boolean}
  */
-export declare function sameDeclarationsAndOrder(a: Declaration[], b: Declaration[]): boolean;
+export declare function sameDeclarationsAndOrder(a: DeclarationRecord[], b: DeclarationRecord[]): boolean;
 /**
- * @param {Declaration[]} hoistCandidates
- * @param {Declaration[]} earlierRuleDeclarations
- * @param {Declaration[]} laterRuleDeclarations
+ * @param {DeclarationRecord[]} hoistCandidates
+ * @param {DeclarationRecord[]} earlierRuleDeclarations
+ * @param {DeclarationRecord[]} laterRuleDeclarations
  * @param {PropertyTable} table
- * @return {{intersection: Declaration[], claimedIndices: Set<number>, claimedEarlierIndices: Set<number>}}
+ * @return {{intersection: DeclarationRecord[], claimedIndices: Set<number>, claimedEarlierIndices: Set<number>}}
  */
-export declare function filterRuleIntersections(hoistCandidates: Declaration[], earlierRuleDeclarations: Declaration[], laterRuleDeclarations: Declaration[], table: PropertyTable): {
-    intersection: Declaration[];
+export declare function filterRuleIntersections(hoistCandidates: DeclarationRecord[], earlierRuleDeclarations: DeclarationRecord[], laterRuleDeclarations: DeclarationRecord[], table: PropertyTable): {
+    intersection: DeclarationRecord[];
     claimedIndices: Set<number>;
     claimedEarlierIndices: Set<number>;
 };

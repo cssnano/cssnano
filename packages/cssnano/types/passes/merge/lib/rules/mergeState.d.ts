@@ -1,9 +1,8 @@
-import type { Declaration, Rule } from 'postcss';
+import type { Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { TextTable } from '../../../../values/textTable.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleRecord } from './ruleRecord.js';
-import type { RuleDeclarationKeys } from './ruleRecord.js';
 import type { BlockRecord, BlockRecords } from './blockRecords.js';
 /** @import {Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -11,7 +10,6 @@ import type { BlockRecord, BlockRecords } from './blockRecords.js';
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {RuleDeclarationKeys} from './ruleRecord.js' */
 /** @import {BlockRecord, BlockRecords, Slot} from './blockRecords.js' */
 /**
  * The state shared by every merge of one stylesheet.
@@ -47,19 +45,12 @@ export default class MergeState {
      */
     elementKeysOf: (record: RuleRecord) => string[] | null;
     /**
-     * Numbers declarations so equal ones, with the same property, value,
-     * importance and hack prefix, share a key for the whole run. An arrow
-     * function, so it passes as a callback without a closure per call.
+     * The ids of the run's declarations: equal declarations, with the same
+     * property, value, importance and hack prefix, share an id.
      *
-     * @param {Declaration} declaration
-     * @return {number}
+     * @return {import('../../../ir/declarationKey.js').DeclarationKeys}
      */
-    declarationKey: (declaration: Declaration) => number;
-    /**
-     * @param {RuleRecord} record
-     * @return {RuleDeclarationKeys}
-     */
-    declarationKeysOf(record: RuleRecord): RuleDeclarationKeys;
+    get declarationIds(): import('../../../ir/declarationKey.js').DeclarationKeys;
     /**
      * Reports a rule a merge created, when the run collects them, so the driver
      * canonicalizes it. A rule no run collects is left alone.

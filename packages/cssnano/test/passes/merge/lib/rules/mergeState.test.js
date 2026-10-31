@@ -190,11 +190,11 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
     ),
     true
   );
-  const kept = [...receiving.nodes];
+  const kept = [...ruleRecordOf(state.records, receiving).declarations];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    /** @type {import('postcss').Declaration[]} */ (kept),
+    kept,
     writesOf(kept, state.properties),
     ruleRecordOf(state.records, incoming)
   );
@@ -235,47 +235,56 @@ test('blockOf should throw for a departed record, since its rule stands in no bl
 
 const declarationsOf = (css) => postcss.parse(css).first.nodes;
 
-test('declarationKey should give equal declarations the same key', () => {
+test('declarationIds.keyOf should give equal declarations the same key', () => {
   const state = createState();
   const [first] = declarationsOf('a{color:red}');
   const [second] = declarationsOf('b{color:red}');
-  assert.equal(state.declarationKey(first), state.declarationKey(second));
-});
-
-test('declarationKey should give declarations with different values different keys', () => {
-  const state = createState();
-  const [red, blue] = declarationsOf('a{color:red;color:blue}');
-  assert.notEqual(state.declarationKey(red), state.declarationKey(blue));
-});
-
-test('declarationKey should tell an important declaration from a plain one', () => {
-  const state = createState();
-  const [plain, important] = declarationsOf('a{color:red;color:red!important}');
-  assert.notEqual(state.declarationKey(plain), state.declarationKey(important));
-});
-
-test('declarationKey should keep a key after other declarations are numbered', () => {
-  const state = createState();
-  const [red, blue] = declarationsOf('a{color:red;color:blue}');
-  const key = state.declarationKey(red);
-  state.declarationKey(blue);
-  assert.equal(state.declarationKey(red), key);
-});
-
-test('declarationKeysOf should give equal declarations of different rules the same key', () => {
-  const state = createState();
-  const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-  assert.deepEqual(
-    state.declarationKeysOf(ruleRecordOf(state.records, root.first)).keys,
-    state.declarationKeysOf(ruleRecordOf(state.records, root.last)).keys
+  assert.equal(
+    state.declarationIds.keyOf(first),
+    state.declarationIds.keyOf(second)
   );
 });
 
-test('declarationKeysOf should return the cached keys of an unchanged rule', () => {
+test('declarationIds.keyOf should give declarations with different values different keys', () => {
+  const state = createState();
+  const [red, blue] = declarationsOf('a{color:red;color:blue}');
+  assert.notEqual(
+    state.declarationIds.keyOf(red),
+    state.declarationIds.keyOf(blue)
+  );
+});
+
+test('declarationIds.keyOf should tell an important declaration from a plain one', () => {
+  const state = createState();
+  const [plain, important] = declarationsOf('a{color:red;color:red!important}');
+  assert.notEqual(
+    state.declarationIds.keyOf(plain),
+    state.declarationIds.keyOf(important)
+  );
+});
+
+test('declarationIds.keyOf should keep a key after other declarations are numbered', () => {
+  const state = createState();
+  const [red, blue] = declarationsOf('a{color:red;color:blue}');
+  const key = state.declarationIds.keyOf(red);
+  state.declarationIds.keyOf(blue);
+  assert.equal(state.declarationIds.keyOf(red), key);
+});
+
+test('declarationKeys of a record should give equal declarations of different rules the same key', () => {
+  const state = createState();
+  const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
+  assert.deepEqual(
+    ruleRecordOf(state.records, root.first).declarationKeys().keys,
+    ruleRecordOf(state.records, root.last).declarationKeys().keys
+  );
+});
+
+test('declarationKeys of a record should return the cached keys of an unchanged rule', () => {
   const state = createState();
   const rule = withRecords(state, postcss.parse('a{color:red}')).first;
   assert.equal(
-    state.declarationKeysOf(ruleRecordOf(state.records, rule)),
-    state.declarationKeysOf(ruleRecordOf(state.records, rule))
+    ruleRecordOf(state.records, rule).declarationKeys(),
+    ruleRecordOf(state.records, rule).declarationKeys()
   );
 });

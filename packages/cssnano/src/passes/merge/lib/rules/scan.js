@@ -59,8 +59,8 @@ export default function runScan(mergeState) {
    * @return {number} NO_BENEFIT when merging the pair cannot rewrite anything
    */
   const mergeBenefit = (first, second) => {
-    const a = mergeState.declarationKeysOf(first.record);
-    const b = mergeState.declarationKeysOf(second.record);
+    const a = first.record.declarationKeys();
+    const b = second.record.declarationKeys();
     if (first.record.hasSameSelectors(second.record))
       return a.keys.length + b.keys.length;
     const [smaller, larger] =

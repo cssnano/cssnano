@@ -4,6 +4,7 @@ import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 
 /** @import {Declaration, Rule} from 'postcss' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /**
  * @typedef {object} RuleDeclarationKeys
  * @property {number[]} keys
@@ -38,7 +39,7 @@ export class RuleRecord {
   #node;
   /** @type {string[]} */
   #selectors;
-  /** @type {Declaration[]} */
+  /** @type {DeclarationRecord[]} the declarations of the rule, in order */
   #declarations;
   /** @type {VendorPrefixSummary | undefined} derived from the selector list */
   #vendor;
@@ -62,7 +63,7 @@ export class RuleRecord {
   /**
    * @param {Rule} node the rule the record describes
    * @param {string[]} selectors
-   * @param {Declaration[]} declarations
+   * @param {DeclarationRecord[]} declarations
    */
   constructor(node, selectors, declarations) {
     this.#node = node;
@@ -123,7 +124,7 @@ export class RuleRecord {
     return this.#selectors;
   }
 
-  /** @return {Declaration[]} */
+  /** @return {DeclarationRecord[]} */
   get declarations() {
     this.#assertLive();
     this.assertFresh();
@@ -149,7 +150,7 @@ export class RuleRecord {
    * Takes the declarations of the rule as its own list, which the caller
    * keeps extending in place. The keys are derived again on the next read.
    *
-   * @param {Declaration[]} declarations
+   * @param {DeclarationRecord[]} declarations
    */
   takeDeclarations(declarations) {
     this.#assertLive();
@@ -158,18 +159,20 @@ export class RuleRecord {
   }
 
   /**
-   * Numbers the declarations so equal ones share a key. The numbering is
-   * the caller's, and the keys last until the declarations change; adding
-   * selectors leaves them valid.
+   * The ids of the declarations, so equal declarations share a key. The keys
+   * last until the declarations change; adding selectors leaves them valid.
    *
-   * @param {(declaration: Declaration) => number} keyOf
    * @return {RuleDeclarationKeys}
    */
-  declarationKeys(keyOf) {
+  declarationKeys() {
     this.#assertLive();
     this.assertFresh();
     if (!this.#declarationKeys) {
-      const keys = this.#declarations.map(keyOf);
+      // A loop, since `map` would pass each index to a callback.
+      const keys = [];
+      for (const declaration of this.#declarations) {
+        keys.push(declaration.id);
+      }
       this.#declarationKeys = { keys, keySet: new Set(keys) };
     }
     return this.#declarationKeys;
@@ -365,7 +368,8 @@ export class RuleRecord {
 
   /**
    * Under consistency checks, throws when the declarations held differ from
-   * those the rule holds now, which an edit that skipped its bookkeeping leaves.
+   * those the rule holds now, in node or in the facts a record keeps, which an
+   * edit that skipped its bookkeeping leaves.
    *
    * @throws {Error} when the declarations are stale
    */
@@ -373,9 +377,16 @@ export class RuleRecord {
     if (!consistencyChecksEnabled()) return;
     const kept = this.#declarations;
     const fresh = this.#node.nodes.filter(isDeclaration);
-    const same =
-      kept.length === fresh.length &&
-      kept.every((node, i) => node === fresh[i]);
+    let same = kept.length === fresh.length;
+    for (let index = 0; same && index < kept.length; index++) {
+      const record = kept[index];
+      const node = fresh[index];
+      same =
+        record.node === node &&
+        record.prop === node.prop &&
+        record.value === node.value &&
+        record.important === (node.important === true);
+    }
     if (!same) throw new Error('stale declarations of a rule record');
   }
 }

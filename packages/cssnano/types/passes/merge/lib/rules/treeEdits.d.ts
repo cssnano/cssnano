@@ -1,6 +1,7 @@
 import { BlockRecord, BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
-import type { Container, Declaration, Root } from 'postcss';
+import type { Container, Root } from 'postcss';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { PropertyWrites } from './lastWriteIndex.js';
 import type MergeState from './mergeState.js';
 /**
@@ -52,21 +53,22 @@ export declare function takePlaceOf(mergeState: MergeState, parent: Container, e
  *
  * @param {MergeState} mergeState
  * @param {RuleRecord} receiving
- * @param {Declaration[]} kept the declarations of `receiving`, extended in place
+ * @param {DeclarationRecord[]} kept the declarations of `receiving`, extended in place
  * @param {PropertyWrites} index the writes of `kept`, extended in place
  * @param {RuleRecord} incoming
  * @return {void}
  */
-export declare function appendToDeclarations(mergeState: MergeState, receiving: RuleRecord, kept: Declaration[], index: PropertyWrites, incoming: RuleRecord): void;
+export declare function appendToDeclarations(mergeState: MergeState, receiving: RuleRecord, kept: DeclarationRecord[], index: PropertyWrites, incoming: RuleRecord): void;
 /**
- * Removes `declarations` from `record`'s rule, which keeps the others.
+ * Removes the declarations at `claimed` from `record`'s rule, which keeps the
+ * others.
  *
  * @param {MergeState} mergeState
  * @param {RuleRecord} record
- * @param {Declaration[]} declarations
+ * @param {Set<number>} claimed the positions of the declarations that leave
  * @return {void}
  */
-export declare function removeDeclarations(mergeState: MergeState, record: RuleRecord, declarations: Declaration[]): void;
+export declare function removeDeclarations(mergeState: MergeState, record: RuleRecord, claimed: Set<number>): void;
 /**
  * Removes `records` from the records of their parent. The PostCSS child list
  * catches up at write-back.

@@ -190,11 +190,11 @@ test('appendToDeclarations should move the declarations of the incoming rule int
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const kept = [...receiving.nodes];
+  const kept = [...ruleRecordOf(state.records, receiving).declarations];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
-    /** @type {Declaration[]} */ (kept),
+    kept,
     writesOf(kept, new PropertyTable()),
     ruleRecordOf(state.records, incoming)
   );
@@ -204,9 +204,7 @@ test('appendToDeclarations should move the declarations of the incoming rule int
 test('removeDeclarations should keep the declarations that are not removed', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  removeDeclarations(state, ruleRecordOf(state.records, rule), [
-    /** @type {Declaration} */ (rule.first),
-  ]);
+  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
   assert.deepEqual(treeProps(rule), ['width']);
 });
 
@@ -289,9 +287,7 @@ test('removeDeclarations should drop the removed declarations from the rule and 
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {Container} */ (media).first);
 
-  removeDeclarations(state, ruleRecordOf(state.records, rule), [
-    /** @type {Declaration} */ (rule.first),
-  ]);
+  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
 
   assert.deepEqual(treeProps(media), ['width']);
 });

@@ -3,7 +3,6 @@ import {
   intersect,
   sameDeclarationsAndOrder,
 } from './declarations.js';
-import { getDecls } from './ruleRecord.js';
 import { buildMergedRule, writesOf } from './ruleRewrite.js';
 import { appendToDeclarations, depart } from './treeEdits.js';
 
@@ -32,8 +31,7 @@ function partialMerge(
 ) {
   let intersection = intersect(
     first.declarations,
-    mergeState.declarationKeysOf(second).keySet,
-    mergeState.declarationKey
+    second.declarationKeys().keySet
   );
   if (intersection.length === 0) return null;
   const filtered = filterRuleIntersections(
@@ -94,7 +92,7 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
  */
 export function mergeMatchingSelectors(first, second, mergeState) {
   if (!first.hasSameSelectors(second)) return null;
-  const kept = getDecls(first.node);
+  const kept = [...first.declarations];
   appendToDeclarations(
     mergeState,
     first,
