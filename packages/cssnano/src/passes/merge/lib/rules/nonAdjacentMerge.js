@@ -309,7 +309,7 @@ function joinInParent(block, mergeState, rules) {
       writes = writesOf(kept, mergeState.properties);
       received.set(earlier, writes);
     }
-    appendToDeclarations(mergeState, earlier.node, kept, writes, later.node);
+    appendToDeclarations(mergeState, earlier, kept, writes, later);
   }
 
   /**

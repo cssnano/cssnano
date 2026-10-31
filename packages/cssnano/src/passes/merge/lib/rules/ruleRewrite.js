@@ -151,7 +151,7 @@ export function buildMergedRule(
       });
       mergeState.storeClone(rule, leftover);
       mergeState.reportCreated(leftover);
-      depart(mergeState, rule);
+      depart(mergeState, mergeState.meta(rule));
       let index = 0;
       leftover.walkDecls((decl) => {
         if (claimed.has(index++)) decl.remove();
