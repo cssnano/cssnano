@@ -1,8 +1,10 @@
 /** @import {ChildNode, Container, Rule} from 'postcss' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import { recordDeclaration } from '../../../ir/declarationRecord.js';
+import {
+  DeclarationRecord,
+  recordDeclaration,
+} from '../../../ir/declarationRecord.js';
 import { RuleRecord, isDeclaration } from './ruleRecord.js';
 
 /**
@@ -64,7 +66,7 @@ export class BlockRecord {
   /** @type {boolean} whether the block applies nothing once it is empty */
   droppable;
 
-  /** @type {(Slot | BlockRecord | ChildNode)[]} */
+  /** @type {(Slot | BlockRecord | DeclarationRecord | ChildNode)[]} */
   children = [];
 
   /**
@@ -124,6 +126,8 @@ export class BlockRecord {
         if (entry.rules.length > 0) return entry.rules[0].node;
       } else if (entry instanceof BlockRecord) {
         if (!entry.dropped) return /** @type {ChildNode} */ (entry.node);
+      } else if (entry instanceof DeclarationRecord) {
+        return entry.node;
       } else {
         return entry;
       }
@@ -186,10 +190,10 @@ export class BlockRecord {
    * record of each at-rule block, and the node of anything else. A block that
    * was dropped is left out.
    *
-   * @return {(RuleRecord | BlockRecord | ChildNode)[]}
+   * @return {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]}
    */
   liveEntries() {
-    /** @type {(RuleRecord | BlockRecord | ChildNode)[]} */
+    /** @type {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]} */
     const entries = [];
     for (const entry of this.children) {
       if (entry instanceof Slot) {
@@ -216,6 +220,8 @@ export class BlockRecord {
       } else if (entry instanceof BlockRecord) {
         if (!entry.dropped)
           children.push(/** @type {ChildNode} */ (entry.node));
+      } else if (entry instanceof DeclarationRecord) {
+        children.push(entry.node);
       } else {
         children.push(entry);
       }
@@ -330,6 +336,16 @@ export class BlockRecords {
   }
 
   /**
+   * Builds the record of a declaration that is a child of a block.
+   *
+   * @param {import('postcss').Declaration} node
+   * @return {DeclarationRecord}
+   */
+  declarationRecord(node) {
+    return recordDeclaration(node, this.#properties, this.#declarations);
+  }
+
+  /**
    * Builds the record of a rule. Nothing stores it: the slot the caller places
    * it in is what holds it.
    *
@@ -346,11 +362,7 @@ export class BlockRecords {
     // A loop, since `filter` and `map` would each allocate a list of nodes.
     const records = [];
     for (const node of rule.nodes) {
-      if (isDeclaration(node)) {
-        records.push(
-          recordDeclaration(node, this.#properties, this.#declarations)
-        );
-      }
+      if (isDeclaration(node)) records.push(this.declarationRecord(node));
     }
     return new RuleRecord(rule, rule.selectors, records);
   }

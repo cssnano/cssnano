@@ -1,8 +1,9 @@
 import cssnanoUtils from '#utils';
 import { BlockRecord, Slot } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
-/** @import {AtRule, ChildNode, Declaration, Rule} from 'postcss' */
+/** @import {AtRule, ChildNode, Rule} from 'postcss' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
@@ -235,8 +236,8 @@ export default class LastWriteIndex {
    * a barrier, since moving anything across it is not known to preserve the
    * cascade.
    *
-   * @param {ChildNode | RuleRecord | BlockRecord} entry the node, or the record
-   * of a rule or of an at-rule with a block, as a live entry of a block is
+   * @param {ChildNode | DeclarationRecord | RuleRecord | BlockRecord} entry a
+   * live entry of a block
    * @param {number} position
    * @param {(record: RuleRecord) => string[] | null} keysOf
    * @return {void}
@@ -246,7 +247,7 @@ export default class LastWriteIndex {
   }
 
   /**
-   * @param {ChildNode | RuleRecord | BlockRecord} entry
+   * @param {ChildNode | DeclarationRecord | RuleRecord | BlockRecord} entry
    * @param {number} position
    * @param {string[] | null} keys
    * @param {(record: RuleRecord) => string[] | null} keysOf
@@ -254,14 +255,13 @@ export default class LastWriteIndex {
   #recordNode(entry, position, keys, keysOf) {
     if (entry instanceof RuleRecord) {
       const own = keysOf(entry);
-      const block = entry.block;
-      if (block) {
-        this.#recordBlock(block, position, own, keysOf);
+      if (entry.block) {
+        this.#recordBlock(entry.block, position, own, keysOf);
         return;
       }
-      // A rule without a block holds declarations and comments only.
-      for (const child of entry.node.nodes)
-        this.#recordNode(child, position, own, keysOf);
+      // A rule without a block writes its declarations only.
+      for (const declaration of entry.declarations)
+        this.record(declaration, position, own);
     } else if (entry instanceof BlockRecord) {
       // Only an at-rule has a block record among the entries.
       if (isConditionalGroupRule(/** @type {AtRule} */ (entry.node))) {
@@ -269,7 +269,7 @@ export default class LastWriteIndex {
       } else {
         this.#lastBarrier = Math.max(this.#lastBarrier, position);
       }
-    } else if (entry.type === 'decl') {
+    } else if (entry instanceof DeclarationRecord) {
       this.record(entry, position, keys);
     } else if (entry.type === 'atrule' && !isConditionalGroupRule(entry)) {
       this.#lastBarrier = Math.max(this.#lastBarrier, position);
@@ -338,7 +338,7 @@ export default class LastWriteIndex {
    * whose declarations take the keys `keysOf` gives, and bare declarations,
    * which count every write. Unknown keys count every write.
    *
-   * @param {(RuleRecord | Declaration)[]} entries
+   * @param {(RuleRecord | DeclarationRecord)[]} entries
    * @param {number} position
    * @param {(record: RuleRecord) => string[] | null} keysOf
    * @return {boolean}
@@ -355,7 +355,7 @@ export default class LastWriteIndex {
   }
 
   /**
-   * @param {(RuleRecord | Declaration)[]} entries
+   * @param {(RuleRecord | DeclarationRecord)[]} entries
    * @param {number} position
    * @param {Set<string> | null} elements
    * @return {boolean}
@@ -380,7 +380,7 @@ export default class LastWriteIndex {
    * entry only ever moves forward, so a later write to the same property
    * is kept.
    *
-   * @param {(RuleRecord | Declaration)[]} entries
+   * @param {(RuleRecord | DeclarationRecord)[]} entries
    * @param {number} position
    * @param {(record: RuleRecord) => string[] | null} keysOf
    */

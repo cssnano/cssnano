@@ -1,7 +1,10 @@
 import type { ChildNode, Container, Rule } from 'postcss';
-import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
+/** @import {ChildNode, Container, Rule} from 'postcss' */
+/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
+/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 /**
  * One position among the children of a block. `rules` are the rules that
@@ -47,8 +50,8 @@ export declare class BlockRecord {
     position: number;
     /** @type {boolean} whether the block applies nothing once it is empty */
     droppable: boolean;
-    /** @type {(Slot | BlockRecord | ChildNode)[]} */
-    children: (Slot | BlockRecord | ChildNode)[];
+    /** @type {(Slot | BlockRecord | DeclarationRecord | ChildNode)[]} */
+    children: (Slot | BlockRecord | DeclarationRecord | ChildNode)[];
     /**
      * The live children of a droppable block during a sweep, or null while the
      * block is not tracked. Dropping an emptied `@layer` is safe because a rule
@@ -102,9 +105,9 @@ export declare class BlockRecord {
      * record of each at-rule block, and the node of anything else. A block that
      * was dropped is left out.
      *
-     * @return {(RuleRecord | BlockRecord | ChildNode)[]}
+     * @return {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]}
      */
-    liveEntries(): (RuleRecord | BlockRecord | ChildNode)[];
+    liveEntries(): (RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[];
     /**
      * The children the block holds now, in order: the rules of its slots, and
      * the nodes of its other entries, except a block that was dropped.
@@ -165,6 +168,13 @@ export declare class BlockRecords {
      * @return {IterableIterator<BlockRecord>}
      */
     blocks(): IterableIterator<BlockRecord>;
+    /**
+     * Builds the record of a declaration that is a child of a block.
+     *
+     * @param {import('postcss').Declaration} node
+     * @return {DeclarationRecord}
+     */
+    declarationRecord(node: import('postcss').Declaration): DeclarationRecord;
     /**
      * Builds the record of a rule. Nothing stores it: the slot the caller places
      * it in is what holds it.

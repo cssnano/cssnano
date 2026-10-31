@@ -1,6 +1,6 @@
 import { BlockRecord } from './blockRecords.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
-import type { Declaration } from 'postcss';
 import type MergeState from './mergeState.js';
 /**
  * The rule records and bare declarations of a block at any depth, in
@@ -9,9 +9,9 @@ import type MergeState from './mergeState.js';
  * it stale.
  *
  * @param {BlockRecord} block
- * @return {(RuleRecord | Declaration)[] | null}
+ * @return {(RuleRecord | DeclarationRecord)[] | null}
  */
-export declare function subtreeEntries(block: BlockRecord): (RuleRecord | Declaration)[] | null;
+export declare function subtreeEntries(block: BlockRecord): (RuleRecord | DeclarationRecord)[] | null;
 /**
  * Joins siblings that apply under the same circumstances across any nodes
  * between them that set no conflicting property, in every container except

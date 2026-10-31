@@ -97,3 +97,16 @@ test('assertRecordsMatchTree throws under consistency checks when a declaration 
   declaration.value = 'blue';
   assert.throws(() => assertRecordsMatchTree(state), /stale declarations/v);
 });
+
+test('a declaration in a rule that holds a block is a declaration record in its block entries, and its node in the live children', () => {
+  const { root, state } = setup('a{color:red;b{width:1px}}');
+  const rule = ruleRecordOf(state.records, root.first);
+  const block =
+    /** @type {import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecord} */ (
+      rule.block
+    );
+  const [color] = block.liveEntries();
+  assert.ok(color instanceof DeclarationRecord);
+  assert.equal(block.liveChildren()[0], root.first.first);
+  assert.equal(color.node, root.first.first);
+});
