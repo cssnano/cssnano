@@ -4,6 +4,7 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
 
 /** @import {Container, Rule} from 'postcss' */
 
@@ -14,10 +15,13 @@ test('liveEntries should yield the rule record, the at-rule block record and the
   const [rule, media, comment] = root.nodes;
   const entries = state.records.root.liveEntries();
   assert.equal(entries.length, 3);
-  assert.equal(entries[0], state.records.metaOf(/** @type {Rule} */ (rule)));
+  assert.equal(
+    entries[0],
+    ruleRecordOf(state.records, /** @type {Rule} */ (rule))
+  );
   assert.equal(
     entries[1],
-    state.records.blockOf(/** @type {Container} */ (media))
+    blockRecordOf(state.records, /** @type {Container} */ (media))
   );
   assert.equal(entries[2], comment);
 });

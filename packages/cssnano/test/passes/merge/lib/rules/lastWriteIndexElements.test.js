@@ -6,6 +6,7 @@ import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { entryOf } from './liveRecords.js';
 
 /** @param {string} prop */
 const decl = (prop) => ({ prop });
@@ -59,7 +60,7 @@ test('last-write index with an unknown target element counts writes to every ele
 test('last-write index reports a barrier for any target element', () => {
   const index = new LastWriteIndex(new PropertyTable());
   const { node, records } = firstNodeWithRecords('@layer x{}');
-  index.recordNode(records.entryOf(node), 1, unknownElements);
+  index.recordNode(entryOf(records, node), 1, unknownElements);
   assert.equal(index.conflictsSince([], 0, ['h1']), true);
 });
 
@@ -85,7 +86,7 @@ test('last-write index keeps a write at the queried position out of the answer f
 test('last-write index recordNode records each rule declaration under its element keys', () => {
   const index = new LastWriteIndex(new PropertyTable());
   const { node, records } = firstNodeWithRecords('h2{color:red}');
-  index.recordNode(records.entryOf(node), 1, () => ['h2']);
+  index.recordNode(entryOf(records, node), 1, () => ['h2']);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h1']), false);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h2']), true);
 });
@@ -148,6 +149,6 @@ test('last-write index conflictsSinceIn counts every write for a bare declaratio
   const index = new LastWriteIndex(new PropertyTable());
   index.record(decl('color'), 1, ['h2']);
   const { node, records } = firstNodeWithRecords('@media print{color:red}');
-  const entries = records.entryOf(node).liveEntries();
+  const entries = entryOf(records, node).liveEntries();
   assert.equal(index.conflictsSinceIn(entries, 0, keysOfRule), true);
 });
