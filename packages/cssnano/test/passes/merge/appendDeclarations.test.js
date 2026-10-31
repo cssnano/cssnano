@@ -6,11 +6,13 @@ import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
   appendToDeclarations,
   buildRecords,
+  removeRules,
 } from '../../../src/passes/merge/lib/rules/treeEdits.js';
+import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
 import { ruleRecordOf } from './lib/rules/liveRecords.js';
 
-// The incoming rule keeps its emptied block `b{}` until a later sweep drops it,
-// so the tree reads the joined declarations on `a` alone.
+// The incoming rule leaves the tree once the placement drops it, so the tree
+// reads the joined declarations on `a` alone.
 test('appendToDeclarations drops an equal declaration from the incoming rule and moves the rest to the receiving rule', () => {
   const root = postcss.parse(
     '@media print{a{color:red}b{color:red;width:1px}}'
@@ -28,6 +30,11 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
     writesOf(kept),
     ruleRecordOf(mergeState.records, incoming)
   );
+  removeRules(
+    mergeState,
+    new Set([ruleRecordOf(mergeState.records, incoming)])
+  );
+  writeBack(mergeState.records.blocks());
 
-  assert.equal(root.toString(), '@media print{a{color:red;width:1px}b{}}');
+  assert.equal(root.toString(), '@media print{a{color:red;width:1px}}');
 });

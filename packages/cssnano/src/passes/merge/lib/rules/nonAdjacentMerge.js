@@ -7,12 +7,7 @@ import { BlockRecord, Slot } from './blockRecords.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
-import {
-  appendToDeclarations,
-  moveChildren,
-  remove,
-  takePlaceOf,
-} from './treeEdits.js';
+import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -212,7 +207,7 @@ function joinBlocksBackward(block, mergeState) {
     const laterEntries = subtreeEntries(later);
     if (!laterEntries) return null;
     if (!index.conflictsSinceIn(laterEntries, laterPosition, keysOf)) {
-      moveChildren(earlier, later);
+      earlier.adopt(later);
       remove(later);
       return 'up';
     }
@@ -221,7 +216,7 @@ function joinBlocksBackward(block, mergeState) {
     if (!earlierEntries) return null;
     if (!index.conflictsSinceIn(earlierEntries, laterPosition, keysOf)) {
       index.moveWrites(earlierEntries, laterPosition, keysOf);
-      moveChildren(earlier, later);
+      earlier.adopt(later);
       takePlaceOf(mergeState, block.node, earlier, later);
       return 'down';
     }
@@ -353,7 +348,7 @@ function joinInParent(block, mergeState, rules) {
     if (!laterEntries) return null;
     if (!index.conflictsSinceIn(laterEntries, earlierPosition, keysOf)) {
       index.moveWrites(laterEntries, earlierPosition, keysOf);
-      moveChildren(earlier, later);
+      earlier.adopt(later);
       remove(later);
       return 'up';
     }
@@ -363,7 +358,7 @@ function joinInParent(block, mergeState, rules) {
     if (!index.conflictsSinceIn(earlierEntries, earlierPosition, keysOf)) {
       index.moveWrites(earlierEntries, laterPosition, keysOf);
       index.moveWrites(laterEntries, laterPosition, keysOf);
-      moveChildren(earlier, later);
+      earlier.adopt(later);
       takePlaceOf(mergeState, block.node, earlier, later);
       return 'down';
     }

@@ -36,6 +36,8 @@ export declare class RuleRecord extends SelectorList {
     place(slot: Slot): void;
     /** @param {BlockRecord} block the record of the rule's children */
     setBlock(block: BlockRecord): void;
+    /** @return {boolean} whether a child was added or removed since the record was made */
+    get edited(): boolean;
     /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
     get departed(): boolean;
     /** @return {string[]} change it only through the methods of this class */
@@ -53,7 +55,7 @@ export declare class RuleRecord extends SelectorList {
     /** @param {RangePiece[] | null} pieces one per selector, or null */
     setPieces(pieces: RangePiece[] | null): void;
     /**
-     * Appends a child to the node and to the records.
+     * Appends a child to the records. The node takes it at write-back.
      *
      * @param {DeclarationRecord | ChildNode} child
      * @return {void}
@@ -66,7 +68,8 @@ export declare class RuleRecord extends SelectorList {
      */
     declarationKeys(): RuleDeclarationKeys;
     /**
-     * Removes the declarations at `claimed` from the node and the records.
+     * Removes the declarations at `claimed` from the records. The node drops
+     * them at write-back.
      *
      * @param {Set<number>} claimed the positions of the declarations that leave
      * @return {void}
@@ -74,7 +77,7 @@ export declare class RuleRecord extends SelectorList {
     removeDeclarationsAt(claimed: Set<number>): void;
     /**
      * Removes the declarations at `claimed` as `removeDeclarationsAt` does, and
-     * hands over their records and nodes for another rule to append.
+     * hands over their records for another rule to append.
      *
      * @param {Set<number>} claimed the positions of the declarations that leave
      * @return {DeclarationRecord[]} the removed records, in order
@@ -121,9 +124,9 @@ export declare class RuleRecord extends SelectorList {
     /** Marks the record of a rule that left the stylesheet, so a later read throws. */
     depart(): void;
     /**
-     * Under consistency checks, throws when the declarations held differ from
-     * those the rule holds now, in node or in the facts a record keeps, which an
-     * edit that skipped its bookkeeping leaves.
+     * Under consistency checks, throws when the children the node holds differ
+     * from those the record holds, in node or in the facts a record keeps. Call
+     * it once the node has taken the edits, at write-back.
      *
      * @throws {Error} when the declarations are stale
      */

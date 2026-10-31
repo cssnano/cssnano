@@ -2,7 +2,6 @@ import postcss from 'postcss';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { PropertyWrites } from './lastWriteIndex.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
-import { depart } from './treeEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
@@ -33,13 +32,12 @@ function shellOf(source, selector) {
  * needs no report: only a rule that held a declaration in the first round
  * reaches a merge, so the second round already has it.
  *
- * @param {MergeState} mergeState
  * @param {RuleRecord} record
  * @return {RuleRecord[]}
  */
-function leftoverOf(mergeState, record) {
+function leftoverOf(record) {
   if (!record.childCount()) {
-    depart(mergeState, record);
+    record.depart();
     return [];
   }
   return [record];
@@ -149,9 +147,9 @@ export function buildMergedRule(
   for (const declaration of first.takeDeclarationsAt(claimedEarlierIndices)) {
     receivingRecord.append(declaration);
   }
-  const firstLeftover = leftoverOf(mergeState, first);
+  const firstLeftover = leftoverOf(first);
   second.removeDeclarationsAt(claimedIndices);
-  const secondLeftover = leftoverOf(mergeState, second);
+  const secondLeftover = leftoverOf(second);
   /** @type {Placement} */
   const placement = {
     first: firstLeftover,
@@ -162,7 +160,7 @@ export function buildMergedRule(
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
       rule.removeDeclarationsAt(claimed);
-      return leftoverOf(mergeState, rule);
+      return leftoverOf(rule);
     });
   }
   return placement;

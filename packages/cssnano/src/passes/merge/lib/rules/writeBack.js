@@ -72,6 +72,11 @@ function checkRuleRecord(mergeState, block, slot, record) {
       throw new Error(OUT_OF_STEP);
     }
     checkBlockRecord(mergeState, record.block);
+  } else {
+    for (const child of record.children) {
+      const node = child instanceof DeclarationRecord ? child.node : child;
+      if (node.parent !== rule) throw new Error(OUT_OF_STEP);
+    }
   }
 }
 
@@ -141,9 +146,25 @@ export function replaceChildren(rebuilt) {
 }
 
 /**
+ * The nodes of the children a rule record holds, comments included, in order.
+ *
+ * @param {RuleRecord} record a rule that holds no block
+ * @return {ChildNode[]}
+ */
+function nodesOf(record) {
+  /** @type {ChildNode[]} */
+  const nodes = [];
+  for (const child of record.children) {
+    nodes.push(child instanceof DeclarationRecord ? child.node : child);
+  }
+  return nodes;
+}
+
+/**
  * Gives each block whose live children differ from its container the children
- * the records hold. A block that already matches, or was dropped, keeps its
- * child list.
+ * the records hold, and each rule that an edit changed the children of. A
+ * block that already matches, or was dropped, keeps its child list, and so
+ * does a rule that no edit touched.
  *
  * @param {Iterable<Block>} blocks
  * @return {void}
@@ -152,12 +173,26 @@ export function writeBack(blocks) {
   /** @type {Rebuilt[]} */
   const rebuilt = [];
   for (const block of blocks) {
-    if (block.dropped || !differs(block)) continue;
-    rebuilt.push({
-      container: /** @type {Container} */ (block.node),
-      children: block.liveChildren(),
-      leading: block.parent === null ? block.leadingWhitespace : undefined,
-    });
+    if (block.dropped) continue;
+    if (differs(block)) {
+      rebuilt.push({
+        container: /** @type {Container} */ (block.node),
+        children: block.liveChildren(),
+        leading: block.parent === null ? block.leadingWhitespace : undefined,
+      });
+    }
+    for (const entry of block.children) {
+      if (!(entry instanceof Slot)) continue;
+      for (const record of entry.rules) {
+        if (record.edited && !record.block) {
+          rebuilt.push({
+            container: /** @type {Container} */ (record.node),
+            children: nodesOf(record),
+            leading: undefined,
+          });
+        }
+      }
+    }
   }
   replaceChildren(rebuilt);
 }

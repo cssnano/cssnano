@@ -5,10 +5,7 @@ import { subtreeEntries } from '../../../../../src/passes/merge/lib/rules/nonAdj
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { DeclarationRecord } from '../../../../../src/passes/ir/declarationRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import {
-  buildRecords,
-  moveChildren,
-} from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { entryOf } from './liveRecords.js';
 
@@ -92,6 +89,6 @@ test('subtreeEntries should see the declarations that an edit adds, since nothin
   );
   const block = entryOf(state.records, first);
   assert.equal(propsOf(subtreeEntries(block))?.length, 1);
-  moveChildren(block, entryOf(state.records, second));
+  block.adopt(entryOf(state.records, second));
   assert.equal(propsOf(subtreeEntries(block))?.length, 2);
 });

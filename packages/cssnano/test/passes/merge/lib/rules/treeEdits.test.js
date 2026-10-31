@@ -8,9 +8,7 @@ import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.
 import {
   appendToDeclarations,
   buildRecords,
-  moveChildren,
   remove,
-  removeDeclarations,
   removeRules,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
@@ -61,20 +59,15 @@ function selectorsOf(node) {
   );
 }
 
-test('moveChildren should move the declarations of the source into the target and its ancestors', () => {
+test('adopt should move the declarations of the source into the target and its ancestors', () => {
   const { root, state } = setup(
     '@supports (a:b){@media print{a{color:red}}@media print{b{width:1px}}}'
   );
   const [supports] = /** @type {Container} */ (root.nodes);
   const [media, other] = /** @type {Container} */ (supports).nodes;
 
-  moveChildren(
-    /** @type {BlockRecord} */ (
-      blockRecordOf(state.records, /** @type {Container} */ (media))
-    ),
-    /** @type {BlockRecord} */ (
-      blockRecordOf(state.records, /** @type {Container} */ (other))
-    )
+  blockRecordOf(state.records, /** @type {Container} */ (media)).adopt(
+    blockRecordOf(state.records, /** @type {Container} */ (other))
   );
   // The source keeps its emptied block until the pair is joined, so the
   // ancestors are read once the source is removed.
@@ -85,18 +78,13 @@ test('moveChildren should move the declarations of the source into the target an
   assert.deepEqual(treeProps(supports), ['color', 'width']);
 });
 
-test('moveChildren should leave the source container holding no children', () => {
+test('adopt should leave the source container holding no children', () => {
   const { root, state } = setup(
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   const [media, other] = /** @type {Container} */ (root).nodes;
-  moveChildren(
-    /** @type {BlockRecord} */ (
-      blockRecordOf(state.records, /** @type {Container} */ (media))
-    ),
-    /** @type {BlockRecord} */ (
-      blockRecordOf(state.records, /** @type {Container} */ (other))
-    )
+  blockRecordOf(state.records, /** @type {Container} */ (media)).adopt(
+    blockRecordOf(state.records, /** @type {Container} */ (other))
   );
   writeBack(state.records.blocks());
   assert.deepEqual(/** @type {Container} */ (other).nodes, []);
@@ -199,10 +187,11 @@ test('appendToDeclarations should move the declarations of the incoming rule int
   assert.deepEqual(treeProps(media), ['color', 'width']);
 });
 
-test('removeDeclarations should keep the declarations that are not removed', () => {
+test('removeDeclarationsAt should keep the declarations that are not removed', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
+  ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
+  writeBack(state.records.blocks());
   assert.deepEqual(treeProps(rule), ['width']);
 });
 
@@ -280,12 +269,13 @@ test('replaceChildren should move the declarations of a rebuilt container into i
   assert.deepEqual(treeProps(supports), ['color', 'width']);
 });
 
-test('removeDeclarations should drop the removed declarations from the rule and its ancestors', () => {
+test('removeDeclarationsAt should drop the removed declarations from the rule and its ancestors', () => {
   const { root, state } = setup('@media print{a{color:red;width:1px}}');
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {Container} */ (media).first);
 
-  removeDeclarations(state, ruleRecordOf(state.records, rule), new Set([0]));
+  ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
+  writeBack(state.records.blocks());
 
   assert.deepEqual(treeProps(media), ['width']);
 });

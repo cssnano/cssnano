@@ -7,8 +7,8 @@ import { resolveTargets } from '../../../../../src/utils/browserTargets.js';
 
 // The modules that may edit the live tree directly. Every other module in
 // `lib/rules/` edits through `treeEdits.js`, which clears the caches an edit
-// makes stale. `writeBack.js` gives the blocks their child lists at the end of
-// a sweep.
+// makes stale. `writeBack.js` gives the blocks and the edited rules their child
+// lists at the end of a sweep.
 const treeEditors = new Set(['treeEdits.js', 'writeBack.js']);
 const rulesDirectory = new URL(
   '../../../../../src/passes/merge/lib/rules/',
@@ -56,10 +56,14 @@ test('lib/rules should import no tree-edit primitive other than through treeEdit
   assert.deepEqual(offenders, []);
 });
 
-test('lib/rules should mark a rule departed only through treeEdits', () => {
+// The record owns `depart`, and the two placements that drop a rule call it
+// when they leave the rule without children.
+const departers = new Set(['ruleRecord.js', 'merge.js', 'ruleRewrite.js']);
+
+test('lib/rules should mark a rule departed only in its record and the placements that drop it', () => {
   const offenders = sources
     .filter(
-      ({ name, text }) => name !== 'ruleRecord.js' && text.includes('.depart(')
+      ({ name, text }) => !departers.has(name) && text.includes('.depart(')
     )
     .map(({ name }) => name);
   assert.deepEqual(offenders, []);

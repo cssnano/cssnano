@@ -28,11 +28,11 @@ export const mutations = [
   {
     name: 'depart a leftover that keeps a child',
     find: '  }\n  return [record];',
-    replace: '  }\n  depart(mergeState, record);\n  return [record];',
+    replace: '  }\n  record.depart();\n  return [record];',
   },
   {
     name: 'leave the record of a leftover with no child readable',
-    find: '    depart(mergeState, record);\n    return [];',
+    find: '    record.depart();\n    return [];',
     replace: '    return [];',
   },
 ];
