@@ -2,16 +2,16 @@ import { DeclarationKeys } from './declarationKey.js';
 import { PropertyTable } from './propertyTable.js';
 import { TextTable } from '../../values/textTable.js';
 import type { SelectorInfo } from '../merge/lib/rules/ensureCompatibility.js';
-import type { Rule } from 'postcss';
+import type { Container } from 'postcss';
 export type RunContext = {
     properties: PropertyTable;
     declarations: DeclarationKeys;
-    createdBlocks: Set<Rule> | null;
+    createdBlocks: Set<Container> | null;
     selectorCompatibility: Map<string, SelectorInfo>;
     textTable: TextTable;
 };
 /** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
-/** @import {Rule} from 'postcss' */
+/** @import {Container} from 'postcss' */
 /**
  * The state one run of the merge pass shares across its transforms. Nothing in
  * it may outlive the run: its ids mean nothing to another stylesheet.
@@ -19,7 +19,7 @@ export type RunContext = {
  * @typedef {{
  *   properties: PropertyTable,
  *   declarations: DeclarationKeys,
- *   createdBlocks: Set<Rule> | null,
+ *   createdBlocks: Set<Container> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
  *   textTable: TextTable,
  * }} RunContext
