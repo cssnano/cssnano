@@ -96,22 +96,10 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'an append leaves the record of the receiving rule without its kept declarations',
-    target: source('treeEdits.js'),
-    find: '  receiving.takeDeclarations(kept);\n',
-    replace: '',
-  },
-  {
-    name: 'a removal of declarations leaves the record with the declarations it had',
-    target: source('treeEdits.js'),
-    find: '  record.takeDeclarations(kept);\n',
-    replace: '',
-  },
-  {
-    name: 'taking declarations keeps the declaration keys of the record',
+    name: 'removing declarations keeps the declaration keys of the record',
     target: source('ruleRecord.js'),
-    find: '    this.#declarations = declarations;\n    this.#declarationKeys = undefined;\n',
-    replace: '    this.#declarations = declarations;\n',
+    find: '      claimed\n    );\n    this.#declarationKeys = undefined;\n',
+    replace: '      claimed\n    );\n',
   },
   {
     name: 'a removal of rules leaves the record of each removed rule live',
@@ -191,5 +179,23 @@ export const mutations = [
     target: source('writeBack.js'),
     find: '  if (record.slot !== slot) throw new Error(OUT_OF_STEP);\n',
     replace: '',
+  },
+  {
+    name: 'taking declarations hands over no record',
+    target: source('ruleChildren.js'),
+    find: '        taken?.push(child);\n',
+    replace: '',
+  },
+  {
+    name: 'taking declarations leaves the taken node in the rule',
+    target: source('ruleChildren.js'),
+    find: '        child.node.remove();\n        taken?.push(child);',
+    replace: '        taken?.push(child);',
+  },
+  {
+    name: 'taking declarations keeps the declaration keys of the record',
+    target: source('ruleRecord.js'),
+    find: '      taken\n    );\n    this.#declarationKeys = undefined;\n',
+    replace: '      taken\n    );\n',
   },
 ];

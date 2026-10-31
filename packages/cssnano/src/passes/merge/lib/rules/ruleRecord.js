@@ -189,6 +189,27 @@ export class RuleRecord extends SelectorList {
   }
 
   /**
+   * Removes the declarations at `claimed` as `removeDeclarationsAt` does, and
+   * hands over their records and nodes for another rule to append.
+   *
+   * @param {Set<number>} claimed the positions of the declarations that leave
+   * @return {DeclarationRecord[]} the removed records, in order
+   */
+  takeDeclarationsAt(claimed) {
+    this.#assertChildren();
+    /** @type {DeclarationRecord[]} */
+    const taken = [];
+    removeClaimed(
+      this.#entries ?? this.#declarations,
+      this.#declarations,
+      claimed,
+      taken
+    );
+    this.#declarationKeys = undefined;
+    return taken;
+  }
+
+  /**
    * @param {SelectorLookup} lookup
    * @return {VendorPrefixSummary}
    */

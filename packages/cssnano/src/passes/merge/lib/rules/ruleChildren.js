@@ -94,9 +94,10 @@ export function inheritWhitespace(node, last) {
  * @param {(DeclarationRecord | ChildNode)[]} children the entries, or the declarations when there are no comments
  * @param {DeclarationRecord[]} declarations
  * @param {Set<number>} claimed the positions of the declarations that leave
+ * @param {DeclarationRecord[]} [taken] receives the records of the removed declarations, in order
  * @return {void}
  */
-export function removeClaimed(children, declarations, claimed) {
+export function removeClaimed(children, declarations, claimed, taken) {
   let kept = 0;
   let written = 0;
   let position = 0;
@@ -104,6 +105,7 @@ export function removeClaimed(children, declarations, claimed) {
     if (child instanceof DeclarationRecord) {
       if (claimed.has(position++)) {
         child.node.remove();
+        taken?.push(child);
         continue;
       }
       declarations[kept++] = child;

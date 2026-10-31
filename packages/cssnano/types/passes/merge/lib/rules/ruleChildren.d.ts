@@ -37,7 +37,8 @@ export declare function inheritWhitespace(node: ChildNode, last: DeclarationReco
  * @param {(DeclarationRecord | ChildNode)[]} children the entries, or the declarations when there are no comments
  * @param {DeclarationRecord[]} declarations
  * @param {Set<number>} claimed the positions of the declarations that leave
+ * @param {DeclarationRecord[]} [taken] receives the records of the removed declarations, in order
  * @return {void}
  */
-export declare function removeClaimed(children: (DeclarationRecord | ChildNode)[], declarations: DeclarationRecord[], claimed: Set<number>): void;
+export declare function removeClaimed(children: (DeclarationRecord | ChildNode)[], declarations: DeclarationRecord[], claimed: Set<number>, taken?: DeclarationRecord[]): void;
 //# sourceMappingURL=ruleChildren.d.ts.map

@@ -73,6 +73,14 @@ export declare class RuleRecord extends SelectorList {
      */
     removeDeclarationsAt(claimed: Set<number>): void;
     /**
+     * Removes the declarations at `claimed` as `removeDeclarationsAt` does, and
+     * hands over their records and nodes for another rule to append.
+     *
+     * @param {Set<number>} claimed the positions of the declarations that leave
+     * @return {DeclarationRecord[]} the removed records, in order
+     */
+    takeDeclarationsAt(claimed: Set<number>): DeclarationRecord[];
+    /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}
      */
