@@ -10,6 +10,7 @@ import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { ruleRecordOf, entryOf } from './liveRecords.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
@@ -184,7 +185,7 @@ test('last-write index: place-* acts as a wildcard for unknown vendor properties
  */
 function entriesOfFirst(css) {
   const { node, records } = firstNodeWithRecords(css);
-  return records.entryOf(node).liveEntries();
+  return entryOf(records, node).liveEntries();
 }
 
 test('last-write index: moveWrites makes the moved declarations count from the new position', () => {
@@ -235,7 +236,7 @@ test('last-write index: recordNode records declarations inside @media, @supports
   ]) {
     const index = new LastWriteIndex(new PropertyTable());
     const { node, records } = firstNodeWithRecords(css);
-    index.recordNode(records.entryOf(node), 1, unknownElements);
+    index.recordNode(entryOf(records, node), 1, unknownElements);
     assert.equal(index.conflictsSince([decl('color')], 0), true, css);
     assert.equal(index.conflictsSince([decl('width')], 0), false, css);
   }
@@ -246,7 +247,7 @@ test('last-write index: recordNode records declarations of nested rules', () => 
   const { node, records } = firstNodeWithRecords(
     '.a{width:1px;& .b{color:red}}'
   );
-  index.recordNode(records.entryOf(node), 1, unknownElements);
+  index.recordNode(entryOf(records, node), 1, unknownElements);
   assert.equal(index.conflictsSince([decl('color')], 0), true);
 });
 
@@ -255,7 +256,7 @@ test('last-write index: recordNode given the record of a rule that holds a block
   const { node, records } = firstNodeWithRecords(
     '.a{width:1px;& .b{color:red}}'
   );
-  index.recordNode(records.metaOf(node), 1, unknownElements);
+  index.recordNode(ruleRecordOf(records, node), 1, unknownElements);
   assert.equal(index.conflictsSince([decl('color')], 0), true);
 });
 
@@ -269,7 +270,7 @@ test('last-write index: recordNode treats an at-rule it cannot analyse as a barr
   ]) {
     const index = new LastWriteIndex(new PropertyTable());
     const { node, records } = firstNodeWithRecords(css);
-    index.recordNode(records.entryOf(node), 1, unknownElements);
+    index.recordNode(entryOf(records, node), 1, unknownElements);
     assert.equal(index.conflictsSince([decl('width')], 0), true, css);
   }
 });
@@ -277,6 +278,6 @@ test('last-write index: recordNode treats an at-rule it cannot analyse as a barr
 test('last-write index: recordNode ignores comments', () => {
   const index = new LastWriteIndex(new PropertyTable());
   const { node, records } = firstNodeWithRecords('/* note */');
-  index.recordNode(records.entryOf(node), 1, unknownElements);
+  index.recordNode(entryOf(records, node), 1, unknownElements);
   assert.equal(index.conflictsSince([decl('color')], 0), false);
 });

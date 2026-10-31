@@ -67,7 +67,7 @@ export default class LastWriteIndex {
      * cascade.
      *
      * @param {ChildNode | RuleRecord | BlockRecord} entry the node, or the record
-     * of a rule or of an at-rule with a block, as `BlockRecords#entryOf` gives
+     * of a rule or of an at-rule with a block, as a live entry of a block is
      * @param {number} position
      * @param {(record: RuleRecord) => string[] | null} keysOf
      * @return {void}

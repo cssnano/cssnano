@@ -8,6 +8,7 @@ import {
   appendToDeclarations,
   buildRecords,
 } from '../../../src/passes/merge/lib/rules/treeEdits.js';
+import { ruleRecordOf } from './lib/rules/liveRecords.js';
 
 // The incoming rule keeps its emptied block `b{}` until a later sweep drops it,
 // so the tree reads the joined declarations on `a` alone.
@@ -24,10 +25,10 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
   mergeState.records = buildRecords(root, mergeState);
   appendToDeclarations(
     mergeState,
-    mergeState.records.metaOf(receiving),
+    ruleRecordOf(mergeState.records, receiving),
     /** @type {import('postcss').Declaration[]} */ (kept),
     writesOf(kept, new PropertyTable()),
-    mergeState.records.metaOf(incoming)
+    ruleRecordOf(mergeState.records, incoming)
   );
 
   assert.equal(root.toString(), '@media print{a{color:red;width:1px}b{}}');
