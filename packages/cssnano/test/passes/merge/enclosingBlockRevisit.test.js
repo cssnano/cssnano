@@ -50,7 +50,6 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
   appendToDeclarations(
     mergeState,
     ruleRecordOf(mergeState.records, q),
-    kept,
     writesOf(kept),
     incomingRecord
   );

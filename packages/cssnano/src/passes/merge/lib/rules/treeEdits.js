@@ -1,13 +1,12 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockRecord, BlockRecords, Slot } from './blockRecords.js';
-import { countDeclarations } from './sweepPotential.js';
 import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
 import { RuleRecord } from './ruleRecord.js';
 import { tallyDeclarations } from './overDuplication.js';
 
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {PropertyWrites} from './lastWriteIndex.js' */
 /** @import MergeState from './mergeState.js' */
 
@@ -24,22 +23,6 @@ import { tallyDeclarations } from './overDuplication.js';
  */
 function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
-}
-
-const BLOCK_DECLARATION_EDIT =
-  'a declaration edit on a rule that holds a block';
-
-/**
- * Under consistency checks, throws when a declaration edit reaches a rule that
- * holds a block, whose declarations stand in its block record.
- *
- * @param {RuleRecord} record
- * @return {void}
- */
-function checkNoBlock(record) {
-  if (consistencyChecksEnabled() && record.block !== null) {
-    throw new Error(BLOCK_DECLARATION_EDIT);
-  }
 }
 
 /**
@@ -79,7 +62,7 @@ export function buildRecords(root, mergeState) {
           record.setBlock(nested);
           fill(nested);
         } else {
-          declarations += countDeclarations(child);
+          declarations += record.declarations.length;
         }
       } else if (child.type === 'atrule' && child.nodes) {
         const nested = new BlockRecord(
@@ -186,45 +169,32 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
 }
 
 /**
- * Appends the content of `incoming` to `receiving`. A declaration of
- * `incoming` is redundant only when the last declaration of `receiving` that
- * can set the same property already has an identical value. Otherwise it
- * revives an overridden value or overrides intermediate declarations, so
- * appending it is required to preserve the cascade result.
+ * Appends the children of `incoming` to `receiving`, comments included. A
+ * declaration of `incoming` is redundant only when the last declaration of
+ * `receiving` that can set the same property already has an identical value.
+ * Otherwise it revives an overridden value or overrides intermediate
+ * declarations, so appending it is required to preserve the cascade result.
  *
  * @param {MergeState} mergeState
  * @param {RuleRecord} receiving
- * @param {DeclarationRecord[]} kept the declarations of `receiving`, extended in place
- * @param {PropertyWrites} index the writes of `kept`, extended in place
+ * @param {PropertyWrites} index the writes of the declarations of `receiving`, extended in place
  * @param {RuleRecord} incoming
  * @return {void}
  */
-export function appendToDeclarations(
-  mergeState,
-  receiving,
-  kept,
-  index,
-  incoming
-) {
-  checkNoBlock(receiving);
-  const { node: rule } = receiving;
-  // The declaration nodes of `incoming` pair with its records in order.
-  const records = incoming.declarations;
-  let next = 0;
-  for (const node of incoming.node.nodes.slice()) {
-    if (node.type === 'decl') {
-      const record = records[next++];
-      const last = index.lastConflict(record.keys);
-      if (last !== -1 && declarationIsEqual(kept[last], record)) {
-        node.remove();
+export function appendToDeclarations(mergeState, receiving, index, incoming) {
+  // Appending extends this list in place, so it is read once.
+  const kept = receiving.declarations;
+  for (const child of incoming.children) {
+    if (child instanceof DeclarationRecord) {
+      const last = index.lastConflict(child.keys);
+      if (last !== -1 && declarationIsEqual(kept[last], child)) {
+        child.node.remove();
         continue;
       }
-      index.record(record.keys, kept.length);
-      kept.push(record);
+      index.record(child.keys, kept.length);
     }
-    rule.append(node);
+    receiving.append(child);
   }
-  receiving.takeDeclarations(kept);
   incoming.depart();
 }
 
@@ -238,14 +208,7 @@ export function appendToDeclarations(
  * @return {void}
  */
 export function removeDeclarations(mergeState, record, claimed) {
-  checkNoBlock(record);
-  const kept = [];
-  let index = 0;
-  for (const declaration of record.declarations) {
-    if (claimed.has(index++)) declaration.node.remove();
-    else kept.push(declaration);
-  }
-  record.takeDeclarations(kept);
+  record.removeDeclarationsAt(claimed);
 }
 
 /**

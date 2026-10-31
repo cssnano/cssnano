@@ -37,7 +37,7 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   const incoming = ruleRecordOf(state.records, root.first.last);
   const moved = incoming.declarations[0];
   const kept = [...receiving.declarations];
-  appendToDeclarations(state, receiving, kept, writesOf(kept), incoming);
+  appendToDeclarations(state, receiving, writesOf(kept), incoming);
   assert.equal(receiving.declarations.at(-1), moved);
   assert.equal(moved.node.parent, receiving.node);
 });

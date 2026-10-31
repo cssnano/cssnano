@@ -25,7 +25,6 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
   appendToDeclarations(
     mergeState,
     ruleRecordOf(mergeState.records, receiving),
-    kept,
     writesOf(kept),
     ruleRecordOf(mergeState.records, incoming)
   );

@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { subtreeEntries } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { DeclarationRecord } from '../../../../../src/passes/ir/declarationRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   buildRecords,
@@ -36,7 +37,9 @@ function entriesOf(css) {
 function propsOf(entries) {
   return entries?.flatMap((entry) =>
     entry instanceof RuleRecord
-      ? entry.allDeclarations().map((declaration) => declaration.prop)
+      ? (entry.block ? entry.block.children : entry.declarations)
+          .filter((child) => child instanceof DeclarationRecord)
+          .map((declaration) => declaration.prop)
       : [entry.prop]
   );
 }

@@ -64,8 +64,10 @@ function partialMerge(
  */
 export function mergeMatchingDeclarations(first, second, mergeState) {
   if (
-    !first.node.nodes.every((node) => node.type === 'decl') ||
-    !second.node.nodes.every((node) => node.type === 'decl') ||
+    first.block !== null ||
+    second.block !== null ||
+    !first.holdsOnlyDeclarations() ||
+    !second.holdsOnlyDeclarations() ||
     !sameDeclarationsAndOrder(second.declarations, first.declarations)
   )
     return null;
@@ -91,8 +93,7 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
  */
 export function mergeMatchingSelectors(first, second, mergeState) {
   if (!first.hasSameSelectors(second)) return null;
-  const kept = [...first.declarations];
-  appendToDeclarations(mergeState, first, kept, writesOf(kept), second);
+  appendToDeclarations(mergeState, first, writesOf(first.declarations), second);
   return { first: [first], second: [] };
 }
 

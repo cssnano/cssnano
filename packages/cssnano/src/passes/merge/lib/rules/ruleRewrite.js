@@ -77,10 +77,10 @@ export function buildMergedRule(
     selectorsLength(secondSelectors) +
     2 -
     sharedBytes;
-  if (first.node.nodes.length === claimedEarlierIndices.size) {
+  if (first.childCount() === claimedEarlierIndices.size) {
     delta -= selectorsLength(firstSelectors) + 1;
   }
-  if (second.node.nodes.length === claimedIndices.size) {
+  if (second.childCount() === claimedIndices.size) {
     delta -= selectorsLength(secondSelectors) + 1;
   }
   // A pair that shortens the output merges alone: the rules after it may
@@ -157,9 +157,9 @@ export function buildMergedRule(
   const secondRecord = mergeState.records.recordRule(secondClone, secondKept);
   /** @type {Placement} */
   const placement = {
-    first: [firstRecord].filter((record) => record.node.nodes.length),
-    second: [receivingRecord, secondRecord].filter(
-      (record) => record.node.nodes.length
+    first: [firstRecord].filter((record) => record.childCount()),
+    second: [receivingRecord, secondRecord].filter((record) =>
+      record.childCount()
     ),
   };
   if (group) {
@@ -178,7 +178,7 @@ export function buildMergedRule(
         else kept.push(copy);
       });
       const leftoverRecord = mergeState.records.recordRule(leftover, kept);
-      if (!leftover.nodes.length) return [];
+      if (!leftoverRecord.childCount()) return [];
       return [leftoverRecord];
     });
   }
