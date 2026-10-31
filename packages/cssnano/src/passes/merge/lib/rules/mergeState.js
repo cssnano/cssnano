@@ -10,7 +10,7 @@ import {
 } from '../../../../values/selectorRanges.js';
 import { tokensText } from '../../../../values/tokensText.js';
 
-/** @import {Declaration, Rule} from 'postcss' */
+/** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
@@ -38,7 +38,7 @@ export default class MergeState {
   #textTable;
   /** @type {Set<RuleRecord>} rules whose selector text is set, and whose tokens are stored at the end of the run */
   #spelled = new Set();
-  /** @type {Set<Rule> | null} */
+  /** @type {Set<Container> | null} */
   #createdBlocks;
   /**
    * The block and rule records of the stylesheet. `runMerge` sets them before

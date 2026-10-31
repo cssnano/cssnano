@@ -3,7 +3,7 @@ import { PropertyTable } from './propertyTable.js';
 import { TextTable } from '../../values/textTable.js';
 
 /** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
-/** @import {Rule} from 'postcss' */
+/** @import {Container} from 'postcss' */
 
 /**
  * The state one run of the merge pass shares across its transforms. Nothing in
@@ -12,7 +12,7 @@ import { TextTable } from '../../values/textTable.js';
  * @typedef {{
  *   properties: PropertyTable,
  *   declarations: DeclarationKeys,
- *   createdBlocks: Set<Rule> | null,
+ *   createdBlocks: Set<Container> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
  *   textTable: TextTable,
  * }} RunContext

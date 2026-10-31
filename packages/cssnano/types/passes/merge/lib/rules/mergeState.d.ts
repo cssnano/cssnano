@@ -4,7 +4,7 @@ import type { TextTable } from '../../../../values/textTable.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecord, BlockRecords } from './blockRecords.js';
-/** @import {Declaration, Rule} from 'postcss' */
+/** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */

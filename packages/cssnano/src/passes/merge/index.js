@@ -69,7 +69,7 @@ function inLonghandSupport(features, work) {
  *
  * @param {Root} css
  * @param {ReturnType<typeof longhandContext>} first
- * @param {Container[] | undefined} blocks receives each block that holds a declaration, when a second round runs
+ * @param {Set<Container> | undefined} blocks receives each block that holds a declaration, when a second round runs
  * @param {readonly (Rule | AtRule)[] | undefined} reached the rules and at-rules of the stylesheet in
  *   document order, when the host walk collected them; the stylesheet is walked otherwise
  * @return {void}
@@ -81,7 +81,7 @@ function canonicalizeFirstRound(css, first, blocks, reached) {
     if (node.type !== 'rule' && node.type !== 'atrule') return;
     if (!node.nodes?.some((n) => n.type === 'decl')) return;
     canonicalize(node, first);
-    if (blocks) blocks.push(node);
+    if (blocks) blocks.add(node);
   };
   if (reached) {
     for (const node of reached) visit(node);
@@ -96,7 +96,7 @@ function canonicalizeFirstRound(css, first, blocks, reached) {
  *
  * @param {Root} css
  * @param {ReturnType<typeof targetSupportOf>} support
- * @param {Container[] | undefined} blocks
+ * @param {Set<Container> | undefined} blocks
  * @param {TextTable} textTable the tokens the host walk left
  * @param {readonly (Rule | AtRule)[]} [reached] the rules and at-rules the host walk reached
  * @return {ReturnType<typeof longhandContext>} the context of the round, which the second round reuses
@@ -174,12 +174,13 @@ function runTransforms(css, browsers, rules, context, reached) {
 
   // A second round canonicalizes every block recorded here, because removing
   // duplicates or merging rules can expose a reduction the first round left.
-  /** @type {Container[]} */
-  const blocks = [];
+  // The merge adds each rule it creates to the same set, which the second
+  // round also canonicalizes.
+  /** @type {Set<Container>} */
+  const blocks = new Set();
   const first = runFirstRound(css, support, blocks, context.textTable, reached);
 
-  // The merge reports the rules it creates, which the second round also canonicalizes.
-  context.createdBlocks = new Set();
+  context.createdBlocks = blocks;
   discardDuplicates(css, context);
 
   if (rules) mergeRules(css, browsers, context);
@@ -201,9 +202,6 @@ function runTransforms(css, browsers, rules, context, reached) {
   inLonghandSupport(features, () => {
     canonicalize(css, secondContext);
     for (const block of blocks) canonicalizeInTree(block, css, secondContext);
-    // A created rule is not in `blocks`, so it is canonicalized here.
-    for (const rule of /** @type {Set<Rule>} */ (context.createdBlocks))
-      canonicalizeInTree(rule, css, secondContext);
     finishColumns(secondContext);
   });
 }
