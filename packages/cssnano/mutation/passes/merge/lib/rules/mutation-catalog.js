@@ -80,7 +80,7 @@ export const mutations = [
   {
     name: 'ignore !important when comparing declarations',
     target: source('declarations.js'),
-    find: '    a.important === b.important &&\n',
+    find: '    (a.important === true) === (b.important === true) &&\n',
     replace: '',
   },
   {
