@@ -203,6 +203,18 @@ export const mergeCases = {
         `.join-${index}{color:red;width:1px}.noise-${index}{--v:${index}}`
     ).join('')
   ),
+  // Few rules, each a block of declarations, comments and nested rules.
+  'merge-rules-nested-declarations': mergeCase(
+    'mergeRules',
+    Array.from({ length: 12 }, (_, index) => {
+      const body = Array.from(
+        { length: 60 },
+        (unused, noiseIndex) =>
+          `/* ${index}-${noiseIndex} */--v${noiseIndex}:${noiseIndex};`
+      ).join('');
+      return `.host-${index}{${body}.leaf-${index}{color:red;display:block}}`;
+    }).join('')
+  ),
   // As in picnic: a block joins its counterpart only after the block after it.
   'merge-rules-media-runs': mergeCase(
     'mergeRules',
