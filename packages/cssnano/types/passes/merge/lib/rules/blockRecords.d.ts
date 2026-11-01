@@ -47,7 +47,8 @@ export declare class BlockRecords {
     entry(index: number): BlockRecord | RuleRecord | DeclarationRecord | NodeEntry;
     /**
      * @param {number} index an index that `add` gave, or -1 for no block
-     * @return {BlockRecord | undefined}
+     * @return {BlockRecord | undefined} undefined for -1
+     * @throws {Error} under checks, when the entry at `index` is not a block
      */
     block(index: number): BlockRecord | undefined;
     /**

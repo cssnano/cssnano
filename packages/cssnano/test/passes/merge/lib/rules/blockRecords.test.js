@@ -3,11 +3,9 @@ import { after, before, test } from 'node:test';
 import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import {
-  BlockRecords,
-  Slot,
-} from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { Slot } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
 import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 import {
   assertSweepLowers,
   sweepPotential,
@@ -91,13 +89,14 @@ test('assertRecordsMatchTree should throw when a rule record names a slot the ru
   assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
 });
 
-test('assertRecordsMatchTree should throw when a block record holds a child the tree lacks', () => {
+test('assertRecordsMatchTree should throw when a block chain lacks a child the tree holds', () => {
   const { root, state } = setup('@media print{a{color:red}}');
   const media = /** @type {BlockRecord} */ (
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
-  const [slot] = /** @type {Slot[]} */ (media.children);
-  slot.rules.length = 0;
+  state.records.links.unlink(
+    ruleRecordOf(state.records, /** @type {Rule} */ (media.node.first)).index
+  );
   assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
 });
 
@@ -307,18 +306,6 @@ test('assertNoOverDuplication should accept records built from a stylesheet that
   assert.doesNotThrow(() => assertNoOverDuplication(state.records));
 });
 
-test('assertNoOverDuplication should throw when the records reach a rule twice', () => {
-  const { root, state } = setup('a{color:red}b{width:1px}');
-  const [, second] = /** @type {Slot[]} */ (state.records.root.children);
-  second.rules.push(
-    ruleRecordOf(state.records, /** @type {Rule} */ (root.first)).index
-  );
-  assert.throws(
-    () => assertNoOverDuplication(state.records),
-    /reach a node twice/v
-  );
-});
-
 test('assertNoOverDuplication should throw when a declaration is written more often than the input wrote it', () => {
   const { root, state } = setup('a{color:red}');
   const rule = /** @type {Rule} */ (root.first);
@@ -337,40 +324,13 @@ test('assertNoOverDuplication should throw when a declaration is written more of
   );
 });
 
-/**
- * @param {number} count
- * @return {number} the entries read by `count` calls of firstLiveChild on a
- * block whose first `count` entries are empty slots
- */
-function entriesReadByFirstLiveChild(count) {
-  const root = postcss.parse('a{color:red}');
-  const state = new MergeState(['chrome 120'], createRunContext());
-  const records = new BlockRecords(new BlockRecord(root, -1, 0, false));
-  records.add(records.root);
-  const block = records.root;
-  const rule = records.recordRule(
-    /** @type {Rule} */ (root.first),
-    state.properties,
-    state.declarationIds
+test('firstLiveChild should give the node after the first rule once that rule is unlinked', () => {
+  const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
+  const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
+  const first = ruleRecordOf(
+    state.records,
+    /** @type {Rule} */ (media.node.first)
   );
-  const entries = Array.from(
-    { length: count },
-    (_, i) => new Slot(block.index, i, [])
-  );
-  entries.push(new Slot(block.index, count, [rule.index]));
-  let reads = 0;
-  block.children = new Proxy(entries, {
-    get(target, key, receiver) {
-      if (typeof key === 'string' && Number.isInteger(Number(key))) reads++;
-      return Reflect.get(target, key, receiver);
-    },
-  });
-  for (let call = 0; call < count; call++) records.firstLiveChild(block.index);
-  return reads;
-}
-
-test('firstLiveChild should read the entries before the first live one a linear number of times across calls', () => {
-  const ratio =
-    entriesReadByFirstLiveChild(4000) / entriesReadByFirstLiveChild(1000);
-  assert.ok(ratio < 8, `4× size read ratio ${ratio.toFixed(2)}`);
+  state.records.links.unlink(first.index);
+  assert.equal(state.records.firstLiveChild(media.index), media.node.nodes[1]);
 });

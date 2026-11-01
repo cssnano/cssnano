@@ -3,6 +3,7 @@
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 import { recordDeclaration } from '../../../ir/declarationRecord.js';
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockLinks } from './blockLinks.js';
 import { BlockRecord, NodeEntry, Slot } from './blockRecord.js';
 import {
@@ -85,10 +86,19 @@ export class BlockRecords {
 
   /**
    * @param {number} index an index that `add` gave, or -1 for no block
-   * @return {BlockRecord | undefined}
+   * @return {BlockRecord | undefined} undefined for -1
+   * @throws {Error} under checks, when the entry at `index` is not a block
    */
   block(index) {
-    return /** @type {BlockRecord | undefined} */ (this.#entries[index]);
+    const entry = this.#entries[index];
+    if (
+      index !== -1 &&
+      consistencyChecksEnabled() &&
+      !(entry instanceof BlockRecord)
+    ) {
+      throw new Error('a block is read at an entry that is not a block');
+    }
+    return /** @type {BlockRecord | undefined} */ (entry);
   }
 
   /**

@@ -1,9 +1,8 @@
 import DeclarationScan from './declarationScan.js';
-import { Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
+import { RuleRecord } from './ruleRecord.js';
 
-/** @import {BlockRecord} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
 
 /**
  * The rules that stand in the slots of a pair after it is merged.
@@ -43,6 +42,9 @@ export default class RuleSequence {
   /** @type {BlockRecord[]} droppable blocks tracked by this sweep */
   #tracked = [];
 
+  /** @type {number} the index of the last rule linked so far, -1 before the first */
+  #tail = -1;
+
   /** @param {BlockRecords} records */
   constructor(records) {
     this.#records = records;
@@ -50,39 +52,43 @@ export default class RuleSequence {
     this.#prev = [];
     this.#next = [];
     this.#reserve(records.entryCount() - 1);
-    let tail = -1;
-    /** @param {BlockRecord} block */
-    const collect = (block) => {
-      let live = 0;
-      for (const entry of block.children) {
-        if (entry instanceof Slot) {
-          for (const index of entry.rules) {
-            tail = this.#link(tail, index);
-            live++;
-            const { block: nested } = /** @type {RuleRecord} */ (
-              records.rule(index)
-            );
-            if (nested !== -1) {
-              collect(/** @type {BlockRecord} */ (records.block(nested)));
-            }
-          }
-        } else {
-          const nested = records.blockEntry(entry);
-          if (nested === undefined) {
-            live++;
-          } else if (!nested.dropped) {
-            live++;
-            collect(nested);
-          }
+    this.#collect(records.root);
+  }
+
+  /**
+   * Links the rules under `block` in document order, after the rules already
+   * linked, and tracks each droppable block that a sweep may empty.
+   *
+   * @param {BlockRecord} block
+   * @return {void}
+   */
+  #collect(block) {
+    const { links } = this.#records;
+    let live = 0;
+    for (
+      let entry = links.firstChild(block.index);
+      entry !== -1;
+      entry = links.nextSibling(entry)
+    ) {
+      const item = this.#records.entry(entry);
+      if (item instanceof RuleRecord) {
+        this.#tail = this.#link(this.#tail, entry);
+        live++;
+        if (item.block !== -1) {
+          this.#collect(
+            /** @type {BlockRecord} */ (this.#records.block(item.block))
+          );
         }
+      } else {
+        live++;
+        if (item instanceof BlockRecord) this.#collect(item);
       }
-      block.remaining = null;
-      if (block.droppable && live > 0) {
-        block.remaining = live;
-        this.#tracked.push(block);
-      }
-    };
-    collect(records.root);
+    }
+    block.remaining = null;
+    if (block.droppable && live > 0) {
+      block.remaining = live;
+      this.#tracked.push(block);
+    }
   }
 
   /**

@@ -41,6 +41,13 @@ export class BlockRecord {
   last = -1;
 
   /**
+   * The number of entries in the chain, kept by each link and unlink.
+   *
+   * @type {number}
+   */
+  count = 0;
+
+  /**
    * The live children of a droppable block during a sweep, or null while the
    * block is not tracked. Dropping an emptied `@layer` is safe because a rule
    * moves only into an equivalent earlier block, which already orders the
@@ -74,15 +81,6 @@ export class BlockRecord {
    * @type {string | undefined}
    */
   leadingWhitespace = undefined;
-
-  /**
-   * Where the first live entry stood when last looked up. A dead entry never
-   * becomes live again, so the lookup resumes here rather than at the start.
-   * `BlockRecords#firstLiveChild` reads and advances it.
-   *
-   * @type {number}
-   */
-  firstLive = 0;
 
   /**
    * @param {Container} node

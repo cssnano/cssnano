@@ -69,7 +69,12 @@ function checkBlockStructure(records, block) {
         const nested = record.block;
         if (nested === -1) continue;
         const nestedBlock = /** @type {BlockRecord} */ (records.block(nested));
-        if (nestedBlock.parent !== block.index) throw new Error(OUT_OF_STEP);
+        if (
+          nestedBlock.parent !== block.index ||
+          records.links.enclosingBlock(nested) !== block
+        ) {
+          throw new Error(OUT_OF_STEP);
+        }
         if (records.links.parentOf(nested) !== ruleIndex) {
           throw new Error(OUT_OF_STEP);
         }
@@ -82,8 +87,12 @@ function checkBlockStructure(records, block) {
         throw new Error(OUT_OF_STEP);
       }
       if (nested.dropped) {
+        // A dropped block is unlinked, so only its live children are checked.
         if (records.liveCount(entry) !== 0) throw new Error(OUT_OF_STEP);
       } else {
+        if (records.links.enclosingBlock(entry) !== block) {
+          throw new Error(OUT_OF_STEP);
+        }
         checkBlockStructure(records, nested);
       }
     }
@@ -166,7 +175,10 @@ export function assertContextsCurrent(mergeState) {
   if (!consistencyChecksEnabled()) return;
   const { records, declarationIds, textTable } = mergeState;
   for (const block of records.blocks()) {
-    const parent = records.block(block.parent)?.context ?? -1;
+    const holder = records.links.enclosingBlock(block.index);
+    // An emptied block is unlinked and applies nothing, so it has no place to keep.
+    if (holder === undefined && block !== records.root) continue;
+    const parent = holder?.context ?? -1;
     if (
       block.context !==
       containerContext(declarationIds, parent, block, textTable)

@@ -1,10 +1,9 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { Slot } from './blockRecords.js';
-/** @import {BlockRecord} from './blockRecord.js' */
+import { BlockRecord } from './blockRecord.js';
+import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
 
 const TWICE = 'the records reach a node twice';
 const OVER_WRITTEN =
@@ -24,9 +23,8 @@ function declarationKey(node) {
 
 /**
  * Counts the declarations that the records hold by key: those of each rule that
- * holds no block, and each declaration that is a child of a block. Walks the
- * dropped blocks too. Under consistency checks, throws when a node is reached
- * twice.
+ * holds no block, and each declaration that is a child of a block. Under
+ * consistency checks, throws when a node is reached twice.
  *
  * @param {BlockRecords} records
  * @return {Map<string, number>}
@@ -57,21 +55,21 @@ export function tallyDeclarations(records) {
   };
   /** @param {BlockRecord} block */
   const walk = (block) => {
-    for (const entry of block.children) {
-      if (entry instanceof Slot) {
-        for (const index of entry.rules) {
-          visitRule(/** @type {RuleRecord} */ (records.rule(index)));
-        }
+    const { links } = records;
+    for (
+      let entry = links.firstChild(block.index);
+      entry !== -1;
+      entry = links.nextSibling(entry)
+    ) {
+      const item = records.entry(entry);
+      if (item instanceof RuleRecord) {
+        visitRule(item);
+      } else if (item instanceof BlockRecord) {
+        reach(item.node);
+        walk(item);
       } else {
-        const nested = records.blockEntry(entry);
-        if (nested) {
-          reach(nested.node);
-          walk(nested);
-        } else {
-          reach(records.nodeOf(entry));
-          const item = records.entry(entry);
-          if (item instanceof DeclarationRecord) count(item);
-        }
+        reach(records.nodeOf(entry));
+        if (item instanceof DeclarationRecord) count(item);
       }
     }
   };

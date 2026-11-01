@@ -1,5 +1,4 @@
 import cssnanoUtils from '#utils';
-import { Slot } from './blockRecords.js';
 import { BlockRecord, NodeEntry } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
@@ -7,7 +6,7 @@ import { PropertyWrites } from './propertyWrites.js';
 
 /** @import {AtRule, ChildNode, Rule} from 'postcss' */
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecords, Slot} from './blockRecords.js' */
 
 // Conditional group rules hold ordinary rules whose declarations cascade as
 // they do at the top level. Any other at-rule may depend on its position, as
@@ -141,26 +140,19 @@ export default class LastWriteIndex {
    * @param {(record: RuleRecord) => string[] | null} keysOf
    */
   #recordBlock(block, position, keys, keysOf) {
-    for (const entry of block.children) {
-      if (entry instanceof Slot) {
-        for (const index of entry.rules) {
-          const record = /** @type {RuleRecord} */ (this.#records.rule(index));
-          this.#recordNode(record, position, keys, keysOf);
-        }
-      } else {
-        const nested = this.#records.blockEntry(entry);
-        if (nested) {
-          if (!nested.dropped) this.#recordNode(nested, position, keys, keysOf);
-        } else {
-          const item = this.#records.entry(entry);
-          this.#recordNode(
-            item instanceof NodeEntry ? item.node : item,
-            position,
-            keys,
-            keysOf
-          );
-        }
-      }
+    const { links } = this.#records;
+    for (
+      let entry = links.firstChild(block.index);
+      entry !== -1;
+      entry = links.nextSibling(entry)
+    ) {
+      const item = this.#records.entry(entry);
+      this.#recordNode(
+        item instanceof NodeEntry ? item.node : item,
+        position,
+        keys,
+        keysOf
+      );
     }
   }
 
