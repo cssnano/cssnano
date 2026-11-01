@@ -1,4 +1,3 @@
-import cssnanoUtils from '#utils';
 import LastWriteIndex, { isConditionalGroupRule } from './lastWriteIndex.js';
 import joinByDeclarations from './declarationJoin.js';
 import { writesOf } from './ruleRewrite.js';
@@ -9,8 +8,6 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
 import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
-
-const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {AtRule, Container, ChildNode, Rule} from 'postcss' */
 /** @import {PropertyWrites} from './propertyWrites.js' */
@@ -95,17 +92,18 @@ export function subtreeEntries(records, block) {
  *
  * @param {RuleRecord | BlockRecord | DeclarationRecord | ChildNode} entry
  * @param {boolean} joinRules
- * @return {string | null}
+ * @return {string | number | null}
  */
 function joinKey(entry, joinRules) {
   if (entry instanceof RuleRecord) {
     return joinRules ? `{${entry.selectorText()}` : null;
   }
   // `@font-face` and `@page` have block records too, so the name decides.
+  // Siblings share their enclosing blocks, so their contexts are equal exactly
+  // when their names and preludes are.
   if (entry instanceof BlockRecord) {
-    const atRule = /** @type {AtRule} */ (entry.node);
-    if (isConditionalGroupRule(atRule))
-      return `@${asciiLowerCase(atRule.name)} ${atRule.params}`;
+    if (isConditionalGroupRule(/** @type {AtRule} */ (entry.node)))
+      return entry.context;
   }
   return null;
 }
@@ -186,7 +184,7 @@ function joinBlocksBackward(block, mergeState) {
 
   const index = new LastWriteIndex(mergeState.records);
   const keysOf = mergeState.elementKeysOf;
-  /** @type {Map<string, {block: number, position: number}>} */
+  /** @type {Map<string | number, {block: number, position: number}>} */
   const next = new Map();
   let joined = false;
   for (let position = last - scan.start; position >= 0; position--) {
@@ -260,7 +258,7 @@ function joinInParent(block, mergeState, rules) {
   const index = new LastWriteIndex(mergeState.records);
   const keysOf = mergeState.elementKeysOf;
   // Each entry is named by its place in `entries`, which is not changed.
-  /** @type {Map<string, {origin: number, position: number}>} */
+  /** @type {Map<string | number, {origin: number, position: number}>} */
   const latest = new Map();
   // Every rule with a selector joins the first rule with that selector, so
   // the joined rule keeps its writes from one join to the next: rebuilding
@@ -290,7 +288,7 @@ function joinInParent(block, mergeState, rules) {
               position
             );
       if (direction === 'down') {
-        latest.set(/** @type {string} */ (key), {
+        latest.set(/** @type {string | number} */ (key), {
           origin: earlier.origin,
           position,
         });

@@ -1,4 +1,5 @@
 import type { BlockRecords } from './blockRecords.js';
+import type MergeState from './mergeState.js';
 /**
  * Under consistency checks, throws when a slot or a nested block names the wrong
  * block or position, or a dropped block still holds a live child. Reads only
@@ -20,4 +21,14 @@ export declare function assertRecordsWellFormed(mergeState: {
  * @return {void}
  */
 export declare function assertOwnershipIsTree(records: BlockRecords): void;
+/**
+ * Under consistency checks, throws when a block's context differs from the one
+ * its prelude and its enclosing block give it now. A context is assigned once,
+ * at the build, so a move that crossed into an unequal container would leave
+ * it stale.
+ *
+ * @param {MergeState} mergeState
+ * @return {void}
+ */
+export declare function assertContextsCurrent(mergeState: MergeState): void;
 //# sourceMappingURL=recordsCheck.d.ts.map

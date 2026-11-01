@@ -5,6 +5,7 @@ import { BlockRecord } from './blockRecord.js';
 import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
 import { RuleRecord } from './ruleRecord.js';
+import { containerContext } from './sameContainer.js';
 import { tallyDeclarations } from './overDuplication.js';
 
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
@@ -44,6 +45,12 @@ export function buildRecords(root, mergeState) {
   /** @param {BlockRecord} block */
   const fill = (block) => {
     records.add(block);
+    block.context = containerContext(
+      mergeState.declarationIds,
+      records.block(block.parent)?.context ?? -1,
+      block,
+      textTable
+    );
     for (const child of /** @type {ChildNode[]} */ (block.node.nodes)) {
       const index = block.children.length;
       if (isRuleOrAtRule(child)) nodes++;

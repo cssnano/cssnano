@@ -6,16 +6,11 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { repositoryFile } from '../../../../../../../util/testHelpers.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
 
 /** @import {BlockRecords, Slot} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import {Rule} from 'postcss' */
-
-const textTable = new TextTable();
-// The arena for the calls that compare no block.
-const emptyRecords = recordsOf(postcss.root()).records;
 
 /**
  * @param {BlockRecords} records
@@ -83,80 +78,77 @@ const nestedSupports = (outerFirst, outerSecond, firstQuery, secondQuery) => `
     `;
 
 test('sameContainer holds for the blocks of sibling rules', async () => {
-  const { records, first, second } = await blockPair('h1 {} h2 {}', [0], [1]);
+  const { first, second } = await blockPair('h1 {} h2 {}', [0], [1]);
 
-  assert.strictEqual(sameContainer(records, first, second, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer holds for two missing blocks', () => {
-  assert.strictEqual(
-    sameContainer(emptyRecords, null, undefined, textTable),
-    true
-  );
+  assert.strictEqual(sameContainer(null, undefined), true);
 });
 
 test('sameContainer does not hold when only one block is missing', async () => {
-  const { records, first } = await blockPair('h1 {}', [0], [0]);
+  const { first } = await blockPair('h1 {}', [0], [0]);
 
-  assert.strictEqual(sameContainer(records, first, null, textTable), false);
+  assert.strictEqual(sameContainer(first, null), false);
 });
 
 test('sameContainer holds for siblings inside one @media block', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     '@media screen{h1 {} h2 {}}',
     [0, 0],
     [0, 1]
   );
-  assert.strictEqual(sameContainer(records, first, second, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer holds for rules in equal @media blocks', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     '@media screen{h1 {}} @media screen{h2 {}}',
     [0, 0],
     [1, 0]
   );
-  assert.strictEqual(sameContainer(records, first, second, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer compares at-rule names case-insensitively', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     '@media screen{h1 {}} @MEDIA screen{h2 {}}',
     [0, 0],
     [1, 0]
   );
-  assert.strictEqual(sameContainer(records, first, second, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer holds for rules in equal nested at-rule blocks', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     nestedSupports('@media screen', '@media screen', 'course', 'course'),
     [0, 0, 0],
     [1, 0, 0]
   );
-  assert.strictEqual(sameContainer(records, first, second, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold when nested @supports conditions differ', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     nestedSupports('@media screen', '@media screen', 'fine', 'course'),
     [0, 0, 0],
     [1, 0, 0]
   );
-  assert.notStrictEqual(sameContainer(records, first, second, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold when outer @media queries differ', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     nestedSupports('@media print', '@media screen', 'course', 'course'),
     [0, 0, 0],
     [1, 0, 0]
   );
-  assert.notStrictEqual(sameContainer(records, first, second, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold when only one side is inside an outer @media block', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     `
         @supports(pointer: course) {
             h1 {}
@@ -170,11 +162,11 @@ test('sameContainer does not hold when only one side is inside an outer @media b
     [0, 0],
     [1, 0, 0]
   );
-  assert.notStrictEqual(sameContainer(records, first, second, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold when only one side is inside a nested @supports block', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     `
         @media screen {
             h1 {}
@@ -188,34 +180,34 @@ test('sameContainer does not hold when only one side is inside a nested @support
     [0, 0],
     [1, 0, 0]
   );
-  assert.notStrictEqual(sameContainer(records, first, second, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold for two anonymous @layer blocks', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     '@layer { h1 {} } @layer { h2 {} }',
     [0, 0],
     [1, 0]
   );
-  assert.notStrictEqual(sameContainer(records, first, second, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold for rules nested in parent rules with different selectors', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     '.card { h1 {} } .hero { h2 {} }',
     [0, 0],
     [1, 0]
   );
-  assert.notStrictEqual(sameContainer(records, first, second, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer holds for rules nested in parent rules with identical selectors', async () => {
-  const { records, first, second } = await blockPair(
+  const { first, second } = await blockPair(
     '.card { h1 {} } .card { h2 {} }',
     [0, 0],
     [1, 0]
   );
-  assert.strictEqual(sameContainer(records, first, second, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold for anonymous @layer blocks whose params are only comments', () => {
@@ -229,12 +221,7 @@ test('sameContainer does not hold for anonymous @layer blocks whose params are o
   root.append(layer1, layer2);
   const state = recordsOf(root);
   assert.notStrictEqual(
-    sameContainer(
-      state.records,
-      blockOf(state.records, h1),
-      blockOf(state.records, h2),
-      textTable
-    ),
+    sameContainer(blockOf(state.records, h1), blockOf(state.records, h2)),
     true
   );
 });
@@ -256,12 +243,7 @@ test('sameContainer holds for named @layer blocks with identical comments and na
   root.append(layer1, layer2);
   const state = recordsOf(root);
   assert.strictEqual(
-    sameContainer(
-      state.records,
-      blockOf(state.records, h1),
-      blockOf(state.records, h2),
-      textTable
-    ),
+    sameContainer(blockOf(state.records, h1), blockOf(state.records, h2)),
     true
   );
 });
@@ -274,10 +256,8 @@ test('sameContainer should hold for equal conditional blocks that are different 
   const state = recordsOf(root);
   assert.strictEqual(
     sameContainer(
-      state.records,
       blockRecordOf(state.records, root.nodes[0]),
-      blockRecordOf(state.records, root.nodes[1]),
-      textTable
+      blockRecordOf(state.records, root.nodes[1])
     ),
     true
   );
@@ -291,10 +271,8 @@ test('sameContainer should not hold for blocks with different conditions', async
   const state = recordsOf(root);
   assert.strictEqual(
     sameContainer(
-      state.records,
       blockRecordOf(state.records, root.nodes[0]),
-      blockRecordOf(state.records, root.nodes[1]),
-      textTable
+      blockRecordOf(state.records, root.nodes[1])
     ),
     false
   );
@@ -307,20 +285,15 @@ test('sameContainer should not hold when only one side is the stylesheet root', 
   const state = recordsOf(root);
   assert.strictEqual(
     sameContainer(
-      state.records,
       state.records.root,
-      blockRecordOf(state.records, root.nodes[0]),
-      textTable
+      blockRecordOf(state.records, root.nodes[0])
     ),
     false
   );
 });
 
 test('sameContainer should hold for two undefined containers', () => {
-  assert.strictEqual(
-    sameContainer(emptyRecords, undefined, undefined, textTable),
-    true
-  );
+  assert.strictEqual(sameContainer(undefined, undefined), true);
 });
 
 test('sameContainer should not hold when the outer blocks differ and the inner ones match', async () => {
@@ -331,10 +304,7 @@ test('sameContainer should not hold when the outer blocks differ and the inner o
   const state = recordsOf(root);
   const first = blockRecordOf(state.records, root.nodes[0].nodes[0]);
   const second = blockRecordOf(state.records, root.nodes[1].nodes[0]);
-  assert.strictEqual(
-    sameContainer(state.records, first, second, textTable),
-    false
-  );
+  assert.strictEqual(sameContainer(first, second), false);
 });
 
 test('sameContainer does not fold the Kelvin sign in at-rule names, because CSS matches names ASCII-case-insensitively', () => {
@@ -347,10 +317,8 @@ test('sameContainer does not fold the Kelvin sign in at-rule names, because CSS 
   const state = recordsOf(root);
   assert.strictEqual(
     sameContainer(
-      state.records,
       blockRecordOf(state.records, kelvin),
-      blockRecordOf(state.records, ascii),
-      textTable
+      blockRecordOf(state.records, ascii)
     ),
     false
   );
