@@ -142,7 +142,7 @@ test('a departed rule leaves the tree at write-back', () => {
     writesOf(receiving.declarations),
     incoming
   );
-  removeRules(state, new Set([incoming]));
+  removeRules(state, new Set([incoming.index]));
   writeBack(state.records, state.records.blocks());
   assert.deepEqual(root.nodes, [b]);
   assert.equal(a.parent, undefined);
@@ -159,7 +159,7 @@ test('a departed rule keeps its child array, since write-back does not empty it'
     writesOf(receiving.declarations),
     incoming
   );
-  removeRules(state, new Set([incoming]));
+  removeRules(state, new Set([incoming.index]));
   writeBack(state.records, state.records.blocks());
   assert.equal(a.nodes.length, 1);
 });

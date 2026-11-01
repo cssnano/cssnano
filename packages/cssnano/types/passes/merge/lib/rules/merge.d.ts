@@ -1,5 +1,4 @@
 import type { RuleRecord } from './ruleRecord.js';
-import type { BlockRecord } from './blockRecord.js';
 import type RuleSequence, { Placement } from './ruleSequence.js';
 import type MergeState from './mergeState.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -33,9 +32,9 @@ export declare function mergeMatchingSelectors(first: RuleRecord, second: RuleRe
  * @param {MergeState} mergeState
  * @param {number} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
- * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
+ * @param {Map<number, boolean>} outsideDeclarations
  * @return {Placement | null} the rules that replace the pair, or null when
  * sharing the declarations would not make the output shorter
  */
-export declare function mergeSharedDeclarations(first: RuleRecord, second: RuleRecord, mergeState: MergeState, secondLink: number, sequence: RuleSequence, outsideDeclarations: WeakMap<BlockRecord, boolean>): Placement | null;
+export declare function mergeSharedDeclarations(first: RuleRecord, second: RuleRecord, mergeState: MergeState, secondLink: number, sequence: RuleSequence, outsideDeclarations: Map<number, boolean>): Placement | null;
 //# sourceMappingURL=merge.d.ts.map

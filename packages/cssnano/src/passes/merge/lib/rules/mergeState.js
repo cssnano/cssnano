@@ -34,7 +34,7 @@ export default class MergeState {
   #elementKeyOf = createElementKeyLookup();
   /** @type {TextTable} */
   #textTable;
-  /** @type {Set<RuleRecord>} rules whose selector text is set, and whose tokens are stored at the end of the run */
+  /** @type {Set<number>} the indices of the rules whose selector text is set, and whose tokens are stored at the end of the run */
   #spelled = new Set();
   /** @type {Set<Container> | null} */
   #createdBlocks;
@@ -155,7 +155,7 @@ export default class MergeState {
    */
   spellSelectors(record) {
     this.#textTable.setText(record.node, record.selectorText());
-    this.#spelled.add(record);
+    this.#spelled.add(record.index);
   }
 
   /**
@@ -195,7 +195,8 @@ export default class MergeState {
    * reader tokenizes it.
    */
   flushSelectors() {
-    for (const record of this.#spelled) {
+    for (const index of this.#spelled) {
+      const record = /** @type {RuleRecord} */ (this.records.rule(index));
       // A rule that left the stylesheet has nothing to store.
       if (record.departed) continue;
       const pieces = record.pieces;

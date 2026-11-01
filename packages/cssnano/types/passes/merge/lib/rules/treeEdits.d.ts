@@ -54,8 +54,8 @@ export declare function appendToDeclarations(mergeState: MergeState, receiving: 
  * catches up at write-back.
  *
  * @param {MergeState} mergeState
- * @param {Set<RuleRecord>} records
+ * @param {Set<number>} indices the indices of the rules to remove
  * @return {void}
  */
-export declare function removeRules(mergeState: MergeState, records: Set<RuleRecord>): void;
+export declare function removeRules(mergeState: MergeState, indices: Set<number>): void;
 //# sourceMappingURL=treeEdits.d.ts.map

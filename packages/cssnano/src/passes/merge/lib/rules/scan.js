@@ -87,17 +87,17 @@ export default function runScan(mergeState) {
 
   // Pairs that passed `canMerge` as the best candidate but rewrote nothing;
   // they are skipped until another rewrite can change the outcome.
-  /** @type {Map<RuleRecord, RuleRecord>} */
+  /** @type {Map<number, number>} */
   const unmergeablePairs = new Map();
 
   /** @param {number} first @param {number} second */
   const pairBenefit = (first, second) =>
-    unmergeablePairs.get(rule(first)) === rule(second)
+    unmergeablePairs.get(first) === second
       ? NO_BENEFIT
       : mergeBenefit(rule(first), rule(second));
 
-  /** @type {WeakMap<BlockRecord, boolean>} */
-  const outsideDeclarations = new WeakMap();
+  /** @type {Map<number, boolean>} */
+  const outsideDeclarations = new Map();
 
   /**
    * @param {RuleSequence} sequence
@@ -128,7 +128,9 @@ export default function runScan(mergeState) {
         outsideDeclarations
       );
     if (placement) return { placement, moved };
-    return moved ? { placement: { first: [a], second: [b] }, moved } : null;
+    return moved
+      ? { placement: { first: [a.index], second: [b.index] }, moved }
+      : null;
   };
 
   /** @type {number[]} */
@@ -210,7 +212,7 @@ export default function runScan(mergeState) {
         benefit === NO_BENEFIT ? null : mergePair(sequence, current, second);
       if (!merged) {
         if (lookaheadStart !== -1 && benefit !== NO_BENEFIT) {
-          unmergeablePairs.set(rule(current), rule(second));
+          unmergeablePairs.set(current, second);
           current = lookaheadStart;
         } else {
           current = second;

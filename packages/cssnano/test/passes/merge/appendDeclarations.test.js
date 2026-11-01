@@ -32,7 +32,7 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
   );
   removeRules(
     mergeState,
-    new Set([ruleRecordOf(mergeState.records, incoming)])
+    new Set([ruleRecordOf(mergeState.records, incoming).index])
   );
   writeBack(mergeState.records, mergeState.records.blocks());
 
