@@ -5,7 +5,10 @@ import runScan from './scan.js';
 import { assertNoOverDuplication } from './overDuplication.js';
 import { buildRecords } from './treeEdits.js';
 import { assertRecordsMatchTree, writeBack } from './writeBack.js';
-import { assertRecordsWellFormed } from './recordsCheck.js';
+import {
+  assertContextsCurrent,
+  assertRecordsWellFormed,
+} from './recordsCheck.js';
 
 const ROUNDS = 'runMerge repeats past its bound on rounds';
 
@@ -45,6 +48,7 @@ export default function runMerge(root, browsers, context = createRunContext()) {
   // Sweeps and joins edit only the records, so the tree catches up once. It
   // is checked here and not at the checkpoints, which would hide stale reads
   // that production makes.
+  assertContextsCurrent(mergeState);
   writeBack(mergeState.records, mergeState.records.blocks());
   assertRecordsMatchTree(mergeState);
   mergeState.flushSelectors();

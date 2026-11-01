@@ -264,8 +264,7 @@ export default class MergeState {
   ) {
     const containerA = /** @type {BlockRecord} */ (this.records.block(blockA));
     const containerB = this.records.block(blockB);
-    if (!sameContainer(this.records, containerA, containerB, this.#textTable))
-      return false;
+    if (!sameContainer(containerA, containerB)) return false;
     if (isKeyframes(containerA.node)) return false;
     if (recordA.block !== -1) return false;
     if (recordB.block !== -1) return false;

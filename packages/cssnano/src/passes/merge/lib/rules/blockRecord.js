@@ -43,6 +43,15 @@ export class BlockRecord {
   index = -1;
 
   /**
+   * The id of the circumstances under which the block applies its content, as
+   * `containerContext` gives it. A block moves only between equal containers,
+   * so the id holds for the whole run.
+   *
+   * @type {number}
+   */
+  context = -1;
+
+  /**
    * The whitespace before the first child of the stylesheet, which PostCSS
    * hands on when that child is removed. Only the record of the stylesheet
    * holds it.

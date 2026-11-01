@@ -76,12 +76,7 @@ export default function runScan(mergeState) {
     const rewritesStructure =
       (a.keys.length === 0 && b.keys.length === 0) ||
       (first.slotBlock !== second.slotBlock &&
-        sameContainer(
-          mergeState.records,
-          mergeState.blockOf(first),
-          mergeState.blockOf(second),
-          mergeState.textTable
-        ));
+        sameContainer(mergeState.blockOf(first), mergeState.blockOf(second)));
     return rewritesStructure ? 0 : NO_BENEFIT;
   };
 

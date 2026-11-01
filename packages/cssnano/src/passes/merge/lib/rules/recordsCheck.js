@@ -1,10 +1,12 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { Slot } from './blockRecords.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { containerContext } from './sameContainer.js';
 /** @import {BlockRecord} from './blockRecord.js' */
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @import MergeState from './mergeState.js' */
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 const REACHED_TWICE = 'a record or slot is reached twice from the root';
@@ -102,4 +104,27 @@ export function assertOwnershipIsTree(records) {
     }
   };
   visit(records.root);
+}
+
+/**
+ * Under consistency checks, throws when a block's context differs from the one
+ * its prelude and its enclosing block give it now. A context is assigned once,
+ * at the build, so a move that crossed into an unequal container would leave
+ * it stale.
+ *
+ * @param {MergeState} mergeState
+ * @return {void}
+ */
+export function assertContextsCurrent(mergeState) {
+  if (!consistencyChecksEnabled()) return;
+  const { records, declarationIds, textTable } = mergeState;
+  for (const block of records.blocks()) {
+    const parent = records.block(block.parent)?.context ?? -1;
+    if (
+      block.context !==
+      containerContext(declarationIds, parent, block, textTable)
+    ) {
+      throw new Error('a block keeps the context of another place');
+    }
+  }
 }

@@ -50,14 +50,26 @@ export const mutations = [
   {
     name: 'join at-rules of one name whatever their conditions',
     target: source('sameContainer.js'),
-    find: '    return nodeA.params === nodeB.params;',
-    replace: '    return true;',
+    find: '        : step(trie, node.params);',
+    replace: '        : trie;',
   },
   {
     name: 'join distinct anonymous layers',
     target: source('sameContainer.js'),
-    find: 'return anonA && anonB && nodeA === nodeB;',
-    replace: 'return anonA && anonB;',
+    find: '? step(step(trie, ANONYMOUS), block.index)',
+    replace: '? step(trie, ANONYMOUS)',
+  },
+  {
+    name: 'a block takes its context without the enclosing blocks',
+    target: source('sameContainer.js'),
+    find: 'let trie = step(step(keys.root, CONTEXT), parentContext);',
+    replace: 'let trie = step(keys.root, CONTEXT);',
+  },
+  {
+    name: 'rules nested in rules of different selectors share a context',
+    target: source('sameContainer.js'),
+    find: "trie = step(step(trie, 'rule'), node.selector);",
+    replace: "trie = step(trie, 'rule');",
   },
   {
     name: 'keep a downward join anchored at the earlier rule',
