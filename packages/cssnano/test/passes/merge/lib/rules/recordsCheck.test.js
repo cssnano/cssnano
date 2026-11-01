@@ -45,6 +45,7 @@ test('assertRecordsWellFormed should throw when a dropped block still holds a li
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
   // A sweep takes a dropped block out of the tree, so the tree lacks it too.
+  state.records.links.unlink(layer.index);
   layer.dropped = true;
   root.first?.remove();
   assert.doesNotThrow(() => assertRecordsMatchTree(state));

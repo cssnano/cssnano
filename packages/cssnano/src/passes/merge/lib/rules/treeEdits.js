@@ -51,7 +51,7 @@ export function buildRecords(root, mergeState) {
   const fill = (block) => {
     block.context = containerContext(
       mergeState.declarationIds,
-      records.block(block.parent)?.context ?? -1,
+      records.links.enclosingBlock(block.index)?.context ?? -1,
       block,
       textTable
     );
@@ -142,7 +142,9 @@ export function remove(records, entry) {
  * @return {void}
  */
 function emptyEntry(records, block) {
-  const holder = /** @type {BlockRecord} */ (records.block(block.parent));
+  const holder = /** @type {BlockRecord} */ (
+    records.links.enclosingBlock(block.index)
+  );
   const { position } = block;
   holder.children[position] = new Slot(holder.index, position, []);
   records.links.unlink(block.index);
@@ -181,7 +183,7 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
   } else {
     const block = /** @type {BlockRecord} */ (earlier);
     const holder = /** @type {BlockRecord} */ (
-      mergeState.records.block(block.parent)
+      mergeState.records.links.enclosingBlock(block.index)
     );
     const from = block.position;
     const to = later.position;

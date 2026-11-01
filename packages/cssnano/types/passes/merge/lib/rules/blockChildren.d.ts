@@ -1,8 +1,8 @@
 import type { ChildNode } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import type { BlockRecord } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
+import type { BlockRecord } from './blockRecord.js';
 /**
  * The first child the block at `index` holds now, without copying the child
  * list.
@@ -13,8 +13,8 @@ import type { RuleRecord } from './ruleRecord.js';
  */
 export declare function firstLiveChild(records: BlockRecords, index: number): ChildNode | undefined;
 /**
- * The number of children the block at `index` holds now, counted without
- * copying them.
+ * The number of children the block at `index` holds now. The chain keeps the
+ * count, so the answer costs no walk.
  *
  * @param {BlockRecords} records
  * @param {number} index
@@ -24,7 +24,7 @@ export declare function liveCount(records: BlockRecords, index: number): number;
 /**
  * The entries the block at `index` holds now, in order: the record of each
  * rule, the record of each at-rule block, the record of each declaration, and
- * the node of each bare node. A block that was dropped is left out.
+ * the node of each bare node.
  *
  * @param {BlockRecords} records
  * @param {number} index
@@ -32,8 +32,8 @@ export declare function liveCount(records: BlockRecords, index: number): number;
  */
 export declare function liveEntries(records: BlockRecords, index: number): (RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[];
 /**
- * The children the block at `index` holds now, in order: the rules of its
- * slots, and the nodes of its other entries, except a block that was dropped.
+ * The children the block at `index` holds now, in order: the node of each
+ * entry of its chain.
  *
  * @param {BlockRecords} records
  * @param {number} index

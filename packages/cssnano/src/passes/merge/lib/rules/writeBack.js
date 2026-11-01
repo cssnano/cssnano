@@ -1,5 +1,6 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { Slot } from './blockRecords.js';
+import { RuleRecord } from './ruleRecord.js';
 /** @import {BlockRecord} from './blockRecord.js' */
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
@@ -7,7 +8,6 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord as Block} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 
@@ -24,17 +24,12 @@ function differs(records, block) {
   const nodes = /** @type {ChildNode[]} */ (block.node.nodes);
   if (records.liveCount(block.index) !== nodes.length) return true;
   let at = 0;
-  for (const entry of block.children) {
-    if (entry instanceof Slot) {
-      for (const index of entry.rules) {
-        const record = /** @type {RuleRecord} */ (records.rule(index));
-        if (nodes[at++] !== record.node) return true;
-      }
-    } else if (records.blockEntry(entry)?.dropped) {
-      continue;
-    } else if (nodes[at++] !== records.nodeOf(entry)) {
-      return true;
-    }
+  for (
+    let entry = records.links.firstChild(block.index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    if (nodes[at++] !== records.nodeOf(entry)) return true;
   }
   return false;
 }
@@ -71,7 +66,7 @@ function checkRuleRecord(mergeState, block, slot, record) {
       mergeState.records.block(record.block)
     );
     if (
-      nested.parent !== block.index ||
+      mergeState.records.links.enclosingBlock(nested.index) !== block ||
       nested.node !== rule ||
       nested.position !== slot.position
     ) {
@@ -189,20 +184,25 @@ export function writeBack(records, blocks) {
       rebuilt.push({
         container: /** @type {Container} */ (block.node),
         children: records.liveChildren(block.index),
-        leading: block.parent === -1 ? block.leadingWhitespace : undefined,
+        leading: block === records.root ? block.leadingWhitespace : undefined,
       });
     }
-    for (const entry of block.children) {
-      if (!(entry instanceof Slot)) continue;
-      for (const index of entry.rules) {
-        const record = /** @type {RuleRecord} */ (records.rule(index));
-        if (record.edited && record.block === -1) {
-          rebuilt.push({
-            container: /** @type {Container} */ (record.node),
-            children: nodesOf(record),
-            leading: undefined,
-          });
-        }
+    for (
+      let entry = records.links.firstChild(block.index);
+      entry !== -1;
+      entry = records.links.nextSibling(entry)
+    ) {
+      const record = records.entry(entry);
+      if (
+        record instanceof RuleRecord &&
+        record.edited &&
+        record.block === -1
+      ) {
+        rebuilt.push({
+          container: /** @type {Container} */ (record.node),
+          children: nodesOf(record),
+          leading: undefined,
+        });
       }
     }
   }

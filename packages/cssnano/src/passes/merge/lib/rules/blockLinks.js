@@ -1,8 +1,10 @@
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
+import { RuleRecord } from './ruleRecord.js';
 
 const DETACHED_BLOCK = 'an entry is linked into a block outside the tree';
+const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
 
 /**
  * The links between the entries of the records. Each entry has a container:
@@ -38,6 +40,21 @@ export class BlockLinks {
   }
 
   /**
+   * The block whose chain holds the entry at `index`. A nested block is linked
+   * to the rule that owns it, so the walk steps through that rule.
+   *
+   * @param {number} index an index that the arena gave
+   * @return {BlockRecord | undefined} undefined for the stylesheet
+   */
+  enclosingBlock(index) {
+    let holder = this.#parent[index];
+    if (holder !== -1 && this.#records.entry(holder) instanceof RuleRecord) {
+      holder = this.#parent[holder];
+    }
+    return this.#records.block(holder);
+  }
+
+  /**
    * @param {number} index an index that the arena gave
    * @return {number} the container of the entry, -1 when it is linked nowhere
    */
@@ -46,18 +63,22 @@ export class BlockLinks {
   }
 
   /**
-   * @param {number} index an index that the arena gave
+   * @param {number} index an index that the arena gave, linked in a chain
    * @return {number} the entry before `index` in its chain, -1 at the start
+   * @throws {Error} under checks, when `index` is linked nowhere
    */
   prevSibling(index) {
+    this.#assertLinked(index);
     return this.#prev[index];
   }
 
   /**
-   * @param {number} index an index that the arena gave
+   * @param {number} index an index that the arena gave, linked in a chain
    * @return {number} the entry after `index` in its chain, -1 at the end
+   * @throws {Error} under checks, when `index` is linked nowhere
    */
   nextSibling(index) {
+    this.#assertLinked(index);
     return this.#next[index];
   }
 
@@ -111,6 +132,7 @@ export class BlockLinks {
     else this.#next[after] = index;
     if (next === -1) holder.last = index;
     else this.#prev[next] = index;
+    holder.count++;
   }
 
   /**
@@ -145,6 +167,7 @@ export class BlockLinks {
     else this.#next[prev] = next;
     if (next === -1) holder.last = prev;
     else this.#prev[next] = prev;
+    holder.count--;
     this.#parent[index] = -1;
     this.#prev[index] = -1;
     this.#next[index] = -1;
@@ -164,6 +187,17 @@ export class BlockLinks {
     // neighbour is read after it.
     this.linkAfter(this.#parent[later], this.#prev[later], earlier);
     this.unlink(later);
+  }
+
+  /**
+   * @param {number} index
+   * @return {void}
+   * @throws {Error} under checks, when `index` is linked nowhere
+   */
+  #assertLinked(index) {
+    if (consistencyChecksEnabled() && this.#parent[index] === -1) {
+      throw new Error(UNLINKED_SIBLING);
+    }
   }
 
   /**

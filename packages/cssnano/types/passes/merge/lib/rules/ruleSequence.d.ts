@@ -1,5 +1,5 @@
+import { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
-import type { RuleRecord } from './ruleRecord.js';
 export type Placement = {
     /**
      * the indices of the rules that replace the earlier
@@ -17,9 +17,7 @@ export type Placement = {
      */
     following?: number[][];
 };
-/** @import {BlockRecord} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
 /**
  * The rules that stand in the slots of a pair after it is merged.
  *

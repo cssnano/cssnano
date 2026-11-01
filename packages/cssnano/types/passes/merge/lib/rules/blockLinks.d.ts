@@ -1,3 +1,4 @@
+import type { BlockRecord } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 /**
  * The links between the entries of the records. Each entry has a container:
@@ -14,18 +15,28 @@ export declare class BlockLinks {
     /** Gives the next entry of the arena unlinked links. */
     grow(): void;
     /**
+     * The block whose chain holds the entry at `index`. A nested block is linked
+     * to the rule that owns it, so the walk steps through that rule.
+     *
+     * @param {number} index an index that the arena gave
+     * @return {BlockRecord | undefined} undefined for the stylesheet
+     */
+    enclosingBlock(index: number): BlockRecord | undefined;
+    /**
      * @param {number} index an index that the arena gave
      * @return {number} the container of the entry, -1 when it is linked nowhere
      */
     parentOf(index: number): number;
     /**
-     * @param {number} index an index that the arena gave
+     * @param {number} index an index that the arena gave, linked in a chain
      * @return {number} the entry before `index` in its chain, -1 at the start
+     * @throws {Error} under checks, when `index` is linked nowhere
      */
     prevSibling(index: number): number;
     /**
-     * @param {number} index an index that the arena gave
+     * @param {number} index an index that the arena gave, linked in a chain
      * @return {number} the entry after `index` in its chain, -1 at the end
+     * @throws {Error} under checks, when `index` is linked nowhere
      */
     nextSibling(index: number): number;
     /**

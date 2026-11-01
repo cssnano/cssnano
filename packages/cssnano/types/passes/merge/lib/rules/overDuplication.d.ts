@@ -1,9 +1,8 @@
 import type { BlockRecords } from './blockRecords.js';
 /**
  * Counts the declarations that the records hold by key: those of each rule that
- * holds no block, and each declaration that is a child of a block. Walks the
- * dropped blocks too. Under consistency checks, throws when a node is reached
- * twice.
+ * holds no block, and each declaration that is a child of a block. Under
+ * consistency checks, throws when a node is reached twice.
  *
  * @param {BlockRecords} records
  * @return {Map<string, number>}

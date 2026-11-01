@@ -2,7 +2,6 @@ import LastWriteIndex, { isConditionalGroupRule } from './lastWriteIndex.js';
 import joinByDeclarations from './declarationJoin.js';
 import { writesOf } from './ruleRewrite.js';
 import RepeatScan from './repeatScan.js';
-import { Slot } from './blockRecords.js';
 import { BlockRecord, NodeEntry } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
@@ -53,24 +52,16 @@ function collectFrom(records, entry, entries) {
 function collectEntries(records, block, entries) {
   // The declarations of a rule stand in its record, so its block skips them.
   const ruleOwned = block.node.type === 'rule';
-  for (const entry of block.children) {
-    if (entry instanceof Slot) {
-      for (const index of entry.rules) {
-        const record = /** @type {RuleRecord} */ (records.rule(index));
-        if (!collectFrom(records, record, entries)) return false;
-      }
-    } else {
-      const nested = records.blockEntry(entry);
-      if (nested) {
-        if (!nested.dropped && !collectFrom(records, nested, entries))
-          return false;
-      } else {
-        const item = records.entry(entry);
-        if (ruleOwned && item instanceof DeclarationRecord) continue;
-        const child = item instanceof NodeEntry ? item.node : item;
-        if (!collectFrom(records, child, entries)) return false;
-      }
-    }
+  const { links } = records;
+  for (
+    let entry = links.firstChild(block.index);
+    entry !== -1;
+    entry = links.nextSibling(entry)
+  ) {
+    const item = records.entry(entry);
+    if (ruleOwned && item instanceof DeclarationRecord) continue;
+    const child = item instanceof NodeEntry ? item.node : item;
+    if (!collectFrom(records, child, entries)) return false;
   }
   return true;
 }
@@ -157,11 +148,14 @@ export function joinNonAdjacent(block, mergeState) {
       : joinInParent(block, mergeState, false);
   }
   joined = joinByDeclarations(block, mergeState) || joined;
-  for (const entry of block.children) {
-    if (typeof entry !== 'number') continue;
-    const nested = mergeState.records.blockEntry(entry);
-    if (nested && !nested.dropped)
-      joined = joinNonAdjacent(nested, mergeState) || joined;
+  const { records } = mergeState;
+  for (let entry = records.links.firstChild(block.index); entry !== -1;) {
+    // The next entry is read first, since joining a nested block edits only
+    // the chain of that block.
+    const next = records.links.nextSibling(entry);
+    const nested = records.blockEntry(entry);
+    if (nested) joined = joinNonAdjacent(nested, mergeState) || joined;
+    entry = next;
   }
   return joined;
 }
