@@ -17,8 +17,10 @@ import type { BlockRecords } from './blockRecords.js';
 export declare function isDeclaration(node: ChildNode): node is Declaration;
 /**
  * What the merge knows of a rule: its selector list, which the base class
- * derives facts from, its children, and where it stands. Every field is set up
- * front so all instances share one object layout.
+ * derives facts from, its children, and where it stands. Its slot and nested
+ * block are indices into the arenas of `BlockRecords`, so the record refers to
+ * no other record. Every field is set up front so all instances share one
+ * object layout.
  */
 export declare class RuleRecord extends SelectorList {
     #private;

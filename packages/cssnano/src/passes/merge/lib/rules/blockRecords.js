@@ -36,10 +36,11 @@ export class Slot {
 }
 
 /**
- * The records of one run: the stylesheet's block, and every block record the
- * run added, and every rule record recorded. A block names its parent and a
- * rule names its slot by index, so every edit that touches more than one
- * record is a method here.
+ * The records of one run: the stylesheet's block, and an arena of every block
+ * record and one of every rule record. Ownership is a tree: a block owns its
+ * slots and declarations, a rule its declarations, and every other relation is
+ * an index into an arena, never reused within a run. So an edit that touches
+ * more than one record is a method here.
  */
 export class BlockRecords {
   /** @type {BlockRecord} the record of the stylesheet */
