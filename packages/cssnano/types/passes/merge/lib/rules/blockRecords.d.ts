@@ -2,6 +2,7 @@ import type { ChildNode, Rule } from 'postcss';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { BlockLinks } from './blockLinks.js';
 import { BlockRecord, NodeEntry, Slot } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 export { Slot } from './blockRecord.js';
@@ -17,6 +18,8 @@ export declare class BlockRecords {
     #private;
     /** @type {BlockRecord} the record of the stylesheet */
     root: BlockRecord;
+    /** @type {BlockLinks} the chains of the blocks, and each entry's container */
+    links: BlockLinks;
     /** @type {Map<string, number> | null} declarations the input wrote, under checks */
     inputWrites: Map<string, number> | null;
     /**

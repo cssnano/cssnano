@@ -3,6 +3,7 @@
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 import { recordDeclaration } from '../../../ir/declarationRecord.js';
+import { BlockLinks } from './blockLinks.js';
 import { BlockRecord, NodeEntry, Slot } from './blockRecord.js';
 import {
   firstLiveChild,
@@ -28,6 +29,9 @@ export class BlockRecords {
 
   /** @type {(BlockRecord | RuleRecord | DeclarationRecord | NodeEntry)[]} every entry, by index, dropped and departed ones included */
   #entries = [];
+
+  /** @type {BlockLinks} the chains of the blocks, and each entry's container */
+  links = new BlockLinks(this);
 
   /** @type {Map<string, number> | null} declarations the input wrote, under checks */
   inputWrites = null;
@@ -57,6 +61,7 @@ export class BlockRecords {
   #place(entry) {
     entry.index = this.#entries.length;
     this.#entries.push(entry);
+    this.links.grow();
     return entry;
   }
 
@@ -234,7 +239,14 @@ export class BlockRecords {
    */
   substitute(slot, record, replacements) {
     slot.rules.splice(slot.rules.indexOf(record), 1, ...replacements);
+    // The replacements take the chain where the record stood, which may be
+    // the record itself; it is read before the record leaves the chain.
+    const holder = this.links.parentOf(record);
+    let after = this.links.prevSibling(record);
+    this.links.unlink(record);
     for (const replacement of replacements) {
+      this.links.linkAfter(holder, after, replacement);
+      after = replacement;
       /** @type {RuleRecord} */ (this.rule(replacement)).place(
         slot.block,
         slot.position
@@ -254,9 +266,11 @@ export class BlockRecords {
     const rule = /** @type {RuleRecord} */ (this.rule(record));
     const from = this.slotOf(rule);
     from.rules.splice(from.rules.indexOf(record), 1);
+    this.links.unlink(record);
     const holder = /** @type {BlockRecord} */ (this.block(target));
     const slot = new Slot(target, holder.children.length, [record]);
     holder.children.push(slot);
+    this.links.linkLast(target, record);
     rule.place(target, slot.position);
     return slot;
   }
@@ -301,6 +315,13 @@ export class BlockRecords {
       }
     }
     from.children = [];
+    // The chain of `source` moves whole: each entry leaves it for the end of
+    // `target`, and takes `target` as its container.
+    while (from.first !== -1) {
+      const entry = from.first;
+      this.links.unlink(entry);
+      this.links.linkLast(target, entry);
+    }
   }
 
   /**

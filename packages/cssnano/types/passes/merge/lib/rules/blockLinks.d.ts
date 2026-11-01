@@ -1,0 +1,88 @@
+import type { BlockRecords } from './blockRecords.js';
+/**
+ * The links between the entries of the records. Each entry has a container:
+ * the block whose chain holds it, or for a nested block the rule that owns it.
+ * A chained entry has the entries before and after it in its container's
+ * chain, and the chain's ends are `first` and `last` on the block record. The
+ * links are plain arrays indexed by entry, grown by `grow` as entries are
+ * added, so no link is an object reference.
+ */
+export declare class BlockLinks {
+    #private;
+    /** @param {BlockRecords} records the arena whose entries these links join */
+    constructor(records: BlockRecords);
+    /** Gives the next entry of the arena unlinked links. */
+    grow(): void;
+    /**
+     * @param {number} index an index that the arena gave
+     * @return {number} the container of the entry, -1 when it is linked nowhere
+     */
+    parentOf(index: number): number;
+    /**
+     * @param {number} index an index that the arena gave
+     * @return {number} the entry before `index` in its chain, -1 at the start
+     */
+    prevSibling(index: number): number;
+    /**
+     * @param {number} index an index that the arena gave
+     * @return {number} the entry after `index` in its chain, -1 at the end
+     */
+    nextSibling(index: number): number;
+    /**
+     * @param {number} index an index that the arena gave, of a block
+     * @return {number} the first entry of its chain, -1 when it has none
+     */
+    firstChild(index: number): number;
+    /**
+     * @param {number} index an index that the arena gave, of a block
+     * @return {number} the last entry of its chain, -1 when it has none
+     */
+    lastChild(index: number): number;
+    /**
+     * Makes the rule at `rule` the container of the nested block at `block`. The
+     * nested block is linked nowhere: its children are the rule's.
+     *
+     * @param {number} rule
+     * @param {number} block
+     * @return {void}
+     */
+    ownBlock(rule: number, block: number): void;
+    /**
+     * Links the entry at `index` after `after` in the chain of the block at
+     * `block`, which is the head when `after` is -1. Under checks, a block that
+     * does not reach the root through `parentOf` throws, since its entries would
+     * be lost.
+     *
+     * @param {number} block
+     * @param {number} after
+     * @param {number} index an entry that is linked nowhere, or was unlinked
+     * @return {void}
+     */
+    linkAfter(block: number, after: number, index: number): void;
+    /**
+     * Links the entry at `index` at the end of the chain of the block at `block`.
+     *
+     * @param {number} block
+     * @param {number} index an entry that is linked nowhere, or was unlinked
+     * @return {void}
+     */
+    linkLast(block: number, index: number): void;
+    /**
+     * Takes the entry at `index` out of its chain. The entry keeps its own
+     * subtree, and a later link may place it again.
+     *
+     * @param {number} index
+     * @return {void}
+     */
+    unlink(index: number): void;
+    /**
+     * Puts the entry `earlier` in the chain where `later` stands, and unlinks
+     * `later`.
+     *
+     * @param {number} later a linked entry
+     * @param {number} earlier an entry that is linked elsewhere, or nowhere
+     * @return {void}
+     */
+    takeLinkOf(later: number, earlier: number): void;
+}
+//# sourceMappingURL=blockLinks.d.ts.map

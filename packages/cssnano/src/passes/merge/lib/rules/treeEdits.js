@@ -39,12 +39,16 @@ function isRuleOrAtRule(node) {
 export function buildRecords(root, mergeState) {
   const { textTable } = mergeState;
   const records = new BlockRecords(new BlockRecord(root, -1, 0, false));
+  records.add(records.root);
   records.root.leadingWhitespace = root.first?.raws.before;
   let nodes = 0;
   let declarations = 0;
-  /** @param {BlockRecord} block */
+  /**
+   * Fills a block that the records hold already, and links each child to it.
+   *
+   * @param {BlockRecord} block
+   */
   const fill = (block) => {
-    records.add(block);
     block.context = containerContext(
       mergeState.declarationIds,
       records.block(block.parent)?.context ?? -1,
@@ -66,10 +70,13 @@ export function buildRecords(root, mergeState) {
         const slot = new Slot(block.index, index, [record.index]);
         record.place(block.index, index);
         block.children.push(slot);
+        records.links.linkLast(block.index, record.index);
         if (holds) {
           const nested = new BlockRecord(child, block.index, index, false);
-          fill(nested);
+          records.add(nested);
+          records.links.ownBlock(record.index, nested.index);
           record.setBlock(nested.index);
+          fill(nested);
         } else {
           declarations += record.declarations.length;
         }
@@ -80,19 +87,23 @@ export function buildRecords(root, mergeState) {
           index,
           isDroppableWhenEmpty(child, textTable)
         );
-        fill(nested);
+        records.add(nested);
         block.children.push(nested.index);
+        records.links.linkLast(block.index, nested.index);
+        fill(nested);
       } else if (child.type === 'decl') {
         declarations++;
-        block.children.push(
-          records.blockDeclaration(
-            child,
-            mergeState.properties,
-            mergeState.declarationIds
-          ).index
+        const declaration = records.blockDeclaration(
+          child,
+          mergeState.properties,
+          mergeState.declarationIds
         );
+        block.children.push(declaration.index);
+        records.links.linkLast(block.index, declaration.index);
       } else {
-        block.children.push(records.bareEntry(child).index);
+        const entry = records.bareEntry(child);
+        block.children.push(entry.index);
+        records.links.linkLast(block.index, entry.index);
       }
     }
   };
@@ -116,6 +127,7 @@ export function remove(records, entry) {
   if (entry instanceof RuleRecord) {
     const slot = records.slotOf(entry);
     slot.rules.splice(slot.rules.indexOf(entry.index), 1);
+    records.links.unlink(entry.index);
   } else {
     emptyEntry(records, entry);
   }
@@ -133,6 +145,7 @@ function emptyEntry(records, block) {
   const holder = /** @type {BlockRecord} */ (records.block(block.parent));
   const { position } = block;
   holder.children[position] = new Slot(holder.index, position, []);
+  records.links.unlink(block.index);
 }
 
 /**
@@ -164,6 +177,7 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
     earlierSlot.rules.splice(earlierSlot.rules.indexOf(rule.index), 1);
     laterSlot.rules.splice(laterSlot.rules.indexOf(later.index), 1, rule.index);
     rule.place(laterSlot.block, laterSlot.position);
+    records.links.takeLinkOf(later.index, rule.index);
   } else {
     const block = /** @type {BlockRecord} */ (earlier);
     const holder = /** @type {BlockRecord} */ (
@@ -174,6 +188,7 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
     holder.children[to] = block.index;
     block.position = to;
     holder.children[from] = new Slot(holder.index, from, []);
+    records.links.takeLinkOf(later.index, block.index);
   }
   earlier.node.raws.before = later.node.raws.before;
 }
@@ -223,6 +238,7 @@ export function removeRules(mergeState, indices) {
     leadsRoot ||= record.node === first;
     const slot = arena.slotOf(record);
     slot.rules.splice(slot.rules.indexOf(record.index), 1);
+    arena.links.unlink(index);
     record.depart();
   }
   // Unlike `remove`, the rest keep their own whitespace, so the first of them

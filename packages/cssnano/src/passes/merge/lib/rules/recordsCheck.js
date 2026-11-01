@@ -12,14 +12,53 @@ const OUT_OF_STEP = 'block record out of step with the tree';
 const REACHED_TWICE = 'a record or slot is reached twice from the root';
 
 /**
+ * Throws when the chain of a block is not its live entries in order: each
+ * entry is linked to its neighbours and names the block as its container, and
+ * `first` and `last` end the chain.
+ *
+ * @param {BlockRecords} records
+ * @param {BlockRecord} block
+ * @return {void}
+ */
+function checkChain(records, block) {
+  /** @type {number[]} */
+  const live = [];
+  for (const entry of block.children) {
+    if (entry instanceof Slot) {
+      for (const ruleIndex of entry.rules) live.push(ruleIndex);
+    } else if (!records.blockEntry(entry)?.dropped) {
+      live.push(entry);
+    }
+  }
+  let previous = -1;
+  let link = records.links.firstChild(block.index);
+  for (const index of live) {
+    if (link !== index) throw new Error(OUT_OF_STEP);
+    if (
+      records.links.prevSibling(index) !== previous ||
+      records.links.parentOf(index) !== block.index
+    ) {
+      throw new Error(OUT_OF_STEP);
+    }
+    previous = index;
+    link = records.links.nextSibling(index);
+  }
+  if (link !== -1 || records.links.lastChild(block.index) !== previous) {
+    throw new Error(OUT_OF_STEP);
+  }
+}
+
+/**
  * Throws when a block holds the entries of another block, or positions that
- * differ from their index, or a dropped block still holds a live child.
+ * differ from their index, or a dropped block still holds a live child, or its
+ * chain differs from its live children.
  *
  * @param {BlockRecords} records
  * @param {BlockRecord} block
  * @return {void}
  */
 function checkBlockStructure(records, block) {
+  checkChain(records, block);
   for (const [index, entry] of block.children.entries()) {
     if (entry instanceof Slot) {
       if (entry.block !== block.index || entry.position !== index) {
@@ -31,6 +70,9 @@ function checkBlockStructure(records, block) {
         if (nested === -1) continue;
         const nestedBlock = /** @type {BlockRecord} */ (records.block(nested));
         if (nestedBlock.parent !== block.index) throw new Error(OUT_OF_STEP);
+        if (records.links.parentOf(nested) !== ruleIndex) {
+          throw new Error(OUT_OF_STEP);
+        }
         checkBlockStructure(records, nestedBlock);
       }
     } else if (typeof entry === 'number') {
