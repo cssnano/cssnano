@@ -256,10 +256,10 @@ export const mutations = [
   },
 
   {
-    name: 'recordRule reuses the index of the rule recorded before it',
+    name: 'an arena entry reuses the index of the entry placed before it',
     target: source('blockRecords.js'),
-    find: '    record.index = this.#rules.length;',
-    replace: '    record.index = Math.max(0, this.#rules.length - 1);',
+    find: '    entry.index = this.#entries.length;',
+    replace: '    entry.index = Math.max(0, this.#entries.length - 1);',
   },
   {
     name: 'replacePair leaves the prev link of the rule after the replacement unset',
