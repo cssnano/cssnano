@@ -17,10 +17,9 @@ import type { BlockRecords } from './blockRecords.js';
 export declare function isDeclaration(node: ChildNode): node is Declaration;
 /**
  * What the merge knows of a rule: its selector list, which the base class
- * derives facts from, its children, and where it stands. Its slot and nested
- * block are indices into the arenas of `BlockRecords`, so the record refers to
- * no other record. Every field is set up front so all instances share one
- * object layout.
+ * derives facts from, and its children. Its nested block is an index into the
+ * arena of `BlockRecords`, so the record refers to no other record. Every field
+ * is set up front so all instances share one object layout.
  */
 export declare class RuleRecord extends SelectorList {
     #private;
@@ -32,17 +31,8 @@ export declare class RuleRecord extends SelectorList {
      * @param {DeclarationRecord[]} declarations
      */
     constructor(node: Rule, selectors: string[], declarations: DeclarationRecord[]);
-    /** @return {number} the index of the block whose slot holds the rule, readable after departure */
-    get slotBlock(): number;
-    /** @return {number} where the rule's slot stands among the children of its block */
-    get slotPosition(): number;
     /** @return {number} the index of the record of the rule's children, -1 when there is none */
     get block(): number;
-    /**
-     * @param {number} block the index of the block whose slot now holds the rule
-     * @param {number} position where that slot stands among the block's children
-     */
-    place(block: number, position: number): void;
     /** @param {number} block the index of the record of the rule's children */
     setBlock(block: number): void;
     /** @return {boolean} whether a child was added or removed since the record was made */

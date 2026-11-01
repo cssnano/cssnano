@@ -11,7 +11,6 @@ import type { BlockRecord } from './blockRecord.js';
  * @param {number} index
  * @return {ChildNode | undefined}
  */
-export declare function firstLiveChild(records: BlockRecords, index: number): ChildNode | undefined;
 /**
  * The number of children the block at `index` holds now. The chain keeps the
  * count, so the answer costs no walk.

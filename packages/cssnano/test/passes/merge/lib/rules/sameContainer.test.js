@@ -8,7 +8,7 @@ import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { repositoryFile } from '../../../../../../../util/testHelpers.js';
 import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
 
-/** @import {BlockRecords, Slot} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import {Rule} from 'postcss' */
 
@@ -19,7 +19,7 @@ import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
  */
 function blockOf(records, rule) {
   return /** @type {BlockRecord} */ (
-    records.block(ruleRecordOf(records, rule).slotBlock)
+    records.block(records.links.parentOf(ruleRecordOf(records, rule).index))
   );
 }
 

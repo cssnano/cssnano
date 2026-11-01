@@ -20,7 +20,6 @@ import {
 /** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
 /** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
 
 const BLOCK_HOLDER = 'a rule that holds a block';
 const STALE = 'stale declarations of a rule record';
@@ -35,10 +34,9 @@ export function isDeclaration(node) {
 
 /**
  * What the merge knows of a rule: its selector list, which the base class
- * derives facts from, its children, and where it stands. Its slot and nested
- * block are indices into the arenas of `BlockRecords`, so the record refers to
- * no other record. Every field is set up front so all instances share one
- * object layout.
+ * derives facts from, and its children. Its nested block is an index into the
+ * arena of `BlockRecords`, so the record refers to no other record. Every field
+ * is set up front so all instances share one object layout.
  */
 export class RuleRecord extends SelectorList {
   /** @type {DeclarationRecord[]} the declarations of the rule, in order */
@@ -49,10 +47,6 @@ export class RuleRecord extends SelectorList {
   #declarationKeys;
   /** @type {boolean} set once the rule has left the stylesheet */
   #departed = false;
-  /** @type {number} the index of the block whose slot holds the rule, -1 until placed */
-  #slotBlock = -1;
-  /** @type {number} where the rule's slot stands among the children of that block */
-  #slotPosition = -1;
   /** @type {number} the index of the record of the rule's children, -1 when it holds neither a rule nor an at-rule */
   #block = -1;
   /** @type {boolean} set once a child is added or removed, which the node takes at write-back */
@@ -72,28 +66,9 @@ export class RuleRecord extends SelectorList {
     this.#declarationKeys = undefined;
   }
 
-  /** @return {number} the index of the block whose slot holds the rule, readable after departure */
-  get slotBlock() {
-    return this.#slotBlock;
-  }
-
-  /** @return {number} where the rule's slot stands among the children of its block */
-  get slotPosition() {
-    return this.#slotPosition;
-  }
-
   /** @return {number} the index of the record of the rule's children, -1 when there is none */
   get block() {
     return this.#block;
-  }
-
-  /**
-   * @param {number} block the index of the block whose slot now holds the rule
-   * @param {number} position where that slot stands among the block's children
-   */
-  place(block, position) {
-    this.#slotBlock = block;
-    this.#slotPosition = position;
   }
 
   /** @param {number} block the index of the record of the rule's children */
@@ -187,12 +162,11 @@ export class RuleRecord extends SelectorList {
       if (this.#block === -1) {
         for (const entry of this.#declarations) keys.push(entry.id);
       } else {
-        const { children } = /** @type {BlockRecord} */ (
-          records.block(this.#block)
-        );
-        for (const entry of children) {
-          // A slot is not a declaration, and an index names the entry it stands for.
-          if (typeof entry !== 'number') continue;
+        for (
+          let entry = records.links.firstChild(this.#block);
+          entry !== -1;
+          entry = records.links.nextSibling(entry)
+        ) {
           const item = records.entry(entry);
           if (item instanceof DeclarationRecord) keys.push(item.id);
         }

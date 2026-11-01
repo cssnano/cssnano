@@ -1,57 +1,50 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { RuleRecord } from './ruleRecord.js';
 import { containerContext } from './sameContainer.js';
-/** @import {BlockRecord} from './blockRecord.js' */
-
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import MergeState from './mergeState.js' */
 
 const OUT_OF_STEP = 'block record out of step with the tree';
-const REACHED_TWICE = 'a record or slot is reached twice from the root';
+const REACHED_TWICE = 'a record is reached twice from the root';
 
 /**
- * Throws when the chain of a block is not its live entries in order: each
- * entry is linked to its neighbours and names the block as its container, and
- * `first` and `last` end the chain.
+ * Throws when the chain of a block does not hold its entries in order: each
+ * entry is linked to its neighbours and names the block as its container,
+ * `first` and `last` end the chain, and `count` is its length.
  *
  * @param {BlockRecords} records
  * @param {BlockRecord} block
  * @return {void}
  */
 function checkChain(records, block) {
-  /** @type {number[]} */
-  const live = [];
-  for (const entry of block.children) {
-    if (entry instanceof Slot) {
-      for (const ruleIndex of entry.rules) live.push(ruleIndex);
-    } else if (!records.isDropped(entry)) {
-      live.push(entry);
-    }
-  }
+  const { links } = records;
   let previous = -1;
-  let link = records.links.firstChild(block.index);
-  for (const index of live) {
-    if (link !== index) throw new Error(OUT_OF_STEP);
+  let count = 0;
+  for (
+    let entry = links.firstChild(block.index);
+    entry !== -1;
+    entry = links.nextSibling(entry)
+  ) {
+    // A chain longer than its count is a cycle, so the walk stops there.
+    if (++count > block.count) throw new Error(OUT_OF_STEP);
     if (
-      records.links.prevSibling(index) !== previous ||
-      records.links.parentOf(index) !== block.index
+      links.prevSibling(entry) !== previous ||
+      links.parentOf(entry) !== block.index
     ) {
       throw new Error(OUT_OF_STEP);
     }
-    previous = index;
-    link = records.links.nextSibling(index);
+    previous = entry;
   }
-  if (link !== -1 || records.links.lastChild(block.index) !== previous) {
+  if (count !== block.count || links.lastChild(block.index) !== previous) {
     throw new Error(OUT_OF_STEP);
   }
 }
 
 /**
- * Throws when a block holds the entries of another block, or positions that
- * differ from their index, or a dropped block still holds a live child, or its
- * chain differs from its live children.
+ * Throws when a block's chain is out of step, or a rule's nested block does not
+ * stand under the rule in the block that holds the rule.
  *
  * @param {BlockRecords} records
  * @param {BlockRecord} block
@@ -59,65 +52,55 @@ function checkChain(records, block) {
  */
 function checkBlockStructure(records, block) {
   checkChain(records, block);
-  for (const [index, entry] of block.children.entries()) {
-    if (entry instanceof Slot) {
-      if (entry.block !== block.index || entry.position !== index) {
+  const { links } = records;
+  for (
+    let entry = links.firstChild(block.index);
+    entry !== -1;
+    entry = links.nextSibling(entry)
+  ) {
+    const item = records.entry(entry);
+    if (item instanceof BlockRecord) {
+      checkBlockStructure(records, item);
+    } else if (item instanceof RuleRecord && item.block !== -1) {
+      const nested = /** @type {BlockRecord} */ (records.block(item.block));
+      if (
+        links.parentOf(nested.index) !== entry ||
+        links.enclosingBlock(nested.index) !== block
+      ) {
         throw new Error(OUT_OF_STEP);
       }
-      for (const ruleIndex of entry.rules) {
-        const record = /** @type {RuleRecord} */ (records.rule(ruleIndex));
-        const nested = record.block;
-        if (nested === -1) continue;
-        const nestedBlock = /** @type {BlockRecord} */ (records.block(nested));
-        if (
-          nestedBlock.parent !== block.index ||
-          records.links.enclosingBlock(nested) !== block
-        ) {
-          throw new Error(OUT_OF_STEP);
-        }
-        if (records.links.parentOf(nested) !== ruleIndex) {
-          throw new Error(OUT_OF_STEP);
-        }
-        checkBlockStructure(records, nestedBlock);
-      }
-    } else if (typeof entry === 'number') {
-      const nested = records.blockEntry(entry);
-      if (nested === undefined) continue;
-      if (nested.parent !== block.index || nested.position !== index) {
-        throw new Error(OUT_OF_STEP);
-      }
-      if (records.isDropped(entry)) {
-        // A dropped block is unlinked, so only its live children are checked.
-        if (records.liveCount(entry) !== 0) throw new Error(OUT_OF_STEP);
-      } else {
-        if (records.links.enclosingBlock(entry) !== block) {
-          throw new Error(OUT_OF_STEP);
-        }
-        checkBlockStructure(records, nested);
-      }
+      checkBlockStructure(records, nested);
     }
   }
 }
 
 /**
- * Under consistency checks, throws when a slot or a nested block names the wrong
- * block or position, or a dropped block still holds a live child. Reads only
- * the records, so it needs no PostCSS node.
+ * Under consistency checks, throws when a chain is out of step with its
+ * entries, a rule's nested block stands elsewhere, or a dropped block still
+ * holds a live child. Reads only the records, so it needs no PostCSS node.
  *
  * @param {{records: BlockRecords}} mergeState
  * @return {void}
  */
 export function assertRecordsWellFormed(mergeState) {
   if (!consistencyChecksEnabled()) return;
-  checkBlockStructure(mergeState.records, mergeState.records.root);
-  assertOwnershipIsTree(mergeState.records);
+  const { records } = mergeState;
+  // Runs first: a cycle in the chains would loop the structure walk below.
+  assertOwnershipIsTree(records);
+  checkBlockStructure(records, records.root);
+  for (const block of records.blocks()) {
+    // A dropped block is unlinked, so only its own count says whether it is empty.
+    if (records.isDropped(block.index) && block.count !== 0) {
+      throw new Error(OUT_OF_STEP);
+    }
+  }
 }
 
 /**
- * Walks the ownership of the records from the root: the children of each block,
- * the rules of each slot, the nested block of each rule, and the declarations
- * of each rule that holds none. Throws when a block, slot, rule or declaration
- * is reached twice, since every record has one owner.
+ * Walks the ownership of the records from the root along the chains: the
+ * entries of each block, and the nested block and declarations of each rule.
+ * Throws when a block, rule or declaration is reached twice, since every record
+ * has one owner, or when a chain holds other than the count its block keeps.
  *
  * @param {BlockRecords} records
  * @return {void}
@@ -142,22 +125,20 @@ export function assertOwnershipIsTree(records) {
   /** @param {BlockRecord} block */
   const visit = (block) => {
     reach(block);
-    for (const entry of block.children) {
-      if (entry instanceof Slot) {
-        reach(entry);
-        for (const index of entry.rules) {
-          visitRule(/** @type {RuleRecord} */ (records.rule(index)));
-        }
-      } else {
-        const nested = records.blockEntry(entry);
-        if (nested) {
-          visit(nested);
-        } else {
-          const item = records.entry(entry);
-          if (item instanceof DeclarationRecord) reach(item);
-        }
-      }
+    const { links } = records;
+    let count = 0;
+    for (
+      let entry = links.firstChild(block.index);
+      entry !== -1;
+      entry = links.nextSibling(entry)
+    ) {
+      const item = records.entry(entry);
+      if (item instanceof RuleRecord) visitRule(item);
+      else if (item instanceof BlockRecord) visit(item);
+      else if (item instanceof DeclarationRecord) reach(item);
+      count++;
     }
+    if (count !== block.count) throw new Error(OUT_OF_STEP);
   };
   visit(records.root);
 }

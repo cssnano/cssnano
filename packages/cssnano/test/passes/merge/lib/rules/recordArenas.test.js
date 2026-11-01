@@ -3,14 +3,16 @@ import { before, after, test } from 'node:test';
 import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { Slot } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { ruleRecordOf } from './liveRecords.js';
+import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 
 /** @import {Root, Rule} from 'postcss' */
-/** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecord as Block} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 
 before(() => enableConsistencyChecks(true));
 after(() => enableConsistencyChecks(false));
@@ -28,31 +30,30 @@ function setup(css) {
 }
 
 /**
- * Every block record reached from `block` through its slots and nested blocks.
+ * Every block record reached from `block` through the chains of its entries
+ * and the nested blocks of its rules.
  *
  * @param {BlockRecords} records
- * @param {BlockRecord} block
- * @param {BlockRecord[]} found
- * @return {BlockRecord[]}
+ * @param {Block} block
+ * @param {Block[]} found
+ * @return {Block[]}
  */
 function reachedBlocks(records, block, found = [block]) {
-  for (const entry of block.children) {
-    if (entry instanceof Slot) {
-      for (const index of entry.rules) {
-        const { block: nested } = /** @type {RuleRecord} */ (
-          records.rule(index)
-        );
-        if (nested !== -1) {
-          found.push(/** @type {BlockRecord} */ (records.block(nested)));
-          reachedBlocks(records, records.block(nested), found);
-        }
-      }
-    } else {
-      const nested = records.blockEntry(entry);
-      if (nested) {
-        found.push(nested);
-        reachedBlocks(records, nested, found);
-      }
+  for (
+    let entry = records.links.firstChild(block.index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    const item = records.entry(entry);
+    /** @type {Block | undefined} */
+    let nested;
+    if (item instanceof BlockRecord) nested = item;
+    else if (item instanceof RuleRecord && item.block !== -1) {
+      nested = records.block(item.block);
+    }
+    if (nested) {
+      found.push(nested);
+      reachedBlocks(records, nested, found);
     }
   }
   return found;
@@ -110,57 +111,61 @@ test('blocks() should hold every block reached from the stylesheet record, each 
  * whose nested block it is.
  *
  * @param {BlockRecords} records
- * @param {BlockRecord} holder
- * @param {BlockRecord} block
+ * @param {Block} holder
+ * @param {Block} block
  * @return {boolean}
  */
 function holds(records, holder, block) {
-  return holder.children.some(
-    (entry) =>
-      entry === block.index ||
-      (entry instanceof Slot &&
-        entry.rules.some(
-          (index) =>
-            /** @type {RuleRecord} */ (records.rule(index)).block ===
-            block.index
-        ))
-  );
+  for (
+    let entry = records.links.firstChild(holder.index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    const item = records.entry(entry);
+    if (item === block) return true;
+    if (item instanceof RuleRecord && item.block === block.index) return true;
+  }
+  return false;
 }
 
-test('a block should name the block that holds its entry by index, -1 for the stylesheet', () => {
+test('a block should name the block whose chain holds it by index, -1 for the stylesheet', () => {
   const { state } = setup(
     '@media (x){@media (y){p{width:1px}}}a{color:red;b{width:1px}}'
   );
   const { records } = state;
-  assert.equal(records.root.parent, -1);
+  assert.equal(records.links.parentOf(records.root.index), -1);
   for (const block of reachedBlocks(records, records.root)) {
     if (block !== records.root) {
-      assert.ok(holds(records, records.block(block.parent), block));
+      const holder = records.links.enclosingBlock(block.index);
+      assert.ok(holder && holds(records, holder, block));
     }
   }
 });
 
-test('a slot should name its block by index and stand at its position in that block', () => {
+test('a rule should name the block whose chain holds it by index', () => {
   const { state } = setup('@media (x){p{width:1px}q{height:2px}}a{color:red}');
   const { records } = state;
   for (const block of reachedBlocks(records, records.root)) {
-    for (const [position, entry] of block.children.entries()) {
-      if (entry instanceof Slot) {
-        assert.equal(records.block(entry.block), block);
-        assert.equal(entry.position, position);
+    for (
+      let entry = records.links.firstChild(block.index);
+      entry !== -1;
+      entry = records.links.nextSibling(entry)
+    ) {
+      if (records.entry(entry) instanceof RuleRecord) {
+        assert.equal(records.links.parentOf(entry), block.index);
       }
     }
   }
 });
 
-test('a nested at-rule block should be a number in its parent children, naming the block by index', () => {
+test('a nested at-rule block should be linked into its parent chain, naming the block by index', () => {
   const { state } = setup('@media (x){@media (y){p{width:1px}}}');
   const { records } = state;
-  const [entry] = records.root.children;
-  assert.equal(typeof entry, 'number');
-  const nested = records.block(/** @type {number} */ (entry));
-  assert.equal(nested.index, entry);
-  assert.equal(nested.parent, records.root.index);
+  const nested = records.blockEntry(
+    records.links.firstChild(records.root.index)
+  );
+  assert.ok(nested);
+  assert.equal(records.links.parentOf(nested.index), records.root.index);
 });
 
 test('assertOwnershipIsTree should accept the records of a stylesheet', () => {
@@ -168,9 +173,18 @@ test('assertOwnershipIsTree should accept the records of a stylesheet', () => {
   assert.doesNotThrow(() => assertOwnershipIsTree(state.records));
 });
 
-test('assertOwnershipIsTree should throw when a rule is held by two slots', () => {
+test('assertOwnershipIsTree should throw when a rule is linked twice in one chain', () => {
   const { state } = setup('a{color:red}b{width:1px}');
-  const [first, second] = /** @type {Slot[]} */ (state.records.root.children);
-  second.rules.push(first.rules[0]);
-  assert.throws(() => assertOwnershipIsTree(state.records), /reached twice/v);
+  const { records } = state;
+  const first = records.links.firstChild(records.root.index);
+  const second = records.links.nextSibling(first);
+  // Linking `first` after `second` makes the chain loop from `second` to itself.
+  records.links.linkAfter(records.root.index, first, second);
+  assert.throws(() => assertOwnershipIsTree(records), /reached twice/v);
+});
+
+test('assertOwnershipIsTree should throw when a block counts other entries than its chain holds', () => {
+  const { state } = setup('a{color:red}b{width:1px}');
+  state.records.root.count += 1;
+  assert.throws(() => assertOwnershipIsTree(state.records), /out of step/v);
 });

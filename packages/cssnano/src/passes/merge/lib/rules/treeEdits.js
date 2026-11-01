@@ -1,14 +1,14 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { BlockRecords, Slot } from './blockRecords.js';
+import { BlockRecords } from './blockRecords.js';
 import { BlockRecord } from './blockRecord.js';
 import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
-import { RuleRecord } from './ruleRecord.js';
 import { containerContext } from './sameContainer.js';
 import { tallyDeclarations } from './overDuplication.js';
 
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
 
@@ -28,9 +28,9 @@ function isRuleOrAtRule(node) {
 }
 
 /**
- * Builds the records of a stylesheet from its tree, once per run. Each rule
- * gets a slot, and each rule that holds a rule or an at-rule gets the record
- * of its children.
+ * Builds the records of a stylesheet from its tree, once per run. Each child is
+ * linked into the chain of its parent, and each rule that holds a rule or an
+ * at-rule gets the record of its children.
  *
  * @param {Root} root
  * @param {MergeState} mergeState
@@ -38,7 +38,7 @@ function isRuleOrAtRule(node) {
  */
 export function buildRecords(root, mergeState) {
   const { textTable } = mergeState;
-  const records = new BlockRecords(new BlockRecord(root, -1, 0, false));
+  const records = new BlockRecords(new BlockRecord(root, false));
   records.add(records.root);
   records.root.leadingWhitespace = root.first?.raws.before;
   let nodes = 0;
@@ -56,7 +56,6 @@ export function buildRecords(root, mergeState) {
       textTable
     );
     for (const child of /** @type {ChildNode[]} */ (block.node.nodes)) {
-      const index = block.children.length;
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
         // A rule that holds a block keeps its declarations as block entries.
@@ -67,12 +66,9 @@ export function buildRecords(root, mergeState) {
           mergeState.declarationIds,
           holds ? [] : null
         );
-        const slot = new Slot(block.index, index, [record.index]);
-        record.place(block.index, index);
-        block.children.push(slot);
         records.links.linkLast(block.index, record.index);
         if (holds) {
-          const nested = new BlockRecord(child, block.index, index, false);
+          const nested = new BlockRecord(child, false);
           records.add(nested);
           records.links.ownBlock(record.index, nested.index);
           record.setBlock(nested.index);
@@ -83,12 +79,9 @@ export function buildRecords(root, mergeState) {
       } else if (child.type === 'atrule' && child.nodes) {
         const nested = new BlockRecord(
           child,
-          block.index,
-          index,
           isDroppableWhenEmpty(child, textTable)
         );
         records.add(nested);
-        block.children.push(nested.index);
         records.links.linkLast(block.index, nested.index);
         fill(nested);
       } else if (child.type === 'decl') {
@@ -98,11 +91,9 @@ export function buildRecords(root, mergeState) {
           mergeState.properties,
           mergeState.declarationIds
         );
-        block.children.push(declaration.index);
         records.links.linkLast(block.index, declaration.index);
       } else {
         const entry = records.bareEntry(child);
-        block.children.push(entry.index);
         records.links.linkLast(block.index, entry.index);
       }
     }
@@ -124,30 +115,7 @@ export function buildRecords(root, mergeState) {
  * @return {void}
  */
 export function remove(records, entry) {
-  if (entry instanceof RuleRecord) {
-    const slot = records.slotOf(entry);
-    slot.rules.splice(slot.rules.indexOf(entry.index), 1);
-    records.links.unlink(entry.index);
-  } else {
-    emptyEntry(records, entry);
-  }
-}
-
-/**
- * Replaces the entry of a block with an empty slot, so the entry is skipped
- * from now on.
- *
- * @param {BlockRecords} records
- * @param {BlockRecord} block
- * @return {void}
- */
-function emptyEntry(records, block) {
-  const holder = /** @type {BlockRecord} */ (
-    records.links.enclosingBlock(block.index)
-  );
-  const { position } = block;
-  holder.children[position] = new Slot(holder.index, position, []);
-  records.links.unlink(block.index);
+  records.links.unlink(entry.index);
 }
 
 /**
@@ -168,30 +136,11 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
   const { root } = records;
   if (
     parent.type === 'root' &&
-    records.firstLiveChild(root.index) === earlier.node
+    records.links.firstChild(root.index) === earlier.index
   ) {
     root.leadingWhitespace = later.node.raws.before;
   }
-  if (later instanceof RuleRecord) {
-    const rule = /** @type {RuleRecord} */ (earlier);
-    const laterSlot = records.slotOf(later);
-    const earlierSlot = records.slotOf(rule);
-    earlierSlot.rules.splice(earlierSlot.rules.indexOf(rule.index), 1);
-    laterSlot.rules.splice(laterSlot.rules.indexOf(later.index), 1, rule.index);
-    rule.place(laterSlot.block, laterSlot.position);
-    records.links.takeLinkOf(later.index, rule.index);
-  } else {
-    const block = /** @type {BlockRecord} */ (earlier);
-    const holder = /** @type {BlockRecord} */ (
-      mergeState.records.links.enclosingBlock(block.index)
-    );
-    const from = block.position;
-    const to = later.position;
-    holder.children[to] = block.index;
-    block.position = to;
-    holder.children[from] = new Slot(holder.index, from, []);
-    records.links.takeLinkOf(later.index, block.index);
-  }
+  records.links.takeLinkOf(later.index, earlier.index);
   earlier.node.raws.before = later.node.raws.before;
 }
 
@@ -233,19 +182,19 @@ export function appendToDeclarations(mergeState, receiving, index, incoming) {
 export function removeRules(mergeState, indices) {
   const arena = mergeState.records;
   const { root } = arena;
-  const first = arena.firstLiveChild(root.index);
+  const first = arena.links.firstChild(root.index);
   let leadsRoot = false;
   for (const index of indices) {
     const record = /** @type {RuleRecord} */ (arena.rule(index));
-    leadsRoot ||= record.node === first;
-    const slot = arena.slotOf(record);
-    slot.rules.splice(slot.rules.indexOf(record.index), 1);
+    leadsRoot ||= index === first;
     arena.links.unlink(index);
     record.depart();
   }
   // Unlike `remove`, the rest keep their own whitespace, so the first of them
   // takes its own as the leading whitespace of the stylesheet.
   if (leadsRoot) {
-    root.leadingWhitespace = arena.firstLiveChild(root.index)?.raws.before;
+    const head = arena.links.firstChild(root.index);
+    root.leadingWhitespace =
+      head === -1 ? undefined : arena.nodeOf(head).raws.before;
   }
 }

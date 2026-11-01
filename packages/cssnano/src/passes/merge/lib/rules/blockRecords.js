@@ -5,24 +5,17 @@
 import { recordDeclaration } from '../../../ir/declarationRecord.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockLinks } from './blockLinks.js';
-import { BlockRecord, NodeEntry, Slot } from './blockRecord.js';
-import {
-  firstLiveChild,
-  liveChildren,
-  liveCount,
-  liveEntries,
-} from './blockChildren.js';
+import { BlockRecord, NodeEntry } from './blockRecord.js';
+import { liveChildren, liveCount, liveEntries } from './blockChildren.js';
 import { RuleRecord, isDeclaration } from './ruleRecord.js';
-
-export { Slot } from './blockRecord.js';
 
 /**
  * The records of one run. One arena holds every block record, every rule record,
  * every declaration of a block and every bare node of a block, each at the next
- * index of one counter; an index is never reused within a run. A block's children
- * are slots and arena indices, and a rule's own declarations stay in its record.
- * Ownership is a tree, so an edit that touches more than one record is a method
- * here.
+ * index of one counter; an index is never reused within a run. A block's
+ * children are the entries its chain links, and a rule's own declarations stay
+ * in its record. Ownership is a tree, so an edit that touches more than one
+ * record is a method here.
  */
 export class BlockRecords {
   /** @type {BlockRecord} the record of the stylesheet */
@@ -149,39 +142,18 @@ export class BlockRecords {
   }
 
   /**
-   * The slot a placed rule stands in.
-   *
-   * @param {RuleRecord} record
-   * @return {Slot}
-   */
-  slotOf(record) {
-    const block = /** @type {BlockRecord} */ (this.block(record.slotBlock));
-    return /** @type {Slot} */ (block.children[record.slotPosition]);
-  }
-
-  /**
-   * The PostCSS node of the entry at `index`, which is a block, a declaration or
-   * a bare node.
+   * The PostCSS node of the entry at `index`, which is a rule, a block, a
+   * declaration or a bare node.
    *
    * @param {number} index
    * @return {ChildNode}
    */
   nodeOf(index) {
     return /** @type {ChildNode} */ (
-      /** @type {BlockRecord | DeclarationRecord | NodeEntry} */ (
+      /** @type {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} */ (
         this.#entries[index]
       ).node
     );
-  }
-
-  /**
-   * The first live child of the block at `index`; see `blockChildren.js`.
-   *
-   * @param {number} index
-   * @return {ChildNode | undefined}
-   */
-  firstLiveChild(index) {
-    return firstLiveChild(this, index);
   }
 
   /**
@@ -215,16 +187,14 @@ export class BlockRecords {
   }
 
   /**
-   * Replaces the rule `record` in `slot` with the rules `replacements`, and
-   * places each of them in the slot.
+   * Replaces the rule `record` with the rules `replacements`, which take its
+   * place in the chain, in order.
    *
-   * @param {Slot} slot the slot that holds `record` and is given the replacements
-   * @param {number} record the index of the rule that stands in the slot and is replaced
+   * @param {number} record the index of the rule that is replaced
    * @param {number[]} replacements
    * @return {void}
    */
-  substitute(slot, record, replacements) {
-    slot.rules.splice(slot.rules.indexOf(record), 1, ...replacements);
+  substitute(record, replacements) {
     // The replacements take the chain where the record stood, which may be
     // the record itself; it is read before the record leaves the chain.
     const holder = this.links.parentOf(record);
@@ -233,76 +203,32 @@ export class BlockRecords {
     for (const replacement of replacements) {
       this.links.linkAfter(holder, after, replacement);
       after = replacement;
-      /** @type {RuleRecord} */ (this.rule(replacement)).place(
-        slot.block,
-        slot.position
-      );
     }
   }
 
   /**
-   * Moves the rule `record` out of its slot into a new slot after the last
-   * child of the block at `target`.
+   * Moves the rule `record` to the end of the chain of the block at `target`.
    *
    * @param {number} target the index of the block that takes the rule
    * @param {number} record the index of the rule
-   * @return {Slot} the slot that now holds the rule
+   * @return {void}
    */
   moveRule(target, record) {
-    const rule = /** @type {RuleRecord} */ (this.rule(record));
-    const from = this.slotOf(rule);
-    from.rules.splice(from.rules.indexOf(record), 1);
     this.links.unlink(record);
-    const holder = /** @type {BlockRecord} */ (this.block(target));
-    const slot = new Slot(target, holder.children.length, [record]);
-    holder.children.push(slot);
     this.links.linkLast(target, record);
-    rule.place(target, slot.position);
-    return slot;
   }
 
   /**
-   * Takes the children of the block at `source` after those of the block at
-   * `target`. Each rule gets a slot in `target`, and each block a rule holds
-   * gets `target` as its parent. `source` is left with no children, since the
-   * caller removes it.
+   * Moves the chain of the block at `source` to the end of the chain of the
+   * block at `target`. `source` is left with no children, since the caller
+   * removes it. A nested block keeps its rule, which moves with the chain.
    *
    * @param {number} target
    * @param {number} source
    * @return {void}
    */
   adopt(target, source) {
-    const holder = /** @type {BlockRecord} */ (this.block(target));
     const from = /** @type {BlockRecord} */ (this.block(source));
-    for (const entry of from.children) {
-      if (entry instanceof Slot) {
-        if (entry.rules.length === 0) continue;
-        const slot = new Slot(target, holder.children.length, entry.rules);
-        for (const index of entry.rules) {
-          const record = /** @type {RuleRecord} */ (this.rule(index));
-          record.place(target, slot.position);
-          if (record.block !== -1) {
-            const nested = /** @type {BlockRecord} */ (
-              this.block(record.block)
-            );
-            nested.parent = target;
-            nested.position = slot.position;
-          }
-        }
-        holder.children.push(slot);
-      } else {
-        const nested = this.blockEntry(entry);
-        if (nested) {
-          if (this.isDropped(entry)) continue;
-          nested.parent = target;
-          nested.position = holder.children.length;
-        }
-        holder.children.push(entry);
-      }
-    }
-    from.children = [];
-    // The chain of `source` moves whole: each entry leaves it for the end of
-    // `target`, and takes `target` as its container.
     while (from.first !== -1) {
       const entry = from.first;
       this.links.unlink(entry);

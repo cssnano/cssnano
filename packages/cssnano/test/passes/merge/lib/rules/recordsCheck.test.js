@@ -13,9 +13,8 @@ import {
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import { blockRecordOf, ruleRecordOf } from './liveRecords.js';
 
-/** @import {Slot} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
-/** @import {Root} from 'postcss' */
+/** @import {Root, Rule} from 'postcss' */
 
 before(() => enableConsistencyChecks(true));
 after(() => enableConsistencyChecks(false));
@@ -51,14 +50,23 @@ test('assertRecordsWellFormed should throw when a dropped block still holds a li
   assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
 });
 
-test('assertRecordsWellFormed should throw when a slot names a block other than the one holding it', () => {
-  const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
-  const media = /** @type {BlockRecord} */ (
-    blockRecordOf(state.records, /** @type {any} */ (root.first))
-  );
-  const [first] = /** @type {Slot[]} */ (media.children);
-  first.block = state.records.root;
+test('assertRecordsWellFormed should throw when a nested block is owned by a rule other than the one holding it', () => {
+  const { root, state } = setup('a{color:red;b{width:1px}}c{top:0}');
+  const [a, c] = /** @type {Rule[]} */ (root.nodes);
+  const holder = ruleRecordOf(state.records, a);
+  const other = ruleRecordOf(state.records, c);
+  state.records.links.ownBlock(other.index, holder.block);
   assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
+});
+
+test('assertRecordsWellFormed should throw when the root is linked into its own subtree, so the walk reaches it twice', () => {
+  const { state } = setup('a{color:red;b{width:1px}}');
+  const holder = ruleRecordOf(
+    state.records,
+    /** @type {Rule} */ (state.records.root.node.first)
+  );
+  state.records.links.linkLast(holder.block, state.records.root.index);
+  assert.throws(() => assertRecordsWellFormed(state), /reached twice/v);
 });
 
 test('assertRecordsWellFormed should throw when a block whose chain does not start at its first live child', () => {
@@ -81,7 +89,7 @@ test('assertRecordsWellFormed should throw when a block whose chain ends before 
 
 test('assertRecordsWellFormed should accept the chains after a rule moves out of an at-rule and a block is removed', () => {
   const { root, state } = setup(
-    '@media print{a{color:red}}@layer b{c{width:1px}}d{height:2px}'
+    '@media print{a{color:red}}@layer b{}d{height:2px}'
   );
   const [media, layer] = /** @type {any[]} */ (root.nodes);
   const rule = ruleRecordOf(state.records, media.first);
@@ -92,12 +100,7 @@ test('assertRecordsWellFormed should accept the chains after a rule moves out of
 
 test('linkLast should throw under checks when the block is outside the tree', () => {
   const { state } = setup('a{color:red}');
-  const detached = new BlockRecord(
-    postcss.atRule({ name: 'media' }),
-    -1,
-    0,
-    false
-  );
+  const detached = new BlockRecord(postcss.atRule({ name: 'media' }), false);
   state.records.add(detached);
   const comment = state.records.bareEntry(postcss.comment({ text: 'x' }));
   assert.throws(

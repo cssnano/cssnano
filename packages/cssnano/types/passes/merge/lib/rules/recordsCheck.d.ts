@@ -1,9 +1,9 @@
 import type { BlockRecords } from './blockRecords.js';
 import type MergeState from './mergeState.js';
 /**
- * Under consistency checks, throws when a slot or a nested block names the wrong
- * block or position, or a dropped block still holds a live child. Reads only
- * the records, so it needs no PostCSS node.
+ * Under consistency checks, throws when a chain is out of step with its
+ * entries, a rule's nested block stands elsewhere, or a dropped block still
+ * holds a live child. Reads only the records, so it needs no PostCSS node.
  *
  * @param {{records: BlockRecords}} mergeState
  * @return {void}
@@ -12,10 +12,10 @@ export declare function assertRecordsWellFormed(mergeState: {
     records: BlockRecords;
 }): void;
 /**
- * Walks the ownership of the records from the root: the children of each block,
- * the rules of each slot, the nested block of each rule, and the declarations
- * of each rule that holds none. Throws when a block, slot, rule or declaration
- * is reached twice, since every record has one owner.
+ * Walks the ownership of the records from the root along the chains: the
+ * entries of each block, and the nested block and declarations of each rule.
+ * Throws when a block, rule or declaration is reached twice, since every record
+ * has one owner, or when a chain holds other than the count its block keeps.
  *
  * @param {BlockRecords} records
  * @return {void}

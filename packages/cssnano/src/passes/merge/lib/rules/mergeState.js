@@ -13,7 +13,7 @@ import { tokensText } from '../../../../values/tokensText.js';
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecords, Slot} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 
 /**
@@ -224,9 +224,9 @@ export default class MergeState {
   }
 
   /**
-   * The block whose child list holds the rule's slot. It is where the rule
-   * stands, which can differ from its PostCSS parent during a sweep. A rule
-   * that left the stylesheet stands in no block.
+   * The block whose chain holds the rule. It is where the rule stands, which
+   * can differ from its PostCSS parent during a sweep. A rule that left the
+   * stylesheet stands in no block.
    *
    * @param {RuleRecord} record
    * @return {BlockRecord}
@@ -243,7 +243,7 @@ export default class MergeState {
    */
   #blockIndexOf(record) {
     if (record.departed) throw new Error('block of a departed rule record');
-    return record.slotBlock;
+    return this.records.links.parentOf(record.index);
   }
 
   /**

@@ -76,7 +76,12 @@ function overridesShared(declarations, claimed, shared) {
 function repeatsShared(link, parent, firstKeys, sharedIndices, records) {
   if (link === -1) return false;
   const rule = /** @type {RuleRecord} */ (records.rule(link));
-  if (rule.slotBlock !== parent || !isDeclarationRule(rule)) return false;
+  if (
+    records.links.parentOf(rule.index) !== parent ||
+    !isDeclarationRule(rule)
+  ) {
+    return false;
+  }
   const { keySet } = rule.declarationKeys(records);
   for (const index of sharedIndices) {
     if (!keySet.has(firstKeys[index])) return false;
@@ -136,7 +141,7 @@ export function findGroup(
 ) {
   const { records } = mergeState;
   const secondRule = /** @type {RuleRecord} */ (records.rule(second));
-  const parent = secondRule.slotBlock;
+  const parent = records.links.parentOf(secondRule.index);
   const firstKeys = first.declarationKeys(records).keys;
   if (
     !repeatsShared(
@@ -281,7 +286,7 @@ export function earliestPairReaching(
 ) {
   const { records } = mergeState;
   const linked = /** @type {RuleRecord} */ (records.rule(link));
-  const parent = linked.slotBlock;
+  const parent = records.links.parentOf(linked.index);
   const own = linked.declarationKeys(records);
   let passed = false;
   let member = link;
@@ -311,7 +316,7 @@ export function earliestPairReaching(
       }
     }
     if (prev === resume) passed = true;
-    if (depth >= PAIR_REACH || prevRule.slotBlock !== parent) break;
+    if (depth >= PAIR_REACH || records.links.parentOf(prev) !== parent) break;
     member = prev;
   }
 }

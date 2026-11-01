@@ -13,11 +13,6 @@ import { NodeEntry } from './blockRecord.js';
  * @param {number} index
  * @return {ChildNode | undefined}
  */
-export function firstLiveChild(records, index) {
-  const first = records.links.firstChild(index);
-  return first === -1 ? undefined : records.nodeOf(first);
-}
-
 /**
  * The number of children the block at `index` holds now. The chain keeps the
  * count, so the answer costs no walk.

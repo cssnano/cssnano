@@ -21,9 +21,7 @@ const lookupB = (selector) => ({ compatible: selector !== 'b' });
 const properties = new PropertyTable();
 const declarationIds = new DeclarationKeys();
 /** An arena for the calls that read no nested block. */
-const noBlocks = new BlockRecords(
-  new BlockRecord(postcss.root(), -1, 0, false)
-);
+const noBlocks = new BlockRecords(new BlockRecord(postcss.root(), false));
 /**
  * The declaration records of `rule`, as the run builds them.
  *
@@ -67,9 +65,7 @@ test('compatible should be false after absorbEarlier takes an incompatible earli
 
 test('recordRule should give the record of a rule the rule as its node', () => {
   const rule = postcss.parse('a{color:red}').first;
-  const records = new BlockRecords(
-    new BlockRecord(postcss.root(), -1, 0, false)
-  );
+  const records = new BlockRecords(new BlockRecord(postcss.root(), false));
   assert.equal(records.recordRule(rule, properties, declarationIds).node, rule);
 });
 

@@ -3,16 +3,15 @@ import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockLinks } from './blockLinks.js';
-import { BlockRecord, NodeEntry, Slot } from './blockRecord.js';
+import { BlockRecord, NodeEntry } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
-export { Slot } from './blockRecord.js';
 /**
  * The records of one run. One arena holds every block record, every rule record,
  * every declaration of a block and every bare node of a block, each at the next
- * index of one counter; an index is never reused within a run. A block's children
- * are slots and arena indices, and a rule's own declarations stay in its record.
- * Ownership is a tree, so an edit that touches more than one record is a method
- * here.
+ * index of one counter; an index is never reused within a run. A block's
+ * children are the entries its chain links, and a rule's own declarations stay
+ * in its record. Ownership is a tree, so an edit that touches more than one
+ * record is a method here.
  */
 export declare class BlockRecords {
     #private;
@@ -77,27 +76,13 @@ export declare class BlockRecords {
      */
     blocks(): Generator<BlockRecord>;
     /**
-     * The slot a placed rule stands in.
-     *
-     * @param {RuleRecord} record
-     * @return {Slot}
-     */
-    slotOf(record: RuleRecord): Slot;
-    /**
-     * The PostCSS node of the entry at `index`, which is a block, a declaration or
-     * a bare node.
+     * The PostCSS node of the entry at `index`, which is a rule, a block, a
+     * declaration or a bare node.
      *
      * @param {number} index
      * @return {ChildNode}
      */
     nodeOf(index: number): ChildNode;
-    /**
-     * The first live child of the block at `index`; see `blockChildren.js`.
-     *
-     * @param {number} index
-     * @return {ChildNode | undefined}
-     */
-    firstLiveChild(index: number): ChildNode | undefined;
     /**
      * The live children of the block at `index`, counted; see `blockChildren.js`.
      *
@@ -120,29 +105,26 @@ export declare class BlockRecords {
      */
     liveChildren(index: number): ChildNode[];
     /**
-     * Replaces the rule `record` in `slot` with the rules `replacements`, and
-     * places each of them in the slot.
+     * Replaces the rule `record` with the rules `replacements`, which take its
+     * place in the chain, in order.
      *
-     * @param {Slot} slot the slot that holds `record` and is given the replacements
-     * @param {number} record the index of the rule that stands in the slot and is replaced
+     * @param {number} record the index of the rule that is replaced
      * @param {number[]} replacements
      * @return {void}
      */
-    substitute(slot: Slot, record: number, replacements: number[]): void;
+    substitute(record: number, replacements: number[]): void;
     /**
-     * Moves the rule `record` out of its slot into a new slot after the last
-     * child of the block at `target`.
+     * Moves the rule `record` to the end of the chain of the block at `target`.
      *
      * @param {number} target the index of the block that takes the rule
      * @param {number} record the index of the rule
-     * @return {Slot} the slot that now holds the rule
+     * @return {void}
      */
-    moveRule(target: number, record: number): Slot;
+    moveRule(target: number, record: number): void;
     /**
-     * Takes the children of the block at `source` after those of the block at
-     * `target`. Each rule gets a slot in `target`, and each block a rule holds
-     * gets `target` as its parent. `source` is left with no children, since the
-     * caller removes it.
+     * Moves the chain of the block at `source` to the end of the chain of the
+     * block at `target`. `source` is left with no children, since the caller
+     * removes it. A nested block keeps its rule, which moves with the chain.
      *
      * @param {number} target
      * @param {number} source

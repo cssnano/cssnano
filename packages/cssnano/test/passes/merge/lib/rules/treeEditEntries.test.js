@@ -49,7 +49,7 @@ test('substitute with no replacement should remove the rule from the live entrie
   const { root, state } = setup('a{color:red}b{width:1px}c{height:1px}');
   const [a] = /** @type {Rule[]} */ (root.nodes);
   const record = ruleRecordOf(state.records, a);
-  state.records.substitute(state.records.slotOf(record), record.index, []);
+  state.records.substitute(record.index, []);
   assert.deepEqual(liveLabels(state), ['b', 'c']);
 });
 
@@ -62,9 +62,7 @@ test('substitute with one replacement should put it where the rule stood', () =>
     state.properties,
     state.declarationIds
   );
-  state.records.substitute(state.records.slotOf(record), record.index, [
-    replacement.index,
-  ]);
+  state.records.substitute(record.index, [replacement.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'c']);
 });
 
@@ -82,10 +80,7 @@ test('substitute with several replacements should keep their order where the rul
     state.properties,
     state.declarationIds
   );
-  state.records.substitute(state.records.slotOf(record), record.index, [
-    first.index,
-    second.index,
-  ]);
+  state.records.substitute(record.index, [first.index, second.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'y', 'c']);
 });
 

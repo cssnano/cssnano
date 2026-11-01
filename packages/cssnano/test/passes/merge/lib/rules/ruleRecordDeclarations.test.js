@@ -28,9 +28,7 @@ const recordsOf = (rule) =>
     .map((node) => recordDeclaration(node, properties, declarationIds));
 
 /** An arena for the calls that read no nested block. */
-const noBlocks = new BlockRecords(
-  new BlockRecord(postcss.root(), -1, 0, false)
-);
+const noBlocks = new BlockRecords(new BlockRecord(postcss.root(), false));
 
 test('removeDeclarationsAt should keep the comment that a rule holds', () => {
   const rule = postcss.parse('a{color:red;/* note */width:1px}').first;

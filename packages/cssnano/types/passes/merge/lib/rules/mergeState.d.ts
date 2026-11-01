@@ -11,7 +11,7 @@ import type { BlockRecord } from './blockRecord.js';
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecords, Slot} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /**
  * The state shared by every merge of one stylesheet.
@@ -111,9 +111,9 @@ export default class MergeState {
      */
     absorbEarlier(later: RuleRecord, earlier: RuleRecord): void;
     /**
-     * The block whose child list holds the rule's slot. It is where the rule
-     * stands, which can differ from its PostCSS parent during a sweep. A rule
-     * that left the stylesheet stands in no block.
+     * The block whose chain holds the rule. It is where the rule stands, which
+     * can differ from its PostCSS parent during a sweep. A rule that left the
+     * stylesheet stands in no block.
      *
      * @param {RuleRecord} record
      * @return {BlockRecord}

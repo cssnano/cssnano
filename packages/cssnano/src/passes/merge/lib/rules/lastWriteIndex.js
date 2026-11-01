@@ -6,7 +6,7 @@ import { PropertyWrites } from './propertyWrites.js';
 
 /** @import {AtRule, ChildNode, Rule} from 'postcss' */
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
-/** @import {BlockRecords, Slot} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 
 // Conditional group rules hold ordinary rules whose declarations cascade as
 // they do at the top level. Any other at-rule may depend on its position, as
@@ -224,16 +224,7 @@ export default class LastWriteIndex {
     if (this.#lastBarrier > position) return true;
     for (const entry of entries) {
       if (entry instanceof RuleRecord) {
-        const list = this.#listOf(entry);
-        for (const item of list) {
-          const declaration = this.#declarationIn(item);
-          if (
-            declaration &&
-            this.#conflictsWith(declaration.keys, position, elements)
-          ) {
-            return true;
-          }
-        }
+        if (this.#ruleConflicts(entry, position, elements)) return true;
       } else if (this.#conflictsWith(entry.keys, position, elements)) {
         return true;
       }
@@ -242,30 +233,38 @@ export default class LastWriteIndex {
   }
 
   /**
-   * The children that hold the declarations a rule writes: its nested block's
-   * children when it holds one, else its declarations.
+   * Whether a write after `position` conflicts with a declaration of `rule`,
+   * which are its own declarations, or the declarations of its nested block.
    *
-   * @param {RuleRecord} entry
-   * @return {readonly (DeclarationRecord | number | Slot | ChildNode)[]}
+   * @param {RuleRecord} rule
+   * @param {number} position
+   * @param {Set<string> | null} elements
+   * @return {boolean}
    */
-  #listOf(entry) {
-    if (entry.block === -1) return entry.declarations;
-    const block = /** @type {BlockRecord} */ (this.#records.block(entry.block));
-    return block.children;
-  }
-
-  /**
-   * The record of the declaration that an item of `#listOf` names, or undefined
-   * when the item is a slot, a nested block or a bare node.
-   *
-   * @param {DeclarationRecord | number | Slot | ChildNode} item
-   * @return {DeclarationRecord | undefined}
-   */
-  #declarationIn(item) {
-    if (item instanceof DeclarationRecord) return item;
-    if (typeof item !== 'number') return undefined;
-    const entry = this.#records.entry(item);
-    return entry instanceof DeclarationRecord ? entry : undefined;
+  #ruleConflicts(rule, position, elements) {
+    if (rule.block === -1) {
+      for (const declaration of rule.declarations) {
+        if (this.#conflictsWith(declaration.keys, position, elements)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    const { links } = this.#records;
+    for (
+      let entry = links.firstChild(rule.block);
+      entry !== -1;
+      entry = links.nextSibling(entry)
+    ) {
+      const item = this.#records.entry(entry);
+      if (
+        item instanceof DeclarationRecord &&
+        this.#conflictsWith(item.keys, position, elements)
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -279,15 +278,26 @@ export default class LastWriteIndex {
    * @param {(record: RuleRecord) => string[] | null} keysOf
    */
   moveWrites(entries, position, keysOf) {
+    const { links } = this.#records;
     for (const entry of entries) {
       if (entry instanceof RuleRecord) {
         // `record` only reads the keys, so the record's own list is passed as is.
         const keys = keysOf(entry);
-        const list = this.#listOf(entry);
-        for (const item of list) {
-          const declaration = this.#declarationIn(item);
-          if (declaration) {
-            this.record(declaration.keys, position, keys?.length ? keys : null);
+        const own = keys?.length ? keys : null;
+        if (entry.block === -1) {
+          for (const declaration of entry.declarations) {
+            this.record(declaration.keys, position, own);
+          }
+          continue;
+        }
+        for (
+          let item = links.firstChild(entry.block);
+          item !== -1;
+          item = links.nextSibling(item)
+        ) {
+          const declaration = this.#records.entry(item);
+          if (declaration instanceof DeclarationRecord) {
+            this.record(declaration.keys, position, own);
           }
         }
       } else {

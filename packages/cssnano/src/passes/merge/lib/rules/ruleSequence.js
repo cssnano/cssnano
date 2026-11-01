@@ -2,7 +2,7 @@ import DeclarationScan from './declarationScan.js';
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 
-/** @import {BlockRecords, Slot} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 
 /**
  * The rules that stand in the slots of a pair after it is merged.
@@ -163,16 +163,13 @@ export default class RuleSequence {
    */
   moveIntoParent(first, second) {
     const records = this.#records;
-    const target = /** @type {RuleRecord} */ (records.rule(first)).slotBlock;
-    const source = /** @type {RuleRecord} */ (records.rule(second)).slotBlock;
+    const target = records.links.parentOf(first);
+    const source = records.links.parentOf(second);
     if (target === source) return false;
     records.moveRule(target, second);
     // The sweep retries a moved pair, so a move that leaves the parents
     // apart would repeat forever; it throws instead.
-    if (
-      /** @type {RuleRecord} */ (records.rule(second)).slotBlock !==
-      /** @type {RuleRecord} */ (records.rule(first)).slotBlock
-    ) {
+    if (records.links.parentOf(second) !== records.links.parentOf(first)) {
       throw new Error('a moved rule is still outside the parent it joined');
     }
     this.#dropIfEmptied(source);
@@ -188,20 +185,11 @@ export default class RuleSequence {
    * @return {number} the index of the first replacement
    */
   replacePair(first, placement) {
-    const records = this.#records;
     const second = this.#next[first];
     const before = this.#prev[first];
     const after = this.#next[second];
-    const firstSlot = records.slotOf(
-      /** @type {RuleRecord} */ (records.rule(first))
-    );
-    const secondSlot = records.slotOf(
-      /** @type {RuleRecord} */ (records.rule(second))
-    );
-    // Both rules may share a slot after an earlier partial merge, so each is
-    // replaced where it stands.
-    this.#substitute(firstSlot, first, placement.first);
-    this.#substitute(secondSlot, second, placement.second);
+    this.#substitute(first, placement.first);
+    this.#substitute(second, placement.second);
 
     let tail = this.#linkAll(
       this.#linkAll(before, placement.first),
@@ -211,10 +199,7 @@ export default class RuleSequence {
     for (const rules of placement.following ?? []) {
       const index = following;
       following = this.#next[index];
-      const slot = records.slotOf(
-        /** @type {RuleRecord} */ (records.rule(index))
-      );
-      this.#substitute(slot, index, rules);
+      this.#substitute(index, rules);
       tail = this.#linkAll(tail, rules);
     }
     if (tail === -1) this.head = following;
@@ -224,17 +209,17 @@ export default class RuleSequence {
   }
 
   /**
-   * Replaces the rule `index` in `slot` with `rules`, then unlinks the block
-   * that the replacement left empty.
+   * Replaces the rule `index` with `rules`, then unlinks the block that the
+   * replacement left empty.
    *
-   * @param {Slot} slot
    * @param {number} index
    * @param {number[]} rules
    * @return {void}
    */
-  #substitute(slot, index, rules) {
-    this.#records.substitute(slot, index, rules);
-    this.#dropIfEmptied(slot.block);
+  #substitute(index, rules) {
+    const holder = this.#records.links.parentOf(index);
+    this.#records.substitute(index, rules);
+    this.#dropIfEmptied(holder);
   }
 
   /**

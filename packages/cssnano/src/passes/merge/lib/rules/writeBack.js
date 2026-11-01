@@ -1,7 +1,6 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { Slot } from './blockRecords.js';
+import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
-/** @import {BlockRecord} from './blockRecord.js' */
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
@@ -43,19 +42,18 @@ function isRuleOrAtRule(node) {
 }
 
 /**
- * Throws when the record of a rule does not name its slot, or does not hold
- * the block of the rule's children that the tree has.
+ * Throws when the record of a rule is not linked in the block that holds it,
+ * or does not hold the block of the rule's children that the tree has.
  *
  * @param {MergeState} mergeState
- * @param {Block} block the block holding the slot
- * @param {Slot} slot
+ * @param {Block} block the block whose chain holds the rule
  * @param {RuleRecord} record
  * @return {void}
  */
-function checkRuleRecord(mergeState, block, slot, record) {
+function checkRuleRecord(mergeState, block, record) {
   const rule = record.node;
   record.assertFresh();
-  if (mergeState.records.slotOf(record) !== slot) {
+  if (mergeState.records.links.parentOf(record.index) !== block.index) {
     throw new Error(OUT_OF_STEP);
   }
   if ((record.block !== -1) !== rule.nodes.some(isRuleOrAtRule)) {
@@ -67,8 +65,7 @@ function checkRuleRecord(mergeState, block, slot, record) {
     );
     if (
       mergeState.records.links.enclosingBlock(nested.index) !== block ||
-      nested.node !== rule ||
-      nested.position !== slot.position
+      nested.node !== rule
     ) {
       throw new Error(OUT_OF_STEP);
     }
@@ -83,27 +80,25 @@ function checkRuleRecord(mergeState, block, slot, record) {
 
 /**
  * Throws when the live children of a block are not the nodes its container
- * holds, and checks the rule records of its slots.
+ * holds, and checks the rule records and nested blocks its chain links.
  *
  * @param {MergeState} mergeState
  * @param {Block} block
  * @return {void}
  */
 function checkBlockRecord(mergeState, block) {
-  if (differs(mergeState.records, block)) throw new Error(OUT_OF_STEP);
-  for (const entry of block.children) {
-    if (entry instanceof Slot) {
-      for (const index of entry.rules) {
-        const record = /** @type {RuleRecord} */ (
-          mergeState.records.rule(index)
-        );
-        checkRuleRecord(mergeState, block, entry, record);
-      }
-    } else {
-      const nested = mergeState.records.blockEntry(entry);
-      if (nested && !mergeState.records.isDropped(nested.index)) {
-        checkBlockRecord(mergeState, nested);
-      }
+  const { records } = mergeState;
+  if (differs(records, block)) throw new Error(OUT_OF_STEP);
+  for (
+    let entry = records.links.firstChild(block.index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    const item = records.entry(entry);
+    if (item instanceof RuleRecord) {
+      checkRuleRecord(mergeState, block, item);
+    } else if (item instanceof BlockRecord) {
+      checkBlockRecord(mergeState, item);
     }
   }
 }
