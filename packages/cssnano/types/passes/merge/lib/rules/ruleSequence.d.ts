@@ -1,21 +1,36 @@
-import type { BlockRecord } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { RuleRecord } from './ruleRecord.js';
 export type Placement = {
     /**
-     * replaces the earlier rule, in its slot
+     * the indices of the rules that replace the earlier
+     * rule, in its slot
      */
-    first: RuleRecord[];
+    first: number[];
     /**
-     * replaces the later rule, in its slot
+     * the indices of the rules that replace the later
+     * rule, in its slot
      */
-    second: RuleRecord[];
+    second: number[];
     /**
-     * replaces each rule after the later one
-     * that joined the merge, in its slot
+     * the indices of the rules that replace each
+     * rule after the later one that joined the merge, in its slot
      */
-    following?: RuleRecord[][];
+    following?: number[][];
 };
+/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/**
+ * The rules that stand in the slots of a pair after it is merged.
+ *
+ * @typedef {object} Placement
+ * @property {number[]} first the indices of the rules that replace the earlier
+ * rule, in its slot
+ * @property {number[]} second the indices of the rules that replace the later
+ * rule, in its slot
+ * @property {number[][]} [following] the indices of the rules that replace each
+ * rule after the later one that joined the merge, in its slot
+ */
 /**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
  * other rules, rewritten in the block records. The order is two arrays indexed
@@ -42,11 +57,11 @@ export default class RuleSequence {
     /**
      * @param {RuleRecord} first
      * @param {RuleRecord} second
-     * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations see
+     * @param {Map<number, boolean>} outsideDeclarations see
      * `DeclarationScan#declarationBetween`
      * @return {boolean} whether a declaration outside both rules lies between them
      */
-    declarationBetween(first: RuleRecord, second: RuleRecord, outsideDeclarations: WeakMap<BlockRecord, boolean>): boolean;
+    declarationBetween(first: RuleRecord, second: RuleRecord, outsideDeclarations: Map<number, boolean>): boolean;
     /**
      * Moves the rule at `second` to the end of the parent of the rule at `first`.
      * It follows `first` and holds no nested rules, so passing the rest of that

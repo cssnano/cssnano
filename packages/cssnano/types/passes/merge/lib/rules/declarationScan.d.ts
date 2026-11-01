@@ -1,4 +1,3 @@
-import type { BlockRecord as Block } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 /**
@@ -21,11 +20,11 @@ export default class DeclarationScan {
      *
      * @param {RuleRecord} first
      * @param {RuleRecord} second
-     * @param {WeakMap<Block, boolean>} outsideDeclarations whether a rule has
+     * @param {Map<number, boolean>} outsideDeclarations whether a rule has
      * a declaration outside its nested rules, valid for the whole scan: rewrites
      * move declarations between rules but never create one outside them
      * @return {boolean}
      */
-    declarationBetween(first: RuleRecord, second: RuleRecord, outsideDeclarations: WeakMap<Block, boolean>): boolean;
+    declarationBetween(first: RuleRecord, second: RuleRecord, outsideDeclarations: Map<number, boolean>): boolean;
 }
 //# sourceMappingURL=declarationScan.d.ts.map

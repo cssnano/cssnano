@@ -186,7 +186,7 @@ function joinBlocksBackward(block, mergeState) {
 
   const index = new LastWriteIndex(mergeState.records);
   const keysOf = mergeState.elementKeysOf;
-  /** @type {Map<string, {block: BlockRecord, position: number}>} */
+  /** @type {Map<string, {block: number, position: number}>} */
   const next = new Map();
   let joined = false;
   for (let position = last - scan.start; position >= 0; position--) {
@@ -197,7 +197,7 @@ function joinBlocksBackward(block, mergeState) {
     if (later) {
       const moved = joinBlock(
         /** @type {BlockRecord} */ (entry),
-        later.block,
+        /** @type {BlockRecord} */ (mergeState.records.block(later.block)),
         last - later.position
       );
       if (moved === 'down') at = later.position;
@@ -205,7 +205,7 @@ function joinBlocksBackward(block, mergeState) {
     }
     if (key !== null) {
       next.set(key, {
-        block: /** @type {BlockRecord} */ (entry),
+        block: /** @type {BlockRecord} */ (entry).index,
         position: at,
       });
     }
@@ -259,13 +259,14 @@ function joinInParent(block, mergeState, rules) {
 
   const index = new LastWriteIndex(mergeState.records);
   const keysOf = mergeState.elementKeysOf;
-  /** @type {Map<string, {entry: RuleRecord | BlockRecord, position: number}>} */
+  // Each entry is named by its place in `entries`, which is not changed.
+  /** @type {Map<string, {origin: number, position: number}>} */
   const latest = new Map();
   // Every rule with a selector joins the first rule with that selector, so
   // the joined rule keeps its writes from one join to the next: rebuilding
   // them would make each join cost time in the growing rule. Its declarations
   // live in its record.
-  /** @type {Map<RuleRecord, PropertyWrites>} */
+  /** @type {Map<number, PropertyWrites>} keyed by the index of the earlier rule */
   const received = new Map();
   let joined = false;
   for (let position = scan.start; position < entries.length; position++) {
@@ -273,23 +274,24 @@ function joinInParent(block, mergeState, rules) {
     const key = keys[position];
     const earlier = key === null ? undefined : latest.get(key);
     if (earlier) {
+      const earlierEntry = entries[earlier.origin];
       const direction =
         entry instanceof RuleRecord
           ? joinRule(
-              /** @type {RuleRecord} */ (earlier.entry),
+              /** @type {RuleRecord} */ (earlierEntry),
               entry,
               earlier.position,
               position
             )
           : joinBlock(
-              /** @type {BlockRecord} */ (earlier.entry),
+              /** @type {BlockRecord} */ (earlierEntry),
               /** @type {BlockRecord} */ (entry),
               earlier.position,
               position
             );
       if (direction === 'down') {
         latest.set(/** @type {string} */ (key), {
-          entry: earlier.entry,
+          origin: earlier.origin,
           position,
         });
       }
@@ -299,10 +301,7 @@ function joinInParent(block, mergeState, rules) {
       }
     }
     if (key !== null) {
-      latest.set(key, {
-        entry: /** @type {RuleRecord | BlockRecord} */ (entry),
-        position,
-      });
+      latest.set(key, { origin: position, position });
     }
     index.recordNode(entry, position, keysOf);
   }
@@ -317,10 +316,10 @@ function joinInParent(block, mergeState, rules) {
    * @return {void}
    */
   function receive(earlier, later) {
-    let writes = received.get(earlier);
+    let writes = received.get(earlier.index);
     if (!writes) {
       writes = writesOf(earlier.declarations);
-      received.set(earlier, writes);
+      received.set(earlier.index, writes);
     }
     appendToDeclarations(mergeState, earlier, writes, later);
   }

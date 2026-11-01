@@ -43,8 +43,8 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
     state.declarationIds
   );
   sequence.replacePair(0, {
-    first: [records.rule(0)],
-    second: [added],
+    first: [0],
+    second: [added.index],
   });
   assert.equal(sequence.nextOf(0), added.index);
   assert.equal(sequence.prevOf(added.index), 0);

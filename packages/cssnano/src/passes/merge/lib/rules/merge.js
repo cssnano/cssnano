@@ -33,12 +33,12 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
   // and a selector list that repeats the selector is longer than one rule.
   if (first.hasSameSelectors(second)) {
     second.depart();
-    return { first: [first], second: [] };
+    return { first: [first.index], second: [] };
   }
   mergeState.absorbEarlier(second, first);
   mergeState.spellSelectors(second);
   first.depart();
-  return { first: [], second: [second] };
+  return { first: [], second: [second.index] };
 }
 
 /**
@@ -52,7 +52,7 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
 export function mergeMatchingSelectors(first, second, mergeState) {
   if (!first.hasSameSelectors(second)) return null;
   appendToDeclarations(mergeState, first, writesOf(first.declarations), second);
-  return { first: [first], second: [] };
+  return { first: [first.index], second: [] };
 }
 
 /**
@@ -63,7 +63,7 @@ export function mergeMatchingSelectors(first, second, mergeState) {
  * @param {MergeState} mergeState
  * @param {number} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
- * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
+ * @param {Map<number, boolean>} outsideDeclarations
  * @return {Placement | null} the rules that replace the pair, or null when
  * sharing the declarations would not make the output shorter
  */

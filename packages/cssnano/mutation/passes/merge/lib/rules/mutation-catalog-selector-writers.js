@@ -32,7 +32,8 @@ export const mutations = [
   },
   {
     name: 'forget the rules a merge spelled, so their tokens are never stored',
-    find: '    this.#spelled.add(record);',
+    target: source('mergeState.js'),
+    find: '    this.#spelled.add(record.index);',
     replace: '    void record;',
   },
   {

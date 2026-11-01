@@ -9,19 +9,13 @@ import { Slot } from './blockRecords.js';
  * The rules that stand in the slots of a pair after it is merged.
  *
  * @typedef {object} Placement
- * @property {RuleRecord[]} first replaces the earlier rule, in its slot
- * @property {RuleRecord[]} second replaces the later rule, in its slot
- * @property {RuleRecord[][]} [following] replaces each rule after the later one
- * that joined the merge, in its slot
+ * @property {number[]} first the indices of the rules that replace the earlier
+ * rule, in its slot
+ * @property {number[]} second the indices of the rules that replace the later
+ * rule, in its slot
+ * @property {number[][]} [following] the indices of the rules that replace each
+ * rule after the later one that joined the merge, in its slot
  */
-
-/**
- * @param {RuleRecord[]} records
- * @return {number[]} the index of each rule
- */
-function indicesOf(records) {
-  return records.map((record) => record.index);
-}
 
 /**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
@@ -53,9 +47,9 @@ export default class RuleSequence {
   constructor(records) {
     this.#records = records;
     this.#scan = new DeclarationScan(records);
-    const count = records.ruleCount();
-    this.#prev = Array.from({ length: count }, () => -1);
-    this.#next = Array.from({ length: count }, () => -1);
+    this.#prev = [];
+    this.#next = [];
+    this.#reserve(records.ruleCount() - 1);
     let tail = -1;
     /** @param {BlockRecord} block */
     const collect = (block) => {
@@ -107,6 +101,20 @@ export default class RuleSequence {
   }
 
   /**
+   * Grows the arrays to hold the rule at `index`, so no array has holes for the
+   * rules a rewrite made and never linked.
+   *
+   * @param {number} index
+   * @return {void}
+   */
+  #reserve(index) {
+    for (let at = this.#prev.length; at <= index; at++) {
+      this.#prev.push(-1);
+      this.#next.push(-1);
+    }
+  }
+
+  /**
    * Links the rule at `index` after the rule at `previous`, or makes it the head
    * when `previous` is -1. Its own link to the rule after it is reset, so the
    * caller links that next.
@@ -116,6 +124,7 @@ export default class RuleSequence {
    * @return {number} `index`
    */
   #link(previous, index) {
+    this.#reserve(index);
     this.#prev[index] = previous;
     this.#next[index] = -1;
     if (previous === -1) this.head = index;
@@ -124,22 +133,22 @@ export default class RuleSequence {
   }
 
   /**
-   * Links each rule of `records` in order after `previous`.
+   * Links each rule of `indices` in order after `previous`.
    *
    * @param {number} previous
-   * @param {RuleRecord[]} records
+   * @param {number[]} indices
    * @return {number} the last rule linked, or `previous` when there are none
    */
-  #linkAll(previous, records) {
+  #linkAll(previous, indices) {
     let tail = previous;
-    for (const record of records) tail = this.#link(tail, record.index);
+    for (const index of indices) tail = this.#link(tail, index);
     return tail;
   }
 
   /**
    * @param {RuleRecord} first
    * @param {RuleRecord} second
-   * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations see
+   * @param {Map<number, boolean>} outsideDeclarations see
    * `DeclarationScan#declarationBetween`
    * @return {boolean} whether a declaration outside both rules lies between them
    */
@@ -190,8 +199,8 @@ export default class RuleSequence {
     // replaced where it stands.
     records.changed(firstSlot.block, placement.first.length - 1);
     records.changed(secondSlot.block, placement.second.length - 1);
-    records.substitute(firstSlot, first, indicesOf(placement.first));
-    records.substitute(secondSlot, second, indicesOf(placement.second));
+    records.substitute(firstSlot, first, placement.first);
+    records.substitute(secondSlot, second, placement.second);
 
     let tail = this.#linkAll(
       this.#linkAll(before, placement.first),
@@ -205,7 +214,7 @@ export default class RuleSequence {
         /** @type {RuleRecord} */ (records.rule(index))
       );
       records.changed(slot.block, rules.length - 1);
-      records.substitute(slot, index, indicesOf(rules));
+      records.substitute(slot, index, rules);
       tail = this.#linkAll(tail, rules);
     }
     if (tail === -1) this.head = following;

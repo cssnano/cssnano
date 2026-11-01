@@ -11,6 +11,14 @@ import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 /** @import MergeState from './mergeState.js' */
 
 /**
+ * @param {RuleRecord[]} records
+ * @return {number[]} the index of each rule
+ */
+function indicesOf(records) {
+  return records.map((record) => record.index);
+}
+
+/**
  * A rule with the source's raws, position and selector but no children, so
  * the caller fills it without cloning the source's declarations.
  *
@@ -76,7 +84,7 @@ export function writesOf(declarations) {
  * @param {import('./mergeState.js').default} mergeState
  * @param {number} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
- * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
+ * @param {Map<number, boolean>} outsideDeclarations
  * @return {Placement | null} null when the output would not get shorter
  */
 export function buildMergedRule(
@@ -157,15 +165,17 @@ export function buildMergedRule(
   const secondLeftover = leftoverOf(second);
   /** @type {Placement} */
   const placement = {
-    first: firstLeftover,
-    second: [receivingRecord, ...secondLeftover].filter((record) =>
-      record.childCount()
+    first: indicesOf(firstLeftover),
+    second: indicesOf(
+      [receivingRecord, ...secondLeftover].filter((record) =>
+        record.childCount()
+      )
     ),
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
       rule.removeDeclarationsAt(claimed);
-      return leftoverOf(rule);
+      return indicesOf(leftoverOf(rule));
     });
   }
   return placement;

@@ -1,5 +1,8 @@
 import { Slot } from './blockRecords.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
+
+const REFILLED = 'a skipped entry is no longer emptied';
 
 /** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecord as Block} from './blockRecord.js' */
@@ -55,9 +58,11 @@ export default class DeclarationScan {
   #records;
 
   /**
-   * @type {Map<Slot | number | DeclarationRecord | ChildNode, number>} for a slot that holds no
-   * rule, or a block that left none, the index of a later sibling before which
-   * no live node stands
+   * Per block index, the index of a later sibling before which no live entry
+   * stands, for each position a skip has passed. Made at the first skip in a
+   * block; a child appended later has no entry.
+   *
+   * @type {Map<number, number[]>}
    */
   #skips = new Map();
 
@@ -78,7 +83,7 @@ export default class DeclarationScan {
    *
    * @param {RuleRecord} first
    * @param {RuleRecord} second
-   * @param {WeakMap<Block, boolean>} outsideDeclarations whether a rule has
+   * @param {Map<number, boolean>} outsideDeclarations whether a rule has
    * a declaration outside its nested rules, valid for the whole scan: rewrites
    * move declarations between rules but never create one outside them
    * @return {boolean}
@@ -90,10 +95,10 @@ export default class DeclarationScan {
       enclosing = this.#records.block(enclosing.parent);
     }
     if (!enclosing) return false;
-    let hasOutside = outsideDeclarations.get(enclosing);
+    let hasOutside = outsideDeclarations.get(enclosing.index);
     if (hasOutside === undefined) {
       hasOutside = hasDeclarationOutsideRules(this.#records, enclosing);
-      outsideDeclarations.set(enclosing, hasOutside);
+      outsideDeclarations.set(enclosing.index, hasOutside);
     }
     if (!hasOutside) return false;
 
@@ -142,16 +147,24 @@ export default class DeclarationScan {
     const { children } = block;
     const { length } = children;
     const records = this.#records;
+    let jumps = this.#skips.get(block.index);
+    if (jumps === undefined) {
+      jumps = [];
+      this.#skips.set(block.index, jumps);
+    }
     let end = index;
     while (end < length) {
-      const entry = children[end];
-      if (!isEmptied(records, entry)) break;
-      end = this.#skips.get(entry) ?? end + 1;
+      if (!isEmptied(records, children[end])) break;
+      end = jumps[end] ?? end + 1;
+    }
+    if (consistencyChecksEnabled()) {
+      for (let at = index; at < end; at++) {
+        if (!isEmptied(records, children[at])) throw new Error(REFILLED);
+      }
     }
     for (let at = index; at < end;) {
-      const entry = children[at];
-      const next = this.#skips.get(entry) ?? at + 1;
-      this.#skips.set(entry, end);
+      const next = jumps[at] ?? at + 1;
+      jumps[at] = end;
       at = next;
     }
     return end;

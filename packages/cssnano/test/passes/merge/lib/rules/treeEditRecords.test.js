@@ -169,7 +169,7 @@ test('removeRules should mark the record of each rule it removes departed', () =
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
   const [, removed] = /** @type {Rule[]} */ (root.nodes);
   const record = ruleRecordOf(state.records, removed);
-  removeRules(state, new Set([ruleRecordOf(state.records, removed)]));
+  removeRules(state, new Set([ruleRecordOf(state.records, removed).index]));
   assert.throws(() => record.declarations, /departed/v);
 });
 
@@ -177,7 +177,7 @@ test('removeRules should leave the record of a rule it keeps readable', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
   const [kept, removed] = /** @type {Rule[]} */ (root.nodes);
   ruleRecordOf(state.records, kept);
-  removeRules(state, new Set([ruleRecordOf(state.records, removed)]));
+  removeRules(state, new Set([ruleRecordOf(state.records, removed).index]));
   assert.equal(ruleRecordOf(state.records, kept).departed, false);
 });
 

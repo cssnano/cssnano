@@ -1,5 +1,4 @@
 import type { RuleRecord } from './ruleRecord.js';
-import type { BlockRecord } from './blockRecord.js';
 import type RuleSequence from './ruleSequence.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {ChildNode} from 'postcss' */
@@ -49,10 +48,10 @@ export type Group = {
  * @param {number} delta how much the pair alone lengthens the output
  * @param {import('./mergeState.js').default} mergeState
  * @param {RuleSequence} sequence
- * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
+ * @param {Map<number, boolean>} outsideDeclarations
  * @return {Group | null}
  */
-export declare function findGroup(first: RuleRecord, second: number, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: WeakMap<BlockRecord, boolean>): Group | null;
+export declare function findGroup(first: RuleRecord, second: number, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: Map<number, boolean>): Group | null;
 /**
  * Records in `earliest` the farthest pair before `resume` that a rewrite at
  * `link` can change, if it is farther than the recorded pair. A later rule

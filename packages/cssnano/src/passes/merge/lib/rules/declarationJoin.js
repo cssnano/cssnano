@@ -124,11 +124,11 @@ export default function joinByDeclarations(block, mergeState) {
   const groups = new Map();
   // Rules whose selector lists grew; their text is written once at the end,
   // since rewriting a long list on every join would cost quadratic time.
-  /** @type {Set<RuleRecord>} */
+  /** @type {Set<number>} the indices of the rules that grew */
   const grown = new Set();
   // Rules that gave up every declaration, detached together at the end:
   // removing each one splices the parent's array, which takes quadratic time.
-  /** @type {Set<RuleRecord>} */
+  /** @type {Set<number>} the indices of the rules that gave up every declaration */
   const emptied = new Set();
   for (let position = scan.start; position < entries.length; position++) {
     const entry = entries[position];
@@ -145,7 +145,11 @@ export default function joinByDeclarations(block, mergeState) {
     }
     index.recordNode(entry, position, keysOf);
   }
-  for (const record of grown) mergeState.spellSelectors(record);
+  for (const grownIndex of grown) {
+    mergeState.spellSelectors(
+      /** @type {RuleRecord} */ (mergeState.records.rule(grownIndex))
+    );
+  }
   removeRules(mergeState, emptied);
   return grown.size > 0;
 
@@ -231,7 +235,7 @@ export default function joinByDeclarations(block, mergeState) {
     const gained = mergeState.addSelectors(groupRecord, added, laterRecord);
     for (const selector of added) group.selectors?.add(selector);
     if (listed) recordGained(group, gained);
-    grown.add(group.rule);
+    grown.add(group.rule.index);
     const outcome = withdraw(laterRecord, claimed);
     return outcome;
   }
@@ -260,7 +264,7 @@ export default function joinByDeclarations(block, mergeState) {
     // The group's writes already stand at its position, so the declarations
     // that leave `later` record nothing.
     if (claimed.size === later.declarations.length) {
-      emptied.add(later);
+      emptied.add(later.index);
       return 'emptied';
     }
     later.removeDeclarationsAt(claimed);

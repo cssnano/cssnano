@@ -119,7 +119,7 @@ function mergesWithAll(members, later, parent, mergeState) {
  * @param {number} delta how much the pair alone lengthens the output
  * @param {import('./mergeState.js').default} mergeState
  * @param {RuleSequence} sequence
- * @param {WeakMap<BlockRecord, boolean>} outsideDeclarations
+ * @param {Map<number, boolean>} outsideDeclarations
  * @return {Group | null}
  */
 export function findGroup(

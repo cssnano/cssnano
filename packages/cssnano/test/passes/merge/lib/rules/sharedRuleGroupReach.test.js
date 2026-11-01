@@ -60,7 +60,7 @@ function groupsOf(css) {
   const mergeState = new MergeState(['Chrome 120']);
   mergeState.records = buildRecords(root, mergeState);
   const sequence = new RuleSequence(mergeState.records);
-  const outsideDeclarations = new WeakMap();
+  const outsideDeclarations = new Map();
   /** @type {number[]} */
   const links = [];
   for (let link = sequence.head; link !== -1; link = sequence.nextOf(link)) {

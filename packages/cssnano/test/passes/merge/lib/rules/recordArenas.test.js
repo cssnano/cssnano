@@ -12,6 +12,7 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { ruleRecordOf } from './liveRecords.js';
+import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 
 /** @import {Root, Rule} from 'postcss' */
 /** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
@@ -213,4 +214,16 @@ test('a nested at-rule block should be a number in its parent children, naming t
   const nested = records.block(/** @type {number} */ (entry));
   assert.equal(nested.index, entry);
   assert.equal(nested.parent, records.root.index);
+});
+
+test('assertOwnershipIsTree should accept the records of a stylesheet', () => {
+  const { state } = setup('@media (x){a{color:red;b{width:1px}}}c{top:0}');
+  assert.doesNotThrow(() => assertOwnershipIsTree(state.records));
+});
+
+test('assertOwnershipIsTree should throw when a rule is held by two slots', () => {
+  const { state } = setup('a{color:red}b{width:1px}');
+  const [first, second] = /** @type {Slot[]} */ (state.records.root.children);
+  second.rules.push(first.rules[0]);
+  assert.throws(() => assertOwnershipIsTree(state.records), /reached twice/v);
 });

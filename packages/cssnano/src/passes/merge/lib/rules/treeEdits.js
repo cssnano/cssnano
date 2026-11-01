@@ -203,15 +203,16 @@ export function appendToDeclarations(mergeState, receiving, index, incoming) {
  * catches up at write-back.
  *
  * @param {MergeState} mergeState
- * @param {Set<RuleRecord>} records
+ * @param {Set<number>} indices the indices of the rules to remove
  * @return {void}
  */
-export function removeRules(mergeState, records) {
+export function removeRules(mergeState, indices) {
   const arena = mergeState.records;
   const { root } = arena;
   const first = arena.firstLiveChild(root.index);
   let leadsRoot = false;
-  for (const record of records) {
+  for (const index of indices) {
+    const record = /** @type {RuleRecord} */ (arena.rule(index));
     leadsRoot ||= record.node === first;
     const slot = arena.slotOf(record);
     slot.rules.splice(slot.rules.indexOf(record.index), 1);
