@@ -242,7 +242,10 @@ export default class RuleSequence {
     // A block which has become empty can be safely ignored, but keeping it
     // would make every later pair walk across it.
     for (const block of this.#tracked) {
-      if (block.remaining === 0) block.dropped = true;
+      if (block.remaining === 0) {
+        block.dropped = true;
+        this.#records.links.unlink(block.index);
+      }
     }
   }
 }

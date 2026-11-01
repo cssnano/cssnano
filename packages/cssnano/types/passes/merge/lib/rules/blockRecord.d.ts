@@ -20,6 +20,20 @@ export declare class BlockRecord {
     /** @type {(Slot | number)[]} */
     children: (Slot | number)[];
     /**
+     * The first entry of the chain of live children, which `BlockRecords` links,
+     * or -1 when the block holds none.
+     *
+     * @type {number}
+     */
+    first: number;
+    /**
+     * The last entry of the chain of live children, or -1 when the block holds
+     * none.
+     *
+     * @type {number}
+     */
+    last: number;
+    /**
      * The live children of a droppable block during a sweep, or null while the
      * block is not tracked. Dropping an emptied `@layer` is safe because a rule
      * moves only into an equivalent earlier block, which already orders the

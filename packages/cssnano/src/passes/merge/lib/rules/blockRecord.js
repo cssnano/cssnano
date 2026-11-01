@@ -25,6 +25,22 @@ export class BlockRecord {
   children = [];
 
   /**
+   * The first entry of the chain of live children, which `BlockRecords` links,
+   * or -1 when the block holds none.
+   *
+   * @type {number}
+   */
+  first = -1;
+
+  /**
+   * The last entry of the chain of live children, or -1 when the block holds
+   * none.
+   *
+   * @type {number}
+   */
+  last = -1;
+
+  /**
    * The live children of a droppable block during a sweep, or null while the
    * block is not tracked. Dropping an emptied `@layer` is safe because a rule
    * moves only into an equivalent earlier block, which already orders the
