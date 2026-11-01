@@ -6,7 +6,6 @@ import { DeclarationRecord } from '../../../../../src/passes/ir/declarationRecor
 import {
   BlockRecord,
   NodeEntry,
-  Slot,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
@@ -35,42 +34,51 @@ test('every index below the entry count of a fresh build names the entry that ho
   }
 });
 
-test('a declaration of a block is an arena entry that the block names by index', () => {
+test('a declaration of a block is an arena entry that the block chain links', () => {
   const { root, state } = setup('@font-face{src:x;font-family:y}');
   const block = blockRecordOf(
     state.records,
     /** @type {Container} */ (root.nodes[0])
   );
-  assert.equal(block.children.length, 2);
-  for (const index of block.children) {
-    assert.equal(typeof index, 'number');
-    const entry = state.records.entry(/** @type {number} */ (index));
+  assert.equal(block.count, 2);
+  const { links } = state.records;
+  for (
+    let index = links.firstChild(block.index);
+    index !== -1;
+    index = links.nextSibling(index)
+  ) {
+    const entry = state.records.entry(index);
     assert.ok(entry instanceof DeclarationRecord);
     assert.equal(entry.index, index);
   }
 });
 
-test('a comment of a block is a bare arena entry that the block names by index', () => {
+test('a comment of a block is a bare arena entry that the block chain links', () => {
   const { root, state } = setup('@media print{/* note */}');
   const block = blockRecordOf(
     state.records,
     /** @type {Container} */ (root.nodes[0])
   );
-  const [index] = block.children;
-  const entry = state.records.entry(/** @type {number} */ (index));
+  const index = state.records.links.firstChild(block.index);
+  const entry = state.records.entry(index);
   assert.ok(entry instanceof NodeEntry);
   assert.equal(entry.node.type, 'comment');
   assert.equal(entry.index, index);
 });
 
-test('the children of every block are slots and arena indices, never entries themselves', () => {
+test('every entry of a block chain names that block as its container', () => {
   const { state } = setup(
     'a{color:red}@media print{b{width:1px}/* c */}@font-face{src:x}'
   );
+  const { links } = state.records;
   for (const block of state.records.blocks()) {
     assert.ok(block instanceof BlockRecord);
-    for (const child of block.children) {
-      assert.ok(child instanceof Slot || typeof child === 'number');
+    for (
+      let index = links.firstChild(block.index);
+      index !== -1;
+      index = links.nextSibling(index)
+    ) {
+      assert.equal(links.parentOf(index), block.index);
     }
   }
 });

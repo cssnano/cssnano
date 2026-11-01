@@ -11,10 +11,9 @@ import {
   removeRules,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { ruleRecordOf } from './liveRecords.js';
+import { blockRecordOf, ruleRecordOf } from './liveRecords.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
-/** @import {Slot} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
 // The records of the rules an edit touches stay readable, or, for a rule that
 // left the stylesheet, are marked departed. Consistency checks compare each
@@ -196,20 +195,42 @@ test('depart should leave the rule in the tree', () => {
   assert.equal(rule.parent, root);
 });
 
-test('takePlaceOf should move the record of the earlier rule into the slot of the later one', () => {
-  const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
+test('takePlaceOf should link the earlier rule where the later one stood', () => {
+  const { root, state } = setup(
+    '@media print{x{color:red}a{color:red}b{width:1px}}'
+  );
   const [media] = /** @type {Container} */ (root).nodes;
-  const [earlier, later] = /** @type {Rule[]} */ (
+  const [x, earlier, later] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const laterSlot = ruleRecordOf(state.records, later).slot;
   takePlaceOf(
     state,
     /** @type {Container} */ (media),
     ruleRecordOf(state.records, earlier),
     ruleRecordOf(state.records, later)
   );
-  assert.equal(ruleRecordOf(state.records, earlier).slot, laterSlot);
+  const entries = state.records.liveEntries(
+    blockRecordOf(state.records, media).index
+  );
+  assert.equal(entries.length, 2);
+  assert.equal(entries[0], ruleRecordOf(state.records, x));
+  assert.equal(entries[1], ruleRecordOf(state.records, earlier));
+});
+
+test('takePlaceOf should unlink the later rule once the earlier one takes its place', () => {
+  const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
+  const [media] = /** @type {Container} */ (root).nodes;
+  const [earlier, later] = /** @type {Rule[]} */ (
+    /** @type {Container} */ (media).nodes
+  );
+  const laterRecord = ruleRecordOf(state.records, later);
+  takePlaceOf(
+    state,
+    /** @type {Container} */ (media),
+    ruleRecordOf(state.records, earlier),
+    laterRecord
+  );
+  assert.equal(state.records.links.parentOf(laterRecord.index), -1);
 });
 
 test('appendToDeclarations should throw when the receiving rule holds a block', () => {
@@ -240,12 +261,20 @@ test('removeDeclarationsAt should throw when the rule holds a block', () => {
   );
 });
 
-test('buildRecords should give each slot the record of its rule, which names the slot', () => {
+test('buildRecords should link each rule into the chain of the stylesheet, in document order', () => {
   const { root, state } = setup('a{color:red}b{width:1px}');
-  const [first] = /** @type {Slot[]} */ (state.records.root.children);
+  const [a, b] = /** @type {Rule[]} */ (root.nodes);
+  const { links, root: block } = state.records;
+  const first = links.firstChild(block.index);
+  assert.equal(first, ruleRecordOf(state.records, a).index);
+  assert.equal(links.nextSibling(first), ruleRecordOf(state.records, b).index);
+});
+
+test('buildRecords should name the stylesheet as the container of each of its rules', () => {
+  const { root, state } = setup('a{color:red}');
+  const [a] = /** @type {Rule[]} */ (root.nodes);
   assert.equal(
-    state.records.rule(first.rules[0]),
-    ruleRecordOf(state.records, /** @type {Rule} */ (root.first))
+    state.records.links.parentOf(ruleRecordOf(state.records, a).index),
+    state.records.root.index
   );
-  assert.equal(state.records.slotOf(state.records.rule(first.rules[0])), first);
 });

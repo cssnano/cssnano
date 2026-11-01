@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
+import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
@@ -10,6 +10,7 @@ import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdit
 import { writeBack } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 
 /** @import {Container, Root} from 'postcss' */
+/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
 /**
  * Makes each rule's `parent` and each block's `nodes` throw when read or
@@ -86,20 +87,22 @@ function scanned(css) {
 }
 
 /**
- * The records of the stylesheet and of each at-rule block it holds, without
- * dropped ones. Rule blocks are reached through their slots and not needed here.
+ * The records of the stylesheet and of each at-rule block its chain links,
+ * without dropped ones. Rule blocks are not reached here.
  *
+ * @param {BlockRecords} records
  * @param {BlockRecord} block
  * @return {BlockRecord[]}
  */
 function liveBlocks(records, block) {
   const blocks = [block];
-  for (const entry of block.children) {
-    if (typeof entry === 'number') {
-      const nested = /** @type {BlockRecord} */ (records.block(entry));
-      if (!records.isDropped(entry))
-        blocks.push(...liveBlocks(records, nested));
-    }
+  for (
+    let entry = records.links.firstChild(block.index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    const item = records.entry(entry);
+    if (item instanceof BlockRecord) blocks.push(...liveBlocks(records, item));
   }
   return blocks;
 }

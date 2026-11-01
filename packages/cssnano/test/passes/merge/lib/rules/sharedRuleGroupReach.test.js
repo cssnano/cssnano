@@ -178,7 +178,7 @@ test('earliestPairReaching should reach the first rule of a pair whose second ru
 test('findGroup should form a group whose pair spans two equal blocks in the generated stylesheets, so the property below covers that pair', () => {
   assert.ok(
     allGroups({ blocks: true }).some(
-      ({ first, second }) => first.slotBlock !== second.slotBlock
+      ({ first, second }) => first.node.parent !== second.node.parent
     )
   );
 });

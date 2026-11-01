@@ -3,13 +3,12 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { subtreeEntries } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 import { DeclarationRecord } from '../../../../../src/passes/ir/declarationRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { entryOf } from './liveRecords.js';
-
-/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 
 /**
  * The entries under the first at-rule of `css`, read from its record.
@@ -31,6 +30,27 @@ function entriesOf(css) {
 }
 
 /**
+ * The property names of the declarations a block chain links, in order.
+ *
+ * @param {import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecords} records
+ * @param {number} block the index of the block
+ * @return {string[]}
+ */
+function chainProps(records, block) {
+  /** @type {string[]} */
+  const props = [];
+  for (
+    let index = records.links.firstChild(block);
+    index !== -1;
+    index = records.links.nextSibling(index)
+  ) {
+    const item = records.entry(index);
+    if (item instanceof DeclarationRecord) props.push(item.prop);
+  }
+  return props;
+}
+
+/**
  * The property names of the declarations of `entries`, in order: a rule
  * record stands for its own declarations.
  *
@@ -42,14 +62,7 @@ function propsOf({ records, entries }) {
     if (entry.block === -1) {
       return entry.declarations.map((declaration) => declaration.prop);
     }
-    // A block's children are indices of the arena, which name its declarations.
-    const { children } = /** @type {BlockRecord} */ (
-      records.block(entry.block)
-    );
-    return children.flatMap((index) => {
-      const item = typeof index === 'number' ? records.entry(index) : undefined;
-      return item instanceof DeclarationRecord ? [item.prop] : [];
-    });
+    return chainProps(records, entry.block);
   });
 }
 

@@ -65,8 +65,8 @@ function sameChain(records, a, b, textTable) {
     sameBlock(a.node, b.node, textTable) &&
     sameChain(
       records,
-      records.block(a.parent),
-      records.block(b.parent),
+      records.links.enclosingBlock(a.index),
+      records.links.enclosingBlock(b.index),
       textTable
     )
   );

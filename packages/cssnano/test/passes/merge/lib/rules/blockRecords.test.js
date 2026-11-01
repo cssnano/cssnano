@@ -3,7 +3,6 @@ import { after, before, test } from 'node:test';
 import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { Slot } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
 import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 import {
@@ -25,7 +24,6 @@ import { assertNoOverDuplication } from '../../../../../src/passes/merge/lib/rul
 import { mergePass } from '../../../../../src/passes/merge/index.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
-import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
@@ -45,26 +43,26 @@ function setup(css) {
   return { root, state };
 }
 
-test('buildRecords should hold each rule of a block in its own slot, in order', () => {
+test('buildRecords should link the rules of a block in document order', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
-  const media = /** @type {BlockRecord} */ (
-    blockRecordOf(state.records, /** @type {any} */ (root.first))
-  );
-  const [first, second] = media.children;
-  assert.ok(first instanceof Slot);
-  assert.ok(second instanceof Slot);
-  assert.equal(state.records.rule(first.rules[0]).node.selector, 'a');
-  assert.equal(state.records.rule(second.rules[0]).node.selector, 'b');
-  assert.equal(state.records.slotOf(state.records.rule(first.rules[0])), first);
+  const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
+  const [a, b] = /** @type {Rule[]} */ (media.node.nodes);
+  const { links } = state.records;
+  const first = links.firstChild(media.index);
+  assert.equal(first, ruleRecordOf(state.records, a).index);
+  assert.equal(links.nextSibling(first), ruleRecordOf(state.records, b).index);
 });
 
-test('buildRecords should give a rule that holds a rule a block record for its children', () => {
+test('buildRecords should give a rule that holds a rule a block record linked under the rule', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = /** @type {Rule} */ (root.first);
   const block = state.records.block(ruleRecordOf(state.records, rule).block);
   assert.ok(block instanceof BlockRecord);
   assert.equal(block.node, rule);
-  assert.equal(block.parent, state.records.root.index);
+  assert.equal(
+    state.records.links.parentOf(block.index),
+    ruleRecordOf(state.records, rule).index
+  );
 });
 
 test('buildRecords should leave a rule with only declarations without a block record', () => {
@@ -79,13 +77,13 @@ test('assertRecordsMatchTree should accept records built from a stylesheet', () 
   assert.doesNotThrow(() => assertRecordsMatchTree(state));
 });
 
-test('assertRecordsMatchTree should throw when a rule record names a slot the rule is not in', () => {
+test('assertRecordsMatchTree should throw when the chain holds the rules in another order than the tree', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = /** @type {BlockRecord} */ (
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
-  const [first, second] = /** @type {Slot[]} */ (media.children);
-  state.records.rule(first.rules[0]).place(second.block, second.position);
+  const [a] = /** @type {Rule[]} */ (media.node.nodes);
+  state.records.moveRule(media.index, ruleRecordOf(state.records, a).index);
   assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
 });
 
@@ -190,27 +188,7 @@ test('liveChildren should return a fresh array of the children, not the entries'
   assert.equal(state.records.liveChildren(state.records.root.index).length, 1);
 });
 
-/**
- * Whether each slot and nested record of a block holds its index among the
- * entries as position. A raw node has no position.
- *
- * @param {BlockRecords} records
- * @param {BlockRecord} block
- * @return {boolean}
- */
-function positionsMatchIndex(records, block) {
-  return block.children.every((entry, index) => {
-    if (entry instanceof Slot) return entry.position === index;
-    if (typeof entry === 'number') {
-      return (
-        /** @type {BlockRecord} */ (records.block(entry)).position === index
-      );
-    }
-    return true;
-  });
-}
-
-test('an entry should hold its index as position after a move of children', () => {
+test('the chains should stay well formed after a move of children', () => {
   const { root, state } = setup(
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
@@ -219,15 +197,12 @@ test('an entry should hold its index as position after a move of children', () =
     blockRecordOf(state.records, first).index,
     blockRecordOf(state.records, second).index
   );
-  assert.equal(
-    positionsMatchIndex(state.records, blockRecordOf(state.records, first)),
-    true
-  );
+  assertRecordsWellFormed(state);
 });
 
-test('an entry should hold its index as position after a join takes the place of a block', () => {
+test('the chains should stay well formed after a join takes the place of a block', () => {
   const { root, state } = setup(
-    'a{color:red}@media print{b{width:1px}}@media print{c{height:1px}}'
+    'a{color:red}@media print{b{width:1px}}@media print{}'
   );
   const [, earlier, later] = /** @type {Container} */ (root).nodes;
   takePlaceOf(
@@ -236,19 +211,17 @@ test('an entry should hold its index as position after a join takes the place of
     blockRecordOf(state.records, earlier),
     blockRecordOf(state.records, later)
   );
-  assert.equal(positionsMatchIndex(state.records, state.records.root), true);
+  assertRecordsWellFormed(state);
 });
 
-test('an entry should hold its index as position after a removal of a block', () => {
-  const { root, state } = setup(
-    'a{color:red}@media print{b{width:1px}}c{height:1px}'
-  );
+test('the chains should stay well formed after a removal of a block', () => {
+  const { root, state } = setup('a{color:red}@media print{}c{height:1px}');
   const [, media] = /** @type {Container} */ (root).nodes;
   remove(state.records, blockRecordOf(state.records, media));
-  assert.equal(positionsMatchIndex(state.records, state.records.root), true);
+  assertRecordsWellFormed(state);
 });
 
-test('an entry should hold its index as position after a rule moves to the end of a block', () => {
+test('the chains should stay well formed after a rule moves to the end of a block', () => {
   const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
@@ -256,20 +229,7 @@ test('an entry should hold its index as position after a rule moves to the end o
     state.records.root.index,
     ruleRecordOf(state.records, rule).index
   );
-  assert.equal(positionsMatchIndex(state.records, state.records.root), true);
-});
-
-test('assertRecordsWellFormed should throw when an entry holds a position other than its index', () => {
-  const { state } = setup('a{color:red}b{width:1px}');
-  state.records.root.children[1].position = 5;
-  assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
-});
-
-test('a sweep should keep the positions the records hold rather than resetting them', () => {
-  const { state } = setup('a{color:red}b{width:1px}');
-  state.records.root.children[1].position = 5;
-  new RuleSequence(state.records);
-  assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
+  assertRecordsWellFormed(state);
 });
 
 test('assertSweepLowers should throw when a sweep moved a rule and the potential stayed equal', () => {
@@ -340,7 +300,7 @@ test('assertNoOverDuplication should throw when a chain reaches a rule that a se
   );
 });
 
-test('firstLiveChild should give the node after the first rule once that rule is unlinked', () => {
+test('links.firstChild should give the entry after the first rule once that rule is unlinked', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
   const first = ruleRecordOf(
@@ -348,5 +308,8 @@ test('firstLiveChild should give the node after the first rule once that rule is
     /** @type {Rule} */ (media.node.first)
   );
   state.records.links.unlink(first.index);
-  assert.equal(state.records.firstLiveChild(media.index), media.node.nodes[1]);
+  assert.equal(
+    state.records.nodeOf(state.records.links.firstChild(media.index)),
+    media.node.nodes[1]
+  );
 });

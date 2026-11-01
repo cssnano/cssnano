@@ -3,26 +3,15 @@
 
 /**
  * The record of a container that the merge visits: the stylesheet, an at-rule
- * with a block, or a rule that holds rules or at-rules. `children` has one
- * entry per child, in order: a slot for a rule, or the index in the arena of a
- * block, declaration or bare node. Entries are never spliced out, so a removed
- * entry is left in place and skipped.
+ * with a block, or a rule that holds rules or at-rules. Its children are the
+ * entries its chain links, which `BlockRecords` keeps.
  */
 export class BlockRecord {
   /** @type {Container} */
   node;
 
-  /** @type {number} the index of the block whose children hold this one's entry, -1 for the stylesheet */
-  parent;
-
-  /** @type {number} where the entry stands among the children of `parent` */
-  position;
-
   /** @type {boolean} whether the block applies nothing once it is empty */
   droppable;
-
-  /** @type {(Slot | number)[]} */
-  children = [];
 
   /**
    * The first entry of the chain of live children, which `BlockRecords` links,
@@ -70,14 +59,10 @@ export class BlockRecord {
 
   /**
    * @param {Container} node
-   * @param {number} parent the index of the block whose children hold this one's entry, -1 for the stylesheet
-   * @param {number} position
    * @param {boolean} droppable
    */
-  constructor(node, parent, position, droppable) {
+  constructor(node, droppable) {
     this.node = node;
-    this.parent = parent;
-    this.position = position;
     this.droppable = droppable;
   }
 }
@@ -97,32 +82,5 @@ export class NodeEntry {
   /** @param {ChildNode} node */
   constructor(node) {
     this.node = node;
-  }
-}
-
-/**
- * One position among the children of a block. `rules` are the indices of the
- * rules that stand there now, in order, so the slot is empty once every rule
- * left.
- */
-export class Slot {
-  /** @type {number} the index of the block the slot stands in */
-  block;
-
-  /** @type {number} where the slot stands among the children of `block` */
-  position;
-
-  /** @type {number[]} the indices of the rules in the slot */
-  rules;
-
-  /**
-   * @param {number} block the index of the block the slot stands in
-   * @param {number} position
-   * @param {number[]} rules
-   */
-  constructor(block, position, rules) {
-    this.block = block;
-    this.position = position;
-    this.rules = rules;
   }
 }

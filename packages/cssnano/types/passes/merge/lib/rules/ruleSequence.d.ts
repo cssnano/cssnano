@@ -17,7 +17,7 @@ export type Placement = {
      */
     following?: number[][];
 };
-/** @import {BlockRecords, Slot} from './blockRecords.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /**
  * The rules that stand in the slots of a pair after it is merged.
  *

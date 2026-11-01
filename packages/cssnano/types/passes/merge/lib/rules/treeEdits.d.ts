@@ -1,13 +1,13 @@
 import { BlockRecords } from './blockRecords.js';
 import { BlockRecord } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
 import type { Container, Root } from 'postcss';
+import type { RuleRecord } from './ruleRecord.js';
 import type { PropertyWrites } from './propertyWrites.js';
 import type MergeState from './mergeState.js';
 /**
- * Builds the records of a stylesheet from its tree, once per run. Each rule
- * gets a slot, and each rule that holds a rule or an at-rule gets the record
- * of its children.
+ * Builds the records of a stylesheet from its tree, once per run. Each child is
+ * linked into the chain of its parent, and each rule that holds a rule or an
+ * at-rule gets the record of its children.
  *
  * @param {Root} root
  * @param {MergeState} mergeState

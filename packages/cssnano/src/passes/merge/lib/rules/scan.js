@@ -75,7 +75,8 @@ export default function runScan(mergeState) {
     if (shared > 0) return shared;
     const rewritesStructure =
       (a.keys.length === 0 && b.keys.length === 0) ||
-      (first.slotBlock !== second.slotBlock &&
+      (mergeState.records.links.parentOf(first.index) !==
+        mergeState.records.links.parentOf(second.index) &&
         sameContainer(mergeState.blockOf(first), mergeState.blockOf(second)));
     return rewritesStructure ? 0 : NO_BENEFIT;
   };
@@ -105,7 +106,12 @@ export default function runScan(mergeState) {
     const a = rule(first);
     const b = rule(second);
     if (
-      !mergeState.canMerge(a, b, a.slotBlock, b.slotBlock) ||
+      !mergeState.canMerge(
+        a,
+        b,
+        mergeState.records.links.parentOf(a.index),
+        mergeState.records.links.parentOf(b.index)
+      ) ||
       sequence.declarationBetween(a, b, outsideDeclarations)
     ) {
       return null;

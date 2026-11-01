@@ -20,9 +20,7 @@ const decl = (prop) => ({ keys: keys(prop) });
 // Element keys for writes that may reach any element.
 const unknownElements = () => null;
 /** An arena for the index calls that read no nested block. */
-const noBlocks = new BlockRecords(
-  new BlockRecord(postcss.root(), -1, 0, false)
-);
+const noBlocks = new BlockRecords(new BlockRecord(postcss.root(), false));
 
 /**
  * The first node of `css`, with the records of its stylesheet.
