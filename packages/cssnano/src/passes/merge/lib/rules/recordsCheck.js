@@ -26,7 +26,7 @@ function checkChain(records, block) {
   for (const entry of block.children) {
     if (entry instanceof Slot) {
       for (const ruleIndex of entry.rules) live.push(ruleIndex);
-    } else if (!records.blockEntry(entry)?.dropped) {
+    } else if (!records.isDropped(entry)) {
       live.push(entry);
     }
   }
@@ -86,7 +86,7 @@ function checkBlockStructure(records, block) {
       if (nested.parent !== block.index || nested.position !== index) {
         throw new Error(OUT_OF_STEP);
       }
-      if (nested.dropped) {
+      if (records.isDropped(entry)) {
         // A dropped block is unlinked, so only its live children are checked.
         if (records.liveCount(entry) !== 0) throw new Error(OUT_OF_STEP);
       } else {

@@ -57,6 +57,11 @@ export declare class BlockRecords {
      */
     blockEntry(index: number): BlockRecord | undefined;
     /**
+     * @param {number} index an index that the arena gave
+     * @return {boolean} whether a sweep dropped the block at `index`, which leaves the tree
+     */
+    isDropped(index: number): boolean;
+    /**
      * @param {number} index an index that `recordRule` gave
      * @return {RuleRecord | undefined}
      */
@@ -86,16 +91,6 @@ export declare class BlockRecords {
      * @return {ChildNode}
      */
     nodeOf(index: number): ChildNode;
-    /**
-     * Accounts for the block at `index` gaining `change` live children, or losing
-     * them when negative. A droppable block that is tracked and goes empty tells
-     * its parent, which may go empty in turn.
-     *
-     * @param {number} index
-     * @param {number} change
-     * @return {void}
-     */
-    changed(index: number, change: number): void;
     /**
      * The first live child of the block at `index`; see `blockChildren.js`.
      *

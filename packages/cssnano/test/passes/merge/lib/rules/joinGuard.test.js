@@ -97,7 +97,8 @@ function liveBlocks(records, block) {
   for (const entry of block.children) {
     if (typeof entry === 'number') {
       const nested = /** @type {BlockRecord} */ (records.block(entry));
-      if (!nested.dropped) blocks.push(...liveBlocks(records, nested));
+      if (!records.isDropped(entry))
+        blocks.push(...liveBlocks(records, nested));
     }
   }
   return blocks;

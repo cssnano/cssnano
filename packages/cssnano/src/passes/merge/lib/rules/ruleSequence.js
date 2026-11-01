@@ -2,7 +2,7 @@ import DeclarationScan from './declarationScan.js';
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecords, Slot} from './blockRecords.js' */
 
 /**
  * The rules that stand in the slots of a pair after it is merged.
@@ -39,9 +39,6 @@ export default class RuleSequence {
   /** @type {DeclarationScan} */
   #scan;
 
-  /** @type {BlockRecord[]} droppable blocks tracked by this sweep */
-  #tracked = [];
-
   /** @type {number} the index of the last rule linked so far, -1 before the first */
   #tail = -1;
 
@@ -57,14 +54,13 @@ export default class RuleSequence {
 
   /**
    * Links the rules under `block` in document order, after the rules already
-   * linked, and tracks each droppable block that a sweep may empty.
+   * linked.
    *
    * @param {BlockRecord} block
    * @return {void}
    */
   #collect(block) {
     const { links } = this.#records;
-    let live = 0;
     for (
       let entry = links.firstChild(block.index);
       entry !== -1;
@@ -73,21 +69,14 @@ export default class RuleSequence {
       const item = this.#records.entry(entry);
       if (item instanceof RuleRecord) {
         this.#tail = this.#link(this.#tail, entry);
-        live++;
         if (item.block !== -1) {
           this.#collect(
             /** @type {BlockRecord} */ (this.#records.block(item.block))
           );
         }
-      } else {
-        live++;
-        if (item instanceof BlockRecord) this.#collect(item);
+      } else if (item instanceof BlockRecord) {
+        this.#collect(item);
       }
-    }
-    block.remaining = null;
-    if (block.droppable && live > 0) {
-      block.remaining = live;
-      this.#tracked.push(block);
     }
   }
 
@@ -177,8 +166,6 @@ export default class RuleSequence {
     const target = /** @type {RuleRecord} */ (records.rule(first)).slotBlock;
     const source = /** @type {RuleRecord} */ (records.rule(second)).slotBlock;
     if (target === source) return false;
-    records.changed(source, -1);
-    records.changed(target, 1);
     records.moveRule(target, second);
     // The sweep retries a moved pair, so a move that leaves the parents
     // apart would repeat forever; it throws instead.
@@ -188,6 +175,7 @@ export default class RuleSequence {
     ) {
       throw new Error('a moved rule is still outside the parent it joined');
     }
+    this.#dropIfEmptied(source);
     return true;
   }
 
@@ -212,10 +200,8 @@ export default class RuleSequence {
     );
     // Both rules may share a slot after an earlier partial merge, so each is
     // replaced where it stands.
-    records.changed(firstSlot.block, placement.first.length - 1);
-    records.changed(secondSlot.block, placement.second.length - 1);
-    records.substitute(firstSlot, first, placement.first);
-    records.substitute(secondSlot, second, placement.second);
+    this.#substitute(firstSlot, first, placement.first);
+    this.#substitute(secondSlot, second, placement.second);
 
     let tail = this.#linkAll(
       this.#linkAll(before, placement.first),
@@ -228,8 +214,7 @@ export default class RuleSequence {
       const slot = records.slotOf(
         /** @type {RuleRecord} */ (records.rule(index))
       );
-      records.changed(slot.block, rules.length - 1);
-      records.substitute(slot, index, rules);
+      this.#substitute(slot, index, rules);
       tail = this.#linkAll(tail, rules);
     }
     if (tail === -1) this.head = following;
@@ -239,19 +224,38 @@ export default class RuleSequence {
   }
 
   /**
-   * Ends the sweep: drops the blocks it emptied. The stylesheet is not touched;
-   * `runMerge` writes the records back once.
+   * Replaces the rule `index` in `slot` with `rules`, then unlinks the block
+   * that the replacement left empty.
    *
+   * @param {Slot} slot
+   * @param {number} index
+   * @param {number[]} rules
    * @return {void}
    */
-  finish() {
-    // A block which has become empty can be safely ignored, but keeping it
-    // would make every later pair walk across it.
-    for (const block of this.#tracked) {
-      if (block.remaining === 0) {
-        block.dropped = true;
-        this.#records.links.unlink(block.index);
-      }
+  #substitute(slot, index, rules) {
+    this.#records.substitute(slot, index, rules);
+    this.#dropIfEmptied(slot.block);
+  }
+
+  /**
+   * Unlinks the droppable block at `index` once an edit has emptied it, then
+   * the droppable block that holds it, if that one is empty in turn. A block
+   * that holds nothing at the start of the sweep is never emptied by an edit,
+   * so it stays.
+   *
+   * @param {number} index
+   * @return {void}
+   */
+  #dropIfEmptied(index) {
+    const { links } = this.#records;
+    let at = index;
+    for (;;) {
+      const block = /** @type {BlockRecord} */ (this.#records.block(at));
+      if (!block.droppable || block.count !== 0) return;
+      const holder = links.parentOf(at);
+      links.unlink(at);
+      if (holder === -1) return;
+      at = holder;
     }
   }
 }

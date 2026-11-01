@@ -1,10 +1,5 @@
-import { Slot } from './blockRecords.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 
-const REFILLED = 'a skipped entry is no longer emptied';
-
-/** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecord as Block} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -19,34 +14,16 @@ const REFILLED = 'a skipped entry is no longer emptied';
  * @return {boolean}
  */
 function hasDeclarationOutsideRules(records, block) {
-  for (const entry of block.children) {
-    if (entry instanceof Slot) continue;
+  for (
+    let entry = records.links.firstChild(block.index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    if (records.entry(entry) instanceof DeclarationRecord) return true;
     const nested = records.blockEntry(entry);
-    if (nested) {
-      if (
-        !nested.dropped &&
-        nested.node.type === 'atrule' &&
-        hasDeclarationOutsideRules(records, nested)
-      ) {
-        return true;
-      }
-    } else if (records.entry(entry) instanceof DeclarationRecord) {
-      return true;
-    }
+    if (nested && hasDeclarationOutsideRules(records, nested)) return true;
   }
   return false;
-}
-
-/**
- * True for a slot that holds no rule, or a block that a sweep emptied.
- *
- * @param {BlockRecords} records
- * @param {Slot | number} entry
- * @return {boolean}
- */
-function isEmptied(records, entry) {
-  if (entry instanceof Slot) return entry.rules.length === 0;
-  return records.blockEntry(entry)?.remaining === 0;
 }
 
 /**
@@ -56,15 +33,6 @@ function isEmptied(records, entry) {
 export default class DeclarationScan {
   /** @type {BlockRecords} */
   #records;
-
-  /**
-   * Per block index, the index of a later sibling before which no live entry
-   * stands, for each position a skip has passed. Made at the first skip in a
-   * block; a child appended later has no entry.
-   *
-   * @type {Map<number, number[]>}
-   */
-  #skips = new Map();
 
   /** @param {BlockRecords} records the arena that the blocks of the links index */
   constructor(records) {
@@ -77,9 +45,10 @@ export default class DeclarationScan {
    * rule may move across it. Neighbors hold no rule between them, so any such
    * declaration belongs to an enclosing rule or a block nested in it.
    *
-   * The walk follows source order as the stylesheet will be written, which
-   * differs from the stylesheet for rules that moved, and is short because it
-   * starts at `first`.
+   * The walk follows the chains from `first`, which is the source order the
+   * stylesheet will be written in, though rules that moved may differ from
+   * the stylesheet. A nested rule's own block is not in a chain, so the walk
+   * does not enter it.
    *
    * @param {RuleRecord} first
    * @param {RuleRecord} second
@@ -89,10 +58,11 @@ export default class DeclarationScan {
    * @return {boolean}
    */
   declarationBetween(first, second, outsideDeclarations) {
+    const { links } = this.#records;
     /** @type {Block | undefined} */
-    let enclosing = this.#records.block(first.slotBlock);
+    let enclosing = links.enclosingBlock(first.index);
     while (enclosing && enclosing.node.type !== 'rule') {
-      enclosing = this.#records.block(enclosing.parent);
+      enclosing = links.enclosingBlock(enclosing.index);
     }
     if (!enclosing) return false;
     let hasOutside = outsideDeclarations.get(enclosing.index);
@@ -102,71 +72,28 @@ export default class DeclarationScan {
     }
     if (!hasOutside) return false;
 
-    let block = /** @type {Block} */ (this.#records.block(first.slotBlock));
-    let index = first.slotPosition;
-    // The rules after `first` in its slot come next; `first` holds only
-    // declarations and comments, so its own contents are skipped.
-    let offset = this.#records.slotOf(first).rules.indexOf(first.index) + 1;
+    // `first` holds only declarations and comments in its own block, so the
+    // walk starts at the entry after it, in the block that holds it.
+    let holder = /** @type {Block} */ (links.enclosingBlock(first.index));
+    let entry = links.nextSibling(first.index);
     for (;;) {
-      index = this.#skipEmptied(block, index);
-      const entry = block.children[index];
-      if (entry instanceof Slot) {
-        if (entry.rules.includes(second.index, offset)) return false;
-      } else if (entry === undefined) {
-        if (block === enclosing) return false;
-        index = block.position;
-        block = /** @type {Block} */ (this.#records.block(block.parent));
-      } else if (this.#records.entry(entry) instanceof DeclarationRecord) {
-        return true;
+      if (entry === -1) {
+        if (holder === enclosing) return false;
+        // The walk leaves an at-rule block, which is in a chain, for the entry after it.
+        entry = links.nextSibling(holder.index);
+        holder = /** @type {Block} */ (links.enclosingBlock(holder.index));
+        continue;
+      }
+      if (entry === second.index) return false;
+      const item = this.#records.entry(entry);
+      if (item instanceof DeclarationRecord) return true;
+      const nested = this.#records.blockEntry(entry);
+      if (nested && nested.first !== -1) {
+        holder = nested;
+        entry = nested.first;
       } else {
-        const nested = this.#records.blockEntry(entry);
-        if (nested?.children.length) {
-          block = nested;
-          index = 0;
-          offset = 0;
-          continue;
-        }
-      }
-      index++;
-      offset = 0;
-    }
-  }
-
-  /**
-   * The index of the first entry at or after `index` that applies something.
-   * A run of emptied slots and blocks is crossed once, then jumped, so a rule
-   * that moved ahead of many of them does not walk across them again for
-   * every neighbor. Nothing refills an emptied slot or block during a sweep,
-   * which keeps a jump valid.
-   *
-   * @param {Block} block
-   * @param {number} index
-   * @return {number}
-   */
-  #skipEmptied(block, index) {
-    const { children } = block;
-    const { length } = children;
-    const records = this.#records;
-    let jumps = this.#skips.get(block.index);
-    if (jumps === undefined) {
-      jumps = [];
-      this.#skips.set(block.index, jumps);
-    }
-    let end = index;
-    while (end < length) {
-      if (!isEmptied(records, children[end])) break;
-      end = jumps[end] ?? end + 1;
-    }
-    if (consistencyChecksEnabled()) {
-      for (let at = index; at < end; at++) {
-        if (!isEmptied(records, children[at])) throw new Error(REFILLED);
+        entry = links.nextSibling(entry);
       }
     }
-    for (let at = index; at < end;) {
-      const next = jumps[at] ?? at + 1;
-      jumps[at] = end;
-      at = next;
-    }
-    return end;
   }
 }

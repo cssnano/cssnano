@@ -111,6 +111,18 @@ export class BlockRecords {
   }
 
   /**
+   * @param {number} index an index that the arena gave
+   * @return {boolean} whether a sweep dropped the block at `index`, which leaves the tree
+   */
+  isDropped(index) {
+    return (
+      index !== this.root.index &&
+      this.links.parentOf(index) === -1 &&
+      this.blockEntry(index) !== undefined
+    );
+  }
+
+  /**
    * @param {number} index an index that `recordRule` gave
    * @return {RuleRecord | undefined}
    */
@@ -160,42 +172,6 @@ export class BlockRecords {
         this.#entries[index]
       ).node
     );
-  }
-
-  /**
-   * Accounts for the block at `index` gaining `change` live children, or losing
-   * them when negative. A droppable block that is tracked and goes empty tells
-   * its parent, which may go empty in turn.
-   *
-   * @param {number} index
-   * @param {number} change
-   * @return {void}
-   */
-  changed(index, change) {
-    const block = /** @type {BlockRecord} */ (this.block(index));
-    const count = block.remaining;
-    if (count === null) return;
-    block.remaining = count + change;
-    // A block already empty has told its parent; telling it again would
-    // undercount the parent.
-    if (count > 0 && count + change === 0) this.#climb(block);
-  }
-
-  /**
-   * Tells the parent of a block that just lost its last child. Only a
-   * droppable parent is climbed to: a style rule or any other at-rule stays.
-   *
-   * @param {BlockRecord} block
-   * @return {void}
-   */
-  #climb(block) {
-    const parent = this.block(block.parent);
-    if (!parent || !parent.droppable) return;
-    const known = parent.remaining;
-    // A parent that is empty in the source is not tracked, and holds no child.
-    if (known === null) return;
-    parent.remaining = known - 1;
-    if (known === 1) this.#climb(parent);
   }
 
   /**
@@ -317,7 +293,7 @@ export class BlockRecords {
       } else {
         const nested = this.blockEntry(entry);
         if (nested) {
-          if (nested.dropped) continue;
+          if (this.isDropped(entry)) continue;
           nested.parent = target;
           nested.position = holder.children.length;
         }

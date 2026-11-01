@@ -2,13 +2,20 @@ import type { BlockRecords } from './blockRecords.js';
 /**
  * The potential that a sweep never raises: the declarations of the live rules
  * that hold no block, then those rules, then the sum over them of the number
- * of the block each stands in. Blocks are numbered in document order, dropped
- * ones included, and nothing is stored between calls.
+ * of the block each stands in. The call before a sweep numbers the blocks in
+ * document order and returns the numbers, which the call after the sweep
+ * reuses: renumbering after it would hide a move that does not lower the
+ * potential, since a moved rule may stand in a block numbered differently.
  *
  * @param {BlockRecords} records
- * @return {[number, number, number]}
+ * @param {number[] | null} numbers the number of each block by index, from the
+ * call before the sweep, or null to number the blocks now
+ * @return {{potential: [number, number, number], numbers: number[]}}
  */
-export declare function sweepPotential(records: BlockRecords): [number, number, number];
+export declare function sweepPotential(records: BlockRecords, numbers: number[] | null): {
+    potential: [number, number, number];
+    numbers: number[];
+};
 /**
  * Under consistency checks, throws when a sweep raised the potential, or moved
  * a rule and left the potential equal. A move lowers the parent count because

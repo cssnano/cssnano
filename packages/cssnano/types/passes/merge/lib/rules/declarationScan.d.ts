@@ -14,9 +14,10 @@ export default class DeclarationScan {
      * rule may move across it. Neighbors hold no rule between them, so any such
      * declaration belongs to an enclosing rule or a block nested in it.
      *
-     * The walk follows source order as the stylesheet will be written, which
-     * differs from the stylesheet for rules that moved, and is short because it
-     * starts at `first`.
+     * The walk follows the chains from `first`, which is the source order the
+     * stylesheet will be written in, though rules that moved may differ from
+     * the stylesheet. A nested rule's own block is not in a chain, so the walk
+     * does not enter it.
      *
      * @param {RuleRecord} first
      * @param {RuleRecord} second

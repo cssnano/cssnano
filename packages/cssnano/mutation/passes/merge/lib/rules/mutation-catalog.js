@@ -152,8 +152,8 @@ export const mutations = [
   {
     name: 'a removal of a rule set that leaves its rules in their slots',
     target: source('treeEdits.js'),
-    find: '    slot.rules.splice(slot.rules.indexOf(record.index), 1);\n    record.depart();\n',
-    replace: '    record.depart();\n',
+    find: '    slot.rules.splice(slot.rules.indexOf(record.index), 1);\n    arena.links.unlink(index);\n    record.depart();\n',
+    replace: '    arena.links.unlink(index);\n    record.depart();\n',
   },
   {
     name: 'a removal of a block that leaves its entry in place',
@@ -176,8 +176,8 @@ export const mutations = [
   {
     name: 'a sweep move that leaves the moved rule on its old slot',
     target: source('blockRecords.js'),
-    find: '    holder.children.push(slot);\n    rule.place(target, slot.position);\n    return slot;\n',
-    replace: '    holder.children.push(slot);\n    return slot;\n',
+    find: '    this.links.linkLast(target, record);\n    rule.place(target, slot.position);\n    return slot;\n',
+    replace: '    this.links.linkLast(target, record);\n    return slot;\n',
   },
   {
     name: 'move into the later parent',
@@ -268,15 +268,15 @@ export const mutations = [
     replace: '    if (following !== -1) void tail;',
   },
   {
-    name: 'climb reads the child index instead of the parent index',
-    target: source('blockRecords.js'),
-    find: '    const parent = this.block(block.parent);',
-    replace: '    const parent = this.block(block.index);',
+    name: 'a drop does not climb to the droppable parent it empties',
+    target: source('ruleSequence.js'),
+    find: '      if (holder === -1) return;\n      at = holder;\n',
+    replace: '      return;\n',
   },
   {
-    name: 'a skip target is read from the wrong block',
+    name: 'a walk into a block starts at its last child',
     target: source('declarationScan.js'),
-    find: '    let jumps = this.#skips.get(block.index);',
-    replace: '    let jumps = this.#skips.get(block.index - 1);',
+    find: '        entry = nested.first;',
+    replace: '        entry = nested.last;',
   },
 ];

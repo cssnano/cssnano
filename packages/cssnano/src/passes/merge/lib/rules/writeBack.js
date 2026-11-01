@@ -101,7 +101,9 @@ function checkBlockRecord(mergeState, block) {
       }
     } else {
       const nested = mergeState.records.blockEntry(entry);
-      if (nested && !nested.dropped) checkBlockRecord(mergeState, nested);
+      if (nested && !mergeState.records.isDropped(nested.index)) {
+        checkBlockRecord(mergeState, nested);
+      }
     }
   }
 }
@@ -179,7 +181,7 @@ export function writeBack(records, blocks) {
   /** @type {Rebuilt[]} */
   const rebuilt = [];
   for (const block of blocks) {
-    if (block.dropped) continue;
+    if (records.isDropped(block.index)) continue;
     if (differs(records, block)) {
       rebuilt.push({
         container: /** @type {Container} */ (block.node),

@@ -178,7 +178,7 @@ export default function runScan(mergeState) {
   do {
     moved = false;
     const before = consistencyChecksEnabled()
-      ? sweepPotential(mergeState.records)
+      ? sweepPotential(mergeState.records, null)
       : null;
     const sequence = new RuleSequence(mergeState.records);
     let current = sequence.head;
@@ -226,9 +226,12 @@ export default function runScan(mergeState) {
       );
       lookaheadStart = -1;
     }
-    sequence.finish();
     if (before) {
-      assertSweepLowers(before, sweepPotential(mergeState.records), moved);
+      assertSweepLowers(
+        before.potential,
+        sweepPotential(mergeState.records, before.numbers).potential,
+        moved
+      );
     }
     // A move changes which rules share a parent, so rules the sweep already
     // passed may now merge.

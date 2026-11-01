@@ -3,13 +3,8 @@ import { before, after, test } from 'node:test';
 import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import {
-  BlockRecords,
-  Slot,
-} from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import { Slot } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { ruleRecordOf } from './liveRecords.js';
 import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
@@ -156,57 +151,6 @@ test('a slot should name its block by index and stand at its position in that bl
       }
     }
   }
-});
-
-test('changed should tell the parent by index once a droppable block goes empty', () => {
-  const { state } = setup('@layer outer{@layer inner{a{color:red}}}');
-  const { records } = state;
-  // The stylesheet is block 0, so the outer and inner at-rules are 1 and 2.
-  const outer = /** @type {BlockRecord} */ (records.block(1));
-  const inner = /** @type {BlockRecord} */ (records.block(2));
-  new RuleSequence(records);
-  records.changed(inner.index, -1);
-  assert.equal(inner.remaining, 0);
-  assert.equal(outer.remaining, 0);
-});
-
-test('changed should count a droppable parent down when its last live child empties', () => {
-  const root = new BlockRecord(postcss.root(), -1, 0, false);
-  const records = new BlockRecords(root);
-  records.add(root);
-  const outer = new BlockRecord(
-    postcss.atRule({ name: 'layer' }),
-    root.index,
-    0,
-    true
-  );
-  records.add(outer);
-  const inner = new BlockRecord(
-    postcss.atRule({ name: 'layer' }),
-    outer.index,
-    0,
-    true
-  );
-  records.add(inner);
-  outer.remaining = 1;
-  inner.remaining = 1;
-  records.changed(inner.index, -1);
-  assert.equal(outer.remaining, 0);
-});
-
-test('changed should leave a block that no sweep tracks untouched', () => {
-  const root = new BlockRecord(postcss.root(), -1, 0, false);
-  const records = new BlockRecords(root);
-  records.add(root);
-  const block = new BlockRecord(
-    postcss.atRule({ name: 'layer' }),
-    root.index,
-    0,
-    true
-  );
-  records.add(block);
-  records.changed(block.index, 1);
-  assert.equal(block.remaining, null);
 });
 
 test('a nested at-rule block should be a number in its parent children, naming the block by index', () => {

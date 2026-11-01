@@ -39,18 +39,6 @@ export declare class BlockRecord {
      * @type {number}
      */
     count: number;
-    /**
-     * The live children of a droppable block during a sweep, or null while the
-     * block is not tracked. Dropping an emptied `@layer` is safe because a rule
-     * moves only into an equivalent earlier block, which already orders the
-     * layer. A block empty at sweep start is untracked because it may be the
-     * first statement that orders its layer.
-     *
-     * @type {number | null}
-     */
-    remaining: number | null;
-    /** @type {boolean} whether a sweep removed the block for being empty */
-    dropped: boolean;
     /** @type {number} the place of the block in the arena of its records, -1 until added */
     index: number;
     /**
