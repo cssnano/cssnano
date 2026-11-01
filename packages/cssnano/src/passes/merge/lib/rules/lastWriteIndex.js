@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
 import { Slot } from './blockRecords.js';
-import { BlockRecord } from './blockRecord.js';
+import { BlockRecord, NodeEntry } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { PropertyWrites } from './propertyWrites.js';
@@ -147,11 +147,19 @@ export default class LastWriteIndex {
           const record = /** @type {RuleRecord} */ (this.#records.rule(index));
           this.#recordNode(record, position, keys, keysOf);
         }
-      } else if (typeof entry === 'number') {
-        const nested = /** @type {BlockRecord} */ (this.#records.block(entry));
-        if (!nested.dropped) this.#recordNode(nested, position, keys, keysOf);
       } else {
-        this.#recordNode(entry, position, keys, keysOf);
+        const nested = this.#records.blockEntry(entry);
+        if (nested) {
+          if (!nested.dropped) this.#recordNode(nested, position, keys, keysOf);
+        } else {
+          const item = this.#records.entry(entry);
+          this.#recordNode(
+            item instanceof NodeEntry ? item.node : item,
+            position,
+            keys,
+            keysOf
+          );
+        }
       }
     }
   }
@@ -225,9 +233,10 @@ export default class LastWriteIndex {
     for (const entry of entries) {
       if (entry instanceof RuleRecord) {
         const list = this.#listOf(entry);
-        for (const declaration of list) {
+        for (const item of list) {
+          const declaration = this.#declarationIn(item);
           if (
-            declaration instanceof DeclarationRecord &&
+            declaration &&
             this.#conflictsWith(declaration.keys, position, elements)
           ) {
             return true;
@@ -254,6 +263,20 @@ export default class LastWriteIndex {
   }
 
   /**
+   * The record of the declaration that an item of `#listOf` names, or undefined
+   * when the item is a slot, a nested block or a bare node.
+   *
+   * @param {DeclarationRecord | number | Slot | ChildNode} item
+   * @return {DeclarationRecord | undefined}
+   */
+  #declarationIn(item) {
+    if (item instanceof DeclarationRecord) return item;
+    if (typeof item !== 'number') return undefined;
+    const entry = this.#records.entry(item);
+    return entry instanceof DeclarationRecord ? entry : undefined;
+  }
+
+  /**
    * Entries that moved to `position` are written there now: each rule record
    * writes its declarations under the element keys `keysOf` gives it. Every
    * entry only ever moves forward, so a later write to the same property
@@ -269,8 +292,9 @@ export default class LastWriteIndex {
         // `record` only reads the keys, so the record's own list is passed as is.
         const keys = keysOf(entry);
         const list = this.#listOf(entry);
-        for (const declaration of list) {
-          if (declaration instanceof DeclarationRecord) {
+        for (const item of list) {
+          const declaration = this.#declarationIn(item);
+          if (declaration) {
             this.record(declaration.keys, position, keys?.length ? keys : null);
           }
         }

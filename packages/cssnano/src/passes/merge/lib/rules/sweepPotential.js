@@ -38,8 +38,9 @@ export function sweepPotential(records) {
             parents += id;
           }
         }
-      } else if (typeof entry === 'number') {
-        visit(/** @type {BlockRecord} */ (records.block(entry)));
+      } else {
+        const nested = records.blockEntry(entry);
+        if (nested) visit(nested);
       }
     }
   };

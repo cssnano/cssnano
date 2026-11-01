@@ -34,7 +34,8 @@ function checkBlockStructure(records, block) {
         checkBlockStructure(records, nestedBlock);
       }
     } else if (typeof entry === 'number') {
-      const nested = /** @type {BlockRecord} */ (records.block(entry));
+      const nested = records.blockEntry(entry);
+      if (nested === undefined) continue;
       if (nested.parent !== block.index || nested.position !== index) {
         throw new Error(OUT_OF_STEP);
       }
@@ -96,10 +97,14 @@ export function assertOwnershipIsTree(records) {
         for (const index of entry.rules) {
           visitRule(/** @type {RuleRecord} */ (records.rule(index)));
         }
-      } else if (typeof entry === 'number') {
-        visit(/** @type {BlockRecord} */ (records.block(entry)));
-      } else if (entry instanceof DeclarationRecord) {
-        reach(entry);
+      } else {
+        const nested = records.blockEntry(entry);
+        if (nested) {
+          visit(nested);
+        } else {
+          const item = records.entry(entry);
+          if (item instanceof DeclarationRecord) reach(item);
+        }
       }
     }
   };

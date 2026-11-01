@@ -21,8 +21,8 @@ const REFILLED = 'a skipped entry is no longer emptied';
 function hasDeclarationOutsideRules(records, block) {
   for (const entry of block.children) {
     if (entry instanceof Slot) continue;
-    if (typeof entry === 'number') {
-      const nested = /** @type {Block} */ (records.block(entry));
+    const nested = records.blockEntry(entry);
+    if (nested) {
       if (
         !nested.dropped &&
         nested.node.type === 'atrule' &&
@@ -30,7 +30,7 @@ function hasDeclarationOutsideRules(records, block) {
       ) {
         return true;
       }
-    } else if (entry instanceof DeclarationRecord) {
+    } else if (records.entry(entry) instanceof DeclarationRecord) {
       return true;
     }
   }
@@ -41,12 +41,12 @@ function hasDeclarationOutsideRules(records, block) {
  * True for a slot that holds no rule, or a block that a sweep emptied.
  *
  * @param {BlockRecords} records
- * @param {Slot | number | DeclarationRecord | ChildNode} entry
+ * @param {Slot | number} entry
  * @return {boolean}
  */
 function isEmptied(records, entry) {
   if (entry instanceof Slot) return entry.rules.length === 0;
-  return typeof entry === 'number' && records.block(entry)?.remaining === 0;
+  return records.blockEntry(entry)?.remaining === 0;
 }
 
 /**
@@ -112,20 +112,20 @@ export default class DeclarationScan {
       const entry = block.children[index];
       if (entry instanceof Slot) {
         if (entry.rules.includes(second.index, offset)) return false;
-      } else if (typeof entry === 'number') {
-        const nested = /** @type {Block} */ (this.#records.block(entry));
-        if (nested.children.length > 0) {
+      } else if (entry === undefined) {
+        if (block === enclosing) return false;
+        index = block.position;
+        block = /** @type {Block} */ (this.#records.block(block.parent));
+      } else if (this.#records.entry(entry) instanceof DeclarationRecord) {
+        return true;
+      } else {
+        const nested = this.#records.blockEntry(entry);
+        if (nested?.children.length) {
           block = nested;
           index = 0;
           offset = 0;
           continue;
         }
-      } else if (entry instanceof DeclarationRecord) {
-        return true;
-      } else if (!entry) {
-        if (block === enclosing) return false;
-        index = block.position;
-        block = /** @type {Block} */ (this.#records.block(block.parent));
       }
       index++;
       offset = 0;

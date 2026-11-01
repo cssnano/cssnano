@@ -52,22 +52,25 @@ function reachedBlocks(records, block, found = [block]) {
           reachedBlocks(records, records.block(nested), found);
         }
       }
-    } else if (typeof entry === 'number') {
-      const nested = /** @type {BlockRecord} */ (records.block(entry));
-      found.push(nested);
-      reachedBlocks(records, nested, found);
+    } else {
+      const nested = records.blockEntry(entry);
+      if (nested) {
+        found.push(nested);
+        reachedBlocks(records, nested, found);
+      }
     }
   }
   return found;
 }
 
-test('buildRecords should index the stylesheet as block 0 and each rule from 0 in order', () => {
+test('buildRecords should index the stylesheet as entry 0 and each rule after it in document order', () => {
   const { state } = setup('a{color:red}b{width:1px}');
   const { records } = state;
   assert.equal(records.root.index, 0);
-  assert.equal(records.rule(0).node.selector, 'a');
-  assert.equal(records.rule(1).node.selector, 'b');
-  assert.equal(records.rule(2), undefined);
+  assert.equal(records.entryCount(), 3);
+  assert.equal(records.rule(1).node.selector, 'a');
+  assert.equal(records.rule(2).node.selector, 'b');
+  assert.equal(records.rule(3), undefined);
 });
 
 test('a rule should keep its index and stay readable through rule(i) after it departs', () => {
@@ -80,16 +83,16 @@ test('a rule should keep its index and stay readable through rule(i) after it de
   assert.equal(record.departed, true);
 });
 
-test('a rule recorded mid-run should take the next index after the rules already recorded', () => {
+test('a rule recorded mid-run should take the next index of the arena', () => {
   const { state } = setup('a{color:red}b{width:1px}');
   const { records } = state;
-  const previous = records.rule(1).index;
+  const count = records.entryCount();
   const added = records.recordRule(
     postcss.rule({ selector: 'c' }),
     state.properties,
     state.declarationIds
   );
-  assert.equal(added.index, previous + 1);
+  assert.equal(added.index, count);
   assert.equal(records.rule(added.index), added);
 });
 

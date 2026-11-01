@@ -30,13 +30,9 @@ function differs(records, block) {
         const record = /** @type {RuleRecord} */ (records.rule(index));
         if (nodes[at++] !== record.node) return true;
       }
-    } else if (typeof entry === 'number') {
-      const nested = /** @type {BlockRecord} */ (records.block(entry));
-      if (nested.dropped) continue;
-      if (nodes[at++] !== nested.node) return true;
-    } else if (entry instanceof DeclarationRecord) {
-      if (nodes[at++] !== entry.node) return true;
-    } else if (nodes[at++] !== entry) {
+    } else if (records.blockEntry(entry)?.dropped) {
+      continue;
+    } else if (nodes[at++] !== records.nodeOf(entry)) {
       return true;
     }
   }
@@ -108,11 +104,9 @@ function checkBlockRecord(mergeState, block) {
         );
         checkRuleRecord(mergeState, block, entry, record);
       }
-    } else if (typeof entry === 'number') {
-      const nested = /** @type {BlockRecord} */ (
-        mergeState.records.block(entry)
-      );
-      if (!nested.dropped) checkBlockRecord(mergeState, nested);
+    } else {
+      const nested = mergeState.records.blockEntry(entry);
+      if (nested && !nested.dropped) checkBlockRecord(mergeState, nested);
     }
   }
 }

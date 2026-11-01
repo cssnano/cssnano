@@ -21,6 +21,8 @@ export class DeclarationRecord {
   keys;
   /** @type {number} equal for declarations that print the same, within one run */
   id;
+  /** @type {number} the place of the record in the arena of a block's entries, -1 until added */
+  index = -1;
 
   /**
    * @param {Declaration} node

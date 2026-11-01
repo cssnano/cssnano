@@ -85,14 +85,14 @@ export function buildRecords(root, mergeState) {
       } else if (child.type === 'decl') {
         declarations++;
         block.children.push(
-          records.declarationRecord(
+          records.blockDeclaration(
             child,
             mergeState.properties,
             mergeState.declarationIds
-          )
+          ).index
         );
       } else {
-        block.children.push(child);
+        block.children.push(records.bareEntry(child).index);
       }
     }
   };

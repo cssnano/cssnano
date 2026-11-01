@@ -16,15 +16,28 @@ function setup(css) {
   return state;
 }
 
+/**
+ * The indices of the rules of the stylesheet, in document order.
+ *
+ * @param {MergeState['records']} records
+ * @return {number[]}
+ */
+function ruleIndices(records) {
+  return records
+    .liveEntries(records.root.index)
+    .map((entry) => /** @type {{index: number}} */ (entry).index);
+}
+
 test('a sweep should link the rules of the stylesheet by index, from the head', () => {
   const { records } = setup('a{color:red}b{width:1px}c{top:0}');
+  const [a, b, c] = ruleIndices(records);
   const sequence = new RuleSequence(records);
-  assert.equal(sequence.head, 0);
-  assert.equal(sequence.nextOf(0), 1);
-  assert.equal(sequence.nextOf(1), 2);
-  assert.equal(sequence.nextOf(2), -1);
-  assert.equal(sequence.prevOf(0), -1);
-  assert.equal(sequence.prevOf(2), 1);
+  assert.equal(sequence.head, a);
+  assert.equal(sequence.nextOf(a), b);
+  assert.equal(sequence.nextOf(b), c);
+  assert.equal(sequence.nextOf(c), -1);
+  assert.equal(sequence.prevOf(a), -1);
+  assert.equal(sequence.prevOf(c), b);
 });
 
 test('a sweep over a stylesheet without rules should have no head', () => {
@@ -35,6 +48,7 @@ test('a sweep over a stylesheet without rules should have no head', () => {
 test('replacePair should link a rule made mid-sweep at its own index, between its neighbors', () => {
   const state = setup('a{color:red}b{width:1px}c{top:0}');
   const { records } = state;
+  const [a, , c] = ruleIndices(records);
   const sequence = new RuleSequence(records);
   // A rule made mid-sweep takes the next index, past every link the sweep made.
   const added = records.recordRule(
@@ -42,12 +56,12 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
     state.properties,
     state.declarationIds
   );
-  sequence.replacePair(0, {
-    first: [0],
+  sequence.replacePair(a, {
+    first: [a],
     second: [added.index],
   });
-  assert.equal(sequence.nextOf(0), added.index);
-  assert.equal(sequence.prevOf(added.index), 0);
-  assert.equal(sequence.nextOf(added.index), 2);
-  assert.equal(sequence.prevOf(2), added.index);
+  assert.equal(sequence.nextOf(a), added.index);
+  assert.equal(sequence.prevOf(added.index), a);
+  assert.equal(sequence.nextOf(added.index), c);
+  assert.equal(sequence.prevOf(c), added.index);
 });

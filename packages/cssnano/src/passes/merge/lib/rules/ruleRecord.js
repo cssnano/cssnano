@@ -184,12 +184,18 @@ export class RuleRecord extends SelectorList {
     this.#assertLive();
     if (!this.#declarationKeys) {
       const keys = [];
-      const list =
-        this.#block === -1
-          ? this.#declarations
-          : /** @type {BlockRecord} */ (records.block(this.#block)).children;
-      for (const entry of list) {
-        if (entry instanceof DeclarationRecord) keys.push(entry.id);
+      if (this.#block === -1) {
+        for (const entry of this.#declarations) keys.push(entry.id);
+      } else {
+        const { children } = /** @type {BlockRecord} */ (
+          records.block(this.#block)
+        );
+        for (const entry of children) {
+          // A slot is not a declaration, and an index names the entry it stands for.
+          if (typeof entry !== 'number') continue;
+          const item = records.entry(entry);
+          if (item instanceof DeclarationRecord) keys.push(item.id);
+        }
       }
       this.#declarationKeys = { keys, keySet: new Set(keys) };
     }
