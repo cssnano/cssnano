@@ -173,6 +173,14 @@ export default class RuleSequence {
     records.changed(source, -1);
     records.changed(target, 1);
     records.moveRule(target, second);
+    // The sweep retries a moved pair, so a move that leaves the parents
+    // apart would repeat forever; it throws instead.
+    if (
+      /** @type {RuleRecord} */ (records.rule(second)).slotBlock !==
+      /** @type {RuleRecord} */ (records.rule(first)).slotBlock
+    ) {
+      throw new Error('a moved rule is still outside the parent it joined');
+    }
     return true;
   }
 
