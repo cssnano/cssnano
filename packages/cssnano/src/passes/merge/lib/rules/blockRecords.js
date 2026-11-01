@@ -1,56 +1,33 @@
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+import { recordDeclaration } from '../../../ir/declarationRecord.js';
+import { BlockRecord, NodeEntry, Slot } from './blockRecord.js';
 import {
-  DeclarationRecord,
-  recordDeclaration,
-} from '../../../ir/declarationRecord.js';
+  firstLiveChild,
+  liveChildren,
+  liveCount,
+  liveEntries,
+} from './blockChildren.js';
 import { RuleRecord, isDeclaration } from './ruleRecord.js';
-/** @import {BlockRecord} from './blockRecord.js' */
+
+export { Slot } from './blockRecord.js';
 
 /**
- * One position among the children of a block. `rules` are the indices of the
- * rules that stand there now, in order, so the slot is empty once every rule
- * left.
- */
-export class Slot {
-  /** @type {number} the index of the block the slot stands in */
-  block;
-
-  /** @type {number} where the slot stands among the children of `block` */
-  position;
-
-  /** @type {number[]} the indices of the rules in the slot */
-  rules;
-
-  /**
-   * @param {number} block the index of the block the slot stands in
-   * @param {number} position
-   * @param {number[]} rules
-   */
-  constructor(block, position, rules) {
-    this.block = block;
-    this.position = position;
-    this.rules = rules;
-  }
-}
-
-/**
- * The records of one run: the stylesheet's block, and an arena of every block
- * record and one of every rule record. Ownership is a tree: a block owns its
- * slots and declarations, a rule its declarations, and every other relation is
- * an index into an arena, never reused within a run. So an edit that touches
- * more than one record is a method here.
+ * The records of one run. One arena holds every block record, every rule record,
+ * every declaration of a block and every bare node of a block, each at the next
+ * index of one counter; an index is never reused within a run. A block's children
+ * are slots and arena indices, and a rule's own declarations stay in its record.
+ * Ownership is a tree, so an edit that touches more than one record is a method
+ * here.
  */
 export class BlockRecords {
   /** @type {BlockRecord} the record of the stylesheet */
   root;
 
-  /** @type {BlockRecord[]} every block record added, dropped ones included */
-  #blocks = [];
-
-  /** @type {RuleRecord[]} every rule record recorded, departed ones included */
-  #rules = [];
+  /** @type {(BlockRecord | RuleRecord | DeclarationRecord | NodeEntry)[]} every entry, by index, dropped and departed ones included */
+  #entries = [];
 
   /** @type {Map<string, number> | null} declarations the input wrote, under checks */
   inputWrites = null;
@@ -71,14 +48,34 @@ export class BlockRecords {
   }
 
   /**
+   * Gives an entry the next index of the arena and keeps it there.
+   *
+   * @template {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} T
+   * @param {T} entry
+   * @return {T}
+   */
+  #place(entry) {
+    entry.index = this.#entries.length;
+    this.#entries.push(entry);
+    return entry;
+  }
+
+  /**
    * Adds a block record to the arena, which gives it the next index.
    *
    * @param {BlockRecord} block
    * @return {void}
    */
   add(block) {
-    block.index = this.#blocks.length;
-    this.#blocks.push(block);
+    this.#place(block);
+  }
+
+  /**
+   * @param {number} index an index that the arena gave
+   * @return {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry}
+   */
+  entry(index) {
+    return this.#entries[index];
   }
 
   /**
@@ -86,7 +83,16 @@ export class BlockRecords {
    * @return {BlockRecord | undefined}
    */
   block(index) {
-    return this.#blocks[index];
+    return /** @type {BlockRecord | undefined} */ (this.#entries[index]);
+  }
+
+  /**
+   * @param {number} index an index that the arena gave
+   * @return {BlockRecord | undefined} the block at `index`, or undefined when the entry is another kind
+   */
+  blockEntry(index) {
+    const entry = this.#entries[index];
+    return entry instanceof BlockRecord ? entry : undefined;
   }
 
   /**
@@ -94,23 +100,25 @@ export class BlockRecords {
    * @return {RuleRecord | undefined}
    */
   rule(index) {
-    return this.#rules[index];
+    return /** @type {RuleRecord | undefined} */ (this.#entries[index]);
   }
 
   /**
-   * @return {number} the rule records recorded so far, departed ones included
+   * @return {number} the entries the arena holds, dropped and departed ones included
    */
-  ruleCount() {
-    return this.#rules.length;
+  entryCount() {
+    return this.#entries.length;
   }
 
   /**
    * The records of every block the run added, dropped ones included.
    *
-   * @return {IterableIterator<BlockRecord>}
+   * @return {Generator<BlockRecord>}
    */
-  blocks() {
-    return this.#blocks.values();
+  *blocks() {
+    for (const entry of this.#entries) {
+      if (entry instanceof BlockRecord) yield entry;
+    }
   }
 
   /**
@@ -125,11 +133,18 @@ export class BlockRecords {
   }
 
   /**
+   * The PostCSS node of the entry at `index`, which is a block, a declaration or
+   * a bare node.
+   *
    * @param {number} index
-   * @return {boolean} whether the block at `index` was dropped by a sweep
+   * @return {ChildNode}
    */
-  #dropped(index) {
-    return /** @type {BlockRecord} */ (this.block(index)).dropped;
+  nodeOf(index) {
+    return /** @type {ChildNode} */ (
+      /** @type {BlockRecord | DeclarationRecord | NodeEntry} */ (
+        this.#entries[index]
+      ).node
+    );
   }
 
   /**
@@ -142,7 +157,7 @@ export class BlockRecords {
    * @return {void}
    */
   changed(index, change) {
-    const block = this.#blocks[index];
+    const block = /** @type {BlockRecord} */ (this.block(index));
     const count = block.remaining;
     if (count === null) return;
     block.remaining = count + change;
@@ -169,108 +184,43 @@ export class BlockRecords {
   }
 
   /**
-   * The first child the block at `index` holds now, without copying the child
-   * list.
+   * The first live child of the block at `index`; see `blockChildren.js`.
    *
    * @param {number} index
    * @return {ChildNode | undefined}
    */
   firstLiveChild(index) {
-    const block = /** @type {BlockRecord} */ (this.block(index));
-    const { children } = block;
-    for (; block.firstLive < children.length; block.firstLive++) {
-      const entry = children[block.firstLive];
-      if (entry instanceof Slot) {
-        if (entry.rules.length > 0) {
-          return /** @type {RuleRecord} */ (this.rule(entry.rules[0])).node;
-        }
-      } else if (typeof entry === 'number') {
-        const nested = /** @type {BlockRecord} */ (this.block(entry));
-        if (!nested.dropped) return /** @type {ChildNode} */ (nested.node);
-      } else if (entry instanceof DeclarationRecord) {
-        return entry.node;
-      } else {
-        return entry;
-      }
-    }
-    return undefined;
+    return firstLiveChild(this, index);
   }
 
   /**
-   * The number of children the block at `index` holds now, counted without
-   * copying them.
+   * The live children of the block at `index`, counted; see `blockChildren.js`.
    *
    * @param {number} index
    * @return {number}
    */
   liveCount(index) {
-    let count = 0;
-    const { children } = /** @type {BlockRecord} */ (this.block(index));
-    for (const entry of children) {
-      if (entry instanceof Slot) {
-        count += entry.rules.length;
-      } else if (typeof entry !== 'number' || !this.#dropped(entry)) {
-        count++;
-      }
-    }
-    return count;
+    return liveCount(this, index);
   }
 
   /**
-   * The entries the block at `index` holds now, in order: the record of each
-   * rule, the record of each at-rule block, and the node of anything else. A
-   * block that was dropped is left out.
+   * The live entries of the block at `index`; see `blockChildren.js`.
    *
    * @param {number} index
    * @return {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]}
    */
   liveEntries(index) {
-    /** @type {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]} */
-    const entries = [];
-    const { children } = /** @type {BlockRecord} */ (this.block(index));
-    for (const entry of children) {
-      if (entry instanceof Slot) {
-        for (const rule of entry.rules) {
-          entries.push(/** @type {RuleRecord} */ (this.rule(rule)));
-        }
-      } else if (typeof entry === 'number') {
-        if (!this.#dropped(entry)) {
-          entries.push(/** @type {BlockRecord} */ (this.block(entry)));
-        }
-      } else {
-        entries.push(entry);
-      }
-    }
-    return entries;
+    return liveEntries(this, index);
   }
 
   /**
-   * The children the block at `index` holds now, in order: the rules of its
-   * slots, and the nodes of its other entries, except a block that was dropped.
+   * The live children of the block at `index`; see `blockChildren.js`.
    *
    * @param {number} index
    * @return {ChildNode[]}
    */
   liveChildren(index) {
-    /** @type {ChildNode[]} */
-    const children = [];
-    const holder = /** @type {BlockRecord} */ (this.block(index));
-    for (const entry of holder.children) {
-      if (entry instanceof Slot) {
-        for (const rule of entry.rules) {
-          children.push(/** @type {RuleRecord} */ (this.rule(rule)).node);
-        }
-      } else if (typeof entry === 'number') {
-        const nested = /** @type {BlockRecord} */ (this.block(entry));
-        if (!nested.dropped)
-          children.push(/** @type {ChildNode} */ (nested.node));
-      } else if (entry instanceof DeclarationRecord) {
-        children.push(entry.node);
-      } else {
-        children.push(entry);
-      }
-    }
-    return children;
+    return liveChildren(this, index);
   }
 
   /**
@@ -340,13 +290,13 @@ export class BlockRecords {
           }
         }
         holder.children.push(slot);
-      } else if (typeof entry === 'number') {
-        const nested = /** @type {BlockRecord} */ (this.block(entry));
-        if (nested.dropped) continue;
-        nested.parent = target;
-        nested.position = holder.children.length;
-        holder.children.push(entry);
       } else {
+        const nested = this.blockEntry(entry);
+        if (nested) {
+          if (nested.dropped) continue;
+          nested.parent = target;
+          nested.position = holder.children.length;
+        }
         holder.children.push(entry);
       }
     }
@@ -354,7 +304,7 @@ export class BlockRecords {
   }
 
   /**
-   * Builds the record of a declaration that is a child of a block.
+   * Builds the record of a declaration that is a rule's child.
    *
    * @param {import('postcss').Declaration} node
    * @param {PropertyTable} properties the keys of the property names
@@ -363,6 +313,30 @@ export class BlockRecords {
    */
   declarationRecord(node, properties, declarations) {
     return recordDeclaration(node, properties, declarations);
+  }
+
+  /**
+   * Builds the record of a declaration that is a child of a block and adds it
+   * to the arena, which gives it the next index.
+   *
+   * @param {import('postcss').Declaration} node
+   * @param {PropertyTable} properties the keys of the property names
+   * @param {DeclarationKeys} declarations the ids of the declarations
+   * @return {DeclarationRecord}
+   */
+  blockDeclaration(node, properties, declarations) {
+    return this.#place(this.declarationRecord(node, properties, declarations));
+  }
+
+  /**
+   * Adds a bare node of a block, a comment or a statement at-rule, to the
+   * arena, which gives it the next index.
+   *
+   * @param {ChildNode} node
+   * @return {NodeEntry}
+   */
+  bareEntry(node) {
+    return this.#place(new NodeEntry(node));
   }
 
   /**
@@ -389,9 +363,6 @@ export class BlockRecords {
         }
       }
     }
-    const record = new RuleRecord(rule, rule.selectors, children);
-    record.index = this.#rules.length;
-    this.#rules.push(record);
-    return record;
+    return this.#place(new RuleRecord(rule, rule.selectors, children));
   }
 }

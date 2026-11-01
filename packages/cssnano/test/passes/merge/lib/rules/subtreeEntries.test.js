@@ -37,16 +37,20 @@ function entriesOf(css) {
  * @param {import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord[] | import('postcss').Declaration[] | null} entries
  */
 function propsOf({ records, entries }) {
-  return entries?.flatMap((entry) =>
-    entry instanceof RuleRecord
-      ? (entry.block === -1
-          ? entry.declarations
-          : /** @type {BlockRecord} */ (records.block(entry.block)).children
-        )
-          .filter((child) => child instanceof DeclarationRecord)
-          .map((declaration) => declaration.prop)
-      : [entry.prop]
-  );
+  return entries?.flatMap((entry) => {
+    if (!(entry instanceof RuleRecord)) return [entry.prop];
+    if (entry.block === -1) {
+      return entry.declarations.map((declaration) => declaration.prop);
+    }
+    // A block's children are indices of the arena, which name its declarations.
+    const { children } = /** @type {BlockRecord} */ (
+      records.block(entry.block)
+    );
+    return children.flatMap((index) => {
+      const item = typeof index === 'number' ? records.entry(index) : undefined;
+      return item instanceof DeclarationRecord ? [item.prop] : [];
+    });
+  });
 }
 
 test('subtreeEntries should list the rule records and declarations of a block at any depth, in document order', () => {

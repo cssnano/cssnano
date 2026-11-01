@@ -62,13 +62,16 @@ export function tallyDeclarations(records) {
         for (const index of entry.rules) {
           visitRule(/** @type {RuleRecord} */ (records.rule(index)));
         }
-      } else if (typeof entry === 'number') {
-        const nested = /** @type {BlockRecord} */ (records.block(entry));
-        reach(nested.node);
-        walk(nested);
       } else {
-        reach(entry);
-        if (entry instanceof DeclarationRecord) count(entry);
+        const nested = records.blockEntry(entry);
+        if (nested) {
+          reach(nested.node);
+          walk(nested);
+        } else {
+          reach(records.nodeOf(entry));
+          const item = records.entry(entry);
+          if (item instanceof DeclarationRecord) count(item);
+        }
       }
     }
   };

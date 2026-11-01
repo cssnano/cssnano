@@ -23,6 +23,8 @@ export declare class DeclarationRecord {
     keys: PropertyKeys;
     /** @type {number} equal for declarations that print the same, within one run */
     id: number;
+    /** @type {number} the place of the record in the arena of a block's entries, -1 until added */
+    index: number;
     /**
      * @param {Declaration} node
      * @param {string} prop

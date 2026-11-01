@@ -49,7 +49,7 @@ export default class RuleSequence {
     this.#scan = new DeclarationScan(records);
     this.#prev = [];
     this.#next = [];
-    this.#reserve(records.ruleCount() - 1);
+    this.#reserve(records.entryCount() - 1);
     let tail = -1;
     /** @param {BlockRecord} block */
     const collect = (block) => {
@@ -66,13 +66,14 @@ export default class RuleSequence {
               collect(/** @type {BlockRecord} */ (records.block(nested)));
             }
           }
-        } else if (typeof entry === 'number') {
-          const nested = /** @type {BlockRecord} */ (records.block(entry));
-          if (nested.dropped) continue;
-          live++;
-          collect(nested);
         } else {
-          live++;
+          const nested = records.blockEntry(entry);
+          if (nested === undefined) {
+            live++;
+          } else if (!nested.dropped) {
+            live++;
+            collect(nested);
+          }
         }
       }
       block.remaining = null;

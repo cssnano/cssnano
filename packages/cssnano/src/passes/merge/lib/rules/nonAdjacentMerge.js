@@ -3,7 +3,7 @@ import joinByDeclarations from './declarationJoin.js';
 import { writesOf } from './ruleRewrite.js';
 import RepeatScan from './repeatScan.js';
 import { Slot } from './blockRecords.js';
-import { BlockRecord } from './blockRecord.js';
+import { BlockRecord, NodeEntry } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
@@ -59,12 +59,17 @@ function collectEntries(records, block, entries) {
         const record = /** @type {RuleRecord} */ (records.rule(index));
         if (!collectFrom(records, record, entries)) return false;
       }
-    } else if (typeof entry === 'number') {
-      const nested = /** @type {BlockRecord} */ (records.block(entry));
-      if (!nested.dropped && !collectFrom(records, nested, entries))
-        return false;
-    } else if (!ruleOwned || !(entry instanceof DeclarationRecord)) {
-      if (!collectFrom(records, entry, entries)) return false;
+    } else {
+      const nested = records.blockEntry(entry);
+      if (nested) {
+        if (!nested.dropped && !collectFrom(records, nested, entries))
+          return false;
+      } else {
+        const item = records.entry(entry);
+        if (ruleOwned && item instanceof DeclarationRecord) continue;
+        const child = item instanceof NodeEntry ? item.node : item;
+        if (!collectFrom(records, child, entries)) return false;
+      }
     }
   }
   return true;
@@ -154,8 +159,9 @@ export function joinNonAdjacent(block, mergeState) {
   joined = joinByDeclarations(block, mergeState) || joined;
   for (const entry of block.children) {
     if (typeof entry !== 'number') continue;
-    const nested = /** @type {BlockRecord} */ (mergeState.records.block(entry));
-    if (!nested.dropped) joined = joinNonAdjacent(nested, mergeState) || joined;
+    const nested = mergeState.records.blockEntry(entry);
+    if (nested && !nested.dropped)
+      joined = joinNonAdjacent(nested, mergeState) || joined;
   }
   return joined;
 }

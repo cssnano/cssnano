@@ -1,38 +1,17 @@
 import type { ChildNode, Rule } from 'postcss';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
-/** @import {ChildNode, Container, Rule} from 'postcss' */
-/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { BlockRecord, NodeEntry, Slot } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
-import type { BlockRecord } from './blockRecord.js';
-/** @import {BlockRecord} from './blockRecord.js' */
+export { Slot } from './blockRecord.js';
 /**
- * One position among the children of a block. `rules` are the indices of the
- * rules that stand there now, in order, so the slot is empty once every rule
- * left.
- */
-export declare class Slot {
-    /** @type {number} the index of the block the slot stands in */
-    block: number;
-    /** @type {number} where the slot stands among the children of `block` */
-    position: number;
-    /** @type {number[]} the indices of the rules in the slot */
-    rules: number[];
-    /**
-     * @param {number} block the index of the block the slot stands in
-     * @param {number} position
-     * @param {number[]} rules
-     */
-    constructor(block: number, position: number, rules: number[]);
-}
-/**
- * The records of one run: the stylesheet's block, and an arena of every block
- * record and one of every rule record. Ownership is a tree: a block owns its
- * slots and declarations, a rule its declarations, and every other relation is
- * an index into an arena, never reused within a run. So an edit that touches
- * more than one record is a method here.
+ * The records of one run. One arena holds every block record, every rule record,
+ * every declaration of a block and every bare node of a block, each at the next
+ * index of one counter; an index is never reused within a run. A block's children
+ * are slots and arena indices, and a rule's own declarations stay in its record.
+ * Ownership is a tree, so an edit that touches more than one record is a method
+ * here.
  */
 export declare class BlockRecords {
     #private;
@@ -59,25 +38,35 @@ export declare class BlockRecords {
      */
     add(block: BlockRecord): void;
     /**
+     * @param {number} index an index that the arena gave
+     * @return {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry}
+     */
+    entry(index: number): BlockRecord | RuleRecord | DeclarationRecord | NodeEntry;
+    /**
      * @param {number} index an index that `add` gave, or -1 for no block
      * @return {BlockRecord | undefined}
      */
     block(index: number): BlockRecord | undefined;
+    /**
+     * @param {number} index an index that the arena gave
+     * @return {BlockRecord | undefined} the block at `index`, or undefined when the entry is another kind
+     */
+    blockEntry(index: number): BlockRecord | undefined;
     /**
      * @param {number} index an index that `recordRule` gave
      * @return {RuleRecord | undefined}
      */
     rule(index: number): RuleRecord | undefined;
     /**
-     * @return {number} the rule records recorded so far, departed ones included
+     * @return {number} the entries the arena holds, dropped and departed ones included
      */
-    ruleCount(): number;
+    entryCount(): number;
     /**
      * The records of every block the run added, dropped ones included.
      *
-     * @return {IterableIterator<BlockRecord>}
+     * @return {Generator<BlockRecord>}
      */
-    blocks(): IterableIterator<BlockRecord>;
+    blocks(): Generator<BlockRecord>;
     /**
      * The slot a placed rule stands in.
      *
@@ -85,6 +74,14 @@ export declare class BlockRecords {
      * @return {Slot}
      */
     slotOf(record: RuleRecord): Slot;
+    /**
+     * The PostCSS node of the entry at `index`, which is a block, a declaration or
+     * a bare node.
+     *
+     * @param {number} index
+     * @return {ChildNode}
+     */
+    nodeOf(index: number): ChildNode;
     /**
      * Accounts for the block at `index` gaining `change` live children, or losing
      * them when negative. A droppable block that is tracked and goes empty tells
@@ -96,33 +93,28 @@ export declare class BlockRecords {
      */
     changed(index: number, change: number): void;
     /**
-     * The first child the block at `index` holds now, without copying the child
-     * list.
+     * The first live child of the block at `index`; see `blockChildren.js`.
      *
      * @param {number} index
      * @return {ChildNode | undefined}
      */
     firstLiveChild(index: number): ChildNode | undefined;
     /**
-     * The number of children the block at `index` holds now, counted without
-     * copying them.
+     * The live children of the block at `index`, counted; see `blockChildren.js`.
      *
      * @param {number} index
      * @return {number}
      */
     liveCount(index: number): number;
     /**
-     * The entries the block at `index` holds now, in order: the record of each
-     * rule, the record of each at-rule block, and the node of anything else. A
-     * block that was dropped is left out.
+     * The live entries of the block at `index`; see `blockChildren.js`.
      *
      * @param {number} index
      * @return {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]}
      */
     liveEntries(index: number): (RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[];
     /**
-     * The children the block at `index` holds now, in order: the rules of its
-     * slots, and the nodes of its other entries, except a block that was dropped.
+     * The live children of the block at `index`; see `blockChildren.js`.
      *
      * @param {number} index
      * @return {ChildNode[]}
@@ -159,7 +151,7 @@ export declare class BlockRecords {
      */
     adopt(target: number, source: number): void;
     /**
-     * Builds the record of a declaration that is a child of a block.
+     * Builds the record of a declaration that is a rule's child.
      *
      * @param {import('postcss').Declaration} node
      * @param {PropertyTable} properties the keys of the property names
@@ -167,6 +159,24 @@ export declare class BlockRecords {
      * @return {DeclarationRecord}
      */
     declarationRecord(node: import('postcss').Declaration, properties: PropertyTable, declarations: DeclarationKeys): DeclarationRecord;
+    /**
+     * Builds the record of a declaration that is a child of a block and adds it
+     * to the arena, which gives it the next index.
+     *
+     * @param {import('postcss').Declaration} node
+     * @param {PropertyTable} properties the keys of the property names
+     * @param {DeclarationKeys} declarations the ids of the declarations
+     * @return {DeclarationRecord}
+     */
+    blockDeclaration(node: import('postcss').Declaration, properties: PropertyTable, declarations: DeclarationKeys): DeclarationRecord;
+    /**
+     * Adds a bare node of a block, a comment or a statement at-rule, to the
+     * arena, which gives it the next index.
+     *
+     * @param {ChildNode} node
+     * @return {NodeEntry}
+     */
+    bareEntry(node: ChildNode): NodeEntry;
     /**
      * Builds the record of a rule and adds it to the arena, which gives it the
      * next index. The slot the caller places it in is what holds it.
