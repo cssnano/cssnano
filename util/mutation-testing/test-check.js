@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import {
   countTests,
   mapWithConcurrency,
+  withProgress,
   notReachedMarker,
   outcome,
   report,
@@ -130,8 +131,9 @@ export async function run(catalogs, { timeout, allowUnkilled }) {
   const outcomes = await mapWithConcurrency(
     runnable,
     Math.max(1, Math.floor(availableParallelism() / 2)),
-    ({ mutation, target, testPath }) =>
+    withProgress(runnable.length, ({ mutation, target, testPath }) =>
       runMutation({ mutation, target, testPath, timeout })
+    )
   );
 
   const failed = report(

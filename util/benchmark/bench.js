@@ -305,6 +305,10 @@ function main(argv = process.argv.slice(2)) {
         : resolveRevision(options.candidate),
   };
   const comparison = prepareComparison(revisions, repoRoot);
+  // --json keeps stdout machine-readable, so the markers go to stderr.
+  const note = options.json ? console.error : console.log;
+  note(`bench: starting ${names.length} cases`);
+  let resultsPath;
   try {
     warnUnstableGovernor();
     const pinCore = options['pin-core'];
@@ -322,14 +326,20 @@ function main(argv = process.argv.slice(2)) {
     });
     const stamp = new Date().toISOString().replaceAll(':', '-');
     mkdirSync(join(RESULTS_DIR, stamp), { recursive: true });
+    resultsPath = join(RESULTS_DIR, stamp, 'results.json');
     writeFileSync(
-      join(RESULTS_DIR, stamp, 'results.json'),
+      resultsPath,
       JSON.stringify({ revisions, seed: options.seed, results }, null, 2)
     );
   } finally {
     const failures = options.keep ? [] : comparison.cleanup();
     for (const failure of failures) console.error(`bench: ${failure}`);
     if (failures.length > 0) process.exitCode = 1;
+    // Printed after cleanup, so it is the last line of every run that got here.
+    const status = process.exitCode ? 'fail' : 'pass';
+    note(
+      `bench: done status=${status} cases=${names.length}${resultsPath ? ` results=${resultsPath}` : ''}`
+    );
   }
 }
 
@@ -342,6 +352,9 @@ if (process.argv[1] === import.meta.filename) {
     main();
   } catch (error) {
     console.error(`bench: ${error.message}`);
+    (process.argv.includes('--json') ? console.error : console.log)(
+      'bench: done status=fail'
+    );
     process.exit(1);
   }
 }

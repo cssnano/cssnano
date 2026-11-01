@@ -127,3 +127,23 @@ test('a test file that executes no tests fails the run instead of letting every 
     [1, true]
   );
 });
+
+test('the last stdout line states that the run is done, with its verdict', () => {
+  assert.strictEqual(
+    runner.stdout.trimEnd().split('\n').at(-1),
+    'mutation: done status=fail mutants=4'
+  );
+});
+
+test('a run that cannot start still ends with a done line', async () => {
+  const missing = join(directory, 'missing-catalog.js');
+  const { stdout } = await runCatalog(missing);
+  assert.strictEqual(
+    stdout.trimEnd().split('\n').at(-1),
+    'mutation: done status=fail'
+  );
+});
+
+test('each judged mutant prints a progress line with its position', () => {
+  assert.match(runner.stdout, /^mutation: 4\/4 judged$/mv);
+});
