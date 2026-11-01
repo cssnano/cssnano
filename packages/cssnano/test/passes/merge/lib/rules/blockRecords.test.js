@@ -324,6 +324,22 @@ test('assertNoOverDuplication should throw when a declaration is written more of
   );
 });
 
+test('assertNoOverDuplication should throw when a chain reaches a rule that a second chain also reaches', () => {
+  const { root, state } = setup('r{a{width:1px}}b{color:red}');
+  const [outer, second] = /** @type {Rule[]} */ (root.nodes);
+  const nestedIndex = ruleRecordOf(state.records, outer).block;
+  // Linking `b` into the nested chain leaves its sibling link in the root chain,
+  // so the walk reaches `b` from both chains.
+  state.records.links.linkLast(
+    nestedIndex,
+    ruleRecordOf(state.records, second).index
+  );
+  assert.throws(
+    () => assertNoOverDuplication(state.records),
+    /reach a node twice/v
+  );
+});
+
 test('firstLiveChild should give the node after the first rule once that rule is unlinked', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
