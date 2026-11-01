@@ -17,7 +17,7 @@ export type Placement = {
      */
     following?: number[][];
 };
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecords, Slot} from './blockRecords.js' */
 /**
  * The rules that stand in the slots of a pair after it is merged.
  *
@@ -79,12 +79,5 @@ export default class RuleSequence {
      * @return {number} the index of the first replacement
      */
     replacePair(first: number, placement: Placement): number;
-    /**
-     * Ends the sweep: drops the blocks it emptied. The stylesheet is not touched;
-     * `runMerge` writes the records back once.
-     *
-     * @return {void}
-     */
-    finish(): void;
 }
 //# sourceMappingURL=ruleSequence.d.ts.map

@@ -294,11 +294,11 @@ test('runScan should keep the declaration and rule counts and lower the parent c
   const { state } = setup(
     '@media print{.a{color:red}}@media print{.b{color:blue}}'
   );
-  const potentialBefore = sweepPotential(state.records);
+  const start = sweepPotential(state.records, null);
   runScan(state);
-  const potentialAfter = sweepPotential(state.records);
-  assert.deepEqual(potentialBefore, [2, 2, 3]);
-  assert.deepEqual(potentialAfter, [2, 2, 2]);
+  const end = sweepPotential(state.records, start.numbers);
+  assert.deepEqual(start.potential, [2, 2, 3]);
+  assert.deepEqual(end.potential, [2, 2, 2]);
 });
 
 test('assertNoOverDuplication should accept records built from a stylesheet that repeats a declaration', () => {

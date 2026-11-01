@@ -5,6 +5,7 @@ import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { blockRecordOf, ruleRecordOf } from './liveRecords.js';
 
 /**
  * @param {string} css
@@ -64,4 +65,19 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
   assert.equal(sequence.prevOf(added.index), a);
   assert.equal(sequence.nextOf(added.index), c);
   assert.equal(sequence.prevOf(c), added.index);
+});
+
+test('a sweep move that empties a nested at-rule block should unlink it and then its emptied parent', () => {
+  const state = setup('@layer outer{@layer inner{b{width:1px}}}p{color:red}');
+  const { records } = state;
+  const [outer, p] = /** @type {any[]} */ (state.records.root.node.nodes);
+  const inner = outer.first;
+  const innerBlock = blockRecordOf(records, inner);
+  const outerBlock = blockRecordOf(records, outer);
+  new RuleSequence(records).moveIntoParent(
+    ruleRecordOf(records, p).index,
+    ruleRecordOf(records, inner.first).index
+  );
+  assert.equal(records.links.parentOf(innerBlock.index), -1);
+  assert.equal(records.links.parentOf(outerBlock.index), -1);
 });

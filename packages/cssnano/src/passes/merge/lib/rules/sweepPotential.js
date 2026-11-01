@@ -1,9 +1,8 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { Slot } from './blockRecords.js';
-/** @import {BlockRecord} from './blockRecord.js' */
+import { BlockRecord } from './blockRecord.js';
+import { RuleRecord } from './ruleRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
 
 const POTENTIAL =
   'a sweep raised its potential, or moved a rule without lowering it';
@@ -11,41 +10,48 @@ const POTENTIAL =
 /**
  * The potential that a sweep never raises: the declarations of the live rules
  * that hold no block, then those rules, then the sum over them of the number
- * of the block each stands in. Blocks are numbered in document order, dropped
- * ones included, and nothing is stored between calls.
+ * of the block each stands in. The call before a sweep numbers the blocks in
+ * document order and returns the numbers, which the call after the sweep
+ * reuses: renumbering after it would hide a move that does not lower the
+ * potential, since a moved rule may stand in a block numbered differently.
  *
  * @param {BlockRecords} records
- * @return {[number, number, number]}
+ * @param {number[] | null} numbers the number of each block by index, from the
+ * call before the sweep, or null to number the blocks now
+ * @return {{potential: [number, number, number], numbers: number[]}}
  */
-export function sweepPotential(records) {
+export function sweepPotential(records, numbers) {
+  const ids = numbers ?? [];
+  const { links } = records;
   let declarations = 0;
   let rules = 0;
   let parents = 0;
   let number = 0;
   /** @param {BlockRecord} block */
   const visit = (block) => {
-    const id = number++;
-    for (const entry of block.children) {
-      if (entry instanceof Slot) {
-        for (const index of entry.rules) {
-          const record = /** @type {RuleRecord} */ (records.rule(index));
-          const nested = record.block;
-          if (nested !== -1) {
-            visit(/** @type {BlockRecord} */ (records.block(nested)));
-          } else {
-            declarations += record.declarations.length;
-            rules++;
-            parents += id;
-          }
+    if (numbers === null) ids[block.index] = number++;
+    const id = ids[block.index];
+    for (
+      let entry = links.firstChild(block.index);
+      entry !== -1;
+      entry = links.nextSibling(entry)
+    ) {
+      const item = records.entry(entry);
+      if (item instanceof RuleRecord) {
+        if (item.block !== -1) {
+          visit(/** @type {BlockRecord} */ (records.block(item.block)));
+        } else {
+          declarations += item.declarations.length;
+          rules++;
+          parents += id;
         }
-      } else {
-        const nested = records.blockEntry(entry);
-        if (nested) visit(nested);
+      } else if (item instanceof BlockRecord) {
+        visit(item);
       }
     }
   };
-  visit(records.root);
-  return [declarations, rules, parents];
+  visit(/** @type {BlockRecord} */ (records.root));
+  return { potential: [declarations, rules, parents], numbers: ids };
 }
 
 /**
