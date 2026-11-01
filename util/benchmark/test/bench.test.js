@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { parseOptions, runCase } from '../bench.js';
 
 test('a run without --seed draws a new seed each time', () => {
@@ -131,4 +133,17 @@ test('a case result reports the order effect for --json', () => {
   const result = runWithClock(runner);
   assert.equal(typeof result.orderEffect, 'number');
   assert.equal(typeof result.orderStable, 'boolean');
+});
+
+test('a run that fails before measuring still ends with a done line', () => {
+  const { stdout, status } = spawnSync(
+    process.execPath,
+    [
+      fileURLToPath(new URL('../bench.js', import.meta.url)),
+      '--case=nonexistent',
+    ],
+    { encoding: 'utf8' }
+  );
+  assert.equal(status, 1);
+  assert.equal(stdout.trimEnd().split('\n').at(-1), 'bench: done status=fail');
 });

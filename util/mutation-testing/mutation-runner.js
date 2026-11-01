@@ -49,6 +49,8 @@ const { values } = parseArgs({
 
 const checks = { test: testCheck, oracle: oracleCheck };
 const check = checks[values.check] ?? testCheck;
+// Printed last on every path, so a reader of the output knows the run ended.
+let judgedTotal;
 try {
   if (Number(process.versions.node.split('.')[0]) < 24) {
     throw new Error('Mutation testing requires Node 24 or later');
@@ -72,6 +74,7 @@ try {
     values.only
   );
   const total = loaded.reduce((n, { mutations }) => n + mutations.length, 0);
+  judgedTotal = total;
   console.log(
     `Running ${total} mutants of ${loaded.length} catalogs with --check ${values.check}`
   );
@@ -89,4 +92,8 @@ try {
 } catch (error) {
   console.error(`${check.harnessError}: ${error.message}`);
   process.exitCode = 1;
+} finally {
+  const status = process.exitCode ? 'fail' : 'pass';
+  const mutants = judgedTotal === undefined ? '' : ` mutants=${judgedTotal}`;
+  console.log(`mutation: done status=${status}${mutants}`);
 }

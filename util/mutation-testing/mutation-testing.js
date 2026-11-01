@@ -127,6 +127,26 @@ export async function mapWithConcurrency(items, limit, worker) {
 }
 
 /**
+ * Wraps a mutant worker so each finished mutant prints its position, which
+ * shows a long run is advancing before the report appears.
+ *
+ * @template T, R
+ * @param {number} total
+ * @param {(item: T, index: number) => Promise<R>} worker
+ * @param {(line: string) => void} [out]
+ * @returns {(item: T, index: number) => Promise<R>}
+ */
+export function withProgress(total, worker, out = console.log) {
+  let judged = 0;
+  return async (item, index) => {
+    const result = await worker(item, index);
+    judged += 1;
+    out(`mutation: ${judged}/${total} judged`);
+    return result;
+  };
+}
+
+/**
  * The registry entries that a check runs: `test` entries rerun their test
  * file; entries that declare `suites` are judged by the fuzz oracles.
  *
