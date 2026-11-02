@@ -2,19 +2,22 @@ import { RuleRecord } from './ruleRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type MergeState from './mergeState.js';
 import type { BlockRecord } from './blockRecord.js';
+import type { BlockRecords } from './blockRecords.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {ChildNode, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /**
  * A rule made only of declarations. Comments and nested rules would be
  * stranded or reordered by moving declarations out of the rule.
  *
+ * @param {BlockRecords} records the arena that holds the rule's children
  * @param {RuleRecord} record
  * @return {boolean}
  */
-export declare const isDeclarationRule: (record: RuleRecord) => boolean;
+export declare const isDeclarationRule: (records: BlockRecords, record: RuleRecord) => boolean;
 /**
  * The positions in `later` of declarations that repeat every one of
  * `declarations`, or null when a repeat does not stand first for its

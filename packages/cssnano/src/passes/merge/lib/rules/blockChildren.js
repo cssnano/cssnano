@@ -73,3 +73,17 @@ export function liveChildren(records, index) {
   }
   return children;
 }
+
+/**
+ * Gives an appended child the whitespace of the last child when it has none, as
+ * PostCSS gives it, so the records keep what the node will print.
+ *
+ * @param {ChildNode} node
+ * @param {ChildNode | undefined} last the child before `node`
+ * @return {void}
+ */
+export function inheritWhitespace(node, last) {
+  if (node.raws.before !== undefined || last === undefined) return;
+  const sample = last.raws.before;
+  if (sample !== undefined) node.raws.before = sample.replaceAll(/\S/gv, '');
+}

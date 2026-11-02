@@ -1,6 +1,7 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord, NodeEntry } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 
@@ -98,6 +99,35 @@ export class BlockLinks {
   }
 
   /**
+   * @param {number} index an index that the arena gave, of a container
+   * @return {DeclarationRecord | undefined} the first declaration of its chain
+   */
+  firstDeclaration(index) {
+    return this.#declarationFrom(this.firstChild(index));
+  }
+
+  /**
+   * @param {DeclarationRecord} declaration a declaration linked in a chain
+   * @return {DeclarationRecord | undefined} the declaration after it in its chain
+   * @throws {Error} under checks, when the declaration is linked nowhere
+   */
+  nextDeclaration(declaration) {
+    return this.#declarationFrom(this.nextSibling(declaration.index));
+  }
+
+  /**
+   * @param {number} index the entry to start from, or -1
+   * @return {DeclarationRecord | undefined} the first declaration at or after `index`
+   */
+  #declarationFrom(index) {
+    for (let at = index; at !== -1; at = this.#next[at]) {
+      const entry = this.#records.entry(at);
+      if (entry instanceof DeclarationRecord) return entry;
+    }
+    return undefined;
+  }
+
+  /**
    * Links the entry at `index` after `after` in the chain of the container at
    * `block`, which is the head when `after` is -1. Under checks, a container
    * that does not reach the root through `parentOf` throws, since its entries
@@ -123,6 +153,9 @@ export class BlockLinks {
     if (next === -1) holder.last = index;
     else this.#prev[next] = index;
     holder.count++;
+    if (holder instanceof RuleRecord) {
+      holder.childLinked(this.#records.entry(index), next === -1);
+    }
   }
 
   /**
@@ -157,6 +190,7 @@ export class BlockLinks {
     this.#parent[index] = -1;
     this.#prev[index] = -1;
     this.#next[index] = -1;
+    if (holder instanceof RuleRecord) holder.childUnlinked();
   }
 
   /**
@@ -220,6 +254,16 @@ export class BlockLinks {
    * @throws {Error} when a walk up `parentOf` from `block` does not reach the root
    */
   #assertReachesRoot(block) {
+    // A merged rule stands apart until the merge places it, and its children
+    // are built first, so a plain rule with no parent may take children.
+    const holder = this.#records.container(block);
+    if (
+      holder instanceof RuleRecord &&
+      holder.context === -1 &&
+      this.#parent[block] === -1
+    ) {
+      return;
+    }
     let at = block;
     while (at !== this.#records.root.index) {
       at = this.#parent[at];

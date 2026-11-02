@@ -257,9 +257,8 @@ function joinInParent(block, mergeState, rules) {
   const latest = new Map();
   // Every rule with a selector joins the first rule with that selector, so
   // the joined rule keeps its writes from one join to the next: rebuilding
-  // them would make each join cost time in the growing rule. Its declarations
-  // live in its record.
-  /** @type {Map<number, PropertyWrites>} keyed by the index of the earlier rule */
+  // them would make each join cost time in the growing rule.
+  /** @type {Map<number, {kept: DeclarationRecord[], writes: PropertyWrites}>} keyed by the index of the earlier rule */
   const received = new Map();
   let joined = false;
   for (let position = scan.start; position < entries.length; position++) {
@@ -301,20 +300,21 @@ function joinInParent(block, mergeState, rules) {
   return joined;
 
   /**
-   * Appends the declarations of `later` to `earlier`. The declarations are
-   * those of the record of `earlier`, which takes them over as they grow.
+   * Appends the declarations of `later` to `earlier`. The declarations and
+   * writes of `earlier` are read once and grow with each join.
    *
    * @param {RuleRecord} earlier
    * @param {RuleRecord} later
    * @return {void}
    */
   function receive(earlier, later) {
-    let writes = received.get(earlier.index);
-    if (!writes) {
-      writes = writesOf(earlier.declarations);
-      received.set(earlier.index, writes);
+    let joins = received.get(earlier.index);
+    if (!joins) {
+      const kept = earlier.declarationsOf(mergeState.records);
+      joins = { kept, writes: writesOf(kept) };
+      received.set(earlier.index, joins);
     }
-    appendToDeclarations(mergeState, earlier, writes, later);
+    appendToDeclarations(mergeState, earlier, joins.kept, joins.writes, later);
   }
 
   /**

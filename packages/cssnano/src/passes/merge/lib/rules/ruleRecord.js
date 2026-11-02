@@ -1,28 +1,21 @@
 import { SelectorList } from './selectorList.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import {
-  childEntries,
-  inheritWhitespace,
-  matchesNode,
-  removeClaimed,
-} from './ruleChildren.js';
 
-/** @import {ChildNode} from 'postcss' */
+const STALE_KEYS =
+  'declaration keys of a rule record are out of step with its chain';
 
-/** @import {Declaration, Rule} from 'postcss' */
+/** @import {ChildNode, Declaration, Rule} from 'postcss' */
+/** @import {NodeEntry} from './blockRecord.js' */
 /**
  * @typedef {object} RuleDeclarationKeys
- * @property {number[]} keys
- * @property {Set<number>} keySet
+ * @property {number[]} keys the ids of the declarations of the rule, in order
+ * @property {Set<number>} keySet the ids of the declarations
  */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
 /** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-
-const NESTING_RULE = 'a rule that nests holds no declaration list';
-const STALE = 'stale declarations of a rule record';
 
 /**
  * @param {ChildNode} node
@@ -34,22 +27,24 @@ export function isDeclaration(node) {
 
 /**
  * What the merge knows of a rule: its selector list, which the base class
- * derives facts from, and its children. A nesting rule's children form a chain
- * in the arena of `BlockRecords`, so the record refers to no other record.
- * Every field is set up front so all instances share one object layout.
+ * derives facts from, and its children. The children form a chain in the arena
+ * of `BlockRecords`, so the record refers to no other record. Every field is
+ * set up front so all instances share one object layout.
  */
 export class RuleRecord extends SelectorList {
-  /** @type {DeclarationRecord[]} the declarations of the rule, in order */
-  #declarations;
-  /** @type {(DeclarationRecord | ChildNode)[] | null} every child, once a comment is held; null when they are the declarations */
-  #entries;
-  /** @type {RuleDeclarationKeys | undefined} derived from the declarations */
-  #declarationKeys;
+  /**
+   * The ids of the declarations, derived from the chain. It is kept while the
+   * chain only gains declarations at its end, and dropped by any other edit.
+   *
+   * @type {RuleDeclarationKeys | undefined}
+   */
+  #declarationKeys = undefined;
   /** @type {boolean} set once the rule has left the stylesheet */
   #departed = false;
+  /** @type {boolean} set once a child is added or removed, which the node takes at write-back */
+  #edited = false;
   /**
-   * The first entry of the chain of children, which a nesting rule links, or
-   * -1 when it holds none. A plain rule keeps its children in its arrays.
+   * The first entry of the chain of children, or -1 when it holds none.
    *
    * @type {number}
    */
@@ -69,21 +64,16 @@ export class RuleRecord extends SelectorList {
    * @type {number}
    */
   context = -1;
-  /** @type {boolean} set once a child is added or removed, which the node takes at write-back */
-  #edited = false;
+
   /** @type {number} the place of the record in the arena of its records, -1 until added */
   index = -1;
 
   /**
    * @param {Rule} node the rule the record describes
    * @param {string[]} selectors
-   * @param {DeclarationRecord[]} declarations
    */
-  constructor(node, selectors, declarations) {
+  constructor(node, selectors) {
     super(node, selectors);
-    this.#declarations = declarations;
-    this.#entries = childEntries(node, declarations);
-    this.#declarationKeys = undefined;
   }
 
   /** @return {boolean} whether a child was added or removed since the record was made */
@@ -102,28 +92,18 @@ export class RuleRecord extends SelectorList {
     return super.selectors;
   }
 
-  /** @return {DeclarationRecord[]} the declarations, without comments */
-  get declarations() {
-    this.#assertChildren();
-    return this.#declarations;
-  }
-
-  /** @return {readonly (DeclarationRecord | ChildNode)[]} every child, comments included */
-  get children() {
-    this.#assertChildren();
-    return this.#entries ?? this.#declarations;
-  }
-
   /** @return {number} the children, comments included */
   childCount() {
-    this.#assertChildren();
-    return (this.#entries ?? this.#declarations).length;
+    this.#assertLive();
+    return this.count;
   }
 
-  /** @return {boolean} whether every child is a declaration, as an empty rule is */
-  holdsOnlyDeclarations() {
-    this.#assertChildren();
-    return this.#entries === null;
+  /**
+   * @param {BlockRecords} records the arena that holds the rule's children
+   * @return {boolean} whether every child is a declaration, as an empty rule is
+   */
+  holdsOnlyDeclarations(records) {
+    return this.count === this.declarationKeys(records).keys.length;
   }
 
   /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
@@ -139,28 +119,8 @@ export class RuleRecord extends SelectorList {
   }
 
   /**
-   * Appends a child to the records. The node takes it at write-back.
-   *
-   * @param {DeclarationRecord | ChildNode} child
-   * @return {void}
-   */
-  append(child) {
-    this.#assertChildren();
-    const isDeclarationChild = child instanceof DeclarationRecord;
-    const node = isDeclarationChild ? child.node : child;
-    inheritWhitespace(node, (this.#entries ?? this.#declarations).at(-1));
-    this.#edited = true;
-    if (isDeclarationChild) this.#declarations.push(child);
-    if (this.#entries) {
-      this.#entries.push(child);
-    } else if (!isDeclarationChild) {
-      this.#entries = [...this.#declarations, child];
-    }
-    this.#declarationKeys = undefined;
-  }
-
-  /**
-   * The ids of the declarations, which a nesting rule keeps in its chain.
+   * The ids of the declarations of the rule. They are read from the chain once,
+   * and kept until an edit that is not a declaration appended at its end.
    *
    * @param {BlockRecords} records the arena that holds the rule's children
    * @return {RuleDeclarationKeys}
@@ -169,61 +129,117 @@ export class RuleRecord extends SelectorList {
     this.#assertLive();
     if (!this.#declarationKeys) {
       const keys = [];
-      if (this.context === -1) {
-        for (const entry of this.#declarations) keys.push(entry.id);
-      } else {
-        for (
-          let entry = records.links.firstChild(this.index);
-          entry !== -1;
-          entry = records.links.nextSibling(entry)
-        ) {
-          const item = records.entry(entry);
-          if (item instanceof DeclarationRecord) keys.push(item.id);
-        }
+      for (
+        let entry = records.links.firstChild(this.index);
+        entry !== -1;
+        entry = records.links.nextSibling(entry)
+      ) {
+        const item = records.entry(entry);
+        if (item instanceof DeclarationRecord) keys.push(item.id);
       }
       this.#declarationKeys = { keys, keySet: new Set(keys) };
+    } else if (consistencyChecksEnabled()) {
+      this.#assertKeysFresh(records, this.#declarationKeys);
     }
     return this.#declarationKeys;
   }
 
   /**
-   * Removes the declarations at `claimed` from the records. The node drops
-   * them at write-back.
+   * Under consistency checks, throws when the kept ids differ from the ids of
+   * the declarations the chain holds, in order.
    *
-   * @param {Set<number>} claimed the positions of the declarations that leave
+   * @param {BlockRecords} records
+   * @param {RuleDeclarationKeys} kept
    * @return {void}
+   * @throws {Error} when the kept declarations are out of step with the chain
    */
-  removeDeclarationsAt(claimed) {
-    this.#assertChildren();
-    removeClaimed(
-      this.#entries ?? this.#declarations,
-      this.#declarations,
-      claimed
-    );
-    this.#declarationKeys = undefined;
-    if (claimed.size) this.#edited = true;
+  #assertKeysFresh(records, kept) {
+    let at = 0;
+    for (
+      let entry = records.links.firstChild(this.index);
+      entry !== -1;
+      entry = records.links.nextSibling(entry)
+    ) {
+      const item = records.entry(entry);
+      if (!(item instanceof DeclarationRecord)) continue;
+      if (kept.keys[at++] !== item.id) throw new Error(STALE_KEYS);
+    }
+    if (at !== kept.keys.length) throw new Error(STALE_KEYS);
   }
 
   /**
-   * Removes the declarations at `claimed` as `removeDeclarationsAt` does, and
-   * hands over their records for another rule to append.
+   * The declarations of the rule, in order, read from its chain at the call. A
+   * reader that indexes them by position takes this array.
    *
-   * @param {Set<number>} claimed the positions of the declarations that leave
-   * @return {DeclarationRecord[]} the removed records, in order
+   * @param {BlockRecords} records the arena that holds the rule's children
+   * @return {DeclarationRecord[]}
    */
-  takeDeclarationsAt(claimed) {
-    this.#assertChildren();
+  declarationsOf(records) {
+    this.#assertLive();
     /** @type {DeclarationRecord[]} */
-    const taken = [];
-    removeClaimed(
-      this.#entries ?? this.#declarations,
-      this.#declarations,
-      claimed,
-      taken
-    );
+    const declarations = [];
+    for (
+      let declaration = records.links.firstDeclaration(this.index);
+      declaration !== undefined;
+      declaration = records.links.nextDeclaration(declaration)
+    ) {
+      declarations.push(declaration);
+    }
+    return declarations;
+  }
+
+  /**
+   * The declaration of the rule at `position`, counted along its chain at the
+   * call.
+   *
+   * @param {BlockRecords} records the arena that holds the rule's children
+   * @param {number} position
+   * @return {DeclarationRecord | undefined} undefined when the rule has no such declaration
+   */
+  declarationAt(records, position) {
+    this.#assertLive();
+    let at = 0;
+    for (
+      let declaration = records.links.firstDeclaration(this.index);
+      declaration !== undefined;
+      declaration = records.links.nextDeclaration(declaration)
+    ) {
+      if (at++ === position) return declaration;
+    }
+    return undefined;
+  }
+
+  /**
+   * Called by `BlockLinks` once a child is linked into the chain of the rule.
+   * A declaration linked at the end joins the kept ids; any other link drops
+   * them.
+   *
+   * @param {DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord} child
+   *   the record of the child that was linked
+   * @param {boolean} atEnd whether the child was linked after the last entry
+   * @return {void}
+   */
+  childLinked(child, atEnd) {
+    this.#edited = true;
+    const kept = this.#declarationKeys;
+    if (!kept) return;
+    if (atEnd && child instanceof DeclarationRecord) {
+      kept.keys.push(child.id);
+      kept.keySet.add(child.id);
+    } else {
+      this.#declarationKeys = undefined;
+    }
+  }
+
+  /** Called by `BlockLinks` once a child is unlinked from the chain of the rule. */
+  childUnlinked() {
+    this.#edited = true;
     this.#declarationKeys = undefined;
-    if (claimed.size) this.#edited = true;
-    return taken;
+  }
+
+  /** Clears the edited flag, once the build has linked the children of the rule. */
+  settle() {
+    this.#edited = false;
   }
 
   /**
@@ -303,28 +319,5 @@ export class RuleRecord extends SelectorList {
   /** @throws {Error} when the rule this record describes has left the stylesheet */
   #assertLive() {
     if (this.#departed) throw new Error('read of a departed rule record');
-  }
-
-  /**
-   * @throws {Error} when the rule has left the stylesheet, or nests rules or
-   * at-rules, whose children its chain holds
-   */
-  #assertChildren() {
-    this.#assertLive();
-    if (this.context !== -1) throw new Error(NESTING_RULE);
-  }
-
-  /**
-   * Under consistency checks, throws when the children the node holds differ
-   * from those the record holds, in node or in the facts a record keeps. Call
-   * it once the node has taken the edits, at write-back.
-   *
-   * @throws {Error} when the declarations are stale
-   */
-  assertFresh() {
-    if (!consistencyChecksEnabled() || this.context !== -1) return;
-    if (!matchesNode(this.node, this.#entries, this.#declarations)) {
-      throw new Error(STALE);
-    }
   }
 }

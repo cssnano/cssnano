@@ -48,7 +48,10 @@ test('a rule that its declarations left keeps its node array until write-back', 
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [, b] = twoRules(root);
   const kept = b.nodes;
-  ruleRecordOf(state.records, b).removeDeclarationsAt(new Set([0]));
+  state.records.removeDeclarationsAt(
+    ruleRecordOf(state.records, b),
+    new Set([0])
+  );
   assert.equal(b.nodes, kept);
   assert.equal(b.nodes.length, 1);
 });
@@ -58,8 +61,11 @@ test('an unedited rule keeps its node array through a write-back of another rule
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [a, b] = twoRules(root);
   const kept = a.nodes;
-  ruleRecordOf(state.records, b).removeDeclarationsAt(new Set([0]));
-  writeBack(state.records, state.records.blocks());
+  state.records.removeDeclarationsAt(
+    ruleRecordOf(state.records, b),
+    new Set([0])
+  );
+  writeBack(state.records);
   assert.equal(a.nodes, kept);
 });
 
@@ -73,7 +79,7 @@ test('a rule record reports itself edited after it removes a declaration', () =>
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [a] = twoRules(root);
   const record = ruleRecordOf(state.records, a);
-  record.removeDeclarationsAt(new Set([0]));
+  state.records.removeDeclarationsAt(record, new Set([0]));
   assert.equal(record.edited, true);
 });
 
@@ -82,9 +88,11 @@ test('a receiving rule keeps its node unchanged until write-back', () => {
   const [a, b] = twoRules(root);
   const from = ruleRecordOf(state.records, a);
   const to = ruleRecordOf(state.records, b);
-  for (const child of from.takeDeclarationsAt(new Set([0]))) to.append(child);
+  for (const child of state.records.takeDeclarationsAt(from, new Set([0]))) {
+    state.records.appendChild(to, child);
+  }
   assert.equal(b.nodes.length, 1);
-  writeBack(state.records, state.records.blocks());
+  writeBack(state.records);
   assert.equal(b.nodes.length, 2);
 });
 
@@ -93,8 +101,10 @@ test('a declaration handed to another rule has that rule as parent after write-b
   const [a, b] = twoRules(root);
   const from = ruleRecordOf(state.records, a);
   const to = ruleRecordOf(state.records, b);
-  for (const child of from.takeDeclarationsAt(new Set([0]))) to.append(child);
-  writeBack(state.records, state.records.blocks());
+  for (const child of state.records.takeDeclarationsAt(from, new Set([0]))) {
+    state.records.appendChild(to, child);
+  }
+  writeBack(state.records);
   assert.equal(/** @type {Declaration} */ (b.last).prop, 'color');
   assert.equal(b.last.parent, b);
 });
@@ -139,11 +149,12 @@ test('a departed rule leaves the tree at write-back', () => {
   appendToDeclarations(
     state,
     receiving,
-    writesOf(receiving.declarations),
+    receiving.declarationsOf(state.records),
+    writesOf(receiving.declarationsOf(state.records)),
     incoming
   );
   removeRules(state, new Set([incoming.index]));
-  writeBack(state.records, state.records.blocks());
+  writeBack(state.records);
   assert.deepEqual(root.nodes, [b]);
   assert.equal(a.parent, undefined);
 });
@@ -156,18 +167,19 @@ test('a departed rule keeps its child array, since write-back does not empty it'
   appendToDeclarations(
     state,
     receiving,
-    writesOf(receiving.declarations),
+    receiving.declarationsOf(state.records),
+    writesOf(receiving.declarationsOf(state.records)),
     incoming
   );
   removeRules(state, new Set([incoming.index]));
-  writeBack(state.records, state.records.blocks());
+  writeBack(state.records);
   assert.equal(a.nodes.length, 1);
 });
 
 test('a rule whose child points to another container fails the consistency check', () => {
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [a, b] = twoRules(root);
-  writeBack(state.records, state.records.blocks());
+  writeBack(state.records);
   /** @type {ChildNode} */ (a.first).parent = b;
   assert.throws(() => assertRecordsMatchTree(state));
 });

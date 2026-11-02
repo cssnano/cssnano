@@ -39,4 +39,13 @@ export declare function liveEntries(records: BlockRecords, index: number): (Rule
  * @return {ChildNode[]}
  */
 export declare function liveChildren(records: BlockRecords, index: number): ChildNode[];
+/**
+ * Gives an appended child the whitespace of the last child when it has none, as
+ * PostCSS gives it, so the records keep what the node will print.
+ *
+ * @param {ChildNode} node
+ * @param {ChildNode | undefined} last the child before `node`
+ * @return {void}
+ */
+export declare function inheritWhitespace(node: ChildNode, last: ChildNode | undefined): void;
 //# sourceMappingURL=blockChildren.d.ts.map

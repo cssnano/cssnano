@@ -1,15 +1,32 @@
 import { SelectorList } from './selectorList.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import type { ChildNode } from 'postcss';
-import type { Declaration, Rule } from 'postcss';
+import type { ChildNode, Declaration, Rule } from 'postcss';
+import type { NodeEntry } from './blockRecord.js';
 export type RuleDeclarationKeys = {
+    /**
+     * the ids of the declarations of the rule, in order
+     */
     keys: number[];
+    /**
+     * the ids of the declarations
+     */
     keySet: Set<number>;
 };
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { ElementKeyOf, SelectorLookup } from './selectorList.js';
 import type { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { BlockRecords } from './blockRecords.js';
+/** @import {ChildNode, Declaration, Rule} from 'postcss' */
+/** @import {NodeEntry} from './blockRecord.js' */
+/**
+ * @typedef {object} RuleDeclarationKeys
+ * @property {number[]} keys the ids of the declarations of the rule, in order
+ * @property {Set<number>} keySet the ids of the declarations
+ */
+/** @import {RangePiece} from '../../../../values/joinRanges.js' */
+/** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
+/** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /**
  * @param {ChildNode} node
  * @return {node is Declaration}
@@ -17,15 +34,14 @@ import type { BlockRecords } from './blockRecords.js';
 export declare function isDeclaration(node: ChildNode): node is Declaration;
 /**
  * What the merge knows of a rule: its selector list, which the base class
- * derives facts from, and its children. A nesting rule's children form a chain
- * in the arena of `BlockRecords`, so the record refers to no other record.
- * Every field is set up front so all instances share one object layout.
+ * derives facts from, and its children. The children form a chain in the arena
+ * of `BlockRecords`, so the record refers to no other record. Every field is
+ * set up front so all instances share one object layout.
  */
 export declare class RuleRecord extends SelectorList {
     #private;
     /**
-     * The first entry of the chain of children, which a nesting rule links, or
-     * -1 when it holds none. A plain rule keeps its children in its arrays.
+     * The first entry of the chain of children, or -1 when it holds none.
      *
      * @type {number}
      */
@@ -47,57 +63,65 @@ export declare class RuleRecord extends SelectorList {
     /**
      * @param {Rule} node the rule the record describes
      * @param {string[]} selectors
-     * @param {DeclarationRecord[]} declarations
      */
-    constructor(node: Rule, selectors: string[], declarations: DeclarationRecord[]);
+    constructor(node: Rule, selectors: string[]);
     /** @return {boolean} whether a child was added or removed since the record was made */
     get edited(): boolean;
     /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
     get departed(): boolean;
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
-    /** @return {DeclarationRecord[]} the declarations, without comments */
-    get declarations(): DeclarationRecord[];
-    /** @return {readonly (DeclarationRecord | ChildNode)[]} every child, comments included */
-    get children(): readonly (DeclarationRecord | ChildNode)[];
     /** @return {number} the children, comments included */
     childCount(): number;
-    /** @return {boolean} whether every child is a declaration, as an empty rule is */
-    holdsOnlyDeclarations(): boolean;
+    /**
+     * @param {BlockRecords} records the arena that holds the rule's children
+     * @return {boolean} whether every child is a declaration, as an empty rule is
+     */
+    holdsOnlyDeclarations(records: BlockRecords): boolean;
     /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
     get pieces(): RangePiece[] | null | undefined;
     /** @param {RangePiece[] | null} pieces one per selector, or null */
     setPieces(pieces: RangePiece[] | null): void;
     /**
-     * Appends a child to the records. The node takes it at write-back.
-     *
-     * @param {DeclarationRecord | ChildNode} child
-     * @return {void}
-     */
-    append(child: DeclarationRecord | ChildNode): void;
-    /**
-     * The ids of the declarations, which a nesting rule keeps in its chain.
+     * The ids of the declarations of the rule. They are read from the chain once,
+     * and kept until an edit that is not a declaration appended at its end.
      *
      * @param {BlockRecords} records the arena that holds the rule's children
      * @return {RuleDeclarationKeys}
      */
     declarationKeys(records: BlockRecords): RuleDeclarationKeys;
     /**
-     * Removes the declarations at `claimed` from the records. The node drops
-     * them at write-back.
+     * The declarations of the rule, in order, read from its chain at the call. A
+     * reader that indexes them by position takes this array.
      *
-     * @param {Set<number>} claimed the positions of the declarations that leave
+     * @param {BlockRecords} records the arena that holds the rule's children
+     * @return {DeclarationRecord[]}
+     */
+    declarationsOf(records: BlockRecords): DeclarationRecord[];
+    /**
+     * The declaration of the rule at `position`, counted along its chain at the
+     * call.
+     *
+     * @param {BlockRecords} records the arena that holds the rule's children
+     * @param {number} position
+     * @return {DeclarationRecord | undefined} undefined when the rule has no such declaration
+     */
+    declarationAt(records: BlockRecords, position: number): DeclarationRecord | undefined;
+    /**
+     * Called by `BlockLinks` once a child is linked into the chain of the rule.
+     * A declaration linked at the end joins the kept ids; any other link drops
+     * them.
+     *
+     * @param {DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord} child
+     *   the record of the child that was linked
+     * @param {boolean} atEnd whether the child was linked after the last entry
      * @return {void}
      */
-    removeDeclarationsAt(claimed: Set<number>): void;
-    /**
-     * Removes the declarations at `claimed` as `removeDeclarationsAt` does, and
-     * hands over their records for another rule to append.
-     *
-     * @param {Set<number>} claimed the positions of the declarations that leave
-     * @return {DeclarationRecord[]} the removed records, in order
-     */
-    takeDeclarationsAt(claimed: Set<number>): DeclarationRecord[];
+    childLinked(child: DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord, atEnd: boolean): void;
+    /** Called by `BlockLinks` once a child is unlinked from the chain of the rule. */
+    childUnlinked(): void;
+    /** Clears the edited flag, once the build has linked the children of the rule. */
+    settle(): void;
     /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}
@@ -138,13 +162,5 @@ export declare class RuleRecord extends SelectorList {
     absorbEarlier(earlier: RuleRecord, lookup: SelectorLookup, keyOf?: ElementKeyOf): void;
     /** Marks the record of a rule that left the stylesheet, so a later read throws. */
     depart(): void;
-    /**
-     * Under consistency checks, throws when the children the node holds differ
-     * from those the record holds, in node or in the facts a record keeps. Call
-     * it once the node has taken the edits, at write-back.
-     *
-     * @throws {Error} when the declarations are stale
-     */
-    assertFresh(): void;
 }
 //# sourceMappingURL=ruleRecord.d.ts.map

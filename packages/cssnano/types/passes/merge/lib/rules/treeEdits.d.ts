@@ -1,3 +1,4 @@
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockRecords } from './blockRecords.js';
 import { BlockRecord } from './blockRecord.js';
 import type { Container, Root } from 'postcss';
@@ -6,8 +7,8 @@ import type { PropertyWrites } from './propertyWrites.js';
 import type MergeState from './mergeState.js';
 /**
  * Builds the records of a stylesheet from its tree, once per run. Each child is
- * linked into the chain of its parent. A rule that holds a rule or an at-rule
- * is a container too: its children are linked into its own chain.
+ * linked into the chain of its parent, and every rule is a container whose
+ * children form its own chain.
  *
  * @param {Root} root
  * @param {MergeState} mergeState
@@ -44,11 +45,12 @@ export declare function takePlaceOf(mergeState: MergeState, parent: Container, e
  *
  * @param {MergeState} mergeState
  * @param {RuleRecord} receiving
- * @param {PropertyWrites} index the writes of the declarations of `receiving`, extended in place
+ * @param {DeclarationRecord[]} kept the declarations of `receiving`, extended in place
+ * @param {PropertyWrites} index the writes of `kept`, extended in place
  * @param {RuleRecord} incoming
  * @return {void}
  */
-export declare function appendToDeclarations(mergeState: MergeState, receiving: RuleRecord, index: PropertyWrites, incoming: RuleRecord): void;
+export declare function appendToDeclarations(mergeState: MergeState, receiving: RuleRecord, kept: DeclarationRecord[], index: PropertyWrites, incoming: RuleRecord): void;
 /**
  * Removes `records` from the records of their parent. The PostCSS child list
  * catches up at write-back.

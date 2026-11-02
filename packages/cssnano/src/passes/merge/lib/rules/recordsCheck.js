@@ -62,7 +62,7 @@ function checkBlockStructure(records, block) {
     const item = records.entry(entry);
     if (item instanceof BlockRecord) {
       checkBlockStructure(records, item);
-    } else if (item instanceof RuleRecord && item.context !== -1) {
+    } else if (item instanceof RuleRecord) {
       checkBlockStructure(records, item);
     }
   }
@@ -92,7 +92,7 @@ export function assertRecordsWellFormed(mergeState) {
 
 /**
  * Walks the ownership of the records from the root along the chains: the
- * entries of each block, and the nested block and declarations of each rule.
+ * entries of each block, and the chain of each rule.
  * Throws when a block, rule or declaration is reached twice, since every record
  * has one owner, or when a chain holds other than the count its block keeps.
  *
@@ -110,11 +110,7 @@ export function assertOwnershipIsTree(records) {
   /** @param {RuleRecord} record */
   const visitRule = (record) => {
     reach(record);
-    if (record.context !== -1) {
-      visitChildren(record);
-      return;
-    }
-    for (const declaration of record.declarations) reach(declaration);
+    visitChildren(record);
   };
   /** @param {Container} block the block or the rule that nests, already reached */
   const visitChildren = (block) => {

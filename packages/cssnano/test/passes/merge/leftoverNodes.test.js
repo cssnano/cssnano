@@ -86,5 +86,8 @@ test('the record of a rule whose declarations all merge away is marked departed'
     sequence,
     new Map()
   );
-  assert.throws(() => mergeState.records.rule(first).declarations, /departed/v);
+  assert.throws(
+    () => mergeState.records.rule(first).declarationsOf(mergeState.records),
+    /departed/v
+  );
 });

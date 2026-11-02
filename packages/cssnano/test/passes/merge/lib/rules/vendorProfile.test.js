@@ -3,9 +3,6 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 import { VendorPrefixSummary } from '../../../../../src/passes/merge/lib/rules/vendorPrefixSummary.js';
-import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { createSelectorLookup } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
 
@@ -137,15 +134,10 @@ function ruleWith(selector) {
 
 /**
  * @param {import('postcss').Rule} rule
- * @return {RuleRecord} the record of a rule with the declarations it has
+ * @return {RuleRecord} the record of a rule, for the selector facts it keeps
  */
 function metaOf(rule) {
-  const properties = new PropertyTable();
-  const declarationIds = new DeclarationKeys();
-  const declarations = rule.nodes
-    .filter((node) => node.type === 'decl')
-    .map((node) => recordDeclaration(node, properties, declarationIds));
-  return new RuleRecord(rule, rule.selectors, declarations);
+  return new RuleRecord(rule, rule.selectors);
 }
 
 test('getVendorProfile should match the list profile after addSelectors grows a rule whose profile was already computed', () => {

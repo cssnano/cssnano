@@ -110,8 +110,8 @@ export const mutations = [
   {
     name: 'removing declarations keeps the declaration keys of the record',
     target: source('ruleRecord.js'),
-    find: '      claimed\n    );\n    this.#declarationKeys = undefined;\n',
-    replace: '      claimed\n    );\n',
+    find: '    } else {\n      this.#declarationKeys = undefined;\n    }',
+    replace: '    }',
   },
   {
     name: 'a removal of rules leaves the record of each removed rule live',
@@ -133,9 +133,9 @@ export const mutations = [
   },
   {
     name: 'a rule record skips the check of its declarations against the tree',
-    target: source('ruleRecord.js'),
-    find: '    if (!consistencyChecksEnabled() || this.context !== -1) return;',
-    replace: '    return;',
+    target: source('writeBack.js'),
+    find: '      if (item instanceof DeclarationRecord && !describes(item)) {',
+    replace: '      if (false) {',
   },
   {
     name: 'a takePlaceOf that leaves the later entry in its chain',
@@ -194,40 +194,42 @@ export const mutations = [
   },
   {
     name: 'taking declarations hands over no record',
-    target: source('ruleChildren.js'),
-    find: '        taken?.push(child);\n',
-    replace: '',
+    target: source('blockRecords.js'),
+    find: '    for (const declaration of taken) this.links.unlink(declaration.index);\n    return taken;',
+    replace:
+      '    for (const declaration of taken) this.links.unlink(declaration.index);\n    return [];',
   },
   {
     name: 'taking declarations removes the taken node at once',
-    target: source('ruleChildren.js'),
-    find: '        taken?.push(child);\n',
-    replace: '        child.node.remove();\n        taken?.push(child);\n',
+    target: source('blockRecords.js'),
+    find: '    for (const declaration of taken) this.links.unlink(declaration.index);\n    return taken;',
+    replace:
+      '    for (const declaration of taken) {\n      this.links.unlink(declaration.index);\n      declaration.node.remove();\n    }\n    return taken;',
   },
   {
     name: 'an append edits the node of the rule at once',
-    target: source('ruleRecord.js'),
-    find: '    this.#edited = true;\n    if (isDeclarationChild)',
+    target: source('blockRecords.js'),
+    find: '    this.links.linkLast(rule.index, child.index);\n',
     replace:
-      '    this.#edited = true;\n    this.node.append(node);\n    if (isDeclarationChild)',
+      '    this.links.linkLast(rule.index, child.index);\n    rule.node.append(child.node);\n',
   },
   {
     name: 'an append leaves the rule record unedited',
     target: source('ruleRecord.js'),
-    find: '    this.#edited = true;\n    if (isDeclarationChild)',
-    replace: '    if (isDeclarationChild)',
+    find: '  childLinked(child, atEnd) {\n    this.#edited = true;\n',
+    replace: '  childLinked(child, atEnd) {\n',
   },
   {
     name: 'a removal of declarations leaves the rule record unedited',
     target: source('ruleRecord.js'),
-    find: '    if (claimed.size) this.#edited = true;\n  }\n',
-    replace: '  }\n',
+    find: '  childUnlinked() {\n    this.#edited = true;\n',
+    replace: '  childUnlinked() {\n',
   },
   {
     name: 'a taking of declarations leaves the rule record unedited',
-    target: source('ruleRecord.js'),
-    find: '    if (claimed.size) this.#edited = true;\n    return taken;',
-    replace: '    return taken;',
+    target: source('blockLinks.js'),
+    find: '    if (holder instanceof RuleRecord) holder.childUnlinked();\n',
+    replace: '',
   },
   {
     name: 'write-back keeps the parent of a child that moves between rules',
@@ -251,8 +253,8 @@ export const mutations = [
   {
     name: 'taking declarations keeps the declaration keys of the record',
     target: source('ruleRecord.js'),
-    find: '      taken\n    );\n    this.#declarationKeys = undefined;\n',
-    replace: '      taken\n    );\n',
+    find: '  childUnlinked() {\n    this.#edited = true;\n    this.#declarationKeys = undefined;\n  }',
+    replace: '  childUnlinked() {\n    this.#edited = true;\n  }',
   },
 
   {

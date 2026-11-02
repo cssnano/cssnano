@@ -6,8 +6,8 @@ import type MergeState from './mergeState.js';
 export type ContainerRecord = Block | RuleRecord;
 /**
  * Under consistency checks, throws when the records and the tree disagree:
- * each block must hold the nodes its container holds, in order, and each rule
- * must stand in the slot its record names. Writes nothing.
+ * each container must hold the nodes it holds, in order, and each rule must
+ * stand in the slot its record names. Writes nothing.
  *
  * @param {MergeState} mergeState
  * @return {void}

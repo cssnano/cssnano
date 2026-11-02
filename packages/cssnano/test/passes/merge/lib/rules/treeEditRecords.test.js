@@ -40,14 +40,38 @@ test('appendToDeclarations should mark the record of the incoming rule departed'
     /** @type {Container} */ (media).nodes
   );
   const record = ruleRecordOf(state.records, incoming);
-  const kept = [...ruleRecordOf(state.records, receiving).declarations];
+  const kept = [
+    ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
+  ];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
+    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
-  assert.throws(() => record.declarations, /departed/v);
+  assert.throws(() => record.declarationsOf(state.records), /departed/v);
+});
+
+// Positions in the writes name declarations of `kept`, so a list that has
+// fallen behind the rule would compare a declaration with the wrong one.
+test('appendToDeclarations should throw under consistency checks when the kept declarations are not those of the receiving rule', () => {
+  const { root, state } = setup('a{color:red;width:1px}b{width:2px}');
+  const [receiving, incoming] = /** @type {Rule[]} */ (root.nodes);
+  const kept = ruleRecordOf(state.records, receiving)
+    .declarationsOf(state.records)
+    .slice(1);
+  assert.throws(
+    () =>
+      appendToDeclarations(
+        state,
+        ruleRecordOf(state.records, receiving),
+        kept,
+        writesOf(kept),
+        ruleRecordOf(state.records, incoming)
+      ),
+    /out of step/v
+  );
 });
 
 test('appendToDeclarations should leave the record of the receiving rule readable', () => {
@@ -56,10 +80,13 @@ test('appendToDeclarations should leave the record of the receiving rule readabl
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const kept = [...ruleRecordOf(state.records, receiving).declarations];
+  const kept = [
+    ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
+  ];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
+    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
@@ -73,32 +100,39 @@ test('appendToDeclarations should keep the record of the receiving rule', () => 
     /** @type {Container} */ (media).nodes
   );
   const record = ruleRecordOf(state.records, receiving);
-  const kept = [...ruleRecordOf(state.records, receiving).declarations];
+  const kept = [
+    ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
+  ];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
+    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
   assert.equal(ruleRecordOf(state.records, receiving), record);
 });
 
-test('appendToDeclarations should extend the declarations list the receiving record holds', () => {
+test('appendToDeclarations should give the receiving rule the declarations of the incoming rule after its own', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const [media] = /** @type {Container} */ (root).nodes;
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const list = ruleRecordOf(state.records, receiving).declarations;
+  const list = ruleRecordOf(state.records, receiving).declarationsOf(
+    state.records
+  );
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
+    list,
     writesOf(list),
     ruleRecordOf(state.records, incoming)
   );
-  assert.equal(ruleRecordOf(state.records, receiving).declarations, list);
   assert.deepEqual(
-    ruleRecordOf(state.records, receiving).declarations.map((d) => d.prop),
+    ruleRecordOf(state.records, receiving)
+      .declarationsOf(state.records)
+      .map((d) => d.prop),
     ['color', 'width']
   );
 });
@@ -110,16 +144,21 @@ test('appendToDeclarations should give the record of the receiving rule keys for
     /** @type {Container} */ (media).nodes
   );
   ruleRecordOf(state.records, receiving).declarationKeys(state.records);
-  const kept = [...ruleRecordOf(state.records, receiving).declarations];
+  const kept = [
+    ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
+  ];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
+    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
   assert.deepEqual(
     ruleRecordOf(state.records, receiving).declarationKeys(state.records).keys,
-    ruleRecordOf(state.records, receiving).declarations.map((d) => d.id)
+    ruleRecordOf(state.records, receiving)
+      .declarationsOf(state.records)
+      .map((d) => d.id)
   );
 });
 
@@ -127,7 +166,10 @@ test('removeDeclarationsAt should keep the record of the rule', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
-  ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
+  state.records.removeDeclarationsAt(
+    ruleRecordOf(state.records, rule),
+    new Set([0])
+  );
   assert.equal(ruleRecordOf(state.records, rule), record);
 });
 
@@ -135,9 +177,14 @@ test('removeDeclarationsAt should leave the record with the declarations that re
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   ruleRecordOf(state.records, rule);
-  ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
+  state.records.removeDeclarationsAt(
+    ruleRecordOf(state.records, rule),
+    new Set([0])
+  );
   assert.deepEqual(
-    ruleRecordOf(state.records, rule).declarations.map((d) => d.prop),
+    ruleRecordOf(state.records, rule)
+      .declarationsOf(state.records)
+      .map((d) => d.prop),
     ['width']
   );
 });
@@ -146,7 +193,10 @@ test('removeDeclarationsAt should give the record keys for the declarations that
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   ruleRecordOf(state.records, rule).declarationKeys(state.records);
-  ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
+  state.records.removeDeclarationsAt(
+    ruleRecordOf(state.records, rule),
+    new Set([0])
+  );
   assert.deepEqual(
     ruleRecordOf(state.records, rule).declarationKeys(state.records).keys,
     [state.declarationIds.keyOf(/** @type {Declaration} */ (rule.last))]
@@ -157,7 +207,10 @@ test('removeDeclarationsAt should keep the element keys of the record', () => {
   const { root, state } = setup('a,b{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   state.elementKeysOf(ruleRecordOf(state.records, rule));
-  ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0]));
+  state.records.removeDeclarationsAt(
+    ruleRecordOf(state.records, rule),
+    new Set([0])
+  );
   assert.deepEqual(state.elementKeysOf(ruleRecordOf(state.records, rule)), [
     'a',
     'b',
@@ -169,7 +222,7 @@ test('removeRules should mark the record of each rule it removes departed', () =
   const [, removed] = /** @type {Rule[]} */ (root.nodes);
   const record = ruleRecordOf(state.records, removed);
   removeRules(state, new Set([ruleRecordOf(state.records, removed).index]));
-  assert.throws(() => record.declarations, /departed/v);
+  assert.throws(() => record.declarationsOf(state.records), /departed/v);
 });
 
 test('removeRules should leave the record of a rule it keeps readable', () => {
@@ -231,34 +284,6 @@ test('takePlaceOf should unlink the later rule once the earlier one takes its pl
     laterRecord
   );
   assert.equal(state.records.links.parentOf(laterRecord.index), -1);
-});
-
-test('appendToDeclarations should throw when the receiving rule nests', () => {
-  const { root, state } = setup('a{color:red;b{width:1px}}c{width:2px}');
-  const [receiving, incoming] = /** @type {Rule[]} */ (
-    /** @type {Container} */ (root).nodes
-  );
-  // The receiving rule holds no declarations of its own, so `kept` is empty.
-  const kept = [];
-  assert.throws(
-    () =>
-      appendToDeclarations(
-        state,
-        ruleRecordOf(state.records, receiving),
-        writesOf(kept),
-        ruleRecordOf(state.records, incoming)
-      ),
-    /nests/v
-  );
-});
-
-test('removeDeclarationsAt should throw when the rule nests', () => {
-  const { root, state } = setup('a{color:red;b{width:1px}}');
-  const [rule] = /** @type {Rule[]} */ (/** @type {Container} */ (root).nodes);
-  assert.throws(
-    () => ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0])),
-    /nests/v
-  );
 });
 
 test('buildRecords should link each rule into the chain of the stylesheet, in document order', () => {

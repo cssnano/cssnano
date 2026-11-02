@@ -6,8 +6,13 @@ import { recordDeclaration } from '../../../ir/declarationRecord.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockLinks } from './blockLinks.js';
 import { BlockRecord, NodeEntry } from './blockRecord.js';
-import { liveChildren, liveCount, liveEntries } from './blockChildren.js';
-import { RuleRecord, isDeclaration } from './ruleRecord.js';
+import {
+  inheritWhitespace,
+  liveChildren,
+  liveCount,
+  liveEntries,
+} from './blockChildren.js';
+import { RuleRecord } from './ruleRecord.js';
 
 /**
  * The records of one run. One arena holds every block record, every rule record,
@@ -268,6 +273,18 @@ export class BlockRecords {
   }
 
   /**
+   * Clears the edited flag of every rule, once the build has linked their
+   * children, so that only edits after the build mark a rule.
+   *
+   * @return {void}
+   */
+  settle() {
+    for (const entry of this.#entries) {
+      if (entry instanceof RuleRecord) entry.settle();
+    }
+  }
+
+  /**
    * Builds the record of a declaration that is a rule's child.
    *
    * @param {import('postcss').Declaration} node
@@ -305,28 +322,78 @@ export class BlockRecords {
 
   /**
    * Builds the record of a rule and adds it to the arena, which gives it the
-   * next index. The slot the caller places it in is what holds it.
+   * next index. The rule has no children yet: the caller links them, in order.
+   * The slot the caller places the rule in is what holds it.
    *
    * @param {Rule} rule
-   * @param {PropertyTable} properties the keys of the property names
-   * @param {DeclarationKeys} declarations the ids of the declarations
-   * @param {DeclarationRecord[] | null} [records] the records of the rule's
-   * declarations, in order, when the caller holds them already, such as the
-   * records a rule hands to a new rule; null to record each declaration of the
-   * rule
    * @return {RuleRecord}
    */
-  recordRule(rule, properties, declarations, records = null) {
-    let children = records;
-    if (children === null) {
-      // A loop, since `filter` and `map` would each allocate a list of nodes.
-      children = [];
-      for (const node of rule.nodes) {
-        if (isDeclaration(node)) {
-          children.push(this.declarationRecord(node, properties, declarations));
-        }
-      }
+  recordRule(rule) {
+    return this.#place(new RuleRecord(rule, rule.selectors));
+  }
+
+  /**
+   * Appends a child to the chain of a rule, after its last child, and gives the
+   * child the whitespace of that child when it has none. The node takes it at
+   * write-back. The child must be linked nowhere, or unlinked.
+   *
+   * @param {RuleRecord} rule
+   * @param {DeclarationRecord | NodeEntry} child
+   * @return {void}
+   */
+  appendChild(rule, child) {
+    const last = this.links.lastChild(rule.index);
+    inheritWhitespace(child.node, last === -1 ? undefined : this.nodeOf(last));
+    this.links.linkLast(rule.index, child.index);
+  }
+
+  /**
+   * Removes the declarations of a rule at the positions `claimed`, which index
+   * the declarations as they stand at the call. The node drops them at
+   * write-back.
+   *
+   * @param {RuleRecord} rule
+   * @param {Set<number>} claimed the positions of the declarations that leave
+   * @return {void}
+   */
+  removeDeclarationsAt(rule, claimed) {
+    this.takeDeclarationsAt(rule, claimed);
+  }
+
+  /**
+   * Removes the declarations of a rule at the positions `claimed`, as
+   * `removeDeclarationsAt` does, and returns their records for another rule to
+   * append.
+   *
+   * @param {RuleRecord} rule
+   * @param {Set<number>} claimed the positions of the declarations that leave
+   * @return {DeclarationRecord[]} the removed records, in order
+   */
+  takeDeclarationsAt(rule, claimed) {
+    const taken = this.#claimedAt(rule, claimed);
+    for (const declaration of taken) this.links.unlink(declaration.index);
+    return taken;
+  }
+
+  /**
+   * The declarations of a rule at the positions `claimed`, read before any of
+   * them is unlinked, so the positions index the declarations at the call.
+   *
+   * @param {RuleRecord} rule
+   * @param {Set<number>} claimed
+   * @return {DeclarationRecord[]}
+   */
+  #claimedAt(rule, claimed) {
+    /** @type {DeclarationRecord[]} */
+    const taken = [];
+    let position = 0;
+    for (
+      let declaration = this.links.firstDeclaration(rule.index);
+      declaration !== undefined;
+      declaration = this.links.nextDeclaration(declaration)
+    ) {
+      if (claimed.has(position++)) taken.push(declaration);
     }
-    return this.#place(new RuleRecord(rule, rule.selectors, children));
+    return taken;
   }
 }

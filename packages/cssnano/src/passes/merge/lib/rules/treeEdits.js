@@ -9,6 +9,7 @@ import { tallyDeclarations } from './overDuplication.js';
 
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {NodeEntry} from './blockRecord.js' */
 /** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
 
@@ -29,8 +30,8 @@ function isRuleOrAtRule(node) {
 
 /**
  * Builds the records of a stylesheet from its tree, once per run. Each child is
- * linked into the chain of its parent. A rule that holds a rule or an at-rule
- * is a container too: its children are linked into its own chain.
+ * linked into the chain of its parent, and every rule is a container whose
+ * children form its own chain.
  *
  * @param {Root} root
  * @param {MergeState} mergeState
@@ -44,36 +45,27 @@ export function buildRecords(root, mergeState) {
   let nodes = 0;
   let declarations = 0;
   /**
-   * Fills a container that the records hold already, and links each child to
-   * it. A nesting rule is filled as a block is.
+   * Links each child of a container, which holds its context already, in
+   * document order. A rule is linked into its parent, then its children.
    *
    * @param {BlockRecord | RuleRecord} container
-   * @param {number} parentContext the context of the enclosing container, -1 for the stylesheet
    */
-  const fill = (container, parentContext) => {
-    container.context = containerContext(
-      mergeState.declarationIds,
-      parentContext,
-      container,
-      textTable
-    );
+  const fillChildren = (container) => {
     for (const child of /** @type {ChildNode[]} */ (container.node.nodes)) {
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
-        // A rule that holds a rule or an at-rule keeps its declarations in its chain.
-        const holds = child.nodes.some(isRuleOrAtRule);
-        const record = records.recordRule(
-          child,
-          mergeState.properties,
-          mergeState.declarationIds,
-          holds ? [] : null
-        );
+        const record = records.recordRule(child);
         records.links.linkLast(container.index, record.index);
-        if (holds) {
-          fill(record, container.context);
-        } else {
-          declarations += record.declarations.length;
+        // A rule that holds a rule or an at-rule nests, and gets its context.
+        if (child.nodes.some(isRuleOrAtRule)) {
+          record.context = containerContext(
+            mergeState.declarationIds,
+            container.context,
+            record,
+            textTable
+          );
         }
+        fillChildren(record);
       } else if (child.type === 'atrule' && child.nodes) {
         const nested = new BlockRecord(
           child,
@@ -81,7 +73,13 @@ export function buildRecords(root, mergeState) {
         );
         records.add(nested);
         records.links.linkLast(container.index, nested.index);
-        fill(nested, container.context);
+        nested.context = containerContext(
+          mergeState.declarationIds,
+          container.context,
+          nested,
+          textTable
+        );
+        fillChildren(nested);
       } else if (child.type === 'decl') {
         declarations++;
         const declaration = records.blockDeclaration(
@@ -96,7 +94,15 @@ export function buildRecords(root, mergeState) {
       }
     }
   };
-  fill(records.root, -1);
+  // The stylesheet's context is the one for no enclosing container.
+  records.root.context = containerContext(
+    mergeState.declarationIds,
+    -1,
+    records.root,
+    textTable
+  );
+  fillChildren(records.root);
+  records.settle();
   if (consistencyChecksEnabled())
     records.inputWrites = tallyDeclarations(records);
   // N + D + 1 rounds bound a run, see `runMerge`.
@@ -143,6 +149,22 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
 }
 
 /**
+ * @param {BlockRecords} records
+ * @param {RuleRecord} receiving
+ * @param {DeclarationRecord[]} kept
+ * @return {void}
+ * @throws {Error} when `kept` is not the declarations of `receiving`, in order
+ */
+function assertKeptFresh(records, receiving, kept) {
+  const { keys } = receiving.declarationKeys(records);
+  if (
+    kept.length !== keys.length ||
+    kept.some((declaration, i) => declaration.id !== keys[i])
+  )
+    throw new Error('kept declarations are out of step with the rule');
+}
+
+/**
  * Appends the children of `incoming` to `receiving`, comments included. A
  * declaration of `incoming` is redundant only when the last declaration of
  * `receiving` that can set the same property already has an identical value.
@@ -151,20 +173,40 @@ export function takePlaceOf(mergeState, parent, earlier, later) {
  *
  * @param {MergeState} mergeState
  * @param {RuleRecord} receiving
- * @param {PropertyWrites} index the writes of the declarations of `receiving`, extended in place
+ * @param {DeclarationRecord[]} kept the declarations of `receiving`, extended in place
+ * @param {PropertyWrites} index the writes of `kept`, extended in place
  * @param {RuleRecord} incoming
  * @return {void}
  */
-export function appendToDeclarations(mergeState, receiving, index, incoming) {
-  // Appending extends this list in place, so it is read once.
-  const kept = receiving.declarations;
-  for (const child of incoming.children) {
+export function appendToDeclarations(
+  mergeState,
+  receiving,
+  kept,
+  index,
+  incoming
+) {
+  const { records } = mergeState;
+  const { links } = records;
+  if (consistencyChecksEnabled()) assertKeptFresh(records, receiving, kept);
+  // Each child is unlinked before it is read, so the loop holds no link cursor
+  // across an edit. Appending only extends `kept`, so a write's position names
+  // its declaration without a walk of the chain.
+  for (
+    let first = links.firstChild(incoming.index);
+    first !== -1;
+    first = links.firstChild(incoming.index)
+  ) {
+    const child = /** @type {DeclarationRecord | NodeEntry} */ (
+      records.entry(first)
+    );
+    links.unlink(first);
     if (child instanceof DeclarationRecord) {
       const last = index.lastConflict(child.keys);
       if (last !== -1 && declarationIsEqual(kept[last], child)) continue;
       index.record(child.keys, kept.length);
+      kept.push(child);
     }
-    receiving.append(child);
+    records.appendChild(receiving, child);
   }
   incoming.depart();
 }

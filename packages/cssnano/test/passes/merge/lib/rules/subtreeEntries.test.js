@@ -60,7 +60,9 @@ function propsOf({ records, entries }) {
   return entries?.flatMap((entry) => {
     if (!(entry instanceof RuleRecord)) return [entry.prop];
     if (entry.context === -1) {
-      return entry.declarations.map((declaration) => declaration.prop);
+      return entry
+        .declarationsOf(records)
+        .map((declaration) => declaration.prop);
     }
     return chainProps(records, entry.index);
   });
