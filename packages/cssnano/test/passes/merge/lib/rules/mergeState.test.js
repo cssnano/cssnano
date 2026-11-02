@@ -286,3 +286,33 @@ test('declarationKeys of a record should return the cached keys of an unchanged 
     ruleRecordOf(state.records, rule).declarationKeys(state.records)
   );
 });
+
+test('canMerge should keep refusing a rule whose last nested rule has moved out', () => {
+  const state = createState();
+  const root = withRecords(
+    state,
+    postcss.parse('a{&:hover{width:1px}}b{color:red}')
+  );
+  const nesting = ruleRecordOf(state.records, root.first);
+  const nested = ruleRecordOf(state.records, root.first.first);
+  state.records.moveRule(state.records.root.index, nested.index);
+  assert.equal(
+    state.canMerge(nesting, ruleRecordOf(state.records, root.last)),
+    false
+  );
+});
+
+test('a rule whose last nested rule has moved out should stay in its container chain', () => {
+  const state = createState();
+  const root = withRecords(
+    state,
+    postcss.parse('a{&:hover{width:1px}}b{color:red}')
+  );
+  const nesting = ruleRecordOf(state.records, root.first);
+  const nested = ruleRecordOf(state.records, root.first.first);
+  state.records.moveRule(state.records.root.index, nested.index);
+  assert.equal(
+    state.records.links.parentOf(nesting.index),
+    state.records.root.index
+  );
+});

@@ -6,8 +6,8 @@ import type { PropertyWrites } from './propertyWrites.js';
 import type MergeState from './mergeState.js';
 /**
  * Builds the records of a stylesheet from its tree, once per run. Each child is
- * linked into the chain of its parent, and each rule that holds a rule or an
- * at-rule gets the record of its children.
+ * linked into the chain of its parent. A rule that holds a rule or an at-rule
+ * is a container too: its children are linked into its own chain.
  *
  * @param {Root} root
  * @param {MergeState} mergeState

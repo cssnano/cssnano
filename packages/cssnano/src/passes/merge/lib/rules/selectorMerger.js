@@ -49,7 +49,7 @@ export default function runMerge(root, browsers, context = createRunContext()) {
   // is checked here and not at the checkpoints, which would hide stale reads
   // that production makes.
   assertContextsCurrent(mergeState);
-  writeBack(mergeState.records, mergeState.records.blocks());
+  writeBack(mergeState.records);
   assertRecordsMatchTree(mergeState);
   mergeState.flushSelectors();
 }

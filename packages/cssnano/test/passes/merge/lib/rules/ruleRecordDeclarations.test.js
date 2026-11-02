@@ -123,16 +123,16 @@ test('takeDeclarationsAt should drop the keys of the taken declarations from the
   assert.deepEqual(record.declarationKeys(noBlocks).keys, [records[1].id]);
 });
 
-test('takeDeclarationsAt should throw on a rule that holds a block', () => {
+test('takeDeclarationsAt should throw on a rule that nests', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(0); // any index: these tests never read the block
-  assert.throws(() => record.takeDeclarationsAt(new Set()), /block/v);
+  record.context = 0; // any context: these tests never read it
+  assert.throws(() => record.takeDeclarationsAt(new Set()), /nests/v);
 });
 
-test('removeDeclarationsAt should throw on a rule that holds a block', () => {
+test('removeDeclarationsAt should throw on a rule that nests', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(0); // any index: these tests never read the block
-  assert.throws(() => record.removeDeclarationsAt(new Set()), /block/v);
+  record.context = 0; // any context: these tests never read it
+  assert.throws(() => record.removeDeclarationsAt(new Set()), /nests/v);
 });

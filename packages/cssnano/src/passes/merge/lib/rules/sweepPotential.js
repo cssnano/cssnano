@@ -3,6 +3,7 @@ import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @typedef {BlockRecord | RuleRecord} Container */
 
 const POTENTIAL =
   'a sweep raised its potential, or moved a rule without lowering it';
@@ -27,7 +28,7 @@ export function sweepPotential(records, numbers) {
   let rules = 0;
   let parents = 0;
   let number = 0;
-  /** @param {BlockRecord} block */
+  /** @param {Container} block */
   const visit = (block) => {
     if (numbers === null) ids[block.index] = number++;
     const id = ids[block.index];
@@ -37,20 +38,16 @@ export function sweepPotential(records, numbers) {
       entry = links.nextSibling(entry)
     ) {
       const item = records.entry(entry);
-      if (item instanceof RuleRecord) {
-        if (item.block !== -1) {
-          visit(/** @type {BlockRecord} */ (records.block(item.block)));
-        } else {
-          declarations += item.declarations.length;
-          rules++;
-          parents += id;
-        }
-      } else if (item instanceof BlockRecord) {
+      if (item instanceof RuleRecord && item.context === -1) {
+        declarations += item.declarations.length;
+        rules++;
+        parents += id;
+      } else if (item instanceof BlockRecord || item instanceof RuleRecord) {
         visit(item);
       }
     }
   };
-  visit(/** @type {BlockRecord} */ (records.root));
+  visit(records.root);
   return { potential: [declarations, rules, parents], numbers: ids };
 }
 

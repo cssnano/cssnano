@@ -111,14 +111,14 @@ export default class MergeState {
      */
     absorbEarlier(later: RuleRecord, earlier: RuleRecord): void;
     /**
-     * The block whose chain holds the rule. It is where the rule stands, which
-     * can differ from its PostCSS parent during a sweep. A rule that left the
-     * stylesheet stands in no block.
+     * The container whose chain holds the rule: a block, or a rule that nests.
+     * It is where the rule stands, which can differ from its PostCSS parent
+     * during a sweep. A rule that left the stylesheet stands in no container.
      *
      * @param {RuleRecord} record
-     * @return {BlockRecord}
+     * @return {BlockRecord | RuleRecord}
      */
-    blockOf(record: RuleRecord): BlockRecord;
+    blockOf(record: RuleRecord): BlockRecord | RuleRecord;
     /**
      * Whether the rules can be merged. `blockA` and `blockB` are the blocks
      * the rules stand in.

@@ -20,7 +20,7 @@ import { RuleRecord } from './ruleRecord.js';
  * @return {boolean}
  */
 export const isDeclarationRule = (record) =>
-  record.block === -1 &&
+  record.context === -1 &&
   record.childCount() > 0 &&
   record.holdsOnlyDeclarations();
 

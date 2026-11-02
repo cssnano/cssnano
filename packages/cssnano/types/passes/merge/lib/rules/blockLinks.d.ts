@@ -1,12 +1,14 @@
-import type { BlockRecord } from './blockRecord.js';
+import { BlockRecord } from './blockRecord.js';
+import { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 /**
  * The links between the entries of the records. Each entry has a container:
  * the block whose chain holds it, or for a nested block the rule that owns it.
  * A chained entry has the entries before and after it in its container's
- * chain, and the chain's ends are `first` and `last` on the block record. The
- * links are plain arrays indexed by entry, grown by `grow` as entries are
- * added, so no link is an object reference.
+ * chain, and the chain's ends are `first` and `last` on the container's record.
+ * A container is a block, or a rule that nests. The links are plain arrays
+ * indexed by entry, grown by `grow` as entries are added, so no link is an
+ * object reference.
  */
 export declare class BlockLinks {
     #private;
@@ -15,13 +17,12 @@ export declare class BlockLinks {
     /** Gives the next entry of the arena unlinked links. */
     grow(): void;
     /**
-     * The block whose chain holds the entry at `index`. A nested block is linked
-     * to the rule that owns it, so the walk steps through that rule.
+     * The container whose chain holds the entry at `index`.
      *
      * @param {number} index an index that the arena gave
-     * @return {BlockRecord | undefined} undefined for the stylesheet
+     * @return {BlockRecord | RuleRecord | undefined} undefined when the entry is linked nowhere
      */
-    enclosingBlock(index: number): BlockRecord | undefined;
+    enclosingContainer(index: number): BlockRecord | RuleRecord | undefined;
     /**
      * @param {number} index an index that the arena gave
      * @return {number} the container of the entry, -1 when it is linked nowhere
@@ -40,29 +41,20 @@ export declare class BlockLinks {
      */
     nextSibling(index: number): number;
     /**
-     * @param {number} index an index that the arena gave, of a block
+     * @param {number} index an index that the arena gave, of a container
      * @return {number} the first entry of its chain, -1 when it has none
      */
     firstChild(index: number): number;
     /**
-     * @param {number} index an index that the arena gave, of a block
+     * @param {number} index an index that the arena gave, of a container
      * @return {number} the last entry of its chain, -1 when it has none
      */
     lastChild(index: number): number;
     /**
-     * Makes the rule at `rule` the container of the nested block at `block`. The
-     * nested block is linked nowhere: its children are the rule's.
-     *
-     * @param {number} rule
-     * @param {number} block
-     * @return {void}
-     */
-    ownBlock(rule: number, block: number): void;
-    /**
-     * Links the entry at `index` after `after` in the chain of the block at
-     * `block`, which is the head when `after` is -1. Under checks, a block that
-     * does not reach the root through `parentOf` throws, since its entries would
-     * be lost.
+     * Links the entry at `index` after `after` in the chain of the container at
+     * `block`, which is the head when `after` is -1. Under checks, a container
+     * that does not reach the root through `parentOf` throws, since its entries
+     * would be lost, and a rule or an at-rule may join only a rule that nests.
      *
      * @param {number} block
      * @param {number} after

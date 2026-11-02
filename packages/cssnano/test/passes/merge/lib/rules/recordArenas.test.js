@@ -12,7 +12,7 @@ import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules
 
 /** @import {Root, Rule} from 'postcss' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
-/** @import {BlockRecord as Block} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
+/** @typedef {BlockRecord | RuleRecord} Container */
 
 before(() => enableConsistencyChecks(true));
 after(() => enableConsistencyChecks(false));
@@ -30,13 +30,13 @@ function setup(css) {
 }
 
 /**
- * Every block record reached from `block` through the chains of its entries
- * and the nested blocks of its rules.
+ * Every container reached from `block` through the chains of its entries: the
+ * at-rule blocks and the rules that nest.
  *
  * @param {BlockRecords} records
- * @param {Block} block
- * @param {Block[]} found
- * @return {Block[]}
+ * @param {Container} block
+ * @param {Container[]} found
+ * @return {Container[]}
  */
 function reachedBlocks(records, block, found = [block]) {
   for (
@@ -45,15 +45,12 @@ function reachedBlocks(records, block, found = [block]) {
     entry = records.links.nextSibling(entry)
   ) {
     const item = records.entry(entry);
-    /** @type {Block | undefined} */
-    let nested;
-    if (item instanceof BlockRecord) nested = item;
-    else if (item instanceof RuleRecord && item.block !== -1) {
-      nested = records.block(item.block);
-    }
-    if (nested) {
-      found.push(nested);
-      reachedBlocks(records, nested, found);
+    if (
+      item instanceof BlockRecord ||
+      (item instanceof RuleRecord && item.context !== -1)
+    ) {
+      found.push(item);
+      reachedBlocks(records, item, found);
     }
   }
   return found;
@@ -92,27 +89,26 @@ test('a rule recorded mid-run should take the next index of the arena', () => {
   assert.equal(records.rule(added.index), added);
 });
 
-test('blocks() should hold every block reached from the stylesheet record, each at its index', () => {
+test('containers() should hold every container reached from the stylesheet record, each at its index', () => {
   const { state } = setup(
     '@media (x){@media (y){p{width:1px}q{height:2px}}}a{color:red;b{width:1px}}'
   );
   const { records } = state;
   const reached = reachedBlocks(records, records.root);
-  const indexed = [...records.blocks()];
+  const indexed = [...records.containers()];
   assert.equal(reached.length, indexed.length);
   for (const block of reached) {
     assert.ok(indexed.includes(block));
-    assert.equal(records.block(block.index), block);
+    assert.equal(records.container(block.index), block);
   }
 });
 
 /**
- * Whether `holder` holds the entry of `block`: the block itself, or a rule
- * whose nested block it is.
+ * Whether `holder` holds the entry of `block` in its chain.
  *
  * @param {BlockRecords} records
- * @param {Block} holder
- * @param {Block} block
+ * @param {Container} holder
+ * @param {Container} block
  * @return {boolean}
  */
 function holds(records, holder, block) {
@@ -121,9 +117,7 @@ function holds(records, holder, block) {
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
-    const item = records.entry(entry);
-    if (item === block) return true;
-    if (item instanceof RuleRecord && item.block === block.index) return true;
+    if (records.entry(entry) === block) return true;
   }
   return false;
 }
@@ -136,7 +130,7 @@ test('a block should name the block whose chain holds it by index, -1 for the st
   assert.equal(records.links.parentOf(records.root.index), -1);
   for (const block of reachedBlocks(records, records.root)) {
     if (block !== records.root) {
-      const holder = records.links.enclosingBlock(block.index);
+      const holder = records.links.enclosingContainer(block.index);
       assert.ok(holder && holds(records, holder, block));
     }
   }

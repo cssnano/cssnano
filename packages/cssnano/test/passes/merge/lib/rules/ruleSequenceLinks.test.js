@@ -81,3 +81,18 @@ test('a sweep move that empties a nested at-rule block should unlink it and then
   assert.equal(records.links.parentOf(innerBlock.index), -1);
   assert.equal(records.links.parentOf(outerBlock.index), -1);
 });
+
+test('a sweep that empties an at-rule nested in a rule should unlink the at-rule and leave the rule in its chain, with a lower count', () => {
+  const state = setup('a{@layer inner{b{width:1px}}}p{color:red}');
+  const { records } = state;
+  const [a, p] = /** @type {any[]} */ (records.root.node.nodes);
+  const innerBlock = blockRecordOf(records, a.first);
+  const nesting = ruleRecordOf(records, a);
+  new RuleSequence(records).moveIntoParent(
+    ruleRecordOf(records, p).index,
+    ruleRecordOf(records, a.first.first).index
+  );
+  assert.equal(records.links.parentOf(innerBlock.index), -1);
+  assert.equal(records.links.parentOf(nesting.index), records.root.index);
+  assert.equal(nesting.count, 0);
+});

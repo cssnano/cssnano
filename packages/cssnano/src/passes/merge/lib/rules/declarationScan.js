@@ -1,7 +1,8 @@
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
-/** @import {BlockRecord as Block} from './blockRecord.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @typedef {BlockRecord | RuleRecord} Container */
 /** @import {BlockRecords} from './blockRecords.js' */
 
 /**
@@ -10,7 +11,7 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
  * rules.
  *
  * @param {BlockRecords} records
- * @param {Block} block
+ * @param {Container} block
  * @return {boolean}
  */
 function hasDeclarationOutsideRules(records, block) {
@@ -59,10 +60,10 @@ export default class DeclarationScan {
    */
   declarationBetween(first, second, outsideDeclarations) {
     const { links } = this.#records;
-    /** @type {Block | undefined} */
-    let enclosing = links.enclosingBlock(first.index);
+    /** @type {Container | undefined} */
+    let enclosing = links.enclosingContainer(first.index);
     while (enclosing && enclosing.node.type !== 'rule') {
-      enclosing = links.enclosingBlock(enclosing.index);
+      enclosing = links.enclosingContainer(enclosing.index);
     }
     if (!enclosing) return false;
     let hasOutside = outsideDeclarations.get(enclosing.index);
@@ -74,14 +75,18 @@ export default class DeclarationScan {
 
     // `first` holds only declarations and comments in its own block, so the
     // walk starts at the entry after it, in the block that holds it.
-    let holder = /** @type {Block} */ (links.enclosingBlock(first.index));
+    let holder = /** @type {Container} */ (
+      links.enclosingContainer(first.index)
+    );
     let entry = links.nextSibling(first.index);
     for (;;) {
       if (entry === -1) {
         if (holder === enclosing) return false;
         // The walk leaves an at-rule block, which is in a chain, for the entry after it.
         entry = links.nextSibling(holder.index);
-        holder = /** @type {Block} */ (links.enclosingBlock(holder.index));
+        holder = /** @type {Container} */ (
+          links.enclosingContainer(holder.index)
+        );
         continue;
       }
       if (entry === second.index) return false;

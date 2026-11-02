@@ -1,9 +1,11 @@
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { TextTable } from '../../../../values/textTable.js';
 import type { BlockRecord } from './blockRecord.js';
+import type { RuleRecord } from './ruleRecord.js';
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /**
  * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
  * cascaded by position.
@@ -20,20 +22,20 @@ export declare function isKeyframes(container: import('postcss').Container | und
  *
  * @param {DeclarationKeys} keys the run's interner
  * @param {number} parentContext the context of the enclosing block, -1 for the stylesheet
- * @param {BlockRecord} block
+ * @param {BlockRecord | RuleRecord} block the block, or the rule that nests
  * @param {TextTable} textTable the tokens the walk stored, which give each
  *   layer's prelude when it has a comment
  * @return {number}
  */
-export declare function containerContext(keys: DeclarationKeys, parentContext: number, block: BlockRecord, textTable: TextTable): number;
+export declare function containerContext(keys: DeclarationKeys, parentContext: number, block: BlockRecord | RuleRecord, textTable: TextTable): number;
 /**
- * True if two blocks apply their content the same way: they are equal blocks,
- * and so are their enclosing blocks up to the stylesheet. Either may be null,
- * for a block that has no record.
+ * True if two containers apply their content the same way: they are equal
+ * containers, and so are their enclosing containers up to the stylesheet. Either
+ * may be null, for a container that has no record.
  *
- * @param {BlockRecord | null | undefined} blockA
- * @param {BlockRecord | null | undefined} blockB
+ * @param {BlockRecord | RuleRecord | null | undefined} blockA
+ * @param {BlockRecord | RuleRecord | null | undefined} blockB
  * @return {boolean}
  */
-export declare function sameContainer(blockA: BlockRecord | null | undefined, blockB: BlockRecord | null | undefined): boolean;
+export declare function sameContainer(blockA: BlockRecord | RuleRecord | null | undefined, blockB: BlockRecord | RuleRecord | null | undefined): boolean;
 //# sourceMappingURL=sameContainer.d.ts.map

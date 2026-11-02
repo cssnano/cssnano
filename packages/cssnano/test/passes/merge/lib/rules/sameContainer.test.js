@@ -10,16 +10,17 @@ import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
+/** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
 /** @import {Rule} from 'postcss' */
 
 /**
  * @param {BlockRecords} records
  * @param {Rule} rule
- * @return {BlockRecord} the block the rule stands in
+ * @return {BlockRecord | RuleRecord} the container the rule stands in
  */
 function blockOf(records, rule) {
-  return /** @type {BlockRecord} */ (
-    records.block(records.links.parentOf(ruleRecordOf(records, rule).index))
+  return /** @type {BlockRecord | RuleRecord} */ (
+    records.container(records.links.parentOf(ruleRecordOf(records, rule).index))
   );
 }
 

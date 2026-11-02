@@ -95,6 +95,24 @@ export class BlockRecords {
   }
 
   /**
+   * @param {number} index an index that `add` or `recordRule` gave, or -1 for none
+   * @return {BlockRecord | RuleRecord | undefined} the container at `index`, a block or a rule,
+   * or undefined for -1
+   * @throws {Error} under checks, when the entry at `index` is neither
+   */
+  container(index) {
+    const entry = this.#entries[index];
+    const isContainer =
+      entry instanceof BlockRecord || entry instanceof RuleRecord;
+    if (index !== -1 && consistencyChecksEnabled() && !isContainer) {
+      throw new Error(
+        'a container is read at an entry that is neither a block nor a rule'
+      );
+    }
+    return isContainer ? entry : undefined;
+  }
+
+  /**
    * @param {number} index an index that the arena gave
    * @return {BlockRecord | undefined} the block at `index`, or undefined when the entry is another kind
    */
@@ -138,6 +156,19 @@ export class BlockRecords {
   *blocks() {
     for (const entry of this.#entries) {
       if (entry instanceof BlockRecord) yield entry;
+    }
+  }
+
+  /**
+   * The records of every container the run added that holds children: each
+   * block, and each rule that nests. Dropped and departed ones included.
+   *
+   * @return {Generator<BlockRecord | RuleRecord>}
+   */
+  *containers() {
+    for (const entry of this.#entries) {
+      if (entry instanceof BlockRecord) yield entry;
+      else if (entry instanceof RuleRecord && entry.context !== -1) yield entry;
     }
   }
 

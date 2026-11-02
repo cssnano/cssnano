@@ -1,5 +1,8 @@
+import { BlockRecord } from './blockRecord.js';
+import { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type MergeState from './mergeState.js';
+export type Container = BlockRecord | RuleRecord;
 /**
  * Under consistency checks, throws when a chain is out of step with its
  * entries, a rule's nested block stands elsewhere, or a dropped block still

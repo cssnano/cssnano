@@ -134,7 +134,7 @@ export const mutations = [
   {
     name: 'a rule record skips the check of its declarations against the tree',
     target: source('ruleRecord.js'),
-    find: '    if (!consistencyChecksEnabled() || this.#block !== -1) return;',
+    find: '    if (!consistencyChecksEnabled() || this.context !== -1) return;',
     replace: '    return;',
   },
   {
@@ -189,8 +189,8 @@ export const mutations = [
   {
     name: 'the ownership check accepts a block whose count differs from its chain',
     target: source('recordsCheck.js'),
-    find: '    if (count !== block.count) throw new Error(OUT_OF_STEP);\n  };\n  visit(records.root);',
-    replace: '  };\n  visit(records.root);',
+    find: '    if (count !== block.count) throw new Error(OUT_OF_STEP);\n  };\n  reach(records.root);\n  visitChildren(records.root);',
+    replace: '  };\n  reach(records.root);\n  visitChildren(records.root);',
   },
   {
     name: 'taking declarations hands over no record',

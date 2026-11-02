@@ -233,7 +233,7 @@ test('takePlaceOf should unlink the later rule once the earlier one takes its pl
   assert.equal(state.records.links.parentOf(laterRecord.index), -1);
 });
 
-test('appendToDeclarations should throw when the receiving rule holds a block', () => {
+test('appendToDeclarations should throw when the receiving rule nests', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}c{width:2px}');
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (root).nodes
@@ -248,16 +248,16 @@ test('appendToDeclarations should throw when the receiving rule holds a block', 
         writesOf(kept),
         ruleRecordOf(state.records, incoming)
       ),
-    /holds a block/v
+    /nests/v
   );
 });
 
-test('removeDeclarationsAt should throw when the rule holds a block', () => {
+test('removeDeclarationsAt should throw when the rule nests', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const [rule] = /** @type {Rule[]} */ (/** @type {Container} */ (root).nodes);
   assert.throws(
     () => ruleRecordOf(state.records, rule).removeDeclarationsAt(new Set([0])),
-    /holds a block/v
+    /nests/v
   );
 });
 

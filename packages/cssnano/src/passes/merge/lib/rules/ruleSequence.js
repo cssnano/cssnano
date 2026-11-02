@@ -56,7 +56,7 @@ export default class RuleSequence {
    * Links the rules under `block` in document order, after the rules already
    * linked.
    *
-   * @param {BlockRecord} block
+   * @param {BlockRecord | RuleRecord} block the block, or the rule that nests
    * @return {void}
    */
   #collect(block) {
@@ -69,11 +69,7 @@ export default class RuleSequence {
       const item = this.#records.entry(entry);
       if (item instanceof RuleRecord) {
         this.#tail = this.#link(this.#tail, entry);
-        if (item.block !== -1) {
-          this.#collect(
-            /** @type {BlockRecord} */ (this.#records.block(item.block))
-          );
-        }
+        if (item.context !== -1) this.#collect(item);
       } else if (item instanceof BlockRecord) {
         this.#collect(item);
       }
@@ -235,8 +231,9 @@ export default class RuleSequence {
     const { links } = this.#records;
     let at = index;
     for (;;) {
-      const block = /** @type {BlockRecord} */ (this.#records.block(at));
-      if (!block.droppable || block.count !== 0) return;
+      // A rule that nests is never dropped, so the climb stops at it.
+      const block = this.#records.blockEntry(at);
+      if (!block?.droppable || block.count !== 0) return;
       const holder = links.parentOf(at);
       links.unlink(at);
       if (holder === -1) return;

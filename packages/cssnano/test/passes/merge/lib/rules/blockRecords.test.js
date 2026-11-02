@@ -3,7 +3,7 @@ import { after, before, test } from 'node:test';
 import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 import {
   assertSweepLowers,
@@ -53,21 +53,19 @@ test('buildRecords should link the rules of a block in document order', () => {
   assert.equal(links.nextSibling(first), ruleRecordOf(state.records, b).index);
 });
 
-test('buildRecords should give a rule that holds a rule a block record linked under the rule', () => {
+test('buildRecords should link the children of a rule that holds a rule into the rule itself', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
-  const rule = /** @type {Rule} */ (root.first);
-  const block = state.records.block(ruleRecordOf(state.records, rule).block);
-  assert.ok(block instanceof BlockRecord);
-  assert.equal(block.node, rule);
-  assert.equal(
-    state.records.links.parentOf(block.index),
-    ruleRecordOf(state.records, rule).index
-  );
+  const record = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
+  const { links } = state.records;
+  const declaration = links.firstChild(record.index);
+  assert.equal(links.parentOf(declaration), record.index);
+  assert.equal(record.first, declaration);
+  assert.equal(record.count, 2);
 });
 
-test('buildRecords should leave a rule with only declarations without a block record', () => {
+test('buildRecords should give a rule with only declarations the context -1 of a plain rule', () => {
   const { root, state } = setup('a{color:red}');
-  assert.equal(ruleRecordOf(state.records, root.first).block, -1);
+  assert.equal(ruleRecordOf(state.records, root.first).context, -1);
 });
 
 test('assertRecordsMatchTree should accept records built from a stylesheet', () => {
@@ -287,7 +285,7 @@ test('assertNoOverDuplication should throw when a declaration is written more of
 test('assertNoOverDuplication should throw when a chain reaches a rule that a second chain also reaches', () => {
   const { root, state } = setup('r{a{width:1px}}b{color:red}');
   const [outer, second] = /** @type {Rule[]} */ (root.nodes);
-  const nestedIndex = ruleRecordOf(state.records, outer).block;
+  const nestedIndex = ruleRecordOf(state.records, outer).index;
   // Linking `b` into the nested chain leaves its sibling link in the root chain,
   // so the walk reaches `b` from both chains.
   state.records.links.linkLast(
@@ -312,4 +310,14 @@ test('links.firstChild should give the entry after the first rule once that rule
     state.records.nodeOf(state.records.links.firstChild(media.index)),
     media.node.nodes[1]
   );
+});
+
+test('parentOf should give the outer rule for a rule nested in a rule that holds rules', () => {
+  const { root, state } = setup('a{color:red;b{width:1px}}');
+  const outer = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
+  const inner = ruleRecordOf(
+    state.records,
+    /** @type {Rule} */ (root.first.nodes[1])
+  );
+  assert.equal(state.records.links.parentOf(inner.index), outer.index);
 });

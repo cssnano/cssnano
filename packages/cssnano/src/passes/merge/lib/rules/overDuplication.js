@@ -46,14 +46,13 @@ export function tallyDeclarations(records) {
   /** @param {RuleRecord} record */
   const visitRule = (record) => {
     reach(record.node);
-    const nested = record.block;
-    if (nested !== -1) {
-      walk(/** @type {BlockRecord} */ (records.block(nested)));
+    if (record.context !== -1) {
+      walk(record);
       return;
     }
     for (const declaration of record.declarations) count(declaration);
   };
-  /** @param {BlockRecord} block */
+  /** @param {BlockRecord | RuleRecord} block the block, or the rule that nests */
   const walk = (block) => {
     const { links } = records;
     for (

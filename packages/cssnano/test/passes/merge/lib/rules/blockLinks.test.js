@@ -8,7 +8,6 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
 
-/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -52,33 +51,37 @@ test('nextSibling should throw under checks when the entry is linked nowhere', (
   assert.throws(() => records.links.nextSibling(rule.index), /unlinked/v);
 });
 
-test('enclosingBlock should be undefined for the stylesheet, which has no container', () => {
+test('enclosingContainer should be undefined for the stylesheet, which has no container', () => {
   const { records } = setup('a{color:red}');
-  assert.equal(records.links.enclosingBlock(records.root.index), undefined);
+  assert.equal(records.links.enclosingContainer(records.root.index), undefined);
 });
 
-test('enclosingBlock should give the stylesheet for a block at the root', () => {
+test('enclosingContainer should give the stylesheet for a block at the root', () => {
   const { root, records } = setup('@media print{a{color:red}}');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
-  assert.equal(records.links.enclosingBlock(media.index), records.root);
+  assert.equal(records.links.enclosingContainer(media.index), records.root);
 });
 
-test('enclosingBlock should give the at-rule block that holds an at-rule block', () => {
+test('enclosingContainer should give the at-rule block that holds an at-rule block', () => {
   const { root, records } = setup('@media (x){@media (y){a{color:red}}}');
   const outer = blockRecordOf(records, /** @type {Container} */ (root.first));
   const inner = blockRecordOf(
     records,
     /** @type {Container} */ (root.first.first)
   );
-  assert.equal(records.links.enclosingBlock(inner.index), outer);
+  assert.equal(records.links.enclosingContainer(inner.index), outer);
 });
 
-test('enclosingBlock should step through the rule that owns a nested block', () => {
+test('enclosingContainer should give the rule that nests the rule, and the block that holds that rule', () => {
   const { root, records } = setup('@media (x){a{color:red;b{width:1px}}}');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
-  const rule = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
-  const nested = /** @type {BlockRecord} */ (records.block(rule.block));
-  assert.equal(records.links.enclosingBlock(nested.index), media);
+  const outer = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
+  const inner = ruleRecordOf(
+    records,
+    /** @type {Rule} */ (outer.node.nodes[1])
+  );
+  assert.equal(records.links.enclosingContainer(inner.index), outer);
+  assert.equal(records.links.enclosingContainer(outer.index), media);
 });
 
 test('liveCount should count a comment linked into a block', () => {
@@ -119,4 +122,14 @@ test('liveCount should give the whole chain to the target and nothing to the sou
   records.adopt(target.index, source.index);
   assert.equal(records.liveCount(target.index), 3);
   assert.equal(records.liveCount(source.index), 0);
+});
+
+test('linkLast should throw under checks when a rule is linked into a rule that holds no rules', () => {
+  const { root, records } = setup('a{color:red}b{width:1px}');
+  const plain = ruleRecordOf(records, /** @type {Rule} */ (root.first));
+  const other = ruleRecordOf(records, /** @type {Rule} */ (root.last));
+  assert.throws(
+    () => records.links.linkLast(plain.index, other.index),
+    /holds no rules/v
+  );
 });

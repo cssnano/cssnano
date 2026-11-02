@@ -22,8 +22,8 @@ import { appendToDeclarations } from './treeEdits.js';
  */
 export function mergeMatchingDeclarations(first, second, mergeState) {
   if (
-    first.block !== -1 ||
-    second.block !== -1 ||
+    first.context !== -1 ||
+    second.context !== -1 ||
     !first.holdsOnlyDeclarations() ||
     !second.holdsOnlyDeclarations() ||
     !sameDeclarationsAndOrder(second.declarations, first.declarations)

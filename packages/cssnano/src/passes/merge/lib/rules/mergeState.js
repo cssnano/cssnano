@@ -224,16 +224,16 @@ export default class MergeState {
   }
 
   /**
-   * The block whose chain holds the rule. It is where the rule stands, which
-   * can differ from its PostCSS parent during a sweep. A rule that left the
-   * stylesheet stands in no block.
+   * The container whose chain holds the rule: a block, or a rule that nests.
+   * It is where the rule stands, which can differ from its PostCSS parent
+   * during a sweep. A rule that left the stylesheet stands in no container.
    *
    * @param {RuleRecord} record
-   * @return {BlockRecord}
+   * @return {BlockRecord | RuleRecord}
    */
   blockOf(record) {
-    return /** @type {BlockRecord} */ (
-      this.records.block(this.#blockIndexOf(record))
+    return /** @type {BlockRecord | RuleRecord} */ (
+      this.records.container(this.#blockIndexOf(record))
     );
   }
 
@@ -262,12 +262,14 @@ export default class MergeState {
     blockA = this.#blockIndexOf(recordA),
     blockB = this.#blockIndexOf(recordB)
   ) {
-    const containerA = /** @type {BlockRecord} */ (this.records.block(blockA));
-    const containerB = this.records.block(blockB);
+    const containerA = /** @type {BlockRecord | RuleRecord} */ (
+      this.records.container(blockA)
+    );
+    const containerB = this.records.container(blockB);
     if (!sameContainer(containerA, containerB)) return false;
     if (isKeyframes(containerA.node)) return false;
-    if (recordA.block !== -1) return false;
-    if (recordB.block !== -1) return false;
+    if (recordA.context !== -1) return false;
+    if (recordB.context !== -1) return false;
 
     // The vendor check follows compatibility, because an incompatible selector
     // has no known prefix.

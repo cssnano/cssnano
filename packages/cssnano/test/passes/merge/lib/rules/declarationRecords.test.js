@@ -83,28 +83,26 @@ test('assertRecordsMatchTree throws under consistency checks when a declaration 
   assert.throws(() => assertRecordsMatchTree(state), /stale declarations/v);
 });
 
-test('a declaration in a rule that holds a block is a declaration record in its block entries, and its node in the live children', () => {
+test('a declaration in a rule that nests is a declaration record in its chain, and its node in the live children', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
-  const block = state.records.block(rule.block);
-  const [color] = state.records.liveEntries(block.index);
+  const [color] = state.records.liveEntries(rule.index);
   assert.ok(color instanceof DeclarationRecord);
-  assert.equal(state.records.liveChildren(block.index)[0], root.first.first);
+  assert.equal(state.records.liveChildren(rule.index)[0], root.first.first);
   assert.equal(color.node, root.first.first);
 });
 
-test('declarations should throw on a rule that holds a block, whose declarations are its block entries', () => {
+test('declarations should throw on a rule that nests, whose declarations are its chain', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
-  assert.throws(() => rule.declarations, /holds a block/v);
+  assert.throws(() => rule.declarations, /nests/v);
 });
 
-test('declarationKeys of a rule that holds a block are the ids of its block declarations', () => {
+test('declarationKeys of a rule that nests are the ids of its chain declarations', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
-  const block = state.records.block(rule.block);
   const ids = state.records
-    .liveEntries(block.index)
+    .liveEntries(rule.index)
     .filter((entry) => entry instanceof DeclarationRecord)
     .map((entry) => entry.id);
   assert.deepEqual(rule.declarationKeys(state.records).keys, ids);

@@ -51,6 +51,13 @@ export declare class BlockRecords {
      */
     block(index: number): BlockRecord | undefined;
     /**
+     * @param {number} index an index that `add` or `recordRule` gave, or -1 for none
+     * @return {BlockRecord | RuleRecord | undefined} the container at `index`, a block or a rule,
+     * or undefined for -1
+     * @throws {Error} under checks, when the entry at `index` is neither
+     */
+    container(index: number): BlockRecord | RuleRecord | undefined;
+    /**
      * @param {number} index an index that the arena gave
      * @return {BlockRecord | undefined} the block at `index`, or undefined when the entry is another kind
      */
@@ -75,6 +82,13 @@ export declare class BlockRecords {
      * @return {Generator<BlockRecord>}
      */
     blocks(): Generator<BlockRecord>;
+    /**
+     * The records of every container the run added that holds children: each
+     * block, and each rule that nests. Dropped and departed ones included.
+     *
+     * @return {Generator<BlockRecord | RuleRecord>}
+     */
+    containers(): Generator<BlockRecord | RuleRecord>;
     /**
      * The PostCSS node of the entry at `index`, which is a rule, a block, a
      * declaration or a bare node.

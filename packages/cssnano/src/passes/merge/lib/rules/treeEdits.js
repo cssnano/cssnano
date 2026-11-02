@@ -29,8 +29,8 @@ function isRuleOrAtRule(node) {
 
 /**
  * Builds the records of a stylesheet from its tree, once per run. Each child is
- * linked into the chain of its parent, and each rule that holds a rule or an
- * at-rule gets the record of its children.
+ * linked into the chain of its parent. A rule that holds a rule or an at-rule
+ * is a container too: its children are linked into its own chain.
  *
  * @param {Root} root
  * @param {MergeState} mergeState
@@ -44,21 +44,23 @@ export function buildRecords(root, mergeState) {
   let nodes = 0;
   let declarations = 0;
   /**
-   * Fills a block that the records hold already, and links each child to it.
+   * Fills a container that the records hold already, and links each child to
+   * it. A nesting rule is filled as a block is.
    *
-   * @param {BlockRecord} block
+   * @param {BlockRecord | RuleRecord} container
+   * @param {number} parentContext the context of the enclosing container, -1 for the stylesheet
    */
-  const fill = (block) => {
-    block.context = containerContext(
+  const fill = (container, parentContext) => {
+    container.context = containerContext(
       mergeState.declarationIds,
-      records.links.enclosingBlock(block.index)?.context ?? -1,
-      block,
+      parentContext,
+      container,
       textTable
     );
-    for (const child of /** @type {ChildNode[]} */ (block.node.nodes)) {
+    for (const child of /** @type {ChildNode[]} */ (container.node.nodes)) {
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
-        // A rule that holds a block keeps its declarations as block entries.
+        // A rule that holds a rule or an at-rule keeps its declarations in its chain.
         const holds = child.nodes.some(isRuleOrAtRule);
         const record = records.recordRule(
           child,
@@ -66,13 +68,9 @@ export function buildRecords(root, mergeState) {
           mergeState.declarationIds,
           holds ? [] : null
         );
-        records.links.linkLast(block.index, record.index);
+        records.links.linkLast(container.index, record.index);
         if (holds) {
-          const nested = new BlockRecord(child, false);
-          records.add(nested);
-          records.links.ownBlock(record.index, nested.index);
-          record.setBlock(nested.index);
-          fill(nested);
+          fill(record, container.context);
         } else {
           declarations += record.declarations.length;
         }
@@ -82,8 +80,8 @@ export function buildRecords(root, mergeState) {
           isDroppableWhenEmpty(child, textTable)
         );
         records.add(nested);
-        records.links.linkLast(block.index, nested.index);
-        fill(nested);
+        records.links.linkLast(container.index, nested.index);
+        fill(nested, container.context);
       } else if (child.type === 'decl') {
         declarations++;
         const declaration = records.blockDeclaration(
@@ -91,14 +89,14 @@ export function buildRecords(root, mergeState) {
           mergeState.properties,
           mergeState.declarationIds
         );
-        records.links.linkLast(block.index, declaration.index);
+        records.links.linkLast(container.index, declaration.index);
       } else {
         const entry = records.bareEntry(child);
-        records.links.linkLast(block.index, entry.index);
+        records.links.linkLast(container.index, entry.index);
       }
     }
   };
-  fill(records.root);
+  fill(records.root, -1);
   if (consistencyChecksEnabled())
     records.inputWrites = tallyDeclarations(records);
   // N + D + 1 rounds bound a run, see `runMerge`.
