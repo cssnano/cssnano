@@ -1,3 +1,5 @@
+import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
+import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
@@ -132,4 +134,75 @@ test('linkLast should throw under checks when a rule is linked into a rule that 
     () => records.links.linkLast(plain.index, other.index),
     /holds no rules/v
   );
+});
+
+test('declarationKeys should list a declaration that linkAfter puts in the middle of a rule in its new place', () => {
+  const { root, records } = setup('a{color:red;top:0}');
+  const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
+  const [color] = rule.declarationsOf(records);
+  const width = records.blockDeclaration(
+    postcss.decl({ prop: 'width', value: '1px' }),
+    new PropertyTable(),
+    new DeclarationKeys()
+  );
+  records.links.linkAfter(rule.index, color.index, width.index);
+  assert.deepEqual(
+    rule.declarationsOf(records).map((declaration) => declaration.prop),
+    ['color', 'width', 'top']
+  );
+});
+
+test('declarationsOf should list the declaration that linkLast appends to its rule, after the declarations it held', () => {
+  const { root, records } = setup('a{color:red}');
+  const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
+  rule.declarationKeys(records);
+  const top = records.blockDeclaration(
+    postcss.decl({ prop: 'top', value: '0' }),
+    new PropertyTable(),
+    new DeclarationKeys()
+  );
+  records.links.linkLast(rule.index, top.index);
+  assert.deepEqual(
+    rule.declarationsOf(records).map((declaration) => declaration.prop),
+    ['color', 'top']
+  );
+});
+
+test('firstDeclaration and nextDeclaration should walk a declaration that linkAfter puts in the middle of a rule in its new place', () => {
+  const { root, records } = setup('a{color:red;top:0}');
+  const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
+  const color = records.links.firstDeclaration(rule.index);
+  const width = records.blockDeclaration(
+    postcss.decl({ prop: 'width', value: '1px' }),
+    new PropertyTable(),
+    new DeclarationKeys()
+  );
+  records.links.linkAfter(rule.index, color.index, width.index);
+  const props = [];
+  for (
+    let declaration = records.links.firstDeclaration(rule.index);
+    declaration !== undefined;
+    declaration = records.links.nextDeclaration(declaration)
+  ) {
+    props.push(declaration.prop);
+  }
+  assert.deepEqual(props, ['color', 'width', 'top']);
+});
+
+test('declarationKeys should list the ids in their new order after linkAfter puts a declaration in the middle of a rule', () => {
+  const { root, records } = setup('a{color:red;top:0}');
+  const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
+  const [color, top] = rule.declarationsOf(records);
+  rule.declarationKeys(records);
+  const width = records.blockDeclaration(
+    postcss.decl({ prop: 'width', value: '1px' }),
+    new PropertyTable(),
+    new DeclarationKeys()
+  );
+  records.links.linkAfter(rule.index, color.index, width.index);
+  assert.deepEqual(rule.declarationKeys(records).keys, [
+    color.id,
+    width.id,
+    top.id,
+  ]);
 });

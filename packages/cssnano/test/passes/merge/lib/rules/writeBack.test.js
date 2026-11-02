@@ -35,10 +35,10 @@ test('a second write-back should leave the child array of a block that already m
   const sequence = new RuleSequence(state.records);
   const first = sequence.head;
   sequence.moveIntoParent(first, sequence.nextOf(first));
-  writeBack(state.records, state.records.blocks());
+  writeBack(state.records);
   const media = /** @type {Container} */ (root.first);
   const kept = media.nodes;
-  writeBack(state.records, state.records.blocks());
+  writeBack(state.records);
   assert.equal(media.nodes, kept);
   assert.doesNotThrow(() => assertRecordsMatchTree(state));
 });

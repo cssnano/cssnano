@@ -16,7 +16,7 @@ export declare function assertRecordsWellFormed(mergeState: {
 }): void;
 /**
  * Walks the ownership of the records from the root along the chains: the
- * entries of each block, and the nested block and declarations of each rule.
+ * entries of each block, and the chain of each rule.
  * Throws when a block, rule or declaration is reached twice, since every record
  * has one owner, or when a chain holds other than the count its block keeps.
  *

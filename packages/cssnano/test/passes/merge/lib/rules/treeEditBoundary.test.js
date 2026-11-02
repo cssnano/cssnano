@@ -22,14 +22,9 @@ const sources = readdirSync(rulesDirectory)
   }));
 
 // `ruleRewrite.js` appends to the record of the merged rule it creates, a call
-// the pattern cannot tell from a node edit. `ruleRecord.js` holds the entry
-// methods that edit a rule's children, and edits each node with its records,
-// through the helpers of `ruleChildren.js`.
-const cloneEditors = new Set([
-  'ruleRewrite.js',
-  'ruleRecord.js',
-  'ruleChildren.js',
-]);
+// the pattern cannot tell from a node edit. `blockRecords.js` holds the methods
+// that link a rule's children, and edits each node with its records.
+const cloneEditors = new Set(['ruleRewrite.js', 'blockRecords.js']);
 
 const forbiddenImports = new Set(['detach', 'insertAfter', 'applyChildEdits']);
 

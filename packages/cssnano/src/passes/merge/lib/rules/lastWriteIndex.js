@@ -111,7 +111,11 @@ export default class LastWriteIndex {
         return;
       }
       // A rule without a block writes its declarations only.
-      for (const declaration of entry.declarations)
+      for (
+        let declaration = this.#records.links.firstDeclaration(entry.index);
+        declaration !== undefined;
+        declaration = this.#records.links.nextDeclaration(declaration)
+      )
         this.record(declaration.keys, position, own);
     } else if (entry instanceof BlockRecord) {
       // Only an at-rule has a block record among the entries.
@@ -240,7 +244,11 @@ export default class LastWriteIndex {
    */
   #ruleConflicts(rule, position, elements) {
     if (rule.context === -1) {
-      for (const declaration of rule.declarations) {
+      for (
+        let declaration = this.#records.links.firstDeclaration(rule.index);
+        declaration !== undefined;
+        declaration = this.#records.links.nextDeclaration(declaration)
+      ) {
         if (this.#conflictsWith(declaration.keys, position, elements)) {
           return true;
         }
@@ -282,7 +290,11 @@ export default class LastWriteIndex {
         const keys = keysOf(entry);
         const own = keys?.length ? keys : null;
         if (entry.context === -1) {
-          for (const declaration of entry.declarations) {
+          for (
+            let declaration = this.#records.links.firstDeclaration(entry.index);
+            declaration !== undefined;
+            declaration = this.#records.links.nextDeclaration(declaration)
+          ) {
             this.record(declaration.keys, position, own);
           }
           continue;

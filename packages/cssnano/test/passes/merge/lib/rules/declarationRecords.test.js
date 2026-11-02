@@ -38,11 +38,11 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const receiving = ruleRecordOf(state.records, root.first.first);
   const incoming = ruleRecordOf(state.records, root.first.last);
-  const moved = incoming.declarations[0];
-  const kept = [...receiving.declarations];
-  appendToDeclarations(state, receiving, writesOf(kept), incoming);
-  assert.equal(receiving.declarations.at(-1), moved);
-  writeBack(state.records, state.records.blocks());
+  const moved = incoming.declarationsOf(state.records)[0];
+  const kept = [...receiving.declarationsOf(state.records)];
+  appendToDeclarations(state, receiving, kept, writesOf(kept), incoming);
+  assert.equal(receiving.declarationsOf(state.records).at(-1), moved);
+  writeBack(state.records);
   assert.equal(moved.node.parent, receiving.node);
 });
 
@@ -69,7 +69,7 @@ test('a rule record reads its declaration keys from the ids of its records', () 
   const rule = ruleRecordOf(state.records, root.first);
   assert.deepEqual(
     rule.declarationKeys(state.records).keys,
-    rule.declarations.map((declaration) => declaration.id)
+    rule.declarationsOf(state.records).map((declaration) => declaration.id)
   );
 });
 
@@ -90,12 +90,6 @@ test('a declaration in a rule that nests is a declaration record in its chain, a
   assert.ok(color instanceof DeclarationRecord);
   assert.equal(state.records.liveChildren(rule.index)[0], root.first.first);
   assert.equal(color.node, root.first.first);
-});
-
-test('declarations should throw on a rule that nests, whose declarations are its chain', () => {
-  const { root, state } = setup('a{color:red;b{width:1px}}');
-  const rule = ruleRecordOf(state.records, root.first);
-  assert.throws(() => rule.declarations, /nests/v);
 });
 
 test('declarationKeys of a rule that nests are the ids of its chain declarations', () => {

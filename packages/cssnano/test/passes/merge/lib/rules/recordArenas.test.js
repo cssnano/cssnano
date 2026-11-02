@@ -56,14 +56,14 @@ function reachedBlocks(records, block, found = [block]) {
   return found;
 }
 
-test('buildRecords should index the stylesheet as entry 0 and each rule after it in document order', () => {
+test('buildRecords should index the stylesheet as entry 0, then each rule and each declaration of a rule in document order', () => {
   const { state } = setup('a{color:red}b{width:1px}');
   const { records } = state;
   assert.equal(records.root.index, 0);
-  assert.equal(records.entryCount(), 3);
+  assert.equal(records.entryCount(), 5);
   assert.equal(records.rule(1).node.selector, 'a');
-  assert.equal(records.rule(2).node.selector, 'b');
-  assert.equal(records.rule(3), undefined);
+  assert.equal(records.rule(3).node.selector, 'b');
+  assert.equal(records.rule(5), undefined);
 });
 
 test('a rule should keep its index and stay readable through rule(i) after it departs', () => {

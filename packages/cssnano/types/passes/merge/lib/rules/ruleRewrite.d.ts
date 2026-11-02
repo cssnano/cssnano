@@ -22,6 +22,7 @@ export declare function writesOf(declarations: DeclarationRecord[]): PropertyWri
  *
  * @param {RuleRecord} first
  * @param {RuleRecord} second
+ * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
  * @param {Set<number>} claimedEarlierIndices
  * @param {Set<number>} claimedIndices
  * @param {import('./mergeState.js').default} mergeState
@@ -30,5 +31,5 @@ export declare function writesOf(declarations: DeclarationRecord[]): PropertyWri
  * @param {Map<number, boolean>} outsideDeclarations
  * @return {Placement | null} null when the output would not get shorter
  */
-export declare function buildMergedRule(first: RuleRecord, second: RuleRecord, claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, mergeState: import('./mergeState.js').default, secondLink: number, sequence: RuleSequence, outsideDeclarations: Map<number, boolean>): Placement | null;
+export declare function buildMergedRule(first: RuleRecord, second: RuleRecord, shared: DeclarationRecord[], claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, mergeState: import('./mergeState.js').default, secondLink: number, sequence: RuleSequence, outsideDeclarations: Map<number, boolean>): Placement | null;
 //# sourceMappingURL=ruleRewrite.d.ts.map

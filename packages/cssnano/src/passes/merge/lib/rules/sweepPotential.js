@@ -39,7 +39,7 @@ export function sweepPotential(records, numbers) {
     ) {
       const item = records.entry(entry);
       if (item instanceof RuleRecord && item.context === -1) {
-        declarations += item.declarations.length;
+        declarations += item.declarationKeys(records).keys.length;
         rules++;
         parents += id;
       } else if (item instanceof BlockRecord || item instanceof RuleRecord) {

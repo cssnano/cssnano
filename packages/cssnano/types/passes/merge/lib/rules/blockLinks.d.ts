@@ -1,5 +1,6 @@
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 /**
  * The links between the entries of the records. Each entry has a container:
@@ -50,6 +51,17 @@ export declare class BlockLinks {
      * @return {number} the last entry of its chain, -1 when it has none
      */
     lastChild(index: number): number;
+    /**
+     * @param {number} index an index that the arena gave, of a container
+     * @return {DeclarationRecord | undefined} the first declaration of its chain
+     */
+    firstDeclaration(index: number): DeclarationRecord | undefined;
+    /**
+     * @param {DeclarationRecord} declaration a declaration linked in a chain
+     * @return {DeclarationRecord | undefined} the declaration after it in its chain
+     * @throws {Error} under checks, when the declaration is linked nowhere
+     */
+    nextDeclaration(declaration: DeclarationRecord): DeclarationRecord | undefined;
     /**
      * Links the entry at `index` after `after` in the chain of the container at
      * `block`, which is the head when `after` is -1. Under checks, a container

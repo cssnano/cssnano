@@ -26,15 +26,19 @@ export function intersect(declarations, keySet) {
 }
 
 /**
- * @param {DeclarationRecord[]} a
- * @param {DeclarationRecord[]} b
+ * Whether two rules hold equal declarations in the same order. Equal
+ * declarations share an id, as `declarationIsEqual` states, so the ids of
+ * each rule's declarations decide it.
+ *
+ * @param {number[]} a the ids of the declarations of a rule, in order
+ * @param {number[]} b
  * @return {boolean}
  */
 export function sameDeclarationsAndOrder(a, b) {
   if (a.length !== b.length) {
     return false;
   }
-  return a.every((d, index) => declarationIsEqual(d, b[index]));
+  return a.every((id, index) => id === b[index]);
 }
 
 /**

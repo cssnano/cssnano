@@ -79,6 +79,7 @@ export function writesOf(declarations) {
  *
  * @param {RuleRecord} first
  * @param {RuleRecord} second
+ * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
  * @param {Set<number>} claimedEarlierIndices
  * @param {Set<number>} claimedIndices
  * @param {import('./mergeState.js').default} mergeState
@@ -90,6 +91,7 @@ export function writesOf(declarations) {
 export function buildMergedRule(
   first,
   second,
+  shared,
   claimedEarlierIndices,
   claimedIndices,
   mergeState,
@@ -99,13 +101,12 @@ export function buildMergedRule(
 ) {
   const firstSelectors = first.selectors;
   const secondSelectors = second.selectors;
-  const firstDeclarations = first.declarations;
+  const { records } = mergeState;
   let sharedBytes = 0;
   // A later plugin, such as Autoprefixer, removes an outdated prefixed
   // declaration from the rule that sets it, which a shared rule leaves alone.
   let prefixed = 0;
-  for (const index of claimedEarlierIndices) {
-    const declaration = firstDeclarations[index];
+  for (const declaration of shared) {
     const length = minifiedLength(declaration);
     sharedBytes += length;
     const { prop } = declaration;
@@ -133,6 +134,7 @@ export function buildMergedRule(
       : findGroup(
           first,
           secondLink,
+          shared,
           claimedEarlierIndices,
           claimedIndices,
           sharedBytes,
@@ -151,17 +153,15 @@ export function buildMergedRule(
   if (!group) mergeState.storeJoined(receivingBlock, first, second);
   mergeState.reportCreated(receivingBlock);
   // The merged rule takes the declarations of the earlier rule themselves.
-  const receivingRecord = mergeState.records.recordRule(
-    receivingBlock,
-    mergeState.properties,
-    mergeState.declarationIds,
-    []
-  );
-  for (const declaration of first.takeDeclarationsAt(claimedEarlierIndices)) {
-    receivingRecord.append(declaration);
+  const receivingRecord = records.recordRule(receivingBlock);
+  for (const declaration of records.takeDeclarationsAt(
+    first,
+    claimedEarlierIndices
+  )) {
+    records.appendChild(receivingRecord, declaration);
   }
   const firstLeftover = leftoverOf(first);
-  second.removeDeclarationsAt(claimedIndices);
+  records.removeDeclarationsAt(second, claimedIndices);
   const secondLeftover = leftoverOf(second);
   /** @type {Placement} */
   const placement = {
@@ -174,7 +174,7 @@ export function buildMergedRule(
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
-      rule.removeDeclarationsAt(claimed);
+      records.removeDeclarationsAt(rule, claimed);
       return indicesOf(leftoverOf(rule));
     });
   }

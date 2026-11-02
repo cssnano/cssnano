@@ -28,22 +28,27 @@ export const SHARING_WINDOW = 10;
 const PAIR_REACH = SHARING_WINDOW + 1;
 
 /**
- * Whether a declaration among `declarations`, other than the `claimed` ones,
- * sets a property of `shared`. Standing after the shared rule, it blocks every
- * later rule from handing over the shared declarations.
+ * Whether a declaration of `rule`, other than the `claimed` ones, sets a
+ * property of `shared`. Standing after the shared rule, it blocks every later
+ * rule from handing over the shared declarations.
  *
- * @param {DeclarationRecord[]} declarations the declarations of the rule
- * @param {Set<number> | null | undefined} claimed positions among the declarations
+ * @param {BlockRecords} records the arena that holds the rule's children
+ * @param {RuleRecord} rule
+ * @param {Set<number> | null | undefined} claimed positions among the declarations of `rule`
  * @param {DeclarationRecord[]} shared
  * @return {boolean}
  */
-function overridesShared(declarations, claimed, shared) {
+function overridesShared(records, rule, claimed, shared) {
   const sharedWrites = new PropertyWrites();
   for (const declaration of shared) {
     sharedWrites.record(declaration.keys, 0);
   }
   let position = 0;
-  for (const declaration of declarations) {
+  for (
+    let declaration = records.links.firstDeclaration(rule.index);
+    declaration !== undefined;
+    declaration = records.links.nextDeclaration(declaration)
+  ) {
     if (claimed?.has(position++)) continue;
     if (sharedWrites.lastConflict(declaration.keys) !== -1) return true;
   }
@@ -78,7 +83,7 @@ function repeatsShared(link, parent, firstKeys, sharedIndices, records) {
   const rule = /** @type {RuleRecord} */ (records.rule(link));
   if (
     records.links.parentOf(rule.index) !== parent ||
-    !isDeclarationRule(rule)
+    !isDeclarationRule(records, rule)
   ) {
     return false;
   }
@@ -117,6 +122,7 @@ function mergesWithAll(members, later, parent, mergeState) {
  *
  * @param {RuleRecord} first
  * @param {number} second the index of the later rule of the pair
+ * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
  * @param {Set<number>} claimedEarlierIndices where the shared declarations stand in `first`
  * @param {Set<number>} claimedIndices where they stand in `second`
  * @param {number} sharedBytes
@@ -130,6 +136,7 @@ function mergesWithAll(members, later, parent, mergeState) {
 export function findGroup(
   first,
   second,
+  shared,
   claimedEarlierIndices,
   claimedIndices,
   sharedBytes,
@@ -153,11 +160,7 @@ export function findGroup(
     )
   )
     return null;
-  const shared = first.declarations.filter((_, index) =>
-    claimedEarlierIndices.has(index)
-  );
-  if (overridesShared(secondRule.declarations, claimedIndices, shared))
-    return null;
+  if (overridesShared(records, secondRule, claimedIndices, shared)) return null;
 
   const listed = new Set(first.selectors);
   for (const selector of secondRule.selectors) {
@@ -202,7 +205,7 @@ export function findGroup(
       const index = followers.length;
       const candidate = candidates[index];
       const later = /** @type {RuleRecord} */ (records.rule(candidate));
-      const claimed = claimedBy(shared, later);
+      const claimed = claimedBy(shared, later, records);
       const previous = index ? candidates[index - 1] : second;
       if (
         !claimed ||
@@ -217,7 +220,7 @@ export function findGroup(
       }
       followers.push({ rule: later, claimed });
       members.push(later);
-      blocked = overridesShared(later.declarations, claimed, shared);
+      blocked = overridesShared(records, later, claimed, shared);
     }
     if (followers.length < candidates.length) break;
     best = running;
@@ -234,14 +237,17 @@ export function findGroup(
 
 /**
  * The positions of the declarations of `later` that repeat `shared`, or null
- * when `later` cannot join: a rule that holds a block never joins.
+ * when `later` cannot join: a rule that nests never joins.
  *
  * @param {DeclarationRecord[]} shared
  * @param {RuleRecord} later
+ * @param {BlockRecords} records
  * @return {Set<number> | null}
  */
-function claimedBy(shared, later) {
-  return later.context !== -1 ? null : claimRepeats(shared, later.declarations);
+function claimedBy(shared, later, records) {
+  return later.context !== -1
+    ? null
+    : claimRepeats(shared, later.declarationsOf(records));
 }
 
 /**

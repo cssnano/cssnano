@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
@@ -86,27 +85,6 @@ function scanned(css) {
   return { root, state };
 }
 
-/**
- * The records of the stylesheet and of each at-rule block its chain links,
- * without dropped ones. Rule blocks are not reached here.
- *
- * @param {BlockRecords} records
- * @param {BlockRecord} block
- * @return {BlockRecord[]}
- */
-function liveBlocks(records, block) {
-  const blocks = [block];
-  for (
-    let entry = records.links.firstChild(block.index);
-    entry !== -1;
-    entry = records.links.nextSibling(entry)
-  ) {
-    const item = records.entry(entry);
-    if (item instanceof BlockRecord) blocks.push(...liveBlocks(records, item));
-  }
-  return blocks;
-}
-
 test('joinNonAdjacent should join a selector repeated after another rule without reading the tree', () => {
   const { root, state } = scanned('a{color:red}b{color:blue}a{margin:0}');
   const restore = armGuard(root);
@@ -137,7 +115,7 @@ test('a rule that a join removes has no parent after write-back', () => {
   const { root, state } = scanned('a{color:red}b{color:blue}a{margin:0}');
   const [, , removed] = root.nodes;
   joinNonAdjacent(state.records.root, state);
-  writeBack(state.records, liveBlocks(state.records, state.records.root));
+  writeBack(state.records);
   assert.equal(removed.parent, undefined);
 });
 
@@ -156,6 +134,6 @@ test('runScan should merge a pair of adjacent rules without reading the tree', (
 test('runScan should leave the child list of the stylesheet as it was until write-back', () => {
   const { root, state } = scanned('a{color:red}b{color:red}');
   assert.equal(root.nodes.length, 2);
-  writeBack(state.records, liveBlocks(state.records, state.records.root));
+  writeBack(state.records);
   assert.equal(root.nodes.length, 1);
 });

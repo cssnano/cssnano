@@ -8,9 +8,10 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /** @import {BlockRecord as Block} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
 
-/** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule that nests */
+/** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule, whose children form its chain */
 
 const OUT_OF_STEP = 'block record out of step with the tree';
+const STALE = 'stale declarations of a rule record';
 
 /**
  * Whether the live children of a container differ from the nodes it holds.
@@ -44,6 +45,22 @@ function isRuleOrAtRule(node) {
 }
 
 /**
+ * Whether a declaration record describes the declaration node it stands for, in
+ * the facts a record keeps.
+ *
+ * @param {DeclarationRecord} child
+ * @return {boolean}
+ */
+function describes(child) {
+  const { node } = child;
+  return (
+    child.prop === node.prop &&
+    child.value === node.value &&
+    child.important === (node.important === true)
+  );
+}
+
+/**
  * Throws when the record of a rule is not linked in the container that holds
  * it, or does not nest exactly when the tree's rule holds rules or at-rules.
  *
@@ -54,7 +71,6 @@ function isRuleOrAtRule(node) {
  */
 function checkRuleRecord(mergeState, block, record) {
   const rule = record.node;
-  record.assertFresh();
   if (mergeState.records.links.parentOf(record.index) !== block.index) {
     throw new Error(OUT_OF_STEP);
   }
@@ -62,19 +78,14 @@ function checkRuleRecord(mergeState, block, record) {
   if (nests !== rule.nodes.some(isRuleOrAtRule)) {
     throw new Error(OUT_OF_STEP);
   }
-  if (nests) {
-    checkBlockRecord(mergeState, record);
-  } else {
-    for (const child of record.children) {
-      const node = child instanceof DeclarationRecord ? child.node : child;
-      if (node.parent !== rule) throw new Error(OUT_OF_STEP);
-    }
-  }
+  checkBlockRecord(mergeState, record);
 }
 
 /**
  * Throws when the live children of a container are not the nodes it holds, and
- * checks the rule records and nested blocks its chain links.
+ * checks the rule records and nested blocks its chain links. A plain rule's
+ * declarations must also describe their nodes, and its children must be its
+ * nodes' children.
  *
  * @param {MergeState} mergeState
  * @param {ContainerRecord} block
@@ -83,6 +94,7 @@ function checkRuleRecord(mergeState, block, record) {
 function checkBlockRecord(mergeState, block) {
   const { records } = mergeState;
   if (differs(records, block)) throw new Error(OUT_OF_STEP);
+  const plain = block instanceof RuleRecord && block.context === -1;
   for (
     let entry = records.links.firstChild(block.index);
     entry !== -1;
@@ -93,14 +105,21 @@ function checkBlockRecord(mergeState, block) {
       checkRuleRecord(mergeState, block, item);
     } else if (item instanceof BlockRecord) {
       checkBlockRecord(mergeState, item);
+    } else if (plain) {
+      if (item instanceof DeclarationRecord && !describes(item)) {
+        throw new Error(STALE);
+      }
+      if (records.nodeOf(entry).parent !== block.node) {
+        throw new Error(OUT_OF_STEP);
+      }
     }
   }
 }
 
 /**
  * Under consistency checks, throws when the records and the tree disagree:
- * each block must hold the nodes its container holds, in order, and each rule
- * must stand in the slot its record names. Writes nothing.
+ * each container must hold the nodes it holds, in order, and each rule must
+ * stand in the slot its record names. Writes nothing.
  *
  * @param {MergeState} mergeState
  * @return {void}
@@ -142,21 +161,6 @@ export function replaceChildren(rebuilt) {
 }
 
 /**
- * The nodes of the children a rule record holds, comments included, in order.
- *
- * @param {RuleRecord} record a rule that holds no block
- * @return {ChildNode[]}
- */
-function nodesOf(record) {
-  /** @type {ChildNode[]} */
-  const nodes = [];
-  for (const child of record.children) {
-    nodes.push(child instanceof DeclarationRecord ? child.node : child);
-  }
-  return nodes;
-}
-
-/**
  * Gives each container in the live tree whose children differ from its node
  * the children the records hold, and each plain rule that an edit changed the
  * children of. A container that already matches keeps its child list, and so
@@ -185,18 +189,17 @@ export function writeBack(records) {
       entry = records.links.nextSibling(entry)
     ) {
       const record = records.entry(entry);
-      if (record instanceof RuleRecord && record.context === -1) {
-        if (record.edited) {
+      if (record instanceof RuleRecord) {
+        if (record.context !== -1) {
+          visit(record);
+        } else if (record.edited) {
           rebuilt.push({
             container: /** @type {Container} */ (record.node),
-            children: nodesOf(record),
+            children: records.liveChildren(record.index),
             leading: undefined,
           });
         }
-      } else if (
-        record instanceof RuleRecord ||
-        record instanceof BlockRecord
-      ) {
+      } else if (record instanceof BlockRecord) {
         visit(record);
       }
     }

@@ -108,7 +108,7 @@ test('adopt should splice the source children after the target, keeping a rule t
     entries[1],
     ruleRecordOf(state.records, /** @type {Rule} */ (source.first))
   );
-  assert.notEqual(/** @type {RuleRecord} */ (entries[1]).block, -1);
+  assert.notEqual(/** @type {RuleRecord} */ (entries[1]).context, -1);
   assert.deepEqual(
     state.records.liveChildren(targetBlock.index).map((node) => node.type),
     ['rule', 'rule']

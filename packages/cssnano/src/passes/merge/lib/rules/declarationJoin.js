@@ -11,18 +11,20 @@ import { RuleRecord } from './ruleRecord.js';
 /** @import {ChildNode, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 
 /**
  * A rule made only of declarations. Comments and nested rules would be
  * stranded or reordered by moving declarations out of the rule.
  *
+ * @param {BlockRecords} records the arena that holds the rule's children
  * @param {RuleRecord} record
  * @return {boolean}
  */
-export const isDeclarationRule = (record) =>
+export const isDeclarationRule = (records, record) =>
   record.context === -1 &&
   record.childCount() > 0 &&
-  record.holdsOnlyDeclarations();
+  record.holdsOnlyDeclarations(records);
 
 /**
  * The positions in `later` of declarations that repeat every one of
@@ -104,7 +106,7 @@ export default function joinByDeclarations(block, mergeState) {
   if (isKeyframes(block.node)) return false;
   const entries = mergeState.records.liveEntries(block.index);
   const keyLists = entries.map((entry) =>
-    entry instanceof RuleRecord && isDeclarationRule(entry)
+    entry instanceof RuleRecord && isDeclarationRule(mergeState.records, entry)
       ? entry.declarationKeys(mergeState.records)
       : null
   );
@@ -163,7 +165,7 @@ export default function joinByDeclarations(block, mergeState) {
     const group = {
       rule,
       position,
-      declarations: rule.declarations,
+      declarations: rule.declarationsOf(mergeState.records),
       keys,
       selectors: null,
       bytes: -1,
@@ -179,7 +181,7 @@ export default function joinByDeclarations(block, mergeState) {
    * declarations, some of them, or joined no group
    */
   function joinIntoGroup(laterRecord) {
-    const laterDeclarations = laterRecord.declarations;
+    const laterDeclarations = laterRecord.declarationsOf(mergeState.records);
     const laterSet = laterRecord.declarationKeys(mergeState.records).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
     const laterKeys = keysOf(laterRecord);
@@ -263,11 +265,12 @@ export default function joinByDeclarations(block, mergeState) {
   function withdraw(later, claimed) {
     // The group's writes already stand at its position, so the declarations
     // that leave `later` record nothing.
-    if (claimed.size === later.declarations.length) {
+    const { records } = mergeState;
+    if (claimed.size === later.declarationKeys(records).keys.length) {
       emptied.add(later.index);
       return 'emptied';
     }
-    later.removeDeclarationsAt(claimed);
+    records.removeDeclarationsAt(later, claimed);
     return 'trimmed';
   }
 }

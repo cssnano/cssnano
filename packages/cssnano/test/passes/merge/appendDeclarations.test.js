@@ -23,10 +23,15 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
   );
   const mergeState = new MergeState(['chrome 120']);
   mergeState.records = buildRecords(root, mergeState);
-  const kept = [...ruleRecordOf(mergeState.records, receiving).declarations];
+  const kept = [
+    ...ruleRecordOf(mergeState.records, receiving).declarationsOf(
+      mergeState.records
+    ),
+  ];
   appendToDeclarations(
     mergeState,
     ruleRecordOf(mergeState.records, receiving),
+    kept,
     writesOf(kept),
     ruleRecordOf(mergeState.records, incoming)
   );
@@ -34,7 +39,20 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
     mergeState,
     new Set([ruleRecordOf(mergeState.records, incoming).index])
   );
-  writeBack(mergeState.records, mergeState.records.blocks());
+  writeBack(mergeState.records);
 
   assert.equal(root.toString(), '@media print{a{color:red;width:1px}}');
+});
+
+test('appendToDeclarations sees each declaration it appended, so a repeat of it is dropped', () => {
+  const root = postcss.parse('a{}b{width:1px;width:1px}');
+  const [receiving, incoming] = /** @type {import('postcss').Rule[]} */ (
+    root.nodes
+  );
+  const mergeState = new MergeState(['chrome 120']);
+  mergeState.records = buildRecords(root, mergeState);
+  const to = ruleRecordOf(mergeState.records, receiving);
+  const from = ruleRecordOf(mergeState.records, incoming);
+  appendToDeclarations(mergeState, to, [], writesOf([]), from);
+  assert.equal(to.declarationsOf(mergeState.records).length, 1);
 });

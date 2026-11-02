@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import {
   appendToDeclarations,
   buildRecords,
@@ -189,10 +190,13 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
     ),
     true
   );
-  const kept = [...ruleRecordOf(state.records, receiving).declarations];
+  const kept = [
+    ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
+  ];
   appendToDeclarations(
     state,
     ruleRecordOf(state.records, receiving),
+    kept,
     writesOf(kept),
     ruleRecordOf(state.records, incoming)
   );
@@ -205,16 +209,14 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
   );
 });
 
-test('assertFresh should throw when a declaration left the rule without a tree edit', () => {
+test('assertRecordsMatchTree should throw when a declaration left the rule without a tree edit', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);
   try {
     const state = createState();
     const root = withRecords(state, postcss.parse('a{color:red;width:1px}'));
-    const rule = /** @type {import('postcss').Rule} */ (root.first);
-    const record = ruleRecordOf(state.records, rule);
-    rule.first.remove();
-    assert.throws(() => record.assertFresh(), /stale/v);
+    /** @type {import('postcss').Rule} */ (root.first).first?.remove();
+    assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
   } finally {
     enableConsistencyChecks(wasEnabled);
   }

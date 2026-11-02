@@ -110,7 +110,7 @@ test('liveChildren should equal the children of the stylesheet after a sweep dro
     '@media print{a{color:red}}@media print{a{color:red}}'
   );
   runScan(state);
-  writeBack(state.records, state.records.blocks());
+  writeBack(state.records);
   assert.deepEqual(
     state.records.liveChildren(state.records.root.index),
     root.nodes
@@ -122,7 +122,7 @@ test('liveChildren should equal the children of the stylesheet after a join move
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   joinNonAdjacent(state.records.root, state);
-  writeBack(state.records, state.records.blocks());
+  writeBack(state.records);
   assert.deepEqual(
     state.records.liveChildren(state.records.root.index),
     root.nodes
@@ -132,7 +132,7 @@ test('liveChildren should equal the children of the stylesheet after a join move
 test('liveChildren should equal the children of the stylesheet after a join removes a rule', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
   joinNonAdjacent(state.records.root, state);
-  writeBack(state.records, state.records.blocks());
+  writeBack(state.records);
   assert.deepEqual(
     state.records.liveChildren(state.records.root.index),
     root.nodes
@@ -269,8 +269,9 @@ test('assertNoOverDuplication should throw when a declaration is written more of
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
   const added = postcss.decl({ prop: 'color', value: 'red' });
-  record.append(
-    state.records.declarationRecord(
+  state.records.appendChild(
+    record,
+    state.records.blockDeclaration(
       added,
       state.properties,
       state.declarationIds

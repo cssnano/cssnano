@@ -18,11 +18,15 @@ export declare function declarationIsEqual(a: DeclarationRecord, b: DeclarationR
  */
 export declare function intersect(declarations: DeclarationRecord[], keySet: Set<number>): DeclarationRecord[];
 /**
- * @param {DeclarationRecord[]} a
- * @param {DeclarationRecord[]} b
+ * Whether two rules hold equal declarations in the same order. Equal
+ * declarations share an id, as `declarationIsEqual` states, so the ids of
+ * each rule's declarations decide it.
+ *
+ * @param {number[]} a the ids of the declarations of a rule, in order
+ * @param {number[]} b
  * @return {boolean}
  */
-export declare function sameDeclarationsAndOrder(a: DeclarationRecord[], b: DeclarationRecord[]): boolean;
+export declare function sameDeclarationsAndOrder(a: number[], b: number[]): boolean;
 /**
  * @param {DeclarationRecord[]} hoistCandidates
  * @param {DeclarationRecord[]} earlierRuleDeclarations

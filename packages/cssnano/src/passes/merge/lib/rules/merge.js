@@ -24,9 +24,12 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
   if (
     first.context !== -1 ||
     second.context !== -1 ||
-    !first.holdsOnlyDeclarations() ||
-    !second.holdsOnlyDeclarations() ||
-    !sameDeclarationsAndOrder(second.declarations, first.declarations)
+    !first.holdsOnlyDeclarations(mergeState.records) ||
+    !second.holdsOnlyDeclarations(mergeState.records) ||
+    !sameDeclarationsAndOrder(
+      second.declarationKeys(mergeState.records).keys,
+      first.declarationKeys(mergeState.records).keys
+    )
   )
     return null;
   // Repeating the same declarations under the same selector changes nothing,
@@ -51,7 +54,8 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
  */
 export function mergeMatchingSelectors(first, second, mergeState) {
   if (!first.hasSameSelectors(second)) return null;
-  appendToDeclarations(mergeState, first, writesOf(first.declarations), second);
+  const kept = first.declarationsOf(mergeState.records);
+  appendToDeclarations(mergeState, first, kept, writesOf(kept), second);
   return { first: [first.index], second: [] };
 }
 
@@ -75,21 +79,24 @@ export function mergeSharedDeclarations(
   sequence,
   outsideDeclarations
 ) {
+  const { records } = mergeState;
+  const firstDeclarations = first.declarationsOf(records);
   let intersection = intersect(
-    first.declarations,
-    second.declarationKeys(mergeState.records).keySet
+    firstDeclarations,
+    second.declarationKeys(records).keySet
   );
   if (intersection.length === 0) return null;
   const filtered = filterRuleIntersections(
     intersection,
-    first.declarations,
-    second.declarations
+    firstDeclarations,
+    second.declarationsOf(records)
   );
   intersection = filtered.intersection;
   if (intersection.length === 0) return null;
   return buildMergedRule(
     first,
     second,
+    intersection,
     filtered.claimedEarlierIndices,
     filtered.claimedIndices,
     mergeState,

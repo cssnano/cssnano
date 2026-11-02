@@ -50,7 +50,13 @@ export function tallyDeclarations(records) {
       walk(record);
       return;
     }
-    for (const declaration of record.declarations) count(declaration);
+    for (
+      let declaration = records.links.firstDeclaration(record.index);
+      declaration !== undefined;
+      declaration = records.links.nextDeclaration(declaration)
+    ) {
+      count(declaration);
+    }
   };
   /** @param {BlockRecord | RuleRecord} block the block, or the rule that nests */
   const walk = (block) => {

@@ -146,6 +146,13 @@ export declare class BlockRecords {
      */
     adopt(target: number, source: number): void;
     /**
+     * Clears the edited flag of every rule, once the build has linked their
+     * children, so that only edits after the build mark a rule.
+     *
+     * @return {void}
+     */
+    settle(): void;
+    /**
      * Builds the record of a declaration that is a rule's child.
      *
      * @param {import('postcss').Declaration} node
@@ -174,17 +181,42 @@ export declare class BlockRecords {
     bareEntry(node: ChildNode): NodeEntry;
     /**
      * Builds the record of a rule and adds it to the arena, which gives it the
-     * next index. The slot the caller places it in is what holds it.
+     * next index. The rule has no children yet: the caller links them, in order.
+     * The slot the caller places the rule in is what holds it.
      *
      * @param {Rule} rule
-     * @param {PropertyTable} properties the keys of the property names
-     * @param {DeclarationKeys} declarations the ids of the declarations
-     * @param {DeclarationRecord[] | null} [records] the records of the rule's
-     * declarations, in order, when the caller holds them already, such as the
-     * records a rule hands to a new rule; null to record each declaration of the
-     * rule
      * @return {RuleRecord}
      */
-    recordRule(rule: Rule, properties: PropertyTable, declarations: DeclarationKeys, records?: DeclarationRecord[] | null): RuleRecord;
+    recordRule(rule: Rule): RuleRecord;
+    /**
+     * Appends a child to the chain of a rule, after its last child, and gives the
+     * child the whitespace of that child when it has none. The node takes it at
+     * write-back. The child must be linked nowhere, or unlinked.
+     *
+     * @param {RuleRecord} rule
+     * @param {DeclarationRecord | NodeEntry} child
+     * @return {void}
+     */
+    appendChild(rule: RuleRecord, child: DeclarationRecord | NodeEntry): void;
+    /**
+     * Removes the declarations of a rule at the positions `claimed`, which index
+     * the declarations as they stand at the call. The node drops them at
+     * write-back.
+     *
+     * @param {RuleRecord} rule
+     * @param {Set<number>} claimed the positions of the declarations that leave
+     * @return {void}
+     */
+    removeDeclarationsAt(rule: RuleRecord, claimed: Set<number>): void;
+    /**
+     * Removes the declarations of a rule at the positions `claimed`, as
+     * `removeDeclarationsAt` does, and returns their records for another rule to
+     * append.
+     *
+     * @param {RuleRecord} rule
+     * @param {Set<number>} claimed the positions of the declarations that leave
+     * @return {DeclarationRecord[]} the removed records, in order
+     */
+    takeDeclarationsAt(rule: RuleRecord, claimed: Set<number>): DeclarationRecord[];
 }
 //# sourceMappingURL=blockRecords.d.ts.map
