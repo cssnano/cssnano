@@ -1,4 +1,6 @@
+import type { BlockRecord } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
+export type Container = BlockRecord | RuleRecord;
 import type { BlockRecords } from './blockRecords.js';
 /**
  * Walks the stylesheet in the order it will be written to find declarations

@@ -10,7 +10,7 @@ import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord
  * stylesheet is not found.
  *
  * @param {BlockRecords} records
- * @param {BlockRecord} block
+ * @param {BlockRecord | RuleRecord} block the block, or the rule that nests
  * @param {object} node
  * @return {RuleRecord | BlockRecord | undefined}
  */
@@ -18,9 +18,8 @@ function liveEntryOf(records, block, node) {
   for (const entry of records.liveEntries(block.index)) {
     if (entry instanceof RuleRecord) {
       if (entry.node === node) return entry;
-      if (entry.block !== -1) {
-        const nested = /** @type {BlockRecord} */ (records.block(entry.block));
-        const found = liveEntryOf(records, nested, node);
+      if (entry.context !== -1) {
+        const found = liveEntryOf(records, entry, node);
         if (found) return found;
       }
     } else if (entry instanceof BlockRecord) {
@@ -61,20 +60,18 @@ export function entryOf(records, node) {
 }
 
 /**
- * The block record of a container that is live in `records`: the stylesheet, an
- * at-rule, or a rule that holds rules or at-rules.
+ * The container record of a container that is live in `records`: the
+ * stylesheet, an at-rule, or a rule that holds rules or at-rules.
  *
  * @param {BlockRecords} records
  * @param {Container} node
- * @return {BlockRecord}
- * @throws {Error} when no live block record stands for the container
+ * @return {BlockRecord | RuleRecord}
+ * @throws {Error} when no live container record stands for the container
  */
 export function blockRecordOf(records, node) {
   if (node === records.root.node) return records.root;
   const found = liveEntryOf(records, records.root, node);
-  if (found instanceof RuleRecord && found.block !== -1) {
-    return /** @type {BlockRecord} */ (records.block(found.block));
-  }
+  if (found instanceof RuleRecord && found.context !== -1) return found;
   if (found instanceof BlockRecord) return found;
   throw new Error('no live block record for the container');
 }

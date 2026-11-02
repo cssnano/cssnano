@@ -17,12 +17,31 @@ import type { BlockRecords } from './blockRecords.js';
 export declare function isDeclaration(node: ChildNode): node is Declaration;
 /**
  * What the merge knows of a rule: its selector list, which the base class
- * derives facts from, and its children. Its nested block is an index into the
- * arena of `BlockRecords`, so the record refers to no other record. Every field
- * is set up front so all instances share one object layout.
+ * derives facts from, and its children. A nesting rule's children form a chain
+ * in the arena of `BlockRecords`, so the record refers to no other record.
+ * Every field is set up front so all instances share one object layout.
  */
 export declare class RuleRecord extends SelectorList {
     #private;
+    /**
+     * The first entry of the chain of children, which a nesting rule links, or
+     * -1 when it holds none. A plain rule keeps its children in its arrays.
+     *
+     * @type {number}
+     */
+    first: number;
+    /** @type {number} the last entry of the chain of children, or -1 when it holds none */
+    last: number;
+    /** @type {number} the number of entries in the chain, kept by each link and unlink */
+    count: number;
+    /**
+     * The id of the circumstances under which the rule applies its children, as
+     * `containerContext` gives it. It is set once, at the build, for a rule that
+     * holds a rule or an at-rule; -1 for any other rule.
+     *
+     * @type {number}
+     */
+    context: number;
     /** @type {number} the place of the record in the arena of its records, -1 until added */
     index: number;
     /**
@@ -31,10 +50,6 @@ export declare class RuleRecord extends SelectorList {
      * @param {DeclarationRecord[]} declarations
      */
     constructor(node: Rule, selectors: string[], declarations: DeclarationRecord[]);
-    /** @return {number} the index of the record of the rule's children, -1 when there is none */
-    get block(): number;
-    /** @param {number} block the index of the record of the rule's children */
-    setBlock(block: number): void;
     /** @return {boolean} whether a child was added or removed since the record was made */
     get edited(): boolean;
     /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
@@ -61,9 +76,9 @@ export declare class RuleRecord extends SelectorList {
      */
     append(child: DeclarationRecord | ChildNode): void;
     /**
-     * The ids of the declarations, which a block holder keeps in its block.
+     * The ids of the declarations, which a nesting rule keeps in its chain.
      *
-     * @param {BlockRecords} records the arena that holds the rule's block
+     * @param {BlockRecords} records the arena that holds the rule's children
      * @return {RuleDeclarationKeys}
      */
     declarationKeys(records: BlockRecords): RuleDeclarationKeys;

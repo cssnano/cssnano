@@ -3,6 +3,7 @@
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord as Rule} from './ruleRecord.js' */
 import { NodeEntry } from './blockRecord.js';
 
 /**
@@ -22,7 +23,7 @@ import { NodeEntry } from './blockRecord.js';
  * @return {number}
  */
 export function liveCount(records, index) {
-  return /** @type {BlockRecord} */ (records.block(index)).count;
+  return /** @type {BlockRecord | Rule} */ (records.container(index)).count;
 }
 
 /**

@@ -8,15 +8,17 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /** @import {BlockRecord as Block} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
 
+/** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule that nests */
+
 const OUT_OF_STEP = 'block record out of step with the tree';
 
 /**
- * Whether the live children of a block differ from the nodes its container
- * holds. Compares in order and stops at the first difference, without building
- * the list of live children.
+ * Whether the live children of a container differ from the nodes it holds.
+ * Compares in order and stops at the first difference, without building the
+ * list of live children.
  *
  * @param {BlockRecords} records
- * @param {Block} block
+ * @param {ContainerRecord} block
  * @return {boolean}
  */
 function differs(records, block) {
@@ -42,11 +44,11 @@ function isRuleOrAtRule(node) {
 }
 
 /**
- * Throws when the record of a rule is not linked in the block that holds it,
- * or does not hold the block of the rule's children that the tree has.
+ * Throws when the record of a rule is not linked in the container that holds
+ * it, or does not nest exactly when the tree's rule holds rules or at-rules.
  *
  * @param {MergeState} mergeState
- * @param {Block} block the block whose chain holds the rule
+ * @param {ContainerRecord} block the container whose chain holds the rule
  * @param {RuleRecord} record
  * @return {void}
  */
@@ -56,20 +58,12 @@ function checkRuleRecord(mergeState, block, record) {
   if (mergeState.records.links.parentOf(record.index) !== block.index) {
     throw new Error(OUT_OF_STEP);
   }
-  if ((record.block !== -1) !== rule.nodes.some(isRuleOrAtRule)) {
+  const nests = record.context !== -1;
+  if (nests !== rule.nodes.some(isRuleOrAtRule)) {
     throw new Error(OUT_OF_STEP);
   }
-  if (record.block !== -1) {
-    const nested = /** @type {BlockRecord} */ (
-      mergeState.records.block(record.block)
-    );
-    if (
-      mergeState.records.links.enclosingBlock(nested.index) !== block ||
-      nested.node !== rule
-    ) {
-      throw new Error(OUT_OF_STEP);
-    }
-    checkBlockRecord(mergeState, nested);
+  if (nests) {
+    checkBlockRecord(mergeState, record);
   } else {
     for (const child of record.children) {
       const node = child instanceof DeclarationRecord ? child.node : child;
@@ -79,11 +73,11 @@ function checkRuleRecord(mergeState, block, record) {
 }
 
 /**
- * Throws when the live children of a block are not the nodes its container
- * holds, and checks the rule records and nested blocks its chain links.
+ * Throws when the live children of a container are not the nodes it holds, and
+ * checks the rule records and nested blocks its chain links.
  *
  * @param {MergeState} mergeState
- * @param {Block} block
+ * @param {ContainerRecord} block
  * @return {void}
  */
 function checkBlockRecord(mergeState, block) {
@@ -163,45 +157,50 @@ function nodesOf(record) {
 }
 
 /**
- * Gives each block whose live children differ from its container the children
- * the records hold, and each rule that an edit changed the children of. A
- * block that already matches, or was dropped, keeps its child list, and so
- * does a rule that no edit touched.
+ * Gives each container in the live tree whose children differ from its node
+ * the children the records hold, and each plain rule that an edit changed the
+ * children of. A container that already matches keeps its child list, and so
+ * does a plain rule that no edit touched. Dropped and departed records are not
+ * in the tree, so they keep theirs.
  *
  * @param {BlockRecords} records
- * @param {Iterable<Block>} blocks
  * @return {void}
  */
-export function writeBack(records, blocks) {
+export function writeBack(records) {
   /** @type {Rebuilt[]} */
   const rebuilt = [];
-  for (const block of blocks) {
-    if (records.isDropped(block.index)) continue;
-    if (differs(records, block)) {
+  /** @param {ContainerRecord} container */
+  const visit = (container) => {
+    if (differs(records, container)) {
       rebuilt.push({
-        container: /** @type {Container} */ (block.node),
-        children: records.liveChildren(block.index),
-        leading: block === records.root ? block.leadingWhitespace : undefined,
+        container: /** @type {Container} */ (container.node),
+        children: records.liveChildren(container.index),
+        leading:
+          container === records.root ? container.leadingWhitespace : undefined,
       });
     }
     for (
-      let entry = records.links.firstChild(block.index);
+      let entry = records.links.firstChild(container.index);
       entry !== -1;
       entry = records.links.nextSibling(entry)
     ) {
       const record = records.entry(entry);
-      if (
-        record instanceof RuleRecord &&
-        record.edited &&
-        record.block === -1
+      if (record instanceof RuleRecord && record.context === -1) {
+        if (record.edited) {
+          rebuilt.push({
+            container: /** @type {Container} */ (record.node),
+            children: nodesOf(record),
+            leading: undefined,
+          });
+        }
+      } else if (
+        record instanceof RuleRecord ||
+        record instanceof BlockRecord
       ) {
-        rebuilt.push({
-          container: /** @type {Container} */ (record.node),
-          children: nodesOf(record),
-          leading: undefined,
-        });
+        visit(record);
       }
     }
-  }
+  };
+  visit(records.root);
   replaceChildren(rebuilt);
 }

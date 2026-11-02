@@ -13,6 +13,7 @@ import { random } from '../../../../../../../util/fuzzRng.js';
 /** @import {AnyNode, AtRule, Rule} from 'postcss' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
+/** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
 /** @import {TextTable} from '../../../../../src/values/textTable.js' */
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
@@ -54,8 +55,8 @@ function sameBlock(a, b, textTable) {
  * enclosing blocks up to the stylesheet are equal blocks.
  *
  * @param {BlockRecords} records
- * @param {BlockRecord | undefined} a
- * @param {BlockRecord | undefined} b
+ * @param {BlockRecord | RuleRecord | undefined} a
+ * @param {BlockRecord | RuleRecord | undefined} b
  * @param {TextTable} textTable
  * @return {boolean}
  */
@@ -65,8 +66,8 @@ function sameChain(records, a, b, textTable) {
     sameBlock(a.node, b.node, textTable) &&
     sameChain(
       records,
-      records.links.enclosingBlock(a.index),
-      records.links.enclosingBlock(b.index),
+      records.links.enclosingContainer(a.index),
+      records.links.enclosingContainer(b.index),
       textTable
     )
   );
@@ -123,7 +124,7 @@ test('sameContainer agrees with the definition of one container on every pair of
   for (let seed = 1; seed <= 150; seed++) {
     const css = generateBlocks(random(seed), 3);
     const state = stateOf(css);
-    const blocks = [...state.records.blocks()];
+    const blocks = [...state.records.containers()];
     for (const a of blocks) {
       for (const b of blocks) {
         assert.strictEqual(

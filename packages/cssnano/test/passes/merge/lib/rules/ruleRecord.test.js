@@ -320,38 +320,38 @@ test('assertFresh should throw under consistency checks when a comment was added
   }
 });
 
-test('childCount should throw on a rule that holds a block', () => {
+test('childCount should throw on a rule that nests', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(0); // any index: these tests never read the block
-  assert.throws(() => record.childCount(), /block/v);
+  record.context = 0; // any context: these tests never read it
+  assert.throws(() => record.childCount(), /nests/v);
 });
 
-test('holdsOnlyDeclarations should throw on a rule that holds a block', () => {
+test('holdsOnlyDeclarations should throw on a rule that nests', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(0); // any index: these tests never read the block
-  assert.throws(() => record.holdsOnlyDeclarations(), /block/v);
+  record.context = 0; // any context: these tests never read it
+  assert.throws(() => record.holdsOnlyDeclarations(), /nests/v);
 });
 
-test('append should throw on a rule that holds a block', () => {
+test('append should throw on a rule that nests', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(0); // any index: these tests never read the block
+  record.context = 0; // any context: these tests never read it
   assert.throws(
     () =>
       record.append(
         declarationOf(postcss.decl({ prop: 'width', value: '1px' }))
       ),
-    /block/v
+    /nests/v
   );
 });
 
-test('declarations should throw on a rule that holds a block', () => {
+test('declarations should throw on a rule that nests', () => {
   const rule = postcss.parse('a{b{color:red}}').first;
   const record = new RuleRecord(rule, rule.selectors, []);
-  record.setBlock(0); // any index: these tests never read the block
-  assert.throws(() => record.declarations, /block/v);
+  record.context = 0; // any context: these tests never read it
+  assert.throws(() => record.declarations, /nests/v);
 });
 
 test('append should give an appended declaration without raws.before the whitespace of the last child', () => {

@@ -59,10 +59,10 @@ function chainProps(records, block) {
 function propsOf({ records, entries }) {
   return entries?.flatMap((entry) => {
     if (!(entry instanceof RuleRecord)) return [entry.prop];
-    if (entry.block === -1) {
+    if (entry.context === -1) {
       return entry.declarations.map((declaration) => declaration.prop);
     }
-    return chainProps(records, entry.block);
+    return chainProps(records, entry.index);
   });
 }
 

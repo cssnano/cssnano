@@ -106,11 +106,8 @@ export default class LastWriteIndex {
   #recordNode(entry, position, keys, keysOf) {
     if (entry instanceof RuleRecord) {
       const own = keysOf(entry);
-      if (entry.block !== -1) {
-        const block = /** @type {BlockRecord} */ (
-          this.#records.block(entry.block)
-        );
-        this.#recordBlock(block, position, own, keysOf);
+      if (entry.context !== -1) {
+        this.#recordBlock(entry.index, position, own, keysOf);
         return;
       }
       // A rule without a block writes its declarations only.
@@ -119,7 +116,7 @@ export default class LastWriteIndex {
     } else if (entry instanceof BlockRecord) {
       // Only an at-rule has a block record among the entries.
       if (isConditionalGroupRule(/** @type {AtRule} */ (entry.node))) {
-        this.#recordBlock(entry, position, keys, keysOf);
+        this.#recordBlock(entry.index, position, keys, keysOf);
       } else {
         this.#lastBarrier = Math.max(this.#lastBarrier, position);
       }
@@ -134,7 +131,7 @@ export default class LastWriteIndex {
    * Records the writes of every live entry of a block, in place, since a copy
    * of the children would cost an allocation at every block.
    *
-   * @param {BlockRecord} block
+   * @param {number} block the index of the block, or of the rule that nests
    * @param {number} position
    * @param {string[] | null} keys
    * @param {(record: RuleRecord) => string[] | null} keysOf
@@ -142,7 +139,7 @@ export default class LastWriteIndex {
   #recordBlock(block, position, keys, keysOf) {
     const { links } = this.#records;
     for (
-      let entry = links.firstChild(block.index);
+      let entry = links.firstChild(block);
       entry !== -1;
       entry = links.nextSibling(entry)
     ) {
@@ -242,7 +239,7 @@ export default class LastWriteIndex {
    * @return {boolean}
    */
   #ruleConflicts(rule, position, elements) {
-    if (rule.block === -1) {
+    if (rule.context === -1) {
       for (const declaration of rule.declarations) {
         if (this.#conflictsWith(declaration.keys, position, elements)) {
           return true;
@@ -252,7 +249,7 @@ export default class LastWriteIndex {
     }
     const { links } = this.#records;
     for (
-      let entry = links.firstChild(rule.block);
+      let entry = links.firstChild(rule.index);
       entry !== -1;
       entry = links.nextSibling(entry)
     ) {
@@ -284,14 +281,14 @@ export default class LastWriteIndex {
         // `record` only reads the keys, so the record's own list is passed as is.
         const keys = keysOf(entry);
         const own = keys?.length ? keys : null;
-        if (entry.block === -1) {
+        if (entry.context === -1) {
           for (const declaration of entry.declarations) {
             this.record(declaration.keys, position, own);
           }
           continue;
         }
         for (
-          let item = links.firstChild(entry.block);
+          let item = links.firstChild(entry.index);
           item !== -1;
           item = links.nextSibling(item)
         ) {

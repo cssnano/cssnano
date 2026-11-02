@@ -5,17 +5,18 @@ import { RuleRecord } from './ruleRecord.js';
 import { containerContext } from './sameContainer.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import MergeState from './mergeState.js' */
+/** @typedef {BlockRecord | RuleRecord} Container */
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 const REACHED_TWICE = 'a record is reached twice from the root';
 
 /**
- * Throws when the chain of a block does not hold its entries in order: each
- * entry is linked to its neighbours and names the block as its container,
- * `first` and `last` end the chain, and `count` is its length.
+ * Throws when the chain of a container does not hold its entries in order: each
+ * entry is linked to its neighbours and names the container, `first` and `last`
+ * end the chain, and `count` is its length.
  *
  * @param {BlockRecords} records
- * @param {BlockRecord} block
+ * @param {Container} block
  * @return {void}
  */
 function checkChain(records, block) {
@@ -43,11 +44,11 @@ function checkChain(records, block) {
 }
 
 /**
- * Throws when a block's chain is out of step, or a rule's nested block does not
- * stand under the rule in the block that holds the rule.
+ * Throws when the chain of a container is out of step, for it and for each
+ * nested container its chain links.
  *
  * @param {BlockRecords} records
- * @param {BlockRecord} block
+ * @param {Container} block
  * @return {void}
  */
 function checkBlockStructure(records, block) {
@@ -61,15 +62,8 @@ function checkBlockStructure(records, block) {
     const item = records.entry(entry);
     if (item instanceof BlockRecord) {
       checkBlockStructure(records, item);
-    } else if (item instanceof RuleRecord && item.block !== -1) {
-      const nested = /** @type {BlockRecord} */ (records.block(item.block));
-      if (
-        links.parentOf(nested.index) !== entry ||
-        links.enclosingBlock(nested.index) !== block
-      ) {
-        throw new Error(OUT_OF_STEP);
-      }
-      checkBlockStructure(records, nested);
+    } else if (item instanceof RuleRecord && item.context !== -1) {
+      checkBlockStructure(records, item);
     }
   }
 }
@@ -116,15 +110,14 @@ export function assertOwnershipIsTree(records) {
   /** @param {RuleRecord} record */
   const visitRule = (record) => {
     reach(record);
-    if (record.block !== -1) {
-      visit(/** @type {BlockRecord} */ (records.block(record.block)));
+    if (record.context !== -1) {
+      visitChildren(record);
       return;
     }
     for (const declaration of record.declarations) reach(declaration);
   };
-  /** @param {BlockRecord} block */
-  const visit = (block) => {
-    reach(block);
+  /** @param {Container} block the block or the rule that nests, already reached */
+  const visitChildren = (block) => {
     const { links } = records;
     let count = 0;
     for (
@@ -134,13 +127,16 @@ export function assertOwnershipIsTree(records) {
     ) {
       const item = records.entry(entry);
       if (item instanceof RuleRecord) visitRule(item);
-      else if (item instanceof BlockRecord) visit(item);
-      else if (item instanceof DeclarationRecord) reach(item);
+      else if (item instanceof BlockRecord) {
+        reach(item);
+        visitChildren(item);
+      } else if (item instanceof DeclarationRecord) reach(item);
       count++;
     }
     if (count !== block.count) throw new Error(OUT_OF_STEP);
   };
-  visit(records.root);
+  reach(records.root);
+  visitChildren(records.root);
 }
 
 /**
@@ -155,8 +151,8 @@ export function assertOwnershipIsTree(records) {
 export function assertContextsCurrent(mergeState) {
   if (!consistencyChecksEnabled()) return;
   const { records, declarationIds, textTable } = mergeState;
-  for (const block of records.blocks()) {
-    const holder = records.links.enclosingBlock(block.index);
+  for (const block of records.containers()) {
+    const holder = records.links.enclosingContainer(block.index);
     // An emptied block is unlinked and applies nothing, so it has no place to keep.
     if (holder === undefined && block !== records.root) continue;
     const parent = holder?.context ?? -1;

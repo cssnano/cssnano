@@ -21,7 +21,7 @@ import {
 /** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
-const BLOCK_HOLDER = 'a rule that holds a block';
+const NESTING_RULE = 'a rule that nests holds no declaration list';
 const STALE = 'stale declarations of a rule record';
 
 /**
@@ -34,9 +34,9 @@ export function isDeclaration(node) {
 
 /**
  * What the merge knows of a rule: its selector list, which the base class
- * derives facts from, and its children. Its nested block is an index into the
- * arena of `BlockRecords`, so the record refers to no other record. Every field
- * is set up front so all instances share one object layout.
+ * derives facts from, and its children. A nesting rule's children form a chain
+ * in the arena of `BlockRecords`, so the record refers to no other record.
+ * Every field is set up front so all instances share one object layout.
  */
 export class RuleRecord extends SelectorList {
   /** @type {DeclarationRecord[]} the declarations of the rule, in order */
@@ -47,8 +47,28 @@ export class RuleRecord extends SelectorList {
   #declarationKeys;
   /** @type {boolean} set once the rule has left the stylesheet */
   #departed = false;
-  /** @type {number} the index of the record of the rule's children, -1 when it holds neither a rule nor an at-rule */
-  #block = -1;
+  /**
+   * The first entry of the chain of children, which a nesting rule links, or
+   * -1 when it holds none. A plain rule keeps its children in its arrays.
+   *
+   * @type {number}
+   */
+  first = -1;
+
+  /** @type {number} the last entry of the chain of children, or -1 when it holds none */
+  last = -1;
+
+  /** @type {number} the number of entries in the chain, kept by each link and unlink */
+  count = 0;
+
+  /**
+   * The id of the circumstances under which the rule applies its children, as
+   * `containerContext` gives it. It is set once, at the build, for a rule that
+   * holds a rule or an at-rule; -1 for any other rule.
+   *
+   * @type {number}
+   */
+  context = -1;
   /** @type {boolean} set once a child is added or removed, which the node takes at write-back */
   #edited = false;
   /** @type {number} the place of the record in the arena of its records, -1 until added */
@@ -64,16 +84,6 @@ export class RuleRecord extends SelectorList {
     this.#declarations = declarations;
     this.#entries = childEntries(node, declarations);
     this.#declarationKeys = undefined;
-  }
-
-  /** @return {number} the index of the record of the rule's children, -1 when there is none */
-  get block() {
-    return this.#block;
-  }
-
-  /** @param {number} block the index of the record of the rule's children */
-  setBlock(block) {
-    this.#block = block;
   }
 
   /** @return {boolean} whether a child was added or removed since the record was made */
@@ -150,20 +160,20 @@ export class RuleRecord extends SelectorList {
   }
 
   /**
-   * The ids of the declarations, which a block holder keeps in its block.
+   * The ids of the declarations, which a nesting rule keeps in its chain.
    *
-   * @param {BlockRecords} records the arena that holds the rule's block
+   * @param {BlockRecords} records the arena that holds the rule's children
    * @return {RuleDeclarationKeys}
    */
   declarationKeys(records) {
     this.#assertLive();
     if (!this.#declarationKeys) {
       const keys = [];
-      if (this.#block === -1) {
+      if (this.context === -1) {
         for (const entry of this.#declarations) keys.push(entry.id);
       } else {
         for (
-          let entry = records.links.firstChild(this.#block);
+          let entry = records.links.firstChild(this.index);
           entry !== -1;
           entry = records.links.nextSibling(entry)
         ) {
@@ -296,12 +306,12 @@ export class RuleRecord extends SelectorList {
   }
 
   /**
-   * @throws {Error} when the rule has left the stylesheet, or holds a block
-   * whose children stand in its block record
+   * @throws {Error} when the rule has left the stylesheet, or nests rules or
+   * at-rules, whose children its chain holds
    */
   #assertChildren() {
     this.#assertLive();
-    if (this.#block !== -1) throw new Error(BLOCK_HOLDER);
+    if (this.context !== -1) throw new Error(NESTING_RULE);
   }
 
   /**
@@ -312,7 +322,7 @@ export class RuleRecord extends SelectorList {
    * @throws {Error} when the declarations are stale
    */
   assertFresh() {
-    if (!consistencyChecksEnabled() || this.#block !== -1) return;
+    if (!consistencyChecksEnabled() || this.context !== -1) return;
     if (!matchesNode(this.node, this.#entries, this.#declarations)) {
       throw new Error(STALE);
     }

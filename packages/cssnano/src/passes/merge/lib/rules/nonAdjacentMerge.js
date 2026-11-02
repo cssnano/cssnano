@@ -22,14 +22,9 @@ import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
 function collectFrom(records, entry, entries) {
   if (entry instanceof RuleRecord) {
     entries.push(entry);
-    const { block } = entry;
-    return block === -1
+    return entry.context === -1
       ? true
-      : collectEntries(
-          records,
-          /** @type {BlockRecord} */ (records.block(block)),
-          entries
-        );
+      : collectEntries(records, entry, entries);
   } else if (entry instanceof BlockRecord) {
     if (!isConditionalGroupRule(/** @type {AtRule} */ (entry.node)))
       return false;
@@ -44,7 +39,7 @@ function collectFrom(records, entry, entries) {
 
 /**
  * @param {BlockRecords} records
- * @param {BlockRecord} block
+ * @param {BlockRecord | RuleRecord} block the block, or the rule that nests
  * @param {(RuleRecord | DeclarationRecord)[]} entries grown in place
  * @return {boolean} false when the subtree holds an at-rule outside the
  * conditional groups

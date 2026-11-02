@@ -241,7 +241,7 @@ export function findGroup(
  * @return {Set<number> | null}
  */
 function claimedBy(shared, later) {
-  return later.block !== -1 ? null : claimRepeats(shared, later.declarations);
+  return later.context !== -1 ? null : claimRepeats(shared, later.declarations);
 }
 
 /**

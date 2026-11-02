@@ -1,18 +1,22 @@
-/** @import {BlockRecord} from './blockRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
+import { BlockRecord, NodeEntry } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
+
+/** @import {BlockRecords} from './blockRecords.js' */
 
 const DETACHED_BLOCK = 'an entry is linked into a block outside the tree';
 const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
+const PLAIN_RULE =
+  'a rule or an at-rule is linked into a rule that holds no rules';
 
 /**
  * The links between the entries of the records. Each entry has a container:
  * the block whose chain holds it, or for a nested block the rule that owns it.
  * A chained entry has the entries before and after it in its container's
- * chain, and the chain's ends are `first` and `last` on the block record. The
- * links are plain arrays indexed by entry, grown by `grow` as entries are
- * added, so no link is an object reference.
+ * chain, and the chain's ends are `first` and `last` on the container's record.
+ * A container is a block, or a rule that nests. The links are plain arrays
+ * indexed by entry, grown by `grow` as entries are added, so no link is an
+ * object reference.
  */
 export class BlockLinks {
   /** @type {BlockRecords} the arena whose block records hold the chain ends */
@@ -40,18 +44,13 @@ export class BlockLinks {
   }
 
   /**
-   * The block whose chain holds the entry at `index`. A nested block is linked
-   * to the rule that owns it, so the walk steps through that rule.
+   * The container whose chain holds the entry at `index`.
    *
    * @param {number} index an index that the arena gave
-   * @return {BlockRecord | undefined} undefined for the stylesheet
+   * @return {BlockRecord | RuleRecord | undefined} undefined when the entry is linked nowhere
    */
-  enclosingBlock(index) {
-    let holder = this.#parent[index];
-    if (holder !== -1 && this.#records.entry(holder) instanceof RuleRecord) {
-      holder = this.#parent[holder];
-    }
-    return this.#records.block(holder);
+  enclosingContainer(index) {
+    return this.#records.container(this.#parent[index]);
   }
 
   /**
@@ -83,38 +82,26 @@ export class BlockLinks {
   }
 
   /**
-   * @param {number} index an index that the arena gave, of a block
+   * @param {number} index an index that the arena gave, of a container
    * @return {number} the first entry of its chain, -1 when it has none
    */
   firstChild(index) {
-    return /** @type {BlockRecord} */ (this.#records.block(index)).first;
+    return this.#containerAt(index).first;
   }
 
   /**
-   * @param {number} index an index that the arena gave, of a block
+   * @param {number} index an index that the arena gave, of a container
    * @return {number} the last entry of its chain, -1 when it has none
    */
   lastChild(index) {
-    return /** @type {BlockRecord} */ (this.#records.block(index)).last;
+    return this.#containerAt(index).last;
   }
 
   /**
-   * Makes the rule at `rule` the container of the nested block at `block`. The
-   * nested block is linked nowhere: its children are the rule's.
-   *
-   * @param {number} rule
-   * @param {number} block
-   * @return {void}
-   */
-  ownBlock(rule, block) {
-    this.#parent[block] = rule;
-  }
-
-  /**
-   * Links the entry at `index` after `after` in the chain of the block at
-   * `block`, which is the head when `after` is -1. Under checks, a block that
-   * does not reach the root through `parentOf` throws, since its entries would
-   * be lost.
+   * Links the entry at `index` after `after` in the chain of the container at
+   * `block`, which is the head when `after` is -1. Under checks, a container
+   * that does not reach the root through `parentOf` throws, since its entries
+   * would be lost, and a rule or an at-rule may join only a rule that nests.
    *
    * @param {number} block
    * @param {number} after
@@ -122,8 +109,11 @@ export class BlockLinks {
    * @return {void}
    */
   linkAfter(block, after, index) {
-    if (consistencyChecksEnabled()) this.#assertReachesRoot(block);
-    const holder = /** @type {BlockRecord} */ (this.#records.block(block));
+    if (consistencyChecksEnabled()) {
+      this.#assertReachesRoot(block);
+      this.#assertCanHold(block, index);
+    }
+    const holder = this.#containerAt(block);
     const next = after === -1 ? holder.first : this.#next[after];
     this.#parent[index] = block;
     this.#prev[index] = after;
@@ -143,11 +133,7 @@ export class BlockLinks {
    * @return {void}
    */
   linkLast(block, index) {
-    this.linkAfter(
-      block,
-      /** @type {BlockRecord} */ (this.#records.block(block)).last,
-      index
-    );
+    this.linkAfter(block, this.#containerAt(block).last, index);
   }
 
   /**
@@ -160,7 +146,7 @@ export class BlockLinks {
   unlink(index) {
     const block = this.#parent[index];
     if (block === -1) return;
-    const holder = /** @type {BlockRecord} */ (this.#records.block(block));
+    const holder = this.#containerAt(block);
     const prev = this.#prev[index];
     const next = this.#next[index];
     if (prev === -1) holder.first = next;
@@ -187,6 +173,34 @@ export class BlockLinks {
     // neighbour is read after it.
     this.linkAfter(this.#parent[later], this.#prev[later], earlier);
     this.unlink(later);
+  }
+
+  /**
+   * @param {number} index an index that the arena gave, of a container
+   * @return {BlockRecord | RuleRecord} the record at `index`
+   */
+  #containerAt(index) {
+    return /** @type {BlockRecord | RuleRecord} */ (
+      this.#records.container(index)
+    );
+  }
+
+  /**
+   * @param {number} block a container
+   * @param {number} index the entry linked into it
+   * @return {void}
+   * @throws {Error} when a rule or an at-rule is linked into a rule that holds no rules
+   */
+  #assertCanHold(block, index) {
+    const holder = this.#records.container(block);
+    if (holder instanceof RuleRecord && holder.context === -1) {
+      const entry = this.#records.entry(index);
+      const nests =
+        entry instanceof RuleRecord ||
+        entry instanceof BlockRecord ||
+        (entry instanceof NodeEntry && entry.node.type === 'atrule');
+      if (nests) throw new Error(PLAIN_RULE);
+    }
   }
 
   /**

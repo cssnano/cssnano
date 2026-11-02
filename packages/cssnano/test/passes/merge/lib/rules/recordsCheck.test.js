@@ -50,12 +50,13 @@ test('assertRecordsWellFormed should throw when a dropped block still holds a li
   assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
 });
 
-test('assertRecordsWellFormed should throw when a nested block is owned by a rule other than the one holding it', () => {
+test('assertRecordsWellFormed should throw when a child of a rule is linked into another rule, which leaves it in both chains', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}c{top:0}');
   const [a, c] = /** @type {Rule[]} */ (root.nodes);
   const holder = ruleRecordOf(state.records, a);
   const other = ruleRecordOf(state.records, c);
-  state.records.links.ownBlock(other.index, holder.block);
+  const child = state.records.links.firstChild(holder.index);
+  state.records.links.linkLast(other.index, child);
   assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
 });
 
@@ -65,7 +66,7 @@ test('assertRecordsWellFormed should throw when the root is linked into its own 
     state.records,
     /** @type {Rule} */ (state.records.root.node.first)
   );
-  state.records.links.linkLast(holder.block, state.records.root.index);
+  state.records.links.linkLast(holder.index, state.records.root.index);
   assert.throws(() => assertRecordsWellFormed(state), /reached twice/v);
 });
 
