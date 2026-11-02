@@ -231,4 +231,13 @@ export const mergeCases = {
       ),
     ].join('')
   ),
+  // Repeated rules, repeated @media blocks and duplicate declarations.
+  'merge-duplicates-dense': mergeCase(
+    'discardDuplicates',
+    Array.from({ length: 200 }, (_, index) => {
+      const rule = `.dup-${index % 50}{color:red;color:red;width:${index % 7}px}`;
+      const media = `@media (min-width:${index % 20}px){.m-${index % 10}{margin:0;margin:0}}`;
+      return `${rule}${media}.u-${index}{--v:${index};--v:${index}}`;
+    }).join('')
+  ),
 };
