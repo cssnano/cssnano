@@ -70,3 +70,13 @@ test(
   'should remove a custom property whose name is an escaped spelling of a later one',
   processCSS('a{--\\61:1;--a:1}', 'a{--a:1}')
 );
+
+test(
+  'should remove a declaration that repeats a later one after a stray semicolon, since the semicolon is no hack',
+  processCSS('a{zoom:1;;zoom:1}', 'a{;zoom:1}')
+);
+
+test(
+  'should keep a declaration that differs from a later one only by a * hack after a stray semicolon',
+  passthroughCSS('a{;*zoom:1;zoom:1}')
+);
