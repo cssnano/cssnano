@@ -47,16 +47,16 @@ export default pluginCreator;
  * The pass of one merge transform, which a preset can run in the place of the
  * merge pass, so each transform can be tested alone.
  *
- * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} name
+ * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'} name
  * @return {(css: Root, browsers: readonly string[]) => void}
  */
-export declare function transformPass(name: 'mergeLonghand' | 'discardDuplicates' | 'mergeRules'): (css: Root, browsers: readonly string[]) => void;
+export declare function transformPass(name: 'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'): (css: Root, browsers: readonly string[]) => void;
 /**
  * The creator of a pass that runs one transform, so each transform can be
  * tested alone as its own plugin.
  *
- * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} name
+ * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'} name
  * @return {import('postcss').PluginCreator<object>}
  */
-export declare function transformPlugin(name: 'mergeLonghand' | 'discardDuplicates' | 'mergeRules'): import('postcss').PluginCreator<object>;
+export declare function transformPlugin(name: 'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'): import('postcss').PluginCreator<object>;
 //# sourceMappingURL=index.d.ts.map
