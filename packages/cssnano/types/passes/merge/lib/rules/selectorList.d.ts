@@ -1,8 +1,16 @@
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
+import type { CSSToken } from '@csstools/css-tokenizer';
 import type { Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
-export type SelectorLookup = (selector: string, rule?: Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo;
+import type { SelectorRange } from '../../../../values/selectorRanges.js';
+import type { TextTable } from '../../../../values/textTable.js';
+export type SelectorLookup = (selector: string, list?: SelectorList, index?: number) => import('./ensureCompatibility.js').SelectorInfo;
 export type ElementKeyOf = (selector: string, piece: RangePiece | null) => string | null;
+export type SelectorRanges = {
+    source: string;
+    tokens: readonly CSSToken[];
+    spans: SelectorRange[];
+};
 /**
  * The selector list of a rule with the facts derived from it, each computed on
  * first use and then grown incrementally as the list grows. It is the base of
@@ -23,6 +31,15 @@ export declare class SelectorList {
     get pieces(): RangePiece[] | null | undefined;
     /** @param {RangePiece[] | null} pieces one per selector, or null */
     setPieces(pieces: RangePiece[] | null): void;
+    /**
+     * The token ranges of the selectors, found in the tokens the table gives the
+     * rule's text. They are derived at the first read, and derived again only when
+     * those tokens change.
+     *
+     * @param {TextTable} table
+     * @return {SelectorRanges}
+     */
+    rangesOf(table: TextTable): SelectorRanges;
     /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}

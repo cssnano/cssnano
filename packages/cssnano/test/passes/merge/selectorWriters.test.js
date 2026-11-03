@@ -121,3 +121,21 @@ suite('the merge pass leaves the selectors it writes in the text table', () => {
     assert.equal(tokenizeTotal() - before, 0);
   });
 });
+
+suite(
+  'the merge pass tokenizes a non-simple selector once across its compatibility checks',
+  () => {
+    test('a rule whose selector has a pseudo-class is tokenized once when rules merge', async () => {
+      const { transformPlugin } =
+        await import('../../../src/passes/merge/index.js');
+      const { default: postcssProcessor } = await import('postcss');
+      const root = postcssProcessor.parse('a:hover {color:red} b {color:red}');
+      const before = tokenizeTotal();
+      await postcssProcessor([transformPlugin('mergeRules')()]).process(root, {
+        from: undefined,
+      });
+      assert.equal(tokenizeTotal() - before, 1);
+      assert.equal(root.toString(), 'a:hover,b {color:red}');
+    });
+  }
+);
