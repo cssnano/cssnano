@@ -30,13 +30,14 @@ export function step(trie, key) {
 /**
  * The browser hack in front of a declaration, such as `*` or `_`. The parser
  * keeps it in `raws.before`, not in the property name, so it is part of the
- * declaration's identity. A declaration without `raws.before` has no hack.
+ * declaration's identity. A stray `;` before the declaration is not a hack,
+ * and a declaration without `raws.before` has none.
  *
  * @param {Declaration} declaration
  * @return {string}
  */
 export function hackPrefixOf(declaration) {
-  return declaration.raws.before?.trim() ?? '';
+  return declaration.raws.before?.replaceAll(';', '').trim() ?? '';
 }
 
 /**
