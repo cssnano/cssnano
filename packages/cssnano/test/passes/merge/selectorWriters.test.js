@@ -7,6 +7,12 @@ const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../../src/values/textTable.js');
 const { mergePass } = await import('../../../src/passes/merge/index.js');
+const { buildRecords } =
+  await import('../../../src/passes/merge/lib/rules/treeEdits.js');
+const { writeBack } =
+  await import('../../../src/passes/merge/lib/rules/writeBack.js');
+const { createRunContext } =
+  await import('../../../src/passes/ir/runContext.js');
 const { resolveTargets } = await import('../../../src/utils/browserTargets.js');
 const { tokensText } = await import('../../../src/values/tokensText.js');
 
@@ -139,3 +145,47 @@ suite(
     });
   }
 );
+
+suite('the merge pass writes selectors through its records', () => {
+  test('a rule with a pseudo-class is tokenized once and a simple selector never, when rules merge', async () => {
+    const { transformPlugin } =
+      await import('../../../src/passes/merge/index.js');
+    const { default: postcssProcessor } = await import('postcss');
+    const run = async (css) => {
+      const before = tokenizeTotal();
+      await postcssProcessor([transformPlugin('mergeRules')()]).process(
+        postcssProcessor.parse(css),
+        { from: undefined }
+      );
+      return tokenizeTotal() - before;
+    };
+    assert.equal(await run('a:hover {color:red} b {color:red}'), 1);
+    assert.equal(await run('a {color:red} b {color:red}'), 0);
+  });
+
+  test('a merged rule whose selector changed without a stored list spells its new selector in the table', () => {
+    const root = postcss.parse('a {color:red} b {color:red}');
+    const table = new TextTable();
+    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
+    assert.equal(tokensText(table.tokens(ruleWith(root, 'a,b'))), 'a,b');
+  });
+
+  test('a rule the compatibility check tokenized before its first merge gives the merged rule a stored list', () => {
+    const root = postcss.parse('a:hover {color:red} b:focus {color:red}');
+    const table = new TextTable();
+    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
+    const joined = ruleWith(root, 'a:hover,b:focus');
+    const before = tokenizeTotal();
+    assert.equal(tokensText(table.tokens(joined)), 'a:hover,b:focus');
+    assert.equal(tokenizeTotal() - before, 0);
+  });
+
+  test("a marked record whose selector equals its node's comment-free text prints without the comment", () => {
+    const root = postcss.parse('a /*x*/, c {color:red}');
+    const records = buildRecords(root, createRunContext());
+    const rule = records.rule(records.links.firstChild(records.root.index));
+    rule.mark();
+    writeBack(records, new TextTable());
+    assert.equal(root.toString(), 'a , c {color:red}');
+  });
+});

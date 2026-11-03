@@ -1,5 +1,6 @@
 import { SelectorList } from './selectorList.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ChildNode, Declaration, Rule } from 'postcss';
 import type { NodeEntry } from './blockRecord.js';
 export type RuleDeclarationKeys = {
@@ -16,6 +17,7 @@ import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { ElementKeyOf, SelectorLookup } from './selectorList.js';
 import type { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { BlockRecords } from './blockRecords.js';
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ChildNode, Declaration, Rule} from 'postcss' */
 /** @import {NodeEntry} from './blockRecord.js' */
 /**
@@ -63,8 +65,11 @@ export declare class RuleRecord extends SelectorList {
     /**
      * @param {Rule} node the rule the record describes
      * @param {string[]} selectors
+     * @param {string} selector the selector, without comments
+     * @param {string | undefined} sourceSelector the text the list spells, set only when it keeps comments
+     * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
      */
-    constructor(node: Rule, selectors: string[]);
+    constructor(node: Rule, selectors: string[], selector: string, sourceSelector: string | undefined, tokens: readonly CSSToken[] | undefined);
     /** @return {boolean} whether a child was added or removed since the record was made */
     get edited(): boolean;
     /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
@@ -80,6 +85,16 @@ export declare class RuleRecord extends SelectorList {
     holdsOnlyDeclarations(records: BlockRecords): boolean;
     /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
     get pieces(): RangePiece[] | null | undefined;
+    /** @param {string} selector the selector, without comments */
+    setSelector(selector: string): void;
+    /** @param {readonly CSSToken[]} tokens the tokens of the source text */
+    setTokens(tokens: readonly CSSToken[]): void;
+    /** @return {readonly CSSToken[]} the tokens of the source text, tokenized at the first read */
+    tokensOf(): readonly CSSToken[];
+    /** @return {import('./selectorList.js').SelectorRanges} the token range of each selector */
+    rangesOf(): import('./selectorList.js').SelectorRanges;
+    /** Marks the selector as written by a merge. */
+    mark(): void;
     /** @param {RangePiece[] | null} pieces one per selector, or null */
     setPieces(pieces: RangePiece[] | null): void;
     /**

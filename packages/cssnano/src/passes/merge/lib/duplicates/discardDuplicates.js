@@ -157,7 +157,7 @@ function dedupeDeclaration(run, entry, scope) {
 function dedupeRule(run, rule, scope, wantIds) {
   const { records } = run;
   const { links } = records;
-  const { selector } = rule.node;
+  const { selector } = rule;
   const ruleDecls = (scope.ruleDecls ??= new Map());
   let declMap = ruleDecls.get(selector);
   const isSubsequent = declMap !== undefined;
@@ -191,7 +191,7 @@ function dedupeRule(run, rule, scope, wantIds) {
   const childIds = dedupeEntries(run, rule, {}, wantIds);
   if (hasContainers && !hasNestedEntry(records, rule)) rule.context = -1;
   return wantIds && childIds
-    ? containerId(run.keys, run.layered, rule.node, childIds)
+    ? containerId(run.keys, run.layered, rule, childIds)
     : 0;
 }
 
@@ -231,9 +231,7 @@ function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
       childScope(scope, block.context),
       wantIds
     );
-    return wantIds && ids
-      ? containerId(run.keys, run.layered, block.node, ids)
-      : 0;
+    return wantIds && ids ? containerId(run.keys, run.layered, block, ids) : 0;
   }
 
   if (conditionalAtRules.has(name)) {
@@ -256,9 +254,7 @@ function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
   // An imported style sheet may declare layers, so even an identical earlier
   // @import can fix a layer's place in the layer order.
   if (name === 'import')
-    return wantIds && ids
-      ? containerId(run.keys, run.layered, block.node, ids)
-      : 0;
+    return wantIds && ids ? containerId(run.keys, run.layered, block, ids) : 0;
   return keepAtRule(run, block, ids, seenAtRules);
 }
 
@@ -273,7 +269,7 @@ function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
  * @return {number}
  */
 function keepAtRule(run, block, ids, seenAtRules) {
-  const id = containerId(run.keys, run.layered, block.node, ids ?? []);
+  const id = containerId(run.keys, run.layered, block, ids ?? []);
   if (seenAtRules.has(id) && !run.layered.has(id)) {
     remove(run.records, block);
     return REMOVED;

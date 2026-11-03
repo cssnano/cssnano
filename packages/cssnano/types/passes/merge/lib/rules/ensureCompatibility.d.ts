@@ -1,5 +1,4 @@
 import type { SelectorList } from './selectorList.js';
-import type { TextTable } from '../../../../values/textTable.js';
 export declare const simpleSelectorRe: RegExp;
 export type SelectorInfo = {
     compatible: boolean;
@@ -14,10 +13,9 @@ export type SelectorInfo = {
  *
  * @param {readonly string[]} browsers
  * @param {Map<string, SelectorInfo>} [cache]
- * @param {TextTable} [table] the tokens of the lists' selectors
  * @return {(selector: string, list?: SelectorList, index?: number) => SelectorInfo}
  */
-export declare function createSelectorLookup(browsers: readonly string[], cache?: Map<string, SelectorInfo>, table?: TextTable): (selector: string, list?: SelectorList, index?: number) => SelectorInfo;
+export declare function createSelectorLookup(browsers: readonly string[], cache?: Map<string, SelectorInfo>): (selector: string, list?: SelectorList, index?: number) => SelectorInfo;
 /**
  * @param {string[]} selectors
  * @param {(selector: string, list?: SelectorList, index?: number) => SelectorInfo} lookup

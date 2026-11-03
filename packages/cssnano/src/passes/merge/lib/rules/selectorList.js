@@ -2,19 +2,18 @@ import { addElementKeys, elementKeyOf } from './elementKeys.js';
 import { selectorsCompatible } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import { selectorRanges } from '../../../../values/selectorRanges.js';
-import { sourceSelector } from '../../../../utils/sourceText.js';
+import { tokens as tokenize } from '../../../../utils/value.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Rule} from 'postcss' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {SelectorRange} from '../../../../values/selectorRanges.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
-/** @import {TextTable} from '../../../../values/textTable.js' */
 /** @typedef {(selector: string, list?: SelectorList, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
 /** @typedef {(selector: string, piece: RangePiece | null) => string | null} ElementKeyOf */
 /**
- * The token ranges of a list's selectors, for the tokens of the list's text.
- * `spans` is usable only while it matches the selectors one for one.
+ * The token ranges of a list's selectors, for the tokens of the text the list
+ * spells. `spans` is usable only while it matches the selectors one for one.
  *
  * @typedef {{source: string, tokens: readonly CSSToken[], spans: SelectorRange[]}} SelectorRanges
  */
@@ -26,12 +25,25 @@ const noElementKeys = Object.freeze([]);
  * The selector list of a rule with the facts derived from it, each computed on
  * first use and then grown incrementally as the list grows. It is the base of
  * `RuleRecord`, not a member of it, so a rule is one object with one layout.
+ *
+ * It also holds the text the rule spells: the comment-free selector, the source
+ * text when it keeps comments, and the tokens of that source text.
  */
 export class SelectorList {
   /** @type {Rule} the rule the list belongs to, read for the browser targets */
   #node;
   /** @type {string[]} */
   #selectors;
+  /** @type {string} the selector the rule spells, without comments */
+  #selector;
+  /** @type {string | undefined} the text the list spells, when it keeps comments */
+  #sourceSelector;
+  /** @type {readonly CSSToken[] | undefined} the tokens of the source text, once known */
+  #tokens;
+  /** @type {boolean} whether the table holds `#tokens` for the text the node spells */
+  #listStored;
+  /** @type {boolean} whether the selector was written by a merge, and must be written back */
+  #marked = false;
   /** @type {VendorPrefixSummary | undefined} */
   #vendor;
   /** @type {string | undefined} the selectors joined by commas, once known */
@@ -48,10 +60,17 @@ export class SelectorList {
   /**
    * @param {Rule} node
    * @param {string[]} selectors
+   * @param {string} selector the selector, without comments
+   * @param {string | undefined} sourceSelector the text the list spells, set only when it keeps comments
+   * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
    */
-  constructor(node, selectors) {
+  constructor(node, selectors, selector, sourceSelector, tokens) {
     this.#node = node;
     this.#selectors = selectors;
+    this.#selector = selector;
+    this.#sourceSelector = sourceSelector;
+    this.#tokens = tokens;
+    this.#listStored = tokens !== undefined;
     this.#vendor = undefined;
     this.#selectorText = undefined;
     this.#elementKeys = undefined;
@@ -70,9 +89,94 @@ export class SelectorList {
     return this.#selectors;
   }
 
-  /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
-  get pieces() {
-    return this.#pieces;
+  /** @return {string} the selector, without comments */
+  get selector() {
+    return this.#selector;
+  }
+
+  /** @return {string} the text the list spells, with its comments */
+  get sourceText() {
+    return this.#sourceSelector ?? this.#selector;
+  }
+
+  /** @return {readonly CSSToken[] | undefined} the tokens of the source text, undefined until known */
+  get tokens() {
+    return this.#tokens;
+  }
+
+  /** @return {boolean} whether the table holds the tokens, so they need no write-back */
+  get listStored() {
+    return this.#listStored;
+  }
+
+  /** @return {boolean} whether a merge wrote the selector, so write-back assigns it */
+  get marked() {
+    return this.#marked;
+  }
+
+  /** Marks the selector as written by a merge. */
+  mark() {
+    this.#marked = true;
+  }
+
+  /**
+   * Sets the selector the rule spells. Its source text and tokens belonged to
+   * the old text, so they are dropped.
+   *
+   * @param {string} selector
+   */
+  setSelector(selector) {
+    this.#selector = selector;
+    this.#sourceSelector = undefined;
+    this.#tokens = undefined;
+    this.#listStored = false;
+    this.#ranges = undefined;
+  }
+
+  /**
+   * Gives the list tokens that the table does not hold yet, which write-back stores.
+   *
+   * @param {readonly CSSToken[]} tokens the tokens of the source text
+   */
+  setTokens(tokens) {
+    this.#tokens = tokens;
+    this.#listStored = false;
+    this.#ranges = undefined;
+    if (this.#pieces === null) this.#pieces = undefined;
+  }
+
+  /** Records that write-back stored the tokens in the table. */
+  markStored() {
+    this.#listStored = true;
+  }
+
+  /**
+   * The tokens of the source text, which the first reader tokenizes and keeps.
+   *
+   * @return {readonly CSSToken[]}
+   */
+  tokensOf() {
+    if (this.#tokens === undefined) this.setTokens(tokenize(this.sourceText));
+    return /** @type {readonly CSSToken[]} */ (this.#tokens);
+  }
+
+  /**
+   * The token ranges of the selectors, found in the tokens of the source text.
+   * They are derived at the first read, and derived again only when the tokens
+   * change.
+   *
+   * @return {SelectorRanges}
+   */
+  rangesOf() {
+    const tokens = this.tokensOf();
+    if (this.#ranges?.tokens !== tokens) {
+      this.#ranges = {
+        source: this.sourceText,
+        tokens,
+        spans: selectorRanges(tokens),
+      };
+    }
+    return this.#ranges;
   }
 
   /** @param {RangePiece[] | null} pieces one per selector, or null */
@@ -80,24 +184,9 @@ export class SelectorList {
     this.#pieces = pieces;
   }
 
-  /**
-   * The token ranges of the selectors, found in the tokens the table gives the
-   * rule's text. They are derived at the first read, and derived again only when
-   * those tokens change.
-   *
-   * @param {TextTable} table
-   * @return {SelectorRanges}
-   */
-  rangesOf(table) {
-    const tokens = table.tokens(this.#node);
-    if (this.#ranges?.tokens !== tokens) {
-      this.#ranges = {
-        source: sourceSelector(this.#node),
-        tokens,
-        spans: selectorRanges(tokens),
-      };
-    }
-    return this.#ranges;
+  /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
+  get pieces() {
+    return this.#pieces;
   }
 
   /**
@@ -106,9 +195,11 @@ export class SelectorList {
    */
   vendorProfile(lookup) {
     if (this.#vendor === undefined) {
-      // A loop, since `map` would pass each index to a lookup that takes a rule.
+      // A loop, since `map` would pass each index to a lookup that takes a list.
       const infos = [];
-      for (const selector of this.#selectors) infos.push(lookup(selector));
+      for (const [index, selector] of this.#selectors.entries()) {
+        infos.push(lookup(selector, this, index));
+      }
       this.#vendor = VendorPrefixSummary.of(infos);
     }
     return this.#vendor;
@@ -209,8 +300,8 @@ export class SelectorList {
     for (const selector of this.#selectors) selectors.push(selector);
     this.#selectors = selectors;
     this.#selectorText = text;
-    this.#ranges = undefined;
     this.#vendor = vendor;
+    this.#ranges = undefined;
     // Grows the earlier list's pieces in place, as its selectors grow.
     const earlierPieces = earlier.#pieces;
     const ownPieces = this.#pieces;

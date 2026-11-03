@@ -55,11 +55,7 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
   const [a, , c] = ruleIndices(records);
   const sequence = new RuleSequence(records);
   // A rule made mid-sweep takes the next index, past every link the sweep made.
-  const added = records.recordRule(
-    postcss.rule({ selector: 'x' }),
-    state.properties,
-    state.declarationIds
-  );
+  const added = records.recordRule(postcss.rule({ selector: 'x' }));
   sequence.replacePair(a, {
     first: [a],
     second: [added.index],

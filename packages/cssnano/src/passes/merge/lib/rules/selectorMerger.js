@@ -56,5 +56,4 @@ export default function runMerge(records, browsers, context) {
   // once. The contexts are checked here and not at the checkpoints, which
   // would hide stale reads that production makes.
   assertContextsCurrent(mergeState);
-  mergeState.flushSelectors();
 }

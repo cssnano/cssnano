@@ -130,7 +130,7 @@ function runFirstRound(css, support, blocks, textTable, reached) {
 function runRecords(css, browsers, context, transforms) {
   const records = buildRecords(css, context);
   for (const transform of transforms) transform(records, browsers, context);
-  writeBack(records);
+  writeBack(records, context.textTable);
   assertRecordsMatchTree(records);
 }
 

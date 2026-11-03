@@ -22,22 +22,26 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'store the joined selector list as text, dropping its tokens',
-    find: '        this.#textTable.write(record.node, list);',
-    replace: '        this.#textTable.setText(record.node, tokensText(list));',
+    target: source('writeBack.js'),
+    find: '        textTable.write(record.node, list);\n        record.markStored();',
+    replace:
+      '        textTable.setText(record.node, tokensText(list));\n        record.markStored();',
   },
   {
     name: 'store a clone or joined rule as text, dropping its tokens',
-    find: '      this.#textTable.record(rule, rule.selector, list);',
-    replace: '      this.#textTable.setText(rule, rule.selector);',
+    target: source('mergeState.js'),
+    find: '    if (tokensText(list) === record.selector) record.setTokens(list);',
+    replace: '    if (tokensText(list) === record.selector) void list;',
   },
   {
-    name: 'forget the rules a merge spelled, so their tokens are never stored',
+    name: 'forget the rules a merge spelled, so their selector is never marked',
     target: source('mergeState.js'),
-    find: '    this.#spelled.add(record.index);',
-    replace: '    void record;',
+    find: '    record.setSelector(record.selectorText());\n    record.mark();',
+    replace: '    record.setSelector(record.selectorText());',
   },
   {
     name: 'drop the token ranges of the selectors a rule gains by repeated declarations',
+    target: source('mergeState.js'),
     find: '    const from = own === null ? null : this.piecesOf(source);',
     replace: '    const from = null;',
   },

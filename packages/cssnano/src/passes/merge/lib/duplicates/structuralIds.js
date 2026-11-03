@@ -2,7 +2,9 @@ import cssnanoUtils from '#utils';
 import { step } from '../../../ir/declarationKey.js';
 
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {AtRule, Comment, Container, Rule} from 'postcss' */
+/** @import {AtRule, Comment} from 'postcss' */
+/** @import {BlockRecord} from '../rules/blockRecord.js' */
+/** @import {RuleRecord} from '../rules/ruleRecord.js' */
 
 const { isImportantComment } = cssnanoUtils;
 
@@ -73,15 +75,19 @@ export function statementId(keys, layered, node) {
  *
  * @param {DeclarationKeys} keys
  * @param {Set<number>} layered
- * @param {Container} node the rule, or the block at-rule
+ * @param {BlockRecord | RuleRecord} container the rule, or the block at-rule
  * @param {number[]} childIds the ids of the kept entries, back to front
  * @return {number}
  */
-export function containerId(keys, layered, node, childIds) {
+export function containerId(keys, layered, container, childIds) {
+  const node = container.node;
   let path;
   let declaresLayer = false;
   if (node.type === 'rule') {
-    path = step(step(keys.root, 'rule'), /** @type {Rule} */ (node).selector);
+    path = step(
+      step(keys.root, 'rule'),
+      /** @type {RuleRecord} */ (container).selector
+    );
   } else {
     const atRule = /** @type {AtRule} */ (node);
     path = atRulePath(step(keys.root, 'atrule'), atRule);

@@ -3,7 +3,6 @@ import type { CSSToken } from '@csstools/css-tokenizer';
 import type { Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { SelectorRange } from '../../../../values/selectorRanges.js';
-import type { TextTable } from '../../../../values/textTable.js';
 export type SelectorLookup = (selector: string, list?: SelectorList, index?: number) => import('./ensureCompatibility.js').SelectorInfo;
 export type ElementKeyOf = (selector: string, piece: RangePiece | null) => string | null;
 export type SelectorRanges = {
@@ -15,31 +14,69 @@ export type SelectorRanges = {
  * The selector list of a rule with the facts derived from it, each computed on
  * first use and then grown incrementally as the list grows. It is the base of
  * `RuleRecord`, not a member of it, so a rule is one object with one layout.
+ *
+ * It also holds the text the rule spells: the comment-free selector, the source
+ * text when it keeps comments, and the tokens of that source text.
  */
 export declare class SelectorList {
     #private;
     /**
      * @param {Rule} node
      * @param {string[]} selectors
+     * @param {string} selector the selector, without comments
+     * @param {string | undefined} sourceSelector the text the list spells, set only when it keeps comments
+     * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
      */
-    constructor(node: Rule, selectors: string[]);
+    constructor(node: Rule, selectors: string[], selector: string, sourceSelector: string | undefined, tokens: readonly CSSToken[] | undefined);
     /** @return {Rule} the rule the list belongs to, which is never changed */
     get node(): Rule;
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
-    /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
-    get pieces(): RangePiece[] | null | undefined;
-    /** @param {RangePiece[] | null} pieces one per selector, or null */
-    setPieces(pieces: RangePiece[] | null): void;
+    /** @return {string} the selector, without comments */
+    get selector(): string;
+    /** @return {string} the text the list spells, with its comments */
+    get sourceText(): string;
+    /** @return {readonly CSSToken[] | undefined} the tokens of the source text, undefined until known */
+    get tokens(): readonly CSSToken[] | undefined;
+    /** @return {boolean} whether the table holds the tokens, so they need no write-back */
+    get listStored(): boolean;
+    /** @return {boolean} whether a merge wrote the selector, so write-back assigns it */
+    get marked(): boolean;
+    /** Marks the selector as written by a merge. */
+    mark(): void;
     /**
-     * The token ranges of the selectors, found in the tokens the table gives the
-     * rule's text. They are derived at the first read, and derived again only when
-     * those tokens change.
+     * Sets the selector the rule spells. Its source text and tokens belonged to
+     * the old text, so they are dropped.
      *
-     * @param {TextTable} table
+     * @param {string} selector
+     */
+    setSelector(selector: string): void;
+    /**
+     * Gives the list tokens that the table does not hold yet, which write-back stores.
+     *
+     * @param {readonly CSSToken[]} tokens the tokens of the source text
+     */
+    setTokens(tokens: readonly CSSToken[]): void;
+    /** Records that write-back stored the tokens in the table. */
+    markStored(): void;
+    /**
+     * The tokens of the source text, which the first reader tokenizes and keeps.
+     *
+     * @return {readonly CSSToken[]}
+     */
+    tokensOf(): readonly CSSToken[];
+    /**
+     * The token ranges of the selectors, found in the tokens of the source text.
+     * They are derived at the first read, and derived again only when the tokens
+     * change.
+     *
      * @return {SelectorRanges}
      */
-    rangesOf(table: TextTable): SelectorRanges;
+    rangesOf(): SelectorRanges;
+    /** @param {RangePiece[] | null} pieces one per selector, or null */
+    setPieces(pieces: RangePiece[] | null): void;
+    /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
+    get pieces(): RangePiece[] | null | undefined;
     /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}
