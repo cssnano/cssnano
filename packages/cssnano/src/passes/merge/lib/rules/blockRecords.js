@@ -317,7 +317,7 @@ export class BlockRecords {
    * @param {Rule} rule
    * @param {string[]} [selectors]
    * @param {string} [selector]
-   * @param {string} [sourceSelector] set only when the text keeps comments
+   * @param {string} [sourceSelector] set only when the source text differs from the selector
    * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
    * @return {RuleRecord}
    */
