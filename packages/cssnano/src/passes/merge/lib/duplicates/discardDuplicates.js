@@ -50,7 +50,7 @@ function trimValue(value) {
 
 /**
  * Structural id of a node, computed bottom-up from its children. Equal ids
- * mean equal nodes. Comments all share one id, whatever their text.
+ * mean equal nodes. Ordinary comments share one id; an important comment keeps its text.
  * @param {Interner} interner
  * @param {import('postcss').AnyNode} node
  * @return {number}
@@ -76,7 +76,10 @@ function computeNodeId(interner, node) {
 
   let trie = step(interner.declarations.root, node.type);
   let layered = false;
-  if (node.type === 'rule') {
+  if (node.type === 'comment') {
+    // An important comment is kept by minifiers, so its text tells blocks apart.
+    if (isImportantComment(node.text)) trie = step(trie, node.text);
+  } else if (node.type === 'rule') {
     trie = step(trie, node.selector);
   } else if (node.type === 'atrule') {
     trie = step(trie, node.name);
