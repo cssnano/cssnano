@@ -32,6 +32,7 @@ const creators = {
   mergeLonghand: await loadTransform('mergeLonghand'),
   discardDuplicates: await loadTransform('discardDuplicates'),
   mergeRules: await loadTransform('mergeRules'),
+  dedupeThenMerge: await loadTransform('dedupeThenMerge'),
 };
 
 /**
@@ -52,6 +53,13 @@ function mergeCase(transform, css, options = {}) {
     css,
   };
 }
+
+// Repeated rules, repeated @media blocks and duplicate declarations.
+const duplicatesDense = Array.from({ length: 200 }, (_, index) => {
+  const rule = `.dup-${index % 50}{color:red;color:red;width:${index % 7}px}`;
+  const media = `@media (min-width:${index % 20}px){.m-${index % 10}{margin:0;margin:0}}`;
+  return `${rule}${media}.u-${index}{--v:${index};--v:${index}}`;
+}).join('');
 
 /* Focused merge-longhand cases: the no-op negative path (single standalone
  * shorthands, and multi-declaration rules that revert), and the concrete
@@ -232,12 +240,7 @@ export const mergeCases = {
     ].join('')
   ),
   // Repeated rules, repeated @media blocks and duplicate declarations.
-  'merge-duplicates-dense': mergeCase(
-    'discardDuplicates',
-    Array.from({ length: 200 }, (_, index) => {
-      const rule = `.dup-${index % 50}{color:red;color:red;width:${index % 7}px}`;
-      const media = `@media (min-width:${index % 20}px){.m-${index % 10}{margin:0;margin:0}}`;
-      return `${rule}${media}.u-${index}{--v:${index};--v:${index}}`;
-    }).join('')
-  ),
+  'merge-duplicates-dense': mergeCase('discardDuplicates', duplicatesDense),
+  // The dedupe of the same input, then the rule merge that follows it.
+  'merge-pass-duplicates': mergeCase('dedupeThenMerge', duplicatesDense),
 };
