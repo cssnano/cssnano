@@ -25,6 +25,11 @@ test(
 );
 
 test(
+  'should keep two blocks that differ only by the text of an important comment',
+  passthroughCSS('@media print{/*! a */}@media print{/*! b */}')
+);
+
+test(
   'should compare nested rules by selector and declarations, not by the whitespace before them',
   processCSS('@foo x{ a{x:1}}@foo x{a{x:1}}', '@foo x{a{x:1}}')
 );
