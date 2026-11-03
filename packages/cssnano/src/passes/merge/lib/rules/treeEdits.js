@@ -5,7 +5,6 @@ import { BlockRecord } from './blockRecord.js';
 import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
 import { containerContext } from './sameContainer.js';
-import { tallyDeclarations } from './overDuplication.js';
 import { hasPendingEdits } from '../deferredChildEdits.js';
 
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
@@ -111,19 +110,17 @@ export function buildRecords(root, context) {
   );
   fillChildren(records.root);
   records.settle();
-  if (consistencyChecksEnabled())
-    records.inputWrites = tallyDeclarations(records);
   // N + D + 1 rounds bound a run, see `runMerge`.
   records.maxRounds = nodes + declarations + 1;
   return records;
 }
 
 /**
- * Takes a rule or an at-rule out of its parent's records at once. The PostCSS
- * child list catches up at write-back.
+ * Takes an entry out of its parent's records at once. The PostCSS child list
+ * catches up at write-back.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord | BlockRecord} entry the record of the rule, or the block of the at-rule
+ * @param {RuleRecord | BlockRecord | DeclarationRecord | NodeEntry} entry the record of the rule, the block of the at-rule, or another entry
  * @return {void}
  */
 export function remove(records, entry) {

@@ -1,21 +1,24 @@
+import type { BlockRecords } from '../rules/blockRecords.js';
+import type { RunContext } from '../../../ir/runContext.js';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
-import type { TextTable } from '../../../../values/textTable.js';
-export type Interner = {
-    declarations: DeclarationKeys;
-    ids: WeakMap<import('postcss').AnyNode, number>;
-    layered: Set<number>;
-    textTable: TextTable;
-};
 export type Scope = {
-    decls?: Map<number, import('postcss').AnyNode>;
-    ruleDecls?: Map<string, Map<number, import('postcss').AnyNode>>;
-    children?: Map<string, Scope>;
+    decls?: Set<number>;
+    ruleDecls?: Map<string, Set<number>>;
+    children?: Map<number, Scope>;
+};
+export type Run = {
+    records: BlockRecords;
+    keys: DeclarationKeys;
+    layered: Set<number>;
 };
 /**
- * Removes duplicate rules, declarations and at-rules from the tree.
- * @param {import('postcss').Root} css
- * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with rule merging
+ * Removes duplicate rules, declarations and at-rules from the records. Each
+ * removal takes effect in the records at once; write-back writes them out.
+ *
+ * @param {BlockRecords} records
+ * @param {readonly string[]} _browsers unused: dedupe does not depend on the targets
+ * @param {RunContext} context the run's state, whose ids the records use
  * @return {void}
  */
-export declare function discardDuplicates(css: import('postcss').Root, context?: import('../../../ir/runContext.js').RunContext): void;
+export declare function discardDuplicates(records: BlockRecords, _browsers: readonly string[], context: RunContext): void;
 //# sourceMappingURL=discardDuplicates.d.ts.map

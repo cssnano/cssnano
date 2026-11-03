@@ -19,7 +19,10 @@ import {
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import { assertRecordsWellFormed } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
-import { assertNoOverDuplication } from '../../../../../src/passes/merge/lib/rules/overDuplication.js';
+import {
+  assertNoOverDuplication,
+  tallyDeclarations,
+} from '../../../../../src/passes/merge/lib/rules/overDuplication.js';
 import { mergePass } from '../../../../../src/passes/merge/index.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
@@ -269,6 +272,8 @@ test('assertNoOverDuplication should accept records built from a stylesheet that
 
 test('assertNoOverDuplication should throw when a declaration is written more often than the input wrote it', () => {
   const { root, state } = setup('a{color:red}');
+  // runMerge takes this tally when it starts, after dedupe.
+  state.records.inputWrites = tallyDeclarations(state.records);
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
   const added = postcss.decl({ prop: 'color', value: 'red' });

@@ -124,6 +124,14 @@ export const catalogs = [
   },
   {
     url: new URL(
+      './passes/merge/lib/duplicates/mutation-catalog-ids.js',
+      import.meta.url
+    ),
+    suites: duplicatesSuites,
+    test: true,
+  },
+  {
+    url: new URL(
       './passes/merge/lib/rules/mutation-catalog.js',
       import.meta.url
     ),

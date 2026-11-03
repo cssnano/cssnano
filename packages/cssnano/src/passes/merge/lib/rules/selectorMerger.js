@@ -1,7 +1,11 @@
 import MergeState from './mergeState.js';
 import { joinNonAdjacent } from './nonAdjacentMerge.js';
 import runScan from './scan.js';
-import { assertNoOverDuplication } from './overDuplication.js';
+import {
+  assertNoOverDuplication,
+  tallyDeclarations,
+} from './overDuplication.js';
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import {
   assertContextsCurrent,
   assertRecordsWellFormed,
@@ -33,6 +37,9 @@ export default function runMerge(records, browsers, context) {
   // `sweepPotential`, which is finite, though too large to enforce as a cap.
   const mergeState = new MergeState(browsers, context);
   mergeState.records = records;
+  // What dedupe left is the input the over-duplication check compares with.
+  if (consistencyChecksEnabled())
+    records.inputWrites = tallyDeclarations(records);
   const { maxRounds } = records;
   let joined;
   let rounds = 0;

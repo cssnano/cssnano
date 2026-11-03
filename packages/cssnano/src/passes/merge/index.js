@@ -134,17 +134,10 @@ function runRecords(css, browsers, context, transforms) {
   assertRecordsMatchTree(records);
 }
 
-/**
- * Merges rules with the context of one run, as the rule-merging plugin does.
- *
- * @param {Root} css
- * @param {readonly string[]} browsers
- * @param {ReturnType<typeof createRunContext>} context
- * @return {void}
- */
-function mergeRules(css, browsers, context) {
-  runRecords(css, browsers, context, [runMerge]);
-}
+/** The transforms that run over the records, in order, for each path of the pass. */
+const DEDUPE_THEN_MERGE = Object.freeze([discardDuplicates, runMerge]);
+const DEDUPE_ONLY = Object.freeze([discardDuplicates]);
+const MERGE_ONLY = Object.freeze([runMerge]);
 
 /**
  * The merge transforms over one stylesheet, in the order the default preset
@@ -200,9 +193,7 @@ function runTransforms(css, browsers, rules, context, reached) {
   const first = runFirstRound(css, support, blocks, context.textTable, reached);
 
   context.createdBlocks = blocks;
-  discardDuplicates(css, context);
-
-  if (rules) mergeRules(css, browsers, context);
+  runRecords(css, browsers, context, rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY);
 
   // Canonicalizing is not idempotent: a block the first round reduced can
   // reduce again, so every block still in the stylesheet gets the second round,
@@ -272,14 +263,13 @@ const transformHooks = Object.freeze({
     runFirstRound(css, targetSupportOf(browsers), undefined, new TextTable());
   },
   discardDuplicates(css) {
-    discardDuplicates(css, createRunContext());
+    runRecords(css, [], createRunContext(), DEDUPE_ONLY);
   },
   mergeRules(css, browsers) {
-    mergeRules(css, browsers, createRunContext());
+    runRecords(css, browsers, createRunContext(), MERGE_ONLY);
   },
   dedupeThenMerge(css, browsers) {
-    discardDuplicates(css, createRunContext());
-    mergeRules(css, browsers, createRunContext());
+    runRecords(css, browsers, createRunContext(), DEDUPE_THEN_MERGE);
   },
 });
 

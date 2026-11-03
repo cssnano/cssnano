@@ -3,6 +3,7 @@ import { BlockRecords } from './blockRecords.js';
 import { BlockRecord } from './blockRecord.js';
 import type { Container, Root } from 'postcss';
 import type { RuleRecord } from './ruleRecord.js';
+import type { NodeEntry } from './blockRecord.js';
 import type { PropertyWrites } from './propertyWrites.js';
 import type MergeState from './mergeState.js';
 import type { RunContext } from '../../../ir/runContext.js';
@@ -17,14 +18,14 @@ import type { RunContext } from '../../../ir/runContext.js';
  */
 export declare function buildRecords(root: Root, context: RunContext): BlockRecords;
 /**
- * Takes a rule or an at-rule out of its parent's records at once. The PostCSS
- * child list catches up at write-back.
+ * Takes an entry out of its parent's records at once. The PostCSS child list
+ * catches up at write-back.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord | BlockRecord} entry the record of the rule, or the block of the at-rule
+ * @param {RuleRecord | BlockRecord | DeclarationRecord | NodeEntry} entry the record of the rule, the block of the at-rule, or another entry
  * @return {void}
  */
-export declare function remove(records: BlockRecords, entry: RuleRecord | BlockRecord): void;
+export declare function remove(records: BlockRecords, entry: RuleRecord | BlockRecord | DeclarationRecord | NodeEntry): void;
 /**
  * Moves `earlier`, which already holds the joined content, to the place of
  * `later`, so the joined node takes the later position and keeps the
