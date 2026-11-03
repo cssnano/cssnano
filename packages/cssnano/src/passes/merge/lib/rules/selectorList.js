@@ -1,12 +1,23 @@
 import { addElementKeys, elementKeyOf } from './elementKeys.js';
 import { selectorsCompatible } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
+import { selectorRanges } from '../../../../values/selectorRanges.js';
+import { sourceSelector } from '../../../../utils/sourceText.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Rule} from 'postcss' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
+/** @import {SelectorRange} from '../../../../values/selectorRanges.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
-/** @typedef {(selector: string, rule?: Rule, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
+/** @import {TextTable} from '../../../../values/textTable.js' */
+/** @typedef {(selector: string, list?: SelectorList, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
 /** @typedef {(selector: string, piece: RangePiece | null) => string | null} ElementKeyOf */
+/**
+ * The token ranges of a list's selectors, for the tokens of the list's text.
+ * `spans` is usable only while it matches the selectors one for one.
+ *
+ * @typedef {{source: string, tokens: readonly CSSToken[], spans: SelectorRange[]}} SelectorRanges
+ */
 
 /** @type {readonly string[]} */
 const noElementKeys = Object.freeze([]);
@@ -31,6 +42,8 @@ export class SelectorList {
   #pieces;
   /** @type {boolean | undefined} whether every selector suits the target browsers, once read */
   #compatible;
+  /** @type {SelectorRanges | undefined} derived at the first read, dropped when the selectors change */
+  #ranges;
 
   /**
    * @param {Rule} node
@@ -44,6 +57,7 @@ export class SelectorList {
     this.#elementKeys = undefined;
     this.#pieces = undefined;
     this.#compatible = undefined;
+    this.#ranges = undefined;
   }
 
   /** @return {Rule} the rule the list belongs to, which is never changed */
@@ -64,6 +78,26 @@ export class SelectorList {
   /** @param {RangePiece[] | null} pieces one per selector, or null */
   setPieces(pieces) {
     this.#pieces = pieces;
+  }
+
+  /**
+   * The token ranges of the selectors, found in the tokens the table gives the
+   * rule's text. They are derived at the first read, and derived again only when
+   * those tokens change.
+   *
+   * @param {TextTable} table
+   * @return {SelectorRanges}
+   */
+  rangesOf(table) {
+    const tokens = table.tokens(this.#node);
+    if (this.#ranges?.tokens !== tokens) {
+      this.#ranges = {
+        source: sourceSelector(this.#node),
+        tokens,
+        spans: selectorRanges(tokens),
+      };
+    }
+    return this.#ranges;
   }
 
   /**
@@ -88,11 +122,7 @@ export class SelectorList {
    * @return {boolean}
    */
   compatible(lookup) {
-    this.#compatible ??= selectorsCompatible(
-      this.#selectors,
-      lookup,
-      this.#node
-    );
+    this.#compatible ??= selectorsCompatible(this.#selectors, lookup, this);
     return this.#compatible;
   }
 
@@ -144,6 +174,7 @@ export class SelectorList {
    */
   addSelectors(selectors, lookup, keyOf = elementKeyOf, pieces = null) {
     this.#selectorText = undefined;
+    this.#ranges = undefined;
     const from = this.#selectors.length;
     for (const selector of selectors) {
       this.#selectors.push(selector);
@@ -151,7 +182,7 @@ export class SelectorList {
     }
     this.#pieces = pieces;
     if (this.#compatible) {
-      this.#compatible = selectorsCompatible(selectors, lookup, this.#node);
+      this.#compatible = selectorsCompatible(selectors, lookup, this);
     }
     return this.#gainElementKeys(from, keyOf);
   }
@@ -178,6 +209,7 @@ export class SelectorList {
     for (const selector of this.#selectors) selectors.push(selector);
     this.#selectors = selectors;
     this.#selectorText = text;
+    this.#ranges = undefined;
     this.#vendor = vendor;
     // Grows the earlier list's pieces in place, as its selectors grow.
     const earlierPieces = earlier.#pieces;
