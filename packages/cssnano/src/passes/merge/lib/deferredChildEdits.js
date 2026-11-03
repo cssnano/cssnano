@@ -20,6 +20,16 @@
 const pendingEdits = new WeakMap();
 
 /**
+ * Whether the container has edits that its child list does not show yet.
+ *
+ * @param {Container} container
+ * @return {boolean}
+ */
+export function hasPendingEdits(container) {
+  return pendingEdits.has(container);
+}
+
+/**
  * @param {ChildNode} node
  * @return {void}
  */

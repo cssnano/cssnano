@@ -5,8 +5,7 @@ import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistenc
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { ruleRecordOf } from './liveRecords.js';
+import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 
@@ -25,7 +24,7 @@ function setup(css) {
   const root = postcss.parse(css);
   const context = createRunContext();
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   return { root, state };
 }
 

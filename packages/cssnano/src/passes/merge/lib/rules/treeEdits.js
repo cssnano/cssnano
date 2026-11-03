@@ -6,12 +6,14 @@ import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
 import { containerContext } from './sameContainer.js';
 import { tallyDeclarations } from './overDuplication.js';
+import { hasPendingEdits } from '../deferredChildEdits.js';
 
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
+/** @import {RunContext} from '../../../ir/runContext.js' */
 
 /**
  * The edits that rule merging makes to the records of the stylesheet. Each one
@@ -28,17 +30,19 @@ function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
 }
 
+const PENDING_EDITS = 'a container has edits its child list does not show';
+
 /**
  * Builds the records of a stylesheet from its tree, once per run. Each child is
  * linked into the chain of its parent, and every rule is a container whose
  * children form its own chain.
  *
  * @param {Root} root
- * @param {MergeState} mergeState
+ * @param {RunContext} context the run's state, which gives the tokens and ids the records keep
  * @return {BlockRecords}
  */
-export function buildRecords(root, mergeState) {
-  const { textTable } = mergeState;
+export function buildRecords(root, context) {
+  const { textTable } = context;
   const records = new BlockRecords(new BlockRecord(root, false));
   records.add(records.root);
   records.root.leadingWhitespace = root.first?.raws.before;
@@ -51,6 +55,10 @@ export function buildRecords(root, mergeState) {
    * @param {BlockRecord | RuleRecord} container
    */
   const fillChildren = (container) => {
+    // The build reads the child lists, which a pending edit has not rebuilt yet.
+    if (consistencyChecksEnabled() && hasPendingEdits(container.node)) {
+      throw new Error(PENDING_EDITS);
+    }
     for (const child of /** @type {ChildNode[]} */ (container.node.nodes)) {
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
@@ -59,7 +67,7 @@ export function buildRecords(root, mergeState) {
         // A rule that holds a rule or an at-rule nests, and gets its context.
         if (child.nodes.some(isRuleOrAtRule)) {
           record.context = containerContext(
-            mergeState.declarationIds,
+            context.declarations,
             container.context,
             record,
             textTable
@@ -74,7 +82,7 @@ export function buildRecords(root, mergeState) {
         records.add(nested);
         records.links.linkLast(container.index, nested.index);
         nested.context = containerContext(
-          mergeState.declarationIds,
+          context.declarations,
           container.context,
           nested,
           textTable
@@ -84,8 +92,8 @@ export function buildRecords(root, mergeState) {
         declarations++;
         const declaration = records.blockDeclaration(
           child,
-          mergeState.properties,
-          mergeState.declarationIds
+          context.properties,
+          context.declarations
         );
         records.links.linkLast(container.index, declaration.index);
       } else {
@@ -96,7 +104,7 @@ export function buildRecords(root, mergeState) {
   };
   // The stylesheet's context is the one for no enclosing container.
   records.root.context = containerContext(
-    mergeState.declarationIds,
+    context.declarations,
     -1,
     records.root,
     textTable

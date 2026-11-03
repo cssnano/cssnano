@@ -1,10 +1,7 @@
-import { createRunContext } from '../../../ir/runContext.js';
 import MergeState from './mergeState.js';
 import { joinNonAdjacent } from './nonAdjacentMerge.js';
 import runScan from './scan.js';
 import { assertNoOverDuplication } from './overDuplication.js';
-import { buildRecords } from './treeEdits.js';
-import { assertRecordsMatchTree, writeBack } from './writeBack.js';
 import {
   assertContextsCurrent,
   assertRecordsWellFormed,
@@ -13,12 +10,15 @@ import {
 const ROUNDS = 'runMerge repeats past its bound on rounds';
 
 /**
- * @param {import('postcss').Root} root
+ * Rounds of the joins over the records of one run. The records are built and
+ * written back by the driver, which runs this after dedupe.
+ *
+ * @param {import('./blockRecords.js').BlockRecords} records the records the driver built
  * @param {readonly string[]} browsers
- * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
- * @return void
+ * @param {import('../../../ir/runContext.js').RunContext} context the run's state, shared with dedupe
+ * @return {void}
  */
-export default function runMerge(root, browsers, context = createRunContext()) {
+export default function runMerge(records, browsers, context) {
   // The scan runs first because a join by selector can remove a
   // shared declaration that would have merged more selectors. Its merges
   // can leave same-selector rules apart, so the joins repeat until none apply.
@@ -32,8 +32,8 @@ export default function runMerge(root, browsers, context = createRunContext()) {
   // remove a node or withdraw one. The sweeps per round are bounded by
   // `sweepPotential`, which is finite, though too large to enforce as a cap.
   const mergeState = new MergeState(browsers, context);
-  mergeState.records = buildRecords(root, mergeState);
-  const { maxRounds } = mergeState.records;
+  mergeState.records = records;
+  const { maxRounds } = records;
   let joined;
   let rounds = 0;
   do {
@@ -45,11 +45,9 @@ export default function runMerge(root, browsers, context = createRunContext()) {
     assertRecordsWellFormed(mergeState);
     assertNoOverDuplication(mergeState.records);
   } while (joined);
-  // Sweeps and joins edit only the records, so the tree catches up once. It
-  // is checked here and not at the checkpoints, which would hide stale reads
-  // that production makes.
+  // Sweeps and joins edit only the records, and the driver writes them back
+  // once. The contexts are checked here and not at the checkpoints, which
+  // would hide stale reads that production makes.
   assertContextsCurrent(mergeState);
-  writeBack(mergeState.records);
-  assertRecordsMatchTree(mergeState);
   mergeState.flushSelectors();
 }

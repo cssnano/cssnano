@@ -6,7 +6,6 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord as Block} from './blockRecord.js' */
-/** @import MergeState from './mergeState.js' */
 
 /** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule, whose children form its chain */
 
@@ -64,21 +63,21 @@ function describes(child) {
  * Throws when the record of a rule is not linked in the container that holds
  * it, or does not nest exactly when the tree's rule holds rules or at-rules.
  *
- * @param {MergeState} mergeState
+ * @param {BlockRecords} records
  * @param {ContainerRecord} block the container whose chain holds the rule
  * @param {RuleRecord} record
  * @return {void}
  */
-function checkRuleRecord(mergeState, block, record) {
+function checkRuleRecord(records, block, record) {
   const rule = record.node;
-  if (mergeState.records.links.parentOf(record.index) !== block.index) {
+  if (records.links.parentOf(record.index) !== block.index) {
     throw new Error(OUT_OF_STEP);
   }
   const nests = record.context !== -1;
   if (nests !== rule.nodes.some(isRuleOrAtRule)) {
     throw new Error(OUT_OF_STEP);
   }
-  checkBlockRecord(mergeState, record);
+  checkBlockRecord(records, record);
 }
 
 /**
@@ -87,12 +86,11 @@ function checkRuleRecord(mergeState, block, record) {
  * declarations must also describe their nodes, and its children must be its
  * nodes' children.
  *
- * @param {MergeState} mergeState
+ * @param {BlockRecords} records
  * @param {ContainerRecord} block
  * @return {void}
  */
-function checkBlockRecord(mergeState, block) {
-  const { records } = mergeState;
+function checkBlockRecord(records, block) {
   if (differs(records, block)) throw new Error(OUT_OF_STEP);
   const plain = block instanceof RuleRecord && block.context === -1;
   for (
@@ -102,9 +100,9 @@ function checkBlockRecord(mergeState, block) {
   ) {
     const item = records.entry(entry);
     if (item instanceof RuleRecord) {
-      checkRuleRecord(mergeState, block, item);
+      checkRuleRecord(records, block, item);
     } else if (item instanceof BlockRecord) {
-      checkBlockRecord(mergeState, item);
+      checkBlockRecord(records, item);
     } else if (plain) {
       if (item instanceof DeclarationRecord && !describes(item)) {
         throw new Error(STALE);
@@ -121,12 +119,12 @@ function checkBlockRecord(mergeState, block) {
  * each container must hold the nodes it holds, in order, and each rule must
  * stand in the slot its record names. Writes nothing.
  *
- * @param {MergeState} mergeState
+ * @param {BlockRecords} records
  * @return {void}
  */
-export function assertRecordsMatchTree(mergeState) {
+export function assertRecordsMatchTree(records) {
   if (!consistencyChecksEnabled()) return;
-  checkBlockRecord(mergeState, mergeState.records.root);
+  checkBlockRecord(records, records.root);
 }
 
 /**

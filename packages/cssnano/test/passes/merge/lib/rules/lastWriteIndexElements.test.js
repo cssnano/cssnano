@@ -5,10 +5,9 @@ import LastWriteIndex from '../../../../../src/passes/merge/lib/rules/lastWriteI
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { BlockRecords } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
 import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
-import { entryOf } from './liveRecords.js';
+import { entryOf, buildTestRecords } from './liveRecords.js';
 
 /** @param {string} prop */
 const table = new PropertyTable();
@@ -31,7 +30,7 @@ const noBlocks = new BlockRecords(new BlockRecord(postcss.root(), false));
 function firstNodeWithRecords(css) {
   const root = postcss.parse(css);
   const mergeState = new MergeState(['chrome 120'], createRunContext());
-  mergeState.records = buildRecords(root, mergeState);
+  mergeState.records = buildTestRecords(root, mergeState);
   return { node: root.first, records: mergeState.records };
 }
 
@@ -118,7 +117,7 @@ const keysOfRule = (record) =>
 function entriesOf(css) {
   const root = postcss.parse(css);
   const mergeState = new MergeState(['chrome 120'], createRunContext());
-  mergeState.records = buildRecords(root, mergeState);
+  mergeState.records = buildTestRecords(root, mergeState);
   return {
     records: mergeState.records,
     entries: mergeState.records.liveEntries(mergeState.records.root.index),

@@ -6,9 +6,8 @@ import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 import { DeclarationRecord } from '../../../../../src/passes/ir/declarationRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { entryOf } from './liveRecords.js';
+import { entryOf, buildTestRecords } from './liveRecords.js';
 
 /**
  * The entries under the first at-rule of `css`, read from its record.
@@ -18,7 +17,7 @@ import { entryOf } from './liveRecords.js';
 function entriesOf(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   const block = entryOf(
     state.records,
     /** @type {import('postcss').AtRule} */ (root.first)
@@ -113,7 +112,7 @@ test('subtreeEntries should see the declarations that an edit adds, since nothin
     '@media print{a{color:red}}@media print{b{top:0}}'
   );
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   const [first, second] = /** @type {import('postcss').AtRule[]} */ (
     root.nodes
   );

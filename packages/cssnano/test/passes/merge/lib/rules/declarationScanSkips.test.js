@@ -5,8 +5,11 @@ import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistenc
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { blockRecordOf, ruleRecordOf } from './liveRecords.js';
+import {
+  blockRecordOf,
+  ruleRecordOf,
+  buildTestRecords,
+} from './liveRecords.js';
 
 /** @import {Root} from 'postcss' */
 
@@ -20,7 +23,7 @@ after(() => enableConsistencyChecks(false));
 function setup(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   return { root, state };
 }
 

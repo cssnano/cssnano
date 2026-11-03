@@ -3,10 +3,13 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { sameContainer } from '../../../../../src/passes/merge/lib/rules/sameContainer.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { repositoryFile } from '../../../../../../../util/testHelpers.js';
-import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
+import {
+  ruleRecordOf,
+  blockRecordOf,
+  buildTestRecords,
+} from './liveRecords.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
@@ -32,7 +35,7 @@ function blockOf(records, rule) {
  */
 function recordsOf(root) {
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   return state;
 }
 

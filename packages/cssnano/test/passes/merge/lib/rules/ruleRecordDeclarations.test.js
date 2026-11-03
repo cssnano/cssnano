@@ -6,9 +6,8 @@ import {
   enableConsistencyChecks,
 } from '../../../../../src/passes/ir/consistencyChecks.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { ruleRecordOf } from './liveRecords.js';
+import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
@@ -23,7 +22,7 @@ import { ruleRecordOf } from './liveRecords.js';
 const arenaOf = (css) => {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   const { records } = state;
   return {
     records,

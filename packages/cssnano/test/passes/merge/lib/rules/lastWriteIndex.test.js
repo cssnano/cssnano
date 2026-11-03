@@ -10,8 +10,7 @@ import { BlockRecords } from '../../../../../src/passes/merge/lib/rules/blockRec
 import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { ruleRecordOf, entryOf } from './liveRecords.js';
+import { ruleRecordOf, entryOf, buildTestRecords } from './liveRecords.js';
 
 /** @param {string} prop */
 const table = new PropertyTable();
@@ -35,7 +34,7 @@ const keysOfSelectors = (record) => record.selectors;
 function firstNodeWithRecords(css) {
   const root = postcss.parse(css);
   const mergeState = new MergeState(['chrome 120'], createRunContext());
-  mergeState.records = buildRecords(root, mergeState);
+  mergeState.records = buildTestRecords(root, mergeState);
   return { node: root.first, records: mergeState.records };
 }
 

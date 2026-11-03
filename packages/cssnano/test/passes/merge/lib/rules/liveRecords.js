@@ -1,8 +1,10 @@
 import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js' */
 
 /**
  * The live entry of `block` standing for `node`: the record of a rule, or the
@@ -74,4 +76,20 @@ export function blockRecordOf(records, node) {
   if (found instanceof RuleRecord && found.context !== -1) return found;
   if (found instanceof BlockRecord) return found;
   throw new Error('no live block record for the container');
+}
+
+/**
+ * The records of `root` built the way the driver builds them, from the run
+ * state of a test's merge state.
+ *
+ * @param {import('postcss').Root} root
+ * @param {MergeState} state
+ * @return {BlockRecords}
+ */
+export function buildTestRecords(root, state) {
+  return buildRecords(root, {
+    textTable: state.textTable,
+    declarations: state.declarationIds,
+    properties: state.properties,
+  });
 }

@@ -2,17 +2,16 @@ import { RuleRecord } from './ruleRecord.js';
 import type { ChildNode, Container } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord as Block } from './blockRecord.js';
-import type MergeState from './mergeState.js';
 export type ContainerRecord = Block | RuleRecord;
 /**
  * Under consistency checks, throws when the records and the tree disagree:
  * each container must hold the nodes it holds, in order, and each rule must
  * stand in the slot its record names. Writes nothing.
  *
- * @param {MergeState} mergeState
+ * @param {BlockRecords} records
  * @return {void}
  */
-export declare function assertRecordsMatchTree(mergeState: MergeState): void;
+export declare function assertRecordsMatchTree(records: BlockRecords): void;
 export type Rebuilt = {
     container: Container;
     /**

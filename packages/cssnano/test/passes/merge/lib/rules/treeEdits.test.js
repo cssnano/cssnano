@@ -7,7 +7,6 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
   appendToDeclarations,
-  buildRecords,
   remove,
   removeRules,
   takePlaceOf,
@@ -16,7 +15,11 @@ import {
   replaceChildren,
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
-import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
+import {
+  ruleRecordOf,
+  blockRecordOf,
+  buildTestRecords,
+} from './liveRecords.js';
 
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 
@@ -34,7 +37,7 @@ after(() => enableConsistencyChecks(false));
 function setup(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   return { root, state };
 }
 
