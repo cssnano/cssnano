@@ -79,11 +79,7 @@ test('a rule recorded mid-run should take the next index of the arena', () => {
   const { state } = setup('a{color:red}b{width:1px}');
   const { records } = state;
   const count = records.entryCount();
-  const added = records.recordRule(
-    postcss.rule({ selector: 'c' }),
-    state.properties,
-    state.declarationIds
-  );
+  const added = records.recordRule(postcss.rule({ selector: 'c' }));
   assert.equal(added.index, count);
   assert.equal(records.rule(added.index), added);
 });

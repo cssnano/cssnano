@@ -3,7 +3,6 @@ import { scanCompatibility } from './selectorScan.js';
 
 /** @import {ScanState} from './selectorScan.js' */
 /** @import {SelectorList} from './selectorList.js' */
-/** @import {TextTable} from '../../../../values/textTable.js' */
 
 // Type, class and ID selectors joined by descendant combinators. Every name
 // must be a valid <ident-token>, so `#1a` and `.1a` take the full check.
@@ -52,16 +51,15 @@ const incompatibleInfo = {
  * match the list one for one, and tokenizes the selector otherwise.
  *
  * @param {string} selector
- * @param {TextTable | undefined} table the tokens of the list's text
  * @param {SelectorList | undefined} list the list the selector belongs to
  * @param {number | undefined} index where the selector is in the list
  * @return {boolean}
  */
-function isInvalidSelectorOf(selector, table, list, index) {
-  if (table === undefined || list === undefined || index === undefined) {
+function isInvalidSelectorOf(selector, list, index) {
+  if (list === undefined || index === undefined) {
     return isInvalidSelector(selector);
   }
-  const { source, tokens, spans } = list.rangesOf(table);
+  const { source, tokens, spans } = list.rangesOf();
   const { selectors } = list;
   if (spans.length !== selectors.length || selectors[index] !== selector) {
     return isInvalidSelector(selector);
@@ -73,12 +71,11 @@ function isInvalidSelectorOf(selector, table, list, index) {
 /**
  * @param {string} selector
  * @param {readonly string[]} browsers
- * @param {TextTable | undefined} table
  * @param {SelectorList | undefined} list
  * @param {number | undefined} index
  * @return {SelectorInfo}
  */
-function computeSelectorInfo(selector, browsers, table, list, index) {
+function computeSelectorInfo(selector, browsers, list, index) {
   if (simpleSelectorRe.test(selector)) return simpleInfo;
   /** @type {ScanState} */
   const state = {
@@ -93,7 +90,7 @@ function computeSelectorInfo(selector, browsers, table, list, index) {
   // stops at the first unsupported token, so it never learns the prefix of
   // an incompatible selector.
   if (!scanCompatibility(selector, browsers, state)) return incompatibleInfo;
-  if (isInvalidSelectorOf(selector, table, list, index)) {
+  if (isInvalidSelectorOf(selector, list, index)) {
     return incompatibleInfo;
   }
   return {
@@ -111,14 +108,13 @@ function computeSelectorInfo(selector, browsers, table, list, index) {
  *
  * @param {readonly string[]} browsers
  * @param {Map<string, SelectorInfo>} [cache]
- * @param {TextTable} [table] the tokens of the lists' selectors
  * @return {(selector: string, list?: SelectorList, index?: number) => SelectorInfo}
  */
-export function createSelectorLookup(browsers, cache = new Map(), table) {
+export function createSelectorLookup(browsers, cache = new Map()) {
   return (selector, list, index) => {
     let info = cache.get(selector);
     if (info === undefined) {
-      info = computeSelectorInfo(selector, browsers, table, list, index);
+      info = computeSelectorInfo(selector, browsers, list, index);
       cache.set(selector, info);
     }
     return info;

@@ -34,8 +34,6 @@ export default class MergeState {
   #elementKeyOf = createElementKeyLookup();
   /** @type {TextTable} */
   #textTable;
-  /** @type {Set<number>} the indices of the rules whose selector text is set, and whose tokens are stored at the end of the run */
-  #spelled = new Set();
   /** @type {Set<Container> | null} */
   #createdBlocks;
   /**
@@ -58,8 +56,7 @@ export default class MergeState {
   constructor(browsers, context = createRunContext()) {
     this.#lookup = createSelectorLookup(
       browsers,
-      context.selectorCompatibility,
-      context.textTable
+      context.selectorCompatibility
     );
     this.#declarations = context.declarations;
     this.properties = context.properties;
@@ -131,82 +128,60 @@ export default class MergeState {
   }
 
   /**
-   * The token range of each selector of the rule, read from the text table
-   * without tokenizing, or null when the table does not hold them.
+   * The token range of each selector of the rule, read from the tokens the
+   * record holds without tokenizing, or null when it holds none.
    *
    * @param {RuleRecord} record
    * @return {RangePiece[] | null}
    */
   piecesOf(record) {
     if (record.pieces === undefined) {
-      const list = this.#textTable.stored(record.node);
+      const { tokens } = record;
       record.setPieces(
-        list === undefined ? null : selectorPieces(list, record.selectors)
+        tokens === undefined ? null : selectorPieces(tokens, record.selectors)
       );
     }
     return /** @type {RangePiece[] | null} */ (record.pieces);
   }
 
   /**
-   * Sets the selector text of a rule from its list. Its tokens are stored at
-   * the end of the run, so a chain of merges into one rule stores them once.
+   * Sets the selector of a rule from its list and marks it, so write-back
+   * assigns the text. The tokens of the old text are dropped.
    *
    * @param {RuleRecord} record
    */
   spellSelectors(record) {
-    this.#textTable.setText(record.node, record.selectorText());
-    this.#spelled.add(record.index);
+    record.setSelector(record.selectorText());
+    record.mark();
   }
 
   /**
-   * Stores the tokens of a rule joined from the selectors of `first` and
-   * `second`, in that order, with a comma between each, as `join()` writes it.
+   * Gives the record the tokens of a rule joined from the selectors of `first`
+   * and `second`, in that order, with a comma between each, as `join()` writes it.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record the merged rule, whose selector is the join
    * @param {RuleRecord} first
    * @param {RuleRecord} second
    */
-  storeJoined(rule, first, second) {
+  storeJoined(record, first, second) {
     const earlier = this.piecesOf(first);
     const later = this.piecesOf(second);
     if (earlier === null || later === null) return;
-    this.#storePieces(rule, earlier.concat(later), [comma()]);
+    this.#storePieces(record, earlier.concat(later), [comma()]);
   }
 
   /**
-   * Stores the list the pieces join to, when it spells the rule's selector as
-   * it is written. Otherwise the rule keeps its text, and a reader tokenizes it.
+   * Gives the record the list the pieces join to, when it spells the record's
+   * selector as it is written. Otherwise the record keeps no list.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    * @param {RangePiece[] | null} pieces
    * @param {readonly CSSToken[]} separator
    */
-  #storePieces(rule, pieces, separator) {
+  #storePieces(record, pieces, separator) {
     if (pieces === null) return;
     const list = joinRanges(pieces, separator);
-    if (tokensText(list) === rule.selector) {
-      this.#textTable.record(rule, rule.selector, list);
-    }
-  }
-
-  /**
-   * Stores the tokens of every rule `spellSelectors` set, joined from the
-   * pieces its list holds. A rule without pieces keeps its text only, and a
-   * reader tokenizes it.
-   */
-  flushSelectors() {
-    for (const index of this.#spelled) {
-      const record = /** @type {RuleRecord} */ (this.records.rule(index));
-      // A rule that left the stylesheet has nothing to store.
-      if (record.departed) continue;
-      const pieces = record.pieces;
-      if (!pieces) continue;
-      const list = joinRanges(pieces, [comma()]);
-      if (tokensText(list) === record.selectorText()) {
-        this.#textTable.write(record.node, list);
-      }
-    }
-    this.#spelled.clear();
+    if (tokensText(list) === record.selector) record.setTokens(list);
   }
 
   /**
@@ -217,6 +192,10 @@ export default class MergeState {
    * @param {RuleRecord} earlier
    */
   absorbEarlier(later, earlier) {
+    // The compatibility check tokenizes a list that holds no tokens yet, so
+    // both checks run before the pieces are read, which cache a missing list.
+    earlier.compatible(this.#lookup);
+    later.compatible(this.#lookup);
     // Both lists of pieces are known before the absorb joins them.
     this.piecesOf(earlier);
     this.piecesOf(later);

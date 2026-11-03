@@ -1,5 +1,7 @@
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
-import type { AtRule, Comment, Container } from 'postcss';
+import type { AtRule, Comment } from 'postcss';
+import type { BlockRecord } from '../rules/blockRecord.js';
+import type { RuleRecord } from '../rules/ruleRecord.js';
 /**
  * The id of a comment: ordinary comments share one, and an important comment
  * steps its text.
@@ -23,9 +25,9 @@ export declare function statementId(keys: DeclarationKeys, layered: Set<number>,
  *
  * @param {DeclarationKeys} keys
  * @param {Set<number>} layered
- * @param {Container} node the rule, or the block at-rule
+ * @param {BlockRecord | RuleRecord} container the rule, or the block at-rule
  * @param {number[]} childIds the ids of the kept entries, back to front
  * @return {number}
  */
-export declare function containerId(keys: DeclarationKeys, layered: Set<number>, node: Container, childIds: number[]): number;
+export declare function containerId(keys: DeclarationKeys, layered: Set<number>, container: BlockRecord | RuleRecord, childIds: number[]): number;
 //# sourceMappingURL=structuralIds.d.ts.map

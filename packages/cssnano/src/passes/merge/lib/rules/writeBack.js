@@ -2,8 +2,12 @@ import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { comma } from '../../../../values/punctuationTokens.js';
+import { joinRanges } from '../../../../values/joinRanges.js';
+import { TextTable } from '../../../../values/textTable.js';
+import { tokensText } from '../../../../values/tokensText.js';
 
-/** @import {ChildNode, Container, Rule} from 'postcss' */
+/** @import {ChildNode, Container} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord as Block} from './blockRecord.js' */
 
@@ -75,6 +79,10 @@ function checkRuleRecord(records, block, record) {
   }
   const nests = record.context !== -1;
   if (nests !== rule.nodes.some(isRuleOrAtRule)) {
+    throw new Error(OUT_OF_STEP);
+  }
+  const { tokens } = record;
+  if (tokens !== undefined && tokensText(tokens) !== record.sourceText) {
     throw new Error(OUT_OF_STEP);
   }
   checkBlockRecord(records, record);
@@ -159,16 +167,62 @@ export function replaceChildren(rebuilt) {
 }
 
 /**
- * Gives each container in the live tree whose children differ from its node
- * the children the records hold, and each plain rule that an edit changed the
- * children of. A container that already matches keeps its child list, and so
- * does a plain rule that no edit touched. Dropped and departed records are not
- * in the tree, so they keep theirs.
+ * The tokens a marked rule's pieces join to, when they spell its selector as
+ * it is written, or undefined.
+ *
+ * @param {RuleRecord} record
+ * @return {readonly import('@csstools/css-tokenizer').CSSToken[] | undefined}
+ */
+function joinedPieces(record) {
+  const { pieces } = record;
+  if (!pieces) return undefined;
+  const list = joinRanges(pieces, [comma()]);
+  return tokensText(list) === record.selectorText() ? list : undefined;
+}
+
+/**
+ * Writes the selector of each rule that a merge wrote, through the table: the
+ * text, and the tokens the record holds or joins from its pieces. Then stores
+ * the tokens of each other rule that the compatibility check tokenized, so a
+ * later reader of the table does not tokenize them again. A departed rule has
+ * nothing to write.
  *
  * @param {BlockRecords} records
+ * @param {TextTable} textTable
  * @return {void}
  */
-export function writeBack(records) {
+function writeSelectors(records, textTable) {
+  for (let index = 0; index < records.entryCount(); index++) {
+    const record = records.entry(index);
+    if (!(record instanceof RuleRecord) || record.departed) continue;
+    if (record.marked) {
+      const list = record.tokens ?? joinedPieces(record);
+      if (list === undefined) {
+        textTable.setText(record.node, record.selector);
+      } else {
+        textTable.write(record.node, list);
+        record.markStored();
+      }
+    } else if (record.tokens !== undefined && !record.listStored) {
+      textTable.write(record.node, record.tokens);
+      record.markStored();
+    }
+  }
+}
+
+/**
+ * Writes the selectors, then gives each container in the live tree whose
+ * children differ from its node the children the records hold, and each plain
+ * rule that an edit changed the children of. A container that already matches
+ * keeps its child list, and so does a plain rule that no edit touched. Dropped
+ * and departed records are not in the tree, so they keep theirs.
+ *
+ * @param {BlockRecords} records
+ * @param {TextTable} [textTable] the table the selectors are written through
+ * @return {void}
+ */
+export function writeBack(records, textTable = new TextTable()) {
+  writeSelectors(records, textTable);
   /** @type {Rebuilt[]} */
   const rebuilt = [];
   /** @param {ContainerRecord} container */

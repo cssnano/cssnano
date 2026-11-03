@@ -14,8 +14,8 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'ignore the selector in the structural id of a rule',
-    find: "step(step(keys.root, 'rule'), /** @type {Rule} */ (node).selector)",
-    replace: "step(keys.root, 'rule')",
+    find: "      step(keys.root, 'rule'),\n      /** @type {RuleRecord} */ (container).selector\n    )",
+    replace: "      step(keys.root, 'rule'),\n      ''\n    )",
   },
   {
     name: 'let a layer declaration not mark the block that holds it',

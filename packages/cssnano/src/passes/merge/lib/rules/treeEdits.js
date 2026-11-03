@@ -6,6 +6,7 @@ import { declarationIsEqual } from './declarations.js';
 import { isDroppableWhenEmpty } from './droppableBlocks.js';
 import { containerContext } from './sameContainer.js';
 import { hasPendingEdits } from '../deferredChildEdits.js';
+import { sourceSelector } from '../../../../utils/sourceText.js';
 
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -61,7 +62,14 @@ export function buildRecords(root, context) {
     for (const child of /** @type {ChildNode[]} */ (container.node.nodes)) {
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
-        const record = records.recordRule(child);
+        const source = sourceSelector(child);
+        const record = records.recordRule(
+          child,
+          child.selectors,
+          child.selector,
+          source === child.selector ? undefined : source,
+          textTable.stored(child)
+        );
         records.links.linkLast(container.index, record.index);
         // A rule that holds a rule or an at-rule nests, and gets its context.
         if (child.nodes.some(isRuleOrAtRule)) {

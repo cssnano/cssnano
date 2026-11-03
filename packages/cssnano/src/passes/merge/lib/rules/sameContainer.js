@@ -53,7 +53,7 @@ export function containerContext(keys, parentContext, block, textTable) {
         ? step(step(trie, ANONYMOUS), block.index)
         : step(trie, node.params);
   } else if (node.type === 'rule') {
-    trie = step(step(trie, 'rule'), node.selector);
+    trie = step(step(trie, 'rule'), /** @type {RuleRecord} */ (block).selector);
   } else {
     trie = step(trie, node.type);
   }

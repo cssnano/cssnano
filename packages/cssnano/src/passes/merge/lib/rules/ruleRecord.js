@@ -5,6 +5,7 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 const STALE_KEYS =
   'declaration keys of a rule record are out of step with its chain';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ChildNode, Declaration, Rule} from 'postcss' */
 /** @import {NodeEntry} from './blockRecord.js' */
 /**
@@ -71,9 +72,12 @@ export class RuleRecord extends SelectorList {
   /**
    * @param {Rule} node the rule the record describes
    * @param {string[]} selectors
+   * @param {string} selector the selector, without comments
+   * @param {string | undefined} sourceSelector the text the list spells, set only when it keeps comments
+   * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
    */
-  constructor(node, selectors) {
-    super(node, selectors);
+  constructor(node, selectors, selector, sourceSelector, tokens) {
+    super(node, selectors, selector, sourceSelector, tokens);
   }
 
   /** @return {boolean} whether a child was added or removed since the record was made */
@@ -110,6 +114,36 @@ export class RuleRecord extends SelectorList {
   get pieces() {
     this.#assertLive();
     return super.pieces;
+  }
+
+  /** @param {string} selector the selector, without comments */
+  setSelector(selector) {
+    this.#assertLive();
+    super.setSelector(selector);
+  }
+
+  /** @param {readonly CSSToken[]} tokens the tokens of the source text */
+  setTokens(tokens) {
+    this.#assertLive();
+    super.setTokens(tokens);
+  }
+
+  /** @return {readonly CSSToken[]} the tokens of the source text, tokenized at the first read */
+  tokensOf() {
+    this.#assertLive();
+    return super.tokensOf();
+  }
+
+  /** @return {import('./selectorList.js').SelectorRanges} the token range of each selector */
+  rangesOf() {
+    this.#assertLive();
+    return super.rangesOf();
+  }
+
+  /** Marks the selector as written by a merge. */
+  mark() {
+    this.#assertLive();
+    super.mark();
   }
 
   /** @param {RangePiece[] | null} pieces one per selector, or null */

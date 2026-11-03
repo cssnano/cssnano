@@ -73,35 +73,29 @@ export default class MergeState {
      */
     addSelectors(record: RuleRecord, selectors: string[], source: RuleRecord): readonly string[] | null;
     /**
-     * The token range of each selector of the rule, read from the text table
-     * without tokenizing, or null when the table does not hold them.
+     * The token range of each selector of the rule, read from the tokens the
+     * record holds without tokenizing, or null when it holds none.
      *
      * @param {RuleRecord} record
      * @return {RangePiece[] | null}
      */
     piecesOf(record: RuleRecord): RangePiece[] | null;
     /**
-     * Sets the selector text of a rule from its list. Its tokens are stored at
-     * the end of the run, so a chain of merges into one rule stores them once.
+     * Sets the selector of a rule from its list and marks it, so write-back
+     * assigns the text. The tokens of the old text are dropped.
      *
      * @param {RuleRecord} record
      */
     spellSelectors(record: RuleRecord): void;
     /**
-     * Stores the tokens of a rule joined from the selectors of `first` and
-     * `second`, in that order, with a comma between each, as `join()` writes it.
+     * Gives the record the tokens of a rule joined from the selectors of `first`
+     * and `second`, in that order, with a comma between each, as `join()` writes it.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record the merged rule, whose selector is the join
      * @param {RuleRecord} first
      * @param {RuleRecord} second
      */
-    storeJoined(rule: Rule, first: RuleRecord, second: RuleRecord): void;
-    /**
-     * Stores the tokens of every rule `spellSelectors` set, joined from the
-     * pieces its list holds. A rule without pieces keeps its text only, and a
-     * reader tokenizes it.
-     */
-    flushSelectors(): void;
+    storeJoined(record: RuleRecord, first: RuleRecord, second: RuleRecord): void;
     /**
      * Gives `later` the selectors of `earlier`, which stands before it and is
      * dropped by the caller.

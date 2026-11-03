@@ -19,19 +19,21 @@ function indicesOf(records) {
 }
 
 /**
- * A rule with the source's raws, position and selector but no children, so
- * the caller fills it without cloning the source's declarations.
+ * A rule with the source's raws and position but no selector and no children,
+ * so the caller fills it without cloning the source's declarations. Write-back
+ * gives it the selector of its record.
  *
  * @param {import('postcss').Rule} source
- * @param {string} selector
  * @return {import('postcss').Rule}
  */
-function shellOf(source, selector) {
-  return postcss.rule({
-    selector,
-    raws: structuredClone(source.raws),
-    source: source.source,
-  });
+function shellOf(source) {
+  // The node has no selector yet, which PostCSS's props type does not allow.
+  return postcss.rule(
+    /** @type {import('postcss').RuleProps} */ ({
+      raws: structuredClone(source.raws),
+      source: source.source,
+    })
+  );
 }
 
 /**
@@ -146,14 +148,21 @@ export function buildMergedRule(
         );
   if (delta >= 0 && !group) return null;
 
-  const receivingBlock = shellOf(
-    second.node,
-    [...firstSelectors, ...secondSelectors, ...(group?.added ?? [])].join()
+  const selectors = [
+    ...firstSelectors,
+    ...secondSelectors,
+    ...(group?.added ?? []),
+  ];
+  const receivingBlock = shellOf(second.node);
+  const receivingRecord = records.recordRule(
+    receivingBlock,
+    selectors,
+    selectors.join()
   );
-  if (!group) mergeState.storeJoined(receivingBlock, first, second);
+  receivingRecord.mark();
+  if (!group) mergeState.storeJoined(receivingRecord, first, second);
   mergeState.reportCreated(receivingBlock);
   // The merged rule takes the declarations of the earlier rule themselves.
-  const receivingRecord = records.recordRule(receivingBlock);
   for (const declaration of records.takeDeclarationsAt(
     first,
     claimedEarlierIndices

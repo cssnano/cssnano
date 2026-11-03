@@ -1,3 +1,4 @@
+import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ChildNode, Rule } from 'postcss';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
@@ -175,14 +176,18 @@ export declare class BlockRecords {
      */
     bareEntry(node: ChildNode): NodeEntry;
     /**
-     * Builds the record of a rule and adds it to the arena, which gives it the
-     * next index. The rule has no children yet: the caller links them, in order.
-     * The slot the caller places the rule in is what holds it.
+     * Builds the record of a rule and adds it to the arena. The caller links its
+     * children, in order, and places the rule. Selector arguments default to the
+     * node's.
      *
      * @param {Rule} rule
+     * @param {string[]} [selectors]
+     * @param {string} [selector]
+     * @param {string} [sourceSelector] set only when the text keeps comments
+     * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
      * @return {RuleRecord}
      */
-    recordRule(rule: Rule): RuleRecord;
+    recordRule(rule: Rule, selectors?: string[], selector?: string, sourceSelector?: string, tokens?: readonly CSSToken[]): RuleRecord;
     /**
      * Appends a child to the chain of a rule, after its last child, and gives the
      * child the whitespace of that child when it has none. The node takes it at
