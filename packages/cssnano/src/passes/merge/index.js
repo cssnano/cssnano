@@ -246,7 +246,7 @@ export default pluginCreator;
  * Each transform run alone, as the hook of its own plugin. They call the
  * library code directly, so a test can pin one transform without the preset.
  *
- * @type {Readonly<Record<'mergeLonghand' | 'discardDuplicates' | 'mergeRules', (css: Root, browsers: readonly string[]) => void>>}
+ * @type {Readonly<Record<'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge', (css: Root, browsers: readonly string[]) => void>>}
  */
 const transformHooks = Object.freeze({
   mergeLonghand(css, browsers) {
@@ -258,13 +258,17 @@ const transformHooks = Object.freeze({
   mergeRules(css, browsers) {
     mergeRules(css, browsers, createRunContext());
   },
+  dedupeThenMerge(css, browsers) {
+    discardDuplicates(css, createRunContext());
+    mergeRules(css, browsers, createRunContext());
+  },
 });
 
 /**
  * The pass of one merge transform, which a preset can run in the place of the
  * merge pass, so each transform can be tested alone.
  *
- * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} name
+ * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'} name
  * @return {(css: Root, browsers: readonly string[]) => void}
  */
 export function transformPass(name) {
@@ -275,7 +279,7 @@ export function transformPass(name) {
  * The creator of a pass that runs one transform, so each transform can be
  * tested alone as its own plugin.
  *
- * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} name
+ * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'} name
  * @return {import('postcss').PluginCreator<object>}
  */
 export function transformPlugin(name) {

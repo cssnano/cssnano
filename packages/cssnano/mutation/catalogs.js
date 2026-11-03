@@ -5,6 +5,10 @@ const mergeRulesSuites = new URL(
   '../script/passes/merge/rules/mutationSuites.js',
   import.meta.url
 );
+const duplicatesSuites = new URL(
+  '../script/passes/merge/duplicates/mutationSuites.js',
+  import.meta.url
+);
 
 export const catalogs = [
   {
@@ -115,7 +119,7 @@ export const catalogs = [
       './passes/merge/lib/duplicates/mutation-catalog.js',
       import.meta.url
     ),
-    suites: mergeRulesSuites,
+    suites: duplicatesSuites,
     test: true,
   },
   {
