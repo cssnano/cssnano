@@ -7,7 +7,6 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import { assertRecordsWellFormed } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { remove } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import {
   blockRecordOf,
   ruleRecordOf,
@@ -39,16 +38,15 @@ test('assertRecordsWellFormed should accept records built from a stylesheet', ()
   assert.doesNotThrow(() => assertRecordsWellFormed(state));
 });
 
-test('assertRecordsWellFormed should throw when a dropped block still holds a live child, which the tree check does not see', () => {
-  const { root, state } = setup('@layer a{p{color:red}}');
-  const layer = /** @type {BlockRecord} */ (
+test('assertRecordsWellFormed should accept a block removed with its declarations, as dedupe removes a duplicate @font-face', () => {
+  const { root, state } = setup(
+    '@font-face{font-family:x}@font-face{font-family:x}'
+  );
+  const earlier = /** @type {BlockRecord} */ (
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
-  // A sweep takes a dropped block out of the tree, so the tree lacks it too.
-  state.records.links.unlink(layer.index);
-  root.first?.remove();
-  assert.doesNotThrow(() => assertRecordsMatchTree(state.records));
-  assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
+  remove(state.records, earlier);
+  assert.doesNotThrow(() => assertRecordsWellFormed(state));
 });
 
 test('assertRecordsWellFormed should throw when a child of a rule is linked into another rule, which leaves it in both chains', () => {

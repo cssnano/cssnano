@@ -127,18 +127,6 @@ export class BlockRecords {
   }
 
   /**
-   * @param {number} index an index that the arena gave
-   * @return {boolean} whether a sweep dropped the block at `index`, which leaves the tree
-   */
-  isDropped(index) {
-    return (
-      index !== this.root.index &&
-      this.links.parentOf(index) === -1 &&
-      this.blockEntry(index) !== undefined
-    );
-  }
-
-  /**
    * @param {number} index an index that `recordRule` gave
    * @return {RuleRecord | undefined}
    */
