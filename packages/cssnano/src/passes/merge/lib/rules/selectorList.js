@@ -26,17 +26,17 @@ const noElementKeys = Object.freeze([]);
  * first use and then grown incrementally as the list grows. It is the base of
  * `RuleRecord`, not a member of it, so a rule is one object with one layout.
  *
- * It also holds the text the rule spells: the comment-free selector, the source
- * text when it keeps comments, and the tokens of that source text.
+ * It also holds the text the rule spells: the selector in PostCSS's form, the
+ * source text when its comments make it differ, and the tokens of that text.
  */
 export class SelectorList {
   /** @type {Rule} the rule the list belongs to, read for the browser targets */
   #node;
   /** @type {string[]} */
   #selectors;
-  /** @type {string} the selector the rule spells, without comments */
+  /** @type {string} the selector the rule spells, in PostCSS's form */
   #selector;
-  /** @type {string | undefined} the text the list spells, when it keeps comments */
+  /** @type {string | undefined} the source text, when it differs from the selector */
   #sourceSelector;
   /** @type {readonly CSSToken[] | undefined} the tokens of the source text, once known */
   #tokens;
@@ -60,8 +60,8 @@ export class SelectorList {
   /**
    * @param {Rule} node
    * @param {string[]} selectors
-   * @param {string} selector the selector, without comments
-   * @param {string | undefined} sourceSelector the text the list spells, set only when it keeps comments
+   * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
+   * @param {string | undefined} sourceSelector the source text, set only when it differs from the selector
    * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
    */
   constructor(node, selectors, selector, sourceSelector, tokens) {
@@ -89,7 +89,7 @@ export class SelectorList {
     return this.#selectors;
   }
 
-  /** @return {string} the selector, without comments */
+  /** @return {string} the selector, in PostCSS's form */
   get selector() {
     return this.#selector;
   }

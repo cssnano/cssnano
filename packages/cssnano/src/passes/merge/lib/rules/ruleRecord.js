@@ -72,8 +72,8 @@ export class RuleRecord extends SelectorList {
   /**
    * @param {Rule} node the rule the record describes
    * @param {string[]} selectors
-   * @param {string} selector the selector, without comments
-   * @param {string | undefined} sourceSelector the text the list spells, set only when it keeps comments
+   * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
+   * @param {string | undefined} sourceSelector the source text, set only when it differs from the selector
    * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
    */
   constructor(node, selectors, selector, sourceSelector, tokens) {
@@ -116,7 +116,7 @@ export class RuleRecord extends SelectorList {
     return super.pieces;
   }
 
-  /** @param {string} selector the selector, without comments */
+  /** @param {string} selector the selector, in PostCSS's form */
   setSelector(selector) {
     this.#assertLive();
     super.setSelector(selector);
