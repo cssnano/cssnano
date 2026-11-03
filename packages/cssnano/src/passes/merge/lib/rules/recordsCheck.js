@@ -70,8 +70,9 @@ function checkBlockStructure(records, block) {
 
 /**
  * Under consistency checks, throws when a chain is out of step with its
- * entries, a rule's nested block stands elsewhere, or a dropped block still
- * holds a live child. Reads only the records, so it needs no PostCSS node.
+ * entries or a record is reached twice. Only what the root reaches is checked:
+ * a removed block may keep its entries, and write-back never reads them.
+ * Reads only the records, so it needs no PostCSS node.
  *
  * @param {{records: BlockRecords}} mergeState
  * @return {void}
@@ -82,12 +83,6 @@ export function assertRecordsWellFormed(mergeState) {
   // Runs first: a cycle in the chains would loop the structure walk below.
   assertOwnershipIsTree(records);
   checkBlockStructure(records, records.root);
-  for (const block of records.blocks()) {
-    // A dropped block is unlinked, so only its own count says whether it is empty.
-    if (records.isDropped(block.index) && block.count !== 0) {
-      throw new Error(OUT_OF_STEP);
-    }
-  }
 }
 
 /**

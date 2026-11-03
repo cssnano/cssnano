@@ -5,8 +5,9 @@ import type MergeState from './mergeState.js';
 export type Container = BlockRecord | RuleRecord;
 /**
  * Under consistency checks, throws when a chain is out of step with its
- * entries, a rule's nested block stands elsewhere, or a dropped block still
- * holds a live child. Reads only the records, so it needs no PostCSS node.
+ * entries or a record is reached twice. Only what the root reaches is checked:
+ * a removed block may keep its entries, and write-back never reads them.
+ * Reads only the records, so it needs no PostCSS node.
  *
  * @param {{records: BlockRecords}} mergeState
  * @return {void}

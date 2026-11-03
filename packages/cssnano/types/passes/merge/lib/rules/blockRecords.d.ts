@@ -63,11 +63,6 @@ export declare class BlockRecords {
      */
     blockEntry(index: number): BlockRecord | undefined;
     /**
-     * @param {number} index an index that the arena gave
-     * @return {boolean} whether a sweep dropped the block at `index`, which leaves the tree
-     */
-    isDropped(index: number): boolean;
-    /**
      * @param {number} index an index that `recordRule` gave
      * @return {RuleRecord | undefined}
      */
