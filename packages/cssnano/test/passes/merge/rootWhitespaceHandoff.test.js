@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../src/passes/ir/consistencyChecks.js';
-import { mergePass } from '../../../src/passes/merge/index.js';
+import { mergePass, transformPass } from '../../../src/passes/merge/index.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 
 /** @import {Root} from 'postcss' */
@@ -37,6 +37,31 @@ test('mergePass should hand the leading whitespace of the stylesheet to the next
       '\n\n@media print{a{color:red}}\n  b{width:1px}\n  @media print{a{color:red}}'
     ),
     '\n\nb{width:1px}\n  @media print{a{color:red}}'
+  );
+});
+
+test('mergePass should hand the leading whitespace of the stylesheet to the next rule when rule merging is off and a duplicate removes the first rule', () => {
+  /** @type {Root} */
+  const root = postcss.parse(
+    '\n\na{color:red}\n  b{width:1px}\n  a{color:red}'
+  );
+  mergePass(root, resolveTargets({}, undefined), { rules: false });
+  assert.equal(root.toString(), '\n\nb{width:1px}\n  a{color:red}');
+});
+
+test('discardDuplicates should hand the leading whitespace of the stylesheet to the next rule when it removes the first rule', () => {
+  /** @type {Root} */
+  const root = postcss.parse(
+    '\n\na{color:red}\n  b{width:1px}\n  a{color:red}'
+  );
+  transformPass('discardDuplicates')(root, []);
+  assert.equal(root.toString(), '\n\nb{width:1px}\n  a{color:red}');
+});
+
+test('mergePass should hand the leading whitespace of the stylesheet to the rule that rule merging joins when a duplicate removes the first rule', () => {
+  assert.equal(
+    merge('\n\na{color:red}\n  b{width:1px}\n  b{margin:0}\n  a{color:red}'),
+    '\n\nb{width:1px;margin:0}\n  a{color:red}'
   );
 });
 
