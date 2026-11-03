@@ -6,11 +6,8 @@ import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
-import {
-  appendToDeclarations,
-  buildRecords,
-} from '../../../src/passes/merge/lib/rules/treeEdits.js';
-import { ruleRecordOf } from './lib/rules/liveRecords.js';
+import { appendToDeclarations } from '../../../src/passes/merge/lib/rules/treeEdits.js';
+import { ruleRecordOf, buildTestRecords } from './lib/rules/liveRecords.js';
 
 /** @import {AtRule, Declaration, Root, Rule} from 'postcss' */
 
@@ -22,7 +19,7 @@ import { ruleRecordOf } from './lib/rules/liveRecords.js';
  */
 function mergeStateOf(root) {
   const mergeState = new MergeState(['Chrome 120'], createRunContext());
-  mergeState.records = buildRecords(root, mergeState);
+  mergeState.records = buildTestRecords(root, mergeState);
   return mergeState;
 }
 

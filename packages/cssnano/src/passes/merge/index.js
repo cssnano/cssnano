@@ -9,6 +9,8 @@ import { withTargetSupport } from './lib/longhand/isFallback.js';
 import { clearSupportCache } from './lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import runMerge from './lib/rules/selectorMerger.js';
+import { buildRecords } from './lib/rules/treeEdits.js';
+import { assertRecordsMatchTree, writeBack } from './lib/rules/writeBack.js';
 import { createRunContext } from '../ir/runContext.js';
 import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
@@ -116,6 +118,23 @@ function runFirstRound(css, support, blocks, textTable, reached) {
 }
 
 /**
+ * Builds the records of the stylesheet, runs each transform on them in order,
+ * and writes them back once.
+ *
+ * @param {Root} css
+ * @param {readonly string[]} browsers
+ * @param {ReturnType<typeof createRunContext>} context
+ * @param {readonly ((records: ReturnType<typeof buildRecords>, browsers: readonly string[], context: ReturnType<typeof createRunContext>) => void)[]} transforms
+ * @return {void}
+ */
+function runRecords(css, browsers, context, transforms) {
+  const records = buildRecords(css, context);
+  for (const transform of transforms) transform(records, browsers, context);
+  writeBack(records);
+  assertRecordsMatchTree(records);
+}
+
+/**
  * Merges rules with the context of one run, as the rule-merging plugin does.
  *
  * @param {Root} css
@@ -124,7 +143,7 @@ function runFirstRound(css, support, blocks, textTable, reached) {
  * @return {void}
  */
 function mergeRules(css, browsers, context) {
-  runMerge(css, browsers, context);
+  runRecords(css, browsers, context, [runMerge]);
 }
 
 /**

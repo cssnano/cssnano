@@ -10,15 +10,12 @@ import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
-import {
-  appendToDeclarations,
-  buildRecords,
-} from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import {
   assertRecordsMatchTree,
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
-import { ruleRecordOf } from './liveRecords.js';
+import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 
 before(() => enableConsistencyChecks(true));
 after(() => enableConsistencyChecks(false));
@@ -30,7 +27,7 @@ after(() => enableConsistencyChecks(false));
 function setup(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120']);
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   return { root, state };
 }
 
@@ -75,12 +72,15 @@ test('a rule record reads its declaration keys from the ids of its records', () 
 
 test('assertRecordsMatchTree throws under consistency checks when a declaration value changed behind its record', () => {
   const { root, state } = setup('a{color:red}');
-  assert.doesNotThrow(() => assertRecordsMatchTree(state));
+  assert.doesNotThrow(() => assertRecordsMatchTree(state.records));
   const declaration = /** @type {import('postcss').Declaration} */ (
     root.first.first
   );
   declaration.value = 'blue';
-  assert.throws(() => assertRecordsMatchTree(state), /stale declarations/v);
+  assert.throws(
+    () => assertRecordsMatchTree(state.records),
+    /stale declarations/v
+  );
 });
 
 test('a declaration in a rule that nests is a declaration record in its chain, and its node in the live children', () => {

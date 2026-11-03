@@ -7,12 +7,15 @@ import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockReco
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import {
-  buildRecords,
   remove,
   removeRules,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { blockRecordOf, ruleRecordOf } from './liveRecords.js';
+import {
+  blockRecordOf,
+  ruleRecordOf,
+  buildTestRecords,
+} from './liveRecords.js';
 
 /** @import {ChildNode, Container, Root, Rule} from 'postcss' */
 
@@ -26,7 +29,7 @@ after(() => enableConsistencyChecks(false));
 function setup(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   return { root, state };
 }
 

@@ -9,9 +9,8 @@ import {
 import { isDeclarationRule } from '../../../../../src/passes/merge/lib/rules/declarationJoin.js';
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { ruleRecordOf } from './liveRecords.js';
+import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
@@ -28,7 +27,7 @@ const lookupB = (selector) => ({ compatible: selector !== 'b' });
 const arenaOf = (css) => {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   const { records } = state;
   return { state, records, record: ruleRecordOf(records, root.first) };
 };
@@ -302,9 +301,9 @@ test('assertRecordsMatchTree should throw under consistency checks when a commen
   try {
     const root = postcss.parse('a{color:red}');
     const state = new MergeState(['chrome 120'], createRunContext());
-    state.records = buildRecords(root, state);
+    state.records = buildTestRecords(root, state);
     root.first.append(postcss.comment({ text: 'note' }));
-    assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
+    assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
   } finally {
     enableConsistencyChecks(wasEnabled);
   }

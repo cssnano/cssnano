@@ -1,10 +1,10 @@
 import { after, before, test } from 'node:test';
+import { buildTestRecords } from './liveRecords.js';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import cssnanoUtils from '../../../../../src/utils/index.js';
 import { sameContainer } from '../../../../../src/passes/merge/lib/rules/sameContainer.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { assertContextsCurrent } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
@@ -79,7 +79,7 @@ function sameChain(records, a, b, textTable) {
  */
 function stateOf(css) {
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(postcss.parse(css), state);
+  state.records = buildTestRecords(postcss.parse(css), state);
   return state;
 }
 

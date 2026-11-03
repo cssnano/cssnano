@@ -11,7 +11,6 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/sweepPotential.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
-  buildRecords,
   remove,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
@@ -24,7 +23,11 @@ import { assertNoOverDuplication } from '../../../../../src/passes/merge/lib/rul
 import { mergePass } from '../../../../../src/passes/merge/index.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
-import { ruleRecordOf, blockRecordOf } from './liveRecords.js';
+import {
+  ruleRecordOf,
+  blockRecordOf,
+  buildTestRecords,
+} from './liveRecords.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -39,7 +42,7 @@ function setup(css) {
   const root = postcss.parse(css);
   const context = createRunContext();
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   return { root, state };
 }
 
@@ -72,7 +75,7 @@ test('assertRecordsMatchTree should accept records built from a stylesheet', () 
   const { state } = setup(
     '@media (x){@media (y){p{width:1px}q{height:2px}}}a{color:red;b{width:1px}}'
   );
-  assert.doesNotThrow(() => assertRecordsMatchTree(state));
+  assert.doesNotThrow(() => assertRecordsMatchTree(state.records));
 });
 
 test('assertRecordsMatchTree should throw when the chain holds the rules in another order than the tree', () => {
@@ -82,7 +85,7 @@ test('assertRecordsMatchTree should throw when the chain holds the rules in anot
   );
   const [a] = /** @type {Rule[]} */ (media.node.nodes);
   state.records.moveRule(media.index, ruleRecordOf(state.records, a).index);
-  assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
+  assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
 });
 
 test('assertRecordsMatchTree should throw when a block chain lacks a child the tree holds', () => {
@@ -93,7 +96,7 @@ test('assertRecordsMatchTree should throw when a block chain lacks a child the t
   state.records.links.unlink(
     ruleRecordOf(state.records, /** @type {Rule} */ (media.node.first)).index
   );
-  assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
+  assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
 });
 
 test('the merge pass should keep the records in step with the tree through its joins', () => {

@@ -8,8 +8,7 @@ import {
   NodeEntry,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { blockRecordOf } from './liveRecords.js';
+import { blockRecordOf, buildTestRecords } from './liveRecords.js';
 
 /** @import {Container} from 'postcss' */
 
@@ -20,7 +19,7 @@ import { blockRecordOf } from './liveRecords.js';
 function setup(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   return { root, state };
 }
 

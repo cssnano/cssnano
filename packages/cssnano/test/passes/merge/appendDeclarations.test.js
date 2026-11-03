@@ -5,11 +5,10 @@ import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
   appendToDeclarations,
-  buildRecords,
   removeRules,
 } from '../../../src/passes/merge/lib/rules/treeEdits.js';
 import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
-import { ruleRecordOf } from './lib/rules/liveRecords.js';
+import { ruleRecordOf, buildTestRecords } from './lib/rules/liveRecords.js';
 
 // The incoming rule leaves the tree once the placement drops it, so the tree
 // reads the joined declarations on `a` alone.
@@ -22,7 +21,7 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
     media.nodes
   );
   const mergeState = new MergeState(['chrome 120']);
-  mergeState.records = buildRecords(root, mergeState);
+  mergeState.records = buildTestRecords(root, mergeState);
   const kept = [
     ...ruleRecordOf(mergeState.records, receiving).declarationsOf(
       mergeState.records
@@ -50,7 +49,7 @@ test('appendToDeclarations sees each declaration it appended, so a repeat of it 
     root.nodes
   );
   const mergeState = new MergeState(['chrome 120']);
-  mergeState.records = buildRecords(root, mergeState);
+  mergeState.records = buildTestRecords(root, mergeState);
   const to = ruleRecordOf(mergeState.records, receiving);
   const from = ruleRecordOf(mergeState.records, incoming);
   appendToDeclarations(mergeState, to, [], writesOf([]), from);

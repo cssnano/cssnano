@@ -25,8 +25,8 @@ export default class MergeState {
      */
     properties: PropertyTable;
     /**
-     * The block and rule records of the stylesheet. `runMerge` sets them before
-     * any edit reads them.
+     * The block and rule records of the stylesheet. The driver builds them, and
+     * `runMerge` sets them before any edit reads them.
      *
      * @type {BlockRecords}
      */

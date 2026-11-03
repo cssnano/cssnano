@@ -5,16 +5,17 @@ import type { Container, Root } from 'postcss';
 import type { RuleRecord } from './ruleRecord.js';
 import type { PropertyWrites } from './propertyWrites.js';
 import type MergeState from './mergeState.js';
+import type { RunContext } from '../../../ir/runContext.js';
 /**
  * Builds the records of a stylesheet from its tree, once per run. Each child is
  * linked into the chain of its parent, and every rule is a container whose
  * children form its own chain.
  *
  * @param {Root} root
- * @param {MergeState} mergeState
+ * @param {RunContext} context the run's state, which gives the tokens and ids the records keep
  * @return {BlockRecords}
  */
-export declare function buildRecords(root: Root, mergeState: MergeState): BlockRecords;
+export declare function buildRecords(root: Root, context: RunContext): BlockRecords;
 /**
  * Takes a rule or an at-rule out of its parent's records at once. The PostCSS
  * child list catches up at write-back.

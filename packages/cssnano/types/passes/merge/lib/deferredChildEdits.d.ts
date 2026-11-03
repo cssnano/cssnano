@@ -1,6 +1,13 @@
 /** @import {ChildNode, Container} from 'postcss'; */
 import type { ChildNode, Container } from 'postcss';
 /**
+ * Whether the container has edits that its child list does not show yet.
+ *
+ * @param {Container} container
+ * @return {boolean}
+ */
+export declare function hasPendingEdits(container: Container): boolean;
+/**
  * @param {ChildNode} node
  * @return {void}
  */

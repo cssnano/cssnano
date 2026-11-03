@@ -8,7 +8,6 @@ import { mergeMatchingDeclarations } from '../../../../../src/passes/merge/lib/r
 import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
   appendToDeclarations,
-  buildRecords,
   removeRules,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import {
@@ -16,7 +15,7 @@ import {
   replaceChildren,
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
-import { ruleRecordOf } from './liveRecords.js';
+import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 
 /** @import {ChildNode, Declaration, Rule} from 'postcss' */
 
@@ -30,7 +29,7 @@ after(() => enableConsistencyChecks(false));
 function setup(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   return { root, state };
 }
 
@@ -181,7 +180,7 @@ test('a rule whose child points to another container fails the consistency check
   const [a, b] = twoRules(root);
   writeBack(state.records);
   /** @type {ChildNode} */ (a.first).parent = b;
-  assert.throws(() => assertRecordsMatchTree(state));
+  assert.throws(() => assertRecordsMatchTree(state.records));
 });
 
 test('a merge of rules with one selector departs the later rule', () => {

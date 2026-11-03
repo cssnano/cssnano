@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { buildTestRecords } from './liveRecords.js';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import {
@@ -7,7 +8,6 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/declarations.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import {
   earliestPairReaching,
   findGroup,
@@ -58,7 +58,7 @@ function stylesheet(seed, { comments = false, blocks = false } = {}) {
 function groupsOf(css) {
   const root = postcss.parse(css);
   const mergeState = new MergeState(['Chrome 120']);
-  mergeState.records = buildRecords(root, mergeState);
+  mergeState.records = buildTestRecords(root, mergeState);
   const sequence = new RuleSequence(mergeState.records);
   const outsideDeclarations = new Map();
   /** @type {number[]} */

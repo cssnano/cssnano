@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
+import { buildTestRecords } from './liveRecords.js';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { writeBack } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 
 /** @import {Container, Root} from 'postcss' */
@@ -80,7 +80,7 @@ function isRuleOrAtRule(node) {
 function scanned(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   runScan(state);
   return { root, state };
 }
@@ -122,7 +122,7 @@ test('a rule that a join removes has no parent after write-back', () => {
 test('runScan should merge a pair of adjacent rules without reading the tree', () => {
   const root = postcss.parse('a{color:red}b{color:red}');
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   const restore = armGuard(root);
   try {
     assert.doesNotThrow(() => runScan(state));

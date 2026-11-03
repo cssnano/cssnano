@@ -4,16 +4,13 @@ import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
-import {
-  appendToDeclarations,
-  buildRecords,
-} from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
   consistencyChecksEnabled,
   enableConsistencyChecks,
 } from '../../../../../src/passes/ir/consistencyChecks.js';
-import { ruleRecordOf } from './liveRecords.js';
+import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 
 const createState = () => new MergeState(['chrome 120'], createRunContext());
 
@@ -25,7 +22,7 @@ const createState = () => new MergeState(['chrome 120'], createRunContext());
  * @return {import('postcss').Root}
  */
 const withRecords = (state, root) => {
-  state.records = buildRecords(root, state);
+  state.records = buildTestRecords(root, state);
   return root;
 };
 
@@ -216,7 +213,7 @@ test('assertRecordsMatchTree should throw when a declaration left the rule witho
     const state = createState();
     const root = withRecords(state, postcss.parse('a{color:red;width:1px}'));
     /** @type {import('postcss').Rule} */ (root.first).first?.remove();
-    assert.throws(() => assertRecordsMatchTree(state), /out of step/v);
+    assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
   } finally {
     enableConsistencyChecks(wasEnabled);
   }
