@@ -75,7 +75,7 @@ Every change should make the intended CSS transformation clearer while preservin
   `bench: done status=pass|fail ...` or `mutation: done status=pass|fail ...`.
   Read the last line of the output: a run without a `done` line crashed or was
   killed, and its partial output is not a result.
-- Mutation testing (Node 24) judges whether tests or fuzz oracles notice a
+- Mutation testing (Node 24 or 26) judges whether tests or fuzz oracles notice a
   curated fault in a plugin. Run it only through the runner, never a
   hand-copied module or a string replacement, which silently tests the
   unmutated code:

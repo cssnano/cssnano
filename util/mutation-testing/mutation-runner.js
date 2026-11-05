@@ -52,8 +52,8 @@ const check = checks[values.check] ?? testCheck;
 // Printed last on every path, so a reader of the output knows the run ended.
 let judgedTotal;
 try {
-  if (process.versions.node.split('.')[0] !== '24') {
-    throw new Error('Mutation testing requires Node 24');
+  if (!['24', '26'].includes(process.versions.node.split('.')[0])) {
+    throw new Error('Mutation testing requires Node 24 or 26');
   }
   if (!Object.hasOwn(checks, values.check)) {
     throw new Error(`Unknown --check ${values.check}; use test or oracle`);
