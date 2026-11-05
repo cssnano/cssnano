@@ -93,7 +93,7 @@ export class RuleRecord extends SelectorList {
    */
   template = -1;
 
-  /** @type {string | undefined} the whitespace before the rule, as its node gives it at the build */
+  /** @type {string | null} the whitespace before the rule, as its node gives it at the build */
   before = '';
 
   /**

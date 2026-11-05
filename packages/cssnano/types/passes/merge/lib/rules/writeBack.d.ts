@@ -21,16 +21,16 @@ export type Rebuilt = {
     children: ChildNode[];
     /**
      * the whitespace the first child of a
-     * root takes, or undefined for any other container
+     * root takes, or null for any other container
      */
-    leading: string | undefined;
+    leading: string | null;
 };
 /**
  * @typedef {object} Rebuilt
  * @property {Container} container
  * @property {ChildNode[]} children the children the container takes
- * @property {string | undefined} leading the whitespace the first child of a
- * root takes, or undefined for any other container
+ * @property {string | null} leading the whitespace the first child of a
+ * root takes, or null for any other container
  */
 /**
  * Gives each container its children, after every container has been emptied,

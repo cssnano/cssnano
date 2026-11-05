@@ -32,8 +32,8 @@ export declare class DeclarationRecord {
     anonymous: boolean;
     /** @type {number} NO_PRELUDE for a declaration */
     preludeId: number;
-    /** @type {string | undefined} the whitespace before the declaration, as its node gives it at the build */
-    before: string | undefined;
+    /** @type {string | null} the whitespace before the declaration, as its node gives it at the build */
+    before: string | null;
     /**
      * @param {Declaration} node
      * @param {string} prop

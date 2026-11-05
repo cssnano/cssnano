@@ -71,9 +71,10 @@ export class BlockRecord {
 
   /**
    * The whitespace before the block, as its node's `raws.before` gives it at
-   * the build; write-back assigns the value a merge gives the record.
+   * the build, or null when the node has none and the printer infers it;
+   * write-back assigns the value a merge gives the record.
    *
-   * @type {string | undefined}
+   * @type {string | null}
    */
   before = '';
 
@@ -120,9 +121,9 @@ export class BlockRecord {
    * hands on when that child is removed. Only the record of the stylesheet
    * holds it.
    *
-   * @type {string | undefined}
+   * @type {string | null}
    */
-  leadingWhitespace = undefined;
+  leadingWhitespace = null;
 
   /**
    * @param {Container} node
@@ -172,7 +173,7 @@ export class NodeEntry {
   /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
   preludeId;
 
-  /** @type {string | undefined} the whitespace before the node, see `BlockRecord#before` */
+  /** @type {string | null} the whitespace before the node, see `BlockRecord#before` */
   before = '';
 
   /**

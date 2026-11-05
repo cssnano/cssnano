@@ -167,8 +167,8 @@ export function assertRecordsMatchTree(records) {
  * @typedef {object} Rebuilt
  * @property {Container} container
  * @property {ChildNode[]} children the children the container takes
- * @property {string | undefined} leading the whitespace the first child of a
- * root takes, or undefined for any other container
+ * @property {string | null} leading the whitespace the first child of a
+ * root takes, or null for any other container
  */
 
 /**
@@ -188,7 +188,7 @@ export function replaceChildren(rebuilt) {
     container.append(children);
     // Appending rewrites the whitespace of the nodes it places, so the first
     // child of a root takes the leading whitespace after the append.
-    if (leading !== undefined && children.length) {
+    if (leading !== null && children.length) {
       children[0].raws.before = leading;
     }
   }
@@ -267,7 +267,7 @@ function writeSelectors(records, textTable) {
  * Assigns the whitespace before each live entry, and the entries of its
  * children, from the records, where a merge may have changed it. Runs after
  * the appends, so PostCSS's normalizing cannot change the value. A record whose
- * value is undefined leaves its node's whitespace as it is.
+ * value is null leaves its node's whitespace as it is.
  *
  * @param {BlockRecords} records
  * @param {BlockRecord | RuleRecord} container
@@ -281,7 +281,7 @@ function writeBefore(records, container) {
   ) {
     const item = records.entry(entry);
     const node = records.nodeOf(entry);
-    if (item.before !== undefined && node.raws.before !== item.before) {
+    if (item.before !== null && node.raws.before !== item.before) {
       node.raws.before = item.before;
     }
     if (item instanceof BlockRecord || item instanceof RuleRecord) {
@@ -312,7 +312,7 @@ export function writeBack(records, textTable = new TextTable()) {
         container: /** @type {Container} */ (container.node),
         children: records.liveChildren(container.index),
         leading:
-          container === records.root ? container.leadingWhitespace : undefined,
+          container === records.root ? container.leadingWhitespace : null,
       });
     }
     for (
@@ -328,7 +328,7 @@ export function writeBack(records, textTable = new TextTable()) {
           rebuilt.push({
             container: /** @type {Container} */ (record.node),
             children: records.liveChildren(record.index),
-            leading: undefined,
+            leading: null,
           });
         }
       } else if (record instanceof BlockRecord) {
@@ -342,7 +342,7 @@ export function writeBack(records, textTable = new TextTable()) {
   // The first child of the stylesheet takes the leading whitespace last.
   const first = records.root.node.first;
   const { leadingWhitespace } = records.root;
-  if (first && leadingWhitespace !== undefined) {
+  if (first && leadingWhitespace !== null) {
     first.raws.before = leadingWhitespace;
   }
 }
