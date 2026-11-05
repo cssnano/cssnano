@@ -6,7 +6,8 @@ const { counter } = await import('../../../../../util/countTokenize.js');
 const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../../src/values/textTable.js');
-const { mergePass } = await import('../../../src/passes/merge/index.js');
+const { mergePass, transformPass } =
+  await import('../../../src/passes/merge/index.js');
 const { buildRecords, takePlaceOf } =
   await import('../../../src/passes/merge/lib/rules/treeEdits.js');
 const { writeBack } =
@@ -237,4 +238,26 @@ test('takePlaceOf gives the earlier record the whitespace of the later one, whic
   assert.equal(earlier.before, '\n\n');
   writeBack(records);
   assert.equal(root.first.raws.before, '\n\n');
+});
+
+test('a merged rule prints the four raws of the rule it was merged from, unminified', () => {
+  const root = postcss.parse(
+    'a{color:red;width:1px}\nb  /*x*/ {color:red;height:2px}  ;\n'
+  );
+  transformPass('mergeRules')(root, resolveTargets({}, undefined));
+  assert.equal(
+    root.toString(),
+    'a{width:1px}\na,b  /*x*/ {color:red}  ;\nb  /*x*/ {height:2px}  ;\n'
+  );
+});
+
+test('a rule merged again prints the raws of the rule its first merge took them from', () => {
+  const root = postcss.parse(
+    'c{width:1px;\nwidth:1px;\ncolor:red\n}\nb {color:red; top:0}\nc /*k*/ {top:0;\ntop:0;\ncolor:red}'
+  );
+  transformPass('mergeRules')(root, resolveTargets({}, undefined));
+  assert.equal(
+    root.toString(),
+    'c{width:1px;\nwidth:1px\n}\nc,b,c /*k*/ {\ncolor:red}\nb,c,c /*k*/ {\ntop:0}'
+  );
 });

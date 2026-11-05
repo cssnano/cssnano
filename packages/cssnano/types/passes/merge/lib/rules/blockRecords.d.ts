@@ -177,17 +177,17 @@ export declare class BlockRecords {
     bareEntry(entry: NodeEntry): NodeEntry;
     /**
      * Builds the record of a rule and adds it to the arena. The caller links its
-     * children, in order, and places the rule. Selector arguments default to the
-     * node's.
+     * children, in order, and places the rule. The selector arguments are the
+     * rule's, in PostCSS's form, so a caller passes them rather than read the node.
      *
      * @param {Rule} rule
-     * @param {string[]} [selectors]
-     * @param {string} [selector]
+     * @param {string[]} selectors
+     * @param {string} selector
      * @param {string} [sourceSelector] set only when the source text differs from the selector
      * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
      * @return {RuleRecord}
      */
-    recordRule(rule: Rule, selectors?: string[], selector?: string, sourceSelector?: string, tokens?: readonly CSSToken[]): RuleRecord;
+    recordRule(rule: Rule, selectors: string[], selector: string, sourceSelector?: string, tokens?: readonly CSSToken[]): RuleRecord;
     /**
      * Appends a child to the chain of a rule, after its last child, and gives the
      * child the whitespace of that child when it has none. The node takes it at

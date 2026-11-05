@@ -21,6 +21,18 @@ export const test = new URL(
 
 export const mutations = [
   {
+    name: 'a merged rule takes its template from the rule merged, even when that one was merged',
+    target: source('ruleRewrite.js'),
+    find: '  const template = second.template === -1 ? second.index : second.template;',
+    replace: '  const template = second.index;',
+  },
+  {
+    name: 'write-back leaves the ownSemicolon of a merged rule unwritten',
+    target: source('writeBack.js'),
+    find: '  raws.ownSemicolon = source.ownSemicolon;',
+    replace: '',
+  },
+  {
     name: 'write-back skips the whitespace the records hold',
     target: source('writeBack.js'),
     find: '  writeBefore(records, records.root);',

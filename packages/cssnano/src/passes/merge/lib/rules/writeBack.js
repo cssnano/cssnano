@@ -209,6 +209,23 @@ function joinedPieces(record) {
 }
 
 /**
+ * Gives a merged rule the raws that print its template: the space between the
+ * selector and the block, the space after the block, and the semicolons.
+ *
+ * @param {import('postcss').Rule} node the merged rule
+ * @param {import('postcss').Rule} template the rule whose raws it prints
+ * @return {void}
+ */
+function writeTemplateRaws(node, template) {
+  const { raws } = node;
+  const source = template.raws;
+  raws.between = source.between;
+  raws.after = source.after;
+  raws.semicolon = source.semicolon;
+  raws.ownSemicolon = source.ownSemicolon;
+}
+
+/**
  * Writes the selector of each rule that a merge wrote, through the table: the
  * text, and the tokens the record holds or joins from its pieces. Then stores
  * the tokens of each other rule that the compatibility check tokenized, so a
@@ -230,6 +247,14 @@ function writeSelectors(records, textTable) {
       } else {
         textTable.write(record.node, list);
         record.markStored();
+      }
+      if (record.template !== -1) {
+        writeTemplateRaws(
+          record.node,
+          /** @type {import('postcss').Rule} */ (
+            records.nodeOf(record.template)
+          )
+        );
       }
     } else if (record.tokens !== undefined && !record.listStored) {
       textTable.write(record.node, record.tokens);

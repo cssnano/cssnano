@@ -85,6 +85,14 @@ export class RuleRecord extends SelectorList {
   /** @type {number} NO_PRELUDE for a rule */
   preludeId = NO_PRELUDE;
 
+  /**
+   * The arena index of the rule whose raws a merged rule prints, or -1 for a
+   * rule that keeps its own. A merged rule copies the raws of its template.
+   *
+   * @type {number}
+   */
+  template = -1;
+
   /** @type {string | undefined} the whitespace before the rule, as its node gives it at the build */
   before = '';
 
