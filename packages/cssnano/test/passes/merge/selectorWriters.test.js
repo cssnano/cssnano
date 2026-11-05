@@ -8,10 +8,12 @@ const { walkStylesheet } = await import('../../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../../src/values/textTable.js');
 const { mergePass, transformPass } =
   await import('../../../src/passes/merge/index.js');
-const { buildRecords, takePlaceOf } =
+const { buildRecords, removeRules, takePlaceOf } =
   await import('../../../src/passes/merge/lib/rules/treeEdits.js');
-const { writeBack } =
+const { assertRecordsMatchTree, writeBack } =
   await import('../../../src/passes/merge/lib/rules/writeBack.js');
+const { consistencyChecksEnabled, enableConsistencyChecks } =
+  await import('../../../src/passes/ir/consistencyChecks.js');
 const { createRunContext } =
   await import('../../../src/passes/ir/runContext.js');
 const { resolveTargets } = await import('../../../src/utils/browserTargets.js');
@@ -203,14 +205,48 @@ function whitespaceRecordsOf(css) {
   return { root, records };
 }
 
-test('write-back gives a rule the whitespace its record holds, in a container it does not rebuild', () => {
+test('write-back gives a rule the whitespace its record holds, in the stylesheet it rebuilds', () => {
+  const { root, records } = whitespaceRecordsOf(
+    'a{color:red}\nb{color:blue}\nc{top:0}'
+  );
+  const second = root.nodes[1];
+  const first = records.links.firstChild(records.root.index);
+  const middle = records.links.nextSibling(first);
+  records.rule(middle).before = '\n\n';
+  removeRules({ records }, new Set([records.links.nextSibling(middle)]));
+  writeBack(records);
+  assert.equal(second.raws.before, '\n\n');
+});
+
+/**
+ * The records of two rules whose second record holds whitespace that no edit of
+ * the children accompanies.
+ */
+function recordEditedAlone() {
   const { root, records } = whitespaceRecordsOf('a{color:red}\nb{color:blue}');
-  const second = root.last;
   records.rule(
     records.links.nextSibling(records.links.firstChild(records.root.index))
   ).before = '\n\n';
   writeBack(records);
-  assert.equal(second.raws.before, '\n\n');
+  return { root, records };
+}
+
+// Every change of whitespace comes with a change of children; a record edited
+// alone is a broken invariant.
+test('write-back leaves the whitespace of a rule in a container it does not rebuild as it is', () => {
+  const { root } = recordEditedAlone();
+  assert.equal(root.last.raws.before, '\n');
+});
+
+test('the consistency check reports a record whose whitespace write-back did not write', () => {
+  const { records } = recordEditedAlone();
+  const enabled = consistencyChecksEnabled();
+  enableConsistencyChecks(true);
+  try {
+    assert.throws(() => assertRecordsMatchTree(records));
+  } finally {
+    enableConsistencyChecks(enabled);
+  }
 });
 
 test('write-back gives a rule nested in an at-rule the whitespace its record holds', () => {
@@ -224,6 +260,7 @@ test('write-back gives a rule nested in an at-rule the whitespace its record hol
     records.links.nextSibling(records.links.firstChild(media.index))
   );
   nested.before = '\n\n';
+  removeRules({ records }, new Set([records.links.firstChild(media.index)]));
   writeBack(records);
   assert.equal(root.first.last.raws.before, '\n\n');
 });
