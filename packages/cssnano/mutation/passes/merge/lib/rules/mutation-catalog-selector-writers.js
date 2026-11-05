@@ -21,6 +21,25 @@ export const test = new URL(
 
 export const mutations = [
   {
+    name: 'write-back skips the whitespace the records hold',
+    target: source('writeBack.js'),
+    find: '  writeBefore(records, records.root);',
+    replace: '',
+  },
+  {
+    name: 'write-back assigns the whitespace of root children only',
+    target: source('writeBack.js'),
+    find: '    if (item.before !== undefined && node.raws.before !== item.before) {',
+    replace:
+      '    if (item.before !== undefined && node.raws.before !== item.before && node.parent === records.root.node) {',
+  },
+  {
+    name: 'takePlaceOf keeps the whitespace of the earlier entry',
+    target: source('treeEdits.js'),
+    find: '  earlier.before = later.before;',
+    replace: '',
+  },
+  {
     name: 'store the joined selector list as text, dropping its tokens',
     target: source('writeBack.js'),
     find: '        textTable.write(record.node, list);\n        record.markStored();',

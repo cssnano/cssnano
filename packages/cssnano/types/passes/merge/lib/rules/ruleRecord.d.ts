@@ -72,6 +72,8 @@ export declare class RuleRecord extends SelectorList {
     anonymous: boolean;
     /** @type {number} NO_PRELUDE for a rule */
     preludeId: number;
+    /** @type {string | undefined} the whitespace before the rule, as its node gives it at the build */
+    before: string | undefined;
     /**
      * @param {Rule} node the rule the record describes
      * @param {string[]} selectors

@@ -85,6 +85,9 @@ export class RuleRecord extends SelectorList {
   /** @type {number} NO_PRELUDE for a rule */
   preludeId = NO_PRELUDE;
 
+  /** @type {string | undefined} the whitespace before the rule, as its node gives it at the build */
+  before = '';
+
   /**
    * @param {Rule} node the rule the record describes
    * @param {string[]} selectors

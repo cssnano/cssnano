@@ -344,7 +344,7 @@ export class BlockRecords {
    */
   appendChild(rule, child) {
     const last = this.links.lastChild(rule.index);
-    inheritWhitespace(child.node, last === -1 ? undefined : this.nodeOf(last));
+    inheritWhitespace(child, last === -1 ? undefined : this.entry(last));
     this.links.linkLast(rule.index, child.index);
   }
 
