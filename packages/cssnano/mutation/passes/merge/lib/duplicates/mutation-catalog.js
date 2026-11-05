@@ -75,7 +75,7 @@ export const mutations = [
   },
   {
     name: 'drop a repeated @import',
-    find: "  if (name === 'layer' || name === 'import') {",
-    replace: "  if (name === 'layer') {",
+    find: "  if (entry.kind === LAYER || entry.kind === IMPORT) {",
+    replace: "  if (entry.kind === LAYER) {",
   },
 ];

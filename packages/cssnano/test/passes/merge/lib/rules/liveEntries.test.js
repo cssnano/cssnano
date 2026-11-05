@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { COMMENT } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   ruleRecordOf,
@@ -26,5 +27,6 @@ test('liveEntries should yield the rule record, the at-rule block record and the
     entries[1],
     blockRecordOf(state.records, /** @type {Container} */ (media))
   );
-  assert.equal(entries[2], comment);
+  assert.equal(entries[2].node, comment);
+  assert.equal(entries[2].kind, COMMENT);
 });

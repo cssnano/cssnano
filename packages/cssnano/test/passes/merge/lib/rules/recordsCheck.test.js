@@ -5,7 +5,12 @@ import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistenc
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { assertRecordsWellFormed } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import {
+  BlockRecord,
+  COMMENT,
+  NO_PRELUDE,
+  NodeEntry,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { remove } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import {
   blockRecordOf,
@@ -102,7 +107,16 @@ test('linkLast should throw under checks when the block is outside the tree', ()
   const { state } = setup('a{color:red}');
   const detached = new BlockRecord(postcss.atRule({ name: 'media' }), false);
   state.records.add(detached);
-  const comment = state.records.bareEntry(postcss.comment({ text: 'x' }));
+  const comment = state.records.bareEntry(
+    new NodeEntry(
+      postcss.comment({ text: 'x' }),
+      COMMENT,
+      '',
+      '',
+      false,
+      NO_PRELUDE
+    )
+  );
   assert.throws(
     () => state.records.links.linkLast(detached.index, comment.index),
     /outside the tree/v

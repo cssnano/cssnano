@@ -1,14 +1,10 @@
-import { BlockRecord } from './blockRecord.js';
+import { BlockRecord, NodeEntry } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import type { AtRule, ChildNode } from 'postcss';
 import type { PropertyKeys } from '../../../ir/propertyTable.js';
 import type { BlockRecords } from './blockRecords.js';
-/**
- * @param {ChildNode} node
- * @return {node is AtRule}
- */
-export declare function isConditionalGroupRule(node: ChildNode): node is AtRule;
+/** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /**
  * A table of the latest position at which each property was declared among
  * the children of one parent, visited in document order. It tells whether a
@@ -40,13 +36,13 @@ export default class LastWriteIndex {
      * a barrier, since moving anything across it is not known to preserve the
      * cascade.
      *
-     * @param {ChildNode | DeclarationRecord | RuleRecord | BlockRecord} entry a
+     * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry a
      * live entry of a block
      * @param {number} position
      * @param {(record: RuleRecord) => string[] | null} keysOf
      * @return {void}
      */
-    recordNode(entry: ChildNode | DeclarationRecord | RuleRecord | BlockRecord, position: number, keysOf: (record: RuleRecord) => string[] | null): void;
+    recordNode(entry: DeclarationRecord | RuleRecord | BlockRecord | NodeEntry, position: number, keysOf: (record: RuleRecord) => string[] | null): void;
     /**
      * Whether a write after `position` conflicts with one of `declarations`,
      * counting only writes that can set an element in `elements`, the non-empty

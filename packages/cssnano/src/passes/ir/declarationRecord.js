@@ -1,6 +1,7 @@
 /** @import {Declaration} from 'postcss' */
 /** @import {DeclarationKeys} from './declarationKey.js' */
 /** @import {PropertyKeys, PropertyTable} from './propertyTable.js' */
+import { DECLARATION, NO_PRELUDE } from '../merge/lib/rules/blockRecord.js';
 
 /**
  * One declaration of a merge run, held beside the PostCSS node it describes.
@@ -23,6 +24,16 @@ export class DeclarationRecord {
   id;
   /** @type {number} the place of the record in the arena of a block's entries, -1 until added */
   index = -1;
+  /** @type {number} DECLARATION, which the window reads with the other records */
+  kind = DECLARATION;
+  /** @type {string} '' for a declaration, which has no at-rule name */
+  name = '';
+  /** @type {string} '' for a declaration, which has no prelude */
+  params = '';
+  /** @type {boolean} false for a declaration, which is no layer */
+  anonymous = false;
+  /** @type {number} NO_PRELUDE for a declaration */
+  preludeId = NO_PRELUDE;
 
   /**
    * @param {Declaration} node

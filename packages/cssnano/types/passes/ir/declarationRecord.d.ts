@@ -1,6 +1,3 @@
-/** @import {Declaration} from 'postcss' */
-/** @import {DeclarationKeys} from './declarationKey.js' */
-/** @import {PropertyKeys, PropertyTable} from './propertyTable.js' */
 import type { Declaration } from 'postcss';
 import type { DeclarationKeys } from './declarationKey.js';
 import type { PropertyKeys, PropertyTable } from './propertyTable.js';
@@ -25,6 +22,16 @@ export declare class DeclarationRecord {
     id: number;
     /** @type {number} the place of the record in the arena of a block's entries, -1 until added */
     index: number;
+    /** @type {number} DECLARATION, which the window reads with the other records */
+    kind: number;
+    /** @type {string} '' for a declaration, which has no at-rule name */
+    name: string;
+    /** @type {string} '' for a declaration, which has no prelude */
+    params: string;
+    /** @type {boolean} false for a declaration, which is no layer */
+    anonymous: boolean;
+    /** @type {number} NO_PRELUDE for a declaration */
+    preludeId: number;
     /**
      * @param {Declaration} node
      * @param {string} prop

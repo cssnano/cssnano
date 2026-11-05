@@ -1,6 +1,10 @@
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import {
+  BlockRecord,
+  NodeEntry,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
@@ -28,6 +32,8 @@ function liveEntryOf(records, block, node) {
       if (entry.node === node) return entry;
       const found = liveEntryOf(records, entry, node);
       if (found) return found;
+    } else if (entry instanceof NodeEntry && entry.node === node) {
+      return entry;
     }
   }
   return undefined;
@@ -58,7 +64,9 @@ export function ruleRecordOf(records, rule) {
 export function entryOf(records, node) {
   if (node.type === 'rule') return ruleRecordOf(records, node);
   if (node.type === 'atrule' && node.nodes) return blockRecordOf(records, node);
-  return node;
+  const found = liveEntryOf(records, records.root, node);
+  if (found === undefined) throw new Error('no live entry for the node');
+  return found;
 }
 
 /**
@@ -80,15 +88,17 @@ export function blockRecordOf(records, node) {
 
 /**
  * The records of `root` built the way the driver builds them, from the run
- * state of a test's merge state.
+ * state of a test's merge state. The text table holds the tokens a test stored,
+ * and is empty by default.
  *
  * @param {import('postcss').Root} root
  * @param {MergeState} state
+ * @param {TextTable} [textTable]
  * @return {BlockRecords}
  */
-export function buildTestRecords(root, state) {
+export function buildTestRecords(root, state, textTable = new TextTable()) {
   return buildRecords(root, {
-    textTable: state.textTable,
+    textTable,
     declarations: state.declarationIds,
     properties: state.properties,
   });

@@ -6,7 +6,8 @@
 import { recordDeclaration } from '../../../ir/declarationRecord.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockLinks } from './blockLinks.js';
-import { BlockRecord, NodeEntry } from './blockRecord.js';
+import { BlockRecord } from './blockRecord.js';
+/** @import {NodeEntry} from './blockRecord.js' */
 import {
   inheritWhitespace,
   liveChildren,
@@ -195,7 +196,7 @@ export class BlockRecords {
    * The live entries of the block at `index`; see `blockChildren.js`.
    *
    * @param {number} index
-   * @return {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]}
+   * @return {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]}
    */
   liveEntries(index) {
     return liveEntries(this, index);
@@ -299,14 +300,13 @@ export class BlockRecords {
   }
 
   /**
-   * Adds a bare node of a block, a comment or a statement at-rule, to the
-   * arena, which gives it the next index.
+   * Adds a bare node, a comment or a statement at-rule, to the arena.
    *
-   * @param {ChildNode} node
+   * @param {NodeEntry} entry
    * @return {NodeEntry}
    */
-  bareEntry(node) {
-    return this.#place(new NodeEntry(node));
+  bareEntry(entry) {
+    return this.#place(entry);
   }
 
   /**

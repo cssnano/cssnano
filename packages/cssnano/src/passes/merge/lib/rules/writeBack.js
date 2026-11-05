@@ -1,5 +1,6 @@
+import cssnanoUtils from '#utils';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { BlockRecord } from './blockRecord.js';
+import { atRuleKind, BlockRecord, NodeEntry } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { comma } from '../../../../values/punctuationTokens.js';
@@ -7,11 +8,13 @@ import { joinRanges } from '../../../../values/joinRanges.js';
 import { TextTable } from '../../../../values/textTable.js';
 import { tokensText } from '../../../../values/tokensText.js';
 
-/** @import {ChildNode, Container} from 'postcss' */
+/** @import {AtRule, ChildNode, Container} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord as Block} from './blockRecord.js' */
 
 /** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule, whose children form its chain */
+
+const { asciiLowerCase } = cssnanoUtils;
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 const STALE = 'stale declarations of a rule record';
@@ -64,6 +67,27 @@ function describes(child) {
 }
 
 /**
+ * Throws when an at-rule record names another kind, name or prelude than the
+ * at-rule the tree holds. The prelude id is not compared, since it counts the
+ * raws too.
+ *
+ * @param {BlockRecord | NodeEntry} entry
+ * @return {void}
+ */
+function checkAtRuleFacts(entry) {
+  if (entry.node.type !== 'atrule') return;
+  const node = /** @type {AtRule} */ (entry.node);
+  const name = asciiLowerCase(node.name);
+  if (
+    entry.kind !== atRuleKind(name) ||
+    entry.name !== name ||
+    entry.params !== node.params
+  ) {
+    throw new Error(OUT_OF_STEP);
+  }
+}
+
+/**
  * Throws when the record of a rule is not linked in the container that holds
  * it, or does not nest exactly when the tree's rule holds rules or at-rules.
  *
@@ -110,13 +134,17 @@ function checkBlockRecord(records, block) {
     if (item instanceof RuleRecord) {
       checkRuleRecord(records, block, item);
     } else if (item instanceof BlockRecord) {
+      checkAtRuleFacts(item);
       checkBlockRecord(records, item);
-    } else if (plain) {
-      if (item instanceof DeclarationRecord && !describes(item)) {
-        throw new Error(STALE);
-      }
-      if (records.nodeOf(entry).parent !== block.node) {
-        throw new Error(OUT_OF_STEP);
+    } else {
+      if (item instanceof NodeEntry) checkAtRuleFacts(item);
+      if (plain) {
+        if (item instanceof DeclarationRecord && !describes(item)) {
+          throw new Error(STALE);
+        }
+        if (records.nodeOf(entry).parent !== block.node) {
+          throw new Error(OUT_OF_STEP);
+        }
       }
     }
   }

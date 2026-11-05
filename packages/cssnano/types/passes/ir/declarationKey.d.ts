@@ -1,4 +1,4 @@
-import type { Declaration } from 'postcss';
+import type { AtRule, Declaration } from 'postcss';
 export type Trie = Map<unknown, unknown>;
 /**
  * Nested maps keyed by the components of a structural description. Each
@@ -40,6 +40,23 @@ export declare class DeclarationKeys {
      * @return {number}
      */
     keyOf(declaration: Declaration): number;
+    /**
+     * The id of an at-rule's prelude: its name, its params and its trimmed
+     * `raws.before` and `raws.afterName`. Ids of the preludes are kept with
+     * their paths, for `preludeTrie`.
+     *
+     * @param {AtRule} node
+     * @return {number}
+     */
+    preludeId(node: AtRule): number;
+    /**
+     * The path that a prelude id ends, from `preludeId`, which a structural id
+     * extends.
+     *
+     * @param {number} id
+     * @return {Trie}
+     */
+    preludeTrie(id: number): Trie;
     /**
      * The id of the path that ends at `trie`, assigned on first use.
      *

@@ -48,6 +48,36 @@ test('the window guard throws on a read of the table tokens of a rule', () => {
   }
 });
 
+test('the window guard throws on a read of an at-rule name the build reached', () => {
+  const { root, textTable, records } = buildOf('@media print{a{color:red}}');
+  const release = guardWindow(records, textTable);
+  try {
+    assert.throws(() => root.first.name);
+  } finally {
+    release();
+  }
+});
+
+test('the window guard throws on a read of an at-rule prelude the build reached', () => {
+  const { root, textTable, records } = buildOf('@media print{a{color:red}}');
+  const release = guardWindow(records, textTable);
+  try {
+    assert.throws(() => root.first.params);
+  } finally {
+    release();
+  }
+});
+
+test('the window guard throws on a table write the window makes', () => {
+  const { root, textTable, records } = buildOf('a{color:red}');
+  const release = guardWindow(records, textTable);
+  try {
+    assert.throws(() => textTable.setText(root.first, 'b'));
+  } finally {
+    release();
+  }
+});
+
 test('the window guard leaves the node type readable while installed', () => {
   const { root, textTable, records } = buildOf('a{color:red}');
   const release = guardWindow(records, textTable);

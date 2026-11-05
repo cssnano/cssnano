@@ -62,6 +62,16 @@ export declare class RuleRecord extends SelectorList {
     context: number;
     /** @type {number} the place of the record in the arena of its records, -1 until added */
     index: number;
+    /** @type {number} RULE, which the window reads with the other records */
+    kind: number;
+    /** @type {string} '' for a rule, which has no at-rule name */
+    name: string;
+    /** @type {string} '' for a rule, which has no prelude */
+    params: string;
+    /** @type {boolean} false for a rule, which is no layer */
+    anonymous: boolean;
+    /** @type {number} NO_PRELUDE for a rule */
+    preludeId: number;
     /**
      * @param {Rule} node the rule the record describes
      * @param {string[]} selectors

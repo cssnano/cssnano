@@ -1,6 +1,6 @@
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
-import type { AtRule, Comment } from 'postcss';
-import type { BlockRecord } from '../rules/blockRecord.js';
+import type { Comment } from 'postcss';
+import type { BlockRecord, NodeEntry } from '../rules/blockRecord.js';
 import type { RuleRecord } from '../rules/ruleRecord.js';
 /**
  * The id of a comment: ordinary comments share one, and an important comment
@@ -12,14 +12,14 @@ import type { RuleRecord } from '../rules/ruleRecord.js';
  */
 export declare function commentId(keys: DeclarationKeys, node: Comment): number;
 /**
- * The id of a statement at-rule, which has no block.
+ * The id of a statement at-rule, which has no block: its prelude's id.
  *
  * @param {DeclarationKeys} keys
  * @param {Set<number>} layered
- * @param {AtRule} node
+ * @param {NodeEntry} entry the statement at-rule
  * @return {number}
  */
-export declare function statementId(keys: DeclarationKeys, layered: Set<number>, node: AtRule): number;
+export declare function statementId(keys: DeclarationKeys, layered: Set<number>, entry: NodeEntry): number;
 /**
  * The id of a rule or of a block at-rule, from the ids of its kept entries.
  *

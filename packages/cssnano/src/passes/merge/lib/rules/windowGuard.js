@@ -12,10 +12,26 @@ const WINDOW_READ =
   'a node or table entry is read between build and write-back';
 
 /** Node properties the window must not read, the ones a record holds. */
-const NODE_PROPERTIES = ['selector', 'selectors', 'prop', 'value', 'important'];
+const NODE_PROPERTIES = [
+  'selector',
+  'selectors',
+  'prop',
+  'value',
+  'important',
+  'name',
+  'params',
+];
 
-/** Table reads the window must not make. */
-const TABLE_READS = ['tokens', 'stored'];
+/** Table reads and writes the window must not make. */
+const TABLE_READS = [
+  'tokens',
+  'stored',
+  'write',
+  'setText',
+  'record',
+  'share',
+  'assignFolded',
+];
 
 function throwing() {
   throw new Error(WINDOW_READ);

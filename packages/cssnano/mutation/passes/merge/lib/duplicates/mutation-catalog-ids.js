@@ -24,13 +24,13 @@ export const mutations = [
   },
   {
     name: 'treat a layer at-rule as not declaring a layer',
-    find: "    declaresLayer = atRule.name.toLowerCase() === 'layer';",
+    find: '    declaresLayer = container.kind === LAYER;',
     replace: '    declaresLayer = false;',
   },
   {
     name: 'treat a layer statement as not declaring a layer',
-    find: "    node.name.toLowerCase() === 'layer'\n  );",
-    replace: '    false\n  );',
+    find: '  return markLayered(layered, entry.preludeId, entry.kind === LAYER);',
+    replace: '  return markLayered(layered, entry.preludeId, false);',
   },
   {
     name: 'let an empty block equal a statement with the same prelude',
@@ -43,22 +43,38 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'ignore the at-rule params in its structural id',
-    find: '  path = step(path, node.params);',
+    name: 'ignore the at-rule params in its prelude id',
+    target: new URL(
+      '../../../../../src/passes/ir/declarationKey.js',
+      import.meta.url
+    ).href,
+    find: '    path = step(path, node.params);',
     replace: '',
   },
   {
-    name: 'ignore raws.before in the structural id of an at-rule',
-    find: '  path = step(path, trimValue(node.raws.before));',
+    name: 'ignore raws.before in the prelude id of an at-rule',
+    target: new URL(
+      '../../../../../src/passes/ir/declarationKey.js',
+      import.meta.url
+    ).href,
+    find: '    path = step(path, trimValue(node.raws.before));',
     replace: '',
   },
   {
-    name: 'ignore raws.afterName in the structural id of an at-rule',
-    find: '  return step(path, trimValue(node.raws.afterName));',
-    replace: '  return path;',
+    name: 'ignore raws.afterName in the prelude id of an at-rule',
+    target: new URL(
+      '../../../../../src/passes/ir/declarationKey.js',
+      import.meta.url
+    ).href,
+    find: '    path = step(path, trimValue(node.raws.afterName));',
+    replace: '',
   },
   {
     name: 'compare the at-rule raws untrimmed',
+    target: new URL(
+      '../../../../../src/passes/ir/declarationKey.js',
+      import.meta.url
+    ).href,
     find: '  return value ? value.trim() : value;',
     replace: '  return value;',
   },
