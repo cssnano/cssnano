@@ -10,8 +10,10 @@ import { clearSupportCache } from './lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import runMerge from './lib/rules/selectorMerger.js';
 import { buildRecords } from './lib/rules/treeEdits.js';
+import { guardWindow } from './lib/rules/windowGuard.js';
 import { assertRecordsMatchTree, writeBack } from './lib/rules/writeBack.js';
 import { createRunContext } from '../ir/runContext.js';
+import { consistencyChecksEnabled } from '../ir/consistencyChecks.js';
 import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
 
@@ -129,7 +131,14 @@ function runFirstRound(css, support, blocks, textTable, reached) {
  */
 function runRecords(css, browsers, context, transforms) {
   const records = buildRecords(css, context);
-  for (const transform of transforms) transform(records, browsers, context);
+  const release = consistencyChecksEnabled()
+    ? guardWindow(records, context.textTable)
+    : undefined;
+  try {
+    for (const transform of transforms) transform(records, browsers, context);
+  } finally {
+    release?.();
+  }
   writeBack(records, context.textTable);
   assertRecordsMatchTree(records);
 }

@@ -68,7 +68,7 @@ export const mutations = [
   {
     name: 'rules nested in rules of different selectors share a context',
     target: source('sameContainer.js'),
-    find: "trie = step(step(trie, 'rule'), node.selector);",
+    find: "trie = step(step(trie, 'rule'), /** @type {RuleRecord} */ (block).selector);",
     replace: "trie = step(trie, 'rule');",
   },
   {
