@@ -35,15 +35,15 @@ export const mutations = [
   {
     name: 'write-back skips the whitespace the records hold',
     target: source('writeBack.js'),
-    find: '  writeBefore(records, records.root);',
+    find: '  for (const { index } of rebuilt) writeBefore(records, index);',
     replace: '',
   },
   {
     name: 'write-back assigns the whitespace of root children only',
     target: source('writeBack.js'),
-    find: '    if (item.before !== undefined && node.raws.before !== item.before) {',
+    find: '    if (before !== null) records.nodeOf(entry).raws.before = before;',
     replace:
-      '    if (item.before !== undefined && node.raws.before !== item.before && node.parent === records.root.node) {',
+      '    if (before !== null && container === records.root.index) records.nodeOf(entry).raws.before = before;',
   },
   {
     name: 'takePlaceOf keeps the whitespace of the earlier entry',
