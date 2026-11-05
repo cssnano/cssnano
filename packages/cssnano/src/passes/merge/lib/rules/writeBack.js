@@ -131,6 +131,15 @@ function checkBlockRecord(records, block) {
     entry = records.links.nextSibling(entry)
   ) {
     const item = records.entry(entry);
+    // The first child of the stylesheet prints the stylesheet's leading
+    // whitespace instead of its own.
+    const expected =
+      block === records.root && entry === records.links.firstChild(block.index)
+        ? block.leadingWhitespace
+        : item.before;
+    if (expected !== null && records.nodeOf(entry).raws.before !== expected) {
+      throw new Error(STALE);
+    }
     if (item instanceof RuleRecord) {
       checkRuleRecord(records, block, item);
     } else if (item instanceof BlockRecord) {
@@ -264,29 +273,23 @@ function writeSelectors(records, textTable) {
 }
 
 /**
- * Assigns the whitespace before each live entry, and the entries of its
- * children, from the records, where a merge may have changed it. Runs after
- * the appends, so PostCSS's normalizing cannot change the value. A record whose
- * value is null leaves its node's whitespace as it is.
+ * Assigns the whitespace before each child of a rebuilt container from the
+ * records, where a merge may have changed it. Runs after the append, which
+ * rewrites the whitespace of the nodes it places. A record whose value is null
+ * leaves its node's whitespace as it is.
  *
  * @param {BlockRecords} records
- * @param {BlockRecord | RuleRecord} container
+ * @param {number} container the index of the rebuilt container's record
  * @return {void}
  */
 function writeBefore(records, container) {
   for (
-    let entry = records.links.firstChild(container.index);
+    let entry = records.links.firstChild(container);
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
-    const item = records.entry(entry);
-    const node = records.nodeOf(entry);
-    if (item.before !== null && node.raws.before !== item.before) {
-      node.raws.before = item.before;
-    }
-    if (item instanceof BlockRecord || item instanceof RuleRecord) {
-      writeBefore(records, item);
-    }
+    const { before } = records.entry(entry);
+    if (before !== null) records.nodeOf(entry).raws.before = before;
   }
 }
 
@@ -303,13 +306,14 @@ function writeBefore(records, container) {
  */
 export function writeBack(records, textTable = new TextTable()) {
   writeSelectors(records, textTable);
-  /** @type {Rebuilt[]} */
+  /** @type {(Rebuilt & {index: number})[]} */
   const rebuilt = [];
   /** @param {ContainerRecord} container */
   const visit = (container) => {
     if (differs(records, container)) {
       rebuilt.push({
         container: /** @type {Container} */ (container.node),
+        index: container.index,
         children: records.liveChildren(container.index),
         leading:
           container === records.root ? container.leadingWhitespace : null,
@@ -327,6 +331,7 @@ export function writeBack(records, textTable = new TextTable()) {
         } else if (record.edited) {
           rebuilt.push({
             container: /** @type {Container} */ (record.node),
+            index: record.index,
             children: records.liveChildren(record.index),
             leading: null,
           });
@@ -338,7 +343,7 @@ export function writeBack(records, textTable = new TextTable()) {
   };
   visit(records.root);
   replaceChildren(rebuilt);
-  writeBefore(records, records.root);
+  for (const { index } of rebuilt) writeBefore(records, index);
   // The first child of the stylesheet takes the leading whitespace last.
   const first = records.root.node.first;
   const { leadingWhitespace } = records.root;

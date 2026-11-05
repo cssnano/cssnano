@@ -42,3 +42,27 @@ test('a second write-back should leave the child array of a block that already m
   assert.equal(media.nodes, kept);
   assert.doesNotThrow(() => assertRecordsMatchTree(state.records));
 });
+
+test('assertRecordsMatchTree should throw when a child of the stylesheet prints other whitespace than its record holds', () => {
+  const { root, state } = setup('a{color:red}\nb{width:1px}');
+  writeBack(state.records);
+  root.nodes[1].raws.before = ' ';
+  assert.throws(() => assertRecordsMatchTree(state.records));
+});
+
+test('assertRecordsMatchTree should throw when a declaration prints other whitespace than its record holds', () => {
+  const { root, state } = setup('a{\n  color:red}');
+  writeBack(state.records);
+  const rule = /** @type {Container} */ (root.first);
+  /** @type {import('postcss').ChildNode} */ (rule.first).raws.before = '';
+  assert.throws(() => assertRecordsMatchTree(state.records));
+});
+
+test('assertRecordsMatchTree should accept a node whose record leaves its whitespace to the printer', () => {
+  const { root, state } = setup('a{color:red}\nb{width:1px}');
+  writeBack(state.records);
+  const [, second] = state.records.liveEntries(state.records.root.index);
+  second.before = null;
+  root.nodes[1].raws.before = ' ';
+  assert.doesNotThrow(() => assertRecordsMatchTree(state.records));
+});
