@@ -103,7 +103,7 @@ function joinGain(group, later) {
  * @return {boolean}
  */
 export default function joinByDeclarations(block, mergeState) {
-  if (isKeyframes(block.node)) return false;
+  if (isKeyframes(block)) return false;
   const entries = mergeState.records.liveEntries(block.index);
   const keyLists = entries.map((entry) =>
     entry instanceof RuleRecord && isDeclarationRule(mergeState.records, entry)

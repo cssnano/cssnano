@@ -1,20 +1,24 @@
 import cssnanoUtils from '#utils';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { BlockRecord, NodeEntry } from '../rules/blockRecord.js';
+import {
+  BlockRecord,
+  COMMENT,
+  CONDITIONAL_GROUP,
+  IMPORT,
+  isAtRuleKind,
+  LAYER,
+  NodeEntry,
+} from '../rules/blockRecord.js';
 import { RuleRecord } from '../rules/ruleRecord.js';
 import { remove } from '../rules/treeEdits.js';
 import { commentId, containerId, statementId } from './structuralIds.js';
 
-/** @import {AtRule} from 'postcss' */
+/** @import {Comment} from 'postcss' */
 /** @import {BlockRecords} from '../rules/blockRecords.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 
 const { isImportantComment } = cssnanoUtils;
-
-// Identical preludes apply their contents under the same condition; other
-// at-rules have semantics this plugin does not model.
-const conditionalAtRules = new Set(['media', 'supports', 'container']);
 
 // The entry was removed; a kept entry returns its structural id, or 0 when no
 // ancestor needs one.
@@ -223,8 +227,7 @@ function hasNestedEntry(records, rule) {
  * @return {number}
  */
 function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
-  const name = /** @type {AtRule} */ (block.node).name.toLowerCase();
-  if (name === 'layer') {
+  if (block.kind === LAYER) {
     const ids = dedupeEntries(
       run,
       block,
@@ -234,7 +237,9 @@ function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
     return wantIds && ids ? containerId(run.keys, run.layered, block, ids) : 0;
   }
 
-  if (conditionalAtRules.has(name)) {
+  // Identical preludes apply their contents under the same condition; other
+  // at-rules have semantics this plugin does not model.
+  if (block.kind === CONDITIONAL_GROUP) {
     // An emptied conditional group has no effect.
     const hadContent = hasContent(run, block);
     const ids = dedupeEntries(
@@ -253,7 +258,7 @@ function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
   const ids = dedupeEntries(run, block, {}, true);
   // An imported style sheet may declare layers, so even an identical earlier
   // @import can fix a layer's place in the layer order.
-  if (name === 'import')
+  if (block.kind === IMPORT)
     return wantIds && ids ? containerId(run.keys, run.layered, block, ids) : 0;
   return keepAtRule(run, block, ids, seenAtRules);
 }
@@ -288,17 +293,17 @@ function keepAtRule(run, block, ids, seenAtRules) {
  * @return {number}
  */
 function dedupeNode(run, entry, seenAtRules, wantIds) {
-  const { node } = entry;
-  if (node.type === 'comment') {
-    return wantIds ? commentId(run.keys, node) : 0;
+  if (entry.kind === COMMENT) {
+    return wantIds
+      ? commentId(run.keys, /** @type {Comment} */ (entry.node))
+      : 0;
   }
-  if (node.type !== 'atrule') return 0;
+  if (!isAtRuleKind(entry.kind)) return 0;
   // A statement layer is never removed, and an @import is kept too.
-  const name = node.name.toLowerCase();
-  if (name === 'layer' || name === 'import') {
-    return wantIds ? statementId(run.keys, run.layered, node) : 0;
+  if (entry.kind === LAYER || entry.kind === IMPORT) {
+    return wantIds ? statementId(run.keys, run.layered, entry) : 0;
   }
-  const id = statementId(run.keys, run.layered, node);
+  const id = statementId(run.keys, run.layered, entry);
   if (seenAtRules.has(id) && !run.layered.has(id)) {
     remove(run.records, entry);
     return REMOVED;

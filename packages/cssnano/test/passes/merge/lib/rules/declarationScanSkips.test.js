@@ -1,3 +1,8 @@
+import {
+  COMMENT,
+  NO_PRELUDE,
+  NodeEntry,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
@@ -49,7 +54,16 @@ test('linking an entry into an at-rule block that a sweep unlinked should throw 
     ruleRecordOf(records, p).index,
     ruleRecordOf(records, layer.first).index
   );
-  const comment = records.bareEntry(postcss.comment({ text: 'x' }));
+  const comment = records.bareEntry(
+    new NodeEntry(
+      postcss.comment({ text: 'x' }),
+      COMMENT,
+      '',
+      '',
+      false,
+      NO_PRELUDE
+    )
+  );
   assert.throws(
     () => records.links.linkLast(block.index, comment.index),
     /outside the tree/v

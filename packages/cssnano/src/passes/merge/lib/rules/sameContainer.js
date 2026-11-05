@@ -1,7 +1,5 @@
-import cssnanoUtils from '#utils';
 import { step } from '../../../ir/declarationKey.js';
-
-const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
+import { KEYFRAMES, LAYER, RULE, STYLESHEET } from './blockRecord.js';
 
 // The first steps of a context's path, apart from those of declarations and
 // of the structural ids that duplicate removal takes from the same interner.
@@ -9,7 +7,6 @@ const CONTEXT = Symbol('container context');
 const ANONYMOUS = Symbol('anonymous layer');
 
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 
@@ -17,16 +14,11 @@ const ANONYMOUS = Symbol('anonymous layer');
  * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
  * cascaded by position.
  *
- * @param {import('postcss').Container | undefined} container
+ * @param {BlockRecord | RuleRecord | undefined} container
  * @return {boolean}
  */
 export function isKeyframes(container) {
-  return (
-    container?.type === 'atrule' &&
-    asciiLowerCase(
-      /** @type {import('postcss').AtRule} */ (container).name
-    ).includes('keyframes')
-  );
+  return container?.kind === KEYFRAMES;
 }
 
 /**
@@ -38,24 +30,20 @@ export function isKeyframes(container) {
  * @param {DeclarationKeys} keys the run's interner
  * @param {number} parentContext the context of the enclosing block, -1 for the stylesheet
  * @param {BlockRecord | RuleRecord} block the block, or the rule that nests
- * @param {TextTable} textTable the tokens the walk stored, which give each
- *   layer's prelude when it has a comment
  * @return {number}
  */
-export function containerContext(keys, parentContext, block, textTable) {
-  const node = /** @type {import('postcss').AnyNode} */ (block.node);
+export function containerContext(keys, parentContext, block) {
   let trie = step(step(keys.root, CONTEXT), parentContext);
-  if (node.type === 'atrule') {
-    const name = asciiLowerCase(node.name);
-    trie = step(step(trie, 'atrule'), name);
-    trie =
-      name === 'layer' && isAnonymousLayer(node, textTable)
-        ? step(step(trie, ANONYMOUS), block.index)
-        : step(trie, node.params);
-  } else if (node.type === 'rule') {
+  if (block.kind === RULE) {
     trie = step(step(trie, 'rule'), /** @type {RuleRecord} */ (block).selector);
+  } else if (block.kind === STYLESHEET) {
+    trie = step(trie, 'root');
   } else {
-    trie = step(trie, node.type);
+    trie = step(step(trie, 'atrule'), block.name);
+    trie =
+      block.kind === LAYER && block.anonymous
+        ? step(step(trie, ANONYMOUS), block.index)
+        : step(trie, block.params);
   }
   return keys.leafOf(trie);
 }

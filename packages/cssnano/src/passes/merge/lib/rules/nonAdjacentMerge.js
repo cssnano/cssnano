@@ -1,20 +1,25 @@
-import LastWriteIndex, { isConditionalGroupRule } from './lastWriteIndex.js';
+import LastWriteIndex from './lastWriteIndex.js';
 import joinByDeclarations from './declarationJoin.js';
 import { writesOf } from './ruleRewrite.js';
 import RepeatScan from './repeatScan.js';
-import { BlockRecord, NodeEntry } from './blockRecord.js';
+import {
+  BlockRecord,
+  CONDITIONAL_GROUP,
+  isAtRuleKind,
+  RULE,
+} from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
 import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
 
-/** @import {AtRule, Container, ChildNode, Rule} from 'postcss' */
 /** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {NodeEntry} from './blockRecord.js' */
 
 /**
- * @param {ChildNode | DeclarationRecord | RuleRecord | BlockRecord} entry
+ * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry
  * @param {BlockRecords} records
  * @param {(RuleRecord | DeclarationRecord)[]} entries grown in place
  * @return {boolean} see `collectEntries`
@@ -26,12 +31,11 @@ function collectFrom(records, entry, entries) {
       ? true
       : collectEntries(records, entry, entries);
   } else if (entry instanceof BlockRecord) {
-    if (!isConditionalGroupRule(/** @type {AtRule} */ (entry.node)))
-      return false;
+    if (entry.kind !== CONDITIONAL_GROUP) return false;
     return collectEntries(records, entry, entries);
   } else if (entry instanceof DeclarationRecord) {
     entries.push(entry);
-  } else if (entry.type === 'atrule' && !isConditionalGroupRule(entry)) {
+  } else if (isAtRuleKind(entry.kind) && entry.kind !== CONDITIONAL_GROUP) {
     return false;
   }
   return true;
@@ -46,7 +50,7 @@ function collectFrom(records, entry, entries) {
  */
 function collectEntries(records, block, entries) {
   // The declarations of a rule stand in its record, so its block skips them.
-  const ruleOwned = block.node.type === 'rule';
+  const ruleOwned = block.kind === RULE;
   const { links } = records;
   for (
     let entry = links.firstChild(block.index);
@@ -55,8 +59,7 @@ function collectEntries(records, block, entries) {
   ) {
     const item = records.entry(entry);
     if (ruleOwned && item instanceof DeclarationRecord) continue;
-    const child = item instanceof NodeEntry ? item.node : item;
-    if (!collectFrom(records, child, entries)) return false;
+    if (!collectFrom(records, item, entries)) return false;
   }
   return true;
 }
@@ -81,7 +84,7 @@ export function subtreeEntries(records, block) {
  * The key under which a live entry can join an earlier sibling, or null if it
  * cannot join any.
  *
- * @param {RuleRecord | BlockRecord | DeclarationRecord | ChildNode} entry
+ * @param {RuleRecord | BlockRecord | DeclarationRecord | NodeEntry} entry
  * @param {boolean} joinRules
  * @return {string | number | null}
  */
@@ -93,8 +96,7 @@ function joinKey(entry, joinRules) {
   // Siblings share their enclosing blocks, so their contexts are equal exactly
   // when their names and preludes are.
   if (entry instanceof BlockRecord) {
-    if (isConditionalGroupRule(/** @type {AtRule} */ (entry.node)))
-      return entry.context;
+    if (entry.kind === CONDITIONAL_GROUP) return entry.context;
   }
   return null;
 }
@@ -240,7 +242,7 @@ function joinBlocksBackward(block, mergeState) {
  * @return {boolean}
  */
 function joinInParent(block, mergeState, rules) {
-  const joinRules = rules && !isKeyframes(block.node);
+  const joinRules = rules && !isKeyframes(block);
   // A snapshot, since joining removes entries from the block.
   const entries = mergeState.records.liveEntries(block.index);
   const keys = entries.map((entry) => joinKey(entry, joinRules));

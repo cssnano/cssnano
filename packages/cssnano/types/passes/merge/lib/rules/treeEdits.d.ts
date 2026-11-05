@@ -1,9 +1,8 @@
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockRecords } from './blockRecords.js';
-import { BlockRecord } from './blockRecord.js';
+import { BlockRecord, NodeEntry } from './blockRecord.js';
 import type { Container, Root } from 'postcss';
 import type { RuleRecord } from './ruleRecord.js';
-import type { NodeEntry } from './blockRecord.js';
 import type { PropertyWrites } from './propertyWrites.js';
 import type MergeState from './mergeState.js';
 import type { RunContext } from '../../../ir/runContext.js';

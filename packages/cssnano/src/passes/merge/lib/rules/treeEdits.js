@@ -1,16 +1,25 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import cssnanoUtils from '#utils';
 import { BlockRecords } from './blockRecords.js';
-import { BlockRecord } from './blockRecord.js';
+import {
+  atRuleKind,
+  BlockRecord,
+  COMMENT,
+  LAYER,
+  NO_PRELUDE,
+  NodeEntry,
+  STYLESHEET,
+} from './blockRecord.js';
 import { declarationIsEqual } from './declarations.js';
-import { isDroppableWhenEmpty } from './droppableBlocks.js';
 import { containerContext } from './sameContainer.js';
 import { hasPendingEdits } from '../deferredChildEdits.js';
 import { sourceSelector } from '../../../../utils/sourceText.js';
 
+const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
+
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {NodeEntry} from './blockRecord.js' */
 /** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
@@ -43,7 +52,9 @@ const PENDING_EDITS = 'a container has edits its child list does not show';
  */
 export function buildRecords(root, context) {
   const { textTable } = context;
-  const records = new BlockRecords(new BlockRecord(root, false));
+  const records = new BlockRecords(
+    new BlockRecord(root, STYLESHEET, '', '', false, NO_PRELUDE)
+  );
   records.add(records.root);
   records.root.leadingWhitespace = root.first?.raws.before;
   let nodes = 0;
@@ -76,23 +87,27 @@ export function buildRecords(root, context) {
           record.context = containerContext(
             context.declarations,
             container.context,
-            record,
-            textTable
+            record
           );
         }
         fillChildren(record);
       } else if (child.type === 'atrule' && child.nodes) {
+        const name = asciiLowerCase(child.name);
+        const kind = atRuleKind(name);
         const nested = new BlockRecord(
           child,
-          isDroppableWhenEmpty(child, textTable)
+          kind,
+          name,
+          child.params,
+          kind === LAYER && isAnonymousLayer(child, textTable),
+          context.declarations.preludeId(child)
         );
         records.add(nested);
         records.links.linkLast(container.index, nested.index);
         nested.context = containerContext(
           context.declarations,
           container.context,
-          nested,
-          textTable
+          nested
         );
         fillChildren(nested);
       } else if (child.type === 'decl') {
@@ -103,8 +118,24 @@ export function buildRecords(root, context) {
           context.declarations
         );
         records.links.linkLast(container.index, declaration.index);
+      } else if (child.type === 'atrule') {
+        const name = asciiLowerCase(child.name);
+        const kind = atRuleKind(name);
+        const entry = records.bareEntry(
+          new NodeEntry(
+            child,
+            kind,
+            name,
+            child.params,
+            kind === LAYER && isAnonymousLayer(child, textTable),
+            context.declarations.preludeId(child)
+          )
+        );
+        records.links.linkLast(container.index, entry.index);
       } else {
-        const entry = records.bareEntry(child);
+        const entry = records.bareEntry(
+          new NodeEntry(child, COMMENT, '', '', false, NO_PRELUDE)
+        );
         records.links.linkLast(container.index, entry.index);
       }
     }
@@ -113,8 +144,7 @@ export function buildRecords(root, context) {
   records.root.context = containerContext(
     context.declarations,
     -1,
-    records.root,
-    textTable
+    records.root
   );
   fillChildren(records.root);
   records.settle();

@@ -1,9 +1,10 @@
 import cssnanoUtils from '#utils';
 import { step } from '../../../ir/declarationKey.js';
+import { LAYER, RULE } from '../rules/blockRecord.js';
 
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {AtRule, Comment} from 'postcss' */
-/** @import {BlockRecord} from '../rules/blockRecord.js' */
+/** @import {Comment} from 'postcss' */
+/** @import {BlockRecord, NodeEntry} from '../rules/blockRecord.js' */
 /** @import {RuleRecord} from '../rules/ruleRecord.js' */
 
 const { isImportantComment } = cssnanoUtils;
@@ -17,14 +18,6 @@ const BLOCK = Symbol('block');
  * `layered` holds the ids of the nodes that declare a layer, which keep their
  * place in the cascade.
  */
-
-/**
- * @param {string | undefined} value
- * @return {string | undefined}
- */
-function trimValue(value) {
-  return value ? value.trim() : value;
-}
 
 /**
  * Records the id of a node in `layered` when the node declares a layer.
@@ -54,20 +47,15 @@ export function commentId(keys, node) {
 }
 
 /**
- * The id of a statement at-rule, which has no block.
+ * The id of a statement at-rule, which has no block: its prelude's id.
  *
  * @param {DeclarationKeys} keys
  * @param {Set<number>} layered
- * @param {AtRule} node
+ * @param {NodeEntry} entry the statement at-rule
  * @return {number}
  */
-export function statementId(keys, layered, node) {
-  const path = atRulePath(step(keys.root, 'atrule'), node);
-  return markLayered(
-    layered,
-    keys.leafOf(path),
-    node.name.toLowerCase() === 'layer'
-  );
+export function statementId(keys, layered, entry) {
+  return markLayered(layered, entry.preludeId, entry.kind === LAYER);
 }
 
 /**
@@ -80,18 +68,16 @@ export function statementId(keys, layered, node) {
  * @return {number}
  */
 export function containerId(keys, layered, container, childIds) {
-  const node = container.node;
   let path;
   let declaresLayer = false;
-  if (node.type === 'rule') {
+  if (container.kind === RULE) {
     path = step(
       step(keys.root, 'rule'),
       /** @type {RuleRecord} */ (container).selector
     );
   } else {
-    const atRule = /** @type {AtRule} */ (node);
-    path = atRulePath(step(keys.root, 'atrule'), atRule);
-    declaresLayer = atRule.name.toLowerCase() === 'layer';
+    path = keys.preludeTrie(container.preludeId);
+    declaresLayer = container.kind === LAYER;
   }
   path = step(path, BLOCK);
   for (const id of childIds) {
@@ -99,19 +85,4 @@ export function containerId(keys, layered, container, childIds) {
     path = step(path, id);
   }
   return markLayered(layered, keys.leafOf(path), declaresLayer);
-}
-
-/**
- * The path of an at-rule's name, params and trimmed raws, which the id of its
- * block or statement extends.
- *
- * @param {Map<unknown, unknown>} trie the path that begins at the at-rule
- * @param {AtRule} node
- * @return {Map<unknown, unknown>}
- */
-function atRulePath(trie, node) {
-  let path = step(trie, node.name);
-  path = step(path, node.params);
-  path = step(path, trimValue(node.raws.before));
-  return step(path, trimValue(node.raws.afterName));
 }

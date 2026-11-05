@@ -1,10 +1,10 @@
 /** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {NodeEntry} from './blockRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {RuleRecord as Rule} from './ruleRecord.js' */
-import { NodeEntry } from './blockRecord.js';
 
 /**
  * The first child the block at `index` holds now, without copying the child
@@ -29,25 +29,24 @@ export function liveCount(records, index) {
 /**
  * The entries the block at `index` holds now, in order: the record of each
  * rule, the record of each at-rule block, the record of each declaration, and
- * the node of each bare node.
+ * the record of each bare node.
  *
  * @param {BlockRecords} records
  * @param {number} index
- * @return {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]}
+ * @return {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]}
  */
 export function liveEntries(records, index) {
-  /** @type {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]} */
+  /** @type {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]} */
   const entries = [];
   for (
     let entry = records.links.firstChild(index);
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
-    const item = records.entry(entry);
     entries.push(
-      item instanceof NodeEntry
-        ? item.node
-        : /** @type {RuleRecord | BlockRecord | DeclarationRecord} */ (item)
+      /** @type {RuleRecord | BlockRecord | DeclarationRecord | NodeEntry} */ (
+        records.entry(entry)
+      )
     );
   }
   return entries;

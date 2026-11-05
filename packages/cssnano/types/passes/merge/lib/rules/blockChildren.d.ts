@@ -1,5 +1,13 @@
+/** @import {ChildNode} from 'postcss' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {NodeEntry} from './blockRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord as Rule} from './ruleRecord.js' */
 import type { ChildNode } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
+import type { NodeEntry } from './blockRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecord } from './blockRecord.js';
@@ -23,13 +31,13 @@ export declare function liveCount(records: BlockRecords, index: number): number;
 /**
  * The entries the block at `index` holds now, in order: the record of each
  * rule, the record of each at-rule block, the record of each declaration, and
- * the node of each bare node.
+ * the record of each bare node.
  *
  * @param {BlockRecords} records
  * @param {number} index
- * @return {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]}
+ * @return {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]}
  */
-export declare function liveEntries(records: BlockRecords, index: number): (RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[];
+export declare function liveEntries(records: BlockRecords, index: number): (RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[];
 /**
  * The children the block at `index` holds now, in order: the node of each
  * entry of its chain.

@@ -1,6 +1,7 @@
 import { SelectorList } from './selectorList.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { NO_PRELUDE, RULE } from './blockRecord.js';
 
 const STALE_KEYS =
   'declaration keys of a rule record are out of step with its chain';
@@ -68,6 +69,21 @@ export class RuleRecord extends SelectorList {
 
   /** @type {number} the place of the record in the arena of its records, -1 until added */
   index = -1;
+
+  /** @type {number} RULE, which the window reads with the other records */
+  kind = RULE;
+
+  /** @type {string} '' for a rule, which has no at-rule name */
+  name = '';
+
+  /** @type {string} '' for a rule, which has no prelude */
+  params = '';
+
+  /** @type {boolean} false for a rule, which is no layer */
+  anonymous = false;
+
+  /** @type {number} NO_PRELUDE for a rule */
+  preludeId = NO_PRELUDE;
 
   /**
    * @param {Rule} node the rule the record describes

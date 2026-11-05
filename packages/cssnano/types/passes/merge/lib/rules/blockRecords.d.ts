@@ -4,7 +4,8 @@ import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockLinks } from './blockLinks.js';
-import { BlockRecord, NodeEntry } from './blockRecord.js';
+import { BlockRecord } from './blockRecord.js';
+import type { NodeEntry } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 /**
  * The records of one run. One arena holds every block record, every rule record,
@@ -104,9 +105,9 @@ export declare class BlockRecords {
      * The live entries of the block at `index`; see `blockChildren.js`.
      *
      * @param {number} index
-     * @return {(RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[]}
+     * @return {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]}
      */
-    liveEntries(index: number): (RuleRecord | BlockRecord | DeclarationRecord | ChildNode)[];
+    liveEntries(index: number): (RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[];
     /**
      * The live children of the block at `index`; see `blockChildren.js`.
      *
@@ -168,13 +169,12 @@ export declare class BlockRecords {
      */
     blockDeclaration(node: import('postcss').Declaration, properties: PropertyTable, declarations: DeclarationKeys): DeclarationRecord;
     /**
-     * Adds a bare node of a block, a comment or a statement at-rule, to the
-     * arena, which gives it the next index.
+     * Adds a bare node, a comment or a statement at-rule, to the arena.
      *
-     * @param {ChildNode} node
+     * @param {NodeEntry} entry
      * @return {NodeEntry}
      */
-    bareEntry(node: ChildNode): NodeEntry;
+    bareEntry(entry: NodeEntry): NodeEntry;
     /**
      * Builds the record of a rule and adds it to the arena. The caller links its
      * children, in order, and places the rule. Selector arguments default to the

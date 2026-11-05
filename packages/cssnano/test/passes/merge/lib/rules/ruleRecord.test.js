@@ -1,3 +1,8 @@
+import {
+  COMMENT,
+  NO_PRELUDE,
+  NodeEntry,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -262,7 +267,16 @@ test('appendChild should count an appended comment among the children without ad
   const { state, records, record } = arenaOf('a{color:red}');
   records.appendChild(
     record,
-    state.records.bareEntry(postcss.comment({ text: 'note' }))
+    state.records.bareEntry(
+      new NodeEntry(
+        postcss.comment({ text: 'note' }),
+        COMMENT,
+        '',
+        '',
+        false,
+        NO_PRELUDE
+      )
+    )
   );
   assert.equal(record.childCount(), 2);
   assert.equal(record.declarationsOf(records).length, 1);

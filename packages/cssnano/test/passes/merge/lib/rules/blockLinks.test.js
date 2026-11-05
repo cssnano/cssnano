@@ -1,3 +1,8 @@
+import {
+  COMMENT,
+  NO_PRELUDE,
+  NodeEntry,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
 import assert from 'node:assert/strict';
@@ -92,7 +97,16 @@ test('enclosingContainer should give the rule that nests the rule, and the block
 test('liveCount should count a comment linked into a block', () => {
   const { root, records } = setup('@media print{a{color:red}}');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
-  const comment = records.bareEntry(postcss.comment({ text: 'c' }));
+  const comment = records.bareEntry(
+    new NodeEntry(
+      postcss.comment({ text: 'c' }),
+      COMMENT,
+      '',
+      '',
+      false,
+      NO_PRELUDE
+    )
+  );
   records.links.linkLast(media.index, comment.index);
   assert.equal(records.liveCount(media.index), 2);
 });

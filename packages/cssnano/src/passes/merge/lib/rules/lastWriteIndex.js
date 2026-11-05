@@ -1,10 +1,13 @@
-import cssnanoUtils from '#utils';
-import { BlockRecord, NodeEntry } from './blockRecord.js';
+import {
+  BlockRecord,
+  CONDITIONAL_GROUP,
+  isAtRuleKind,
+  NodeEntry,
+} from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { PropertyWrites } from './propertyWrites.js';
 
-/** @import {AtRule, ChildNode, Rule} from 'postcss' */
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
@@ -12,18 +15,6 @@ import { PropertyWrites } from './propertyWrites.js';
 // they do at the top level. Any other at-rule may depend on its position, as
 // `@layer` statements and `@import` do for layer order, or have effects this
 // module does not model, so a move across one is never safe.
-const conditionalGroupRules = new Set(['media', 'supports', 'container']);
-
-/**
- * @param {ChildNode} node
- * @return {node is AtRule}
- */
-export function isConditionalGroupRule(node) {
-  return (
-    node.type === 'atrule' &&
-    conditionalGroupRules.has(cssnanoUtils.asciiLowerCase(node.name))
-  );
-}
 
 /**
  * A table of the latest position at which each property was declared among
@@ -87,7 +78,7 @@ export default class LastWriteIndex {
    * a barrier, since moving anything across it is not known to preserve the
    * cascade.
    *
-   * @param {ChildNode | DeclarationRecord | RuleRecord | BlockRecord} entry a
+   * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry a
    * live entry of a block
    * @param {number} position
    * @param {(record: RuleRecord) => string[] | null} keysOf
@@ -98,7 +89,7 @@ export default class LastWriteIndex {
   }
 
   /**
-   * @param {ChildNode | DeclarationRecord | RuleRecord | BlockRecord} entry
+   * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry
    * @param {number} position
    * @param {string[] | null} keys
    * @param {(record: RuleRecord) => string[] | null} keysOf
@@ -119,14 +110,18 @@ export default class LastWriteIndex {
         this.record(declaration.keys, position, own);
     } else if (entry instanceof BlockRecord) {
       // Only an at-rule has a block record among the entries.
-      if (isConditionalGroupRule(/** @type {AtRule} */ (entry.node))) {
+      if (entry.kind === CONDITIONAL_GROUP) {
         this.#recordBlock(entry.index, position, keys, keysOf);
       } else {
         this.#lastBarrier = Math.max(this.#lastBarrier, position);
       }
     } else if (entry instanceof DeclarationRecord) {
       this.record(entry.keys, position, keys);
-    } else if (entry.type === 'atrule' && !isConditionalGroupRule(entry)) {
+    } else if (
+      entry instanceof NodeEntry &&
+      isAtRuleKind(entry.kind) &&
+      entry.kind !== CONDITIONAL_GROUP
+    ) {
       this.#lastBarrier = Math.max(this.#lastBarrier, position);
     }
   }
@@ -147,13 +142,7 @@ export default class LastWriteIndex {
       entry !== -1;
       entry = links.nextSibling(entry)
     ) {
-      const item = this.#records.entry(entry);
-      this.#recordNode(
-        item instanceof NodeEntry ? item.node : item,
-        position,
-        keys,
-        keysOf
-      );
+      this.#recordNode(this.#records.entry(entry), position, keys, keysOf);
     }
   }
 

@@ -10,7 +10,6 @@ import { tokensText } from '../../../../values/tokensText.js';
 /** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -32,8 +31,6 @@ export default class MergeState {
   #declarations;
   /** @type {(selector: string, piece?: RangePiece | null) => string | null} */
   #elementKeyOf = createElementKeyLookup();
-  /** @type {TextTable} */
-  #textTable;
   /** @type {Set<Container> | null} */
   #createdBlocks;
   /**
@@ -43,11 +40,6 @@ export default class MergeState {
    * @type {BlockRecords}
    */
   records = /** @type {BlockRecords} */ (/** @type {unknown} */ (null));
-
-  /** @returns {TextTable} the selector tokens the walk stored */
-  get textTable() {
-    return this.#textTable;
-  }
 
   /**
    * @param {readonly string[]} browsers
@@ -61,7 +53,6 @@ export default class MergeState {
     this.#declarations = context.declarations;
     this.properties = context.properties;
     this.#createdBlocks = context.createdBlocks;
-    this.#textTable = context.textTable;
   }
 
   /**
@@ -246,7 +237,7 @@ export default class MergeState {
     );
     const containerB = this.records.container(blockB);
     if (!sameContainer(containerA, containerB)) return false;
-    if (isKeyframes(containerA.node)) return false;
+    if (isKeyframes(containerA)) return false;
     if (recordA.context !== -1) return false;
     if (recordB.context !== -1) return false;
 

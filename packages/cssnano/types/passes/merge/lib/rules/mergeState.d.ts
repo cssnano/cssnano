@@ -1,6 +1,5 @@
 import type { Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
-import type { TextTable } from '../../../../values/textTable.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
@@ -8,7 +7,6 @@ import type { BlockRecord } from './blockRecord.js';
 /** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -31,8 +29,6 @@ export default class MergeState {
      * @type {BlockRecords}
      */
     records: BlockRecords;
-    /** @returns {TextTable} the selector tokens the walk stored */
-    get textTable(): TextTable;
     /**
      * @param {readonly string[]} browsers
      * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
