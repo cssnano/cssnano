@@ -239,8 +239,8 @@ test('replaceChildren should move a child to the container given for it', () => 
   const [media1, media2] = /** @type {Container[]} */ (root.nodes);
   const moved = /** @type {ChildNode} */ (media2.first);
   replaceChildren([
-    { container: media2, children: [], head: moved },
-    { container: media1, children: [media1.first, moved], head: media1.first },
+    { container: media2, children: [], leading: null },
+    { container: media1, children: [media1.first, moved], leading: null },
   ]);
   assert.equal(moved.parent, media1);
 });
@@ -252,8 +252,8 @@ test('replaceChildren should leave the container that gave up a child empty', ()
   const [media1, media2] = /** @type {Container[]} */ (root.nodes);
   const moved = /** @type {ChildNode} */ (media2.first);
   replaceChildren([
-    { container: media2, children: [], head: moved },
-    { container: media1, children: [media1.first, moved], head: media1.first },
+    { container: media2, children: [], leading: null },
+    { container: media1, children: [media1.first, moved], leading: null },
   ]);
   assert.deepEqual(media2.nodes, []);
 });
@@ -265,8 +265,8 @@ test('replaceChildren should keep the whitespace before a rule moved into anothe
   const [media1, media2] = /** @type {Container[]} */ (root.nodes);
   const moved = /** @type {ChildNode} */ (media2.first);
   replaceChildren([
-    { container: media2, children: [], head: moved },
-    { container: media1, children: [media1.first, moved], head: media1.first },
+    { container: media2, children: [], leading: null },
+    { container: media1, children: [media1.first, moved], leading: null },
   ]);
   assert.equal(
     root.toString(),
@@ -282,8 +282,8 @@ test('replaceChildren should move the declarations of a rebuilt container into i
   const [media1, media2] = /** @type {Container[]} */ (supports.nodes);
   const moved = /** @type {ChildNode} */ (media2.first);
   replaceChildren([
-    { container: media2, children: [], head: moved },
-    { container: media1, children: [media1.first, moved], head: media1.first },
+    { container: media2, children: [], leading: null },
+    { container: media1, children: [media1.first, moved], leading: null },
   ]);
   assert.deepEqual(treeProps(supports), ['color', 'width']);
 });

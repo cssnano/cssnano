@@ -77,12 +77,12 @@ export function liveChildren(records, index) {
  * Gives an appended child the whitespace of the last child when it has none, as
  * PostCSS gives it, so the records keep what the node will print.
  *
- * @param {{before: string | undefined}} child the record of the appended child
- * @param {{before: string | undefined} | undefined} last the record of the child before `child`
+ * @param {{before: string | null}} child the record of the appended child
+ * @param {{before: string | null} | undefined} last the record of the child before `child`
  * @return {void}
  */
 export function inheritWhitespace(child, last) {
-  if (child.before !== undefined || last === undefined) return;
+  if (child.before !== null || last === undefined) return;
   const sample = last.before;
-  if (sample !== undefined) child.before = sample.replaceAll(/\S/gv, '');
+  if (sample !== null) child.before = sample.replaceAll(/\S/gv, '');
 }

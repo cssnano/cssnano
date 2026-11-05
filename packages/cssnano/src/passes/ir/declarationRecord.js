@@ -34,7 +34,7 @@ export class DeclarationRecord {
   anonymous = false;
   /** @type {number} NO_PRELUDE for a declaration */
   preludeId = NO_PRELUDE;
-  /** @type {string | undefined} the whitespace before the declaration, as its node gives it at the build */
+  /** @type {string | null} the whitespace before the declaration, as its node gives it at the build */
   before = '';
 
   /**
@@ -72,6 +72,6 @@ export function recordDeclaration(node, properties, declarations) {
     properties.keysOf(node.prop),
     declarations.keyOf(node)
   );
-  record.before = node.raws.before;
+  record.before = node.raws.before ?? null;
   return record;
 }

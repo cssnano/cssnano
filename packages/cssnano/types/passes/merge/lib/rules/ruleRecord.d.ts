@@ -79,8 +79,8 @@ export declare class RuleRecord extends SelectorList {
      * @type {number}
      */
     template: number;
-    /** @type {string | undefined} the whitespace before the rule, as its node gives it at the build */
-    before: string | undefined;
+    /** @type {string | null} the whitespace before the rule, as its node gives it at the build */
+    before: string | null;
     /**
      * @param {Rule} node the rule the record describes
      * @param {string[]} selectors

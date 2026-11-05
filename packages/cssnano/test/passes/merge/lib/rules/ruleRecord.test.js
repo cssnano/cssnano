@@ -339,5 +339,5 @@ test('appendChild should leave the whitespace of a declaration appended to a rul
   const node = postcss.decl({ prop: 'width', value: '1px' });
   const declaration = declarationOf(state, node);
   records.appendChild(record, declaration);
-  assert.equal(declaration.before, undefined);
+  assert.equal(declaration.before, null);
 });

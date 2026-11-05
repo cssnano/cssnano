@@ -56,7 +56,7 @@ export function buildRecords(root, context) {
     new BlockRecord(root, STYLESHEET, '', '', false, NO_PRELUDE)
   );
   records.add(records.root);
-  records.root.leadingWhitespace = root.first?.raws.before;
+  records.root.leadingWhitespace = root.first?.raws.before ?? null;
   let nodes = 0;
   let declarations = 0;
   /**
@@ -81,7 +81,7 @@ export function buildRecords(root, context) {
           source === child.selector ? undefined : source,
           textTable.stored(child)
         );
-        record.before = child.raws.before;
+        record.before = child.raws.before ?? null;
         records.links.linkLast(container.index, record.index);
         // A rule that holds a rule or an at-rule nests, and gets its context.
         if (child.nodes.some(isRuleOrAtRule)) {
@@ -103,7 +103,7 @@ export function buildRecords(root, context) {
           kind === LAYER && isAnonymousLayer(child, textTable),
           context.declarations.preludeId(child)
         );
-        nested.before = child.raws.before;
+        nested.before = child.raws.before ?? null;
         records.add(nested);
         records.links.linkLast(container.index, nested.index);
         nested.context = containerContext(
@@ -133,13 +133,13 @@ export function buildRecords(root, context) {
             context.declarations.preludeId(child)
           )
         );
-        entry.before = child.raws.before;
+        entry.before = child.raws.before ?? null;
         records.links.linkLast(container.index, entry.index);
       } else {
         const entry = records.bareEntry(
           new NodeEntry(child, COMMENT, '', '', false, NO_PRELUDE)
         );
-        entry.before = child.raws.before;
+        entry.before = child.raws.before ?? null;
         records.links.linkLast(container.index, entry.index);
       }
     }
@@ -281,6 +281,6 @@ export function removeRules(mergeState, indices) {
   // takes its own as the leading whitespace of the stylesheet.
   if (leadsRoot) {
     const head = arena.links.firstChild(root.index);
-    root.leadingWhitespace = head === -1 ? undefined : arena.entry(head).before;
+    root.leadingWhitespace = head === -1 ? null : arena.entry(head).before;
   }
 }

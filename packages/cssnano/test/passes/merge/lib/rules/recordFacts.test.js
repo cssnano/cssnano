@@ -138,3 +138,51 @@ test('the tree check throws when an at-rule record names another at-rule than it
   root.first.name = 'supports';
   assert.throws(() => assertRecordsMatchTree(records));
 });
+
+/**
+ * A stylesheet built through the PostCSS API, whose nodes have no
+ * `raws.before`, so the printer infers their whitespace.
+ *
+ * @return {{root: import('postcss').Root, records: import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecords}}
+ */
+function recordsOfBuiltTree() {
+  const root = postcss.root();
+  root.append(
+    postcss
+      .rule({ selector: 'a' })
+      .append(postcss.decl({ prop: 'color', value: 'red' })),
+    postcss
+      .atRule({ name: 'media', params: 'print' })
+      .append(postcss.rule({ selector: 'b' })),
+    postcss.atRule({ name: 'import', params: '"x.css"' }),
+    postcss.comment({ text: 'c' })
+  );
+  const state = new MergeState(['chrome 120'], createRunContext());
+  state.records = buildTestRecords(root, state);
+  return { root, records: state.records };
+}
+
+test('every record of a node without raws.before holds null, so write-back leaves the inferred whitespace alone', () => {
+  const { root, records } = recordsOfBuiltTree();
+  const [rule, media, statement, comment] = root.nodes;
+  assert.deepEqual(
+    [
+      ruleRecordOf(records, rule).before,
+      ruleRecordOf(records, rule).declarationsOf(records)[0].before,
+      blockRecordOf(records, media).before,
+      entryOf(records, statement).before,
+      entryOf(records, comment).before,
+    ],
+    [null, null, null, null, null]
+  );
+});
+
+test('the stylesheet holds null as its leading whitespace when its first child has no raws.before', () => {
+  const { records } = recordsOfBuiltTree();
+  assert.equal(records.root.leadingWhitespace, null);
+});
+
+test('an empty stylesheet holds null as its leading whitespace', () => {
+  const { records } = recordsOf('');
+  assert.equal(records.root.leadingWhitespace, null);
+});
