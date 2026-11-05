@@ -160,6 +160,7 @@ export function buildMergedRule(
     selectors.join()
   );
   receivingRecord.mark();
+  receivingRecord.before = second.before;
   if (!group) mergeState.storeJoined(receivingRecord, first, second);
   mergeState.reportCreated(receivingBlock);
   // The merged rule takes the declarations of the earlier rule themselves.

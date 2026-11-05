@@ -7,7 +7,7 @@ const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../../src/values/textTable.js');
 const { mergePass } = await import('../../../src/passes/merge/index.js');
-const { buildRecords } =
+const { buildRecords, takePlaceOf } =
   await import('../../../src/passes/merge/lib/rules/treeEdits.js');
 const { writeBack } =
   await import('../../../src/passes/merge/lib/rules/writeBack.js');
@@ -188,4 +188,53 @@ suite('the merge pass writes selectors through its records', () => {
     writeBack(records, new TextTable());
     assert.equal(root.toString(), 'a , c {color:red}');
   });
+});
+
+/**
+ * The records of `css`, built the way the driver builds them, with the rule
+ * records of its first level in order.
+ *
+ * @param {string} css
+ */
+function whitespaceRecordsOf(css) {
+  const root = postcss.parse(css);
+  const records = buildRecords(root, createRunContext(new TextTable()));
+  return { root, records };
+}
+
+test('write-back gives a rule the whitespace its record holds, in a container it does not rebuild', () => {
+  const { root, records } = whitespaceRecordsOf('a{color:red}\nb{color:blue}');
+  const second = root.last;
+  records.rule(
+    records.links.nextSibling(records.links.firstChild(records.root.index))
+  ).before = '\n\n';
+  writeBack(records);
+  assert.equal(second.raws.before, '\n\n');
+});
+
+test('write-back gives a rule nested in an at-rule the whitespace its record holds', () => {
+  const { root, records } = whitespaceRecordsOf(
+    '@media x{a{color:red}\nb{color:blue}}'
+  );
+  const media = records.blockEntry(
+    records.links.firstChild(records.root.index)
+  );
+  const nested = records.rule(
+    records.links.nextSibling(records.links.firstChild(media.index))
+  );
+  nested.before = '\n\n';
+  writeBack(records);
+  assert.equal(root.first.last.raws.before, '\n\n');
+});
+
+test('takePlaceOf gives the earlier record the whitespace of the later one, which write-back writes', () => {
+  const { root, records } = whitespaceRecordsOf('a{}\n\nb{}\n');
+  const earlier = records.rule(records.links.firstChild(records.root.index));
+  const later = records.rule(
+    records.links.nextSibling(records.links.firstChild(records.root.index))
+  );
+  takePlaceOf({ records }, root, earlier, later);
+  assert.equal(earlier.before, '\n\n');
+  writeBack(records);
+  assert.equal(root.first.raws.before, '\n\n');
 });

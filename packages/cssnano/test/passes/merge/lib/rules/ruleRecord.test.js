@@ -326,13 +326,15 @@ test('assertRecordsMatchTree should throw under consistency checks when a commen
 test('appendChild should give an appended declaration without raws.before the whitespace of the last child', () => {
   const { state, records, record } = arenaOf('a{\n  color:red}');
   const node = postcss.decl({ prop: 'width', value: '1px' });
-  records.appendChild(record, declarationOf(state, node));
-  assert.equal(node.raws.before, '\n  ');
+  const declaration = declarationOf(state, node);
+  records.appendChild(record, declaration);
+  assert.equal(declaration.before, '\n  ');
 });
 
 test('appendChild should leave the whitespace of a declaration appended to a rule with no children unset', () => {
   const { state, records, record } = arenaOf('a{}');
   const node = postcss.decl({ prop: 'width', value: '1px' });
-  records.appendChild(record, declarationOf(state, node));
-  assert.equal(node.raws.before, undefined);
+  const declaration = declarationOf(state, node);
+  records.appendChild(record, declaration);
+  assert.equal(declaration.before, undefined);
 });

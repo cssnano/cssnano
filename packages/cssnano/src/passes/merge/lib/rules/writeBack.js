@@ -239,6 +239,33 @@ function writeSelectors(records, textTable) {
 }
 
 /**
+ * Assigns the whitespace before each live entry, and the entries of its
+ * children, from the records, where a merge may have changed it. Runs after
+ * the appends, so PostCSS's normalizing cannot change the value. A record whose
+ * value is undefined leaves its node's whitespace as it is.
+ *
+ * @param {BlockRecords} records
+ * @param {BlockRecord | RuleRecord} container
+ * @return {void}
+ */
+function writeBefore(records, container) {
+  for (
+    let entry = records.links.firstChild(container.index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    const item = records.entry(entry);
+    const node = records.nodeOf(entry);
+    if (item.before !== undefined && node.raws.before !== item.before) {
+      node.raws.before = item.before;
+    }
+    if (item instanceof BlockRecord || item instanceof RuleRecord) {
+      writeBefore(records, item);
+    }
+  }
+}
+
+/**
  * Writes the selectors, then gives each container in the live tree whose
  * children differ from its node the children the records hold, and each plain
  * rule that an edit changed the children of. A container that already matches
@@ -286,4 +313,11 @@ export function writeBack(records, textTable = new TextTable()) {
   };
   visit(records.root);
   replaceChildren(rebuilt);
+  writeBefore(records, records.root);
+  // The first child of the stylesheet takes the leading whitespace last.
+  const first = records.root.node.first;
+  const { leadingWhitespace } = records.root;
+  if (first && leadingWhitespace !== undefined) {
+    first.raws.before = leadingWhitespace;
+  }
 }

@@ -45,6 +45,13 @@ export declare class BlockRecord {
     anonymous: boolean;
     /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
     preludeId: number;
+    /**
+     * The whitespace before the block, as its node's `raws.before` gives it at
+     * the build; write-back assigns the value a merge gives the record.
+     *
+     * @type {string | undefined}
+     */
+    before: string | undefined;
     /** @type {boolean} whether the block applies nothing once it is empty */
     droppable: boolean;
     /**
@@ -115,6 +122,8 @@ export declare class NodeEntry {
     anonymous: boolean;
     /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
     preludeId: number;
+    /** @type {string | undefined} the whitespace before the node, see `BlockRecord#before` */
+    before: string | undefined;
     /**
      * @param {ChildNode} node
      * @param {number} kind
