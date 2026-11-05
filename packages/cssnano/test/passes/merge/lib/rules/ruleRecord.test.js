@@ -75,7 +75,10 @@ test('compatible should be false after absorbEarlier takes an incompatible earli
 test('recordRule should give the record of a rule the rule as its node', () => {
   const rule = postcss.parse('a{color:red}').first;
   const { state } = arenaOf('a{}');
-  assert.equal(state.records.recordRule(rule).node, rule);
+  assert.equal(
+    state.records.recordRule(rule, rule.selectors, rule.selector).node,
+    rule
+  );
 });
 
 test('declarationKeys should list the id of each declaration in order', () => {

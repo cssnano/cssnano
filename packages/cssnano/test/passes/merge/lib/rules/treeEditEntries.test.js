@@ -60,7 +60,11 @@ test('substitute with one replacement should put it where the rule stood', () =>
   const { root, state } = setup('a{color:red}b{width:1px}c{height:1px}');
   const [, b] = /** @type {Rule[]} */ (root.nodes);
   const record = ruleRecordOf(state.records, b);
-  const replacement = state.records.recordRule(postcss.rule({ selector: 'x' }));
+  const replacement = state.records.recordRule(
+    postcss.rule({ selector: 'x' }),
+    ['x'],
+    'x'
+  );
   state.records.substitute(record.index, [replacement.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'c']);
 });
@@ -69,8 +73,16 @@ test('substitute with several replacements should keep their order where the rul
   const { root, state } = setup('a{color:red}b{width:1px}c{height:1px}');
   const [, b] = /** @type {Rule[]} */ (root.nodes);
   const record = ruleRecordOf(state.records, b);
-  const first = state.records.recordRule(postcss.rule({ selector: 'x' }));
-  const second = state.records.recordRule(postcss.rule({ selector: 'y' }));
+  const first = state.records.recordRule(
+    postcss.rule({ selector: 'x' }),
+    ['x'],
+    'x'
+  );
+  const second = state.records.recordRule(
+    postcss.rule({ selector: 'y' }),
+    ['y'],
+    'y'
+  );
   state.records.substitute(record.index, [first.index, second.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'y', 'c']);
 });

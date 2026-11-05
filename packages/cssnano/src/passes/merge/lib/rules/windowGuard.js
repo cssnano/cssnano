@@ -20,6 +20,7 @@ const NODE_PROPERTIES = [
   'important',
   'name',
   'params',
+  'raws',
 ];
 
 /** Table reads and writes the window must not make. */

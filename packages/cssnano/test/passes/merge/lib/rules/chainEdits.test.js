@@ -44,7 +44,11 @@ test('substitute should put the replacement in the chain where the rule stood', 
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const [media] = /** @type {Container[]} */ (root.nodes);
   const [a, b] = /** @type {Rule[]} */ (/** @type {Container} */ (media).nodes);
-  const replacement = state.records.recordRule(postcss.rule({ selector: 'x' }));
+  const replacement = state.records.recordRule(
+    postcss.rule({ selector: 'x' }),
+    ['x'],
+    'x'
+  );
   const mediaIndex = indexOfBlock(state, media);
   state.records.substitute(ruleRecordOf(state.records, a).index, [
     replacement.index,

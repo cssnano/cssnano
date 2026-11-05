@@ -43,7 +43,11 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
     mergeState.records
   );
   const incoming = /** @type {Rule} */ (postcss.parse('x{width:1px}').first);
-  const incomingRecord = mergeState.records.recordRule(incoming);
+  const incomingRecord = mergeState.records.recordRule(
+    incoming,
+    incoming.selectors,
+    incoming.selector
+  );
   for (const node of incoming.nodes) {
     mergeState.records.appendChild(
       incomingRecord,
