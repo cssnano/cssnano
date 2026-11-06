@@ -35,65 +35,65 @@ function firstNodeWithRecords(css) {
 }
 
 test('last-write index ignores a write to another known element', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['h2']);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h1']), false);
 });
 
 test('last-write index reports a write to the same known element', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['h1']);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h1']), true);
 });
 
 test('last-write index reports a write to any element on one of several target elements', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['p']);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h1', 'p']), true);
 });
 
 test('last-write index reports a write whose element is unknown for any target element', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, null);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h1']), true);
 });
 
 test('last-write index with an unknown target element counts writes to every element', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['h2']);
   assert.equal(index.conflictsSince([decl('color')], 0, null), true);
 });
 
 test('last-write index reports a barrier for any target element', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   const { node, records } = firstNodeWithRecords('@layer x{}');
-  index.recordNode(entryOf(records, node), 1, unknownElements);
+  index.recordNode(noBlocks, entryOf(records, node), 1, unknownElements);
   assert.equal(index.conflictsSince([], 0, ['h1']), true);
 });
 
 test('last-write index reports a known-element write to a different property as no conflict', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('top'), 1, ['h1']);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h1']), false);
 });
 
 test('last-write index with a known element still applies a later all to that element', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('all'), 1, ['h2']);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h2']), true);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h1']), false);
 });
 
 test('last-write index keeps a write at the queried position out of the answer for a known element', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['h1']);
   assert.equal(index.conflictsSince([decl('color')], 1, ['h1']), false);
 });
 
 test('last-write index recordNode records each rule declaration under its element keys', () => {
   const { node, records } = firstNodeWithRecords('h2{color:red}');
-  const index = new LastWriteIndex(records);
-  index.recordNode(entryOf(records, node), 1, () => ['h2']);
+  const index = new LastWriteIndex();
+  index.recordNode(records, entryOf(records, node), 1, () => ['h2']);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h1']), false);
   assert.equal(index.conflictsSince([decl('color')], 0, ['h2']), true);
 });
@@ -126,38 +126,38 @@ function entriesOf(css) {
 
 test('last-write index conflictsSinceIn ignores a write to an element other than the rule of the declaration', () => {
   const { records, entries } = entriesOf('h1{color:red}');
-  const index = new LastWriteIndex(records);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['h2']);
-  assert.equal(index.conflictsSinceIn(entries, 0, keysOfRule), false);
+  assert.equal(index.conflictsSinceIn(records, entries, 0, keysOfRule), false);
 });
 
 test('last-write index conflictsSinceIn reports a write to the element of the rule of the declaration', () => {
   const { records, entries } = entriesOf('h1{color:red}');
-  const index = new LastWriteIndex(records);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['h1']);
-  assert.equal(index.conflictsSinceIn(entries, 0, keysOfRule), true);
+  assert.equal(index.conflictsSinceIn(records, entries, 0, keysOfRule), true);
 });
 
 test('last-write index conflictsSinceIn reports a write to the element of any rule among the entries', () => {
   const { records, entries } = entriesOf('h1{top:0}p{color:red}');
-  const index = new LastWriteIndex(records);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['p']);
-  assert.equal(index.conflictsSinceIn(entries, 0, keysOfRule), true);
+  assert.equal(index.conflictsSinceIn(records, entries, 0, keysOfRule), true);
 });
 
 test('last-write index conflictsSinceIn counts every write when a rule among the entries has an unknown element', () => {
   const { records, entries } = entriesOf('h1{color:red}*{top:0}');
-  const index = new LastWriteIndex(records);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['h2']);
-  assert.equal(index.conflictsSinceIn(entries, 0, keysOfRule), true);
+  assert.equal(index.conflictsSinceIn(records, entries, 0, keysOfRule), true);
 });
 
 test('last-write index conflictsSinceIn counts every write for a bare declaration of a conditional block', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['h2']);
   const { node, records } = firstNodeWithRecords('@media print{color:red}');
   const entries = records.liveEntries(
     /** @type {BlockRecord} */ (entryOf(records, node)).index
   );
-  assert.equal(index.conflictsSinceIn(entries, 0, keysOfRule), true);
+  assert.equal(index.conflictsSinceIn(noBlocks, entries, 0, keysOfRule), true);
 });

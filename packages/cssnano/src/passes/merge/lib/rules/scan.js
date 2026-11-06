@@ -9,6 +9,8 @@ import { earliestPairReaching } from './sharedRuleGroup.js';
 import RuleSequence from './ruleSequence.js';
 import { sameContainer } from './sameContainer.js';
 
+/** @import {ArenaIndex} from './blockRecord.js' */
+
 const NO_BENEFIT = -1;
 
 /**
@@ -86,7 +88,7 @@ export default function runScan(mergeState) {
   /** @type {Map<number, number>} */
   const unmergeablePairs = new Map();
 
-  /** @param {number} first @param {number} second */
+  /** @param {ArenaIndex} first @param {ArenaIndex} second */
   const pairBenefit = (first, second) =>
     unmergeablePairs.get(first) === second
       ? NO_BENEFIT
@@ -97,8 +99,8 @@ export default function runScan(mergeState) {
 
   /**
    * @param {RuleSequence} sequence
-   * @param {number} first
-   * @param {number} second
+   * @param {ArenaIndex} first
+   * @param {ArenaIndex} second
    * @return {{placement: Placement, moved: boolean} | null} the rules that
    * now stand in place of the pair, or null when nothing changed
    */
@@ -112,11 +114,11 @@ export default function runScan(mergeState) {
         mergeState.records.links.parentOf(a.index),
         mergeState.records.links.parentOf(b.index)
       ) ||
-      sequence.declarationBetween(a, b, outsideDeclarations)
+      sequence.declarationBetween(mergeState.records, a, b, outsideDeclarations)
     ) {
       return null;
     }
-    const moved = sequence.moveIntoParent(first, second);
+    const moved = sequence.moveIntoParent(mergeState.records, first, second);
     const placement =
       mergeMatchingDeclarations(a, b, mergeState) ??
       mergeMatchingSelectors(a, b, mergeState) ??
@@ -136,7 +138,7 @@ export default function runScan(mergeState) {
 
   /** @type {number[]} */
   const scratch = [];
-  /** @type {{link: number, distance: number}} */
+  /** @type {{link: ArenaIndex | -1, distance: number}} */
   const earliest = { link: -1, distance: 0 };
 
   /**
@@ -146,11 +148,11 @@ export default function runScan(mergeState) {
    * (see `earliestPairReaching`), so the sweep resumes at the earliest such pair.
    *
    * @param {RuleSequence} sequence
-   * @param {number} replacement the first of the new rules
+   * @param {ArenaIndex | -1} replacement the first of the new rules
    * @param {Placement} placement
-   * @param {number} lookaheadStart a rule before the replaced pair, -1 for none,
+   * @param {ArenaIndex | -1} lookaheadStart a rule before the replaced pair, -1 for none,
    * since the lookahead moves past it
-   * @return {number}
+   * @return {ArenaIndex | -1}
    */
   const resumeAfter = (sequence, replacement, placement, lookaheadStart) => {
     const before = sequence.prevOf(replacement);
@@ -163,7 +165,7 @@ export default function runScan(mergeState) {
     earliest.link = -1;
     let link = replacement;
     const count = linkCount(placement);
-    for (let index = 0; index < count; index++) {
+    for (let index = 0; index < count && link !== -1; index++) {
       // The walk from the `index`th new rule starts `index` links after the
       // first one, so its distance is measured from the first.
       earliestPairReaching(
@@ -188,12 +190,15 @@ export default function runScan(mergeState) {
       : null;
     const sequence = new RuleSequence(mergeState.records);
     let current = sequence.head;
+    /** @type {ArenaIndex | -1} */
     let lookaheadStart = -1;
     for (
       let second = sequence.nextOf(current);
       second !== -1;
       second = sequence.nextOf(current)
     ) {
+      // A pair has a first rule; this narrows `current` to its index.
+      if (current === -1) break;
       let benefit = pairBenefit(current, second);
       // Move on to the next pair while it shares strictly more declarations,
       // then come back to `lookaheadStart` so the skipped pairs are tried.
@@ -223,7 +228,11 @@ export default function runScan(mergeState) {
       }
       moved ||= merged.moved;
       unmergeablePairs.clear();
-      const replacement = sequence.replacePair(current, merged.placement);
+      const replacement = sequence.replacePair(
+        mergeState.records,
+        current,
+        merged.placement
+      );
       current = resumeAfter(
         sequence,
         replacement,

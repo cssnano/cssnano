@@ -1,32 +1,34 @@
 import { RuleRecord } from './ruleRecord.js';
+import type { ArenaIndex } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 export type Placement = {
     /**
      * the indices of the rules that replace the earlier
      * rule, in its slot
      */
-    first: number[];
+    first: ArenaIndex[];
     /**
      * the indices of the rules that replace the later
      * rule, in its slot
      */
-    second: number[];
+    second: ArenaIndex[];
     /**
      * the indices of the rules that replace each
      * rule after the later one that joined the merge, in its slot
      */
-    following?: number[][];
+    following?: ArenaIndex[][];
 };
+/** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /**
  * The rules that stand in the slots of a pair after it is merged.
  *
  * @typedef {object} Placement
- * @property {number[]} first the indices of the rules that replace the earlier
+ * @property {ArenaIndex[]} first the indices of the rules that replace the earlier
  * rule, in its slot
- * @property {number[]} second the indices of the rules that replace the later
+ * @property {ArenaIndex[]} second the indices of the rules that replace the later
  * rule, in its slot
- * @property {number[][]} [following] the indices of the rules that replace each
+ * @property {ArenaIndex[][]} [following] the indices of the rules that replace each
  * rule after the later one that joined the merge, in its slot
  */
 /**
@@ -34,50 +36,54 @@ export type Placement = {
  * other rules, rewritten in the block records. The order is two arrays indexed
  * by rule: each rule names the rule before it and the rule after it, with -1 at
  * either end. A rule made during the sweep takes an index past the arrays,
- * which they grow to hold.
+ * which they grow to hold. The methods that edit the records take them as an
+ * argument; the sequence keeps no reference to them.
  */
 export default class RuleSequence {
     #private;
-    /** @type {number} the index of the first rule, -1 when there is none */
-    head: number;
+    /** @type {ArenaIndex | -1} the index of the first rule, -1 when there is none */
+    head: ArenaIndex | -1;
     /** @param {BlockRecords} records */
     constructor(records: BlockRecords);
     /**
-     * @param {number} index
-     * @return {number} the index of the rule after the rule at `index`, -1 at the end
+     * @param {ArenaIndex | -1} index
+     * @return {ArenaIndex | -1} the index of the rule after the rule at `index`, -1 at the end
      */
-    nextOf(index: number): number;
+    nextOf(index: ArenaIndex | -1): ArenaIndex | -1;
     /**
-     * @param {number} index
-     * @return {number} the index of the rule before the rule at `index`, -1 at the start
+     * @param {ArenaIndex | -1} index
+     * @return {ArenaIndex | -1} the index of the rule before the rule at `index`, -1 at the start
      */
-    prevOf(index: number): number;
+    prevOf(index: ArenaIndex | -1): ArenaIndex | -1;
     /**
+     * @param {BlockRecords} records
      * @param {RuleRecord} first
      * @param {RuleRecord} second
      * @param {Map<number, boolean>} outsideDeclarations see
      * `DeclarationScan#declarationBetween`
      * @return {boolean} whether a declaration outside both rules lies between them
      */
-    declarationBetween(first: RuleRecord, second: RuleRecord, outsideDeclarations: Map<number, boolean>): boolean;
+    declarationBetween(records: BlockRecords, first: RuleRecord, second: RuleRecord, outsideDeclarations: Map<number, boolean>): boolean;
     /**
      * Moves the rule at `second` to the end of the parent of the rule at `first`.
      * It follows `first` and holds no nested rules, so passing the rest of that
      * parent leaves the order of the rules unchanged.
      *
-     * @param {number} first
-     * @param {number} second
+     * @param {BlockRecords} records
+     * @param {ArenaIndex} first
+     * @param {ArenaIndex} second
      * @return {boolean} whether the parents differed
      */
-    moveIntoParent(first: number, second: number): boolean;
+    moveIntoParent(records: BlockRecords, first: ArenaIndex, second: ArenaIndex): boolean;
     /**
      * Replaces the pair at `first` and the rule after it, and the rules after
      * those that joined, with the `placement` rules.
      *
-     * @param {number} first
+     * @param {BlockRecords} records
+     * @param {ArenaIndex} first
      * @param {Placement} placement
-     * @return {number} the index of the first replacement
+     * @return {ArenaIndex | -1} the index of the first replacement
      */
-    replacePair(first: number, placement: Placement): number;
+    replacePair(records: BlockRecords, first: ArenaIndex, placement: Placement): ArenaIndex | -1;
 }
 //# sourceMappingURL=ruleSequence.d.ts.map

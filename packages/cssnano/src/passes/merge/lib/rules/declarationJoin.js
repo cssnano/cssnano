@@ -118,7 +118,7 @@ export default function joinByDeclarations(block, mergeState) {
   }
   if (scan.start === Infinity) return false;
 
-  const index = new LastWriteIndex(mergeState.records);
+  const index = new LastWriteIndex();
   const keysOf = mergeState.elementKeysOf;
   // Groups by their first declaration, in document order: a rule that
   // repeats a group's declarations repeats that one too.
@@ -149,7 +149,7 @@ export default function joinByDeclarations(block, mergeState) {
         record.declarationKeys(mergeState.records).keys
       );
     }
-    index.recordNode(entry, position, keysOf);
+    index.recordNode(mergeState.records, entry, position, keysOf);
   }
   for (const grownIndex of grown) {
     mergeState.spellSelectors(

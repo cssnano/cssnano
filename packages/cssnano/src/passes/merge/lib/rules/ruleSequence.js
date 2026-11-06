@@ -2,17 +2,18 @@ import DeclarationScan from './declarationScan.js';
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 
+/** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
 /**
  * The rules that stand in the slots of a pair after it is merged.
  *
  * @typedef {object} Placement
- * @property {number[]} first the indices of the rules that replace the earlier
+ * @property {ArenaIndex[]} first the indices of the rules that replace the earlier
  * rule, in its slot
- * @property {number[]} second the indices of the rules that replace the later
+ * @property {ArenaIndex[]} second the indices of the rules that replace the later
  * rule, in its slot
- * @property {number[][]} [following] the indices of the rules that replace each
+ * @property {ArenaIndex[][]} [following] the indices of the rules that replace each
  * rule after the later one that joined the merge, in its slot
  */
 
@@ -21,72 +22,68 @@ import { RuleRecord } from './ruleRecord.js';
  * other rules, rewritten in the block records. The order is two arrays indexed
  * by rule: each rule names the rule before it and the rule after it, with -1 at
  * either end. A rule made during the sweep takes an index past the arrays,
- * which they grow to hold.
+ * which they grow to hold. The methods that edit the records take them as an
+ * argument; the sequence keeps no reference to them.
  */
 export default class RuleSequence {
-  /** @type {BlockRecords} */
-  #records;
-
-  /** @type {number[]} the index of the rule before each rule, -1 at the start */
+  /** @type {(ArenaIndex | -1)[]} the index of the rule before each rule, -1 at the start */
   #prev;
 
-  /** @type {number[]} the index of the rule after each rule, -1 at the end */
+  /** @type {(ArenaIndex | -1)[]} the index of the rule after each rule, -1 at the end */
   #next;
 
-  /** @type {number} the index of the first rule, -1 when there is none */
+  /** @type {ArenaIndex | -1} the index of the first rule, -1 when there is none */
   head = -1;
 
-  /** @type {DeclarationScan} */
-  #scan;
+  #scan = new DeclarationScan();
 
-  /** @type {number} the index of the last rule linked so far, -1 before the first */
+  /** @type {ArenaIndex | -1} the index of the last rule linked so far, -1 before the first */
   #tail = -1;
 
   /** @param {BlockRecords} records */
   constructor(records) {
-    this.#records = records;
-    this.#scan = new DeclarationScan(records);
     this.#prev = [];
     this.#next = [];
     this.#reserve(records.entryCount() - 1);
-    this.#collect(records.root);
+    this.#collect(records, records.root);
   }
 
   /**
    * Links the rules under `block` in document order, after the rules already
    * linked.
    *
+   * @param {BlockRecords} records
    * @param {BlockRecord | RuleRecord} block the block, or the rule that nests
    * @return {void}
    */
-  #collect(block) {
-    const { links } = this.#records;
+  #collect(records, block) {
+    const { links } = records;
     for (
       let entry = links.firstChild(block.index);
       entry !== -1;
       entry = links.nextSibling(entry)
     ) {
-      const item = this.#records.entry(entry);
+      const item = records.entry(entry);
       if (item instanceof RuleRecord) {
         this.#tail = this.#link(this.#tail, entry);
-        if (item.context !== -1) this.#collect(item);
+        if (item.context !== -1) this.#collect(records, item);
       } else if (item instanceof BlockRecord) {
-        this.#collect(item);
+        this.#collect(records, item);
       }
     }
   }
 
   /**
-   * @param {number} index
-   * @return {number} the index of the rule after the rule at `index`, -1 at the end
+   * @param {ArenaIndex | -1} index
+   * @return {ArenaIndex | -1} the index of the rule after the rule at `index`, -1 at the end
    */
   nextOf(index) {
     return index === -1 ? -1 : this.#next[index];
   }
 
   /**
-   * @param {number} index
-   * @return {number} the index of the rule before the rule at `index`, -1 at the start
+   * @param {ArenaIndex | -1} index
+   * @return {ArenaIndex | -1} the index of the rule before the rule at `index`, -1 at the start
    */
   prevOf(index) {
     return index === -1 ? -1 : this.#prev[index];
@@ -111,9 +108,9 @@ export default class RuleSequence {
    * when `previous` is -1. Its own link to the rule after it is reset, so the
    * caller links that next.
    *
-   * @param {number} previous
-   * @param {number} index
-   * @return {number} `index`
+   * @param {ArenaIndex | -1} previous
+   * @param {ArenaIndex} index
+   * @return {ArenaIndex} `index`
    */
   #link(previous, index) {
     this.#reserve(index);
@@ -127,9 +124,9 @@ export default class RuleSequence {
   /**
    * Links each rule of `indices` in order after `previous`.
    *
-   * @param {number} previous
-   * @param {number[]} indices
-   * @return {number} the last rule linked, or `previous` when there are none
+   * @param {ArenaIndex | -1} previous
+   * @param {ArenaIndex[]} indices
+   * @return {ArenaIndex | -1} the last rule linked, or `previous` when there are none
    */
   #linkAll(previous, indices) {
     let tail = previous;
@@ -138,14 +135,20 @@ export default class RuleSequence {
   }
 
   /**
+   * @param {BlockRecords} records
    * @param {RuleRecord} first
    * @param {RuleRecord} second
    * @param {Map<number, boolean>} outsideDeclarations see
    * `DeclarationScan#declarationBetween`
    * @return {boolean} whether a declaration outside both rules lies between them
    */
-  declarationBetween(first, second, outsideDeclarations) {
-    return this.#scan.declarationBetween(first, second, outsideDeclarations);
+  declarationBetween(records, first, second, outsideDeclarations) {
+    return this.#scan.declarationBetween(
+      records,
+      first,
+      second,
+      outsideDeclarations
+    );
   }
 
   /**
@@ -153,12 +156,12 @@ export default class RuleSequence {
    * It follows `first` and holds no nested rules, so passing the rest of that
    * parent leaves the order of the rules unchanged.
    *
-   * @param {number} first
-   * @param {number} second
+   * @param {BlockRecords} records
+   * @param {ArenaIndex} first
+   * @param {ArenaIndex} second
    * @return {boolean} whether the parents differed
    */
-  moveIntoParent(first, second) {
-    const records = this.#records;
+  moveIntoParent(records, first, second) {
     const target = records.links.parentOf(first);
     const source = records.links.parentOf(second);
     if (target === source) return false;
@@ -168,7 +171,7 @@ export default class RuleSequence {
     if (records.links.parentOf(second) !== records.links.parentOf(first)) {
       throw new Error('a moved rule is still outside the parent it joined');
     }
-    this.#dropIfEmptied(source);
+    this.#dropIfEmptied(records, source);
     return true;
   }
 
@@ -176,16 +179,17 @@ export default class RuleSequence {
    * Replaces the pair at `first` and the rule after it, and the rules after
    * those that joined, with the `placement` rules.
    *
-   * @param {number} first
+   * @param {BlockRecords} records
+   * @param {ArenaIndex} first
    * @param {Placement} placement
-   * @return {number} the index of the first replacement
+   * @return {ArenaIndex | -1} the index of the first replacement
    */
-  replacePair(first, placement) {
+  replacePair(records, first, placement) {
     const second = this.#next[first];
     const before = this.#prev[first];
     const after = this.#next[second];
-    this.#substitute(first, placement.first);
-    this.#substitute(second, placement.second);
+    this.#substitute(records, first, placement.first);
+    this.#substitute(records, second, placement.second);
 
     let tail = this.#linkAll(
       this.#linkAll(before, placement.first),
@@ -195,7 +199,7 @@ export default class RuleSequence {
     for (const rules of placement.following ?? []) {
       const index = following;
       following = this.#next[index];
-      this.#substitute(index, rules);
+      this.#substitute(records, index, rules);
       tail = this.#linkAll(tail, rules);
     }
     if (tail === -1) this.head = following;
@@ -208,14 +212,15 @@ export default class RuleSequence {
    * Replaces the rule `index` with `rules`, then unlinks the block that the
    * replacement left empty.
    *
-   * @param {number} index
-   * @param {number[]} rules
+   * @param {BlockRecords} records
+   * @param {ArenaIndex | -1} index
+   * @param {ArenaIndex[]} rules
    * @return {void}
    */
-  #substitute(index, rules) {
-    const holder = this.#records.links.parentOf(index);
-    this.#records.substitute(index, rules);
-    this.#dropIfEmptied(holder);
+  #substitute(records, index, rules) {
+    const holder = records.links.parentOf(index);
+    records.substitute(index, rules);
+    this.#dropIfEmptied(records, holder);
   }
 
   /**
@@ -224,15 +229,16 @@ export default class RuleSequence {
    * that holds nothing at the start of the sweep is never emptied by an edit,
    * so it stays.
    *
-   * @param {number} index
+   * @param {BlockRecords} records
+   * @param {ArenaIndex | -1} index
    * @return {void}
    */
-  #dropIfEmptied(index) {
-    const { links } = this.#records;
+  #dropIfEmptied(records, index) {
+    const { links } = records;
     let at = index;
     for (;;) {
       // A rule that nests is never dropped, so the climb stops at it.
-      const block = this.#records.blockEntry(at);
+      const block = records.blockEntry(at);
       if (!block?.droppable || block.count !== 0) return;
       const holder = links.parentOf(at);
       links.unlink(at);

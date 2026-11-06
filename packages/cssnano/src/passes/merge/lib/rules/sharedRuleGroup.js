@@ -71,7 +71,7 @@ function overridesShared(records, rule, claimed, shared) {
  * Whether the rule at `link` stands among declarations only in `parent`, as
  * the shared rule does, and sets every shared declaration.
  *
- * @param {number} link the index of the rule, -1 for none
+ * @param {ArenaIndex | -1} link the index of the rule, -1 for none
  * @param {ArenaIndex | -1} parent the index of the block the rules stand in
  * @param {number[]} firstKeys the declaration keys of the earlier rule
  * @param {Set<ChainPosition>} sharedIndices where the shared declarations stand in it
@@ -121,7 +121,7 @@ function mergesWithAll(members, later, parent, mergeState) {
  * checks run only for a prefix that would pay.
  *
  * @param {RuleRecord} first
- * @param {number} second the index of the later rule of the pair
+ * @param {ArenaIndex} second the index of the later rule of the pair
  * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
  * @param {Set<ChainPosition>} claimedEarlierIndices where the shared declarations stand in `first`
  * @param {Set<ChainPosition>} claimedIndices where they stand in `second`
@@ -210,6 +210,7 @@ export function findGroup(
       if (
         !claimed ||
         sequence.declarationBetween(
+          records,
           /** @type {RuleRecord} */ (records.rule(previous)),
           later,
           outsideDeclarations
@@ -272,12 +273,12 @@ function keepKeysIn(scratch, keySet) {
  * at the first rule that breaks that run or after `PAIR_REACH` links.
  *
  * @param {RuleSequence} sequence
- * @param {number} link the index of a rule that a rewrite placed
- * @param {number} resume the sweep's resume point; only pairs before it count
+ * @param {ArenaIndex} link the index of a rule that a rewrite placed
+ * @param {ArenaIndex | -1} resume the sweep's resume point; only pairs before it count
  * @param {number} offset how many links `link` stands after the first new rule
  * @param {number[]} scratch the declaration keys still shared by the walk
  * @param {import('./mergeState.js').default} mergeState
- * @param {{link: number, distance: number}} earliest the best pair so far, as
+ * @param {{link: ArenaIndex | -1, distance: number}} earliest the best pair so far, as
  * the index of its earlier rule, and its distance in links from the first new rule
  * @return {void}
  */

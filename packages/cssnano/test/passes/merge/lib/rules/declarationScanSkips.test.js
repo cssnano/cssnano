@@ -38,6 +38,7 @@ test('a sweep should unlink an at-rule block that its move emptied', () => {
   const [p, layer] = /** @type {any[]} */ (root.nodes);
   const block = blockRecordOf(records, layer);
   new RuleSequence(records).moveIntoParent(
+    records,
     ruleRecordOf(records, p).index,
     ruleRecordOf(records, layer.first).index
   );
@@ -51,6 +52,7 @@ test('linking an entry into an at-rule block that a sweep unlinked should throw 
   const [p, layer] = /** @type {any[]} */ (root.nodes);
   const block = blockRecordOf(records, layer);
   new RuleSequence(records).moveIntoParent(
+    records,
     ruleRecordOf(records, p).index,
     ruleRecordOf(records, layer.first).index
   );
@@ -78,7 +80,7 @@ test('a sweep should leave an at-rule block that was empty when the sweep starte
   const sequence = new RuleSequence(records);
   const pIndex = ruleRecordOf(records, p).index;
   const qIndex = ruleRecordOf(records, q).index;
-  sequence.replacePair(pIndex, { first: [pIndex], second: [qIndex] });
+  sequence.replacePair(records, pIndex, { first: [pIndex], second: [qIndex] });
   assert.equal(records.liveCount(block.index), 0);
   assert.equal(records.links.parentOf(block.index), records.root.index);
 });

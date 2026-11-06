@@ -1,6 +1,6 @@
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
-import type { ChainPosition } from './blockRecord.js';
+import type { ArenaIndex, ChainPosition } from './blockRecord.js';
 import type RuleSequence from './ruleSequence.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {ChildNode} from 'postcss' */
@@ -42,7 +42,7 @@ export type Group = {
  * checks run only for a prefix that would pay.
  *
  * @param {RuleRecord} first
- * @param {number} second the index of the later rule of the pair
+ * @param {ArenaIndex} second the index of the later rule of the pair
  * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
  * @param {Set<ChainPosition>} claimedEarlierIndices where the shared declarations stand in `first`
  * @param {Set<ChainPosition>} claimedIndices where they stand in `second`
@@ -54,7 +54,7 @@ export type Group = {
  * @param {Map<number, boolean>} outsideDeclarations
  * @return {Group | null}
  */
-export declare function findGroup(first: RuleRecord, second: number, shared: DeclarationRecord[], claimedEarlierIndices: Set<ChainPosition>, claimedIndices: Set<ChainPosition>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: Map<number, boolean>): Group | null;
+export declare function findGroup(first: RuleRecord, second: ArenaIndex, shared: DeclarationRecord[], claimedEarlierIndices: Set<ChainPosition>, claimedIndices: Set<ChainPosition>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: Map<number, boolean>): Group | null;
 /**
  * Records in `earliest` the farthest pair before `resume` that a rewrite at
  * `link` can change, if it is farther than the recorded pair. A later rule
@@ -62,17 +62,17 @@ export declare function findGroup(first: RuleRecord, second: number, shared: Dec
  * at the first rule that breaks that run or after `PAIR_REACH` links.
  *
  * @param {RuleSequence} sequence
- * @param {number} link the index of a rule that a rewrite placed
- * @param {number} resume the sweep's resume point; only pairs before it count
+ * @param {ArenaIndex} link the index of a rule that a rewrite placed
+ * @param {ArenaIndex | -1} resume the sweep's resume point; only pairs before it count
  * @param {number} offset how many links `link` stands after the first new rule
  * @param {number[]} scratch the declaration keys still shared by the walk
  * @param {import('./mergeState.js').default} mergeState
- * @param {{link: number, distance: number}} earliest the best pair so far, as
+ * @param {{link: ArenaIndex | -1, distance: number}} earliest the best pair so far, as
  * the index of its earlier rule, and its distance in links from the first new rule
  * @return {void}
  */
-export declare function earliestPairReaching(sequence: RuleSequence, link: number, resume: number, offset: number, scratch: number[], mergeState: import('./mergeState.js').default, earliest: {
-    link: number;
+export declare function earliestPairReaching(sequence: RuleSequence, link: ArenaIndex, resume: ArenaIndex | -1, offset: number, scratch: number[], mergeState: import('./mergeState.js').default, earliest: {
+    link: ArenaIndex | -1;
     distance: number;
 }): void;
 //# sourceMappingURL=sharedRuleGroup.d.ts.map

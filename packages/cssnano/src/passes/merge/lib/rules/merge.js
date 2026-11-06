@@ -7,7 +7,7 @@ import { buildMergedRule, writesOf } from './ruleRewrite.js';
 import { appendToDeclarations } from './treeEdits.js';
 
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import MergeState from './mergeState.js' */
 
@@ -65,7 +65,7 @@ export function mergeMatchingSelectors(first, second, mergeState) {
  * @param {RuleRecord} first
  * @param {RuleRecord} second
  * @param {MergeState} mergeState
- * @param {number} secondLink the index of `second` in the sweep
+ * @param {ArenaIndex} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
  * @param {Map<number, boolean>} outsideDeclarations
  * @return {Placement | null} the rules that replace the pair, or null when
