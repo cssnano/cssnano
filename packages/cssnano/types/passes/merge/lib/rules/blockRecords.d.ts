@@ -65,8 +65,7 @@ export declare class BlockRecords {
      */
     blockEntry(index: number): BlockRecord | undefined;
     /**
-     * @param {number} index an index that `recordRule` gave
-     * @return {RuleRecord | undefined}
+     * @param {number} index an index that `recordRule` gave; under checks, throws when the root does not reach it
      */
     rule(index: number): RuleRecord | undefined;
     /**

@@ -99,5 +99,14 @@ export declare class BlockLinks {
      * @return {void}
      */
     takeLinkOf(later: number, earlier: number): void;
+    /**
+     * Under checks, walks `parentOf` up from `index` and throws when a container
+     * above it stops the walk at -1. An entry linked nowhere is unplaced and passes.
+     *
+     * @param {number} index an index that the arena gave, or -1
+     * @return {void}
+     * @throws {Error} under checks, when a container above `index` does not reach the root
+     */
+    assertReached(index: number): void;
 }
 //# sourceMappingURL=blockLinks.d.ts.map
