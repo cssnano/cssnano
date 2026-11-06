@@ -23,4 +23,4 @@ versioning:
   changelog:
     storage: repository
 overrides:
-  postcss-calc: link:/home/ludovico/projects/scratch/postcss-calc
+  postcss-calc: link:/home/ludovico/Projects/scratch/postcss-calc
