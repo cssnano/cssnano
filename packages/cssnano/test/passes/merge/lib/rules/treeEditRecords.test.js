@@ -260,10 +260,9 @@ test('takePlaceOf should link the earlier rule where the later one stood', () =>
     /** @type {Container} */ (media).nodes
   );
   takePlaceOf(
-    state,
-    /** @type {Container} */ (media),
-    ruleRecordOf(state.records, earlier),
-    ruleRecordOf(state.records, later)
+    state.records,
+    ruleRecordOf(state.records, earlier).index,
+    ruleRecordOf(state.records, later).index
   );
   const entries = state.records.liveEntries(
     blockRecordOf(state.records, media).index
@@ -281,10 +280,9 @@ test('takePlaceOf should unlink the later rule once the earlier one takes its pl
   );
   const laterRecord = ruleRecordOf(state.records, later);
   takePlaceOf(
-    state,
-    /** @type {Container} */ (media),
-    ruleRecordOf(state.records, earlier),
-    laterRecord
+    state.records,
+    ruleRecordOf(state.records, earlier).index,
+    laterRecord.index
   );
   assert.equal(state.records.links.parentOf(laterRecord.index), -1);
 });

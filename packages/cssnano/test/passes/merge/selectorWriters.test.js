@@ -271,7 +271,7 @@ test('takePlaceOf gives the earlier record the whitespace of the later one, whic
   const later = records.rule(
     records.links.nextSibling(records.links.firstChild(records.root.index))
   );
-  takePlaceOf({ records }, root, earlier, later);
+  takePlaceOf(records, earlier.index, later.index);
   assert.equal(earlier.before, '\n\n');
   writeBack(records);
   assert.equal(root.first.raws.before, '\n\n');
@@ -297,4 +297,28 @@ test('a rule merged again prints the raws of the rule its first merge took them 
     root.toString(),
     'c{width:1px;\nwidth:1px\n}\nc,b,c /*k*/ {\ncolor:red}\nb,c,c /*k*/ {\ntop:0}'
   );
+});
+
+test('write-back stores no tokens of a rule the root does not reach', () => {
+  const { records } = whitespaceRecordsOf('a{color:red}b{color:red}');
+  const first = records.rule(records.links.firstChild(records.root.index));
+  first.tokensOf();
+  records.links.unlink(first.index);
+  const table = new TextTable();
+  writeBack(records, table);
+  assert.equal(table.stored(first.node), undefined);
+});
+
+test('under consistency checks, write-back throws for a departed rule the root still reaches', () => {
+  const { records } = whitespaceRecordsOf('a{color:red}');
+  const rule = records.rule(records.links.firstChild(records.root.index));
+  rule.tokensOf();
+  rule.depart();
+  const enabled = consistencyChecksEnabled();
+  enableConsistencyChecks(true);
+  try {
+    assert.throws(() => writeBack(records, new TextTable()), /departed/v);
+  } finally {
+    enableConsistencyChecks(enabled);
+  }
 });

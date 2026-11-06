@@ -92,7 +92,7 @@ test('takePlaceOf should link the earlier block where the later block stood and 
   const [first, second] = /** @type {Container[]} */ (root.nodes);
   const firstBlock = blockRecordOf(state.records, first);
   const secondBlock = blockRecordOf(state.records, second);
-  takePlaceOf(state, root, firstBlock, secondBlock);
+  takePlaceOf(state.records, firstBlock.index, secondBlock.index);
   const entries = state.records.liveEntries(state.records.root.index);
   assert.equal(entries.length, 1);
   assert.equal(entries[0], firstBlock);
