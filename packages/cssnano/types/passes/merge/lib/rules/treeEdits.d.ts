@@ -3,6 +3,7 @@ import { BlockRecords } from './blockRecords.js';
 import { BlockRecord, NodeEntry } from './blockRecord.js';
 import type { Root } from 'postcss';
 import type { RuleRecord } from './ruleRecord.js';
+import type { ArenaIndex } from './blockRecord.js';
 import type { PropertyWrites } from './propertyWrites.js';
 import type MergeState from './mergeState.js';
 import type { RunContext } from '../../../ir/runContext.js';
@@ -31,11 +32,11 @@ export declare function remove(records: BlockRecords, entry: RuleRecord | BlockR
  * whitespace before `later`.
  *
  * @param {BlockRecords} records
- * @param {number} earlier the index of a rule, or of the block of an at-rule
- * @param {number} later the index of a rule, or of the block of an at-rule, of the same kind
+ * @param {ArenaIndex} earlier the index of a rule, or of the block of an at-rule
+ * @param {ArenaIndex} later the index of a rule, or of the block of an at-rule, of the same kind
  * @return {void}
  */
-export declare function takePlaceOf(records: BlockRecords, earlier: number, later: number): void;
+export declare function takePlaceOf(records: BlockRecords, earlier: ArenaIndex, later: ArenaIndex): void;
 /**
  * Appends the children of `incoming` to `receiving`, comments included. A
  * declaration of `incoming` is redundant only when the last declaration of

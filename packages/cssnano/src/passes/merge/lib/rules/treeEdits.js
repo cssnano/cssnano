@@ -20,6 +20,7 @@ const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
@@ -175,8 +176,8 @@ export function remove(records, entry) {
  * whitespace before `later`.
  *
  * @param {BlockRecords} records
- * @param {number} earlier the index of a rule, or of the block of an at-rule
- * @param {number} later the index of a rule, or of the block of an at-rule, of the same kind
+ * @param {ArenaIndex} earlier the index of a rule, or of the block of an at-rule
+ * @param {ArenaIndex} later the index of a rule, or of the block of an at-rule, of the same kind
  * @return {void}
  */
 export function takePlaceOf(records, earlier, later) {

@@ -2,6 +2,7 @@ import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { BlockRecords } from './blockRecords.js';
+import type { ArenaIndex } from './blockRecord.js';
 /**
  * The links between the entries of the records. Each entry has a container:
  * the block whose chain holds it, or for a nested block the rule that owns it.
@@ -26,31 +27,31 @@ export declare class BlockLinks {
     enclosingContainer(index: number): BlockRecord | RuleRecord | undefined;
     /**
      * @param {number} index an index that the arena gave
-     * @return {number} the container of the entry, -1 when it is linked nowhere
+     * @return {ArenaIndex | -1} the container of the entry, -1 when it is linked nowhere
      */
-    parentOf(index: number): number;
+    parentOf(index: number): ArenaIndex | -1;
     /**
      * @param {number} index an index that the arena gave, linked in a chain
-     * @return {number} the entry before `index` in its chain, -1 at the start
+     * @return {ArenaIndex | -1} the entry before `index` in its chain, -1 at the start
      * @throws {Error} under checks, when `index` is linked nowhere
      */
-    prevSibling(index: number): number;
+    prevSibling(index: number): ArenaIndex | -1;
     /**
      * @param {number} index an index that the arena gave, linked in a chain
-     * @return {number} the entry after `index` in its chain, -1 at the end
+     * @return {ArenaIndex | -1} the entry after `index` in its chain, -1 at the end
      * @throws {Error} under checks, when `index` is linked nowhere
      */
-    nextSibling(index: number): number;
+    nextSibling(index: number): ArenaIndex | -1;
     /**
      * @param {number} index an index that the arena gave, of a container
-     * @return {number} the first entry of its chain, -1 when it has none
+     * @return {ArenaIndex | -1} the first entry of its chain, -1 when it has none
      */
-    firstChild(index: number): number;
+    firstChild(index: number): ArenaIndex | -1;
     /**
      * @param {number} index an index that the arena gave, of a container
-     * @return {number} the last entry of its chain, -1 when it has none
+     * @return {ArenaIndex | -1} the last entry of its chain, -1 when it has none
      */
-    lastChild(index: number): number;
+    lastChild(index: number): ArenaIndex | -1;
     /**
      * @param {number} index an index that the arena gave, of a container
      * @return {DeclarationRecord | undefined} the first declaration of its chain

@@ -1,6 +1,7 @@
 import { PropertyWrites } from './propertyWrites.js';
 import { WritePositions } from './writePositions.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {ChainPosition} from './blockRecord.js' */
 
 /**
  * Two declarations are equal when they print the same, which their ids tell:
@@ -51,7 +52,7 @@ class LaterClaims {
   #declarations;
   /** @type {WritePositions} */
   #writes;
-  /** @type {Set<number>} */
+  /** @type {Set<ChainPosition>} */
   #claimed = new Set();
   #hasAll = false;
 
@@ -66,7 +67,7 @@ class LaterClaims {
     }
   }
 
-  /** @return {Set<number>} the positions claimed so far */
+  /** @return {Set<ChainPosition>} the positions claimed so far */
   get claimed() {
     return this.#claimed;
   }
@@ -82,7 +83,9 @@ class LaterClaims {
     if (!keys.custom && (keys.all || (this.#hasAll && keys.subjectToAll))) {
       return false;
     }
-    const matchIndex = this.#writes.firstUnclaimed(keys, this.#claimed);
+    const matchIndex = /** @type {ChainPosition | -1} */ (
+      this.#writes.firstUnclaimed(keys, this.#claimed)
+    );
     if (matchIndex === -1) {
       return false;
     }
@@ -105,7 +108,7 @@ class LaterClaims {
  * @param {DeclarationRecord[]} candidates
  * @param {DeclarationRecord[]} earlierRuleDeclarations
  * @param {DeclarationRecord[]} laterRuleDeclarations
- * @return {{survivors: DeclarationRecord[], claimedIndices: Set<number>, earlierIndices: Set<number>}}
+ * @return {{survivors: DeclarationRecord[], claimedIndices: Set<ChainPosition>, earlierIndices: Set<ChainPosition>}}
  */
 function filterRound(
   candidates,
@@ -113,7 +116,7 @@ function filterRound(
   laterRuleDeclarations
 ) {
   const candidateSet = new Set(candidates);
-  /** @type {Map<DeclarationRecord, number>} */
+  /** @type {Map<DeclarationRecord, ChainPosition>} */
   const earlierIndexOf = new Map();
   const hoistable = new Set();
   // The non-candidates after the current position. A candidate is blocked by
@@ -125,7 +128,7 @@ function filterRound(
       outside.record(declaration.keys, index);
       continue;
     }
-    earlierIndexOf.set(declaration, index);
+    earlierIndexOf.set(declaration, /** @type {ChainPosition} */ (index));
     if (outside.lastConflict(declaration.keys) === -1) {
       hoistable.add(declaration);
     }
@@ -144,7 +147,8 @@ function filterRound(
     claimedIndices: claims.claimed,
     earlierIndices: new Set(
       survivors.map(
-        (declaration) => /** @type {number} */ (earlierIndexOf.get(declaration))
+        (declaration) =>
+          /** @type {ChainPosition} */ (earlierIndexOf.get(declaration))
       )
     ),
   };
@@ -154,7 +158,7 @@ function filterRound(
  * @param {DeclarationRecord[]} hoistCandidates
  * @param {DeclarationRecord[]} earlierRuleDeclarations
  * @param {DeclarationRecord[]} laterRuleDeclarations
- * @return {{intersection: DeclarationRecord[], claimedIndices: Set<number>, claimedEarlierIndices: Set<number>}}
+ * @return {{intersection: DeclarationRecord[], claimedIndices: Set<ChainPosition>, claimedEarlierIndices: Set<ChainPosition>}}
  */
 export function filterRuleIntersections(
   hoistCandidates,

@@ -6,13 +6,13 @@ import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import MergeState from './mergeState.js' */
 
 /**
  * @param {RuleRecord[]} records
- * @return {number[]} the index of each rule
+ * @return {ArenaIndex[]} the index of each rule
  */
 function indicesOf(records) {
   return records.map((record) => record.index);
@@ -81,8 +81,8 @@ export function writesOf(declarations) {
  * @param {RuleRecord} first
  * @param {RuleRecord} second
  * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
- * @param {Set<number>} claimedEarlierIndices
- * @param {Set<number>} claimedIndices
+ * @param {Set<ChainPosition>} claimedEarlierIndices
+ * @param {Set<ChainPosition>} claimedIndices
  * @param {import('./mergeState.js').default} mergeState
  * @param {number} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence

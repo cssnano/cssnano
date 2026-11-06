@@ -7,7 +7,7 @@ import { recordDeclaration } from '../../../ir/declarationRecord.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockLinks } from './blockLinks.js';
 import { BlockRecord } from './blockRecord.js';
-/** @import {NodeEntry} from './blockRecord.js' */
+/** @import {ArenaIndex, ChainPosition, NodeEntry} from './blockRecord.js' */
 import {
   inheritWhitespace,
   liveChildren,
@@ -60,7 +60,7 @@ export class BlockRecords {
    * @return {T}
    */
   #place(entry) {
-    entry.index = this.#entries.length;
+    entry.index = /** @type {ArenaIndex} */ (this.#entries.length);
     this.#entries.push(entry);
     this.links.grow();
     return entry;
@@ -77,7 +77,7 @@ export class BlockRecords {
   }
 
   /**
-   * @param {number} index an index that the arena gave
+   * @param {ArenaIndex} index an index that the arena gave
    * @return {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry}
    */
   entry(index) {
@@ -224,7 +224,7 @@ export class BlockRecords {
     // The replacements take the chain where the record stood, which may be
     // the record itself; it is read before the record leaves the chain.
     const holder = this.links.parentOf(record);
-    let after = this.links.prevSibling(record);
+    let after = /** @type {number} */ (this.links.prevSibling(record));
     this.links.unlink(record);
     for (const replacement of replacements) {
       this.links.linkAfter(holder, after, replacement);
@@ -354,7 +354,7 @@ export class BlockRecords {
    * write-back.
    *
    * @param {RuleRecord} rule
-   * @param {Set<number>} claimed the positions of the declarations that leave
+   * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
    * @return {void}
    */
   removeDeclarationsAt(rule, claimed) {
@@ -367,7 +367,7 @@ export class BlockRecords {
    * append.
    *
    * @param {RuleRecord} rule
-   * @param {Set<number>} claimed the positions of the declarations that leave
+   * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
    * @return {DeclarationRecord[]} the removed records, in order
    */
   takeDeclarationsAt(rule, claimed) {
@@ -377,11 +377,10 @@ export class BlockRecords {
   }
 
   /**
-   * The declarations of a rule at the positions `claimed`, read before any of
-   * them is unlinked, so the positions index the declarations at the call.
+   * The declarations of `rule` at the positions `claimed` as it stands now.
    *
    * @param {RuleRecord} rule
-   * @param {Set<number>} claimed
+   * @param {Set<ChainPosition>} claimed
    * @return {DeclarationRecord[]}
    */
   #claimedAt(rule, claimed) {
@@ -393,7 +392,8 @@ export class BlockRecords {
       declaration !== undefined;
       declaration = this.links.nextDeclaration(declaration)
     ) {
-      if (claimed.has(position++)) taken.push(declaration);
+      if (claimed.has(/** @type {ChainPosition} */ (position++)))
+        taken.push(declaration);
     }
     return taken;
   }

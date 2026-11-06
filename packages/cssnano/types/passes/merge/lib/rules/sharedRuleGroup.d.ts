@@ -1,12 +1,13 @@
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
+import type { ChainPosition } from './blockRecord.js';
 import type RuleSequence from './ruleSequence.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {ChildNode} from 'postcss' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @param {string[]} selectors @return {number} */
 export declare function selectorsLength(selectors: string[]): number;
@@ -16,7 +17,7 @@ export type Follower = {
     /**
      * where it repeats the shared declarations
      */
-    claimed: Set<number>;
+    claimed: Set<ChainPosition>;
 };
 export type Group = {
     /**
@@ -43,8 +44,8 @@ export type Group = {
  * @param {RuleRecord} first
  * @param {number} second the index of the later rule of the pair
  * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
- * @param {Set<number>} claimedEarlierIndices where the shared declarations stand in `first`
- * @param {Set<number>} claimedIndices where they stand in `second`
+ * @param {Set<ChainPosition>} claimedEarlierIndices where the shared declarations stand in `first`
+ * @param {Set<ChainPosition>} claimedIndices where they stand in `second`
  * @param {number} sharedBytes
  * @param {number} prefixed the bytes of the shared declarations a later plugin may remove
  * @param {number} delta how much the pair alone lengthens the output
@@ -53,7 +54,7 @@ export type Group = {
  * @param {Map<number, boolean>} outsideDeclarations
  * @return {Group | null}
  */
-export declare function findGroup(first: RuleRecord, second: number, shared: DeclarationRecord[], claimedEarlierIndices: Set<number>, claimedIndices: Set<number>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: Map<number, boolean>): Group | null;
+export declare function findGroup(first: RuleRecord, second: number, shared: DeclarationRecord[], claimedEarlierIndices: Set<ChainPosition>, claimedIndices: Set<ChainPosition>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: Map<number, boolean>): Group | null;
 /**
  * Records in `earliest` the farthest pair before `resume` that a rewrite at
  * `link` can change, if it is farther than the recorded pair. A later rule

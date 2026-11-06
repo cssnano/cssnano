@@ -15,6 +15,20 @@ export const KEYFRAMES = 6;
 export const IMPORT = 7;
 export const OTHER_AT_RULE = 8;
 
+/**
+ * The place of an entry in the arena of a run's records. It stays the same
+ * while the entry moves between chains, unlike its chain position.
+ *
+ * @typedef {number & {readonly brand: unique symbol}} ArenaIndex
+ */
+
+/**
+ * The place of an entry in the ordered children read from a chain, counted
+ * from 0. It changes whenever an entry before it is linked or unlinked.
+ *
+ * @typedef {number & {readonly brand: unique symbol}} ChainPosition
+ */
+
 /** The id of an entry that has no prelude. */
 export const NO_PRELUDE = -1;
 
@@ -85,7 +99,7 @@ export class BlockRecord {
    * The first entry of the chain of live children, which `BlockRecords` links,
    * or -1 when the block holds none.
    *
-   * @type {number}
+   * @type {ArenaIndex | -1}
    */
   first = -1;
 
@@ -93,7 +107,7 @@ export class BlockRecord {
    * The last entry of the chain of live children, or -1 when the block holds
    * none.
    *
-   * @type {number}
+   * @type {ArenaIndex | -1}
    */
   last = -1;
 
@@ -104,8 +118,8 @@ export class BlockRecord {
    */
   count = 0;
 
-  /** @type {number} the place of the block in the arena of its records, -1 until added */
-  index = -1;
+  /** @type {ArenaIndex} the place of the block in the arena of its records, -1 until added */
+  index = /** @type {ArenaIndex} */ (-1);
 
   /**
    * The id of the circumstances under which the block applies its content, as
@@ -155,8 +169,8 @@ export class NodeEntry {
   /** @type {ChildNode} the node the entry stands for */
   node;
 
-  /** @type {number} the place of the entry in the arena, -1 until added */
-  index = -1;
+  /** @type {ArenaIndex} the place of the entry in the arena, -1 until added */
+  index = /** @type {ArenaIndex} */ (-1);
 
   /** @type {number} what the entry is, a comment or an at-rule kind */
   kind;

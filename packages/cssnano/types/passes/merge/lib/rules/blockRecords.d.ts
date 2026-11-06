@@ -5,7 +5,7 @@ import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockLinks } from './blockLinks.js';
 import { BlockRecord } from './blockRecord.js';
-import type { NodeEntry } from './blockRecord.js';
+import type { ArenaIndex, ChainPosition, NodeEntry } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 /**
  * The records of one run. One arena holds every block record, every rule record,
@@ -42,10 +42,10 @@ export declare class BlockRecords {
      */
     add(block: BlockRecord): void;
     /**
-     * @param {number} index an index that the arena gave
+     * @param {ArenaIndex} index an index that the arena gave
      * @return {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry}
      */
-    entry(index: number): BlockRecord | RuleRecord | DeclarationRecord | NodeEntry;
+    entry(index: ArenaIndex): BlockRecord | RuleRecord | DeclarationRecord | NodeEntry;
     /**
      * @param {number} index an index that `add` gave, or -1 for no block
      * @return {BlockRecord | undefined} undefined for -1
@@ -203,19 +203,19 @@ export declare class BlockRecords {
      * write-back.
      *
      * @param {RuleRecord} rule
-     * @param {Set<number>} claimed the positions of the declarations that leave
+     * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
      * @return {void}
      */
-    removeDeclarationsAt(rule: RuleRecord, claimed: Set<number>): void;
+    removeDeclarationsAt(rule: RuleRecord, claimed: Set<ChainPosition>): void;
     /**
      * Removes the declarations of a rule at the positions `claimed`, as
      * `removeDeclarationsAt` does, and returns their records for another rule to
      * append.
      *
      * @param {RuleRecord} rule
-     * @param {Set<number>} claimed the positions of the declarations that leave
+     * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
      * @return {DeclarationRecord[]} the removed records, in order
      */
-    takeDeclarationsAt(rule: RuleRecord, claimed: Set<number>): DeclarationRecord[];
+    takeDeclarationsAt(rule: RuleRecord, claimed: Set<ChainPosition>): DeclarationRecord[];
 }
 //# sourceMappingURL=blockRecords.d.ts.map
