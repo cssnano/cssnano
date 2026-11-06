@@ -6,6 +6,10 @@ import merge, { transformPlugin } from '#passes/merge';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { mergeSharedDeclarations } from '../../../src/passes/merge/lib/rules/merge.js';
 import RuleSequence from '../../../src/passes/merge/lib/rules/ruleSequence.js';
+import {
+  consistencyChecksEnabled,
+  enableConsistencyChecks,
+} from '../../../src/passes/ir/consistencyChecks.js';
 
 const plugin = transformPlugin('mergeRules');
 
@@ -71,7 +75,13 @@ test('a leftover that a join gave longhands is canonicalized in the second round
   assert.equal(result.css, 'a{margin:1px;padding:0}a,b{color:red}b{width:1px}');
 });
 
-test('the record of a rule whose declarations all merge away is marked departed', () => {
+/**
+ * Merges the shared declarations of two rules and returns the record of the
+ * first, whose declarations all merged away.
+ *
+ * @return {{mergeState: MergeState, first: number}}
+ */
+function mergedAway() {
   const root = postcss.parse('a{color:red}b{color:red;padding:0}');
   const mergeState = new MergeState(['Chrome 120']);
   mergeState.records = buildTestRecords(root, mergeState);
@@ -86,8 +96,32 @@ test('the record of a rule whose declarations all merge away is marked departed'
     sequence,
     new Map()
   );
-  assert.throws(
-    () => mergeState.records.rule(first).declarationsOf(mergeState.records),
-    /departed/v
-  );
+  return { mergeState, first };
+}
+
+test('under consistency checks, reading the record of a rule whose declarations all merge away should throw', () => {
+  const wasEnabled = consistencyChecksEnabled();
+  enableConsistencyChecks(true);
+  try {
+    const { mergeState, first } = mergedAway();
+    assert.throws(
+      () => mergeState.records.rule(first).declarationsOf(mergeState.records),
+      /departed/v
+    );
+  } finally {
+    enableConsistencyChecks(wasEnabled);
+  }
+});
+
+test('without consistency checks, reading the record of a rule whose declarations all merge away should not throw', () => {
+  const wasEnabled = consistencyChecksEnabled();
+  enableConsistencyChecks(false);
+  try {
+    const { mergeState, first } = mergedAway();
+    assert.doesNotThrow(() =>
+      mergeState.records.rule(first).declarationsOf(mergeState.records)
+    );
+  } finally {
+    enableConsistencyChecks(wasEnabled);
+  }
 });

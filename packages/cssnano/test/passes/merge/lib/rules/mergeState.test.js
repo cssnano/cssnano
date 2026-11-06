@@ -66,15 +66,38 @@ test('absorbEarlier should list the earlier rule selectors first', () => {
   ]);
 });
 
-test('absorbEarlier should mark the record of the earlier rule departed', () => {
-  const state = createState();
-  const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-  const record = ruleRecordOf(state.records, root.first);
-  state.absorbEarlier(
-    ruleRecordOf(state.records, root.last),
-    ruleRecordOf(state.records, root.first)
-  );
-  assert.throws(() => record.selectors, /departed/v);
+test('under consistency checks, a read of the record of an earlier rule that absorbEarlier departed should throw', () => {
+  const wasEnabled = consistencyChecksEnabled();
+  enableConsistencyChecks(true);
+  try {
+    const state = createState();
+    const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
+    const record = ruleRecordOf(state.records, root.first);
+    state.absorbEarlier(
+      ruleRecordOf(state.records, root.last),
+      ruleRecordOf(state.records, root.first)
+    );
+    assert.throws(() => record.selectors, /departed/v);
+  } finally {
+    enableConsistencyChecks(wasEnabled);
+  }
+});
+
+test('without consistency checks, a read of the record of an earlier rule that absorbEarlier departed should not throw', () => {
+  const wasEnabled = consistencyChecksEnabled();
+  enableConsistencyChecks(false);
+  try {
+    const state = createState();
+    const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
+    const record = ruleRecordOf(state.records, root.first);
+    state.absorbEarlier(
+      ruleRecordOf(state.records, root.last),
+      ruleRecordOf(state.records, root.first)
+    );
+    assert.doesNotThrow(() => record.selectors);
+  } finally {
+    enableConsistencyChecks(wasEnabled);
+  }
 });
 
 test('absorbEarlier should leave the record of the later rule readable', () => {
@@ -219,15 +242,38 @@ test('assertRecordsMatchTree should throw when a declaration left the rule witho
   }
 });
 
-test('blockOf should throw for a departed record, since its rule stands in no block', () => {
-  const state = createState();
-  const root = withRecords(state, postcss.parse('a{color:red}'));
-  const record = ruleRecordOf(
-    state.records,
-    /** @type {import('postcss').Rule} */ (root.first)
-  );
-  record.depart();
-  assert.throws(() => state.blockOf(record), /departed/v);
+test('under consistency checks, blockOf should throw for a departed record, since its rule stands in no block', () => {
+  const wasEnabled = consistencyChecksEnabled();
+  enableConsistencyChecks(true);
+  try {
+    const state = createState();
+    const root = withRecords(state, postcss.parse('a{color:red}'));
+    const record = ruleRecordOf(
+      state.records,
+      /** @type {import('postcss').Rule} */ (root.first)
+    );
+    record.depart();
+    assert.throws(() => state.blockOf(record), /departed/v);
+  } finally {
+    enableConsistencyChecks(wasEnabled);
+  }
+});
+
+test('without consistency checks, blockOf should not throw for a departed record', () => {
+  const wasEnabled = consistencyChecksEnabled();
+  enableConsistencyChecks(false);
+  try {
+    const state = createState();
+    const root = withRecords(state, postcss.parse('a{color:red}'));
+    const record = ruleRecordOf(
+      state.records,
+      /** @type {import('postcss').Rule} */ (root.first)
+    );
+    record.depart();
+    assert.doesNotThrow(() => state.blockOf(record));
+  } finally {
+    enableConsistencyChecks(wasEnabled);
+  }
 });
 
 const declarationsOf = (css) => postcss.parse(css).first.nodes;

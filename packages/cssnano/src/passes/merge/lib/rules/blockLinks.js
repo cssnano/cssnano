@@ -9,6 +9,7 @@ const DETACHED_BLOCK = 'an entry is linked into a block outside the tree';
 const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
 const PLAIN_RULE =
   'a rule or an at-rule is linked into a rule that holds no rules';
+const NOT_REACHED = 'a rule is read that the root does not reach';
 
 /**
  * The links between the entries of the records. Each entry has a container:
@@ -207,6 +208,25 @@ export class BlockLinks {
     // neighbour is read after it.
     this.linkAfter(this.#parent[later], this.#prev[later], earlier);
     this.unlink(later);
+  }
+
+  /**
+   * Under checks, walks `parentOf` up from `index` and throws when a container
+   * above it stops the walk at -1. An entry linked nowhere is unplaced and passes.
+   *
+   * @param {number} index an index that the arena gave, or -1
+   * @return {void}
+   * @throws {Error} under checks, when a container above `index` does not reach the root
+   */
+  assertReached(index) {
+    if (!consistencyChecksEnabled()) return;
+    // An index the arena did not give has no container, and so is unplaced.
+    if (this.#parent[index] === undefined || this.#parent[index] === -1) return;
+    let at = index;
+    while (at !== this.#records.root.index) {
+      at = this.#parent[at];
+      if (at === -1) throw new Error(NOT_REACHED);
+    }
   }
 
   /**

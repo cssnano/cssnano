@@ -112,7 +112,12 @@ export class RuleRecord extends SelectorList {
     return this.#edited;
   }
 
-  /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
+  /**
+   * Whether the rule has left the stylesheet. Only consistency checks read it;
+   * no decision does.
+   *
+   * @return {boolean}
+   */
   get departed() {
     return this.#departed;
   }
@@ -377,8 +382,12 @@ export class RuleRecord extends SelectorList {
     this.#departed = true;
   }
 
-  /** @throws {Error} when the rule this record describes has left the stylesheet */
+  /**
+   * @throws {Error} under consistency checks, when the rule this record
+   *   describes has left the stylesheet
+   */
   #assertLive() {
-    if (this.#departed) throw new Error('read of a departed rule record');
+    if (consistencyChecksEnabled() && this.#departed)
+      throw new Error('read of a departed rule record');
   }
 }

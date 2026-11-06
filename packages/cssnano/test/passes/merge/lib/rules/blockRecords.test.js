@@ -224,6 +224,23 @@ test('the chains should stay well formed after a removal of a block', () => {
   assertRecordsWellFormed(state);
 });
 
+test('records.rule should throw under consistency checks for a rule inside a block that a removal dropped', () => {
+  const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
+  const [media] = /** @type {Container} */ (root).nodes;
+  const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
+  const { index } = ruleRecordOf(state.records, rule);
+  remove(state.records, blockRecordOf(state.records, media));
+  assert.throws(() => state.records.rule(index), /does not reach/v);
+});
+
+test('records.rule should return an unplaced merged rule, whose getters do not throw under consistency checks', () => {
+  const { state } = setup('a{color:red}');
+  const merged = postcss.parse('b{width:1px}').first;
+  const record = state.records.recordRule(merged, ['b'], 'b');
+  assert.equal(state.records.rule(record.index), record);
+  assert.deepEqual(record.selectors, ['b']);
+});
+
 test('the chains should stay well formed after a rule moves to the end of a block', () => {
   const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
   const [media] = /** @type {Container} */ (root).nodes;

@@ -2,6 +2,7 @@ import { createSelectorLookup } from './ensureCompatibility.js';
 import { createElementKeyLookup } from './elementKeys.js';
 import { comma } from '../../../../values/punctuationTokens.js';
 import { createRunContext } from '../../../ir/runContext.js';
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { isKeyframes, sameContainer } from './sameContainer.js';
 import { joinRanges } from '../../../../values/joinRanges.js';
 import { selectorPieces } from '../../../../values/selectorRanges.js';
@@ -212,7 +213,8 @@ export default class MergeState {
    * @return {number} the index of the block the rule stands in
    */
   #blockIndexOf(record) {
-    if (record.departed) throw new Error('block of a departed rule record');
+    if (consistencyChecksEnabled() && record.departed)
+      throw new Error('block of a departed rule record');
     return this.records.links.parentOf(record.index);
   }
 

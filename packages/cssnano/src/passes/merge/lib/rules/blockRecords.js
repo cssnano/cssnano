@@ -129,10 +129,10 @@ export class BlockRecords {
   }
 
   /**
-   * @param {number} index an index that `recordRule` gave
-   * @return {RuleRecord | undefined}
+   * @param {number} index an index that `recordRule` gave; under checks, throws when the root does not reach it
    */
   rule(index) {
+    if (consistencyChecksEnabled()) this.links.assertReached(index);
     return /** @type {RuleRecord | undefined} */ (this.#entries[index]);
   }
 
