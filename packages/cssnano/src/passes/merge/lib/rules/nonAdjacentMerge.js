@@ -228,7 +228,7 @@ function joinBlocksBackward(block, mergeState) {
     if (!index.conflictsSinceIn(earlierEntries, laterPosition, keysOf)) {
       index.moveWrites(earlierEntries, laterPosition, keysOf);
       mergeState.records.adopt(earlier.index, later.index);
-      takePlaceOf(mergeState, block.node, earlier, later);
+      takePlaceOf(mergeState.records, earlier.index, later.index);
       return 'down';
     }
     return null;
@@ -340,7 +340,7 @@ function joinInParent(block, mergeState, rules) {
       index.moveWrites([earlier, later], laterPosition, keysOf);
       receive(earlier, later);
       // A move edits the parent at once, after the pending removals.
-      takePlaceOf(mergeState, block.node, earlier, later);
+      takePlaceOf(mergeState.records, earlier.index, later.index);
       return 'down';
     }
     return null;
@@ -369,7 +369,7 @@ function joinInParent(block, mergeState, rules) {
       index.moveWrites(earlierEntries, laterPosition, keysOf);
       index.moveWrites(laterEntries, laterPosition, keysOf);
       mergeState.records.adopt(earlier.index, later.index);
-      takePlaceOf(mergeState, block.node, earlier, later);
+      takePlaceOf(mergeState.records, earlier.index, later.index);
       return 'down';
     }
     return null;

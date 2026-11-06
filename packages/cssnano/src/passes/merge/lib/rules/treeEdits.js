@@ -170,29 +170,24 @@ export function remove(records, entry) {
 }
 
 /**
- * Moves `earlier`, which already holds the joined content, to the place of
- * `later`, so the joined node takes the later position and keeps the
+ * Moves the entry `earlier`, which already holds the joined content, to the
+ * place of `later`, so the joined node takes the later position and keeps the
  * whitespace before `later`.
  *
- * @param {MergeState} mergeState
- * @param {Container} parent
- * @param {RuleRecord | BlockRecord} earlier the record of a rule, or the block of an at-rule
- * @param {RuleRecord | BlockRecord} later the record of a rule, or the block of an at-rule, of the same kind
+ * @param {BlockRecords} records
+ * @param {number} earlier the index of a rule, or of the block of an at-rule
+ * @param {number} later the index of a rule, or of the block of an at-rule, of the same kind
  * @return {void}
  */
-export function takePlaceOf(mergeState, parent, earlier, later) {
+export function takePlaceOf(records, earlier, later) {
   // The first child of the stylesheet leaves its place, so the whitespace it
   // held passes to the child after it, which `later` gave to `earlier`.
-  const { records } = mergeState;
   const { root } = records;
-  if (
-    parent.type === 'root' &&
-    records.links.firstChild(root.index) === earlier.index
-  ) {
-    root.leadingWhitespace = later.before;
+  if (records.links.firstChild(root.index) === earlier) {
+    root.leadingWhitespace = records.entry(later).before;
   }
-  records.links.takeLinkOf(later.index, earlier.index);
-  earlier.before = later.before;
+  records.links.takeLinkOf(later, earlier);
+  records.entry(earlier).before = records.entry(later).before;
 }
 
 /**

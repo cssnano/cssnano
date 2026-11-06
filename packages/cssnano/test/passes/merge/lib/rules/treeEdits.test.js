@@ -134,10 +134,9 @@ test('takePlaceOf should place the earlier node where the later one stood', () =
   const { root, state } = setup('a{color:red}\n\nb{color:blue}');
   const [earlier, later] = /** @type {Rule[]} */ (root.nodes);
   takePlaceOf(
-    state,
-    root,
-    ruleRecordOf(state.records, earlier),
-    ruleRecordOf(state.records, later)
+    state.records,
+    ruleRecordOf(state.records, earlier).index,
+    ruleRecordOf(state.records, later).index
   );
   writeBack(state.records);
   assert.deepEqual(selectorsOf(root), ['a']);
@@ -147,10 +146,9 @@ test('takePlaceOf should keep the whitespace before the later node', () => {
   const { root, state } = setup('a{color:red}\n\nb{color:blue}');
   const [earlier, later] = /** @type {Rule[]} */ (root.nodes);
   takePlaceOf(
-    state,
-    root,
-    ruleRecordOf(state.records, earlier),
-    ruleRecordOf(state.records, later)
+    state.records,
+    ruleRecordOf(state.records, earlier).index,
+    ruleRecordOf(state.records, later).index
   );
   writeBack(state.records);
   assert.equal(root.toString(), '\n\na{color:red}');
@@ -161,10 +159,9 @@ test('takePlaceOf should place the earlier node after a removal in the same pare
   const [removed, earlier, later] = /** @type {Rule[]} */ (root.nodes);
   remove(state.records, ruleRecordOf(state.records, removed));
   takePlaceOf(
-    state,
-    root,
-    ruleRecordOf(state.records, earlier),
-    ruleRecordOf(state.records, later)
+    state.records,
+    ruleRecordOf(state.records, earlier).index,
+    ruleRecordOf(state.records, later).index
   );
   writeBack(state.records);
   assert.deepEqual(selectorsOf(root), ['a']);
@@ -175,10 +172,9 @@ test('takePlaceOf should hand the leading whitespace of a removed first root chi
   const [removed, earlier, later] = /** @type {Rule[]} */ (root.nodes);
   remove(state.records, ruleRecordOf(state.records, removed));
   takePlaceOf(
-    state,
-    root,
-    ruleRecordOf(state.records, earlier),
-    ruleRecordOf(state.records, later)
+    state.records,
+    ruleRecordOf(state.records, earlier).index,
+    ruleRecordOf(state.records, later).index
   );
   writeBack(state.records);
   assert.equal(root.toString(), '\na{color:red}');

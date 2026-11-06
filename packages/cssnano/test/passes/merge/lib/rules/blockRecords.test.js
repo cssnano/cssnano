@@ -210,10 +210,9 @@ test('the chains should stay well formed after a join takes the place of a block
   );
   const [, earlier, later] = /** @type {Container} */ (root).nodes;
   takePlaceOf(
-    state,
-    root,
-    blockRecordOf(state.records, earlier),
-    blockRecordOf(state.records, later)
+    state.records,
+    blockRecordOf(state.records, earlier).index,
+    blockRecordOf(state.records, later).index
   );
   assertRecordsWellFormed(state);
 });

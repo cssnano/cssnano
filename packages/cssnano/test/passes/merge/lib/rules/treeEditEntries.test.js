@@ -122,10 +122,9 @@ test('takePlaceOf should put the earlier rule where the later rule stood', () =>
   const { root, state } = setup('a{color:red}b{width:1px}c{height:1px}');
   const [a, , c] = /** @type {Rule[]} */ (root.nodes);
   takePlaceOf(
-    state,
-    root,
-    ruleRecordOf(state.records, a),
-    ruleRecordOf(state.records, c)
+    state.records,
+    ruleRecordOf(state.records, a).index,
+    ruleRecordOf(state.records, c).index
   );
   assert.deepEqual(liveLabels(state), ['b', 'a']);
 });
@@ -136,10 +135,9 @@ test('takePlaceOf should put the earlier at-rule block where the later block sto
   );
   const [first, , second] = /** @type {Container[]} */ (root.nodes);
   takePlaceOf(
-    state,
-    root,
-    blockRecordOf(state.records, first),
-    blockRecordOf(state.records, second)
+    state.records,
+    blockRecordOf(state.records, first).index,
+    blockRecordOf(state.records, second).index
   );
   assert.deepEqual(liveLabels(state), ['b', '@media']);
   assert.equal(

@@ -48,15 +48,15 @@ export const mutations = [
   {
     name: 'takePlaceOf keeps the whitespace of the earlier entry',
     target: source('treeEdits.js'),
-    find: '  earlier.before = later.before;',
+    find: '  records.entry(earlier).before = records.entry(later).before;',
     replace: '',
   },
   {
     name: 'store the joined selector list as text, dropping its tokens',
     target: source('writeBack.js'),
-    find: '        textTable.write(record.node, list);\n        record.markStored();',
+    find: '      textTable.write(record.node, list);\n      record.markStored();',
     replace:
-      '        textTable.setText(record.node, tokensText(list));\n        record.markStored();',
+      '      textTable.setText(record.node, tokensText(list));\n      record.markStored();',
   },
   {
     name: 'store a clone or joined rule as text, dropping its tokens',
