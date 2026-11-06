@@ -56,7 +56,7 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
   const sequence = new RuleSequence(records);
   // A rule made mid-sweep takes the next index, past every link the sweep made.
   const added = records.recordRule(postcss.rule({ selector: 'x' }), ['x'], 'x');
-  sequence.replacePair(a, {
+  sequence.replacePair(records, a, {
     first: [a],
     second: [added.index],
   });
@@ -74,6 +74,7 @@ test('a sweep move that empties a nested at-rule block should unlink it and then
   const innerBlock = blockRecordOf(records, inner);
   const outerBlock = blockRecordOf(records, outer);
   new RuleSequence(records).moveIntoParent(
+    records,
     ruleRecordOf(records, p).index,
     ruleRecordOf(records, inner.first).index
   );
@@ -88,6 +89,7 @@ test('a sweep that empties an at-rule nested in a rule should unlink the at-rule
   const innerBlock = blockRecordOf(records, a.first);
   const nesting = ruleRecordOf(records, a);
   new RuleSequence(records).moveIntoParent(
+    records,
     ruleRecordOf(records, p).index,
     ruleRecordOf(records, a.first.first).index
   );

@@ -44,7 +44,7 @@ function firstNodeWithRecords(css) {
  * @return {boolean}
  */
 function conflictsAfterWrite(written, queried) {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys(written), 1);
   return index.conflictsSince([decl(queried)], 0);
 }
@@ -79,7 +79,7 @@ const catalogue = [
 test('last-write index agrees with isConflictingProp on every pair of known property names', () => {
   const disagreements = [];
   for (const written of catalogue) {
-    const index = new LastWriteIndex(noBlocks);
+    const index = new LastWriteIndex();
     index.record(keys(written), 1);
     for (const queried of catalogue) {
       if (
@@ -94,25 +94,25 @@ test('last-write index agrees with isConflictingProp on every pair of known prop
 });
 
 test('last-write index ignores a write at or before the position queried', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 3);
   assert.equal(index.conflictsSince([decl('color')], 3), false);
 });
 
 test('last-write index reports a write after the position queried', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 4);
   assert.equal(index.conflictsSince([decl('color')], 3), true);
 });
 
 test('last-write index reports a conflict when any queried declaration conflicts', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1);
   assert.equal(index.conflictsSince([decl('width'), decl('color')], 0), true);
 });
 
 test('last-write index reports no conflict for an empty declaration list', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1);
   assert.equal(index.conflictsSince([], 0), false);
 });
@@ -196,9 +196,10 @@ function entriesOfFirst(css) {
 }
 
 test('last-write index: moveWrites makes the moved declarations count from the new position', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 1);
   index.moveWrites(
+    noBlocks,
     entriesOfFirst('@media print{width:1px}'),
     5,
     unknownElements
@@ -208,9 +209,10 @@ test('last-write index: moveWrites makes the moved declarations count from the n
 });
 
 test('last-write index: moveWrites keeps a later write to the same property', () => {
-  const index = new LastWriteIndex(noBlocks);
+  const index = new LastWriteIndex();
   index.record(keys('color'), 7);
   index.moveWrites(
+    noBlocks,
     entriesOfFirst('@media print{color:red}'),
     3,
     unknownElements
@@ -220,8 +222,13 @@ test('last-write index: moveWrites keeps a later write to the same property', ()
 
 test('last-write index: moveWrites records a rule entry under the element keys of its rule', () => {
   const { records } = firstNodeWithRecords('h1{color:red}');
-  const index = new LastWriteIndex(records);
-  index.moveWrites(records.liveEntries(records.root.index), 5, keysOfSelectors);
+  const index = new LastWriteIndex();
+  index.moveWrites(
+    records,
+    records.liveEntries(records.root.index),
+    5,
+    keysOfSelectors
+  );
   assert.equal(index.conflictsSince([decl('color')], 4, ['h2']), false);
   assert.equal(index.conflictsSince([decl('color')], 4, ['h1']), true);
 });
@@ -242,8 +249,8 @@ test('last-write index: recordNode records declarations inside @media, @supports
     '@container (min-width:1px){.a{color:red}}',
   ]) {
     const { node, records } = firstNodeWithRecords(css);
-    const index = new LastWriteIndex(records);
-    index.recordNode(entryOf(records, node), 1, unknownElements);
+    const index = new LastWriteIndex();
+    index.recordNode(records, entryOf(records, node), 1, unknownElements);
     assert.equal(index.conflictsSince([decl('color')], 0), true, css);
     assert.equal(index.conflictsSince([decl('width')], 0), false, css);
   }
@@ -253,8 +260,8 @@ test('last-write index: recordNode records declarations of nested rules', () => 
   const { node, records } = firstNodeWithRecords(
     '.a{width:1px;& .b{color:red}}'
   );
-  const index = new LastWriteIndex(records);
-  index.recordNode(entryOf(records, node), 1, unknownElements);
+  const index = new LastWriteIndex();
+  index.recordNode(records, entryOf(records, node), 1, unknownElements);
   assert.equal(index.conflictsSince([decl('color')], 0), true);
 });
 
@@ -262,8 +269,8 @@ test('last-write index: recordNode given the record of a rule that holds a block
   const { node, records } = firstNodeWithRecords(
     '.a{width:1px;& .b{color:red}}'
   );
-  const index = new LastWriteIndex(records);
-  index.recordNode(ruleRecordOf(records, node), 1, unknownElements);
+  const index = new LastWriteIndex();
+  index.recordNode(records, ruleRecordOf(records, node), 1, unknownElements);
   assert.equal(index.conflictsSince([decl('color')], 0), true);
 });
 
@@ -276,15 +283,15 @@ test('last-write index: recordNode treats an at-rule it cannot analyse as a barr
     '@import "x.css";',
   ]) {
     const { node, records } = firstNodeWithRecords(css);
-    const index = new LastWriteIndex(records);
-    index.recordNode(entryOf(records, node), 1, unknownElements);
+    const index = new LastWriteIndex();
+    index.recordNode(records, entryOf(records, node), 1, unknownElements);
     assert.equal(index.conflictsSince([decl('width')], 0), true, css);
   }
 });
 
 test('last-write index: recordNode ignores comments', () => {
   const { node, records } = firstNodeWithRecords('/* note */');
-  const index = new LastWriteIndex(records);
-  index.recordNode(entryOf(records, node), 1, unknownElements);
+  const index = new LastWriteIndex();
+  index.recordNode(records, entryOf(records, node), 1, unknownElements);
   assert.equal(index.conflictsSince([decl('color')], 0), false);
 });

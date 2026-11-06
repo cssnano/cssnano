@@ -34,7 +34,7 @@ test('a second write-back should leave the child array of a block that already m
   );
   const sequence = new RuleSequence(state.records);
   const first = sequence.head;
-  sequence.moveIntoParent(first, sequence.nextOf(first));
+  sequence.moveIntoParent(state.records, first, sequence.nextOf(first));
   writeBack(state.records);
   const media = /** @type {Container} */ (root.first);
   const kept = media.nodes;

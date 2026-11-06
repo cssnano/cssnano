@@ -84,7 +84,7 @@ export function writesOf(declarations) {
  * @param {Set<ChainPosition>} claimedEarlierIndices
  * @param {Set<ChainPosition>} claimedIndices
  * @param {import('./mergeState.js').default} mergeState
- * @param {number} secondLink the index of `second` in the sweep
+ * @param {ArenaIndex} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
  * @param {Map<number, boolean>} outsideDeclarations
  * @return {Placement | null} null when the output would not get shorter

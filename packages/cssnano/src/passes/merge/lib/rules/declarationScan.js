@@ -32,14 +32,6 @@ function hasDeclarationOutsideRules(records, block) {
  * between two rules.
  */
 export default class DeclarationScan {
-  /** @type {BlockRecords} */
-  #records;
-
-  /** @param {BlockRecords} records the arena that the blocks of the links index */
-  constructor(records) {
-    this.#records = records;
-  }
-
   /**
    * True if a declaration outside both rules lies between them. CSS Nesting
    * keeps a declaration that follows nested rules in source order, so neither
@@ -51,6 +43,7 @@ export default class DeclarationScan {
    * the stylesheet. A nested rule's own block is not in a chain, so the walk
    * does not enter it.
    *
+   * @param {BlockRecords} records the arena that the blocks of the links index
    * @param {RuleRecord} first
    * @param {RuleRecord} second
    * @param {Map<number, boolean>} outsideDeclarations whether a rule has
@@ -58,8 +51,8 @@ export default class DeclarationScan {
    * move declarations between rules but never create one outside them
    * @return {boolean}
    */
-  declarationBetween(first, second, outsideDeclarations) {
-    const { links } = this.#records;
+  declarationBetween(records, first, second, outsideDeclarations) {
+    const { links } = records;
     /** @type {Container | undefined} */
     let enclosing = links.enclosingContainer(first.index);
     while (enclosing && enclosing.node.type !== 'rule') {
@@ -68,7 +61,7 @@ export default class DeclarationScan {
     if (!enclosing) return false;
     let hasOutside = outsideDeclarations.get(enclosing.index);
     if (hasOutside === undefined) {
-      hasOutside = hasDeclarationOutsideRules(this.#records, enclosing);
+      hasOutside = hasDeclarationOutsideRules(records, enclosing);
       outsideDeclarations.set(enclosing.index, hasOutside);
     }
     if (!hasOutside) return false;
@@ -90,9 +83,9 @@ export default class DeclarationScan {
         continue;
       }
       if (entry === second.index) return false;
-      const item = this.#records.entry(entry);
+      const item = records.entry(entry);
       if (item instanceof DeclarationRecord) return true;
-      const nested = this.#records.blockEntry(entry);
+      const nested = records.blockEntry(entry);
       if (nested && nested.first !== -1) {
         holder = nested;
         entry = nested.first;

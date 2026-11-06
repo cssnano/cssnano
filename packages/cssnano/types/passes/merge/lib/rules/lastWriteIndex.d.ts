@@ -21,8 +21,7 @@ import type { BlockRecords } from './blockRecords.js';
  */
 export default class LastWriteIndex {
     #private;
-    /** @param {BlockRecords} records the arena that holds the blocks and rules the entries name */
-    constructor(records: BlockRecords);
+    constructor();
     /**
      * @param {PropertyKeys} keys the keys of a declaration's property name
      * @param {number} position
@@ -36,13 +35,14 @@ export default class LastWriteIndex {
      * a barrier, since moving anything across it is not known to preserve the
      * cascade.
      *
+     * @param {BlockRecords} records the arena that holds the entries
      * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry a
      * live entry of a block
      * @param {number} position
      * @param {(record: RuleRecord) => string[] | null} keysOf
      * @return {void}
      */
-    recordNode(entry: DeclarationRecord | RuleRecord | BlockRecord | NodeEntry, position: number, keysOf: (record: RuleRecord) => string[] | null): void;
+    recordNode(records: BlockRecords, entry: DeclarationRecord | RuleRecord | BlockRecord | NodeEntry, position: number, keysOf: (record: RuleRecord) => string[] | null): void;
     /**
      * Whether a write after `position` conflicts with one of `declarations`,
      * counting only writes that can set an element in `elements`, the non-empty
@@ -59,22 +59,24 @@ export default class LastWriteIndex {
      * whose declarations take the keys `keysOf` gives, and bare declarations,
      * which count every write. Unknown keys count every write.
      *
+     * @param {BlockRecords} records
      * @param {(RuleRecord | DeclarationRecord)[]} entries
      * @param {number} position
      * @param {(record: RuleRecord) => string[] | null} keysOf
      * @return {boolean}
      */
-    conflictsSinceIn(entries: (RuleRecord | DeclarationRecord)[], position: number, keysOf: (record: RuleRecord) => string[] | null): boolean;
+    conflictsSinceIn(records: BlockRecords, entries: (RuleRecord | DeclarationRecord)[], position: number, keysOf: (record: RuleRecord) => string[] | null): boolean;
     /**
      * Entries that moved to `position` are written there now: each rule record
      * writes its declarations under the element keys `keysOf` gives it. Every
      * entry only ever moves forward, so a later write to the same property
      * is kept.
      *
+     * @param {BlockRecords} records
      * @param {(RuleRecord | DeclarationRecord)[]} entries
      * @param {number} position
      * @param {(record: RuleRecord) => string[] | null} keysOf
      */
-    moveWrites(entries: (RuleRecord | DeclarationRecord)[], position: number, keysOf: (record: RuleRecord) => string[] | null): void;
+    moveWrites(records: BlockRecords, entries: (RuleRecord | DeclarationRecord)[], position: number, keysOf: (record: RuleRecord) => string[] | null): void;
 }
 //# sourceMappingURL=lastWriteIndex.d.ts.map
