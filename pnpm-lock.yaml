@@ -193,7 +193,7 @@ catalogs:
       version: 8.5.32
 
 overrides:
-  postcss-calc: link:/home/ludovico/projects/scratch/postcss-calc
+  postcss-calc: link:/home/ludovico/Projects/scratch/postcss-calc
 
 importers:
 
@@ -233,8 +233,8 @@ importers:
         specifier: 'catalog:'
         version: 1.0.30001817
       postcss-calc:
-        specifier: link:/home/ludovico/projects/scratch/postcss-calc
-        version: link:../../../../../projects/scratch/postcss-calc
+        specifier: link:/home/ludovico/Projects/scratch/postcss-calc
+        version: link:../../../postcss-calc
     devDependencies:
       '@mdn/browser-compat-data':
         specifier: 'catalog:'
