@@ -41,11 +41,12 @@ export type Rebuilt = {
  */
 export declare function replaceChildren(rebuilt: Rebuilt[]): void;
 /**
- * Writes the selectors, then gives each container in the live tree whose
- * children differ from its node the children the records hold, and each plain
- * rule that an edit changed the children of. A container that already matches
- * keeps its child list, and so does a plain rule that no edit touched. Dropped
- * and departed records are not in the tree, so they keep theirs.
+ * Walks the live tree from the root. Each rule it reaches gets its selector
+ * written, and each container whose children differ from its node gets the
+ * children the records hold, as does each plain rule that an edit changed the
+ * children of. A container that already matches keeps its child list, and so
+ * does a plain rule that no edit touched. A record the root does not reach,
+ * dropped or departed, keeps its node as it is.
  *
  * @param {BlockRecords} records
  * @param {TextTable} [textTable] the table the selectors are written through

@@ -91,7 +91,12 @@ export declare class RuleRecord extends SelectorList {
     constructor(node: Rule, selectors: string[], selector: string, sourceSelector: string | undefined, tokens: readonly CSSToken[] | undefined);
     /** @return {boolean} whether a child was added or removed since the record was made */
     get edited(): boolean;
-    /** @return {boolean} whether the rule has left the stylesheet; reading it does not throw */
+    /**
+     * Whether the rule has left the stylesheet. Only consistency checks read it;
+     * no decision does.
+     *
+     * @return {boolean}
+     */
     get departed(): boolean;
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];

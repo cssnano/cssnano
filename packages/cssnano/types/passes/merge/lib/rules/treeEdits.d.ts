@@ -1,7 +1,7 @@
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockRecords } from './blockRecords.js';
 import { BlockRecord, NodeEntry } from './blockRecord.js';
-import type { Container, Root } from 'postcss';
+import type { Root } from 'postcss';
 import type { RuleRecord } from './ruleRecord.js';
 import type { PropertyWrites } from './propertyWrites.js';
 import type MergeState from './mergeState.js';
@@ -26,17 +26,16 @@ export declare function buildRecords(root: Root, context: RunContext): BlockReco
  */
 export declare function remove(records: BlockRecords, entry: RuleRecord | BlockRecord | DeclarationRecord | NodeEntry): void;
 /**
- * Moves `earlier`, which already holds the joined content, to the place of
- * `later`, so the joined node takes the later position and keeps the
+ * Moves the entry `earlier`, which already holds the joined content, to the
+ * place of `later`, so the joined node takes the later position and keeps the
  * whitespace before `later`.
  *
- * @param {MergeState} mergeState
- * @param {Container} parent
- * @param {RuleRecord | BlockRecord} earlier the record of a rule, or the block of an at-rule
- * @param {RuleRecord | BlockRecord} later the record of a rule, or the block of an at-rule, of the same kind
+ * @param {BlockRecords} records
+ * @param {number} earlier the index of a rule, or of the block of an at-rule
+ * @param {number} later the index of a rule, or of the block of an at-rule, of the same kind
  * @return {void}
  */
-export declare function takePlaceOf(mergeState: MergeState, parent: Container, earlier: RuleRecord | BlockRecord, later: RuleRecord | BlockRecord): void;
+export declare function takePlaceOf(records: BlockRecords, earlier: number, later: number): void;
 /**
  * Appends the children of `incoming` to `receiving`, comments included. A
  * declaration of `incoming` is redundant only when the last declaration of

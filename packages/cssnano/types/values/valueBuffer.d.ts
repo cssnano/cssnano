@@ -86,12 +86,15 @@ declare class ValueBuffer {
     replaceRanges(edits: readonly TokenEdit[]): void;
     /**
      * Reports a problem with the value. The host turns each message into a
-     * warning on the declaration, tagged with the plugin name when given.
+     * warning on the declaration, tagged with `opts.plugin` when given. The
+     * shape matches PostCSS's `Result.warn(text, opts)`.
      *
      * @param {string} message
-     * @param {string} [plugin]
+     * @param {{plugin?: string}} [opts]
      */
-    warn(message: string, plugin?: string): void;
+    warn(message: string, opts?: {
+        plugin?: string;
+    }): void;
     /**
      * The warnings reported so far, or undefined when there are none.
      *
