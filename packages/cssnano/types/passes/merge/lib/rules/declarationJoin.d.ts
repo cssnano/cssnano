@@ -1,13 +1,13 @@
 import { RuleRecord } from './ruleRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type MergeState from './mergeState.js';
-import type { BlockRecord } from './blockRecord.js';
+import type { BlockRecord, ChainPosition } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {ChildNode, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /**
  * A rule made only of declarations. Comments and nested rules would be
@@ -25,12 +25,15 @@ export declare const isDeclarationRule: (records: BlockRecords, record: RuleReco
  *
  * @param {DeclarationRecord[]} declarations
  * @param {DeclarationRecord[]} later
- * @return {Set<number> | null}
+ * @return {Set<ChainPosition> | null}
  */
-export declare function claimRepeats(declarations: DeclarationRecord[], later: DeclarationRecord[]): Set<number> | null;
+export declare function claimRepeats(declarations: DeclarationRecord[], later: DeclarationRecord[]): Set<ChainPosition> | null;
 export type Group = {
     rule: RuleRecord;
-    position: number;
+    /**
+     * its place among the live entries of the block
+     */
+    position: ChainPosition;
     declarations: DeclarationRecord[];
     /**
      * declaration keys, in order

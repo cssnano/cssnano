@@ -8,7 +8,7 @@ const STALE_KEYS =
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ChildNode, Declaration, Rule} from 'postcss' */
-/** @import {NodeEntry} from './blockRecord.js' */
+/** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /**
  * @typedef {object} RuleDeclarationKeys
  * @property {number[]} keys the ids of the declarations of the rule, in order
@@ -48,11 +48,11 @@ export class RuleRecord extends SelectorList {
   /**
    * The first entry of the chain of children, or -1 when it holds none.
    *
-   * @type {number}
+   * @type {ArenaIndex | -1}
    */
   first = -1;
 
-  /** @type {number} the last entry of the chain of children, or -1 when it holds none */
+  /** @type {ArenaIndex | -1} the last entry of the chain of children, or -1 when it holds none */
   last = -1;
 
   /** @type {number} the number of entries in the chain, kept by each link and unlink */
@@ -67,8 +67,8 @@ export class RuleRecord extends SelectorList {
    */
   context = -1;
 
-  /** @type {number} the place of the record in the arena of its records, -1 until added */
-  index = -1;
+  /** @type {ArenaIndex} the place of the record in the arena of its records, -1 until added */
+  index = /** @type {ArenaIndex} */ (-1);
 
   /** @type {number} RULE, which the window reads with the other records */
   kind = RULE;

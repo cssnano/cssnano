@@ -4,6 +4,7 @@ import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
 
 const DETACHED_BLOCK = 'an entry is linked into a block outside the tree';
 const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
@@ -57,46 +58,46 @@ export class BlockLinks {
 
   /**
    * @param {number} index an index that the arena gave
-   * @return {number} the container of the entry, -1 when it is linked nowhere
+   * @return {ArenaIndex | -1} the container of the entry, -1 when it is linked nowhere
    */
   parentOf(index) {
-    return this.#parent[index];
+    return /** @type {ArenaIndex | -1} */ (this.#parent[index]);
   }
 
   /**
    * @param {number} index an index that the arena gave, linked in a chain
-   * @return {number} the entry before `index` in its chain, -1 at the start
+   * @return {ArenaIndex | -1} the entry before `index` in its chain, -1 at the start
    * @throws {Error} under checks, when `index` is linked nowhere
    */
   prevSibling(index) {
     this.#assertLinked(index);
-    return this.#prev[index];
+    return /** @type {ArenaIndex | -1} */ (this.#prev[index]);
   }
 
   /**
    * @param {number} index an index that the arena gave, linked in a chain
-   * @return {number} the entry after `index` in its chain, -1 at the end
+   * @return {ArenaIndex | -1} the entry after `index` in its chain, -1 at the end
    * @throws {Error} under checks, when `index` is linked nowhere
    */
   nextSibling(index) {
     this.#assertLinked(index);
-    return this.#next[index];
+    return /** @type {ArenaIndex | -1} */ (this.#next[index]);
   }
 
   /**
    * @param {number} index an index that the arena gave, of a container
-   * @return {number} the first entry of its chain, -1 when it has none
+   * @return {ArenaIndex | -1} the first entry of its chain, -1 when it has none
    */
   firstChild(index) {
-    return this.#containerAt(index).first;
+    return /** @type {ArenaIndex | -1} */ (this.#containerAt(index).first);
   }
 
   /**
    * @param {number} index an index that the arena gave, of a container
-   * @return {number} the last entry of its chain, -1 when it has none
+   * @return {ArenaIndex | -1} the last entry of its chain, -1 when it has none
    */
   lastChild(index) {
-    return this.#containerAt(index).last;
+    return /** @type {ArenaIndex | -1} */ (this.#containerAt(index).last);
   }
 
   /**
@@ -122,7 +123,7 @@ export class BlockLinks {
    */
   #declarationFrom(index) {
     for (let at = index; at !== -1; at = this.#next[at]) {
-      const entry = this.#records.entry(at);
+      const entry = this.#records.entry(/** @type {ArenaIndex} */ (at));
       if (entry instanceof DeclarationRecord) return entry;
     }
     return undefined;
@@ -149,13 +150,16 @@ export class BlockLinks {
     this.#parent[index] = block;
     this.#prev[index] = after;
     this.#next[index] = next;
-    if (after === -1) holder.first = index;
+    if (after === -1) holder.first = /** @type {ArenaIndex} */ (index);
     else this.#next[after] = index;
-    if (next === -1) holder.last = index;
+    if (next === -1) holder.last = /** @type {ArenaIndex} */ (index);
     else this.#prev[next] = index;
     holder.count++;
     if (holder instanceof RuleRecord) {
-      holder.childLinked(this.#records.entry(index), next === -1);
+      holder.childLinked(
+        this.#records.entry(/** @type {ArenaIndex} */ (index)),
+        next === -1
+      );
     }
   }
 
@@ -183,9 +187,9 @@ export class BlockLinks {
     const holder = this.#containerAt(block);
     const prev = this.#prev[index];
     const next = this.#next[index];
-    if (prev === -1) holder.first = next;
+    if (prev === -1) holder.first = /** @type {ArenaIndex | -1} */ (next);
     else this.#next[prev] = next;
-    if (next === -1) holder.last = prev;
+    if (next === -1) holder.last = /** @type {ArenaIndex | -1} */ (prev);
     else this.#prev[next] = prev;
     holder.count--;
     this.#parent[index] = -1;
@@ -248,7 +252,7 @@ export class BlockLinks {
   #assertCanHold(block, index) {
     const holder = this.#records.container(block);
     if (holder instanceof RuleRecord && holder.context === -1) {
-      const entry = this.#records.entry(index);
+      const entry = this.#records.entry(/** @type {ArenaIndex} */ (index));
       const nests =
         entry instanceof RuleRecord ||
         entry instanceof BlockRecord ||

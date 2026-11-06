@@ -1,6 +1,7 @@
 /** @import {Declaration} from 'postcss' */
 /** @import {DeclarationKeys} from './declarationKey.js' */
 /** @import {PropertyKeys, PropertyTable} from './propertyTable.js' */
+/** @import {ArenaIndex} from '../merge/lib/rules/blockRecord.js' */
 import { DECLARATION, NO_PRELUDE } from '../merge/lib/rules/blockRecord.js';
 
 /**
@@ -22,8 +23,8 @@ export class DeclarationRecord {
   keys;
   /** @type {number} equal for declarations that print the same, within one run */
   id;
-  /** @type {number} the place of the record in the arena of a block's entries, -1 until added */
-  index = -1;
+  /** @type {ArenaIndex} the place of the record in the arena of a block's entries, -1 until added */
+  index = /** @type {ArenaIndex} */ (-1);
   /** @type {number} DECLARATION, which the window reads with the other records */
   kind = DECLARATION;
   /** @type {string} '' for a declaration, which has no at-rule name */

@@ -10,6 +10,24 @@ export declare const LAYER = 5;
 export declare const KEYFRAMES = 6;
 export declare const IMPORT = 7;
 export declare const OTHER_AT_RULE = 8;
+export type ArenaIndex = number & {
+    readonly brand: unique symbol;
+};
+export type ChainPosition = number & {
+    readonly brand: unique symbol;
+};
+/**
+ * The place of an entry in the arena of a run's records. It stays the same
+ * while the entry moves between chains, unlike its chain position.
+ *
+ * @typedef {number & {readonly brand: unique symbol}} ArenaIndex
+ */
+/**
+ * The place of an entry in the ordered children read from a chain, counted
+ * from 0. It changes whenever an entry before it is linked or unlinked.
+ *
+ * @typedef {number & {readonly brand: unique symbol}} ChainPosition
+ */
 /** The id of an entry that has no prelude. */
 export declare const NO_PRELUDE = -1;
 /**
@@ -59,24 +77,24 @@ export declare class BlockRecord {
      * The first entry of the chain of live children, which `BlockRecords` links,
      * or -1 when the block holds none.
      *
-     * @type {number}
+     * @type {ArenaIndex | -1}
      */
-    first: number;
+    first: ArenaIndex | -1;
     /**
      * The last entry of the chain of live children, or -1 when the block holds
      * none.
      *
-     * @type {number}
+     * @type {ArenaIndex | -1}
      */
-    last: number;
+    last: ArenaIndex | -1;
     /**
      * The number of entries in the chain, kept by each link and unlink.
      *
      * @type {number}
      */
     count: number;
-    /** @type {number} the place of the block in the arena of its records, -1 until added */
-    index: number;
+    /** @type {ArenaIndex} the place of the block in the arena of its records, -1 until added */
+    index: ArenaIndex;
     /**
      * The id of the circumstances under which the block applies its content, as
      * `containerContext` gives it. A block moves only between equal containers,
@@ -111,8 +129,8 @@ export declare class BlockRecord {
 export declare class NodeEntry {
     /** @type {ChildNode} the node the entry stands for */
     node: ChildNode;
-    /** @type {number} the place of the entry in the arena, -1 until added */
-    index: number;
+    /** @type {ArenaIndex} the place of the entry in the arena, -1 until added */
+    index: ArenaIndex;
     /** @type {number} what the entry is, a comment or an at-rule kind */
     kind: number;
     /** @type {string} the folded name of an at-rule, '' for a comment */

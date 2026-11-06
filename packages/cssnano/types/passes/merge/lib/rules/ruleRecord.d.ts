@@ -2,7 +2,7 @@ import { SelectorList } from './selectorList.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ChildNode, Declaration, Rule } from 'postcss';
-import type { NodeEntry } from './blockRecord.js';
+import type { ArenaIndex, NodeEntry } from './blockRecord.js';
 export type RuleDeclarationKeys = {
     /**
      * the ids of the declarations of the rule, in order
@@ -19,7 +19,7 @@ import type { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { BlockRecords } from './blockRecords.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ChildNode, Declaration, Rule} from 'postcss' */
-/** @import {NodeEntry} from './blockRecord.js' */
+/** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /**
  * @typedef {object} RuleDeclarationKeys
  * @property {number[]} keys the ids of the declarations of the rule, in order
@@ -45,11 +45,11 @@ export declare class RuleRecord extends SelectorList {
     /**
      * The first entry of the chain of children, or -1 when it holds none.
      *
-     * @type {number}
+     * @type {ArenaIndex | -1}
      */
-    first: number;
-    /** @type {number} the last entry of the chain of children, or -1 when it holds none */
-    last: number;
+    first: ArenaIndex | -1;
+    /** @type {ArenaIndex | -1} the last entry of the chain of children, or -1 when it holds none */
+    last: ArenaIndex | -1;
     /** @type {number} the number of entries in the chain, kept by each link and unlink */
     count: number;
     /**
@@ -60,8 +60,8 @@ export declare class RuleRecord extends SelectorList {
      * @type {number}
      */
     context: number;
-    /** @type {number} the place of the record in the arena of its records, -1 until added */
-    index: number;
+    /** @type {ArenaIndex} the place of the record in the arena of its records, -1 until added */
+    index: ArenaIndex;
     /** @type {number} RULE, which the window reads with the other records */
     kind: number;
     /** @type {string} '' for a rule, which has no at-rule name */

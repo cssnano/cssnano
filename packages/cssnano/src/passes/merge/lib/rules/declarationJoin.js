@@ -10,7 +10,7 @@ import { RuleRecord } from './ruleRecord.js';
 
 /** @import {ChildNode, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
 /**
@@ -33,7 +33,7 @@ export const isDeclarationRule = (records, record) =>
  *
  * @param {DeclarationRecord[]} declarations
  * @param {DeclarationRecord[]} later
- * @return {Set<number> | null}
+ * @return {Set<ChainPosition> | null}
  */
 export function claimRepeats(declarations, later) {
   const { intersection, claimedIndices } = filterRuleIntersections(
@@ -54,7 +54,7 @@ function listLength(selectors) {
 /**
  * @typedef {object} Group
  * @property {RuleRecord} rule
- * @property {number} position
+ * @property {ChainPosition} position its place among the live entries of the block
  * @property {DeclarationRecord[]} declarations
  * @property {number[]} keys declaration keys, in order
  * @property {Set<string> | null} selectors listed selectors, built on demand
@@ -126,13 +126,17 @@ export default function joinByDeclarations(block, mergeState) {
   const groups = new Map();
   // Rules whose selector lists grew; their text is written once at the end,
   // since rewriting a long list on every join would cost quadratic time.
-  /** @type {Set<number>} the indices of the rules that grew */
+  /** @type {Set<ArenaIndex>} the indices of the rules that grew */
   const grown = new Set();
   // Rules that gave up every declaration, detached together at the end:
   // removing each one splices the parent's array, which takes quadratic time.
-  /** @type {Set<number>} the indices of the rules that gave up every declaration */
+  /** @type {Set<ArenaIndex>} the indices of the rules that gave up every declaration */
   const emptied = new Set();
-  for (let position = scan.start; position < entries.length; position++) {
+  for (
+    let position = /** @type {ChainPosition} */ (scan.start);
+    position < entries.length;
+    position++
+  ) {
     const entry = entries[position];
     if (keyLists[position]) {
       const record = /** @type {RuleRecord} */ (entry);
@@ -157,7 +161,7 @@ export default function joinByDeclarations(block, mergeState) {
 
   /**
    * @param {RuleRecord} rule
-   * @param {number} position
+   * @param {ChainPosition} position
    * @param {number[]} keys
    */
   function register(rule, position, keys) {
@@ -185,7 +189,7 @@ export default function joinByDeclarations(block, mergeState) {
     const laterSet = laterRecord.declarationKeys(mergeState.records).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
     const laterKeys = keysOf(laterRecord);
-    /** @type {{group: Group, claimed: Set<number>, added: string[], gain: number} | null} */
+    /** @type {{group: Group, claimed: Set<ChainPosition>, added: string[], gain: number} | null} */
     let best = null;
     for (const id of laterSet) {
       const candidates = groups.get(id) ?? [];
@@ -259,7 +263,7 @@ export default function joinByDeclarations(block, mergeState) {
 
   /**
    * @param {RuleRecord} later
-   * @param {Set<number>} claimed indices of the declarations that leave
+   * @param {Set<ChainPosition>} claimed positions of the declarations that leave
    * @return {'emptied' | 'trimmed'}
    */
   function withdraw(later, claimed) {

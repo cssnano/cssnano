@@ -1,5 +1,7 @@
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { ChainPosition } from './blockRecord.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {ChainPosition} from './blockRecord.js' */
 /**
  * Two declarations are equal when they print the same, which their ids tell:
  * the same property name, value, importance and hack prefix.
@@ -31,11 +33,11 @@ export declare function sameDeclarationsAndOrder(a: number[], b: number[]): bool
  * @param {DeclarationRecord[]} hoistCandidates
  * @param {DeclarationRecord[]} earlierRuleDeclarations
  * @param {DeclarationRecord[]} laterRuleDeclarations
- * @return {{intersection: DeclarationRecord[], claimedIndices: Set<number>, claimedEarlierIndices: Set<number>}}
+ * @return {{intersection: DeclarationRecord[], claimedIndices: Set<ChainPosition>, claimedEarlierIndices: Set<ChainPosition>}}
  */
 export declare function filterRuleIntersections(hoistCandidates: DeclarationRecord[], earlierRuleDeclarations: DeclarationRecord[], laterRuleDeclarations: DeclarationRecord[]): {
     intersection: DeclarationRecord[];
-    claimedIndices: Set<number>;
-    claimedEarlierIndices: Set<number>;
+    claimedIndices: Set<ChainPosition>;
+    claimedEarlierIndices: Set<ChainPosition>;
 };
 //# sourceMappingURL=declarations.d.ts.map
