@@ -39,7 +39,7 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   const kept = [...receiving.declarationsOf(state.records)];
   appendToDeclarations(state, receiving, kept, writesOf(kept), incoming);
   assert.equal(receiving.declarationsOf(state.records).at(-1), moved);
-  state.records.links.unlink(incoming.index);
+  state.records.unlink(incoming.index);
   writeBack(state.records);
   assert.equal(moved.node.parent, receiving.node);
 });

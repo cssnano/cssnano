@@ -20,6 +20,10 @@ import {
   blockRecordOf,
   buildTestRecords,
 } from './liveRecords.js';
+import {
+  adopt,
+  removeDeclarationsAt,
+} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 
@@ -69,7 +73,8 @@ test('adopt should move the declarations of the source into the target and its a
   const [supports] = /** @type {Container} */ (root.nodes);
   const [media, other] = /** @type {Container} */ (supports).nodes;
 
-  state.records.adopt(
+  adopt(
+    state.records,
     blockRecordOf(state.records, /** @type {Container} */ (media)).index,
     blockRecordOf(state.records, /** @type {Container} */ (other)).index
   );
@@ -90,7 +95,8 @@ test('adopt should leave the source container holding no children', () => {
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   const [media, other] = /** @type {Container} */ (root).nodes;
-  state.records.adopt(
+  adopt(
+    state.records,
     blockRecordOf(state.records, /** @type {Container} */ (media)).index,
     blockRecordOf(state.records, /** @type {Container} */ (other)).index
   );
@@ -202,7 +208,8 @@ test('appendToDeclarations should move the declarations of the incoming rule int
 test('removeDeclarationsAt should keep the declarations that are not removed', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  state.records.removeDeclarationsAt(
+  removeDeclarationsAt(
+    state.records,
     ruleRecordOf(state.records, rule),
     new Set([0])
   );
@@ -289,7 +296,8 @@ test('removeDeclarationsAt should drop the removed declarations from the rule an
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {Container} */ (media).first);
 
-  state.records.removeDeclarationsAt(
+  removeDeclarationsAt(
+    state.records,
     ruleRecordOf(state.records, rule),
     new Set([0])
   );

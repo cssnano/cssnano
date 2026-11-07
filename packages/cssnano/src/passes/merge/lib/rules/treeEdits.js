@@ -15,6 +15,7 @@ import { declarationIsEqual } from './declarations.js';
 import { containerContext } from './sameContainer.js';
 import { hasPendingEdits } from '../deferredChildEdits.js';
 import { sourceSelector } from '../../../../utils/sourceText.js';
+import { appendChild } from './arenaEdits.js';
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
@@ -83,7 +84,7 @@ export function buildRecords(root, context) {
           textTable.stored(child)
         );
         record.before = child.raws.before ?? null;
-        records.links.linkLast(container.index, record.index);
+        records.linkLast(container.index, record.index);
         // A rule that holds a rule or an at-rule nests, and gets its context.
         if (child.nodes.some(isRuleOrAtRule)) {
           record.context = containerContext(
@@ -106,7 +107,7 @@ export function buildRecords(root, context) {
         );
         nested.before = child.raws.before ?? null;
         records.add(nested);
-        records.links.linkLast(container.index, nested.index);
+        records.linkLast(container.index, nested.index);
         nested.context = containerContext(
           context.declarations,
           container.context,
@@ -120,7 +121,7 @@ export function buildRecords(root, context) {
           context.properties,
           context.declarations
         );
-        records.links.linkLast(container.index, declaration.index);
+        records.linkLast(container.index, declaration.index);
       } else if (child.type === 'atrule') {
         const name = asciiLowerCase(child.name);
         const kind = atRuleKind(name);
@@ -135,13 +136,13 @@ export function buildRecords(root, context) {
           )
         );
         entry.before = child.raws.before ?? null;
-        records.links.linkLast(container.index, entry.index);
+        records.linkLast(container.index, entry.index);
       } else {
         const entry = records.bareEntry(
           new NodeEntry(child, COMMENT, '', '', false, NO_PRELUDE)
         );
         entry.before = child.raws.before ?? null;
-        records.links.linkLast(container.index, entry.index);
+        records.linkLast(container.index, entry.index);
       }
     }
   };
@@ -167,7 +168,7 @@ export function buildRecords(root, context) {
  * @return {void}
  */
 export function remove(records, entry) {
-  records.links.unlink(entry.index);
+  records.unlink(entry.index);
 }
 
 /**
@@ -187,7 +188,7 @@ export function takePlaceOf(records, earlier, later) {
   if (records.links.firstChild(root.index) === earlier) {
     root.leadingWhitespace = records.entry(later).before;
   }
-  records.links.takeLinkOf(later, earlier);
+  records.takeLinkOf(later, earlier);
   records.entry(earlier).before = records.entry(later).before;
 }
 
@@ -242,14 +243,14 @@ export function appendToDeclarations(
     const child = /** @type {DeclarationRecord | NodeEntry} */ (
       records.entry(first)
     );
-    links.unlink(first);
+    records.unlink(first);
     if (child instanceof DeclarationRecord) {
       const last = index.lastConflict(child.keys);
       if (last !== -1 && declarationIsEqual(kept[last], child)) continue;
       index.record(child.keys, kept.length);
       kept.push(child);
     }
-    records.appendChild(receiving, child);
+    appendChild(records, receiving, child);
   }
   incoming.depart();
 }
@@ -270,7 +271,7 @@ export function removeRules(mergeState, indices) {
   for (const index of indices) {
     const record = /** @type {RuleRecord} */ (arena.rule(index));
     leadsRoot ||= index === first;
-    arena.links.unlink(index);
+    arena.unlink(index);
     record.depart();
   }
   // Unlike `remove`, the rest keep their own whitespace, so the first of them

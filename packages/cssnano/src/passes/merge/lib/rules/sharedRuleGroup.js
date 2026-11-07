@@ -46,9 +46,9 @@ function overridesShared(records, rule, claimed, shared) {
   }
   let position = 0;
   for (
-    let declaration = records.links.firstDeclaration(rule.index);
+    let declaration = records.firstDeclaration(rule.index);
     declaration !== undefined;
-    declaration = records.links.nextDeclaration(declaration)
+    declaration = records.nextDeclaration(declaration)
   ) {
     if (claimed?.has(/** @type {ChainPosition} */ (position++))) continue;
     if (sharedWrites.lastConflict(declaration.keys) !== -1) return true;

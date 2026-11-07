@@ -60,9 +60,9 @@ export default class DeclarationScan {
   declarationBetween(records, first, second) {
     const { links } = records;
     /** @type {Container | undefined} */
-    let enclosing = links.enclosingContainer(first.index);
+    let enclosing = records.enclosingContainer(first.index);
     while (enclosing && enclosing.node.type !== 'rule') {
-      enclosing = links.enclosingContainer(enclosing.index);
+      enclosing = records.enclosingContainer(enclosing.index);
     }
     if (!enclosing) return false;
     let hasOutside = this.#outside.get(enclosing.index);
@@ -75,7 +75,7 @@ export default class DeclarationScan {
     // `first` holds only declarations and comments in its own block, so the
     // walk starts at the entry after it, in the block that holds it.
     let holder = /** @type {Container} */ (
-      links.enclosingContainer(first.index)
+      records.enclosingContainer(first.index)
     );
     let entry = links.nextSibling(first.index);
     for (;;) {
@@ -84,7 +84,7 @@ export default class DeclarationScan {
         // The walk leaves an at-rule block, which is in a chain, for the entry after it.
         entry = links.nextSibling(holder.index);
         holder = /** @type {Container} */ (
-          links.enclosingContainer(holder.index)
+          records.enclosingContainer(holder.index)
         );
         continue;
       }

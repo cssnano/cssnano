@@ -2,18 +2,18 @@
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-import { recordDeclaration } from '../../../ir/declarationRecord.js';
+import {
+  DeclarationRecord,
+  recordDeclaration,
+} from '../../../ir/declarationRecord.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockLinks } from './blockLinks.js';
+import { assertCanLink, assertReached } from './linkChecks.js';
 import { BlockRecord } from './blockRecord.js';
-/** @import {ArenaIndex, ChainPosition, NodeEntry} from './blockRecord.js' */
-import {
-  inheritWhitespace,
-  liveChildren,
-  liveCount,
-  liveEntries,
-} from './blockChildren.js';
+/** @import {NodeEntry} from './blockRecord.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
+/** @import {LinkReader} from './blockLinks.js' */
+import { liveChildren, liveCount, liveEntries } from './blockChildren.js';
 import { RuleRecord } from './ruleRecord.js';
 
 /**
@@ -31,8 +31,11 @@ export class BlockRecords {
   /** @type {(BlockRecord | RuleRecord | DeclarationRecord | NodeEntry)[]} every entry, by index, dropped and departed ones included */
   #entries = [];
 
-  /** @type {BlockLinks} the chains of the blocks, and each entry's container */
-  links = new BlockLinks(this);
+  /** @type {BlockLinks} the chains of the blocks, which only this arena edits */
+  #links = new BlockLinks(this);
+
+  /** @type {LinkReader} the chains of the blocks, read here and edited through this arena */
+  links = this.#links;
 
   /** @type {Map<string, number> | null} declarations the input wrote, under checks */
   inputWrites = null;
@@ -62,7 +65,7 @@ export class BlockRecords {
   #place(entry) {
     entry.index = /** @type {ArenaIndex} */ (this.#entries.length);
     this.#entries.push(entry);
-    this.links.grow();
+    this.#links.grow();
     return entry;
   }
 
@@ -132,8 +135,103 @@ export class BlockRecords {
    * @param {number} index an index that `recordRule` gave; under checks, throws when the root does not reach it
    */
   rule(index) {
-    if (consistencyChecksEnabled()) this.links.assertReached(index);
+    if (consistencyChecksEnabled()) assertReached(this, index);
     return /** @type {RuleRecord | undefined} */ (this.#entries[index]);
+  }
+
+  /**
+   * The container whose chain holds the entry at `index`.
+   *
+   * @param {number} index an index that the arena gave
+   * @return {BlockRecord | RuleRecord | undefined} undefined when the entry is linked nowhere
+   */
+  enclosingContainer(index) {
+    return this.container(this.links.parentOf(index));
+  }
+
+  /**
+   * @param {number} index an index that the arena gave, of a container
+   * @return {DeclarationRecord | undefined} the first declaration of its chain
+   */
+  firstDeclaration(index) {
+    return this.#declarationFrom(this.links.firstChild(index));
+  }
+
+  /**
+   * @param {DeclarationRecord} declaration a declaration linked in a chain
+   * @return {DeclarationRecord | undefined} the declaration after it in its chain
+   * @throws {Error} under checks, when the declaration is linked nowhere
+   */
+  nextDeclaration(declaration) {
+    return this.#declarationFrom(this.links.nextSibling(declaration.index));
+  }
+
+  /**
+   * @param {number} index the entry to start from, or -1
+   * @return {DeclarationRecord | undefined} the first declaration at or after `index`
+   */
+  #declarationFrom(index) {
+    for (
+      let at = index;
+      at !== -1;
+      at = this.links.nextSibling(/** @type {ArenaIndex} */ (at))
+    ) {
+      const entry = this.entry(/** @type {ArenaIndex} */ (at));
+      if (entry instanceof DeclarationRecord) return entry;
+    }
+    return undefined;
+  }
+
+  /**
+   * Links the entry at `index` after `after` in the chain of the container at
+   * `block`, which is the head when `after` is -1. Under checks, a container
+   * that does not reach the root through `parentOf` throws, since its entries
+   * would be lost, and a rule or an at-rule may join only a rule that nests.
+   *
+   * @param {number} block
+   * @param {number} after
+   * @param {number} index an entry that is linked nowhere, or was unlinked
+   * @return {void}
+   */
+  linkAfter(block, after, index) {
+    assertCanLink(this, block, index);
+    this.#links.linkAfter(block, after, index);
+  }
+
+  /**
+   * Links the entry at `index` at the end of the chain of the block at `block`.
+   *
+   * @param {number} block
+   * @param {number} index an entry that is linked nowhere, or was unlinked
+   * @return {void}
+   */
+  linkLast(block, index) {
+    assertCanLink(this, block, index);
+    this.#links.linkLast(block, index);
+  }
+
+  /**
+   * Takes the entry at `index` out of its chain. The entry keeps its own
+   * subtree, and a later link may place it again.
+   *
+   * @param {number} index
+   * @return {void}
+   */
+  unlink(index) {
+    this.#links.unlink(index);
+  }
+
+  /**
+   * Puts the entry `earlier` in the chain where `later` stands, and unlinks
+   * `later`.
+   *
+   * @param {number} later a linked entry
+   * @param {number} earlier an entry that is linked elsewhere, or nowhere
+   * @return {void}
+   */
+  takeLinkOf(later, earlier) {
+    assertCanLink(this, this.links.parentOf(later), earlier);
+    this.#links.takeLinkOf(later, earlier);
   }
 
   /**
@@ -213,56 +311,6 @@ export class BlockRecords {
   }
 
   /**
-   * Replaces the rule `record` with the rules `replacements`, which take its
-   * place in the chain, in order.
-   *
-   * @param {number} record the index of the rule that is replaced
-   * @param {number[]} replacements
-   * @return {void}
-   */
-  substitute(record, replacements) {
-    // The replacements take the chain where the record stood, which may be
-    // the record itself; it is read before the record leaves the chain.
-    const holder = this.links.parentOf(record);
-    let after = /** @type {number} */ (this.links.prevSibling(record));
-    this.links.unlink(record);
-    for (const replacement of replacements) {
-      this.links.linkAfter(holder, after, replacement);
-      after = replacement;
-    }
-  }
-
-  /**
-   * Moves the rule `record` to the end of the chain of the block at `target`.
-   *
-   * @param {number} target the index of the block that takes the rule
-   * @param {number} record the index of the rule
-   * @return {void}
-   */
-  moveRule(target, record) {
-    this.links.unlink(record);
-    this.links.linkLast(target, record);
-  }
-
-  /**
-   * Moves the chain of the block at `source` to the end of the chain of the
-   * block at `target`. `source` is left with no children, since the caller
-   * removes it. A nested block keeps its rule, which moves with the chain.
-   *
-   * @param {number} target
-   * @param {number} source
-   * @return {void}
-   */
-  adopt(target, source) {
-    const from = /** @type {BlockRecord} */ (this.block(source));
-    while (from.first !== -1) {
-      const entry = from.first;
-      this.links.unlink(entry);
-      this.links.linkLast(target, entry);
-    }
-  }
-
-  /**
    * Clears the edited flag of every rule, once the build has linked their
    * children, so that only edits after the build mark a rule.
    *
@@ -331,70 +379,5 @@ export class BlockRecords {
     return this.#place(
       new RuleRecord(rule, selectors, selector, sourceSelector, tokens)
     );
-  }
-
-  /**
-   * Appends a child to the chain of a rule, after its last child, and gives the
-   * child the whitespace of that child when it has none. The node takes it at
-   * write-back. The child must be linked nowhere, or unlinked.
-   *
-   * @param {RuleRecord} rule
-   * @param {DeclarationRecord | NodeEntry} child
-   * @return {void}
-   */
-  appendChild(rule, child) {
-    const last = this.links.lastChild(rule.index);
-    inheritWhitespace(child, last === -1 ? undefined : this.entry(last));
-    this.links.linkLast(rule.index, child.index);
-  }
-
-  /**
-   * Removes the declarations of a rule at the positions `claimed`, which index
-   * the declarations as they stand at the call. The node drops them at
-   * write-back.
-   *
-   * @param {RuleRecord} rule
-   * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
-   * @return {void}
-   */
-  removeDeclarationsAt(rule, claimed) {
-    this.takeDeclarationsAt(rule, claimed);
-  }
-
-  /**
-   * Removes the declarations of a rule at the positions `claimed`, as
-   * `removeDeclarationsAt` does, and returns their records for another rule to
-   * append.
-   *
-   * @param {RuleRecord} rule
-   * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
-   * @return {DeclarationRecord[]} the removed records, in order
-   */
-  takeDeclarationsAt(rule, claimed) {
-    const taken = this.#claimedAt(rule, claimed);
-    for (const declaration of taken) this.links.unlink(declaration.index);
-    return taken;
-  }
-
-  /**
-   * The declarations of `rule` at the positions `claimed` as it stands now.
-   *
-   * @param {RuleRecord} rule
-   * @param {Set<ChainPosition>} claimed
-   * @return {DeclarationRecord[]}
-   */
-  #claimedAt(rule, claimed) {
-    /** @type {DeclarationRecord[]} */
-    const taken = [];
-    let position = 0;
-    for (
-      let declaration = this.links.firstDeclaration(rule.index);
-      declaration !== undefined;
-      declaration = this.links.nextDeclaration(declaration)
-    ) {
-      if (claimed.has(/** @type {ChainPosition} */ (position++)))
-        taken.push(declaration);
-    }
-    return taken;
   }
 }

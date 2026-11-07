@@ -8,6 +8,7 @@ import { DeclarationRecord } from '../../../../../src/passes/ir/declarationRecor
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { entryOf, buildTestRecords } from './liveRecords.js';
+import { adopt } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /**
  * The entries under the first at-rule of `css`, read from its record.
@@ -123,7 +124,8 @@ test('subtreeEntries should see the declarations that an edit adds, since nothin
       entries: subtreeEntries(state.records, block),
     });
   assert.equal(propsNow()?.length, 1);
-  state.records.adopt(
+  adopt(
+    state.records,
     block.index,
     /** @type {BlockRecord} */ (entryOf(state.records, second)).index
   );

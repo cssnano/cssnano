@@ -5,6 +5,7 @@ import { filterRuleIntersections } from './declarations.js';
 import { isKeyframes } from './sameContainer.js';
 import { removeRules } from './treeEdits.js';
 import { RuleRecord } from './ruleRecord.js';
+import { removeDeclarationsAt } from './arenaEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
@@ -274,7 +275,7 @@ export default function joinByDeclarations(block, mergeState) {
       emptied.add(later.index);
       return 'emptied';
     }
-    records.removeDeclarationsAt(later, claimed);
+    removeDeclarationsAt(records, later, claimed);
     return 'trimmed';
   }
 }

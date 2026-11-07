@@ -17,6 +17,7 @@ import {
   ruleRecordOf,
   buildTestRecords,
 } from './liveRecords.js';
+import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import {Root, Rule} from 'postcss' */
@@ -60,7 +61,7 @@ test('assertRecordsWellFormed should throw when a child of a rule is linked into
   const holder = ruleRecordOf(state.records, a);
   const other = ruleRecordOf(state.records, c);
   const child = state.records.links.firstChild(holder.index);
-  state.records.links.linkLast(other.index, child);
+  state.records.linkLast(other.index, child);
   assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
 });
 
@@ -70,7 +71,7 @@ test('assertRecordsWellFormed should throw when the root is linked into its own 
     state.records,
     /** @type {Rule} */ (state.records.root.node.first)
   );
-  state.records.links.linkLast(holder.index, state.records.root.index);
+  state.records.linkLast(holder.index, state.records.root.index);
   assert.throws(() => assertRecordsWellFormed(state), /reached twice/v);
 });
 
@@ -98,7 +99,7 @@ test('assertRecordsWellFormed should accept the chains after a rule moves out of
   );
   const [media, layer] = /** @type {any[]} */ (root.nodes);
   const rule = ruleRecordOf(state.records, media.first);
-  state.records.moveRule(state.records.root.index, rule.index);
+  moveRule(state.records, state.records.root.index, rule.index);
   remove(state.records, blockRecordOf(state.records, layer));
   assert.doesNotThrow(() => assertRecordsWellFormed(state));
 });
@@ -118,7 +119,7 @@ test('linkLast should throw under checks when the block is outside the tree', ()
     )
   );
   assert.throws(
-    () => state.records.links.linkLast(detached.index, comment.index),
+    () => state.records.linkLast(detached.index, comment.index),
     /outside the tree/v
   );
 });

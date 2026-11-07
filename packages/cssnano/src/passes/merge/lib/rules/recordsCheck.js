@@ -143,7 +143,7 @@ export function assertContextsCurrent(mergeState) {
   if (!consistencyChecksEnabled()) return;
   const { records, declarationIds } = mergeState;
   for (const block of records.containers()) {
-    const holder = records.links.enclosingContainer(block.index);
+    const holder = records.enclosingContainer(block.index);
     // An emptied block is unlinked and applies nothing, so it has no place to keep.
     if (holder === undefined && block !== records.root) continue;
     const parent = holder?.context ?? -1;

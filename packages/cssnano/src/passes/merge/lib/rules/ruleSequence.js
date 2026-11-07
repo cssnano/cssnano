@@ -1,5 +1,6 @@
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
+import { moveRule, substitute } from './arenaEdits.js';
 
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -145,7 +146,7 @@ export default class RuleSequence {
     const target = records.links.parentOf(first);
     const source = records.links.parentOf(second);
     if (target === source) return false;
-    records.moveRule(target, second);
+    moveRule(records, target, second);
     // The sweep retries a moved pair, so a move that leaves the parents
     // apart would repeat forever; it throws instead.
     if (records.links.parentOf(second) !== records.links.parentOf(first)) {
@@ -199,7 +200,7 @@ export default class RuleSequence {
    */
   #substitute(records, index, rules) {
     const holder = records.links.parentOf(index);
-    records.substitute(index, rules);
+    substitute(records, index, rules);
     this.#dropIfEmptied(records, holder);
   }
 
@@ -221,7 +222,7 @@ export default class RuleSequence {
       const block = records.blockEntry(at);
       if (!block?.droppable || block.count !== 0) return;
       const holder = links.parentOf(at);
-      links.unlink(at);
+      records.unlink(at);
       if (holder === -1) return;
       at = holder;
     }

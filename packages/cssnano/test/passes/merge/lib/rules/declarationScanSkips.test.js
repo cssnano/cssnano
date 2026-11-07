@@ -67,7 +67,7 @@ test('linking an entry into an at-rule block that a sweep unlinked should throw 
     )
   );
   assert.throws(
-    () => records.links.linkLast(block.index, comment.index),
+    () => records.linkLast(block.index, comment.index),
     /outside the tree/v
   );
 });

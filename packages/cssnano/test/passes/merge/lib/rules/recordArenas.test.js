@@ -125,7 +125,7 @@ test('a block should name the block whose chain holds it by index, -1 for the st
   assert.equal(records.links.parentOf(records.root.index), -1);
   for (const block of reachedBlocks(records, records.root)) {
     if (block !== records.root) {
-      const holder = records.links.enclosingContainer(block.index);
+      const holder = records.enclosingContainer(block.index);
       assert.ok(holder && holds(records, holder, block));
     }
   }
@@ -168,7 +168,7 @@ test('assertOwnershipIsTree should throw when a rule is linked twice in one chai
   const first = records.links.firstChild(records.root.index);
   const second = records.links.nextSibling(first);
   // Linking `first` after `second` makes the chain loop from `second` to itself.
-  records.links.linkAfter(records.root.index, first, second);
+  records.linkAfter(records.root.index, first, second);
   assert.throws(() => assertOwnershipIsTree(records), /reached twice/v);
 });
 

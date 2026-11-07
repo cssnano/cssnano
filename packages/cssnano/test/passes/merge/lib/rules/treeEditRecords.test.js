@@ -15,6 +15,7 @@ import {
   ruleRecordOf,
   buildTestRecords,
 } from './liveRecords.js';
+import { removeDeclarationsAt } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 
@@ -169,7 +170,8 @@ test('removeDeclarationsAt should keep the record of the rule', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
-  state.records.removeDeclarationsAt(
+  removeDeclarationsAt(
+    state.records,
     ruleRecordOf(state.records, rule),
     new Set([0])
   );
@@ -180,7 +182,8 @@ test('removeDeclarationsAt should leave the record with the declarations that re
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   ruleRecordOf(state.records, rule);
-  state.records.removeDeclarationsAt(
+  removeDeclarationsAt(
+    state.records,
     ruleRecordOf(state.records, rule),
     new Set([0])
   );
@@ -196,7 +199,8 @@ test('removeDeclarationsAt should give the record keys for the declarations that
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   ruleRecordOf(state.records, rule).declarationKeys(state.records);
-  state.records.removeDeclarationsAt(
+  removeDeclarationsAt(
+    state.records,
     ruleRecordOf(state.records, rule),
     new Set([0])
   );
@@ -210,7 +214,8 @@ test('removeDeclarationsAt should keep the element keys of the record', () => {
   const { root, state } = setup('a,b{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   state.elementKeysOf(ruleRecordOf(state.records, rule));
-  state.records.removeDeclarationsAt(
+  removeDeclarationsAt(
+    state.records,
     ruleRecordOf(state.records, rule),
     new Set([0])
   );

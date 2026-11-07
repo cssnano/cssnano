@@ -51,9 +51,9 @@ export function tallyDeclarations(records) {
       return;
     }
     for (
-      let declaration = records.links.firstDeclaration(record.index);
+      let declaration = records.firstDeclaration(record.index);
       declaration !== undefined;
-      declaration = records.links.nextDeclaration(declaration)
+      declaration = records.nextDeclaration(declaration)
     ) {
       count(declaration);
     }
