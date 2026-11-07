@@ -1,4 +1,3 @@
-import DeclarationScan from './declarationScan.js';
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 
@@ -34,8 +33,6 @@ export default class RuleSequence {
 
   /** @type {ArenaIndex | -1} the index of the first rule, -1 when there is none */
   head = -1;
-
-  #scan = new DeclarationScan();
 
   /** @type {ArenaIndex | -1} the index of the last rule linked so far, -1 before the first */
   #tail = -1;
@@ -132,23 +129,6 @@ export default class RuleSequence {
     let tail = previous;
     for (const index of indices) tail = this.#link(tail, index);
     return tail;
-  }
-
-  /**
-   * @param {BlockRecords} records
-   * @param {RuleRecord} first
-   * @param {RuleRecord} second
-   * @param {Map<number, boolean>} outsideDeclarations see
-   * `DeclarationScan#declarationBetween`
-   * @return {boolean} whether a declaration outside both rules lies between them
-   */
-  declarationBetween(records, first, second, outsideDeclarations) {
-    return this.#scan.declarationBetween(
-      records,
-      first,
-      second,
-      outsideDeclarations
-    );
   }
 
   /**

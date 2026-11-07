@@ -7,6 +7,7 @@ import type { BlockRecords } from './blockRecords.js';
  * between two rules.
  */
 export default class DeclarationScan {
+    #private;
     /**
      * True if a declaration outside both rules lies between them. CSS Nesting
      * keeps a declaration that follows nested rules in source order, so neither
@@ -21,11 +22,8 @@ export default class DeclarationScan {
      * @param {BlockRecords} records the arena that the blocks of the links index
      * @param {RuleRecord} first
      * @param {RuleRecord} second
-     * @param {Map<number, boolean>} outsideDeclarations whether a rule has
-     * a declaration outside its nested rules, valid for the whole scan: rewrites
-     * move declarations between rules but never create one outside them
      * @return {boolean}
      */
-    declarationBetween(records: BlockRecords, first: RuleRecord, second: RuleRecord, outsideDeclarations: Map<number, boolean>): boolean;
+    declarationBetween(records: BlockRecords, first: RuleRecord, second: RuleRecord): boolean;
 }
 //# sourceMappingURL=declarationScan.d.ts.map

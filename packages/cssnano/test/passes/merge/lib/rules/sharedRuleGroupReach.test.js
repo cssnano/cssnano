@@ -7,6 +7,7 @@ import {
   intersect,
 } from '../../../../../src/passes/merge/lib/rules/declarations.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
+import DeclarationScan from '../../../../../src/passes/merge/lib/rules/declarationScan.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 import {
   earliestPairReaching,
@@ -60,7 +61,7 @@ function groupsOf(css) {
   const mergeState = new MergeState(['Chrome 120']);
   mergeState.records = buildTestRecords(root, mergeState);
   const sequence = new RuleSequence(mergeState.records);
-  const outsideDeclarations = new Map();
+  const scan = new DeclarationScan();
   /** @type {number[]} */
   const links = [];
   for (let link = sequence.head; link !== -1; link = sequence.nextOf(link)) {
@@ -98,7 +99,7 @@ function groupsOf(css) {
       0,
       mergeState,
       sequence,
-      outsideDeclarations
+      scan
     );
     if (group) found.push({ i, group });
   }

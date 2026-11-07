@@ -33,6 +33,15 @@ function hasDeclarationOutsideRules(records, block) {
  */
 export default class DeclarationScan {
   /**
+   * Whether a rule has a declaration outside its nested rules, valid for the
+   * whole scan: rewrites move declarations between rules but never create one
+   * outside them.
+   *
+   * @type {Map<number, boolean>}
+   */
+  #outside = new Map();
+
+  /**
    * True if a declaration outside both rules lies between them. CSS Nesting
    * keeps a declaration that follows nested rules in source order, so neither
    * rule may move across it. Neighbors hold no rule between them, so any such
@@ -46,12 +55,9 @@ export default class DeclarationScan {
    * @param {BlockRecords} records the arena that the blocks of the links index
    * @param {RuleRecord} first
    * @param {RuleRecord} second
-   * @param {Map<number, boolean>} outsideDeclarations whether a rule has
-   * a declaration outside its nested rules, valid for the whole scan: rewrites
-   * move declarations between rules but never create one outside them
    * @return {boolean}
    */
-  declarationBetween(records, first, second, outsideDeclarations) {
+  declarationBetween(records, first, second) {
     const { links } = records;
     /** @type {Container | undefined} */
     let enclosing = links.enclosingContainer(first.index);
@@ -59,10 +65,10 @@ export default class DeclarationScan {
       enclosing = links.enclosingContainer(enclosing.index);
     }
     if (!enclosing) return false;
-    let hasOutside = outsideDeclarations.get(enclosing.index);
+    let hasOutside = this.#outside.get(enclosing.index);
     if (hasOutside === undefined) {
       hasOutside = hasDeclarationOutsideRules(records, enclosing);
-      outsideDeclarations.set(enclosing.index, hasOutside);
+      this.#outside.set(enclosing.index, hasOutside);
     }
     if (!hasOutside) return false;
 
