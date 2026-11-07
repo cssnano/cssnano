@@ -138,15 +138,6 @@ export declare class RuleRecord extends SelectorList {
      */
     declarationsOf(records: BlockRecords): DeclarationRecord[];
     /**
-     * The declaration of the rule at `position`, counted along its chain at the
-     * call.
-     *
-     * @param {BlockRecords} records the arena that holds the rule's children
-     * @param {number} position
-     * @return {DeclarationRecord | undefined} undefined when the rule has no such declaration
-     */
-    declarationAt(records: BlockRecords, position: number): DeclarationRecord | undefined;
-    /**
      * Called by `BlockLinks` once a child is linked into the chain of the rule.
      * A declaration linked at the end joins the kept ids; any other link drops
      * them.

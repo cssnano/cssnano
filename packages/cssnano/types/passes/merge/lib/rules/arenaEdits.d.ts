@@ -1,11 +1,11 @@
 import type { BlockRecords } from './blockRecords.js';
-import type { ChainPosition } from './blockRecord.js';
+import type { ArenaIndex } from './blockRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { NodeEntry } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
-/** @import {ChainPosition} from './blockRecord.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -51,25 +51,25 @@ export declare function adopt(records: BlockRecords, target: number, source: num
  */
 export declare function appendChild(records: BlockRecords, rule: RuleRecord, child: DeclarationRecord | NodeEntry): void;
 /**
- * Removes the declarations of a rule at the positions `claimed`, which index
- * the declarations as they stand at the call. The node drops them at
- * write-back.
+ * Removes the declarations at the arena indices `claimed` from the chain of
+ * the rule at `rule`. The node drops them at write-back.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord} rule
- * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
+ * @param {ArenaIndex} rule
+ * @param {Set<ArenaIndex>} claimed the declarations that leave, each a child of `rule`
  * @return {void}
  */
-export declare function removeDeclarationsAt(records: BlockRecords, rule: RuleRecord, claimed: Set<ChainPosition>): void;
+export declare function removeDeclarations(records: BlockRecords, rule: ArenaIndex, claimed: Set<ArenaIndex>): void;
 /**
- * Removes the declarations of a rule at the positions `claimed`, as
- * `removeDeclarationsAt` does, and returns their records for another rule to
- * append.
+ * Moves the declarations at the arena indices `claimed`, in order, from the
+ * chain of `source` to the end of the chain of `target`. The node of `source`
+ * keeps them until write-back.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord} rule
- * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
- * @return {DeclarationRecord[]} the removed records, in order
+ * @param {ArenaIndex} source
+ * @param {ArenaIndex} target
+ * @param {ArenaIndex[]} claimed the declarations that move, in their chain order
+ * @return {void}
  */
-export declare function takeDeclarationsAt(records: BlockRecords, rule: RuleRecord, claimed: Set<ChainPosition>): DeclarationRecord[];
+export declare function moveDeclarations(records: BlockRecords, source: ArenaIndex, target: ArenaIndex, claimed: ArenaIndex[]): void;
 //# sourceMappingURL=arenaEdits.d.ts.map

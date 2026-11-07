@@ -87,6 +87,21 @@ export function blockRecordOf(records, node) {
 }
 
 /**
+ * The arena indices of the declarations of `rule` at `positions`, counted
+ * along its chain as it stands now. A test names the declarations it claims
+ * this way, in chain order.
+ *
+ * @param {BlockRecords} records
+ * @param {RuleRecord} rule
+ * @param {number[]} positions
+ * @return {Set<import('../../../../../src/passes/merge/lib/rules/blockRecord.js').ArenaIndex>}
+ */
+export function claimAt(records, rule, positions) {
+  const declarations = rule.declarationsOf(records);
+  return new Set(positions.map((position) => declarations[position].index));
+}
+
+/**
  * The records of `root` built the way the driver builds them, from the run
  * state of a test's merge state. The text table holds the tokens a test stored,
  * and is empty by default.

@@ -255,27 +255,6 @@ export class RuleRecord extends SelectorList {
   }
 
   /**
-   * The declaration of the rule at `position`, counted along its chain at the
-   * call.
-   *
-   * @param {BlockRecords} records the arena that holds the rule's children
-   * @param {number} position
-   * @return {DeclarationRecord | undefined} undefined when the rule has no such declaration
-   */
-  declarationAt(records, position) {
-    this.#assertLive();
-    let at = 0;
-    for (
-      let declaration = records.firstDeclaration(this.index);
-      declaration !== undefined;
-      declaration = records.nextDeclaration(declaration)
-    ) {
-      if (at++ === position) return declaration;
-    }
-    return undefined;
-  }
-
-  /**
    * Called by `BlockLinks` once a child is linked into the chain of the rule.
    * A declaration linked at the end joins the kept ids; any other link drops
    * them.

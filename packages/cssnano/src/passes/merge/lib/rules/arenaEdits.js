@@ -1,8 +1,10 @@
 import { inheritWhitespace } from './blockChildren.js';
 
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
+
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
-/** @import {ChainPosition} from './blockRecord.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -82,54 +84,82 @@ export function appendChild(records, rule, child) {
 }
 
 /**
- * Removes the declarations of a rule at the positions `claimed`, which index
- * the declarations as they stand at the call. The node drops them at
- * write-back.
+ * Removes the declarations at the arena indices `claimed` from the chain of
+ * the rule at `rule`. The node drops them at write-back.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord} rule
- * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
+ * @param {ArenaIndex} rule
+ * @param {Set<ArenaIndex>} claimed the declarations that leave, each a child of `rule`
  * @return {void}
  */
-export function removeDeclarationsAt(records, rule, claimed) {
-  takeDeclarationsAt(records, rule, claimed);
+export function removeDeclarations(records, rule, claimed) {
+  if (consistencyChecksEnabled()) assertChildrenOf(records, rule, claimed);
+  for (const index of claimed) records.unlink(index);
 }
 
 /**
- * Removes the declarations of a rule at the positions `claimed`, as
- * `removeDeclarationsAt` does, and returns their records for another rule to
- * append.
+ * Moves the declarations at the arena indices `claimed`, in order, from the
+ * chain of `source` to the end of the chain of `target`. The node of `source`
+ * keeps them until write-back.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord} rule
- * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
- * @return {DeclarationRecord[]} the removed records, in order
+ * @param {ArenaIndex} source
+ * @param {ArenaIndex} target
+ * @param {ArenaIndex[]} claimed the declarations that move, in their chain order
+ * @return {void}
  */
-export function takeDeclarationsAt(records, rule, claimed) {
-  const taken = claimedAt(records, rule, claimed);
-  for (const declaration of taken) records.unlink(declaration.index);
-  return taken;
+export function moveDeclarations(records, source, target, claimed) {
+  if (consistencyChecksEnabled()) assertMovesInOrder(records, source, claimed);
+  const receiving = /** @type {RuleRecord} */ (records.rule(target));
+  for (const index of claimed) {
+    records.unlink(index);
+    appendChild(
+      records,
+      receiving,
+      /** @type {DeclarationRecord} */ (records.entry(index))
+    );
+  }
+}
+
+const NOT_A_CHILD =
+  'a declaration is removed from a rule that does not hold it';
+const OUT_OF_ORDER = 'declarations are moved out of their chain order';
+
+/**
+ * Under checks, throws when an index in `claimed` is not a child of `rule`.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} rule
+ * @param {Iterable<ArenaIndex>} claimed
+ * @return {void}
+ * @throws {Error} under checks, for the first index that `rule` does not hold
+ */
+function assertChildrenOf(records, rule, claimed) {
+  for (const index of claimed) {
+    if (records.links.parentOf(index) !== rule) throw new Error(NOT_A_CHILD);
+  }
 }
 
 /**
- * The declarations of `rule` at the positions `claimed` as it stands now.
+ * Under checks, throws when a declaration moves from `source` in another
+ * order than its chain, or when `source` does not hold it. The chain of
+ * `source` is walked once.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord} rule
- * @param {Set<ChainPosition>} claimed
- * @return {DeclarationRecord[]}
+ * @param {ArenaIndex} source
+ * @param {ArenaIndex[]} claimed
+ * @return {void}
+ * @throws {Error} under checks, when a claimed index is not a child of `source` in order
  */
-function claimedAt(records, rule, claimed) {
-  /** @type {DeclarationRecord[]} */
-  const taken = [];
-  let position = 0;
+function assertMovesInOrder(records, source, claimed) {
+  assertChildrenOf(records, source, claimed);
+  let at = 0;
   for (
-    let declaration = records.firstDeclaration(rule.index);
-    declaration !== undefined;
+    let declaration = records.firstDeclaration(source);
+    declaration !== undefined && at < claimed.length;
     declaration = records.nextDeclaration(declaration)
   ) {
-    if (claimed.has(/** @type {ChainPosition} */ (position++)))
-      taken.push(declaration);
+    if (declaration.index === claimed[at]) at++;
   }
-  return taken;
+  if (at !== claimed.length) throw new Error(OUT_OF_ORDER);
 }

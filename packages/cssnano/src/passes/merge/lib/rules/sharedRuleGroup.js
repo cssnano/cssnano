@@ -6,7 +6,7 @@ import { PropertyWrites } from './propertyWrites.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
 
@@ -35,7 +35,7 @@ const PAIR_REACH = SHARING_WINDOW + 1;
  *
  * @param {BlockRecords} records the arena that holds the rule's children
  * @param {RuleRecord} rule
- * @param {Set<ChainPosition> | null | undefined} claimed positions among the declarations of `rule`
+ * @param {Set<ArenaIndex> | null | undefined} claimed the arena indices of the declarations of `rule` that repeat `shared`
  * @param {DeclarationRecord[]} shared
  * @return {boolean}
  */
@@ -44,13 +44,12 @@ function overridesShared(records, rule, claimed, shared) {
   for (const declaration of shared) {
     sharedWrites.record(declaration.keys, 0);
   }
-  let position = 0;
   for (
     let declaration = records.firstDeclaration(rule.index);
     declaration !== undefined;
     declaration = records.nextDeclaration(declaration)
   ) {
-    if (claimed?.has(/** @type {ChainPosition} */ (position++))) continue;
+    if (claimed?.has(declaration.index)) continue;
     if (sharedWrites.lastConflict(declaration.keys) !== -1) return true;
   }
   return false;
@@ -59,7 +58,7 @@ function overridesShared(records, rule, claimed, shared) {
 /**
  * @typedef {object} Follower
  * @property {RuleRecord} rule
- * @property {Set<ChainPosition>} claimed where it repeats the shared declarations
+ * @property {Set<ArenaIndex>} claimed the arena indices of the declarations where it repeats the shared declarations
  */
 
 /**
@@ -74,12 +73,11 @@ function overridesShared(records, rule, claimed, shared) {
  *
  * @param {ArenaIndex | -1} link the index of the rule, -1 for none
  * @param {ArenaIndex | -1} parent the index of the block the rules stand in
- * @param {number[]} firstKeys the declaration keys of the earlier rule
- * @param {Set<ChainPosition>} sharedIndices where the shared declarations stand in it
+ * @param {DeclarationRecord[]} shared the shared declarations
  * @param {BlockRecords} records the arena that holds the rules' blocks
  * @return {boolean}
  */
-function repeatsShared(link, parent, firstKeys, sharedIndices, records) {
+function repeatsShared(link, parent, shared, records) {
   if (link === -1) return false;
   const rule = /** @type {RuleRecord} */ (records.rule(link));
   if (
@@ -89,8 +87,8 @@ function repeatsShared(link, parent, firstKeys, sharedIndices, records) {
     return false;
   }
   const { keySet } = rule.declarationKeys(records);
-  for (const index of sharedIndices) {
-    if (!keySet.has(firstKeys[index])) return false;
+  for (const declaration of shared) {
+    if (!keySet.has(declaration.id)) return false;
   }
   return true;
 }
@@ -124,8 +122,7 @@ function mergesWithAll(members, later, parent, mergeState) {
  * @param {RuleRecord} first
  * @param {ArenaIndex} second the index of the later rule of the pair
  * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
- * @param {Set<ChainPosition>} claimedEarlierIndices where the shared declarations stand in `first`
- * @param {Set<ChainPosition>} claimedIndices where they stand in `second`
+ * @param {Set<ArenaIndex>} claimedIndices the arena indices of the declarations of `second` that repeat them
  * @param {number} sharedBytes
  * @param {number} prefixed the bytes of the shared declarations a later plugin may remove
  * @param {number} delta how much the pair alone lengthens the output
@@ -138,7 +135,6 @@ export function findGroup(
   first,
   second,
   shared,
-  claimedEarlierIndices,
   claimedIndices,
   sharedBytes,
   prefixed,
@@ -150,16 +146,7 @@ export function findGroup(
   const { records } = mergeState;
   const secondRule = /** @type {RuleRecord} */ (records.rule(second));
   const parent = records.links.parentOf(secondRule.index);
-  const firstKeys = first.declarationKeys(records).keys;
-  if (
-    !repeatsShared(
-      sequence.nextOf(second),
-      parent,
-      firstKeys,
-      claimedEarlierIndices,
-      mergeState.records
-    )
-  )
+  if (!repeatsShared(sequence.nextOf(second), parent, shared, records))
     return null;
   if (overridesShared(records, secondRule, claimedIndices, shared)) return null;
 
@@ -180,8 +167,7 @@ export function findGroup(
   let running = delta;
   for (
     let link = sequence.nextOf(second), seen = 0;
-    seen < SHARING_WINDOW &&
-    repeatsShared(link, parent, firstKeys, claimedEarlierIndices, records);
+    seen < SHARING_WINDOW && repeatsShared(link, parent, shared, records);
     link = sequence.nextOf(link), seen++
   ) {
     const linked = /** @type {RuleRecord} */ (records.rule(link));
@@ -237,13 +223,13 @@ export function findGroup(
 }
 
 /**
- * The positions of the declarations of `later` that repeat `shared`, or null
- * when `later` cannot join: a rule that nests never joins.
+ * The arena indices of the declarations of `later` that repeat `shared`, or
+ * null when `later` cannot join: a rule that nests never joins.
  *
  * @param {DeclarationRecord[]} shared
  * @param {RuleRecord} later
  * @param {BlockRecords} records
- * @return {Set<ChainPosition> | null}
+ * @return {Set<ArenaIndex> | null}
  */
 function claimedBy(shared, later, records) {
   return later.context !== -1

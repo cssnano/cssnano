@@ -5,7 +5,7 @@ import { filterRuleIntersections } from './declarations.js';
 import { isKeyframes } from './sameContainer.js';
 import { removeRules } from './treeEdits.js';
 import { RuleRecord } from './ruleRecord.js';
-import { removeDeclarationsAt } from './arenaEdits.js';
+import { removeDeclarations } from './arenaEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
@@ -28,13 +28,13 @@ export const isDeclarationRule = (records, record) =>
   record.holdsOnlyDeclarations(records);
 
 /**
- * The positions in `later` of declarations that repeat every one of
+ * The arena indices of the declarations in `later` that repeat every one of
  * `declarations`, or null when a repeat does not stand first for its
  * property, since removing it would then change what `later` sets.
  *
  * @param {DeclarationRecord[]} declarations
  * @param {DeclarationRecord[]} later
- * @return {Set<ChainPosition> | null}
+ * @return {Set<ArenaIndex> | null} the arena indices of the later declarations
  */
 export function claimRepeats(declarations, later) {
   const { intersection, claimedIndices } = filterRuleIntersections(
@@ -186,11 +186,12 @@ export default function joinByDeclarations(block, mergeState) {
    * declarations, some of them, or joined no group
    */
   function joinIntoGroup(laterRecord) {
-    const laterDeclarations = laterRecord.declarationsOf(mergeState.records);
+    const { records } = mergeState;
+    const laterDeclarations = laterRecord.declarationsOf(records);
     const laterSet = laterRecord.declarationKeys(mergeState.records).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
     const laterKeys = keysOf(laterRecord);
-    /** @type {{group: Group, claimed: Set<ChainPosition>, added: string[], gain: number} | null} */
+    /** @type {{group: Group, claimed: Set<ArenaIndex>, added: string[], gain: number} | null} */
     let best = null;
     for (const id of laterSet) {
       const candidates = groups.get(id) ?? [];
@@ -229,7 +230,10 @@ export default function joinByDeclarations(block, mergeState) {
           laterDeclarations
         );
         if (!claimedIndices) continue;
-        const claimed = [...claimedIndices].map((j) => laterDeclarations[j]);
+        const claimed = [...claimedIndices].map(
+          (declarationIndex) =>
+            /** @type {DeclarationRecord} */ (records.entry(declarationIndex))
+        );
         if (index.conflictsSince(claimed, group.position, laterKeys)) continue;
         if (!mergeState.canMerge(group.rule, laterRecord)) continue;
         best = { group, claimed: claimedIndices, added, gain };
@@ -264,7 +268,7 @@ export default function joinByDeclarations(block, mergeState) {
 
   /**
    * @param {RuleRecord} later
-   * @param {Set<ChainPosition>} claimed positions of the declarations that leave
+   * @param {Set<ArenaIndex>} claimed the declarations that leave
    * @return {'emptied' | 'trimmed'}
    */
   function withdraw(later, claimed) {
@@ -275,7 +279,7 @@ export default function joinByDeclarations(block, mergeState) {
       emptied.add(later.index);
       return 'emptied';
     }
-    removeDeclarationsAt(records, later, claimed);
+    removeDeclarations(records, later.index, claimed);
     return 'trimmed';
   }
 }

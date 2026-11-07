@@ -1,7 +1,7 @@
 import { PropertyWrites } from './propertyWrites.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
-import type { ArenaIndex, ChainPosition } from './blockRecord.js';
+import type { ArenaIndex } from './blockRecord.js';
 import type RuleSequence, { Placement } from './ruleSequence.js';
 import type DeclarationScan from './declarationScan.js';
 /**
@@ -25,13 +25,12 @@ export declare function writesOf(declarations: DeclarationRecord[]): PropertyWri
  * @param {RuleRecord} first
  * @param {RuleRecord} second
  * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
- * @param {Set<ChainPosition>} claimedEarlierIndices
- * @param {Set<ChainPosition>} claimedIndices
+ * @param {Set<ArenaIndex>} claimedIndices the arena indices of the declarations of `second` that repeat `shared`
  * @param {import('./mergeState.js').default} mergeState
  * @param {ArenaIndex} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
  * @param {DeclarationScan} scan
  * @return {Placement | null} null when the output would not get shorter
  */
-export declare function buildMergedRule(first: RuleRecord, second: RuleRecord, shared: DeclarationRecord[], claimedEarlierIndices: Set<ChainPosition>, claimedIndices: Set<ChainPosition>, mergeState: import('./mergeState.js').default, secondLink: ArenaIndex, sequence: RuleSequence, scan: DeclarationScan): Placement | null;
+export declare function buildMergedRule(first: RuleRecord, second: RuleRecord, shared: DeclarationRecord[], claimedIndices: Set<ArenaIndex>, mergeState: import('./mergeState.js').default, secondLink: ArenaIndex, sequence: RuleSequence, scan: DeclarationScan): Placement | null;
 //# sourceMappingURL=ruleRewrite.d.ts.map

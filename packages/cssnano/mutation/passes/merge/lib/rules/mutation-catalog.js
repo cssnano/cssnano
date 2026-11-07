@@ -193,18 +193,16 @@ export const mutations = [
     replace: '  };\n  reach(records.root);\n  visitChildren(records.root);',
   },
   {
-    name: 'taking declarations hands over no record',
+    name: 'moving declarations hands over no record',
     target: source('arenaEdits.js'),
-    find: '  for (const declaration of taken) records.unlink(declaration.index);\n  return taken;',
-    replace:
-      '  for (const declaration of taken) records.unlink(declaration.index);\n  return [];',
+    find: '    records.unlink(index);\n    appendChild(\n      records,\n      receiving,',
+    replace: '    records.unlink(index);\n    void (\n      records,\n      receiving,',
   },
   {
-    name: 'taking declarations removes the taken node at once',
+    name: 'moving declarations removes the moved node at once',
     target: source('arenaEdits.js'),
-    find: '  for (const declaration of taken) records.unlink(declaration.index);\n  return taken;',
-    replace:
-      '  for (const declaration of taken) {\n    records.unlink(declaration.index);\n    declaration.node.remove();\n  }\n  return taken;',
+    find: '    records.unlink(index);\n    appendChild(',
+    replace: '    records.unlink(index);\n    records.entry(index).node.remove();\n    appendChild(',
   },
   {
     name: 'an append edits the node of the rule at once',

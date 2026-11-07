@@ -1,7 +1,7 @@
 import { PropertyWrites } from './propertyWrites.js';
 import { WritePositions } from './writePositions.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {ChainPosition} from './blockRecord.js' */
+/** @import {ArenaIndex, ChainPosition} from './blockRecord.js' */
 
 /**
  * Two declarations are equal when they print the same, which their ids tell:
@@ -102,13 +102,15 @@ class LaterClaims {
  *
  * A candidate keeps the override order when no declaration after it in the
  * earlier rule that is not a candidate conflicts with it. The candidates are
- * the earlier rule's declarations by reference, so this one backward pass
- * decides every candidate.
+ * the earlier rule's declarations by reference, in their chain order, so one
+ * backward pass over the earlier rule decides every candidate.
  *
- * @param {DeclarationRecord[]} candidates
+ * @param {DeclarationRecord[]} candidates in the earlier rule's chain order
  * @param {DeclarationRecord[]} earlierRuleDeclarations
  * @param {DeclarationRecord[]} laterRuleDeclarations
- * @return {{survivors: DeclarationRecord[], claimedIndices: Set<ChainPosition>, earlierIndices: Set<ChainPosition>}}
+ * @return {{survivors: DeclarationRecord[], claimed: Set<ChainPosition>}} the
+ * surviving candidates in their order, and the positions in the later rule
+ * that they claim
  */
 function filterRound(
   candidates,
@@ -116,8 +118,6 @@ function filterRound(
   laterRuleDeclarations
 ) {
   const candidateSet = new Set(candidates);
-  /** @type {Map<DeclarationRecord, ChainPosition>} */
-  const earlierIndexOf = new Map();
   const hoistable = new Set();
   // The non-candidates after the current position. A candidate is blocked by
   // any of them that conflicts with it.
@@ -128,7 +128,6 @@ function filterRound(
       outside.record(declaration.keys, index);
       continue;
     }
-    earlierIndexOf.set(declaration, /** @type {ChainPosition} */ (index));
     if (outside.lastConflict(declaration.keys) === -1) {
       hoistable.add(declaration);
     }
@@ -142,23 +141,17 @@ function filterRound(
       survivors.push(candidate);
     }
   }
-  return {
-    survivors,
-    claimedIndices: claims.claimed,
-    earlierIndices: new Set(
-      survivors.map(
-        (declaration) =>
-          /** @type {ChainPosition} */ (earlierIndexOf.get(declaration))
-      )
-    ),
-  };
+  return { survivors, claimed: claims.claimed };
 }
 
 /**
- * @param {DeclarationRecord[]} hoistCandidates
+ * @param {DeclarationRecord[]} hoistCandidates in the earlier rule's chain order
  * @param {DeclarationRecord[]} earlierRuleDeclarations
  * @param {DeclarationRecord[]} laterRuleDeclarations
- * @return {{intersection: DeclarationRecord[], claimedIndices: Set<ChainPosition>, claimedEarlierIndices: Set<ChainPosition>}}
+ * @return {{intersection: DeclarationRecord[], claimedIndices: Set<ArenaIndex>}}
+ * `intersection` lists the surviving declarations in the earlier rule's chain
+ * order, and `claimedIndices` the arena indices of the later rule's declarations
+ * that they claim
  */
 export function filterRuleIntersections(
   hoistCandidates,
@@ -176,13 +169,12 @@ export function filterRuleIntersections(
       round.survivors.length === remainingCandidates.length ||
       round.survivors.length === 0
     ) {
-      return {
-        intersection: round.survivors,
-        claimedIndices: round.claimedIndices,
-        // Symmetric to `claimedIndices`: the positions of the surviving
-        // declarations within the earlier rule.
-        claimedEarlierIndices: round.earlierIndices,
-      };
+      /** @type {Set<ArenaIndex>} */
+      const claimedIndices = new Set();
+      for (const position of round.claimed) {
+        claimedIndices.add(laterRuleDeclarations[position].index);
+      }
+      return { intersection: round.survivors, claimedIndices };
     }
     remainingCandidates = round.survivors;
   }

@@ -14,8 +14,9 @@ import {
   blockRecordOf,
   ruleRecordOf,
   buildTestRecords,
+  claimAt,
 } from './liveRecords.js';
-import { removeDeclarationsAt } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { removeDeclarations } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 
@@ -166,26 +167,27 @@ test('appendToDeclarations should give the record of the receiving rule keys for
   );
 });
 
-test('removeDeclarationsAt should keep the record of the rule', () => {
+test('removeDeclarations should keep the record of the rule', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
-  removeDeclarationsAt(
+  removeDeclarations(
     state.records,
-    ruleRecordOf(state.records, rule),
-    new Set([0])
+    record.index,
+    claimAt(state.records, record, [0])
   );
   assert.equal(ruleRecordOf(state.records, rule), record);
 });
 
-test('removeDeclarationsAt should leave the record with the declarations that remain', () => {
+test('removeDeclarations should leave the record with the declarations that remain', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   ruleRecordOf(state.records, rule);
-  removeDeclarationsAt(
+  const record = ruleRecordOf(state.records, rule);
+  removeDeclarations(
     state.records,
-    ruleRecordOf(state.records, rule),
-    new Set([0])
+    record.index,
+    claimAt(state.records, record, [0])
   );
   assert.deepEqual(
     ruleRecordOf(state.records, rule)
@@ -195,14 +197,15 @@ test('removeDeclarationsAt should leave the record with the declarations that re
   );
 });
 
-test('removeDeclarationsAt should give the record keys for the declarations that remain', () => {
+test('removeDeclarations should give the record keys for the declarations that remain', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   ruleRecordOf(state.records, rule).declarationKeys(state.records);
-  removeDeclarationsAt(
+  const record = ruleRecordOf(state.records, rule);
+  removeDeclarations(
     state.records,
-    ruleRecordOf(state.records, rule),
-    new Set([0])
+    record.index,
+    claimAt(state.records, record, [0])
   );
   assert.deepEqual(
     ruleRecordOf(state.records, rule).declarationKeys(state.records).keys,
@@ -210,14 +213,15 @@ test('removeDeclarationsAt should give the record keys for the declarations that
   );
 });
 
-test('removeDeclarationsAt should keep the element keys of the record', () => {
+test('removeDeclarations should keep the element keys of the record', () => {
   const { root, state } = setup('a,b{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
   state.elementKeysOf(ruleRecordOf(state.records, rule));
-  removeDeclarationsAt(
+  const record = ruleRecordOf(state.records, rule);
+  removeDeclarations(
     state.records,
-    ruleRecordOf(state.records, rule),
-    new Set([0])
+    record.index,
+    claimAt(state.records, record, [0])
   );
   assert.deepEqual(state.elementKeysOf(ruleRecordOf(state.records, rule)), [
     'a',

@@ -15,10 +15,10 @@ import { isDeclarationRule } from '../../../../../src/passes/merge/lib/rules/dec
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
+import { ruleRecordOf, buildTestRecords, claimAt } from './liveRecords.js';
 import {
   appendChild,
-  removeDeclarationsAt,
+  removeDeclarations,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
@@ -313,7 +313,7 @@ test('declarations should read the records under consistency checks, before writ
   enableConsistencyChecks(true);
   try {
     const { records, record } = arenaOf('a{color:red}');
-    removeDeclarationsAt(records, record, new Set([0]));
+    removeDeclarations(records, record.index, claimAt(records, record, [0]));
     assert.equal(record.declarationsOf(records).length, 0);
   } finally {
     enableConsistencyChecks(wasEnabled);

@@ -98,7 +98,6 @@ export function mergeSharedDeclarations(
     first,
     second,
     intersection,
-    filtered.claimedEarlierIndices,
     filtered.claimedIndices,
     mergeState,
     secondLink,

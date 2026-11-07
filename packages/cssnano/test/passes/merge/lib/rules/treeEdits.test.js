@@ -19,10 +19,11 @@ import {
   ruleRecordOf,
   blockRecordOf,
   buildTestRecords,
+  claimAt,
 } from './liveRecords.js';
 import {
   adopt,
-  removeDeclarationsAt,
+  removeDeclarations,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
@@ -205,13 +206,14 @@ test('appendToDeclarations should move the declarations of the incoming rule int
   assert.deepEqual(treeProps(media), ['color', 'width']);
 });
 
-test('removeDeclarationsAt should keep the declarations that are not removed', () => {
+test('removeDeclarations should keep the declarations that are not removed', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  removeDeclarationsAt(
+  const record = ruleRecordOf(state.records, rule);
+  removeDeclarations(
     state.records,
-    ruleRecordOf(state.records, rule),
-    new Set([0])
+    record.index,
+    claimAt(state.records, record, [0])
   );
   writeBack(state.records);
   assert.deepEqual(treeProps(rule), ['width']);
@@ -291,15 +293,17 @@ test('replaceChildren should move the declarations of a rebuilt container into i
   assert.deepEqual(treeProps(supports), ['color', 'width']);
 });
 
-test('removeDeclarationsAt should drop the removed declarations from the rule and its ancestors', () => {
+test('removeDeclarations should drop the removed declarations from the rule and its ancestors', () => {
   const { root, state } = setup('@media print{a{color:red;width:1px}}');
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {Container} */ (media).first);
 
-  removeDeclarationsAt(
+  const record = ruleRecordOf(state.records, rule);
+
+  removeDeclarations(
     state.records,
-    ruleRecordOf(state.records, rule),
-    new Set([0])
+    record.index,
+    claimAt(state.records, record, [0])
   );
   writeBack(state.records);
 

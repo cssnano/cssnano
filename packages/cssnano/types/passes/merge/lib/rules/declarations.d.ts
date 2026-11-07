@@ -1,7 +1,7 @@
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import type { ChainPosition } from './blockRecord.js';
+import type { ArenaIndex } from './blockRecord.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {ChainPosition} from './blockRecord.js' */
+/** @import {ArenaIndex, ChainPosition} from './blockRecord.js' */
 /**
  * Two declarations are equal when they print the same, which their ids tell:
  * the same property name, value, importance and hack prefix.
@@ -30,14 +30,16 @@ export declare function intersect(declarations: DeclarationRecord[], keySet: Set
  */
 export declare function sameDeclarationsAndOrder(a: number[], b: number[]): boolean;
 /**
- * @param {DeclarationRecord[]} hoistCandidates
+ * @param {DeclarationRecord[]} hoistCandidates in the earlier rule's chain order
  * @param {DeclarationRecord[]} earlierRuleDeclarations
  * @param {DeclarationRecord[]} laterRuleDeclarations
- * @return {{intersection: DeclarationRecord[], claimedIndices: Set<ChainPosition>, claimedEarlierIndices: Set<ChainPosition>}}
+ * @return {{intersection: DeclarationRecord[], claimedIndices: Set<ArenaIndex>}}
+ * `intersection` lists the surviving declarations in the earlier rule's chain
+ * order, and `claimedIndices` the arena indices of the later rule's declarations
+ * that they claim
  */
 export declare function filterRuleIntersections(hoistCandidates: DeclarationRecord[], earlierRuleDeclarations: DeclarationRecord[], laterRuleDeclarations: DeclarationRecord[]): {
     intersection: DeclarationRecord[];
-    claimedIndices: Set<ChainPosition>;
-    claimedEarlierIndices: Set<ChainPosition>;
+    claimedIndices: Set<ArenaIndex>;
 };
 //# sourceMappingURL=declarations.d.ts.map

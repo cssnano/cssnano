@@ -1,6 +1,6 @@
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
-import type { ArenaIndex, ChainPosition } from './blockRecord.js';
+import type { ArenaIndex } from './blockRecord.js';
 import type RuleSequence from './ruleSequence.js';
 import type DeclarationScan from './declarationScan.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
@@ -8,7 +8,7 @@ import type DeclarationScan from './declarationScan.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
 /** @param {string[]} selectors @return {number} */
@@ -17,9 +17,9 @@ export declare const SHARING_WINDOW = 10;
 export type Follower = {
     rule: RuleRecord;
     /**
-     * where it repeats the shared declarations
+     * the arena indices of the declarations where it repeats the shared declarations
      */
-    claimed: Set<ChainPosition>;
+    claimed: Set<ArenaIndex>;
 };
 export type Group = {
     /**
@@ -46,8 +46,7 @@ export type Group = {
  * @param {RuleRecord} first
  * @param {ArenaIndex} second the index of the later rule of the pair
  * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
- * @param {Set<ChainPosition>} claimedEarlierIndices where the shared declarations stand in `first`
- * @param {Set<ChainPosition>} claimedIndices where they stand in `second`
+ * @param {Set<ArenaIndex>} claimedIndices the arena indices of the declarations of `second` that repeat them
  * @param {number} sharedBytes
  * @param {number} prefixed the bytes of the shared declarations a later plugin may remove
  * @param {number} delta how much the pair alone lengthens the output
@@ -56,7 +55,7 @@ export type Group = {
  * @param {DeclarationScan} scan
  * @return {Group | null}
  */
-export declare function findGroup(first: RuleRecord, second: ArenaIndex, shared: DeclarationRecord[], claimedEarlierIndices: Set<ChainPosition>, claimedIndices: Set<ChainPosition>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, scan: DeclarationScan): Group | null;
+export declare function findGroup(first: RuleRecord, second: ArenaIndex, shared: DeclarationRecord[], claimedIndices: Set<ArenaIndex>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, scan: DeclarationScan): Group | null;
 /**
  * Records in `earliest` the farthest pair before `resume` that a rewrite at
  * `link` can change, if it is farther than the recorded pair. A later rule

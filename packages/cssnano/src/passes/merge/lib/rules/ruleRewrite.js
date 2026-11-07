@@ -2,16 +2,12 @@ import postcss from 'postcss';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { PropertyWrites } from './propertyWrites.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
-import {
-  appendChild,
-  removeDeclarationsAt,
-  takeDeclarationsAt,
-} from './arenaEdits.js';
+import { moveDeclarations, removeDeclarations } from './arenaEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
 /** @import MergeState from './mergeState.js' */
@@ -87,8 +83,7 @@ export function writesOf(declarations) {
  * @param {RuleRecord} first
  * @param {RuleRecord} second
  * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
- * @param {Set<ChainPosition>} claimedEarlierIndices
- * @param {Set<ChainPosition>} claimedIndices
+ * @param {Set<ArenaIndex>} claimedIndices the arena indices of the declarations of `second` that repeat `shared`
  * @param {import('./mergeState.js').default} mergeState
  * @param {ArenaIndex} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
@@ -99,7 +94,6 @@ export function buildMergedRule(
   first,
   second,
   shared,
-  claimedEarlierIndices,
   claimedIndices,
   mergeState,
   secondLink,
@@ -127,7 +121,7 @@ export function buildMergedRule(
     selectorsLength(secondSelectors) +
     2 -
     sharedBytes;
-  if (first.childCount() === claimedEarlierIndices.size) {
+  if (first.childCount() === shared.length) {
     delta -= selectorsLength(firstSelectors) + 1;
   }
   if (second.childCount() === claimedIndices.size) {
@@ -142,7 +136,6 @@ export function buildMergedRule(
           first,
           secondLink,
           shared,
-          claimedEarlierIndices,
           claimedIndices,
           sharedBytes,
           prefixed,
@@ -175,15 +168,14 @@ export function buildMergedRule(
   if (!group) mergeState.storeJoined(receivingRecord, first, second);
   mergeState.reportCreated(receivingBlock);
   // The merged rule takes the declarations of the earlier rule themselves.
-  for (const declaration of takeDeclarationsAt(
+  moveDeclarations(
     records,
-    first,
-    claimedEarlierIndices
-  )) {
-    appendChild(records, receivingRecord, declaration);
-  }
+    first.index,
+    receivingRecord.index,
+    shared.map((declaration) => declaration.index)
+  );
   const firstLeftover = leftoverOf(first);
-  removeDeclarationsAt(records, second, claimedIndices);
+  removeDeclarations(records, second.index, claimedIndices);
   const secondLeftover = leftoverOf(second);
   /** @type {Placement} */
   const placement = {
@@ -196,7 +188,7 @@ export function buildMergedRule(
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
-      removeDeclarationsAt(records, rule, claimed);
+      removeDeclarations(records, rule.index, claimed);
       return indicesOf(leftoverOf(rule));
     });
   }

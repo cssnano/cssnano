@@ -77,13 +77,12 @@ function groupsOf(css) {
       rule(second).declarationKeys(mergeState.records).keySet
     );
     if (shared.length === 0) continue;
-    const { intersection, claimedEarlierIndices, claimedIndices } =
-      filterRuleIntersections(
-        shared,
-        [...rule(first).declarationsOf(mergeState.records)],
-        [...rule(second).declarationsOf(mergeState.records)]
-      );
-    if (claimedEarlierIndices.size === 0) continue;
+    const { intersection, claimedIndices } = filterRuleIntersections(
+      shared,
+      [...rule(first).declarationsOf(mergeState.records)],
+      [...rule(second).declarationsOf(mergeState.records)]
+    );
+    if (intersection.length === 0) continue;
     const sharedBytes = shared.reduce(
       (total, { prop, value }) => total + prop.length + value.length + 2,
       0
@@ -92,7 +91,6 @@ function groupsOf(css) {
       rule(first),
       second,
       intersection,
-      claimedEarlierIndices,
       claimedIndices,
       sharedBytes,
       0,

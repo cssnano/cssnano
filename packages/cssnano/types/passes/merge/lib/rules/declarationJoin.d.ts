@@ -1,7 +1,7 @@
 import { RuleRecord } from './ruleRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type MergeState from './mergeState.js';
-import type { BlockRecord, ChainPosition } from './blockRecord.js';
+import type { ArenaIndex, BlockRecord, ChainPosition } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
@@ -19,15 +19,15 @@ import type { BlockRecords } from './blockRecords.js';
  */
 export declare const isDeclarationRule: (records: BlockRecords, record: RuleRecord) => boolean;
 /**
- * The positions in `later` of declarations that repeat every one of
+ * The arena indices of the declarations in `later` that repeat every one of
  * `declarations`, or null when a repeat does not stand first for its
  * property, since removing it would then change what `later` sets.
  *
  * @param {DeclarationRecord[]} declarations
  * @param {DeclarationRecord[]} later
- * @return {Set<ChainPosition> | null}
+ * @return {Set<ArenaIndex> | null} the arena indices of the later declarations
  */
-export declare function claimRepeats(declarations: DeclarationRecord[], later: DeclarationRecord[]): Set<ChainPosition> | null;
+export declare function claimRepeats(declarations: DeclarationRecord[], later: DeclarationRecord[]): Set<ArenaIndex> | null;
 export type Group = {
     rule: RuleRecord;
     /**
