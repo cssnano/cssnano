@@ -1,4 +1,3 @@
-import { RuleRecord } from './ruleRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 export type Placement = {
@@ -55,15 +54,6 @@ export default class RuleSequence {
      * @return {ArenaIndex | -1} the index of the rule before the rule at `index`, -1 at the start
      */
     prevOf(index: ArenaIndex | -1): ArenaIndex | -1;
-    /**
-     * @param {BlockRecords} records
-     * @param {RuleRecord} first
-     * @param {RuleRecord} second
-     * @param {Map<number, boolean>} outsideDeclarations see
-     * `DeclarationScan#declarationBetween`
-     * @return {boolean} whether a declaration outside both rules lies between them
-     */
-    declarationBetween(records: BlockRecords, first: RuleRecord, second: RuleRecord, outsideDeclarations: Map<number, boolean>): boolean;
     /**
      * Moves the rule at `second` to the end of the parent of the rule at `first`.
      * It follows `first` and holds no nested rules, so passing the rest of that

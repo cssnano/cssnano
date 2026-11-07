@@ -8,6 +8,7 @@ import { PropertyWrites } from './propertyWrites.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
+/** @import DeclarationScan from './declarationScan.js' */
 
 /** @param {string[]} selectors @return {number} */
 export function selectorsLength(selectors) {
@@ -130,7 +131,7 @@ function mergesWithAll(members, later, parent, mergeState) {
  * @param {number} delta how much the pair alone lengthens the output
  * @param {import('./mergeState.js').default} mergeState
  * @param {RuleSequence} sequence
- * @param {Map<number, boolean>} outsideDeclarations
+ * @param {DeclarationScan} scan
  * @return {Group | null}
  */
 export function findGroup(
@@ -144,7 +145,7 @@ export function findGroup(
   delta,
   mergeState,
   sequence,
-  outsideDeclarations
+  scan
 ) {
   const { records } = mergeState;
   const secondRule = /** @type {RuleRecord} */ (records.rule(second));
@@ -209,11 +210,10 @@ export function findGroup(
       const previous = index ? candidates[index - 1] : second;
       if (
         !claimed ||
-        sequence.declarationBetween(
+        scan.declarationBetween(
           records,
           /** @type {RuleRecord} */ (records.rule(previous)),
-          later,
-          outsideDeclarations
+          later
         ) ||
         !mergesWithAll(members, later, parent, mergeState)
       ) {

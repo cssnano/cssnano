@@ -7,6 +7,7 @@ import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { assertSweepLowers, sweepPotential } from './sweepPotential.js';
 import { earliestPairReaching } from './sharedRuleGroup.js';
 import RuleSequence from './ruleSequence.js';
+import DeclarationScan from './declarationScan.js';
 import { sameContainer } from './sameContainer.js';
 
 /** @import {ArenaIndex} from './blockRecord.js' */
@@ -94,8 +95,7 @@ export default function runScan(mergeState) {
       ? NO_BENEFIT
       : mergeBenefit(rule(first), rule(second));
 
-  /** @type {Map<number, boolean>} */
-  const outsideDeclarations = new Map();
+  const scan = new DeclarationScan();
 
   /**
    * @param {RuleSequence} sequence
@@ -114,7 +114,7 @@ export default function runScan(mergeState) {
         mergeState.records.links.parentOf(a.index),
         mergeState.records.links.parentOf(b.index)
       ) ||
-      sequence.declarationBetween(mergeState.records, a, b, outsideDeclarations)
+      scan.declarationBetween(mergeState.records, a, b)
     ) {
       return null;
     }
@@ -122,14 +122,7 @@ export default function runScan(mergeState) {
     const placement =
       mergeMatchingDeclarations(a, b, mergeState) ??
       mergeMatchingSelectors(a, b, mergeState) ??
-      mergeSharedDeclarations(
-        a,
-        b,
-        mergeState,
-        second,
-        sequence,
-        outsideDeclarations
-      );
+      mergeSharedDeclarations(a, b, mergeState, second, sequence, scan);
     if (placement) return { placement, moved };
     return moved
       ? { placement: { first: [a.index], second: [b.index] }, moved }

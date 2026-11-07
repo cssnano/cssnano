@@ -5,6 +5,7 @@ import postcss from 'postcss';
 import merge, { transformPlugin } from '#passes/merge';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { mergeSharedDeclarations } from '../../../src/passes/merge/lib/rules/merge.js';
+import DeclarationScan from '../../../src/passes/merge/lib/rules/declarationScan.js';
 import RuleSequence from '../../../src/passes/merge/lib/rules/ruleSequence.js';
 import {
   consistencyChecksEnabled,
@@ -94,7 +95,7 @@ function mergedAway() {
     mergeState,
     second,
     sequence,
-    new Map()
+    new DeclarationScan()
   );
   return { mergeState, first };
 }

@@ -9,6 +9,7 @@ import { appendToDeclarations } from './treeEdits.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
+/** @import DeclarationScan from './declarationScan.js' */
 /** @import MergeState from './mergeState.js' */
 
 /**
@@ -67,7 +68,7 @@ export function mergeMatchingSelectors(first, second, mergeState) {
  * @param {MergeState} mergeState
  * @param {ArenaIndex} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
- * @param {Map<number, boolean>} outsideDeclarations
+ * @param {DeclarationScan} scan
  * @return {Placement | null} the rules that replace the pair, or null when
  * sharing the declarations would not make the output shorter
  */
@@ -77,7 +78,7 @@ export function mergeSharedDeclarations(
   mergeState,
   secondLink,
   sequence,
-  outsideDeclarations
+  scan
 ) {
   const { records } = mergeState;
   const firstDeclarations = first.declarationsOf(records);
@@ -102,6 +103,6 @@ export function mergeSharedDeclarations(
     mergeState,
     secondLink,
     sequence,
-    outsideDeclarations
+    scan
   );
 }

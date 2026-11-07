@@ -8,6 +8,7 @@ import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
+/** @import DeclarationScan from './declarationScan.js' */
 /** @import MergeState from './mergeState.js' */
 
 /**
@@ -86,7 +87,7 @@ export function writesOf(declarations) {
  * @param {import('./mergeState.js').default} mergeState
  * @param {ArenaIndex} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
- * @param {Map<number, boolean>} outsideDeclarations
+ * @param {DeclarationScan} scan
  * @return {Placement | null} null when the output would not get shorter
  */
 export function buildMergedRule(
@@ -98,7 +99,7 @@ export function buildMergedRule(
   mergeState,
   secondLink,
   sequence,
-  outsideDeclarations
+  scan
 ) {
   const firstSelectors = first.selectors;
   const secondSelectors = second.selectors;
@@ -143,7 +144,7 @@ export function buildMergedRule(
           delta,
           mergeState,
           sequence,
-          outsideDeclarations
+          scan
         );
   if (delta >= 0 && !group) return null;
 

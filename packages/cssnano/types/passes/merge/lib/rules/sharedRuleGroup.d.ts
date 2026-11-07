@@ -2,6 +2,7 @@ import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { ArenaIndex, ChainPosition } from './blockRecord.js';
 import type RuleSequence from './ruleSequence.js';
+import type DeclarationScan from './declarationScan.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {ChildNode} from 'postcss' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
@@ -9,6 +10,7 @@ import type RuleSequence from './ruleSequence.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
+/** @import DeclarationScan from './declarationScan.js' */
 /** @param {string[]} selectors @return {number} */
 export declare function selectorsLength(selectors: string[]): number;
 export declare const SHARING_WINDOW = 10;
@@ -51,10 +53,10 @@ export type Group = {
  * @param {number} delta how much the pair alone lengthens the output
  * @param {import('./mergeState.js').default} mergeState
  * @param {RuleSequence} sequence
- * @param {Map<number, boolean>} outsideDeclarations
+ * @param {DeclarationScan} scan
  * @return {Group | null}
  */
-export declare function findGroup(first: RuleRecord, second: ArenaIndex, shared: DeclarationRecord[], claimedEarlierIndices: Set<ChainPosition>, claimedIndices: Set<ChainPosition>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, outsideDeclarations: Map<number, boolean>): Group | null;
+export declare function findGroup(first: RuleRecord, second: ArenaIndex, shared: DeclarationRecord[], claimedEarlierIndices: Set<ChainPosition>, claimedIndices: Set<ChainPosition>, sharedBytes: number, prefixed: number, delta: number, mergeState: import('./mergeState.js').default, sequence: RuleSequence, scan: DeclarationScan): Group | null;
 /**
  * Records in `earliest` the farthest pair before `resume` that a rewrite at
  * `link` can change, if it is farther than the recorded pair. A later rule

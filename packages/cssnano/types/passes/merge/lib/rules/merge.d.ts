@@ -1,10 +1,12 @@
 import type { RuleRecord } from './ruleRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type RuleSequence, { Placement } from './ruleSequence.js';
+import type DeclarationScan from './declarationScan.js';
 import type MergeState from './mergeState.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
+/** @import DeclarationScan from './declarationScan.js' */
 /** @import MergeState from './mergeState.js' */
 /**
  * Rules with the same declarations in the same order become one rule with
@@ -33,9 +35,9 @@ export declare function mergeMatchingSelectors(first: RuleRecord, second: RuleRe
  * @param {MergeState} mergeState
  * @param {ArenaIndex} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
- * @param {Map<number, boolean>} outsideDeclarations
+ * @param {DeclarationScan} scan
  * @return {Placement | null} the rules that replace the pair, or null when
  * sharing the declarations would not make the output shorter
  */
-export declare function mergeSharedDeclarations(first: RuleRecord, second: RuleRecord, mergeState: MergeState, secondLink: ArenaIndex, sequence: RuleSequence, outsideDeclarations: Map<number, boolean>): Placement | null;
+export declare function mergeSharedDeclarations(first: RuleRecord, second: RuleRecord, mergeState: MergeState, secondLink: ArenaIndex, sequence: RuleSequence, scan: DeclarationScan): Placement | null;
 //# sourceMappingURL=merge.d.ts.map
