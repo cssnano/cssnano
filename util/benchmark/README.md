@@ -87,7 +87,7 @@ slower. The table reports the ratio, its interval, the verdict and a reason:
 | `runtime slower beyond the margin`                  | regression on the runtime endpoint (or the cold start) |
 | `cold start faster beyond the margin`               | improvement on the cold start endpoint               |
 | `within the margin`                                 | both endpoints are inside the margin                 |
-| `time budget reached`                               | the budget, not the noise, ended the run; rerun with a larger budget |
+| `time budget reached`                               | the budget, not the noise, ended the run; the case is inconclusive |
 | `output changed: <case>`                            | the two sides produced different CSS                 |
 | `noise is too large to rule out a meaningful change` | all blocks were used and an interval still spans the margin |
 

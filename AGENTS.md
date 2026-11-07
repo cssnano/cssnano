@@ -66,10 +66,9 @@ Every change should make the intended CSS transformation clearer while preservin
 - Use Node’s built-in `test` module for repository package tests and the shared helpers. Plugin and preset tests use `processCSSFactory()` from `util/testHelpers.js`, and preset tests that need a processor call `postcss()` directly.
 - Agents benchmark with `pnpm run bench:check --case=<name>`,
   `--set=<name>` or `--package=<name>` only. Use `bench:compare` (`bench:check --corpus`) only when the user asks for it.
-  A benchmark always runs its minimum blocks, and `--budget` only stops it from
-  starting more pairs, so a small budget or a shell `timeout` does not bound the
-  run: one block over the whole corpus can take minutes. Pick the narrowest case,
-  run it in the background, and never raise or wrap a timeout to compensate.
+  Pick the narrowest case. `--budget` does not bound a run, since a benchmark
+  always runs its minimum blocks, so never raise or wrap a timeout to compensate.
+  `util/benchmark/README.md` has the options and the verdict rule.
 - Run benchmarks and mutation testing with `run_in_background`, do not poll or
   sleep, and wait for the exit notification. Each ends with
   `bench: done status=pass|fail ...` or `mutation: done status=pass|fail ...`.

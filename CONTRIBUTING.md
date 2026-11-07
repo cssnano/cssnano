@@ -31,22 +31,22 @@ pnpm test
 
 Mutation testing is an opt-in test-quality check for realistic faults in a
 plugin. It requires Node 24 or later and applies curated mutations in memory in an
-isolated child process; source files are never changed. Run the initial slice
-with:
+isolated child process; source files are never changed. Run a named group of
+catalogs with:
 
 ```shell
-pnpm test:mutation
+pnpm mutation --group merge
 ```
 
-`pnpm test:mutation:oracle` runs the catalogs that declare `suites`
-against the fuzz suites instead of a test file and reports the mutants the
-oracles miss. For each suite it counts the cases that executed the mutated
-code (`reached=`) and the cases whose output changed (`changed=`). A mutant
-that no case runs is `not reached`, and one that runs without changing any
-output is `unchanged`. Both call for a corpus that exercises the mutant;
-only a `survived` mutant shows an output change that the oracle accepted.
-Register a new catalog in
-`packages/cssnano/mutation/catalogs.js`; both commands read that list.
+Groups are listed in `packages/cssnano/mutation/catalogs.js`, which is also
+where to register a new catalog. `pnpm test:mutation` reruns every catalog
+against its own test file, and `pnpm test:mutation:oracle` runs the catalogs
+that declare `suites` against the fuzz suites. A mutant is only caught when the
+run reports it as `killed`: `survived`, `unchanged` and `not reached` mean the
+tests or oracles did not notice the fault, and `errored` and `timed out` mean
+it was not judged.
+
+Mutation testing is not part of the required test or CI path.
 
 ### Benchmarking
 
@@ -72,10 +72,6 @@ The comparison CLI exits 0 for a generated report, including an inconclusive
 report. Invalid artifacts, execution failures, and correctness mismatches exit
 nonzero. Performance conclusions remain advisory and cannot fail the command
 until an explicitly documented `--policy=gate` mode is introduced.
-
-Mutation testing is not part of the required test or CI path. A surviving
-mutation means the current tests did not detect that simulated fault; a
-timeout or harness error is reported separately.
 
 We recommend that you look in the issue tracker to find anything tagged
 [help wanted][help wanted]; that's the first port of call for getting stuck
