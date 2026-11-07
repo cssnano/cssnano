@@ -62,7 +62,6 @@ function listLength(selectors) {
  * @property {RuleRecord} rule
  * @property {ChainPosition} position its place among the live entries of the block
  * @property {DeclarationRecord[]} declarations
- * @property {number[]} keys declaration keys, in order
  * @property {Set<string> | null} selectors listed selectors, built on demand
  * @property {number} bytes declaration bytes, each with its separator, or -1
  */
@@ -112,16 +111,19 @@ function joinGain(records, group, later) {
 export default function joinByDeclarations(block, mergeState) {
   if (isKeyframes(block)) return false;
   const entries = liveEntries(mergeState.records, block.index);
-  const keyLists = entries.map((entry) =>
-    entry instanceof RuleRecord && isDeclarationRule(mergeState.records, entry)
-      ? entry.declarationKeys(mergeState.records)
-      : null
+  const declarationRules = entries.map(
+    (entry) =>
+      entry instanceof RuleRecord &&
+      isDeclarationRule(mergeState.records, entry)
   );
-  // Rules can only join where they share a declaration.
+  // Rules can only join where they share a declaration. The keys are read
+  // here, before any edit, so no loop holds a rule's keys across an edit.
   const scan = new RepeatScan();
-  for (const [i, own] of keyLists.entries()) {
-    if (!own) continue;
-    for (const key of own.keySet) scan.see(key, i);
+  for (const [i, entry] of entries.entries()) {
+    if (!declarationRules[i]) continue;
+    const record = /** @type {RuleRecord} */ (entry);
+    for (const key of record.declarationKeys(mergeState.records).keySet)
+      scan.see(key, i);
   }
   if (scan.start === Infinity) return false;
 
@@ -145,16 +147,11 @@ export default function joinByDeclarations(block, mergeState) {
     position++
   ) {
     const entry = entries[position];
-    if (keyLists[position]) {
+    if (declarationRules[position]) {
       const record = /** @type {RuleRecord} */ (entry);
       const outcome = joinIntoGroup(record);
       if (outcome === 'emptied') continue;
-      // A trimmed rule's record took its remaining declarations, so its keys are new.
-      register(
-        record,
-        position,
-        record.declarationKeys(mergeState.records).keys
-      );
+      register(record, position);
     }
     index.recordNode(mergeState.records, entry, position, keysOf);
   }
@@ -169,15 +166,15 @@ export default function joinByDeclarations(block, mergeState) {
   /**
    * @param {RuleRecord} rule
    * @param {ChainPosition} position
-   * @param {number[]} keys
    */
-  function register(rule, position, keys) {
+  function register(rule, position) {
+    // A trimmed rule's record took its remaining declarations, so its keys are new.
+    const keys = rule.declarationKeys(mergeState.records).keys;
     /** @type {Group} */
     const group = {
       rule,
       position,
       declarations: rule.declarationsOf(mergeState.records),
-      keys,
       selectors: null,
       bytes: -1,
     };
@@ -215,7 +212,9 @@ export default function joinByDeclarations(block, mergeState) {
           break;
         if (
           group.declarations.length > laterDeclarations.length ||
-          !group.keys.every((key) => laterSet.has(key))
+          !group.rule
+            .declarationKeys(records)
+            .keys.every((key) => laterSet.has(key))
         ) {
           continue;
         }

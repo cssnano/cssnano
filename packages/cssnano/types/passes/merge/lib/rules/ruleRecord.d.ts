@@ -104,7 +104,8 @@ export declare class RuleRecord extends SelectorList {
     setPieces(pieces: RangePiece[] | null): void;
     /**
      * The ids of the declarations of the rule. They are read from the chain once,
-     * and kept until an edit that is not a declaration appended at its end.
+     * and kept until an edit that is not a declaration appended at its end. Under
+     * checks, the result throws once the rule is edited after this call.
      *
      * @param {BlockRecords} records the arena that holds the rule's children
      * @return {RuleDeclarationKeys}

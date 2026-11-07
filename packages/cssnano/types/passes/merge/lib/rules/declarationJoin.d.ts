@@ -36,10 +36,6 @@ export type Group = {
     position: ChainPosition;
     declarations: DeclarationRecord[];
     /**
-     * declaration keys, in order
-     */
-    keys: number[];
-    /**
      * listed selectors, built on demand
      */
     selectors: Set<string> | null;

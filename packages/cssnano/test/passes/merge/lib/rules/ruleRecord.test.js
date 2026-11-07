@@ -338,6 +338,32 @@ test('assertRecordsMatchTree should throw under consistency checks when a commen
   }
 });
 
+test('declarationKeys should throw under consistency checks when its keys are read after a declaration of the rule is removed', () => {
+  const wasEnabled = consistencyChecksEnabled();
+  enableConsistencyChecks(true);
+  try {
+    const { records, record } = arenaOf('a{color:red;top:0}');
+    const held = record.declarationKeys(records);
+    removeDeclarations(records, record.index, claimAt(records, record, [0]));
+    assert.throws(() => held.keys, /held across an edit/v);
+  } finally {
+    enableConsistencyChecks(wasEnabled);
+  }
+});
+
+test('declarationKeys should throw under consistency checks when a keys array taken before a declaration of the rule is removed is read', () => {
+  const wasEnabled = consistencyChecksEnabled();
+  enableConsistencyChecks(true);
+  try {
+    const { records, record } = arenaOf('a{color:red;top:0}');
+    const { keys } = record.declarationKeys(records);
+    removeDeclarations(records, record.index, claimAt(records, record, [0]));
+    assert.throws(() => keys.length, /held across an edit/v);
+  } finally {
+    enableConsistencyChecks(wasEnabled);
+  }
+});
+
 test('appendChild should give an appended declaration without raws.before the whitespace of the last child', () => {
   const { state, records, record } = arenaOf('a{\n  color:red}');
   const node = postcss.decl({ prop: 'width', value: '1px' });
