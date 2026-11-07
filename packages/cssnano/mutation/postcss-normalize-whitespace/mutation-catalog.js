@@ -13,7 +13,7 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'preserve declaration whitespace',
-    find: "node.raws.before = node.raws.before.replace(whitespaceRegex, '');",
+    find: "node.raws.before = node.raws.before.replaceAll(whitespaceRegex, '');",
     replace: 'node.raws.before = node.raws.before;',
   },
   {

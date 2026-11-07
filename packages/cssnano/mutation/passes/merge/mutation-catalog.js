@@ -93,9 +93,9 @@ export const mutations = [
   {
     name: 'skip invalidating the earlier block that takes a later block without a move',
     target: source('nonAdjacentMerge.js'),
-    find: '      invalidate(earlier);\n      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());\n      detach(later);\n',
+    find: "      invalidate(earlier);\n      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());\n      detach(later);\n      return 'up';\n",
     replace:
-      '      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());\n      detach(later);\n',
+      "      earlier.append(/** @type {ChildNode[]} */ (later.nodes).slice());\n      detach(later);\n      return 'up';\n",
   },
   // Settled containers: a visit that joined nothing is skipped until an edit.
   // Not mutated: settling after a visit that joined is equivalent, since every

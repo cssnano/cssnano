@@ -18,8 +18,14 @@ const loader = fileURLToPath(new URL('./mutation-loader.js', import.meta.url));
 const testFlags = ['--test-isolation=none', '--test'];
 
 // A parent `node --test` sets NODE_TEST_CONTEXT, which switches child runs to a
-// binary reporter whose summary countTests cannot read.
-const { NODE_TEST_CONTEXT: _context, ...cleanEnvironment } = process.env;
+// binary reporter whose summary countTests cannot read. FORCE_COLOR makes the
+// reporter wrap the summary in escape codes, which countTests cannot read either.
+const {
+  NODE_TEST_CONTEXT: _context,
+  FORCE_COLOR: _color,
+  ...inheritedEnvironment
+} = process.env;
+const cleanEnvironment = { ...inheritedEnvironment, NO_COLOR: '1' };
 
 export const harnessError = 'Mutation harness error';
 

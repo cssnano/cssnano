@@ -64,7 +64,7 @@ Every change should make the intended CSS transformation clearer while preservin
   starting more pairs, so a small budget or a shell `timeout` does not bound the
   run: one block over the whole corpus can take minutes. Pick the narrowest case,
   run it in the background, and never raise or wrap a timeout to compensate.
-- Mutation testing (Node 24) judges whether tests or fuzz oracles notice a
+- Mutation testing (Node 24 or later) judges whether tests or fuzz oracles notice a
   curated fault in a plugin. Run it only through the runner, never a
   hand-copied module or a string replacement, which silently tests the
   unmutated code:
