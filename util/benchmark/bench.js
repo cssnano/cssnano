@@ -8,13 +8,15 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { performance } from 'node:perf_hooks';
-import { benchmarkCases } from './cases/index.js';
+import { benchmarkCases, benchmarkSets } from './cases/index.js';
+import { doneLine, formatRow } from './report.js';
 import { createComparisonSchedule, decide } from './stats.js';
 import { prepareComparison, snapshotWorkingTree } from './worktrees.js';
 
 const MINIMUM_BLOCKS = 4;
 const REQUESTED_BLOCKS = 20;
 const COOLDOWN_MS = 100;
+const TARGET_CHOICE = 'choose one of --case, --package, --set, --corpus';
 const DURATION_UNITS = { s: 1000, m: 60_000 };
 const RESULTS_DIR = join(import.meta.dirname, '..', '..', 'bench-results');
 const CORPUS_DIR = join(import.meta.dirname, '..', '..', 'frameworks');
@@ -69,7 +71,18 @@ function warnUnstableGovernor() {
   }
 }
 
-function casesFor(values) {
+export function casesFor(values) {
+  if (values.set) {
+    if (!Object.hasOwn(benchmarkSets, values.set)) {
+      throw new Error(
+        `unknown set "${values.set}"; use ${Object.keys(benchmarkSets).join(', ')}`
+      );
+    }
+    return benchmarkSets[values.set];
+  }
+  if (!values.case && !values.package) {
+    throw new Error(TARGET_CHOICE);
+  }
   if (values.case) {
     return values.case
       .split(',')
@@ -138,6 +151,7 @@ export function runCase(
     run = runChild,
     pause = sleep,
     now = () => performance.now(),
+    progress = () => {},
   }
 ) {
   const schedule = createComparisonSchedule(REQUESTED_BLOCKS, seed);
@@ -168,6 +182,7 @@ export function runCase(
       durationMs: now() - blockStarted,
       observations,
     });
+    progress(progressLine(name, blocks, now() - started));
     const changed = outputsMatch(
       observations.baseline.outputHashes,
       observations.candidate.outputHashes
@@ -185,6 +200,16 @@ export function runCase(
     }
   }
   return summarize(name, blocks, stopReason);
+}
+
+// The verdicts exist from the minimum number of blocks on.
+function progressLine(name, blocks, elapsedMs) {
+  const verdicts = Object.values(ENDPOINTS).map((field) =>
+    blocks.length >= MINIMUM_BLOCKS
+      ? decide(logRatios(blocks, field)).verdict
+      : 'pending'
+  );
+  return `bench: ${name} block ${blocks.length}/${REQUESTED_BLOCKS} elapsed=${Math.round(elapsedMs / 1000)}s runtime=${verdicts[0]} cold-start=${verdicts[1]}`;
 }
 
 // Adaptive stopping waits until both endpoints have a verdict.
@@ -256,26 +281,17 @@ function summarize(name, blocks, stopReason) {
   };
 }
 
-const pct = (value) => `${((value - 1) * 100).toFixed(1)}%`;
-
-function formatRow(result) {
-  if (!result.interval) {
-    return `${result.case}: ${result.verdict} (${result.reason})`;
-  }
-  const interval = `[${pct(result.interval.low)}, ${pct(result.interval.high)}]`;
-  return `${result.case}: ${pct(result.ratio)} ${interval} ${result.verdict} (${result.reason})`;
-}
-
 export function parseOptions(argv) {
   const { values } = parseArgs({
     args: argv,
     options: {
       case: { type: 'string' },
       package: { type: 'string' },
+      set: { type: 'string' },
       corpus: { type: 'boolean', default: false },
       base: { type: 'string', default: 'HEAD' },
       candidate: { type: 'string', default: 'worktree' },
-      budget: { type: 'string', default: '2m' },
+      budget: { type: 'string', default: '10m' },
       'pin-core': { type: 'string' },
       'allow-output-change': { type: 'boolean', default: false },
       json: { type: 'boolean', default: false },
@@ -283,6 +299,10 @@ export function parseOptions(argv) {
       seed: { type: 'string' },
     },
   });
+  const targets = ['case', 'package', 'set', 'corpus'].filter(
+    (key) => values[key]
+  );
+  if (targets.length > 1) throw new Error(TARGET_CHOICE);
   const budgetMs = parseDuration(values.budget);
   if (budgetMs === null) {
     throw new Error('--budget must be a duration such as 90s or 5m');
@@ -309,21 +329,22 @@ function main(argv = process.argv.slice(2)) {
   const note = options.json ? console.error : console.log;
   note(`bench: starting ${names.length} cases`);
   let resultsPath;
+  const results = [];
   try {
     warnUnstableGovernor();
     const pinCore = options['pin-core'];
-    const perCase = options.budgetMs / names.length;
-    const results = names.map((name) => {
+    for (const name of names) {
       const result = runCase(name, comparison, {
-        budgetMs: perCase,
+        budgetMs: options.budgetMs,
         allowOutputChange: options['allow-output-change'],
         pinCore,
         seed: options.seed,
+        progress: note,
       });
+      results.push(result);
       if (options.json) console.log(JSON.stringify(result));
       else console.log(formatRow(result));
-      return result;
-    });
+    }
     const stamp = new Date().toISOString().replaceAll(':', '-');
     mkdirSync(join(RESULTS_DIR, stamp), { recursive: true });
     resultsPath = join(RESULTS_DIR, stamp, 'results.json');
@@ -331,14 +352,22 @@ function main(argv = process.argv.slice(2)) {
       resultsPath,
       JSON.stringify({ revisions, seed: options.seed, results }, null, 2)
     );
+    // Repeats the rows, so the end of the output holds every verdict.
+    if (!options.json) {
+      note('bench: summary');
+      for (const result of results) note(`  ${formatRow(result)}`);
+    }
   } finally {
     const failures = options.keep ? [] : comparison.cleanup();
     for (const failure of failures) console.error(`bench: ${failure}`);
     if (failures.length > 0) process.exitCode = 1;
     // Printed after cleanup, so it is the last line of every run that got here.
-    const status = process.exitCode ? 'fail' : 'pass';
     note(
-      `bench: done status=${status} cases=${names.length}${resultsPath ? ` results=${resultsPath}` : ''}`
+      doneLine({
+        failed: Boolean(process.exitCode),
+        results,
+        path: resultsPath,
+      })
     );
   }
 }

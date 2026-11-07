@@ -180,3 +180,39 @@ export const catalogs = [
     test: true,
   },
 ];
+
+const catalogUrl = (path) => new URL(path, import.meta.url);
+
+// `merge` is the three runs of step 9 of the merge IR plan, not every merge
+// catalog; the longhand catalogs run with `--all`.
+//
+// A group is what one command judges: each run names its catalogs, the check
+// that judges them and whether unkilled mutants fail it. The fuzz oracles
+// leave some mutants unkilled by design; the selector writers must lose all.
+const mergeRules = {
+  check: 'oracle',
+  allowUnkilled: true,
+  catalogs: [catalogUrl('./passes/merge/lib/rules/mutation-catalog.js')],
+};
+const mergeDuplicates = {
+  check: 'oracle',
+  allowUnkilled: true,
+  catalogs: [
+    catalogUrl('./passes/merge/lib/duplicates/mutation-catalog.js'),
+    catalogUrl('./passes/merge/lib/duplicates/mutation-catalog-ids.js'),
+  ],
+};
+const mergeSelectorWriters = {
+  check: 'test',
+  allowUnkilled: false,
+  catalogs: [
+    catalogUrl('./passes/merge/lib/rules/mutation-catalog-selector-writers.js'),
+  ],
+};
+
+export const groups = {
+  'merge-rules': [mergeRules],
+  'merge-duplicates': [mergeDuplicates],
+  'merge-selector-writers': [mergeSelectorWriters],
+  merge: [mergeRules, mergeDuplicates, mergeSelectorWriters],
+};

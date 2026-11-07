@@ -114,17 +114,30 @@ export async function run(catalogs, { timeout, allowUnkilled }) {
   );
 
   const runnable = [];
+  // A catalog that cannot be judged still lists its mutants, as errored, so
+  // that no result file silently lacks them.
+  const skipped = [];
+  const skip = (entry, diagnostic) => {
+    process.exitCode = 1;
+    for (const { mutation } of entry.mutations) {
+      skipped.push({
+        name: `${entry.label}${mutation.name}`,
+        status: outcome.errored,
+        diagnostic,
+      });
+    }
+  };
   for (const entry of entries) {
     const baseline = baselineResults.get(entry.test);
     if (baseline.timedOut || baseline.code !== 0) {
       printFailure(`${entry.label}baseline failed`, baseline);
-      process.exitCode = 1;
+      skip(entry, 'baseline failed');
       continue;
     }
     // A file that registers no test passes, so every mutant would survive.
     if (!countTests(baseline.stdout, entry.test)) {
       console.error(`${entry.label}baseline ran no tests: ${entry.test}`);
-      process.exitCode = 1;
+      skip(entry, 'baseline ran no tests');
       continue;
     }
     for (const mutation of entry.mutations) {
@@ -142,13 +155,14 @@ export async function run(catalogs, { timeout, allowUnkilled }) {
     )
   );
 
-  const failed = report(
-    outcomes.map(({ mutation, result, status }, index) => ({
+  const results = [
+    ...skipped,
+    ...outcomes.map(({ mutation, result, status }, index) => ({
       name: `${runnable[index].label}${mutation.name}`,
       status,
       diagnostic: result.stderr.trim() || result.stdout.trim(),
     })),
-    { allowUnkilled }
-  );
-  if (failed) process.exitCode = 1;
+  ];
+  if (report(results, { allowUnkilled })) process.exitCode = 1;
+  return results;
 }

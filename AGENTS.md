@@ -64,8 +64,8 @@ Every change should make the intended CSS transformation clearer while preservin
 ## Durable conventions
 
 - Use Node’s built-in `test` module for repository package tests and the shared helpers. Plugin and preset tests use `processCSSFactory()` from `util/testHelpers.js`, and preset tests that need a processor call `postcss()` directly.
-- Agents benchmark with `pnpm run bench:check --case=<name>` or
-  `--package=<name>` only. Use `bench:compare` (`bench:check --corpus`) only when the user asks for it.
+- Agents benchmark with `pnpm run bench:check --case=<name>`,
+  `--set=<name>` or `--package=<name>` only. Use `bench:compare` (`bench:check --corpus`) only when the user asks for it.
   A benchmark always runs its minimum blocks, and `--budget` only stops it from
   starting more pairs, so a small budget or a shell `timeout` does not bound the
   run: one block over the whole corpus can take minutes. Pick the narrowest case,
@@ -79,6 +79,16 @@ Every change should make the intended CSS transformation clearer while preservin
   curated fault in a plugin. Run it only through the runner, never a
   hand-copied module or a string replacement, which silently tests the
   unmutated code:
+  - For a group of catalogs, run `pnpm mutation --group <name>` (groups are
+    in `packages/cssnano/mutation/catalogs.js`; `merge` is the merge gate).
+    It picks the check and the unkilled policy. It first applies every
+    mutation in memory: a mutant whose fragment no longer matches is
+    `stale`, fails the run, and stops it before any mutant runs, so delete or
+    update it in its catalog. The last line carries every count and the
+    results file; read only it, then the `not killed` lines above it. To
+    compare with the parent, run once at the parent with `--out parent.json`
+    and again with `--baseline parent.json`; a mutant the parent killed and
+    the run did not fails it.
   - `pnpm test:mutation` reruns each catalog's test file;
     `pnpm test:mutation:oracle` uses the fuzz suites. Probe one mutant with
     `node util/mutation-testing/mutation-runner.js --check oracle --catalog <file> --only '<regex>' --suites <module> --allow-unkilled`.

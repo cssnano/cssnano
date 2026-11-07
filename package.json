@@ -22,6 +22,7 @@
     "test:site": "node --test site/test/*.js",
     "test:integration": "node --test packages/cssnano/test/presets/default/integrations.test.js packages/cssnano/test/presets/default/pluginIdempotency.test.js packages/cssnano/test/presets/advanced/integrations.test.js packages/cssnano/test/presets/lite/integrations.test.js",
     "test:packaging": "node --test util/packaging.test.js",
+    "mutation": "node util/mutation-testing/mutation-runner.js",
     "test:mutation": "node util/mutation-testing/mutation-runner.js --all",
     "test:mutation:oracle": "node util/mutation-testing/mutation-runner.js --all --check oracle --allow-unkilled",
     "types": "tsc -b && tsc -p packages/cssnano/test/types"

@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 /** What a check concludes about one mutant. */
@@ -10,6 +11,8 @@ export const outcome = {
   notReached: 'not reached',
   // The mutated code ran, but every output equals the unmutated one.
   unchanged: 'unchanged',
+  // The catalog no longer matches its source, so nothing was judged.
+  stale: 'stale',
 };
 
 /** Written to stderr by a run that never loaded the module it should mutate. */
@@ -162,8 +165,28 @@ export function selectCatalogs(registry, check) {
 }
 
 /**
- * Keep the mutants whose labelled name matches `only`. Throws when nothing is
- * left, so a mistyped pattern cannot produce a run that judges nothing.
+ * Keep the mutants whose labelled name matches `only`; the catalogs stay,
+ * possibly with no mutant.
+ *
+ * @template {{label: string, mutations: Array<{mutation: {name: string}}>}} T
+ * @param {T[]} catalogs
+ * @param {string} [only] regular expression source
+ * @returns {T[]}
+ */
+export function matchingMutants(catalogs, only) {
+  const filter = only === undefined ? undefined : new RegExp(only, 'v');
+  return catalogs.map((catalog) => ({
+    ...catalog,
+    mutations: catalog.mutations.filter(
+      ({ mutation }) =>
+        !filter || filter.test(`${catalog.label}${mutation.name}`)
+    ),
+  }));
+}
+
+/**
+ * Like `matchingMutants`, but throws when nothing is left, so a mistyped
+ * pattern cannot produce a run that judges nothing.
  *
  * @template {{label: string, mutations: Array<{mutation: {name: string}}>}} T
  * @param {T[]} catalogs
@@ -171,20 +194,88 @@ export function selectCatalogs(registry, check) {
  * @returns {T[]}
  */
 export function selectMutants(catalogs, only) {
-  const filter = only === undefined ? undefined : new RegExp(only, 'v');
-  const selected = catalogs.map((catalog) => ({
-    ...catalog,
-    mutations: catalog.mutations.filter(
-      ({ mutation }) =>
-        !filter || filter.test(`${catalog.label}${mutation.name}`)
-    ),
-  }));
+  const selected = matchingMutants(catalogs, only);
   if (!selected.some(({ mutations }) => mutations.length)) {
     throw new Error(
-      filter ? `No mutant matches --only ${only}` : 'No mutants to run'
+      only === undefined
+        ? 'No mutants to run'
+        : `No mutant matches --only ${only}`
     );
   }
   return selected;
+}
+
+/**
+ * Apply every mutation to its source in memory and name those that do not
+ * apply. This takes milliseconds, so a stale catalog is found before any
+ * baseline or fuzz run starts.
+ *
+ * @param {Array<{label: string, mutations: Array<{mutation: {name: string, find: string, replace: string}, target: string}>}>} catalogs
+ * @returns {Promise<Array<{name: string, detail: string}>>}
+ */
+export async function findStale(catalogs) {
+  const sources = new Map();
+  const stale = [];
+  for (const { label, mutations } of catalogs) {
+    for (const { mutation, target } of mutations) {
+      if (!sources.has(target)) {
+        sources.set(target, readFile(fileURLToPath(target), 'utf8'));
+      }
+      try {
+        applyMutation(await sources.get(target), mutation);
+      } catch (error) {
+        stale.push({ name: `${label}${mutation.name}`, detail: error.message });
+      }
+    }
+  }
+  return stale;
+}
+
+/**
+ * Compare a run with an earlier run of the same mutants. A regression is a
+ * mutant the earlier run killed and this one did not.
+ *
+ * @param {Array<{name: string, status: string}>} before
+ * @param {Array<{name: string, status: string}>} now
+ * @returns {Array<{name: string, before: string, now: string, regression: boolean}>}
+ */
+export function compareToBaseline(before, now) {
+  const earlier = new Map(before.map(({ name, status }) => [name, status]));
+  return now
+    .filter(
+      ({ name, status }) => earlier.has(name) && earlier.get(name) !== status
+    )
+    .map(({ name, status }) => ({
+      name,
+      before: earlier.get(name),
+      now: status,
+      regression: earlier.get(name) === outcome.killed,
+    }));
+}
+
+const countedStatuses = [
+  outcome.killed,
+  outcome.survived,
+  outcome.unchanged,
+  outcome.notReached,
+  outcome.errored,
+  outcome.timedOut,
+  outcome.stale,
+];
+
+/**
+ * The last line of a run. It holds everything a reader needs, so that
+ * reading only that line is enough.
+ *
+ * @param {{failed: boolean, total: number, results: Array<{status: string}>, regressions: number, path: string}} run
+ * @returns {string}
+ */
+export function doneLine({ failed, total, results, regressions, path }) {
+  const counts = countedStatuses.map((status) => {
+    const n = results.filter((result) => result.status === status).length;
+    return `${status.replaceAll(' ', '-')}=${n}`;
+  });
+  return `mutation: done status=${failed ? 'fail' : 'pass'} mutants=${total} ${counts.join(' ')} regressions=${regressions} results=${path}`;
 }
 
 /**
@@ -239,6 +330,7 @@ export function report(results, options) {
     !results.length ||
     counts[outcome.errored] ||
     counts[outcome.timedOut] ||
+    counts[outcome.stale] ||
     (!allowUnkilled &&
       (counts[outcome.survived] ||
         counts[outcome.notReached] ||

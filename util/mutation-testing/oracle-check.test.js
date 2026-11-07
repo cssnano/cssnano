@@ -142,7 +142,6 @@ export const mutations = [
     replace: 'return value;',
   },
   { name: 'flip the sign', find: 'Math.sign(value)', replace: '-Math.sign(value)' },
-  { name: 'missing fragment', find: 'value * 3;', replace: 'value;' },
   {
     name: 'unused module',
     target: ${JSON.stringify(pathToFileURL(unused).href)},
@@ -240,10 +239,29 @@ test('a second-pass check catches a mutant whose first outputs equal the baselin
   );
 });
 
-test('a mutation whose fragment is missing is reported as errored with the error message', () => {
+test('a mutation whose fragment is missing is stale, and no oracle runs', async () => {
+  const catalog = join(directory, 'stale.js');
+  await writeFile(
+    catalog,
+    `export const name = 'fixture';
+export const target = ${JSON.stringify(pathToFileURL(join(directory, 'target.js')).href)};
+export const mutations = [
+  { name: 'missing fragment', find: 'value * 3;', replace: 'value;' },
+];
+`
+  );
+  const run = await runRunner([
+    '--check',
+    'oracle',
+    '--suites',
+    join(directory, 'suites.js'),
+    '--catalog',
+    catalog,
+    '--allow-unkilled',
+  ]);
   assert.match(
-    lineOf(fast, 'missing fragment'),
-    /^errored: .*\| Error: Mutation loader error: Mutation fragment was not found: value \* 3;$/v
+    lineOf(run, 'missing fragment'),
+    /^stale: .*\| Mutation fragment was not found: value \* 3;$/v
   );
 });
 

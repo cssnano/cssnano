@@ -224,4 +224,5 @@ export async function run(catalogs, options) {
     suffix: `; baseline ${baselineSeconds.toFixed(1)}s, total ${((Date.now() - started) / 1000).toFixed(1)}s`,
   });
   if (failed) process.exitCode = 1;
+  return results;
 }
