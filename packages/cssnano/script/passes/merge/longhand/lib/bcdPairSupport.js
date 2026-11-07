@@ -11,6 +11,7 @@ import {
   browserslistNames,
   earliestVersion,
   latestSupport,
+  layoutContexts,
 } from './bcdSupport.js';
 
 /** @typedef {import('./bcdSupport.js').CompatData} CompatData */
@@ -96,13 +97,10 @@ function requiredEntries(bcd, shorthand) {
     if (property === undefined) return [];
     return [
       property,
-      ...Object.entries(property)
-        .filter(
-          ([key]) =>
-            key.endsWith('_context') ||
-            (name === shorthand && keywords.includes(key))
-        )
-        .map(([, entry]) => entry),
+      ...layoutContexts(property).map(([, entry]) => entry),
+      ...(name === shorthand ? keywords : []).flatMap((keyword) =>
+        property[keyword] === undefined ? [] : [property[keyword]]
+      ),
     ];
   });
 }

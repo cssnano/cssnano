@@ -120,6 +120,14 @@ describe('buildPairSupport', () => {
     assert.equal(buildPairSupport(data).get('gap')?.get('chrome'), '84');
   });
 
+  test('requires a layout context that BCD names context_flex', () => {
+    const data = bcd({ chrome: { version_added: '57' } });
+    data.css.properties.gap.context_flex = {
+      __compat: { support: { chrome: { version_added: '84' } } },
+    };
+    assert.equal(buildPairSupport(data).get('gap')?.get('chrome'), '84');
+  });
+
   test('requires the normal keyword of gap', () => {
     const data = bcd({ chrome: { version_added: '57' } });
     data.css.properties.gap.normal = {

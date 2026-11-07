@@ -49,6 +49,33 @@ export function supportOf(entry) {
 }
 
 /**
+ * The layout mode, such as `flex`, that a subfeature key names a layout
+ * context for. BCD is renaming `flex_context` to `context_flex` one property
+ * at a time, so both spellings occur in the same release.
+ *
+ * @param {string} key
+ * @return {string | undefined} undefined when the key is not a layout context
+ */
+export function layoutMode(key) {
+  if (key.startsWith('context_')) return key.slice('context_'.length);
+  if (key.endsWith('_context')) return key.slice(0, -'_context'.length);
+  return undefined;
+}
+
+/**
+ * The layout-context subfeatures of a property, by layout mode.
+ *
+ * @param {CompatEntry & Record<string, CompatEntry> | undefined} property
+ * @return {Generator<[string, CompatEntry]>}
+ */
+export function* layoutContexts(property) {
+  for (const [key, entry] of Object.entries(property ?? {})) {
+    const mode = layoutMode(key);
+    if (mode !== undefined) yield [mode, entry];
+  }
+}
+
+/**
  * @param {unknown} root
  * @param {string} path - dotted keys
  * @return {CompatEntry | undefined}
