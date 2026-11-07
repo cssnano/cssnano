@@ -108,12 +108,6 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'removing declarations keeps the declaration keys of the record',
-    target: source('ruleRecord.js'),
-    find: '    } else {\n      this.#declarationKeys = undefined;\n    }',
-    replace: '    }',
-  },
-  {
     name: 'a removal of rules leaves the record of each removed rule live',
     target: source('treeEdits.js'),
     find: '    record.depart();\n',
@@ -214,23 +208,46 @@ export const mutations = [
       '  records.linkLast(rule.index, child.index);\n  rule.node.append(child.node);\n',
   },
   {
-    name: 'an append stamps no container',
-    target: source('blockLinks.js'),
-    find: '    this.#stamp(block);\n    if (holder instanceof RuleRecord) {\n      holder.childLinked(',
-    replace:
-      '    if (holder instanceof RuleRecord) {\n      holder.childLinked(',
+    name: 'a link stamps no container',
+    target: source('blockRecords.js'),
+    find: '    this.#links.linkAfter(block, after, index);\n    this.#touchDeclaration(block, index);\n',
+    replace: '    this.#links.linkAfter(block, after, index);\n',
+  },
+  {
+    name: 'a read treats a stale entry as fresh',
+    target: source('declarationCache.js'),
+    find: '    if (this.#builtAt[index] !== stamp) {',
+    replace: '    if (this.#builtAt[index] === -1) {',
+  },
+  {
+    name: 'a rebuild leaves the build stamp',
+    target: source('declarationCache.js'),
+    find: '      this.#builtAt[index] = stamp;\n',
+    replace: '',
+  },
+  {
+    name: 'the append extends a stale entry',
+    target: source('declarationCache.js'),
+    find: '    if (this.#builtAt[index] !== before) return;\n',
+    replace: '',
+  },
+  {
+    name: 'a link before the last child appends in place',
+    target: source('blockRecords.js'),
+    find: '    if (this.#links.nextSibling(/** @type {ArenaIndex} */ (index)) !== -1) {\n      return;\n    }\n',
+    replace: '',
+  },
+  {
+    name: 'takeLinkOf leaves the stamp of the container earlier leaves',
+    target: source('blockRecords.js'),
+    find: '    this.#touchDeclaration(from, earlier);\n',
+    replace: '',
   },
   {
     name: 'a removal of declarations stamps no container',
     target: source('blockLinks.js'),
     find: '    this.#stamp(block);\n    this.#parent[index] = -1;\n',
     replace: '    this.#parent[index] = -1;\n',
-  },
-  {
-    name: 'a removal of declarations keeps the declaration keys of the rule',
-    target: source('blockLinks.js'),
-    find: '    if (holder instanceof RuleRecord) {\n      holder.childUnlinked(\n        this.#records.entry(/** @type {ArenaIndex} */ (index))\n      );\n    }\n',
-    replace: '',
   },
   {
     name: 'write-back keeps the parent of a child that moves between rules',
@@ -250,18 +267,6 @@ export const mutations = [
     target: source('writeBack.js'),
     find: '  if (liveCount(records, block.index) !== nodes.length) return true;\n',
     replace: '',
-  },
-  {
-    name: 'taking declarations keeps the declaration keys of the record',
-    target: source('ruleRecord.js'),
-    find: '  childUnlinked(child) {\n    if (child instanceof DeclarationRecord) this.#declarationKeys = undefined;\n  }',
-    replace: '  childUnlinked(child) {\n  }',
-  },
-  {
-    name: 'taking a child that is not a declaration clears the declaration keys of the record',
-    target: source('ruleRecord.js'),
-    find: '    if (child instanceof DeclarationRecord) this.#declarationKeys = undefined;\n',
-    replace: '    this.#declarationKeys = undefined;\n',
   },
 
   {

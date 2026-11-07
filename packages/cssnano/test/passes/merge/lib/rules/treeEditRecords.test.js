@@ -18,6 +18,7 @@ import {
   claimAt,
 } from './liveRecords.js';
 import { removeDeclarations } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 
@@ -149,7 +150,7 @@ test('appendToDeclarations should give the record of the receiving rule keys for
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  ruleRecordOf(state.records, receiving).declarationKeys(state.records);
+  declarationKeys(state.records, ruleRecordOf(state.records, receiving).index);
   const kept = [
     ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
   ];
@@ -161,7 +162,8 @@ test('appendToDeclarations should give the record of the receiving rule keys for
     ruleRecordOf(state.records, incoming)
   );
   assert.deepEqual(
-    ruleRecordOf(state.records, receiving).declarationKeys(state.records).keys,
+    declarationKeys(state.records, ruleRecordOf(state.records, receiving).index)
+      .keys,
     ruleRecordOf(state.records, receiving)
       .declarationsOf(state.records)
       .map((d) => d.id)
@@ -201,7 +203,7 @@ test('removeDeclarations should leave the record with the declarations that rema
 test('removeDeclarations should give the record keys for the declarations that remain', () => {
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  ruleRecordOf(state.records, rule).declarationKeys(state.records);
+  declarationKeys(state.records, ruleRecordOf(state.records, rule).index);
   const record = ruleRecordOf(state.records, rule);
   removeDeclarations(
     state.records,
@@ -209,7 +211,8 @@ test('removeDeclarations should give the record keys for the declarations that r
     claimAt(state.records, record, [0])
   );
   assert.deepEqual(
-    ruleRecordOf(state.records, rule).declarationKeys(state.records).keys,
+    declarationKeys(state.records, ruleRecordOf(state.records, rule).index)
+      .keys,
     [state.declarationIds.keyOf(/** @type {Declaration} */ (rule.last))]
   );
 });

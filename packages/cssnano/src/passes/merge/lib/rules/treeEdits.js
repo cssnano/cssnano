@@ -16,6 +16,7 @@ import { containerContext } from './sameContainer.js';
 import { hasPendingEdits } from '../deferredChildEdits.js';
 import { sourceSelector } from '../../../../utils/sourceText.js';
 import { appendChild } from './arenaEdits.js';
+import { declarationKeys } from './declarationCache.js';
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
@@ -200,7 +201,7 @@ export function takePlaceOf(records, earlier, later) {
  * @throws {Error} when `kept` is not the declarations of `receiving`, in order
  */
 function assertKeptFresh(records, receiving, kept) {
-  const { keys } = receiving.declarationKeys(records);
+  const { keys } = declarationKeys(records, receiving.index);
   if (
     kept.length !== keys.length ||
     kept.some((declaration, i) => declaration.id !== keys[i])

@@ -2,15 +2,22 @@ import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ChildNode, Rule } from 'postcss';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {ChildNode, Container, Rule} from 'postcss' */
+/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
+/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockRecord } from './blockRecord.js';
 import type { NodeEntry } from './blockRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
-import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { LinkReader } from './blockLinks.js';
+import type { DeclarationStampReader } from './declarationStamps.js';
+import type { DeclarationCacheReader } from './declarationCache.js';
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {LinkReader} from './blockLinks.js' */
+/** @import {DeclarationStampReader} from './declarationStamps.js' */
+/** @import {DeclarationCacheReader} from './declarationCache.js' */
 import { RuleRecord } from './ruleRecord.js';
 /**
  * The records of one run. One arena holds every block record, every rule record,
@@ -26,6 +33,10 @@ export declare class BlockRecords {
     root: BlockRecord;
     /** @type {LinkReader} the chains of the blocks, read here and edited through this arena */
     links: LinkReader;
+    /** @type {DeclarationStampReader} the declaration stamps, read here and moved through this arena */
+    declarationStamps: DeclarationStampReader;
+    /** @type {DeclarationCacheReader} the declaration ids, read here and extended through this arena */
+    declarations: DeclarationCacheReader;
     /**
      * The most rounds a run may take before it throws. Set from the counts of
      * rules, at-rules and declarations when the records are built.

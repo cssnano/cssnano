@@ -24,6 +24,7 @@ import {
   buildTestRecords,
 } from './liveRecords.js';
 import { adopt } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {Container, Root, Rule} from 'postcss' */
@@ -179,7 +180,7 @@ test('declarationKeys should list a declaration that linkAfter puts in the middl
 test('declarationsOf should list the declaration that linkLast appends to its rule, after the declarations it held', () => {
   const { root, records } = setup('a{color:red}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
-  rule.declarationKeys(records);
+  declarationKeys(records, rule.index);
   const top = records.blockDeclaration(
     postcss.decl({ prop: 'top', value: '0' }),
     new PropertyTable(),
@@ -217,14 +218,14 @@ test('declarationKeys should list the ids in their new order after linkAfter put
   const { root, records } = setup('a{color:red;top:0}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
   const [color, top] = rule.declarationsOf(records);
-  rule.declarationKeys(records);
+  declarationKeys(records, rule.index);
   const width = records.blockDeclaration(
     postcss.decl({ prop: 'width', value: '1px' }),
     new PropertyTable(),
     new DeclarationKeys()
   );
   records.linkAfter(rule.index, color.index, width.index);
-  assert.deepEqual(rule.declarationKeys(records).keys, [
+  assert.deepEqual(declarationKeys(records, rule.index).keys, [
     color.id,
     width.id,
     top.id,

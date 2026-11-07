@@ -1,7 +1,5 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { RuleRecord } from './ruleRecord.js';
 
-/** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 
 const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
@@ -22,9 +20,6 @@ const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
  * so no link is an object reference.
  */
 export class BlockLinks {
-  /** @type {BlockRecords} the arena whose block records hold the chain ends */
-  #records;
-
   /** @type {number[]} the container of each entry, -1 when it is linked nowhere */
   #parent = [];
 
@@ -51,11 +46,6 @@ export class BlockLinks {
 
   /** @type {number} the clock when the build settled the links; edits after it are unsettled */
   #settledAt = 0;
-
-  /** @param {BlockRecords} records the arena whose entries these links join */
-  constructor(records) {
-    this.#records = records;
-  }
 
   /** Gives the next entry of the arena unlinked links and an empty chain. */
   grow() {
@@ -162,7 +152,6 @@ export class BlockLinks {
    * @return {void}
    */
   linkAfter(block, after, index) {
-    const holder = this.#records.container(block);
     const next = after === -1 ? this.#first[block] : this.#next[after];
     this.#parent[index] = block;
     this.#prev[index] = after;
@@ -173,12 +162,6 @@ export class BlockLinks {
     else this.#prev[next] = index;
     this.#count[block]++;
     this.#stamp(block);
-    if (holder instanceof RuleRecord) {
-      holder.childLinked(
-        this.#records.entry(/** @type {ArenaIndex} */ (index)),
-        next === -1
-      );
-    }
   }
 
   /**
@@ -202,7 +185,6 @@ export class BlockLinks {
   unlink(index) {
     const block = this.#parent[index];
     if (block === -1) return;
-    const holder = this.#records.container(block);
     const prev = this.#prev[index];
     const next = this.#next[index];
     if (prev === -1) this.#first[block] = next;
@@ -214,11 +196,6 @@ export class BlockLinks {
     this.#parent[index] = -1;
     this.#prev[index] = -1;
     this.#next[index] = -1;
-    if (holder instanceof RuleRecord) {
-      holder.childUnlinked(
-        this.#records.entry(/** @type {ArenaIndex} */ (index))
-      );
-    }
   }
 
   /**

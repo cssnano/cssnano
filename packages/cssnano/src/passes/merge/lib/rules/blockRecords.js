@@ -2,15 +2,21 @@
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import { recordDeclaration } from '../../../ir/declarationRecord.js';
+import {
+  DeclarationRecord,
+  recordDeclaration,
+} from '../../../ir/declarationRecord.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockLinks } from './blockLinks.js';
+import { DeclarationStamps } from './declarationStamps.js';
+import { DeclarationCache } from './declarationCache.js';
 import { assertCanLink, assertReached } from './linkChecks.js';
 import { BlockRecord } from './blockRecord.js';
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {LinkReader} from './blockLinks.js' */
+/** @import {DeclarationStampReader} from './declarationStamps.js' */
+/** @import {DeclarationCacheReader} from './declarationCache.js' */
 import { RuleRecord } from './ruleRecord.js';
 
 /**
@@ -29,10 +35,22 @@ export class BlockRecords {
   #entries = [];
 
   /** @type {BlockLinks} the chains of the blocks, which only this arena edits */
-  #links = new BlockLinks(this);
+  #links = new BlockLinks();
 
   /** @type {LinkReader} the chains of the blocks, read here and edited through this arena */
   links = this.#links;
+
+  /** @type {DeclarationStamps} the declaration stamp of each container, which only this arena moves */
+  #declarationStamps = new DeclarationStamps();
+
+  /** @type {DeclarationStampReader} the declaration stamps, read here and moved through this arena */
+  declarationStamps = this.#declarationStamps;
+
+  /** @type {DeclarationCache} the declaration ids of each container, rebuilt from the chain when stale */
+  #declarations = new DeclarationCache();
+
+  /** @type {DeclarationCacheReader} the declaration ids, read here and extended through this arena */
+  declarations = this.#declarations;
 
   /**
    * The most rounds a run may take before it throws. Set from the counts of
@@ -60,7 +78,46 @@ export class BlockRecords {
     entry.index = /** @type {ArenaIndex} */ (this.#entries.length);
     this.#entries.push(entry);
     this.#links.grow();
+    this.#declarationStamps.grow();
+    this.#declarations.grow();
     return entry;
+  }
+
+  /**
+   * Moves the declaration stamp of `container` when the entry at `index` is a
+   * declaration, which joins or leaves its chain.
+   *
+   * @param {number} container an index that the arena gave, or -1 for none
+   * @param {number} index an index that the arena gave
+   * @return {void}
+   */
+  #touchDeclaration(container, index) {
+    if (container !== -1 && this.#entries[index] instanceof DeclarationRecord) {
+      this.#declarationStamps.touch(container);
+    }
+  }
+
+  /**
+   * Extends the declaration cache of `block` with the entry at `index`, when
+   * that entry is a declaration that the link left at the end of the chain.
+   *
+   * @param {number} block an index that the arena gave
+   * @param {number} index an entry that was just linked into `block`
+   * @param {number} before the declaration stamp of `block` before the link
+   * @return {void}
+   */
+  #appendDeclaration(block, index, before) {
+    const entry = this.#entries[index];
+    if (!(entry instanceof DeclarationRecord)) return;
+    if (this.#links.nextSibling(/** @type {ArenaIndex} */ (index)) !== -1) {
+      return;
+    }
+    this.#declarations.appended(
+      /** @type {ArenaIndex} */ (block),
+      entry,
+      before,
+      this.#declarationStamps.stampOf(block)
+    );
   }
 
   /**
@@ -156,7 +213,10 @@ export class BlockRecords {
    */
   linkAfter(block, after, index) {
     assertCanLink(this, block, index);
+    const before = this.#declarationStamps.stampOf(block);
     this.#links.linkAfter(block, after, index);
+    this.#touchDeclaration(block, index);
+    this.#appendDeclaration(block, index, before);
   }
 
   /**
@@ -168,7 +228,10 @@ export class BlockRecords {
    */
   linkLast(block, index) {
     assertCanLink(this, block, index);
+    const before = this.#declarationStamps.stampOf(block);
     this.#links.linkLast(block, index);
+    this.#touchDeclaration(block, index);
+    this.#appendDeclaration(block, index, before);
   }
 
   /**
@@ -179,7 +242,9 @@ export class BlockRecords {
    * @return {void}
    */
   unlink(index) {
+    const block = this.links.parentOf(index);
     this.#links.unlink(index);
+    this.#touchDeclaration(block, index);
   }
 
   /**
@@ -191,8 +256,13 @@ export class BlockRecords {
    * @return {void}
    */
   takeLinkOf(later, earlier) {
-    assertCanLink(this, this.links.parentOf(later), earlier);
+    const to = this.links.parentOf(later);
+    assertCanLink(this, to, earlier);
+    const from = this.links.parentOf(earlier);
     this.#links.takeLinkOf(later, earlier);
+    this.#touchDeclaration(from, earlier);
+    this.#touchDeclaration(to, earlier);
+    this.#touchDeclaration(to, later);
   }
 
   /**

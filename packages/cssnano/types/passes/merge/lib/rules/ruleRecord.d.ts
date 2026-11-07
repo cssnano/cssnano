@@ -2,17 +2,7 @@ import { SelectorList } from './selectorList.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ChildNode, Declaration, Rule } from 'postcss';
-import type { ArenaIndex, NodeEntry } from './blockRecord.js';
-export type RuleDeclarationKeys = {
-    /**
-     * the ids of the declarations of the rule, in order
-     */
-    keys: number[];
-    /**
-     * the ids of the declarations
-     */
-    keySet: Set<number>;
-};
+import type { ArenaIndex } from './blockRecord.js';
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { ElementKeyOf, SelectorLookup } from './selectorList.js';
 import type { VendorPrefixSummary } from './vendorPrefixSummary.js';
@@ -20,11 +10,6 @@ import type { BlockRecords } from './blockRecords.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ChildNode, Declaration, Rule} from 'postcss' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
-/**
- * @typedef {object} RuleDeclarationKeys
- * @property {number[]} keys the ids of the declarations of the rule, in order
- * @property {Set<number>} keySet the ids of the declarations
- */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
 /** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
@@ -103,14 +88,6 @@ export declare class RuleRecord extends SelectorList {
     /** @param {RangePiece[] | null} pieces one per selector, or null */
     setPieces(pieces: RangePiece[] | null): void;
     /**
-     * The ids of the declarations of the rule. They are read from the chain once,
-     * and kept until an edit that is not a declaration appended at its end.
-     *
-     * @param {BlockRecords} records the arena that holds the rule's children
-     * @return {RuleDeclarationKeys}
-     */
-    declarationKeys(records: BlockRecords): RuleDeclarationKeys;
-    /**
      * The declarations of the rule, in order, read from its chain at the call. A
      * reader that indexes them by position takes this array.
      *
@@ -118,27 +95,6 @@ export declare class RuleRecord extends SelectorList {
      * @return {DeclarationRecord[]}
      */
     declarationsOf(records: BlockRecords): DeclarationRecord[];
-    /**
-     * Called by `BlockLinks` once a child is linked into the chain of the rule.
-     * Only the declaration ids are kept, so a child that is not a declaration
-     * leaves them. A declaration linked at the end joins them; one linked
-     * elsewhere drops them.
-     *
-     * @param {DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord} child
-     *   the record of the child that was linked
-     * @param {boolean} atEnd whether the child was linked after the last entry
-     * @return {void}
-     */
-    childLinked(child: DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord, atEnd: boolean): void;
-    /**
-     * Called by `BlockLinks` once a child is unlinked from the chain of the rule.
-     * A declaration that leaves drops the kept ids; any other child leaves them.
-     *
-     * @param {DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord} child
-     *   the record of the child that was unlinked
-     * @return {void}
-     */
-    childUnlinked(child: DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord): void;
     /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}

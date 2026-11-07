@@ -1,4 +1,3 @@
-import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
 export type LinkReader = Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild' | 'childCount' | 'editedAt' | 'isEdited'>;
 /**
@@ -17,8 +16,6 @@ export type LinkReader = Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibl
  */
 export declare class BlockLinks {
     #private;
-    /** @param {BlockRecords} records the arena whose entries these links join */
-    constructor(records: BlockRecords);
     /** Gives the next entry of the arena unlinked links and an empty chain. */
     grow(): void;
     /**

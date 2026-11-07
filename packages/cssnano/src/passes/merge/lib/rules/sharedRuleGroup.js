@@ -5,6 +5,7 @@ import {
 } from './blockChildren.js';
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
 import { PropertyWrites } from './propertyWrites.js';
+import { declarationKeys } from './declarationCache.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {ChildNode} from 'postcss' */
@@ -91,7 +92,7 @@ function repeatsShared(link, parent, shared, records) {
   ) {
     return false;
   }
-  const { keySet } = rule.declarationKeys(records);
+  const { keySet } = declarationKeys(records, rule.index);
   for (const declaration of shared) {
     if (!keySet.has(declaration.id)) return false;
   }
@@ -285,14 +286,14 @@ export function earliestPairReaching(
   const { records } = mergeState;
   const linked = /** @type {RuleRecord} */ (records.rule(link));
   const parent = records.links.parentOf(linked.index);
-  const own = linked.declarationKeys(records);
+  const own = declarationKeys(records, linked.index);
   let passed = false;
   let member = link;
   for (let depth = 1; ; depth++) {
     const prev = sequence.prevOf(member);
     if (prev === -1) break;
     const prevRule = /** @type {RuleRecord} */ (records.rule(prev));
-    const other = prevRule.declarationKeys(records);
+    const other = declarationKeys(records, prevRule.index);
     if (depth === 1) {
       // Seed from the smaller key list, which bounds the first intersection.
       const [from, to] =

@@ -1,6 +1,7 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
+import { declarationKeys } from './declarationCache.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @typedef {BlockRecord | RuleRecord} Container */
@@ -39,7 +40,7 @@ export function sweepPotential(records, numbers) {
     ) {
       const item = records.entry(entry);
       if (item instanceof RuleRecord && item.context === -1) {
-        declarations += item.declarationKeys(records).keys.length;
+        declarations += declarationKeys(records, item.index).keys.length;
         rules++;
         parents += id;
       } else if (item instanceof BlockRecord || item instanceof RuleRecord) {

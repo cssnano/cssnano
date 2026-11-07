@@ -20,6 +20,7 @@ import {
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
+import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 before(() => enableConsistencyChecks(true));
 after(() => enableConsistencyChecks(false));
@@ -70,7 +71,7 @@ test('a rule record reads its declaration keys from the ids of its records', () 
   const { root, state } = setup('a{color:red;width:1px}');
   const rule = ruleRecordOf(state.records, root.first);
   assert.deepEqual(
-    rule.declarationKeys(state.records).keys,
+    declarationKeys(state.records, rule.index).keys,
     rule.declarationsOf(state.records).map((declaration) => declaration.id)
   );
 });
@@ -103,7 +104,7 @@ test('declarationKeys of a rule that nests are the ids of its chain declarations
   const ids = liveEntries(state.records, rule.index)
     .filter((entry) => entry instanceof DeclarationRecord)
     .map((entry) => entry.id);
-  assert.deepEqual(rule.declarationKeys(state.records).keys, ids);
+  assert.deepEqual(declarationKeys(state.records, rule.index).keys, ids);
 });
 
 test('canMerge should refuse a rule that holds a block against a rule it could otherwise join', () => {

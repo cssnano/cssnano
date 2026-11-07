@@ -114,12 +114,10 @@ export function childCountOf(records, index) {
  */
 export function holdsOnlyDeclarationsOf(records, index) {
   assertLiveRule(records, index);
-  const rule = /** @type {RuleRecord} */ (
-    records.entry(/** @type {ArenaIndex} */ (index))
-  );
   return (
     records.links.childCount(index) ===
-    rule.declarationKeys(records).keys.length
+    records.declarations.keysOf(records, /** @type {ArenaIndex} */ (index)).keys
+      .length
   );
 }
 

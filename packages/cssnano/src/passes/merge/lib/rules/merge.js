@@ -6,6 +6,7 @@ import {
 } from './declarations.js';
 import { buildMergedRule, writesOf } from './ruleRewrite.js';
 import { appendToDeclarations } from './treeEdits.js';
+import { declarationKeys } from './declarationCache.js';
 
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
@@ -29,8 +30,8 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
     !holdsOnlyDeclarationsOf(mergeState.records, first.index) ||
     !holdsOnlyDeclarationsOf(mergeState.records, second.index) ||
     !sameDeclarationsAndOrder(
-      second.declarationKeys(mergeState.records).keys,
-      first.declarationKeys(mergeState.records).keys
+      declarationKeys(mergeState.records, second.index).keys,
+      declarationKeys(mergeState.records, first.index).keys
     )
   )
     return null;
@@ -85,7 +86,7 @@ export function mergeSharedDeclarations(
   const firstDeclarations = first.declarationsOf(records);
   let intersection = intersect(
     firstDeclarations,
-    second.declarationKeys(records).keySet
+    declarationKeys(records, second.index).keySet
   );
   if (intersection.length === 0) return null;
   const filtered = filterRuleIntersections(

@@ -10,9 +10,16 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { ruleRecordOf, buildTestRecords, claimAt } from './liveRecords.js';
 import {
+  appendChild,
   moveDeclarations,
   removeDeclarations,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import {
+  COMMENT,
+  NO_PRELUDE,
+  NodeEntry,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
@@ -30,6 +37,7 @@ const arenaOf = (css) => {
   state.records = buildTestRecords(root, state);
   const { records } = state;
   return {
+    state,
     records,
     rule: root.first,
     record: ruleRecordOf(records, root.first),
@@ -88,7 +96,7 @@ test('removeDeclarations should drop the keys of the removed declarations from t
   const { records, record } = arenaOf('a{color:red;width:1px}');
   const [, width] = record.declarationsOf(records);
   removeDeclarations(records, record.index, claimAt(records, record, [0]));
-  assert.deepEqual(record.declarationKeys(records).keys, [width.id]);
+  assert.deepEqual(declarationKeys(records, record.index).keys, [width.id]);
 });
 
 test('removeDeclarations should throw under checks for an index that a previous removal already took', () => {
@@ -191,31 +199,126 @@ test('moveDeclarations should drop the keys of the moved declarations from the d
   moveDeclarations(records, record.index, target.index, [
     ...claimAt(records, record, [0]),
   ]);
-  assert.deepEqual(record.declarationKeys(records).keys, [width.id]);
+  assert.deepEqual(declarationKeys(records, record.index).keys, [width.id]);
 });
 
 test('unlinking a nested rule should keep the declaration keys of its parent, without a rebuild', () => {
   const { records, rule, record } = arenaOf('a{color:red;b{width:1px}}');
   const nested = ruleRecordOf(records, rule.nodes[1]);
-  const kept = record.declarationKeys(records);
+  const kept = declarationKeys(records, record.index);
   records.unlink(nested.index);
-  assert.equal(record.declarationKeys(records), kept);
+  assert.equal(declarationKeys(records, record.index), kept);
 });
 
 test('linking a nested rule into its parent should keep the declaration keys of the parent, without a rebuild', () => {
-  const { records, rule, record } = arenaOf('a{color:red}b{width:1px}');
+  const { records, rule, record } = arenaOf('a{color:red;c{top:0}}b{width:1px}');
   const sibling = ruleRecordOf(records, rule.next());
-  const kept = record.declarationKeys(records);
+  const kept = declarationKeys(records, record.index);
   records.unlink(sibling.index);
   records.linkLast(record.index, sibling.index);
-  assert.equal(record.declarationKeys(records), kept);
+  assert.equal(declarationKeys(records, record.index), kept);
 });
 
 test('unlinking a declaration should clear the declaration keys of its parent, which then list the rest', () => {
   const { records, record } = arenaOf('a{color:red;width:1px}');
   const [, width] = record.declarationsOf(records);
-  const kept = record.declarationKeys(records);
+  const kept = declarationKeys(records, record.index);
   records.unlink(record.declarationsOf(records)[0].index);
-  assert.notEqual(record.declarationKeys(records), kept);
-  assert.deepEqual(record.declarationKeys(records).keys, [width.id]);
+  assert.notEqual(declarationKeys(records, record.index), kept);
+  assert.deepEqual(declarationKeys(records, record.index).keys, [width.id]);
+});
+
+/**
+ * A declaration of `css` that no rule holds yet, built as a block child.
+ *
+ * @param {ReturnType<typeof arenaOf>} arena
+ * @param {string} prop
+ * @return {import('../../../../../src/passes/ir/declarationRecord.js').DeclarationRecord}
+ */
+const freshDeclaration = ({ state, records }, prop) =>
+  records.blockDeclaration(
+    postcss.decl({ prop, value: '0' }),
+    state.properties,
+    state.declarationIds
+  );
+
+test('appendChild of a declaration should keep the entry of the rule and list the appended id last', () => {
+  const arena = arenaOf('a{color:red}');
+  const { records, record } = arena;
+  const [color] = record.declarationsOf(records);
+  const before = declarationKeys(records, record.index);
+  const top = freshDeclaration(arena, 'top');
+  appendChild(records, record, top);
+  assert.equal(declarationKeys(records, record.index), before);
+  assert.deepEqual(declarationKeys(records, record.index).keys, [
+    color.id,
+    top.id,
+  ]);
+});
+
+test('appendChild of a declaration after an unlink should list the ids without the unlinked one, in a new entry', () => {
+  const arena = arenaOf('a{color:red;width:1px}');
+  const { records, record } = arena;
+  const [color, width] = record.declarationsOf(records);
+  const before = declarationKeys(records, record.index);
+  records.unlink(color.index);
+  const top = freshDeclaration(arena, 'top');
+  appendChild(records, record, top);
+  const after = declarationKeys(records, record.index);
+  assert.notEqual(after, before);
+  assert.deepEqual(after.keys, [width.id, top.id]);
+});
+
+test('linking a declaration before the last child should list the ids in chain order, in a new entry', () => {
+  const arena = arenaOf('a{color:red;width:1px}');
+  const { records, record } = arena;
+  const [color, width] = record.declarationsOf(records);
+  const before = declarationKeys(records, record.index);
+  const top = freshDeclaration(arena, 'top');
+  records.linkAfter(record.index, color.index, top.index);
+  const after = declarationKeys(records, record.index);
+  assert.notEqual(after, before);
+  assert.deepEqual(after.keys, [color.id, top.id, width.id]);
+});
+
+test('takeLinkOf of a declaration of one rule into another should give each rule a new entry after the move', () => {
+  const { records, rule } = arenaOf('a{color:red}b{width:1px}');
+  const first = ruleRecordOf(records, rule);
+  const second = ruleRecordOf(records, rule.next());
+  const [color] = first.declarationsOf(records);
+  const [width] = second.declarationsOf(records);
+  const firstKeys = declarationKeys(records, first.index);
+  const secondKeys = declarationKeys(records, second.index);
+  records.takeLinkOf(width.index, color.index);
+  assert.notEqual(declarationKeys(records, first.index), firstKeys);
+  assert.notEqual(declarationKeys(records, second.index), secondKeys);
+  assert.deepEqual(declarationKeys(records, first.index).keys, []);
+  assert.deepEqual(declarationKeys(records, second.index).keys, [color.id]);
+});
+
+test('appendChild of a comment should make the next read return the same entry', () => {
+  const { records, record } = arenaOf('a{color:red}');
+  const keys = declarationKeys(records, record.index);
+  const note = records.bareEntry(
+    new NodeEntry(
+      postcss.comment({ text: 'c' }),
+      COMMENT,
+      '',
+      '',
+      false,
+      NO_PRELUDE
+    )
+  );
+  appendChild(records, record, note);
+  assert.equal(declarationKeys(records, record.index), keys);
+});
+
+test('linking a declaration into a nested rule should keep the declaration keys of the outer rule', () => {
+  const { records, rule, record } = arenaOf('a{b{width:1px}}c{top:0}');
+  const nested = ruleRecordOf(records, rule.first);
+  const [top] = ruleRecordOf(records, rule.next()).declarationsOf(records);
+  const keys = declarationKeys(records, record.index);
+  records.unlink(top.index);
+  records.linkLast(nested.index, top.index);
+  assert.equal(declarationKeys(records, record.index), keys);
 });

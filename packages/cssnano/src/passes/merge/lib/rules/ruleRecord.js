@@ -3,17 +3,9 @@ import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { NO_PRELUDE, RULE } from './blockRecord.js';
 
-const STALE_KEYS =
-  'declaration keys of a rule record are out of step with its chain';
-
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ChildNode, Declaration, Rule} from 'postcss' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
-/**
- * @typedef {object} RuleDeclarationKeys
- * @property {number[]} keys the ids of the declarations of the rule, in order
- * @property {Set<number>} keySet the ids of the declarations
- */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
 /** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
@@ -34,13 +26,6 @@ export function isDeclaration(node) {
  * set up front so all instances share one object layout.
  */
 export class RuleRecord extends SelectorList {
-  /**
-   * The ids of the declarations, derived from the chain. It is kept while the
-   * chain only gains declarations at its end, and dropped by any other edit.
-   *
-   * @type {RuleDeclarationKeys | undefined}
-   */
-  #declarationKeys = undefined;
   /** @type {boolean} set once the rule has left the stylesheet */
   #departed = false;
   /**
@@ -151,55 +136,6 @@ export class RuleRecord extends SelectorList {
   }
 
   /**
-   * The ids of the declarations of the rule. They are read from the chain once,
-   * and kept until an edit that is not a declaration appended at its end.
-   *
-   * @param {BlockRecords} records the arena that holds the rule's children
-   * @return {RuleDeclarationKeys}
-   */
-  declarationKeys(records) {
-    this.#assertLive();
-    if (!this.#declarationKeys) {
-      const keys = [];
-      for (
-        let entry = records.links.firstChild(this.index);
-        entry !== -1;
-        entry = records.links.nextSibling(entry)
-      ) {
-        const item = records.entry(entry);
-        if (item instanceof DeclarationRecord) keys.push(item.id);
-      }
-      this.#declarationKeys = { keys, keySet: new Set(keys) };
-    } else if (consistencyChecksEnabled()) {
-      this.#assertKeysFresh(records, this.#declarationKeys);
-    }
-    return this.#declarationKeys;
-  }
-
-  /**
-   * Under consistency checks, throws when the kept ids differ from the ids of
-   * the declarations the chain holds, in order.
-   *
-   * @param {BlockRecords} records
-   * @param {RuleDeclarationKeys} kept
-   * @return {void}
-   * @throws {Error} when the kept declarations are out of step with the chain
-   */
-  #assertKeysFresh(records, kept) {
-    let at = 0;
-    for (
-      let entry = records.links.firstChild(this.index);
-      entry !== -1;
-      entry = records.links.nextSibling(entry)
-    ) {
-      const item = records.entry(entry);
-      if (!(item instanceof DeclarationRecord)) continue;
-      if (kept.keys[at++] !== item.id) throw new Error(STALE_KEYS);
-    }
-    if (at !== kept.keys.length) throw new Error(STALE_KEYS);
-  }
-
-  /**
    * The declarations of the rule, in order, read from its chain at the call. A
    * reader that indexes them by position takes this array.
    *
@@ -219,40 +155,6 @@ export class RuleRecord extends SelectorList {
       if (item instanceof DeclarationRecord) declarations.push(item);
     }
     return declarations;
-  }
-
-  /**
-   * Called by `BlockLinks` once a child is linked into the chain of the rule.
-   * Only the declaration ids are kept, so a child that is not a declaration
-   * leaves them. A declaration linked at the end joins them; one linked
-   * elsewhere drops them.
-   *
-   * @param {DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord} child
-   *   the record of the child that was linked
-   * @param {boolean} atEnd whether the child was linked after the last entry
-   * @return {void}
-   */
-  childLinked(child, atEnd) {
-    const kept = this.#declarationKeys;
-    if (!kept || !(child instanceof DeclarationRecord)) return;
-    if (atEnd) {
-      kept.keys.push(child.id);
-      kept.keySet.add(child.id);
-    } else {
-      this.#declarationKeys = undefined;
-    }
-  }
-
-  /**
-   * Called by `BlockLinks` once a child is unlinked from the chain of the rule.
-   * A declaration that leaves drops the kept ids; any other child leaves them.
-   *
-   * @param {DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord} child
-   *   the record of the child that was unlinked
-   * @return {void}
-   */
-  childUnlinked(child) {
-    if (child instanceof DeclarationRecord) this.#declarationKeys = undefined;
   }
 
   /**

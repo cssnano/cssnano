@@ -12,6 +12,7 @@ import {
 } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 const createState = () => new MergeState(['chrome 120'], createRunContext());
 
@@ -319,8 +320,12 @@ test('declarationKeys of a record should give equal declarations of different ru
   const state = createState();
   const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
   assert.deepEqual(
-    ruleRecordOf(state.records, root.first).declarationKeys(state.records).keys,
-    ruleRecordOf(state.records, root.last).declarationKeys(state.records).keys
+    declarationKeys(
+      state.records,
+      ruleRecordOf(state.records, root.first).index
+    ).keys,
+    declarationKeys(state.records, ruleRecordOf(state.records, root.last).index)
+      .keys
   );
 });
 
@@ -328,8 +333,8 @@ test('declarationKeys of a record should return the cached keys of an unchanged 
   const state = createState();
   const rule = withRecords(state, postcss.parse('a{color:red}')).first;
   assert.equal(
-    ruleRecordOf(state.records, rule).declarationKeys(state.records),
-    ruleRecordOf(state.records, rule).declarationKeys(state.records)
+    declarationKeys(state.records, ruleRecordOf(state.records, rule).index),
+    declarationKeys(state.records, ruleRecordOf(state.records, rule).index)
   );
 });
 

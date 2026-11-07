@@ -9,6 +9,7 @@ import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { assertLinearTime } from '../linearTiming.js';
 import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 /**
  * The records of `css`, as the run builds them. The first rule of a stylesheet
@@ -52,7 +53,7 @@ function timeAppendsAndReads(size) {
       rule,
       records.blockDeclaration(node, state.properties, state.declarationIds)
     );
-    seen += rule.declarationKeys(records).keys.length;
+    seen += declarationKeys(records, rule.index).keys.length;
   }
   const elapsed = performance.now() - start;
   if (seen < 0) throw new Error('unreachable');
@@ -73,7 +74,7 @@ function timeUnlinksThenRead(size) {
   const declarations = rule.declarationsOf(records);
   const start = performance.now();
   for (let i = 0; i < size; i += 2) records.links.unlink(declarations[i].index);
-  const left = rule.declarationKeys(records).keys.length;
+  const left = declarationKeys(records, rule.index).keys.length;
   const elapsed = performance.now() - start;
   if (left < 0) throw new Error('unreachable');
   return elapsed;

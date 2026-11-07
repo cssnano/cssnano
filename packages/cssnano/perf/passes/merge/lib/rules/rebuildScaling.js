@@ -5,26 +5,27 @@
 // family below appends n declarations to one rule, so the walked entries
 // divided by n must stay flat as n grows.
 //
-// The counter wraps `RuleRecord.prototype.declarationKeys`, which the cache
-// read goes through until the cache moves beside the records. A read that
-// returns a different entry than the rule's previous read is a rebuild.
+// The counter wraps `DeclarationCache.prototype.keysOf`, which every cache
+// read goes through. A read that returns a different entry than the rule's
+// previous read is a rebuild.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { transformPlugin } from '#passes/merge';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { DeclarationCache } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 const plugin = transformPlugin('mergeRules');
 
 const walk = { rebuilds: 0, entries: 0 };
-const lastRead = new WeakMap();
-const declarationKeys = RuleRecord.prototype.declarationKeys;
-RuleRecord.prototype.declarationKeys = function (records) {
-  const keys = declarationKeys.call(this, records);
-  if (lastRead.get(this) !== keys) {
-    lastRead.set(this, keys);
+/** @type {Map<number, object>} the entry each container's previous read returned */
+let lastRead = new Map();
+const keysOf = DeclarationCache.prototype.keysOf;
+DeclarationCache.prototype.keysOf = function (records, index) {
+  const keys = keysOf.call(this, records, index);
+  if (lastRead.get(index) !== keys) {
+    lastRead.set(index, keys);
     walk.rebuilds++;
-    walk.entries += records.links.childCount(this.index);
+    walk.entries += records.links.childCount(index);
   }
   return keys;
 };
@@ -36,6 +37,7 @@ RuleRecord.prototype.declarationKeys = function (records) {
 function measure(css) {
   walk.rebuilds = 0;
   walk.entries = 0;
+  lastRead = new Map();
   postcss([plugin()]).process(css, { from: undefined }).sync();
   return { rebuilds: walk.rebuilds, entries: walk.entries };
 }

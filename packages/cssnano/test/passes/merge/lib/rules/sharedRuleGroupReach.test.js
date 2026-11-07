@@ -15,6 +15,7 @@ import {
   SHARING_WINDOW,
 } from '../../../../../src/passes/merge/lib/rules/sharedRuleGroup.js';
 import { longSelector, sharedBackground } from './sharedRuleGroupFixtures.js';
+import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 // Park-Miller generator: products stay below 2 ** 53, and the repository
 // forbids bitwise operators.
@@ -74,7 +75,7 @@ function groupsOf(css) {
     if (second === undefined) break;
     const shared = intersect(
       rule(first).declarationsOf(mergeState.records),
-      rule(second).declarationKeys(mergeState.records).keySet
+      declarationKeys(mergeState.records, rule(second).index).keySet
     );
     if (shared.length === 0) continue;
     const { intersection, claimedIndices } = filterRuleIntersections(

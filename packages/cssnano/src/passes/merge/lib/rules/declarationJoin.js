@@ -11,6 +11,7 @@ import { isKeyframes } from './sameContainer.js';
 import { removeRules } from './treeEdits.js';
 import { RuleRecord } from './ruleRecord.js';
 import { removeDeclarations } from './arenaEdits.js';
+import { declarationKeys } from './declarationCache.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
@@ -122,7 +123,7 @@ export default function joinByDeclarations(block, mergeState) {
   for (const [i, entry] of entries.entries()) {
     if (!declarationRules[i]) continue;
     const record = /** @type {RuleRecord} */ (entry);
-    for (const key of record.declarationKeys(mergeState.records).keySet)
+    for (const key of declarationKeys(mergeState.records, record.index).keySet)
       scan.see(key, i);
   }
   if (scan.start === Infinity) return false;
@@ -169,7 +170,7 @@ export default function joinByDeclarations(block, mergeState) {
    */
   function register(rule, position) {
     // A trimmed rule's record took its remaining declarations, so its keys are new.
-    const keys = rule.declarationKeys(mergeState.records).keys;
+    const keys = declarationKeys(mergeState.records, rule.index).keys;
     /** @type {Group} */
     const group = {
       rule,
@@ -191,7 +192,10 @@ export default function joinByDeclarations(block, mergeState) {
   function joinIntoGroup(laterRecord) {
     const { records } = mergeState;
     const laterDeclarations = laterRecord.declarationsOf(records);
-    const laterSet = laterRecord.declarationKeys(mergeState.records).keySet;
+    const laterSet = declarationKeys(
+      mergeState.records,
+      laterRecord.index
+    ).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
     const laterKeys = keysOf(laterRecord);
     /** @type {{group: Group, claimed: Set<ArenaIndex>, added: string[], gain: number} | null} */
@@ -212,9 +216,9 @@ export default function joinByDeclarations(block, mergeState) {
           break;
         if (
           group.declarations.length > laterDeclarations.length ||
-          !group.rule
-            .declarationKeys(records)
-            .keys.every((key) => laterSet.has(key))
+          !declarationKeys(records, group.rule.index).keys.every((key) =>
+            laterSet.has(key)
+          )
         ) {
           continue;
         }
@@ -280,7 +284,7 @@ export default function joinByDeclarations(block, mergeState) {
     // The group's writes already stand at its position, so the declarations
     // that leave `later` record nothing.
     const { records } = mergeState;
-    if (claimed.size === later.declarationKeys(records).keys.length) {
+    if (claimed.size === declarationKeys(records, later.index).keys.length) {
       emptied.add(later.index);
       return 'emptied';
     }

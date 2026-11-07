@@ -9,6 +9,7 @@ import { earliestPairReaching } from './sharedRuleGroup.js';
 import RuleSequence from './ruleSequence.js';
 import DeclarationScan from './declarationScan.js';
 import { sameContainer } from './sameContainer.js';
+import { declarationKeys } from './declarationCache.js';
 
 /** @import {ArenaIndex} from './blockRecord.js' */
 
@@ -114,8 +115,8 @@ export default function runScan(mergeState) {
    * @return {number} NO_BENEFIT when merging the pair cannot rewrite anything
    */
   const mergeBenefit = (first, second) => {
-    const a = first.declarationKeys(mergeState.records);
-    const b = second.declarationKeys(mergeState.records);
+    const a = declarationKeys(mergeState.records, first.index);
+    const b = declarationKeys(mergeState.records, second.index);
     if (first.hasSameSelectors(second)) return a.keys.length + b.keys.length;
     const [smaller, larger] =
       a.keys.length <= b.keys.length ? [a, b.keySet] : [b, a.keySet];

@@ -24,6 +24,7 @@ import {
   appendChild,
   removeDeclarations,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
@@ -92,13 +93,16 @@ test('recordRule should give the record of a rule the rule as its node', () => {
 test('declarationKeys should list the id of each declaration in order', () => {
   const { records, record } = arenaOf('a{color:red;top:0}');
   const [color, top] = record.declarationsOf(records);
-  assert.deepEqual(record.declarationKeys(records).keys, [color.id, top.id]);
+  assert.deepEqual(declarationKeys(records, record.index).keys, [
+    color.id,
+    top.id,
+  ]);
 });
 
 test('declarationKeys should offer the same keys as a set for membership tests', () => {
   const { records, record } = arenaOf('a{color:red;top:0}');
   assert.deepEqual(
-    record.declarationKeys(records).keySet,
+    declarationKeys(records, record.index).keySet,
     new Set(record.declarationsOf(records).map((declaration) => declaration.id))
   );
 });
@@ -106,21 +110,21 @@ test('declarationKeys should offer the same keys as a set for membership tests',
 test('declarationKeys should return the cached keys while the declarations are unchanged', () => {
   const { records, record } = arenaOf('a{color:red}');
   assert.equal(
-    record.declarationKeys(records),
-    record.declarationKeys(records)
+    declarationKeys(records, record.index),
+    declarationKeys(records, record.index)
   );
 });
 
 test('appendChild should make declarationKeys reflect the appended declaration', () => {
   const { state, records, record } = arenaOf('a{color:red}');
-  record.declarationKeys(records);
+  declarationKeys(records, record.index);
   appendChild(
     records,
     record,
     declarationOf(state, postcss.decl({ prop: 'top', value: '0' }))
   );
   assert.deepEqual(
-    record.declarationKeys(records).keys,
+    declarationKeys(records, record.index).keys,
     record.declarationsOf(records).map((declaration) => declaration.id)
   );
   assert.equal(record.declarationsOf(records).length, 2);
@@ -128,17 +132,17 @@ test('appendChild should make declarationKeys reflect the appended declaration',
 
 test('addSelectors should keep the cached declaration keys since it leaves the declarations alone', () => {
   const { records, record } = arenaOf('a{color:red}');
-  const keys = record.declarationKeys(records);
+  const keys = declarationKeys(records, record.index);
   record.addSelectors(['b'], lookup);
-  assert.equal(record.declarationKeys(records), keys);
+  assert.equal(declarationKeys(records, record.index), keys);
 });
 
 test('absorbEarlier should keep the cached declaration keys since it leaves the declarations alone', () => {
   const { records, record } = arenaOf('b{color:red}');
   const earlier = arenaOf('a{color:red}').record;
-  const keys = record.declarationKeys(records);
+  const keys = declarationKeys(records, record.index);
   record.absorbEarlier(earlier, lookup);
-  assert.equal(record.declarationKeys(records), keys);
+  assert.equal(declarationKeys(records, record.index), keys);
 });
 
 test('elementKeys should list the distinct element of each selector', () => {
