@@ -104,8 +104,7 @@ export declare class RuleRecord extends SelectorList {
     setPieces(pieces: RangePiece[] | null): void;
     /**
      * The ids of the declarations of the rule. They are read from the chain once,
-     * and kept until an edit that is not a declaration appended at its end. Under
-     * checks, the result throws once the rule is edited after this call.
+     * and kept until an edit that is not a declaration appended at its end.
      *
      * @param {BlockRecords} records the arena that holds the rule's children
      * @return {RuleDeclarationKeys}
@@ -121,8 +120,9 @@ export declare class RuleRecord extends SelectorList {
     declarationsOf(records: BlockRecords): DeclarationRecord[];
     /**
      * Called by `BlockLinks` once a child is linked into the chain of the rule.
-     * A declaration linked at the end joins the kept ids; any other link drops
-     * them.
+     * Only the declaration ids are kept, so a child that is not a declaration
+     * leaves them. A declaration linked at the end joins them; one linked
+     * elsewhere drops them.
      *
      * @param {DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord} child
      *   the record of the child that was linked
@@ -130,8 +130,15 @@ export declare class RuleRecord extends SelectorList {
      * @return {void}
      */
     childLinked(child: DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord, atEnd: boolean): void;
-    /** Called by `BlockLinks` once a child is unlinked from the chain of the rule. */
-    childUnlinked(): void;
+    /**
+     * Called by `BlockLinks` once a child is unlinked from the chain of the rule.
+     * A declaration that leaves drops the kept ids; any other child leaves them.
+     *
+     * @param {DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord} child
+     *   the record of the child that was unlinked
+     * @return {void}
+     */
+    childUnlinked(child: DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord): void;
     /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}

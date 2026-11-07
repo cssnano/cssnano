@@ -223,8 +223,9 @@ export class RuleRecord extends SelectorList {
 
   /**
    * Called by `BlockLinks` once a child is linked into the chain of the rule.
-   * A declaration linked at the end joins the kept ids; any other link drops
-   * them.
+   * Only the declaration ids are kept, so a child that is not a declaration
+   * leaves them. A declaration linked at the end joins them; one linked
+   * elsewhere drops them.
    *
    * @param {DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord} child
    *   the record of the child that was linked
@@ -233,8 +234,8 @@ export class RuleRecord extends SelectorList {
    */
   childLinked(child, atEnd) {
     const kept = this.#declarationKeys;
-    if (!kept) return;
-    if (atEnd && child instanceof DeclarationRecord) {
+    if (!kept || !(child instanceof DeclarationRecord)) return;
+    if (atEnd) {
       kept.keys.push(child.id);
       kept.keySet.add(child.id);
     } else {
@@ -242,9 +243,16 @@ export class RuleRecord extends SelectorList {
     }
   }
 
-  /** Called by `BlockLinks` once a child is unlinked from the chain of the rule. */
-  childUnlinked() {
-    this.#declarationKeys = undefined;
+  /**
+   * Called by `BlockLinks` once a child is unlinked from the chain of the rule.
+   * A declaration that leaves drops the kept ids; any other child leaves them.
+   *
+   * @param {DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord} child
+   *   the record of the child that was unlinked
+   * @return {void}
+   */
+  childUnlinked(child) {
+    if (child instanceof DeclarationRecord) this.#declarationKeys = undefined;
   }
 
   /**

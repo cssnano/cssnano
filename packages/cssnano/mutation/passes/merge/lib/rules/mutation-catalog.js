@@ -229,7 +229,7 @@ export const mutations = [
   {
     name: 'a removal of declarations keeps the declaration keys of the rule',
     target: source('blockLinks.js'),
-    find: '    if (holder instanceof RuleRecord) holder.childUnlinked();\n',
+    find: '    if (holder instanceof RuleRecord) {\n      holder.childUnlinked(\n        this.#records.entry(/** @type {ArenaIndex} */ (index))\n      );\n    }\n',
     replace: '',
   },
   {
@@ -254,8 +254,14 @@ export const mutations = [
   {
     name: 'taking declarations keeps the declaration keys of the record',
     target: source('ruleRecord.js'),
-    find: '  childUnlinked() {\n    this.#declarationKeys = undefined;\n  }',
-    replace: '  childUnlinked() {\n  }',
+    find: '  childUnlinked(child) {\n    if (child instanceof DeclarationRecord) this.#declarationKeys = undefined;\n  }',
+    replace: '  childUnlinked(child) {\n  }',
+  },
+  {
+    name: 'taking a child that is not a declaration clears the declaration keys of the record',
+    target: source('ruleRecord.js'),
+    find: '    if (child instanceof DeclarationRecord) this.#declarationKeys = undefined;\n',
+    replace: '    this.#declarationKeys = undefined;\n',
   },
 
   {

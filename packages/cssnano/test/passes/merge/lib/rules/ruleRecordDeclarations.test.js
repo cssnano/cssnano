@@ -193,3 +193,29 @@ test('moveDeclarations should drop the keys of the moved declarations from the d
   ]);
   assert.deepEqual(record.declarationKeys(records).keys, [width.id]);
 });
+
+test('unlinking a nested rule should keep the declaration keys of its parent, without a rebuild', () => {
+  const { records, rule, record } = arenaOf('a{color:red;b{width:1px}}');
+  const nested = ruleRecordOf(records, rule.nodes[1]);
+  const kept = record.declarationKeys(records);
+  records.unlink(nested.index);
+  assert.equal(record.declarationKeys(records), kept);
+});
+
+test('linking a nested rule into its parent should keep the declaration keys of the parent, without a rebuild', () => {
+  const { records, rule, record } = arenaOf('a{color:red}b{width:1px}');
+  const sibling = ruleRecordOf(records, rule.next());
+  const kept = record.declarationKeys(records);
+  records.unlink(sibling.index);
+  records.linkLast(record.index, sibling.index);
+  assert.equal(record.declarationKeys(records), kept);
+});
+
+test('unlinking a declaration should clear the declaration keys of its parent, which then list the rest', () => {
+  const { records, record } = arenaOf('a{color:red;width:1px}');
+  const [, width] = record.declarationsOf(records);
+  const kept = record.declarationKeys(records);
+  records.unlink(record.declarationsOf(records)[0].index);
+  assert.notEqual(record.declarationKeys(records), kept);
+  assert.deepEqual(record.declarationKeys(records).keys, [width.id]);
+});

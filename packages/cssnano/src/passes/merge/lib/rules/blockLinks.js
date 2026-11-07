@@ -214,7 +214,11 @@ export class BlockLinks {
     this.#parent[index] = -1;
     this.#prev[index] = -1;
     this.#next[index] = -1;
-    if (holder instanceof RuleRecord) holder.childUnlinked();
+    if (holder instanceof RuleRecord) {
+      holder.childUnlinked(
+        this.#records.entry(/** @type {ArenaIndex} */ (index))
+      );
+    }
   }
 
   /**
