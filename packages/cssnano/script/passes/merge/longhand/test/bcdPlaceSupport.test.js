@@ -7,8 +7,13 @@ import {
   alignmentKeywordSubfeatures,
   buildPlaceSupport,
   serializePlaceSupport,
+  validatePlaceSupport,
 } from '../lib/bcdPlaceSupport.js';
-import { browserslistNames } from '../lib/bcdSupport.js';
+import {
+  browserslistNames,
+  earliestVersion,
+  supportOf,
+} from '../lib/bcdSupport.js';
 import { compareVersions } from '../../../../../src/utils/versions.js';
 import { widelySupported } from '../../../../../src/passes/merge/lib/longhand/decl/alignmentForms.js';
 
@@ -42,6 +47,14 @@ describe('buildPlaceSupport', () => {
   test('requires the latest layout context of a shorthand', () => {
     const data = bcd({ firefox: { version_added: '45' } });
     data.css.properties['place-content'].grid_context = {
+      __compat: { support: { firefox: { version_added: '53' } } },
+    };
+    assert.equal(buildPlaceSupport(data).get('firefox'), '53');
+  });
+
+  test('requires a layout context that BCD names context_grid', () => {
+    const data = bcd({ firefox: { version_added: '45' } });
+    data.css.properties['place-content'].context_grid = {
       __compat: { support: { firefox: { version_added: '53' } } },
     };
     assert.equal(buildPlaceSupport(data).get('firefox'), '53');
@@ -118,8 +131,47 @@ describe('buildPlaceSupport', () => {
   });
 });
 
-/* BCD records flex layout behavior, not parsing, for these keywords. */
-const layoutOnlySubfeatures = new Set(['start_end']);
+/* BCD dates these keywords on the flex-layout longhands by when they took
+ * effect there (Chrome 93, Safari 15.4), noting that earlier releases already
+ * parsed them. Grid-only justify-self records when each engine first parsed
+ * them, so they are checked against the earliest record on any longhand. */
+const flexDatedKeywords = new Set(['start', 'end', 'self-start', 'self-end']);
+
+/**
+ * @param {import('../lib/bcdSupport.js').CompatEntry} entry
+ * @param {string} bcdName
+ * @return {string | undefined} the earliest plain version BCD records
+ * unprefixed, unflagged support from, whether or not the record is a list
+ */
+function versionAdded(entry, bcdName) {
+  const support = supportOf(entry)?.[bcdName];
+  return support && earliestVersion(support, () => true);
+}
+
+/**
+ * The earliest version at which any alignment longhand records each
+ * flex-dated keyword, by keyword and BCD browser name.
+ *
+ * @param {import('../lib/bcdSupport.js').CompatData} data
+ * @return {Map<string, Map<string, string>>}
+ */
+function earliestFlexDatedSupport(data) {
+  /** @type {Map<string, Map<string, string>>} */
+  const earliest = new Map();
+  for (const [name, entry] of alignmentKeywordSubfeatures(data)) {
+    if (!flexDatedKeywords.has(name)) continue;
+    const byBrowser = earliest.get(name) ?? new Map();
+    earliest.set(name, byBrowser);
+    for (const [bcdName] of browserslistNames) {
+      const added = versionAdded(entry, bcdName);
+      const known = byBrowser.get(bcdName);
+      if (added && (!known || compareVersions(added, known) < 0)) {
+        byBrowser.set(bcdName, added);
+      }
+    }
+  }
+  return earliest;
+}
 
 /** @param {string | boolean} version */
 function withSpaceEvenly(version) {
@@ -152,12 +204,70 @@ describe('buildPlaceSupport keyword requirements', () => {
     );
   });
 
+  test('requires space-evenly that BCD lists directly under the longhand', () => {
+    const data = bcd({ chrome: { version_added: '59' } });
+    data.css.properties['justify-content'] = {
+      'space-evenly': {
+        __compat: { support: { chrome: { version_added: '60' } } },
+      },
+    };
+    assert.equal(buildPlaceSupport(data).get('chrome'), '60');
+  });
+
   test('ignores a keyword outside the allowlist', () => {
     const data = withSpaceEvenly('50');
     data.css.properties['align-content'].flex_context['last_baseline'] = {
       __compat: { support: { chrome: { version_added: '108' } } },
     };
     assert.equal(buildPlaceSupport(data).get('chrome'), '59');
+  });
+});
+
+/**
+ * @param {import('../lib/bcdSupport.js').CompatData} data
+ * @param {string} keyword
+ */
+function withoutKeyword(data, keyword) {
+  const copy = structuredClone(data);
+  for (const property of Object.values(copy.css.properties)) {
+    delete property[keyword];
+    for (const context of Object.values(property)) delete context[keyword];
+  }
+  return copy;
+}
+
+describe('validatePlaceSupport', () => {
+  test('accepts the pinned browser compatibility data', () => {
+    assert.doesNotThrow(() =>
+      validatePlaceSupport(buildPlaceSupport(bcdData), bcdData)
+    );
+  });
+
+  test('rejects data in which BCD no longer lists space-evenly, so a renamed subfeature cannot loosen the gate', () => {
+    const data = withoutKeyword(bcdData, 'space-evenly');
+    assert.throws(
+      () => validatePlaceSupport(buildPlaceSupport(data), data),
+      /space-evenly/v
+    );
+  });
+
+  test('rejects data in which BCD no longer lists first_baseline, so a renamed subfeature cannot loosen the gate', () => {
+    const data = withoutKeyword(bcdData, 'first_baseline');
+    assert.throws(
+      () => validatePlaceSupport(buildPlaceSupport(data), data),
+      /first_baseline/v
+    );
+  });
+
+  test('rejects data in which a shorthand lists no grid layout context', () => {
+    const data = structuredClone(bcdData);
+    const property = data.css.properties['place-content'];
+    delete property.grid_context;
+    delete property.context_grid;
+    assert.throws(
+      () => validatePlaceSupport(buildPlaceSupport(data), data),
+      /place-content.*grid/v
+    );
   });
 });
 
@@ -204,27 +314,20 @@ describe('committed place-* support data', () => {
   });
 
   test('postdates every allowlisted keyword the compatibility data covers, so the allowlist stays true', () => {
+    const flexDated = earliestFlexDatedSupport(bcdData);
     let checked = 0;
     for (const [name, entry] of alignmentKeywordSubfeatures(bcdData)) {
-      if (
-        !name.split('_').every((word) => widelySupported.has(word)) ||
-        layoutOnlySubfeatures.has(name)
-      ) {
+      if (!name.split('_').every((word) => widelySupported.has(word))) {
         continue;
       }
       for (const [bcdName, browserslistName] of browserslistNames) {
-        // BCD names its compatibility record __compat.
-        // eslint-disable-next-line no-underscore-dangle
-        const added = entry.__compat.support[bcdName].version_added;
-        if (typeof added !== 'string' || !committed[browserslistName]) {
-          continue;
-        }
+        const added = flexDatedKeywords.has(name)
+          ? flexDated.get(name)?.get(bcdName)
+          : versionAdded(entry, bcdName);
+        if (added === undefined || !committed[browserslistName]) continue;
         checked++;
         assert.ok(
-          compareVersions(
-            committed[browserslistName],
-            added.replace(/^≤/v, '')
-          ) >= 0,
+          compareVersions(committed[browserslistName], added) >= 0,
           `${browserslistName} ${name}`
         );
       }

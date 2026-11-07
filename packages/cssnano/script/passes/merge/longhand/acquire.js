@@ -72,7 +72,7 @@ const identitiesTarget = new URL(
 );
 writeFileSync(identitiesTarget, serializeShorthandIdentities(identities));
 const placeSupport = buildPlaceSupport(bcd);
-validatePlaceSupport(placeSupport);
+validatePlaceSupport(placeSupport, bcd);
 writeFileSync(
   new URL(
     '../../../../src/passes/merge/lib/longhand/data/placeSupport.json',

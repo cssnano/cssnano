@@ -101,9 +101,11 @@ const namespacePrefixes = namespaceDeclarations.map(({ prefix }) => prefix);
 
 /**
  * @param {ReturnType<typeof random>} rng
- * @return {string} one simple selector or combinator combo
+ * @param {boolean} isSubject - whether this compound is the last one, the
+ * only place a pseudo-element may appear
+ * @return {string} a compound selector (no combinators, single element level)
  */
-function simpleSelector(rng, isSubject = false) {
+function compoundSelector(rng, isSubject) {
   const parts = [];
 
   if (rng.chance(0.2)) {
@@ -163,14 +165,6 @@ function simpleSelector(rng, isSubject = false) {
   }
 
   return parts.join('');
-}
-
-/**
- * @param {ReturnType<typeof random>} rng
- * @return {string} a compound selector (no combinators, single element level)
- */
-function compoundSelector(rng, isSubject) {
-  return simpleSelector(rng, isSubject);
 }
 
 /**
