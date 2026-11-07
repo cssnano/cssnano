@@ -58,9 +58,11 @@ function matchElements(selector, tree) {
       }
     }
   }
+  // The attribute must follow the type selector: `[a]*` is not valid.
   const querySelector = selector.replaceAll(
-    /\b(svg|math)\|(?=[\w*\-])/gv,
-    '[data-fz-namespace="$1"]'
+    /\b(svg|math)\|(\*|[\w\-]+)/gv,
+    (_, prefix, name) =>
+      `${name === '*' ? '' : name}[data-fz-namespace="${prefix}"]`
   );
 
   try {
