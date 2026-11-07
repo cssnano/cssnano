@@ -9,6 +9,7 @@ const DETACHED_BLOCK = 'an entry is linked into a block outside the tree';
 const PLAIN_RULE =
   'a rule or an at-rule is linked into a rule that holds no rules';
 const NOT_REACHED = 'a rule is read that the root does not reach';
+const DEPARTED = 'read of a departed rule record';
 
 /**
  * The checks of the arena's links. Each one only reads and throws, so the
@@ -28,7 +29,14 @@ export function assertReached(records, index) {
   if (!consistencyChecksEnabled()) return;
   const parent = records.links.parentOf(index);
   // An index the arena did not give has no container, and so is unplaced.
-  if (parent === undefined || parent === -1) return;
+  if (parent === undefined) return;
+  // Only an unplaced rule that does not nest may stand apart: a merged rule
+  // before the merge places it.
+  if (parent === -1) {
+    const entry = records.entry(/** @type {ArenaIndex} */ (index));
+    if (entry instanceof RuleRecord && entry.context === -1) return;
+    throw new Error(NOT_REACHED);
+  }
   let at = index;
   while (at !== records.root.index) {
     at = records.links.parentOf(at);
@@ -95,4 +103,19 @@ export function assertReachesRoot(records, block) {
     at = records.links.parentOf(at);
     if (at === -1) throw new Error(DETACHED_BLOCK);
   }
+}
+
+/**
+ * Under checks, throws when the rule at `index` is not reached by the root or
+ * has left the stylesheet. Each read of a rule that a function makes runs it.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index an index that `recordRule` gave
+ * @return {void}
+ * @throws {Error} under checks, when the rule is unreached or departed
+ */
+export function assertLiveRule(records, index) {
+  if (!consistencyChecksEnabled()) return;
+  const rule = records.rule(/** @type {ArenaIndex} */ (index));
+  if (rule?.departed) throw new Error(DEPARTED);
 }

@@ -43,16 +43,6 @@ export declare function isDeclaration(node: ChildNode): node is Declaration;
 export declare class RuleRecord extends SelectorList {
     #private;
     /**
-     * The first entry of the chain of children, or -1 when it holds none.
-     *
-     * @type {ArenaIndex | -1}
-     */
-    first: ArenaIndex | -1;
-    /** @type {ArenaIndex | -1} the last entry of the chain of children, or -1 when it holds none */
-    last: ArenaIndex | -1;
-    /** @type {number} the number of entries in the chain, kept by each link and unlink */
-    count: number;
-    /**
      * The id of the circumstances under which the rule applies its children, as
      * `containerContext` gives it. It is set once, at the build, for a rule that
      * holds a rule or an at-rule; -1 for any other rule.
@@ -100,13 +90,6 @@ export declare class RuleRecord extends SelectorList {
     get departed(): boolean;
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
-    /** @return {number} the children, comments included */
-    childCount(): number;
-    /**
-     * @param {BlockRecords} records the arena that holds the rule's children
-     * @return {boolean} whether every child is a declaration, as an empty rule is
-     */
-    holdsOnlyDeclarations(records: BlockRecords): boolean;
     /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
     get pieces(): RangePiece[] | null | undefined;
     /** @param {string} selector the selector, in PostCSS's form */

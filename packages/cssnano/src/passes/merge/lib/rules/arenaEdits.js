@@ -63,11 +63,13 @@ export function moveRule(records, target, record) {
  * @return {void}
  */
 export function adopt(records, target, source) {
-  const from = /** @type {BlockRecord} */ (records.block(source));
-  while (from.first !== -1) {
-    const entry = from.first;
+  // Under checks, `records.block` throws unless `source` is a block.
+  records.block(source);
+  let entry = records.links.firstChild(source);
+  while (entry !== -1) {
     records.unlink(entry);
     records.linkLast(target, entry);
+    entry = records.links.firstChild(source);
   }
 }
 

@@ -4,6 +4,7 @@
 /** @import {RuleRecord} from './ruleRecord.js' */
 import { BlockRecord, RULE } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { assertLiveRule } from './linkChecks.js';
 
 /**
  * The first declaration at or after `index` in the chain, or undefined.
@@ -87,8 +88,39 @@ export function* containers(records) {
  * @return {number}
  */
 export function liveCount(records, index) {
-  return /** @type {BlockRecord | RuleRecord} */ (records.container(index))
-    .count;
+  return records.links.childCount(index);
+}
+
+/**
+ * The children the rule at `index` holds now, comments included. A comment there
+ * says the output depends on it: a rule with a comment is kept as written.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index an index that `recordRule` gave
+ * @return {number}
+ */
+export function childCountOf(records, index) {
+  assertLiveRule(records, index);
+  return records.links.childCount(index);
+}
+
+/**
+ * Whether the rule at `index` holds only declarations, as an empty rule does
+ * when it holds no other child.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index an index that `recordRule` gave
+ * @return {boolean}
+ */
+export function holdsOnlyDeclarationsOf(records, index) {
+  assertLiveRule(records, index);
+  const rule = /** @type {RuleRecord} */ (
+    records.entry(/** @type {ArenaIndex} */ (index))
+  );
+  return (
+    records.links.childCount(index) ===
+    rule.declarationKeys(records).keys.length
+  );
 }
 
 /**

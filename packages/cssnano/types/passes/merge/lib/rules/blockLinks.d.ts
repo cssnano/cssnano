@@ -1,26 +1,25 @@
 import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
-export type LinkReader = Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild'>;
+export type LinkReader = Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild' | 'childCount'>;
 /**
  * The reads of the links. `BlockRecords#links` has this type, so an edit
  * reaches the links only through the arena's methods.
  *
- * @typedef {Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild'>} LinkReader
+ * @typedef {Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild' | 'childCount'>} LinkReader
  */
 /**
  * The links between the entries of the records. Each entry has a container:
  * the block whose chain holds it, or for a nested block the rule that owns it.
  * A chained entry has the entries before and after it in its container's
- * chain, and the chain's ends are `first` and `last` on the container's record.
- * A container is a block, or a rule that nests. The links are plain arrays
- * indexed by entry, grown by `grow` as entries are added, so no link is an
- * object reference.
+ * chain. A container is a block, or a rule that nests. The links and the chain
+ * ends are plain arrays indexed by entry, grown by `grow` as entries are added,
+ * so no link is an object reference.
  */
 export declare class BlockLinks {
     #private;
     /** @param {BlockRecords} records the arena whose entries these links join */
     constructor(records: BlockRecords);
-    /** Gives the next entry of the arena unlinked links. */
+    /** Gives the next entry of the arena unlinked links and an empty chain. */
     grow(): void;
     /**
      * @param {number} index an index that the arena gave
@@ -49,6 +48,11 @@ export declare class BlockLinks {
      * @return {ArenaIndex | -1} the last entry of its chain, -1 when it has none
      */
     lastChild(index: number): ArenaIndex | -1;
+    /**
+     * @param {number} index an index that the arena gave, of a container
+     * @return {number} the entries in its chain, comments included
+     */
+    childCount(index: number): number;
     /**
      * Links the entry at `index` after `after` in the chain of the container at
      * `block`, which is the head when `after` is -1. The arena checks the link

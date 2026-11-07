@@ -2,7 +2,7 @@ import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { RuleRecord } from './ruleRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord, NodeEntry, ArenaIndex} from './blockRecord.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
 
 const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
 
@@ -10,17 +10,16 @@ const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
  * The reads of the links. `BlockRecords#links` has this type, so an edit
  * reaches the links only through the arena's methods.
  *
- * @typedef {Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild'>} LinkReader
+ * @typedef {Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild' | 'childCount'>} LinkReader
  */
 
 /**
  * The links between the entries of the records. Each entry has a container:
  * the block whose chain holds it, or for a nested block the rule that owns it.
  * A chained entry has the entries before and after it in its container's
- * chain, and the chain's ends are `first` and `last` on the container's record.
- * A container is a block, or a rule that nests. The links are plain arrays
- * indexed by entry, grown by `grow` as entries are added, so no link is an
- * object reference.
+ * chain. A container is a block, or a rule that nests. The links and the chain
+ * ends are plain arrays indexed by entry, grown by `grow` as entries are added,
+ * so no link is an object reference.
  */
 export class BlockLinks {
   /** @type {BlockRecords} the arena whose block records hold the chain ends */
@@ -35,16 +34,28 @@ export class BlockLinks {
   /** @type {number[]} the entry after each entry in its chain, -1 at the end */
   #next = [];
 
+  /** @type {number[]} the first entry of each container's chain, -1 when it holds none */
+  #first = [];
+
+  /** @type {number[]} the last entry of each container's chain, -1 when it holds none */
+  #last = [];
+
+  /** @type {number[]} the entries in each container's chain, comments included */
+  #count = [];
+
   /** @param {BlockRecords} records the arena whose entries these links join */
   constructor(records) {
     this.#records = records;
   }
 
-  /** Gives the next entry of the arena unlinked links. */
+  /** Gives the next entry of the arena unlinked links and an empty chain. */
   grow() {
     this.#parent.push(-1);
     this.#prev.push(-1);
     this.#next.push(-1);
+    this.#first.push(-1);
+    this.#last.push(-1);
+    this.#count.push(0);
   }
 
   /**
@@ -80,7 +91,7 @@ export class BlockLinks {
    * @return {ArenaIndex | -1} the first entry of its chain, -1 when it has none
    */
   firstChild(index) {
-    return /** @type {ArenaIndex | -1} */ (this.#containerAt(index).first);
+    return /** @type {ArenaIndex | -1} */ (this.#first[index]);
   }
 
   /**
@@ -88,7 +99,15 @@ export class BlockLinks {
    * @return {ArenaIndex | -1} the last entry of its chain, -1 when it has none
    */
   lastChild(index) {
-    return /** @type {ArenaIndex | -1} */ (this.#containerAt(index).last);
+    return /** @type {ArenaIndex | -1} */ (this.#last[index]);
+  }
+
+  /**
+   * @param {number} index an index that the arena gave, of a container
+   * @return {number} the entries in its chain, comments included
+   */
+  childCount(index) {
+    return this.#count[index];
   }
 
   /**
@@ -102,16 +121,16 @@ export class BlockLinks {
    * @return {void}
    */
   linkAfter(block, after, index) {
-    const holder = this.#containerAt(block);
-    const next = after === -1 ? holder.first : this.#next[after];
+    const holder = this.#records.container(block);
+    const next = after === -1 ? this.#first[block] : this.#next[after];
     this.#parent[index] = block;
     this.#prev[index] = after;
     this.#next[index] = next;
-    if (after === -1) holder.first = /** @type {ArenaIndex} */ (index);
+    if (after === -1) this.#first[block] = index;
     else this.#next[after] = index;
-    if (next === -1) holder.last = /** @type {ArenaIndex} */ (index);
+    if (next === -1) this.#last[block] = index;
     else this.#prev[next] = index;
-    holder.count++;
+    this.#count[block]++;
     if (holder instanceof RuleRecord) {
       holder.childLinked(
         this.#records.entry(/** @type {ArenaIndex} */ (index)),
@@ -128,7 +147,7 @@ export class BlockLinks {
    * @return {void}
    */
   linkLast(block, index) {
-    this.linkAfter(block, this.#containerAt(block).last, index);
+    this.linkAfter(block, this.#last[block], index);
   }
 
   /**
@@ -141,14 +160,14 @@ export class BlockLinks {
   unlink(index) {
     const block = this.#parent[index];
     if (block === -1) return;
-    const holder = this.#containerAt(block);
+    const holder = this.#records.container(block);
     const prev = this.#prev[index];
     const next = this.#next[index];
-    if (prev === -1) holder.first = /** @type {ArenaIndex | -1} */ (next);
+    if (prev === -1) this.#first[block] = next;
     else this.#next[prev] = next;
-    if (next === -1) holder.last = /** @type {ArenaIndex | -1} */ (prev);
+    if (next === -1) this.#last[block] = prev;
     else this.#prev[next] = prev;
-    holder.count--;
+    this.#count[block]--;
     this.#parent[index] = -1;
     this.#prev[index] = -1;
     this.#next[index] = -1;
@@ -169,16 +188,6 @@ export class BlockLinks {
     // neighbour is read after it.
     this.linkAfter(this.#parent[later], this.#prev[later], earlier);
     this.unlink(later);
-  }
-
-  /**
-   * @param {number} index an index that the arena gave, of a container
-   * @return {BlockRecord | RuleRecord} the record at `index`
-   */
-  #containerAt(index) {
-    return /** @type {BlockRecord | RuleRecord} */ (
-      this.#records.container(index)
-    );
   }
 
   /**

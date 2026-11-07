@@ -1,4 +1,3 @@
-import { firstDeclaration, nextDeclaration } from './blockChildren.js';
 import { SelectorList } from './selectorList.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
@@ -46,19 +45,6 @@ export class RuleRecord extends SelectorList {
   #departed = false;
   /** @type {boolean} set once a child is added or removed, which the node takes at write-back */
   #edited = false;
-  /**
-   * The first entry of the chain of children, or -1 when it holds none.
-   *
-   * @type {ArenaIndex | -1}
-   */
-  first = -1;
-
-  /** @type {ArenaIndex | -1} the last entry of the chain of children, or -1 when it holds none */
-  last = -1;
-
-  /** @type {number} the number of entries in the chain, kept by each link and unlink */
-  count = 0;
-
   /**
    * The id of the circumstances under which the rule applies its children, as
    * `containerContext` gives it. It is set once, at the build, for a rule that
@@ -127,20 +113,6 @@ export class RuleRecord extends SelectorList {
   get selectors() {
     this.#assertLive();
     return super.selectors;
-  }
-
-  /** @return {number} the children, comments included */
-  childCount() {
-    this.#assertLive();
-    return this.count;
-  }
-
-  /**
-   * @param {BlockRecords} records the arena that holds the rule's children
-   * @return {boolean} whether every child is a declaration, as an empty rule is
-   */
-  holdsOnlyDeclarations(records) {
-    return this.count === this.declarationKeys(records).keys.length;
   }
 
   /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
@@ -246,11 +218,12 @@ export class RuleRecord extends SelectorList {
     /** @type {DeclarationRecord[]} */
     const declarations = [];
     for (
-      let declaration = firstDeclaration(records, this.index);
-      declaration !== undefined;
-      declaration = nextDeclaration(records, declaration)
+      let entry = records.links.firstChild(this.index);
+      entry !== -1;
+      entry = records.links.nextSibling(entry)
     ) {
-      declarations.push(declaration);
+      const item = records.entry(entry);
+      if (item instanceof DeclarationRecord) declarations.push(item);
     }
     return declarations;
   }

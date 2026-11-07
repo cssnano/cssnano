@@ -30,7 +30,7 @@ function checkChain(records, block) {
     entry = links.nextSibling(entry)
   ) {
     // A chain longer than its count is a cycle, so the walk stops there.
-    if (++count > block.count) throw new Error(OUT_OF_STEP);
+    if (++count > links.childCount(block.index)) throw new Error(OUT_OF_STEP);
     if (
       links.prevSibling(entry) !== previous ||
       links.parentOf(entry) !== block.index
@@ -39,7 +39,10 @@ function checkChain(records, block) {
     }
     previous = entry;
   }
-  if (count !== block.count || links.lastChild(block.index) !== previous) {
+  if (
+    count !== links.childCount(block.index) ||
+    links.lastChild(block.index) !== previous
+  ) {
     throw new Error(OUT_OF_STEP);
   }
 }
@@ -125,7 +128,7 @@ export function assertOwnershipIsTree(records) {
       } else if (item instanceof DeclarationRecord) reach(item);
       count++;
     }
-    if (count !== block.count) throw new Error(OUT_OF_STEP);
+    if (count !== links.childCount(block.index)) throw new Error(OUT_OF_STEP);
   };
   reach(records.root);
   visitChildren(records.root);

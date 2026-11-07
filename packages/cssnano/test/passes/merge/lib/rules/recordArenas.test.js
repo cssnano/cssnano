@@ -6,7 +6,11 @@ import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistenc
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
+import {
+  ruleRecordOf,
+  buildTestRecords,
+  withCorruptedLinks,
+} from './liveRecords.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 
@@ -175,6 +179,8 @@ test('assertOwnershipIsTree should throw when a rule is linked twice in one chai
 
 test('assertOwnershipIsTree should throw when a block counts other entries than its chain holds', () => {
   const { state } = setup('a{color:red}b{width:1px}');
-  state.records.root.count += 1;
-  assert.throws(() => assertOwnershipIsTree(state.records), /out of step/v);
+  const records = withCorruptedLinks(state.records, state.records.root.index, {
+    childCount: (real, index) => real.childCount(index) + 1,
+  });
+  assert.throws(() => assertOwnershipIsTree(records), /out of step/v);
 });

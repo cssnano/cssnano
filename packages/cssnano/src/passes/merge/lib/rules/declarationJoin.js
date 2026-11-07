@@ -1,4 +1,8 @@
-import { liveEntries } from './blockChildren.js';
+import {
+  childCountOf,
+  holdsOnlyDeclarationsOf,
+  liveEntries,
+} from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import RepeatScan from './repeatScan.js';
@@ -25,8 +29,8 @@ import { removeDeclarations } from './arenaEdits.js';
  */
 export const isDeclarationRule = (records, record) =>
   record.context === -1 &&
-  record.childCount() > 0 &&
-  record.holdsOnlyDeclarations(records);
+  childCountOf(records, record.index) > 0 &&
+  holdsOnlyDeclarationsOf(records, record.index);
 
 /**
  * The arena indices of the declarations in `later` that repeat every one of
@@ -69,11 +73,12 @@ function listLength(selectors) {
  * group takes. A later rule that keeps no declaration is removed with its
  * selector and braces, so that join always shortens the output.
  *
+ * @param {BlockRecords} records
  * @param {Group} group
  * @param {RuleRecord} later
  * @return {{added: string[], gain: number}}
  */
-function joinGain(group, later) {
+function joinGain(records, group, later) {
   if (group.bytes < 0) {
     group.bytes = group.declarations.reduce(
       (total, declaration) => total + minifiedLength(declaration),
@@ -86,7 +91,7 @@ function joinGain(group, later) {
     (selector) => !listed.has(selector)
   );
   const removed =
-    group.declarations.length === later.childCount()
+    group.declarations.length === childCountOf(records, later.index)
       ? group.bytes + listLength(laterSelectors)
       : group.bytes;
   return { added, gain: removed - listLength(added) };
@@ -214,7 +219,7 @@ export default function joinByDeclarations(block, mergeState) {
         ) {
           continue;
         }
-        const { added, gain } = joinGain(group, laterRecord);
+        const { added, gain } = joinGain(records, group, laterRecord);
         // A join that breaks even still takes the shared declarations out of
         // the way of later rules that can join the group. On a tie, the
         // nearest group has the least to cross.

@@ -332,3 +332,10 @@ test('takeLinkOf should put an unlinked earlier entry where the later one stood'
   ]);
   assert.equal(liveCount(records, media.index), 2);
 });
+
+test('rule should throw under checks for a rule that nests and was unlinked without being departed', () => {
+  const { root, records } = setup('r{a{color:red}}');
+  const outer = ruleRecordOf(records, /** @type {Rule} */ (root.first));
+  records.unlink(outer.index);
+  assert.throws(() => records.rule(outer.index), /does not reach/v);
+});

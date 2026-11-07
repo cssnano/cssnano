@@ -1,4 +1,8 @@
 import {
+  childCountOf,
+  holdsOnlyDeclarationsOf,
+} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import {
   COMMENT,
   NO_PRELUDE,
   NodeEntry,
@@ -228,8 +232,8 @@ test('addSelectors should return null when the element keys were never read, sin
 });
 
 test('childCount should count a comment that a rule holds, which declarations leave out', () => {
-  const { record } = arenaOf('a{/* note */color:red}');
-  assert.equal(record.childCount(), 2);
+  const { records, record } = arenaOf('a{/* note */color:red}');
+  assert.equal(childCountOf(records, record.index), 2);
 });
 
 test('declarations should leave out a comment that a rule holds', () => {
@@ -239,12 +243,12 @@ test('declarations should leave out a comment that a rule holds', () => {
 
 test('holdsOnlyDeclarations should be false for a rule that holds a comment', () => {
   const { records, record } = arenaOf('a{/* note */color:red}');
-  assert.equal(record.holdsOnlyDeclarations(records), false);
+  assert.equal(holdsOnlyDeclarationsOf(records, record.index), false);
 });
 
 test('holdsOnlyDeclarations should be true for an empty rule so that empty rules still join', () => {
   const { records, record } = arenaOf('a{}');
-  assert.equal(record.holdsOnlyDeclarations(records), true);
+  assert.equal(holdsOnlyDeclarationsOf(records, record.index), true);
 });
 
 test('isDeclarationRule should reject an empty rule, which holds no declaration to share', () => {
@@ -288,7 +292,7 @@ test('appendChild should count an appended comment among the children without ad
       )
     )
   );
-  assert.equal(record.childCount(), 2);
+  assert.equal(childCountOf(records, record.index), 2);
   assert.equal(record.declarationsOf(records).length, 1);
 });
 

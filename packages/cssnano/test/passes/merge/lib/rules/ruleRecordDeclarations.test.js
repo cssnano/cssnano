@@ -1,3 +1,4 @@
+import { childCountOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -62,7 +63,7 @@ const underChecks = (action) => {
 test('removeDeclarations should keep the comment that a rule holds', () => {
   const { records, record } = arenaOf('a{color:red;/* note */width:1px}');
   removeDeclarations(records, record.index, claimAt(records, record, [0]));
-  assert.equal(record.childCount(), 2);
+  assert.equal(childCountOf(records, record.index), 2);
 });
 
 test('removeDeclarations should leave the nodes of a rule holding a comment as they were, until write-back', () => {
@@ -170,7 +171,7 @@ test('moveDeclarations should leave the comment that a rule holds', () => {
   moveDeclarations(records, record.index, target.index, [
     ...claimAt(records, record, [0, 1]),
   ]);
-  assert.equal(record.childCount(), 1);
+  assert.equal(childCountOf(records, record.index), 1);
 });
 
 test('moveDeclarations should keep the raws.before of a moved declaration', () => {

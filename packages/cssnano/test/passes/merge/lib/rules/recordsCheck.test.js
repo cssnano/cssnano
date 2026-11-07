@@ -16,6 +16,7 @@ import {
   blockRecordOf,
   ruleRecordOf,
   buildTestRecords,
+  withCorruptedLinks,
 } from './liveRecords.js';
 import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
@@ -80,8 +81,10 @@ test('assertRecordsWellFormed should throw when a block whose chain does not sta
   const media = /** @type {BlockRecord} */ (
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
-  media.first = -1;
-  assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
+  const records = withCorruptedLinks(state.records, media.index, {
+    firstChild: () => -1,
+  });
+  assert.throws(() => assertRecordsWellFormed({ records }), /out of step/v);
 });
 
 test('assertRecordsWellFormed should throw when a block whose chain ends before its last live child', () => {
@@ -89,8 +92,10 @@ test('assertRecordsWellFormed should throw when a block whose chain ends before 
   const media = /** @type {BlockRecord} */ (
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
-  media.last = media.first;
-  assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
+  const records = withCorruptedLinks(state.records, media.index, {
+    lastChild: (real, index) => real.firstChild(index),
+  });
+  assert.throws(() => assertRecordsWellFormed({ records }), /out of step/v);
 });
 
 test('assertRecordsWellFormed should accept the chains after a rule moves out of an at-rule and a block is removed', () => {

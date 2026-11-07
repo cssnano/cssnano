@@ -40,7 +40,7 @@ test('a declaration of a block is an arena entry that the block chain links', ()
     state.records,
     /** @type {Container} */ (root.nodes[0])
   );
-  assert.equal(block.count, 2);
+  assert.equal(state.records.links.childCount(block.index), 2);
   const { links } = state.records;
   for (
     let index = links.firstChild(block.index);

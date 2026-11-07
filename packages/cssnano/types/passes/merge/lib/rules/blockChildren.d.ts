@@ -49,6 +49,24 @@ export declare function containers(records: BlockRecords): Generator<BlockRecord
  */
 export declare function liveCount(records: BlockRecords, index: number): number;
 /**
+ * The children the rule at `index` holds now, comments included. A comment there
+ * says the output depends on it: a rule with a comment is kept as written.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index an index that `recordRule` gave
+ * @return {number}
+ */
+export declare function childCountOf(records: BlockRecords, index: number): number;
+/**
+ * Whether the rule at `index` holds only declarations, as an empty rule does
+ * when it holds no other child.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index an index that `recordRule` gave
+ * @return {boolean}
+ */
+export declare function holdsOnlyDeclarationsOf(records: BlockRecords, index: number): boolean;
+/**
  * The entries the block at `index` holds now, in order: the record of each
  * rule, the record of each at-rule block, the record of each declaration, and
  * the record of each bare node.

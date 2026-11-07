@@ -1,4 +1,8 @@
-import { firstDeclaration, nextDeclaration } from './blockChildren.js';
+import {
+  childCountOf,
+  firstDeclaration,
+  nextDeclaration,
+} from './blockChildren.js';
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
 import { PropertyWrites } from './propertyWrites.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
@@ -179,7 +183,7 @@ export function findGroup(
       running += 1 + selector.length;
     }
     running -= sharedBytes;
-    if (linked.childCount() === shared.length) {
+    if (childCountOf(records, linked.index) === shared.length) {
       running -= selectorsLength(selectors) + 1;
     }
     candidates.push(link);

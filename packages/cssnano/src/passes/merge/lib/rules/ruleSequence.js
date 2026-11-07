@@ -220,7 +220,7 @@ export default class RuleSequence {
     for (;;) {
       // A rule that nests is never dropped, so the climb stops at it.
       const block = records.blockEntry(at);
-      if (!block?.droppable || block.count !== 0) return;
+      if (!block?.droppable || links.childCount(at) !== 0) return;
       const holder = links.parentOf(at);
       records.unlink(at);
       if (holder === -1) return;

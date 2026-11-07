@@ -189,7 +189,7 @@ export const mutations = [
   {
     name: 'the ownership check accepts a block whose count differs from its chain',
     target: source('recordsCheck.js'),
-    find: '    if (count !== block.count) throw new Error(OUT_OF_STEP);\n  };\n  reach(records.root);\n  visitChildren(records.root);',
+    find: '    if (count !== links.childCount(block.index)) throw new Error(OUT_OF_STEP);\n  };\n  reach(records.root);\n  visitChildren(records.root);',
     replace: '  };\n  reach(records.root);\n  visitChildren(records.root);',
   },
   {
@@ -279,7 +279,7 @@ export const mutations = [
   {
     name: 'a walk into a block starts at its last child',
     target: source('declarationScan.js'),
-    find: '        entry = nested.first;',
-    replace: '        entry = nested.last;',
+    find: '        entry = links.firstChild(nested.index);',
+    replace: '        entry = links.lastChild(nested.index);',
   },
 ];

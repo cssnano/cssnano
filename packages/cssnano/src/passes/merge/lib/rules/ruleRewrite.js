@@ -1,3 +1,5 @@
+/** @import {BlockRecords} from './blockRecords.js' */
+import { childCountOf } from './blockChildren.js';
 import postcss from 'postcss';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { PropertyWrites } from './propertyWrites.js';
@@ -43,11 +45,12 @@ function shellOf(template) {
  * needs no report: only a rule that held a declaration in the first round
  * reaches a merge, so the second round already has it.
  *
+ * @param {BlockRecords} records
  * @param {RuleRecord} record
  * @return {RuleRecord[]}
  */
-function leftoverOf(record) {
-  if (!record.childCount()) {
+function leftoverOf(records, record) {
+  if (!childCountOf(records, record.index)) {
     record.depart();
     return [];
   }
@@ -121,10 +124,10 @@ export function buildMergedRule(
     selectorsLength(secondSelectors) +
     2 -
     sharedBytes;
-  if (first.childCount() === shared.length) {
+  if (childCountOf(records, first.index) === shared.length) {
     delta -= selectorsLength(firstSelectors) + 1;
   }
-  if (second.childCount() === claimedIndices.size) {
+  if (childCountOf(records, second.index) === claimedIndices.size) {
     delta -= selectorsLength(secondSelectors) + 1;
   }
   // A pair that shortens the output merges alone: the rules after it may
@@ -174,22 +177,22 @@ export function buildMergedRule(
     receivingRecord.index,
     shared.map((declaration) => declaration.index)
   );
-  const firstLeftover = leftoverOf(first);
+  const firstLeftover = leftoverOf(records, first);
   removeDeclarations(records, second.index, claimedIndices);
-  const secondLeftover = leftoverOf(second);
+  const secondLeftover = leftoverOf(records, second);
   /** @type {Placement} */
   const placement = {
     first: indicesOf(firstLeftover),
     second: indicesOf(
       [receivingRecord, ...secondLeftover].filter((record) =>
-        record.childCount()
+        childCountOf(records, record.index)
       )
     ),
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
       removeDeclarations(records, rule.index, claimed);
-      return indicesOf(leftoverOf(rule));
+      return indicesOf(leftoverOf(records, rule));
     });
   }
   return placement;

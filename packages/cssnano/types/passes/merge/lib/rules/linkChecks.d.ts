@@ -39,4 +39,14 @@ export declare function assertCanHold(records: BlockRecords, block: number, inde
  * @throws {Error} when a walk up `parentOf` from `block` does not reach the root
  */
 export declare function assertReachesRoot(records: BlockRecords, block: number): void;
+/**
+ * Under checks, throws when the rule at `index` is not reached by the root or
+ * has left the stylesheet. Each read of a rule that a function makes runs it.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index an index that `recordRule` gave
+ * @return {void}
+ * @throws {Error} under checks, when the rule is unreached or departed
+ */
+export declare function assertLiveRule(records: BlockRecords, index: number): void;
 //# sourceMappingURL=linkChecks.d.ts.map

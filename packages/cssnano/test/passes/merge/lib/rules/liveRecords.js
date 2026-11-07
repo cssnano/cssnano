@@ -119,3 +119,34 @@ export function buildTestRecords(root, state, textTable = new TextTable()) {
     properties: state.properties,
   });
 }
+
+/**
+ * A view of `records` whose links read a corrupted value for one container, so
+ * a check can see a chain that the arena never builds. Each method of the view
+ * runs on the real arena or links, which hold private fields.
+ *
+ * @param {BlockRecords} records
+ * @param {number} container the index of the container to corrupt
+ * @param {Record<string, (real: object, index: number) => number>} corrupt a
+ *   reader of the corrupted value, by the link read it replaces
+ * @return {BlockRecords}
+ */
+export function withCorruptedLinks(records, container, corrupt) {
+  const links = new Proxy(records.links, {
+    get(target, key) {
+      const read = Reflect.get(target, key, target);
+      if (typeof read !== 'function') return read;
+      return (/** @type {number} */ index) =>
+        index === container && key in corrupt
+          ? corrupt[/** @type {string} */ (key)](target, index)
+          : read.call(target, index);
+    },
+  });
+  return new Proxy(records, {
+    get(target, key) {
+      if (key === 'links') return links;
+      const value = Reflect.get(target, key, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+}

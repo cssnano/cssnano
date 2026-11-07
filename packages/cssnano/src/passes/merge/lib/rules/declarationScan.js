@@ -92,9 +92,9 @@ export default class DeclarationScan {
       const item = records.entry(entry);
       if (item instanceof DeclarationRecord) return true;
       const nested = records.blockEntry(entry);
-      if (nested && nested.first !== -1) {
+      if (nested && links.firstChild(nested.index) !== -1) {
         holder = nested;
-        entry = nested.first;
+        entry = links.firstChild(nested.index);
       } else {
         entry = links.nextSibling(entry);
       }

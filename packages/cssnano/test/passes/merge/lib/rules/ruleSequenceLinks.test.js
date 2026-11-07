@@ -119,5 +119,5 @@ test('a sweep that empties an at-rule nested in a rule should unlink the at-rule
   );
   assert.equal(records.links.parentOf(innerBlock.index), -1);
   assert.equal(records.links.parentOf(nesting.index), records.root.index);
-  assert.equal(nesting.count, 0);
+  assert.equal(records.links.childCount(nesting.index), 0);
 });

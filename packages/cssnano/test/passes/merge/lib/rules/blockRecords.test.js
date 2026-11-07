@@ -71,8 +71,8 @@ test('buildRecords should link the children of a rule that holds a rule into the
   const { links } = state.records;
   const declaration = links.firstChild(record.index);
   assert.equal(links.parentOf(declaration), record.index);
-  assert.equal(record.first, declaration);
-  assert.equal(record.count, 2);
+  assert.equal(links.firstChild(record.index), declaration);
+  assert.equal(links.childCount(record.index), 2);
 });
 
 test('buildRecords should give a rule with only declarations the context -1 of a plain rule', () => {

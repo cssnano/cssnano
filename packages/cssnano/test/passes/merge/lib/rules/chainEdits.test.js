@@ -73,7 +73,7 @@ test('substitute with no replacement should unlink the rule and shrink its block
   const mediaRecord = blockRecordOf(state.records, media);
   const rule = ruleRecordOf(state.records, a);
   substitute(state.records, rule.index, []);
-  assert.equal(mediaRecord.count, 1);
+  assert.equal(state.records.links.childCount(mediaRecord.index), 1);
   assert.equal(state.records.links.parentOf(rule.index), -1);
 });
 
@@ -90,7 +90,10 @@ test('moveRule should link the rule at the end of the target chain and unlink it
     state.records.links.parentOf(rule.index),
     state.records.root.index
   );
-  assert.equal(blockRecordOf(state.records, media).count, 0);
+  assert.equal(
+    state.records.links.childCount(blockRecordOf(state.records, media).index),
+    0
+  );
 });
 
 test('takePlaceOf should link the earlier block where the later block stood and unlink the later one', () => {
@@ -119,7 +122,7 @@ test('adopt should append the children of the source to the target and leave the
   assert.equal(entries[1], mediaRecord);
   assert.equal(entries[2], ruleRecordOf(state.records, a));
   assert.equal(entries[3], ruleRecordOf(state.records, b));
-  assert.equal(mediaRecord.count, 0);
+  assert.equal(state.records.links.childCount(mediaRecord.index), 0);
   assert.equal(
     state.records.links.parentOf(ruleRecordOf(state.records, b).index),
     state.records.root.index
@@ -133,7 +136,10 @@ test('remove should unlink a rule and leave its block count one less', () => {
   const rule = ruleRecordOf(state.records, a);
   remove(state.records, rule);
   assert.equal(state.records.links.parentOf(rule.index), -1);
-  assert.equal(blockRecordOf(state.records, media).count, 1);
+  assert.equal(
+    state.records.links.childCount(blockRecordOf(state.records, media).index),
+    1
+  );
 });
 
 test('remove should unlink a block and leave its container count one less', () => {
@@ -142,5 +148,5 @@ test('remove should unlink a block and leave its container count one less', () =
   const block = blockRecordOf(state.records, media);
   remove(state.records, block);
   assert.equal(state.records.links.parentOf(block.index), -1);
-  assert.equal(state.records.root.count, 1);
+  assert.equal(state.records.links.childCount(state.records.root.index), 1);
 });

@@ -1,3 +1,4 @@
+import { holdsOnlyDeclarationsOf } from './blockChildren.js';
 import {
   filterRuleIntersections,
   intersect,
@@ -25,8 +26,8 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
   if (
     first.context !== -1 ||
     second.context !== -1 ||
-    !first.holdsOnlyDeclarations(mergeState.records) ||
-    !second.holdsOnlyDeclarations(mergeState.records) ||
+    !holdsOnlyDeclarationsOf(mergeState.records, first.index) ||
+    !holdsOnlyDeclarationsOf(mergeState.records, second.index) ||
     !sameDeclarationsAndOrder(
       second.declarationKeys(mergeState.records).keys,
       first.declarationKeys(mergeState.records).keys

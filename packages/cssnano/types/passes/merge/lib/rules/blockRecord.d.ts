@@ -73,26 +73,6 @@ export declare class BlockRecord {
     before: string | null;
     /** @type {boolean} whether the block applies nothing once it is empty */
     droppable: boolean;
-    /**
-     * The first entry of the chain of live children, which `BlockRecords` links,
-     * or -1 when the block holds none.
-     *
-     * @type {ArenaIndex | -1}
-     */
-    first: ArenaIndex | -1;
-    /**
-     * The last entry of the chain of live children, or -1 when the block holds
-     * none.
-     *
-     * @type {ArenaIndex | -1}
-     */
-    last: ArenaIndex | -1;
-    /**
-     * The number of entries in the chain, kept by each link and unlink.
-     *
-     * @type {number}
-     */
-    count: number;
     /** @type {ArenaIndex} the place of the block in the arena of its records, -1 until added */
     index: ArenaIndex;
     /**
