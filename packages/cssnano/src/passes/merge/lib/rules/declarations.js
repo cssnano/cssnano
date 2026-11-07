@@ -1,3 +1,4 @@
+import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { PropertyWrites } from './propertyWrites.js';
 import { WritePositions } from './writePositions.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
@@ -117,27 +118,33 @@ function filterRound(
   earlierRuleDeclarations,
   laterRuleDeclarations
 ) {
-  const candidateSet = new Set(candidates);
-  const hoistable = new Set();
+  /** @type {boolean[]} whether each candidate has no conflicting outside write after it */
+  const hoistable = [];
   // The non-candidates after the current position. A candidate is blocked by
   // any of them that conflicts with it.
   const outside = new PropertyWrites();
+  // The cursor walks down the candidates as the earlier rule's declarations
+  // are passed, so each candidate is matched by reference.
+  let cursor = candidates.length - 1;
   for (let index = earlierRuleDeclarations.length - 1; index >= 0; index--) {
     const declaration = earlierRuleDeclarations[index];
-    if (!candidateSet.has(declaration)) {
-      outside.record(declaration.keys, index);
+    if (cursor >= 0 && declaration === candidates[cursor]) {
+      hoistable[cursor] = outside.lastConflict(declaration.keys) === -1;
+      cursor--;
       continue;
     }
-    if (outside.lastConflict(declaration.keys) === -1) {
-      hoistable.add(declaration);
-    }
+    outside.record(declaration.keys, index);
+  }
+  if (consistencyChecksEnabled() && cursor !== -1) {
+    throw new Error('filterRound: a candidate is not in the earlier rule');
   }
 
   const claims = new LaterClaims(laterRuleDeclarations);
   /** @type {DeclarationRecord[]} */
   const survivors = [];
-  for (const candidate of candidates) {
-    if (hoistable.has(candidate) && claims.claim(candidate)) {
+  for (let index = 0; index < candidates.length; index++) {
+    const candidate = candidates[index];
+    if (hoistable[index] && claims.claim(candidate)) {
       survivors.push(candidate);
     }
   }

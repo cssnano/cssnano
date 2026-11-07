@@ -78,3 +78,21 @@ test('filterRuleIntersections hoists a custom property declaration that a later 
   const { intersection } = filterRuleIntersections(earlier, earlier, later);
   assert.equal(intersection.length, 1);
 });
+
+test('filterRuleIntersections does not hoist a candidate that a later non-candidate declaration overrides', () => {
+  const earlier = recordsOf('a{color:red;color:blue}');
+  const later = recordsOf('b{color:red}');
+  const { intersection } = filterRuleIntersections(
+    [earlier[0]],
+    earlier,
+    later
+  );
+  assert.equal(intersection.length, 0);
+});
+
+test('filterRuleIntersections keeps blocking a candidate with a declaration dropped in the first round', () => {
+  const earlier = recordsOf('a{color:red;color:blue}');
+  const later = recordsOf('b{color:red}');
+  const { intersection } = filterRuleIntersections(earlier, earlier, later);
+  assert.equal(intersection.length, 0);
+});
