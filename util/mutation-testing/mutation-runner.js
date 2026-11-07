@@ -50,8 +50,8 @@ const { values } = parseArgs({
 const checks = { test: testCheck, oracle: oracleCheck };
 const check = checks[values.check] ?? testCheck;
 try {
-  if (process.versions.node.split('.')[0] !== '24') {
-    throw new Error('Mutation testing requires Node 24');
+  if (Number(process.versions.node.split('.')[0]) < 24) {
+    throw new Error('Mutation testing requires Node 24 or later');
   }
   if (!Object.hasOwn(checks, values.check)) {
     throw new Error(`Unknown --check ${values.check}; use test or oracle`);

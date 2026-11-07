@@ -30,7 +30,7 @@ pnpm test
 ```
 
 Mutation testing is an opt-in test-quality check for realistic faults in a
-plugin. It requires Node 24 and applies curated mutations in memory in an
+plugin. It requires Node 24 or later and applies curated mutations in memory in an
 isolated child process; source files are never changed. Run the initial slice
 with:
 
