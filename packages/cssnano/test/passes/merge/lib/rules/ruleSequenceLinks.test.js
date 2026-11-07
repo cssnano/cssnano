@@ -66,6 +66,29 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
   assert.equal(sequence.prevOf(c), added.index);
 });
 
+test('replacePair should chain the placed rules in the order first, second, then each following array, with an empty first', () => {
+  const state = setup('a{color:red}b{width:1px}c{top:0}d{left:0}e{right:0}');
+  const { records } = state;
+  const [a, , , , e] = ruleIndices(records);
+  const sequence = new RuleSequence(records);
+  const made = (selector) =>
+    records.recordRule(postcss.rule({ selector }), [selector], selector).index;
+  const x = made('x');
+  const y = made('y');
+  const z = made('z');
+  const replacement = sequence.replacePair(records, a, {
+    first: [],
+    second: [x],
+    following: [[y], [z]],
+  });
+  assert.equal(replacement, x);
+  assert.equal(sequence.nextOf(x), y);
+  assert.equal(sequence.nextOf(y), z);
+  assert.equal(sequence.nextOf(z), e);
+  assert.equal(sequence.head, x);
+  assert.equal(sequence.prevOf(x), -1);
+});
+
 test('a sweep move that empties a nested at-rule block should unlink it and then its emptied parent', () => {
   const state = setup('@layer outer{@layer inner{b{width:1px}}}p{color:red}');
   const { records } = state;

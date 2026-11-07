@@ -15,13 +15,61 @@ import { sameContainer } from './sameContainer.js';
 const NO_BENEFIT = -1;
 
 /**
- * @param {Placement} placement
- * @return {number} the rules the placement puts in place of the pair
+ * Measures the reach of each rule of `rules`, the new rules of one slot.
+ * `offset` counts the rules the sweep visited before them, from the first one.
+ *
+ * @param {RuleSequence} sequence
+ * @param {ArenaIndex[]} rules
+ * @param {ArenaIndex | -1} resume
+ * @param {number} offset
+ * @param {number[]} scratch
+ * @param {MergeState} mergeState
+ * @param {{link: ArenaIndex | -1, distance: number}} earliest
+ * @return {number} the offset after the last rule of `rules`
  */
-function linkCount(placement) {
-  let count = placement.first.length + placement.second.length;
-  for (const rules of placement.following ?? []) count += rules.length;
-  return count;
+function reachRules(
+  sequence,
+  rules,
+  resume,
+  offset,
+  scratch,
+  mergeState,
+  earliest
+) {
+  for (let index = 0; index < rules.length; index++) {
+    earliestPairReaching(
+      sequence,
+      rules[index],
+      resume,
+      offset + index,
+      scratch,
+      mergeState,
+      earliest
+    );
+  }
+  return offset + rules.length;
+}
+
+/**
+ * Asserts under checks that `rules` follow `previous` in the sequence, the
+ * first of them following nothing but `replacement`.
+ *
+ * @param {RuleSequence} sequence
+ * @param {ArenaIndex[]} rules
+ * @param {ArenaIndex | -1} replacement
+ * @param {ArenaIndex | -1} previous the last rule checked, -1 before the first
+ * @return {ArenaIndex | -1} the last rule checked
+ */
+function checkPlacedRules(sequence, rules, replacement, previous) {
+  let last = previous;
+  for (const rule of rules) {
+    const expected = last === -1 ? replacement : sequence.nextOf(last);
+    if (rule !== expected) {
+      throw new Error('a placed rule is not linked after the rule before it');
+    }
+    last = rule;
+  }
+  return last;
 }
 
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -156,21 +204,42 @@ export default function runScan(mergeState) {
       resume = before;
     }
     earliest.link = -1;
-    let link = replacement;
-    const count = linkCount(placement);
-    for (let index = 0; index < count && link !== -1; index++) {
-      // The walk from the `index`th new rule starts `index` links after the
-      // first one, so its distance is measured from the first.
-      earliestPairReaching(
+    const { first, second, following = [] } = placement;
+    let offset = reachRules(
+      sequence,
+      first,
+      resume,
+      0,
+      scratch,
+      mergeState,
+      earliest
+    );
+    offset = reachRules(
+      sequence,
+      second,
+      resume,
+      offset,
+      scratch,
+      mergeState,
+      earliest
+    );
+    for (const rules of following) {
+      offset = reachRules(
         sequence,
-        link,
+        rules,
         resume,
-        index,
+        offset,
         scratch,
         mergeState,
         earliest
       );
-      link = sequence.nextOf(link);
+    }
+    if (consistencyChecksEnabled()) {
+      let last = checkPlacedRules(sequence, first, replacement, -1);
+      last = checkPlacedRules(sequence, second, replacement, last);
+      for (const rules of following) {
+        last = checkPlacedRules(sequence, rules, replacement, last);
+      }
     }
     return earliest.link === -1 ? resume : earliest.link;
   };
@@ -187,11 +256,9 @@ export default function runScan(mergeState) {
     let lookaheadStart = -1;
     for (
       let second = sequence.nextOf(current);
-      second !== -1;
+      current !== -1 && second !== -1;
       second = sequence.nextOf(current)
     ) {
-      // A pair has a first rule; this narrows `current` to its index.
-      if (current === -1) break;
       let benefit = pairBenefit(current, second);
       // Move on to the next pair while it shares strictly more declarations,
       // then come back to `lookaheadStart` so the skipped pairs are tried.
