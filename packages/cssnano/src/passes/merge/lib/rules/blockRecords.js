@@ -218,15 +218,13 @@ export class BlockRecords {
   }
 
   /**
-   * Clears the edited flag of every rule, once the build has linked their
-   * children, so that only edits after the build mark a rule.
+   * Settles the links once the build has linked the children, so that only
+   * edits after the build count as edits.
    *
    * @return {void}
    */
   settle() {
-    for (const entry of this.#entries) {
-      if (entry instanceof RuleRecord) entry.settle();
-    }
+    this.#links.settle();
   }
 
   /**

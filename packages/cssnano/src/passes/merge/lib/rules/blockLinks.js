@@ -10,7 +10,7 @@ const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
  * The reads of the links. `BlockRecords#links` has this type, so an edit
  * reaches the links only through the arena's methods.
  *
- * @typedef {Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild' | 'childCount'>} LinkReader
+ * @typedef {Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild' | 'childCount' | 'editedAt' | 'isEdited'>} LinkReader
  */
 
 /**
@@ -43,6 +43,15 @@ export class BlockLinks {
   /** @type {number[]} the entries in each container's chain, comments included */
   #count = [];
 
+  /** @type {number} the stamp of the last edit, which only grows */
+  #clock = 0;
+
+  /** @type {number[]} the stamp of the last edit of each container, 0 for none */
+  #editedAt = [];
+
+  /** @type {number} the clock when the build settled the links; edits after it are unsettled */
+  #settledAt = 0;
+
   /** @param {BlockRecords} records the arena whose entries these links join */
   constructor(records) {
     this.#records = records;
@@ -56,6 +65,38 @@ export class BlockLinks {
     this.#first.push(-1);
     this.#last.push(-1);
     this.#count.push(0);
+    this.#editedAt.push(0);
+  }
+
+  /**
+   * Stamps the container with a stamp greater than every earlier one.
+   *
+   * @param {number} container
+   * @return {void}
+   */
+  #stamp(container) {
+    this.#editedAt[container] = ++this.#clock;
+  }
+
+  /**
+   * @param {number} index an index that the arena gave, of a container
+   * @return {number} the stamp of the last link or unlink of its chain, 0 for none
+   */
+  editedAt(index) {
+    return this.#editedAt[index];
+  }
+
+  /**
+   * @param {number} index an index that the arena gave, of a container
+   * @return {boolean} whether its chain changed after the build settled it
+   */
+  isEdited(index) {
+    return this.#editedAt[index] > this.#settledAt;
+  }
+
+  /** Marks every edit so far as the build's, so that only later edits count. */
+  settle() {
+    this.#settledAt = this.#clock;
   }
 
   /**
@@ -131,6 +172,7 @@ export class BlockLinks {
     if (next === -1) this.#last[block] = index;
     else this.#prev[next] = index;
     this.#count[block]++;
+    this.#stamp(block);
     if (holder instanceof RuleRecord) {
       holder.childLinked(
         this.#records.entry(/** @type {ArenaIndex} */ (index)),
@@ -168,6 +210,7 @@ export class BlockLinks {
     if (next === -1) this.#last[block] = prev;
     else this.#prev[next] = prev;
     this.#count[block]--;
+    this.#stamp(block);
     this.#parent[index] = -1;
     this.#prev[index] = -1;
     this.#next[index] = -1;

@@ -73,7 +73,7 @@ test('removeDeclarations should leave the nodes of a rule holding a comment as t
     rule.nodes.map((node) => node.type),
     ['decl', 'comment', 'decl']
   );
-  assert.equal(record.edited, true);
+  assert.equal(records.links.isEdited(record.index), true);
 });
 
 test('removeDeclarations should keep the declarations in step with the children under consistency checks', () => {

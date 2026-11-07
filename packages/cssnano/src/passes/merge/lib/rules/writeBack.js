@@ -328,7 +328,7 @@ export function writeBack(records, textTable = new TextTable()) {
         writeSelector(record, records, textTable);
         if (record.context !== -1) {
           visit(record);
-        } else if (record.edited) {
+        } else if (records.links.isEdited(record.index)) {
           rebuilt.push({
             container: /** @type {Container} */ (record.node),
             index: record.index,

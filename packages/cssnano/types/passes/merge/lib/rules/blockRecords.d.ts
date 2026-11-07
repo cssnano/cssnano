@@ -128,8 +128,8 @@ export declare class BlockRecords {
      */
     nodeOf(index: number): ChildNode;
     /**
-     * Clears the edited flag of every rule, once the build has linked their
-     * children, so that only edits after the build mark a rule.
+     * Settles the links once the build has linked the children, so that only
+     * edits after the build count as edits.
      *
      * @return {void}
      */

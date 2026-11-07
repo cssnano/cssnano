@@ -79,7 +79,8 @@ test('an unedited rule keeps its node array through a write-back of another rule
 test('a rule record reports itself unedited before any child edit', () => {
   const { root, state } = setup('a{color:red}');
   const [a] = twoRules(root);
-  assert.equal(ruleRecordOf(state.records, a).edited, false);
+  const record = ruleRecordOf(state.records, a);
+  assert.equal(state.records.links.isEdited(record.index), false);
 });
 
 test('a rule record reports itself edited after it removes a declaration', () => {
@@ -91,7 +92,7 @@ test('a rule record reports itself edited after it removes a declaration', () =>
     record.index,
     claimAt(state.records, record, [0])
   );
-  assert.equal(record.edited, true);
+  assert.equal(state.records.links.isEdited(record.index), true);
 });
 
 test('a receiving rule keeps its node unchanged until write-back', () => {

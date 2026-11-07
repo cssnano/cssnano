@@ -79,8 +79,6 @@ export declare class RuleRecord extends SelectorList {
      * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
      */
     constructor(node: Rule, selectors: string[], selector: string, sourceSelector: string | undefined, tokens: readonly CSSToken[] | undefined);
-    /** @return {boolean} whether a child was added or removed since the record was made */
-    get edited(): boolean;
     /**
      * Whether the rule has left the stylesheet. Only consistency checks read it;
      * no decision does.
@@ -133,8 +131,6 @@ export declare class RuleRecord extends SelectorList {
     childLinked(child: DeclarationRecord | NodeEntry | RuleRecord | import('./blockRecord.js').BlockRecord, atEnd: boolean): void;
     /** Called by `BlockLinks` once a child is unlinked from the chain of the rule. */
     childUnlinked(): void;
-    /** Clears the edited flag, once the build has linked the children of the rule. */
-    settle(): void;
     /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}

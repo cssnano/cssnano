@@ -43,8 +43,6 @@ export class RuleRecord extends SelectorList {
   #declarationKeys = undefined;
   /** @type {boolean} set once the rule has left the stylesheet */
   #departed = false;
-  /** @type {boolean} set once a child is added or removed, which the node takes at write-back */
-  #edited = false;
   /**
    * The id of the circumstances under which the rule applies its children, as
    * `containerContext` gives it. It is set once, at the build, for a rule that
@@ -92,11 +90,6 @@ export class RuleRecord extends SelectorList {
    */
   constructor(node, selectors, selector, sourceSelector, tokens) {
     super(node, selectors, selector, sourceSelector, tokens);
-  }
-
-  /** @return {boolean} whether a child was added or removed since the record was made */
-  get edited() {
-    return this.#edited;
   }
 
   /**
@@ -239,7 +232,6 @@ export class RuleRecord extends SelectorList {
    * @return {void}
    */
   childLinked(child, atEnd) {
-    this.#edited = true;
     const kept = this.#declarationKeys;
     if (!kept) return;
     if (atEnd && child instanceof DeclarationRecord) {
@@ -252,13 +244,7 @@ export class RuleRecord extends SelectorList {
 
   /** Called by `BlockLinks` once a child is unlinked from the chain of the rule. */
   childUnlinked() {
-    this.#edited = true;
     this.#declarationKeys = undefined;
-  }
-
-  /** Clears the edited flag, once the build has linked the children of the rule. */
-  settle() {
-    this.#edited = false;
   }
 
   /**

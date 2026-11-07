@@ -1,11 +1,11 @@
 import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
-export type LinkReader = Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild' | 'childCount'>;
+export type LinkReader = Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild' | 'childCount' | 'editedAt' | 'isEdited'>;
 /**
  * The reads of the links. `BlockRecords#links` has this type, so an edit
  * reaches the links only through the arena's methods.
  *
- * @typedef {Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild' | 'childCount'>} LinkReader
+ * @typedef {Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild' | 'childCount' | 'editedAt' | 'isEdited'>} LinkReader
  */
 /**
  * The links between the entries of the records. Each entry has a container:
@@ -21,6 +21,18 @@ export declare class BlockLinks {
     constructor(records: BlockRecords);
     /** Gives the next entry of the arena unlinked links and an empty chain. */
     grow(): void;
+    /**
+     * @param {number} index an index that the arena gave, of a container
+     * @return {number} the stamp of the last link or unlink of its chain, 0 for none
+     */
+    editedAt(index: number): number;
+    /**
+     * @param {number} index an index that the arena gave, of a container
+     * @return {boolean} whether its chain changed after the build settled it
+     */
+    isEdited(index: number): boolean;
+    /** Marks every edit so far as the build's, so that only later edits count. */
+    settle(): void;
     /**
      * @param {number} index an index that the arena gave
      * @return {ArenaIndex | -1} the container of the entry, -1 when it is linked nowhere

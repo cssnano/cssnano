@@ -214,19 +214,20 @@ export const mutations = [
       '  records.linkLast(rule.index, child.index);\n  rule.node.append(child.node);\n',
   },
   {
-    name: 'an append leaves the rule record unedited',
-    target: source('ruleRecord.js'),
-    find: '  childLinked(child, atEnd) {\n    this.#edited = true;\n',
-    replace: '  childLinked(child, atEnd) {\n',
+    name: 'an append stamps no container',
+    target: source('blockLinks.js'),
+    find: '    this.#stamp(block);\n    if (holder instanceof RuleRecord) {\n      holder.childLinked(',
+    replace:
+      '    if (holder instanceof RuleRecord) {\n      holder.childLinked(',
   },
   {
-    name: 'a removal of declarations leaves the rule record unedited',
-    target: source('ruleRecord.js'),
-    find: '  childUnlinked() {\n    this.#edited = true;\n',
-    replace: '  childUnlinked() {\n',
+    name: 'a removal of declarations stamps no container',
+    target: source('blockLinks.js'),
+    find: '    this.#stamp(block);\n    this.#parent[index] = -1;\n',
+    replace: '    this.#parent[index] = -1;\n',
   },
   {
-    name: 'a taking of declarations leaves the rule record unedited',
+    name: 'a removal of declarations keeps the declaration keys of the rule',
     target: source('blockLinks.js'),
     find: '    if (holder instanceof RuleRecord) holder.childUnlinked();\n',
     replace: '',
@@ -253,8 +254,8 @@ export const mutations = [
   {
     name: 'taking declarations keeps the declaration keys of the record',
     target: source('ruleRecord.js'),
-    find: '  childUnlinked() {\n    this.#edited = true;\n    this.#declarationKeys = undefined;\n  }',
-    replace: '  childUnlinked() {\n    this.#edited = true;\n  }',
+    find: '  childUnlinked() {\n    this.#declarationKeys = undefined;\n  }',
+    replace: '  childUnlinked() {\n  }',
   },
 
   {
