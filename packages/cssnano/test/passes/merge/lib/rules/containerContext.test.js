@@ -1,3 +1,7 @@
+import {
+  blocks,
+  containers,
+} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import { after, before, test } from 'node:test';
 import { buildTestRecords } from './liveRecords.js';
 import assert from 'node:assert/strict';
@@ -124,9 +128,9 @@ test('sameContainer agrees with the definition of one container on every pair of
   for (let seed = 1; seed <= 150; seed++) {
     const css = generateBlocks(random(seed), 3);
     const state = stateOf(css);
-    const blocks = [...state.records.containers()];
-    for (const a of blocks) {
-      for (const b of blocks) {
+    const holders = [...containers(state.records)];
+    for (const a of holders) {
+      for (const b of holders) {
         assert.strictEqual(
           sameContainer(a, b),
           sameChain(state.records, a, b, state.textTable),
@@ -144,7 +148,7 @@ test('assertContextsCurrent accepts the contexts the build assigns', () => {
 
 test('assertContextsCurrent throws when a block keeps the context of another place', () => {
   const state = stateOf('@media screen{a{b:c}}@media print{d{e:f}}');
-  const [, screen, print] = state.records.blocks();
+  const [, screen, print] = blocks(state.records);
   screen.context = print.context;
   assert.throws(() => assertContextsCurrent(state), /context/v);
 });

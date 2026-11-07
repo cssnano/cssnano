@@ -1,3 +1,4 @@
+import { blocks } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -70,7 +71,7 @@ test('every entry of a block chain names that block as its container', () => {
     'a{color:red}@media print{b{width:1px}/* c */}@font-face{src:x}'
   );
   const { links } = state.records;
-  for (const block of state.records.blocks()) {
+  for (const block of blocks(state.records)) {
     assert.ok(block instanceof BlockRecord);
     for (
       let index = links.firstChild(block.index);

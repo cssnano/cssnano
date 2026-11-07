@@ -1,3 +1,4 @@
+import { liveChildren, liveCount } from './blockChildren.js';
 import cssnanoUtils from '#utils';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { atRuleKind, BlockRecord, NodeEntry } from './blockRecord.js';
@@ -31,7 +32,7 @@ const DEPARTED_REACHED = 'write-back reached a departed rule';
  */
 function differs(records, block) {
   const nodes = /** @type {ChildNode[]} */ (block.node.nodes);
-  if (records.liveCount(block.index) !== nodes.length) return true;
+  if (liveCount(records, block.index) !== nodes.length) return true;
   let at = 0;
   for (
     let entry = records.links.firstChild(block.index);
@@ -309,7 +310,7 @@ export function writeBack(records, textTable = new TextTable()) {
       rebuilt.push({
         container: /** @type {Container} */ (container.node),
         index: container.index,
-        children: records.liveChildren(container.index),
+        children: liveChildren(records, container.index),
         leading:
           container === records.root ? container.leadingWhitespace : null,
       });
@@ -331,7 +332,7 @@ export function writeBack(records, textTable = new TextTable()) {
           rebuilt.push({
             container: /** @type {Container} */ (record.node),
             index: record.index,
-            children: records.liveChildren(record.index),
+            children: liveChildren(records, record.index),
             leading: null,
           });
         }

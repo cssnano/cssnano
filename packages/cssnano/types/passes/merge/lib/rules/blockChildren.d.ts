@@ -1,24 +1,44 @@
-/** @import {ChildNode} from 'postcss' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {NodeEntry} from './blockRecord.js' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
-/** @import {RuleRecord as Rule} from './ruleRecord.js' */
 import type { ChildNode } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
 import type { NodeEntry } from './blockRecord.js';
-import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
-import type { BlockRecord } from './blockRecord.js';
+/** @import {ChildNode} from 'postcss' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {NodeEntry, ArenaIndex} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+import { BlockRecord } from './blockRecord.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /**
- * The first child the block at `index` holds now, without copying the child
- * list.
+ * The first declaration the container at `index` holds now.
  *
  * @param {BlockRecords} records
- * @param {number} index
- * @return {ChildNode | undefined}
+ * @param {number} index an index that the arena gave, of a container
+ * @return {DeclarationRecord | undefined}
  */
+export declare function firstDeclaration(records: BlockRecords, index: number): DeclarationRecord | undefined;
+/**
+ * The declaration after `declaration` in its chain.
+ *
+ * @param {BlockRecords} records
+ * @param {DeclarationRecord} declaration a declaration linked in a chain
+ * @return {DeclarationRecord | undefined}
+ */
+export declare function nextDeclaration(records: BlockRecords, declaration: DeclarationRecord): DeclarationRecord | undefined;
+/**
+ * The records of every block the run added, dropped ones included.
+ *
+ * @param {BlockRecords} records
+ * @return {Generator<BlockRecord>}
+ */
+export declare function blocks(records: BlockRecords): Generator<BlockRecord>;
+/**
+ * The records of every container the run added that holds children: each
+ * block, and each rule that nests. Dropped and departed ones included.
+ *
+ * @param {BlockRecords} records
+ * @return {Generator<BlockRecord | RuleRecord>}
+ */
+export declare function containers(records: BlockRecords): Generator<BlockRecord | RuleRecord>;
 /**
  * The number of children the block at `index` holds now. The chain keeps the
  * count, so the answer costs no walk.

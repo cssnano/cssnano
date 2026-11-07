@@ -1,3 +1,4 @@
+import { firstDeclaration, nextDeclaration } from './blockChildren.js';
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
 import { PropertyWrites } from './propertyWrites.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
@@ -45,9 +46,9 @@ function overridesShared(records, rule, claimed, shared) {
     sharedWrites.record(declaration.keys, 0);
   }
   for (
-    let declaration = records.firstDeclaration(rule.index);
+    let declaration = firstDeclaration(records, rule.index);
     declaration !== undefined;
-    declaration = records.nextDeclaration(declaration)
+    declaration = nextDeclaration(records, declaration)
   ) {
     if (claimed?.has(declaration.index)) continue;
     if (sharedWrites.lastConflict(declaration.keys) !== -1) return true;

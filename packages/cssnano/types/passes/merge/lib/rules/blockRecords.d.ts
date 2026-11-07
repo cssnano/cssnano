@@ -2,15 +2,15 @@ import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ChildNode, Rule } from 'postcss';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ChildNode, Container, Rule} from 'postcss' */
-/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockRecord } from './blockRecord.js';
 import type { NodeEntry } from './blockRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { LinkReader } from './blockLinks.js';
+/** @import {NodeEntry} from './blockRecord.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {LinkReader} from './blockLinks.js' */
 import { RuleRecord } from './ruleRecord.js';
 /**
  * The records of one run. One arena holds every block record, every rule record,
@@ -26,8 +26,6 @@ export declare class BlockRecords {
     root: BlockRecord;
     /** @type {LinkReader} the chains of the blocks, read here and edited through this arena */
     links: LinkReader;
-    /** @type {Map<string, number> | null} declarations the input wrote, under checks */
-    inputWrites: Map<string, number> | null;
     /**
      * The most rounds a run may take before it throws. Set from the counts of
      * rules, at-rules and declarations when the records are built.
@@ -81,17 +79,6 @@ export declare class BlockRecords {
      */
     enclosingContainer(index: number): BlockRecord | RuleRecord | undefined;
     /**
-     * @param {number} index an index that the arena gave, of a container
-     * @return {DeclarationRecord | undefined} the first declaration of its chain
-     */
-    firstDeclaration(index: number): DeclarationRecord | undefined;
-    /**
-     * @param {DeclarationRecord} declaration a declaration linked in a chain
-     * @return {DeclarationRecord | undefined} the declaration after it in its chain
-     * @throws {Error} under checks, when the declaration is linked nowhere
-     */
-    nextDeclaration(declaration: DeclarationRecord): DeclarationRecord | undefined;
-    /**
      * Links the entry at `index` after `after` in the chain of the container at
      * `block`, which is the head when `after` is -1. Under checks, a container
      * that does not reach the root through `parentOf` throws, since its entries
@@ -133,19 +120,6 @@ export declare class BlockRecords {
      */
     entryCount(): number;
     /**
-     * The records of every block the run added, dropped ones included.
-     *
-     * @return {Generator<BlockRecord>}
-     */
-    blocks(): Generator<BlockRecord>;
-    /**
-     * The records of every container the run added that holds children: each
-     * block, and each rule that nests. Dropped and departed ones included.
-     *
-     * @return {Generator<BlockRecord | RuleRecord>}
-     */
-    containers(): Generator<BlockRecord | RuleRecord>;
-    /**
      * The PostCSS node of the entry at `index`, which is a rule, a block, a
      * declaration or a bare node.
      *
@@ -154,42 +128,12 @@ export declare class BlockRecords {
      */
     nodeOf(index: number): ChildNode;
     /**
-     * The live children of the block at `index`, counted; see `blockChildren.js`.
-     *
-     * @param {number} index
-     * @return {number}
-     */
-    liveCount(index: number): number;
-    /**
-     * The live entries of the block at `index`; see `blockChildren.js`.
-     *
-     * @param {number} index
-     * @return {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]}
-     */
-    liveEntries(index: number): (RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[];
-    /**
-     * The live children of the block at `index`; see `blockChildren.js`.
-     *
-     * @param {number} index
-     * @return {ChildNode[]}
-     */
-    liveChildren(index: number): ChildNode[];
-    /**
      * Clears the edited flag of every rule, once the build has linked their
      * children, so that only edits after the build mark a rule.
      *
      * @return {void}
      */
     settle(): void;
-    /**
-     * Builds the record of a declaration that is a rule's child.
-     *
-     * @param {import('postcss').Declaration} node
-     * @param {PropertyTable} properties the keys of the property names
-     * @param {DeclarationKeys} declarations the ids of the declarations
-     * @return {DeclarationRecord}
-     */
-    declarationRecord(node: import('postcss').Declaration, properties: PropertyTable, declarations: DeclarationKeys): DeclarationRecord;
     /**
      * Builds the record of a declaration that is a child of a block and adds it
      * to the arena, which gives it the next index.

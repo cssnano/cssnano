@@ -2,18 +2,15 @@
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import {
-  DeclarationRecord,
-  recordDeclaration,
-} from '../../../ir/declarationRecord.js';
+import { recordDeclaration } from '../../../ir/declarationRecord.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockLinks } from './blockLinks.js';
 import { assertCanLink, assertReached } from './linkChecks.js';
 import { BlockRecord } from './blockRecord.js';
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {LinkReader} from './blockLinks.js' */
-import { liveChildren, liveCount, liveEntries } from './blockChildren.js';
 import { RuleRecord } from './ruleRecord.js';
 
 /**
@@ -36,9 +33,6 @@ export class BlockRecords {
 
   /** @type {LinkReader} the chains of the blocks, read here and edited through this arena */
   links = this.#links;
-
-  /** @type {Map<string, number> | null} declarations the input wrote, under checks */
-  inputWrites = null;
 
   /**
    * The most rounds a run may take before it throws. Set from the counts of
@@ -150,39 +144,6 @@ export class BlockRecords {
   }
 
   /**
-   * @param {number} index an index that the arena gave, of a container
-   * @return {DeclarationRecord | undefined} the first declaration of its chain
-   */
-  firstDeclaration(index) {
-    return this.#declarationFrom(this.links.firstChild(index));
-  }
-
-  /**
-   * @param {DeclarationRecord} declaration a declaration linked in a chain
-   * @return {DeclarationRecord | undefined} the declaration after it in its chain
-   * @throws {Error} under checks, when the declaration is linked nowhere
-   */
-  nextDeclaration(declaration) {
-    return this.#declarationFrom(this.links.nextSibling(declaration.index));
-  }
-
-  /**
-   * @param {number} index the entry to start from, or -1
-   * @return {DeclarationRecord | undefined} the first declaration at or after `index`
-   */
-  #declarationFrom(index) {
-    for (
-      let at = index;
-      at !== -1;
-      at = this.links.nextSibling(/** @type {ArenaIndex} */ (at))
-    ) {
-      const entry = this.entry(/** @type {ArenaIndex} */ (at));
-      if (entry instanceof DeclarationRecord) return entry;
-    }
-    return undefined;
-  }
-
-  /**
    * Links the entry at `index` after `after` in the chain of the container at
    * `block`, which is the head when `after` is -1. Under checks, a container
    * that does not reach the root through `parentOf` throws, since its entries
@@ -242,30 +203,6 @@ export class BlockRecords {
   }
 
   /**
-   * The records of every block the run added, dropped ones included.
-   *
-   * @return {Generator<BlockRecord>}
-   */
-  *blocks() {
-    for (const entry of this.#entries) {
-      if (entry instanceof BlockRecord) yield entry;
-    }
-  }
-
-  /**
-   * The records of every container the run added that holds children: each
-   * block, and each rule that nests. Dropped and departed ones included.
-   *
-   * @return {Generator<BlockRecord | RuleRecord>}
-   */
-  *containers() {
-    for (const entry of this.#entries) {
-      if (entry instanceof BlockRecord) yield entry;
-      else if (entry instanceof RuleRecord && entry.context !== -1) yield entry;
-    }
-  }
-
-  /**
    * The PostCSS node of the entry at `index`, which is a rule, a block, a
    * declaration or a bare node.
    *
@@ -281,36 +218,6 @@ export class BlockRecords {
   }
 
   /**
-   * The live children of the block at `index`, counted; see `blockChildren.js`.
-   *
-   * @param {number} index
-   * @return {number}
-   */
-  liveCount(index) {
-    return liveCount(this, index);
-  }
-
-  /**
-   * The live entries of the block at `index`; see `blockChildren.js`.
-   *
-   * @param {number} index
-   * @return {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]}
-   */
-  liveEntries(index) {
-    return liveEntries(this, index);
-  }
-
-  /**
-   * The live children of the block at `index`; see `blockChildren.js`.
-   *
-   * @param {number} index
-   * @return {ChildNode[]}
-   */
-  liveChildren(index) {
-    return liveChildren(this, index);
-  }
-
-  /**
    * Clears the edited flag of every rule, once the build has linked their
    * children, so that only edits after the build mark a rule.
    *
@@ -323,18 +230,6 @@ export class BlockRecords {
   }
 
   /**
-   * Builds the record of a declaration that is a rule's child.
-   *
-   * @param {import('postcss').Declaration} node
-   * @param {PropertyTable} properties the keys of the property names
-   * @param {DeclarationKeys} declarations the ids of the declarations
-   * @return {DeclarationRecord}
-   */
-  declarationRecord(node, properties, declarations) {
-    return recordDeclaration(node, properties, declarations);
-  }
-
-  /**
    * Builds the record of a declaration that is a child of a block and adds it
    * to the arena, which gives it the next index.
    *
@@ -344,7 +239,7 @@ export class BlockRecords {
    * @return {DeclarationRecord}
    */
   blockDeclaration(node, properties, declarations) {
-    return this.#place(this.declarationRecord(node, properties, declarations));
+    return this.#place(recordDeclaration(node, properties, declarations));
   }
 
   /**

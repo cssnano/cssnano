@@ -196,13 +196,15 @@ export const mutations = [
     name: 'moving declarations hands over no record',
     target: source('arenaEdits.js'),
     find: '    records.unlink(index);\n    appendChild(\n      records,\n      receiving,',
-    replace: '    records.unlink(index);\n    void (\n      records,\n      receiving,',
+    replace:
+      '    records.unlink(index);\n    void (\n      records,\n      receiving,',
   },
   {
     name: 'moving declarations removes the moved node at once',
     target: source('arenaEdits.js'),
     find: '    records.unlink(index);\n    appendChild(',
-    replace: '    records.unlink(index);\n    records.entry(index).node.remove();\n    appendChild(',
+    replace:
+      '    records.unlink(index);\n    records.entry(index).node.remove();\n    appendChild(',
   },
   {
     name: 'an append edits the node of the rule at once',
@@ -245,7 +247,7 @@ export const mutations = [
   {
     name: 'write-back leaves a departed rule in its block',
     target: source('writeBack.js'),
-    find: '  if (records.liveCount(block.index) !== nodes.length) return true;\n',
+    find: '  if (liveCount(records, block.index) !== nodes.length) return true;\n',
     replace: '',
   },
   {

@@ -1,3 +1,7 @@
+import {
+  liveChildren,
+  liveEntries,
+} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
@@ -87,17 +91,16 @@ test('assertRecordsMatchTree throws under consistency checks when a declaration 
 test('a declaration in a rule that nests is a declaration record in its chain, and its node in the live children', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
-  const [color] = state.records.liveEntries(rule.index);
+  const [color] = liveEntries(state.records, rule.index);
   assert.ok(color instanceof DeclarationRecord);
-  assert.equal(state.records.liveChildren(rule.index)[0], root.first.first);
+  assert.equal(liveChildren(state.records, rule.index)[0], root.first.first);
   assert.equal(color.node, root.first.first);
 });
 
 test('declarationKeys of a rule that nests are the ids of its chain declarations', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
-  const ids = state.records
-    .liveEntries(rule.index)
+  const ids = liveEntries(state.records, rule.index)
     .filter((entry) => entry instanceof DeclarationRecord)
     .map((entry) => entry.id);
   assert.deepEqual(rule.declarationKeys(state.records).keys, ids);

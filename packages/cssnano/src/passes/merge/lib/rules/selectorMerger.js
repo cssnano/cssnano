@@ -38,8 +38,7 @@ export default function runMerge(records, browsers, context) {
   const mergeState = new MergeState(browsers, context);
   mergeState.records = records;
   // What dedupe left is the input the over-duplication check compares with.
-  if (consistencyChecksEnabled())
-    records.inputWrites = tallyDeclarations(records);
+  const input = consistencyChecksEnabled() ? tallyDeclarations(records) : null;
   const { maxRounds } = records;
   let joined;
   let rounds = 0;
@@ -47,10 +46,10 @@ export default function runMerge(records, browsers, context) {
     if (++rounds > maxRounds) throw new Error(ROUNDS);
     runScan(mergeState);
     assertRecordsWellFormed(mergeState);
-    assertNoOverDuplication(mergeState.records);
+    assertNoOverDuplication(mergeState.records, input);
     joined = joinNonAdjacent(mergeState.records.root, mergeState);
     assertRecordsWellFormed(mergeState);
-    assertNoOverDuplication(mergeState.records);
+    assertNoOverDuplication(mergeState.records, input);
   } while (joined);
   // Sweeps and joins edit only the records, and the driver writes them back
   // once. The contexts are checked here and not at the checkpoints, which

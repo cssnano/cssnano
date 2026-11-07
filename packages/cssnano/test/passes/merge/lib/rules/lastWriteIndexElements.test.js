@@ -1,3 +1,4 @@
+import { liveEntries } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -120,7 +121,7 @@ function entriesOf(css) {
   mergeState.records = buildTestRecords(root, mergeState);
   return {
     records: mergeState.records,
-    entries: mergeState.records.liveEntries(mergeState.records.root.index),
+    entries: liveEntries(mergeState.records, mergeState.records.root.index),
   };
 }
 
@@ -156,7 +157,8 @@ test('last-write index conflictsSinceIn counts every write for a bare declaratio
   const index = new LastWriteIndex();
   index.record(keys('color'), 1, ['h2']);
   const { node, records } = firstNodeWithRecords('@media print{color:red}');
-  const entries = records.liveEntries(
+  const entries = liveEntries(
+    records,
     /** @type {BlockRecord} */ (entryOf(records, node)).index
   );
   assert.equal(index.conflictsSinceIn(noBlocks, entries, 0, keysOfRule), true);

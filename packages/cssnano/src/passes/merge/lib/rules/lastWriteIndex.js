@@ -1,3 +1,4 @@
+import { firstDeclaration, nextDeclaration } from './blockChildren.js';
 import {
   BlockRecord,
   CONDITIONAL_GROUP,
@@ -100,9 +101,9 @@ export default class LastWriteIndex {
       }
       // A rule without a block writes its declarations only.
       for (
-        let declaration = records.firstDeclaration(entry.index);
+        let declaration = firstDeclaration(records, entry.index);
         declaration !== undefined;
-        declaration = records.nextDeclaration(declaration)
+        declaration = nextDeclaration(records, declaration)
       )
         this.record(declaration.keys, position, own);
     } else if (entry instanceof BlockRecord) {
@@ -237,9 +238,9 @@ export default class LastWriteIndex {
   #ruleConflicts(records, rule, position, elements) {
     if (rule.context === -1) {
       for (
-        let declaration = records.firstDeclaration(rule.index);
+        let declaration = firstDeclaration(records, rule.index);
         declaration !== undefined;
-        declaration = records.nextDeclaration(declaration)
+        declaration = nextDeclaration(records, declaration)
       ) {
         if (this.#conflictsWith(declaration.keys, position, elements)) {
           return true;
@@ -284,9 +285,9 @@ export default class LastWriteIndex {
         const own = keys?.length ? keys : null;
         if (entry.context === -1) {
           for (
-            let declaration = records.firstDeclaration(entry.index);
+            let declaration = firstDeclaration(records, entry.index);
             declaration !== undefined;
-            declaration = records.nextDeclaration(declaration)
+            declaration = nextDeclaration(records, declaration)
           ) {
             this.record(declaration.keys, position, own);
           }

@@ -1,3 +1,4 @@
+import { liveEntries } from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import RepeatScan from './repeatScan.js';
@@ -105,7 +106,7 @@ function joinGain(group, later) {
  */
 export default function joinByDeclarations(block, mergeState) {
   if (isKeyframes(block)) return false;
-  const entries = mergeState.records.liveEntries(block.index);
+  const entries = liveEntries(mergeState.records, block.index);
   const keyLists = entries.map((entry) =>
     entry instanceof RuleRecord && isDeclarationRule(mergeState.records, entry)
       ? entry.declarationKeys(mergeState.records)

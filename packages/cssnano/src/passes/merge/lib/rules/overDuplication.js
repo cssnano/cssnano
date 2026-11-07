@@ -1,3 +1,4 @@
+import { firstDeclaration, nextDeclaration } from './blockChildren.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
@@ -51,9 +52,9 @@ export function tallyDeclarations(records) {
       return;
     }
     for (
-      let declaration = records.firstDeclaration(record.index);
+      let declaration = firstDeclaration(records, record.index);
       declaration !== undefined;
-      declaration = records.nextDeclaration(declaration)
+      declaration = nextDeclaration(records, declaration)
     ) {
       count(declaration);
     }
@@ -88,12 +89,12 @@ export function tallyDeclarations(records) {
  * move and rewrite rules, so no declaration is written again.
  *
  * @param {BlockRecords} records
+ * @param {Map<string, number> | null} input the tally of the input, or null when none was taken
  * @return {void}
  */
-export function assertNoOverDuplication(records) {
+export function assertNoOverDuplication(records, input) {
   if (!consistencyChecksEnabled()) return;
   const written = tallyDeclarations(records);
-  const input = records.inputWrites;
   if (input === null) return;
   for (const [key, count] of written) {
     if (count > (input.get(key) ?? 0)) throw new Error(OVER_WRITTEN);

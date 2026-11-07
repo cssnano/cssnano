@@ -1,19 +1,83 @@
 /** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {NodeEntry} from './blockRecord.js' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {NodeEntry, ArenaIndex} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
-/** @import {RuleRecord as Rule} from './ruleRecord.js' */
+import { BlockRecord, RULE } from './blockRecord.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 
 /**
- * The first child the block at `index` holds now, without copying the child
- * list.
+ * The first declaration at or after `index` in the chain, or undefined.
  *
  * @param {BlockRecords} records
- * @param {number} index
- * @return {ChildNode | undefined}
+ * @param {number} index the entry to start from, or -1
+ * @return {DeclarationRecord | undefined}
  */
+function declarationFrom(records, index) {
+  for (
+    let at = index;
+    at !== -1;
+    at = records.links.nextSibling(/** @type {ArenaIndex} */ (at))
+  ) {
+    const entry = records.entry(/** @type {ArenaIndex} */ (at));
+    if (entry instanceof DeclarationRecord) return entry;
+  }
+  return undefined;
+}
+
+/**
+ * The first declaration the container at `index` holds now.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index an index that the arena gave, of a container
+ * @return {DeclarationRecord | undefined}
+ */
+export function firstDeclaration(records, index) {
+  return declarationFrom(records, records.links.firstChild(index));
+}
+
+/**
+ * The declaration after `declaration` in its chain.
+ *
+ * @param {BlockRecords} records
+ * @param {DeclarationRecord} declaration a declaration linked in a chain
+ * @return {DeclarationRecord | undefined}
+ */
+export function nextDeclaration(records, declaration) {
+  return declarationFrom(records, records.links.nextSibling(declaration.index));
+}
+
+/**
+ * The records of every block the run added, dropped ones included.
+ *
+ * @param {BlockRecords} records
+ * @return {Generator<BlockRecord>}
+ */
+export function* blocks(records) {
+  for (let index = 0; index < records.entryCount(); index++) {
+    const entry = records.entry(/** @type {ArenaIndex} */ (index));
+    if (entry instanceof BlockRecord) yield entry;
+  }
+}
+
+/**
+ * The records of every container the run added that holds children: each
+ * block, and each rule that nests. Dropped and departed ones included.
+ *
+ * @param {BlockRecords} records
+ * @return {Generator<BlockRecord | RuleRecord>}
+ */
+export function* containers(records) {
+  for (let index = 0; index < records.entryCount(); index++) {
+    const entry = records.entry(/** @type {ArenaIndex} */ (index));
+    if (entry instanceof BlockRecord) yield entry;
+    else if (
+      entry.kind === RULE &&
+      /** @type {RuleRecord} */ (entry).context !== -1
+    )
+      yield /** @type {RuleRecord} */ (entry);
+  }
+}
+
 /**
  * The number of children the block at `index` holds now. The chain keeps the
  * count, so the answer costs no walk.
@@ -23,7 +87,8 @@
  * @return {number}
  */
 export function liveCount(records, index) {
-  return /** @type {BlockRecord | Rule} */ (records.container(index)).count;
+  return /** @type {BlockRecord | RuleRecord} */ (records.container(index))
+    .count;
 }
 
 /**

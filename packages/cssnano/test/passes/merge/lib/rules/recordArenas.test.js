@@ -1,3 +1,4 @@
+import { containers } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { before, after, test } from 'node:test';
 import postcss from 'postcss';
@@ -90,7 +91,7 @@ test('containers() should hold every container reached from the stylesheet recor
   );
   const { records } = state;
   const reached = reachedBlocks(records, records.root);
-  const indexed = [...records.containers()];
+  const indexed = [...containers(records)];
   assert.equal(reached.length, indexed.length);
   for (const block of reached) {
     assert.ok(indexed.includes(block));

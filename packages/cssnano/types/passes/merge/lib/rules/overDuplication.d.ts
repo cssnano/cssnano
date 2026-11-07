@@ -14,7 +14,8 @@ export declare function tallyDeclarations(records: BlockRecords): Map<string, nu
  * move and rewrite rules, so no declaration is written again.
  *
  * @param {BlockRecords} records
+ * @param {Map<string, number> | null} input the tally of the input, or null when none was taken
  * @return {void}
  */
-export declare function assertNoOverDuplication(records: BlockRecords): void;
+export declare function assertNoOverDuplication(records: BlockRecords, input: Map<string, number> | null): void;
 //# sourceMappingURL=overDuplication.d.ts.map

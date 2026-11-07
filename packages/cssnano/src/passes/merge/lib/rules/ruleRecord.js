@@ -1,3 +1,4 @@
+import { firstDeclaration, nextDeclaration } from './blockChildren.js';
 import { SelectorList } from './selectorList.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
@@ -245,9 +246,9 @@ export class RuleRecord extends SelectorList {
     /** @type {DeclarationRecord[]} */
     const declarations = [];
     for (
-      let declaration = records.firstDeclaration(this.index);
+      let declaration = firstDeclaration(records, this.index);
       declaration !== undefined;
-      declaration = records.nextDeclaration(declaration)
+      declaration = nextDeclaration(records, declaration)
     ) {
       declarations.push(declaration);
     }

@@ -1,4 +1,8 @@
-import { inheritWhitespace } from './blockChildren.js';
+import {
+  firstDeclaration,
+  inheritWhitespace,
+  nextDeclaration,
+} from './blockChildren.js';
 
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 
@@ -155,9 +159,9 @@ function assertMovesInOrder(records, source, claimed) {
   assertChildrenOf(records, source, claimed);
   let at = 0;
   for (
-    let declaration = records.firstDeclaration(source);
+    let declaration = firstDeclaration(records, source);
     declaration !== undefined && at < claimed.length;
-    declaration = records.nextDeclaration(declaration)
+    declaration = nextDeclaration(records, declaration)
   ) {
     if (declaration.index === claimed[at]) at++;
   }

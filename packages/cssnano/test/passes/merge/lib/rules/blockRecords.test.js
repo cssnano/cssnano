@@ -1,3 +1,4 @@
+import { liveChildren } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
@@ -123,7 +124,7 @@ test('liveChildren should equal the children of the stylesheet after a sweep dro
   runScan(state);
   writeBack(state.records);
   assert.deepEqual(
-    state.records.liveChildren(state.records.root.index),
+    liveChildren(state.records, state.records.root.index),
     root.nodes
   );
 });
@@ -135,7 +136,7 @@ test('liveChildren should equal the children of the stylesheet after a join move
   joinNonAdjacent(state.records.root, state);
   writeBack(state.records);
   assert.deepEqual(
-    state.records.liveChildren(state.records.root.index),
+    liveChildren(state.records, state.records.root.index),
     root.nodes
   );
 });
@@ -145,7 +146,7 @@ test('liveChildren should equal the children of the stylesheet after a join remo
   joinNonAdjacent(state.records.root, state);
   writeBack(state.records);
   assert.deepEqual(
-    state.records.liveChildren(state.records.root.index),
+    liveChildren(state.records, state.records.root.index),
     root.nodes
   );
 });
@@ -158,11 +159,11 @@ test('liveChildren should equal the children of the stylesheet after a join remo
  */
 function liveCountAround(css) {
   const { state } = setup(css);
-  const was = state.records.liveChildren(state.records.root.index).length;
+  const was = liveChildren(state.records, state.records.root.index).length;
   joinNonAdjacent(state.records.root, state);
   return {
     was,
-    now: state.records.liveChildren(state.records.root.index).length,
+    now: liveChildren(state.records, state.records.root.index).length,
   };
 }
 
@@ -192,9 +193,9 @@ test('joinNonAdjacent should leave fewer live children when a block moves down o
 
 test('liveChildren should return a fresh array of the children, not the entries', () => {
   const { state } = setup('a{color:red}');
-  const children = state.records.liveChildren(state.records.root.index);
+  const children = liveChildren(state.records, state.records.root.index);
   children.length = 0;
-  assert.equal(state.records.liveChildren(state.records.root.index).length, 1);
+  assert.equal(liveChildren(state.records, state.records.root.index).length, 1);
 });
 
 test('the chains should stay well formed after a move of children', () => {
@@ -290,13 +291,13 @@ test('runScan should keep the declaration and rule counts and lower the parent c
 
 test('assertNoOverDuplication should accept records built from a stylesheet that repeats a declaration', () => {
   const { state } = setup('a{color:red}b{color:red}');
-  assert.doesNotThrow(() => assertNoOverDuplication(state.records));
+  assert.doesNotThrow(() => assertNoOverDuplication(state.records, null));
 });
 
 test('assertNoOverDuplication should throw when a declaration is written more often than the input wrote it', () => {
   const { root, state } = setup('a{color:red}');
   // runMerge takes this tally when it starts, after dedupe.
-  state.records.inputWrites = tallyDeclarations(state.records);
+  const input = tallyDeclarations(state.records);
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
   const added = postcss.decl({ prop: 'color', value: 'red' });
@@ -310,7 +311,7 @@ test('assertNoOverDuplication should throw when a declaration is written more of
     )
   );
   assert.throws(
-    () => assertNoOverDuplication(state.records),
+    () => assertNoOverDuplication(state.records, input),
     /more often than the input/v
   );
 });
@@ -326,7 +327,7 @@ test('assertNoOverDuplication should throw when a chain reaches a rule that a se
     ruleRecordOf(state.records, second).index
   );
   assert.throws(
-    () => assertNoOverDuplication(state.records),
+    () => assertNoOverDuplication(state.records, null),
     /reach a node twice/v
   );
 });

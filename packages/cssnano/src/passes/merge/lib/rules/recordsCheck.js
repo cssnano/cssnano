@@ -1,3 +1,4 @@
+import { containers } from './blockChildren.js';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
@@ -142,7 +143,7 @@ export function assertOwnershipIsTree(records) {
 export function assertContextsCurrent(mergeState) {
   if (!consistencyChecksEnabled()) return;
   const { records, declarationIds } = mergeState;
-  for (const block of records.containers()) {
+  for (const block of containers(records)) {
     const holder = records.enclosingContainer(block.index);
     // An emptied block is unlinked and applies nothing, so it has no place to keep.
     if (holder === undefined && block !== records.root) continue;

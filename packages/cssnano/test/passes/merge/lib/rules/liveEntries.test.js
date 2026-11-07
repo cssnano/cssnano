@@ -1,3 +1,4 @@
+import { liveEntries } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -17,7 +18,7 @@ test('liveEntries should yield the rule record, the at-rule block record and the
   const state = new MergeState(['chrome 120'], createRunContext());
   state.records = buildTestRecords(root, state);
   const [rule, media, comment] = root.nodes;
-  const entries = state.records.liveEntries(state.records.root.index);
+  const entries = liveEntries(state.records, state.records.root.index);
   assert.equal(entries.length, 3);
   assert.equal(
     entries[0],
