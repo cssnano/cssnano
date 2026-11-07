@@ -27,8 +27,10 @@ If you would like to use the preset in its default configuration, add it to your
 
 ```js
 // cssnano.config.js
-module.exports = {
-  preset: require('cssnano/presets/advanced'),
+import advanced from 'cssnano/presets/advanced';
+
+export default {
+  preset: advanced,
 };
 ```
 
@@ -36,8 +38,10 @@ But should you wish to customise this, you can set the `options` key of the conf
 
 ```js
 // cssnano.config.js
-module.exports = {
-  preset: require('cssnano/presets/advanced'),
+import advanced from 'cssnano/presets/advanced';
+
+export default {
+  preset: advanced,
   options: {
     discardComments: { removeAll: true },
   },
@@ -48,8 +52,10 @@ For options with customisable function parameters, use a `cssnano.config.js` in 
 
 ```js
 // cssnano.config.js
+import advanced from 'cssnano/presets/advanced';
+
 export default {
-  preset: require('cssnano/presets/advanced'),
+  preset: advanced,
   options: {
     discardComments: {
       remove: (comment) => comment[0] === '@',

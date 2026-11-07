@@ -1,6 +1,6 @@
-# cssnano-utils
+# cssnano utilities
 
-Utility methods and plugins for cssnano projects.
+Internal utility modules in `packages/cssnano/src/utils`, imported inside the package as `#utils` and the `#utils/*` specifiers below. They are not published or exported, and the former `cssnano-utils` package no longer exists.
 
 ## API
 
@@ -101,7 +101,7 @@ Instances returned by `balancedTokens(source)` provide:
 ## Usage
 
 ```js
-import cssnanoUtils from 'cssnano-utils';
+import cssnanoUtils from '#utils';
 
 const { tokens, balancedTokens, applyEdits } = cssnanoUtils;
 

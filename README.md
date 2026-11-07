@@ -23,7 +23,7 @@ cssnano is a modern, modular CSS compression tool written on top of the PostCSS
 ecosystem, which allows us to use a lot of powerful features in order to minify
 CSS.
 
-Our preset system allow you to load cssnano in a different configuration
+Our preset system allows you to load cssnano in a different configuration
 depending on your needs; the default preset performs safe transforms, whereas
 the advanced preset performs more aggressive transforms that are safe only when
 your site meets the requirements; but regardless of the preset you choose, we
@@ -79,6 +79,7 @@ This project exists thanks to all the people who contribute. [[Contribute](CONTR
 Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/cssnano#backer)]
 
 <a href="https://opencollective.com/cssnano#backers" target="_blank"><img src="https://opencollective.com/cssnano/backers.svg?width=890"></a>
+
 ## Sponsors
 Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/cssnano#sponsor)]
 
@@ -92,7 +93,6 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/cssnano/sponsor/7/website" target="_blank"><img src="https://opencollective.com/cssnano/sponsor/7/avatar.svg"></a>
 <a href="https://opencollective.com/cssnano/sponsor/8/website" target="_blank"><img src="https://opencollective.com/cssnano/sponsor/8/avatar.svg"></a>
 <a href="https://opencollective.com/cssnano/sponsor/9/website" target="_blank"><img src="https://opencollective.com/cssnano/sponsor/9/avatar.svg"></a>
-
 
 
 ## License

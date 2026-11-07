@@ -40,8 +40,10 @@ But should you wish to customise this, you can set the `options` key of the conf
 
 ```js
 // cssnano.config.js
-module.exports = {
-  preset: require('cssnano/presets/default'),
+import defaultPreset from 'cssnano/presets/default';
+
+export default {
+  preset: defaultPreset,
   options: {
     discardComments: { removeAll: true },
   },
@@ -52,8 +54,10 @@ For options with customisable function parameters, use a `cssnano.config.js` in 
 
 ```js
 // cssnano.config.js
+import defaultPreset from 'cssnano/presets/default';
+
 export default {
-  preset: require('cssnano/presets/default'),
+  preset: defaultPreset,
   options: {
     discardComments: {
       remove: (comment) => comment[0] === '@',

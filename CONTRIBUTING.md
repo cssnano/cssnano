@@ -4,13 +4,13 @@ Thanks for contributing to cssnano! We appreciate any contributions,
 large or small. If you've contributed to cssnano we would recommend that
 you add yourself to the list of contributors, found in [CONTRIBUTORS.md].
 
-[CONTRIBUTORS.md]: https://github.com/cssnano/cssnano/blob/master/CONTRIBUTORS.md
+[CONTRIBUTORS.md]: https://github.com/cssnano/cssnano/blob/main/CONTRIBUTORS.md
 
 ## How can I contribute to cssnano's code?
 
-Since version 4, we develop in a monorepo. This is because a lot of transforms overlap with each other; it's
-easier to test them together. Other than this, you'll need Node.js, pnpm &
-git installed. Then, you can run these commands to get the repository set up:
+We develop in a pnpm monorepo with two published packages: `cssnano`, which
+contains the presets, the plugins and the shared utilities, and `postcss-svgo`.
+You'll need Node.js, pnpm & git installed. Then, you can run these commands to get the repository set up:
 
 ```shell
 git clone git@github.com:cssnano/cssnano.git
@@ -168,8 +168,6 @@ Word of mouth really does mean a lot to us!
 
 You can also [help support us financially](https://cssnano.github.io/cssnano/docs/support-us/).
 
-[chat]: https://gitter.im/postcss/postcss
 [documentation]: https://github.com/cssnano/cssnano/labels/documentation
 [help wanted]: https://github.com/cssnano/cssnano/labels/help%20wanted
 [question]: https://github.com/cssnano/cssnano/labels/question
-[twitter]: https://twitter.com/cssnano_
