@@ -54,9 +54,10 @@ const pseudoClasses = [
   ':has(/**/ > /**/ .selected)',
   ':host(.foo)',
   ':host-context(.bar)',
-  '::before',
-  '::after',
 ];
+// A pseudo-element must end its complex selector, so it is only appended to
+// the last compound; elsewhere the selector would be invalid.
+const pseudoElements = ['::before', '::after'];
 const pseudoClassesForIs = [':hover', ':focus', ':link', ':visited'];
 // Invalid cases stay outside the DOM differential oracle: two rejected
 // querySelectorAll calls prove neither validity nor selector equivalence.
@@ -102,7 +103,7 @@ const namespacePrefixes = namespaceDeclarations.map(({ prefix }) => prefix);
  * @param {ReturnType<typeof random>} rng
  * @return {string} one simple selector or combinator combo
  */
-function simpleSelector(rng) {
+function simpleSelector(rng, isSubject = false) {
   const parts = [];
 
   if (rng.chance(0.2)) {
@@ -157,6 +158,10 @@ function simpleSelector(rng) {
     parts.push(rng.chance(0.5) ? rng.pick(tagNames) : '*');
   }
 
+  if (isSubject && rng.chance(0.1)) {
+    parts.push(rng.pick(pseudoElements));
+  }
+
   return parts.join('');
 }
 
@@ -164,8 +169,8 @@ function simpleSelector(rng) {
  * @param {ReturnType<typeof random>} rng
  * @return {string} a compound selector (no combinators, single element level)
  */
-function compoundSelector(rng) {
-  return simpleSelector(rng);
+function compoundSelector(rng, isSubject) {
+  return simpleSelector(rng, isSubject);
 }
 
 /**
@@ -176,11 +181,12 @@ function complexSelector(rng) {
   const compounds = [];
   const combinators = [' ', '>', '+', '~', ' /* c */ > ', ' + /*! c */ '];
 
-  for (let i = 0; i < rng.int(3) + 1; i++) {
+  const length = rng.int(3) + 1;
+  for (let i = 0; i < length; i++) {
     if (i > 0) {
       compounds.push(rng.pick(combinators));
     }
-    compounds.push(compoundSelector(rng));
+    compounds.push(compoundSelector(rng, i === length - 1));
   }
 
   return compounds.join('');
