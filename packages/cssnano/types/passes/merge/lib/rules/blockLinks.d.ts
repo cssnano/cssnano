@@ -1,8 +1,12 @@
-import { BlockRecord } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
+export type LinkReader = Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild'>;
+/**
+ * The reads of the links. `BlockRecords#links` has this type, so an edit
+ * reaches the links only through the arena's methods.
+ *
+ * @typedef {Pick<BlockLinks, 'parentOf' | 'prevSibling' | 'nextSibling' | 'firstChild' | 'lastChild'>} LinkReader
+ */
 /**
  * The links between the entries of the records. Each entry has a container:
  * the block whose chain holds it, or for a nested block the rule that owns it.
@@ -18,13 +22,6 @@ export declare class BlockLinks {
     constructor(records: BlockRecords);
     /** Gives the next entry of the arena unlinked links. */
     grow(): void;
-    /**
-     * The container whose chain holds the entry at `index`.
-     *
-     * @param {number} index an index that the arena gave
-     * @return {BlockRecord | RuleRecord | undefined} undefined when the entry is linked nowhere
-     */
-    enclosingContainer(index: number): BlockRecord | RuleRecord | undefined;
     /**
      * @param {number} index an index that the arena gave
      * @return {ArenaIndex | -1} the container of the entry, -1 when it is linked nowhere
@@ -53,21 +50,9 @@ export declare class BlockLinks {
      */
     lastChild(index: number): ArenaIndex | -1;
     /**
-     * @param {number} index an index that the arena gave, of a container
-     * @return {DeclarationRecord | undefined} the first declaration of its chain
-     */
-    firstDeclaration(index: number): DeclarationRecord | undefined;
-    /**
-     * @param {DeclarationRecord} declaration a declaration linked in a chain
-     * @return {DeclarationRecord | undefined} the declaration after it in its chain
-     * @throws {Error} under checks, when the declaration is linked nowhere
-     */
-    nextDeclaration(declaration: DeclarationRecord): DeclarationRecord | undefined;
-    /**
      * Links the entry at `index` after `after` in the chain of the container at
-     * `block`, which is the head when `after` is -1. Under checks, a container
-     * that does not reach the root through `parentOf` throws, since its entries
-     * would be lost, and a rule or an at-rule may join only a rule that nests.
+     * `block`, which is the head when `after` is -1. The arena checks the link
+     * before it calls this.
      *
      * @param {number} block
      * @param {number} after
@@ -100,14 +85,5 @@ export declare class BlockLinks {
      * @return {void}
      */
     takeLinkOf(later: number, earlier: number): void;
-    /**
-     * Under checks, walks `parentOf` up from `index` and throws when a container
-     * above it stops the walk at -1. An entry linked nowhere is unplaced and passes.
-     *
-     * @param {number} index an index that the arena gave, or -1
-     * @return {void}
-     * @throws {Error} under checks, when a container above `index` does not reach the root
-     */
-    assertReached(index: number): void;
 }
 //# sourceMappingURL=blockLinks.d.ts.map

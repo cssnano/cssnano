@@ -13,6 +13,11 @@ import {
   ruleRecordOf,
   buildTestRecords,
 } from './liveRecords.js';
+import {
+  adopt,
+  moveRule,
+  substitute,
+} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -50,7 +55,7 @@ test('substitute should put the replacement in the chain where the rule stood', 
     'x'
   );
   const mediaIndex = indexOfBlock(state, media);
-  state.records.substitute(ruleRecordOf(state.records, a).index, [
+  substitute(state.records, ruleRecordOf(state.records, a).index, [
     replacement.index,
   ]);
   const entries = state.records.liveEntries(mediaIndex);
@@ -66,7 +71,7 @@ test('substitute with no replacement should unlink the rule and shrink its block
   const [a] = /** @type {Rule[]} */ (/** @type {Container} */ (media).nodes);
   const mediaRecord = blockRecordOf(state.records, media);
   const rule = ruleRecordOf(state.records, a);
-  state.records.substitute(rule.index, []);
+  substitute(state.records, rule.index, []);
   assert.equal(mediaRecord.count, 1);
   assert.equal(state.records.links.parentOf(rule.index), -1);
 });
@@ -76,7 +81,7 @@ test('moveRule should link the rule at the end of the target chain and unlink it
   const [x, media] = /** @type {Container[]} */ (root.nodes);
   const [a] = /** @type {Rule[]} */ (/** @type {Container} */ (media).nodes);
   const rule = ruleRecordOf(state.records, a);
-  state.records.moveRule(state.records.root.index, rule.index);
+  moveRule(state.records, state.records.root.index, rule.index);
   const entries = state.records.liveEntries(state.records.root.index);
   assert.equal(entries.at(-1), rule);
   assert.equal(entries[0], ruleRecordOf(state.records, x));
@@ -106,7 +111,7 @@ test('adopt should append the children of the source to the target and leave the
   const [x, media] = /** @type {Container[]} */ (root.nodes);
   const [a, b] = /** @type {Rule[]} */ (/** @type {Container} */ (media).nodes);
   const mediaRecord = blockRecordOf(state.records, media);
-  state.records.adopt(state.records.root.index, mediaRecord.index);
+  adopt(state.records, state.records.root.index, mediaRecord.index);
   const entries = state.records.liveEntries(state.records.root.index);
   assert.equal(entries.length, 4);
   assert.equal(entries[0], ruleRecordOf(state.records, x));

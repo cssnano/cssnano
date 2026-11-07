@@ -8,6 +8,10 @@ import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
 import { appendToDeclarations } from '../../../src/passes/merge/lib/rules/treeEdits.js';
 import { ruleRecordOf, buildTestRecords } from './lib/rules/liveRecords.js';
+import {
+  appendChild,
+  removeDeclarationsAt,
+} from '../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {AtRule, Declaration, Root, Rule} from 'postcss' */
 
@@ -35,7 +39,8 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
   const q = /** @type {Rule} */ (inner.last);
   // The edit goes through treeEdits, which keeps the record of `q` in step with
   // its declarations.
-  mergeState.records.removeDeclarationsAt(
+  removeDeclarationsAt(
+    mergeState.records,
     ruleRecordOf(mergeState.records, q),
     new Set([0])
   );
@@ -49,7 +54,8 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
     incoming.selector
   );
   for (const node of incoming.nodes) {
-    mergeState.records.appendChild(
+    appendChild(
+      mergeState.records,
       incomingRecord,
       mergeState.records.blockDeclaration(
         /** @type {Declaration} */ (node),

@@ -8,6 +8,7 @@ import {
 import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { assertLinearTime } from '../linearTiming.js';
+import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /**
  * The records of `css`, as the run builds them. The first rule of a stylesheet
@@ -46,7 +47,8 @@ function timeAppendsAndReads(size) {
   let seen = 0;
   const start = performance.now();
   for (const node of nodes) {
-    records.appendChild(
+    appendChild(
+      records,
       rule,
       records.blockDeclaration(node, state.properties, state.declarationIds)
     );

@@ -2,6 +2,11 @@ import postcss from 'postcss';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { PropertyWrites } from './propertyWrites.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
+import {
+  appendChild,
+  removeDeclarationsAt,
+  takeDeclarationsAt,
+} from './arenaEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
@@ -170,14 +175,15 @@ export function buildMergedRule(
   if (!group) mergeState.storeJoined(receivingRecord, first, second);
   mergeState.reportCreated(receivingBlock);
   // The merged rule takes the declarations of the earlier rule themselves.
-  for (const declaration of records.takeDeclarationsAt(
+  for (const declaration of takeDeclarationsAt(
+    records,
     first,
     claimedEarlierIndices
   )) {
-    records.appendChild(receivingRecord, declaration);
+    appendChild(records, receivingRecord, declaration);
   }
   const firstLeftover = leftoverOf(first);
-  records.removeDeclarationsAt(second, claimedIndices);
+  removeDeclarationsAt(records, second, claimedIndices);
   const secondLeftover = leftoverOf(second);
   /** @type {Placement} */
   const placement = {
@@ -190,7 +196,7 @@ export function buildMergedRule(
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
-      records.removeDeclarationsAt(rule, claimed);
+      removeDeclarationsAt(records, rule, claimed);
       return indicesOf(leftoverOf(rule));
     });
   }

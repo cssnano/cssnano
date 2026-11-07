@@ -31,6 +31,11 @@ import {
   blockRecordOf,
   buildTestRecords,
 } from './liveRecords.js';
+import {
+  adopt,
+  appendChild,
+  moveRule,
+} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -87,7 +92,7 @@ test('assertRecordsMatchTree should throw when the chain holds the rules in anot
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
   const [a] = /** @type {Rule[]} */ (media.node.nodes);
-  state.records.moveRule(media.index, ruleRecordOf(state.records, a).index);
+  moveRule(state.records, media.index, ruleRecordOf(state.records, a).index);
   assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
 });
 
@@ -96,7 +101,7 @@ test('assertRecordsMatchTree should throw when a block chain lacks a child the t
   const media = /** @type {BlockRecord} */ (
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
-  state.records.links.unlink(
+  state.records.unlink(
     ruleRecordOf(state.records, /** @type {Rule} */ (media.node.first)).index
   );
   assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
@@ -197,7 +202,8 @@ test('the chains should stay well formed after a move of children', () => {
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   const [first, second] = /** @type {Container} */ (root).nodes;
-  state.records.adopt(
+  adopt(
+    state.records,
     blockRecordOf(state.records, first).index,
     blockRecordOf(state.records, second).index
   );
@@ -245,7 +251,8 @@ test('the chains should stay well formed after a rule moves to the end of a bloc
   const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
-  state.records.moveRule(
+  moveRule(
+    state.records,
     state.records.root.index,
     ruleRecordOf(state.records, rule).index
   );
@@ -293,7 +300,8 @@ test('assertNoOverDuplication should throw when a declaration is written more of
   const rule = /** @type {Rule} */ (root.first);
   const record = ruleRecordOf(state.records, rule);
   const added = postcss.decl({ prop: 'color', value: 'red' });
-  state.records.appendChild(
+  appendChild(
+    state.records,
     record,
     state.records.blockDeclaration(
       added,
@@ -313,7 +321,7 @@ test('assertNoOverDuplication should throw when a chain reaches a rule that a se
   const nestedIndex = ruleRecordOf(state.records, outer).index;
   // Linking `b` into the nested chain leaves its sibling link in the root chain,
   // so the walk reaches `b` from both chains.
-  state.records.links.linkLast(
+  state.records.linkLast(
     nestedIndex,
     ruleRecordOf(state.records, second).index
   );
@@ -330,7 +338,7 @@ test('links.firstChild should give the entry after the first rule once that rule
     state.records,
     /** @type {Rule} */ (media.node.first)
   );
-  state.records.links.unlink(first.index);
+  state.records.unlink(first.index);
   assert.equal(
     state.records.nodeOf(state.records.links.firstChild(media.index)),
     media.node.nodes[1]

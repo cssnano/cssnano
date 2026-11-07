@@ -16,6 +16,10 @@ import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rule
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
+import {
+  appendChild,
+  removeDeclarationsAt,
+} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
@@ -106,7 +110,8 @@ test('declarationKeys should return the cached keys while the declarations are u
 test('appendChild should make declarationKeys reflect the appended declaration', () => {
   const { state, records, record } = arenaOf('a{color:red}');
   record.declarationKeys(records);
-  records.appendChild(
+  appendChild(
+    records,
     record,
     declarationOf(state, postcss.decl({ prop: 'top', value: '0' }))
   );
@@ -259,7 +264,8 @@ test('isDeclarationRule should accept a rule that holds only declarations', () =
 
 test('appendChild should add a declaration to the declarations of a rule that holds a comment', () => {
   const { state, records, record } = arenaOf('a{/* note */color:red}');
-  records.appendChild(
+  appendChild(
+    records,
     record,
     declarationOf(state, postcss.decl({ prop: 'width', value: '1px' }))
   );
@@ -268,7 +274,8 @@ test('appendChild should add a declaration to the declarations of a rule that ho
 
 test('appendChild should count an appended comment among the children without adding a declaration', () => {
   const { state, records, record } = arenaOf('a{color:red}');
-  records.appendChild(
+  appendChild(
+    records,
     record,
     state.records.bareEntry(
       new NodeEntry(
@@ -290,7 +297,8 @@ test('appendChild should keep the declarations in step with the children under c
   enableConsistencyChecks(true);
   try {
     const { state, records, record } = arenaOf('a{/* note */color:red}');
-    records.appendChild(
+    appendChild(
+      records,
       record,
       declarationOf(state, postcss.decl({ prop: 'width', value: '1px' }))
     );
@@ -305,7 +313,7 @@ test('declarations should read the records under consistency checks, before writ
   enableConsistencyChecks(true);
   try {
     const { records, record } = arenaOf('a{color:red}');
-    records.removeDeclarationsAt(record, new Set([0]));
+    removeDeclarationsAt(records, record, new Set([0]));
     assert.equal(record.declarationsOf(records).length, 0);
   } finally {
     enableConsistencyChecks(wasEnabled);
@@ -330,7 +338,7 @@ test('appendChild should give an appended declaration without raws.before the wh
   const { state, records, record } = arenaOf('a{\n  color:red}');
   const node = postcss.decl({ prop: 'width', value: '1px' });
   const declaration = declarationOf(state, node);
-  records.appendChild(record, declaration);
+  appendChild(records, record, declaration);
   assert.equal(declaration.before, '\n  ');
 });
 
@@ -338,6 +346,6 @@ test('appendChild should leave the whitespace of a declaration appended to a rul
   const { state, records, record } = arenaOf('a{}');
   const node = postcss.decl({ prop: 'width', value: '1px' });
   const declaration = declarationOf(state, node);
-  records.appendChild(record, declaration);
+  appendChild(records, record, declaration);
   assert.equal(declaration.before, null);
 });

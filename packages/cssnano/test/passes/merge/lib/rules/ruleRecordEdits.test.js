@@ -16,6 +16,11 @@ import {
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
+import {
+  appendChild,
+  removeDeclarationsAt,
+  takeDeclarationsAt,
+} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {ChildNode, Declaration, Rule} from 'postcss' */
 
@@ -47,7 +52,8 @@ test('a rule that its declarations left keeps its node array until write-back', 
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [, b] = twoRules(root);
   const kept = b.nodes;
-  state.records.removeDeclarationsAt(
+  removeDeclarationsAt(
+    state.records,
     ruleRecordOf(state.records, b),
     new Set([0])
   );
@@ -60,7 +66,8 @@ test('an unedited rule keeps its node array through a write-back of another rule
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [a, b] = twoRules(root);
   const kept = a.nodes;
-  state.records.removeDeclarationsAt(
+  removeDeclarationsAt(
+    state.records,
     ruleRecordOf(state.records, b),
     new Set([0])
   );
@@ -78,7 +85,7 @@ test('a rule record reports itself edited after it removes a declaration', () =>
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [a] = twoRules(root);
   const record = ruleRecordOf(state.records, a);
-  state.records.removeDeclarationsAt(record, new Set([0]));
+  removeDeclarationsAt(state.records, record, new Set([0]));
   assert.equal(record.edited, true);
 });
 
@@ -87,8 +94,8 @@ test('a receiving rule keeps its node unchanged until write-back', () => {
   const [a, b] = twoRules(root);
   const from = ruleRecordOf(state.records, a);
   const to = ruleRecordOf(state.records, b);
-  for (const child of state.records.takeDeclarationsAt(from, new Set([0]))) {
-    state.records.appendChild(to, child);
+  for (const child of takeDeclarationsAt(state.records, from, new Set([0]))) {
+    appendChild(state.records, to, child);
   }
   assert.equal(b.nodes.length, 1);
   writeBack(state.records);
@@ -100,8 +107,8 @@ test('a declaration handed to another rule has that rule as parent after write-b
   const [a, b] = twoRules(root);
   const from = ruleRecordOf(state.records, a);
   const to = ruleRecordOf(state.records, b);
-  for (const child of state.records.takeDeclarationsAt(from, new Set([0]))) {
-    state.records.appendChild(to, child);
+  for (const child of takeDeclarationsAt(state.records, from, new Set([0]))) {
+    appendChild(state.records, to, child);
   }
   writeBack(state.records);
   assert.equal(/** @type {Declaration} */ (b.last).prop, 'color');

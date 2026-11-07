@@ -245,9 +245,9 @@ export class RuleRecord extends SelectorList {
     /** @type {DeclarationRecord[]} */
     const declarations = [];
     for (
-      let declaration = records.links.firstDeclaration(this.index);
+      let declaration = records.firstDeclaration(this.index);
       declaration !== undefined;
-      declaration = records.links.nextDeclaration(declaration)
+      declaration = records.nextDeclaration(declaration)
     ) {
       declarations.push(declaration);
     }
@@ -266,9 +266,9 @@ export class RuleRecord extends SelectorList {
     this.#assertLive();
     let at = 0;
     for (
-      let declaration = records.links.firstDeclaration(this.index);
+      let declaration = records.firstDeclaration(this.index);
       declaration !== undefined;
-      declaration = records.links.nextDeclaration(declaration)
+      declaration = records.nextDeclaration(declaration)
     ) {
       if (at++ === position) return declaration;
     }

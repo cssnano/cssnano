@@ -100,9 +100,9 @@ export default class LastWriteIndex {
       }
       // A rule without a block writes its declarations only.
       for (
-        let declaration = records.links.firstDeclaration(entry.index);
+        let declaration = records.firstDeclaration(entry.index);
         declaration !== undefined;
-        declaration = records.links.nextDeclaration(declaration)
+        declaration = records.nextDeclaration(declaration)
       )
         this.record(declaration.keys, position, own);
     } else if (entry instanceof BlockRecord) {
@@ -237,9 +237,9 @@ export default class LastWriteIndex {
   #ruleConflicts(records, rule, position, elements) {
     if (rule.context === -1) {
       for (
-        let declaration = records.links.firstDeclaration(rule.index);
+        let declaration = records.firstDeclaration(rule.index);
         declaration !== undefined;
-        declaration = records.links.nextDeclaration(declaration)
+        declaration = records.nextDeclaration(declaration)
       ) {
         if (this.#conflictsWith(declaration.keys, position, elements)) {
           return true;
@@ -284,9 +284,9 @@ export default class LastWriteIndex {
         const own = keys?.length ? keys : null;
         if (entry.context === -1) {
           for (
-            let declaration = records.links.firstDeclaration(entry.index);
+            let declaration = records.firstDeclaration(entry.index);
             declaration !== undefined;
-            declaration = records.links.nextDeclaration(declaration)
+            declaration = records.nextDeclaration(declaration)
           ) {
             this.record(declaration.keys, position, own);
           }

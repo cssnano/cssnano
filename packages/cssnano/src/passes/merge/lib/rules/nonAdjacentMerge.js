@@ -12,6 +12,7 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
 import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
+import { adopt } from './arenaEdits.js';
 
 /** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
@@ -220,7 +221,7 @@ function joinBlocksBackward(block, mergeState) {
     const laterEntries = subtreeEntries(mergeState.records, later);
     if (!laterEntries) return null;
     if (!index.conflictsSinceIn(records, laterEntries, laterPosition, keysOf)) {
-      mergeState.records.adopt(earlier.index, later.index);
+      adopt(mergeState.records, earlier.index, later.index);
       remove(mergeState.records, later);
       return 'up';
     }
@@ -231,7 +232,7 @@ function joinBlocksBackward(block, mergeState) {
       !index.conflictsSinceIn(records, earlierEntries, laterPosition, keysOf)
     ) {
       index.moveWrites(records, earlierEntries, laterPosition, keysOf);
-      mergeState.records.adopt(earlier.index, later.index);
+      adopt(mergeState.records, earlier.index, later.index);
       takePlaceOf(mergeState.records, earlier.index, later.index);
       return 'down';
     }
@@ -365,7 +366,7 @@ function joinInParent(block, mergeState, rules) {
       !index.conflictsSinceIn(records, laterEntries, earlierPosition, keysOf)
     ) {
       index.moveWrites(records, laterEntries, earlierPosition, keysOf);
-      mergeState.records.adopt(earlier.index, later.index);
+      adopt(mergeState.records, earlier.index, later.index);
       remove(mergeState.records, later);
       return 'up';
     }
@@ -377,7 +378,7 @@ function joinInParent(block, mergeState, rules) {
     ) {
       index.moveWrites(records, earlierEntries, laterPosition, keysOf);
       index.moveWrites(records, laterEntries, laterPosition, keysOf);
-      mergeState.records.adopt(earlier.index, later.index);
+      adopt(mergeState.records, earlier.index, later.index);
       takePlaceOf(mergeState.records, earlier.index, later.index);
       return 'down';
     }

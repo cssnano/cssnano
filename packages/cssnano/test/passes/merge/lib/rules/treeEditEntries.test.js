@@ -16,6 +16,11 @@ import {
   ruleRecordOf,
   buildTestRecords,
 } from './liveRecords.js';
+import {
+  adopt,
+  moveRule,
+  substitute,
+} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 /** @import {ChildNode, Container, Root, Rule} from 'postcss' */
 
@@ -52,7 +57,7 @@ test('substitute with no replacement should remove the rule from the live entrie
   const { root, state } = setup('a{color:red}b{width:1px}c{height:1px}');
   const [a] = /** @type {Rule[]} */ (root.nodes);
   const record = ruleRecordOf(state.records, a);
-  state.records.substitute(record.index, []);
+  substitute(state.records, record.index, []);
   assert.deepEqual(liveLabels(state), ['b', 'c']);
 });
 
@@ -65,7 +70,7 @@ test('substitute with one replacement should put it where the rule stood', () =>
     ['x'],
     'x'
   );
-  state.records.substitute(record.index, [replacement.index]);
+  substitute(state.records, record.index, [replacement.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'c']);
 });
 
@@ -83,7 +88,7 @@ test('substitute with several replacements should keep their order where the rul
     ['y'],
     'y'
   );
-  state.records.substitute(record.index, [first.index, second.index]);
+  substitute(state.records, record.index, [first.index, second.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'y', 'c']);
 });
 
@@ -93,7 +98,7 @@ test('moveRule should move a rule out of an at-rule to the end of the stylesheet
   );
   const [media] = /** @type {Container[]} */ (root.nodes);
   const rule = ruleRecordOf(state.records, /** @type {Rule} */ (media.first));
-  state.records.moveRule(state.records.root.index, rule.index);
+  moveRule(state.records, state.records.root.index, rule.index);
   assert.deepEqual(liveLabels(state), ['@media', 'c', 'a']);
 });
 
@@ -104,7 +109,7 @@ test('adopt should splice the source children after the target, keeping a rule t
   const [target, source] = /** @type {Container[]} */ (root.nodes);
   const targetBlock = blockRecordOf(state.records, target);
   const sourceBlock = blockRecordOf(state.records, source);
-  state.records.adopt(targetBlock.index, sourceBlock.index);
+  adopt(state.records, targetBlock.index, sourceBlock.index);
   const entries = state.records.liveEntries(targetBlock.index);
   assert.equal(entries.length, 2);
   assert.equal(

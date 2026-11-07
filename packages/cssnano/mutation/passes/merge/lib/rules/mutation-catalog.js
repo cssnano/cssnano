@@ -86,8 +86,8 @@ export const mutations = [
   {
     name: 'forget the writes of a block moved down in the backward pass',
     target: source('nonAdjacentMerge.js'),
-    find: '      index.moveWrites(records, earlierEntries, laterPosition, keysOf);\n      mergeState.records.adopt(earlier.index, later.index);',
-    replace: '      mergeState.records.adopt(earlier.index, later.index);',
+    find: '      index.moveWrites(records, earlierEntries, laterPosition, keysOf);\n      adopt(mergeState.records, earlier.index, later.index);',
+    replace: '      adopt(mergeState.records, earlier.index, later.index);',
   },
   {
     name: 'ignore !important in the declaration key',
@@ -146,19 +146,19 @@ export const mutations = [
   {
     name: 'a removal of a rule that leaves it in its chain',
     target: source('treeEdits.js'),
-    find: '  records.links.unlink(entry.index);\n',
+    find: '  records.unlink(entry.index);\n',
     replace: '',
   },
   {
     name: 'a removal of a rule set that leaves its rules in their chains',
     target: source('treeEdits.js'),
-    find: '    arena.links.unlink(index);\n    record.depart();\n',
+    find: '    arena.unlink(index);\n    record.depart();\n',
     replace: '    record.depart();\n',
   },
   {
     name: 'a sweep that leaves an emptied block in its chain',
     target: source('ruleSequence.js'),
-    find: '      links.unlink(at);\n',
+    find: '      records.unlink(at);\n',
     replace: '',
   },
   {
@@ -169,15 +169,15 @@ export const mutations = [
   },
   {
     name: 'a move of children that unlinks the moved entries without linking them',
-    target: source('blockRecords.js'),
-    find: '      this.links.linkLast(target, entry);\n',
+    target: source('arenaEdits.js'),
+    find: '    records.linkLast(target, entry);\n',
     replace: '',
   },
   {
     name: 'a move that leaves the moved rule in its old chain',
-    target: source('blockRecords.js'),
-    find: '  moveRule(target, record) {\n    this.links.unlink(record);\n',
-    replace: '  moveRule(target, record) {\n',
+    target: source('arenaEdits.js'),
+    find: 'export function moveRule(records, target, record) {\n  records.unlink(record);\n',
+    replace: 'export function moveRule(records, target, record) {\n',
   },
   {
     name: 'move into the later parent',
@@ -194,24 +194,24 @@ export const mutations = [
   },
   {
     name: 'taking declarations hands over no record',
-    target: source('blockRecords.js'),
-    find: '    for (const declaration of taken) this.links.unlink(declaration.index);\n    return taken;',
+    target: source('arenaEdits.js'),
+    find: '  for (const declaration of taken) records.unlink(declaration.index);\n  return taken;',
     replace:
-      '    for (const declaration of taken) this.links.unlink(declaration.index);\n    return [];',
+      '  for (const declaration of taken) records.unlink(declaration.index);\n  return [];',
   },
   {
     name: 'taking declarations removes the taken node at once',
-    target: source('blockRecords.js'),
-    find: '    for (const declaration of taken) this.links.unlink(declaration.index);\n    return taken;',
+    target: source('arenaEdits.js'),
+    find: '  for (const declaration of taken) records.unlink(declaration.index);\n  return taken;',
     replace:
-      '    for (const declaration of taken) {\n      this.links.unlink(declaration.index);\n      declaration.node.remove();\n    }\n    return taken;',
+      '  for (const declaration of taken) {\n    records.unlink(declaration.index);\n    declaration.node.remove();\n  }\n  return taken;',
   },
   {
     name: 'an append edits the node of the rule at once',
-    target: source('blockRecords.js'),
-    find: '    this.links.linkLast(rule.index, child.index);\n',
+    target: source('arenaEdits.js'),
+    find: '  records.linkLast(rule.index, child.index);\n',
     replace:
-      '    this.links.linkLast(rule.index, child.index);\n    rule.node.append(child.node);\n',
+      '  records.linkLast(rule.index, child.index);\n  rule.node.append(child.node);\n',
   },
   {
     name: 'an append leaves the rule record unedited',

@@ -11,6 +11,7 @@ import {
   enableConsistencyChecks,
 } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
+import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 
 const createState = () => new MergeState(['chrome 120'], createRunContext());
 
@@ -340,7 +341,7 @@ test('canMerge should keep refusing a rule whose last nested rule has moved out'
   );
   const nesting = ruleRecordOf(state.records, root.first);
   const nested = ruleRecordOf(state.records, root.first.first);
-  state.records.moveRule(state.records.root.index, nested.index);
+  moveRule(state.records, state.records.root.index, nested.index);
   assert.equal(
     state.canMerge(nesting, ruleRecordOf(state.records, root.last)),
     false
@@ -355,7 +356,7 @@ test('a rule whose last nested rule has moved out should stay in its container c
   );
   const nesting = ruleRecordOf(state.records, root.first);
   const nested = ruleRecordOf(state.records, root.first.first);
-  state.records.moveRule(state.records.root.index, nested.index);
+  moveRule(state.records, state.records.root.index, nested.index);
   assert.equal(
     state.records.links.parentOf(nesting.index),
     state.records.root.index

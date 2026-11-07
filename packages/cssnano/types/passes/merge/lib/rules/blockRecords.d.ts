@@ -2,10 +2,15 @@ import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ChildNode, Rule } from 'postcss';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
-import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { BlockLinks } from './blockLinks.js';
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {ChildNode, Container, Rule} from 'postcss' */
+/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
+/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockRecord } from './blockRecord.js';
-import type { ArenaIndex, ChainPosition, NodeEntry } from './blockRecord.js';
+import type { NodeEntry } from './blockRecord.js';
+import type { ArenaIndex } from './blockRecord.js';
+import type { LinkReader } from './blockLinks.js';
 import { RuleRecord } from './ruleRecord.js';
 /**
  * The records of one run. One arena holds every block record, every rule record,
@@ -19,8 +24,8 @@ export declare class BlockRecords {
     #private;
     /** @type {BlockRecord} the record of the stylesheet */
     root: BlockRecord;
-    /** @type {BlockLinks} the chains of the blocks, and each entry's container */
-    links: BlockLinks;
+    /** @type {LinkReader} the chains of the blocks, read here and edited through this arena */
+    links: LinkReader;
     /** @type {Map<string, number> | null} declarations the input wrote, under checks */
     inputWrites: Map<string, number> | null;
     /**
@@ -69,6 +74,61 @@ export declare class BlockRecords {
      */
     rule(index: number): RuleRecord | undefined;
     /**
+     * The container whose chain holds the entry at `index`.
+     *
+     * @param {number} index an index that the arena gave
+     * @return {BlockRecord | RuleRecord | undefined} undefined when the entry is linked nowhere
+     */
+    enclosingContainer(index: number): BlockRecord | RuleRecord | undefined;
+    /**
+     * @param {number} index an index that the arena gave, of a container
+     * @return {DeclarationRecord | undefined} the first declaration of its chain
+     */
+    firstDeclaration(index: number): DeclarationRecord | undefined;
+    /**
+     * @param {DeclarationRecord} declaration a declaration linked in a chain
+     * @return {DeclarationRecord | undefined} the declaration after it in its chain
+     * @throws {Error} under checks, when the declaration is linked nowhere
+     */
+    nextDeclaration(declaration: DeclarationRecord): DeclarationRecord | undefined;
+    /**
+     * Links the entry at `index` after `after` in the chain of the container at
+     * `block`, which is the head when `after` is -1. Under checks, a container
+     * that does not reach the root through `parentOf` throws, since its entries
+     * would be lost, and a rule or an at-rule may join only a rule that nests.
+     *
+     * @param {number} block
+     * @param {number} after
+     * @param {number} index an entry that is linked nowhere, or was unlinked
+     * @return {void}
+     */
+    linkAfter(block: number, after: number, index: number): void;
+    /**
+     * Links the entry at `index` at the end of the chain of the block at `block`.
+     *
+     * @param {number} block
+     * @param {number} index an entry that is linked nowhere, or was unlinked
+     * @return {void}
+     */
+    linkLast(block: number, index: number): void;
+    /**
+     * Takes the entry at `index` out of its chain. The entry keeps its own
+     * subtree, and a later link may place it again.
+     *
+     * @param {number} index
+     * @return {void}
+     */
+    unlink(index: number): void;
+    /**
+     * Puts the entry `earlier` in the chain where `later` stands, and unlinks
+     * `later`.
+     *
+     * @param {number} later a linked entry
+     * @param {number} earlier an entry that is linked elsewhere, or nowhere
+     * @return {void}
+     */
+    takeLinkOf(later: number, earlier: number): void;
+    /**
      * @return {number} the entries the arena holds, dropped and departed ones included
      */
     entryCount(): number;
@@ -115,33 +175,6 @@ export declare class BlockRecords {
      */
     liveChildren(index: number): ChildNode[];
     /**
-     * Replaces the rule `record` with the rules `replacements`, which take its
-     * place in the chain, in order.
-     *
-     * @param {number} record the index of the rule that is replaced
-     * @param {number[]} replacements
-     * @return {void}
-     */
-    substitute(record: number, replacements: number[]): void;
-    /**
-     * Moves the rule `record` to the end of the chain of the block at `target`.
-     *
-     * @param {number} target the index of the block that takes the rule
-     * @param {number} record the index of the rule
-     * @return {void}
-     */
-    moveRule(target: number, record: number): void;
-    /**
-     * Moves the chain of the block at `source` to the end of the chain of the
-     * block at `target`. `source` is left with no children, since the caller
-     * removes it. A nested block keeps its rule, which moves with the chain.
-     *
-     * @param {number} target
-     * @param {number} source
-     * @return {void}
-     */
-    adopt(target: number, source: number): void;
-    /**
      * Clears the edited flag of every rule, once the build has linked their
      * children, so that only edits after the build mark a rule.
      *
@@ -187,35 +220,5 @@ export declare class BlockRecords {
      * @return {RuleRecord}
      */
     recordRule(rule: Rule, selectors: string[], selector: string, sourceSelector?: string, tokens?: readonly CSSToken[]): RuleRecord;
-    /**
-     * Appends a child to the chain of a rule, after its last child, and gives the
-     * child the whitespace of that child when it has none. The node takes it at
-     * write-back. The child must be linked nowhere, or unlinked.
-     *
-     * @param {RuleRecord} rule
-     * @param {DeclarationRecord | NodeEntry} child
-     * @return {void}
-     */
-    appendChild(rule: RuleRecord, child: DeclarationRecord | NodeEntry): void;
-    /**
-     * Removes the declarations of a rule at the positions `claimed`, which index
-     * the declarations as they stand at the call. The node drops them at
-     * write-back.
-     *
-     * @param {RuleRecord} rule
-     * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
-     * @return {void}
-     */
-    removeDeclarationsAt(rule: RuleRecord, claimed: Set<ChainPosition>): void;
-    /**
-     * Removes the declarations of a rule at the positions `claimed`, as
-     * `removeDeclarationsAt` does, and returns their records for another rule to
-     * append.
-     *
-     * @param {RuleRecord} rule
-     * @param {Set<ChainPosition>} claimed the positions of the declarations that leave
-     * @return {DeclarationRecord[]} the removed records, in order
-     */
-    takeDeclarationsAt(rule: RuleRecord, claimed: Set<ChainPosition>): DeclarationRecord[];
 }
 //# sourceMappingURL=blockRecords.d.ts.map
