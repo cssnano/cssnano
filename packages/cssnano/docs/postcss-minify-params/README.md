@@ -21,7 +21,9 @@
 ## Usage
 
 ```js
-postcss([ require('postcss-minify-params') ])
+import cssnano from 'cssnano';
+
+postcss([cssnano({ preset: 'default' })]);
 ```
 
 See [PostCSS] docs for examples for your environment.

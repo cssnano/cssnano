@@ -4,23 +4,19 @@
 
 ## Install
 
-With [npm](https://npmjs.org/package/postcss-colormin) do:
-
-```
-npm install postcss-colormin --save
-```
-
+This plugin is part of `cssnano` and is no longer published as a separate package. It runs in the `cssnano` presets; see the [presets documentation](https://cssnano.github.io/cssnano/docs/presets/) to configure it.
 
 ## Example
 
 ```js
-var postcss = require('postcss')
-var colormin = require('postcss-colormin');
+import postcss from 'postcss';
+import cssnano from 'cssnano';
 
-var css = 'h1 {color: rgba(255, 0, 0, 1)}';
-console.log(postcss(colormin()).process(css).css);
+const css = 'h1 {color: rgba(255, 0, 0, 1)}';
+const result = await postcss([cssnano()]).process(css, { from: undefined });
+console.log(result.css);
 
-// => 'h1 {color:red}'
+// => 'h1{color:red}'
 ```
 
 For more examples see the [tests](test).

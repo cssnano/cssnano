@@ -4,11 +4,7 @@
 
 ## Install
 
-With [npm](https://npmjs.org/package/postcss-merge-rules) do:
-
-```
-npm install postcss-merge-rules --save
-```
+This transform is part of the `cssnano` merge pass and is not a published package. It runs in the `cssnano` presets; see the [presets documentation](https://cssnano.github.io/cssnano/docs/presets/) to configure it.
 
 ## Examples
 

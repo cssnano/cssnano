@@ -64,7 +64,9 @@ Pass a function to determine whether a css variable is one of `font`, `font-fami
 ## Usage
 
 ```js
-postcss([ require('postcss-minify-font-values') ])
+import cssnano from 'cssnano';
+
+postcss([cssnano({ preset: 'default' })]);
 ```
 
 See [PostCSS] docs for examples for your environment.

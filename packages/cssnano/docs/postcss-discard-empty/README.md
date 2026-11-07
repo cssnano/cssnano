@@ -4,11 +4,7 @@
 
 ## Install
 
-With [npm](https://npmjs.org/package/postcss-discard-empty) do:
-
-```
-npm install postcss-discard-empty --save
-```
+This plugin is part of `cssnano` and is no longer published as a separate package. It runs in the `cssnano` presets; see the [presets documentation](https://cssnano.github.io/cssnano/docs/presets/) to configure it.
 
 ## Example
 
