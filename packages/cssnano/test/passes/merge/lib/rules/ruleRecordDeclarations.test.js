@@ -8,7 +8,12 @@ import {
 } from '../../../../../src/passes/ir/consistencyChecks.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { ruleRecordOf, buildTestRecords, claimAt } from './liveRecords.js';
+import {
+  buildTestRecords,
+  claimAt,
+  declarationIds,
+  ruleRecordOf,
+} from './liveRecords.js';
 import {
   appendChild,
   moveDeclarations,
@@ -96,7 +101,7 @@ test('removeDeclarations should drop the keys of the removed declarations from t
   const { records, record } = arenaOf('a{color:red;width:1px}');
   const [, width] = record.declarationsOf(records);
   removeDeclarations(records, record.index, claimAt(records, record, [0]));
-  assert.deepEqual(declarationKeys(records, record.index).keys, [width.id]);
+  assert.deepEqual(declarationIds(records, record.index), [width.id]);
 });
 
 test('removeDeclarations should throw under checks for an index that a previous removal already took', () => {
@@ -199,7 +204,7 @@ test('moveDeclarations should drop the keys of the moved declarations from the d
   moveDeclarations(records, record.index, target.index, [
     ...claimAt(records, record, [0]),
   ]);
-  assert.deepEqual(declarationKeys(records, record.index).keys, [width.id]);
+  assert.deepEqual(declarationIds(records, record.index), [width.id]);
 });
 
 test('unlinking a nested rule should keep the declaration keys of its parent, without a rebuild', () => {
@@ -227,7 +232,7 @@ test('unlinking a declaration should clear the declaration keys of its parent, w
   const kept = declarationKeys(records, record.index);
   records.unlink(record.declarationsOf(records)[0].index);
   assert.notEqual(declarationKeys(records, record.index), kept);
-  assert.deepEqual(declarationKeys(records, record.index).keys, [width.id]);
+  assert.deepEqual(declarationIds(records, record.index), [width.id]);
 });
 
 /**
@@ -252,10 +257,7 @@ test('appendChild of a declaration should keep the entry of the rule and list th
   const top = freshDeclaration(arena, 'top');
   appendChild(records, record, top);
   assert.equal(declarationKeys(records, record.index), before);
-  assert.deepEqual(declarationKeys(records, record.index).keys, [
-    color.id,
-    top.id,
-  ]);
+  assert.deepEqual(declarationIds(records, record.index), [color.id, top.id]);
 });
 
 test('appendChild of a declaration after an unlink should list the ids without the unlinked one, in a new entry', () => {
@@ -268,7 +270,7 @@ test('appendChild of a declaration after an unlink should list the ids without t
   appendChild(records, record, top);
   const after = declarationKeys(records, record.index);
   assert.notEqual(after, before);
-  assert.deepEqual(after.keys, [width.id, top.id]);
+  assert.deepEqual(declarationIds(records, record.index), [width.id, top.id]);
 });
 
 test('linking a declaration before the last child should list the ids in chain order, in a new entry', () => {
@@ -280,7 +282,11 @@ test('linking a declaration before the last child should list the ids in chain o
   records.linkAfter(record.index, color.index, top.index);
   const after = declarationKeys(records, record.index);
   assert.notEqual(after, before);
-  assert.deepEqual(after.keys, [color.id, top.id, width.id]);
+  assert.deepEqual(declarationIds(records, record.index), [
+    color.id,
+    top.id,
+    width.id,
+  ]);
 });
 
 test('takeLinkOf of a declaration of one rule into another should give each rule a new entry after the move', () => {
@@ -294,8 +300,8 @@ test('takeLinkOf of a declaration of one rule into another should give each rule
   records.takeLinkOf(width.index, color.index);
   assert.notEqual(declarationKeys(records, first.index), firstKeys);
   assert.notEqual(declarationKeys(records, second.index), secondKeys);
-  assert.deepEqual(declarationKeys(records, first.index).keys, []);
-  assert.deepEqual(declarationKeys(records, second.index).keys, [color.id]);
+  assert.deepEqual(declarationIds(records, first.index), []);
+  assert.deepEqual(declarationIds(records, second.index), [color.id]);
 });
 
 test('appendChild of a comment should make the next read return the same entry', () => {

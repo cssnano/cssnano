@@ -117,16 +117,16 @@ export default function runScan(mergeState) {
   const mergeBenefit = (first, second) => {
     const a = declarationKeys(mergeState.records, first.index);
     const b = declarationKeys(mergeState.records, second.index);
-    if (first.hasSameSelectors(second)) return a.keys.length + b.keys.length;
+    if (first.hasSameSelectors(second)) return a.kept.length + b.kept.length;
     const [smaller, larger] =
-      a.keys.length <= b.keys.length ? [a, b.keySet] : [b, a.keySet];
+      a.kept.length <= b.kept.length ? [a, b.keySet] : [b, a.keySet];
     let shared = 0;
     for (const key of smaller.keySet) {
       if (larger.has(key)) shared++;
     }
     if (shared > 0) return shared;
     const rewritesStructure =
-      (a.keys.length === 0 && b.keys.length === 0) ||
+      (a.kept.length === 0 && b.kept.length === 0) ||
       (mergeState.records.links.parentOf(first.index) !==
         mergeState.records.links.parentOf(second.index) &&
         sameContainer(mergeState.blockOf(first), mergeState.blockOf(second)));

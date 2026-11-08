@@ -1,6 +1,8 @@
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, ChainPosition} from './blockRecord.js' */
 /**
  * Two declarations are equal when they print the same, which their ids tell:
@@ -15,20 +17,21 @@ export declare function declarationIsEqual(a: DeclarationRecord, b: DeclarationR
  * The declarations of `declarations` whose id is in `keySet`, in their order.
  *
  * @param {DeclarationRecord[]} declarations
- * @param {Set<number>} keySet the ids of the other rule's declarations
+ * @param {ReadonlySet<number>} keySet the ids of the other rule's declarations
  * @return {DeclarationRecord[]}
  */
-export declare function intersect(declarations: DeclarationRecord[], keySet: Set<number>): DeclarationRecord[];
+export declare function intersect(declarations: DeclarationRecord[], keySet: ReadonlySet<number>): DeclarationRecord[];
 /**
  * Whether two rules hold equal declarations in the same order. Equal
  * declarations share an id, as `declarationIsEqual` states, so the ids of
  * each rule's declarations decide it.
  *
- * @param {number[]} a the ids of the declarations of a rule, in order
- * @param {number[]} b
+ * @param {BlockRecords} records the arena that holds both rules' declarations
+ * @param {readonly ArenaIndex[]} a the declarations of a rule, in order
+ * @param {readonly ArenaIndex[]} b
  * @return {boolean}
  */
-export declare function sameDeclarationsAndOrder(a: number[], b: number[]): boolean;
+export declare function sameDeclarationsAndOrder(records: BlockRecords, a: readonly ArenaIndex[], b: readonly ArenaIndex[]): boolean;
 /**
  * @param {DeclarationRecord[]} hoistCandidates in the earlier rule's chain order
  * @param {DeclarationRecord[]} earlierRuleDeclarations

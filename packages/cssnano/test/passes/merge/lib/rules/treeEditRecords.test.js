@@ -16,6 +16,7 @@ import {
   ruleRecordOf,
   buildTestRecords,
   claimAt,
+  declarationIds,
 } from './liveRecords.js';
 import { removeDeclarations } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
@@ -162,8 +163,7 @@ test('appendToDeclarations should give the record of the receiving rule keys for
     ruleRecordOf(state.records, incoming)
   );
   assert.deepEqual(
-    declarationKeys(state.records, ruleRecordOf(state.records, receiving).index)
-      .keys,
+    declarationIds(state.records, ruleRecordOf(state.records, receiving).index),
     ruleRecordOf(state.records, receiving)
       .declarationsOf(state.records)
       .map((d) => d.id)
@@ -211,8 +211,7 @@ test('removeDeclarations should give the record keys for the declarations that r
     claimAt(state.records, record, [0])
   );
   assert.deepEqual(
-    declarationKeys(state.records, ruleRecordOf(state.records, rule).index)
-      .keys,
+    declarationIds(state.records, ruleRecordOf(state.records, rule).index),
     [state.declarationIds.keyOf(/** @type {Declaration} */ (rule.last))]
   );
 });

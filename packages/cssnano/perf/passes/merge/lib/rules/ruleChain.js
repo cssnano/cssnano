@@ -53,7 +53,7 @@ function timeAppendsAndReads(size) {
       rule,
       records.blockDeclaration(node, state.properties, state.declarationIds)
     );
-    seen += declarationKeys(records, rule.index).keys.length;
+    seen += declarationKeys(records, rule.index).kept.length;
   }
   const elapsed = performance.now() - start;
   if (seen < 0) throw new Error('unreachable');
@@ -74,7 +74,7 @@ function timeUnlinksThenRead(size) {
   const declarations = rule.declarationsOf(records);
   const start = performance.now();
   for (let i = 0; i < size; i += 2) records.links.unlink(declarations[i].index);
-  const left = declarationKeys(records, rule.index).keys.length;
+  const left = declarationKeys(records, rule.index).kept.length;
   const elapsed = performance.now() - start;
   if (left < 0) throw new Error('unreachable');
   return elapsed;

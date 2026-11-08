@@ -19,7 +19,12 @@ import { isDeclarationRule } from '../../../../../src/passes/merge/lib/rules/dec
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { ruleRecordOf, buildTestRecords, claimAt } from './liveRecords.js';
+import {
+  buildTestRecords,
+  claimAt,
+  declarationIds,
+  ruleRecordOf,
+} from './liveRecords.js';
 import {
   appendChild,
   removeDeclarations,
@@ -93,10 +98,7 @@ test('recordRule should give the record of a rule the rule as its node', () => {
 test('declarationKeys should list the id of each declaration in order', () => {
   const { records, record } = arenaOf('a{color:red;top:0}');
   const [color, top] = record.declarationsOf(records);
-  assert.deepEqual(declarationKeys(records, record.index).keys, [
-    color.id,
-    top.id,
-  ]);
+  assert.deepEqual(declarationIds(records, record.index), [color.id, top.id]);
 });
 
 test('declarationKeys should offer the same keys as a set for membership tests', () => {
@@ -124,7 +126,7 @@ test('appendChild should make declarationKeys reflect the appended declaration',
     declarationOf(state, postcss.decl({ prop: 'top', value: '0' }))
   );
   assert.deepEqual(
-    declarationKeys(records, record.index).keys,
+    declarationIds(records, record.index),
     record.declarationsOf(records).map((declaration) => declaration.id)
   );
   assert.equal(record.declarationsOf(records).length, 2);

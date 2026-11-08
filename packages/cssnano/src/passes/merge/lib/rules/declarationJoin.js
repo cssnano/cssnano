@@ -170,7 +170,11 @@ export default function joinByDeclarations(block, mergeState) {
    */
   function register(rule, position) {
     // A trimmed rule's record took its remaining declarations, so its keys are new.
-    const keys = declarationKeys(mergeState.records, rule.index).keys;
+    const { kept } = declarationKeys(mergeState.records, rule.index);
+    // A declaration-only rule holds a declaration, so its first id exists.
+    const firstId = /** @type {DeclarationRecord} */ (
+      mergeState.records.entry(kept[0])
+    ).id;
     /** @type {Group} */
     const group = {
       rule,
@@ -179,9 +183,9 @@ export default function joinByDeclarations(block, mergeState) {
       selectors: null,
       bytes: -1,
     };
-    const same = groups.get(keys[0]);
+    const same = groups.get(firstId);
     if (same) same.push(group);
-    else groups.set(keys[0], [group]);
+    else groups.set(firstId, [group]);
   }
 
   /**
@@ -216,8 +220,10 @@ export default function joinByDeclarations(block, mergeState) {
           break;
         if (
           group.declarations.length > laterDeclarations.length ||
-          !declarationKeys(records, group.rule.index).keys.every((key) =>
-            laterSet.has(key)
+          !declarationKeys(records, group.rule.index).kept.every((kept) =>
+            laterSet.has(
+              /** @type {DeclarationRecord} */ (records.entry(kept)).id
+            )
           )
         ) {
           continue;
@@ -284,7 +290,7 @@ export default function joinByDeclarations(block, mergeState) {
     // The group's writes already stand at its position, so the declarations
     // that leave `later` record nothing.
     const { records } = mergeState;
-    if (claimed.size === declarationKeys(records, later.index).keys.length) {
+    if (claimed.size === declarationKeys(records, later.index).kept.length) {
       emptied.add(later.index);
       return 'emptied';
     }

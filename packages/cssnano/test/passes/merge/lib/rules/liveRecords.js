@@ -5,10 +5,12 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {ArenaIndex} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js' */
 
 /**
@@ -149,4 +151,17 @@ export function withCorruptedLinks(records, container, corrupt) {
       return typeof value === 'function' ? value.bind(target) : value;
     },
   });
+}
+
+/**
+ * The ids of the declarations of the rule at `index`, in chain order.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index an index that `recordRule` gave
+ * @return {number[]}
+ */
+export function declarationIds(records, index) {
+  return declarationKeys(records, /** @type {ArenaIndex} */ (index)).kept.map(
+    (entry) => records.entry(entry).id
+  );
 }

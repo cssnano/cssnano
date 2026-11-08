@@ -104,7 +104,7 @@ export function holdsOnlyDeclarationsOf(records, index) {
   assertLiveRule(records, index);
   return (
     records.links.childCount(index) ===
-    records.declarations.keysOf(records, /** @type {ArenaIndex} */ (index)).keys
+    records.declarations.keysOf(records, /** @type {ArenaIndex} */ (index)).kept
       .length
   );
 }

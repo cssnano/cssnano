@@ -201,10 +201,14 @@ export function takePlaceOf(records, earlier, later) {
  * @throws {Error} when `kept` is not the declarations of `receiving`, in order
  */
 function assertKeptFresh(records, receiving, kept) {
-  const { keys } = declarationKeys(records, receiving.index);
+  const { kept: keys } = declarationKeys(records, receiving.index);
   if (
     kept.length !== keys.length ||
-    kept.some((declaration, i) => declaration.id !== keys[i])
+    kept.some(
+      (declaration, i) =>
+        declaration.id !==
+        /** @type {DeclarationRecord} */ (records.entry(keys[i])).id
+    )
   )
     throw new Error('kept declarations are out of step with the rule');
 }

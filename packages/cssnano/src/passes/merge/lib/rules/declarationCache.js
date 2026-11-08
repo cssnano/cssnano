@@ -10,18 +10,18 @@ const STALE_KEYS =
 
 /**
  * @typedef {object} RuleDeclarationKeys
- * @property {number[]} keys the ids of the declarations of the rule, in order
- * @property {Set<number>} keySet the ids of the declarations
+ * @property {readonly ArenaIndex[]} kept the indices of the declarations of the rule, in order
+ * @property {ReadonlySet<number>} keySet the ids of the declarations
  */
 
 /**
- * The declaration ids of each container, kept beside the arena's records. An
+ * The declarations of each container, kept beside the arena's records. An
  * entry is built at the declaration stamp of its container, and it is stale
  * once a declaration joins or leaves the chain. The arrays are indexed by
  * entry, so the cache keeps no reference to the arena or its links.
  */
 export class DeclarationCache {
-  /** @type {(RuleDeclarationKeys | undefined)[]} the ids of each container, undefined until built */
+  /** @type {(RuleDeclarationKeys | undefined)[]} the declarations of each container, undefined until built */
   #entries = [];
 
   /** @type {number[]} the declaration stamp each entry was built at, -1 before the first build */
@@ -34,8 +34,8 @@ export class DeclarationCache {
   }
 
   /**
-   * The ids of the declarations of the container at `index`, in chain order.
-   * A stale entry is rebuilt from the chain.
+   * The declarations of the container at `index`, in chain order. A stale
+   * entry is rebuilt from the chain.
    *
    * @param {BlockRecords} records the arena that holds the container's children
    * @param {ArenaIndex} index an index that `recordRule` gave
@@ -44,16 +44,21 @@ export class DeclarationCache {
   keysOf(records, index) {
     const stamp = records.declarationStamps.stampOf(index);
     if (this.#builtAt[index] !== stamp) {
-      const keys = [];
+      /** @type {ArenaIndex[]} */
+      const kept = [];
+      const keySet = new Set();
       for (
         let entry = records.links.firstChild(index);
         entry !== -1;
         entry = records.links.nextSibling(entry)
       ) {
         const item = records.entry(entry);
-        if (item instanceof DeclarationRecord) keys.push(item.id);
+        if (item instanceof DeclarationRecord) {
+          kept.push(/** @type {ArenaIndex} */ (entry));
+          keySet.add(item.id);
+        }
       }
-      this.#entries[index] = { keys, keySet: new Set(keys) };
+      this.#entries[index] = { kept, keySet };
       this.#builtAt[index] = stamp;
     } else if (consistencyChecksEnabled()) {
       assertKeysFresh(
@@ -80,8 +85,10 @@ export class DeclarationCache {
   appended(index, declaration, before, after) {
     if (this.#builtAt[index] !== before) return;
     const entry = /** @type {RuleDeclarationKeys} */ (this.#entries[index]);
-    entry.keys.push(declaration.id);
-    entry.keySet.add(declaration.id);
+    /** @type {ArenaIndex[]} */ (entry.kept).push(
+      /** @type {ArenaIndex} */ (declaration.index)
+    );
+    /** @type {Set<number>} */ (entry.keySet).add(declaration.id);
     this.#builtAt[index] = after;
   }
 }
@@ -89,9 +96,9 @@ export class DeclarationCache {
 /** @typedef {Pick<DeclarationCache, 'keysOf'>} DeclarationCacheReader */
 
 /**
- * The ids of the declarations of the rule at `index`, in chain order. The
- * entry is the cache's own, so the caller reads it and does not keep it across
- * an edit of the rule.
+ * The declarations of the rule at `index`, in chain order. The entry is the
+ * cache's own, so the caller reads it and does not keep it across an edit of
+ * the rule.
  *
  * @param {BlockRecords} records
  * @param {number} index an index that `recordRule` gave
@@ -106,25 +113,31 @@ export function declarationKeys(records, index) {
 }
 
 /**
- * Under consistency checks, throws when the kept ids differ from the ids of
- * the declarations the chain holds, in order.
+ * Under consistency checks, throws when the kept declarations differ from the
+ * declarations the chain holds, in order, or when the ids differ from theirs.
  *
  * @param {BlockRecords} records
  * @param {ArenaIndex} index
- * @param {RuleDeclarationKeys} kept
+ * @param {RuleDeclarationKeys} entry
  * @return {void}
  * @throws {Error} when the kept declarations are out of step with the chain
  */
-function assertKeysFresh(records, index, kept) {
+function assertKeysFresh(records, index, entry) {
+  const ids = new Set();
   let at = 0;
   for (
-    let entry = records.links.firstChild(index);
-    entry !== -1;
-    entry = records.links.nextSibling(entry)
+    let link = records.links.firstChild(index);
+    link !== -1;
+    link = records.links.nextSibling(link)
   ) {
-    const item = records.entry(entry);
+    const item = records.entry(link);
     if (!(item instanceof DeclarationRecord)) continue;
-    if (kept.keys[at++] !== item.id) throw new Error(STALE_KEYS);
+    if (entry.kept[at++] !== link || !entry.keySet.has(item.id)) {
+      throw new Error(STALE_KEYS);
+    }
+    ids.add(item.id);
   }
-  if (at !== kept.keys.length) throw new Error(STALE_KEYS);
+  if (at !== entry.kept.length || ids.size !== entry.keySet.size) {
+    throw new Error(STALE_KEYS);
+  }
 }

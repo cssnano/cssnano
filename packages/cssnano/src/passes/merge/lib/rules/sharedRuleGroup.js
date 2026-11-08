@@ -247,7 +247,7 @@ function claimedBy(shared, later, records) {
  * Keeps in `scratch` only the keys that `keySet` holds, compacting in place.
  *
  * @param {number[]} scratch
- * @param {Set<number>} keySet
+ * @param {ReadonlySet<number>} keySet
  * @return {void}
  */
 function keepKeysIn(scratch, keySet) {
@@ -297,9 +297,10 @@ export function earliestPairReaching(
     if (depth === 1) {
       // Seed from the smaller key list, which bounds the first intersection.
       const [from, to] =
-        own.keys.length <= other.keys.length ? [own, other] : [other, own];
+        own.kept.length <= other.kept.length ? [own, other] : [other, own];
       scratch.length = 0;
-      for (const key of from.keys) {
+      for (const index of from.kept) {
+        const key = /** @type {DeclarationRecord} */ (records.entry(index)).id;
         if (to.keySet.has(key)) scratch.push(key);
       }
     } else {

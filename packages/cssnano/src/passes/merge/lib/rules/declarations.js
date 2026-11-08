@@ -2,6 +2,7 @@ import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { PropertyWrites } from './propertyWrites.js';
 import { WritePositions } from './writePositions.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, ChainPosition} from './blockRecord.js' */
 
 /**
@@ -20,7 +21,7 @@ export function declarationIsEqual(a, b) {
  * The declarations of `declarations` whose id is in `keySet`, in their order.
  *
  * @param {DeclarationRecord[]} declarations
- * @param {Set<number>} keySet the ids of the other rule's declarations
+ * @param {ReadonlySet<number>} keySet the ids of the other rule's declarations
  * @return {DeclarationRecord[]}
  */
 export function intersect(declarations, keySet) {
@@ -32,15 +33,20 @@ export function intersect(declarations, keySet) {
  * declarations share an id, as `declarationIsEqual` states, so the ids of
  * each rule's declarations decide it.
  *
- * @param {number[]} a the ids of the declarations of a rule, in order
- * @param {number[]} b
+ * @param {BlockRecords} records the arena that holds both rules' declarations
+ * @param {readonly ArenaIndex[]} a the declarations of a rule, in order
+ * @param {readonly ArenaIndex[]} b
  * @return {boolean}
  */
-export function sameDeclarationsAndOrder(a, b) {
+export function sameDeclarationsAndOrder(records, a, b) {
   if (a.length !== b.length) {
     return false;
   }
-  return a.every((id, index) => id === b[index]);
+  return a.every(
+    (index, at) =>
+      /** @type {DeclarationRecord} */ (records.entry(index)).id ===
+      /** @type {DeclarationRecord} */ (records.entry(b[at])).id
+  );
 }
 
 /**

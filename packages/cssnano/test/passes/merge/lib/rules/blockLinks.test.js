@@ -18,9 +18,10 @@ import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
-  ruleRecordOf,
   blockRecordOf,
   buildTestRecords,
+  declarationIds,
+  ruleRecordOf,
 } from './liveRecords.js';
 import { adopt } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
@@ -224,7 +225,7 @@ test('declarationKeys should list the ids in their new order after linkAfter put
     new DeclarationKeys()
   );
   records.linkAfter(rule.index, color.index, width.index);
-  assert.deepEqual(declarationKeys(records, rule.index).keys, [
+  assert.deepEqual(declarationIds(records, rule.index), [
     color.id,
     width.id,
     top.id,

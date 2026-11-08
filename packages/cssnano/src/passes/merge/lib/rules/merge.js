@@ -30,8 +30,9 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
     !holdsOnlyDeclarationsOf(mergeState.records, first.index) ||
     !holdsOnlyDeclarationsOf(mergeState.records, second.index) ||
     !sameDeclarationsAndOrder(
-      declarationKeys(mergeState.records, second.index).keys,
-      declarationKeys(mergeState.records, first.index).keys
+      mergeState.records,
+      declarationKeys(mergeState.records, second.index).kept,
+      declarationKeys(mergeState.records, first.index).kept
     )
   )
     return null;

@@ -3,21 +3,21 @@ import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
 export type RuleDeclarationKeys = {
     /**
-     * the ids of the declarations of the rule, in order
+     * the indices of the declarations of the rule, in order
      */
-    keys: number[];
+    kept: readonly ArenaIndex[];
     /**
      * the ids of the declarations
      */
-    keySet: Set<number>;
+    keySet: ReadonlySet<number>;
 };
 /**
  * @typedef {object} RuleDeclarationKeys
- * @property {number[]} keys the ids of the declarations of the rule, in order
- * @property {Set<number>} keySet the ids of the declarations
+ * @property {readonly ArenaIndex[]} kept the indices of the declarations of the rule, in order
+ * @property {ReadonlySet<number>} keySet the ids of the declarations
  */
 /**
- * The declaration ids of each container, kept beside the arena's records. An
+ * The declarations of each container, kept beside the arena's records. An
  * entry is built at the declaration stamp of its container, and it is stale
  * once a declaration joins or leaves the chain. The arrays are indexed by
  * entry, so the cache keeps no reference to the arena or its links.
@@ -27,8 +27,8 @@ export declare class DeclarationCache {
     /** Gives the next entry of the arena an empty cache. */
     grow(): void;
     /**
-     * The ids of the declarations of the container at `index`, in chain order.
-     * A stale entry is rebuilt from the chain.
+     * The declarations of the container at `index`, in chain order. A stale
+     * entry is rebuilt from the chain.
      *
      * @param {BlockRecords} records the arena that holds the container's children
      * @param {ArenaIndex} index an index that `recordRule` gave
@@ -52,9 +52,9 @@ export declare class DeclarationCache {
 export type DeclarationCacheReader = Pick<DeclarationCache, 'keysOf'>;
 /** @typedef {Pick<DeclarationCache, 'keysOf'>} DeclarationCacheReader */
 /**
- * The ids of the declarations of the rule at `index`, in chain order. The
- * entry is the cache's own, so the caller reads it and does not keep it across
- * an edit of the rule.
+ * The declarations of the rule at `index`, in chain order. The entry is the
+ * cache's own, so the caller reads it and does not keep it across an edit of
+ * the rule.
  *
  * @param {BlockRecords} records
  * @param {number} index an index that `recordRule` gave
