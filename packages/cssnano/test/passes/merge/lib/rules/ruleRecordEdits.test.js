@@ -5,7 +5,6 @@ import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistenc
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { mergeMatchingDeclarations } from '../../../../../src/passes/merge/lib/rules/merge.js';
-import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
   appendToDeclarations,
   removeRules,
@@ -158,13 +157,7 @@ test('a departed rule leaves the tree at write-back', () => {
   const [a, b] = twoRules(root);
   const incoming = ruleRecordOf(state.records, a);
   const receiving = ruleRecordOf(state.records, b);
-  appendToDeclarations(
-    state,
-    receiving,
-    receiving.declarationsOf(state.records),
-    writesOf(receiving.declarationsOf(state.records)),
-    incoming
-  );
+  appendToDeclarations(state, receiving.index, incoming.index);
   removeRules(state, new Set([incoming.index]));
   writeBack(state.records);
   assert.deepEqual(root.nodes, [b]);
@@ -176,13 +169,7 @@ test('a departed rule keeps its child array, since write-back does not empty it'
   const [a, b] = twoRules(root);
   const receiving = ruleRecordOf(state.records, b);
   const incoming = ruleRecordOf(state.records, a);
-  appendToDeclarations(
-    state,
-    receiving,
-    receiving.declarationsOf(state.records),
-    writesOf(receiving.declarationsOf(state.records)),
-    incoming
-  );
+  appendToDeclarations(state, receiving.index, incoming.index);
   removeRules(state, new Set([incoming.index]));
   writeBack(state.records);
   assert.equal(a.nodes.length, 1);

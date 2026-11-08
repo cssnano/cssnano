@@ -4,7 +4,6 @@ import { BlockRecord, NodeEntry } from './blockRecord.js';
 import type { Root } from 'postcss';
 import type { RuleRecord } from './ruleRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
-import type { PropertyWrites } from './propertyWrites.js';
 import type MergeState from './mergeState.js';
 import type { RunContext } from '../../../ir/runContext.js';
 /**
@@ -44,14 +43,17 @@ export declare function takePlaceOf(records: BlockRecords, earlier: ArenaIndex, 
  * Otherwise it revives an overridden value or overrides intermediate
  * declarations, so appending it is required to preserve the cascade result.
  *
+ * Each pass reads the declarations of `receiving` before its duplicate test,
+ * so a pass sees the appends before it. The loop's only edit of `receiving` is
+ * appendChild, which keeps the entry fresh, so only the first read of a merge
+ * can rebuild it.
+ *
  * @param {MergeState} mergeState
- * @param {RuleRecord} receiving
- * @param {DeclarationRecord[]} kept the declarations of `receiving`, extended in place
- * @param {PropertyWrites} index the writes of `kept`, extended in place
- * @param {RuleRecord} incoming
+ * @param {ArenaIndex} receiving
+ * @param {ArenaIndex} incoming
  * @return {void}
  */
-export declare function appendToDeclarations(mergeState: MergeState, receiving: RuleRecord, kept: DeclarationRecord[], index: PropertyWrites, incoming: RuleRecord): void;
+export declare function appendToDeclarations(mergeState: MergeState, receiving: ArenaIndex, incoming: ArenaIndex): void;
 /**
  * Removes `records` from the records of their parent. The PostCSS child list
  * catches up at write-back.

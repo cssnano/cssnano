@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
-import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
   appendToDeclarations,
   removeRules,
@@ -22,17 +21,10 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
   );
   const mergeState = new MergeState(['chrome 120']);
   mergeState.records = buildTestRecords(root, mergeState);
-  const kept = [
-    ...ruleRecordOf(mergeState.records, receiving).declarationsOf(
-      mergeState.records
-    ),
-  ];
   appendToDeclarations(
     mergeState,
-    ruleRecordOf(mergeState.records, receiving),
-    kept,
-    writesOf(kept),
-    ruleRecordOf(mergeState.records, incoming)
+    ruleRecordOf(mergeState.records, receiving).index,
+    ruleRecordOf(mergeState.records, incoming).index
   );
   removeRules(
     mergeState,
@@ -52,6 +44,6 @@ test('appendToDeclarations sees each declaration it appended, so a repeat of it 
   mergeState.records = buildTestRecords(root, mergeState);
   const to = ruleRecordOf(mergeState.records, receiving);
   const from = ruleRecordOf(mergeState.records, incoming);
-  appendToDeclarations(mergeState, to, [], writesOf([]), from);
+  appendToDeclarations(mergeState, to.index, from.index);
   assert.equal(to.declarationsOf(mergeState.records).length, 1);
 });

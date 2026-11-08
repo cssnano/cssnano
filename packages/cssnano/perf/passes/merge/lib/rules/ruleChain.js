@@ -5,7 +5,6 @@ import {
   appendToDeclarations,
   buildRecords,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { assertLinearTime } from '../linearTiming.js';
 import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
@@ -71,7 +70,6 @@ function timeAppendsAndReads(size) {
 function timeUnlinksThenRead(size) {
   const { state, rule } = recordsOf(ruleOf(size));
   const { records } = state;
-  const declarations = rule.declarationsOf(records);
   const start = performance.now();
   for (let i = 0; i < size; i += 2) records.links.unlink(declarations[i].index);
   const left = declarationKeys(records, rule.index).kept.length;
@@ -95,10 +93,8 @@ function timeConflictingAppend(size) {
   const { state, rule } = recordsOf(`${ruleOf(size)}a{${redeclared}}`);
   const { records } = state;
   const incoming = records.rule(records.links.nextSibling(rule.index));
-  const declarations = rule.declarationsOf(records);
-  const writes = writesOf(declarations);
   const start = performance.now();
-  appendToDeclarations(state, rule, declarations, writes, incoming);
+  appendToDeclarations(state, rule.index, incoming.index);
   const elapsed = performance.now() - start;
   if (rule.count < 0) throw new Error('unreachable');
   return elapsed;

@@ -5,7 +5,6 @@ import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
   appendToDeclarations,
   removeRules,
@@ -19,7 +18,10 @@ import {
   declarationIds,
 } from './liveRecords.js';
 import { removeDeclarations } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
-import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import {
+  declarationKeys,
+  receivingDeclarations,
+} from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 
@@ -48,36 +50,30 @@ test('appendToDeclarations should mark the record of the incoming rule departed'
     /** @type {Container} */ (media).nodes
   );
   const record = ruleRecordOf(state.records, incoming);
-  const kept = [
-    ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
-  ];
   appendToDeclarations(
     state,
-    ruleRecordOf(state.records, receiving),
-    kept,
-    writesOf(kept),
-    ruleRecordOf(state.records, incoming)
+    ruleRecordOf(state.records, receiving).index,
+    ruleRecordOf(state.records, incoming).index
   );
   assert.throws(() => record.declarationsOf(state.records), /departed/v);
 });
 
-// Positions in the writes name declarations of `kept`, so a list that has
-// fallen behind the rule would compare a declaration with the wrong one.
-test('appendToDeclarations should throw under consistency checks when the kept declarations are not those of the receiving rule', () => {
-  const { root, state } = setup('a{color:red;width:1px}b{width:2px}');
-  const [receiving, incoming] = /** @type {Rule[]} */ (root.nodes);
-  const kept = ruleRecordOf(state.records, receiving)
-    .declarationsOf(state.records)
-    .slice(1);
+// The entry of a rule names its declarations by position, so an append that
+// the chain does not hold would leave the entry out of step with the rule.
+test('DeclarationCache#appended should make the checked read throw out of step when the chain does not hold the declaration', () => {
+  const { root, state } = setup('a{color:red}');
+  const rule = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
+  const { records } = state;
+  receivingDeclarations(records, rule.index);
+  const width = records.blockDeclaration(
+    postcss.decl({ prop: 'width', value: '0' }),
+    state.properties,
+    state.declarationIds
+  );
+  const stamp = records.declarationStamps.stampOf(rule.index);
+  records.declarations.appended(rule.index, width, stamp, stamp);
   assert.throws(
-    () =>
-      appendToDeclarations(
-        state,
-        ruleRecordOf(state.records, receiving),
-        kept,
-        writesOf(kept),
-        ruleRecordOf(state.records, incoming)
-      ),
+    () => receivingDeclarations(records, rule.index),
     /out of step/v
   );
 });
@@ -88,15 +84,10 @@ test('appendToDeclarations should leave the record of the receiving rule readabl
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const kept = [
-    ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
-  ];
   appendToDeclarations(
     state,
-    ruleRecordOf(state.records, receiving),
-    kept,
-    writesOf(kept),
-    ruleRecordOf(state.records, incoming)
+    ruleRecordOf(state.records, receiving).index,
+    ruleRecordOf(state.records, incoming).index
   );
   assert.equal(ruleRecordOf(state.records, receiving).departed, false);
 });
@@ -108,15 +99,10 @@ test('appendToDeclarations should keep the record of the receiving rule', () => 
     /** @type {Container} */ (media).nodes
   );
   const record = ruleRecordOf(state.records, receiving);
-  const kept = [
-    ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
-  ];
   appendToDeclarations(
     state,
-    ruleRecordOf(state.records, receiving),
-    kept,
-    writesOf(kept),
-    ruleRecordOf(state.records, incoming)
+    ruleRecordOf(state.records, receiving).index,
+    ruleRecordOf(state.records, incoming).index
   );
   assert.equal(ruleRecordOf(state.records, receiving), record);
 });
@@ -127,15 +113,10 @@ test('appendToDeclarations should give the receiving rule the declarations of th
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const list = ruleRecordOf(state.records, receiving).declarationsOf(
-    state.records
-  );
   appendToDeclarations(
     state,
-    ruleRecordOf(state.records, receiving),
-    list,
-    writesOf(list),
-    ruleRecordOf(state.records, incoming)
+    ruleRecordOf(state.records, receiving).index,
+    ruleRecordOf(state.records, incoming).index
   );
   assert.deepEqual(
     ruleRecordOf(state.records, receiving)
@@ -152,15 +133,10 @@ test('appendToDeclarations should give the record of the receiving rule keys for
     /** @type {Container} */ (media).nodes
   );
   declarationKeys(state.records, ruleRecordOf(state.records, receiving).index);
-  const kept = [
-    ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
-  ];
   appendToDeclarations(
     state,
-    ruleRecordOf(state.records, receiving),
-    kept,
-    writesOf(kept),
-    ruleRecordOf(state.records, incoming)
+    ruleRecordOf(state.records, receiving).index,
+    ruleRecordOf(state.records, incoming).index
   );
   assert.deepEqual(
     declarationIds(state.records, ruleRecordOf(state.records, receiving).index),

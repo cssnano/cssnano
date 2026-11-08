@@ -13,7 +13,6 @@ import {
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import {
   assertRecordsMatchTree,
@@ -44,8 +43,7 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   const receiving = ruleRecordOf(state.records, root.first.first);
   const incoming = ruleRecordOf(state.records, root.first.last);
   const moved = incoming.declarationsOf(state.records)[0];
-  const kept = [...receiving.declarationsOf(state.records)];
-  appendToDeclarations(state, receiving, kept, writesOf(kept), incoming);
+  appendToDeclarations(state, receiving.index, incoming.index);
   assert.equal(receiving.declarationsOf(state.records).at(-1), moved);
   state.records.unlink(incoming.index);
   writeBack(state.records);

@@ -1,4 +1,5 @@
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { PropertyWrites } from './propertyWrites.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
 export type RuleDeclarationKeys = {
@@ -10,12 +11,21 @@ export type RuleDeclarationKeys = {
      * the ids of the declarations
      */
     keySet: ReadonlySet<number>;
+    /**
+     * the writes of `kept`, numbered by position; undefined until a caller asks
+     */
+    writes: PropertyWrites | undefined;
+};
+export type ReceivingDeclarations = RuleDeclarationKeys & {
+    writes: PropertyWrites;
 };
 /**
  * @typedef {object} RuleDeclarationKeys
  * @property {readonly ArenaIndex[]} kept the indices of the declarations of the rule, in order
  * @property {ReadonlySet<number>} keySet the ids of the declarations
+ * @property {PropertyWrites | undefined} writes the writes of `kept`, numbered by position; undefined until a caller asks
  */
+/** @typedef {RuleDeclarationKeys & {writes: PropertyWrites}} ReceivingDeclarations */
 /**
  * The declarations of each container, kept beside the arena's records. An
  * entry is built at the declaration stamp of its container, and it is stale
@@ -36,6 +46,16 @@ export declare class DeclarationCache {
      */
     keysOf(records: BlockRecords, index: ArenaIndex): RuleDeclarationKeys;
     /**
+     * The declarations of the container at `index`, with the writes of `kept`
+     * built on first asking. Under checks, the writes of an entry that already
+     * has them are compared with a fresh build.
+     *
+     * @param {BlockRecords} records the arena that holds the container's children
+     * @param {ArenaIndex} index an index that `recordRule` gave
+     * @return {ReceivingDeclarations}
+     */
+    receivingOf(records: BlockRecords, index: ArenaIndex): ReceivingDeclarations;
+    /**
      * Extends the entry of `index` with a declaration linked last into it, when
      * the entry was built at the stamp the container had before the link. The
      * entry then moves to the stamp of the container after the link. A stale
@@ -49,8 +69,8 @@ export declare class DeclarationCache {
      */
     appended(index: ArenaIndex, declaration: DeclarationRecord, before: number, after: number): void;
 }
-export type DeclarationCacheReader = Pick<DeclarationCache, 'keysOf'>;
-/** @typedef {Pick<DeclarationCache, 'keysOf'>} DeclarationCacheReader */
+export type DeclarationCacheReader = Pick<DeclarationCache, 'keysOf' | 'receivingOf'>;
+/** @typedef {Pick<DeclarationCache, 'keysOf' | 'receivingOf'>} DeclarationCacheReader */
 /**
  * The declarations of the rule at `index`, in chain order. The entry is the
  * cache's own, so the caller reads it and does not keep it across an edit of
@@ -61,4 +81,14 @@ export type DeclarationCacheReader = Pick<DeclarationCache, 'keysOf'>;
  * @return {RuleDeclarationKeys}
  */
 export declare function declarationKeys(records: BlockRecords, index: number): RuleDeclarationKeys;
+/**
+ * The declarations of the rule at `index`, in chain order, with the writes that
+ * name the last declaration of each property. The entry is the cache's own: a
+ * caller reads it again after an edit and keeps nothing of it across one.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index an index that `recordRule` gave
+ * @return {ReceivingDeclarations}
+ */
+export declare function receivingDeclarations(records: BlockRecords, index: number): ReceivingDeclarations;
 //# sourceMappingURL=declarationCache.d.ts.map

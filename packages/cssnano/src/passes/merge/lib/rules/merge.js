@@ -4,7 +4,7 @@ import {
   intersect,
   sameDeclarationsAndOrder,
 } from './declarations.js';
-import { buildMergedRule, writesOf } from './ruleRewrite.js';
+import { buildMergedRule } from './ruleRewrite.js';
 import { appendToDeclarations } from './treeEdits.js';
 import { declarationKeys } from './declarationCache.js';
 
@@ -58,8 +58,7 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
  */
 export function mergeMatchingSelectors(first, second, mergeState) {
   if (!first.hasSameSelectors(second)) return null;
-  const kept = first.declarationsOf(mergeState.records);
-  appendToDeclarations(mergeState, first, kept, writesOf(kept), second);
+  appendToDeclarations(mergeState, first.index, second.index);
   return { first: [first.index], second: [] };
 }
 

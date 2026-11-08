@@ -16,14 +16,13 @@ import { containerContext } from './sameContainer.js';
 import { hasPendingEdits } from '../deferredChildEdits.js';
 import { sourceSelector } from '../../../../utils/sourceText.js';
 import { appendChild } from './arenaEdits.js';
-import { declarationKeys } from './declarationCache.js';
+import { receivingDeclarations } from './declarationCache.js';
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
-/** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
 
@@ -194,70 +193,55 @@ export function takePlaceOf(records, earlier, later) {
 }
 
 /**
- * @param {BlockRecords} records
- * @param {RuleRecord} receiving
- * @param {DeclarationRecord[]} kept
- * @return {void}
- * @throws {Error} when `kept` is not the declarations of `receiving`, in order
- */
-function assertKeptFresh(records, receiving, kept) {
-  const { kept: keys } = declarationKeys(records, receiving.index);
-  if (
-    kept.length !== keys.length ||
-    kept.some(
-      (declaration, i) =>
-        declaration.id !==
-        /** @type {DeclarationRecord} */ (records.entry(keys[i])).id
-    )
-  )
-    throw new Error('kept declarations are out of step with the rule');
-}
-
-/**
  * Appends the children of `incoming` to `receiving`, comments included. A
  * declaration of `incoming` is redundant only when the last declaration of
  * `receiving` that can set the same property already has an identical value.
  * Otherwise it revives an overridden value or overrides intermediate
  * declarations, so appending it is required to preserve the cascade result.
  *
+ * Each pass reads the declarations of `receiving` before its duplicate test,
+ * so a pass sees the appends before it. The loop's only edit of `receiving` is
+ * appendChild, which keeps the entry fresh, so only the first read of a merge
+ * can rebuild it.
+ *
  * @param {MergeState} mergeState
- * @param {RuleRecord} receiving
- * @param {DeclarationRecord[]} kept the declarations of `receiving`, extended in place
- * @param {PropertyWrites} index the writes of `kept`, extended in place
- * @param {RuleRecord} incoming
+ * @param {ArenaIndex} receiving
+ * @param {ArenaIndex} incoming
  * @return {void}
  */
-export function appendToDeclarations(
-  mergeState,
-  receiving,
-  kept,
-  index,
-  incoming
-) {
+export function appendToDeclarations(mergeState, receiving, incoming) {
   const { records } = mergeState;
   const { links } = records;
-  if (consistencyChecksEnabled()) assertKeptFresh(records, receiving, kept);
   // Each child is unlinked before it is read, so the loop holds no link cursor
-  // across an edit. Appending only extends `kept`, so a write's position names
-  // its declaration without a walk of the chain.
+  // across an edit.
   for (
-    let first = links.firstChild(incoming.index);
+    let first = links.firstChild(incoming);
     first !== -1;
-    first = links.firstChild(incoming.index)
+    first = links.firstChild(incoming)
   ) {
     const child = /** @type {DeclarationRecord | NodeEntry} */ (
       records.entry(first)
     );
     records.unlink(first);
     if (child instanceof DeclarationRecord) {
-      const last = index.lastConflict(child.keys);
-      if (last !== -1 && declarationIsEqual(kept[last], child)) continue;
-      index.record(child.keys, kept.length);
-      kept.push(child);
+      const { kept, writes } = receivingDeclarations(records, receiving);
+      const last = writes.lastConflict(child.keys);
+      if (
+        last !== -1 &&
+        declarationIsEqual(
+          /** @type {DeclarationRecord} */ (records.entry(kept[last])),
+          child
+        )
+      )
+        continue;
     }
-    appendChild(records, receiving, child);
+    appendChild(
+      records,
+      /** @type {RuleRecord} */ (records.rule(receiving)),
+      child
+    );
   }
-  incoming.depart();
+  /** @type {RuleRecord} */ (records.rule(incoming)).depart();
 }
 
 /**

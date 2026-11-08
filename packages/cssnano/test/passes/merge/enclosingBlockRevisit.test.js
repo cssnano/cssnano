@@ -4,7 +4,6 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
-import { writesOf } from '../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
 import { appendToDeclarations } from '../../../src/passes/merge/lib/rules/treeEdits.js';
 import {
@@ -49,9 +48,6 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
     record.index,
     claimAt(mergeState.records, record, [0])
   );
-  const kept = ruleRecordOf(mergeState.records, q).declarationsOf(
-    mergeState.records
-  );
   const incoming = /** @type {Rule} */ (postcss.parse('x{width:1px}').first);
   const incomingRecord = mergeState.records.recordRule(
     incoming,
@@ -71,10 +67,8 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
   }
   appendToDeclarations(
     mergeState,
-    ruleRecordOf(mergeState.records, q),
-    kept,
-    writesOf(kept),
-    incomingRecord
+    ruleRecordOf(mergeState.records, q).index,
+    incomingRecord.index
   );
   assert.equal(joinNonAdjacent(mergeState.records.root, mergeState), true);
   writeBack(mergeState.records);

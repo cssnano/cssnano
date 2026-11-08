@@ -104,7 +104,7 @@ export const mutations = [
   {
     name: 'an append leaves the record of the incoming rule live',
     target: source('treeEdits.js'),
-    find: '  incoming.depart();\n',
+    find: '  /** @type {RuleRecord} */ (records.rule(incoming)).depart();\n',
     replace: '',
   },
   {

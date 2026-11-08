@@ -2,7 +2,6 @@
 import { childCountOf } from './blockChildren.js';
 import postcss from 'postcss';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
-import { PropertyWrites } from './propertyWrites.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 import { moveDeclarations, removeDeclarations } from './arenaEdits.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
@@ -55,21 +54,6 @@ function leftoverOf(records, record) {
     return [];
   }
   return [record];
-}
-
-/**
- * The writes of a rule's declarations, numbered by their position.
- *
- * @param {DeclarationRecord[]} declarations
- * @return {PropertyWrites}
- */
-export function writesOf(declarations) {
-  // Rewrites compare whole rules and never ask about one element.
-  const index = new PropertyWrites();
-  for (const [position, declaration] of declarations.entries()) {
-    index.record(declaration.keys, position);
-  }
-  return index;
 }
 
 /**

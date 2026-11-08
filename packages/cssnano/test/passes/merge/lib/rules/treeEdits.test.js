@@ -5,7 +5,6 @@ import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { writesOf } from '../../../../../src/passes/merge/lib/rules/ruleRewrite.js';
 import {
   appendToDeclarations,
   remove,
@@ -194,15 +193,10 @@ test('appendToDeclarations should move the declarations of the incoming rule int
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const kept = [
-    ...ruleRecordOf(state.records, receiving).declarationsOf(state.records),
-  ];
   appendToDeclarations(
     state,
-    ruleRecordOf(state.records, receiving),
-    kept,
-    writesOf(kept),
-    ruleRecordOf(state.records, incoming)
+    ruleRecordOf(state.records, receiving).index,
+    ruleRecordOf(state.records, incoming).index
   );
   assert.deepEqual(treeProps(media), ['color', 'width']);
 });
@@ -334,15 +328,10 @@ test('appendToDeclarations should see each declaration it appended, so a repeat 
   const [receiving, incoming] = /** @type {Rule[]} */ (
     /** @type {Container} */ (media).nodes
   );
-  const kept = ruleRecordOf(state.records, receiving).declarationsOf(
-    state.records
-  );
   appendToDeclarations(
     state,
-    ruleRecordOf(state.records, receiving),
-    kept,
-    writesOf(kept),
-    ruleRecordOf(state.records, incoming)
+    ruleRecordOf(state.records, receiving).index,
+    ruleRecordOf(state.records, incoming).index
   );
   assert.deepEqual(
     ruleRecordOf(state.records, receiving)

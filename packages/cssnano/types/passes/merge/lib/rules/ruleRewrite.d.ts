@@ -1,16 +1,8 @@
-import { PropertyWrites } from './propertyWrites.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type RuleSequence, { Placement } from './ruleSequence.js';
 import type DeclarationScan from './declarationScan.js';
-/**
- * The writes of a rule's declarations, numbered by their position.
- *
- * @param {DeclarationRecord[]} declarations
- * @return {PropertyWrites}
- */
-export declare function writesOf(declarations: DeclarationRecord[]): PropertyWrites;
 /**
  * Splits the declarations the rules set out of them into a rule with all
  * their selectors, which takes the place of the later rule of the pair,

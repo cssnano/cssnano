@@ -1,7 +1,6 @@
 import { childEntriesOf } from './blockChildren.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import joinByDeclarations from './declarationJoin.js';
-import { writesOf } from './ruleRewrite.js';
 import RepeatScan from './repeatScan.js';
 import {
   BlockRecord,
@@ -15,7 +14,6 @@ import { isKeyframes } from './sameContainer.js';
 import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
 import { adopt } from './arenaEdits.js';
 
-/** @import {PropertyWrites} from './propertyWrites.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {NodeEntry} from './blockRecord.js' */
@@ -264,11 +262,6 @@ function joinInParent(block, mergeState, rules) {
   // Each entry is named by its place in `entries`, which is not changed.
   /** @type {Map<string | number, {origin: number, position: number}>} */
   const latest = new Map();
-  // Every rule with a selector joins the first rule with that selector, so
-  // the joined rule keeps its writes from one join to the next: rebuilding
-  // them would make each join cost time in the growing rule.
-  /** @type {Map<number, {kept: DeclarationRecord[], writes: PropertyWrites}>} keyed by the index of the earlier rule */
-  const received = new Map();
   let joined = false;
   for (let position = scan.start; position < entries.length; position++) {
     const entry = entries[position];
@@ -309,21 +302,16 @@ function joinInParent(block, mergeState, rules) {
   return joined;
 
   /**
-   * Appends the declarations of `later` to `earlier`. The declarations and
-   * writes of `earlier` are read once and grow with each join.
+   * Appends the declarations of `later` to `earlier`. The cache keeps the
+   * writes of `earlier` from one join to the next, so each join does not
+   * rebuild them in the growing rule.
    *
    * @param {RuleRecord} earlier
    * @param {RuleRecord} later
    * @return {void}
    */
   function receive(earlier, later) {
-    let joins = received.get(earlier.index);
-    if (!joins) {
-      const kept = earlier.declarationsOf(mergeState.records);
-      joins = { kept, writes: writesOf(kept) };
-      received.set(earlier.index, joins);
-    }
-    appendToDeclarations(mergeState, earlier, joins.kept, joins.writes, later);
+    appendToDeclarations(mergeState, earlier.index, later.index);
   }
 
   /**

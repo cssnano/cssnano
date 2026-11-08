@@ -51,6 +51,31 @@ export const mutations = [
     replace: '',
   },
   {
+    name: 'the append leaves `kept`',
+    target: source('declarationCache.js'),
+    find: '    /** @type {ArenaIndex[]} */ (entry.kept).push(\n      /** @type {ArenaIndex} */ (declaration.index)\n    );\n',
+    replace: '',
+  },
+  {
+    name: 'the append leaves the writes',
+    target: source('declarationCache.js'),
+    find: '    if (entry.writes)\n      entry.writes.record(declaration.keys, entry.kept.length - 1);\n',
+    replace: '',
+  },
+  {
+    name: 'a rebuild keeps the writes',
+    target: source('declarationCache.js'),
+    find: '      this.#entries[index] = { kept, keySet, writes: undefined };\n',
+    replace:
+      '      this.#entries[index] = { kept, keySet, writes: this.#entries[index]?.writes };\n',
+  },
+  {
+    name: 'a fresh read leaves the writes undefined',
+    target: source('declarationCache.js'),
+    find: '      entry.writes = writesOfKept(records, entry.kept);\n',
+    replace: '      writesOfKept(records, entry.kept);\n',
+  },
+  {
     name: 'takeLinkOf leaves the stamp of the container earlier leaves',
     target: source('blockRecords.js'),
     find: '    this.#touchDeclaration(from, earlier);\n',
