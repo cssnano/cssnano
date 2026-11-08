@@ -1,5 +1,5 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-import { BlockRecord, NodeEntry } from './blockRecord.js';
+import { isContainerKind } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -65,11 +65,7 @@ export function assertCanHold(records, block, index) {
     const entry = records.entry(
       /** @type {import('./blockRecord.js').ArenaIndex} */ (index)
     );
-    const nests =
-      entry instanceof RuleRecord ||
-      entry instanceof BlockRecord ||
-      (entry instanceof NodeEntry && entry.node.type === 'atrule');
-    if (nests) throw new Error(PLAIN_RULE);
+    if (isContainerKind(entry.kind)) throw new Error(PLAIN_RULE);
   }
 }
 

@@ -5,8 +5,10 @@ import selectorParser from 'postcss-selector-parser';
 import { VendorPrefixSummary } from '../../../../../src/passes/merge/lib/rules/vendorPrefixSummary.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { createSelectorLookup } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 
 const lookup = createSelectorLookup(['chrome 120']);
+const selectorIds = new SelectorIds();
 const profileOf = (selectors) =>
   VendorPrefixSummary.of(selectors.map((selector) => lookup(selector)));
 
@@ -215,28 +217,28 @@ test('createSelectorLookup should scan a selector only once when it repeats', ()
 test('hasSameSelectors should hold for rules whose lists are equal', () => {
   const a = metaOf(ruleWith('.a,.b'));
   const b = metaOf(ruleWith('.a,.b'));
-  assert.equal(a.hasSameSelectors(b), true);
+  assert.equal(a.hasSameSelectors(b, selectorIds), true);
 });
 
 test('hasSameSelectors should fail for lists of equal length that differ', () => {
   const a = metaOf(ruleWith('.a,.b'));
   const b = metaOf(ruleWith('.a,.c'));
-  assert.equal(a.hasSameSelectors(b), false);
+  assert.equal(a.hasSameSelectors(b, selectorIds), false);
 });
 
 test('hasSameSelectors should tell :is(a,b) from the list a,b, because a nested comma is not a list separator', () => {
   const a = metaOf(ruleWith(':is(a,b)'));
   const b = metaOf(ruleWith('a,b'));
-  assert.equal(a.hasSameSelectors(b), false);
+  assert.equal(a.hasSameSelectors(b, selectorIds), false);
 });
 
 test('hasSameSelectors should follow a list that grew after the two lists were compared', () => {
   const a = metaOf(ruleWith('.a'));
   const b = metaOf(ruleWith('.a'));
-  assert.equal(a.hasSameSelectors(b), true);
+  assert.equal(a.hasSameSelectors(b, selectorIds), true);
   a.addSelectors(['.c'], lookup);
   b.addSelectors(['.d'], lookup);
-  assert.equal(a.hasSameSelectors(b), false);
+  assert.equal(a.hasSameSelectors(b, selectorIds), false);
 });
 
 test('absorbEarlier should list the selectors of the earlier rule first', () => {

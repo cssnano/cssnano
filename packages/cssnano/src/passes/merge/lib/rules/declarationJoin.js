@@ -63,7 +63,7 @@ function listLength(selectors) {
  * @property {RuleRecord} rule
  * @property {ChainPosition} position its place among the live entries of the block
  * @property {DeclarationRecord[]} declarations
- * @property {Set<string> | null} selectors listed selectors, built on demand
+ * @property {Set<number> | null} selectors the ids of the listed selectors, built on demand
  * @property {number} bytes declaration bytes, each with its separator, or -1
  */
 
@@ -76,19 +76,20 @@ function listLength(selectors) {
  * @param {BlockRecords} records
  * @param {Group} group
  * @param {RuleRecord} later
+ * @param {import('../../../ir/selectorIds.js').SelectorIds} selectorIds
  * @return {{added: string[], gain: number}}
  */
-function joinGain(records, group, later) {
+function joinGain(records, group, later, selectorIds) {
   if (group.bytes < 0) {
     group.bytes = group.declarations.reduce(
       (total, declaration) => total + minifiedLength(declaration),
       0
     );
   }
-  const listed = (group.selectors ??= new Set(group.rule.selectors));
+  const listed = (group.selectors ??= new Set(group.rule.idsOf(selectorIds)));
   const laterSelectors = later.selectors;
   const added = [...new Set(laterSelectors)].filter(
-    (selector) => !listed.has(selector)
+    (selector) => !listed.has(selectorIds.idOf(selector))
   );
   const removed =
     group.declarations.length === childCountOf(records, later.index)
@@ -228,7 +229,12 @@ export default function joinByDeclarations(block, mergeState) {
         ) {
           continue;
         }
-        const { added, gain } = joinGain(records, group, laterRecord);
+        const { added, gain } = joinGain(
+          records,
+          group,
+          laterRecord,
+          mergeState.selectorIds
+        );
         // A join that breaks even still takes the shared declarations out of
         // the way of later rules that can join the group. On a tie, the
         // nearest group has the least to cross.
@@ -259,7 +265,9 @@ export default function joinByDeclarations(block, mergeState) {
     const groupRecord = group.rule;
     const listed = keysOf(groupRecord) !== null;
     const gained = mergeState.addSelectors(groupRecord, added, laterRecord);
-    for (const selector of added) group.selectors?.add(selector);
+    for (const selector of added) {
+      group.selectors?.add(mergeState.selectorIds.idOf(selector));
+    }
     if (listed) recordGained(group, gained);
     grown.add(group.rule.index);
     const outcome = withdraw(laterRecord, claimed);

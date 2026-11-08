@@ -192,12 +192,13 @@ export class RuleRecord extends SelectorList {
 
   /**
    * @param {RuleRecord} other
+   * @param {import('../../../ir/selectorIds.js').SelectorIds} selectorIds
    * @return {boolean}
    */
-  hasSameSelectors(other) {
+  hasSameSelectors(other, selectorIds) {
     this.#assertLive();
     other.#assertLive();
-    return super.hasSameSelectors(other);
+    return super.hasSameSelectors(other, selectorIds);
   }
 
   /**

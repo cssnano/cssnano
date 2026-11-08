@@ -1,11 +1,13 @@
 import { DeclarationKeys } from './declarationKey.js';
 import { PropertyTable } from './propertyTable.js';
+import { SelectorIds } from './selectorIds.js';
 import { TextTable } from '../../values/textTable.js';
 import type { SelectorInfo } from '../merge/lib/rules/ensureCompatibility.js';
 import type { Container } from 'postcss';
 export type RunContext = {
     properties: PropertyTable;
     declarations: DeclarationKeys;
+    selectorIds: SelectorIds;
     createdBlocks: Set<Container> | null;
     selectorCompatibility: Map<string, SelectorInfo>;
     textTable: TextTable;
@@ -19,6 +21,7 @@ export type RunContext = {
  * @typedef {{
  *   properties: PropertyTable,
  *   declarations: DeclarationKeys,
+ *   selectorIds: SelectorIds,
  *   createdBlocks: Set<Container> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
  *   textTable: TextTable,

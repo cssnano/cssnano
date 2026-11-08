@@ -5,10 +5,9 @@
 // family below appends n declarations to one rule, so the walked entries
 // divided by n must stay flat as n grows.
 //
-// Two counters wrap the cache readers. The keys counter wraps `keysOf` and
-// `receivingOf`, and a read that returns a different entry than the rule's
-// previous read is a rebuild. The receiving counter wraps `receivingOf` and
-// counts the chain walk of a new entry, and the write walk of new writes.
+// The keys counter sums the rebuilds of the keys and receiving reads, and the
+// receiving counter sums the receiving rebuilds and the writes the receiving
+// reads built. Both read the counts each cache keeps for its readers.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -17,79 +16,37 @@ import { DeclarationCache } from '../../../../../src/passes/merge/lib/rules/decl
 
 const plugin = transformPlugin('mergeRules');
 
-const walk = { rebuilds: 0, entries: 0 };
-const receiving = { rebuilds: 0, entries: 0 };
-/** @type {Map<number, object>} the entry each container's previous read returned */
-let lastRead = new Map();
-/** @type {Map<number, object>} the entry each container's previous receiving read returned */
-let lastReceived = new Map();
-/** @type {Map<number, object>} the writes each container's previous receiving read returned */
-let lastWrites = new Map();
+/** @type {Set<DeclarationCache>} the caches that the readers of the current run used */
+let caches = new Set();
 
 const keysOf = DeclarationCache.prototype.keysOf;
 const receivingOf = DeclarationCache.prototype.receivingOf;
 DeclarationCache.prototype.keysOf = function (records, index) {
-  const keys = keysOf.call(this, records, index);
-  countKeys(records, index, keys);
-  return keys;
+  caches.add(this);
+  return keysOf.call(this, records, index);
 };
 DeclarationCache.prototype.receivingOf = function (records, index) {
-  const keys = receivingOf.call(this, records, index);
-  countKeys(records, index, keys);
-  countReceiving(records, index, keys);
-  return keys;
+  caches.add(this);
+  return receivingOf.call(this, records, index);
 };
-
-/**
- * @param {import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecords} records
- * @param {number} index
- * @param {object} keys the entry a read returned
- * @return {void}
- */
-function countKeys(records, index, keys) {
-  if (lastRead.get(index) !== keys) {
-    lastRead.set(index, keys);
-    walk.rebuilds++;
-    walk.entries += records.links.childCount(index);
-  }
-}
-
-/**
- * @param {import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecords} records
- * @param {number} index
- * @param {{kept: readonly number[], writes: object | undefined}} keys the entry a receiving read returned
- * @return {void}
- */
-function countReceiving(records, index, keys) {
-  if (lastReceived.get(index) !== keys) {
-    lastReceived.set(index, keys);
-    receiving.rebuilds++;
-    receiving.entries += records.links.childCount(index);
-  }
-  if (lastWrites.get(index) !== keys.writes) {
-    lastWrites.set(index, keys.writes);
-    receiving.rebuilds++;
-    receiving.entries += keys.kept.length;
-  }
-}
 
 /**
  * @param {string} css
  * @return {{keys: {rebuilds: number, entries: number}, receiving: {rebuilds: number, entries: number}}} the cache walks of one run
  */
 function measure(css) {
-  walk.rebuilds = 0;
-  walk.entries = 0;
-  receiving.rebuilds = 0;
-  receiving.entries = 0;
-  lastRead = new Map();
-  lastReceived = new Map();
-  lastWrites = new Map();
+  caches = new Set();
   postcss([plugin()]).process(css, { from: undefined }).sync();
-  return {
-    keys: { rebuilds: walk.rebuilds, entries: walk.entries },
-    receiving: { rebuilds: receiving.rebuilds, entries: receiving.entries },
-  };
+  const keys = { rebuilds: 0, entries: 0 };
+  const receiving = { rebuilds: 0, entries: 0 };
+  for (const cache of caches) {
+    const { keys: fromKeys, receiving: fromReceiving, writes } = cache.rebuilds;
+    keys.rebuilds += fromKeys.rebuilds + fromReceiving.rebuilds;
+    keys.entries += fromKeys.walked + fromReceiving.walked;
+    receiving.rebuilds += fromReceiving.rebuilds + writes.rebuilds;
+    receiving.entries += fromReceiving.walked + writes.walked;
+  }
+  return { keys, receiving };
 }
 
 /**

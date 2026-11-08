@@ -1,4 +1,5 @@
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { RULE } from './blockRecord.js';
 
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -61,7 +62,7 @@ export default class DeclarationScan {
     const { links } = records;
     /** @type {Container | undefined} */
     let enclosing = records.enclosingContainer(first.index);
-    while (enclosing && enclosing.node.type !== 'rule') {
+    while (enclosing && enclosing.kind !== RULE) {
       enclosing = records.enclosingContainer(enclosing.index);
     }
     if (!enclosing) return false;

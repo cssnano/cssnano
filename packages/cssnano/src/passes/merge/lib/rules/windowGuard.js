@@ -13,6 +13,7 @@ const WINDOW_READ =
 
 /** Node properties the window must not read, the ones a record holds. */
 const NODE_PROPERTIES = [
+  'type',
   'selector',
   'selectors',
   'prop',
@@ -20,6 +21,7 @@ const NODE_PROPERTIES = [
   'important',
   'name',
   'params',
+  'text',
   'raws',
 ];
 

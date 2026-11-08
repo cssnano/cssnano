@@ -1,58 +1,53 @@
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
 
 /**
- * The ascending positions at which one key was written, with a cursor past
- * the positions already claimed. While claims only grow, a cursor moves forward
- * once and the total work is linear in the positions recorded. The list
- * remembers the set and size its cursor was advanced under, so a different or
- * smaller set restarts the cursor instead of skipping positions.
- *
- * @typedef {{positions: number[], cursor: number, claimed?: Set<number>, claimedSize: number}} PositionList
+ * The positions one claimer has claimed, and the cursor it holds in each list
+ * it reads. Claims only grow, so a cursor moves forward once. A new claimer
+ * holds no cursors, so it starts every list from its first position.
  */
+export class Claims {
+  /** @type {Set<number>} the positions claimed so far */
+  claimed = new Set();
+  /** @type {Map<number[], number>} the position each list's cursor is at */
+  cursors = new Map();
+}
 
 /**
- * @param {PositionList} list
+ * @param {number[]} positions
  * @param {number} position greater than every position recorded so far
  */
-function appendToList(list, position) {
-  const { positions } = list;
+function appendToList(positions, position) {
   if (positions[positions.length - 1] !== position) positions.push(position);
 }
 
 /**
- * @param {Map<string | number, PositionList>} lists
+ * @param {Map<string | number, number[]>} lists
  * @param {string | number} key
  * @param {number} position greater than every position recorded so far
  */
 function appendPosition(lists, key, position) {
-  let list = lists.get(key);
-  if (!list) {
-    list = { positions: [], cursor: 0, claimedSize: 0 };
-    lists.set(key, list);
+  let positions = lists.get(key);
+  if (!positions) {
+    positions = [];
+    lists.set(key, positions);
   }
-  appendToList(list, position);
+  appendToList(positions, position);
 }
 
 /**
- * @param {PositionList | undefined} list
- * @param {Set<number>} claimed
- * @return {number} the first position of `list` not claimed, or -1
+ * @param {number[] | undefined} positions the ascending positions of one list
+ * @param {Claims} claims
+ * @return {number} the first position of the list not claimed, or -1
  */
-function firstUnclaimedIn(list, claimed) {
-  if (!list) return -1;
-  const { positions } = list;
-  if (list.claimed !== claimed || claimed.size < list.claimedSize) {
-    list.cursor = 0;
-    list.claimed = claimed;
+function firstUnclaimedIn(positions, claims) {
+  if (!positions) return -1;
+  const { claimed, cursors } = claims;
+  let cursor = cursors.get(positions) ?? 0;
+  while (cursor < positions.length && claimed.has(positions[cursor])) {
+    cursor++;
   }
-  list.claimedSize = claimed.size;
-  while (
-    list.cursor < positions.length &&
-    claimed.has(positions[list.cursor])
-  ) {
-    list.cursor++;
-  }
-  return list.cursor < positions.length ? positions[list.cursor] : -1;
+  cursors.set(positions, cursor);
+  return cursor < positions.length ? positions[cursor] : -1;
 }
 
 /**
@@ -71,9 +66,9 @@ function earliest(a, b) {
  * so `firstUnclaimed` reads the lists `SegmentIndex.newest` reads.
  */
 class SegmentPositions {
-  /** @type {Map<string, {lengths: Map<number, PositionList>, names: Map<string, PositionList>}>} */
+  /** @type {Map<string, {lengths: Map<number, number[]>, names: Map<string, number[]>}>} */
   #byLead = new Map();
-  /** @type {{lengths: Map<number, PositionList>, names: Map<string, PositionList>}} */
+  /** @type {{lengths: Map<number, number[]>, names: Map<string, number[]>}} */
   #everything = { lengths: new Map(), names: new Map() };
 
   /**
@@ -97,10 +92,10 @@ class SegmentPositions {
    * chosen as `SegmentIndex.newest` chooses them.
    *
    * @param {{lead: string, length: number, bare: string}} keys
-   * @param {Set<number>} claimed
+   * @param {Claims} claims
    * @return {number}
    */
-  firstUnclaimed({ lead, length, bare }, claimed) {
+  firstUnclaimed({ lead, length, bare }, claims) {
     const groups =
       lead === 'place'
         ? [this.#everything]
@@ -108,10 +103,10 @@ class SegmentPositions {
     let first = -1;
     for (const group of groups) {
       if (!group) continue;
-      first = earliest(first, firstUnclaimedIn(group.names.get(bare), claimed));
-      for (const [recordedLength, list] of group.lengths) {
+      first = earliest(first, firstUnclaimedIn(group.names.get(bare), claims));
+      for (const [recordedLength, positions] of group.lengths) {
         if (recordedLength !== length) {
-          first = earliest(first, firstUnclaimedIn(list, claimed));
+          first = earliest(first, firstUnclaimedIn(positions, claims));
         }
       }
     }
@@ -126,15 +121,15 @@ class SegmentPositions {
  * move forward once. A query for `all` throws, so callers reject it first.
  */
 export class WritePositions {
-  /** @type {Map<string | number, PositionList>} */
+  /** @type {Map<string | number, number[]>} */
   #customs = new Map();
-  /** @type {PositionList} */
-  #all = { positions: [], cursor: 0, claimedSize: 0 };
-  /** @type {Map<string | number, PositionList>} */
+  /** @type {number[]} */
+  #all = [];
+  /** @type {Map<string | number, number[]>} */
   #names = new Map();
-  /** @type {Map<string | number, PositionList>} */
+  /** @type {Map<string | number, number[]>} */
   #longhands = new Map();
-  /** @type {Map<string | number, PositionList>} */
+  /** @type {Map<string | number, number[]>} */
   #sides = new Map();
   #anySegments = new SegmentPositions();
   #unknownSegments = new SegmentPositions();
@@ -167,35 +162,35 @@ export class WritePositions {
    * reads.
    *
    * @param {PropertyKeys} keys of a property that is not `all`
-   * @param {Set<number>} claimed
+   * @param {Claims} claims the claimer's positions and cursors
    * @return {number}
    */
-  firstUnclaimed(keys, claimed) {
+  firstUnclaimed(keys, claims) {
     if (keys.custom) {
-      return firstUnclaimedIn(this.#customs.get(keys.key), claimed);
+      return firstUnclaimedIn(this.#customs.get(keys.key), claims);
     }
     if (keys.all) {
       throw new RangeError('firstUnclaimed takes no all declaration');
     }
     let first = earliest(
-      firstUnclaimedIn(this.#names.get(keys.name), claimed),
-      keys.subjectToAll ? firstUnclaimedIn(this.#all, claimed) : -1
+      firstUnclaimedIn(this.#names.get(keys.name), claims),
+      keys.subjectToAll ? firstUnclaimedIn(this.#all, claims) : -1
     );
     if (!keys.known) {
-      return earliest(first, this.#anySegments.firstUnclaimed(keys, claimed));
+      return earliest(first, this.#anySegments.firstUnclaimed(keys, claims));
     }
     for (const { name, opposite } of keys.longhands) {
       first = earliest(
         first,
-        firstUnclaimedIn(this.#longhands.get(name), claimed)
+        firstUnclaimedIn(this.#longhands.get(name), claims)
       );
       if (opposite) {
         first = earliest(
           first,
-          firstUnclaimedIn(this.#sides.get(opposite), claimed)
+          firstUnclaimedIn(this.#sides.get(opposite), claims)
         );
       }
     }
-    return earliest(first, this.#unknownSegments.firstUnclaimed(keys, claimed));
+    return earliest(first, this.#unknownSegments.firstUnclaimed(keys, claims));
   }
 }

@@ -1,5 +1,4 @@
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
-import type { Comment } from 'postcss';
 import type { BlockRecord, NodeEntry } from '../rules/blockRecord.js';
 import type { RuleRecord } from '../rules/ruleRecord.js';
 /**
@@ -7,10 +6,10 @@ import type { RuleRecord } from '../rules/ruleRecord.js';
  * steps its text.
  *
  * @param {DeclarationKeys} keys
- * @param {Comment} node
+ * @param {string} text the text of the comment
  * @return {number}
  */
-export declare function commentId(keys: DeclarationKeys, node: Comment): number;
+export declare function commentId(keys: DeclarationKeys, text: string): number;
 /**
  * The id of a statement at-rule, which has no block: its prelude's id.
  *

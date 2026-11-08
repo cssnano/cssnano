@@ -3,6 +3,7 @@ import type { CSSToken } from '@csstools/css-tokenizer';
 import type { Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { SelectorRange } from '../../../../values/selectorRanges.js';
+import type { SelectorIds } from '../../../ir/selectorIds.js';
 export type SelectorLookup = (selector: string, list?: SelectorList, index?: number) => import('./ensureCompatibility.js').SelectorInfo;
 export type ElementKeyOf = (selector: string, piece: RangePiece | null) => string | null;
 export type SelectorRanges = {
@@ -103,13 +104,24 @@ export declare class SelectorList {
     /** @return {string} */
     selectorText(): string;
     /**
-     * Lists of different lengths differ in text too, since a selector holds no
-     * top-level comma, so the text of long lists is joined only when needed.
+     * The interned id of each selector, in order. They are read on the first
+     * comparison, and an edit of the selectors drops them.
+     *
+     * @param {SelectorIds} selectorIds
+     * @return {readonly number[]}
+     */
+    idsOf(selectorIds: SelectorIds): readonly number[];
+    /**
+     * Two lists are the same when they have the same selectors in the same
+     * order. A selector holds no top-level comma, so the joined texts of two
+     * lists are equal exactly when their selectors are, and the ids compare the
+     * selectors without joining them.
      *
      * @param {SelectorList} other
+     * @param {SelectorIds} selectorIds
      * @return {boolean}
      */
-    hasSameSelectors(other: SelectorList): boolean;
+    hasSameSelectors(other: SelectorList, selectorIds: SelectorIds): boolean;
     /**
      * @param {string[]} selectors appended to the list
      * @param {SelectorLookup} lookup

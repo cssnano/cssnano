@@ -21,6 +21,20 @@ const STALE_WRITES =
 /** @typedef {RuleDeclarationKeys & {writes: PropertyWrites}} ReceivingDeclarations */
 
 /**
+ * How often one kind of rebuild ran, and how many chain entries or writes it
+ * walked. Only tests read them; the cache never reads them to decide.
+ *
+ * @typedef {{rebuilds: number, walked: number}} RebuildCount
+ */
+
+/**
+ * @typedef {object} RebuildCounts
+ * @property {RebuildCount} keys entries rebuilt by `keysOf`
+ * @property {RebuildCount} receiving entries rebuilt by `receivingOf`
+ * @property {RebuildCount} writes writes built by `receivingOf`
+ */
+
+/**
  * The declarations of each container, kept beside the arena's records. An
  * entry is built at the declaration stamp of its container, and it is stale
  * once a declaration joins or leaves the chain. The arrays are indexed by
@@ -32,6 +46,18 @@ export class DeclarationCache {
 
   /** @type {number[]} the declaration stamp each entry was built at, -1 before the first build */
   #builtAt = [];
+
+  /** @type {RebuildCounts} the rebuilds each reader ran */
+  #rebuilds = {
+    keys: { rebuilds: 0, walked: 0 },
+    receiving: { rebuilds: 0, walked: 0 },
+    writes: { rebuilds: 0, walked: 0 },
+  };
+
+  /** @return {RebuildCounts} the rebuilds this cache ran, for tests and the perf file */
+  get rebuilds() {
+    return this.#rebuilds;
+  }
 
   /** Gives the next entry of the arena an empty cache. */
   grow() {
@@ -48,7 +74,7 @@ export class DeclarationCache {
    * @return {RuleDeclarationKeys}
    */
   keysOf(records, index) {
-    return this.#refresh(records, index);
+    return this.#refresh(records, index, this.#rebuilds.keys);
   }
 
   /**
@@ -61,8 +87,11 @@ export class DeclarationCache {
    * @return {ReceivingDeclarations}
    */
   receivingOf(records, index) {
-    const entry = this.#refresh(records, index);
+    const entry = this.#refresh(records, index, this.#rebuilds.receiving);
     if (entry.writes === undefined) {
+      const count = this.#rebuilds.writes;
+      count.rebuilds++;
+      count.walked += entry.kept.length;
       entry.writes = writesOfKept(records, entry.kept);
     } else if (consistencyChecksEnabled()) {
       assertWritesFresh(records, entry);
@@ -77,11 +106,14 @@ export class DeclarationCache {
    *
    * @param {BlockRecords} records
    * @param {ArenaIndex} index
+   * @param {RebuildCount} count the counter of the reader that asks
    * @return {RuleDeclarationKeys}
    */
-  #refresh(records, index) {
+  #refresh(records, index, count) {
     const stamp = records.declarationStamps.stampOf(index);
     if (this.#builtAt[index] !== stamp) {
+      count.rebuilds++;
+      count.walked += records.links.childCount(index);
       /** @type {ArenaIndex[]} */
       const kept = [];
       const keySet = new Set();
@@ -133,7 +165,7 @@ export class DeclarationCache {
   }
 }
 
-/** @typedef {Pick<DeclarationCache, 'keysOf' | 'receivingOf'>} DeclarationCacheReader */
+/** @typedef {Pick<DeclarationCache, 'keysOf' | 'receivingOf' | 'rebuilds'>} DeclarationCacheReader */
 
 /**
  * The declarations of the rule at `index`, in chain order. The entry is the

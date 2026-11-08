@@ -79,6 +79,41 @@ function checkPlacedRules(sequence, rules, replacement, previous) {
 /** @import {Placement} from './ruleSequence.js' */
 
 /**
+ * Orders pairs for merging. For equal selectors it is the number of
+ * declarations in both rules, since the selector is written once. Otherwise
+ * it is the number of declarations the rules share, or 0 when only a move
+ * into an equivalent parent or the removal of empty rules applies.
+ *
+ * @param {MergeState} mergeState its records hold both rules
+ * @param {ArenaIndex} firstIndex
+ * @param {ArenaIndex} secondIndex
+ * @return {number} NO_BENEFIT when merging the pair cannot rewrite anything
+ */
+export function mergeBenefit(mergeState, firstIndex, secondIndex) {
+  const { records } = mergeState;
+  const first = /** @type {RuleRecord} */ (records.rule(firstIndex));
+  const second = /** @type {RuleRecord} */ (records.rule(secondIndex));
+  const a = declarationKeys(records, firstIndex);
+  const b = declarationKeys(records, secondIndex);
+  if (first.hasSameSelectors(second, mergeState.selectorIds)) {
+    return a.kept.length + b.kept.length;
+  }
+  const [smaller, larger] =
+    a.kept.length <= b.kept.length ? [a, b.keySet] : [b, a.keySet];
+  let shared = 0;
+  for (const key of smaller.keySet) {
+    if (larger.has(key)) shared++;
+  }
+  if (shared > 0) return shared;
+  const rewritesStructure =
+    (a.kept.length === 0 && b.kept.length === 0) ||
+    (records.links.parentOf(firstIndex) !==
+      records.links.parentOf(secondIndex) &&
+      sameContainer(mergeState.blockOf(first), mergeState.blockOf(second)));
+  return rewritesStructure ? 0 : NO_BENEFIT;
+}
+
+/**
  * Merges neighboring rules in left-to-right sweeps, trying the pair that
  * shares the most declarations first and the earlier pair on a tie. That
  * approximates merging the best pair of the whole stylesheet first. The two
@@ -104,35 +139,6 @@ export default function runScan(mergeState) {
   const rule = (index) =>
     /** @type {RuleRecord} */ (mergeState.records.rule(index));
 
-  /**
-   * Orders pairs for merging. For equal selectors it is the number of
-   * declarations in both rules, since the selector is written once. Otherwise
-   * it is the number of declarations the rules share, or 0 when only a move
-   * into an equivalent parent or the removal of empty rules applies.
-   *
-   * @param {RuleRecord} first
-   * @param {RuleRecord} second
-   * @return {number} NO_BENEFIT when merging the pair cannot rewrite anything
-   */
-  const mergeBenefit = (first, second) => {
-    const a = declarationKeys(mergeState.records, first.index);
-    const b = declarationKeys(mergeState.records, second.index);
-    if (first.hasSameSelectors(second)) return a.kept.length + b.kept.length;
-    const [smaller, larger] =
-      a.kept.length <= b.kept.length ? [a, b.keySet] : [b, a.keySet];
-    let shared = 0;
-    for (const key of smaller.keySet) {
-      if (larger.has(key)) shared++;
-    }
-    if (shared > 0) return shared;
-    const rewritesStructure =
-      (a.kept.length === 0 && b.kept.length === 0) ||
-      (mergeState.records.links.parentOf(first.index) !==
-        mergeState.records.links.parentOf(second.index) &&
-        sameContainer(mergeState.blockOf(first), mergeState.blockOf(second)));
-    return rewritesStructure ? 0 : NO_BENEFIT;
-  };
-
   // Pairs that passed `canMerge` as the best candidate but rewrote nothing;
   // they are skipped until another rewrite can change the outcome.
   /** @type {Map<number, number>} */
@@ -142,7 +148,7 @@ export default function runScan(mergeState) {
   const pairBenefit = (first, second) =>
     unmergeablePairs.get(first) === second
       ? NO_BENEFIT
-      : mergeBenefit(rule(first), rule(second));
+      : mergeBenefit(mergeState, first, second);
 
   const scan = new DeclarationScan();
 

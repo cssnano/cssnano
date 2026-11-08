@@ -286,7 +286,6 @@ export function earliestPairReaching(
   const { records } = mergeState;
   const linked = /** @type {RuleRecord} */ (records.rule(link));
   const parent = records.links.parentOf(linked.index);
-  const own = declarationKeys(records, linked.index);
   let passed = false;
   let member = link;
   for (let depth = 1; ; depth++) {
@@ -296,6 +295,7 @@ export function earliestPairReaching(
     const other = declarationKeys(records, prevRule.index);
     if (depth === 1) {
       // Seed from the smaller key list, which bounds the first intersection.
+      const own = declarationKeys(records, linked.index);
       const [from, to] =
         own.kept.length <= other.kept.length ? [own, other] : [other, own];
       scratch.length = 0;

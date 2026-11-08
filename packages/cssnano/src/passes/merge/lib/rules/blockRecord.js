@@ -59,6 +59,14 @@ export function isAtRuleKind(kind) {
 }
 
 /**
+ * @param {number} kind
+ * @return {boolean} whether an entry of the kind is a rule or an at-rule, which a plain rule cannot hold
+ */
+export function isContainerKind(kind) {
+  return kind === RULE || isAtRuleKind(kind);
+}
+
+/**
  * The record of a container that the merge visits: the stylesheet, an at-rule
  * with a block, or a rule that holds rules or at-rules. Its children are the
  * entries its chain links, which `BlockRecords` keeps. Every record class holds
@@ -166,6 +174,12 @@ export class NodeEntry {
 
   /** @type {string | null} the whitespace before the node, see `BlockRecord#before` */
   before = '';
+
+  /** @type {string} the text of a comment, '' for an at-rule */
+  text = '';
+
+  /** @type {boolean} whether a comment is important, which the merge keeps */
+  important = false;
 
   /**
    * @param {ChildNode} node

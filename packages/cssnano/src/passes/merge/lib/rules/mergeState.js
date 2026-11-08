@@ -30,6 +30,8 @@ export default class MergeState {
   #lookup;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
   #declarations;
+  /** @type {import('../../../ir/selectorIds.js').SelectorIds} */
+  #selectorIds;
   /** @type {(selector: string, piece?: RangePiece | null) => string | null} */
   #elementKeyOf = createElementKeyLookup();
   /** @type {Set<Container> | null} */
@@ -52,6 +54,7 @@ export default class MergeState {
       context.selectorCompatibility
     );
     this.#declarations = context.declarations;
+    this.#selectorIds = context.selectorIds;
     this.properties = context.properties;
     this.#createdBlocks = context.createdBlocks;
   }
@@ -76,6 +79,15 @@ export default class MergeState {
    */
   get declarationIds() {
     return this.#declarations;
+  }
+
+  /**
+   * The ids of the run's selectors, which list comparisons read.
+   *
+   * @return {import('../../../ir/selectorIds.js').SelectorIds}
+   */
+  get selectorIds() {
+    return this.#selectorIds;
   }
 
   /**

@@ -19,6 +19,24 @@ export type RuleDeclarationKeys = {
 export type ReceivingDeclarations = RuleDeclarationKeys & {
     writes: PropertyWrites;
 };
+export type RebuildCount = {
+    rebuilds: number;
+    walked: number;
+};
+export type RebuildCounts = {
+    /**
+     * entries rebuilt by `keysOf`
+     */
+    keys: RebuildCount;
+    /**
+     * entries rebuilt by `receivingOf`
+     */
+    receiving: RebuildCount;
+    /**
+     * writes built by `receivingOf`
+     */
+    writes: RebuildCount;
+};
 /**
  * @typedef {object} RuleDeclarationKeys
  * @property {readonly ArenaIndex[]} kept the indices of the declarations of the rule, in order
@@ -27,6 +45,18 @@ export type ReceivingDeclarations = RuleDeclarationKeys & {
  */
 /** @typedef {RuleDeclarationKeys & {writes: PropertyWrites}} ReceivingDeclarations */
 /**
+ * How often one kind of rebuild ran, and how many chain entries or writes it
+ * walked. Only tests read them; the cache never reads them to decide.
+ *
+ * @typedef {{rebuilds: number, walked: number}} RebuildCount
+ */
+/**
+ * @typedef {object} RebuildCounts
+ * @property {RebuildCount} keys entries rebuilt by `keysOf`
+ * @property {RebuildCount} receiving entries rebuilt by `receivingOf`
+ * @property {RebuildCount} writes writes built by `receivingOf`
+ */
+/**
  * The declarations of each container, kept beside the arena's records. An
  * entry is built at the declaration stamp of its container, and it is stale
  * once a declaration joins or leaves the chain. The arrays are indexed by
@@ -34,6 +64,8 @@ export type ReceivingDeclarations = RuleDeclarationKeys & {
  */
 export declare class DeclarationCache {
     #private;
+    /** @return {RebuildCounts} the rebuilds this cache ran, for tests and the perf file */
+    get rebuilds(): RebuildCounts;
     /** Gives the next entry of the arena an empty cache. */
     grow(): void;
     /**
@@ -69,8 +101,8 @@ export declare class DeclarationCache {
      */
     appended(index: ArenaIndex, declaration: DeclarationRecord, before: number, after: number): void;
 }
-export type DeclarationCacheReader = Pick<DeclarationCache, 'keysOf' | 'receivingOf'>;
-/** @typedef {Pick<DeclarationCache, 'keysOf' | 'receivingOf'>} DeclarationCacheReader */
+export type DeclarationCacheReader = Pick<DeclarationCache, 'keysOf' | 'receivingOf' | 'rebuilds'>;
+/** @typedef {Pick<DeclarationCache, 'keysOf' | 'receivingOf' | 'rebuilds'>} DeclarationCacheReader */
 /**
  * The declarations of the rule at `index`, in chain order. The entry is the
  * cache's own, so the caller reads it and does not keep it across an edit of

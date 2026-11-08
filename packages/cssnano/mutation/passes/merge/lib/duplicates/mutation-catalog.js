@@ -45,8 +45,8 @@ export const mutations = [
   },
   {
     name: 'let an important comment not count as content',
-    find: 'isImportantComment(entry.node.text)',
-    replace: 'false',
+    find: '(entry).important) {',
+    replace: 'false) {',
   },
   {
     name: 'keep a conditional group that dedupe empties',

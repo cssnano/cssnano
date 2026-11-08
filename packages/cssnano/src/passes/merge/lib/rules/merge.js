@@ -38,7 +38,7 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
     return null;
   // Repeating the same declarations under the same selector changes nothing,
   // and a selector list that repeats the selector is longer than one rule.
-  if (first.hasSameSelectors(second)) {
+  if (first.hasSameSelectors(second, mergeState.selectorIds)) {
     second.depart();
     return { first: [first.index], second: [] };
   }
@@ -57,7 +57,7 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
  * @return {Placement | null}
  */
 export function mergeMatchingSelectors(first, second, mergeState) {
-  if (!first.hasSameSelectors(second)) return null;
+  if (!first.hasSameSelectors(second, mergeState.selectorIds)) return null;
   appendToDeclarations(mergeState, first.index, second.index);
   return { first: [first.index], second: [] };
 }

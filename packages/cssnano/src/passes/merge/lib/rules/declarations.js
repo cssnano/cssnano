@@ -1,6 +1,6 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { PropertyWrites } from './propertyWrites.js';
-import { WritePositions } from './writePositions.js';
+import { Claims, WritePositions } from './writePositions.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, ChainPosition} from './blockRecord.js' */
@@ -59,8 +59,8 @@ class LaterClaims {
   #declarations;
   /** @type {WritePositions} */
   #writes;
-  /** @type {Set<ChainPosition>} */
-  #claimed = new Set();
+  /** @type {Claims} the positions this claimer claimed, with its cursors */
+  #claims = new Claims();
   #hasAll = false;
 
   /** @param {DeclarationRecord[]} declarations */
@@ -76,7 +76,7 @@ class LaterClaims {
 
   /** @return {Set<ChainPosition>} the positions claimed so far */
   get claimed() {
-    return this.#claimed;
+    return /** @type {Set<ChainPosition>} */ (this.#claims.claimed);
   }
 
   /**
@@ -91,7 +91,7 @@ class LaterClaims {
       return false;
     }
     const matchIndex = /** @type {ChainPosition | -1} */ (
-      this.#writes.firstUnclaimed(keys, this.#claimed)
+      this.#writes.firstUnclaimed(keys, this.#claims)
     );
     if (matchIndex === -1) {
       return false;
@@ -99,7 +99,7 @@ class LaterClaims {
     if (!declarationIsEqual(this.#declarations[matchIndex], candidate)) {
       return false;
     }
-    this.#claimed.add(matchIndex);
+    this.#claims.claimed.add(matchIndex);
     return true;
   }
 }

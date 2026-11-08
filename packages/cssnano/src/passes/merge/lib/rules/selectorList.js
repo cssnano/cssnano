@@ -9,6 +9,7 @@ import { tokens as tokenize } from '../../../../utils/value.js';
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {SelectorRange} from '../../../../values/selectorRanges.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
+/** @import {SelectorIds} from '../../../ir/selectorIds.js' */
 /** @typedef {(selector: string, list?: SelectorList, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
 /** @typedef {(selector: string, piece: RangePiece | null) => string | null} ElementKeyOf */
 /**
@@ -48,6 +49,8 @@ export class SelectorList {
   #vendor;
   /** @type {string | undefined} the selectors joined by commas, once known */
   #selectorText;
+  /** @type {number[] | undefined} the interned id of each selector, once a comparison asks */
+  #ids;
   /** @type {RuleElementKeys | null | undefined} null when a selector has no element key */
   #elementKeys;
   /** @type {RangePiece[] | null | undefined} the token range of each selector; null when unknown */
@@ -73,6 +76,7 @@ export class SelectorList {
     this.#listStored = tokens !== undefined;
     this.#vendor = undefined;
     this.#selectorText = undefined;
+    this.#ids = undefined;
     this.#elementKeys = undefined;
     this.#pieces = undefined;
     this.#compatible = undefined;
@@ -241,17 +245,35 @@ export class SelectorList {
   }
 
   /**
-   * Lists of different lengths differ in text too, since a selector holds no
-   * top-level comma, so the text of long lists is joined only when needed.
+   * The interned id of each selector, in order. They are read on the first
+   * comparison, and an edit of the selectors drops them.
+   *
+   * @param {SelectorIds} selectorIds
+   * @return {readonly number[]}
+   */
+  idsOf(selectorIds) {
+    this.#ids ??= this.#selectors.map((selector) => selectorIds.idOf(selector));
+    return this.#ids;
+  }
+
+  /**
+   * Two lists are the same when they have the same selectors in the same
+   * order. A selector holds no top-level comma, so the joined texts of two
+   * lists are equal exactly when their selectors are, and the ids compare the
+   * selectors without joining them.
    *
    * @param {SelectorList} other
+   * @param {SelectorIds} selectorIds
    * @return {boolean}
    */
-  hasSameSelectors(other) {
-    return (
-      this.#selectors.length === other.#selectors.length &&
-      this.selectorText() === other.selectorText()
-    );
+  hasSameSelectors(other, selectorIds) {
+    if (this.#selectors.length !== other.#selectors.length) return false;
+    const ids = this.idsOf(selectorIds);
+    const otherIds = other.idsOf(selectorIds);
+    for (let at = 0; at < ids.length; at++) {
+      if (ids[at] !== otherIds[at]) return false;
+    }
+    return true;
   }
 
   /**
@@ -265,6 +287,7 @@ export class SelectorList {
    */
   addSelectors(selectors, lookup, keyOf = elementKeyOf, pieces = null) {
     this.#selectorText = undefined;
+    this.#ids = undefined;
     this.#ranges = undefined;
     const from = this.#selectors.length;
     for (const selector of selectors) {
@@ -300,6 +323,7 @@ export class SelectorList {
     for (const selector of this.#selectors) selectors.push(selector);
     this.#selectors = selectors;
     this.#selectorText = text;
+    this.#ids = undefined;
     this.#vendor = vendor;
     this.#ranges = undefined;
     // Grows the earlier list's pieces in place, as its selectors grow.

@@ -1,11 +1,16 @@
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
 import type { PropertyKeys } from '../../../ir/propertyTable.js';
-export type PositionList = {
-    positions: number[];
-    cursor: number;
-    claimed?: Set<number>;
-    claimedSize: number;
-};
+/**
+ * The positions one claimer has claimed, and the cursor it holds in each list
+ * it reads. Claims only grow, so a cursor moves forward once. A new claimer
+ * holds no cursors, so it starts every list from its first position.
+ */
+export declare class Claims {
+    /** @type {Set<number>} the positions claimed so far */
+    claimed: Set<number>;
+    /** @type {Map<number[], number>} the position each list's cursor is at */
+    cursors: Map<number[], number>;
+}
 /**
  * The position of every write, grouped by the keys `PropertyWrites` uses, so
  * the earliest unclaimed conflicting write is read from the lists those keys
@@ -25,9 +30,9 @@ export declare class WritePositions {
      * reads.
      *
      * @param {PropertyKeys} keys of a property that is not `all`
-     * @param {Set<number>} claimed
+     * @param {Claims} claims the claimer's positions and cursors
      * @return {number}
      */
-    firstUnclaimed(keys: PropertyKeys, claimed: Set<number>): number;
+    firstUnclaimed(keys: PropertyKeys, claims: Claims): number;
 }
 //# sourceMappingURL=writePositions.d.ts.map

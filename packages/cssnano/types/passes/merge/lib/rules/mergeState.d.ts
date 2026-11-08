@@ -50,6 +50,12 @@ export default class MergeState {
      */
     get declarationIds(): import('../../../ir/declarationKey.js').DeclarationKeys;
     /**
+     * The ids of the run's selectors, which list comparisons read.
+     *
+     * @return {import('../../../ir/selectorIds.js').SelectorIds}
+     */
+    get selectorIds(): import('../../../ir/selectorIds.js').SelectorIds;
+    /**
      * Reports a rule a merge created, when the run collects them, so the driver
      * canonicalizes it. A rule no run collects is left alone.
      *

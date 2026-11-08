@@ -5,6 +5,10 @@ import postcss from 'postcss';
 const plugin = transformPlugin('mergeRules');
 import { repositoryFile } from '../../../../../../../util/testHelpers.js';
 import { transformPlugin } from '#passes/merge';
+import { mergeBenefit } from '../../../../../src/passes/merge/lib/rules/scan.js';
+import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
+import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { buildTestRecords, ruleRecordOf } from './liveRecords.js';
 
 /** @param {string} css */
 function merge(css) {
@@ -263,4 +267,35 @@ test('should share declarations a rule gained from a same-selector merge with a 
     merge('.a{color:red}.a{margin:0}.b{margin:0}'),
     '.a{color:red}.a,.b{margin:0}'
   );
+});
+
+/**
+ * The merge state of `css` built as the run builds it.
+ *
+ * @param {string} css
+ * @return {{state: MergeState, root: import('postcss').Root}}
+ */
+function stateOf(css) {
+  const root = postcss.parse(css);
+  const state = new MergeState(['chrome 120'], createRunContext());
+  state.records = buildTestRecords(root, state);
+  return { state, root };
+}
+
+test('mergeBenefit should count the shared declarations of a pair', () => {
+  const { state, root } = stateOf('.a{color:red}.b{color:red}');
+  const a = ruleRecordOf(state.records, root.first);
+  const b = ruleRecordOf(state.records, root.last);
+  assert.equal(mergeBenefit(state, a.index, b.index), 1);
+});
+
+test('mergeBenefit should return 0 for a pair in equal containers that share nothing', () => {
+  // The two blocks are equal and share no declaration, so merging the pair
+  // rewrites the structure and has a benefit of 0, not a rejection.
+  const { state, root } = stateOf(
+    '@media print{.a{color:red}}@media print{.b{width:1px}}'
+  );
+  const a = ruleRecordOf(state.records, root.first.first);
+  const b = ruleRecordOf(state.records, root.last.first);
+  assert.equal(mergeBenefit(state, a.index, b.index), 0);
 });

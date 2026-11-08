@@ -36,9 +36,9 @@ export type Group = {
     position: ChainPosition;
     declarations: DeclarationRecord[];
     /**
-     * listed selectors, built on demand
+     * the ids of the listed selectors, built on demand
      */
-    selectors: Set<string> | null;
+    selectors: Set<number> | null;
     /**
      * declaration bytes, each with its separator, or -1
      */

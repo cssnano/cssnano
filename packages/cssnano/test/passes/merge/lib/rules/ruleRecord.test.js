@@ -30,10 +30,12 @@ import {
   removeDeclarations,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
 const lookup = () => ({});
+const selectorIds = new SelectorIds();
 const lookupB = (selector) => ({ compatible: selector !== 'b' });
 
 /**
@@ -84,6 +86,14 @@ test('compatible should be false after absorbEarlier takes an incompatible earli
   const earlier = new RuleRecord(postcss.rule(), ['b']);
   later.absorbEarlier(earlier, lookupB);
   assert.equal(later.compatible(lookupB), false);
+});
+
+test('hasSameSelectors should be false after addSelectors grows one of two equal lists', () => {
+  const a = new RuleRecord(postcss.rule(), ['.a']);
+  const b = new RuleRecord(postcss.rule(), ['.a']);
+  assert.equal(a.hasSameSelectors(b, selectorIds), true);
+  a.addSelectors(['.b'], lookup);
+  assert.equal(a.hasSameSelectors(b, selectorIds), false);
 });
 
 test('recordRule should give the record of a rule the rule as its node', () => {

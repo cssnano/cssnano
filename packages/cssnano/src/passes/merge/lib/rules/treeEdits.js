@@ -20,7 +20,7 @@ import { receivingDeclarations } from './declarationCache.js';
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
-/** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
+/** @import {AtRule, ChildNode, Comment, Container, Root, Rule} from 'postcss' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
@@ -142,6 +142,8 @@ export function buildRecords(root, context) {
           new NodeEntry(child, COMMENT, '', '', false, NO_PRELUDE)
         );
         entry.before = child.raws.before ?? null;
+        entry.text = /** @type {Comment} */ (child).text;
+        entry.important = cssnanoUtils.isImportantComment(entry.text);
         records.linkLast(container.index, entry.index);
       }
     }

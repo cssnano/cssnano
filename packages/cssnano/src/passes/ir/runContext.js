@@ -1,5 +1,6 @@
 import { DeclarationKeys } from './declarationKey.js';
 import { PropertyTable } from './propertyTable.js';
+import { SelectorIds } from './selectorIds.js';
 import { TextTable } from '../../values/textTable.js';
 
 /** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
@@ -12,6 +13,7 @@ import { TextTable } from '../../values/textTable.js';
  * @typedef {{
  *   properties: PropertyTable,
  *   declarations: DeclarationKeys,
+ *   selectorIds: SelectorIds,
  *   createdBlocks: Set<Container> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
  *   textTable: TextTable,
@@ -30,6 +32,7 @@ export function createRunContext(textTable = new TextTable()) {
   return {
     properties: new PropertyTable(),
     declarations: new DeclarationKeys(),
+    selectorIds: new SelectorIds(),
     createdBlocks: null,
     selectorCompatibility: new Map(),
     textTable,

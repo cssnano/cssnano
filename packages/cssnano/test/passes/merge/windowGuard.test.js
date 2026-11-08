@@ -78,11 +78,21 @@ test('the window guard throws on a table write the window makes', () => {
   }
 });
 
-test('the window guard leaves the node type readable while installed', () => {
+test('the window guard throws on a read of a node type the build reached', () => {
   const { root, textTable, records } = buildOf('a{color:red}');
   const release = guardWindow(records, textTable);
   try {
-    assert.equal(root.first.type, 'rule');
+    assert.throws(() => root.first.type);
+  } finally {
+    release();
+  }
+});
+
+test("guardWindow should throw on a read of a comment's text in the window", () => {
+  const { root, textTable, records } = buildOf('/*! keep */a{color:red}');
+  const release = guardWindow(records, textTable);
+  try {
+    assert.throws(() => root.first.text);
   } finally {
     release();
   }

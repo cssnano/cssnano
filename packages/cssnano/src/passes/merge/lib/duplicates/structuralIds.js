@@ -37,12 +37,12 @@ function markLayered(layered, id, isLayer) {
  * steps its text.
  *
  * @param {DeclarationKeys} keys
- * @param {Comment} node
+ * @param {string} text the text of the comment
  * @return {number}
  */
-export function commentId(keys, node) {
+export function commentId(keys, text) {
   let trie = step(keys.root, 'comment');
-  if (isImportantComment(node.text)) trie = step(trie, node.text);
+  if (isImportantComment(text)) trie = step(trie, text);
   return keys.leafOf(trie);
 }
 

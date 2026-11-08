@@ -114,9 +114,10 @@ export declare class RuleRecord extends SelectorList {
     selectorText(): string;
     /**
      * @param {RuleRecord} other
+     * @param {import('../../../ir/selectorIds.js').SelectorIds} selectorIds
      * @return {boolean}
      */
-    hasSameSelectors(other: RuleRecord): boolean;
+    hasSameSelectors(other: RuleRecord, selectorIds: import('../../../ir/selectorIds.js').SelectorIds): boolean;
     /**
      * @param {string[]} selectors appended to the rule's selector list
      * @param {SelectorLookup} lookup

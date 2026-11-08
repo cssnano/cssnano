@@ -80,7 +80,7 @@ export const mutations = [
   },
   {
     name: 'let an important comment id not step its text',
-    find: '  if (isImportantComment(node.text)) trie = step(trie, node.text);',
+    find: '  if (isImportantComment(text)) trie = step(trie, text);',
     replace: '',
   },
 ];

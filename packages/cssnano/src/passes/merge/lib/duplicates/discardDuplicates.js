@@ -1,4 +1,3 @@
-import cssnanoUtils from '#utils';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import {
   BlockRecord,
@@ -6,19 +5,17 @@ import {
   CONDITIONAL_GROUP,
   IMPORT,
   isAtRuleKind,
+  isContainerKind,
   LAYER,
-  NodeEntry,
 } from '../rules/blockRecord.js';
 import { RuleRecord } from '../rules/ruleRecord.js';
 import { remove } from '../rules/treeEdits.js';
 import { commentId, containerId, statementId } from './structuralIds.js';
 
-/** @import {Comment} from 'postcss' */
+/** @import {NodeEntry} from '../rules/blockRecord.js' */
 /** @import {BlockRecords} from '../rules/blockRecords.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-
-const { isImportantComment } = cssnanoUtils;
 
 // The entry was removed; a kept entry returns its structural id, or 0 when no
 // ancestor needs one.
@@ -47,11 +44,7 @@ const REMOVED = -1;
  * @return {boolean} whether the entry is a rule or an at-rule
  */
 function isContainerEntry(entry) {
-  return (
-    entry instanceof RuleRecord ||
-    entry instanceof BlockRecord ||
-    (entry instanceof NodeEntry && entry.node.type === 'atrule')
-  );
+  return isContainerKind(entry.kind);
 }
 
 /**
@@ -69,10 +62,7 @@ function hasContent(run, container) {
     index = records.links.nextSibling(index)
   ) {
     const entry = records.entry(index);
-    if (
-      !(entry instanceof NodeEntry && entry.node.type === 'comment') ||
-      isImportantComment(entry.node.text)
-    ) {
+    if (entry.kind !== COMMENT || /** @type {NodeEntry} */ (entry).important) {
       return true;
     }
   }
@@ -294,9 +284,7 @@ function keepAtRule(run, block, ids, seenAtRules) {
  */
 function dedupeNode(run, entry, seenAtRules, wantIds) {
   if (entry.kind === COMMENT) {
-    return wantIds
-      ? commentId(run.keys, /** @type {Comment} */ (entry.node))
-      : 0;
+    return wantIds ? commentId(run.keys, entry.text) : 0;
   }
   if (!isAtRuleKind(entry.kind)) return 0;
   // A statement layer is never removed, and an @import is kept too.
