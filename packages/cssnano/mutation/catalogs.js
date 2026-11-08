@@ -147,6 +147,13 @@ export const catalogs = [
   },
   {
     url: new URL(
+      './passes/merge/lib/rules/mutation-catalog-links.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
       './passes/merge/lib/rules/mutation-catalog-selector-writers.js',
       import.meta.url
     ),
@@ -224,10 +231,19 @@ const mergeCache = {
   catalogs: [catalogUrl('./passes/merge/lib/rules/mutation-catalog-cache.js')],
 };
 
+// The link checks' exceptions are judged by the rules' tests under checks,
+// which the fuzz oracles never run.
+const mergeLinks = {
+  check: 'test',
+  allowUnkilled: false,
+  catalogs: [catalogUrl('./passes/merge/lib/rules/mutation-catalog-links.js')],
+};
+
 export const groups = {
   'merge-rules': [mergeRules],
   'merge-duplicates': [mergeDuplicates],
   'merge-selector-writers': [mergeSelectorWriters],
   'merge-cache': [mergeCache],
-  merge: [mergeRules, mergeDuplicates, mergeSelectorWriters, mergeCache],
+  'merge-links': [mergeLinks],
+  merge: [mergeRules, mergeDuplicates, mergeSelectorWriters, mergeCache, mergeLinks],
 };

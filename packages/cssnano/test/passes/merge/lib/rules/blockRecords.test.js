@@ -240,12 +240,27 @@ test('records.rule should throw under consistency checks for a rule inside a blo
   assert.throws(() => state.records.rule(index), /does not reach/v);
 });
 
-test('records.rule should return an unplaced merged rule, whose getters do not throw under consistency checks', () => {
-  const { state } = setup('a{color:red}');
-  const merged = postcss.parse('b{width:1px}').first;
-  const record = state.records.recordRule(merged, ['b'], 'b');
-  assert.equal(state.records.rule(record.index), record);
-  assert.deepEqual(record.selectors, ['b']);
+test('records.rule should throw under consistency checks for a plain rule unlinked without departing', () => {
+  const { root, state } = setup('a{color:red}');
+  const rule = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
+  state.records.unlink(rule.index);
+  assert.throws(() => state.records.rule(rule.index), /does not reach/v);
+});
+
+test('linkLast into a plain rule that is linked nowhere should throw under consistency checks', () => {
+  const { root, state } = setup('a{color:red}');
+  const rule = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
+  const [declaration] = rule.declarationsOf(state.records);
+  const orphan = state.records.recordRule(
+    postcss.parse('b{width:1px}').first,
+    ['b'],
+    'b'
+  );
+  state.records.unlink(declaration.index);
+  assert.throws(
+    () => state.records.linkLast(orphan.index, declaration.index),
+    /outside the tree/v
+  );
 });
 
 test('the chains should stay well formed after a rule moves to the end of a block', () => {

@@ -17,26 +17,18 @@ const DEPARTED = 'read of a departed rule record';
  */
 
 /**
- * Under checks, walks `parentOf` up from `index` and throws when a container
- * above it stops the walk at -1. An entry linked nowhere is unplaced and passes.
+ * Under checks, walks `parentOf` up from `index` and throws when the walk stops
+ * at -1 before the root. An entry linked nowhere is removed, so it throws too.
  *
  * @param {BlockRecords} records
  * @param {number} index an index that the arena gave, or -1
  * @return {void}
- * @throws {Error} under checks, when a container above `index` does not reach the root
+ * @throws {Error} under checks, when `index` is not reached by the root
  */
 export function assertReached(records, index) {
   if (!consistencyChecksEnabled()) return;
-  const parent = records.links.parentOf(index);
-  // An index the arena did not give has no container, and so is unplaced.
-  if (parent === undefined) return;
-  // Only an unplaced rule that does not nest may stand apart: a merged rule
-  // before the merge places it.
-  if (parent === -1) {
-    const entry = records.entry(/** @type {ArenaIndex} */ (index));
-    if (entry instanceof RuleRecord && entry.context === -1) return;
-    throw new Error(NOT_REACHED);
-  }
+  // An index the arena did not give has no container, so the walk has no start.
+  if (records.links.parentOf(index) === undefined) return;
   let at = index;
   while (at !== records.root.index) {
     at = records.links.parentOf(at);
@@ -88,16 +80,6 @@ export function assertCanHold(records, block, index) {
  * @throws {Error} when a walk up `parentOf` from `block` does not reach the root
  */
 export function assertReachesRoot(records, block) {
-  // A merged rule stands apart until the merge places it, and its children
-  // are built first, so a plain rule with no parent may take children.
-  const holder = records.container(block);
-  if (
-    holder instanceof RuleRecord &&
-    holder.context === -1 &&
-    records.links.parentOf(block) === -1
-  ) {
-    return;
-  }
   let at = block;
   while (at !== records.root.index) {
     at = records.links.parentOf(at);

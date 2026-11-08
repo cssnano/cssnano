@@ -66,6 +66,30 @@ test('substitute should put the replacement in the chain where the rule stood', 
   assert.equal(state.records.links.parentOf(replacement.index), mediaIndex);
 });
 
+test('substitute should keep a replacement that already stands before the replaced rule', () => {
+  const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
+  const [media] = /** @type {Container[]} */ (root.nodes);
+  const [a, b] = /** @type {Rule[]} */ (/** @type {Container} */ (media).nodes);
+  const mediaIndex = indexOfBlock(state, media);
+  const fresh = state.records.recordRule(
+    postcss.rule({ selector: 'x' }),
+    ['x'],
+    'x'
+  );
+  state.records.linkAfter(
+    mediaIndex,
+    ruleRecordOf(state.records, a).index,
+    fresh.index
+  );
+  substitute(state.records, ruleRecordOf(state.records, b).index, [
+    fresh.index,
+  ]);
+  assert.equal(state.records.links.childCount(mediaIndex), 2);
+  const entries = childEntriesOf(state.records, mediaIndex);
+  assert.equal(entries[1], fresh);
+  assert.equal(state.records.links.parentOf(fresh.index), mediaIndex);
+});
+
 test('substitute with no replacement should unlink the rule and shrink its block', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const [media] = /** @type {Container[]} */ (root.nodes);

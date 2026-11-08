@@ -11,7 +11,9 @@ import type { RuleRecord } from './ruleRecord.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
 /**
  * Replaces the rule `record` with the rules `replacements`, which take its
- * place in the chain, in order.
+ * place in the chain, in order. A replacement that already stands right before
+ * `record` is the first of them and stays where it is; the others are linked
+ * nowhere.
  *
  * @param {BlockRecords} records
  * @param {number} record the index of the rule that is replaced

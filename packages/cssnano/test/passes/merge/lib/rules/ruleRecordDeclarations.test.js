@@ -50,13 +50,17 @@ const arenaOf = (css) => {
 };
 
 /**
- * An unplaced merged rule, as a merge makes one to take declarations.
+ * A merged rule, which the merge links before it takes declarations, as
+ * `buildMergedRule` does. It is linked at the end of the stylesheet.
  *
  * @param {BlockRecords} records
  * @return {RuleRecord}
  */
-const unplacedRule = (records) =>
-  records.recordRule(postcss.rule({ selector: 'b' }), ['b'], 'b');
+const mergedRule = (records) => {
+  const rule = records.recordRule(postcss.rule({ selector: 'b' }), ['b'], 'b');
+  records.linkLast(records.root.index, rule.index);
+  return rule;
+};
 
 /**
  * Runs `action` with consistency checks on, then restores the setting.
@@ -127,7 +131,7 @@ test('removeDeclarations should remove the claimed declarations by index, whatev
 
 test("moveDeclarations should keep the claimed declarations in their order in the target's chain", () => {
   const { records, record } = arenaOf('a{color:red;width:1px;height:2px}');
-  const target = unplacedRule(records);
+  const target = mergedRule(records);
   const [color, , height] = record.declarationsOf(records);
   moveDeclarations(records, record.index, target.index, [
     ...claimAt(records, record, [0, 2]),
@@ -141,7 +145,7 @@ test("moveDeclarations should keep the claimed declarations in their order in th
 test('moveDeclarations should throw under checks for two indices of one rule in reverse chain order', () => {
   underChecks(() => {
     const { records, record } = arenaOf('a{color:red;width:1px;height:2px}');
-    const target = unplacedRule(records);
+    const target = mergedRule(records);
     const [color, , height] = record.declarationsOf(records);
     assert.throws(() =>
       moveDeclarations(records, record.index, target.index, [
@@ -156,7 +160,7 @@ test('moveDeclarations should leave the taken declaration nodes in the rule unti
   const { records, rule, record } = arenaOf(
     'a{color:red;width:1px;height:2px}'
   );
-  const target = unplacedRule(records);
+  const target = mergedRule(records);
   moveDeclarations(records, record.index, target.index, [
     ...claimAt(records, record, [0, 2]),
   ]);
@@ -168,7 +172,7 @@ test('moveDeclarations should leave the taken declaration nodes in the rule unti
 
 test('moveDeclarations should leave the unclaimed declarations in the record', () => {
   const { records, record } = arenaOf('a{color:red;width:1px;height:2px}');
-  const target = unplacedRule(records);
+  const target = mergedRule(records);
   moveDeclarations(records, record.index, target.index, [
     ...claimAt(records, record, [0, 2]),
   ]);
@@ -180,7 +184,7 @@ test('moveDeclarations should leave the unclaimed declarations in the record', (
 
 test('moveDeclarations should leave the comment that a rule holds', () => {
   const { records, record } = arenaOf('a{color:red;/* note */width:1px}');
-  const target = unplacedRule(records);
+  const target = mergedRule(records);
   moveDeclarations(records, record.index, target.index, [
     ...claimAt(records, record, [0, 1]),
   ]);
@@ -189,7 +193,7 @@ test('moveDeclarations should leave the comment that a rule holds', () => {
 
 test('moveDeclarations should keep the raws.before of a moved declaration', () => {
   const { records, record } = arenaOf('a{\n    color:red;\n    width:1px}');
-  const target = unplacedRule(records);
+  const target = mergedRule(records);
   moveDeclarations(records, record.index, target.index, [
     ...claimAt(records, record, [1]),
   ]);
@@ -200,7 +204,7 @@ test('moveDeclarations should keep the raws.before of a moved declaration', () =
 test('moveDeclarations should drop the keys of the moved declarations from the declaration keys', () => {
   const { records, record } = arenaOf('a{color:red;width:1px}');
   const [, width] = record.declarationsOf(records);
-  const target = unplacedRule(records);
+  const target = mergedRule(records);
   moveDeclarations(records, record.index, target.index, [
     ...claimAt(records, record, [0]),
   ]);

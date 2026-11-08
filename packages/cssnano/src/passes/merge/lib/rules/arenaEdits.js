@@ -20,7 +20,9 @@ import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 
 /**
  * Replaces the rule `record` with the rules `replacements`, which take its
- * place in the chain, in order.
+ * place in the chain, in order. A replacement that already stands right before
+ * `record` is the first of them and stays where it is; the others are linked
+ * nowhere.
  *
  * @param {BlockRecords} records
  * @param {number} record the index of the rule that is replaced
@@ -31,9 +33,11 @@ export function substitute(records, record, replacements) {
   // The replacements take the chain where the record stood, which may be
   // the record itself; it is read before the record leaves the chain.
   const holder = records.links.parentOf(record);
-  let after = /** @type {number} */ (records.links.prevSibling(record));
+  const standing = /** @type {number} */ (records.links.prevSibling(record));
   records.unlink(record);
+  let after = standing;
   for (const replacement of replacements) {
+    if (replacement === standing) continue;
     records.linkAfter(holder, after, replacement);
     after = replacement;
   }

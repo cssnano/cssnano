@@ -4,13 +4,13 @@ import type { BlockRecords } from './blockRecords.js';
  * arena calls it under checks and production never runs it.
  */
 /**
- * Under checks, walks `parentOf` up from `index` and throws when a container
- * above it stops the walk at -1. An entry linked nowhere is unplaced and passes.
+ * Under checks, walks `parentOf` up from `index` and throws when the walk stops
+ * at -1 before the root. An entry linked nowhere is removed, so it throws too.
  *
  * @param {BlockRecords} records
  * @param {number} index an index that the arena gave, or -1
  * @return {void}
- * @throws {Error} under checks, when a container above `index` does not reach the root
+ * @throws {Error} under checks, when `index` is not reached by the root
  */
 export declare function assertReached(records: BlockRecords, index: number): void;
 /**

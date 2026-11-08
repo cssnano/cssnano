@@ -152,6 +152,13 @@ export function buildMergedRule(
   receivingRecord.mark();
   receivingRecord.template = template;
   receivingRecord.before = second.before;
+  // The merged rule takes the place before the later rule, so no rule holds
+  // children while it is unlinked. The sweep's replacement keeps that place.
+  records.linkAfter(
+    records.links.parentOf(second.index),
+    records.links.prevSibling(second.index),
+    receivingRecord.index
+  );
   if (!group) mergeState.storeJoined(receivingRecord, first, second);
   mergeState.reportCreated(receivingBlock);
   // The merged rule takes the declarations of the earlier rule themselves.

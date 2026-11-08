@@ -86,6 +86,7 @@ test('a rule recorded mid-run should take the next index of the arena', () => {
   const count = records.entryCount();
   const added = records.recordRule(postcss.rule({ selector: 'c' }), ['c'], 'c');
   assert.equal(added.index, count);
+  records.linkLast(records.root.index, added.index);
   assert.equal(records.rule(added.index), added);
 });
 
