@@ -1,0 +1,6 @@
+{
+  "jsPlugins": ["../../../merge-ir-plugin.js"],
+  "rules": {
+    "merge-ir/no-cache-local": "error"
+  }
+}

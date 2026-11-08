@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "ignorePatterns": ["packages/**/types/**"],
+  "jsPlugins": ["./util/oxlint/merge-ir-plugin.js"],
+  "ignorePatterns": ["packages/**/types/**", "util/oxlint/fixtures/**"],
   "plugins": ["typescript", "unicorn", "oxc", "promise", "import"],
   "categories": {
     "correctness": "error"
@@ -87,6 +88,70 @@
     "unicorn/prefer-math-min-max": "error",
     "unicorn/prefer-string-replace-all": "error"
   },
+  "overrides": [
+    {
+      "files": ["packages/cssnano/src/passes/merge/**"],
+      "rules": {
+        "merge-ir/link-edits-through-arena": [
+          "error",
+          {
+            "allowed": [
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js"
+            ],
+            "required": [
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#linkAfter",
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#linkLast",
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#unlink",
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#takeLinkOf"
+            ]
+          }
+        ],
+        "merge-ir/cache-reads": [
+          "error",
+          {
+            "allowed": [
+              "packages/cssnano/src/passes/merge/lib/rules/declarationCache.js#declarationKeys",
+              "packages/cssnano/src/passes/merge/lib/rules/declarationCache.js#receivingDeclarations",
+              "packages/cssnano/src/passes/merge/lib/rules/blockChildren.js#holdsOnlyDeclarationsOf"
+            ],
+            "required": [
+              "packages/cssnano/src/passes/merge/lib/rules/declarationCache.js#declarationKeys",
+              "packages/cssnano/src/passes/merge/lib/rules/blockChildren.js#holdsOnlyDeclarationsOf"
+            ]
+          }
+        ],
+        "merge-ir/no-cache-local": "error",
+        "merge-ir/departed-under-checks": [
+          "error",
+          {
+            "required": [
+              "packages/cssnano/src/passes/merge/lib/rules/linkChecks.js",
+              "packages/cssnano/src/passes/merge/lib/rules/mergeState.js",
+              "packages/cssnano/src/passes/merge/lib/rules/writeBack.js"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "packages/cssnano/src/passes/merge/lib/rules/blockLinks.js",
+        "packages/cssnano/src/passes/merge/lib/rules/declarationStamps.js"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              "**/ruleRecord.js",
+              "**/blockRecord.js",
+              "**/declarationRecord.js"
+            ]
+          }
+        ]
+      }
+    }
+  ],
   "env": {
     "builtin": true
   }

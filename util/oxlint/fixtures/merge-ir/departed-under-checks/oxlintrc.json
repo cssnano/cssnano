@@ -1,0 +1,14 @@
+{
+  "jsPlugins": ["../../../merge-ir-plugin.js"],
+  "rules": {
+    "merge-ir/departed-under-checks": [
+      "error",
+      {
+        "required": [
+          "util/oxlint/fixtures/merge-ir/departed-under-checks/passes.js",
+          "util/oxlint/fixtures/merge-ir/departed-under-checks/missing.js"
+        ]
+      }
+    ]
+  }
+}
