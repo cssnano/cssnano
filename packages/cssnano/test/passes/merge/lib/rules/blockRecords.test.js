@@ -1,4 +1,4 @@
-import { liveChildren } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childNodesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
@@ -117,36 +117,36 @@ test('the merge pass should keep the records in step with the tree through its j
   assert.doesNotThrow(() => mergePass(root, ['chrome 120']));
 });
 
-test('liveChildren should equal the children of the stylesheet after a sweep drops a block', () => {
+test('childNodesOf should equal the children of the stylesheet after a sweep drops a block', () => {
   const { root, state } = setup(
     '@media print{a{color:red}}@media print{a{color:red}}'
   );
   runScan(state);
   writeBack(state.records);
   assert.deepEqual(
-    liveChildren(state.records, state.records.root.index),
+    childNodesOf(state.records, state.records.root.index),
     root.nodes
   );
 });
 
-test('liveChildren should equal the children of the stylesheet after a join moves a block', () => {
+test('childNodesOf should equal the children of the stylesheet after a join moves a block', () => {
   const { root, state } = setup(
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   joinNonAdjacent(state.records.root, state);
   writeBack(state.records);
   assert.deepEqual(
-    liveChildren(state.records, state.records.root.index),
+    childNodesOf(state.records, state.records.root.index),
     root.nodes
   );
 });
 
-test('liveChildren should equal the children of the stylesheet after a join removes a rule', () => {
+test('childNodesOf should equal the children of the stylesheet after a join removes a rule', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
   joinNonAdjacent(state.records.root, state);
   writeBack(state.records);
   assert.deepEqual(
-    liveChildren(state.records, state.records.root.index),
+    childNodesOf(state.records, state.records.root.index),
     root.nodes
   );
 });
@@ -157,45 +157,45 @@ test('liveChildren should equal the children of the stylesheet after a join remo
  * @param {string} css
  * @return {{was: number, now: number}}
  */
-function liveCountAround(css) {
+function childCountAround(css) {
   const { state } = setup(css);
-  const was = liveChildren(state.records, state.records.root.index).length;
+  const was = childNodesOf(state.records, state.records.root.index).length;
   joinNonAdjacent(state.records.root, state);
   return {
     was,
-    now: liveChildren(state.records, state.records.root.index).length,
+    now: childNodesOf(state.records, state.records.root.index).length,
   };
 }
 
 test('joinNonAdjacent should leave fewer live children when a rule joins the rule before it', () => {
-  const { was, now } = liveCountAround('a{color:red}a{width:1px}');
+  const { was, now } = childCountAround('a{color:red}a{width:1px}');
   assert.ok(now < was);
 });
 
 test('joinNonAdjacent should leave fewer live children when a rule moves down onto a later rule', () => {
-  const { was, now } = liveCountAround('a{color:red}b{width:2px}a{width:3px}');
+  const { was, now } = childCountAround('a{color:red}b{width:2px}a{width:3px}');
   assert.ok(now < was);
 });
 
 test('joinNonAdjacent should leave fewer live children when a block joins the block before it', () => {
-  const { was, now } = liveCountAround(
+  const { was, now } = childCountAround(
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   assert.ok(now < was);
 });
 
 test('joinNonAdjacent should leave fewer live children when a block moves down onto a later block', () => {
-  const { was, now } = liveCountAround(
+  const { was, now } = childCountAround(
     '@media print{a{color:red}}b{width:2px}@media print{c{width:3px}}'
   );
   assert.ok(now < was);
 });
 
-test('liveChildren should return a fresh array of the children, not the entries', () => {
+test('childNodesOf should return a fresh array of the children, not the entries', () => {
   const { state } = setup('a{color:red}');
-  const children = liveChildren(state.records, state.records.root.index);
+  const children = childNodesOf(state.records, state.records.root.index);
   children.length = 0;
-  assert.equal(liveChildren(state.records, state.records.root.index).length, 1);
+  assert.equal(childNodesOf(state.records, state.records.root.index).length, 1);
 });
 
 test('the chains should stay well formed after a move of children', () => {

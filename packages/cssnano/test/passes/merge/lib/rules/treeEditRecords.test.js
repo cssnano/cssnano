@@ -1,4 +1,4 @@
-import { liveEntries } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
@@ -277,7 +277,7 @@ test('takePlaceOf should link the earlier rule where the later one stood', () =>
     ruleRecordOf(state.records, earlier).index,
     ruleRecordOf(state.records, later).index
   );
-  const entries = liveEntries(
+  const entries = childEntriesOf(
     state.records,
     blockRecordOf(state.records, media).index
   );

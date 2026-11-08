@@ -1,7 +1,6 @@
 import {
   firstDeclaration,
-  liveChildren,
-  liveCount,
+  childNodesOf,
   nextDeclaration,
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
@@ -102,7 +101,7 @@ test('enclosingContainer should give the rule that nests the rule, and the block
   assert.equal(records.enclosingContainer(outer.index), media);
 });
 
-test('liveCount should count a comment linked into a block', () => {
+test('childCount should count a comment linked into a block', () => {
   const { root, records } = setup('@media print{a{color:red}}');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
   const comment = records.bareEntry(
@@ -116,30 +115,30 @@ test('liveCount should count a comment linked into a block', () => {
     )
   );
   records.linkLast(media.index, comment.index);
-  assert.equal(liveCount(records, media.index), 2);
+  assert.equal(records.links.childCount(media.index), 2);
 });
 
-test('liveCount should drop by one when a rule is unlinked from its block', () => {
+test('childCount should drop by one when a rule is unlinked from its block', () => {
   const { root, records } = setup('@media print{a{color:red}b{width:1px}}');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
   const rule = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
   records.unlink(rule.index);
-  assert.equal(liveCount(records, media.index), 1);
+  assert.equal(records.links.childCount(media.index), 1);
 });
 
-test('liveCount should move with an entry that takeLinkOf puts in another block', () => {
+test('childCount should move with an entry that takeLinkOf puts in another block', () => {
   const { root, records } = setup('@media print{a{color:red}}/* c */');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
   const rule = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
   // The comment follows the at-rule in the root's chain.
   const comment = records.links.nextSibling(media.index);
-  assert.equal(liveCount(records, records.root.index), 2);
+  assert.equal(records.links.childCount(records.root.index), 2);
   records.takeLinkOf(rule.index, comment);
-  assert.equal(liveCount(records, media.index), 1);
-  assert.equal(liveCount(records, records.root.index), 1);
+  assert.equal(records.links.childCount(media.index), 1);
+  assert.equal(records.links.childCount(records.root.index), 1);
 });
 
-test('liveCount should give the whole chain to the target and nothing to the source of adopt', () => {
+test('childCount should give the whole chain to the target and nothing to the source of adopt', () => {
   const { root, records } = setup(
     '@media x{a{color:red}}@media y{b{width:1px}c{height:1px}}'
   );
@@ -147,8 +146,8 @@ test('liveCount should give the whole chain to the target and nothing to the sou
   const target = blockRecordOf(records, /** @type {Container} */ (first));
   const source = blockRecordOf(records, /** @type {Container} */ (second));
   adopt(records, target.index, source.index);
-  assert.equal(liveCount(records, target.index), 3);
-  assert.equal(liveCount(records, source.index), 0);
+  assert.equal(records.links.childCount(target.index), 3);
+  assert.equal(records.links.childCount(source.index), 0);
 });
 
 test('linkLast should throw under checks when a rule is linked into a rule that holds no rules', () => {
@@ -238,7 +237,7 @@ test('declarationKeys should list the ids in their new order after linkAfter put
  * @return {string[]} the children of the container at `index`, as their text
  */
 function chainText(records, index) {
-  return liveChildren(records, index).map((node) => node.toString());
+  return childNodesOf(records, index).map((node) => node.toString());
 }
 
 test('takeLinkOf should move an entry of another container into the chain of the later entry, under checks', () => {
@@ -253,8 +252,8 @@ test('takeLinkOf should move an entry of another container into the chain of the
   records.takeLinkOf(later.index, earlier.index);
   assert.deepEqual(chainText(records, x.index), []);
   assert.deepEqual(chainText(records, y.index), ['a{color:red}']);
-  assert.equal(liveCount(records, x.index), 0);
-  assert.equal(liveCount(records, y.index), 1);
+  assert.equal(records.links.childCount(x.index), 0);
+  assert.equal(records.links.childCount(y.index), 1);
 });
 
 test('takeLinkOf should put an earlier sibling where the later one stood, when it is directly before it', () => {
@@ -272,7 +271,7 @@ test('takeLinkOf should put an earlier sibling where the later one stood, when i
     'a{color:red}',
     'c{height:1px}',
   ]);
-  assert.equal(liveCount(records, media.index), 2);
+  assert.equal(records.links.childCount(media.index), 2);
 });
 
 test('takeLinkOf should put an earlier sibling where the later one stood, when an entry lies between them', () => {
@@ -290,7 +289,7 @@ test('takeLinkOf should put an earlier sibling where the later one stood, when a
     'm{margin:0}',
     'a{color:red}',
   ]);
-  assert.equal(liveCount(records, media.index), 2);
+  assert.equal(records.links.childCount(media.index), 2);
 });
 
 test('takeLinkOf should make the earlier sibling the last entry when the later one was last, and it lies directly before it', () => {
@@ -311,7 +310,7 @@ test('takeLinkOf should make the earlier sibling the last entry when the later o
     'm{margin:0}',
     'a{color:red}',
   ]);
-  assert.equal(liveCount(records, media.index), 2);
+  assert.equal(records.links.childCount(media.index), 2);
   assert.equal(records.links.lastChild(media.index), earlier.index);
 });
 
@@ -331,7 +330,7 @@ test('takeLinkOf should put an unlinked earlier entry where the later one stood'
     'a{color:red}',
     'c{height:1px}',
   ]);
-  assert.equal(liveCount(records, media.index), 2);
+  assert.equal(records.links.childCount(media.index), 2);
 });
 
 test('rule should throw under checks for a rule that nests and was unlinked without being departed', () => {

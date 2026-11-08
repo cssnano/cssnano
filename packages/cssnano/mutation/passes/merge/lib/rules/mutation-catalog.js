@@ -265,7 +265,7 @@ export const mutations = [
   {
     name: 'write-back leaves a departed rule in its block',
     target: source('writeBack.js'),
-    find: '  if (liveCount(records, block.index) !== nodes.length) return true;\n',
+    find: '  if (records.links.childCount(block.index) !== nodes.length) return true;\n',
     replace: '',
   },
 

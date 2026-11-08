@@ -1,4 +1,4 @@
-import { liveChildren } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childNodesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import postcss from 'postcss';
@@ -126,7 +126,7 @@ test('remove should take the node out of the records of its parent at once', () 
   const { root, state } = setup('a{color:red}b{color:red}');
   const [first, second] = /** @type {Rule[]} */ (root.nodes);
   remove(state.records, ruleRecordOf(state.records, first));
-  assert.deepEqual(liveChildren(state.records, state.records.root.index), [
+  assert.deepEqual(childNodesOf(state.records, state.records.root.index), [
     second,
   ]);
 });

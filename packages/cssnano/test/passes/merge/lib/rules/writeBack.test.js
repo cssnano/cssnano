@@ -1,4 +1,4 @@
-import { liveEntries } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { buildTestRecords } from './liveRecords.js';
 import { after, before, test } from 'node:test';
@@ -62,7 +62,7 @@ test('assertRecordsMatchTree should throw when a declaration prints other whites
 test('assertRecordsMatchTree should accept a node whose record leaves its whitespace to the printer', () => {
   const { root, state } = setup('a{color:red}\nb{width:1px}');
   writeBack(state.records);
-  const [, second] = liveEntries(state.records, state.records.root.index);
+  const [, second] = childEntriesOf(state.records, state.records.root.index);
   second.before = null;
   root.nodes[1].raws.before = ' ';
   assert.doesNotThrow(() => assertRecordsMatchTree(state.records));

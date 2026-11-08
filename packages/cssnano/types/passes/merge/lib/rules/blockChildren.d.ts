@@ -40,15 +40,6 @@ export declare function blocks(records: BlockRecords): Generator<BlockRecord>;
  */
 export declare function containers(records: BlockRecords): Generator<BlockRecord | RuleRecord>;
 /**
- * The number of children the block at `index` holds now. The chain keeps the
- * count, so the answer costs no walk.
- *
- * @param {BlockRecords} records
- * @param {number} index
- * @return {number}
- */
-export declare function liveCount(records: BlockRecords, index: number): number;
-/**
  * The children the rule at `index` holds now, comments included. A comment there
  * says the output depends on it: a rule with a comment is kept as written.
  *
@@ -75,7 +66,7 @@ export declare function holdsOnlyDeclarationsOf(records: BlockRecords, index: nu
  * @param {number} index
  * @return {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]}
  */
-export declare function liveEntries(records: BlockRecords, index: number): (RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[];
+export declare function childEntriesOf(records: BlockRecords, index: number): (RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[];
 /**
  * The children the block at `index` holds now, in order: the node of each
  * entry of its chain.
@@ -84,7 +75,7 @@ export declare function liveEntries(records: BlockRecords, index: number): (Rule
  * @param {number} index
  * @return {ChildNode[]}
  */
-export declare function liveChildren(records: BlockRecords, index: number): ChildNode[];
+export declare function childNodesOf(records: BlockRecords, index: number): ChildNode[];
 /**
  * Gives an appended child the whitespace of the last child when it has none, as
  * PostCSS gives it, so the records keep what the node will print.

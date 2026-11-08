@@ -1,4 +1,4 @@
-import { liveCount } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import {} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
   COMMENT,
   NO_PRELUDE,
@@ -43,7 +43,7 @@ test('a sweep should unlink an at-rule block that its move emptied', () => {
     ruleRecordOf(records, p).index,
     ruleRecordOf(records, layer.first).index
   );
-  assert.equal(liveCount(records, block.index), 0);
+  assert.equal(records.links.childCount(block.index), 0);
   assert.equal(records.links.parentOf(block.index), -1);
 });
 
@@ -82,6 +82,6 @@ test('a sweep should leave an at-rule block that was empty when the sweep starte
   const pIndex = ruleRecordOf(records, p).index;
   const qIndex = ruleRecordOf(records, q).index;
   sequence.replacePair(records, pIndex, { first: [pIndex], second: [qIndex] });
-  assert.equal(liveCount(records, block.index), 0);
+  assert.equal(records.links.childCount(block.index), 0);
   assert.equal(records.links.parentOf(block.index), records.root.index);
 });

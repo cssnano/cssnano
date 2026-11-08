@@ -1,4 +1,4 @@
-import { liveEntries } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
   BlockRecord,
   NodeEntry,
@@ -22,7 +22,7 @@ import { TextTable } from '../../../../../src/values/textTable.js';
  * @return {RuleRecord | BlockRecord | undefined}
  */
 function liveEntryOf(records, block, node) {
-  for (const entry of liveEntries(records, block.index)) {
+  for (const entry of childEntriesOf(records, block.index)) {
     if (entry instanceof RuleRecord) {
       if (entry.node === node) return entry;
       if (entry.context !== -1) {

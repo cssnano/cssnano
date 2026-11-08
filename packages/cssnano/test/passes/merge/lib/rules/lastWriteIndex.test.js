@@ -1,4 +1,4 @@
-import { liveEntries } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -191,7 +191,7 @@ test('last-write index: place-* acts as a wildcard for unknown vendor properties
  */
 function entriesOfFirst(css) {
   const { node, records } = firstNodeWithRecords(css);
-  return liveEntries(
+  return childEntriesOf(
     records,
     /** @type {BlockRecord} */ (entryOf(records, node)).index
   );
@@ -227,7 +227,7 @@ test('last-write index: moveWrites records a rule entry under the element keys o
   const index = new LastWriteIndex();
   index.moveWrites(
     records,
-    liveEntries(records, records.root.index),
+    childEntriesOf(records, records.root.index),
     5,
     keysOfSelectors
   );

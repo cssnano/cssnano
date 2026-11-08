@@ -1,4 +1,4 @@
-import { liveEntries } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -28,7 +28,7 @@ function setup(css) {
  * @return {number[]}
  */
 function ruleIndices(records) {
-  return liveEntries(records, records.root.index).map(
+  return childEntriesOf(records, records.root.index).map(
     (entry) => /** @type {{index: number}} */ (entry).index
   );
 }

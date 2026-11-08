@@ -1,7 +1,7 @@
 import {
   childCountOf,
   holdsOnlyDeclarationsOf,
-  liveEntries,
+  childEntriesOf,
 } from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import LastWriteIndex from './lastWriteIndex.js';
@@ -111,7 +111,7 @@ function joinGain(records, group, later) {
  */
 export default function joinByDeclarations(block, mergeState) {
   if (isKeyframes(block)) return false;
-  const entries = liveEntries(mergeState.records, block.index);
+  const entries = childEntriesOf(mergeState.records, block.index);
   const declarationRules = entries.map(
     (entry) =>
       entry instanceof RuleRecord &&

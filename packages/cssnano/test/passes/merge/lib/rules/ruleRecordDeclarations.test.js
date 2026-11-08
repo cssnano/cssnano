@@ -211,7 +211,9 @@ test('unlinking a nested rule should keep the declaration keys of its parent, wi
 });
 
 test('linking a nested rule into its parent should keep the declaration keys of the parent, without a rebuild', () => {
-  const { records, rule, record } = arenaOf('a{color:red;c{top:0}}b{width:1px}');
+  const { records, rule, record } = arenaOf(
+    'a{color:red;c{top:0}}b{width:1px}'
+  );
   const sibling = ruleRecordOf(records, rule.next());
   const kept = declarationKeys(records, record.index);
   records.unlink(sibling.index);

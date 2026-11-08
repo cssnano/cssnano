@@ -1,6 +1,6 @@
 import {
-  liveChildren,
-  liveEntries,
+  childNodesOf,
+  childEntriesOf,
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
@@ -50,11 +50,13 @@ function setup(css) {
  * @return {string[]}
  */
 function liveLabels(state) {
-  return liveEntries(state.records, state.records.root.index).map((entry) => {
-    if (entry instanceof RuleRecord) return entry.selectors[0];
-    if (entry instanceof BlockRecord) return `@${entry.node.name}`;
-    return entry.node?.type ?? /** @type {ChildNode} */ (entry).type;
-  });
+  return childEntriesOf(state.records, state.records.root.index).map(
+    (entry) => {
+      if (entry instanceof RuleRecord) return entry.selectors[0];
+      if (entry instanceof BlockRecord) return `@${entry.node.name}`;
+      return entry.node?.type ?? /** @type {ChildNode} */ (entry).type;
+    }
+  );
 }
 
 test('substitute with no replacement should remove the rule from the live entries', () => {
@@ -114,7 +116,7 @@ test('adopt should splice the source children after the target, keeping a rule t
   const targetBlock = blockRecordOf(state.records, target);
   const sourceBlock = blockRecordOf(state.records, source);
   adopt(state.records, targetBlock.index, sourceBlock.index);
-  const entries = liveEntries(state.records, targetBlock.index);
+  const entries = childEntriesOf(state.records, targetBlock.index);
   assert.equal(entries.length, 2);
   assert.equal(
     entries[1],
@@ -122,7 +124,7 @@ test('adopt should splice the source children after the target, keeping a rule t
   );
   assert.notEqual(/** @type {RuleRecord} */ (entries[1]).context, -1);
   assert.deepEqual(
-    liveChildren(state.records, targetBlock.index).map((node) => node.type),
+    childNodesOf(state.records, targetBlock.index).map((node) => node.type),
     ['rule', 'rule']
   );
 });
@@ -150,7 +152,7 @@ test('takePlaceOf should put the earlier at-rule block where the later block sto
   );
   assert.deepEqual(liveLabels(state), ['b', '@media']);
   assert.equal(
-    liveEntries(state.records, state.records.root.index).at(-1),
+    childEntriesOf(state.records, state.records.root.index).at(-1),
     blockRecordOf(state.records, first)
   );
 });
@@ -177,7 +179,7 @@ test('removeRules of the first child should leave the rest as the live entries o
   removeRules(state, new Set([ruleRecordOf(state.records, a).index]));
   assert.deepEqual(liveLabels(state), ['b']);
   assert.deepEqual(
-    liveChildren(state.records, state.records.root.index).map(
+    childNodesOf(state.records, state.records.root.index).map(
       (node) => node.type
     ),
     ['rule']

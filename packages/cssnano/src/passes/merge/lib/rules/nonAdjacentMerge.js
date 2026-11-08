@@ -1,4 +1,4 @@
-import { liveCount, liveEntries } from './blockChildren.js';
+import { childEntriesOf } from './blockChildren.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import joinByDeclarations from './declarationJoin.js';
 import { writesOf } from './ruleRewrite.js';
@@ -136,7 +136,7 @@ function joinKey(entry, joinRules) {
  */
 export function joinNonAdjacent(block, mergeState) {
   // Each join removes a live child of `block`, so L + 1 passes bound the loop.
-  let budget = liveCount(mergeState.records, block.index) + 1;
+  let budget = mergeState.records.links.childCount(block.index) + 1;
   let joined = joinInParent(block, mergeState, true);
   // A forward pass resolves a chain of blocks that move up, a backward pass one
   // that moves down. A pass that joins nothing saw the tree unchanged.
@@ -171,7 +171,7 @@ export function joinNonAdjacent(block, mergeState) {
  */
 function joinBlocksBackward(block, mergeState) {
   // A snapshot, since joining removes entries from the block.
-  const entries = liveEntries(mergeState.records, block.index);
+  const entries = childEntriesOf(mergeState.records, block.index);
   const last = entries.length - 1;
   const keys = entries.map((entry) => joinKey(entry, false));
   const scan = new RepeatScan();
@@ -250,7 +250,7 @@ function joinBlocksBackward(block, mergeState) {
 function joinInParent(block, mergeState, rules) {
   const joinRules = rules && !isKeyframes(block);
   // A snapshot, since joining removes entries from the block.
-  const entries = liveEntries(mergeState.records, block.index);
+  const entries = childEntriesOf(mergeState.records, block.index);
   const keys = entries.map((entry) => joinKey(entry, joinRules));
   const scan = new RepeatScan();
   for (const [i, key] of keys.entries()) {

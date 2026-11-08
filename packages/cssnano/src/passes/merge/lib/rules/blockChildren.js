@@ -80,18 +80,6 @@ export function* containers(records) {
 }
 
 /**
- * The number of children the block at `index` holds now. The chain keeps the
- * count, so the answer costs no walk.
- *
- * @param {BlockRecords} records
- * @param {number} index
- * @return {number}
- */
-export function liveCount(records, index) {
-  return records.links.childCount(index);
-}
-
-/**
  * The children the rule at `index` holds now, comments included. A comment there
  * says the output depends on it: a rule with a comment is kept as written.
  *
@@ -130,7 +118,7 @@ export function holdsOnlyDeclarationsOf(records, index) {
  * @param {number} index
  * @return {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]}
  */
-export function liveEntries(records, index) {
+export function childEntriesOf(records, index) {
   /** @type {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]} */
   const entries = [];
   for (
@@ -155,7 +143,7 @@ export function liveEntries(records, index) {
  * @param {number} index
  * @return {ChildNode[]}
  */
-export function liveChildren(records, index) {
+export function childNodesOf(records, index) {
   /** @type {ChildNode[]} */
   const children = [];
   for (
