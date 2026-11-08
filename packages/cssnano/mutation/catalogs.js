@@ -140,6 +140,13 @@ export const catalogs = [
   },
   {
     url: new URL(
+      './passes/merge/lib/rules/mutation-catalog-cache.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
       './passes/merge/lib/rules/mutation-catalog-selector-writers.js',
       import.meta.url
     ),
@@ -209,10 +216,18 @@ const mergeSelectorWriters = {
     catalogUrl('./passes/merge/lib/rules/mutation-catalog-selector-writers.js'),
   ],
 };
+// The cache mutants must all die under the rules' own tests: a survivor is a
+// stale read the tests do not see.
+const mergeCache = {
+  check: 'test',
+  allowUnkilled: false,
+  catalogs: [catalogUrl('./passes/merge/lib/rules/mutation-catalog-cache.js')],
+};
 
 export const groups = {
   'merge-rules': [mergeRules],
   'merge-duplicates': [mergeDuplicates],
   'merge-selector-writers': [mergeSelectorWriters],
-  merge: [mergeRules, mergeDuplicates, mergeSelectorWriters],
+  'merge-cache': [mergeCache],
+  merge: [mergeRules, mergeDuplicates, mergeSelectorWriters, mergeCache],
 };

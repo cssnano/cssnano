@@ -208,42 +208,6 @@ export const mutations = [
       '  records.linkLast(rule.index, child.index);\n  rule.node.append(child.node);\n',
   },
   {
-    name: 'a link stamps no container',
-    target: source('blockRecords.js'),
-    find: '    this.#links.linkAfter(block, after, index);\n    this.#touchDeclaration(block, index);\n',
-    replace: '    this.#links.linkAfter(block, after, index);\n',
-  },
-  {
-    name: 'a read treats a stale entry as fresh',
-    target: source('declarationCache.js'),
-    find: '    if (this.#builtAt[index] !== stamp) {',
-    replace: '    if (this.#builtAt[index] === -1) {',
-  },
-  {
-    name: 'a rebuild leaves the build stamp',
-    target: source('declarationCache.js'),
-    find: '      this.#builtAt[index] = stamp;\n',
-    replace: '',
-  },
-  {
-    name: 'the append extends a stale entry',
-    target: source('declarationCache.js'),
-    find: '    if (this.#builtAt[index] !== before) return;\n',
-    replace: '',
-  },
-  {
-    name: 'a link before the last child appends in place',
-    target: source('blockRecords.js'),
-    find: '    if (this.#links.nextSibling(/** @type {ArenaIndex} */ (index)) !== -1) {\n      return;\n    }\n',
-    replace: '',
-  },
-  {
-    name: 'takeLinkOf leaves the stamp of the container earlier leaves',
-    target: source('blockRecords.js'),
-    find: '    this.#touchDeclaration(from, earlier);\n',
-    replace: '',
-  },
-  {
     name: 'a removal of declarations stamps no container',
     target: source('blockLinks.js'),
     find: '    this.#stamp(block);\n    this.#parent[index] = -1;\n',
