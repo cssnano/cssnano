@@ -310,3 +310,57 @@ test('a stale run does not compare with the baseline, so stale mutants are not r
     [false, true]
   );
 });
+
+test('a failing baseline names its exit code and first output line in the results file', async () => {
+  const failing = join(directory, 'cause.test.js');
+  await writeFile(
+    failing,
+    "import { test } from 'node:test';\ntest('fails', () => { throw new Error('boom'); });\n"
+  );
+  const catalog = join(directory, 'cause-catalog.js');
+  await writeFile(
+    catalog,
+    (await readFile(join(directory, 'catalog.js'), 'utf8')).replace(
+      /export const test = .*;/v,
+      `export const test = ${JSON.stringify(pathToFileURL(failing).href)};`
+    )
+  );
+  const out = join(directory, 'cause.json');
+  await runCatalog(catalog, ['--out', out]);
+  const { results } = JSON.parse(await readFile(out, 'utf8'));
+  assert.match(results[0].detail, /^baseline failed \(exit 1\): \S/v);
+});
+
+test('--out refuses a results file that exists, so a concurrent run cannot overwrite it', async () => {
+  const out = join(directory, 'taken.json');
+  await writeFile(out, '{"keep":true}');
+  const run = await runCatalog(join(directory, 'catalog.js'), [
+    '--only',
+    'change value',
+    '--out',
+    out,
+  ]);
+  assert.deepStrictEqual(
+    [
+      run.code,
+      /already exists/v.test(run.stderr),
+      await readFile(out, 'utf8'),
+      run.stdout.trimEnd().split('\n').at(-1),
+    ],
+    [1, true, '{"keep":true}', 'mutation: done status=fail']
+  );
+});
+
+test('a run announces its process id and results file before judging', async () => {
+  const out = join(directory, 'announced.json');
+  const run = await runCatalog(join(directory, 'catalog.js'), [
+    '--only',
+    'change value',
+    '--out',
+    out,
+  ]);
+  assert.match(
+    run.stdout,
+    /^mutation: started pid=\d+ out=\S+announced\.json$/mv
+  );
+});

@@ -134,10 +134,12 @@ test('every group runs registered catalogs with a check that applies to them', (
   }
 });
 
-test('the merge group holds the three runs of the merge gate', () => {
+test('the groups are the merge gate and each of its runs', () => {
   assert.deepStrictEqual(Object.keys(groups).toSorted(), [
     'merge',
+    'merge-cache',
     'merge-duplicates',
+    'merge-links',
     'merge-rules',
     'merge-selector-writers',
   ]);

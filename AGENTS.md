@@ -73,7 +73,15 @@ Every change should make the intended CSS transformation clearer while preservin
   sleep, and wait for the exit notification. Each ends with
   `bench: done status=pass|fail ...` or `mutation: done status=pass|fail ...`.
   Read the last line of the output: a run without a `done` line crashed or was
-  killed, and its partial output is not a result.
+  killed, and its partial output is not a result. No `done` line yet can also
+  mean the run is still going: check `pgrep -f mutation-runner` before
+  discarding it.
+- Mutants read the live source tree. Do not edit files or stash while a
+  mutation run is going, and run one mutation command at a time, each with
+  its own `--out` (the runner refuses an existing file). Overlapping runs
+  cause false timeouts and invalid comparisons. A catalog whose baseline
+  failed is `errored` with the cause in its detail; fix that harness problem
+  before comparing against a parent.
 - Mutation testing (Node 24 or later) judges whether tests or fuzz oracles notice a
   curated fault in a plugin. Run it only through the runner, never a
   hand-copied module or a string replacement, which silently tests the

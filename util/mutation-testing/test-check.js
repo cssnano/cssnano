@@ -131,7 +131,15 @@ export async function run(catalogs, { timeout, allowUnkilled }) {
     const baseline = baselineResults.get(entry.test);
     if (baseline.timedOut || baseline.code !== 0) {
       printFailure(`${entry.label}baseline failed`, baseline);
-      skip(entry, 'baseline failed');
+      // The first line of a test report is usually a passing test.
+      const lines = (baseline.stderr.trim() || baseline.stdout.trim()).split(
+        '\n'
+      );
+      const cause = lines.find((line) => /^\s*✖|Error/v.test(line)) ?? lines[0];
+      skip(
+        entry,
+        `baseline failed (${baseline.timedOut ? 'timed out' : `exit ${baseline.code ?? baseline.signal}`})${cause ? `: ${cause}` : ''}`
+      );
       continue;
     }
     // A file that registers no test passes, so every mutant would survive.

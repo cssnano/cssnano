@@ -34,7 +34,7 @@
 // pattern that matches none fails the run. Survivors, unchanged mutants and
 // mutants no run reaches fail the run unless the group or --allow-unkilled
 // permits them; errors, timeouts and stale mutants always fail it.
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
@@ -158,6 +158,12 @@ try {
   if (Number(process.versions.node.split('.')[0]) < 24) {
     throw new Error('Mutation testing requires Node 24 or later');
   }
+  // Another run may be writing here; a later write would replace its results.
+  if (values.out !== undefined && existsSync(resolve(values.out))) {
+    throw new Error(
+      `--out ${values.out} already exists; choose another path or remove it`
+    );
+  }
   const runs = await planRuns();
   const loaded = [];
   for (const run of runs) {
@@ -184,6 +190,10 @@ try {
     : `with --check ${values.check ?? 'test'}`;
   console.log(
     `Running ${total} mutants of ${loaded.reduce((n, { catalogs }) => n + catalogs.length, 0)} catalogs ${shown}`
+  );
+
+  console.log(
+    `mutation: started pid=${process.pid} out=${values.out === undefined ? 'mutation-results/' : resolve(values.out)}`
   );
 
   const stale = await findStale(loaded.flatMap(({ catalogs }) => catalogs));
