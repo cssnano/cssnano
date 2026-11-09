@@ -2,7 +2,11 @@
 import { childCountOf } from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
-import { moveDeclarations, removeDeclarations } from './arenaEdits.js';
+import {
+  moveDeclarations,
+  placeBefore,
+  removeDeclarations,
+} from './arenaEdits.js';
 import { RuleRecord } from './ruleRecord.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
@@ -132,7 +136,7 @@ export function buildMergedRule(
   receivingRecord.before = second.before;
   // The merged rule takes the place before the later rule, so no rule holds
   // children while it is unlinked. The sweep's replacement keeps that place.
-  records.insertEntryBefore(second.index, receivingRecord);
+  placeBefore(records, second.index, receivingRecord);
   if (!group) mergeState.storeJoined(receivingRecord, first, second);
   // The merged rule takes the declarations of the earlier rule themselves.
   moveDeclarations(

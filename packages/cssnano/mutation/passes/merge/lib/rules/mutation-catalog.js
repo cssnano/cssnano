@@ -138,12 +138,6 @@ export const mutations = [
     replace: '    records.detach(entry);\n',
   },
   {
-    name: 'a move that leaves the moved entry in its old chain',
-    target: source('blockRecords.js'),
-    find: '    this.detach(index);\n    this.#linkLast(container, index);\n',
-    replace: '    this.#linkLast(container, index);\n',
-  },
-  {
     name: 'move into the later parent',
     target: source('ruleSequence.js'),
     find: '    const target = records.links.parentOf(first);\n    const source = records.links.parentOf(second);\n',

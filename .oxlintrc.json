@@ -192,6 +192,17 @@
               "packages/cssnano/src/passes/ir/declarationKey.js"
             ]
           }
+        ],
+        "merge-ir/arena-edits-only": [
+          "error",
+          {
+            "allowed": [
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js",
+              "packages/cssnano/src/passes/merge/lib/rules/arenaEdits.js",
+              "packages/cssnano/src/passes/merge/lib/rules/treeEdits.js",
+              "packages/cssnano/src/passes/merge/lib/rules/buildRecords.js"
+            ]
+          }
         ]
       }
     }

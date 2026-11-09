@@ -7,6 +7,7 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import {
   blockRecordOf,
   buildTestRecords,
+  declarationIds,
   ruleRecordOf,
 } from './liveRecords.js';
 
@@ -53,4 +54,28 @@ test('moveLast under checks should throw when the block would move into its own 
     () => records.moveLast(inner.index, outer.index),
     /outside the tree/v
   );
+});
+
+test('moveLast should refresh the declaration keys of the rule it moves a declaration into', () => {
+  const { root, records } = setup('a{color:red}b{top:0}');
+  const [a, b] = /** @type {Rule[]} */ (root.nodes);
+  const holder = ruleRecordOf(records, a).index;
+  const receiver = ruleRecordOf(records, b).index;
+  const color = records.links.firstChild(holder);
+  const top = records.links.firstChild(receiver);
+  const colorId = records.entry(color).id;
+  const topId = records.entry(top).id;
+  assert.deepEqual(declarationIds(records, receiver), [topId]);
+  records.moveLast(receiver, color);
+  assert.deepEqual(declarationIds(records, receiver), [topId, colorId]);
+});
+
+test('moveLast should move the declaration stamp of the rule a declaration joins', () => {
+  const { root, records } = setup('a{color:red}b{top:0}');
+  const [a, b] = /** @type {Rule[]} */ (root.nodes);
+  const receiver = ruleRecordOf(records, b).index;
+  const color = records.links.firstChild(ruleRecordOf(records, a).index);
+  const before = records.declarationStamps.stampOf(receiver);
+  records.moveLast(receiver, color);
+  assert.ok(records.declarationStamps.stampOf(receiver) > before);
 });

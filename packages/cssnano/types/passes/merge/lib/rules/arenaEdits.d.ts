@@ -1,4 +1,5 @@
 import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecord } from './blockRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { NodeEntry } from './blockRecord.js';
@@ -21,6 +22,16 @@ import type { RuleRecord } from './ruleRecord.js';
  * @return {void}
  */
 export declare function substitute(records: BlockRecords, record: ArenaIndex, replacements: ArenaIndex[]): void;
+/**
+ * Places the unplaced entry `entry` right before `sibling`, in the chain that
+ * holds `sibling`.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} sibling a linked entry that `entry` stands before
+ * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
+ * @return {void}
+ */
+export declare function placeBefore(records: BlockRecords, sibling: ArenaIndex, entry: BlockRecord | RuleRecord | DeclarationRecord | NodeEntry): void;
 /**
  * Moves the rule `record` to the end of the chain of the block at `target`.
  *

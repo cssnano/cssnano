@@ -159,3 +159,24 @@ test('no-postcss-in-window accepts a file that names postcss only in prose', () 
 test('no-postcss-in-window accepts a file the config allows to reach postcss', () => {
   assert.deepEqual(lintFixture('no-postcss-in-window', 'allowed.js'), []);
 });
+
+test('arena-edits-only reports each arena edit called outside the edit modules', () => {
+  assert.deepEqual(lintFixture('arena-edits-only', 'reports.js'), [
+    {
+      line: 3,
+      message: 'an arena edit outside the edit modules',
+    },
+    {
+      line: 4,
+      message: 'an arena edit outside the edit modules',
+    },
+    {
+      line: 5,
+      message: 'an arena edit outside the edit modules',
+    },
+  ]);
+});
+
+test('arena-edits-only accepts the arena edits of an allowed module', () => {
+  assert.deepEqual(lintFixture('arena-edits-only', 'allowed.js'), []);
+});

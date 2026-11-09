@@ -120,3 +120,13 @@ test('moveLast should throw under checks when the block is outside the tree', ()
     /outside the tree/v
   );
 });
+
+test('assertRecordsWellFormed should accept a declaration that moveLast moves into another rule', () => {
+  const { root, state } = setup('a{color:red}c{top:0}');
+  const [a, c] = /** @type {Rule[]} */ (root.nodes);
+  const color = state.records.links.firstChild(
+    ruleRecordOf(state.records, a).index
+  );
+  state.records.moveLast(ruleRecordOf(state.records, c).index, color);
+  assert.doesNotThrow(() => assertRecordsWellFormed(state));
+});
