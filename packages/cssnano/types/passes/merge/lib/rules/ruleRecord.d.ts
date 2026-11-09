@@ -1,24 +1,19 @@
 import { SelectorList } from './selectorList.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
-import type { ChildNode, Declaration, Rule } from 'postcss';
+import type { Rule } from 'postcss';
 import type { ArenaIndex } from './blockRecord.js';
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { ElementKeyOf, SelectorLookup } from './selectorList.js';
 import type { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { BlockRecords } from './blockRecords.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ChildNode, Declaration, Rule} from 'postcss' */
+/** @import {Rule} from 'postcss' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
 /** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/**
- * @param {ChildNode} node
- * @return {node is Declaration}
- */
-export declare function isDeclaration(node: ChildNode): node is Declaration;
 /**
  * What the merge knows of a rule: its selector list, which the base class
  * derives facts from, and its children. The children form a chain in the arena

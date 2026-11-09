@@ -4,20 +4,12 @@ import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { NO_PRELUDE, RULE } from './blockRecord.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ChildNode, Declaration, Rule} from 'postcss' */
+/** @import {Rule} from 'postcss' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
 /** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-
-/**
- * @param {ChildNode} node
- * @return {node is Declaration}
- */
-export function isDeclaration(node) {
-  return node.type === 'decl';
-}
 
 /**
  * What the merge knows of a rule: its selector list, which the base class

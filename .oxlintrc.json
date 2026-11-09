@@ -150,6 +150,33 @@
           }
         ]
       }
+    },
+    {
+      "files": [
+        "packages/cssnano/src/passes/merge/lib/rules/**",
+        "packages/cssnano/src/passes/merge/lib/duplicates/**",
+        "packages/cssnano/src/passes/ir/**"
+      ],
+      "rules": {
+        "merge-ir/no-postcss-in-window": [
+          "error",
+          {
+            "allowed": [
+              "packages/cssnano/src/passes/merge/lib/rules/writeBack.js",
+              "packages/cssnano/src/passes/merge/lib/rules/treeEdits.js",
+              "packages/cssnano/src/passes/merge/lib/rules/windowGuard.js",
+              "packages/cssnano/src/passes/ir/runContext.js",
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecord.js",
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js",
+              "packages/cssnano/src/passes/merge/lib/rules/ruleRecord.js",
+              "packages/cssnano/src/passes/merge/lib/rules/selectorList.js",
+              "packages/cssnano/src/passes/merge/lib/rules/blockChildren.js",
+              "packages/cssnano/src/passes/ir/declarationRecord.js",
+              "packages/cssnano/src/passes/ir/declarationKey.js"
+            ]
+          }
+        ]
+      }
     }
   ],
   "env": {

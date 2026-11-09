@@ -15,7 +15,6 @@ import { declarationKeys } from './declarationCache.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
-/** @import {ChildNode, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
 /** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */

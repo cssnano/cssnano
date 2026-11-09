@@ -3,7 +3,6 @@ import { step } from '../../../ir/declarationKey.js';
 import { LAYER, RULE } from '../rules/blockRecord.js';
 
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {Comment} from 'postcss' */
 /** @import {BlockRecord, NodeEntry} from '../rules/blockRecord.js' */
 /** @import {RuleRecord} from '../rules/ruleRecord.js' */
 

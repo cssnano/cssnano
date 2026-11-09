@@ -5,6 +5,7 @@
 // working directory.
 
 import { relative, sep } from 'node:path';
+import noPostcssInWindow from './noPostcssInWindow.js';
 
 const LINK_METHODS = new Set(['linkAfter', 'linkLast', 'unlink', 'takeLinkOf']);
 const CACHE_READS = new Set(['keysOf', 'receivingOf']);
@@ -392,5 +393,6 @@ export default {
     'cache-reads': cacheReads,
     'no-cache-local': noCacheLocal,
     'departed-under-checks': departedUnderChecks,
+    'no-postcss-in-window': noPostcssInWindow,
   },
 };

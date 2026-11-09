@@ -1,0 +1,13 @@
+{
+  "jsPlugins": ["../../../merge-ir-plugin.js"],
+  "rules": {
+    "merge-ir/no-postcss-in-window": [
+      "error",
+      {
+        "allowed": [
+          "util/oxlint/fixtures/merge-ir/no-postcss-in-window/allowed.js"
+        ]
+      }
+    ]
+  }
+}

@@ -4,7 +4,6 @@ import type { ArenaIndex } from './blockRecord.js';
 import type RuleSequence from './ruleSequence.js';
 import type DeclarationScan from './declarationScan.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {ChildNode} from 'postcss' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */

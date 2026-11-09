@@ -165,3 +165,19 @@ test('the merge pass sources pass every merge-ir rule under the repository confi
     .map((diagnostic) => `${diagnostic.filename}: ${diagnostic.message}`);
   assert.deepEqual(violations, []);
 });
+
+test('no-postcss-in-window reports an import of postcss and a JSDoc type import from it', () => {
+  const found = lintFixture('no-postcss-in-window', 'reports.js');
+  assert.deepEqual(
+    found.map((diagnostic) => diagnostic.line),
+    [1, 2, 3]
+  );
+});
+
+test('no-postcss-in-window accepts a file that names postcss only in prose', () => {
+  assert.deepEqual(lintFixture('no-postcss-in-window', 'clean.js'), []);
+});
+
+test('no-postcss-in-window accepts a file the config allows to reach postcss', () => {
+  assert.deepEqual(lintFixture('no-postcss-in-window', 'allowed.js'), []);
+});
