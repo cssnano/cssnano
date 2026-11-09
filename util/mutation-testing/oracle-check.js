@@ -8,6 +8,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   mapWithConcurrency,
+  withProgress,
   notReachedMarker,
   outcome,
   report,
@@ -170,7 +171,7 @@ async function judgeMutants(suitesUrl, catalogs, options) {
     const results = await mapWithConcurrency(
       entries,
       workers,
-      ({ mutation, target }) =>
+      withProgress(entries.length, ({ mutation, target }) =>
         runChild(
           ['mutant', suitesUrl, baselinePath, options.full ? 'full' : 'skip'],
           {
@@ -181,6 +182,7 @@ async function judgeMutants(suitesUrl, catalogs, options) {
           timeout,
           true
         )
+      )
     );
     return {
       baselineSeconds,
@@ -222,4 +224,5 @@ export async function run(catalogs, options) {
     suffix: `; baseline ${baselineSeconds.toFixed(1)}s, total ${((Date.now() - started) / 1000).toFixed(1)}s`,
   });
   if (failed) process.exitCode = 1;
+  return results;
 }

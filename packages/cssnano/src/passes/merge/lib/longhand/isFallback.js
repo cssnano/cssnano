@@ -152,6 +152,7 @@ export {
   mergeBlockingSupport,
   needsUnmetSupport,
   inheritSupport,
+  isDerived,
   isFallback,
   strandsFallback,
   withTargetSupport,

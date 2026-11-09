@@ -88,6 +88,8 @@ for (const name of presetNames) {
 if (changed.length === 0) {
   console.log('all framework fixtures are up to date');
 } else if (dryRun) {
+  // A dry run is a check: fixtures out of step with the output fail it.
+  process.exitCode = 1;
   console.log(
     `\n${changed.length} fixture(s) would change; rerun without --dry-run to sync`
   );

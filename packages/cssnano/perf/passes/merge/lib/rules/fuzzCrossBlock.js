@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { processAllWithLimits } from '../../../../../script/passes/merge/rules/lib/fuzzCrossBlock.js';
+import '../../../../../script/passes/merge/enableChecks.js';
 
 test('child-process runner reports the input that did not terminate', () => {
   const result = processAllWithLimits(['.a{color:red}'], {

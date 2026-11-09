@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { mergePass } from '../../../src/passes/merge/index.js';
-import { attachedTableCount } from '../../../src/passes/ir/blockTable.js';
 
 // `5dvh` needs support that the older target lacks, so whether `2em` is a
 // fallback depends on the targets.
@@ -31,7 +30,7 @@ test('merge over one stylesheet per target matches a fresh run for each target, 
   assert.equal(mergeWith(css, oldTargets), freshOld);
 });
 
-test('merge over a stylesheet that throws leaves no block table attached, so the next run matches a fresh one', () => {
+test('merge over a stylesheet that throws leaves no run state behind, so the next run matches a fresh one', () => {
   const expected = mergeWith(css, newTargets);
 
   const root = postcss.parse('a{color:red}b{color:red}');
@@ -45,7 +44,6 @@ test('merge over a stylesheet that throws leaves no block table attached, so the
   assert.throws(() => mergePass(root, newTargets), {
     message: 'value read failed',
   });
-  assert.equal(attachedTableCount(), 0);
 
   assert.equal(mergeWith(css, newTargets), expected);
 });

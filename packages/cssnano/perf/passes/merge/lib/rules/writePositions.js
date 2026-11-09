@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import data from '../../../../../script/passes/ir/lib/propertyGroups.json' with { type: 'json' };
 import { isConflictingProp } from '../../../../../script/passes/ir/lib/propertyRelations.js';
-import { WritePositions } from '../../../../../src/passes/merge/lib/rules/writePositions.js';
+import {
+  Claims,
+  WritePositions,
+} from '../../../../../src/passes/merge/lib/rules/writePositions.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 
 const names = [
@@ -19,16 +22,30 @@ const names = [
   ]),
 ].filter((name) => name !== 'all');
 
+const table = new PropertyTable();
+
 /**
  * @param {string[]} writes
  * @return {WritePositions}
  */
 function indexOf(writes) {
-  const index = new WritePositions(new PropertyTable());
+  const index = new WritePositions();
   for (const [position, prop] of writes.entries()) {
-    index.record({ prop }, position);
+    index.record(table.keysOf(prop), position);
   }
   return index;
+}
+
+/**
+ * A claimer that has claimed the positions of `claimed`.
+ *
+ * @param {Iterable<number>} claimed
+ * @return {Claims}
+ */
+function claimsOf(claimed) {
+  const claims = new Claims();
+  for (const position of claimed) claims.claimed.add(position);
+  return claims;
 }
 
 // Claims only grow over the life of an index, so each claimed set below has an
@@ -41,12 +58,12 @@ test('write positions find the earliest unclaimed write that conflicts, as isCon
     const firstClaimed = indexOf(writes);
     for (const queried of names) {
       assert.strictEqual(
-        unclaimed.firstUnclaimed({ prop: queried }, new Set()),
+        unclaimed.firstUnclaimed(table.keysOf(queried), claimsOf([])),
         isConflictingProp(queried, written) ? 0 : -1,
         `${queried} against ${written}`
       );
       assert.strictEqual(
-        firstClaimed.firstUnclaimed({ prop: queried }, new Set([0])),
+        firstClaimed.firstUnclaimed(table.keysOf(queried), claimsOf([0])),
         isConflictingProp(queried, written) ? 1 : -1,
         `${queried} against ${written}, with the first write claimed`
       );

@@ -1,22 +1,31 @@
-/** @import {ChildNode, Container} from 'postcss' */
-/** @import {RuleLink} from './ruleSequence.js' */
-/** @import {Slot, SlotReader} from './slotIndex.js' */
-/** @import {BlockReader} from './droppableBlocks.js' */
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { RULE } from './blockRecord.js';
+
+/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @typedef {BlockRecord | RuleRecord} Container */
+/** @import {BlockRecords} from './blockRecords.js' */
 
 /**
- * True if a declaration of `container` or of an at-rule inside it, rather
- * than of a nested rule, exists. Only such declarations can separate two
- * neighboring rules.
+ * True if a declaration of `block` or of an at-rule inside it, rather than of
+ * a nested rule, exists. Only such declarations can separate two neighboring
+ * rules.
  *
- * @param {Container} container
+ * @param {BlockRecords} records
+ * @param {Container} block
  * @return {boolean}
  */
-function hasDeclarationOutsideRules(container) {
-  return (container.nodes ?? []).some(
-    (node) =>
-      node.type === 'decl' ||
-      (node.type === 'atrule' && hasDeclarationOutsideRules(node))
-  );
+function hasDeclarationOutsideRules(records, block) {
+  for (
+    let entry = records.links.firstChild(block.index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    if (records.entry(entry) instanceof DeclarationRecord) return true;
+    const nested = records.blockEntry(entry);
+    if (nested && hasDeclarationOutsideRules(records, nested)) return true;
+  }
+  return false;
 }
 
 /**
@@ -24,25 +33,14 @@ function hasDeclarationOutsideRules(container) {
  * between two rules.
  */
 export default class DeclarationScan {
-  #slots;
-
-  #blocks;
-
   /**
-   * @type {Map<Slot | ChildNode, number>} for a slot that holds no rule, or a
-   * block that left none, the index of a later sibling before which no live
-   * node stands
+   * Whether a rule has a declaration outside its nested rules, valid for the
+   * whole scan: rewrites move declarations between rules but never create one
+   * outside them.
+   *
+   * @type {Map<number, boolean>}
    */
-  #skips = new Map();
-
-  /**
-   * @param {SlotReader} slots
-   * @param {BlockReader} blocks
-   */
-  constructor(slots, blocks) {
-    this.#slots = slots;
-    this.#blocks = blocks;
-  }
+  #outside = new Map();
 
   /**
    * True if a declaration outside both rules lies between them. CSS Nesting
@@ -50,94 +48,57 @@ export default class DeclarationScan {
    * rule may move across it. Neighbors hold no rule between them, so any such
    * declaration belongs to an enclosing rule or a block nested in it.
    *
-   * The walk follows source order as the stylesheet will be written, which
-   * differs from the stylesheet for rules that moved, and is short because it
-   * starts at `first`.
+   * The walk follows the chains from `first`, which is the source order the
+   * stylesheet will be written in, though rules that moved may differ from
+   * the stylesheet. A nested rule's own block is not in a chain, so the walk
+   * does not enter it.
    *
-   * @param {RuleLink} first
-   * @param {RuleLink} second
-   * @param {WeakMap<Container, boolean>} outsideDeclarations whether a rule has
-   * a declaration outside its nested rules, valid for the whole scan: rewrites
-   * move declarations between rules but never create one outside them
+   * @param {BlockRecords} records the arena that the blocks of the links index
+   * @param {RuleRecord} first
+   * @param {RuleRecord} second
    * @return {boolean}
    */
-  declarationBetween(first, second, outsideDeclarations) {
+  declarationBetween(records, first, second) {
+    const { links } = records;
     /** @type {Container | undefined} */
-    let enclosing = first.slot.parent;
-    while (enclosing && enclosing.type !== 'rule') {
-      enclosing = /** @type {Container | undefined} */ (enclosing.parent);
+    let enclosing = records.enclosingContainer(first.index);
+    while (enclosing && enclosing.kind !== RULE) {
+      enclosing = records.enclosingContainer(enclosing.index);
     }
     if (!enclosing) return false;
-    let hasOutside = outsideDeclarations.get(enclosing);
+    let hasOutside = this.#outside.get(enclosing.index);
     if (hasOutside === undefined) {
-      hasOutside = hasDeclarationOutsideRules(enclosing);
-      outsideDeclarations.set(enclosing, hasOutside);
+      hasOutside = hasDeclarationOutsideRules(records, enclosing);
+      this.#outside.set(enclosing.index, hasOutside);
     }
     if (!hasOutside) return false;
 
-    let container = first.slot.parent;
-    let index = first.slot.index;
-    // The rules after `first` in its slot come next; `first` holds only
-    // declarations and comments, so its own contents are skipped.
-    let offset = first.slot.rules.indexOf(first.rule) + 1;
+    // `first` holds only declarations and comments in its own block, so the
+    // walk starts at the entry after it, in the block that holds it.
+    let holder = /** @type {Container} */ (
+      records.enclosingContainer(first.index)
+    );
+    let entry = links.nextSibling(first.index);
     for (;;) {
-      const children = /** @type {ChildNode[]} */ (container.nodes);
-      index = this.#skipEmptied(container, index);
-      const node = children[index];
-      const slot = this.#slots.slotAt(container, index);
-      if (slot) {
-        if (slot.rules.includes(second.rule, offset)) return false;
-      } else if (node) {
-        if (node.type === 'decl') return true;
-        if ('nodes' in node && node.nodes?.length) {
-          container = node;
-          index = 0;
-          offset = 0;
-          continue;
-        }
-      } else if (container === enclosing) {
-        return false;
-      } else {
-        const parent = /** @type {Container} */ (container.parent);
-        index = this.#slots.positionOf(container);
-        container = parent;
+      if (entry === -1) {
+        if (holder === enclosing) return false;
+        // The walk leaves an at-rule block, which is in a chain, for the entry after it.
+        entry = links.nextSibling(holder.index);
+        holder = /** @type {Container} */ (
+          records.enclosingContainer(holder.index)
+        );
+        continue;
       }
-      index++;
-      offset = 0;
+      if (entry === second.index) return false;
+      const item = records.entry(entry);
+      if (item instanceof DeclarationRecord) return true;
+      const nested = records.blockEntry(entry);
+      if (nested && links.firstChild(nested.index) !== -1) {
+        holder = nested;
+        entry = links.firstChild(nested.index);
+      } else {
+        entry = links.nextSibling(entry);
+      }
     }
-  }
-
-  /**
-   * The index of the first sibling at or after `index` that applies
-   * something. A run of emptied blocks and slots is crossed once, then
-   * jumped, so a rule that moved ahead of many of them does not walk across
-   * them again for every neighbor. Nothing refills an emptied slot or block
-   * during a sweep, which keeps a jump valid.
-   *
-   * @param {Container} container
-   * @param {number} index
-   * @return {number}
-   */
-  #skipEmptied(container, index) {
-    const children = /** @type {ChildNode[]} */ (container.nodes);
-    const length = this.#slots.length(container);
-    /** @param {number} at */
-    const keyAt = (at) => this.#slots.slotAt(container, at) ?? children[at];
-    /** @param {Slot | ChildNode} key */
-    const isEmptied = (key) =>
-      'rules' in key ? key.rules.length === 0 : this.#blocks.isEmptied(key);
-    let end = index;
-    while (end < length) {
-      const key = keyAt(end);
-      if (!isEmptied(key)) break;
-      end = this.#skips.get(key) ?? end + 1;
-    }
-    for (let at = index; at < end;) {
-      const key = keyAt(at);
-      const next = this.#skips.get(key) ?? at + 1;
-      this.#skips.set(key, end);
-      at = next;
-    }
-    return end;
   }
 }

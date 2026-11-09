@@ -1,36 +1,43 @@
-import type { Container, Rule } from 'postcss';
-import type RuleSequence, { Placement, RuleLink } from './ruleSequence.js';
+import type { RuleRecord } from './ruleRecord.js';
+import type { ArenaIndex } from './blockRecord.js';
+import type RuleSequence, { Placement } from './ruleSequence.js';
+import type DeclarationScan from './declarationScan.js';
 import type MergeState from './mergeState.js';
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import RuleSequence, {Placement} from './ruleSequence.js' */
+/** @import DeclarationScan from './declarationScan.js' */
+/** @import MergeState from './mergeState.js' */
 /**
  * Rules with the same declarations in the same order become one rule with
  * both selectors.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {MergeState} mergeState
  * @return {Placement | null}
  */
-export declare function mergeMatchingDeclarations(first: Rule, second: Rule, mergeState: MergeState): Placement | null;
+export declare function mergeMatchingDeclarations(first: RuleRecord, second: RuleRecord, mergeState: MergeState): Placement | null;
 /**
  * Rules with the same selector become one rule with both declaration lists.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {MergeState} mergeState
  * @return {Placement | null}
  */
-export declare function mergeMatchingSelectors(first: Rule, second: Rule, mergeState: MergeState): Placement | null;
+export declare function mergeMatchingSelectors(first: RuleRecord, second: RuleRecord, mergeState: MergeState): Placement | null;
 /**
  * Rules that share declarations hand them to a rule of their own.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {MergeState} mergeState
- * @param {RuleLink} secondLink
+ * @param {ArenaIndex} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
- * @return {Placement | null} null when sharing the declarations would not
- * make the output shorter
+ * @param {DeclarationScan} scan
+ * @return {Placement | null} the rules that replace the pair, or null when
+ * sharing the declarations would not make the output shorter
  */
-export declare function mergeSharedDeclarations(first: Rule, second: Rule, mergeState: MergeState, secondLink: RuleLink, sequence: RuleSequence, outsideDeclarations: WeakMap<Container, boolean>): Placement | null;
+export declare function mergeSharedDeclarations(first: RuleRecord, second: RuleRecord, mergeState: MergeState, secondLink: ArenaIndex, sequence: RuleSequence, scan: DeclarationScan): Placement | null;
 //# sourceMappingURL=merge.d.ts.map

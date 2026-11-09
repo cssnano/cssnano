@@ -1,66 +1,50 @@
-import cssnanoUtils from '#utils';
-import { hackPrefixOf } from '../../../ir/declarationKey.js';
-import { isAllName, propertyNameKey } from '../../../ir/propertyName.js';
-import { PropertyWrites } from './lastWriteIndex.js';
-import { WritePositions } from './writePositions.js';
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-
-const { asciiLowerCase } = cssnanoUtils;
-
-/** @import {Declaration} from 'postcss' */
+import { PropertyWrites } from './propertyWrites.js';
+import { Claims, WritePositions } from './writePositions.js';
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {ArenaIndex, ChainPosition} from './blockRecord.js' */
 
 /**
- * @param {Declaration} a
- * @param {Declaration} b
+ * Two declarations are equal when they print the same, which their ids tell:
+ * the same property name, value, importance and hack prefix.
+ *
+ * @param {DeclarationRecord} a
+ * @param {DeclarationRecord} b
  * @return {boolean}
  */
 export function declarationIsEqual(a, b) {
-  return (
-    a.important === b.important &&
-    propertyNameKey(a.prop) === propertyNameKey(b.prop) &&
-    a.value === b.value &&
-    hackPrefixOf(a) === hackPrefixOf(b)
-  );
+  return a.id === b.id;
 }
 
 /**
- * The declarations of `declarations` whose key is in `keySet`, in their order.
+ * The declarations of `declarations` whose id is in `keySet`, in their order.
  *
- * @param {Declaration[]} declarations
- * @param {Set<number>} keySet the keys of the other rule's declarations
- * @param {(declaration: Declaration) => number} keyOf
- * @return {Declaration[]}
+ * @param {DeclarationRecord[]} declarations
+ * @param {ReadonlySet<number>} keySet the ids of the other rule's declarations
+ * @return {DeclarationRecord[]}
  */
-export function intersect(declarations, keySet, keyOf) {
-  return declarations.filter((declaration) => keySet.has(keyOf(declaration)));
+export function intersect(declarations, keySet) {
+  return declarations.filter((declaration) => keySet.has(declaration.id));
 }
 
 /**
- * @param {Declaration[]} a
- * @param {Declaration[]} b
+ * Whether two rules hold equal declarations in the same order. Equal
+ * declarations share an id, as `declarationIsEqual` states, so the ids of
+ * each rule's declarations decide it.
+ *
+ * @param {BlockRecords} records the arena that holds both rules' declarations
+ * @param {readonly ArenaIndex[]} a the declarations of a rule, in order
+ * @param {readonly ArenaIndex[]} b
  * @return {boolean}
  */
-export function sameDeclarationsAndOrder(a, b) {
+export function sameDeclarationsAndOrder(records, a, b) {
   if (a.length !== b.length) {
     return false;
   }
-  return a.every((d, index) => declarationIsEqual(d, b[index]));
-}
-
-/**
- * True if a declaration of `prop` can be reset by `all`, which resets every
- * property but `direction`, `unicode-bidi` and custom properties (CSS Cascading
- * and Inheritance Level 4).
- *
- * @param {string} prop
- * @return {boolean}
- */
-function resettableByAll(prop) {
-  const lowercased = asciiLowerCase(prop);
-  return (
-    lowercased !== 'direction' &&
-    lowercased !== 'unicode-bidi' &&
-    !lowercased.startsWith('--')
+  return a.every(
+    (index, at) =>
+      /** @type {DeclarationRecord} */ (records.entry(index)).id ===
+      /** @type {DeclarationRecord} */ (records.entry(b[at])).id
   );
 }
 
@@ -70,55 +54,51 @@ function resettableByAll(prop) {
  * conflicts with it, and the claim must be an equal declaration.
  */
 class LaterClaims {
-  /** @type {Declaration[]} */
+  /** @type {DeclarationRecord[]} */
   #declarations;
   /** @type {WritePositions} */
   #writes;
-  /** @type {Set<number>} */
-  #claimed = new Set();
+  /** @type {Claims} the positions this claimer claimed, with its cursors */
+  #claims = new Claims();
   #hasAll = false;
 
-  /**
-   * @param {Declaration[]} declarations
-   * @param {PropertyTable} table
-   */
-  constructor(declarations, table) {
+  /** @param {DeclarationRecord[]} declarations */
+  constructor(declarations) {
     this.#declarations = declarations;
-    this.#writes = new WritePositions(table);
+    this.#writes = new WritePositions();
     for (let index = 0; index < declarations.length; index++) {
-      this.#writes.record(declarations[index], index);
-      if (isAllName(declarations[index].prop)) {
-        this.#hasAll = true;
-      }
+      const { keys } = declarations[index];
+      this.#writes.record(keys, index);
+      if (!keys.custom && keys.all) this.#hasAll = true;
     }
   }
 
-  /** @return {Set<number>} the positions claimed so far */
+  /** @return {Set<ChainPosition>} the positions claimed so far */
   get claimed() {
-    return this.#claimed;
+    return /** @type {Set<ChainPosition>} */ (this.#claims.claimed);
   }
 
   /**
-   * @param {Declaration} candidate
+   * @param {DeclarationRecord} candidate
    * @return {boolean} whether the candidate claims an equal later declaration
    */
   claim(candidate) {
-    // Both refusals below would fail the claim after the query, so skipping
-    // the query changes no answer.
-    if (
-      isAllName(candidate.prop) ||
-      (this.#hasAll && resettableByAll(candidate.prop))
-    ) {
+    // `all` is never claimed, and neither is a property that a later `all`
+    // resets. Refusing either before the query changes no answer.
+    const { keys } = candidate;
+    if (!keys.custom && (keys.all || (this.#hasAll && keys.subjectToAll))) {
       return false;
     }
-    const matchIndex = this.#writes.firstUnclaimed(candidate, this.#claimed);
+    const matchIndex = /** @type {ChainPosition | -1} */ (
+      this.#writes.firstUnclaimed(keys, this.#claims)
+    );
     if (matchIndex === -1) {
       return false;
     }
     if (!declarationIsEqual(this.#declarations[matchIndex], candidate)) {
       return false;
     }
-    this.#claimed.add(matchIndex);
+    this.#claims.claimed.add(matchIndex);
     return true;
   }
 }
@@ -128,91 +108,85 @@ class LaterClaims {
  *
  * A candidate keeps the override order when no declaration after it in the
  * earlier rule that is not a candidate conflicts with it. The candidates are
- * the earlier rule's declarations by reference, so this one backward pass
- * decides every candidate.
+ * the earlier rule's declarations by reference, in their chain order, so one
+ * backward pass over the earlier rule decides every candidate.
  *
- * @param {Declaration[]} candidates
- * @param {Declaration[]} earlierRuleDeclarations
- * @param {Declaration[]} laterRuleDeclarations
- * @param {PropertyTable} table
- * @return {{survivors: Declaration[], claimedIndices: Set<number>, earlierIndices: Set<number>}}
+ * @param {DeclarationRecord[]} candidates in the earlier rule's chain order
+ * @param {DeclarationRecord[]} earlierRuleDeclarations
+ * @param {DeclarationRecord[]} laterRuleDeclarations
+ * @return {{survivors: DeclarationRecord[], claimed: Set<ChainPosition>}} the
+ * surviving candidates in their order, and the positions in the later rule
+ * that they claim
  */
 function filterRound(
   candidates,
   earlierRuleDeclarations,
-  laterRuleDeclarations,
-  table
+  laterRuleDeclarations
 ) {
-  const candidateSet = new Set(candidates);
-  /** @type {Map<Declaration, number>} */
-  const earlierIndexOf = new Map();
-  const hoistable = new Set();
+  /** @type {boolean[]} whether each candidate has no conflicting outside write after it */
+  const hoistable = [];
   // The non-candidates after the current position. A candidate is blocked by
   // any of them that conflicts with it.
-  const outside = new PropertyWrites(table);
+  const outside = new PropertyWrites();
+  // The cursor walks down the candidates as the earlier rule's declarations
+  // are passed, so each candidate is matched by reference.
+  let cursor = candidates.length - 1;
   for (let index = earlierRuleDeclarations.length - 1; index >= 0; index--) {
     const declaration = earlierRuleDeclarations[index];
-    if (!candidateSet.has(declaration)) {
-      outside.record(declaration, index);
+    if (cursor >= 0 && declaration === candidates[cursor]) {
+      hoistable[cursor] = outside.lastConflict(declaration.keys) === -1;
+      cursor--;
       continue;
     }
-    earlierIndexOf.set(declaration, index);
-    if (outside.lastConflict(declaration) === -1) {
-      hoistable.add(declaration);
-    }
+    outside.record(declaration.keys, index);
+  }
+  if (cursor !== -1) {
+    throw new Error('filterRound: a candidate is not in the earlier rule');
   }
 
-  const claims = new LaterClaims(laterRuleDeclarations, table);
-  /** @type {Declaration[]} */
+  const claims = new LaterClaims(laterRuleDeclarations);
+  /** @type {DeclarationRecord[]} */
   const survivors = [];
-  for (const candidate of candidates) {
-    if (hoistable.has(candidate) && claims.claim(candidate)) {
+  for (let index = 0; index < candidates.length; index++) {
+    const candidate = candidates[index];
+    if (hoistable[index] && claims.claim(candidate)) {
       survivors.push(candidate);
     }
   }
-  return {
-    survivors,
-    claimedIndices: claims.claimed,
-    earlierIndices: new Set(
-      survivors.map(
-        (declaration) => /** @type {number} */ (earlierIndexOf.get(declaration))
-      )
-    ),
-  };
+  return { survivors, claimed: claims.claimed };
 }
 
 /**
- * @param {Declaration[]} hoistCandidates
- * @param {Declaration[]} earlierRuleDeclarations
- * @param {Declaration[]} laterRuleDeclarations
- * @param {PropertyTable} table
- * @return {{intersection: Declaration[], claimedIndices: Set<number>, claimedEarlierIndices: Set<number>}}
+ * @param {DeclarationRecord[]} hoistCandidates in the earlier rule's chain order
+ * @param {DeclarationRecord[]} earlierRuleDeclarations
+ * @param {DeclarationRecord[]} laterRuleDeclarations
+ * @return {{intersection: DeclarationRecord[], claimedIndices: Set<ArenaIndex>}}
+ * `intersection` lists the surviving declarations in the earlier rule's chain
+ * order, and `claimedIndices` the arena indices of the later rule's declarations
+ * that they claim
  */
 export function filterRuleIntersections(
   hoistCandidates,
   earlierRuleDeclarations,
-  laterRuleDeclarations,
-  table
+  laterRuleDeclarations
 ) {
   let remainingCandidates = hoistCandidates;
   for (;;) {
     const round = filterRound(
       remainingCandidates,
       earlierRuleDeclarations,
-      laterRuleDeclarations,
-      table
+      laterRuleDeclarations
     );
     if (
       round.survivors.length === remainingCandidates.length ||
       round.survivors.length === 0
     ) {
-      return {
-        intersection: round.survivors,
-        claimedIndices: round.claimedIndices,
-        // Symmetric to `claimedIndices`: the positions of the surviving
-        // declarations within the earlier rule.
-        claimedEarlierIndices: round.earlierIndices,
-      };
+      /** @type {Set<ArenaIndex>} */
+      const claimedIndices = new Set();
+      for (const position of round.claimed) {
+        claimedIndices.add(laterRuleDeclarations[position].index);
+      }
+      return { intersection: round.survivors, claimedIndices };
     }
     remainingCandidates = round.survivors;
   }

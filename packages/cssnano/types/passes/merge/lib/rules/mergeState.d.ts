@@ -1,9 +1,14 @@
-import type { Container, Declaration, Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
-import type { TextTable } from '../../../../values/textTable.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
-import type { RuleMeta } from './ruleMeta.js';
-import type { RuleDeclarationKeys } from './ruleMeta.js';
+import type { RuleRecord } from './ruleRecord.js';
+import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecord } from './blockRecord.js';
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {RangePiece} from '../../../../values/joinRanges.js' */
+/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /**
  * The state shared by every merge of one stylesheet.
  */
@@ -16,139 +21,101 @@ export default class MergeState {
      */
     properties: PropertyTable;
     /**
-     * The summaries of the stylesheet's blocks, read by the at-rule joins.
+     * The block and rule records of the stylesheet. The driver builds them, and
+     * `runMerge` sets them before any edit reads them.
      *
-     * @type {import('../../../ir/blockTable.js').BlockTable}
+     * @type {BlockRecords}
      */
-    blocks: import('../../../ir/blockTable.js').BlockTable;
-    /** @returns {TextTable} the selector tokens the walk stored */
-    get textTable(): TextTable;
+    records: BlockRecords;
     /**
      * @param {readonly string[]} browsers
      * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
      */
     constructor(browsers: readonly string[], context?: import('../../../ir/runContext.js').RunContext);
     /**
-     * @param {Rule} rule
-     * @return {RuleMeta}
-     */
-    meta(rule: Rule): RuleMeta;
-    /**
-     * Drops the description of a rule whose selectors or declarations changed
-     * or that left the stylesheet. It is rebuilt from the rule when next
-     * needed, so a rule that was never described stays so.
-     *
-     * @param {Rule} rule
-     */
-    forget(rule: Rule): void;
-    /**
      * The elements the rule can match. An arrow function, so it passes as a
      * callback without a closure per call.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      * @return {string[] | null}
      */
-    elementKeysOf: (rule: Rule) => string[] | null;
+    elementKeysOf: (record: RuleRecord) => string[] | null;
     /**
-     * Numbers declarations so equal ones, with the same property, value,
-     * importance and hack prefix, share a key for the whole run. An arrow
-     * function, so it passes as a callback without a closure per call.
+     * The ids of the run's declarations: equal declarations, with the same
+     * property, value, importance and hack prefix, share an id.
      *
-     * @param {Declaration} declaration
-     * @return {number}
+     * @return {import('../../../ir/declarationKey.js').DeclarationKeys}
      */
-    declarationKey: (declaration: Declaration) => number;
+    get declarationIds(): import('../../../ir/declarationKey.js').DeclarationKeys;
     /**
-     * @param {Rule} rule
-     * @return {RuleDeclarationKeys}
-     */
-    declarationKeysOf(rule: Rule): RuleDeclarationKeys;
-    /**
-     * Records that every selector of the rule is compatible with the target
-     * browsers, so `canMerge` does not check them again. The caller must have
-     * established it: a rule built from selectors that passed `canMerge`
-     * qualifies, since a list is compatible exactly when each selector is.
+     * The ids of the run's selectors, which list comparisons read.
      *
-     * @param {Rule} rule
+     * @return {import('../../../ir/selectorIds.js').SelectorIds}
      */
-    markCompatible(rule: Rule): void;
-    /**
-     * Reports a rule a merge created, when the run collects them, so the driver
-     * canonicalizes it. A rule no run collects is left alone.
-     *
-     * @param {Rule} rule
-     */
-    reportCreated(rule: Rule): void;
+    get selectorIds(): import('../../../ir/selectorIds.js').SelectorIds;
     /**
      * Appends selectors of `source` to the rule's selector list, keeping its
      * vendor prefix profile and its token ranges in step.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      * @param {string[]} selectors some of the selectors of `source`, in the
      * order of their first occurrence there
-     * @param {Rule} source
+     * @param {RuleRecord} source
      * @return {readonly string[] | null} the element keys the selectors add, or
      * null when the rule's elements are not listed
      */
-    addSelectors(rule: Rule, selectors: string[], source: Rule): readonly string[] | null;
+    addSelectors(record: RuleRecord, selectors: string[], source: RuleRecord): readonly string[] | null;
     /**
-     * The token range of each selector of the rule, read from the text table
-     * without tokenizing, or null when the table does not hold them.
+     * The token range of each selector of the rule, read from the tokens the
+     * record holds without tokenizing, or null when it holds none.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      * @return {RangePiece[] | null}
      */
-    piecesOf(rule: Rule): RangePiece[] | null;
+    piecesOf(record: RuleRecord): RangePiece[] | null;
     /**
-     * Sets the selector text of a rule from its list. Its tokens are stored at
-     * the end of the run, so a chain of merges into one rule stores them once.
+     * Sets the selector of a rule from its list and marks it, so write-back
+     * assigns the text. The tokens of the old text are dropped.
      *
-     * @param {Rule} rule
+     * @param {RuleRecord} record
      */
-    spellSelectors(rule: Rule): void;
+    spellSelectors(record: RuleRecord): void;
     /**
-     * Stores the tokens of a copy of `rule` made with the rule's selectors. The
-     * copy's text is the one PostCSS joined, so the tokens are stored only when
-     * they spell it.
+     * Gives the record the tokens of a rule joined from the selectors of `first`
+     * and `second`, in that order, with a comma between each, as `join()` writes it.
      *
-     * @param {Rule} rule
-     * @param {Rule} clone
+     * @param {RuleRecord} record the merged rule, whose selector is the join
+     * @param {RuleRecord} first
+     * @param {RuleRecord} second
      */
-    storeClone(rule: Rule, clone: Rule): void;
-    /**
-     * Stores the tokens of a rule joined from the selectors of `first` and
-     * `second`, in that order, with a comma between each, as `join()` writes it.
-     *
-     * @param {Rule} rule
-     * @param {Rule} first
-     * @param {Rule} second
-     */
-    storeJoined(rule: Rule, first: Rule, second: Rule): void;
-    /**
-     * Stores the tokens of every rule `spellSelectors` set, joined from the
-     * pieces its list holds. A rule without pieces keeps its text only, and a
-     * reader tokenizes it.
-     */
-    flushSelectors(): void;
+    storeJoined(record: RuleRecord, first: RuleRecord, second: RuleRecord): void;
     /**
      * Gives `later` the selectors of `earlier`, which stands before it and is
      * dropped by the caller.
      *
-     * @param {Rule} later
-     * @param {Rule} earlier
+     * @param {RuleRecord} later
+     * @param {RuleRecord} earlier
      */
-    absorbEarlier(later: Rule, earlier: Rule): void;
+    absorbEarlier(later: RuleRecord, earlier: RuleRecord): void;
     /**
-     * Whether the rules can be merged. `parentA` and `parentB` are where the
-     * rules stand, which differs from their `parent` for a rule that moved
-     * during the sweep.
+     * The container whose chain holds the rule: a block, or a rule that nests.
+     * It is where the rule stands, which can differ from its PostCSS parent
+     * during a sweep. A rule that left the stylesheet stands in no container.
      *
-     * @param {Rule} ruleA
-     * @param {Rule} ruleB
-     * @param {Container | undefined} [parentA]
-     * @param {Container | undefined} [parentB]
+     * @param {RuleRecord} record
+     * @return {BlockRecord | RuleRecord}
+     */
+    blockOf(record: RuleRecord): BlockRecord | RuleRecord;
+    /**
+     * Whether the rules can be merged. `blockA` and `blockB` are the blocks
+     * the rules stand in.
+     *
+     * @param {RuleRecord} recordA
+     * @param {RuleRecord} recordB
+     * @param {number} [blockA] the index of the block the first rule stands in
+     * @param {number} [blockB] the index of the block the second rule stands in
      * @return {boolean}
      */
-    canMerge(ruleA: Rule, ruleB: Rule, parentA?: Container | undefined, parentB?: Container | undefined): boolean;
+    canMerge(recordA: RuleRecord, recordB: RuleRecord, blockA?: number, blockB?: number): boolean;
 }
 //# sourceMappingURL=mergeState.d.ts.map

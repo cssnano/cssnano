@@ -8,7 +8,7 @@ This plugin is part of `cssnano` and is no longer published as a separate packag
 
 ## Examples
 
-See the [data](src/data) for more conversions. This data is courtesy
+See the [data](../../src/plugins/postcss-reduce-initial/data/) for more conversions. This data is courtesy
 of Mozilla.
 
 ### Convert `initial` values

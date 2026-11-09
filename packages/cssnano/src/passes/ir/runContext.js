@@ -1,11 +1,11 @@
-import { BlockTable } from './blockTable.js';
 import { DeclarationKeys } from './declarationKey.js';
 import { PropertyTable } from './propertyTable.js';
+import { SelectorIds } from './selectorIds.js';
 import { TextTable } from '../../values/textTable.js';
+import { consistencyChecksEnabled } from './consistencyChecks.js';
 
-/** @import {Root, Rule} from 'postcss' */
 /** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
-/** @import {RuleMeta} from '../merge/lib/rules/ruleMeta.js' */
+/** @import {Container} from 'postcss' */
 
 /**
  * The state one run of the merge pass shares across its transforms. Nothing in
@@ -14,34 +14,34 @@ import { TextTable } from '../../values/textTable.js';
  * @typedef {{
  *   properties: PropertyTable,
  *   declarations: DeclarationKeys,
- *   createdBlocks: Set<Rule> | null,
- *   blocks: BlockTable,
+ *   selectorIds: SelectorIds,
+ *   createdBlocks: Set<Container> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
- *   compatibleRules: WeakSet<Rule>,
- *   ruleMeta: WeakMap<Rule, RuleMeta>,
  *   textTable: TextTable,
+ *   consistencyChecks: boolean,
  * }} RunContext
  */
 
 /**
  * A fresh context for one run. `createdBlocks` stays null unless the caller
- * collects the rules a merge creates. `root` is the stylesheet the run edits:
- * its block table caches summaries only when it is given. `textTable` holds
- * the selector tokens the host walk left, which the run reads.
+ * collects the rules a merge creates. `textTable` holds the selector tokens the
+ * host walk left, which the run reads.
  *
- * @param {Root} [root]
  * @param {TextTable} [textTable]
+ * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {RunContext}
  */
-export function createRunContext(root, textTable = new TextTable()) {
+export function createRunContext(
+  textTable = new TextTable(),
+  consistencyChecks = consistencyChecksEnabled()
+) {
   return {
     properties: new PropertyTable(),
     declarations: new DeclarationKeys(),
+    selectorIds: new SelectorIds(),
     createdBlocks: null,
-    blocks: new BlockTable(root),
     selectorCompatibility: new Map(),
-    compatibleRules: new WeakSet(),
-    ruleMeta: new WeakMap(),
     textTable,
+    consistencyChecks,
   };
 }

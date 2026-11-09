@@ -1,0 +1,20 @@
+{
+  "jsPlugins": ["../../../merge-ir-plugin.js"],
+  "rules": {
+    "merge-ir/cache-reads": [
+      "error",
+      {
+        "allowed": [
+          "util/oxlint/fixtures/merge-ir/cache-reads/reader.js#declarationKeys",
+          "util/oxlint/fixtures/merge-ir/cache-reads/reader.js#holdsOnlyDeclarationsOf",
+          "util/oxlint/fixtures/merge-ir/cache-reads/missing.js#holdsOnlyDeclarationsOf"
+        ],
+        "required": [
+          "util/oxlint/fixtures/merge-ir/cache-reads/reader.js#declarationKeys",
+          "util/oxlint/fixtures/merge-ir/cache-reads/reader.js#holdsOnlyDeclarationsOf",
+          "util/oxlint/fixtures/merge-ir/cache-reads/missing.js#declarationKeys"
+        ]
+      }
+    ]
+  }
+}

@@ -8,6 +8,9 @@ import {
 } from './lib/mergeOracle.js';
 import { checkCascade, generateCascadeCases } from './lib/fuzzCascade.js';
 import { transformPlugin } from '#passes/merge';
+// Turns the consistency checks on for the process, so a stale record or key
+// throws at the next read instead of quietly producing the same output.
+import '../enableChecks.js';
 
 /**
  * The merge fuzzers as suites for

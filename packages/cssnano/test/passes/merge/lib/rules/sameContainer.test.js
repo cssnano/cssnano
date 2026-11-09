@@ -2,24 +2,58 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { sameContainer } from '../../../../../src/passes/merge/lib/rules/sameContainer.js';
+import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
+import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { repositoryFile } from '../../../../../../../util/testHelpers.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
+import {
+  ruleRecordOf,
+  blockRecordOf,
+  buildTestRecords,
+} from './liveRecords.js';
 
-const textTable = new TextTable();
+/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
+/** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
+/** @import {Rule} from 'postcss' */
 
 /**
- * Parses `css` and returns the two nodes found by following each child-index
- * path from the root.
+ * @param {BlockRecords} records
+ * @param {Rule} rule
+ * @return {BlockRecord | RuleRecord} the container the rule stands in
+ */
+function blockOf(records, rule) {
+  return /** @type {BlockRecord | RuleRecord} */ (
+    records.container(records.links.parentOf(ruleRecordOf(records, rule).index))
+  );
+}
+
+/**
+ * Builds the block records of `root`.
+ *
+ * @param {import('postcss').Root} root
+ * @return {MergeState}
+ */
+function recordsOf(root) {
+  const state = new MergeState(['chrome 120'], createRunContext());
+  state.records = buildTestRecords(root, state);
+  return state;
+}
+
+/**
+ * Parses `css` and returns the blocks that hold the two rules found by
+ * following each child-index path from the root.
  *
  * @param {string} css
  * @param {number[]} firstPath
  * @param {number[]} secondPath
+ * @return {Promise<{records: BlockRecords, first: BlockRecord, second: BlockRecord}>}
  */
-async function parseNodePair(css, firstPath, secondPath) {
+async function blockPair(css, firstPath, secondPath) {
   const { root } = await postcss().process(css, {
     from: repositoryFile,
     hideNothingWarning: true,
   });
+  const state = recordsOf(root);
   const resolve = (path) => {
     let node = root;
     for (const index of path) {
@@ -27,7 +61,11 @@ async function parseNodePair(css, firstPath, secondPath) {
     }
     return node;
   };
-  return [resolve(firstPath), resolve(secondPath)];
+  return {
+    records: state.records,
+    first: blockOf(state.records, /** @type {Rule} */ (resolve(firstPath))),
+    second: blockOf(state.records, /** @type {Rule} */ (resolve(secondPath))),
+  };
 }
 
 const nestedSupports = (outerFirst, outerSecond, firstQuery, secondQuery) => `
@@ -43,83 +81,78 @@ const nestedSupports = (outerFirst, outerSecond, firstQuery, secondQuery) => `
         }
     `;
 
-test('sameContainer holds for the parents of sibling rules', async () => {
-  const [h1, h2] = await parseNodePair('h1 {} h2 {}', [0], [1]);
+test('sameContainer holds for the blocks of sibling rules', async () => {
+  const { first, second } = await blockPair('h1 {} h2 {}', [0], [1]);
 
-  assert.strictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
-test('sameContainer holds for the missing parents of two detached rules', async () => {
-  const [h1, h2] = await parseNodePair('h1 {} h2 {}', [0], [1]);
+test('sameContainer holds for two missing blocks', () => {
+  assert.strictEqual(sameContainer(null, undefined), true);
+});
 
-  h1.remove();
-  h2.remove();
+test('sameContainer does not hold when only one block is missing', async () => {
+  const { first } = await blockPair('h1 {}', [0], [0]);
 
-  assert.strictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.strictEqual(sameContainer(first, null), false);
 });
 
 test('sameContainer holds for siblings inside one @media block', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     '@media screen{h1 {} h2 {}}',
     [0, 0],
     [0, 1]
   );
-
-  assert.strictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer holds for rules in equal @media blocks', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     '@media screen{h1 {}} @media screen{h2 {}}',
     [0, 0],
     [1, 0]
   );
-
-  assert.strictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer compares at-rule names case-insensitively', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     '@media screen{h1 {}} @MEDIA screen{h2 {}}',
     [0, 0],
     [1, 0]
   );
-
-  assert.strictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer holds for rules in equal nested at-rule blocks', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     nestedSupports('@media screen', '@media screen', 'course', 'course'),
     [0, 0, 0],
     [1, 0, 0]
   );
-
-  assert.strictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold when nested @supports conditions differ', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     nestedSupports('@media screen', '@media screen', 'fine', 'course'),
     [0, 0, 0],
     [1, 0, 0]
   );
-
-  assert.notStrictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold when outer @media queries differ', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     nestedSupports('@media print', '@media screen', 'course', 'course'),
     [0, 0, 0],
     [1, 0, 0]
   );
-
-  assert.notStrictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold when only one side is inside an outer @media block', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     `
         @supports(pointer: course) {
             h1 {}
@@ -133,12 +166,11 @@ test('sameContainer does not hold when only one side is inside an outer @media b
     [0, 0],
     [1, 0, 0]
   );
-
-  assert.notStrictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold when only one side is inside a nested @supports block', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     `
         @media screen {
             h1 {}
@@ -152,38 +184,34 @@ test('sameContainer does not hold when only one side is inside a nested @support
     [0, 0],
     [1, 0, 0]
   );
-
-  assert.notStrictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold for two anonymous @layer blocks', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     '@layer { h1 {} } @layer { h2 {} }',
     [0, 0],
     [1, 0]
   );
-
-  assert.notStrictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold for rules nested in parent rules with different selectors', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     '.card { h1 {} } .hero { h2 {} }',
     [0, 0],
     [1, 0]
   );
-
-  assert.notStrictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.notStrictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer holds for rules nested in parent rules with identical selectors', async () => {
-  const [h1, h2] = await parseNodePair(
+  const { first, second } = await blockPair(
     '.card { h1 {} } .card { h2 {} }',
     [0, 0],
     [1, 0]
   );
-
-  assert.strictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  assert.strictEqual(sameContainer(first, second), true);
 });
 
 test('sameContainer does not hold for anonymous @layer blocks whose params are only comments', () => {
@@ -193,8 +221,13 @@ test('sameContainer does not hold for anonymous @layer blocks whose params are o
   const h2 = postcss.rule({ selector: 'h2' });
   layer1.append(h1);
   layer2.append(h2);
-
-  assert.notStrictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
+  const root = postcss.root();
+  root.append(layer1, layer2);
+  const state = recordsOf(root);
+  assert.notStrictEqual(
+    sameContainer(blockOf(state.records, h1), blockOf(state.records, h2)),
+    true
+  );
 });
 
 test('sameContainer holds for named @layer blocks with identical comments and name', () => {
@@ -210,53 +243,87 @@ test('sameContainer holds for named @layer blocks with identical comments and na
   const h2 = postcss.rule({ selector: 'h2' });
   layer1.append(h1);
   layer2.append(h2);
-
-  assert.strictEqual(sameContainer(h1.parent, h2.parent, textTable), true);
-});
-
-test('sameContainer should hold for equal conditional blocks that are different nodes', () => {
-  const { root } = postcss().process('@media print{a{}}@media print{b{}}', {
-    from: repositoryFile,
-  });
+  const root = postcss.root();
+  root.append(layer1, layer2);
+  const state = recordsOf(root);
   assert.strictEqual(
-    sameContainer(root.nodes[0], root.nodes[1], textTable),
+    sameContainer(blockOf(state.records, h1), blockOf(state.records, h2)),
     true
   );
 });
 
-test('sameContainer should not hold for blocks with different conditions', () => {
-  const { root } = postcss().process('@media print{a{}}@media screen{b{}}', {
-    from: repositoryFile,
-  });
+test('sameContainer should hold for equal conditional blocks that are different nodes', async () => {
+  const { root } = await postcss().process(
+    '@media print{a{}}@media print{b{}}',
+    { from: repositoryFile }
+  );
+  const state = recordsOf(root);
   assert.strictEqual(
-    sameContainer(root.nodes[0], root.nodes[1], textTable),
+    sameContainer(
+      blockRecordOf(state.records, root.nodes[0]),
+      blockRecordOf(state.records, root.nodes[1])
+    ),
+    true
+  );
+});
+
+test('sameContainer should not hold for blocks with different conditions', async () => {
+  const { root } = await postcss().process(
+    '@media print{a{}}@media screen{b{}}',
+    { from: repositoryFile }
+  );
+  const state = recordsOf(root);
+  assert.strictEqual(
+    sameContainer(
+      blockRecordOf(state.records, root.nodes[0]),
+      blockRecordOf(state.records, root.nodes[1])
+    ),
     false
   );
 });
 
-test('sameContainer should not hold when only one side is the stylesheet root', () => {
-  const { root } = postcss().process('@media print{a{}}', {
+test('sameContainer should not hold when only one side is the stylesheet root', async () => {
+  const { root } = await postcss().process('@media print{a{}}', {
     from: repositoryFile,
   });
-  assert.strictEqual(sameContainer(root, root.nodes[0], textTable), false);
+  const state = recordsOf(root);
+  assert.strictEqual(
+    sameContainer(
+      state.records.root,
+      blockRecordOf(state.records, root.nodes[0])
+    ),
+    false
+  );
 });
 
 test('sameContainer should hold for two undefined containers', () => {
-  assert.strictEqual(sameContainer(undefined, undefined, textTable), true);
+  assert.strictEqual(sameContainer(undefined, undefined), true);
 });
 
-test('sameContainer should not hold when the outer blocks differ and the inner ones match', () => {
-  const { root } = postcss().process(
+test('sameContainer should not hold when the outer blocks differ and the inner ones match', async () => {
+  const { root } = await postcss().process(
     '@media print{@supports (x:y){a{}}}@media screen{@supports (x:y){b{}}}',
     { from: repositoryFile }
   );
-  const first = root.nodes[0].nodes[0];
-  const second = root.nodes[1].nodes[0];
-  assert.strictEqual(sameContainer(first, second, textTable), false);
+  const state = recordsOf(root);
+  const first = blockRecordOf(state.records, root.nodes[0].nodes[0]);
+  const second = blockRecordOf(state.records, root.nodes[1].nodes[0]);
+  assert.strictEqual(sameContainer(first, second), false);
 });
 
 test('sameContainer does not fold the Kelvin sign in at-rule names, because CSS matches names ASCII-case-insensitively', () => {
   const kelvin = postcss.atRule({ name: 'Keyframes', params: 'a' });
   const ascii = postcss.atRule({ name: 'keyframes', params: 'a' });
-  assert.strictEqual(sameContainer(kelvin, ascii, textTable), false);
+  kelvin.append(postcss.rule({ selector: 'h1' }));
+  ascii.append(postcss.rule({ selector: 'h2' }));
+  const root = postcss.root();
+  root.append(kelvin, ascii);
+  const state = recordsOf(root);
+  assert.strictEqual(
+    sameContainer(
+      blockRecordOf(state.records, kelvin),
+      blockRecordOf(state.records, ascii)
+    ),
+    false
+  );
 });
