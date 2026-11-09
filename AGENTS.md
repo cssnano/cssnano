@@ -60,6 +60,7 @@ Every change should make the intended CSS transformation clearer while preservin
 - A test that expects unchanged output must say in its name or a comment why the value cannot be shortened.
 - A change should preserve or improve performance and asymptotic complexity. Avoid quadratic time in tests, scripts and algorithms; look for linear time. Performance refactors must preserve byte output unless an intentional output change is documented. Compare matched production benchmarks and measure independent hypotheses separately.
 - A refactor must not add parses, closures, callback arguments, temporary arrays or objects, or new key strings on any path the replaced code did not take. A wrapper must forward to the same underlying operation. Pin the contract with a test where it is observable.
+- Prefer the simplest code to a cache. Do not add a memo for what it might save: add one only where a count shows the work it saves, and pin it with a scaling test under `perf/`. A refactor may remove a memo that no scaling test pins and recompute what it saved, in place of the rule above, provided its commit message names the memo and the work it adds back. Interning, which gives equal values one id so they compare as integers, is not a memo.
 
 ## Running checks
 
