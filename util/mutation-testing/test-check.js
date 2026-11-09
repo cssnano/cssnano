@@ -33,6 +33,17 @@ const cleanEnvironment = { ...inheritedEnvironment, NO_COLOR: '1' };
 
 export const harnessError = 'Mutation harness error';
 
+/**
+ * Runs a catalog's test file unmutated, the way each mutant runs it, so a
+ * baseline that fails here fails every mutant of the catalog.
+ *
+ * @param {string} testPath
+ * @param {number} timeout
+ */
+export function runBaseline(testPath, timeout) {
+  return runNode([...testFlags, testPath], cleanEnvironment, timeout);
+}
+
 // Parallel runs share cores, so a single run can take several times its solo time.
 export const defaultTimeout = 30000;
 
@@ -107,7 +118,7 @@ export async function run(catalogs, { timeout, allowUnkilled }) {
   const baselines = await mapWithConcurrency(
     distinctTestPaths,
     availableParallelism(),
-    (testPath) => runNode([...testFlags, testPath], cleanEnvironment, timeout)
+    (testPath) => runBaseline(testPath, timeout)
   );
   const baselineResults = new Map(
     distinctTestPaths.map((testPath, index) => [testPath, baselines[index]])

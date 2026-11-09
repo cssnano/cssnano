@@ -3,29 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "pnpm types && oxlint . && oxfmt --check",
     "fixlint": "oxfmt . && pnpm oxlint --fix .",
     "acquire": "pnpm --filter cssnano run acquire",
     "build:integration": "node util/buildFrameworks.js",
     "bench:profile": "node ./util/benchmark/child.js --profile=bench-results/profile.cpuprofile",
     "bench:compare": "node ./util/benchmark/bench.js --corpus",
     "bench:check": "node ./util/benchmark/bench.js",
-    "test:benchmark": "node --test util/benchmark/test/*.js",
-    "test:benchmark:simulation": "node util/benchmark/simulation.js",
-    "test:benchmark:e2e": "node --test util/benchmark/e2e/*.e2e.js",
-    "test": "pnpm lint && pnpm test:unit && pnpm test:util && pnpm test:site && pnpm test:integration",
-    "test:performance": "node --test --test-concurrency=1 --test-reporter=spec \"packages/postcss-svgo/perf/*.js\" \"packages/cssnano/perf/*/*.js\" \"packages/cssnano/perf/passes/**/*.js\"",
-    "test:coverage": "cd packages && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=../lcov.info",
-    "test:uncovered-branches": "node util/uncoveredBranches.js",
-    "test:unit": "pnpm --recursive --workspace-concurrency=1 exec node --test --test-reporter=dot --test-skip-pattern=\"framework tests\"",
-    "test:util": "node --test util/chromium.test.js util/pluginTiming.test.js util/webref/*.test.js util/mutation-testing/*.test.js util/oxlint/merge-ir-plugin.test.js",
-    "test:site": "node --test site/test/*.js",
-    "test:integration": "node --test packages/cssnano/test/presets/default/integrations.test.js packages/cssnano/test/presets/default/pluginIdempotency.test.js packages/cssnano/test/presets/advanced/integrations.test.js packages/cssnano/test/presets/lite/integrations.test.js",
-    "test:packaging": "node --test util/packaging.test.js",
-    "mutation": "node util/mutation-testing/mutation-runner.js",
-    "test:mutation": "node util/mutation-testing/mutation-runner.js --all",
-    "test:mutation:oracle": "node util/mutation-testing/mutation-runner.js --all --check oracle --allow-unkilled",
-    "types": "tsc -b && tsc -p packages/cssnano/test/types"
+    "test": "node util/verify.js",
+    "mutation": "node util/mutation-testing/mutation-runner.js"
   },
   "engines": {
     "node": "^22.22.3 || ^24.15.0 || >=26.0"

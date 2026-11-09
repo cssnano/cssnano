@@ -20,14 +20,22 @@ pnpm install
 
 Tests that assert running time or scaling, and slow fuzz sweeps, live in each package's `perf/`
 directory, outside `test/`, so the OS and Node matrix and the coverage run skip
-them. Run them with `pnpm test:performance`; CI runs them once on Linux and the
+them. Run one with `node --test <file>`; CI runs them all once on Linux and the
 result does not gate pull requests.
 
-You can run the tests with:
+`pnpm test` is the one test command. With no arguments it runs every check a
+pull request must pass: types, lint, format, every test, the framework
+fixtures and the mutation baselines. It prints a line as each step starts and
+ends, keeps each step's output in `test-results/`, and ends with
+`test: done status=pass|fail`. With paths it runs only those tests:
 
 ```shell
 pnpm test
+pnpm test packages/cssnano/test/postcss-colormin/
 ```
+
+When a change alters the output on purpose, `pnpm build:integration` updates
+the framework fixtures; review the diff before committing.
 
 Mutation testing is an opt-in test-quality check for realistic faults in a
 plugin. It requires Node 24 or later and applies curated mutations in memory in an
@@ -39,9 +47,10 @@ pnpm mutation --group merge
 ```
 
 Groups are listed in `packages/cssnano/mutation/catalogs.js`, which is also
-where to register a new catalog. `pnpm test:mutation` reruns every catalog
-against its own test file, and `pnpm test:mutation:oracle` runs the catalogs
-that declare `suites` against the fuzz suites. A mutant is only caught when the
+where to register a new catalog. `pnpm mutation --all` reruns every catalog
+against its own test file, and `pnpm mutation --all --check oracle
+--allow-unkilled` runs the catalogs that declare `suites` against the fuzz
+suites. A mutant is only caught when the
 run reports it as `killed`: `survived`, `unchanged` and `not reached` mean the
 tests or oracles did not notice the fault, and `errored` and `timed out` mean
 it was not judged.

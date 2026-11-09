@@ -47,14 +47,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run lint
-        run: pnpm lint
+      - name: Run every check
+        run: pnpm test
 
       - name: Check committed types are up to date
         run: git diff --exit-code -- '**/types/*.d.ts'
 
       - name: Check package manifests resolve for consumers
-        run: pnpm test:packaging
+        run: node --test util/packaging.e2e.js
 
   test:
     name: Test
@@ -80,17 +80,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run unit tests
+      - name: Run the tests
         if: matrix.os != 'ubuntu-latest' || matrix.node-version != '24'
-        run: pnpm test:unit
-
-      - name: Run integration tests
-        if: matrix.os != 'ubuntu-latest' || matrix.node-version != '24'
-        run: pnpm test:integration
+        run: pnpm test packages util
 
       - name: Run all tests with coverage on latest Node on Linux
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '24'
-        run: pnpm test:coverage
+        run: cd packages && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=../lcov.info
 
       - name: Publish code coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '24'

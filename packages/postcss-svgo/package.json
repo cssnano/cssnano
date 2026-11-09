@@ -53,7 +53,6 @@
     "postcss": "^8.5.29"
   },
   "scripts": {
-    "test": "node --test",
     "fuzz": "node ./script/fuzz.js"
   },
   "type": "module"

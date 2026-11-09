@@ -9,7 +9,7 @@
 | `pnpm run bench:check --package=<p>`                 | run every focused case of a plugin                         |
 | `pnpm run bench:check --corpus --budget=30m`         | compare on the framework corpus (`bench:compare` is this)  |
 | `pnpm run bench:profile --case=<name>`               | write a CPU profile of one process to `bench-results/`     |
-| `pnpm run test:benchmark:simulation`                 | check that the decision rule keeps its error rates         |
+| `node util/benchmark/simulation.js`                  | check that the decision rule keeps its error rates         |
 
 Pass exactly one of `--case`, `--package`, `--set` and `--corpus`. Sets are
 in `cases/index.js`.
@@ -98,7 +98,7 @@ slower. The table reports the ratio, its interval, the verdict and a reason:
 - Results are advisory. They are not a regression gate, and a result inside the
   margin is not a finding.
 - The calibration assumes independent blocks. Autocorrelated noise is reported
-  by `test:benchmark:simulation` but has no error band, so its verdicts are not
+  by `simulation.js` but has no error band, so its verdicts are not
   calibrated.
 - The cold start is one sample per process and is noisier than the runtime, so
   it often needs more blocks.

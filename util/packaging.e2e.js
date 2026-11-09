@@ -36,14 +36,16 @@ function packAndInstall(installDir) {
     path.join(installDir, 'package.json'),
     JSON.stringify({ private: true })
   );
+  // A flat node_modules, as npm installs it, so cssnano sits beside the
+  // packages the preset tests plant and would reach them if it resolved by
+  // name; the postcss peer lands there too, where the consumer imports it.
   execFileSync(
-    'npm',
+    'pnpm',
     [
-      'install',
+      'add',
       path.join(packDir, tarball),
       '--ignore-scripts',
-      '--no-audit',
-      '--no-fund',
+      '--node-linker=hoisted',
     ],
     { cwd: installDir, stdio: 'pipe' }
   );

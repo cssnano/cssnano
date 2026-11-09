@@ -50,3 +50,6 @@ site/.astro/
 # Demo lockfile
 example-cli-usage/package-lock.json
 mutation-results
+
+# Test command logs
+test-results

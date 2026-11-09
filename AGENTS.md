@@ -57,7 +57,7 @@ Every change should make the intended CSS transformation clearer while preservin
 - A transform must never turn an invalid declaration into a valid one, or drop a component it does not understand. Browsers ignore invalid declarations, so making one valid changes how the page renders. When unsure, leave the value byte-identical.
 - Before collapsing a multi-value form to a shorter one, check what the grammar fills in for each omitted part (positions, margin/padding shorthands, `border-radius`, and so on). For example, a single `<position>` value implies `center` on the other axis, and a single number is always horizontal.
 - A test that expects unchanged output must say in its name or a comment why the value cannot be shortened.
-- Before handoff, validate the applicable repository contract: run the focused tests for changed packages, type checking (`pnpm run types`, which also checks `packages/cssnano/test/types`; `./node_modules/.bin/tsc -b` alone skips those), and lint/format checks for every change. Add full tests or regenerated artifacts when the change affects them. For generated-data changes, regenerate first, then lint/format and test the consuming package; do not rely on inspection alone. Use the commands under Durable conventions and the current package scripts. If a required check cannot be run, report that explicitly and do not claim full verification.
+- `pnpm test` is the one test command. With no arguments it runs every check that gates a change: types, lint, format, every test, the framework fixtures and the mutation baselines. With paths (`pnpm test packages/cssnano/test/passes/merge/`, which recurses) it runs only those tests, for iterating. Before handoff, run `pnpm test` with no arguments and quote its last line, `test: done status=pass|fail failed=… skipped=…`. Never judge a run from filtered output: a pipe into `grep` or `tail` replaces its exit code. A failed step's full output is in `test-results/<step>.log`. For generated-data changes, regenerate first, then run `pnpm test`; do not rely on inspection alone. Report every skipped or failed step, and do not claim full verification while one remains.
 - A change should preserve or improve performance and asymptotic complexity. Avoid quadratic time in tests, scripts and algorithms; look for linear time. Performance refactors must preserve byte output unless an intentional output change is documented. Compare matched production benchmarks and measure independent hypotheses separately; see `util/benchmark/README.md` for commands and evidence requirements.
 - A refactor must not add parses, closures, callback arguments, temporary arrays or objects, or new key strings on any path the replaced code did not take. A wrapper must forward to the same underlying operation. Pin the contract with a test where it is observable.
 
@@ -69,9 +69,11 @@ Every change should make the intended CSS transformation clearer while preservin
   Pick the narrowest case. `--budget` does not bound a run, since a benchmark
   always runs its minimum blocks, so never raise or wrap a timeout to compensate.
   `util/benchmark/README.md` has the options and the verdict rule.
-- Run benchmarks and mutation testing with `run_in_background`, do not poll or
-  sleep, and wait for the exit notification. Each ends with
-  `bench: done status=pass|fail ...` or `mutation: done status=pass|fail ...`.
+- Run `pnpm test`, benchmarks and mutation testing with `run_in_background`,
+  do not poll or sleep, and wait for the exit notification. Each ends with
+  `test: done`, `bench: done` or `mutation: done`, then `status=pass|fail ...`.
+  To see where a `pnpm test` run is, read its step lines or the log the
+  running step names.
   Read the last line of the output: a run without a `done` line crashed or was
   killed, and its partial output is not a result. No `done` line yet can also
   mean the run is still going: check `pgrep -f mutation-runner` before
@@ -96,8 +98,8 @@ Every change should make the intended CSS transformation clearer while preservin
     compare with the parent, run once at the parent with `--out parent.json`
     and again with `--baseline parent.json`; a mutant the parent killed and
     the run did not fails it.
-  - `pnpm test:mutation` reruns each catalog's test file;
-    `pnpm test:mutation:oracle` uses the fuzz suites. Probe one mutant with
+  - `pnpm mutation --all` reruns each catalog's test file; add
+    `--check oracle --allow-unkilled` for the fuzz suites. Probe one mutant with
     `node util/mutation-testing/mutation-runner.js --check oracle --catalog <file> --only '<regex>' --suites <module> --allow-unkilled`.
   - Read the `Running N mutants` line and the summary. Only `killed` is a
     verdict in favor of the tests. `survived`, `unchanged` and `not reached`
@@ -105,29 +107,22 @@ Every change should make the intended CSS transformation clearer while preservin
     judged. A run with no mutants, an `--only` pattern that matches none, or a
     test file that executes no tests fails.
   - Register a new catalog in `packages/cssnano/mutation/catalogs.js`.
-- Tests that assert wall-clock time or asymptotic scaling, and fuzz or exhaustive sweeps that take about a second or more, go in `packages/<pkg>/perf/` (plain `.js`, not `*.test.js`; plugin perf files live in `packages/cssnano/perf/<name>/`), so `node --test` and the coverage run skip them; run them with the `test:performance` script. Keep correctness assertions in `test/`.
+- Tests that assert wall-clock time or asymptotic scaling, and fuzz or exhaustive sweeps that take about a second or more, go in `packages/<pkg>/perf/` (plain `.js`, not `*.test.js`; plugin perf files live in `packages/cssnano/perf/<name>/`), so `pnpm test` and the coverage run skip them; run one with `node --test <file>`, and CI runs them all. Keep correctness assertions in `test/`.
 - Keep package tests under `test/` and follow the existing filename convention for the package or subsystem (`*.js` and `*.test.js` are both present). Use `describe()` when it improves source readability without disturbing unrelated test order.
 - Keep test-suite nesting shallow; avoid wrapping descriptive suites in redundant package- or preset-level suites.
 - Apply the rule of three before extracting test helpers: tolerate small duplication until a third consumer needs the same setup or assertion contract.
 - Keep generated declarations and generated integration fixtures synchronized with their sources. Do not hand-edit generated site data.
 - Use pnpm for dependency and lockfile changes; never edit lockfiles by hand. If dependencies or workspace links are missing, use an approved `pnpm install` to repair them; never manually
   create, remove, move, or retarget files or symlinks under `node_modules`.
-  To validate changes directly without requiring elevated permissions or invoking pnpm:
-  - Focused package unit tests: `node --test packages/<pkg>/test/*.js` (plugin tests run from `packages/cssnano/test/<name>/`)
-  - Uncovered branches in a package or plugin: `node util/uncoveredBranches.js packages/<pkg>` (a plugin name such as `packages/postcss-colormin` runs its tests and reports its sources)
-    (runs the package tests under coverage and prints the exact line numbers,
-    block/branch indices, and source snippets of every 0-hit branch; arguments
-    after the package path forward to `node --test`, and `--save-lcov=<path>`
-    keeps the raw lcov report)
-  - Preset integration tests: `node --test packages/cssnano/test/presets/*/integrations.test.js packages/cssnano/test/presets/default/pluginIdempotency.test.js`
-  - Utility tests: `pnpm test:util` and `pnpm test:benchmark` (or `node --test` on the files under `util/`)
-  - Type checking: `./node_modules/.bin/tsc -b`
-  - Linting: `./node_modules/.bin/oxlint packages/<pkg>` (or `.` for the entire workspace)
-  - Formatting: `./node_modules/.bin/oxfmt packages/<pkg>` (verify with `--check`)
-  - Integration framework fixtures: `node ./util/buildFrameworks.js`
-    (preview with `--dry-run`). If production transform output changes intentionally, run
-    `node ./util/buildFrameworks.js` to synchronize the framework integration
-    fixtures, then verify the resulting git diff.
+- Uncovered branches in a package or plugin: `node util/uncoveredBranches.js packages/<pkg>` (a plugin name such as `packages/postcss-colormin` runs its tests and reports its sources)
+  (runs the package tests under coverage and prints the exact line numbers,
+  block/branch indices, and source snippets of every 0-hit branch; arguments
+  after the package path forward to `node --test`, and `--save-lcov=<path>`
+  keeps the raw lcov report)
+- When production transform output changes intentionally, run
+  `pnpm build:integration` to synchronize the framework integration fixtures,
+  then review the git diff. `pnpm test` fails while they are out of step.
+  `pnpm fixlint` applies the formatter and lint fixes.
 - When transforming CSS token microsyntaxes (such as `<an-plus-b>` formulas, attribute
   modifiers, and namespace qualifiers), never use regex or broad string replacements.
   Always respect token-boundary microsyntax specifications (CSS Syntax 3 and Selectors 4).
