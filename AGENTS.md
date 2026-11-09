@@ -71,10 +71,15 @@ Every change should make the intended CSS transformation clearer while preservin
   Node 24) is skipped, not passed. With paths
   (`pnpm test packages/cssnano/test/passes/merge/`, which recurses) it runs
   only those tests, for iterating.
+- The cheap steps (types, lint, format, the stale-mutation check) run first and
+  together. If one fails, the slow steps (tests, site, frameworks, mutation
+  baselines) do not start, and the last line lists them as `notrun=`; `skipped=`
+  still means a step that cannot run here. `pnpm test --keep-going` runs the slow
+  steps anyway.
 - Before handoff, run `pnpm test` with no arguments and quote its last line,
-  `test: done status=pass|fail failed=… skipped=…`. Report every skipped or
-  failed step, and do not claim full verification while one remains. A failed
-  step's full output is in `test-results/<step>.log`.
+  `test: done status=pass|fail failed=… skipped=… notrun=…`. Report every
+  skipped, not-run or failed step, and do not claim full verification while
+  one remains. A failed step's full output is in `test-results/<step>.log`.
 - The types step regenerates the declarations in `types/`; commit their diff
   with the change. For other generated data, regenerate first, then run
   `pnpm test`; do not rely on inspection alone.

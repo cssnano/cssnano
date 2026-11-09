@@ -8,6 +8,7 @@
     //"suspicious": "error"
   },
   "rules": {
+    "no-undef": "error",
     "array-callback-return": "error",
     "complexity": "error",
     "guard-for-in": "error",
@@ -89,6 +90,21 @@
     "unicorn/prefer-string-replace-all": "error"
   },
   "overrides": [
+    {
+      "files": ["site/**"],
+      "env": { "browser": true },
+      "globals": { "Astro": "readonly" }
+    },
+    {
+      // Defined by the site build; declared for the compiler in env.d.ts.
+      "files": ["site/src/utils/embeddedBrowserTargets.js"],
+      "globals": { "CSSNANO_PLAYGROUND_TARGETS": "readonly" }
+    },
+    {
+      // Runs inside the browser through `evaluate`.
+      "files": ["util/valueValidity.js"],
+      "globals": { "CSS": "readonly" }
+    },
     {
       "files": ["packages/cssnano/src/passes/merge/**"],
       "rules": {
@@ -203,6 +219,7 @@
     }
   ],
   "env": {
-    "builtin": true
+    "builtin": true,
+    "node": true
   }
 }

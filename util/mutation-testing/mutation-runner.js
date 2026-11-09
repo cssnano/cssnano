@@ -119,7 +119,7 @@ async function planRuns() {
   const sources = (values.catalog ?? []).map((path) => ({
     url: pathToFileURL(resolve(path)),
   }));
-  if (values.all) sources.push(...selectCatalogs(catalogs, values.check));
+  if (values.all) sources.push(...selectCatalogs(catalogs, check));
   if (!sources.length) {
     throw new Error('Missing required argument --group, --catalog or --all');
   }

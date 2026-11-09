@@ -113,7 +113,7 @@ test('no-cache-local accepts a rule read through its records', () => {
 test('the repository config names only files that exist', () => {
   const config = readConfig('.oxlintrc.json');
   const named = config.overrides.flatMap((override) =>
-    Object.values(override.rules).flatMap((setting) => {
+    Object.values(override.rules ?? {}).flatMap((setting) => {
       const options = Array.isArray(setting) ? setting[1] : undefined;
       return [...(options?.allowed ?? []), ...(options?.required ?? [])];
     })
