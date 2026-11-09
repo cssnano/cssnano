@@ -34,7 +34,7 @@ const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
  * @param {ChildNode} node
  * @return {boolean} whether the node holds rules or at-rules
  */
-function isRuleOrAtRule(node) {
+export function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
 }
 

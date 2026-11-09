@@ -3,6 +3,19 @@ import type { ChildNode, Container } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord as Block } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
+/** @import {AtRule, ChildNode, Container, Declaration, Rule} from 'postcss' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {ArenaIndex, BlockRecord as Block, NodeEntry} from './blockRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/**
+ * The nodes of the children the block at `index` holds now, in order.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index
+ * @return {ChildNode[]}
+ */
+export declare function childNodesOf(records: BlockRecords, index: number): ChildNode[];
 export type ContainerRecord = Block | RuleRecord;
 /**
  * Under consistency checks, throws when the records and the tree disagree:

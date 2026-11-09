@@ -1,4 +1,3 @@
-/** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, BlockRecord, NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -128,27 +127,6 @@ export function childEntriesOf(records, index) {
     );
   }
   return entries;
-}
-
-/**
- * The children the block at `index` holds now, in order: the node of each
- * entry of its chain.
- *
- * @param {BlockRecords} records
- * @param {number} index
- * @return {ChildNode[]}
- */
-export function childNodesOf(records, index) {
-  /** @type {ChildNode[]} */
-  const children = [];
-  for (
-    let entry = records.links.firstChild(index);
-    entry !== -1;
-    entry = records.links.nextSibling(entry)
-  ) {
-    children.push(records.nodeOf(entry));
-  }
-  return children;
 }
 
 /**

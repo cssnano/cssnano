@@ -1,5 +1,4 @@
 import postcss from 'postcss';
-import { childNodesOf } from './blockChildren.js';
 import cssnanoUtils from '#utils';
 import {
   AT_RULE_BLOCK,
@@ -15,12 +14,30 @@ import { joinRanges } from '../../../../values/joinRanges.js';
 import { TextTable } from '../../../../values/textTable.js';
 import { tokensText } from '../../../../values/tokensText.js';
 import { describesNode } from '../../../ir/declarationRecord.js';
+import { isRuleOrAtRule } from './buildRecords.js';
 
 /** @import {AtRule, ChildNode, Container, Declaration, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, BlockRecord as Block, NodeEntry} from './blockRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+
+/**
+ * The nodes of the children the block at `index` holds now, in order.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index
+ * @return {ChildNode[]}
+ */
+export function childNodesOf(records, index) {
+  /** @type {ChildNode[]} */ const children = [];
+  let entry = records.links.firstChild(index);
+  while (entry !== -1) {
+    children.push(records.nodeOf(entry));
+    entry = records.links.nextSibling(entry);
+  }
+  return children;
+}
 
 /** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule, whose children form its chain */
 
@@ -30,9 +47,8 @@ const OUT_OF_STEP = 'block record out of step with the tree';
 const STALE = 'stale declarations of a rule record';
 
 /**
- * Whether the live children of a container differ from the nodes it holds.
- * Compares in order and stops at the first difference, without building the
- * list of live children.
+ * Whether the live children of a container differ from its nodes. Compares in
+ * order and stops at the first difference, without a list of live children.
  *
  * @param {BlockRecords} records
  * @param {ContainerRecord} block
@@ -52,14 +68,6 @@ function differs(records, block) {
     if (nodes[at++] !== records.nodeOf(entry)) return true;
   }
   return false;
-}
-
-/**
- * @param {ChildNode} node
- * @return {boolean} whether the node holds rules or at-rules
- */
-function isRuleOrAtRule(node) {
-  return node.type === 'rule' || node.type === 'atrule';
 }
 
 /**

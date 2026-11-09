@@ -187,9 +187,7 @@
               "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js",
               "packages/cssnano/src/passes/merge/lib/rules/ruleRecord.js",
               "packages/cssnano/src/passes/merge/lib/rules/selectorList.js",
-              "packages/cssnano/src/passes/merge/lib/rules/blockChildren.js",
-              "packages/cssnano/src/passes/ir/declarationRecord.js",
-              "packages/cssnano/src/passes/ir/declarationKey.js"
+              "packages/cssnano/src/passes/ir/declarationRecord.js"
             ]
           }
         ],

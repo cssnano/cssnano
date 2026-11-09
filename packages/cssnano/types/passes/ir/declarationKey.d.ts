@@ -1,4 +1,19 @@
-import type { AtRule, Declaration } from 'postcss';
+export type DeclarationFields = {
+    prop: string;
+    value: string;
+    important?: boolean;
+    raws: {
+        before?: string;
+    };
+};
+export type AtRuleFields = {
+    name: string;
+    params: string;
+    raws: {
+        before?: string;
+        afterName?: string;
+    };
+};
 export type Trie = Map<unknown, unknown>;
 /**
  * Nested maps keyed by the components of a structural description. Each
@@ -18,10 +33,10 @@ export declare function step(trie: Trie, key: unknown): Trie;
  * declaration's identity. A stray `;` before the declaration is not a hack,
  * and a declaration without `raws.before` has none.
  *
- * @param {Declaration} declaration
+ * @param {DeclarationFields} declaration
  * @return {string}
  */
-export declare function hackPrefixOf(declaration: Declaration): string;
+export declare function hackPrefixOf(declaration: DeclarationFields): string;
 /**
  * Numbers the declarations and other structural descriptions of one run of the
  * pass. Equal descriptions get equal integers, so callers compare ids rather
@@ -36,19 +51,19 @@ export declare class DeclarationKeys {
      * prefix. Names fold ASCII case, except custom properties, which are
      * case-sensitive.
      *
-     * @param {Declaration} declaration
+     * @param {DeclarationFields} declaration
      * @return {number}
      */
-    keyOf(declaration: Declaration): number;
+    keyOf(declaration: DeclarationFields): number;
     /**
      * The id of an at-rule's prelude: its name, its params and its trimmed
      * `raws.before` and `raws.afterName`. Ids of the preludes are kept with
      * their paths, for `preludeTrie`.
      *
-     * @param {AtRule} node
+     * @param {AtRuleFields} node
      * @return {number}
      */
-    preludeId(node: AtRule): number;
+    preludeId(node: AtRuleFields): number;
     /**
      * The path that a prelude id ends, from `preludeId`, which a structural id
      * extends.

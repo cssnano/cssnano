@@ -1,6 +1,15 @@
 import { propertyNameKey } from './propertyName.js';
 
-/** @import {AtRule, Declaration} from 'postcss' */
+/**
+ * The fields of a declaration that its key reads.
+ *
+ * @typedef {{prop: string, value: string, important?: boolean, raws: {before?: string}}} DeclarationFields
+ */
+/**
+ * The fields of an at-rule that its prelude id reads.
+ *
+ * @typedef {{name: string, params: string, raws: {before?: string, afterName?: string}}} AtRuleFields
+ */
 
 // Marks the end of a component path in a trie, so the id of a path cannot be
 // confused with a component.
@@ -33,7 +42,7 @@ export function step(trie, key) {
  * declaration's identity. A stray `;` before the declaration is not a hack,
  * and a declaration without `raws.before` has none.
  *
- * @param {Declaration} declaration
+ * @param {DeclarationFields} declaration
  * @return {string}
  */
 export function hackPrefixOf(declaration) {
@@ -65,7 +74,7 @@ export class DeclarationKeys {
    * prefix. Names fold ASCII case, except custom properties, which are
    * case-sensitive.
    *
-   * @param {Declaration} declaration
+   * @param {DeclarationFields} declaration
    * @return {number}
    */
   keyOf(declaration) {
@@ -81,7 +90,7 @@ export class DeclarationKeys {
    * `raws.before` and `raws.afterName`. Ids of the preludes are kept with
    * their paths, for `preludeTrie`.
    *
-   * @param {AtRule} node
+   * @param {AtRuleFields} node
    * @return {number}
    */
   preludeId(node) {

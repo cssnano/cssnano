@@ -1,4 +1,3 @@
-import type { ChildNode } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord, NodeEntry } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
@@ -62,15 +61,6 @@ export declare function holdsOnlyDeclarationsOf(records: BlockRecords, index: nu
  * @return {(RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[]}
  */
 export declare function childEntriesOf(records: BlockRecords, index: number): (RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[];
-/**
- * The children the block at `index` holds now, in order: the node of each
- * entry of its chain.
- *
- * @param {BlockRecords} records
- * @param {number} index
- * @return {ChildNode[]}
- */
-export declare function childNodesOf(records: BlockRecords, index: number): ChildNode[];
 /**
  * Gives an appended child the whitespace of the last child when it has none, as
  * PostCSS gives it, so the records keep what the node will print.

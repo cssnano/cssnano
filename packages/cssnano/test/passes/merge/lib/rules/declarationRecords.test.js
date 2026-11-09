@@ -1,7 +1,9 @@
+import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
   childNodesOf,
-  childEntriesOf,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+  assertRecordsMatchTree,
+  writeBack,
+} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -10,10 +12,6 @@ import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecor
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import {
-  assertRecordsMatchTree,
-  writeBack,
-} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import {
   buildTestRecords,
   declarationIds,

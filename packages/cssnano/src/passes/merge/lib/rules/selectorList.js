@@ -64,8 +64,8 @@ export class SelectorList {
    * @param {Rule | undefined} node
    * @param {string[]} selectors
    * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-   * @param {string | undefined} sourceSelector the source text, set only when it differs from the selector
-   * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
+   * @param {string} [sourceSelector] the source text, set only when it differs from the selector
+   * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
    */
   constructor(node, selectors, selector, sourceSelector, tokens) {
     this.#node = node;

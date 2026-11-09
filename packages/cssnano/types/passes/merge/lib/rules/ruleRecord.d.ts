@@ -53,10 +53,10 @@ export declare class RuleRecord extends SelectorList {
      * @param {Rule | undefined} node the rule the record describes; undefined for a merged rule until write-back
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-     * @param {string | undefined} sourceSelector the source text, set only when it differs from the selector
-     * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
+     * @param {string} [sourceSelector] the source text, set only when it differs from the selector
+     * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
      */
-    constructor(node: Rule | undefined, selectors: string[], selector: string, sourceSelector: string | undefined, tokens: readonly CSSToken[] | undefined);
+    constructor(node: Rule | undefined, selectors: string[], selector: string, sourceSelector?: string, tokens?: readonly CSSToken[]);
     /**
      * The declarations of the rule, in order, read from its chain at the call. A
      * reader that indexes them by position takes this array.

@@ -127,9 +127,7 @@ export function buildMergedRule(
   const receivingRecord = new RuleRecord(
     undefined,
     selectors,
-    selectors.join(),
-    undefined,
-    undefined
+    selectors.join()
   );
   receivingRecord.mark();
   receivingRecord.template = template;

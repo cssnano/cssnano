@@ -1,8 +1,8 @@
 import {
   firstDeclaration,
-  childNodesOf,
   nextDeclaration,
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childNodesOf } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import {
   COMMENT,
   NO_AT_RULE,

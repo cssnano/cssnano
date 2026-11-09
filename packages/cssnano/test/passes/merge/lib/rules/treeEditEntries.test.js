@@ -1,7 +1,5 @@
-import {
-  childNodesOf,
-  childEntriesOf,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childNodesOf } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';

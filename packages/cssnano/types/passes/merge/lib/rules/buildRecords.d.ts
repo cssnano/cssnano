@@ -1,6 +1,19 @@
 import { BlockRecords } from './blockRecords.js';
-import type { Root } from 'postcss';
+import type { ChildNode, Root } from 'postcss';
 import type { RunContext } from '../../../ir/runContext.js';
+/** @import {AtRule, ChildNode, Comment, Container, Root, Rule} from 'postcss' */
+/** @import {ArenaIndex} from './blockRecord.js' */
+/** @import MergeState from './mergeState.js' */
+/** @import {RunContext} from '../../../ir/runContext.js' */
+/**
+ * Builds the records of a stylesheet from its tree, which the window's edits
+ * then change. The build is the only code of the window that reads the nodes.
+ */
+/**
+ * @param {ChildNode} node
+ * @return {boolean} whether the node holds rules or at-rules
+ */
+export declare function isRuleOrAtRule(node: ChildNode): boolean;
 /**
  * Builds the records of a stylesheet from its tree, once per run. Each child is
  * linked into the chain of its parent, and every rule is a container whose

@@ -1,4 +1,8 @@
-import { childNodesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import {
+  childNodesOf,
+  replaceChildren,
+  writeBack,
+} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -10,10 +14,6 @@ import {
   removeRules,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import {
-  replaceChildren,
-  writeBack,
-} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import {
   ruleRecordOf,
   blockRecordOf,
