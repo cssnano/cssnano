@@ -1,11 +1,9 @@
 import type { RangePiece } from '../../../../values/joinRanges.js';
-import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
@@ -14,12 +12,6 @@ import type { BlockRecord } from './blockRecord.js';
  */
 export default class MergeState {
     #private;
-    /**
-     * The keys of the property names this stylesheet's merges compare.
-     *
-     * @type {PropertyTable}
-     */
-    properties: PropertyTable;
     /**
      * The block and rule records of the stylesheet. The driver builds them, and
      * `runMerge` sets them before any edit reads them.

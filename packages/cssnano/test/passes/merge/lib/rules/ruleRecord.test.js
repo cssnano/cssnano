@@ -67,7 +67,7 @@ const declarationOf = (state, node) =>
   placeUnlinked(
     state.records,
     state.records.root.index,
-    recordDeclaration(node, state.properties, state.declarationIds)
+    recordDeclaration(node, state.declarationIds)
   );
 
 test('compatible should look up each selector once across repeated reads', () => {

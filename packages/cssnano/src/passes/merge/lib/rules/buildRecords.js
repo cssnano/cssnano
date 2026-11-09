@@ -2,6 +2,7 @@ import cssnanoUtils from '#utils';
 import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { keysOfName } from '../../../ir/propertyTable.js';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
@@ -22,7 +23,6 @@ const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /** @import {AtRule, ChildNode, Comment, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {NodeTable} from './nodeTable.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
@@ -47,16 +47,15 @@ const PENDING_EDITS = 'a container has edits its child list does not show';
  * The record of a declaration of the run's stylesheet.
  *
  * @param {Declaration} node
- * @param {PropertyTable} properties
  * @param {DeclarationKeys} declarations
  * @return {DeclarationRecord}
  */
-export function recordDeclaration(node, properties, declarations) {
+export function recordDeclaration(node, declarations) {
   const record = new DeclarationRecord(
     node.prop,
     node.value,
     node.important === true,
-    properties.keysOf(node.prop),
+    keysOfName(node.prop),
     declarations.keyOf(node)
   );
   record.before = node.raws.before ?? null;
@@ -151,7 +150,7 @@ export function buildRecords(root, context) {
         declarations++;
         place(
           container.index,
-          recordDeclaration(child, context.properties, context.declarations),
+          recordDeclaration(child, context.declarations),
           child
         );
       } else if (child.type === 'atrule') {

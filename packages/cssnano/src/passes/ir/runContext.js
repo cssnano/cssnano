@@ -1,5 +1,4 @@
 import { DeclarationKeys } from './declarationKey.js';
-import { PropertyTable } from './propertyTable.js';
 import { SelectorIds } from './selectorIds.js';
 import { TextTable } from '../../values/textTable.js';
 import { consistencyChecksEnabled } from './consistencyChecks.js';
@@ -12,7 +11,6 @@ import { consistencyChecksEnabled } from './consistencyChecks.js';
  * it may outlive the run: its ids mean nothing to another stylesheet.
  *
  * @typedef {{
- *   properties: PropertyTable,
  *   declarations: DeclarationKeys,
  *   selectorIds: SelectorIds,
  *   createdBlocks: Set<Container> | null,
@@ -36,7 +34,6 @@ export function createRunContext(
   consistencyChecks = consistencyChecksEnabled()
 ) {
   return {
-    properties: new PropertyTable(),
     declarations: new DeclarationKeys(),
     selectorIds: new SelectorIds(),
     createdBlocks: null,

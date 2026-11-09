@@ -6,7 +6,6 @@ import {
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
 import { PropertyWrites } from './propertyWrites.js';
 import { declarationKeys } from './declarationCache.js';
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */

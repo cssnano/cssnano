@@ -82,7 +82,7 @@ test('assertNoOverDuplication should throw when a declaration is written more of
     placeUnlinked(
       state.records,
       state.records.root.index,
-      recordDeclaration(added, state.properties, state.declarationIds)
+      recordDeclaration(added, state.declarationIds)
     )
   );
   assert.throws(

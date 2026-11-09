@@ -1,6 +1,5 @@
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 import { BlockLinks } from './blockLinks.js';
 import { DeclarationStamps } from './declarationStamps.js';
 import { DeclarationCache } from './declarationCache.js';

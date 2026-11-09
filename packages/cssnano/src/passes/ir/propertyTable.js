@@ -96,12 +96,12 @@ function logicalSideOf(longhand) {
 const sideKey = (group, flowRelative) => `${group}:${flowRelative}`;
 
 /**
- * The keys of one property name, as `PropertyTable#keysOf` computes them.
+ * The keys of one property name: what a conflict query reads for it.
  *
  * @param {string} prop
  * @return {PropertyKeys}
  */
-function keysOfName(prop) {
+export function keysOfName(prop) {
   const lowercased = propertyNameKey(prop);
   if (lowercased.startsWith('--')) return { custom: true, key: lowercased };
   if (lowercased === ALL) return { custom: false, all: true };
@@ -128,27 +128,4 @@ function keysOfName(prop) {
     length: segments.length,
     bare,
   };
-}
-
-/**
- * The keys of each property name a conflict query has seen during one run of
- * the pass. A table belongs to the merge state of one stylesheet, so a name
- * seen in one stylesheet is not kept for the next. Custom properties are left
- * out: their keys are trivial and their names unbounded.
- */
-export class PropertyTable {
-  /** @type {Map<string, PropertyKeys>} */
-  #keys = new Map();
-
-  /**
-   * @param {string} prop
-   * @return {PropertyKeys}
-   */
-  keysOf(prop) {
-    const cached = this.#keys.get(prop);
-    if (cached) return cached;
-    const keys = keysOfName(prop);
-    if (!keys.custom) this.#keys.set(prop, keys);
-    return keys;
-  }
 }

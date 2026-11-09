@@ -9,7 +9,6 @@ import { tokensText } from '../../../../values/tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
@@ -18,12 +17,6 @@ import { tokensText } from '../../../../values/tokensText.js';
  * The state shared by every merge of one stylesheet.
  */
 export default class MergeState {
-  /**
-   * The keys of the property names this stylesheet's merges compare.
-   *
-   * @type {PropertyTable}
-   */
-  properties;
   /** @type {import('./selectorList.js').SelectorLookup} */
   #lookup;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
@@ -51,7 +44,6 @@ export default class MergeState {
     );
     this.#declarations = context.declarations;
     this.#selectorIds = context.selectorIds;
-    this.properties = context.properties;
   }
 
   /**

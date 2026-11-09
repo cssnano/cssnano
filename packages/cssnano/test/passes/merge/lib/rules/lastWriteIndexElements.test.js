@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import LastWriteIndex from '../../../../../src/passes/merge/lib/rules/lastWriteIndex.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
+import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { BlockRecords } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
@@ -11,9 +11,8 @@ import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockReco
 import { entryOf, buildTestRecords } from './liveRecords.js';
 
 /** @param {string} prop */
-const table = new PropertyTable();
 /** The keys of a property name, as a write index takes them. */
-const keys = (prop) => table.keysOf(prop);
+const keys = (prop) => keysOfName(prop);
 /** A declaration record holding the keys of a property name. */
 const decl = (prop) => ({ keys: keys(prop) });
 

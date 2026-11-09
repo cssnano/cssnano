@@ -53,7 +53,7 @@ function timeAppendsAndReads(size) {
     placeUnlinked(
       records,
       records.root.index,
-      recordDeclaration(node, context.properties, context.declarations)
+      recordDeclaration(node, context.declarations)
     )
   );
   let seen = 0;

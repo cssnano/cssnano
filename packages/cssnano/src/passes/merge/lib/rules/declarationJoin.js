@@ -12,7 +12,6 @@ import { removeRules } from './treeEdits.js';
 import { RULE } from './blockRecord.js';
 import { removeDeclarations } from './arenaEdits.js';
 import { declarationKeys } from './declarationCache.js';
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 /** @import MergeState from './mergeState.js' */

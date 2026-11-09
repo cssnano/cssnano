@@ -48,11 +48,7 @@ const freshDeclaration = ({ state, records }, prop) =>
   placeUnlinked(
     records,
     records.root.index,
-    recordDeclaration(
-      postcss.decl({ prop, value: '0' }),
-      state.properties,
-      state.declarationIds
-    )
+    recordDeclaration(postcss.decl({ prop, value: '0' }), state.declarationIds)
   );
 
 test('receivingDeclarations should return the same entry after appendChild, with the appended declaration last in kept and its write at its position', () => {

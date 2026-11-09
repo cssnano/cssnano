@@ -31,12 +31,6 @@ test('should assign a declaration the same key in a second run as a fresh run do
   );
 });
 
-test('should give each run its own property table', () => {
-  const first = createRunContext();
-  const second = createRunContext();
-  assert.notEqual(first.properties, second.properties);
-});
-
 test('a run context created with consistency checks makes a link into a removed rule throw', () => {
   const context = createRunContext(new TextTable(), true);
   const { records } = buildRecords(postcss.parse('a{color:red}'), context);

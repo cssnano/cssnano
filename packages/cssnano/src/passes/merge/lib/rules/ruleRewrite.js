@@ -8,7 +8,6 @@ import {
   removeDeclarations,
 } from './arenaEdits.js';
 import { RuleRecord } from './ruleRecord.js';
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */

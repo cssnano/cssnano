@@ -238,11 +238,7 @@ const freshDeclaration = ({ state, records }, prop) =>
   placeUnlinked(
     records,
     records.root.index,
-    recordDeclaration(
-      postcss.decl({ prop, value: '0' }),
-      state.properties,
-      state.declarationIds
-    )
+    recordDeclaration(postcss.decl({ prop, value: '0' }), state.declarationIds)
   );
 
 test('appendChild of a declaration should keep the entry of the rule and list the appended id last', () => {

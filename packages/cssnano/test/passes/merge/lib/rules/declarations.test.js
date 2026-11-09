@@ -3,13 +3,11 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
 import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import {
   declarationIsEqual,
   filterRuleIntersections,
 } from '../../../../../src/passes/merge/lib/rules/declarations.js';
 
-const properties = new PropertyTable();
 const declarationIds = new DeclarationKeys();
 
 /**
@@ -21,14 +19,13 @@ const declarationIds = new DeclarationKeys();
 function recordOf(css) {
   const root = postcss.parse(`a{${css}}`);
   const node = /** @type {import('postcss').Declaration} */ (root.first?.first);
-  return recordDeclaration(node, properties, declarationIds);
+  return recordDeclaration(node, declarationIds);
 }
 
 test('declarationIsEqual treats important: false the same as an unset important flag', () => {
   const unset = recordOf('border-radius:1px');
   const explicitFalse = recordDeclaration(
     postcss.decl({ prop: 'border-radius', value: '1px', important: false }),
-    properties,
     declarationIds
   );
   assert.equal(declarationIsEqual(unset, explicitFalse), true);
@@ -52,7 +49,6 @@ function recordsOf(css) {
   return rule.nodes.map((node) =>
     recordDeclaration(
       /** @type {import('postcss').Declaration} */ (node),
-      properties,
       declarationIds
     )
   );

@@ -9,7 +9,6 @@ import {
   NO_PRELUDE,
   NodeEntry,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -180,7 +179,6 @@ test('declarationKeys should list a declaration that moveBefore puts in the midd
     records.root.index,
     recordDeclaration(
       postcss.decl({ prop: 'width', value: '1px' }),
-      new PropertyTable(),
       new DeclarationKeys()
     )
   );
@@ -200,7 +198,6 @@ test('declarationsOf should list the declaration that moveLast appends to its ru
     records.root.index,
     recordDeclaration(
       postcss.decl({ prop: 'top', value: '0' }),
-      new PropertyTable(),
       new DeclarationKeys()
     )
   );
@@ -220,7 +217,6 @@ test('firstDeclaration and nextDeclaration should walk a declaration that moveBe
     records.root.index,
     recordDeclaration(
       postcss.decl({ prop: 'width', value: '1px' }),
-      new PropertyTable(),
       new DeclarationKeys()
     )
   );
@@ -246,7 +242,6 @@ test('declarationKeys should list the ids in their new order after moveBefore pu
     records.root.index,
     recordDeclaration(
       postcss.decl({ prop: 'width', value: '1px' }),
-      new PropertyTable(),
       new DeclarationKeys()
     )
   );

@@ -3,7 +3,6 @@ import type MergeState from './mergeState.js';
 import type { ArenaIndex, BlockRecord, ChainPosition } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { RuleRecord } from './ruleRecord.js';
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
