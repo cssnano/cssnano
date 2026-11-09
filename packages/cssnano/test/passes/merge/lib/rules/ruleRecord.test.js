@@ -11,10 +11,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
-import {
-  consistencyChecksEnabled,
-  enableConsistencyChecks,
-} from '../../../../../src/passes/ir/consistencyChecks.js';
 import { isDeclarationRule } from '../../../../../src/passes/merge/lib/rules/declarationJoin.js';
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
@@ -45,10 +41,13 @@ const lookupB = (selector) => ({ compatible: selector !== 'b' });
  * @param {string} css
  * @return {{state: MergeState, records: BlockRecords, record: RuleRecord}}
  */
-const arenaOf = (css) => {
+const arenaOf = (css, consistencyChecks = false) => {
   const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildTestRecords(root, state);
+  const state = new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, consistencyChecks)
+  );
+  state.records = buildTestRecords(root, state, undefined, consistencyChecks);
   const { records } = state;
   return { state, records, record: ruleRecordOf(records, root.first) };
 };
@@ -313,45 +312,30 @@ test('appendChild should count an appended comment among the children without ad
 });
 
 test('appendChild should keep the declarations in step with the children under consistency checks', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    const { state, records, record } = arenaOf('a{/* note */color:red}');
-    appendChild(
-      records,
-      record,
-      declarationOf(state, postcss.decl({ prop: 'width', value: '1px' }))
-    );
-    assert.equal(record.declarationsOf(records).length, 2);
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
+  const { state, records, record } = arenaOf('a{/* note */color:red}', true);
+  appendChild(
+    records,
+    record,
+    declarationOf(state, postcss.decl({ prop: 'width', value: '1px' }))
+  );
+  assert.equal(record.declarationsOf(records).length, 2);
 });
 
 test('declarations should read the records under consistency checks, before write-back brings the node in step', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    const { records, record } = arenaOf('a{color:red}');
-    removeDeclarations(records, record.index, claimAt(records, record, [0]));
-    assert.equal(record.declarationsOf(records).length, 0);
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
+  const { records, record } = arenaOf('a{color:red}', true);
+  removeDeclarations(records, record.index, claimAt(records, record, [0]));
+  assert.equal(record.declarationsOf(records).length, 0);
 });
 
 test('assertRecordsMatchTree should throw under consistency checks when a comment was added to the node without the record', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    const root = postcss.parse('a{color:red}');
-    const state = new MergeState(['chrome 120'], createRunContext());
-    state.records = buildTestRecords(root, state);
-    root.first.append(postcss.comment({ text: 'note' }));
-    assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
+  const root = postcss.parse('a{color:red}');
+  const state = new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, true)
+  );
+  state.records = buildTestRecords(root, state, undefined, true);
+  root.first.append(postcss.comment({ text: 'note' }));
+  assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
 });
 
 test('appendChild should give an appended declaration without raws.before the whitespace of the last child', () => {

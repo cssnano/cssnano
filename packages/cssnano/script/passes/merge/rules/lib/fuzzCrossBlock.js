@@ -6,10 +6,7 @@ const mergePassUrl = new URL(
   '../../../../../src/passes/merge/index.js',
   import.meta.url
 ).href;
-const consistencyChecksUrl = new URL(
-  '../../../../../src/passes/ir/consistencyChecks.js',
-  import.meta.url
-).href;
+const enableChecksUrl = new URL('../../enableChecks.js', import.meta.url).href;
 
 const wrappers = ['@media print', '@supports (color:red)'];
 // Rule-less at-rules cannot be merged into, so a block moved across one
@@ -165,8 +162,7 @@ export function processAllWithLimits(
   // bookkeeping fails the case instead of changing only the output.
   const script = `
     import postcss from 'postcss';
-    import { enableConsistencyChecks } from ${JSON.stringify(consistencyChecksUrl)};
-    enableConsistencyChecks(true);
+    import ${JSON.stringify(enableChecksUrl)};
     ${loadPlugin}
     const inputs = ${JSON.stringify(inputs)};
     inputs.forEach((css, index) => {

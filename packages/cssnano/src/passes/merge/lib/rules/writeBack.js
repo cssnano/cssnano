@@ -1,7 +1,6 @@
 import postcss from 'postcss';
 import { childNodesOf } from './blockChildren.js';
 import cssnanoUtils from '#utils';
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { atRuleKind, BlockRecord, NodeEntry } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
@@ -170,7 +169,7 @@ function checkBlockRecord(records, block) {
  * @return {void}
  */
 export function assertRecordsMatchTree(records) {
-  if (!consistencyChecksEnabled()) return;
+  if (!records.consistencyChecks) return;
   checkBlockRecord(records, records.root);
 }
 

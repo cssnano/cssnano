@@ -7,10 +7,6 @@ import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { mergeSharedDeclarations } from '../../../src/passes/merge/lib/rules/merge.js';
 import DeclarationScan from '../../../src/passes/merge/lib/rules/declarationScan.js';
 import RuleSequence from '../../../src/passes/merge/lib/rules/ruleSequence.js';
-import {
-  consistencyChecksEnabled,
-  enableConsistencyChecks,
-} from '../../../src/passes/ir/consistencyChecks.js';
 
 const plugin = transformPlugin('mergeRules');
 
@@ -80,12 +76,18 @@ test('a leftover that a join gave longhands is canonicalized in the second round
  * Merges the shared declarations of two rules and returns the record of the
  * first, whose declarations all merged away.
  *
+ * @param {boolean} consistencyChecks whether the records check their reads
  * @return {{mergeState: MergeState, first: number}}
  */
-function mergedAway() {
+function mergedAway(consistencyChecks) {
   const root = postcss.parse('a{color:red}b{color:red;padding:0}');
   const mergeState = new MergeState(['Chrome 120']);
-  mergeState.records = buildTestRecords(root, mergeState);
+  mergeState.records = buildTestRecords(
+    root,
+    mergeState,
+    undefined,
+    consistencyChecks
+  );
   const sequence = new RuleSequence(mergeState.records);
   const first = sequence.head;
   const second = sequence.nextOf(first);
@@ -101,30 +103,18 @@ function mergedAway() {
 }
 
 test('under consistency checks, reading the record of a rule whose declarations all merge away should throw', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    const { mergeState, first } = mergedAway();
-    // RuleSequence#replacePair unlinks a rule that no child remains in.
-    mergeState.records.unlink(first);
-    assert.throws(
-      () => mergeState.records.rule(first).declarationsOf(mergeState.records),
-      /does not reach/v
-    );
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
+  const { mergeState, first } = mergedAway(true);
+  // RuleSequence#replacePair unlinks a rule that no child remains in.
+  mergeState.records.unlink(first);
+  assert.throws(
+    () => mergeState.records.rule(first).declarationsOf(mergeState.records),
+    /does not reach/v
+  );
 });
 
 test('without consistency checks, reading the record of a rule whose declarations all merge away should not throw', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(false);
-  try {
-    const { mergeState, first } = mergedAway();
-    assert.doesNotThrow(() =>
-      mergeState.records.rule(first).declarationsOf(mergeState.records)
-    );
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
+  const { mergeState, first } = mergedAway(false);
+  assert.doesNotThrow(() =>
+    mergeState.records.rule(first).declarationsOf(mergeState.records)
+  );
 });

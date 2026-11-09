@@ -1,4 +1,3 @@
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import cssnanoUtils from '#utils';
 import { BlockRecords } from './blockRecords.js';
@@ -53,9 +52,10 @@ const PENDING_EDITS = 'a container has edits its child list does not show';
  * @return {BlockRecords}
  */
 export function buildRecords(root, context) {
-  const { textTable } = context;
+  const { textTable, consistencyChecks } = context;
   const records = new BlockRecords(
-    new BlockRecord(root, STYLESHEET, '', '', false, NO_PRELUDE)
+    new BlockRecord(root, STYLESHEET, '', '', false, NO_PRELUDE),
+    consistencyChecks
   );
   records.add(records.root);
   records.root.leadingWhitespace = root.first?.raws.before ?? null;
@@ -69,7 +69,7 @@ export function buildRecords(root, context) {
    */
   const fillChildren = (container) => {
     // The build reads the child lists, which a pending edit has not rebuilt yet.
-    if (consistencyChecksEnabled() && hasPendingEdits(container.node)) {
+    if (consistencyChecks && hasPendingEdits(container.node)) {
       throw new Error(PENDING_EDITS);
     }
     for (const child of /** @type {ChildNode[]} */ (container.node.nodes)) {

@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { test } from 'node:test';
 import postcss from 'postcss';
-import { enableConsistencyChecks } from '../../../src/passes/ir/consistencyChecks.js';
 import { mergePass, transformPass } from '../../../src/passes/merge/index.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 
@@ -10,8 +9,6 @@ import { resolveTargets } from '../../../src/utils/browserTargets.js';
 // The leading whitespace of the stylesheet belongs to its first child. Each
 // case below moves that child by a different edit, so the whitespace must be
 // handed on, or the output loses or doubles it.
-before(() => enableConsistencyChecks(true));
-after(() => enableConsistencyChecks(false));
 
 /**
  * @param {string} css

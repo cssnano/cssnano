@@ -11,6 +11,7 @@ export type RunContext = {
     createdBlocks: Set<Container> | null;
     selectorCompatibility: Map<string, SelectorInfo>;
     textTable: TextTable;
+    consistencyChecks: boolean;
 };
 /** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
 /** @import {Container} from 'postcss' */
@@ -25,6 +26,7 @@ export type RunContext = {
  *   createdBlocks: Set<Container> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
  *   textTable: TextTable,
+ *   consistencyChecks: boolean,
  * }} RunContext
  */
 /**
@@ -33,7 +35,8 @@ export type RunContext = {
  * host walk left, which the run reads.
  *
  * @param {TextTable} [textTable]
+ * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {RunContext}
  */
-export declare function createRunContext(textTable?: TextTable): RunContext;
+export declare function createRunContext(textTable?: TextTable, consistencyChecks?: boolean): RunContext;
 //# sourceMappingURL=runContext.d.ts.map

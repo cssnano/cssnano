@@ -2,7 +2,7 @@ import {
   blocks,
   containers,
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
-import { after, before, test } from 'node:test';
+import { test } from 'node:test';
 import { buildTestRecords } from './liveRecords.js';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
@@ -11,7 +11,7 @@ import { sameContainer } from '../../../../../src/passes/merge/lib/rules/sameCon
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { assertContextsCurrent } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
+import { TextTable } from '../../../../../src/values/textTable.js';
 import { random } from '../../../../../../../util/fuzzRng.js';
 
 /** @import {AnyNode, AtRule, Rule} from 'postcss' */
@@ -21,9 +21,6 @@ import { random } from '../../../../../../../util/fuzzRng.js';
 /** @import {TextTable} from '../../../../../src/values/textTable.js' */
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
-
-before(() => enableConsistencyChecks(true));
-after(() => enableConsistencyChecks(false));
 
 /**
  * The definition of one container: equal at-rule names under ASCII case
@@ -82,8 +79,16 @@ function sameChain(records, a, b, textTable) {
  * @return {MergeState}
  */
 function stateOf(css) {
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildTestRecords(postcss.parse(css), state);
+  const state = new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, true)
+  );
+  state.records = buildTestRecords(
+    postcss.parse(css),
+    state,
+    new TextTable(),
+    true
+  );
   return state;
 }
 

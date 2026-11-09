@@ -11,9 +11,8 @@ import {
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { test } from 'node:test';
 import postcss from 'postcss';
-import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
@@ -25,12 +24,10 @@ import {
 } from './liveRecords.js';
 import { adopt } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {Container, Root, Rule} from 'postcss' */
-
-before(() => enableConsistencyChecks(true));
-after(() => enableConsistencyChecks(false));
 
 /**
  * @param {string} css
@@ -38,8 +35,11 @@ after(() => enableConsistencyChecks(false));
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildTestRecords(root, state);
+  const state = new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, true)
+  );
+  state.records = buildTestRecords(root, state, new TextTable(), true);
   return { root, records: state.records };
 }
 

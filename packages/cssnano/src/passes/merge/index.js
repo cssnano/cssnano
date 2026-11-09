@@ -13,7 +13,6 @@ import { buildRecords } from './lib/rules/treeEdits.js';
 import { guardWindow } from './lib/rules/windowGuard.js';
 import { assertRecordsMatchTree, writeBack } from './lib/rules/writeBack.js';
 import { createRunContext } from '../ir/runContext.js';
-import { consistencyChecksEnabled } from '../ir/consistencyChecks.js';
 import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
 
@@ -131,7 +130,7 @@ function runFirstRound(css, support, blocks, textTable, reached) {
  */
 function runRecords(css, browsers, context, transforms) {
   const records = buildRecords(css, context);
-  const release = consistencyChecksEnabled()
+  const release = context.consistencyChecks
     ? guardWindow(records, context.textTable)
     : undefined;
   try {
@@ -166,6 +165,7 @@ const MERGE_ONLY = Object.freeze([runMerge]);
  * @param {TextTable} [textTable] the selector tokens the host walk left
  * @param {readonly (Rule | AtRule)[]} [reached] the rules and at-rules the host walk reached,
  *   in document order, so the pass need not walk the stylesheet to find them
+ * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {void}
  */
 export function mergePass(
@@ -174,9 +174,16 @@ export function mergePass(
   { rules = true } = {},
   _result,
   textTable,
-  reached
+  reached,
+  consistencyChecks
 ) {
-  runTransforms(css, browsers, rules, createRunContext(textTable), reached);
+  runTransforms(
+    css,
+    browsers,
+    rules,
+    createRunContext(textTable, consistencyChecks),
+    reached
+  );
 }
 
 /**
@@ -265,20 +272,35 @@ export default pluginCreator;
  * Each transform run alone, as the hook of its own plugin. They call the
  * library code directly, so a test can pin one transform without the preset.
  *
- * @type {Readonly<Record<'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge', (css: Root, browsers: readonly string[]) => void>>}
+ * @type {Readonly<Record<'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge', (css: Root, browsers: readonly string[], consistencyChecks?: boolean) => void>>}
  */
 const transformHooks = Object.freeze({
   mergeLonghand(css, browsers) {
     runFirstRound(css, targetSupportOf(browsers), undefined, new TextTable());
   },
-  discardDuplicates(css) {
-    runRecords(css, [], createRunContext(), DEDUPE_ONLY);
+  discardDuplicates(css, _browsers, consistencyChecks) {
+    runRecords(
+      css,
+      [],
+      createRunContext(undefined, consistencyChecks),
+      DEDUPE_ONLY
+    );
   },
-  mergeRules(css, browsers) {
-    runRecords(css, browsers, createRunContext(), MERGE_ONLY);
+  mergeRules(css, browsers, consistencyChecks) {
+    runRecords(
+      css,
+      browsers,
+      createRunContext(undefined, consistencyChecks),
+      MERGE_ONLY
+    );
   },
-  dedupeThenMerge(css, browsers) {
-    runRecords(css, browsers, createRunContext(), DEDUPE_THEN_MERGE);
+  dedupeThenMerge(css, browsers, consistencyChecks) {
+    runRecords(
+      css,
+      browsers,
+      createRunContext(undefined, consistencyChecks),
+      DEDUPE_THEN_MERGE
+    );
   },
 });
 
@@ -287,7 +309,7 @@ const transformHooks = Object.freeze({
  * merge pass, so each transform can be tested alone.
  *
  * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'} name
- * @return {(css: Root, browsers: readonly string[]) => void}
+ * @return {(css: Root, browsers: readonly string[], consistencyChecks?: boolean) => void}
  */
 export function transformPass(name) {
   return transformHooks[name];
@@ -298,9 +320,10 @@ export function transformPass(name) {
  * tested alone as its own plugin.
  *
  * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'} name
+ * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {import('postcss').PluginCreator<object>}
  */
-export function transformPlugin(name) {
+export function transformPlugin(name, consistencyChecks) {
   const hook = transformHooks[name];
   /** @type {import('postcss').PluginCreator<object>} */
   const creator = (opts = {}) => ({
@@ -313,7 +336,7 @@ export function transformPlugin(name) {
       return {
         /** @param {Root} css */
         OnceExit(css) {
-          hook(css, browsers);
+          hook(css, browsers, consistencyChecks);
         },
       };
     },

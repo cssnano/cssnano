@@ -1,4 +1,3 @@
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { isContainerKind } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 
@@ -25,7 +24,7 @@ const NOT_REACHED = 'a rule is read that the root does not reach';
  * @throws {Error} under checks, when `index` is not reached by the root
  */
 export function assertReached(records, index) {
-  if (!consistencyChecksEnabled()) return;
+  if (!records.consistencyChecks) return;
   // An index the arena did not give has no container, so the walk has no start.
   if (records.links.parentOf(index) === undefined) return;
   let at = index;
@@ -46,7 +45,7 @@ export function assertReached(records, index) {
  * @throws {Error} under checks, when the link would lose the entry
  */
 export function assertCanLink(records, block, index) {
-  if (!consistencyChecksEnabled()) return;
+  if (!records.consistencyChecks) return;
   assertReachesRoot(records, block);
   assertCanHold(records, block, index);
 }

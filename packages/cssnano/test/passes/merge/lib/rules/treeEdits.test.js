@@ -1,8 +1,7 @@
 import { childNodesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { test } from 'node:test';
 import postcss from 'postcss';
-import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
@@ -25,6 +24,7 @@ import {
   adopt,
   removeDeclarations,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 
@@ -32,8 +32,6 @@ import {
 
 // The records check the declarations they hold against the tree at each read,
 // so an edit that leaves a record stale throws here.
-before(() => enableConsistencyChecks(true));
-after(() => enableConsistencyChecks(false));
 
 /**
  * @param {string} css
@@ -41,8 +39,11 @@ after(() => enableConsistencyChecks(false));
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildTestRecords(root, state);
+  const state = new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, true)
+  );
+  state.records = buildTestRecords(root, state, new TextTable(), true);
   return { root, state };
 }
 

@@ -124,6 +124,33 @@
       }
     },
     {
+      "files": ["packages/cssnano/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          { "patterns": ["**/ir/consistencyChecks.js"] }
+        ]
+      }
+    },
+    {
+      "files": [
+        "packages/cssnano/src/passes/ir/runContext.js",
+        "packages/cssnano/script/passes/merge/enableChecks.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": ["packages/cssnano/test/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          { "patterns": ["**/ir/consistencyChecks.js", "**/enableChecks.js"] }
+        ]
+      }
+    },
+    {
       "files": [
         "packages/cssnano/src/passes/merge/lib/rules/blockLinks.js",
         "packages/cssnano/src/passes/merge/lib/rules/declarationStamps.js"
@@ -135,7 +162,8 @@
             "patterns": [
               "**/ruleRecord.js",
               "**/blockRecord.js",
-              "**/declarationRecord.js"
+              "**/declarationRecord.js",
+              "**/ir/consistencyChecks.js"
             ]
           }
         ]

@@ -3,7 +3,6 @@ import {
   mergeMatchingSelectors,
   mergeSharedDeclarations,
 } from './merge.js';
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { assertSweepLowers, sweepPotential } from './sweepPotential.js';
 import { earliestPairReaching } from './sharedRuleGroup.js';
 import RuleSequence from './ruleSequence.js';
@@ -241,7 +240,7 @@ export default function runScan(mergeState) {
         earliest
       );
     }
-    if (consistencyChecksEnabled()) {
+    if (mergeState.records.consistencyChecks) {
       let last = checkPlacedRules(sequence, first, replacement, -1);
       last = checkPlacedRules(sequence, second, replacement, last);
       for (const rules of following) {
@@ -254,7 +253,7 @@ export default function runScan(mergeState) {
   let moved;
   do {
     moved = false;
-    const before = consistencyChecksEnabled()
+    const before = mergeState.records.consistencyChecks
       ? sweepPotential(mergeState.records, null)
       : null;
     const sequence = new RuleSequence(mergeState.records);

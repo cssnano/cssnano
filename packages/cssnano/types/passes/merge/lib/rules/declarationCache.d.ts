@@ -64,6 +64,8 @@ export type RebuildCounts = {
  */
 export declare class DeclarationCache {
     #private;
+    /** @param {boolean} consistencyChecks */
+    constructor(consistencyChecks: boolean);
     /** @return {RebuildCounts} the rebuilds this cache ran, for tests and the perf file */
     get rebuilds(): RebuildCounts;
     /** Gives the next entry of the arena an empty cache. */

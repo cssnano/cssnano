@@ -1,5 +1,4 @@
 import { containers } from './blockChildren.js';
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { RuleRecord } from './ruleRecord.js';
@@ -82,7 +81,7 @@ function checkBlockStructure(records, block) {
  * @return {void}
  */
 export function assertRecordsWellFormed(mergeState) {
-  if (!consistencyChecksEnabled()) return;
+  if (!mergeState.records.consistencyChecks) return;
   const { records } = mergeState;
   // Runs first: a cycle in the chains would loop the structure walk below.
   assertOwnershipIsTree(records);
@@ -144,7 +143,7 @@ export function assertOwnershipIsTree(records) {
  * @return {void}
  */
 export function assertContextsCurrent(mergeState) {
-  if (!consistencyChecksEnabled()) return;
+  if (!mergeState.records.consistencyChecks) return;
   const { records, declarationIds } = mergeState;
   for (const block of containers(records)) {
     const holder = records.enclosingContainer(block.index);

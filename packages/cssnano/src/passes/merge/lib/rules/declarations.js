@@ -1,4 +1,3 @@
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { PropertyWrites } from './propertyWrites.js';
 import { Claims, WritePositions } from './writePositions.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
@@ -141,7 +140,7 @@ function filterRound(
     }
     outside.record(declaration.keys, index);
   }
-  if (consistencyChecksEnabled() && cursor !== -1) {
+  if (cursor !== -1) {
     throw new Error('filterRound: a candidate is not in the earlier rule');
   }
 

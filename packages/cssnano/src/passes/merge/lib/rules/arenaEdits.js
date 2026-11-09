@@ -4,8 +4,6 @@ import {
   nextDeclaration,
 } from './blockChildren.js';
 
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
@@ -103,7 +101,7 @@ export function appendChild(records, rule, child) {
  * @return {void}
  */
 export function removeDeclarations(records, rule, claimed) {
-  if (consistencyChecksEnabled()) assertChildrenOf(records, rule, claimed);
+  if (records.consistencyChecks) assertChildrenOf(records, rule, claimed);
   for (const index of claimed) records.unlink(index);
 }
 
@@ -119,7 +117,7 @@ export function removeDeclarations(records, rule, claimed) {
  * @return {void}
  */
 export function moveDeclarations(records, source, target, claimed) {
-  if (consistencyChecksEnabled()) assertMovesInOrder(records, source, claimed);
+  if (records.consistencyChecks) assertMovesInOrder(records, source, claimed);
   const receiving = /** @type {RuleRecord} */ (records.rule(target));
   for (const index of claimed) {
     records.unlink(index);

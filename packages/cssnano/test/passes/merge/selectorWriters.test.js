@@ -12,8 +12,6 @@ const { buildRecords, removeRules, takePlaceOf } =
   await import('../../../src/passes/merge/lib/rules/treeEdits.js');
 const { assertRecordsMatchTree, writeBack } =
   await import('../../../src/passes/merge/lib/rules/writeBack.js');
-const { consistencyChecksEnabled, enableConsistencyChecks } =
-  await import('../../../src/passes/ir/consistencyChecks.js');
 const { createRunContext } =
   await import('../../../src/passes/ir/runContext.js');
 const { resolveTargets } = await import('../../../src/utils/browserTargets.js');
@@ -199,9 +197,12 @@ suite('the merge pass writes selectors through its records', () => {
  *
  * @param {string} css
  */
-function whitespaceRecordsOf(css) {
+function whitespaceRecordsOf(css, consistencyChecks = false) {
   const root = postcss.parse(css);
-  const records = buildRecords(root, createRunContext(new TextTable()));
+  const records = buildRecords(
+    root,
+    createRunContext(new TextTable(), consistencyChecks)
+  );
   return { root, records };
 }
 
@@ -222,8 +223,11 @@ test('write-back gives a rule the whitespace its record holds, in the stylesheet
  * The records of two rules whose second record holds whitespace that no edit of
  * the children accompanies.
  */
-function recordEditedAlone() {
-  const { root, records } = whitespaceRecordsOf('a{color:red}\nb{color:blue}');
+function recordEditedAlone(consistencyChecks = false) {
+  const { root, records } = whitespaceRecordsOf(
+    'a{color:red}\nb{color:blue}',
+    consistencyChecks
+  );
   records.rule(
     records.links.nextSibling(records.links.firstChild(records.root.index))
   ).before = '\n\n';
@@ -239,14 +243,9 @@ test('write-back leaves the whitespace of a rule in a container it does not rebu
 });
 
 test('the consistency check reports a record whose whitespace write-back did not write', () => {
-  const { records } = recordEditedAlone();
-  const enabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    assert.throws(() => assertRecordsMatchTree(records));
-  } finally {
-    enableConsistencyChecks(enabled);
-  }
+  // The arena fixes its checks when it is built, so it is built under checks.
+  const { records } = recordEditedAlone(true);
+  assert.throws(() => assertRecordsMatchTree(records));
 });
 
 test('write-back gives a rule nested in an at-rule the whitespace its record holds', () => {

@@ -3,7 +3,7 @@ import {
   childEntriesOf,
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { test } from 'node:test';
 import postcss from 'postcss';
 import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
 import {
@@ -11,7 +11,6 @@ import {
   recordDeclaration,
 } from '../../../../../src/passes/ir/declarationRecord.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
-import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import {
@@ -23,9 +22,7 @@ import {
   declarationIds,
   ruleRecordOf,
 } from './liveRecords.js';
-
-before(() => enableConsistencyChecks(true));
-after(() => enableConsistencyChecks(false));
+import { TextTable } from '../../../../../src/values/textTable.js';
 
 /**
  * @param {string} css
@@ -34,7 +31,7 @@ after(() => enableConsistencyChecks(false));
 function setup(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120']);
-  state.records = buildTestRecords(root, state);
+  state.records = buildTestRecords(root, state, new TextTable(), true);
   return { root, state };
 }
 

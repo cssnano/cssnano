@@ -1,14 +1,10 @@
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
-import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
+import { test } from 'node:test';
 import {
   duplicateSiblingViolation,
   suites,
 } from '../../../../../script/passes/merge/duplicates/mutationSuites.js';
 import { generateDuplicateCases } from '../../../../../script/passes/merge/duplicates/generate.js';
-
-before(() => enableConsistencyChecks(true));
-after(() => enableConsistencyChecks(false));
 
 const SEEDS = Array.from({ length: 20 }, (_, i) => i + 1);
 const CASES_PER_SEED = 40;

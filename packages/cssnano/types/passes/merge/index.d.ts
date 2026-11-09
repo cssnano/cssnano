@@ -19,11 +19,12 @@ import type { AtRule, Root, Rule } from 'postcss';
  * @param {TextTable} [textTable] the selector tokens the host walk left
  * @param {readonly (Rule | AtRule)[]} [reached] the rules and at-rules the host walk reached,
  *   in document order, so the pass need not walk the stylesheet to find them
+ * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {void}
  */
 export declare function mergePass(css: Root, browsers: readonly string[], { rules }?: {
     rules?: boolean;
-}, _result?: unknown, textTable?: TextTable, reached?: readonly (Rule | AtRule)[]): void;
+}, _result?: unknown, textTable?: TextTable, reached?: readonly (Rule | AtRule)[], consistencyChecks?: boolean): void;
 /** The guard for the `rules` option, shared with the preset that validates it. */
 export declare const rulesGuard: Readonly<{
     isValid: typeof isBoolean;
@@ -48,15 +49,16 @@ export default pluginCreator;
  * merge pass, so each transform can be tested alone.
  *
  * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'} name
- * @return {(css: Root, browsers: readonly string[]) => void}
+ * @return {(css: Root, browsers: readonly string[], consistencyChecks?: boolean) => void}
  */
-export declare function transformPass(name: 'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'): (css: Root, browsers: readonly string[]) => void;
+export declare function transformPass(name: 'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'): (css: Root, browsers: readonly string[], consistencyChecks?: boolean) => void;
 /**
  * The creator of a pass that runs one transform, so each transform can be
  * tested alone as its own plugin.
  *
  * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'} name
+ * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {import('postcss').PluginCreator<object>}
  */
-export declare function transformPlugin(name: 'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge'): import('postcss').PluginCreator<object>;
+export declare function transformPlugin(name: 'mergeLonghand' | 'discardDuplicates' | 'mergeRules' | 'dedupeThenMerge', consistencyChecks?: boolean): import('postcss').PluginCreator<object>;
 //# sourceMappingURL=index.d.ts.map

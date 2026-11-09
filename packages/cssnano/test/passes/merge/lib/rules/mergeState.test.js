@@ -6,10 +6,6 @@ import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rule
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
-  consistencyChecksEnabled,
-  enableConsistencyChecks,
-} from '../../../../../src/passes/ir/consistencyChecks.js';
-import {
   buildTestRecords,
   declarationIds,
   ruleRecordOf,
@@ -17,7 +13,11 @@ import {
 import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
-const createState = () => new MergeState(['chrome 120'], createRunContext());
+const createState = (consistencyChecks = false) =>
+  new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, consistencyChecks)
+  );
 
 /**
  * Gives the rules of `root` their slots, as the merge does before it joins any.
@@ -26,8 +26,8 @@ const createState = () => new MergeState(['chrome 120'], createRunContext());
  * @param {import('postcss').Root} root
  * @return {import('postcss').Root}
  */
-const withRecords = (state, root) => {
-  state.records = buildTestRecords(root, state);
+const withRecords = (state, root, consistencyChecks = false) => {
+  state.records = buildTestRecords(root, state, undefined, consistencyChecks);
   return root;
 };
 
@@ -72,39 +72,35 @@ test('absorbEarlier should list the earlier rule selectors first', () => {
 });
 
 test('under consistency checks, a read of an earlier rule that absorbEarlier then unlinks should throw', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    const state = createState();
-    const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-    const record = ruleRecordOf(state.records, root.first);
-    state.absorbEarlier(
-      ruleRecordOf(state.records, root.last),
-      ruleRecordOf(state.records, root.first)
-    );
-    state.records.unlink(record.index);
-    assert.throws(() => state.records.rule(record.index), /does not reach/v);
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
+  const state = createState(true);
+  const root = withRecords(
+    state,
+    postcss.parse('a{color:red}b{color:red}'),
+    true
+  );
+  const record = ruleRecordOf(state.records, root.first);
+  state.absorbEarlier(
+    ruleRecordOf(state.records, root.last),
+    ruleRecordOf(state.records, root.first)
+  );
+  state.records.unlink(record.index);
+  assert.throws(() => state.records.rule(record.index), /does not reach/v);
 });
 
 test('without consistency checks, a read of an earlier rule that absorbEarlier then unlinks should not throw', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(false);
-  try {
-    const state = createState();
-    const root = withRecords(state, postcss.parse('a{color:red}b{color:red}'));
-    const record = ruleRecordOf(state.records, root.first);
-    state.absorbEarlier(
-      ruleRecordOf(state.records, root.last),
-      ruleRecordOf(state.records, root.first)
-    );
-    state.records.unlink(record.index);
-    assert.doesNotThrow(() => record.selectors);
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
+  const state = createState(false);
+  const root = withRecords(
+    state,
+    postcss.parse('a{color:red}b{color:red}'),
+    false
+  );
+  const record = ruleRecordOf(state.records, root.first);
+  state.absorbEarlier(
+    ruleRecordOf(state.records, root.last),
+    ruleRecordOf(state.records, root.first)
+  );
+  state.records.unlink(record.index);
+  assert.doesNotThrow(() => record.selectors);
 });
 
 test('absorbEarlier should leave the record of the later rule readable', () => {
@@ -235,50 +231,36 @@ test('canMerge should keep accepting a rule after declarations join it', () => {
 });
 
 test('assertRecordsMatchTree should throw when a declaration left the rule without a tree edit', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    const state = createState();
-    const root = withRecords(state, postcss.parse('a{color:red;width:1px}'));
-    /** @type {import('postcss').Rule} */ (root.first).first?.remove();
-    assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
+  const state = createState(true);
+  const root = withRecords(
+    state,
+    postcss.parse('a{color:red;width:1px}'),
+    true
+  );
+  /** @type {import('postcss').Rule} */ (root.first).first?.remove();
+  assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
 });
 
 test('under consistency checks, blockOf should throw for an unlinked record, since its rule stands in no block', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    const state = createState();
-    const root = withRecords(state, postcss.parse('a{color:red}'));
-    const record = ruleRecordOf(
-      state.records,
-      /** @type {import('postcss').Rule} */ (root.first)
-    );
-    state.records.unlink(record.index);
-    assert.throws(() => state.blockOf(record), /does not reach/v);
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
+  const state = createState(true);
+  const root = withRecords(state, postcss.parse('a{color:red}'), true);
+  const record = ruleRecordOf(
+    state.records,
+    /** @type {import('postcss').Rule} */ (root.first)
+  );
+  state.records.unlink(record.index);
+  assert.throws(() => state.blockOf(record), /does not reach/v);
 });
 
 test('without consistency checks, blockOf should not throw for an unlinked record', () => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(false);
-  try {
-    const state = createState();
-    const root = withRecords(state, postcss.parse('a{color:red}'));
-    const record = ruleRecordOf(
-      state.records,
-      /** @type {import('postcss').Rule} */ (root.first)
-    );
-    state.records.unlink(record.index);
-    assert.doesNotThrow(() => state.blockOf(record));
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
+  const state = createState(false);
+  const root = withRecords(state, postcss.parse('a{color:red}'), false);
+  const record = ruleRecordOf(
+    state.records,
+    /** @type {import('postcss').Rule} */ (root.first)
+  );
+  state.records.unlink(record.index);
+  assert.doesNotThrow(() => state.blockOf(record));
 });
 
 const declarationsOf = (css) => postcss.parse(css).first.nodes;

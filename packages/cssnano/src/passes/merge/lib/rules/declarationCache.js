@@ -1,4 +1,3 @@
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { PropertyWrites } from './propertyWrites.js';
 
@@ -46,6 +45,14 @@ export class DeclarationCache {
   /** @type {number[]} the declaration stamp each entry was built at, -1 before the first build */
   #builtAt = [];
 
+  /** @type {boolean} whether a cached answer is compared with a fresh walk, fixed at construction */
+  #checks;
+
+  /** @param {boolean} consistencyChecks */
+  constructor(consistencyChecks) {
+    this.#checks = consistencyChecks;
+  }
+
   /** @type {RebuildCounts} the rebuilds each reader ran */
   #rebuilds = {
     keys: { rebuilds: 0, walked: 0 },
@@ -92,7 +99,7 @@ export class DeclarationCache {
       count.rebuilds++;
       count.walked += entry.kept.length;
       entry.writes = writesOfKept(records, entry.kept);
-    } else if (consistencyChecksEnabled()) {
+    } else if (this.#checks) {
       assertWritesFresh(records, entry);
     }
     return /** @type {ReceivingDeclarations} */ (entry);
@@ -129,7 +136,7 @@ export class DeclarationCache {
       }
       this.#entries[index] = { kept, keySet, writes: undefined };
       this.#builtAt[index] = stamp;
-    } else if (consistencyChecksEnabled()) {
+    } else if (this.#checks) {
       assertKeysFresh(
         records,
         index,

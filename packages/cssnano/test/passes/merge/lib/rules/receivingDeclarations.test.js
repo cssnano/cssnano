@@ -1,10 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import {
-  consistencyChecksEnabled,
-  enableConsistencyChecks,
-} from '../../../../../src/passes/ir/consistencyChecks.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { PropertyWrites } from '../../../../../src/passes/merge/lib/rules/propertyWrites.js';
@@ -25,10 +21,13 @@ import { buildTestRecords, ruleRecordOf } from './liveRecords.js';
  * @param {string} css
  * @return {{state: MergeState, records: BlockRecords, record: RuleRecord}}
  */
-const arenaOf = (css) => {
+const arenaOf = (css, consistencyChecks = false) => {
   const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildTestRecords(root, state);
+  const state = new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, consistencyChecks)
+  );
+  state.records = buildTestRecords(root, state, undefined, consistencyChecks);
   const { records } = state;
   return { state, records, record: ruleRecordOf(records, root.first) };
 };
@@ -46,20 +45,6 @@ const freshDeclaration = ({ state, records }, prop) =>
     state.properties,
     state.declarationIds
   );
-
-/**
- * @param {() => void} action
- * @return {void}
- */
-const underChecks = (action) => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    action();
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
-};
 
 test('receivingDeclarations should return the same entry after appendChild, with the appended declaration last in kept and its write at its position', () => {
   const arena = arenaOf('a{color:red}');
@@ -100,16 +85,14 @@ test('receivingDeclarations should build the writes of an entry that declaration
 });
 
 test('receivingDeclarations should throw out of step under checks when the writes miss a declaration of the rule', () => {
-  const { records, record } = arenaOf('a{color:red;width:1px}');
+  const { records, record } = arenaOf('a{color:red;width:1px}', true);
   const [color] = record.declarationsOf(records);
   const entry = receivingDeclarations(records, record.index);
   // The writes name only `color`, as if the append of `width` missed them.
   entry.writes = new PropertyWrites();
   entry.writes.record(color.keys, 0);
-  underChecks(() =>
-    assert.throws(
-      () => receivingDeclarations(records, record.index),
-      /out of step/v
-    )
+  assert.throws(
+    () => receivingDeclarations(records, record.index),
+    /out of step/v
   );
 });

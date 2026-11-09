@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { test } from 'node:test';
 import postcss from 'postcss';
-import { enableConsistencyChecks } from '../../../src/passes/ir/consistencyChecks.js';
 import { mergePass, transformPlugin } from '../../../src/passes/merge/index.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 
@@ -267,9 +266,6 @@ test('mergePass joins an at-rule into an earlier one, then reads the earlier one
     '@media print{.x{color:blue}}.x{color:red}@media print{a{color:red;margin:0}b{width:1px}}b{margin-top:1px}c{}@media print{b{margin-top:1px}}'
   );
 });
-
-before(() => enableConsistencyChecks(true));
-after(() => enableConsistencyChecks(false));
 
 // Park-Miller generator: products stay below 2 ** 53, and the repository
 // forbids bitwise operators.

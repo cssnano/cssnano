@@ -1,5 +1,3 @@
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
-
 /** @import {ArenaIndex} from './blockRecord.js' */
 
 const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
@@ -22,6 +20,14 @@ const UNLINKED_SIBLING = 'a sibling is read for an entry that is unlinked';
 export class BlockLinks {
   /** @type {number[]} the container of each entry, -1 when it is linked nowhere */
   #parent = [];
+
+  /** @type {boolean} whether an unlinked sibling throws, fixed at construction */
+  #checks;
+
+  /** @param {boolean} consistencyChecks */
+  constructor(consistencyChecks) {
+    this.#checks = consistencyChecks;
+  }
 
   /** @type {number[]} the entry before each entry in its chain, -1 at the start */
   #prev = [];
@@ -220,7 +226,7 @@ export class BlockLinks {
    * @throws {Error} under checks, when `index` is linked nowhere
    */
   #assertLinked(index) {
-    if (consistencyChecksEnabled() && this.#parent[index] === -1) {
+    if (this.#checks && this.#parent[index] === -1) {
       throw new Error(UNLINKED_SIBLING);
     }
   }

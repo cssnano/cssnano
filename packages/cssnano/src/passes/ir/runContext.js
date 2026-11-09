@@ -2,6 +2,7 @@ import { DeclarationKeys } from './declarationKey.js';
 import { PropertyTable } from './propertyTable.js';
 import { SelectorIds } from './selectorIds.js';
 import { TextTable } from '../../values/textTable.js';
+import { consistencyChecksEnabled } from './consistencyChecks.js';
 
 /** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
 /** @import {Container} from 'postcss' */
@@ -17,6 +18,7 @@ import { TextTable } from '../../values/textTable.js';
  *   createdBlocks: Set<Container> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
  *   textTable: TextTable,
+ *   consistencyChecks: boolean,
  * }} RunContext
  */
 
@@ -26,9 +28,13 @@ import { TextTable } from '../../values/textTable.js';
  * host walk left, which the run reads.
  *
  * @param {TextTable} [textTable]
+ * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {RunContext}
  */
-export function createRunContext(textTable = new TextTable()) {
+export function createRunContext(
+  textTable = new TextTable(),
+  consistencyChecks = consistencyChecksEnabled()
+) {
   return {
     properties: new PropertyTable(),
     declarations: new DeclarationKeys(),
@@ -36,5 +42,6 @@ export function createRunContext(textTable = new TextTable()) {
     createdBlocks: null,
     selectorCompatibility: new Map(),
     textTable,
+    consistencyChecks,
   };
 }

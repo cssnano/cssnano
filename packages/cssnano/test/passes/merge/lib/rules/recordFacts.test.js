@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import {
   COMMENT,
   CONDITIONAL_GROUP,
@@ -22,9 +21,7 @@ import {
   entryOf,
   ruleRecordOf,
 } from './liveRecords.js';
-
-before(() => enableConsistencyChecks(true));
-after(() => enableConsistencyChecks(false));
+import { TextTable } from '../../../../../src/values/textTable.js';
 
 /**
  * The records of `css`, with the first child of the stylesheet and the root.
@@ -34,8 +31,11 @@ after(() => enableConsistencyChecks(false));
  */
 function recordsOf(css) {
   const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildTestRecords(root, state);
+  const state = new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, true)
+  );
+  state.records = buildTestRecords(root, state, new TextTable(), true);
   return { root, records: state.records };
 }
 
@@ -157,8 +157,11 @@ function recordsOfBuiltTree() {
     postcss.atRule({ name: 'import', params: '"x.css"' }),
     postcss.comment({ text: 'c' })
   );
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildTestRecords(root, state);
+  const state = new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, true)
+  );
+  state.records = buildTestRecords(root, state, new TextTable(), true);
   return { root, records: state.records };
 }
 

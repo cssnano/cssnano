@@ -1,14 +1,11 @@
 import assert from 'node:assert/strict';
-import { after, before, test } from 'node:test';
+import { test } from 'node:test';
 import postcss from 'postcss';
-import { enableConsistencyChecks } from '../../../src/passes/ir/consistencyChecks.js';
 import { mergePass } from '../../../src/passes/merge/index.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 
 // The merged records check their declarations against the tree at each read,
 // so a record left stale by the handoff throws during the pass.
-before(() => enableConsistencyChecks(true));
-after(() => enableConsistencyChecks(false));
 
 // In the joined @media (y), the forward pass moves the `a` rule down past the
 // first @media (z), so the backward pass hands the second @media (z) up to the

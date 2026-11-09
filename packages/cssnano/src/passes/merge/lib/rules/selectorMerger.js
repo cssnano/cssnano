@@ -5,7 +5,6 @@ import {
   assertNoOverDuplication,
   tallyDeclarations,
 } from './overDuplication.js';
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import {
   assertContextsCurrent,
   assertRecordsWellFormed,
@@ -38,7 +37,7 @@ export default function runMerge(records, browsers, context) {
   const mergeState = new MergeState(browsers, context);
   mergeState.records = records;
   // What dedupe left is the input the over-duplication check compares with.
-  const input = consistencyChecksEnabled() ? tallyDeclarations(records) : null;
+  const input = records.consistencyChecks ? tallyDeclarations(records) : null;
   const { maxRounds } = records;
   let joined;
   let rounds = 0;

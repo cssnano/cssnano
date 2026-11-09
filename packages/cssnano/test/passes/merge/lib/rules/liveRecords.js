@@ -107,18 +107,25 @@ export function claimAt(records, rule, positions) {
 /**
  * The records of `root` built the way the driver builds them, from the run
  * state of a test's merge state. The text table holds the tokens a test stored,
- * and is empty by default.
+ * and is empty by default. The checks are off unless a test turns them on.
  *
  * @param {import('postcss').Root} root
  * @param {MergeState} state
  * @param {TextTable} [textTable]
+ * @param {boolean} [consistencyChecks]
  * @return {BlockRecords}
  */
-export function buildTestRecords(root, state, textTable = new TextTable()) {
+export function buildTestRecords(
+  root,
+  state,
+  textTable = new TextTable(),
+  consistencyChecks = false
+) {
   return buildRecords(root, {
     textTable,
     declarations: state.declarationIds,
     properties: state.properties,
+    consistencyChecks,
   });
 }
 

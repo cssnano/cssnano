@@ -8,13 +8,13 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import {
-  consistencyChecksEnabled,
-  enableConsistencyChecks,
-} from '../../../../../src/passes/ir/consistencyChecks.js';
 import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 
-const createState = () => new MergeState(['chrome 120'], createRunContext());
+const createState = (consistencyChecks = false) =>
+  new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, consistencyChecks)
+  );
 
 /**
  * Builds the records of `css` and absorbs the first rule into the last, then
@@ -22,10 +22,11 @@ const createState = () => new MergeState(['chrome 120'], createRunContext());
  *
  * @param {MergeState} state
  * @param {string} css
+ * @param {boolean} consistencyChecks whether the records check their reads
  */
-function unreachedRecord(state, css) {
+function unreachedRecord(state, css, consistencyChecks) {
   const root = postcss.parse(css);
-  state.records = buildTestRecords(root, state);
+  state.records = buildTestRecords(root, state, undefined, consistencyChecks);
   const record = ruleRecordOf(state.records, root.first);
   state.absorbEarlier(
     ruleRecordOf(state.records, root.last),
@@ -35,82 +36,52 @@ function unreachedRecord(state, css) {
   return record;
 }
 
-/**
- * Runs `read` with consistency checks set to `on`, then restores them.
- *
- * @param {boolean} on
- * @param {() => void} read
- */
-function withChecks(on, read) {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(on);
-  try {
-    read();
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
-}
-
 test('holdsOnlyDeclarationsOf should be true for a rule of two identical declarations that share one id', () => {
-  withChecks(false, () => {
-    const state = createState();
-    const root = postcss.parse('a{color:red;color:red}');
-    state.records = buildTestRecords(root, state);
-    const record = ruleRecordOf(state.records, root.first);
-    assert.equal(holdsOnlyDeclarationsOf(state.records, record.index), true);
-  });
+  const state = createState(false);
+  const root = postcss.parse('a{color:red;color:red}');
+  state.records = buildTestRecords(root, state, undefined, false);
+  const record = ruleRecordOf(state.records, root.first);
+  assert.equal(holdsOnlyDeclarationsOf(state.records, record.index), true);
 });
 
 test('declarationKeys should return the keys of an unreached rule without checks', () => {
-  withChecks(false, () => {
-    const state = createState();
-    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
-    assert.doesNotThrow(() => declarationKeys(state.records, record.index));
-  });
+  const state = createState(false);
+  const record = unreachedRecord(state, 'a{color:red}b{color:red}', false);
+  assert.doesNotThrow(() => declarationKeys(state.records, record.index));
 });
 
 test('declarationKeys should throw for an unreached rule under checks', () => {
-  withChecks(true, () => {
-    const state = createState();
-    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
-    assert.throws(
-      () => declarationKeys(state.records, record.index),
-      /does not reach/v
-    );
-  });
+  const state = createState(true);
+  const record = unreachedRecord(state, 'a{color:red}b{color:red}', true);
+  assert.throws(
+    () => declarationKeys(state.records, record.index),
+    /does not reach/v
+  );
 });
 
 test('childCountOf should return the child count of an unreached rule without checks', () => {
-  withChecks(false, () => {
-    const state = createState();
-    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
-    assert.doesNotThrow(() => childCountOf(state.records, record.index));
-  });
+  const state = createState(false);
+  const record = unreachedRecord(state, 'a{color:red}b{color:red}', false);
+  assert.doesNotThrow(() => childCountOf(state.records, record.index));
 });
 
 test('childCountOf should throw for an unreached rule under checks', () => {
-  withChecks(true, () => {
-    const state = createState();
-    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
-    assert.throws(
-      () => childCountOf(state.records, record.index),
-      /does not reach/v
-    );
-  });
+  const state = createState(true);
+  const record = unreachedRecord(state, 'a{color:red}b{color:red}', true);
+  assert.throws(
+    () => childCountOf(state.records, record.index),
+    /does not reach/v
+  );
 });
 
 test('the selectors of an unreached rule should be readable without checks', () => {
-  withChecks(false, () => {
-    const state = createState();
-    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
-    assert.doesNotThrow(() => record.selectors);
-  });
+  const state = createState(false);
+  const record = unreachedRecord(state, 'a{color:red}b{color:red}', false);
+  assert.doesNotThrow(() => record.selectors);
 });
 
 test('the rule of an unreached record should throw under checks', () => {
-  withChecks(true, () => {
-    const state = createState();
-    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
-    assert.throws(() => state.records.rule(record.index), /does not reach/v);
-  });
+  const state = createState(true);
+  const record = unreachedRecord(state, 'a{color:red}b{color:red}', true);
+  assert.throws(() => state.records.rule(record.index), /does not reach/v);
 });

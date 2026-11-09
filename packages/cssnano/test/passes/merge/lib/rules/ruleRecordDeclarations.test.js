@@ -2,10 +2,6 @@ import { childCountOf } from '../../../../../src/passes/merge/lib/rules/blockChi
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import {
-  consistencyChecksEnabled,
-  enableConsistencyChecks,
-} from '../../../../../src/passes/ir/consistencyChecks.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
@@ -36,10 +32,13 @@ import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/decla
  * @param {string} css
  * @return {{records: BlockRecords, rule: import('postcss').Rule, record: RuleRecord}}
  */
-const arenaOf = (css) => {
+const arenaOf = (css, consistencyChecks = false) => {
   const root = postcss.parse(css);
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildTestRecords(root, state);
+  const state = new MergeState(
+    ['chrome 120'],
+    createRunContext(undefined, consistencyChecks)
+  );
+  state.records = buildTestRecords(root, state, undefined, consistencyChecks);
   const { records } = state;
   return {
     state,
@@ -62,21 +61,6 @@ const mergedRule = (records) => {
   return rule;
 };
 
-/**
- * Runs `action` with consistency checks on, then restores the setting.
- *
- * @param {() => void} action
- */
-const underChecks = (action) => {
-  const wasEnabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    action();
-  } finally {
-    enableConsistencyChecks(wasEnabled);
-  }
-};
-
 test('removeDeclarations should keep the comment that a rule holds', () => {
   const { records, record } = arenaOf('a{color:red;/* note */width:1px}');
   removeDeclarations(records, record.index, claimAt(records, record, [0]));
@@ -94,11 +78,9 @@ test('removeDeclarations should leave the nodes of a rule holding a comment as t
 });
 
 test('removeDeclarations should keep the declarations in step with the children under consistency checks', () => {
-  underChecks(() => {
-    const { records, record } = arenaOf('a{color:red;/* note */width:1px}');
-    removeDeclarations(records, record.index, claimAt(records, record, [0]));
-    assert.equal(record.declarationsOf(records).length, 1);
-  });
+  const { records, record } = arenaOf('a{color:red;/* note */width:1px}', true);
+  removeDeclarations(records, record.index, claimAt(records, record, [0]));
+  assert.equal(record.declarationsOf(records).length, 1);
 });
 
 test('removeDeclarations should drop the keys of the removed declarations from the declaration keys', () => {
@@ -109,12 +91,13 @@ test('removeDeclarations should drop the keys of the removed declarations from t
 });
 
 test('removeDeclarations should throw under checks for an index that a previous removal already took', () => {
-  underChecks(() => {
-    const { records, record } = arenaOf('a{color:red;width:1px;height:2px}');
-    const claim = claimAt(records, record, [1]);
-    removeDeclarations(records, record.index, claim);
-    assert.throws(() => removeDeclarations(records, record.index, claim));
-  });
+  const { records, record } = arenaOf(
+    'a{color:red;width:1px;height:2px}',
+    true
+  );
+  const claim = claimAt(records, record, [1]);
+  removeDeclarations(records, record.index, claim);
+  assert.throws(() => removeDeclarations(records, record.index, claim));
 });
 
 test('removeDeclarations should remove the claimed declarations by index, whatever the positions became', () => {
@@ -143,17 +126,18 @@ test("moveDeclarations should keep the claimed declarations in their order in th
 });
 
 test('moveDeclarations should throw under checks for two indices of one rule in reverse chain order', () => {
-  underChecks(() => {
-    const { records, record } = arenaOf('a{color:red;width:1px;height:2px}');
-    const target = mergedRule(records);
-    const [color, , height] = record.declarationsOf(records);
-    assert.throws(() =>
-      moveDeclarations(records, record.index, target.index, [
-        height.index,
-        color.index,
-      ])
-    );
-  });
+  const { records, record } = arenaOf(
+    'a{color:red;width:1px;height:2px}',
+    true
+  );
+  const target = mergedRule(records);
+  const [color, , height] = record.declarationsOf(records);
+  assert.throws(() =>
+    moveDeclarations(records, record.index, target.index, [
+      height.index,
+      color.index,
+    ])
+  );
 });
 
 test('moveDeclarations should leave the taken declaration nodes in the rule until write-back', () => {

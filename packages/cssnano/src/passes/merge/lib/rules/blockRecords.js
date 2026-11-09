@@ -6,7 +6,6 @@ import {
   DeclarationRecord,
   recordDeclaration,
 } from '../../../ir/declarationRecord.js';
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockLinks } from './blockLinks.js';
 import { DeclarationStamps } from './declarationStamps.js';
 import { DeclarationCache } from './declarationCache.js';
@@ -35,10 +34,13 @@ export class BlockRecords {
   #entries = [];
 
   /** @type {BlockLinks} the chains of the blocks, which only this arena edits */
-  #links = new BlockLinks();
+  #links;
 
   /** @type {LinkReader} the chains of the blocks, read here and edited through this arena */
-  links = this.#links;
+  links;
+
+  /** @type {boolean} whether reads and edits check the tree, fixed by the run */
+  consistencyChecks;
 
   /** @type {number} the entries the build made, set by `settle` */
   #built = 0;
@@ -50,10 +52,10 @@ export class BlockRecords {
   declarationStamps = this.#declarationStamps;
 
   /** @type {DeclarationCache} the declaration ids of each container, rebuilt from the chain when stale */
-  #declarations = new DeclarationCache();
+  #declarations;
 
   /** @type {DeclarationCacheReader} the declaration ids, read here and extended through this arena */
-  declarations = this.#declarations;
+  declarations;
 
   /**
    * The most rounds a run may take before it throws. Set from the counts of
@@ -65,9 +67,15 @@ export class BlockRecords {
 
   /**
    * @param {BlockRecord} root the record of the stylesheet
+   * @param {boolean} consistencyChecks whether the arena and its tables check their reads and edits
    */
-  constructor(root) {
+  constructor(root, consistencyChecks) {
     this.root = root;
+    this.consistencyChecks = consistencyChecks;
+    this.#links = new BlockLinks(consistencyChecks);
+    this.links = this.#links;
+    this.#declarations = new DeclarationCache(consistencyChecks);
+    this.declarations = this.#declarations;
   }
 
   /**
@@ -150,7 +158,7 @@ export class BlockRecords {
     const entry = this.#entries[index];
     if (
       index !== -1 &&
-      consistencyChecksEnabled() &&
+      this.consistencyChecks &&
       !(entry instanceof BlockRecord)
     ) {
       throw new Error('a block is read at an entry that is not a block');
@@ -168,7 +176,7 @@ export class BlockRecords {
     const entry = this.#entries[index];
     const isContainer =
       entry instanceof BlockRecord || entry instanceof RuleRecord;
-    if (index !== -1 && consistencyChecksEnabled() && !isContainer) {
+    if (index !== -1 && this.consistencyChecks && !isContainer) {
       throw new Error(
         'a container is read at an entry that is neither a block nor a rule'
       );
@@ -189,7 +197,7 @@ export class BlockRecords {
    * @param {number} index an index that `recordRule` gave; under checks, throws when the root does not reach it
    */
   rule(index) {
-    if (consistencyChecksEnabled()) assertReached(this, index);
+    if (this.consistencyChecks) assertReached(this, index);
     return /** @type {RuleRecord | undefined} */ (this.#entries[index]);
   }
 

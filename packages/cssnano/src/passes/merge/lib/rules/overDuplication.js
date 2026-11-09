@@ -1,5 +1,4 @@
 import { firstDeclaration, nextDeclaration } from './blockChildren.js';
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
@@ -94,7 +93,7 @@ export function tallyDeclarations(records) {
  * @return {void}
  */
 export function assertNoOverDuplication(records, input) {
-  if (!consistencyChecksEnabled()) return;
+  if (!records.consistencyChecks) return;
   const written = tallyDeclarations(records);
   if (input === null) return;
   for (const [key, count] of written) {

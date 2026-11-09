@@ -33,6 +33,8 @@ export declare class BlockRecords {
     root: BlockRecord;
     /** @type {LinkReader} the chains of the blocks, read here and edited through this arena */
     links: LinkReader;
+    /** @type {boolean} whether reads and edits check the tree, fixed by the run */
+    consistencyChecks: boolean;
     /** @type {DeclarationStampReader} the declaration stamps, read here and moved through this arena */
     declarationStamps: DeclarationStampReader;
     /** @type {DeclarationCacheReader} the declaration ids, read here and extended through this arena */
@@ -46,8 +48,9 @@ export declare class BlockRecords {
     maxRounds: number;
     /**
      * @param {BlockRecord} root the record of the stylesheet
+     * @param {boolean} consistencyChecks whether the arena and its tables check their reads and edits
      */
-    constructor(root: BlockRecord);
+    constructor(root: BlockRecord, consistencyChecks: boolean);
     /**
      * Adds a block record to the arena, which gives it the next index.
      *

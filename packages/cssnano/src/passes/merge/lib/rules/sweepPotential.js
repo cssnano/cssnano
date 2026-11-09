@@ -1,4 +1,3 @@
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { declarationKeys } from './declarationCache.js';
@@ -64,7 +63,6 @@ export function sweepPotential(records, numbers) {
  * @return {void}
  */
 export function assertSweepLowers(before, after, moved) {
-  if (!consistencyChecksEnabled()) return;
   let change = 0;
   for (let index = 0; index < before.length && change === 0; index++) {
     change = after[index] - before[index];

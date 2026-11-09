@@ -1,9 +1,8 @@
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { buildTestRecords } from './liveRecords.js';
-import { after, before, test } from 'node:test';
+import { test } from 'node:test';
 import postcss from 'postcss';
-import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
@@ -11,11 +10,9 @@ import {
   assertRecordsMatchTree,
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {Container, Root} from 'postcss' */
-
-before(() => enableConsistencyChecks(true));
-after(() => enableConsistencyChecks(false));
 
 /**
  * @param {string} css
@@ -23,9 +20,9 @@ after(() => enableConsistencyChecks(false));
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const context = createRunContext();
+  const context = createRunContext(undefined, true);
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state);
+  state.records = buildTestRecords(root, state, new TextTable(), true);
   return { root, state };
 }
 
