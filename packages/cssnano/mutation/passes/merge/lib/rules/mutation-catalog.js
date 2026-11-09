@@ -104,8 +104,8 @@ export const mutations = [
   {
     name: 'a rule record skips the check of its declarations against the tree',
     target: source('writeBack.js'),
-    find: '        if (item.kind === DECLARATION && !describes(item)) {',
-    replace: '        if (false) {',
+    find: '!describesNode(item, records.nodeOf(item.index))',
+    replace: 'false',
   },
   {
     name: 'a removal of a rule that leaves it in its chain',

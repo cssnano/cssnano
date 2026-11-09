@@ -54,9 +54,9 @@ export const mutations = [
   {
     name: 'store the joined selector list as text, dropping its tokens',
     target: source('writeBack.js'),
-    find: '      textTable.write(record.node, list);\n      record.markStored();',
+    find: '      textTable.write(node, list);\n      record.markStored();',
     replace:
-      '      textTable.setText(record.node, tokensText(list));\n      record.markStored();',
+      '      textTable.setText(node, tokensText(list));\n      record.markStored();',
   },
   {
     name: 'store a clone or joined rule as text, dropping its tokens',

@@ -1,8 +1,8 @@
-import type { Declaration } from 'postcss';
+import type { ChildNode, Declaration } from 'postcss';
 import type { DeclarationKeys } from './declarationKey.js';
 import type { PropertyKeys, PropertyTable } from './propertyTable.js';
 import type { ArenaIndex } from '../merge/lib/rules/blockRecord.js';
-/** @import {Declaration} from 'postcss' */
+/** @import {ChildNode, Declaration} from 'postcss' */
 /** @import {DeclarationKeys} from './declarationKey.js' */
 /** @import {PropertyKeys, PropertyTable} from './propertyTable.js' */
 /** @import {ArenaIndex} from '../merge/lib/rules/blockRecord.js' */
@@ -50,6 +50,15 @@ export declare class DeclarationRecord {
      */
     constructor(node: Declaration, prop: string, value: string, important: boolean, keys: PropertyKeys, id: number);
 }
+/**
+ * Whether a declaration record describes the declaration node it stands for, in
+ * the facts a record keeps.
+ *
+ * @param {DeclarationRecord} record
+ * @param {ChildNode} node the node the record stands for
+ * @return {boolean}
+ */
+export declare function describesNode(record: DeclarationRecord, node: ChildNode): boolean;
 /**
  * The record of a declaration of the run's stylesheet.
  *

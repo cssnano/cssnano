@@ -14,8 +14,9 @@ import { comma } from '../../../../values/punctuationTokens.js';
 import { joinRanges } from '../../../../values/joinRanges.js';
 import { TextTable } from '../../../../values/textTable.js';
 import { tokensText } from '../../../../values/tokensText.js';
+import { describesNode } from '../../../ir/declarationRecord.js';
 
-/** @import {AtRule, ChildNode, Container} from 'postcss' */
+/** @import {AtRule, ChildNode, Container, Declaration, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, BlockRecord as Block, NodeEntry} from './blockRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
@@ -38,7 +39,9 @@ const STALE = 'stale declarations of a rule record';
  * @return {boolean}
  */
 function differs(records, block) {
-  const nodes = /** @type {ChildNode[]} */ (block.node.nodes);
+  const nodes = /** @type {ChildNode[]} */ (
+    /** @type {Container} */ (records.nodeOf(block.index)).nodes
+  );
   if (records.links.childCount(block.index) !== nodes.length) return true;
   let at = 0;
   for (
@@ -60,32 +63,17 @@ function isRuleOrAtRule(node) {
 }
 
 /**
- * Whether a declaration record describes the declaration node it stands for, in
- * the facts a record keeps.
- *
- * @param {DeclarationRecord} child
- * @return {boolean}
- */
-function describes(child) {
-  const { node } = child;
-  return (
-    child.prop === node.prop &&
-    child.value === node.value &&
-    child.important === (node.important === true)
-  );
-}
-
-/**
  * Throws when an at-rule record names another kind, name or prelude than the
  * at-rule the tree holds. The prelude id is not compared, since it counts the
  * raws too.
  *
+ * @param {BlockRecords} records
  * @param {Block | NodeEntry} entry
  * @return {void}
  */
-function checkAtRuleFacts(entry) {
-  if (entry.node.type !== 'atrule') return;
-  const node = /** @type {AtRule} */ (entry.node);
+function checkAtRuleFacts(records, entry) {
+  if (records.nodeOf(entry.index).type !== 'atrule') return;
+  const node = /** @type {AtRule} */ (records.nodeOf(entry.index));
   const name = asciiLowerCase(node.name);
   if (
     entry.atRuleKind !== atRuleKindOf(name) ||
@@ -106,7 +94,7 @@ function checkAtRuleFacts(entry) {
  * @return {void}
  */
 function checkRuleRecord(records, block, record) {
-  const rule = record.node;
+  const rule = /** @type {Rule} */ (records.nodeOf(record.index));
   if (records.links.parentOf(record.index) !== block.index) {
     throw new Error(OUT_OF_STEP);
   }
@@ -152,17 +140,20 @@ function checkBlockRecord(records, block) {
     if (item.kind === RULE) {
       checkRuleRecord(records, block, item);
     } else if (item.kind === STYLESHEET || item.kind === AT_RULE_BLOCK) {
-      checkAtRuleFacts(item);
+      checkAtRuleFacts(records, item);
       checkBlockRecord(records, item);
     } else {
       if (item.kind === COMMENT || item.kind === AT_RULE_STATEMENT) {
-        checkAtRuleFacts(item);
+        checkAtRuleFacts(records, item);
       }
       if (plain) {
-        if (item.kind === DECLARATION && !describes(item)) {
+        if (
+          item.kind === DECLARATION &&
+          !describesNode(item, records.nodeOf(item.index))
+        ) {
           throw new Error(STALE);
         }
-        if (records.nodeOf(entry).parent !== block.node) {
+        if (records.nodeOf(entry).parent !== records.nodeOf(block.index)) {
           throw new Error(OUT_OF_STEP);
         }
       }
@@ -257,22 +248,23 @@ function writeTemplateRaws(node, template) {
  * @return {void}
  */
 function writeSelector(record, records, textTable) {
+  const node = /** @type {Rule} */ (records.nodeOf(record.index));
   if (record.marked) {
     const list = record.tokens ?? joinedPieces(record);
     if (list === undefined) {
-      textTable.setText(record.node, record.selector);
+      textTable.setText(node, record.selector);
     } else {
-      textTable.write(record.node, list);
+      textTable.write(node, list);
       record.markStored();
     }
     if (record.template !== -1) {
       writeTemplateRaws(
-        record.node,
+        node,
         /** @type {import('postcss').Rule} */ (records.nodeOf(record.template))
       );
     }
   } else if (record.tokens !== undefined && !record.listStored) {
-    textTable.write(record.node, record.tokens);
+    textTable.write(node, record.tokens);
     record.markStored();
   }
 }
@@ -355,7 +347,7 @@ export function writeBack(
     if (differs(records, container)) {
       createChildNodes(records, container.index);
       rebuilt.push({
-        container: /** @type {Container} */ (container.node),
+        container: /** @type {Container} */ (records.nodeOf(container.index)),
         index: container.index,
         children: childNodesOf(records, container.index),
         leading:
@@ -374,7 +366,7 @@ export function writeBack(
           visit(record);
         } else if (records.links.isEdited(record.index)) {
           rebuilt.push({
-            container: /** @type {Container} */ (record.node),
+            container: /** @type {Container} */ (records.nodeOf(record.index)),
             index: record.index,
             children: childNodesOf(records, record.index),
             leading: null,
@@ -390,7 +382,8 @@ export function writeBack(
   replaceChildren(rebuilt);
   for (const { index } of rebuilt) writeBefore(records, index);
   // The first child of the stylesheet takes the leading whitespace last.
-  const first = records.root.node.first;
+  const root = /** @type {Container} */ (records.nodeOf(records.root.index));
+  const first = root.first;
   const { leadingWhitespace } = records.root;
   if (first && leadingWhitespace !== null) {
     first.raws.before = leadingWhitespace;

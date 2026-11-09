@@ -23,7 +23,7 @@ export const mutations = [
   {
     name: 'skip reporting the receiving block',
     target: source('blockRecords.js'),
-    find: '        reported.add(entry.node);\n',
+    find: '        reported.add(/** @type {Rule} */ (this.nodeOf(index)));\n',
     replace: '',
   },
 ];

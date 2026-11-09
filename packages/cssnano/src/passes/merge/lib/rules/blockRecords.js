@@ -388,7 +388,7 @@ export class BlockRecords {
     for (let index = this.#built; index < this.#entries.length; index++) {
       const entry = this.#entries[index];
       if (entry.kind === RULE && entry.hasNode) {
-        reported.add(entry.node);
+        reported.add(/** @type {Rule} */ (this.nodeOf(index)));
       }
     }
   }

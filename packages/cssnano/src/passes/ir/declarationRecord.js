@@ -1,4 +1,4 @@
-/** @import {Declaration} from 'postcss' */
+/** @import {ChildNode, Declaration} from 'postcss' */
 /** @import {DeclarationKeys} from './declarationKey.js' */
 /** @import {PropertyKeys, PropertyTable} from './propertyTable.js' */
 /** @import {ArenaIndex} from '../merge/lib/rules/blockRecord.js' */
@@ -54,6 +54,23 @@ export class DeclarationRecord {
     this.keys = keys;
     this.id = id;
   }
+}
+
+/**
+ * Whether a declaration record describes the declaration node it stands for, in
+ * the facts a record keeps.
+ *
+ * @param {DeclarationRecord} record
+ * @param {ChildNode} node the node the record stands for
+ * @return {boolean}
+ */
+export function describesNode(record, node) {
+  const declaration = /** @type {Declaration} */ (node);
+  return (
+    record.prop === declaration.prop &&
+    record.value === declaration.value &&
+    record.important === (declaration.important === true)
+  );
 }
 
 /**

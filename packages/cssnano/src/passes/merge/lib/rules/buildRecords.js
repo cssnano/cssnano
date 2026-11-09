@@ -66,10 +66,11 @@ export function buildRecords(root, context) {
    */
   const fillChildren = (container) => {
     // The build reads the child lists, which a pending edit has not rebuilt yet.
-    if (consistencyChecks && hasPendingEdits(container.node)) {
+    const node = /** @type {Container} */ (records.nodeOf(container.index));
+    if (consistencyChecks && hasPendingEdits(node)) {
       throw new Error(PENDING_EDITS);
     }
-    for (const child of /** @type {ChildNode[]} */ (container.node.nodes)) {
+    for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
         const source = sourceSelector(child);
