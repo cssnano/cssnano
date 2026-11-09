@@ -127,7 +127,7 @@ export declare class BlockRecords {
      */
     takeLinkOf(later: number, earlier: number): void;
     /**
-     * @return {number} the entries the arena holds, dropped and departed ones included
+     * @return {number} the entries the arena holds, dropped ones included
      */
     entryCount(): number;
     /**

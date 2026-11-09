@@ -11,6 +11,7 @@ import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockReco
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import {
+  appendToDeclarations,
   remove,
   removeRules,
   takePlaceOf,
@@ -171,6 +172,20 @@ test('remove should take an at-rule block out of the live entries', () => {
   const [, media] = /** @type {Container[]} */ (root.nodes);
   remove(state.records, blockRecordOf(state.records, media));
   assert.deepEqual(liveLabels(state), ['a', 'c']);
+});
+
+test('a rule that appendToDeclarations empties is readable until an edit unlinks it', () => {
+  const { root, state } = setup('a{color:red}b{width:1px}');
+  const [receiving, incoming] = /** @type {Rule[]} */ (root.nodes);
+  const incomingIndex = ruleRecordOf(state.records, incoming).index;
+  appendToDeclarations(
+    state,
+    ruleRecordOf(state.records, receiving).index,
+    incomingIndex
+  );
+  assert.equal(state.records.rule(incomingIndex)?.selectors[0], 'b');
+  remove(state.records, ruleRecordOf(state.records, incoming));
+  assert.throws(() => state.records.rule(incomingIndex), /does not reach/v);
 });
 
 test('removeRules of the first child should leave the rest as the live entries of the stylesheet', () => {

@@ -46,7 +46,7 @@ export declare function replaceChildren(rebuilt: Rebuilt[]): void;
  * children the records hold, as does each plain rule that an edit changed the
  * children of. A container that already matches keeps its child list, and so
  * does a plain rule that no edit touched. A record the root does not reach,
- * dropped or departed, keeps its node as it is, and a merged rule the root
+ * dropped, keeps its node as it is, and a merged rule the root
  * does not reach gets none.
  *
  * @param {BlockRecords} records

@@ -18,8 +18,9 @@ export const test = new URL(
   import.meta.url
 ).href;
 
-// Each mutant restores an exception that the link checks no longer have. The
-// fuzz oracles run without checks, so only the rules' tests judge these.
+// Each mutant is a link fault that leaves the output as it is: it restores an
+// exception the link checks no longer have, or leaves an emptied entry linked.
+// The fuzz oracles see neither, so only the rules' tests judge these.
 export const mutations = [
   {
     name: 'the reach check lets an entry linked nowhere pass again',
@@ -34,5 +35,11 @@ export const mutations = [
     find: '  let at = block;\n',
     replace:
       '  if (records.links.parentOf(block) === -1 && records.container(block)?.context === -1) return;\n  let at = block;\n',
+  },
+  {
+    name: 'a takePlaceOf that leaves the later entry in its chain',
+    target: source('blockLinks.js'),
+    find: '    this.unlink(later);\n',
+    replace: '',
   },
 ];

@@ -4,7 +4,6 @@ import postcss from 'postcss';
 import { enableConsistencyChecks } from '../../../../../src/passes/ir/consistencyChecks.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { mergeMatchingDeclarations } from '../../../../../src/passes/merge/lib/rules/merge.js';
 import {
   appendToDeclarations,
   removeRules,
@@ -152,7 +151,7 @@ test('an exchanged declaration ends with the receiving rule as parent when that 
   assert.equal(color.parent, b);
 });
 
-test('a departed rule leaves the tree at write-back', () => {
+test('a removed rule leaves the tree at write-back', () => {
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [a, b] = twoRules(root);
   const incoming = ruleRecordOf(state.records, a);
@@ -164,7 +163,7 @@ test('a departed rule leaves the tree at write-back', () => {
   assert.equal(a.parent, undefined);
 });
 
-test('a departed rule keeps its child array, since write-back does not empty it', () => {
+test('a removed rule keeps its child array, since write-back does not empty it', () => {
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [a, b] = twoRules(root);
   const receiving = ruleRecordOf(state.records, b);
@@ -181,24 +180,4 @@ test('a rule whose child points to another container fails the consistency check
   writeBack(state.records);
   /** @type {ChildNode} */ (a.first).parent = b;
   assert.throws(() => assertRecordsMatchTree(state.records));
-});
-
-test('a merge of rules with one selector departs the later rule', () => {
-  const { root, state } = setup('a{color:red}a{color:red}');
-  const [a, b] = twoRules(root);
-  const first = ruleRecordOf(state.records, a);
-  const second = ruleRecordOf(state.records, b);
-  mergeMatchingDeclarations(first, second, state);
-  assert.equal(second.departed, true);
-  assert.equal(first.departed, false);
-});
-
-test('a merge of rules with different selectors departs the earlier rule', () => {
-  const { root, state } = setup('a{color:red}b{color:red}');
-  const [a, b] = twoRules(root);
-  const first = ruleRecordOf(state.records, a);
-  const second = ruleRecordOf(state.records, b);
-  mergeMatchingDeclarations(first, second, state);
-  assert.equal(first.departed, true);
-  assert.equal(second.departed, false);
 });

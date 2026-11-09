@@ -110,28 +110,6 @@ test('no-cache-local accepts a rule read through its records', () => {
   assert.deepEqual(lintFixture('no-cache-local', 'passes.js'), []);
 });
 
-test('departed-under-checks reports an else branch, a ternary and a late early return', () => {
-  const found = lintFixture('departed-under-checks', 'reports.js');
-  assert.deepEqual(
-    found.map((diagnostic) => diagnostic.line),
-    [7, 12, 18]
-  );
-});
-
-test('departed-under-checks accepts reads guarded by a check', () => {
-  assert.deepEqual(lintFixture('departed-under-checks', 'passes.js'), []);
-});
-
-test('departed-under-checks reports a required file with no read of departed', () => {
-  const found = lintFixture('departed-under-checks', 'missing.js');
-  assert.deepEqual(found, [
-    {
-      line: 1,
-      message: `required site ${fixtures}/departed-under-checks/missing.js is missing`,
-    },
-  ]);
-});
-
 test('the repository config names only files that exist', () => {
   const config = readConfig('.oxlintrc.json');
   const named = config.overrides.flatMap((override) =>

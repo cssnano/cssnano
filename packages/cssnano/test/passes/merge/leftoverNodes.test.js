@@ -105,9 +105,11 @@ test('under consistency checks, reading the record of a rule whose declarations 
   enableConsistencyChecks(true);
   try {
     const { mergeState, first } = mergedAway();
+    // RuleSequence#replacePair unlinks a rule that no child remains in.
+    mergeState.records.unlink(first);
     assert.throws(
       () => mergeState.records.rule(first).declarationsOf(mergeState.records),
-      /departed/v
+      /does not reach/v
     );
   } finally {
     enableConsistencyChecks(wasEnabled);

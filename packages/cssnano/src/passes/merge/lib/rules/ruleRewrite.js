@@ -31,10 +31,7 @@ function indicesOf(records) {
  * @return {RuleRecord[]}
  */
 function leftoverOf(records, record) {
-  if (!childCountOf(records, record.index)) {
-    record.depart();
-    return [];
-  }
+  if (!childCountOf(records, record.index)) return [];
   return [record];
 }
 

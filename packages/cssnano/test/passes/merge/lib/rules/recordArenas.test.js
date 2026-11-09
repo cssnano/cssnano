@@ -70,14 +70,13 @@ test('buildRecords should index the stylesheet as entry 0, then each rule and ea
   assert.equal(records.rule(5), undefined);
 });
 
-test('a rule should keep its index and stay readable through rule(i) after it departs', () => {
+test('a rule should keep its index and stay in the arena after it is unlinked', () => {
   const { root, state } = setup('a{color:red}b{width:1px}');
   const record = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
   const { index } = record;
-  record.depart();
+  state.records.unlink(index);
   assert.equal(record.index, index);
-  assert.equal(state.records.rule(index), record);
-  assert.equal(record.departed, true);
+  assert.equal(state.records.entry(index), record);
 });
 
 test('a rule recorded mid-run should take the next index of the arena', () => {

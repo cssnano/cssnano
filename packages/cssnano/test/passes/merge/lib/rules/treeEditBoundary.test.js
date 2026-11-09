@@ -51,19 +51,6 @@ test('lib/rules should import no tree-edit primitive other than through treeEdit
   assert.deepEqual(offenders, []);
 });
 
-// The record owns `depart`, and the two placements that drop a rule call it
-// when they leave the rule without children.
-const departers = new Set(['ruleRecord.js', 'merge.js', 'ruleRewrite.js']);
-
-test('lib/rules should mark a rule departed only in its record and the placements that drop it', () => {
-  const offenders = sources
-    .filter(
-      ({ name, text }) => !departers.has(name) && text.includes('.depart(')
-    )
-    .map(({ name }) => name);
-  assert.deepEqual(offenders, []);
-});
-
 test('lib/rules should mutate the child list only through treeEdits and clone editors', () => {
   const offenders = sources
     .filter(

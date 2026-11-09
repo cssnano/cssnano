@@ -1,5 +1,4 @@
 import { SelectorList } from './selectorList.js';
-import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { NO_PRELUDE, RULE } from './blockRecord.js';
 
@@ -18,8 +17,6 @@ import { NO_PRELUDE, RULE } from './blockRecord.js';
  * set up front so all instances share one object layout.
  */
 export class RuleRecord extends SelectorList {
-  /** @type {boolean} set once the rule has left the stylesheet */
-  #departed = false;
   /**
    * The id of the circumstances under which the rule applies its children, as
    * `containerContext` gives it. It is set once, at the build, for a rule that
@@ -70,70 +67,6 @@ export class RuleRecord extends SelectorList {
   }
 
   /**
-   * Whether the rule has left the stylesheet. Only consistency checks read it;
-   * no decision does.
-   *
-   * @return {boolean}
-   */
-  get departed() {
-    return this.#departed;
-  }
-
-  /** @return {string[]} change it only through the methods of this class */
-  get selectors() {
-    this.#assertLive();
-    return super.selectors;
-  }
-
-  /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
-  get pieces() {
-    this.#assertLive();
-    return super.pieces;
-  }
-
-  /** @param {string} selector the selector, in PostCSS's form */
-  setSelector(selector) {
-    this.#assertLive();
-    super.setSelector(selector);
-  }
-
-  /** @param {readonly CSSToken[]} tokens the tokens of the source text */
-  setTokens(tokens) {
-    this.#assertLive();
-    super.setTokens(tokens);
-  }
-
-  /** @return {readonly CSSToken[]} the tokens of the source text, tokenized at the first read */
-  tokensOf() {
-    this.#assertLive();
-    return super.tokensOf();
-  }
-
-  /** @return {import('./selectorList.js').SelectorRanges} the token range of each selector */
-  rangesOf() {
-    this.#assertLive();
-    return super.rangesOf();
-  }
-
-  /** Marks the selector as written by a merge. */
-  mark() {
-    this.#assertLive();
-    super.mark();
-  }
-
-  /** @param {Rule} node the node a merged rule gets at write-back */
-  giveNode(node) {
-    this.#assertLive();
-    super.giveNode(node);
-  }
-
-  /** @param {RangePiece[] | null} pieces one per selector, or null */
-  setPieces(pieces) {
-    this.#assertLive();
-    super.setPieces(pieces);
-  }
-
-  /**
    * The declarations of the rule, in order, read from its chain at the call. A
    * reader that indexes them by position takes this array.
    *
@@ -141,7 +74,8 @@ export class RuleRecord extends SelectorList {
    * @return {DeclarationRecord[]}
    */
   declarationsOf(records) {
-    this.#assertLive();
+    // Under checks, `rule` throws when the root does not reach this rule.
+    records.rule(this.index);
     /** @type {DeclarationRecord[]} */
     const declarations = [];
     for (
@@ -153,89 +87,5 @@ export class RuleRecord extends SelectorList {
       if (item instanceof DeclarationRecord) declarations.push(item);
     }
     return declarations;
-  }
-
-  /**
-   * @param {SelectorLookup} lookup
-   * @return {VendorPrefixSummary}
-   */
-  vendorProfile(lookup) {
-    this.#assertLive();
-    return super.vendorProfile(lookup);
-  }
-
-  /**
-   * @param {SelectorLookup} lookup
-   * @return {boolean} whether every selector is compatible with the target browsers
-   */
-  compatible(lookup) {
-    this.#assertLive();
-    return super.compatible(lookup);
-  }
-
-  /**
-   * @param {ElementKeyOf} [keyOf]
-   * @return {string[] | null} see `SelectorList#elementKeys`
-   */
-  elementKeys(keyOf) {
-    this.#assertLive();
-    return super.elementKeys(keyOf);
-  }
-
-  /** @return {string} */
-  selectorText() {
-    this.#assertLive();
-    return super.selectorText();
-  }
-
-  /**
-   * @param {RuleRecord} other
-   * @param {import('../../../ir/selectorIds.js').SelectorIds} selectorIds
-   * @return {boolean}
-   */
-  hasSameSelectors(other, selectorIds) {
-    this.#assertLive();
-    other.#assertLive();
-    return super.hasSameSelectors(other, selectorIds);
-  }
-
-  /**
-   * @param {string[]} selectors appended to the rule's selector list
-   * @param {SelectorLookup} lookup
-   * @param {ElementKeyOf} [keyOf]
-   * @param {RangePiece[] | null} [pieces]
-   * @return {readonly string[] | null} see `SelectorList#add`
-   */
-  addSelectors(selectors, lookup, keyOf, pieces) {
-    this.#assertLive();
-    return super.addSelectors(selectors, lookup, keyOf, pieces);
-  }
-
-  /**
-   * Takes the place of a rule that is dropped and stood before this one.
-   *
-   * @param {RuleRecord} earlier left unusable
-   * @param {SelectorLookup} lookup
-   * @param {ElementKeyOf} [keyOf]
-   */
-  absorbEarlier(earlier, lookup, keyOf) {
-    this.#assertLive();
-    earlier.#assertLive();
-    super.absorbEarlier(earlier, lookup, keyOf);
-    earlier.#departed = true;
-  }
-
-  /** Marks the record of a rule that left the stylesheet, so a later read throws. */
-  depart() {
-    this.#departed = true;
-  }
-
-  /**
-   * @throws {Error} under consistency checks, when the rule this record
-   *   describes has left the stylesheet
-   */
-  #assertLive() {
-    if (consistencyChecksEnabled() && this.#departed)
-      throw new Error('read of a departed rule record');
   }
 }

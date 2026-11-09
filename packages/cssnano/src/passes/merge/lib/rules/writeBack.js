@@ -20,7 +20,6 @@ const { asciiLowerCase } = cssnanoUtils;
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 const STALE = 'stale declarations of a rule record';
-const DEPARTED_REACHED = 'write-back reached a departed rule';
 
 /**
  * Whether the live children of a container differ from the nodes it holds.
@@ -327,7 +326,7 @@ function createChildNodes(records, container) {
  * children the records hold, as does each plain rule that an edit changed the
  * children of. A container that already matches keeps its child list, and so
  * does a plain rule that no edit touched. A record the root does not reach,
- * dropped or departed, keeps its node as it is, and a merged rule the root
+ * dropped, keeps its node as it is, and a merged rule the root
  * does not reach gets none.
  *
  * @param {BlockRecords} records
@@ -361,9 +360,6 @@ export function writeBack(
     ) {
       const record = records.entry(entry);
       if (record instanceof RuleRecord) {
-        if (consistencyChecksEnabled() && record.departed) {
-          throw new Error(DEPARTED_REACHED);
-        }
         writeSelector(record, records, textTable);
         if (record.context !== -1) {
           visit(record);

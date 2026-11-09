@@ -308,17 +308,3 @@ test('write-back stores no tokens of a rule the root does not reach', () => {
   writeBack(records, table);
   assert.equal(table.stored(first.node), undefined);
 });
-
-test('under consistency checks, write-back throws for a departed rule the root still reaches', () => {
-  const { records } = whitespaceRecordsOf('a{color:red}');
-  const rule = records.rule(records.links.firstChild(records.root.index));
-  rule.tokensOf();
-  rule.depart();
-  const enabled = consistencyChecksEnabled();
-  enableConsistencyChecks(true);
-  try {
-    assert.throws(() => writeBack(records, new TextTable()), /departed/v);
-  } finally {
-    enableConsistencyChecks(enabled);
-  }
-});

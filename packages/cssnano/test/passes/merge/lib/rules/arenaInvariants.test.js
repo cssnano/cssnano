@@ -17,13 +17,13 @@ import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 const createState = () => new MergeState(['chrome 120'], createRunContext());
 
 /**
- * Builds the records of `css` and absorbs the first rule into the last, so
- * the first rule's record departs the stylesheet.
+ * Builds the records of `css` and absorbs the first rule into the last, then
+ * unlinks the first rule, so the root no longer reaches its record.
  *
  * @param {MergeState} state
  * @param {string} css
  */
-function departedRecord(state, css) {
+function unreachedRecord(state, css) {
   const root = postcss.parse(css);
   state.records = buildTestRecords(root, state);
   const record = ruleRecordOf(state.records, root.first);
@@ -31,6 +31,7 @@ function departedRecord(state, css) {
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
+  state.records.unlink(record.index);
   return record;
 }
 
@@ -60,53 +61,56 @@ test('holdsOnlyDeclarationsOf should be true for a rule of two identical declara
   });
 });
 
-test('declarationKeys should return the keys of a departed rule without checks', () => {
+test('declarationKeys should return the keys of an unreached rule without checks', () => {
   withChecks(false, () => {
     const state = createState();
-    const record = departedRecord(state, 'a{color:red}b{color:red}');
+    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
     assert.doesNotThrow(() => declarationKeys(state.records, record.index));
   });
 });
 
-test('declarationKeys should throw for a departed rule under checks', () => {
+test('declarationKeys should throw for an unreached rule under checks', () => {
   withChecks(true, () => {
     const state = createState();
-    const record = departedRecord(state, 'a{color:red}b{color:red}');
+    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
     assert.throws(
       () => declarationKeys(state.records, record.index),
-      /departed/v
+      /does not reach/v
     );
   });
 });
 
-test('childCountOf should return the child count of a departed rule without checks', () => {
+test('childCountOf should return the child count of an unreached rule without checks', () => {
   withChecks(false, () => {
     const state = createState();
-    const record = departedRecord(state, 'a{color:red}b{color:red}');
+    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
     assert.doesNotThrow(() => childCountOf(state.records, record.index));
   });
 });
 
-test('childCountOf should throw for a departed rule under checks', () => {
+test('childCountOf should throw for an unreached rule under checks', () => {
   withChecks(true, () => {
     const state = createState();
-    const record = departedRecord(state, 'a{color:red}b{color:red}');
-    assert.throws(() => childCountOf(state.records, record.index), /departed/v);
+    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
+    assert.throws(
+      () => childCountOf(state.records, record.index),
+      /does not reach/v
+    );
   });
 });
 
-test('the selectors of a departed rule should be readable without checks', () => {
+test('the selectors of an unreached rule should be readable without checks', () => {
   withChecks(false, () => {
     const state = createState();
-    const record = departedRecord(state, 'a{color:red}b{color:red}');
+    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
     assert.doesNotThrow(() => record.selectors);
   });
 });
 
-test('the selectors of a departed rule should throw under checks', () => {
+test('the rule of an unreached record should throw under checks', () => {
   withChecks(true, () => {
     const state = createState();
-    const record = departedRecord(state, 'a{color:red}b{color:red}');
-    assert.throws(() => record.selectors, /departed/v);
+    const record = unreachedRecord(state, 'a{color:red}b{color:red}');
+    assert.throws(() => state.records.rule(record.index), /does not reach/v);
   });
 });

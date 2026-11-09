@@ -26,7 +26,7 @@ import {
 /** @import {Container, Declaration, Rule} from 'postcss' */
 
 // The records of the rules an edit touches stay readable, or, for a rule that
-// left the stylesheet, are marked departed. Consistency checks compare each
+// left the stylesheet, throw as unreached. Consistency checks compare each
 // record with the tree at every read.
 before(() => enableConsistencyChecks(true));
 after(() => enableConsistencyChecks(false));
@@ -43,7 +43,7 @@ function setup(css) {
   return { root, state };
 }
 
-test('appendToDeclarations should mark the record of the incoming rule departed', () => {
+test('appendToDeclarations should empty the incoming rule, which stays reached until it is removed', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const [media] = /** @type {Container} */ (root).nodes;
   const [receiving, incoming] = /** @type {Rule[]} */ (
@@ -55,7 +55,7 @@ test('appendToDeclarations should mark the record of the incoming rule departed'
     ruleRecordOf(state.records, receiving).index,
     ruleRecordOf(state.records, incoming).index
   );
-  assert.throws(() => record.declarationsOf(state.records), /departed/v);
+  assert.deepEqual(record.declarationsOf(state.records), []);
 });
 
 // The entry of a rule names its declarations by position, so an append that
@@ -89,7 +89,7 @@ test('appendToDeclarations should leave the record of the receiving rule readabl
     ruleRecordOf(state.records, receiving).index,
     ruleRecordOf(state.records, incoming).index
   );
-  assert.equal(ruleRecordOf(state.records, receiving).departed, false);
+  assert.deepEqual(ruleRecordOf(state.records, receiving).selectors, ['a']);
 });
 
 test('appendToDeclarations should keep the record of the receiving rule', () => {
@@ -208,12 +208,12 @@ test('removeDeclarations should keep the element keys of the record', () => {
   ]);
 });
 
-test('removeRules should mark the record of each rule it removes departed', () => {
+test('removeRules should unlink each rule it removes, so the root no longer reaches it', () => {
   const { root, state } = setup('a{color:red}b{color:red}c{color:red}');
   const [, removed] = /** @type {Rule[]} */ (root.nodes);
-  const record = ruleRecordOf(state.records, removed);
-  removeRules(state, new Set([ruleRecordOf(state.records, removed).index]));
-  assert.throws(() => record.declarationsOf(state.records), /departed/v);
+  const { index } = ruleRecordOf(state.records, removed);
+  removeRules(state, new Set([index]));
+  assert.throws(() => state.records.rule(index), /does not reach/v);
 });
 
 test('removeRules should leave the record of a rule it keeps readable', () => {
@@ -221,22 +221,7 @@ test('removeRules should leave the record of a rule it keeps readable', () => {
   const [kept, removed] = /** @type {Rule[]} */ (root.nodes);
   ruleRecordOf(state.records, kept);
   removeRules(state, new Set([ruleRecordOf(state.records, removed).index]));
-  assert.equal(ruleRecordOf(state.records, kept).departed, false);
-});
-
-test('depart should mark the record of the rule departed', () => {
-  const { root, state } = setup('a{color:red}');
-  const rule = /** @type {Rule} */ (root.first);
-  const record = ruleRecordOf(state.records, rule);
-  ruleRecordOf(state.records, rule).depart();
-  assert.throws(() => record.selectors, /departed/v);
-});
-
-test('depart should leave the rule in the tree', () => {
-  const { root, state } = setup('a{color:red}');
-  const rule = /** @type {Rule} */ (root.first);
-  ruleRecordOf(state.records, rule).depart();
-  assert.equal(rule.parent, root);
+  assert.deepEqual(ruleRecordOf(state.records, kept).selectors, ['a']);
 });
 
 test('takePlaceOf should link the earlier rule where the later one stood', () => {

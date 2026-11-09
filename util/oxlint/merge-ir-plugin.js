@@ -9,7 +9,6 @@ import noPostcssInWindow from './noPostcssInWindow.js';
 
 const LINK_METHODS = new Set(['linkAfter', 'linkLast', 'unlink', 'takeLinkOf']);
 const CACHE_READS = new Set(['keysOf', 'receivingOf']);
-const CHECK = 'consistencyChecksEnabled';
 
 const LIST_OPTIONS = [
   {
@@ -58,15 +57,6 @@ function isNamed(node, name) {
     (node.property.type === 'Identifier' ||
       node.property.type === 'PrivateIdentifier') &&
     node.property.name === name
-  );
-}
-
-/** @param {any} node */
-function isCheckCall(node) {
-  return (
-    node?.type === 'CallExpression' &&
-    node.callee.type === 'Identifier' &&
-    node.callee.name === CHECK
   );
 }
 
@@ -164,72 +154,6 @@ function isRecordsDeclarations(expr) {
 function isDeclarationsObject(expr) {
   if (expr.type === 'Identifier') return expr.name === 'declarations';
   return isNamed(expr, 'declarations');
-}
-
-/**
- * The left-most operand of an `&&` chain.
- *
- * @param {any} expr
- */
-function leftmostAnd(expr) {
-  let at = expr;
-  while (at.type === 'LogicalExpression' && at.operator === '&&') at = at.left;
-  return at;
-}
-
-/** @param {any} statement */
-function isEarlyReturnGuard(statement) {
-  if (statement?.type !== 'IfStatement' || statement.alternate) return false;
-  const test = statement.test;
-  if (test.type !== 'UnaryExpression' || test.operator !== '!') return false;
-  if (!isCheckCall(test.argument)) return false;
-  const consequent = statement.consequent;
-  const ret =
-    consequent.type === 'BlockStatement' && consequent.body.length === 1
-      ? consequent.body[0]
-      : consequent;
-  return ret.type === 'ReturnStatement' && ret.argument === null;
-}
-
-/**
- * Whether a read of `.departed` runs only under consistency checks: in the
- * consequent of an `if` whose test starts with the check call, in a later
- * operand of such an `&&` chain, or after a function's guard statement.
- *
- * @param {any} node
- * @param {any[]} ancestors
- */
-function underChecks(node, ancestors) {
-  for (let i = ancestors.length - 1; i >= 0; i--) {
-    const parent = ancestors[i];
-    const child = i + 1 < ancestors.length ? ancestors[i + 1] : node;
-    if (parent.type === 'IfStatement') {
-      if (
-        child === parent.consequent &&
-        isCheckCall(leftmostAnd(parent.test))
-      ) {
-        return true;
-      }
-    } else if (
-      parent.type === 'LogicalExpression' &&
-      parent.operator === '&&' &&
-      child === parent.right
-    ) {
-      if (isCheckCall(leftmostAnd(parent.left))) return true;
-    } else if (
-      parent.type === 'FunctionDeclaration' ||
-      parent.type === 'FunctionExpression' ||
-      parent.type === 'ArrowFunctionExpression'
-    ) {
-      const body = parent.body;
-      if (body.type !== 'BlockStatement' || !isEarlyReturnGuard(body.body[0])) {
-        continue;
-      }
-      const statement = i + 2 < ancestors.length ? ancestors[i + 2] : node;
-      if (statement !== body.body[0]) return true;
-    }
-  }
-  return false;
 }
 
 const linkEdits = {
@@ -353,46 +277,12 @@ const noCacheLocal = {
   },
 };
 
-const departedUnderChecks = {
-  meta: { type: 'problem', schema: LIST_OPTIONS },
-  create(context) {
-    const { required = [] } = context.options[0] ?? {};
-    const file = repoPath(context);
-    /** @type {Set<string | null>} */
-    const sites = new Set();
-    return {
-      MemberExpression(node) {
-        // A private field such as `this.#departed` is not the public read.
-        if (node.computed || node.property.type !== 'Identifier') return;
-        if (node.property.name !== 'departed') return;
-        const ancestors = context.sourceCode.getAncestors(node);
-        const parent = ancestors.at(-1);
-        if (parent?.type === 'AssignmentExpression' && parent.left === node) {
-          return;
-        }
-        if (underChecks(node, ancestors)) {
-          sites.add(null);
-          return;
-        }
-        context.report({
-          node,
-          message: 'departed read outside a consistency check',
-        });
-      },
-      'Program:exit'(program) {
-        reportMissing(context, required, file, sites, program);
-      },
-    };
-  },
-};
-
 export default {
   meta: { name: 'merge-ir' },
   rules: {
     'link-edits-through-arena': linkEdits,
     'cache-reads': cacheReads,
     'no-cache-local': noCacheLocal,
-    'departed-under-checks': departedUnderChecks,
     'no-postcss-in-window': noPostcssInWindow,
   },
 };

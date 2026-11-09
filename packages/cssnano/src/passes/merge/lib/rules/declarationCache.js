@@ -1,6 +1,5 @@
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { assertLiveRule } from './linkChecks.js';
 import { PropertyWrites } from './propertyWrites.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -177,7 +176,7 @@ export class DeclarationCache {
  * @return {RuleDeclarationKeys}
  */
 export function declarationKeys(records, index) {
-  assertLiveRule(records, index);
+  records.rule(index);
   return records.declarations.keysOf(
     records,
     /** @type {ArenaIndex} */ (index)
@@ -194,7 +193,7 @@ export function declarationKeys(records, index) {
  * @return {ReceivingDeclarations}
  */
 export function receivingDeclarations(records, index) {
-  assertLiveRule(records, index);
+  records.rule(index);
   return records.declarations.receivingOf(
     records,
     /** @type {ArenaIndex} */ (index)

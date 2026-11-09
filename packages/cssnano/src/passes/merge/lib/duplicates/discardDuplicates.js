@@ -175,7 +175,6 @@ function dedupeRule(run, rule, scope, wantIds) {
 
   if (isSubsequent && !hasContent(run, rule)) {
     remove(records, rule);
-    rule.depart();
     return REMOVED;
   }
 

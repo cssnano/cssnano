@@ -243,7 +243,6 @@ export function appendToDeclarations(mergeState, receiving, incoming) {
       child
     );
   }
-  /** @type {RuleRecord} */ (records.rule(incoming)).depart();
 }
 
 /**
@@ -260,10 +259,10 @@ export function removeRules(mergeState, indices) {
   const first = arena.links.firstChild(root.index);
   let leadsRoot = false;
   for (const index of indices) {
-    const record = /** @type {RuleRecord} */ (arena.rule(index));
+    // Under checks, `rule` throws when the root does not reach the rule.
+    arena.rule(index);
     leadsRoot ||= index === first;
     arena.unlink(index);
-    record.depart();
   }
   // Unlike `remove`, the rest keep their own whitespace, so the first of them
   // takes its own as the leading whitespace of the stylesheet.

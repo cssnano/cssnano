@@ -39,12 +39,10 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
   // Repeating the same declarations under the same selector changes nothing,
   // and a selector list that repeats the selector is longer than one rule.
   if (first.hasSameSelectors(second, mergeState.selectorIds)) {
-    second.depart();
     return { first: [first.index], second: [] };
   }
   mergeState.absorbEarlier(second, first);
   mergeState.spellSelectors(second);
-  first.depart();
   return { first: [], second: [second.index] };
 }
 

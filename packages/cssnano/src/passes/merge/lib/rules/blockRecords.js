@@ -31,7 +31,7 @@ export class BlockRecords {
   /** @type {BlockRecord} the record of the stylesheet */
   root;
 
-  /** @type {(BlockRecord | RuleRecord | DeclarationRecord | NodeEntry)[]} every entry, by index, dropped and departed ones included */
+  /** @type {(BlockRecord | RuleRecord | DeclarationRecord | NodeEntry)[]} every entry, by index, dropped ones included */
   #entries = [];
 
   /** @type {BlockLinks} the chains of the blocks, which only this arena edits */
@@ -269,7 +269,7 @@ export class BlockRecords {
   }
 
   /**
-   * @return {number} the entries the arena holds, dropped and departed ones included
+   * @return {number} the entries the arena holds, dropped ones included
    */
   entryCount() {
     return this.#entries.length;

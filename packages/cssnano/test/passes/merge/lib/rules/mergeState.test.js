@@ -71,7 +71,7 @@ test('absorbEarlier should list the earlier rule selectors first', () => {
   ]);
 });
 
-test('under consistency checks, a read of the record of an earlier rule that absorbEarlier departed should throw', () => {
+test('under consistency checks, a read of an earlier rule that absorbEarlier then unlinks should throw', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);
   try {
@@ -82,13 +82,14 @@ test('under consistency checks, a read of the record of an earlier rule that abs
       ruleRecordOf(state.records, root.last),
       ruleRecordOf(state.records, root.first)
     );
-    assert.throws(() => record.selectors, /departed/v);
+    state.records.unlink(record.index);
+    assert.throws(() => state.records.rule(record.index), /does not reach/v);
   } finally {
     enableConsistencyChecks(wasEnabled);
   }
 });
 
-test('without consistency checks, a read of the record of an earlier rule that absorbEarlier departed should not throw', () => {
+test('without consistency checks, a read of an earlier rule that absorbEarlier then unlinks should not throw', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(false);
   try {
@@ -99,6 +100,7 @@ test('without consistency checks, a read of the record of an earlier rule that a
       ruleRecordOf(state.records, root.last),
       ruleRecordOf(state.records, root.first)
     );
+    state.records.unlink(record.index);
     assert.doesNotThrow(() => record.selectors);
   } finally {
     enableConsistencyChecks(wasEnabled);
@@ -112,7 +114,10 @@ test('absorbEarlier should leave the record of the later rule readable', () => {
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
-  assert.equal(ruleRecordOf(state.records, root.last).departed, false);
+  assert.deepEqual(ruleRecordOf(state.records, root.last).selectors, [
+    'a',
+    'b',
+  ]);
 });
 
 test('canMerge should accept a pair of compatible rules', () => {
@@ -242,7 +247,7 @@ test('assertRecordsMatchTree should throw when a declaration left the rule witho
   }
 });
 
-test('under consistency checks, blockOf should throw for a departed record, since its rule stands in no block', () => {
+test('under consistency checks, blockOf should throw for an unlinked record, since its rule stands in no block', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(true);
   try {
@@ -252,14 +257,14 @@ test('under consistency checks, blockOf should throw for a departed record, sinc
       state.records,
       /** @type {import('postcss').Rule} */ (root.first)
     );
-    record.depart();
-    assert.throws(() => state.blockOf(record), /departed/v);
+    state.records.unlink(record.index);
+    assert.throws(() => state.blockOf(record), /does not reach/v);
   } finally {
     enableConsistencyChecks(wasEnabled);
   }
 });
 
-test('without consistency checks, blockOf should not throw for a departed record', () => {
+test('without consistency checks, blockOf should not throw for an unlinked record', () => {
   const wasEnabled = consistencyChecksEnabled();
   enableConsistencyChecks(false);
   try {
@@ -269,7 +274,7 @@ test('without consistency checks, blockOf should not throw for a departed record
       state.records,
       /** @type {import('postcss').Rule} */ (root.first)
     );
-    record.depart();
+    state.records.unlink(record.index);
     assert.doesNotThrow(() => state.blockOf(record));
   } finally {
     enableConsistencyChecks(wasEnabled);

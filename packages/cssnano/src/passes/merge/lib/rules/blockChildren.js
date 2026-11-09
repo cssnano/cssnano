@@ -4,7 +4,6 @@
 /** @import {RuleRecord} from './ruleRecord.js' */
 import { BlockRecord, RULE } from './blockRecord.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { assertLiveRule } from './linkChecks.js';
 
 /**
  * The first declaration at or after `index` in the chain, or undefined.
@@ -62,7 +61,7 @@ export function* blocks(records) {
 
 /**
  * The records of every container the run added that holds children: each
- * block, and each rule that nests. Dropped and departed ones included.
+ * block, and each rule that nests. Dropped ones included.
  *
  * @param {BlockRecords} records
  * @return {Generator<BlockRecord | RuleRecord>}
@@ -88,7 +87,7 @@ export function* containers(records) {
  * @return {number}
  */
 export function childCountOf(records, index) {
-  assertLiveRule(records, index);
+  records.rule(index);
   return records.links.childCount(index);
 }
 
@@ -101,7 +100,7 @@ export function childCountOf(records, index) {
  * @return {boolean}
  */
 export function holdsOnlyDeclarationsOf(records, index) {
-  assertLiveRule(records, index);
+  records.rule(index);
   return (
     records.links.childCount(index) ===
     records.declarations.keysOf(records, /** @type {ArenaIndex} */ (index)).kept

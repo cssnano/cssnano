@@ -102,40 +102,10 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'an append leaves the record of the incoming rule live',
-    target: source('treeEdits.js'),
-    find: '  /** @type {RuleRecord} */ (records.rule(incoming)).depart();\n',
-    replace: '',
-  },
-  {
-    name: 'a removal of rules leaves the record of each removed rule live',
-    target: source('treeEdits.js'),
-    find: '    record.depart();\n',
-    replace: '',
-  },
-  {
-    name: 'a merged-away rule with a shared selector leaves its record live',
-    target: source('merge.js'),
-    find: '    second.depart();\n',
-    replace: '',
-  },
-  {
-    name: 'absorbing an earlier rule leaves its record live',
-    target: source('ruleRecord.js'),
-    find: '    earlier.#departed = true;\n',
-    replace: '',
-  },
-  {
     name: 'a rule record skips the check of its declarations against the tree',
     target: source('writeBack.js'),
     find: '      if (item instanceof DeclarationRecord && !describes(item)) {',
     replace: '      if (false) {',
-  },
-  {
-    name: 'a takePlaceOf that leaves the later entry in its chain',
-    target: source('blockLinks.js'),
-    find: '    this.unlink(later);\n',
-    replace: '',
   },
   {
     name: 'a removal of a rule that leaves it in its chain',
@@ -146,8 +116,8 @@ export const mutations = [
   {
     name: 'a removal of a rule set that leaves its rules in their chains',
     target: source('treeEdits.js'),
-    find: '    arena.unlink(index);\n    record.depart();\n',
-    replace: '    record.depart();\n',
+    find: '    arena.unlink(index);\n',
+    replace: '',
   },
   {
     name: 'a sweep that leaves an emptied block in its chain',

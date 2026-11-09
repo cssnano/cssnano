@@ -33,7 +33,7 @@ export declare function nextDeclaration(records: BlockRecords, declaration: Decl
 export declare function blocks(records: BlockRecords): Generator<BlockRecord>;
 /**
  * The records of every container the run added that holds children: each
- * block, and each rule that nests. Dropped and departed ones included.
+ * block, and each rule that nests. Dropped ones included.
  *
  * @param {BlockRecords} records
  * @return {Generator<BlockRecord | RuleRecord>}
