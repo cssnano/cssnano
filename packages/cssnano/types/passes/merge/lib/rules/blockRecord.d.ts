@@ -113,11 +113,13 @@ export declare class BlockRecord {
  * so that a block's children hold indices alone.
  */
 export declare class NodeEntry {
-    /** @type {ArenaIndex} the place of the entry in the arena, -1 until added */
-    index: ArenaIndex;
     /** @type {typeof COMMENT | typeof AT_RULE_STATEMENT} what the entry is */
     kind: typeof COMMENT | typeof AT_RULE_STATEMENT;
-    /** @type {number} the category of an at-rule, NO_AT_RULE for a comment */
+    /** @type {ArenaIndex} the place of the entry in the arena, -1 until added */
+    index: ArenaIndex;
+    /** @type {string | null} the whitespace before the node, see `BlockRecord#before` */
+    before: string | null;
+    /** @type {number} the category of the at-rule, NO_AT_RULE for a comment */
     atRuleKind: number;
     /** @type {string} the folded name of an at-rule, '' for a comment */
     name: string;
@@ -127,20 +129,21 @@ export declare class NodeEntry {
     anonymous: boolean;
     /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
     preludeId: number;
-    /** @type {string | null} the whitespace before the node, see `BlockRecord#before` */
-    before: string | null;
     /** @type {string} the text of a comment, '' for an at-rule */
     text: string;
     /** @type {boolean} whether a comment is important, which the merge keeps */
     important: boolean;
     /**
      * @param {typeof COMMENT | typeof AT_RULE_STATEMENT} kind
+     * @param {string | null} before
      * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for a comment
      * @param {string} name
      * @param {string} params
      * @param {boolean} anonymous
      * @param {number} preludeId
+     * @param {string} [text] the text of a comment
+     * @param {boolean} [important] whether a comment is important
      */
-    constructor(kind: typeof COMMENT | typeof AT_RULE_STATEMENT, atRuleKind: number, name: string, params: string, anonymous: boolean, preludeId: number);
+    constructor(kind: typeof COMMENT | typeof AT_RULE_STATEMENT, before: string | null, atRuleKind: number, name: string, params: string, anonymous: boolean, preludeId: number, text?: string, important?: boolean);
 }
 //# sourceMappingURL=blockRecord.d.ts.map

@@ -115,7 +115,7 @@ test('childCount should count a comment linked into a block', () => {
   const comment = placeUnlinked(
     records,
     records.root.index,
-    new NodeEntry(COMMENT, NO_AT_RULE, '', '', false, NO_PRELUDE)
+    new NodeEntry(COMMENT, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
   );
   records.moveLast(media.index, comment.index);
   assert.equal(records.links.childCount(media.index), 2);

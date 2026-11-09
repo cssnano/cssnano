@@ -157,26 +157,27 @@ export function buildRecords(root, context) {
         const category = atRuleKindOf(name);
         const entry = new NodeEntry(
           AT_RULE_STATEMENT,
+          child.raws.before ?? null,
           category,
           name,
           child.params,
           category === LAYER && isAnonymousLayer(child, textTable),
           context.declarations.preludeId(child)
         );
-        entry.before = child.raws.before ?? null;
         place(container.index, entry, child);
       } else {
+        const text = /** @type {Comment} */ (child).text;
         const entry = new NodeEntry(
           COMMENT,
+          child.raws.before ?? null,
           NO_AT_RULE,
           '',
           '',
           false,
-          NO_PRELUDE
+          NO_PRELUDE,
+          text,
+          cssnanoUtils.isImportantComment(text)
         );
-        entry.before = child.raws.before ?? null;
-        entry.text = /** @type {Comment} */ (child).text;
-        entry.important = cssnanoUtils.isImportantComment(entry.text);
         place(container.index, entry, child);
       }
     }

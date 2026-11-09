@@ -158,13 +158,16 @@ export class BlockRecord {
  * so that a block's children hold indices alone.
  */
 export class NodeEntry {
-  /** @type {ArenaIndex} the place of the entry in the arena, -1 until added */
-  index = /** @type {ArenaIndex} */ (-1);
-
   /** @type {typeof COMMENT | typeof AT_RULE_STATEMENT} what the entry is */
   kind;
 
-  /** @type {number} the category of an at-rule, NO_AT_RULE for a comment */
+  /** @type {ArenaIndex} the place of the entry in the arena, -1 until added */
+  index = /** @type {ArenaIndex} */ (-1);
+
+  /** @type {string | null} the whitespace before the node, see `BlockRecord#before` */
+  before;
+
+  /** @type {number} the category of the at-rule, NO_AT_RULE for a comment */
   atRuleKind;
 
   /** @type {string} the folded name of an at-rule, '' for a comment */
@@ -179,29 +182,42 @@ export class NodeEntry {
   /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
   preludeId;
 
-  /** @type {string | null} the whitespace before the node, see `BlockRecord#before` */
-  before = '';
-
   /** @type {string} the text of a comment, '' for an at-rule */
-  text = '';
+  text;
 
   /** @type {boolean} whether a comment is important, which the merge keeps */
-  important = false;
+  important;
 
   /**
    * @param {typeof COMMENT | typeof AT_RULE_STATEMENT} kind
+   * @param {string | null} before
    * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for a comment
    * @param {string} name
    * @param {string} params
    * @param {boolean} anonymous
    * @param {number} preludeId
+   * @param {string} [text] the text of a comment
+   * @param {boolean} [important] whether a comment is important
    */
-  constructor(kind, atRuleKind, name, params, anonymous, preludeId) {
+  constructor(
+    kind,
+    before,
+    atRuleKind,
+    name,
+    params,
+    anonymous,
+    preludeId,
+    text = '',
+    important = false
+  ) {
     this.kind = kind;
+    this.before = before;
     this.atRuleKind = atRuleKind;
     this.name = name;
     this.params = params;
     this.anonymous = anonymous;
     this.preludeId = preludeId;
+    this.text = text;
+    this.important = important;
   }
 }

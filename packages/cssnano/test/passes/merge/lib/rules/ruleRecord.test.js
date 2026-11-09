@@ -309,7 +309,7 @@ test('appendChild should count an appended comment among the children without ad
     placeUnlinked(
       state.records,
       state.records.root.index,
-      new NodeEntry(COMMENT, NO_AT_RULE, '', '', false, NO_PRELUDE)
+      new NodeEntry(COMMENT, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
     )
   );
   assert.equal(childCountOf(records, record.index), 2);
