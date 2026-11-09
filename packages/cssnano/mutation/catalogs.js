@@ -154,6 +154,13 @@ export const catalogs = [
   },
   {
     url: new URL(
+      './passes/merge/lib/rules/mutation-catalog-moves.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
       './passes/merge/lib/rules/mutation-catalog-selector-writers.js',
       import.meta.url
     ),
@@ -237,7 +244,10 @@ const mergeCache = {
 const mergeLinks = {
   check: 'test',
   allowUnkilled: false,
-  catalogs: [catalogUrl('./passes/merge/lib/rules/mutation-catalog-links.js')],
+  catalogs: [
+    catalogUrl('./passes/merge/lib/rules/mutation-catalog-links.js'),
+    catalogUrl('./passes/merge/lib/rules/mutation-catalog-moves.js'),
+  ],
 };
 
 export const groups = {

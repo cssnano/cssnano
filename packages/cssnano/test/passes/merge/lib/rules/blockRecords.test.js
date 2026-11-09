@@ -5,6 +5,7 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockLinks} from '../../../../../src/passes/merge/lib/rules/blockLinks.js' */
 import {
   assertSweepLowers,
   sweepPotential,
@@ -328,6 +329,23 @@ test('assertNoOverDuplication should throw when a declaration is written more of
   assert.throws(
     () => assertNoOverDuplication(state.records, input),
     /more often than the input/v
+  );
+});
+
+test('assertNoOverDuplication should throw when a chain reaches a rule that a second chain also reaches', () => {
+  const { root, state } = setup('r{a{width:1px}}b{color:red}');
+  const [outer, second] = /** @type {Rule[]} */ (root.nodes);
+  const nestedIndex = ruleRecordOf(state.records, outer).index;
+  // Linking `b` into the nested chain through the raw links table, as a bug
+  // inside it would, leaves its sibling link in the root chain, so the walk
+  // reaches `b` from both chains.
+  /** @type {BlockLinks} */ (state.records.links).linkLast(
+    nestedIndex,
+    ruleRecordOf(state.records, second).index
+  );
+  assert.throws(
+    () => assertNoOverDuplication(state.records, null),
+    /reach a node twice/v
   );
 });
 

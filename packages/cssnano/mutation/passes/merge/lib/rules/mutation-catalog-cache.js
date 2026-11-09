@@ -23,6 +23,12 @@ export const mutations = [
   {
     name: 'a link stamps no container',
     target: source('blockRecords.js'),
+    find: '    this.#links.linkBefore(sibling, index);\n    this.#touchDeclaration(block, index);\n',
+    replace: '    this.#links.linkBefore(sibling, index);\n',
+  },
+  {
+    name: 'an append stamps no container',
+    target: source('blockRecords.js'),
     find: '    this.#links.linkLast(block, index);\n    this.#touchDeclaration(block, index);\n',
     replace: '    this.#links.linkLast(block, index);\n',
   },

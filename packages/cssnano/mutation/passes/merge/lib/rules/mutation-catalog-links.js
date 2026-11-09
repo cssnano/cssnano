@@ -37,6 +37,12 @@ export const mutations = [
       '  if (records.links.parentOf(block) === -1 && records.container(block)?.context === -1) return;\n  let at = block;\n',
   },
   {
+    name: 'the link check lets an entry that stands in a chain pass again',
+    target: source('linkChecks.js'),
+    find: '  if (records.links.parentOf(index) !== -1) throw new Error(LINKED_TWICE);\n',
+    replace: '',
+  },
+  {
     name: 'a takePlaceOf that leaves the later entry in its chain',
     target: source('treeEdits.js'),
     find: '  records.detach(later);\n',

@@ -4,6 +4,7 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
+import { assertCanLink } from '../../../../../src/passes/merge/lib/rules/linkChecks.js';
 import {
   blockRecordOf,
   buildTestRecords,
@@ -78,4 +79,15 @@ test('moveLast should move the declaration stamp of the rule a declaration joins
   const before = records.declarationStamps.stampOf(receiver);
   records.moveLast(receiver, color);
   assert.ok(records.declarationStamps.stampOf(receiver) > before);
+});
+
+test('assertCanLink under checks should throw for an entry that stands in a chain, which a second link would leave in two', () => {
+  const { root, records } = setup('a{color:red}b{top:0}');
+  const [a, b] = /** @type {Rule[]} */ (root.nodes);
+  const receiver = ruleRecordOf(records, b).index;
+  const color = records.links.firstChild(ruleRecordOf(records, a).index);
+  assert.throws(
+    () => assertCanLink(records, receiver, color),
+    /stands in a chain/v
+  );
 });

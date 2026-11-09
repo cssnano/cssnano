@@ -16,6 +16,7 @@ import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules
 import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {Root, Rule} from 'postcss' */
+/** @import {BlockLinks} from '../../../../../src/passes/merge/lib/rules/blockLinks.js' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @typedef {BlockRecord | RuleRecord} Container */
 
@@ -167,6 +168,19 @@ test('a nested at-rule block should be linked into its parent chain, naming the 
 test('assertOwnershipIsTree should accept the records of a stylesheet', () => {
   const { state } = setup('@media (x){a{color:red;b{width:1px}}}c{top:0}');
   assert.doesNotThrow(() => assertOwnershipIsTree(state.records));
+});
+
+test('assertOwnershipIsTree should throw when a rule is linked twice in one chain', () => {
+  const { state } = setup('a{color:red}b{width:1px}');
+  const { records } = state;
+  const second = records.links.lastChild(records.root.index);
+  // The arena's edits never link a linked entry, so the raw links table makes
+  // the chain loop from `second` to itself, as a bug inside it would.
+  /** @type {BlockLinks} */ (records.links).linkLast(
+    records.root.index,
+    second
+  );
+  assert.throws(() => assertOwnershipIsTree(records), /reached twice/v);
 });
 
 test('assertOwnershipIsTree should throw when a block counts other entries than its chain holds', () => {

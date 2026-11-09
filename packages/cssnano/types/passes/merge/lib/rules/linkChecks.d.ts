@@ -14,14 +14,15 @@ import type { BlockRecords } from './blockRecords.js';
  */
 export declare function assertReached(records: BlockRecords, index: number): void;
 /**
- * Under checks, the container that receives `index` must reach the root, and
- * a rule or an at-rule may join only a rule that nests.
+ * Under checks, the entry at `index` must stand in no chain, since a second
+ * link would leave it in two; the container that receives it must reach the
+ * root, and a rule or an at-rule may join only a rule that nests.
  *
  * @param {BlockRecords} records
  * @param {number} block the container that receives the entry
  * @param {number} index the entry that is linked into it
  * @return {void}
- * @throws {Error} under checks, when the link would lose the entry
+ * @throws {Error} under checks, when the link would lose the entry or leave it in two chains
  */
 export declare function assertCanLink(records: BlockRecords, block: number, index: number): void;
 /**

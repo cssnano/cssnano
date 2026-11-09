@@ -22,6 +22,7 @@ import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.j
 import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
+/** @import {BlockLinks} from '../../../../../src/passes/merge/lib/rules/blockLinks.js' */
 /** @import {Root, Rule} from 'postcss' */
 
 /**
@@ -52,6 +53,28 @@ test('assertRecordsWellFormed should accept a block removed with its declaration
   );
   remove(state.records, earlier.index);
   assert.doesNotThrow(() => assertRecordsWellFormed(state));
+});
+
+// The arena's edits never build a chain that holds an entry twice, so these
+// tests corrupt the raw links table, as a bug inside it would.
+test('assertRecordsWellFormed should throw when a child of a rule is linked into another rule, which leaves it in both chains', () => {
+  const { root, state } = setup('a{color:red;b{width:1px}}c{top:0}');
+  const [a, c] = /** @type {Rule[]} */ (root.nodes);
+  const holder = ruleRecordOf(state.records, a);
+  const other = ruleRecordOf(state.records, c);
+  const child = state.records.links.firstChild(holder.index);
+  /** @type {BlockLinks} */ (state.records.links).linkLast(other.index, child);
+  assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
+});
+
+test('assertRecordsWellFormed should throw when the root is linked into its own subtree, so the walk reaches it twice', () => {
+  const { root, state } = setup('a{color:red;b{width:1px}}');
+  const holder = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
+  /** @type {BlockLinks} */ (state.records.links).linkLast(
+    holder.index,
+    state.records.root.index
+  );
+  assert.throws(() => assertRecordsWellFormed(state), /reached twice/v);
 });
 
 test('moveLast should throw under checks when the root is moved into a chain', () => {
