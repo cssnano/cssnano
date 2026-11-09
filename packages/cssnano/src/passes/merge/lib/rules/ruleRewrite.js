@@ -1,6 +1,5 @@
 /** @import {BlockRecords} from './blockRecords.js' */
 import { childCountOf } from './blockChildren.js';
-import postcss from 'postcss';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
 import { moveDeclarations, removeDeclarations } from './arenaEdits.js';
@@ -19,23 +18,6 @@ import { moveDeclarations, removeDeclarations } from './arenaEdits.js';
  */
 function indicesOf(records) {
   return records.map((record) => record.index);
-}
-
-/**
- * A rule with the template's source but no selector, raws or children, so the
- * caller fills it without cloning the template's declarations. Write-back gives
- * it the selector and the raws of its record.
- *
- * @param {import('postcss').Rule} template
- * @return {import('postcss').Rule}
- */
-function shellOf(template) {
-  // The node has no selector yet, which PostCSS's props type does not allow.
-  return postcss.rule(
-    /** @type {import('postcss').RuleProps} */ ({
-      source: template.source,
-    })
-  );
 }
 
 /**
@@ -141,11 +123,8 @@ export function buildMergedRule(
   // The merged rule prints the raws of the rule it was merged from, or of
   // the template that rule printed, when it was merged too.
   const template = second.template === -1 ? second.index : second.template;
-  const receivingBlock = shellOf(
-    /** @type {import('postcss').Rule} */ (records.nodeOf(template))
-  );
   const receivingRecord = records.recordRule(
-    receivingBlock,
+    undefined,
     selectors,
     selectors.join()
   );
@@ -160,7 +139,6 @@ export function buildMergedRule(
     receivingRecord.index
   );
   if (!group) mergeState.storeJoined(receivingRecord, first, second);
-  mergeState.reportCreated(receivingBlock);
   // The merged rule takes the declarations of the earlier rule themselves.
   moveDeclarations(
     records,

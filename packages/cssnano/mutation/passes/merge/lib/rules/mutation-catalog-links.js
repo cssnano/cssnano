@@ -25,7 +25,8 @@ export const mutations = [
     name: 'the reach check lets an entry linked nowhere pass again',
     target: source('linkChecks.js'),
     find: '  let at = index;\n',
-    replace: '  if (records.links.parentOf(index) === -1) return;\n  let at = index;\n',
+    replace:
+      '  if (records.links.parentOf(index) === -1) return;\n  let at = index;\n',
   },
   {
     name: 'linking into a rule that is linked nowhere passes again',

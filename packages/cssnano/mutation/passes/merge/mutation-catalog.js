@@ -17,12 +17,13 @@ export const target = source('ruleRewrite.js');
 export const test = new URL('../../../test/passes/merge/*.js', import.meta.url)
   .href;
 
-// The rule that `buildMergedRule` creates is no longer reported, so the
-// driver's second round may skip it; a leftover departs or stays wrongly.
+// The rule that a merge creates is no longer reported, so the driver's second
+// round may skip it; a leftover departs or stays wrongly.
 export const mutations = [
   {
     name: 'skip reporting the receiving block',
-    find: '  mergeState.reportCreated(receivingBlock);\n',
+    target: source('blockRecords.js'),
+    find: '        reported.add(entry.node);\n',
     replace: '',
   },
   {

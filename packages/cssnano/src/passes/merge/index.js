@@ -139,7 +139,7 @@ function runRecords(css, browsers, context, transforms) {
   } finally {
     release?.();
   }
-  writeBack(records, context.textTable);
+  writeBack(records, context.textTable, context.createdBlocks);
   assertRecordsMatchTree(records);
 }
 

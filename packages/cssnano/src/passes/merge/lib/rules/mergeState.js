@@ -8,7 +8,6 @@ import { joinRanges } from '../../../../values/joinRanges.js';
 import { selectorPieces } from '../../../../values/selectorRanges.js';
 import { tokensText } from '../../../../values/tokensText.js';
 
-/** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
@@ -34,8 +33,6 @@ export default class MergeState {
   #selectorIds;
   /** @type {(selector: string, piece?: RangePiece | null) => string | null} */
   #elementKeyOf = createElementKeyLookup();
-  /** @type {Set<Container> | null} */
-  #createdBlocks;
   /**
    * The block and rule records of the stylesheet. The driver builds them, and
    * `runMerge` sets them before any edit reads them.
@@ -56,7 +53,6 @@ export default class MergeState {
     this.#declarations = context.declarations;
     this.#selectorIds = context.selectorIds;
     this.properties = context.properties;
-    this.#createdBlocks = context.createdBlocks;
   }
 
   /**
@@ -88,16 +84,6 @@ export default class MergeState {
    */
   get selectorIds() {
     return this.#selectorIds;
-  }
-
-  /**
-   * Reports a rule a merge created, when the run collects them, so the driver
-   * canonicalizes it. A rule no run collects is left alone.
-   *
-   * @param {Rule} rule
-   */
-  reportCreated(rule) {
-    this.#createdBlocks?.add(rule);
   }
 
   /**

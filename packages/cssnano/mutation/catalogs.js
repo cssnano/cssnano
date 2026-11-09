@@ -245,5 +245,11 @@ export const groups = {
   'merge-selector-writers': [mergeSelectorWriters],
   'merge-cache': [mergeCache],
   'merge-links': [mergeLinks],
-  merge: [mergeRules, mergeDuplicates, mergeSelectorWriters, mergeCache, mergeLinks],
+  merge: [
+    mergeRules,
+    mergeDuplicates,
+    mergeSelectorWriters,
+    mergeCache,
+    mergeLinks,
+  ],
 };

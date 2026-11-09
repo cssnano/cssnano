@@ -40,6 +40,9 @@ export class BlockRecords {
   /** @type {LinkReader} the chains of the blocks, read here and edited through this arena */
   links = this.#links;
 
+  /** @type {number} the entries the build made, set by `settle` */
+  #built = 0;
+
   /** @type {DeclarationStamps} the declaration stamp of each container, which only this arena moves */
   #declarationStamps = new DeclarationStamps();
 
@@ -289,12 +292,36 @@ export class BlockRecords {
 
   /**
    * Settles the links once the build has linked the children, so that only
-   * edits after the build count as edits.
+   * edits after the build count as edits. Entries from here on are the merges'.
    *
    * @return {void}
    */
   settle() {
     this.#links.settle();
+    this.#built = this.#entries.length;
+  }
+
+  /**
+   * @return {number} the entries the build made, which precede every entry a merge added
+   */
+  get builtCount() {
+    return this.#built;
+  }
+
+  /**
+   * Adds the node of each rule a merge created that has one, in arena order,
+   * which is the order the merges made them. Write-back calls it after its walk.
+   *
+   * @param {Set<Container>} reported
+   * @return {void}
+   */
+  addMergedNodes(reported) {
+    for (let index = this.#built; index < this.#entries.length; index++) {
+      const entry = this.#entries[index];
+      if (entry instanceof RuleRecord && entry.hasNode) {
+        reported.add(entry.node);
+      }
+    }
   }
 
   /**
@@ -325,7 +352,7 @@ export class BlockRecords {
    * children, in order, and places the rule. The selector arguments are the
    * rule's, in PostCSS's form, so a caller passes them rather than read the node.
    *
-   * @param {Rule} rule
+   * @param {Rule | undefined} rule the node, or undefined for a merged rule
    * @param {string[]} selectors
    * @param {string} selector
    * @param {string} [sourceSelector] set only when the source text differs from the selector

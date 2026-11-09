@@ -31,13 +31,14 @@ function declarationKey(node) {
  * @return {Map<string, number>}
  */
 export function tallyDeclarations(records) {
+  /** @type {Set<number>} the arena indices of the entries the records reach */
   const reached = new Set();
   /** @type {Map<string, number>} */
   const written = new Map();
-  /** @param {object} node */
-  const reach = (node) => {
-    if (reached.has(node)) throw new Error(TWICE);
-    reached.add(node);
+  /** @param {number} index */
+  const reach = (index) => {
+    if (reached.has(index)) throw new Error(TWICE);
+    reached.add(index);
   };
   /** @param {DeclarationRecord} declaration */
   const count = (declaration) => {
@@ -46,7 +47,7 @@ export function tallyDeclarations(records) {
   };
   /** @param {RuleRecord} record */
   const visitRule = (record) => {
-    reach(record.node);
+    reach(record.index);
     if (record.context !== -1) {
       walk(record);
       return;
@@ -71,10 +72,10 @@ export function tallyDeclarations(records) {
       if (item instanceof RuleRecord) {
         visitRule(item);
       } else if (item instanceof BlockRecord) {
-        reach(item.node);
+        reach(entry);
         walk(item);
       } else {
-        reach(records.nodeOf(entry));
+        reach(entry);
         if (item instanceof DeclarationRecord) count(item);
       }
     }

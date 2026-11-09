@@ -1,10 +1,8 @@
-import type { Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { PropertyTable } from '../../../ir/propertyTable.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
-/** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
@@ -55,13 +53,6 @@ export default class MergeState {
      * @return {import('../../../ir/selectorIds.js').SelectorIds}
      */
     get selectorIds(): import('../../../ir/selectorIds.js').SelectorIds;
-    /**
-     * Reports a rule a merge created, when the run collects them, so the driver
-     * canonicalizes it. A rule no run collects is left alone.
-     *
-     * @param {Rule} rule
-     */
-    reportCreated(rule: Rule): void;
     /**
      * Appends selectors of `source` to the rule's selector list, keeping its
      * vendor prefix profile and its token ranges in step.

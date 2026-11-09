@@ -22,15 +22,27 @@ export type SelectorRanges = {
 export declare class SelectorList {
     #private;
     /**
-     * @param {Rule} node
+     * @param {Rule | undefined} node
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
      * @param {string | undefined} sourceSelector the source text, set only when it differs from the selector
      * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
      */
-    constructor(node: Rule, selectors: string[], selector: string, sourceSelector: string | undefined, tokens: readonly CSSToken[] | undefined);
-    /** @return {Rule} the rule the list belongs to, which is never changed */
+    constructor(node: Rule | undefined, selectors: string[], selector: string, sourceSelector: string | undefined, tokens: readonly CSSToken[] | undefined);
+    /**
+     * @return {Rule} the rule the list belongs to. A merged rule has none until
+     * write-back gives it one, so a caller reads it only after that.
+     */
     get node(): Rule;
+    /** @return {boolean} whether the rule has a node yet */
+    get hasNode(): boolean;
+    /**
+     * Gives a merged rule its node. Write-back calls it once, for a rule that
+     * the tree reaches.
+     *
+     * @param {Rule} node
+     */
+    giveNode(node: Rule): void;
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
     /** @return {string} the selector, in PostCSS's form */

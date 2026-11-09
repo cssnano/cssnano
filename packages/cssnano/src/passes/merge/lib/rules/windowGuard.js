@@ -11,20 +11,6 @@
 const WINDOW_READ =
   'a node or table entry is read between build and write-back';
 
-/** Node properties the window must not read, the ones a record holds. */
-const NODE_PROPERTIES = [
-  'type',
-  'selector',
-  'selectors',
-  'prop',
-  'value',
-  'important',
-  'name',
-  'params',
-  'text',
-  'raws',
-];
-
 /** Table reads and writes the window must not make. */
 const TABLE_READS = [
   'tokens',
@@ -36,14 +22,33 @@ const TABLE_READS = [
   'assignFolded',
 ];
 
+/**
+ * Every property name of a node, own or inherited, short of `Object.prototype`.
+ *
+ * @param {object} node
+ * @return {string[]}
+ */
+function propertyNamesOf(node) {
+  /** @type {string[]} */
+  const names = [];
+  for (
+    let owner = node;
+    owner && owner !== Object.prototype;
+    owner = Object.getPrototypeOf(owner)
+  ) {
+    names.push(...Object.getOwnPropertyNames(owner));
+  }
+  return names;
+}
+
 function throwing() {
   throw new Error(WINDOW_READ);
 }
 
 /**
- * Makes each node property and table read of the window throw, and returns a
- * function that restores them. A node keeps its own descriptor, or none when
- * it inherits the property.
+ * Makes each property of each node the records reach, own or inherited, and
+ * each table read of the window throw, and returns a function that restores
+ * them. A node keeps its own descriptor, or none when it inherits the property.
  *
  * @param {BlockRecords} records
  * @param {TextTable} textTable
@@ -54,7 +59,8 @@ export function guardWindow(records, textTable) {
   const saved = [];
   for (let index = 0; index < records.entryCount(); index++) {
     const node = records.nodeOf(index);
-    for (const name of NODE_PROPERTIES) {
+    if (node === undefined) continue;
+    for (const name of propertyNamesOf(node)) {
       saved.push([node, name, Object.getOwnPropertyDescriptor(node, name)]);
       Object.defineProperty(node, name, {
         configurable: true,

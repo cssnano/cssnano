@@ -67,7 +67,7 @@ export class RuleRecord extends SelectorList {
   before = '';
 
   /**
-   * @param {Rule} node the rule the record describes
+   * @param {Rule | undefined} node the rule the record describes; undefined for a merged rule until write-back
    * @param {string[]} selectors
    * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
    * @param {string | undefined} sourceSelector the source text, set only when it differs from the selector
@@ -127,6 +127,12 @@ export class RuleRecord extends SelectorList {
   mark() {
     this.#assertLive();
     super.mark();
+  }
+
+  /** @param {Rule} node the node a merged rule gets at write-back */
+  giveNode(node) {
+    this.#assertLive();
+    super.giveNode(node);
   }
 
   /** @param {RangePiece[] | null} pieces one per selector, or null */

@@ -57,13 +57,13 @@ export declare class RuleRecord extends SelectorList {
     /** @type {string | null} the whitespace before the rule, as its node gives it at the build */
     before: string | null;
     /**
-     * @param {Rule} node the rule the record describes
+     * @param {Rule | undefined} node the rule the record describes; undefined for a merged rule until write-back
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
      * @param {string | undefined} sourceSelector the source text, set only when it differs from the selector
      * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
      */
-    constructor(node: Rule, selectors: string[], selector: string, sourceSelector: string | undefined, tokens: readonly CSSToken[] | undefined);
+    constructor(node: Rule | undefined, selectors: string[], selector: string, sourceSelector: string | undefined, tokens: readonly CSSToken[] | undefined);
     /**
      * Whether the rule has left the stylesheet. Only consistency checks read it;
      * no decision does.
@@ -85,6 +85,8 @@ export declare class RuleRecord extends SelectorList {
     rangesOf(): import('./selectorList.js').SelectorRanges;
     /** Marks the selector as written by a merge. */
     mark(): void;
+    /** @param {Rule} node the node a merged rule gets at write-back */
+    giveNode(node: Rule): void;
     /** @param {RangePiece[] | null} pieces one per selector, or null */
     setPieces(pieces: RangePiece[] | null): void;
     /**

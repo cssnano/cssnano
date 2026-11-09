@@ -1,3 +1,4 @@
+import postcss from 'postcss';
 import { childNodesOf } from './blockChildren.js';
 import cssnanoUtils from '#utils';
 import { consistencyChecksEnabled } from '../../../ir/consistencyChecks.js';
@@ -11,7 +12,7 @@ import { tokensText } from '../../../../values/tokensText.js';
 
 /** @import {AtRule, ChildNode, Container} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord as Block} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord as Block} from './blockRecord.js' */
 
 /** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule, whose children form its chain */
 
@@ -290,23 +291,61 @@ function writeBefore(records, container) {
 }
 
 /**
+ * Gives each merged rule among the children of a rebuilt container its node,
+ * with the template's source. Write-back fills the rest.
+ *
+ * @param {BlockRecords} records
+ * @param {number} container the index of the rebuilt container
+ * @return {void}
+ */
+function createChildNodes(records, container) {
+  for (
+    let entry = records.links.firstChild(container);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    const record = records.entry(entry);
+    if (record instanceof RuleRecord && !record.hasNode) {
+      const template = /** @type {import('postcss').Rule} */ (
+        records.nodeOf(record.template)
+      );
+      // The node has no selector yet, which PostCSS's props type does not allow.
+      record.giveNode(
+        postcss.rule(
+          /** @type {import('postcss').RuleProps} */ ({
+            source: template.source,
+          })
+        )
+      );
+    }
+  }
+}
+
+/**
  * Walks the live tree from the root. Each rule it reaches gets its selector
  * written, and each container whose children differ from its node gets the
  * children the records hold, as does each plain rule that an edit changed the
  * children of. A container that already matches keeps its child list, and so
  * does a plain rule that no edit touched. A record the root does not reach,
- * dropped or departed, keeps its node as it is.
+ * dropped or departed, keeps its node as it is, and a merged rule the root
+ * does not reach gets none.
  *
  * @param {BlockRecords} records
  * @param {TextTable} [textTable] the table the selectors are written through
+ * @param {Set<Container> | null} [reported] receives the node of each rule a merge created that the tree reaches
  * @return {void}
  */
-export function writeBack(records, textTable = new TextTable()) {
+export function writeBack(
+  records,
+  textTable = new TextTable(),
+  reported = null
+) {
   /** @type {(Rebuilt & {index: number})[]} */
   const rebuilt = [];
   /** @param {ContainerRecord} container */
   const visit = (container) => {
     if (differs(records, container)) {
+      createChildNodes(records, container.index);
       rebuilt.push({
         container: /** @type {Container} */ (container.node),
         index: container.index,
@@ -342,6 +381,7 @@ export function writeBack(records, textTable = new TextTable()) {
     }
   };
   visit(records.root);
+  if (reported) records.addMergedNodes(reported);
   replaceChildren(rebuilt);
   for (const { index } of rebuilt) writeBefore(records, index);
   // The first child of the stylesheet takes the leading whitespace last.
