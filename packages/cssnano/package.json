@@ -237,8 +237,7 @@
     "acquire:postcss-minify-font-values": "node ./script/postcss-minify-font-values/acquire.js",
     "acquire:postcss-ordered-values": "node ./script/postcss-ordered-values/acquire.js",
     "acquire:postcss-reduce-idents": "node ./script/postcss-reduce-idents/acquire.js",
-    "acquire:postcss-reduce-initial": "node ./script/postcss-reduce-initial/acquire.js",
-    "test": "node --test"
+    "acquire:postcss-reduce-initial": "node ./script/postcss-reduce-initial/acquire.js"
   },
   "type": "module"
 }

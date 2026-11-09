@@ -1,8 +1,21 @@
-import type { Root } from 'postcss';
+import type { ArenaIndex } from './blockRecord.js';
 import type MergeState from './mergeState.js';
-/** @import {Container, Root, Rule} from 'postcss' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
-/** @import {Placement, RuleLink} from './ruleSequence.js' */
+/** @import {Placement} from './ruleSequence.js' */
+/**
+ * Orders pairs for merging. For equal selectors it is the number of
+ * declarations in both rules, since the selector is written once. Otherwise
+ * it is the number of declarations the rules share, or 0 when only a move
+ * into an equivalent parent or the removal of empty rules applies.
+ *
+ * @param {MergeState} mergeState its records hold both rules
+ * @param {ArenaIndex} firstIndex
+ * @param {ArenaIndex} secondIndex
+ * @return {number} NO_BENEFIT when merging the pair cannot rewrite anything
+ */
+export declare function mergeBenefit(mergeState: MergeState, firstIndex: ArenaIndex, secondIndex: ArenaIndex): number;
 /**
  * Merges neighboring rules in left-to-right sweeps, trying the pair that
  * shares the most declarations first and the earlier pair on a tie. That
@@ -21,9 +34,8 @@ import type MergeState from './mergeState.js';
  * `perf/passes/merge/lib/rules/loopCounts.js`): no input was found in which a
  * move in one sweep unblocks a move in the next.
  *
- * @param {Root} root
- * @param {MergeState} mergeState
+ * @param {MergeState} mergeState its records are the stylesheet the sweep rewrites
  * @return {void}
  */
-export default function runScan(root: Root, mergeState: MergeState): void;
+export default function runScan(mergeState: MergeState): void;
 //# sourceMappingURL=scan.d.ts.map

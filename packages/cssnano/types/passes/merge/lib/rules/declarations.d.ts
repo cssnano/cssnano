@@ -1,37 +1,48 @@
-import type { PropertyTable } from '../../../ir/propertyTable.js';
-import type { Declaration } from 'postcss';
-/** @import {Declaration} from 'postcss' */
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { BlockRecords } from './blockRecords.js';
+import type { ArenaIndex } from './blockRecord.js';
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {ArenaIndex, ChainPosition} from './blockRecord.js' */
 /**
- * @param {Declaration} a
- * @param {Declaration} b
- * @return {boolean}
- */
-export declare function declarationIsEqual(a: Declaration, b: Declaration): boolean;
-/**
- * The declarations of `declarations` whose key is in `keySet`, in their order.
+ * Two declarations are equal when they print the same, which their ids tell:
+ * the same property name, value, importance and hack prefix.
  *
- * @param {Declaration[]} declarations
- * @param {Set<number>} keySet the keys of the other rule's declarations
- * @param {(declaration: Declaration) => number} keyOf
- * @return {Declaration[]}
- */
-export declare function intersect(declarations: Declaration[], keySet: Set<number>, keyOf: (declaration: Declaration) => number): Declaration[];
-/**
- * @param {Declaration[]} a
- * @param {Declaration[]} b
+ * @param {DeclarationRecord} a
+ * @param {DeclarationRecord} b
  * @return {boolean}
  */
-export declare function sameDeclarationsAndOrder(a: Declaration[], b: Declaration[]): boolean;
+export declare function declarationIsEqual(a: DeclarationRecord, b: DeclarationRecord): boolean;
 /**
- * @param {Declaration[]} hoistCandidates
- * @param {Declaration[]} earlierRuleDeclarations
- * @param {Declaration[]} laterRuleDeclarations
- * @param {PropertyTable} table
- * @return {{intersection: Declaration[], claimedIndices: Set<number>, claimedEarlierIndices: Set<number>}}
+ * The declarations of `declarations` whose id is in `keySet`, in their order.
+ *
+ * @param {DeclarationRecord[]} declarations
+ * @param {ReadonlySet<number>} keySet the ids of the other rule's declarations
+ * @return {DeclarationRecord[]}
  */
-export declare function filterRuleIntersections(hoistCandidates: Declaration[], earlierRuleDeclarations: Declaration[], laterRuleDeclarations: Declaration[], table: PropertyTable): {
-    intersection: Declaration[];
-    claimedIndices: Set<number>;
-    claimedEarlierIndices: Set<number>;
+export declare function intersect(declarations: DeclarationRecord[], keySet: ReadonlySet<number>): DeclarationRecord[];
+/**
+ * Whether two rules hold equal declarations in the same order. Equal
+ * declarations share an id, as `declarationIsEqual` states, so the ids of
+ * each rule's declarations decide it.
+ *
+ * @param {BlockRecords} records the arena that holds both rules' declarations
+ * @param {readonly ArenaIndex[]} a the declarations of a rule, in order
+ * @param {readonly ArenaIndex[]} b
+ * @return {boolean}
+ */
+export declare function sameDeclarationsAndOrder(records: BlockRecords, a: readonly ArenaIndex[], b: readonly ArenaIndex[]): boolean;
+/**
+ * @param {DeclarationRecord[]} hoistCandidates in the earlier rule's chain order
+ * @param {DeclarationRecord[]} earlierRuleDeclarations
+ * @param {DeclarationRecord[]} laterRuleDeclarations
+ * @return {{intersection: DeclarationRecord[], claimedIndices: Set<ArenaIndex>}}
+ * `intersection` lists the surviving declarations in the earlier rule's chain
+ * order, and `claimedIndices` the arena indices of the later rule's declarations
+ * that they claim
+ */
+export declare function filterRuleIntersections(hoistCandidates: DeclarationRecord[], earlierRuleDeclarations: DeclarationRecord[], laterRuleDeclarations: DeclarationRecord[]): {
+    intersection: DeclarationRecord[];
+    claimedIndices: Set<ArenaIndex>;
 };
 //# sourceMappingURL=declarations.d.ts.map

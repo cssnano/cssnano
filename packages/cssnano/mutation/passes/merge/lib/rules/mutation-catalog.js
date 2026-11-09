@@ -31,7 +31,7 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'treat logical and physical longhands as unrelated',
-    target: source('lastWriteIndex.js'),
+    target: source('propertyWrites.js'),
     find: '      if (opposite)',
     replace: '      if (false)',
   },
@@ -50,14 +50,26 @@ export const mutations = [
   {
     name: 'join at-rules of one name whatever their conditions',
     target: source('sameContainer.js'),
-    find: '    return nodeA.params === nodeB.params;',
-    replace: '    return true;',
+    find: '        : step(trie, block.params);',
+    replace: '        : trie;',
   },
   {
     name: 'join distinct anonymous layers',
     target: source('sameContainer.js'),
-    find: 'return anonA && anonB && nodeA === nodeB;',
-    replace: 'return anonA && anonB;',
+    find: '? step(step(trie, ANONYMOUS), block.index)',
+    replace: '? step(trie, ANONYMOUS)',
+  },
+  {
+    name: 'a block takes its context without the enclosing blocks',
+    target: source('sameContainer.js'),
+    find: 'let trie = step(step(keys.root, CONTEXT), parentContext);',
+    replace: 'let trie = step(keys.root, CONTEXT);',
+  },
+  {
+    name: 'rules nested in rules of different selectors share a context',
+    target: source('sameContainer.js'),
+    find: "trie = step(step(trie, 'rule'), /** @type {RuleRecord} */ (block).selector);",
+    replace: "trie = step(trie, 'rule');",
   },
   {
     name: 'keep a downward join anchored at the earlier rule',
@@ -68,20 +80,14 @@ export const mutations = [
   {
     name: 'move a block down in the backward pass across a conflicting write',
     target: source('nonAdjacentMerge.js'),
-    find: '    if (!index.conflictsSinceIn(earlierDeclarations, laterPosition, keysOf)) {',
-    replace: '    if (true) {',
+    find: '!index.conflictsSinceIn(records, earlierEntries, laterPosition, keysOf)',
+    replace: 'true',
   },
   {
     name: 'forget the writes of a block moved down in the backward pass',
     target: source('nonAdjacentMerge.js'),
-    find: '      index.moveWrites(earlierDeclarations, laterPosition, keysOf);',
-    replace: '',
-  },
-  {
-    name: 'ignore !important when comparing declarations',
-    target: source('declarations.js'),
-    find: '    a.important === b.important &&\n',
-    replace: '',
+    find: '      index.moveWrites(records, earlierEntries, laterPosition, keysOf);\n      adopt(mergeState.records, earlier.index, later.index);',
+    replace: '      adopt(mergeState.records, earlier.index, later.index);',
   },
   {
     name: 'ignore !important in the declaration key',
@@ -94,5 +100,132 @@ export const mutations = [
     target: source('elementKeys.js'),
     find: '    if (isVendorExtension(pseudoName)) return null;\n',
     replace: '',
+  },
+  {
+    name: 'a rule record skips the check of its declarations against the tree',
+    target: source('writeBack.js'),
+    find: '      if (item instanceof DeclarationRecord && !describes(item)) {',
+    replace: '      if (false) {',
+  },
+  {
+    name: 'a removal of a rule that leaves it in its chain',
+    target: source('treeEdits.js'),
+    find: '  records.unlink(entry.index);\n',
+    replace: '',
+  },
+  {
+    name: 'a removal of a rule set that leaves its rules in their chains',
+    target: source('treeEdits.js'),
+    find: '    arena.unlink(index);\n',
+    replace: '',
+  },
+  {
+    name: 'a sweep that leaves an emptied block in its chain',
+    target: source('ruleSequence.js'),
+    find: '      records.unlink(at);\n',
+    replace: '',
+  },
+  {
+    name: 'a takePlaceOf that leaves the earlier entry in its old chain',
+    target: source('blockLinks.js'),
+    find: '    this.unlink(earlier);\n',
+    replace: '',
+  },
+  {
+    name: 'a move of children that unlinks the moved entries without linking them',
+    target: source('arenaEdits.js'),
+    find: '    records.linkLast(target, entry);\n',
+    replace: '',
+  },
+  {
+    name: 'a move that leaves the moved rule in its old chain',
+    target: source('arenaEdits.js'),
+    find: 'export function moveRule(records, target, record) {\n  records.unlink(record);\n',
+    replace: 'export function moveRule(records, target, record) {\n',
+  },
+  {
+    name: 'move into the later parent',
+    target: source('ruleSequence.js'),
+    find: '    const target = records.links.parentOf(first);\n    const source = records.links.parentOf(second);\n',
+    replace:
+      '    const target = records.links.parentOf(second);\n    const source = records.links.parentOf(first);\n',
+  },
+  {
+    name: 'the ownership check accepts a block whose count differs from its chain',
+    target: source('recordsCheck.js'),
+    find: '    if (count !== links.childCount(block.index)) throw new Error(OUT_OF_STEP);\n  };\n  reach(records.root);\n  visitChildren(records.root);',
+    replace: '  };\n  reach(records.root);\n  visitChildren(records.root);',
+  },
+  {
+    name: 'moving declarations hands over no record',
+    target: source('arenaEdits.js'),
+    find: '    records.unlink(index);\n    appendChild(\n      records,\n      receiving,',
+    replace:
+      '    records.unlink(index);\n    void (\n      records,\n      receiving,',
+  },
+  {
+    name: 'moving declarations removes the moved node at once',
+    target: source('arenaEdits.js'),
+    find: '    records.unlink(index);\n    appendChild(',
+    replace:
+      '    records.unlink(index);\n    records.entry(index).node.remove();\n    appendChild(',
+  },
+  {
+    name: 'an append edits the node of the rule at once',
+    target: source('arenaEdits.js'),
+    find: '  records.linkLast(rule.index, child.index);\n',
+    replace:
+      '  records.linkLast(rule.index, child.index);\n  rule.node.append(child.node);\n',
+  },
+  {
+    name: 'a removal of declarations stamps no container',
+    target: source('blockLinks.js'),
+    find: '    this.#stamp(block);\n    this.#parent[index] = -1;\n',
+    replace: '    this.#parent[index] = -1;\n',
+  },
+  {
+    name: 'write-back keeps the parent of a child that moves between rules',
+    target: source('writeBack.js'),
+    find: '    for (const node of children) node.parent = undefined;\n',
+    replace: '',
+  },
+  {
+    name: 'write-back appends to a rule that keeps its old children',
+    target: source('writeBack.js'),
+    find: '    container.removeAll();\n  }\n  for (const { container, children, leading } of rebuilt) {',
+    replace:
+      "    if (container.type !== 'rule') container.removeAll();\n  }\n  for (const { container, children, leading } of rebuilt) {",
+  },
+  {
+    name: 'write-back leaves a departed rule in its block',
+    target: source('writeBack.js'),
+    find: '  if (records.links.childCount(block.index) !== nodes.length) return true;\n',
+    replace: '',
+  },
+
+  {
+    name: 'an arena entry reuses the index of the entry placed before it',
+    target: source('blockRecords.js'),
+    find: '    entry.index = /** @type {ArenaIndex} */ (this.#entries.length);',
+    replace:
+      '    entry.index = /** @type {ArenaIndex} */ (Math.max(0, this.#entries.length - 1));',
+  },
+  {
+    name: 'replacePair leaves the prev link of the rule after the replacement unset',
+    target: source('ruleSequence.js'),
+    find: '    if (following !== -1) this.#prev[following] = tail;',
+    replace: '    if (following !== -1) void tail;',
+  },
+  {
+    name: 'a drop does not climb to the droppable parent it empties',
+    target: source('ruleSequence.js'),
+    find: '      if (holder === -1) return;\n      at = holder;\n',
+    replace: '      return;\n',
+  },
+  {
+    name: 'a walk into a block starts at its last child',
+    target: source('declarationScan.js'),
+    find: '        entry = links.firstChild(nested.index);',
+    replace: '        entry = links.lastChild(nested.index);',
   },
 ];

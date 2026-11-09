@@ -1,8 +1,11 @@
 /**
- * @param {import('postcss').Root} root
+ * Rounds of the joins over the records of one run. The records are built and
+ * written back by the driver, which runs this after dedupe.
+ *
+ * @param {import('./blockRecords.js').BlockRecords} records the records the driver built
  * @param {readonly string[]} browsers
- * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
- * @return void
+ * @param {import('../../../ir/runContext.js').RunContext} context the run's state, shared with dedupe
+ * @return {void}
  */
-export default function runMerge(root: import('postcss').Root, browsers: readonly string[], context?: import('../../../ir/runContext.js').RunContext): void;
+export default function runMerge(records: import('./blockRecords.js').BlockRecords, browsers: readonly string[], context: import('../../../ir/runContext.js').RunContext): void;
 //# sourceMappingURL=selectorMerger.d.ts.map

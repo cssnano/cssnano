@@ -1,75 +1,42 @@
-import { invalidate } from '../../../ir/blockTable.js';
+/** @import {BlockRecords} from './blockRecords.js' */
+import { childCountOf } from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
-import { declarationIsEqual } from './declarations.js';
-import { PropertyWrites } from './lastWriteIndex.js';
-import { getDecls } from './ruleMeta.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
+import {
+  insertBefore,
+  moveDeclarations,
+  removeDeclarations,
+} from './arenaEdits.js';
+import { RuleRecord } from './ruleRecord.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
-/** @import {Container, Declaration, Rule} from 'postcss' */
-/** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import RuleSequence, {Placement} from './ruleSequence.js' */
+/** @import DeclarationScan from './declarationScan.js' */
+/** @import MergeState from './mergeState.js' */
 
 /**
- * Appends the content of `incoming` to `receiving`. A declaration of
- * `incoming` is redundant only when the last declaration of `receiving` that
- * can set the same property already has an identical value. Otherwise it
- * revives an overridden value or overrides intermediate declarations, so
- * appending it is required to preserve the cascade result.
- *
- * @param {Rule} receiving
- * @param {Rule} incoming
- * @param {PropertyTable} table
- * @return {void}
+ * @param {RuleRecord[]} records
+ * @return {ArenaIndex[]} the index of each rule
  */
-export function appendDeclarations(receiving, incoming, table) {
-  const kept = getDecls(receiving);
-  appendToDeclarations(receiving, kept, writesOf(kept, table), incoming);
+function indicesOf(records) {
+  return records.map((record) => record.index);
 }
 
 /**
- * The writes of a rule's declarations, numbered by their position.
+ * The rules a rule leaves in its place: the rule itself while it keeps a
+ * child, and nothing once it holds no child, when it departs. A kept rule
+ * needs no report: only a rule that held a declaration in the first round
+ * reaches a merge, so the second round already has it.
  *
- * @param {Declaration[]} declarations
- * @param {PropertyTable} table
- * @return {PropertyWrites}
+ * @param {BlockRecords} records
+ * @param {RuleRecord} record
+ * @return {RuleRecord[]}
  */
-export function writesOf(declarations, table) {
-  // Rewrites compare whole rules and never ask about one element, so a plain
-  // property table is enough.
-  const index = new PropertyWrites(table);
-  for (const [position, declaration] of declarations.entries()) {
-    index.record(declaration, position);
-  }
-  return index;
-}
-
-/**
- * `appendDeclarations` for a rule that keeps receiving: the caller holds its
- * declarations and their writes, which grow with it, so an append costs time
- * in the incoming rule only.
- *
- * @param {Rule} receiving
- * @param {Declaration[]} kept the declarations of `receiving`, extended in place
- * @param {PropertyWrites} index the writes of `kept`, extended in place
- * @param {Rule} incoming
- * @return {void}
- */
-export function appendToDeclarations(receiving, kept, index, incoming) {
-  // Both rules change, and so do their ancestors.
-  invalidate(receiving);
-  invalidate(incoming);
-  for (const node of incoming.nodes.slice()) {
-    if (node.type === 'decl') {
-      const last = index.lastConflict(node);
-      if (last !== -1 && declarationIsEqual(kept[last], node)) {
-        node.remove();
-        continue;
-      }
-      index.record(node, kept.length);
-      kept.push(node);
-    }
-    receiving.append(node);
-  }
+function leftoverOf(records, record) {
+  if (!childCountOf(records, record.index)) return [];
+  return [record];
 }
 
 /**
@@ -83,35 +50,34 @@ export function appendToDeclarations(receiving, kept, index, incoming) {
  * of the source, which a minifier removes, so a merge that pays only in
  * source bytes would grow the output.
  *
- * @param {Rule} first
- * @param {Rule} second
- * @param {Set<number>} claimedEarlierIndices
- * @param {Set<number>} claimedIndices
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
+ * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
+ * @param {Set<ArenaIndex>} claimedIndices the arena indices of the declarations of `second` that repeat `shared`
  * @param {import('./mergeState.js').default} mergeState
- * @param {RuleLink} secondLink where `second` stands in the sweep
+ * @param {ArenaIndex} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
+ * @param {DeclarationScan} scan
  * @return {Placement | null} null when the output would not get shorter
  */
 export function buildMergedRule(
   first,
   second,
-  claimedEarlierIndices,
+  shared,
   claimedIndices,
   mergeState,
   secondLink,
   sequence,
-  outsideDeclarations
+  scan
 ) {
-  const firstSelectors = mergeState.meta(first).selectors;
-  const secondSelectors = mergeState.meta(second).selectors;
-  const firstDeclarations = mergeState.meta(first).declarations;
+  const firstSelectors = first.selectors;
+  const secondSelectors = second.selectors;
+  const { records } = mergeState;
   let sharedBytes = 0;
   // A later plugin, such as Autoprefixer, removes an outdated prefixed
   // declaration from the rule that sets it, which a shared rule leaves alone.
   let prefixed = 0;
-  for (const index of claimedEarlierIndices) {
-    const declaration = firstDeclarations[index];
+  for (const declaration of shared) {
     const length = minifiedLength(declaration);
     sharedBytes += length;
     const { prop } = declaration;
@@ -125,10 +91,10 @@ export function buildMergedRule(
     selectorsLength(secondSelectors) +
     2 -
     sharedBytes;
-  if (first.nodes.length === claimedEarlierIndices.size) {
+  if (childCountOf(records, first.index) === shared.length) {
     delta -= selectorsLength(firstSelectors) + 1;
   }
-  if (second.nodes.length === claimedIndices.size) {
+  if (childCountOf(records, second.index) === claimedIndices.size) {
     delta -= selectorsLength(secondSelectors) + 1;
   }
   // A pair that shortens the output merges alone: the rules after it may
@@ -139,69 +105,62 @@ export function buildMergedRule(
       : findGroup(
           first,
           secondLink,
-          claimedEarlierIndices,
+          shared,
           claimedIndices,
           sharedBytes,
           prefixed,
           delta,
           mergeState,
           sequence,
-          outsideDeclarations
+          scan
         );
   if (delta >= 0 && !group) return null;
 
-  const receivingBlock = second.clone();
-  receivingBlock.selector = [
+  const selectors = [
     ...firstSelectors,
     ...secondSelectors,
     ...(group?.added ?? []),
-  ].join();
-  if (!group) mergeState.storeJoined(receivingBlock, first, second);
-  receivingBlock.nodes = [];
-  const firstClone = first.clone({ selectors: firstSelectors });
-  const secondClone = second.clone({ selectors: secondSelectors });
-  mergeState.storeClone(first, firstClone);
-  mergeState.storeClone(second, secondClone);
-  mergeState.reportCreated(receivingBlock);
-  mergeState.reportCreated(firstClone);
-  mergeState.reportCreated(secondClone);
-  // Index-based removal matches duplicates positionally, symmetric to how
-  // `claimedIndices` selects declarations in the later rule.
-  let earlierIndex = 0;
-  firstClone.walkDecls((decl) => {
-    if (claimedEarlierIndices.has(earlierIndex++)) {
-      decl.remove();
-      receivingBlock.append(decl);
-    }
-  });
-  let laterIndex = 0;
-  secondClone.walkDecls((decl) => {
-    if (claimedIndices.has(laterIndex++)) {
-      decl.remove();
-    }
-  });
-  mergeState.markCompatible(receivingBlock);
-  if (secondClone.nodes.length) mergeState.markCompatible(secondClone);
+  ];
+  // The merged rule prints the raws of the rule it was merged from, or of
+  // the template that rule printed, when it was merged too.
+  const template = second.template === -1 ? second.index : second.template;
+  const receivingRecord = new RuleRecord(
+    undefined,
+    selectors,
+    selectors.join(),
+    undefined,
+    undefined
+  );
+  receivingRecord.mark();
+  receivingRecord.template = template;
+  receivingRecord.before = second.before;
+  // The merged rule takes the place before the later rule, so no rule holds
+  // children while it is unlinked. The sweep's replacement keeps that place.
+  insertBefore(records, second.index, receivingRecord);
+  if (!group) mergeState.storeJoined(receivingRecord, first, second);
+  // The merged rule takes the declarations of the earlier rule themselves.
+  moveDeclarations(
+    records,
+    first.index,
+    receivingRecord.index,
+    shared.map((declaration) => declaration.index)
+  );
+  const firstLeftover = leftoverOf(records, first);
+  removeDeclarations(records, second.index, claimedIndices);
+  const secondLeftover = leftoverOf(records, second);
   /** @type {Placement} */
   const placement = {
-    first: [firstClone].filter((rule) => rule.nodes.length),
-    second: [receivingBlock, secondClone].filter((rule) => rule.nodes.length),
+    first: indicesOf(firstLeftover),
+    second: indicesOf(
+      [receivingRecord, ...secondLeftover].filter((record) =>
+        childCountOf(records, record.index)
+      )
+    ),
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
-      const leftover = rule.clone({
-        selectors: mergeState.meta(rule).selectors,
-      });
-      mergeState.storeClone(rule, leftover);
-      mergeState.reportCreated(leftover);
-      mergeState.forget(rule);
-      let index = 0;
-      leftover.walkDecls((decl) => {
-        if (claimed.has(index++)) decl.remove();
-      });
-      if (!leftover.nodes.length) return [];
-      mergeState.markCompatible(leftover);
-      return [leftover];
+      removeDeclarations(records, rule.index, claimed);
+      return indicesOf(leftoverOf(records, rule));
     });
   }
   return placement;

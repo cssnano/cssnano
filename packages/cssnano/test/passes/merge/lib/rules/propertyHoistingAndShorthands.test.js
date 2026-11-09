@@ -180,3 +180,21 @@ test(
     '.a{appearance:none}.a,.b{place-items:center}'
   )
 );
+
+// `all` skips `direction` and `unicode-bidi` (CSS Cascade 4), so an escaped
+// spelling of either is still hoisted past a later `all`.
+test(
+  'should hoist an escaped direction declaration past a later all, which does not reset direction',
+  processCSS(
+    'a{\\64irection:rtl}b{\\64irection:rtl;all:initial}',
+    'a,b{\\64irection:rtl}b{all:initial}'
+  )
+);
+
+test(
+  'should hoist an escaped unicode-bidi declaration past a later all, which does not reset unicode-bidi',
+  processCSS(
+    'a{\\75nicode-bidi:embed}b{\\75nicode-bidi:embed;all:initial}',
+    'a,b{\\75nicode-bidi:embed}b{all:initial}'
+  )
+);

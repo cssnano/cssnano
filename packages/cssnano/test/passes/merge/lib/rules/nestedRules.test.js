@@ -10,6 +10,13 @@ test(
   passthroughCSS('h1 { .a { color: red; } } h1 { .b { color: red; } }')
 );
 
+// The nested `.b` matches `.x .b`, not `.b`, so the two `@media` rules never
+// join even though their declarations are equal.
+test(
+  'should keep an at-rule inside a rule apart from an equal at-rule outside it',
+  passthroughCSS('@media print{.a{color:red}}.x{@media print{.b{color:red}}}')
+);
+
 test(
   'should preserve nested rules when their parent also has matching declarations',
   passthroughCSS(

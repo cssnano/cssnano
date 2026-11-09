@@ -1,31 +1,18 @@
-import {
-  createSelectorLookup,
-  selectorsCompatible,
-} from './ensureCompatibility.js';
+import { createSelectorLookup } from './ensureCompatibility.js';
 import { createElementKeyLookup } from './elementKeys.js';
 import { comma } from '../../../../values/punctuationTokens.js';
 import { createRunContext } from '../../../ir/runContext.js';
-import { getMeta } from './ruleMeta.js';
 import { isKeyframes, sameContainer } from './sameContainer.js';
 import { joinRanges } from '../../../../values/joinRanges.js';
-import {
-  selectorPieces,
-  separatorOf,
-} from '../../../../values/selectorRanges.js';
+import { selectorPieces } from '../../../../values/selectorRanges.js';
 import { tokensText } from '../../../../values/tokensText.js';
 
-/** @import {Container, Declaration, Rule} from 'postcss' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-/** @import {RuleMeta} from './ruleMeta.js' */
-/** @import {RuleDeclarationKeys} from './ruleMeta.js' */
-
-/** @param {import('postcss').ChildNode} node @return {boolean} */
-function isRuleOrAtRule(node) {
-  return node.type === 'rule' || node.type === 'atrule';
-}
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
 
 /**
  * The state shared by every merge of one stylesheet.
@@ -37,38 +24,21 @@ export default class MergeState {
    * @type {PropertyTable}
    */
   properties;
-  /** @type {import('./ruleMeta.js').SelectorLookup} */
+  /** @type {import('./selectorList.js').SelectorLookup} */
   #lookup;
-  /** @type {WeakSet<Rule>} rules whose selectors are known to be compatible */
-  #ruleCache;
-  /** @type {WeakMap<Rule, RuleMeta>} */
-  #ruleMeta;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
   #declarations;
+  /** @type {import('../../../ir/selectorIds.js').SelectorIds} */
+  #selectorIds;
   /** @type {(selector: string, piece?: RangePiece | null) => string | null} */
   #elementKeyOf = createElementKeyLookup();
-  /** @type {TextTable} */
-  #textTable;
-  /** @type {Set<Rule>} rules whose selector text is set, and whose tokens are stored at the end of the run */
-  #spelled = new Set();
-  // Merging moves only declarations and comments into a rule, so a rule found
-  // to hold no rule or at-rule holds none until it is forgotten. A rule that
-  // keeps receiving is then not rescanned on every merge.
-  /** @type {WeakSet<Rule>} */
-  #withoutBlocks = new WeakSet();
-  /** @type {Set<Rule> | null} */
-  #createdBlocks;
   /**
-   * The summaries of the stylesheet's blocks, read by the at-rule joins.
+   * The block and rule records of the stylesheet. The driver builds them, and
+   * `runMerge` sets them before any edit reads them.
    *
-   * @type {import('../../../ir/blockTable.js').BlockTable}
+   * @type {BlockRecords}
    */
-  blocks;
-
-  /** @returns {TextTable} the selector tokens the walk stored */
-  get textTable() {
-    return this.#textTable;
-  }
+  records = /** @type {BlockRecords} */ (/** @type {unknown} */ (null));
 
   /**
    * @param {readonly string[]} browsers
@@ -77,114 +47,57 @@ export default class MergeState {
   constructor(browsers, context = createRunContext()) {
     this.#lookup = createSelectorLookup(
       browsers,
-      context.selectorCompatibility,
-      context.textTable
+      context.selectorCompatibility
     );
-    this.#ruleCache = context.compatibleRules;
-    this.#ruleMeta = context.ruleMeta;
     this.#declarations = context.declarations;
+    this.#selectorIds = context.selectorIds;
     this.properties = context.properties;
-    this.blocks = context.blocks;
-    this.#createdBlocks = context.createdBlocks;
-    this.#textTable = context.textTable;
-  }
-
-  /**
-   * @param {Rule} rule
-   * @return {RuleMeta}
-   */
-  meta(rule) {
-    return getMeta(rule, this.#ruleMeta);
-  }
-
-  /**
-   * Drops the description of a rule whose selectors or declarations changed
-   * or that left the stylesheet. It is rebuilt from the rule when next
-   * needed, so a rule that was never described stays so.
-   *
-   * @param {Rule} rule
-   */
-  forget(rule) {
-    this.#ruleMeta.delete(rule);
-    this.#withoutBlocks.delete(rule);
-  }
-
-  /**
-   * @param {Rule} rule
-   * @return {boolean} whether the rule holds a rule or an at-rule
-   */
-  #holdsBlocks(rule) {
-    if (this.#withoutBlocks.has(rule)) return false;
-    if (rule.some(isRuleOrAtRule)) return true;
-    this.#withoutBlocks.add(rule);
-    return false;
   }
 
   /**
    * The elements the rule can match. An arrow function, so it passes as a
    * callback without a closure per call.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    * @return {string[] | null}
    */
-  elementKeysOf = (rule) => {
-    this.piecesOf(rule);
-    return this.meta(rule).elementKeys(this.#elementKeyOf);
+  elementKeysOf = (record) => {
+    this.piecesOf(record);
+    return record.elementKeys(this.#elementKeyOf);
   };
 
   /**
-   * Numbers declarations so equal ones, with the same property, value,
-   * importance and hack prefix, share a key for the whole run. An arrow
-   * function, so it passes as a callback without a closure per call.
+   * The ids of the run's declarations: equal declarations, with the same
+   * property, value, importance and hack prefix, share an id.
    *
-   * @param {Declaration} declaration
-   * @return {number}
+   * @return {import('../../../ir/declarationKey.js').DeclarationKeys}
    */
-  declarationKey = (declaration) => this.#declarations.keyOf(declaration);
-
-  /**
-   * @param {Rule} rule
-   * @return {RuleDeclarationKeys}
-   */
-  declarationKeysOf(rule) {
-    return this.meta(rule).declarationKeys(this.declarationKey);
+  get declarationIds() {
+    return this.#declarations;
   }
 
   /**
-   * Records that every selector of the rule is compatible with the target
-   * browsers, so `canMerge` does not check them again. The caller must have
-   * established it: a rule built from selectors that passed `canMerge`
-   * qualifies, since a list is compatible exactly when each selector is.
+   * The ids of the run's selectors, which list comparisons read.
    *
-   * @param {Rule} rule
+   * @return {import('../../../ir/selectorIds.js').SelectorIds}
    */
-  markCompatible(rule) {
-    this.#ruleCache.add(rule);
-  }
-
-  /**
-   * Reports a rule a merge created, when the run collects them, so the driver
-   * canonicalizes it. A rule no run collects is left alone.
-   *
-   * @param {Rule} rule
-   */
-  reportCreated(rule) {
-    this.#createdBlocks?.add(rule);
+  get selectorIds() {
+    return this.#selectorIds;
   }
 
   /**
    * Appends selectors of `source` to the rule's selector list, keeping its
    * vendor prefix profile and its token ranges in step.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    * @param {string[]} selectors some of the selectors of `source`, in the
    * order of their first occurrence there
-   * @param {Rule} source
+   * @param {RuleRecord} source
    * @return {readonly string[] | null} the element keys the selectors add, or
    * null when the rule's elements are not listed
    */
-  addSelectors(rule, selectors, source) {
-    const own = this.piecesOf(rule);
+  addSelectors(record, selectors, source) {
+    const own = this.piecesOf(record);
     const from = own === null ? null : this.piecesOf(source);
     const pieces =
       from === null
@@ -192,10 +105,10 @@ export default class MergeState {
         : appendPieces(
             /** @type {RangePiece[]} */ (own),
             selectors,
-            this.meta(source).selectors,
+            source.selectors,
             from
           );
-    return this.meta(rule).addSelectors(
+    return record.addSelectors(
       selectors,
       this.#lookup,
       this.#elementKeyOf,
@@ -204,144 +117,137 @@ export default class MergeState {
   }
 
   /**
-   * The token range of each selector of the rule, read from the text table
-   * without tokenizing, or null when the table does not hold them.
+   * The token range of each selector of the rule, read from the tokens the
+   * record holds without tokenizing, or null when it holds none.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    * @return {RangePiece[] | null}
    */
-  piecesOf(rule) {
-    const meta = this.meta(rule);
-    if (meta.pieces === undefined) {
-      const list = this.#textTable.stored(rule);
-      meta.setPieces(
-        list === undefined ? null : selectorPieces(list, meta.selectors)
+  piecesOf(record) {
+    if (record.pieces === undefined) {
+      const { tokens } = record;
+      record.setPieces(
+        tokens === undefined ? null : selectorPieces(tokens, record.selectors)
       );
     }
-    return /** @type {RangePiece[] | null} */ (meta.pieces);
+    return /** @type {RangePiece[] | null} */ (record.pieces);
   }
 
   /**
-   * Sets the selector text of a rule from its list. Its tokens are stored at
-   * the end of the run, so a chain of merges into one rule stores them once.
+   * Sets the selector of a rule from its list and marks it, so write-back
+   * assigns the text. The tokens of the old text are dropped.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    */
-  spellSelectors(rule) {
-    this.#textTable.setText(rule, this.meta(rule).selectorText());
-    this.#spelled.add(rule);
+  spellSelectors(record) {
+    record.setSelector(record.selectorText());
+    record.mark();
   }
 
   /**
-   * Stores the tokens of a copy of `rule` made with the rule's selectors. The
-   * copy's text is the one PostCSS joined, so the tokens are stored only when
-   * they spell it.
+   * Gives the record the tokens of a rule joined from the selectors of `first`
+   * and `second`, in that order, with a comma between each, as `join()` writes it.
    *
-   * @param {Rule} rule
-   * @param {Rule} clone
+   * @param {RuleRecord} record the merged rule, whose selector is the join
+   * @param {RuleRecord} first
+   * @param {RuleRecord} second
    */
-  storeClone(rule, clone) {
-    const source = this.#textTable.stored(rule);
-    if (source === undefined) return;
-    this.#storePieces(clone, this.piecesOf(rule), separatorOf(source));
-  }
-
-  /**
-   * Stores the tokens of a rule joined from the selectors of `first` and
-   * `second`, in that order, with a comma between each, as `join()` writes it.
-   *
-   * @param {Rule} rule
-   * @param {Rule} first
-   * @param {Rule} second
-   */
-  storeJoined(rule, first, second) {
+  storeJoined(record, first, second) {
     const earlier = this.piecesOf(first);
     const later = this.piecesOf(second);
     if (earlier === null || later === null) return;
-    this.#storePieces(rule, earlier.concat(later), [comma()]);
+    this.#storePieces(record, earlier.concat(later), [comma()]);
   }
 
   /**
-   * Stores the list the pieces join to, when it spells the rule's selector as
-   * it is written. Otherwise the rule keeps its text, and a reader tokenizes it.
+   * Gives the record the list the pieces join to, when it spells the record's
+   * selector as it is written. Otherwise the record keeps no list.
    *
-   * @param {Rule} rule
+   * @param {RuleRecord} record
    * @param {RangePiece[] | null} pieces
    * @param {readonly CSSToken[]} separator
    */
-  #storePieces(rule, pieces, separator) {
+  #storePieces(record, pieces, separator) {
     if (pieces === null) return;
     const list = joinRanges(pieces, separator);
-    if (tokensText(list) === rule.selector) {
-      this.#textTable.record(rule, rule.selector, list);
-    }
-  }
-
-  /**
-   * Stores the tokens of every rule `spellSelectors` set, joined from the
-   * pieces its list holds. A rule without pieces keeps its text only, and a
-   * reader tokenizes it.
-   */
-  flushSelectors() {
-    for (const rule of this.#spelled) {
-      const meta = this.#ruleMeta.get(rule);
-      const pieces = meta?.pieces;
-      if (!pieces) continue;
-      const list = joinRanges(pieces, [comma()]);
-      if (tokensText(list) === meta?.selectorText()) {
-        this.#textTable.write(rule, list);
-      }
-    }
-    this.#spelled.clear();
+    if (tokensText(list) === record.selector) record.setTokens(list);
   }
 
   /**
    * Gives `later` the selectors of `earlier`, which stands before it and is
    * dropped by the caller.
    *
-   * @param {Rule} later
-   * @param {Rule} earlier
+   * @param {RuleRecord} later
+   * @param {RuleRecord} earlier
    */
   absorbEarlier(later, earlier) {
+    // The compatibility check tokenizes a list that holds no tokens yet, so
+    // both checks run before the pieces are read, which cache a missing list.
+    earlier.compatible(this.#lookup);
+    later.compatible(this.#lookup);
     // Both lists of pieces are known before the absorb joins them.
     this.piecesOf(earlier);
     this.piecesOf(later);
-    this.meta(later).absorbEarlier(
-      this.meta(earlier),
-      this.#lookup,
-      this.#elementKeyOf
+    later.absorbEarlier(earlier, this.#lookup, this.#elementKeyOf);
+  }
+
+  /**
+   * The container whose chain holds the rule: a block, or a rule that nests.
+   * It is where the rule stands, which can differ from its PostCSS parent
+   * during a sweep. A rule that left the stylesheet stands in no container.
+   *
+   * @param {RuleRecord} record
+   * @return {BlockRecord | RuleRecord}
+   */
+  blockOf(record) {
+    return /** @type {BlockRecord | RuleRecord} */ (
+      this.records.container(this.#blockIndexOf(record))
     );
   }
 
   /**
-   * Whether the rules can be merged. `parentA` and `parentB` are where the
-   * rules stand, which differs from their `parent` for a rule that moved
-   * during the sweep.
+   * @param {RuleRecord} record
+   * @return {number} the index of the block the rule stands in
+   */
+  #blockIndexOf(record) {
+    // Under checks, `rule` throws when the root no longer reaches the rule.
+    this.records.rule(record.index);
+    return this.records.links.parentOf(record.index);
+  }
+
+  /**
+   * Whether the rules can be merged. `blockA` and `blockB` are the blocks
+   * the rules stand in.
    *
-   * @param {Rule} ruleA
-   * @param {Rule} ruleB
-   * @param {Container | undefined} [parentA]
-   * @param {Container | undefined} [parentB]
+   * @param {RuleRecord} recordA
+   * @param {RuleRecord} recordB
+   * @param {number} [blockA] the index of the block the first rule stands in
+   * @param {number} [blockB] the index of the block the second rule stands in
    * @return {boolean}
    */
-  canMerge(ruleA, ruleB, parentA = ruleA.parent, parentB = ruleB.parent) {
-    if (!sameContainer(parentA, parentB, this.#textTable)) return false;
-    if (isKeyframes(parentA)) return false;
-    if (this.#holdsBlocks(ruleA) || this.#holdsBlocks(ruleB)) return false;
+  canMerge(
+    recordA,
+    recordB,
+    blockA = this.#blockIndexOf(recordA),
+    blockB = this.#blockIndexOf(recordB)
+  ) {
+    const containerA = /** @type {BlockRecord | RuleRecord} */ (
+      this.records.container(blockA)
+    );
+    const containerB = this.records.container(blockB);
+    if (!sameContainer(containerA, containerB)) return false;
+    if (isKeyframes(containerA)) return false;
+    if (recordA.context !== -1) return false;
+    if (recordB.context !== -1) return false;
 
-    const metaA = this.meta(ruleA);
-    const metaB = this.meta(ruleB);
-    // Compatibility holds for a concatenated list exactly when it holds for
-    // each side, so a long absorbing list is never rescanned. The vendor check
-    // follows it, because an incompatible selector has no known prefix.
+    // The vendor check follows compatibility, because an incompatible selector
+    // has no known prefix.
     return (
-      (this.#ruleCache.has(ruleA) ||
-        selectorsCompatible(metaA.selectors, this.#lookup, ruleA)) &&
-      (this.#ruleCache.has(ruleB) ||
-        selectorsCompatible(metaB.selectors, this.#lookup, ruleB)) &&
-      metaA
+      recordA.compatible(this.#lookup) &&
+      recordB.compatible(this.#lookup) &&
+      recordA
         .vendorProfile(this.#lookup)
-        .allowsMerge(metaB.vendorProfile(this.#lookup))
+        .allowsMerge(recordB.vendorProfile(this.#lookup))
     );
   }
 }

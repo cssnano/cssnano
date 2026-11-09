@@ -98,3 +98,11 @@ test(
     '.a{border-bottom:1px solid #dbdbdb;color:red}.b{border-bottom-color:#dbdbdb;color:blue}'
   )
 );
+
+test(
+  'joins four radius longhands with border-radius:1px when the longhand left important:false, which prints the same as unset (border-radius longhand)',
+  processCSS(
+    'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px}b{border-radius:1px}',
+    'a,b{border-radius:1px}'
+  )
+);

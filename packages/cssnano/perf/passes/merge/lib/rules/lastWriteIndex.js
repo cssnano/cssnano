@@ -5,8 +5,14 @@ import LastWriteIndex from '../../../../../src/passes/merge/lib/rules/lastWriteI
 import { isConflictingProp } from '../../../../../script/passes/ir/lib/propertyRelations.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 
-/** @param {string} prop */
-const decl = (prop) => ({ prop });
+const table = new PropertyTable();
+
+/**
+ * A declaration record holding the keys of a property name.
+ *
+ * @param {string} prop
+ */
+const decl = (prop) => ({ keys: table.keysOf(prop) });
 
 // The index is an independent implementation of isConflictingProp, which stays
 // the definition of when two properties set the same underlying property.
@@ -34,8 +40,10 @@ const catalogue = [
 
 test('last-write index agrees with isConflictingProp when many properties were written', () => {
   const sample = catalogue.filter((_, i) => i % 7 === 0);
-  const index = new LastWriteIndex(new PropertyTable());
-  for (const [i, prop] of sample.entries()) index.record(decl(prop), i + 1);
+  const index = new LastWriteIndex();
+  for (const [i, prop] of sample.entries()) {
+    index.record(table.keysOf(prop), i + 1);
+  }
   for (const queried of catalogue) {
     for (let since = 0; since < sample.length; since++) {
       const expected = sample

@@ -14,7 +14,7 @@ Please explain why you think the changes are an improvement.
 ### Checklist
 
 - [ ] I have followed the [conventional commits](https://www.conventionalcommits.org/) standard for my commit messages
-- [ ] I have read the [contributing guidelines](https://github.com/cssnano/cssnano/blob/master/CONTRIBUTING.md)
+- [ ] I have read the [contributing guidelines](https://github.com/cssnano/cssnano/blob/main/CONTRIBUTING.md)
 - [ ] I have searched/checked for existing issues and PRs
 
 <!-- Note: For anything other than minor chores you are encouraged to discuss 

@@ -1,6 +1,6 @@
 import { propertyNameKey } from './propertyName.js';
 
-/** @import {Declaration} from 'postcss' */
+/** @import {AtRule, Declaration} from 'postcss' */
 
 // Marks the end of a component path in a trie, so the id of a path cannot be
 // confused with a component.
@@ -30,13 +30,22 @@ export function step(trie, key) {
 /**
  * The browser hack in front of a declaration, such as `*` or `_`. The parser
  * keeps it in `raws.before`, not in the property name, so it is part of the
- * declaration's identity. A declaration without `raws.before` has no hack.
+ * declaration's identity. A stray `;` before the declaration is not a hack,
+ * and a declaration without `raws.before` has none.
  *
  * @param {Declaration} declaration
  * @return {string}
  */
 export function hackPrefixOf(declaration) {
-  return declaration.raws.before?.trim() ?? '';
+  return declaration.raws.before?.replaceAll(';', '').trim() ?? '';
+}
+
+/**
+ * @param {string | undefined} value
+ * @return {string | undefined}
+ */
+function trimValue(value) {
+  return value ? value.trim() : value;
 }
 
 /**
@@ -48,6 +57,8 @@ export class DeclarationKeys {
   /** @type {Trie} */
   root = new Map();
   #lastId = 0;
+  /** @type {Map<number, Trie>} the path of each prelude id, which structural ids extend */
+  #preludes = new Map();
 
   /**
    * The key of a declaration: the same property, value, importance and hack
@@ -63,6 +74,35 @@ export class DeclarationKeys {
     trie = step(trie, declaration.value);
     trie = step(trie, declaration.important === true);
     return this.leafOf(step(trie, hackPrefixOf(declaration)));
+  }
+
+  /**
+   * The id of an at-rule's prelude: its name, its params and its trimmed
+   * `raws.before` and `raws.afterName`. Ids of the preludes are kept with
+   * their paths, for `preludeTrie`.
+   *
+   * @param {AtRule} node
+   * @return {number}
+   */
+  preludeId(node) {
+    let path = step(step(this.root, 'atrule'), node.name);
+    path = step(path, node.params);
+    path = step(path, trimValue(node.raws.before));
+    path = step(path, trimValue(node.raws.afterName));
+    const id = this.leafOf(path);
+    this.#preludes.set(id, path);
+    return id;
+  }
+
+  /**
+   * The path that a prelude id ends, from `preludeId`, which a structural id
+   * extends.
+   *
+   * @param {number} id
+   * @return {Trie}
+   */
+  preludeTrie(id) {
+    return /** @type {Trie} */ (this.#preludes.get(id));
   }
 
   /**

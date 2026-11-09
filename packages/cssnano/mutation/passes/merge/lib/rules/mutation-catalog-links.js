@@ -1,0 +1,45 @@
+export const name = 'merge-links';
+
+/**
+ * @param {string} module
+ * @return {string}
+ */
+function source(module) {
+  return new URL(
+    `../../../../../src/passes/merge/lib/rules/${module}`,
+    import.meta.url
+  ).href;
+}
+
+export const target = source('linkChecks.js');
+// node --test expands this glob, so every split test file of the rules runs.
+export const test = new URL(
+  '../../../../../test/passes/merge/lib/rules/*.js',
+  import.meta.url
+).href;
+
+// Each mutant is a link fault that leaves the output as it is: it restores an
+// exception the link checks no longer have, or leaves an emptied entry linked.
+// The fuzz oracles see neither, so only the rules' tests judge these.
+export const mutations = [
+  {
+    name: 'the reach check lets an entry linked nowhere pass again',
+    target: source('linkChecks.js'),
+    find: '  let at = index;\n',
+    replace:
+      '  if (records.links.parentOf(index) === -1) return;\n  let at = index;\n',
+  },
+  {
+    name: 'linking into a rule that is linked nowhere passes again',
+    target: source('linkChecks.js'),
+    find: '  let at = block;\n',
+    replace:
+      '  if (records.links.parentOf(block) === -1 && records.container(block)?.context === -1) return;\n  let at = block;\n',
+  },
+  {
+    name: 'a takePlaceOf that leaves the later entry in its chain',
+    target: source('blockLinks.js'),
+    find: '    this.unlink(later);\n',
+    replace: '',
+  },
+];

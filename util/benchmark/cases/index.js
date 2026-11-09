@@ -22,3 +22,15 @@ export const benchmarkCases = {
   ...stylehacksCases,
   ...presetCases,
 };
+
+// Named lists of cases that one command runs in turn on a single pair of
+// worktrees, which saves the install of a run per case.
+export const benchmarkSets = {
+  // The rule merging and duplicate discarding cases of the merge records.
+  'merge-ir': Object.freeze([
+    'merge-rules-dense',
+    'merge-rules-nested-declarations',
+    'merge-duplicates-dense',
+    'merge-pass-duplicates',
+  ]),
+};

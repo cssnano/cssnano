@@ -1,36 +1,10 @@
-import type { AtRule, ChildNode, Declaration, Rule } from 'postcss';
-import type { PropertyTable } from '../../../ir/propertyTable.js';
-/**
- * @param {ChildNode} node
- * @return {node is AtRule}
- */
-export declare function isConditionalGroupRule(node: ChildNode): node is AtRule;
-/**
- * The latest position at which each property was declared, for one property
- * table: the answers match `isConflictingProp`, in time linear in the number
- * of longhands the property expands to.
- */
-export declare class PropertyWrites {
-    #private;
-    /** @param {PropertyTable} table keys every declaration this index sees */
-    constructor(table: PropertyTable);
-    /**
-     * @param {{prop: string}} declaration
-     * @param {number} position
-     */
-    record(declaration: {
-        prop: string;
-    }, position: number): void;
-    /**
-     * Position of the newest write that conflicts with `declaration`, or -1.
-     *
-     * @param {{prop: string}} declaration
-     * @return {number}
-     */
-    lastConflict(declaration: {
-        prop: string;
-    }): number;
-}
+import { BlockRecord, NodeEntry } from './blockRecord.js';
+import { RuleRecord } from './ruleRecord.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { PropertyKeys } from '../../../ir/propertyTable.js';
+import type { BlockRecords } from './blockRecords.js';
+/** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 /**
  * A table of the latest position at which each property was declared among
  * the children of one parent, visited in document order. It tells whether a
@@ -47,62 +21,62 @@ export declare class PropertyWrites {
  */
 export default class LastWriteIndex {
     #private;
-    /** @param {PropertyTable} table keys every declaration this index sees */
-    constructor(table: PropertyTable);
+    constructor();
     /**
-     * @param {{prop: string}} declaration
+     * @param {PropertyKeys} keys the keys of a declaration's property name
      * @param {number} position
-     * @param {readonly string[] | null} [keys] element keys of the writing rule,
-     * or null when they are unknown
+     * @param {readonly string[] | null} [elements] element keys of the writing
+     * rule, or null when they are unknown
      */
-    record(declaration: {
-        prop: string;
-    }, position: number, keys?: readonly string[] | null): void;
+    record(keys: PropertyKeys, position: number, elements?: readonly string[] | null): void;
     /**
      * Record every write a child of the parent makes, under the element keys
      * `keysOf` gives its rule. An at-rule that is not a conditional group rule is
      * a barrier, since moving anything across it is not known to preserve the
      * cascade.
      *
-     * @param {ChildNode} node
+     * @param {BlockRecords} records the arena that holds the entries
+     * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry a
+     * live entry of a block
      * @param {number} position
-     * @param {(rule: Rule) => string[] | null} keysOf
+     * @param {(record: RuleRecord) => string[] | null} keysOf
      * @return {void}
      */
-    recordNode(node: ChildNode, position: number, keysOf: (rule: Rule) => string[] | null): void;
+    recordNode(records: BlockRecords, entry: DeclarationRecord | RuleRecord | BlockRecord | NodeEntry, position: number, keysOf: (record: RuleRecord) => string[] | null): void;
     /**
      * Whether a write after `position` conflicts with one of `declarations`,
      * counting only writes that can set an element in `elements`, the non-empty
      * element keys of the rules moving to `position`. Null counts every write.
      *
-     * @param {{prop: string}[]} declarations
+     * @param {DeclarationRecord[]} declarations
      * @param {number} position
      * @param {Iterable<string> | null} [elements]
      * @return {boolean}
      */
-    conflictsSince(declarations: {
-        prop: string;
-    }[], position: number, elements?: Iterable<string> | null): boolean;
+    conflictsSince(declarations: DeclarationRecord[], position: number, elements?: Iterable<string> | null): boolean;
     /**
-     * `conflictsSince` for declarations that move with their rules, whose
-     * elements are the union of the keys `keysOf` gives their rules. A
-     * declaration with unknown elements counts every write.
+     * `conflictsSince` for entries that move with their rules: rule records,
+     * whose declarations take the keys `keysOf` gives, and bare declarations,
+     * which count every write. Unknown keys count every write.
      *
-     * @param {Declaration[]} declarations
+     * @param {BlockRecords} records
+     * @param {(RuleRecord | DeclarationRecord)[]} entries
      * @param {number} position
-     * @param {(rule: Rule) => string[] | null} keysOf
+     * @param {(record: RuleRecord) => string[] | null} keysOf
      * @return {boolean}
      */
-    conflictsSinceIn(declarations: Declaration[], position: number, keysOf: (rule: Rule) => string[] | null): boolean;
+    conflictsSinceIn(records: BlockRecords, entries: (RuleRecord | DeclarationRecord)[], position: number, keysOf: (record: RuleRecord) => string[] | null): boolean;
     /**
-     * Declarations that moved to `position` are written there now. Every
+     * Entries that moved to `position` are written there now: each rule record
+     * writes its declarations under the element keys `keysOf` gives it. Every
      * entry only ever moves forward, so a later write to the same property
      * is kept.
      *
-     * @param {Declaration[]} declarations
+     * @param {BlockRecords} records
+     * @param {(RuleRecord | DeclarationRecord)[]} entries
      * @param {number} position
-     * @param {(rule: Rule) => string[] | null} keysOf
+     * @param {(record: RuleRecord) => string[] | null} keysOf
      */
-    moveWrites(declarations: Declaration[], position: number, keysOf: (rule: Rule) => string[] | null): void;
+    moveWrites(records: BlockRecords, entries: (RuleRecord | DeclarationRecord)[], position: number, keysOf: (record: RuleRecord) => string[] | null): void;
 }
 //# sourceMappingURL=lastWriteIndex.d.ts.map
