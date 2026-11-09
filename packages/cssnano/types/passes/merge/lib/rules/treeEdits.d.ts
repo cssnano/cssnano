@@ -1,21 +1,21 @@
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { BlockRecords } from './blockRecords.js';
-import { BlockRecord, NodeEntry } from './blockRecord.js';
-import type { Root } from 'postcss';
+import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecord, NodeEntry } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type MergeState from './mergeState.js';
-import type { RunContext } from '../../../ir/runContext.js';
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
+/** @import MergeState from './mergeState.js' */
+/** @import {RunContext} from '../../../ir/runContext.js' */
 /**
- * Builds the records of a stylesheet from its tree, once per run. Each child is
- * linked into the chain of its parent, and every rule is a container whose
- * children form its own chain.
- *
- * @param {Root} root
- * @param {RunContext} context the run's state, which gives the tokens and ids the records keep
- * @return {BlockRecords}
+ * The edits that rule merging makes to the records of the stylesheet. Each one
+ * updates the records it touches, so a join cannot leave a stale answer
+ * behind. The PostCSS nodes catch up at write-back, which rebuilds the child
+ * lists that changed. Lib code outside this module edits through these names.
  */
-export declare function buildRecords(root: Root, context: RunContext): BlockRecords;
 /**
  * Takes an entry out of its parent's records at once. The PostCSS child list
  * catches up at write-back.

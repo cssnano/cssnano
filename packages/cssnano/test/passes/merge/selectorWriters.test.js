@@ -8,8 +8,10 @@ const { walkStylesheet } = await import('../../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../../src/values/textTable.js');
 const { mergePass, transformPass } =
   await import('../../../src/passes/merge/index.js');
-const { buildRecords, removeRules, takePlaceOf } =
+const { removeRules, takePlaceOf } =
   await import('../../../src/passes/merge/lib/rules/treeEdits.js');
+const { buildRecords } =
+  await import('../../../src/passes/merge/lib/rules/buildRecords.js');
 const { assertRecordsMatchTree, writeBack } =
   await import('../../../src/passes/merge/lib/rules/writeBack.js');
 const { createRunContext } =

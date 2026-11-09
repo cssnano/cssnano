@@ -6,7 +6,7 @@ import {
   applyChildEdits,
   detach,
 } from '../../../../../src/passes/merge/lib/deferredChildEdits.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 
 test('buildRecords should throw under consistency checks when the stylesheet holds a detached child that is not applied', () => {
   const root = postcss.parse('a{color:red}b{color:red}');

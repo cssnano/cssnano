@@ -13,7 +13,7 @@ const SRC = join(dirname(fileURLToPath(import.meta.url)), '../../../../../src');
  */
 const UNWALKED = new Set([
   'passes/merge/lib/rules/writeBack.js',
-  'passes/merge/lib/rules/treeEdits.js',
+  'passes/merge/lib/rules/buildRecords.js',
   'passes/merge/lib/rules/windowGuard.js',
 ]);
 

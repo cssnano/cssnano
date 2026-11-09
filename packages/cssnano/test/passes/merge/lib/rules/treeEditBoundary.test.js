@@ -7,9 +7,14 @@ import { resolveTargets } from '../../../../../src/utils/browserTargets.js';
 
 // The modules that may edit the live tree directly. Every other module in
 // `lib/rules/` edits through `treeEdits.js`, which clears the caches an edit
-// makes stale. `writeBack.js` gives the blocks and the edited rules their child
-// lists at the end of a sweep.
-const treeEditors = new Set(['treeEdits.js', 'writeBack.js']);
+// makes stale. `buildRecords.js` reads the tree once to build the records, and
+// `writeBack.js` gives the blocks and the edited rules their child lists at the
+// end of a sweep.
+const treeEditors = new Set([
+  'treeEdits.js',
+  'buildRecords.js',
+  'writeBack.js',
+]);
 const rulesDirectory = new URL(
   '../../../../../src/passes/merge/lib/rules/',
   import.meta.url

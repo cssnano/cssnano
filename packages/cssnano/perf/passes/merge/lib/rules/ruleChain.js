@@ -1,10 +1,8 @@
 import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import {
-  appendToDeclarations,
-  buildRecords,
-} from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { assertLinearTime } from '../linearTiming.js';
 import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';

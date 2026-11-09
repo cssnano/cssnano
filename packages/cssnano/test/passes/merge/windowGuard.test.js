@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
-import { buildRecords } from '../../../src/passes/merge/lib/rules/treeEdits.js';
+import { buildRecords } from '../../../src/passes/merge/lib/rules/buildRecords.js';
 import { guardWindow } from '../../../src/passes/merge/lib/rules/windowGuard.js';
 import runMerge from '../../../src/passes/merge/lib/rules/selectorMerger.js';
 import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';

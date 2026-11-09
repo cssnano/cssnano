@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import { transformPlugin } from '#passes/merge';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 

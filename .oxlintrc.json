@@ -181,7 +181,7 @@
           {
             "allowed": [
               "packages/cssnano/src/passes/merge/lib/rules/writeBack.js",
-              "packages/cssnano/src/passes/merge/lib/rules/treeEdits.js",
+              "packages/cssnano/src/passes/merge/lib/rules/buildRecords.js",
               "packages/cssnano/src/passes/merge/lib/rules/windowGuard.js",
               "packages/cssnano/src/passes/ir/runContext.js",
               "packages/cssnano/src/passes/merge/lib/rules/blockRecord.js",

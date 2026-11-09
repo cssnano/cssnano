@@ -9,7 +9,7 @@ import { withTargetSupport } from './lib/longhand/isFallback.js';
 import { clearSupportCache } from './lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import runMerge from './lib/rules/selectorMerger.js';
-import { buildRecords } from './lib/rules/treeEdits.js';
+import { buildRecords } from './lib/rules/buildRecords.js';
 import { guardWindow } from './lib/rules/windowGuard.js';
 import { assertRecordsMatchTree, writeBack } from './lib/rules/writeBack.js';
 import { createRunContext } from '../ir/runContext.js';

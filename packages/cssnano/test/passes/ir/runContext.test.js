@@ -2,10 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
-import {
-  buildRecords,
-  remove,
-} from '../../../src/passes/merge/lib/rules/treeEdits.js';
+import { remove } from '../../../src/passes/merge/lib/rules/treeEdits.js';
+import { buildRecords } from '../../../src/passes/merge/lib/rules/buildRecords.js';
 import { TextTable } from '../../../src/values/textTable.js';
 
 /**
