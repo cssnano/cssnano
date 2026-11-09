@@ -14,6 +14,9 @@ const treeEditors = new Set([
   'treeEdits.js',
   'buildRecords.js',
   'writeBack.js',
+  'nodeTable.js',
+  'writeSelector.js',
+  'treeMatch.js',
 ]);
 const rulesDirectory = new URL(
   '../../../../../src/passes/merge/lib/rules/',

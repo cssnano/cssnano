@@ -103,7 +103,7 @@ export const mutations = [
   },
   {
     name: 'a rule record skips the check of its declarations against the tree',
-    target: source('writeBack.js'),
+    target: source('treeMatch.js'),
     find: '!describesNode(item, records.nodeOf(item.index))',
     replace: 'false',
   },

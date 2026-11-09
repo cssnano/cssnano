@@ -7,8 +7,8 @@ import {
   appendToDeclarations,
   removeRules,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import {
-  assertRecordsMatchTree,
   replaceChildren,
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';

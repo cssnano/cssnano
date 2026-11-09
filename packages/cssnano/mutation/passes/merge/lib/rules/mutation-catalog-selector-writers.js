@@ -28,7 +28,7 @@ export const mutations = [
   },
   {
     name: 'write-back leaves the ownSemicolon of a merged rule unwritten',
-    target: source('writeBack.js'),
+    target: source('writeSelector.js'),
     find: '  raws.ownSemicolon = source.ownSemicolon;',
     replace: '',
   },
@@ -53,7 +53,7 @@ export const mutations = [
   },
   {
     name: 'store the joined selector list as text, dropping its tokens',
-    target: source('writeBack.js'),
+    target: source('writeSelector.js'),
     find: '      textTable.write(node, list);\n      record.markStored();',
     replace:
       '      textTable.setText(node, tokensText(list));\n      record.markStored();',

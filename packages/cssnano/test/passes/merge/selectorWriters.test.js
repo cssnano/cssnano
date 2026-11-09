@@ -12,7 +12,9 @@ const { removeRules, takePlaceOf } =
   await import('../../../src/passes/merge/lib/rules/treeEdits.js');
 const { buildRecords } =
   await import('../../../src/passes/merge/lib/rules/buildRecords.js');
-const { assertRecordsMatchTree, writeBack } =
+const { assertRecordsMatchTree } =
+  await import('../../../src/passes/merge/lib/rules/treeMatch.js');
+const { writeBack } =
   await import('../../../src/passes/merge/lib/rules/writeBack.js');
 const { createRunContext } =
   await import('../../../src/passes/ir/runContext.js');

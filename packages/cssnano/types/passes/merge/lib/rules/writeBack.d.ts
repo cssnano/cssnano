@@ -3,10 +3,9 @@ import type { ChildNode, Container } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord as Block } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
-/** @import {AtRule, ChildNode, Container, Declaration, Rule} from 'postcss' */
+/** @import {ChildNode, Container} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex, BlockRecord as Block, NodeEntry} from './blockRecord.js' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {BlockRecord as Block} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /**
  * The nodes of the children the block at `index` holds now, in order.
@@ -17,15 +16,16 @@ import type { RuleRecord } from './ruleRecord.js';
  */
 export declare function childNodesOf(records: BlockRecords, index: number): ChildNode[];
 export type ContainerRecord = Block | RuleRecord;
+/** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule, whose children form its chain */
 /**
- * Under consistency checks, throws when the records and the tree disagree:
- * each container must hold the nodes it holds, in order, and each rule must
- * stand in the slot its record names. Writes nothing.
+ * Whether the live children of a container differ from its nodes. Compares in
+ * order and stops at the first difference, without a list of live children.
  *
  * @param {BlockRecords} records
- * @return {void}
+ * @param {ContainerRecord} block
+ * @return {boolean}
  */
-export declare function assertRecordsMatchTree(records: BlockRecords): void;
+export declare function differs(records: BlockRecords, block: ContainerRecord): boolean;
 export type Rebuilt = {
     container: Container;
     /**

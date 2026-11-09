@@ -1,6 +1,6 @@
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import {
   childNodesOf,
-  assertRecordsMatchTree,
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import assert from 'node:assert/strict';

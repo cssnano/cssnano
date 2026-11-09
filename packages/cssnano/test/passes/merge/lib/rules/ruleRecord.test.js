@@ -13,7 +13,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { isDeclarationRule } from '../../../../../src/passes/merge/lib/rules/declarationJoin.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {

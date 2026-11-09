@@ -6,10 +6,8 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
-import {
-  assertRecordsMatchTree,
-  writeBack,
-} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
+import { writeBack } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {Container, Root} from 'postcss' */

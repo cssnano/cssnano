@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {

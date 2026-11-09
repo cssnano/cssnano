@@ -14,7 +14,7 @@ import {
   STYLESHEET,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import {
   blockRecordOf,
   buildTestRecords,
