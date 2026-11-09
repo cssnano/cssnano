@@ -23,52 +23,45 @@ import {
  * nowhere.
  *
  * @param {BlockRecords} records
- * @param {number} record the index of the rule that is replaced
- * @param {number[]} replacements
+ * @param {ArenaIndex} record the index of the rule that is replaced
+ * @param {ArenaIndex[]} replacements
  * @return {void}
  */
 export function substitute(records, record, replacements) {
-  // The replacements take the chain where the record stood, which may be
-  // the record itself; it is read before the record leaves the chain.
-  const holder = records.links.parentOf(record);
-  const standing = /** @type {number} */ (records.links.prevSibling(record));
-  records.unlink(record);
-  let after = standing;
+  // A replacement that already stands before the record stays. The record may
+  // be one of the replacements, which keeps it in place: the ones after it
+  // then go before the entry that followed it, so the order holds.
+  // A record that is substituted is linked, so its container is an index.
+  const holder = /** @type {ArenaIndex} */ (records.links.parentOf(record));
+  const standing = records.links.prevSibling(record);
+  /** @type {ArenaIndex | -1 | undefined} the entry after the kept record, read when the record is passed */
+  let following;
+  let kept = false;
   for (const replacement of replacements) {
     if (replacement === standing) continue;
-    records.linkAfter(holder, after, replacement);
-    after = replacement;
+    if (replacement === record) {
+      kept = true;
+    } else if (!kept) {
+      records.moveBefore(record, replacement);
+    } else {
+      following ??= records.links.nextSibling(record);
+      if (following === -1) records.moveLast(holder, replacement);
+      else records.moveBefore(following, replacement);
+    }
   }
-}
-
-/**
- * Places the unplaced entry `entry` in the chain of `sibling`'s container, right
- * before `sibling`.
- *
- * @param {BlockRecords} records
- * @param {number} sibling the index of the entry that `entry` stands before
- * @param {RuleRecord} entry
- * @return {void}
- */
-export function insertBefore(records, sibling, entry) {
-  records.insertEntry(
-    records.links.parentOf(sibling),
-    records.links.prevSibling(sibling),
-    entry
-  );
+  if (!kept) records.detach(record);
 }
 
 /**
  * Moves the rule `record` to the end of the chain of the block at `target`.
  *
  * @param {BlockRecords} records
- * @param {number} target the index of the block that takes the rule
- * @param {number} record the index of the rule
+ * @param {ArenaIndex} target the index of the block that takes the rule
+ * @param {ArenaIndex} record the index of the rule
  * @return {void}
  */
 export function moveRule(records, target, record) {
-  records.unlink(record);
-  records.linkLast(target, record);
+  records.moveLast(target, record);
 }
 
 /**
@@ -77,8 +70,8 @@ export function moveRule(records, target, record) {
  * removes it. A nested block keeps its rule, which moves with the chain.
  *
  * @param {BlockRecords} records
- * @param {number} target
- * @param {number} source
+ * @param {ArenaIndex} target
+ * @param {ArenaIndex} source
  * @return {void}
  */
 export function adopt(records, target, source) {
@@ -86,8 +79,7 @@ export function adopt(records, target, source) {
   records.block(source);
   let entry = records.links.firstChild(source);
   while (entry !== -1) {
-    records.unlink(entry);
-    records.linkLast(target, entry);
+    records.moveLast(target, entry);
     entry = records.links.firstChild(source);
   }
 }
@@ -95,7 +87,7 @@ export function adopt(records, target, source) {
 /**
  * Appends a child to the chain of a rule, after its last child, and gives the
  * child the whitespace of that child when it has none. The node takes it at
- * write-back. The child must be linked nowhere, or unlinked.
+ * write-back. A child that is linked elsewhere moves to the end.
  *
  * @param {BlockRecords} records
  * @param {RuleRecord} rule
@@ -105,7 +97,7 @@ export function adopt(records, target, source) {
 export function appendChild(records, rule, child) {
   const last = records.links.lastChild(rule.index);
   inheritWhitespace(child, last === -1 ? undefined : records.entry(last));
-  records.linkLast(rule.index, child.index);
+  records.moveLast(rule.index, child.index);
 }
 
 /**
@@ -119,7 +111,7 @@ export function appendChild(records, rule, child) {
  */
 export function removeDeclarations(records, rule, claimed) {
   if (records.consistencyChecks) assertChildrenOf(records, rule, claimed);
-  for (const index of claimed) records.unlink(index);
+  for (const index of claimed) records.detach(index);
 }
 
 /**
@@ -137,7 +129,6 @@ export function moveDeclarations(records, source, target, claimed) {
   if (records.consistencyChecks) assertMovesInOrder(records, source, claimed);
   const receiving = /** @type {RuleRecord} */ (records.rule(target));
   for (const index of claimed) {
-    records.unlink(index);
     appendChild(
       records,
       receiving,

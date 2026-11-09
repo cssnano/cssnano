@@ -41,11 +41,11 @@ test('a run context created with consistency checks makes a link into a removed 
   const context = createRunContext(new TextTable(), true);
   const records = buildRecords(postcss.parse('a{color:red}'), context);
   const rule = records.rule(records.links.firstChild(records.root.index));
-  remove(records, rule);
+  remove(records, rule.index);
   const entry = placeUnlinked(
     records,
     records.root.index,
     new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
   );
-  assert.throws(() => records.linkLast(rule.index, entry.index));
+  assert.throws(() => records.moveLast(rule.index, entry.index));
 });

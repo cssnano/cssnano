@@ -72,7 +72,7 @@ test('a rule should keep its index and stay in the arena after it is unlinked', 
   const { root, state } = setup('a{color:red}b{width:1px}');
   const record = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
   const { index } = record;
-  state.records.unlink(index);
+  state.records.detach(index);
   assert.equal(record.index, index);
   assert.equal(state.records.entry(index), record);
 });
@@ -87,7 +87,7 @@ test('a rule recorded mid-run should take the next index of the arena', () => {
     new RuleRecord(postcss.rule({ selector: 'c' }), ['c'], 'c')
   );
   assert.equal(added.index, count);
-  records.linkLast(records.root.index, added.index);
+  records.moveLast(records.root.index, added.index);
   assert.equal(records.rule(added.index), added);
 });
 
@@ -167,16 +167,6 @@ test('a nested at-rule block should be linked into its parent chain, naming the 
 test('assertOwnershipIsTree should accept the records of a stylesheet', () => {
   const { state } = setup('@media (x){a{color:red;b{width:1px}}}c{top:0}');
   assert.doesNotThrow(() => assertOwnershipIsTree(state.records));
-});
-
-test('assertOwnershipIsTree should throw when a rule is linked twice in one chain', () => {
-  const { state } = setup('a{color:red}b{width:1px}');
-  const { records } = state;
-  const first = records.links.firstChild(records.root.index);
-  const second = records.links.nextSibling(first);
-  // Linking `first` after `second` makes the chain loop from `second` to itself.
-  records.linkAfter(records.root.index, first, second);
-  assert.throws(() => assertOwnershipIsTree(records), /reached twice/v);
 });
 
 test('assertOwnershipIsTree should throw when a block counts other entries than its chain holds', () => {

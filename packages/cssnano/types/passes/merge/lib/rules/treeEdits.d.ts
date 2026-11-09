@@ -1,7 +1,4 @@
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { BlockRecords } from './blockRecords.js';
-import type { BlockRecord, NodeEntry } from './blockRecord.js';
-import type { RuleRecord } from './ruleRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type MergeState from './mergeState.js';
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -21,10 +18,10 @@ import type MergeState from './mergeState.js';
  * catches up at write-back.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord | BlockRecord | DeclarationRecord | NodeEntry} entry the record of the rule, the block of the at-rule, or another entry
+ * @param {ArenaIndex} index the index of the rule, the block of the at-rule, or another entry
  * @return {void}
  */
-export declare function remove(records: BlockRecords, entry: RuleRecord | BlockRecord | DeclarationRecord | NodeEntry): void;
+export declare function remove(records: BlockRecords, index: ArenaIndex): void;
 /**
  * Moves the entry `earlier`, which already holds the joined content, to the
  * place of `later`, so the joined node takes the later position and keeps the
@@ -59,8 +56,8 @@ export declare function appendToDeclarations(mergeState: MergeState, receiving: 
  * catches up at write-back.
  *
  * @param {MergeState} mergeState
- * @param {Set<number>} indices the indices of the rules to remove
+ * @param {Set<ArenaIndex>} indices the indices of the rules to remove
  * @return {void}
  */
-export declare function removeRules(mergeState: MergeState, indices: Set<number>): void;
+export declare function removeRules(mergeState: MergeState, indices: Set<ArenaIndex>): void;
 //# sourceMappingURL=treeEdits.d.ts.map

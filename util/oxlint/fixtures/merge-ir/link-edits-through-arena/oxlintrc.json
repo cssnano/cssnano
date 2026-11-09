@@ -9,11 +9,10 @@
           "util/oxlint/fixtures/merge-ir/link-edits-through-arena/missing.js"
         ],
         "required": [
-          "util/oxlint/fixtures/merge-ir/link-edits-through-arena/wrappers.js#linkAfter",
+          "util/oxlint/fixtures/merge-ir/link-edits-through-arena/wrappers.js#linkBefore",
           "util/oxlint/fixtures/merge-ir/link-edits-through-arena/wrappers.js#linkLast",
           "util/oxlint/fixtures/merge-ir/link-edits-through-arena/wrappers.js#unlink",
-          "util/oxlint/fixtures/merge-ir/link-edits-through-arena/wrappers.js#takeLinkOf",
-          "util/oxlint/fixtures/merge-ir/link-edits-through-arena/missing.js#takeLinkOf"
+          "util/oxlint/fixtures/merge-ir/link-edits-through-arena/missing.js#linkBefore"
         ]
       }
     ]

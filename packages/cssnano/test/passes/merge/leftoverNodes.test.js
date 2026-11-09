@@ -105,7 +105,7 @@ function mergedAway(consistencyChecks) {
 test('under consistency checks, reading the record of a rule whose declarations all merge away should throw', () => {
   const { mergeState, first } = mergedAway(true);
   // RuleSequence#replacePair unlinks a rule that no child remains in.
-  mergeState.records.unlink(first);
+  mergeState.records.detach(first);
   assert.throws(
     () => mergeState.records.rule(first).declarationsOf(mergeState.records),
     /does not reach/v

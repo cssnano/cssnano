@@ -185,6 +185,6 @@ export function declarationIds(records, index) {
  */
 export function placeUnlinked(records, container, entry) {
   records.appendEntry(container, /** @type {any} */ (entry));
-  records.unlink(/** @type {any} */ (entry).index);
+  records.detach(/** @type {any} */ (entry).index);
   return entry;
 }

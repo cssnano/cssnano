@@ -162,7 +162,7 @@ test('takePlaceOf should put the earlier at-rule block where the later block sto
 test('remove should take a rule out of the live entries', () => {
   const { root, state } = setup('a{color:red}b{width:1px}c{height:1px}');
   const [, b] = /** @type {Rule[]} */ (root.nodes);
-  remove(state.records, ruleRecordOf(state.records, b));
+  remove(state.records, ruleRecordOf(state.records, b).index);
   assert.deepEqual(liveLabels(state), ['a', 'c']);
 });
 
@@ -171,7 +171,7 @@ test('remove should take an at-rule block out of the live entries', () => {
     'a{color:red}@media print{b{width:1px}}c{height:1px}'
   );
   const [, media] = /** @type {Container[]} */ (root.nodes);
-  remove(state.records, blockRecordOf(state.records, media));
+  remove(state.records, blockRecordOf(state.records, media).index);
   assert.deepEqual(liveLabels(state), ['a', 'c']);
 });
 
@@ -185,7 +185,7 @@ test('a rule that appendToDeclarations empties is readable until an edit unlinks
     incomingIndex
   );
   assert.equal(state.records.rule(incomingIndex)?.selectors[0], 'b');
-  remove(state.records, ruleRecordOf(state.records, incoming));
+  remove(state.records, ruleRecordOf(state.records, incoming).index);
   assert.throws(() => state.records.rule(incomingIndex), /does not reach/v);
 });
 

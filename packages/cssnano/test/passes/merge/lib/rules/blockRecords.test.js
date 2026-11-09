@@ -102,7 +102,7 @@ test('assertRecordsMatchTree should throw when a block chain lacks a child the t
   const media = /** @type {BlockRecord} */ (
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
-  state.records.unlink(
+  state.records.detach(
     ruleRecordOf(state.records, /** @type {Rule} */ (media.node.first)).index
   );
   assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
@@ -227,7 +227,7 @@ test('the chains should stay well formed after a join takes the place of a block
 test('the chains should stay well formed after a removal of a block', () => {
   const { root, state } = setup('a{color:red}@media print{}c{height:1px}');
   const [, media] = /** @type {Container} */ (root).nodes;
-  remove(state.records, blockRecordOf(state.records, media));
+  remove(state.records, blockRecordOf(state.records, media).index);
   assertRecordsWellFormed(state);
 });
 
@@ -236,18 +236,18 @@ test('records.rule should throw under consistency checks for a rule inside a blo
   const [media] = /** @type {Container} */ (root).nodes;
   const rule = /** @type {Rule} */ (/** @type {any} */ (media).first);
   const { index } = ruleRecordOf(state.records, rule);
-  remove(state.records, blockRecordOf(state.records, media));
+  remove(state.records, blockRecordOf(state.records, media).index);
   assert.throws(() => state.records.rule(index), /does not reach/v);
 });
 
 test('records.rule should throw under consistency checks for a plain rule unlinked without departing', () => {
   const { root, state } = setup('a{color:red}');
   const rule = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
-  state.records.unlink(rule.index);
+  state.records.detach(rule.index);
   assert.throws(() => state.records.rule(rule.index), /does not reach/v);
 });
 
-test('linkLast into a plain rule that is linked nowhere should throw under consistency checks', () => {
+test('moveLast into a plain rule that is linked nowhere should throw under consistency checks', () => {
   const { root, state } = setup('a{color:red}');
   const rule = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
   const [declaration] = rule.declarationsOf(state.records);
@@ -256,9 +256,9 @@ test('linkLast into a plain rule that is linked nowhere should throw under consi
     state.records.root.index,
     new RuleRecord(postcss.parse('b{width:1px}').first, ['b'], 'b')
   );
-  state.records.unlink(declaration.index);
+  state.records.detach(declaration.index);
   assert.throws(
-    () => state.records.linkLast(orphan.index, declaration.index),
+    () => state.records.moveLast(orphan.index, declaration.index),
     /outside the tree/v
   );
 });
@@ -331,22 +331,6 @@ test('assertNoOverDuplication should throw when a declaration is written more of
   );
 });
 
-test('assertNoOverDuplication should throw when a chain reaches a rule that a second chain also reaches', () => {
-  const { root, state } = setup('r{a{width:1px}}b{color:red}');
-  const [outer, second] = /** @type {Rule[]} */ (root.nodes);
-  const nestedIndex = ruleRecordOf(state.records, outer).index;
-  // Linking `b` into the nested chain leaves its sibling link in the root chain,
-  // so the walk reaches `b` from both chains.
-  state.records.linkLast(
-    nestedIndex,
-    ruleRecordOf(state.records, second).index
-  );
-  assert.throws(
-    () => assertNoOverDuplication(state.records, null),
-    /reach a node twice/v
-  );
-});
-
 test('links.firstChild should give the entry after the first rule once that rule is unlinked', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
@@ -354,7 +338,7 @@ test('links.firstChild should give the entry after the first rule once that rule
     state.records,
     /** @type {Rule} */ (media.node.first)
   );
-  state.records.unlink(first.index);
+  state.records.detach(first.index);
   assert.equal(
     state.records.nodeOf(state.records.links.firstChild(media.index)),
     media.node.nodes[1]

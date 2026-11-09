@@ -50,28 +50,20 @@ test('assertRecordsWellFormed should accept a block removed with its declaration
   const earlier = /** @type {BlockRecord} */ (
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
-  remove(state.records, earlier);
+  remove(state.records, earlier.index);
   assert.doesNotThrow(() => assertRecordsWellFormed(state));
 });
 
-test('assertRecordsWellFormed should throw when a child of a rule is linked into another rule, which leaves it in both chains', () => {
-  const { root, state } = setup('a{color:red;b{width:1px}}c{top:0}');
-  const [a, c] = /** @type {Rule[]} */ (root.nodes);
-  const holder = ruleRecordOf(state.records, a);
-  const other = ruleRecordOf(state.records, c);
-  const child = state.records.links.firstChild(holder.index);
-  state.records.linkLast(other.index, child);
-  assert.throws(() => assertRecordsWellFormed(state), /out of step/v);
-});
-
-test('assertRecordsWellFormed should throw when the root is linked into its own subtree, so the walk reaches it twice', () => {
+test('moveLast should throw under checks when the root is moved into a chain', () => {
   const { state } = setup('a{color:red;b{width:1px}}');
   const holder = ruleRecordOf(
     state.records,
     /** @type {Rule} */ (state.records.root.node.first)
   );
-  state.records.linkLast(holder.index, state.records.root.index);
-  assert.throws(() => assertRecordsWellFormed(state), /reached twice/v);
+  assert.throws(
+    () => state.records.moveLast(holder.index, state.records.root.index),
+    /root is moved/v
+  );
 });
 
 test('assertRecordsWellFormed should throw when a block whose chain does not start at its first live child', () => {
@@ -103,11 +95,11 @@ test('assertRecordsWellFormed should accept the chains after a rule moves out of
   const [media, layer] = /** @type {any[]} */ (root.nodes);
   const rule = ruleRecordOf(state.records, media.first);
   moveRule(state.records, state.records.root.index, rule.index);
-  remove(state.records, blockRecordOf(state.records, layer));
+  remove(state.records, blockRecordOf(state.records, layer).index);
   assert.doesNotThrow(() => assertRecordsWellFormed(state));
 });
 
-test('linkLast should throw under checks when the block is outside the tree', () => {
+test('moveLast should throw under checks when the block is outside the tree', () => {
   const { state } = setup('a{color:red}');
   const detached = new BlockRecord(postcss.atRule({ name: 'media' }), false);
   placeUnlinked(state.records, state.records.root.index, detached);
@@ -124,7 +116,7 @@ test('linkLast should throw under checks when the block is outside the tree', ()
     )
   );
   assert.throws(
-    () => state.records.linkLast(detached.index, comment.index),
+    () => state.records.moveLast(detached.index, comment.index),
     /outside the tree/v
   );
 });

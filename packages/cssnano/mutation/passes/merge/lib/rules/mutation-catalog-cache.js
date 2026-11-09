@@ -23,8 +23,8 @@ export const mutations = [
   {
     name: 'a link stamps no container',
     target: source('blockRecords.js'),
-    find: '    this.#links.linkAfter(block, after, index);\n    this.#touchDeclaration(block, index);\n',
-    replace: '    this.#links.linkAfter(block, after, index);\n',
+    find: '    this.#links.linkLast(block, index);\n    this.#touchDeclaration(block, index);\n',
+    replace: '    this.#links.linkLast(block, index);\n',
   },
   {
     name: 'a read treats a stale entry as fresh',
@@ -76,9 +76,9 @@ export const mutations = [
     replace: '      writesOfKept(records, entry.kept);\n',
   },
   {
-    name: 'takeLinkOf leaves the stamp of the container earlier leaves',
+    name: 'a detach that leaves the stamp of the container it leaves',
     target: source('blockRecords.js'),
-    find: '    this.#touchDeclaration(from, earlier);\n',
-    replace: '',
+    find: '    this.#links.unlink(index);\n    this.#touchDeclaration(block, index);\n',
+    replace: '    this.#links.unlink(index);\n',
   },
 ];

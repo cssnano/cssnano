@@ -3,8 +3,8 @@
 class Records {
   #links = new BlockLinks();
 
-  linkAfter(block, after, index) {
-    this.#links.linkAfter(block, after, index);
+  linkBefore(sibling, index) {
+    this.#links.linkBefore(sibling, index);
   }
 
   linkLast(block, index) {
@@ -13,9 +13,5 @@ class Records {
 
   unlink(index) {
     this.#links.unlink(index);
-  }
-
-  takeLinkOf(later, earlier) {
-    this.#links.takeLinkOf(later, earlier);
   }
 }

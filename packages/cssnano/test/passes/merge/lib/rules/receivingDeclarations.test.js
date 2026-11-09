@@ -71,7 +71,7 @@ test('receivingDeclarations should return a new entry with new writes after a de
   const { records, record } = arenaOf('a{color:red;width:1px}');
   const [color] = record.declarationsOf(records);
   const before = receivingDeclarations(records, record.index);
-  records.unlink(color.index);
+  records.detach(color.index);
   const after = receivingDeclarations(records, record.index);
   assert.notEqual(after, before);
   assert.equal(after.kept.includes(color.index), false);

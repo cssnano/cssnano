@@ -60,14 +60,14 @@ test('block should still answer undefined for the -1 that no block has', () => {
 test('prevSibling should throw under checks when the entry is linked nowhere', () => {
   const { root, records } = setup('@media print{a{color:red}b{width:1px}}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first.first));
-  records.unlink(rule.index);
+  records.detach(rule.index);
   assert.throws(() => records.links.prevSibling(rule.index), /unlinked/v);
 });
 
 test('nextSibling should throw under checks when the entry is linked nowhere', () => {
   const { root, records } = setup('@media print{a{color:red}b{width:1px}}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first.first));
-  records.unlink(rule.index);
+  records.detach(rule.index);
   assert.throws(() => records.links.nextSibling(rule.index), /unlinked/v);
 });
 
@@ -119,7 +119,7 @@ test('childCount should count a comment linked into a block', () => {
       NO_PRELUDE
     )
   );
-  records.linkLast(media.index, comment.index);
+  records.moveLast(media.index, comment.index);
   assert.equal(records.links.childCount(media.index), 2);
 });
 
@@ -127,18 +127,19 @@ test('childCount should drop by one when a rule is unlinked from its block', () 
   const { root, records } = setup('@media print{a{color:red}b{width:1px}}');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
   const rule = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
-  records.unlink(rule.index);
+  records.detach(rule.index);
   assert.equal(records.links.childCount(media.index), 1);
 });
 
-test('childCount should move with an entry that takeLinkOf puts in another block', () => {
+test('childCount should move with an entry that moveBefore puts in another block', () => {
   const { root, records } = setup('@media print{a{color:red}}/* c */');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
   const rule = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
   // The comment follows the at-rule in the root's chain.
   const comment = records.links.nextSibling(media.index);
   assert.equal(records.links.childCount(records.root.index), 2);
-  records.takeLinkOf(rule.index, comment);
+  records.moveBefore(rule.index, comment);
+  records.detach(rule.index);
   assert.equal(records.links.childCount(media.index), 1);
   assert.equal(records.links.childCount(records.root.index), 1);
 });
@@ -155,17 +156,17 @@ test('childCount should give the whole chain to the target and nothing to the so
   assert.equal(records.links.childCount(source.index), 0);
 });
 
-test('linkLast should throw under checks when a rule is linked into a rule that holds no rules', () => {
+test('moveLast should throw under checks when a rule is linked into a rule that holds no rules', () => {
   const { root, records } = setup('a{color:red}b{width:1px}');
   const plain = ruleRecordOf(records, /** @type {Rule} */ (root.first));
   const other = ruleRecordOf(records, /** @type {Rule} */ (root.last));
   assert.throws(
-    () => records.linkLast(plain.index, other.index),
+    () => records.moveLast(plain.index, other.index),
     /holds no rules/v
   );
 });
 
-test('declarationKeys should list a declaration that linkAfter puts in the middle of a rule in its new place', () => {
+test('declarationKeys should list a declaration that moveBefore puts in the middle of a rule in its new place', () => {
   const { root, records } = setup('a{color:red;top:0}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
   const [color] = rule.declarationsOf(records);
@@ -178,14 +179,14 @@ test('declarationKeys should list a declaration that linkAfter puts in the middl
       new DeclarationKeys()
     )
   );
-  records.linkAfter(rule.index, color.index, width.index);
+  records.moveBefore(records.links.nextSibling(color.index), width.index);
   assert.deepEqual(
     rule.declarationsOf(records).map((declaration) => declaration.prop),
     ['color', 'width', 'top']
   );
 });
 
-test('declarationsOf should list the declaration that linkLast appends to its rule, after the declarations it held', () => {
+test('declarationsOf should list the declaration that moveLast appends to its rule, after the declarations it held', () => {
   const { root, records } = setup('a{color:red}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
   declarationKeys(records, rule.index);
@@ -198,14 +199,14 @@ test('declarationsOf should list the declaration that linkLast appends to its ru
       new DeclarationKeys()
     )
   );
-  records.linkLast(rule.index, top.index);
+  records.moveLast(rule.index, top.index);
   assert.deepEqual(
     rule.declarationsOf(records).map((declaration) => declaration.prop),
     ['color', 'top']
   );
 });
 
-test('firstDeclaration and nextDeclaration should walk a declaration that linkAfter puts in the middle of a rule in its new place', () => {
+test('firstDeclaration and nextDeclaration should walk a declaration that moveBefore puts in the middle of a rule in its new place', () => {
   const { root, records } = setup('a{color:red;top:0}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
   const color = firstDeclaration(records, rule.index);
@@ -218,7 +219,7 @@ test('firstDeclaration and nextDeclaration should walk a declaration that linkAf
       new DeclarationKeys()
     )
   );
-  records.linkAfter(rule.index, color.index, width.index);
+  records.moveBefore(records.links.nextSibling(color.index), width.index);
   const props = [];
   for (
     let declaration = firstDeclaration(records, rule.index);
@@ -230,7 +231,7 @@ test('firstDeclaration and nextDeclaration should walk a declaration that linkAf
   assert.deepEqual(props, ['color', 'width', 'top']);
 });
 
-test('declarationKeys should list the ids in their new order after linkAfter puts a declaration in the middle of a rule', () => {
+test('declarationKeys should list the ids in their new order after moveBefore puts a declaration in the middle of a rule', () => {
   const { root, records } = setup('a{color:red;top:0}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
   const [color, top] = rule.declarationsOf(records);
@@ -244,7 +245,7 @@ test('declarationKeys should list the ids in their new order after linkAfter put
       new DeclarationKeys()
     )
   );
-  records.linkAfter(rule.index, color.index, width.index);
+  records.moveBefore(records.links.nextSibling(color.index), width.index);
   assert.deepEqual(declarationIds(records, rule.index), [
     color.id,
     width.id,
@@ -261,7 +262,7 @@ function chainText(records, index) {
   return childNodesOf(records, index).map((node) => node.toString());
 }
 
-test('takeLinkOf should move an entry of another container into the chain of the later entry, under checks', () => {
+test('moveBefore should move an entry of another container into the chain of the later entry, under checks', () => {
   const { root, records } = setup(
     '@media x{a{color:red}}@media y{b{width:1px}}'
   );
@@ -270,14 +271,15 @@ test('takeLinkOf should move an entry of another container into the chain of the
   );
   const earlier = ruleRecordOf(records, /** @type {Rule} */ (x.node.first));
   const later = ruleRecordOf(records, /** @type {Rule} */ (y.node.first));
-  records.takeLinkOf(later.index, earlier.index);
+  records.moveBefore(later.index, earlier.index);
+  records.detach(later.index);
   assert.deepEqual(chainText(records, x.index), []);
   assert.deepEqual(chainText(records, y.index), ['a{color:red}']);
   assert.equal(records.links.childCount(x.index), 0);
   assert.equal(records.links.childCount(y.index), 1);
 });
 
-test('takeLinkOf should put an earlier sibling where the later one stood, when it is directly before it', () => {
+test('moveBefore should put an earlier sibling where the later one stood, when it is directly before it', () => {
   const { root, records } = setup(
     '@media p{a{color:red}b{width:1px}c{height:1px}}'
   );
@@ -287,7 +289,8 @@ test('takeLinkOf should put an earlier sibling where the later one stood, when i
     records,
     /** @type {Rule} */ (media.node.nodes[1])
   );
-  records.takeLinkOf(later.index, earlier.index);
+  records.moveBefore(later.index, earlier.index);
+  records.detach(later.index);
   assert.deepEqual(chainText(records, media.index), [
     'a{color:red}',
     'c{height:1px}',
@@ -295,7 +298,7 @@ test('takeLinkOf should put an earlier sibling where the later one stood, when i
   assert.equal(records.links.childCount(media.index), 2);
 });
 
-test('takeLinkOf should put an earlier sibling where the later one stood, when an entry lies between them', () => {
+test('moveBefore should put an earlier sibling where the later one stood, when an entry lies between them', () => {
   const { root, records } = setup(
     '@media p{a{color:red}m{margin:0}b{width:1px}}'
   );
@@ -305,7 +308,8 @@ test('takeLinkOf should put an earlier sibling where the later one stood, when a
     records,
     /** @type {Rule} */ (media.node.nodes[2])
   );
-  records.takeLinkOf(later.index, earlier.index);
+  records.moveBefore(later.index, earlier.index);
+  records.detach(later.index);
   assert.deepEqual(chainText(records, media.index), [
     'm{margin:0}',
     'a{color:red}',
@@ -313,7 +317,7 @@ test('takeLinkOf should put an earlier sibling where the later one stood, when a
   assert.equal(records.links.childCount(media.index), 2);
 });
 
-test('takeLinkOf should make the earlier sibling the last entry when the later one was last, and it lies directly before it', () => {
+test('moveBefore should make the earlier sibling the last entry when the later one was last, and it lies directly before it', () => {
   const { root, records } = setup(
     '@media p{m{margin:0}a{color:red}b{width:1px}}'
   );
@@ -326,7 +330,8 @@ test('takeLinkOf should make the earlier sibling the last entry when the later o
     records,
     /** @type {Rule} */ (media.node.nodes[2])
   );
-  records.takeLinkOf(later.index, earlier.index);
+  records.moveBefore(later.index, earlier.index);
+  records.detach(later.index);
   assert.deepEqual(chainText(records, media.index), [
     'm{margin:0}',
     'a{color:red}',
@@ -335,7 +340,7 @@ test('takeLinkOf should make the earlier sibling the last entry when the later o
   assert.equal(records.links.lastChild(media.index), earlier.index);
 });
 
-test('takeLinkOf should put an unlinked earlier entry where the later one stood', () => {
+test('moveBefore should put an unlinked earlier entry where the later one stood', () => {
   const { root, records } = setup(
     '@media p{a{color:red}b{width:1px}c{height:1px}}'
   );
@@ -345,8 +350,9 @@ test('takeLinkOf should put an unlinked earlier entry where the later one stood'
     records,
     /** @type {Rule} */ (media.node.nodes[1])
   );
-  records.unlink(earlier.index);
-  records.takeLinkOf(later.index, earlier.index);
+  records.detach(earlier.index);
+  records.moveBefore(later.index, earlier.index);
+  records.detach(later.index);
   assert.deepEqual(chainText(records, media.index), [
     'a{color:red}',
     'c{height:1px}',
@@ -357,6 +363,6 @@ test('takeLinkOf should put an unlinked earlier entry where the later one stood'
 test('rule should throw under checks for a rule that nests and was unlinked', () => {
   const { root, records } = setup('r{a{color:red}}');
   const outer = ruleRecordOf(records, /** @type {Rule} */ (root.first));
-  records.unlink(outer.index);
+  records.detach(outer.index);
   assert.throws(() => records.rule(outer.index), /does not reach/v);
 });

@@ -1,6 +1,7 @@
 import { BlockRecord } from './blockRecord.js';
 import { RuleRecord } from './ruleRecord.js';
 import { moveRule, substitute } from './arenaEdits.js';
+import { remove } from './treeEdits.js';
 
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -146,7 +147,8 @@ export default class RuleSequence {
     const target = records.links.parentOf(first);
     const source = records.links.parentOf(second);
     if (target === source) return false;
-    moveRule(records, target, second);
+    // The first of the pair is linked, so its container is an index.
+    moveRule(records, /** @type {ArenaIndex} */ (target), second);
     // The sweep retries a moved pair, so a move that leaves the parents
     // apart would repeat forever; it throws instead.
     if (records.links.parentOf(second) !== records.links.parentOf(first)) {
@@ -166,7 +168,8 @@ export default class RuleSequence {
    * @return {ArenaIndex | -1} the index of the first replacement
    */
   replacePair(records, first, placement) {
-    const second = this.#next[first];
+    // The pair and the rules that follow it are linked, so each is an index.
+    const second = /** @type {ArenaIndex} */ (this.#next[first]);
     const before = this.#prev[first];
     const after = this.#next[second];
     this.#substitute(records, first, placement.first);
@@ -178,7 +181,7 @@ export default class RuleSequence {
     );
     let following = after;
     for (const rules of placement.following ?? []) {
-      const index = following;
+      const index = /** @type {ArenaIndex} */ (following);
       following = this.#next[index];
       this.#substitute(records, index, rules);
       tail = this.#linkAll(tail, rules);
@@ -194,7 +197,7 @@ export default class RuleSequence {
    * replacement left empty.
    *
    * @param {BlockRecords} records
-   * @param {ArenaIndex | -1} index
+   * @param {ArenaIndex} index
    * @param {ArenaIndex[]} rules
    * @return {void}
    */
@@ -220,9 +223,9 @@ export default class RuleSequence {
     for (;;) {
       // A rule that nests is never dropped, so the climb stops at it.
       const block = records.blockEntry(at);
-      if (!block?.droppable || links.childCount(at) !== 0) return;
+      if (at === -1 || !block?.droppable || links.childCount(at) !== 0) return;
       const holder = links.parentOf(at);
-      records.unlink(at);
+      remove(records, at);
       if (holder === -1) return;
       at = holder;
     }

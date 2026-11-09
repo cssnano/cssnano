@@ -106,7 +106,7 @@ test('removeDeclarations should remove the claimed declarations by index, whatev
   const { records, record } = arenaOf('a{color:red;margin:0;width:1px;top:0}');
   const [color] = record.declarationsOf(records);
   const claim = claimAt(records, record, [2, 3]);
-  records.unlink(color.index);
+  records.detach(color.index);
   removeDeclarations(records, record.index, claim);
   assert.deepEqual(
     record.declarationsOf(records).map((declaration) => declaration.prop),
@@ -201,7 +201,7 @@ test('unlinking a nested rule should keep the declaration keys of its parent, wi
   const { records, rule, record } = arenaOf('a{color:red;b{width:1px}}');
   const nested = ruleRecordOf(records, rule.nodes[1]);
   const kept = declarationKeys(records, record.index);
-  records.unlink(nested.index);
+  records.detach(nested.index);
   assert.equal(declarationKeys(records, record.index), kept);
 });
 
@@ -211,8 +211,8 @@ test('linking a nested rule into its parent should keep the declaration keys of 
   );
   const sibling = ruleRecordOf(records, rule.next());
   const kept = declarationKeys(records, record.index);
-  records.unlink(sibling.index);
-  records.linkLast(record.index, sibling.index);
+  records.detach(sibling.index);
+  records.moveLast(record.index, sibling.index);
   assert.equal(declarationKeys(records, record.index), kept);
 });
 
@@ -220,7 +220,7 @@ test('unlinking a declaration should clear the declaration keys of its parent, w
   const { records, record } = arenaOf('a{color:red;width:1px}');
   const [, width] = record.declarationsOf(records);
   const kept = declarationKeys(records, record.index);
-  records.unlink(record.declarationsOf(records)[0].index);
+  records.detach(record.declarationsOf(records)[0].index);
   assert.notEqual(declarationKeys(records, record.index), kept);
   assert.deepEqual(declarationIds(records, record.index), [width.id]);
 });
@@ -259,7 +259,7 @@ test('appendChild of a declaration after an unlink should list the ids without t
   const { records, record } = arena;
   const [color, width] = record.declarationsOf(records);
   const before = declarationKeys(records, record.index);
-  records.unlink(color.index);
+  records.detach(color.index);
   const top = freshDeclaration(arena, 'top');
   appendChild(records, record, top);
   const after = declarationKeys(records, record.index);
@@ -273,7 +273,7 @@ test('linking a declaration before the last child should list the ids in chain o
   const [color, width] = record.declarationsOf(records);
   const before = declarationKeys(records, record.index);
   const top = freshDeclaration(arena, 'top');
-  records.linkAfter(record.index, color.index, top.index);
+  records.moveBefore(width.index, top.index);
   const after = declarationKeys(records, record.index);
   assert.notEqual(after, before);
   assert.deepEqual(declarationIds(records, record.index), [
@@ -283,7 +283,7 @@ test('linking a declaration before the last child should list the ids in chain o
   ]);
 });
 
-test('takeLinkOf of a declaration of one rule into another should give each rule a new entry after the move', () => {
+test('moveBefore of a declaration of one rule into another should give each rule a new entry after the move', () => {
   const { records, rule } = arenaOf('a{color:red}b{width:1px}');
   const first = ruleRecordOf(records, rule);
   const second = ruleRecordOf(records, rule.next());
@@ -291,7 +291,8 @@ test('takeLinkOf of a declaration of one rule into another should give each rule
   const [width] = second.declarationsOf(records);
   const firstKeys = declarationKeys(records, first.index);
   const secondKeys = declarationKeys(records, second.index);
-  records.takeLinkOf(width.index, color.index);
+  records.moveBefore(width.index, color.index);
+  records.detach(width.index);
   assert.notEqual(declarationKeys(records, first.index), firstKeys);
   assert.notEqual(declarationKeys(records, second.index), secondKeys);
   assert.deepEqual(declarationIds(records, first.index), []);
@@ -322,7 +323,7 @@ test('linking a declaration into a nested rule should keep the declaration keys 
   const nested = ruleRecordOf(records, rule.first);
   const [top] = ruleRecordOf(records, rule.next()).declarationsOf(records);
   const keys = declarationKeys(records, record.index);
-  records.unlink(top.index);
-  records.linkLast(nested.index, top.index);
+  records.detach(top.index);
+  records.moveLast(nested.index, top.index);
   assert.equal(declarationKeys(records, record.index), keys);
 });

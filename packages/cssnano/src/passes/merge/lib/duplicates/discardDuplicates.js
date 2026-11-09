@@ -130,7 +130,7 @@ function dedupeDeclaration(run, entry, scope) {
   const { id } = entry;
   const seen = (scope.decls ??= new Set());
   if (seen.has(id)) {
-    remove(run.records, entry);
+    remove(run.records, entry.index);
     return REMOVED;
   }
   seen.add(id);
@@ -165,7 +165,7 @@ function dedupeRule(run, rule, scope, wantIds) {
     const prev = links.prevSibling(index);
     const entry = records.entry(index);
     if (entry instanceof DeclarationRecord) {
-      if (declMap.has(entry.id)) remove(records, entry);
+      if (declMap.has(entry.id)) remove(records, entry.index);
       else declMap.add(entry.id);
     } else if (isContainerEntry(entry)) {
       hasContainers = true;
@@ -174,7 +174,7 @@ function dedupeRule(run, rule, scope, wantIds) {
   }
 
   if (isSubsequent && !hasContent(run, rule)) {
-    remove(records, rule);
+    remove(records, rule.index);
     return REMOVED;
   }
 
@@ -238,7 +238,7 @@ function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
       true
     );
     if (hadContent && !hasContent(run, block)) {
-      remove(run.records, block);
+      remove(run.records, block.index);
       return REMOVED;
     }
     return keepAtRule(run, block, ids, seenAtRules);
@@ -265,7 +265,7 @@ function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
 function keepAtRule(run, block, ids, seenAtRules) {
   const id = containerId(run.keys, run.layered, block, ids ?? []);
   if (seenAtRules.has(id) && !run.layered.has(id)) {
-    remove(run.records, block);
+    remove(run.records, block.index);
     return REMOVED;
   }
   seenAtRules.add(id);
@@ -292,7 +292,7 @@ function dedupeNode(run, entry, seenAtRules, wantIds) {
   }
   const id = statementId(run.keys, run.layered, entry);
   if (seenAtRules.has(id) && !run.layered.has(id)) {
-    remove(run.records, entry);
+    remove(run.records, entry.index);
     return REMOVED;
   }
   seenAtRules.add(id);

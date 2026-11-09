@@ -83,7 +83,7 @@ test('under consistency checks, a read of an earlier rule that absorbEarlier the
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
-  state.records.unlink(record.index);
+  state.records.detach(record.index);
   assert.throws(() => state.records.rule(record.index), /does not reach/v);
 });
 
@@ -99,7 +99,7 @@ test('without consistency checks, a read of an earlier rule that absorbEarlier t
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
-  state.records.unlink(record.index);
+  state.records.detach(record.index);
   assert.doesNotThrow(() => record.selectors);
 });
 
@@ -248,7 +248,7 @@ test('under consistency checks, blockOf should throw for an unlinked record, sin
     state.records,
     /** @type {import('postcss').Rule} */ (root.first)
   );
-  state.records.unlink(record.index);
+  state.records.detach(record.index);
   assert.throws(() => state.blockOf(record), /does not reach/v);
 });
 
@@ -259,7 +259,7 @@ test('without consistency checks, blockOf should not throw for an unlinked recor
     state.records,
     /** @type {import('postcss').Rule} */ (root.first)
   );
-  state.records.unlink(record.index);
+  state.records.detach(record.index);
   assert.doesNotThrow(() => state.blockOf(record));
 });
 

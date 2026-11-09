@@ -99,10 +99,9 @@
               "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js"
             ],
             "required": [
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#linkAfter",
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#linkBefore",
               "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#linkLast",
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#unlink",
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#takeLinkOf"
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#detach"
             ]
           }
         ],

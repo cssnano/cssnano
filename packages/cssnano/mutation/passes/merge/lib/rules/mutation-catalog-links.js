@@ -38,8 +38,8 @@ export const mutations = [
   },
   {
     name: 'a takePlaceOf that leaves the later entry in its chain',
-    target: source('blockLinks.js'),
-    find: '    this.unlink(later);\n',
+    target: source('treeEdits.js'),
+    find: '  records.detach(later);\n',
     replace: '',
   },
 ];

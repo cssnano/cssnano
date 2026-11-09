@@ -7,7 +7,7 @@
 import { relative, sep } from 'node:path';
 import noPostcssInWindow from './noPostcssInWindow.js';
 
-const LINK_METHODS = new Set(['linkAfter', 'linkLast', 'unlink', 'takeLinkOf']);
+const LINK_METHODS = new Set(['linkBefore', 'linkLast', 'unlink']);
 const CACHE_READS = new Set(['keysOf', 'receivingOf']);
 
 const LIST_OPTIONS = [

@@ -32,7 +32,7 @@ function unreachedRecord(state, css, consistencyChecks) {
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
-  state.records.unlink(record.index);
+  state.records.detach(record.index);
   return record;
 }
 

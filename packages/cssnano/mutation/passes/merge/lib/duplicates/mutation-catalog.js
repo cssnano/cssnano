@@ -40,8 +40,9 @@ export const mutations = [
   },
   {
     name: 'drop a repeated block that declares a named layer',
-    find: '  if (seenAtRules.has(id) && !run.layered.has(id)) {\n    remove(run.records, block);',
-    replace: '  if (seenAtRules.has(id)) {\n    remove(run.records, block);',
+    find: '  if (seenAtRules.has(id) && !run.layered.has(id)) {\n    remove(run.records, block.index);',
+    replace:
+      '  if (seenAtRules.has(id)) {\n    remove(run.records, block.index);',
   },
   {
     name: 'let an important comment not count as content',

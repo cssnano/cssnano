@@ -110,38 +110,38 @@ export const mutations = [
   {
     name: 'a removal of a rule that leaves it in its chain',
     target: source('treeEdits.js'),
-    find: '  records.unlink(entry.index);\n',
+    find: '  records.detach(index);\n',
     replace: '',
   },
   {
     name: 'a removal of a rule set that leaves its rules in their chains',
     target: source('treeEdits.js'),
-    find: '    arena.unlink(index);\n',
+    find: '    arena.detach(index);\n',
     replace: '',
   },
   {
     name: 'a sweep that leaves an emptied block in its chain',
     target: source('ruleSequence.js'),
-    find: '      records.unlink(at);\n',
+    find: '      remove(records, at);\n',
     replace: '',
   },
   {
     name: 'a takePlaceOf that leaves the earlier entry in its old chain',
-    target: source('blockLinks.js'),
-    find: '    this.unlink(earlier);\n',
-    replace: '',
+    target: source('blockRecords.js'),
+    find: '    this.detach(index);\n    this.#linkBefore(sibling, index);\n',
+    replace: '    this.#linkBefore(sibling, index);\n',
   },
   {
     name: 'a move of children that unlinks the moved entries without linking them',
     target: source('arenaEdits.js'),
-    find: '    records.linkLast(target, entry);\n',
-    replace: '',
+    find: '    records.moveLast(target, entry);\n',
+    replace: '    records.detach(entry);\n',
   },
   {
-    name: 'a move that leaves the moved rule in its old chain',
-    target: source('arenaEdits.js'),
-    find: 'export function moveRule(records, target, record) {\n  records.unlink(record);\n',
-    replace: 'export function moveRule(records, target, record) {\n',
+    name: 'a move that leaves the moved entry in its old chain',
+    target: source('blockRecords.js'),
+    find: '    this.detach(index);\n    this.#linkLast(container, index);\n',
+    replace: '    this.#linkLast(container, index);\n',
   },
   {
     name: 'move into the later parent',
@@ -157,25 +157,11 @@ export const mutations = [
     replace: '  };\n  reach(records.root);\n  visitChildren(records.root);',
   },
   {
-    name: 'moving declarations hands over no record',
-    target: source('arenaEdits.js'),
-    find: '    records.unlink(index);\n    appendChild(\n      records,\n      receiving,',
-    replace:
-      '    records.unlink(index);\n    void (\n      records,\n      receiving,',
-  },
-  {
-    name: 'moving declarations removes the moved node at once',
-    target: source('arenaEdits.js'),
-    find: '    records.unlink(index);\n    appendChild(',
-    replace:
-      '    records.unlink(index);\n    records.entry(index).node.remove();\n    appendChild(',
-  },
-  {
     name: 'an append edits the node of the rule at once',
     target: source('arenaEdits.js'),
-    find: '  records.linkLast(rule.index, child.index);\n',
+    find: '  records.moveLast(rule.index, child.index);\n',
     replace:
-      '  records.linkLast(rule.index, child.index);\n  rule.node.append(child.node);\n',
+      '  records.moveLast(rule.index, child.index);\n  rule.node.append(child.node);\n',
   },
   {
     name: 'a removal of declarations stamps no container',

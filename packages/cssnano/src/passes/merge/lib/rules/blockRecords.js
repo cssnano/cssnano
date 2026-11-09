@@ -15,6 +15,8 @@ import { BlockRecord } from './blockRecord.js';
 /** @import {DeclarationCacheReader} from './declarationCache.js' */
 import { RuleRecord } from './ruleRecord.js';
 
+const MOVED_ROOT = 'the root is moved into a chain';
+
 /**
  * The records of one run. One arena holds every block record, every rule record,
  * every declaration of a block and every bare node of a block, each at the next
@@ -87,21 +89,61 @@ export class BlockRecords {
    */
   appendEntry(container, entry) {
     this.#placeUnplaced(entry);
-    this.linkLast(container, entry.index);
+    this.#linkLast(container, entry.index);
   }
 
   /**
-   * Gives an unplaced entry the next index of the arena and links it after
-   * `after` in the chain of `container`, which is the head when `after` is -1.
+   * Gives an unplaced entry the next index of the arena and links it right
+   * before `sibling`, in the chain that holds `sibling`.
    *
-   * @param {number} container
-   * @param {number} after
+   * @param {ArenaIndex} sibling a linked entry
    * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
    * @return {void}
    */
-  insertEntry(container, after, entry) {
+  insertEntryBefore(sibling, entry) {
     this.#placeUnplaced(entry);
-    this.linkAfter(container, after, entry.index);
+    this.#linkBefore(sibling, entry.index);
+  }
+
+  /**
+   * Takes a placed entry out of its chain, if it is linked, then links it at
+   * the end of the chain of `container`.
+   *
+   * @param {ArenaIndex} container
+   * @param {ArenaIndex} index
+   * @return {void}
+   */
+  moveLast(container, index) {
+    this.#assertMovable(index);
+    this.detach(index);
+    this.#linkLast(container, index);
+  }
+
+  /**
+   * Takes a placed entry out of its chain, if it is linked, then links it right
+   * before `sibling`.
+   *
+   * @param {ArenaIndex} sibling a linked entry that is not `index`
+   * @param {ArenaIndex} index
+   * @return {void}
+   */
+  moveBefore(sibling, index) {
+    this.#assertMovable(index);
+    this.detach(index);
+    this.#linkBefore(sibling, index);
+  }
+
+  /**
+   * Takes the entry at `index` out of its chain. The entry keeps its own
+   * subtree, and a later move may place it again.
+   *
+   * @param {ArenaIndex} index
+   * @return {void}
+   */
+  detach(index) {
+    const block = this.links.parentOf(index);
+    this.#links.unlink(index);
+    this.#touchDeclaration(block, index);
   }
 
   /**
@@ -240,32 +282,16 @@ export class BlockRecords {
   }
 
   /**
-   * Links the entry at `index` after `after` in the chain of the container at
-   * `block`, which is the head when `after` is -1. Under checks, a container
-   * that does not reach the root through `parentOf` throws, since its entries
-   * would be lost, and a rule or an at-rule may join only a rule that nests.
-   *
-   * @param {number} block
-   * @param {number} after
-   * @param {number} index an entry that is linked nowhere, or was unlinked
-   * @return {void}
-   */
-  linkAfter(block, after, index) {
-    assertCanLink(this, block, index);
-    const before = this.#declarationStamps.stampOf(block);
-    this.#links.linkAfter(block, after, index);
-    this.#touchDeclaration(block, index);
-    this.#appendDeclaration(block, index, before);
-  }
-
-  /**
    * Links the entry at `index` at the end of the chain of the block at `block`.
+   * Under checks, a container that does not reach the root through `parentOf`
+   * throws, since its entries would be lost, and a rule or an at-rule may join
+   * only a rule that nests.
    *
    * @param {number} block
-   * @param {number} index an entry that is linked nowhere, or was unlinked
+   * @param {number} index an entry that is linked nowhere
    * @return {void}
    */
-  linkLast(block, index) {
+  #linkLast(block, index) {
     assertCanLink(this, block, index);
     const before = this.#declarationStamps.stampOf(block);
     this.#links.linkLast(block, index);
@@ -274,34 +300,37 @@ export class BlockRecords {
   }
 
   /**
-   * Takes the entry at `index` out of its chain. The entry keeps its own
-   * subtree, and a later link may place it again.
+   * Links the entry at `index` right before `sibling`, in the chain that holds
+   * `sibling`. The same checks as `#linkLast` apply to that chain.
    *
-   * @param {number} index
+   * @param {ArenaIndex} sibling a linked entry
+   * @param {number} index an entry that is linked nowhere
    * @return {void}
    */
-  unlink(index) {
-    const block = this.links.parentOf(index);
-    this.#links.unlink(index);
+  #linkBefore(sibling, index) {
+    const block = this.links.parentOf(sibling);
+    // Reading the sibling's neighbour throws under checks when it is linked
+    // nowhere, before its -1 container reaches `assertCanLink`.
+    this.links.prevSibling(sibling);
+    assertCanLink(this, block, index);
+    const before = this.#declarationStamps.stampOf(block);
+    this.#links.linkBefore(sibling, index);
     this.#touchDeclaration(block, index);
+    this.#appendDeclaration(block, index, before);
   }
 
   /**
-   * Puts the entry `earlier` in the chain where `later` stands, and unlinks
-   * `later`.
+   * Under checks, throws when the entry to move is the root, which has no
+   * container to join.
    *
-   * @param {number} later a linked entry
-   * @param {number} earlier an entry that is linked elsewhere, or nowhere
+   * @param {ArenaIndex} index
    * @return {void}
+   * @throws {Error} under checks, when `index` is the root
    */
-  takeLinkOf(later, earlier) {
-    const to = this.links.parentOf(later);
-    assertCanLink(this, to, earlier);
-    const from = this.links.parentOf(earlier);
-    this.#links.takeLinkOf(later, earlier);
-    this.#touchDeclaration(from, earlier);
-    this.#touchDeclaration(to, earlier);
-    this.#touchDeclaration(to, later);
+  #assertMovable(index) {
+    if (this.consistencyChecks && index === this.root.index) {
+      throw new Error(MOVED_ROOT);
+    }
   }
 
   /**

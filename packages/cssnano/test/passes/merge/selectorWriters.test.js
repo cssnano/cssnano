@@ -304,7 +304,7 @@ test('write-back stores no tokens of a rule the root does not reach', () => {
   const { records } = whitespaceRecordsOf('a{color:red}b{color:red}');
   const first = records.rule(records.links.firstChild(records.root.index));
   first.tokensOf();
-  records.unlink(first.index);
+  records.detach(first.index);
   const table = new TextTable();
   writeBack(records, table);
   assert.equal(table.stored(first.node), undefined);

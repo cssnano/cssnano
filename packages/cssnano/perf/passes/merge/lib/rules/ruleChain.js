@@ -75,7 +75,7 @@ function timeUnlinksThenRead(size) {
   const { state, rule } = recordsOf(ruleOf(size));
   const { records } = state;
   const start = performance.now();
-  for (let i = 0; i < size; i += 2) records.links.unlink(declarations[i].index);
+  for (let i = 0; i < size; i += 2) records.detach(declarations[i].index);
   const left = declarationKeys(records, rule.index).kept.length;
   const elapsed = performance.now() - start;
   if (left < 0) throw new Error('unreachable');

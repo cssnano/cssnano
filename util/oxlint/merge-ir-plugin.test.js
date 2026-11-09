@@ -51,7 +51,7 @@ test('link-edits-through-arena reports a links edit outside blockRecords.js', ()
   ]);
 });
 
-test('link-edits-through-arena accepts the four wrappers on this.#links', () => {
+test('link-edits-through-arena accepts the three wrappers on this.#links', () => {
   assert.deepEqual(lintFixture('link-edits-through-arena', 'wrappers.js'), []);
 });
 
@@ -60,7 +60,7 @@ test('link-edits-through-arena reports a required wrapper that is missing', () =
   assert.deepEqual(found, [
     {
       line: 1,
-      message: `required site ${fixtures}/link-edits-through-arena/missing.js#takeLinkOf is missing`,
+      message: `required site ${fixtures}/link-edits-through-arena/missing.js#linkBefore is missing`,
     },
   ]);
 });

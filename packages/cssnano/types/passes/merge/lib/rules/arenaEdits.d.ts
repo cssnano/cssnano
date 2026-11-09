@@ -16,45 +16,35 @@ import type { RuleRecord } from './ruleRecord.js';
  * nowhere.
  *
  * @param {BlockRecords} records
- * @param {number} record the index of the rule that is replaced
- * @param {number[]} replacements
+ * @param {ArenaIndex} record the index of the rule that is replaced
+ * @param {ArenaIndex[]} replacements
  * @return {void}
  */
-export declare function substitute(records: BlockRecords, record: number, replacements: number[]): void;
-/**
- * Places the unplaced entry `entry` in the chain of `sibling`'s container, right
- * before `sibling`.
- *
- * @param {BlockRecords} records
- * @param {number} sibling the index of the entry that `entry` stands before
- * @param {RuleRecord} entry
- * @return {void}
- */
-export declare function insertBefore(records: BlockRecords, sibling: number, entry: RuleRecord): void;
+export declare function substitute(records: BlockRecords, record: ArenaIndex, replacements: ArenaIndex[]): void;
 /**
  * Moves the rule `record` to the end of the chain of the block at `target`.
  *
  * @param {BlockRecords} records
- * @param {number} target the index of the block that takes the rule
- * @param {number} record the index of the rule
+ * @param {ArenaIndex} target the index of the block that takes the rule
+ * @param {ArenaIndex} record the index of the rule
  * @return {void}
  */
-export declare function moveRule(records: BlockRecords, target: number, record: number): void;
+export declare function moveRule(records: BlockRecords, target: ArenaIndex, record: ArenaIndex): void;
 /**
  * Moves the chain of the block at `source` to the end of the chain of the
  * block at `target`. `source` is left with no children, since the caller
  * removes it. A nested block keeps its rule, which moves with the chain.
  *
  * @param {BlockRecords} records
- * @param {number} target
- * @param {number} source
+ * @param {ArenaIndex} target
+ * @param {ArenaIndex} source
  * @return {void}
  */
-export declare function adopt(records: BlockRecords, target: number, source: number): void;
+export declare function adopt(records: BlockRecords, target: ArenaIndex, source: ArenaIndex): void;
 /**
  * Appends a child to the chain of a rule, after its last child, and gives the
  * child the whitespace of that child when it has none. The node takes it at
- * write-back. The child must be linked nowhere, or unlinked.
+ * write-back. A child that is linked elsewhere moves to the end.
  *
  * @param {BlockRecords} records
  * @param {RuleRecord} rule

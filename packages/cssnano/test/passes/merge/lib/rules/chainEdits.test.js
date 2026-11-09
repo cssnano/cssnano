@@ -75,9 +75,8 @@ test('substitute should keep a replacement that already stands before the replac
     state.records.root.index,
     new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
   );
-  state.records.linkAfter(
-    mediaIndex,
-    ruleRecordOf(state.records, a).index,
+  state.records.moveBefore(
+    state.records.links.nextSibling(ruleRecordOf(state.records, a).index),
     fresh.index
   );
   substitute(state.records, ruleRecordOf(state.records, b).index, [
@@ -157,7 +156,7 @@ test('remove should unlink a rule and leave its block count one less', () => {
   const [media] = /** @type {Container[]} */ (root.nodes);
   const [a] = /** @type {Rule[]} */ (/** @type {Container} */ (media).nodes);
   const rule = ruleRecordOf(state.records, a);
-  remove(state.records, rule);
+  remove(state.records, rule.index);
   assert.equal(state.records.links.parentOf(rule.index), -1);
   assert.equal(
     state.records.links.childCount(blockRecordOf(state.records, media).index),
@@ -169,16 +168,18 @@ test('remove should unlink a block and leave its container count one less', () =
   const { root, state } = setup('@media print{a{color:red}}b{width:1px}');
   const [media] = /** @type {Container[]} */ (root.nodes);
   const block = blockRecordOf(state.records, media);
-  remove(state.records, block);
+  remove(state.records, block.index);
   assert.equal(state.records.links.parentOf(block.index), -1);
   assert.equal(state.records.links.childCount(state.records.root.index), 1);
 });
 
-test('insertEntry links the entry it places after the sibling it is given', () => {
+test('insertEntryBefore links the entry it places right before the sibling it is given', () => {
   const { root, state } = setup('a{color:red}b{color:blue}');
   const records = state.records;
   const first = ruleRecordOf(records, root.first);
+  const second = records.links.nextSibling(first.index);
   const entry = new RuleRecord(undefined, ['c'], 'c');
-  records.insertEntry(records.root.index, first.index, entry);
+  records.insertEntryBefore(second, entry);
   assert.equal(records.links.nextSibling(first.index), entry.index);
+  assert.equal(records.links.prevSibling(second), entry.index);
 });
