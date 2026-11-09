@@ -5,18 +5,18 @@ import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
-import { appendToDeclarations } from '../../../src/passes/merge/lib/rules/treeEdits.js';
+import {
+  appendToDeclarations,
+  removeRules,
+} from '../../../src/passes/merge/lib/rules/treeEdits.js';
 import {
   ruleRecordOf,
   buildTestRecords,
   claimAt,
 } from './lib/rules/liveRecords.js';
-import {
-  appendChild,
-  removeDeclarations,
-} from '../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { removeDeclarations } from '../../../src/passes/merge/lib/rules/arenaEdits.js';
 
-/** @import {AtRule, Declaration, Root, Rule} from 'postcss' */
+/** @import {AtRule, Root, Rule} from 'postcss' */
 
 /**
  * A merge state over `root` with its run context.
@@ -32,7 +32,7 @@ function mergeStateOf(root) {
 
 test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-rules visit again and join', () => {
   const root = postcss.parse(
-    '@media (x){@media (y){p{width:1px}q{height:2px}}}'
+    '@media (x){@media (y){p{width:1px}q{height:2px}}}x{width:1px}'
   );
   const mergeState = mergeStateOf(root);
   assert.equal(joinNonAdjacent(mergeState.records.root, mergeState), false);
@@ -48,28 +48,18 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
     record.index,
     claimAt(mergeState.records, record, [0])
   );
-  const incoming = /** @type {Rule} */ (postcss.parse('x{width:1px}').first);
-  const incomingRecord = mergeState.records.recordRule(
-    incoming,
-    incoming.selectors,
-    incoming.selector
+  // As in a merge, the incoming rule is in the tree, and it leaves the tree
+  // once `q` takes its declarations.
+  const incoming = ruleRecordOf(
+    mergeState.records,
+    /** @type {Rule} */ (root.last)
   );
-  for (const node of incoming.nodes) {
-    appendChild(
-      mergeState.records,
-      incomingRecord,
-      mergeState.records.blockDeclaration(
-        /** @type {Declaration} */ (node),
-        mergeState.properties,
-        mergeState.declarationIds
-      )
-    );
-  }
   appendToDeclarations(
     mergeState,
     ruleRecordOf(mergeState.records, q).index,
-    incomingRecord.index
+    incoming.index
   );
+  removeRules(mergeState, new Set([incoming.index]));
   assert.equal(joinNonAdjacent(mergeState.records.root, mergeState), true);
   writeBack(mergeState.records);
   assert.equal(root.toString(), '@media (x){@media (y){p,q{width:1px}}}');
