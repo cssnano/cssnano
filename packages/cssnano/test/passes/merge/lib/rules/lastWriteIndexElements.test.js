@@ -7,7 +7,12 @@ import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { BlockRecords } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import {
+  BlockRecord,
+  NO_AT_RULE,
+  NO_PRELUDE,
+  STYLESHEET,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { entryOf, buildTestRecords } from './liveRecords.js';
 
 /** @param {string} prop */
@@ -19,7 +24,10 @@ const decl = (prop) => ({ keys: keys(prop) });
 // Element keys for writes that may reach any element.
 const unknownElements = () => null;
 /** An arena for the index calls that read no nested block. */
-const noBlocks = new BlockRecords(new BlockRecord(false), false);
+const noBlocks = new BlockRecords(
+  new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
+  false
+);
 
 /**
  * The first node of `css`, with the records of its stylesheet.

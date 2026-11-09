@@ -115,7 +115,7 @@ function checkBlockRecord(records, nodes, block) {
     // whitespace instead of its own.
     const expected =
       block === records.root && entry === records.links.firstChild(block.index)
-        ? block.leadingWhitespace
+        ? records.leadingWhitespace
         : item.before;
     if (
       expected !== null &&

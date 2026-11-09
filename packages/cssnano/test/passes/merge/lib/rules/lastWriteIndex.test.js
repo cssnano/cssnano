@@ -8,7 +8,12 @@ import { PropertyWrites } from '../../../../../src/passes/merge/lib/rules/proper
 import { isConflictingProp } from '../../../../../script/passes/ir/lib/propertyRelations.js';
 import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
 import { BlockRecords } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import {
+  BlockRecord,
+  NO_AT_RULE,
+  NO_PRELUDE,
+  STYLESHEET,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { ruleRecordOf, entryOf, buildTestRecords } from './liveRecords.js';
@@ -50,7 +55,10 @@ function conflictsAfterWrite(written, queried) {
 }
 
 /** An arena for the index calls that read no nested block. */
-const noBlocks = new BlockRecords(new BlockRecord(false), false);
+const noBlocks = new BlockRecords(
+  new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
+  false
+);
 
 // The index is an independent implementation of isConflictingProp, which stays
 // the definition of when two properties set the same underlying property.

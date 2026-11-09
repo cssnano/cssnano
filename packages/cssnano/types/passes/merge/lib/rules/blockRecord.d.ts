@@ -59,6 +59,17 @@ export declare function isRuleOrAtRuleKind(kind: number): boolean;
 export declare class BlockRecord {
     /** @type {typeof STYLESHEET | typeof AT_RULE_BLOCK} what the block is */
     kind: typeof STYLESHEET | typeof AT_RULE_BLOCK;
+    /** @type {ArenaIndex} the place of the block in the arena of its records, -1 until added */
+    index: ArenaIndex;
+    /**
+     * The whitespace before the block, as its node's `raws.before` gives it at
+     * the build, or null when the node has none and the printer infers it;
+     * write-back assigns the value a merge gives the record. The stylesheet has
+     * none, so its value is ''.
+     *
+     * @type {string | null}
+     */
+    before: string | null;
     /** @type {number} the category of an at-rule, NO_AT_RULE for the stylesheet */
     atRuleKind: number;
     /** @type {string} the folded name of an at-rule, '' for the stylesheet */
@@ -69,18 +80,8 @@ export declare class BlockRecord {
     anonymous: boolean;
     /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
     preludeId: number;
-    /**
-     * The whitespace before the block, as its node's `raws.before` gives it at
-     * the build, or null when the node has none and the printer infers it;
-     * write-back assigns the value a merge gives the record.
-     *
-     * @type {string | null}
-     */
-    before: string | null;
     /** @type {boolean} whether the block applies nothing once it is empty */
     droppable: boolean;
-    /** @type {ArenaIndex} the place of the block in the arena of its records, -1 until added */
-    index: ArenaIndex;
     /**
      * The id of the circumstances under which the block applies its content, as
      * `containerContext` gives it. A block moves only between equal containers,
@@ -90,22 +91,15 @@ export declare class BlockRecord {
      */
     context: number;
     /**
-     * The whitespace before the first child of the stylesheet, which PostCSS
-     * hands on when that child is removed. Only the record of the stylesheet
-     * holds it.
-     *
-     * @type {string | null}
-     */
-    leadingWhitespace: string | null;
-    /**
      * @param {typeof STYLESHEET | typeof AT_RULE_BLOCK} kind
+     * @param {string | null} before
      * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for the stylesheet
      * @param {string} name the folded name, or ''
      * @param {string} params the prelude, or ''
      * @param {boolean} anonymous
      * @param {number} preludeId
      */
-    constructor(kind: typeof STYLESHEET | typeof AT_RULE_BLOCK, atRuleKind: number, name: string, params: string, anonymous: boolean, preludeId: number);
+    constructor(kind: typeof STYLESHEET | typeof AT_RULE_BLOCK, before: string | null, atRuleKind: number, name: string, params: string, anonymous: boolean, preludeId: number);
 }
 /**
  * A child of a block that is neither a rule, an at-rule with a block, nor a

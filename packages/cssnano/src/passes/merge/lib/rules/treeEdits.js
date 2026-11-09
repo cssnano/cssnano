@@ -45,7 +45,7 @@ export function takePlaceOf(records, earlier, later) {
   // held passes to the child after it, which `later` gave to `earlier`.
   const { root } = records;
   if (records.links.firstChild(root.index) === earlier) {
-    root.leadingWhitespace = records.entry(later).before;
+    records.leadingWhitespace = records.entry(later).before;
   }
   records.moveBefore(later, earlier);
   records.detach(later);
@@ -126,6 +126,6 @@ export function removeRules(mergeState, indices) {
   // takes its own as the leading whitespace of the stylesheet.
   if (leadsRoot) {
     const head = arena.links.firstChild(root.index);
-    root.leadingWhitespace = head === -1 ? null : arena.entry(head).before;
+    arena.leadingWhitespace = head === -1 ? null : arena.entry(head).before;
   }
 }

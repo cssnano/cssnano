@@ -83,6 +83,19 @@ export class BlockRecord {
   /** @type {typeof STYLESHEET | typeof AT_RULE_BLOCK} what the block is */
   kind;
 
+  /** @type {ArenaIndex} the place of the block in the arena of its records, -1 until added */
+  index = /** @type {ArenaIndex} */ (-1);
+
+  /**
+   * The whitespace before the block, as its node's `raws.before` gives it at
+   * the build, or null when the node has none and the printer infers it;
+   * write-back assigns the value a merge gives the record. The stylesheet has
+   * none, so its value is ''.
+   *
+   * @type {string | null}
+   */
+  before;
+
   /** @type {number} the category of an at-rule, NO_AT_RULE for the stylesheet */
   atRuleKind;
 
@@ -98,20 +111,8 @@ export class BlockRecord {
   /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
   preludeId;
 
-  /**
-   * The whitespace before the block, as its node's `raws.before` gives it at
-   * the build, or null when the node has none and the printer infers it;
-   * write-back assigns the value a merge gives the record.
-   *
-   * @type {string | null}
-   */
-  before = '';
-
   /** @type {boolean} whether the block applies nothing once it is empty */
   droppable;
-
-  /** @type {ArenaIndex} the place of the block in the arena of its records, -1 until added */
-  index = /** @type {ArenaIndex} */ (-1);
 
   /**
    * The id of the circumstances under which the block applies its content, as
@@ -123,24 +124,17 @@ export class BlockRecord {
   context = -1;
 
   /**
-   * The whitespace before the first child of the stylesheet, which PostCSS
-   * hands on when that child is removed. Only the record of the stylesheet
-   * holds it.
-   *
-   * @type {string | null}
-   */
-  leadingWhitespace = null;
-
-  /**
    * @param {typeof STYLESHEET | typeof AT_RULE_BLOCK} kind
+   * @param {string | null} before
    * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for the stylesheet
    * @param {string} name the folded name, or ''
    * @param {string} params the prelude, or ''
    * @param {boolean} anonymous
    * @param {number} preludeId
    */
-  constructor(kind, atRuleKind, name, params, anonymous, preludeId) {
+  constructor(kind, before, atRuleKind, name, params, anonymous, preludeId) {
     this.kind = kind;
+    this.before = before;
     this.atRuleKind = atRuleKind;
     this.name = name;
     this.params = params;

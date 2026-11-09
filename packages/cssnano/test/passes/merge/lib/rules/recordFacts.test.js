@@ -186,10 +186,10 @@ test('every record of a node without raws.before holds null, so write-back leave
 
 test('the stylesheet holds null as its leading whitespace when its first child has no raws.before', () => {
   const { records } = recordsOfBuiltTree();
-  assert.equal(records.root.leadingWhitespace, null);
+  assert.equal(records.leadingWhitespace, null);
 });
 
 test('an empty stylesheet holds null as its leading whitespace', () => {
   const { records } = recordsOf('');
-  assert.equal(records.root.leadingWhitespace, null);
+  assert.equal(records.leadingWhitespace, null);
 });

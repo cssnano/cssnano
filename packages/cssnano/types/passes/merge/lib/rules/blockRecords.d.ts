@@ -26,6 +26,14 @@ export declare class BlockRecords {
     /** @type {DeclarationCacheReader} the declaration ids, read here and extended through this arena */
     declarations: DeclarationCacheReader;
     /**
+     * The whitespace before the first child of the stylesheet, which PostCSS
+     * hands on when that child is removed, or null when the node has none and
+     * the printer infers it.
+     *
+     * @type {string | null}
+     */
+    leadingWhitespace: string | null;
+    /**
      * The most rounds a run may take before it throws. Set from the counts of
      * rules, at-rules and declarations when the records are built.
      *

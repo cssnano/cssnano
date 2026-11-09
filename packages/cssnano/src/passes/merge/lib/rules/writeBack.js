@@ -146,8 +146,7 @@ export function writeBack(
         container: /** @type {Container} */ (nodeOf(nodes, container.index)),
         index: container.index,
         children: childNodesOf(records, nodes, container.index),
-        leading:
-          container === records.root ? container.leadingWhitespace : null,
+        leading: container === records.root ? records.leadingWhitespace : null,
       });
     }
     for (
@@ -180,7 +179,7 @@ export function writeBack(
   // The first child of the stylesheet takes the leading whitespace last.
   const root = /** @type {Container} */ (nodeOf(nodes, records.root.index));
   const first = root.first;
-  const { leadingWhitespace } = records.root;
+  const { leadingWhitespace } = records;
   if (first && leadingWhitespace !== null) {
     first.raws.before = leadingWhitespace;
   }

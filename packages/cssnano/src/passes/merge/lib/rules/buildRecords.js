@@ -73,12 +73,12 @@ export function recordDeclaration(node, declarations) {
 export function buildRecords(root, context) {
   const { textTable, consistencyChecks } = context;
   const records = new BlockRecords(
-    new BlockRecord(STYLESHEET, NO_AT_RULE, '', '', false, NO_PRELUDE),
+    new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
     consistencyChecks
   );
   /** @type {NodeTable} the node of each entry, by index; the root is entry 0 */
   const nodes = [root];
-  records.root.leadingWhitespace = root.first?.raws.before ?? null;
+  records.leadingWhitespace = root.first?.raws.before ?? null;
   let counted = 0;
   let declarations = 0;
   /**
@@ -131,13 +131,13 @@ export function buildRecords(root, context) {
         const category = atRuleKindOf(name);
         const nested = new BlockRecord(
           AT_RULE_BLOCK,
+          child.raws.before ?? null,
           category,
           name,
           child.params,
           category === LAYER && isAnonymousLayer(child, textTable),
           context.declarations.preludeId(child)
         );
-        nested.before = child.raws.before ?? null;
         place(container.index, nested, child);
         nested.context = containerContext(
           context.declarations,

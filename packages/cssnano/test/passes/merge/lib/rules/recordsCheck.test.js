@@ -10,6 +10,7 @@ import {
   NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
+  STYLESHEET,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { remove } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import {
@@ -126,7 +127,15 @@ test('assertRecordsWellFormed should accept the chains after a rule moves out of
 
 test('moveLast should throw under checks when the block is outside the tree', () => {
   const { state } = setup('a{color:red}');
-  const detached = new BlockRecord(false);
+  const detached = new BlockRecord(
+    STYLESHEET,
+    '',
+    NO_AT_RULE,
+    '',
+    '',
+    false,
+    NO_PRELUDE
+  );
   placeUnlinked(state.records, state.records.root.index, detached);
   const comment = placeUnlinked(
     state.records,
