@@ -126,7 +126,7 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'a takePlaceOf that leaves the earlier entry in its old chain',
+    name: 'a move before a sibling that leaves the moved entry in its old chain',
     target: source('blockRecords.js'),
     find: '    this.detach(index);\n    this.#linkBefore(sibling, index);\n',
     replace: '    this.#linkBefore(sibling, index);\n',
