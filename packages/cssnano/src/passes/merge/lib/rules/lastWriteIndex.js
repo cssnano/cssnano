@@ -1,16 +1,19 @@
 import { firstDeclaration, nextDeclaration } from './blockChildren.js';
 import {
-  BlockRecord,
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
   CONDITIONAL_GROUP,
-  isAtRuleKind,
-  NodeEntry,
+  DECLARATION,
+  RULE,
+  STYLESHEET,
 } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { PropertyWrites } from './propertyWrites.js';
 
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 // Conditional group rules hold ordinary rules whose declarations cascade as
 // they do at the top level. Any other at-rule may depend on its position, as
@@ -93,7 +96,7 @@ export default class LastWriteIndex {
    * @param {(record: RuleRecord) => string[] | null} keysOf
    */
   #recordNode(records, entry, position, keys, keysOf) {
-    if (entry instanceof RuleRecord) {
+    if (entry.kind === RULE) {
       const own = keysOf(entry);
       if (entry.context !== -1) {
         this.#recordBlock(records, entry.index, position, own, keysOf);
@@ -106,19 +109,18 @@ export default class LastWriteIndex {
         declaration = nextDeclaration(records, declaration)
       )
         this.record(declaration.keys, position, own);
-    } else if (entry instanceof BlockRecord) {
+    } else if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) {
       // Only an at-rule has a block record among the entries.
-      if (entry.kind === CONDITIONAL_GROUP) {
+      if (entry.atRuleKind === CONDITIONAL_GROUP) {
         this.#recordBlock(records, entry.index, position, keys, keysOf);
       } else {
         this.#lastBarrier = Math.max(this.#lastBarrier, position);
       }
-    } else if (entry instanceof DeclarationRecord) {
+    } else if (entry.kind === DECLARATION) {
       this.record(entry.keys, position, keys);
     } else if (
-      entry instanceof NodeEntry &&
-      isAtRuleKind(entry.kind) &&
-      entry.kind !== CONDITIONAL_GROUP
+      entry.kind === AT_RULE_STATEMENT &&
+      entry.atRuleKind !== CONDITIONAL_GROUP
     ) {
       this.#lastBarrier = Math.max(this.#lastBarrier, position);
     }
@@ -197,7 +199,7 @@ export default class LastWriteIndex {
     const elements = this.#elementScratch;
     elements.clear();
     for (const entry of entries) {
-      const own = entry instanceof RuleRecord ? keysOf(entry) : null;
+      const own = entry.kind === RULE ? keysOf(entry) : null;
       if (own === null)
         return this.#conflictsIn(records, entries, position, null);
       for (const key of own) elements.add(key);
@@ -215,7 +217,7 @@ export default class LastWriteIndex {
   #conflictsIn(records, entries, position, elements) {
     if (this.#lastBarrier > position) return true;
     for (const entry of entries) {
-      if (entry instanceof RuleRecord) {
+      if (entry.kind === RULE) {
         if (this.#ruleConflicts(records, entry, position, elements))
           return true;
       } else if (this.#conflictsWith(entry.keys, position, elements)) {
@@ -256,7 +258,7 @@ export default class LastWriteIndex {
     ) {
       const item = records.entry(entry);
       if (
-        item instanceof DeclarationRecord &&
+        item.kind === DECLARATION &&
         this.#conflictsWith(item.keys, position, elements)
       ) {
         return true;
@@ -279,7 +281,7 @@ export default class LastWriteIndex {
   moveWrites(records, entries, position, keysOf) {
     const { links } = records;
     for (const entry of entries) {
-      if (entry instanceof RuleRecord) {
+      if (entry.kind === RULE) {
         // `record` only reads the keys, so the record's own list is passed as is.
         const keys = keysOf(entry);
         const own = keys?.length ? keys : null;
@@ -299,7 +301,7 @@ export default class LastWriteIndex {
           item = links.nextSibling(item)
         ) {
           const declaration = records.entry(item);
-          if (declaration instanceof DeclarationRecord) {
+          if (declaration.kind === DECLARATION) {
             this.record(declaration.keys, position, own);
           }
         }

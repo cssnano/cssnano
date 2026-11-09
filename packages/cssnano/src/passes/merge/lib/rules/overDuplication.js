@@ -1,9 +1,10 @@
 import { firstDeclaration, nextDeclaration } from './blockChildren.js';
-import { BlockRecord } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 const TWICE = 'the records reach a node twice';
 const OVER_WRITTEN =
@@ -68,14 +69,14 @@ export function tallyDeclarations(records) {
       entry = links.nextSibling(entry)
     ) {
       const item = records.entry(entry);
-      if (item instanceof RuleRecord) {
+      if (item.kind === RULE) {
         visitRule(item);
-      } else if (item instanceof BlockRecord) {
+      } else if (item.kind === STYLESHEET || item.kind === AT_RULE_BLOCK) {
         reach(entry);
         walk(item);
       } else {
         reach(entry);
-        if (item instanceof DeclarationRecord) count(item);
+        if (item.kind === DECLARATION) count(item);
       }
     }
   };

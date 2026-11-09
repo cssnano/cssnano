@@ -2,6 +2,11 @@ import type { Declaration } from 'postcss';
 import type { DeclarationKeys } from './declarationKey.js';
 import type { PropertyKeys, PropertyTable } from './propertyTable.js';
 import type { ArenaIndex } from '../merge/lib/rules/blockRecord.js';
+/** @import {Declaration} from 'postcss' */
+/** @import {DeclarationKeys} from './declarationKey.js' */
+/** @import {PropertyKeys, PropertyTable} from './propertyTable.js' */
+/** @import {ArenaIndex} from '../merge/lib/rules/blockRecord.js' */
+import { DECLARATION } from '../merge/lib/rules/blockRecord.js';
 /**
  * One declaration of a merge run, held beside the PostCSS node it describes.
  * Rule merging moves and removes declarations but never changes their
@@ -23,8 +28,8 @@ export declare class DeclarationRecord {
     id: number;
     /** @type {ArenaIndex} the place of the record in the arena of a block's entries, -1 until added */
     index: ArenaIndex;
-    /** @type {number} DECLARATION, which the window reads with the other records */
-    kind: number;
+    /** @type {typeof DECLARATION} DECLARATION, which the window reads with the other records */
+    kind: typeof DECLARATION;
     /** @type {string} '' for a declaration, which has no at-rule name */
     name: string;
     /** @type {string} '' for a declaration, which has no prelude */

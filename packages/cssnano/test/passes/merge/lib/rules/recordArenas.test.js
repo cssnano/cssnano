@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import {
+  AT_RULE_BLOCK,
+  RULE,
+  STYLESHEET,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   ruleRecordOf,
@@ -49,8 +53,9 @@ function reachedBlocks(records, block, found = [block]) {
   ) {
     const item = records.entry(entry);
     if (
-      item instanceof BlockRecord ||
-      (item instanceof RuleRecord && item.context !== -1)
+      item.kind === STYLESHEET ||
+      item.kind === AT_RULE_BLOCK ||
+      (item.kind === RULE && item.context !== -1)
     ) {
       found.push(item);
       reachedBlocks(records, item, found);
@@ -148,7 +153,7 @@ test('a rule should name the block whose chain holds it by index', () => {
       entry !== -1;
       entry = records.links.nextSibling(entry)
     ) {
-      if (records.entry(entry) instanceof RuleRecord) {
+      if (records.entry(entry).kind === RULE) {
         assert.equal(records.links.parentOf(entry), block.index);
       }
     }

@@ -25,7 +25,7 @@ export class DeclarationRecord {
   id;
   /** @type {ArenaIndex} the place of the record in the arena of a block's entries, -1 until added */
   index = /** @type {ArenaIndex} */ (-1);
-  /** @type {number} DECLARATION, which the window reads with the other records */
+  /** @type {typeof DECLARATION} DECLARATION, which the window reads with the other records */
   kind = DECLARATION;
   /** @type {string} '' for a declaration, which has no at-rule name */
   name = '';

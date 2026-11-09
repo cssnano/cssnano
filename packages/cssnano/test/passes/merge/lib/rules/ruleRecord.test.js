@@ -4,6 +4,7 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
   COMMENT,
+  NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
@@ -312,6 +313,7 @@ test('appendChild should count an appended comment among the children without ad
       new NodeEntry(
         postcss.comment({ text: 'note' }),
         COMMENT,
+        NO_AT_RULE,
         '',
         '',
         false,

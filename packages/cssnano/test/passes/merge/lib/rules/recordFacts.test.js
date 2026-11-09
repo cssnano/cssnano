@@ -41,25 +41,28 @@ function recordsOf(css) {
 
 test('an at-rule block record takes the kind of its folded name', () => {
   const { root, records } = recordsOf('@MEDIA print{a{color:red}}');
-  assert.equal(blockRecordOf(records, root.first).kind, CONDITIONAL_GROUP);
+  assert.equal(
+    blockRecordOf(records, root.first).atRuleKind,
+    CONDITIONAL_GROUP
+  );
   assert.equal(blockRecordOf(records, root.first).name, 'media');
 });
 
 test('a vendor-prefixed keyframes block is keyframes', () => {
   const { root, records } = recordsOf('@-webkit-keyframes x{from{top:0}}');
-  assert.equal(blockRecordOf(records, root.first).kind, KEYFRAMES);
+  assert.equal(blockRecordOf(records, root.first).atRuleKind, KEYFRAMES);
 });
 
 test('an at-rule whose name spells keyframes with a Kelvin sign is not keyframes', () => {
   // U+212A KELVIN SIGN folds to k under Unicode case mapping, but not under ASCII folding.
   const kelvin = String.fromCodePoint(0x212a);
   const { root, records } = recordsOf(`@${kelvin}eyframes x{from{top:0}}`);
-  assert.equal(blockRecordOf(records, root.first).kind, OTHER_AT_RULE);
+  assert.equal(blockRecordOf(records, root.first).atRuleKind, OTHER_AT_RULE);
 });
 
 test('a statement at-rule takes the kind of an import', () => {
   const { root, records } = recordsOf('@import "x.css";');
-  assert.equal(entryOf(records, root.first).kind, IMPORT);
+  assert.equal(entryOf(records, root.first).atRuleKind, IMPORT);
 });
 
 test('a comment entry holds the neutral facts of a comment', () => {
@@ -90,7 +93,7 @@ test('an anonymous layer block is not droppable, and a named layer block is', ()
   );
   const anonymous = blockRecordOf(records, root.first);
   const named = blockRecordOf(records, root.last);
-  assert.equal(anonymous.kind, LAYER);
+  assert.equal(anonymous.atRuleKind, LAYER);
   assert.equal(anonymous.anonymous, true);
   assert.equal(anonymous.droppable, false);
   assert.equal(named.anonymous, false);

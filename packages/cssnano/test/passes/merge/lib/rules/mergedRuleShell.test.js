@@ -5,8 +5,8 @@ import { transformPlugin } from '#passes/merge';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { RULE } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
@@ -23,7 +23,7 @@ function mergedIndexOf(records, selectors) {
   for (let index = 0; index < records.entryCount(); index++) {
     const entry = records.entry(index);
     if (
-      entry instanceof RuleRecord &&
+      entry.kind === RULE &&
       !entry.departed &&
       entry.selectors.join() === selectors &&
       records.links.parentOf(index) !== -1

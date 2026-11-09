@@ -1,9 +1,9 @@
-import { BlockRecord } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
+import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
 import { moveRule, substitute } from './arenaEdits.js';
 import { remove } from './treeEdits.js';
 
-/** @import {ArenaIndex} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
 /**
@@ -63,10 +63,10 @@ export default class RuleSequence {
       entry = links.nextSibling(entry)
     ) {
       const item = records.entry(entry);
-      if (item instanceof RuleRecord) {
+      if (item.kind === RULE) {
         this.#tail = this.#link(this.#tail, entry);
         if (item.context !== -1) this.#collect(records, item);
-      } else if (item instanceof BlockRecord) {
+      } else if (item.kind === STYLESHEET || item.kind === AT_RULE_BLOCK) {
         this.#collect(records, item);
       }
     }

@@ -6,7 +6,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import {
+  AT_RULE_BLOCK,
+  RULE,
+  STYLESHEET,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import {
@@ -54,8 +58,9 @@ function setup(css) {
 function liveLabels(state) {
   return childEntriesOf(state.records, state.records.root.index).map(
     (entry) => {
-      if (entry instanceof RuleRecord) return entry.selectors[0];
-      if (entry instanceof BlockRecord) return `@${entry.node.name}`;
+      if (entry.kind === RULE) return entry.selectors[0];
+      if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK)
+        return `@${entry.node.name}`;
       return entry.node?.type ?? /** @type {ChildNode} */ (entry).type;
     }
   );

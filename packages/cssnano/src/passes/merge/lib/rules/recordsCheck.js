@@ -1,9 +1,10 @@
 import { containers } from './blockChildren.js';
-import { BlockRecord } from './blockRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { RuleRecord } from './ruleRecord.js';
+import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import MergeState from './mergeState.js' */
 /** @typedef {BlockRecord | RuleRecord} Container */
 
@@ -63,9 +64,11 @@ function checkBlockStructure(records, block) {
     entry = links.nextSibling(entry)
   ) {
     const item = records.entry(entry);
-    if (item instanceof BlockRecord) {
-      checkBlockStructure(records, item);
-    } else if (item instanceof RuleRecord) {
+    if (
+      item.kind === STYLESHEET ||
+      item.kind === AT_RULE_BLOCK ||
+      item.kind === RULE
+    ) {
       checkBlockStructure(records, item);
     }
   }
@@ -120,11 +123,11 @@ export function assertOwnershipIsTree(records) {
       entry = links.nextSibling(entry)
     ) {
       const item = records.entry(entry);
-      if (item instanceof RuleRecord) visitRule(item);
-      else if (item instanceof BlockRecord) {
+      if (item.kind === RULE) visitRule(item);
+      else if (item.kind === STYLESHEET || item.kind === AT_RULE_BLOCK) {
         reach(item);
         visitChildren(item);
-      } else if (item instanceof DeclarationRecord) reach(item);
+      } else if (item.kind === DECLARATION) reach(item);
       count++;
     }
     if (count !== links.childCount(block.index)) throw new Error(OUT_OF_STEP);

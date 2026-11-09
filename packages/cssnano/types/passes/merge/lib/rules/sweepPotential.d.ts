@@ -1,6 +1,6 @@
-import { BlockRecord } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecord } from './blockRecord.js';
+import type { RuleRecord } from './ruleRecord.js';
 export type Container = BlockRecord | RuleRecord;
 /**
  * The potential that a sweep never raises: the declarations of the live rules

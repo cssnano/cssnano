@@ -1,10 +1,12 @@
 import { SelectorList } from './selectorList.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { RULE } from './blockRecord.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { Rule } from 'postcss';
 import type { ArenaIndex } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {Rule} from 'postcss' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
@@ -28,8 +30,8 @@ export declare class RuleRecord extends SelectorList {
     context: number;
     /** @type {ArenaIndex} the place of the record in the arena of its records, -1 until added */
     index: ArenaIndex;
-    /** @type {number} RULE, which the window reads with the other records */
-    kind: number;
+    /** @type {typeof RULE} RULE, which the window reads with the other records */
+    kind: typeof RULE;
     /** @type {string} '' for a rule, which has no at-rule name */
     name: string;
     /** @type {string} '' for a rule, which has no prelude */

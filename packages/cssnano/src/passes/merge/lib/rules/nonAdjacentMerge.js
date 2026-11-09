@@ -3,20 +3,22 @@ import LastWriteIndex from './lastWriteIndex.js';
 import joinByDeclarations from './declarationJoin.js';
 import RepeatScan from './repeatScan.js';
 import {
-  BlockRecord,
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
   CONDITIONAL_GROUP,
-  isAtRuleKind,
+  DECLARATION,
   RULE,
+  STYLESHEET,
 } from './blockRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { RuleRecord } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
 import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
 import { adopt } from './arenaEdits.js';
 
 /** @import MergeState from './mergeState.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {NodeEntry} from './blockRecord.js' */
+/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 /**
  * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry
@@ -25,17 +27,20 @@ import { adopt } from './arenaEdits.js';
  * @return {boolean} see `collectEntries`
  */
 function collectFrom(records, entry, entries) {
-  if (entry instanceof RuleRecord) {
+  if (entry.kind === RULE) {
     entries.push(entry);
     return entry.context === -1
       ? true
       : collectEntries(records, entry, entries);
-  } else if (entry instanceof BlockRecord) {
-    if (entry.kind !== CONDITIONAL_GROUP) return false;
+  } else if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) {
+    if (entry.atRuleKind !== CONDITIONAL_GROUP) return false;
     return collectEntries(records, entry, entries);
-  } else if (entry instanceof DeclarationRecord) {
+  } else if (entry.kind === DECLARATION) {
     entries.push(entry);
-  } else if (isAtRuleKind(entry.kind) && entry.kind !== CONDITIONAL_GROUP) {
+  } else if (
+    entry.kind === AT_RULE_STATEMENT &&
+    entry.atRuleKind !== CONDITIONAL_GROUP
+  ) {
     return false;
   }
   return true;
@@ -58,7 +63,7 @@ function collectEntries(records, block, entries) {
     entry = links.nextSibling(entry)
   ) {
     const item = records.entry(entry);
-    if (ruleOwned && item instanceof DeclarationRecord) continue;
+    if (ruleOwned && item.kind === DECLARATION) continue;
     if (!collectFrom(records, item, entries)) return false;
   }
   return true;
@@ -89,14 +94,14 @@ export function subtreeEntries(records, block) {
  * @return {string | number | null}
  */
 function joinKey(entry, joinRules) {
-  if (entry instanceof RuleRecord) {
+  if (entry.kind === RULE) {
     return joinRules ? `{${entry.selectorText()}` : null;
   }
   // `@font-face` and `@page` have block records too, so the name decides.
   // Siblings share their enclosing blocks, so their contexts are equal exactly
   // when their names and preludes are.
-  if (entry instanceof BlockRecord) {
-    if (entry.kind === CONDITIONAL_GROUP) return entry.context;
+  if (entry.kind === AT_RULE_BLOCK && entry.atRuleKind === CONDITIONAL_GROUP) {
+    return entry.context;
   }
   return null;
 }
@@ -270,7 +275,7 @@ function joinInParent(block, mergeState, rules) {
     if (earlier) {
       const earlierEntry = entries[earlier.origin];
       const direction =
-        entry instanceof RuleRecord
+        entry.kind === RULE
           ? joinRule(
               /** @type {RuleRecord} */ (earlierEntry),
               entry,

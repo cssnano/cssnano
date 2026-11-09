@@ -1,8 +1,9 @@
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { DECLARATION } from './blockRecord.js';
 import { PropertyWrites } from './propertyWrites.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 const STALE_KEYS =
   'declaration keys of a rule record are out of step with its chain';
@@ -129,7 +130,7 @@ export class DeclarationCache {
         entry = records.links.nextSibling(entry)
       ) {
         const item = records.entry(entry);
-        if (item instanceof DeclarationRecord) {
+        if (item.kind === DECLARATION) {
           kept.push(/** @type {ArenaIndex} */ (entry));
           keySet.add(item.id);
         }
@@ -244,7 +245,7 @@ function assertKeysFresh(records, index, entry) {
     link = records.links.nextSibling(link)
   ) {
     const item = records.entry(link);
-    if (!(item instanceof DeclarationRecord)) continue;
+    if (item.kind !== DECLARATION) continue;
     if (entry.kept[at++] !== link || !entry.keySet.has(item.id)) {
       throw new Error(STALE_KEYS);
     }

@@ -46,7 +46,7 @@ export const mutations = [
   },
   {
     name: 'let an important comment not count as content',
-    find: '(entry).important) {',
+    find: 'entry.important) {',
     replace: 'false) {',
   },
   {
@@ -76,7 +76,7 @@ export const mutations = [
   },
   {
     name: 'drop a repeated @import',
-    find: '  if (entry.kind === LAYER || entry.kind === IMPORT) {',
-    replace: '  if (entry.kind === LAYER) {',
+    find: '  if (entry.atRuleKind === LAYER || entry.atRuleKind === IMPORT) {',
+    replace: '  if (entry.atRuleKind === LAYER) {',
   },
 ];

@@ -1,21 +1,11 @@
 import type { ChildNode, Container } from 'postcss';
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ChildNode, Container, Rule} from 'postcss' */
-/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { BlockRecord } from './blockRecord.js';
-import type { NodeEntry } from './blockRecord.js';
+import type { BlockRecord, NodeEntry } from './blockRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type { LinkReader } from './blockLinks.js';
 import type { DeclarationStampReader } from './declarationStamps.js';
 import type { DeclarationCacheReader } from './declarationCache.js';
-/** @import {NodeEntry} from './blockRecord.js' */
-/** @import {ArenaIndex} from './blockRecord.js' */
-/** @import {LinkReader} from './blockLinks.js' */
-/** @import {DeclarationStampReader} from './declarationStamps.js' */
-/** @import {DeclarationCacheReader} from './declarationCache.js' */
-import { RuleRecord } from './ruleRecord.js';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { RuleRecord } from './ruleRecord.js';
 /**
  * The records of one run. One arena holds every block record, every rule record,
  * every declaration of a block and every bare node of a block, each at the next

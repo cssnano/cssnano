@@ -18,6 +18,7 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import {
   COMMENT,
+  NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
@@ -308,6 +309,7 @@ test('appendChild of a comment should make the next read return the same entry',
     new NodeEntry(
       postcss.comment({ text: 'c' }),
       COMMENT,
+      NO_AT_RULE,
       '',
       '',
       false,

@@ -1,8 +1,8 @@
 import { SelectorList } from './selectorList.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { NO_PRELUDE, RULE } from './blockRecord.js';
+import { DECLARATION, NO_PRELUDE, RULE } from './blockRecord.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {Rule} from 'postcss' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
@@ -29,7 +29,7 @@ export class RuleRecord extends SelectorList {
   /** @type {ArenaIndex} the place of the record in the arena of its records, -1 until added */
   index = /** @type {ArenaIndex} */ (-1);
 
-  /** @type {number} RULE, which the window reads with the other records */
+  /** @type {typeof RULE} RULE, which the window reads with the other records */
   kind = RULE;
 
   /** @type {string} '' for a rule, which has no at-rule name */
@@ -84,7 +84,7 @@ export class RuleRecord extends SelectorList {
       entry = records.links.nextSibling(entry)
     ) {
       const item = records.entry(entry);
-      if (item instanceof DeclarationRecord) declarations.push(item);
+      if (item.kind === DECLARATION) declarations.push(item);
     }
     return declarations;
   }

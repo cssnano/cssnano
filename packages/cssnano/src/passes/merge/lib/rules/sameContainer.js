@@ -1,5 +1,11 @@
 import { step } from '../../../ir/declarationKey.js';
-import { KEYFRAMES, LAYER, RULE, STYLESHEET } from './blockRecord.js';
+import {
+  AT_RULE_BLOCK,
+  KEYFRAMES,
+  LAYER,
+  RULE,
+  STYLESHEET,
+} from './blockRecord.js';
 
 // The first steps of a context's path, apart from those of declarations and
 // of the structural ids that duplicate removal takes from the same interner.
@@ -18,7 +24,9 @@ const ANONYMOUS = Symbol('anonymous layer');
  * @return {boolean}
  */
 export function isKeyframes(container) {
-  return container?.kind === KEYFRAMES;
+  return (
+    container?.kind === AT_RULE_BLOCK && container.atRuleKind === KEYFRAMES
+  );
 }
 
 /**
@@ -41,7 +49,7 @@ export function containerContext(keys, parentContext, block) {
   } else {
     trie = step(step(trie, 'atrule'), block.name);
     trie =
-      block.kind === LAYER && block.anonymous
+      block.atRuleKind === LAYER && block.anonymous
         ? step(step(trie, ANONYMOUS), block.index)
         : step(trie, block.params);
   }

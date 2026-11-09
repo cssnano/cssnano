@@ -7,6 +7,7 @@ import { assertRecordsWellFormed } from '../../../../../src/passes/merge/lib/rul
 import {
   BlockRecord,
   COMMENT,
+  NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
@@ -132,6 +133,7 @@ test('moveLast should throw under checks when the block is outside the tree', ()
     new NodeEntry(
       postcss.comment({ text: 'x' }),
       COMMENT,
+      NO_AT_RULE,
       '',
       '',
       false,

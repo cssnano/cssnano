@@ -1,13 +1,8 @@
 import type { ChildNode } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
-import type { NodeEntry } from './blockRecord.js';
+import type { BlockRecord, NodeEntry } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
-/** @import {ChildNode} from 'postcss' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {NodeEntry, ArenaIndex} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
-import { BlockRecord } from './blockRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /**
  * The first declaration the container at `index` holds now.
  *

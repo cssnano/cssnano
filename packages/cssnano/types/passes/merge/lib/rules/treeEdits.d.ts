@@ -1,6 +1,7 @@
 import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type MergeState from './mergeState.js';
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */

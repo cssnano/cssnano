@@ -1,5 +1,4 @@
-import { isContainerKind } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
+import { isRuleOrAtRuleKind, RULE } from './blockRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
@@ -62,11 +61,11 @@ export function assertCanLink(records, block, index) {
  */
 export function assertCanHold(records, block, index) {
   const holder = records.container(block);
-  if (holder instanceof RuleRecord && holder.context === -1) {
+  if (holder?.kind === RULE && holder.context === -1) {
     const entry = records.entry(
       /** @type {import('./blockRecord.js').ArenaIndex} */ (index)
     );
-    if (isContainerKind(entry.kind)) throw new Error(PLAIN_RULE);
+    if (isRuleOrAtRuleKind(entry.kind)) throw new Error(PLAIN_RULE);
   }
 }
 

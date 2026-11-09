@@ -3,10 +3,13 @@ import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
 import { recordDeclaration } from '../../../ir/declarationRecord.js';
 import {
-  atRuleKind,
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
+  atRuleKindOf,
   BlockRecord,
   COMMENT,
   LAYER,
+  NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
   STYLESHEET,
@@ -49,7 +52,7 @@ const PENDING_EDITS = 'a container has edits its child list does not show';
 export function buildRecords(root, context) {
   const { textTable, consistencyChecks } = context;
   const records = new BlockRecords(
-    new BlockRecord(root, STYLESHEET, '', '', false, NO_PRELUDE),
+    new BlockRecord(root, STYLESHEET, NO_AT_RULE, '', '', false, NO_PRELUDE),
     consistencyChecks
   );
   records.root.leadingWhitespace = root.first?.raws.before ?? null;
@@ -90,13 +93,14 @@ export function buildRecords(root, context) {
         fillChildren(record);
       } else if (child.type === 'atrule' && child.nodes) {
         const name = asciiLowerCase(child.name);
-        const kind = atRuleKind(name);
+        const category = atRuleKindOf(name);
         const nested = new BlockRecord(
           child,
-          kind,
+          AT_RULE_BLOCK,
+          category,
           name,
           child.params,
-          kind === LAYER && isAnonymousLayer(child, textTable),
+          category === LAYER && isAnonymousLayer(child, textTable),
           context.declarations.preludeId(child)
         );
         nested.before = child.raws.before ?? null;
@@ -115,19 +119,28 @@ export function buildRecords(root, context) {
         );
       } else if (child.type === 'atrule') {
         const name = asciiLowerCase(child.name);
-        const kind = atRuleKind(name);
+        const category = atRuleKindOf(name);
         const entry = new NodeEntry(
           child,
-          kind,
+          AT_RULE_STATEMENT,
+          category,
           name,
           child.params,
-          kind === LAYER && isAnonymousLayer(child, textTable),
+          category === LAYER && isAnonymousLayer(child, textTable),
           context.declarations.preludeId(child)
         );
         entry.before = child.raws.before ?? null;
         records.appendEntry(container.index, entry);
       } else {
-        const entry = new NodeEntry(child, COMMENT, '', '', false, NO_PRELUDE);
+        const entry = new NodeEntry(
+          child,
+          COMMENT,
+          NO_AT_RULE,
+          '',
+          '',
+          false,
+          NO_PRELUDE
+        );
         entry.before = child.raws.before ?? null;
         entry.text = /** @type {Comment} */ (child).text;
         entry.important = cssnanoUtils.isImportantComment(entry.text);

@@ -2,13 +2,15 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { subtreeEntries } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
-import { DeclarationRecord } from '../../../../../src/passes/ir/declarationRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { entryOf, buildTestRecords } from './liveRecords.js';
 import { adopt } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import {
+  DECLARATION,
+  RULE,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 
 /**
  * The entries under the first at-rule of `css`, read from its record.
@@ -45,7 +47,7 @@ function chainProps(records, block) {
     index = records.links.nextSibling(index)
   ) {
     const item = records.entry(index);
-    if (item instanceof DeclarationRecord) props.push(item.prop);
+    if (item.kind === DECLARATION) props.push(item.prop);
   }
   return props;
 }
@@ -58,7 +60,7 @@ function chainProps(records, block) {
  */
 function propsOf({ records, entries }) {
   return entries?.flatMap((entry) => {
-    if (!(entry instanceof RuleRecord)) return [entry.prop];
+    if (!(entry.kind === RULE)) return [entry.prop];
     if (entry.context === -1) {
       return entry
         .declarationsOf(records)
@@ -78,7 +80,7 @@ test('subtreeEntries should list the rule records and declarations of a block at
 test('subtreeEntries should list a rule that holds a rule as its own record, not as bare declarations', () => {
   const { entries } = entriesOf('@media print{a{color:red;b{width:1px}}}');
   assert.deepEqual(
-    entries?.map((entry) => entry instanceof RuleRecord),
+    entries?.map((entry) => entry.kind === RULE),
     [true, true]
   );
 });

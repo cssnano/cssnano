@@ -1,9 +1,15 @@
 import postcss from 'postcss';
 import { childNodesOf } from './blockChildren.js';
 import cssnanoUtils from '#utils';
-import { atRuleKind, BlockRecord, NodeEntry } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import {
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
+  atRuleKindOf,
+  COMMENT,
+  DECLARATION,
+  RULE,
+  STYLESHEET,
+} from './blockRecord.js';
 import { comma } from '../../../../values/punctuationTokens.js';
 import { joinRanges } from '../../../../values/joinRanges.js';
 import { TextTable } from '../../../../values/textTable.js';
@@ -11,7 +17,9 @@ import { tokensText } from '../../../../values/tokensText.js';
 
 /** @import {AtRule, ChildNode, Container} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex, BlockRecord as Block} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord as Block, NodeEntry} from './blockRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 /** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule, whose children form its chain */
 
@@ -72,7 +80,7 @@ function describes(child) {
  * at-rule the tree holds. The prelude id is not compared, since it counts the
  * raws too.
  *
- * @param {BlockRecord | NodeEntry} entry
+ * @param {Block | NodeEntry} entry
  * @return {void}
  */
 function checkAtRuleFacts(entry) {
@@ -80,7 +88,7 @@ function checkAtRuleFacts(entry) {
   const node = /** @type {AtRule} */ (entry.node);
   const name = asciiLowerCase(node.name);
   if (
-    entry.kind !== atRuleKind(name) ||
+    entry.atRuleKind !== atRuleKindOf(name) ||
     entry.name !== name ||
     entry.params !== node.params
   ) {
@@ -125,7 +133,7 @@ function checkRuleRecord(records, block, record) {
  */
 function checkBlockRecord(records, block) {
   if (differs(records, block)) throw new Error(OUT_OF_STEP);
-  const plain = block instanceof RuleRecord && block.context === -1;
+  const plain = block.kind === RULE && block.context === -1;
   for (
     let entry = records.links.firstChild(block.index);
     entry !== -1;
@@ -141,15 +149,17 @@ function checkBlockRecord(records, block) {
     if (expected !== null && records.nodeOf(entry).raws.before !== expected) {
       throw new Error(STALE);
     }
-    if (item instanceof RuleRecord) {
+    if (item.kind === RULE) {
       checkRuleRecord(records, block, item);
-    } else if (item instanceof BlockRecord) {
+    } else if (item.kind === STYLESHEET || item.kind === AT_RULE_BLOCK) {
       checkAtRuleFacts(item);
       checkBlockRecord(records, item);
     } else {
-      if (item instanceof NodeEntry) checkAtRuleFacts(item);
+      if (item.kind === COMMENT || item.kind === AT_RULE_STATEMENT) {
+        checkAtRuleFacts(item);
+      }
       if (plain) {
-        if (item instanceof DeclarationRecord && !describes(item)) {
+        if (item.kind === DECLARATION && !describes(item)) {
           throw new Error(STALE);
         }
         if (records.nodeOf(entry).parent !== block.node) {
@@ -303,7 +313,7 @@ function createChildNodes(records, container) {
     entry = records.links.nextSibling(entry)
   ) {
     const record = records.entry(entry);
-    if (record instanceof RuleRecord && !record.hasNode) {
+    if (record.kind === RULE && !record.hasNode) {
       const template = /** @type {import('postcss').Rule} */ (
         records.nodeOf(record.template)
       );
@@ -358,7 +368,7 @@ export function writeBack(
       entry = records.links.nextSibling(entry)
     ) {
       const record = records.entry(entry);
-      if (record instanceof RuleRecord) {
+      if (record.kind === RULE) {
         writeSelector(record, records, textTable);
         if (record.context !== -1) {
           visit(record);
@@ -370,7 +380,7 @@ export function writeBack(
             leading: null,
           });
         }
-      } else if (record instanceof BlockRecord) {
+      } else if (record.kind === STYLESHEET || record.kind === AT_RULE_BLOCK) {
         visit(record);
       }
     }

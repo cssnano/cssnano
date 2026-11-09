@@ -1,6 +1,7 @@
 import {} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
   COMMENT,
+  NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
@@ -64,6 +65,7 @@ test('linking an entry into an at-rule block that a sweep unlinked should throw 
     new NodeEntry(
       postcss.comment({ text: 'x' }),
       COMMENT,
+      NO_AT_RULE,
       '',
       '',
       false,

@@ -24,12 +24,12 @@ export const mutations = [
   },
   {
     name: 'treat a layer at-rule as not declaring a layer',
-    find: '    declaresLayer = container.kind === LAYER;',
+    find: '    declaresLayer = container.atRuleKind === LAYER;',
     replace: '    declaresLayer = false;',
   },
   {
     name: 'treat a layer statement as not declaring a layer',
-    find: '  return markLayered(layered, entry.preludeId, entry.kind === LAYER);',
+    find: '  return markLayered(layered, entry.preludeId, entry.atRuleKind === LAYER);',
     replace: '  return markLayered(layered, entry.preludeId, false);',
   },
   {

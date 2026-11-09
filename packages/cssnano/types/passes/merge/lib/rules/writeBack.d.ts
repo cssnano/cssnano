@@ -1,8 +1,8 @@
-import { RuleRecord } from './ruleRecord.js';
 import { TextTable } from '../../../../values/textTable.js';
 import type { ChildNode, Container } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord as Block } from './blockRecord.js';
+import type { RuleRecord } from './ruleRecord.js';
 export type ContainerRecord = Block | RuleRecord;
 /**
  * Under consistency checks, throws when the records and the tree disagree:

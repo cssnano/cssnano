@@ -1,9 +1,9 @@
 /** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {NodeEntry, ArenaIndex} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord, NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-import { BlockRecord, RULE } from './blockRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 /**
  * The first declaration at or after `index` in the chain, or undefined.
@@ -19,7 +19,7 @@ function declarationFrom(records, index) {
     at = records.links.nextSibling(/** @type {ArenaIndex} */ (at))
   ) {
     const entry = records.entry(/** @type {ArenaIndex} */ (at));
-    if (entry instanceof DeclarationRecord) return entry;
+    if (entry.kind === DECLARATION) return entry;
   }
   return undefined;
 }
@@ -55,7 +55,7 @@ export function nextDeclaration(records, declaration) {
 export function* blocks(records) {
   for (let index = 0; index < records.entryCount(); index++) {
     const entry = records.entry(/** @type {ArenaIndex} */ (index));
-    if (entry instanceof BlockRecord) yield entry;
+    if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) yield entry;
   }
 }
 
@@ -69,12 +69,8 @@ export function* blocks(records) {
 export function* containers(records) {
   for (let index = 0; index < records.entryCount(); index++) {
     const entry = records.entry(/** @type {ArenaIndex} */ (index));
-    if (entry instanceof BlockRecord) yield entry;
-    else if (
-      entry.kind === RULE &&
-      /** @type {RuleRecord} */ (entry).context !== -1
-    )
-      yield /** @type {RuleRecord} */ (entry);
+    if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) yield entry;
+    else if (entry.kind === RULE && entry.context !== -1) yield entry;
   }
 }
 

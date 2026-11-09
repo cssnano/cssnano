@@ -2,18 +2,26 @@
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 /*
- * What a record is, as a small integer. The window between build and
+ * What an entry is, as a small integer. The window between build and
  * write-back reads these instead of the node's type, name and params.
  */
 export const STYLESHEET = 0;
 export const RULE = 1;
 export const DECLARATION = 2;
 export const COMMENT = 3;
-export const CONDITIONAL_GROUP = 4;
-export const LAYER = 5;
-export const KEYFRAMES = 6;
-export const IMPORT = 7;
-export const OTHER_AT_RULE = 8;
+export const AT_RULE_BLOCK = 4;
+export const AT_RULE_STATEMENT = 5;
+
+/*
+ * The category of an at-rule, held by the two at-rule kinds and by the
+ * neutral value of the others.
+ */
+export const NO_AT_RULE = 0;
+export const CONDITIONAL_GROUP = 1;
+export const LAYER = 2;
+export const KEYFRAMES = 3;
+export const IMPORT = 4;
+export const OTHER_AT_RULE = 5;
 
 /**
  * The place of an entry in the arena of a run's records. It stays the same
@@ -35,14 +43,14 @@ export const NO_PRELUDE = -1;
 const CONDITIONAL_GROUP_NAMES = new Set(['media', 'supports', 'container']);
 
 /**
- * The kind of an at-rule from its folded name. Conditional groups hold rules
- * whose declarations cascade as they do at the top level. A keyframes is any
- * name that contains `keyframes`, vendor prefixes included.
+ * The category of an at-rule from its folded name. Conditional groups hold
+ * rules whose declarations cascade as they do at the top level. A keyframes is
+ * any name that contains `keyframes`, vendor prefixes included.
  *
  * @param {string} name the name, folded by `asciiLowerCase`
- * @return {number} one of the at-rule kinds
+ * @return {number} one of the at-rule categories
  */
-export function atRuleKind(name) {
+export function atRuleKindOf(name) {
   if (CONDITIONAL_GROUP_NAMES.has(name)) return CONDITIONAL_GROUP;
   if (name === 'layer') return LAYER;
   if (name.includes('keyframes')) return KEYFRAMES;
@@ -52,18 +60,18 @@ export function atRuleKind(name) {
 
 /**
  * @param {number} kind
- * @return {boolean} whether the kind is one of an at-rule
+ * @return {boolean} whether the kind is an at-rule with a block or a statement at-rule
  */
 export function isAtRuleKind(kind) {
-  return kind >= CONDITIONAL_GROUP;
+  return kind === AT_RULE_BLOCK || kind === AT_RULE_STATEMENT;
 }
 
 /**
  * @param {number} kind
- * @return {boolean} whether an entry of the kind is a rule or an at-rule, which a plain rule cannot hold
+ * @return {boolean} whether an entry of the kind is a rule, an at-rule or the stylesheet, not a declaration or a comment
  */
-export function isContainerKind(kind) {
-  return kind === RULE || isAtRuleKind(kind);
+export function isRuleOrAtRuleKind(kind) {
+  return kind !== DECLARATION && kind !== COMMENT;
 }
 
 /**
@@ -76,8 +84,11 @@ export class BlockRecord {
   /** @type {Container} */
   node;
 
-  /** @type {number} what the block is, one of the kinds of this module */
+  /** @type {typeof STYLESHEET | typeof AT_RULE_BLOCK} what the block is */
   kind;
+
+  /** @type {number} the category of an at-rule, NO_AT_RULE for the stylesheet */
+  atRuleKind;
 
   /** @type {string} the folded name of an at-rule, '' for the stylesheet */
   name;
@@ -126,22 +137,24 @@ export class BlockRecord {
 
   /**
    * @param {Container} node
-   * @param {number} kind
+   * @param {typeof STYLESHEET | typeof AT_RULE_BLOCK} kind
+   * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for the stylesheet
    * @param {string} name the folded name, or ''
    * @param {string} params the prelude, or ''
    * @param {boolean} anonymous
    * @param {number} preludeId
    */
-  constructor(node, kind, name, params, anonymous, preludeId) {
+  constructor(node, kind, atRuleKind, name, params, anonymous, preludeId) {
     this.node = node;
     this.kind = kind;
+    this.atRuleKind = atRuleKind;
     this.name = name;
     this.params = params;
     this.anonymous = anonymous;
     this.preludeId = preludeId;
     // A conditional group is dropped when empty, and so is a named layer.
     this.droppable =
-      kind === CONDITIONAL_GROUP || (kind === LAYER && !anonymous);
+      atRuleKind === CONDITIONAL_GROUP || (atRuleKind === LAYER && !anonymous);
   }
 }
 
@@ -157,8 +170,11 @@ export class NodeEntry {
   /** @type {ArenaIndex} the place of the entry in the arena, -1 until added */
   index = /** @type {ArenaIndex} */ (-1);
 
-  /** @type {number} what the entry is, a comment or an at-rule kind */
+  /** @type {typeof COMMENT | typeof AT_RULE_STATEMENT} what the entry is */
   kind;
+
+  /** @type {number} the category of an at-rule, NO_AT_RULE for a comment */
+  atRuleKind;
 
   /** @type {string} the folded name of an at-rule, '' for a comment */
   name;
@@ -183,15 +199,17 @@ export class NodeEntry {
 
   /**
    * @param {ChildNode} node
-   * @param {number} kind
+   * @param {typeof COMMENT | typeof AT_RULE_STATEMENT} kind
+   * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for a comment
    * @param {string} name
    * @param {string} params
    * @param {boolean} anonymous
    * @param {number} preludeId
    */
-  constructor(node, kind, name, params, anonymous, preludeId) {
+  constructor(node, kind, atRuleKind, name, params, anonymous, preludeId) {
     this.node = node;
     this.kind = kind;
+    this.atRuleKind = atRuleKind;
     this.name = name;
     this.params = params;
     this.anonymous = anonymous;

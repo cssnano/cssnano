@@ -9,7 +9,7 @@ import RepeatScan from './repeatScan.js';
 import { filterRuleIntersections } from './declarations.js';
 import { isKeyframes } from './sameContainer.js';
 import { removeRules } from './treeEdits.js';
-import { RuleRecord } from './ruleRecord.js';
+import { RULE } from './blockRecord.js';
 import { removeDeclarations } from './arenaEdits.js';
 import { declarationKeys } from './declarationCache.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
@@ -18,6 +18,7 @@ import { declarationKeys } from './declarationCache.js';
 /** @import MergeState from './mergeState.js' */
 /** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 /**
  * A rule made only of declarations. Comments and nested rules would be
@@ -114,8 +115,7 @@ export default function joinByDeclarations(block, mergeState) {
   const entries = childEntriesOf(mergeState.records, block.index);
   const declarationRules = entries.map(
     (entry) =>
-      entry instanceof RuleRecord &&
-      isDeclarationRule(mergeState.records, entry)
+      entry.kind === RULE && isDeclarationRule(mergeState.records, entry)
   );
   // Rules can only join where they share a declaration. The keys are read
   // here, before any edit, so no loop holds a rule's keys across an edit.

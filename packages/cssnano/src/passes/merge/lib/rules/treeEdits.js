@@ -1,8 +1,9 @@
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { DECLARATION } from './blockRecord.js';
 import { declarationIsEqual } from './declarations.js';
 import { appendChild } from './arenaEdits.js';
 import { receivingDeclarations } from './declarationCache.js';
 
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -82,7 +83,7 @@ export function appendToDeclarations(mergeState, receiving, incoming) {
       records.entry(first)
     );
     records.detach(first);
-    if (child instanceof DeclarationRecord) {
+    if (child.kind === DECLARATION) {
       const { kept, writes } = receivingDeclarations(records, receiving);
       const last = writes.lastConflict(child.keys);
       if (

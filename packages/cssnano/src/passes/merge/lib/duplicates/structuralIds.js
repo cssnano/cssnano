@@ -54,7 +54,7 @@ export function commentId(keys, text) {
  * @return {number}
  */
 export function statementId(keys, layered, entry) {
-  return markLayered(layered, entry.preludeId, entry.kind === LAYER);
+  return markLayered(layered, entry.preludeId, entry.atRuleKind === LAYER);
 }
 
 /**
@@ -76,7 +76,7 @@ export function containerId(keys, layered, container, childIds) {
     );
   } else {
     path = keys.preludeTrie(container.preludeId);
-    declaresLayer = container.kind === LAYER;
+    declaresLayer = container.atRuleKind === LAYER;
   }
   path = step(path, BLOCK);
   for (const id of childIds) {

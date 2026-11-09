@@ -6,10 +6,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
-import {
-  DeclarationRecord,
-  recordDeclaration,
-} from '../../../../../src/passes/ir/declarationRecord.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
@@ -23,6 +20,7 @@ import {
   ruleRecordOf,
 } from './liveRecords.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { DECLARATION } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 
 /**
  * @param {string} css
@@ -91,7 +89,7 @@ test('a declaration in a rule that nests is a declaration record in its chain, a
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
   const [color] = childEntriesOf(state.records, rule.index);
-  assert.ok(color instanceof DeclarationRecord);
+  assert.ok(color.kind === DECLARATION);
   assert.equal(childNodesOf(state.records, rule.index)[0], root.first.first);
   assert.equal(color.node, root.first.first);
 });
@@ -100,7 +98,7 @@ test('declarationKeys of a rule that nests are the ids of its chain declarations
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
   const ids = childEntriesOf(state.records, rule.index)
-    .filter((entry) => entry instanceof DeclarationRecord)
+    .filter((entry) => entry.kind === DECLARATION)
     .map((entry) => entry.id);
   assert.deepEqual(declarationIds(state.records, rule.index), ids);
 });

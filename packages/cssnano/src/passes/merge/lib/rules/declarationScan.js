@@ -1,5 +1,4 @@
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { RULE } from './blockRecord.js';
+import { DECLARATION, RULE } from './blockRecord.js';
 
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -21,7 +20,7 @@ function hasDeclarationOutsideRules(records, block) {
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
-    if (records.entry(entry) instanceof DeclarationRecord) return true;
+    if (records.entry(entry).kind === DECLARATION) return true;
     const nested = records.blockEntry(entry);
     if (nested && hasDeclarationOutsideRules(records, nested)) return true;
   }
@@ -91,7 +90,7 @@ export default class DeclarationScan {
       }
       if (entry === second.index) return false;
       const item = records.entry(entry);
-      if (item instanceof DeclarationRecord) return true;
+      if (item.kind === DECLARATION) return true;
       const nested = records.blockEntry(entry);
       if (nested && links.firstChild(nested.index) !== -1) {
         holder = nested;

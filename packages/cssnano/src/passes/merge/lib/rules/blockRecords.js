@@ -2,18 +2,18 @@
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockLinks } from './blockLinks.js';
 import { DeclarationStamps } from './declarationStamps.js';
 import { DeclarationCache } from './declarationCache.js';
 import { assertCanLink, assertReached } from './linkChecks.js';
-import { BlockRecord } from './blockRecord.js';
-/** @import {NodeEntry} from './blockRecord.js' */
+import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
+/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {LinkReader} from './blockLinks.js' */
 /** @import {DeclarationStampReader} from './declarationStamps.js' */
 /** @import {DeclarationCacheReader} from './declarationCache.js' */
-import { RuleRecord } from './ruleRecord.js';
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 const MOVED_ROOT = 'the root is moved into a chain';
 
@@ -183,7 +183,7 @@ export class BlockRecords {
    * @return {void}
    */
   #touchDeclaration(container, index) {
-    if (container !== -1 && this.#entries[index] instanceof DeclarationRecord) {
+    if (container !== -1 && this.#entries[index]?.kind === DECLARATION) {
       this.#declarationStamps.touch(container);
     }
   }
@@ -199,7 +199,7 @@ export class BlockRecords {
    */
   #appendDeclaration(block, index, before) {
     const entry = this.#entries[index];
-    if (!(entry instanceof DeclarationRecord)) return;
+    if (entry?.kind !== DECLARATION) return;
     if (this.#links.nextSibling(/** @type {ArenaIndex} */ (index)) !== -1) {
       return;
     }
@@ -229,7 +229,7 @@ export class BlockRecords {
     if (
       index !== -1 &&
       this.consistencyChecks &&
-      !(entry instanceof BlockRecord)
+      !(entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK)
     ) {
       throw new Error('a block is read at an entry that is not a block');
     }
@@ -245,7 +245,9 @@ export class BlockRecords {
   container(index) {
     const entry = this.#entries[index];
     const isContainer =
-      entry instanceof BlockRecord || entry instanceof RuleRecord;
+      entry?.kind === STYLESHEET ||
+      entry?.kind === AT_RULE_BLOCK ||
+      entry?.kind === RULE;
     if (index !== -1 && this.consistencyChecks && !isContainer) {
       throw new Error(
         'a container is read at an entry that is neither a block nor a rule'
@@ -260,7 +262,9 @@ export class BlockRecords {
    */
   blockEntry(index) {
     const entry = this.#entries[index];
-    return entry instanceof BlockRecord ? entry : undefined;
+    return entry?.kind === STYLESHEET || entry?.kind === AT_RULE_BLOCK
+      ? entry
+      : undefined;
   }
 
   /**
@@ -383,7 +387,7 @@ export class BlockRecords {
   addMergedNodes(reported) {
     for (let index = this.#built; index < this.#entries.length; index++) {
       const entry = this.#entries[index];
-      if (entry instanceof RuleRecord && entry.hasNode) {
+      if (entry.kind === RULE && entry.hasNode) {
         reported.add(entry.node);
       }
     }

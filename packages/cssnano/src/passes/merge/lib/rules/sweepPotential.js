@@ -1,8 +1,9 @@
-import { BlockRecord } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
+import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
 import { declarationKeys } from './declarationCache.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @typedef {BlockRecord | RuleRecord} Container */
 
 const POTENTIAL =
@@ -38,11 +39,15 @@ export function sweepPotential(records, numbers) {
       entry = links.nextSibling(entry)
     ) {
       const item = records.entry(entry);
-      if (item instanceof RuleRecord && item.context === -1) {
+      if (item.kind === RULE && item.context === -1) {
         declarations += declarationKeys(records, item.index).kept.length;
         rules++;
         parents += id;
-      } else if (item instanceof BlockRecord || item instanceof RuleRecord) {
+      } else if (
+        item.kind === RULE ||
+        item.kind === STYLESHEET ||
+        item.kind === AT_RULE_BLOCK
+      ) {
         visit(item);
       }
     }

@@ -1,10 +1,13 @@
-import { BlockRecord, NodeEntry } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { PropertyKeys } from '../../../ir/propertyTable.js';
 import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecord, NodeEntry } from './blockRecord.js';
+import type { RuleRecord } from './ruleRecord.js';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /**
  * A table of the latest position at which each property was declared among
  * the children of one parent, visited in document order. It tells whether a

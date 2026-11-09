@@ -1,7 +1,7 @@
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { PropertyWrites } from './propertyWrites.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 export type RuleDeclarationKeys = {
     /**
      * the indices of the declarations of the rule, in order
