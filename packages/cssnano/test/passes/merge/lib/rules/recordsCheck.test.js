@@ -16,6 +16,7 @@ import {
   ruleRecordOf,
   buildTestRecords,
   withCorruptedLinks,
+  placeUnlinked,
 } from './liveRecords.js';
 import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
@@ -109,8 +110,10 @@ test('assertRecordsWellFormed should accept the chains after a rule moves out of
 test('linkLast should throw under checks when the block is outside the tree', () => {
   const { state } = setup('a{color:red}');
   const detached = new BlockRecord(postcss.atRule({ name: 'media' }), false);
-  state.records.add(detached);
-  const comment = state.records.bareEntry(
+  placeUnlinked(state.records, state.records.root.index, detached);
+  const comment = placeUnlinked(
+    state.records,
+    state.records.root.index,
     new NodeEntry(
       postcss.comment({ text: 'x' }),
       COMMENT,

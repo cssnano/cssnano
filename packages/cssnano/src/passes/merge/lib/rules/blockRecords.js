@@ -2,10 +2,7 @@
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import {
-  DeclarationRecord,
-  recordDeclaration,
-} from '../../../ir/declarationRecord.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockLinks } from './blockLinks.js';
 import { DeclarationStamps } from './declarationStamps.js';
 import { DeclarationCache } from './declarationCache.js';
@@ -76,6 +73,47 @@ export class BlockRecords {
     this.links = this.#links;
     this.#declarations = new DeclarationCache(consistencyChecks);
     this.declarations = this.#declarations;
+    this.#place(root);
+  }
+
+  /**
+   * Gives an entry the next index of the arena and keeps it there, then links
+   * it at the end of the chain of `container`. The entry is unplaced, its index
+   * -1, until this call.
+   *
+   * @param {number} container
+   * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
+   * @return {void}
+   */
+  appendEntry(container, entry) {
+    this.#placeUnplaced(entry);
+    this.linkLast(container, entry.index);
+  }
+
+  /**
+   * Gives an unplaced entry the next index of the arena and links it after
+   * `after` in the chain of `container`, which is the head when `after` is -1.
+   *
+   * @param {number} container
+   * @param {number} after
+   * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
+   * @return {void}
+   */
+  insertEntry(container, after, entry) {
+    this.#placeUnplaced(entry);
+    this.linkAfter(container, after, entry.index);
+  }
+
+  /**
+   * @template {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} T
+   * @param {T} entry an entry that is unplaced
+   * @return {void}
+   */
+  #placeUnplaced(entry) {
+    if (this.consistencyChecks && entry.index !== -1) {
+      throw new Error('an entry is placed twice in the arena');
+    }
+    this.#place(entry);
   }
 
   /**
@@ -132,16 +170,6 @@ export class BlockRecords {
   }
 
   /**
-   * Adds a block record to the arena, which gives it the next index.
-   *
-   * @param {BlockRecord} block
-   * @return {void}
-   */
-  add(block) {
-    this.#place(block);
-  }
-
-  /**
    * @param {ArenaIndex} index an index that the arena gave
    * @return {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry}
    */
@@ -150,7 +178,7 @@ export class BlockRecords {
   }
 
   /**
-   * @param {number} index an index that `add` gave, or -1 for no block
+   * @param {number} index an index that the arena gave, or -1 for no block
    * @return {BlockRecord | undefined} undefined for -1
    * @throws {Error} under checks, when the entry at `index` is not a block
    */
@@ -167,7 +195,7 @@ export class BlockRecords {
   }
 
   /**
-   * @param {number} index an index that `add` or `recordRule` gave, or -1 for none
+   * @param {number} index an index that the arena gave, or -1 for none
    * @return {BlockRecord | RuleRecord | undefined} the container at `index`, a block or a rule,
    * or undefined for -1
    * @throws {Error} under checks, when the entry at `index` is neither
@@ -194,7 +222,7 @@ export class BlockRecords {
   }
 
   /**
-   * @param {number} index an index that `recordRule` gave; under checks, throws when the root does not reach it
+   * @param {number} index an index that the arena gave; under checks, throws when the root does not reach it
    */
   rule(index) {
     if (this.consistencyChecks) assertReached(this, index);
@@ -330,52 +358,5 @@ export class BlockRecords {
         reported.add(entry.node);
       }
     }
-  }
-
-  /**
-   * Builds the record of a declaration that is a child of a block and adds it
-   * to the arena, which gives it the next index.
-   *
-   * @param {import('postcss').Declaration} node
-   * @param {PropertyTable} properties the keys of the property names
-   * @param {DeclarationKeys} declarations the ids of the declarations
-   * @return {DeclarationRecord}
-   */
-  blockDeclaration(node, properties, declarations) {
-    return this.#place(recordDeclaration(node, properties, declarations));
-  }
-
-  /**
-   * Adds a bare node, a comment or a statement at-rule, to the arena.
-   *
-   * @param {NodeEntry} entry
-   * @return {NodeEntry}
-   */
-  bareEntry(entry) {
-    return this.#place(entry);
-  }
-
-  /**
-   * Builds the record of a rule and adds it to the arena. The caller links its
-   * children, in order, and places the rule. The selector arguments are the
-   * rule's, in PostCSS's form, so a caller passes them rather than read the node.
-   *
-   * @param {Rule | undefined} rule the node, or undefined for a merged rule
-   * @param {string[]} selectors
-   * @param {string} selector
-   * @param {string} [sourceSelector] set only when the source text differs from the selector
-   * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
-   * @return {RuleRecord}
-   */
-  recordRule(
-    rule,
-    selectors,
-    selector,
-    sourceSelector = undefined,
-    tokens = undefined
-  ) {
-    return this.#place(
-      new RuleRecord(rule, selectors, selector, sourceSelector, tokens)
-    );
   }
 }

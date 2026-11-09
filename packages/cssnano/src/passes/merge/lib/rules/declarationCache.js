@@ -76,7 +76,7 @@ export class DeclarationCache {
    * entry is rebuilt from the chain.
    *
    * @param {BlockRecords} records the arena that holds the container's children
-   * @param {ArenaIndex} index an index that `recordRule` gave
+   * @param {ArenaIndex} index an index that the arena gave
    * @return {RuleDeclarationKeys}
    */
   keysOf(records, index) {
@@ -89,7 +89,7 @@ export class DeclarationCache {
    * has them are compared with a fresh build.
    *
    * @param {BlockRecords} records the arena that holds the container's children
-   * @param {ArenaIndex} index an index that `recordRule` gave
+   * @param {ArenaIndex} index an index that the arena gave
    * @return {ReceivingDeclarations}
    */
   receivingOf(records, index) {
@@ -179,7 +179,7 @@ export class DeclarationCache {
  * the rule.
  *
  * @param {BlockRecords} records
- * @param {number} index an index that `recordRule` gave
+ * @param {number} index an index that the arena gave
  * @return {RuleDeclarationKeys}
  */
 export function declarationKeys(records, index) {
@@ -196,7 +196,7 @@ export function declarationKeys(records, index) {
  * caller reads it again after an edit and keeps nothing of it across one.
  *
  * @param {BlockRecords} records
- * @param {number} index an index that `recordRule` gave
+ * @param {number} index an index that the arena gave
  * @return {ReceivingDeclarations}
  */
 export function receivingDeclarations(records, index) {

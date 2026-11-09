@@ -83,7 +83,7 @@ export function* containers(records) {
  * says the output depends on it: a rule with a comment is kept as written.
  *
  * @param {BlockRecords} records
- * @param {number} index an index that `recordRule` gave
+ * @param {number} index an index that the arena gave
  * @return {number}
  */
 export function childCountOf(records, index) {
@@ -96,7 +96,7 @@ export function childCountOf(records, index) {
  * when it holds no other child.
  *
  * @param {BlockRecords} records
- * @param {number} index an index that `recordRule` gave
+ * @param {number} index an index that the arena gave
  * @return {boolean}
  */
 export function holdsOnlyDeclarationsOf(records, index) {

@@ -9,7 +9,12 @@ import {
   declarationKeys,
   receivingDeclarations,
 } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
-import { buildTestRecords, ruleRecordOf } from './liveRecords.js';
+import {
+  buildTestRecords,
+  ruleRecordOf,
+  placeUnlinked,
+} from './liveRecords.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
@@ -40,10 +45,14 @@ const arenaOf = (css, consistencyChecks = false) => {
  * @return {import('../../../../../src/passes/ir/declarationRecord.js').DeclarationRecord}
  */
 const freshDeclaration = ({ state, records }, prop) =>
-  records.blockDeclaration(
-    postcss.decl({ prop, value: '0' }),
-    state.properties,
-    state.declarationIds
+  placeUnlinked(
+    records,
+    records.root.index,
+    recordDeclaration(
+      postcss.decl({ prop, value: '0' }),
+      state.properties,
+      state.declarationIds
+    )
   );
 
 test('receivingDeclarations should return the same entry after appendChild, with the appended declaration last in kept and its write at its position', () => {

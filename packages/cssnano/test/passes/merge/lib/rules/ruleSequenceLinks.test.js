@@ -9,7 +9,9 @@ import {
   blockRecordOf,
   ruleRecordOf,
   buildTestRecords,
+  placeUnlinked,
 } from './liveRecords.js';
+import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 
 /**
  * @param {string} css
@@ -56,7 +58,11 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
   const [a, , c] = ruleIndices(records);
   const sequence = new RuleSequence(records);
   // A rule made mid-sweep takes the next index, past every link the sweep made.
-  const added = records.recordRule(postcss.rule({ selector: 'x' }), ['x'], 'x');
+  const added = placeUnlinked(
+    records,
+    records.root.index,
+    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
+  );
   sequence.replacePair(records, a, {
     first: [a],
     second: [added.index],
@@ -73,7 +79,11 @@ test('replacePair should chain the placed rules in the order first, second, then
   const [a, , , , e] = ruleIndices(records);
   const sequence = new RuleSequence(records);
   const made = (selector) =>
-    records.recordRule(postcss.rule({ selector }), [selector], selector).index;
+    placeUnlinked(
+      records,
+      records.root.index,
+      new RuleRecord(postcss.rule({ selector }), [selector], selector)
+    ).index;
   const x = made('x');
   const y = made('y');
   const z = made('z');

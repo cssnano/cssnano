@@ -164,11 +164,27 @@ export function withCorruptedLinks(records, container, corrupt) {
  * The ids of the declarations of the rule at `index`, in chain order.
  *
  * @param {BlockRecords} records
- * @param {number} index an index that `recordRule` gave
+ * @param {number} index an index that the arena gave
  * @return {number[]}
  */
 export function declarationIds(records, index) {
   return declarationKeys(records, /** @type {ArenaIndex} */ (index)).kept.map(
     (entry) => records.entry(entry).id
   );
+}
+
+/**
+ * Gives an unplaced entry an index by appending it to `container`, then takes
+ * it out of the chain, so a test can link it later.
+ *
+ * @template T
+ * @param {BlockRecords} records
+ * @param {number} container
+ * @param {T} entry an entry that is unplaced
+ * @return {T}
+ */
+export function placeUnlinked(records, container, entry) {
+  records.appendEntry(container, /** @type {any} */ (entry));
+  records.unlink(/** @type {any} */ (entry).index);
+  return entry;
 }

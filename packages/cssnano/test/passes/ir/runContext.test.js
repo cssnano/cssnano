@@ -5,6 +5,8 @@ import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { remove } from '../../../src/passes/merge/lib/rules/treeEdits.js';
 import { buildRecords } from '../../../src/passes/merge/lib/rules/buildRecords.js';
 import { TextTable } from '../../../src/values/textTable.js';
+import { RuleRecord } from '../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { placeUnlinked } from '../merge/lib/rules/liveRecords.js';
 
 /**
  * @param {string} css one declaration
@@ -40,6 +42,10 @@ test('a run context created with consistency checks makes a link into a removed 
   const records = buildRecords(postcss.parse('a{color:red}'), context);
   const rule = records.rule(records.links.firstChild(records.root.index));
   remove(records, rule);
-  const entry = records.recordRule(postcss.rule({ selector: 'x' }), ['x'], 'x');
+  const entry = placeUnlinked(
+    records,
+    records.root.index,
+    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
+  );
   assert.throws(() => records.linkLast(rule.index, entry.index));
 });

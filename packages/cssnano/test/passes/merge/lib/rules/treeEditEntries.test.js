@@ -19,6 +19,7 @@ import {
   blockRecordOf,
   ruleRecordOf,
   buildTestRecords,
+  placeUnlinked,
 } from './liveRecords.js';
 import {
   adopt,
@@ -72,10 +73,10 @@ test('substitute with one replacement should put it where the rule stood', () =>
   const { root, state } = setup('a{color:red}b{width:1px}c{height:1px}');
   const [, b] = /** @type {Rule[]} */ (root.nodes);
   const record = ruleRecordOf(state.records, b);
-  const replacement = state.records.recordRule(
-    postcss.rule({ selector: 'x' }),
-    ['x'],
-    'x'
+  const replacement = placeUnlinked(
+    state.records,
+    state.records.root.index,
+    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
   );
   substitute(state.records, record.index, [replacement.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'c']);
@@ -85,15 +86,15 @@ test('substitute with several replacements should keep their order where the rul
   const { root, state } = setup('a{color:red}b{width:1px}c{height:1px}');
   const [, b] = /** @type {Rule[]} */ (root.nodes);
   const record = ruleRecordOf(state.records, b);
-  const first = state.records.recordRule(
-    postcss.rule({ selector: 'x' }),
-    ['x'],
-    'x'
+  const first = placeUnlinked(
+    state.records,
+    state.records.root.index,
+    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
   );
-  const second = state.records.recordRule(
-    postcss.rule({ selector: 'y' }),
-    ['y'],
-    'y'
+  const second = placeUnlinked(
+    state.records,
+    state.records.root.index,
+    new RuleRecord(postcss.rule({ selector: 'y' }), ['y'], 'y')
   );
   substitute(state.records, record.index, [first.index, second.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'y', 'c']);

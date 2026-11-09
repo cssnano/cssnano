@@ -12,6 +12,7 @@ import {
   blockRecordOf,
   ruleRecordOf,
   buildTestRecords,
+  placeUnlinked,
 } from './liveRecords.js';
 import {
   adopt,
@@ -19,6 +20,7 @@ import {
   substitute,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -47,10 +49,10 @@ test('substitute should put the replacement in the chain where the rule stood', 
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const [media] = /** @type {Container[]} */ (root.nodes);
   const [a, b] = /** @type {Rule[]} */ (/** @type {Container} */ (media).nodes);
-  const replacement = state.records.recordRule(
-    postcss.rule({ selector: 'x' }),
-    ['x'],
-    'x'
+  const replacement = placeUnlinked(
+    state.records,
+    state.records.root.index,
+    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
   );
   const mediaIndex = indexOfBlock(state, media);
   substitute(state.records, ruleRecordOf(state.records, a).index, [
@@ -68,10 +70,10 @@ test('substitute should keep a replacement that already stands before the replac
   const [media] = /** @type {Container[]} */ (root.nodes);
   const [a, b] = /** @type {Rule[]} */ (/** @type {Container} */ (media).nodes);
   const mediaIndex = indexOfBlock(state, media);
-  const fresh = state.records.recordRule(
-    postcss.rule({ selector: 'x' }),
-    ['x'],
-    'x'
+  const fresh = placeUnlinked(
+    state.records,
+    state.records.root.index,
+    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
   );
   state.records.linkAfter(
     mediaIndex,
@@ -170,4 +172,13 @@ test('remove should unlink a block and leave its container count one less', () =
   remove(state.records, block);
   assert.equal(state.records.links.parentOf(block.index), -1);
   assert.equal(state.records.links.childCount(state.records.root.index), 1);
+});
+
+test('insertEntry links the entry it places after the sibling it is given', () => {
+  const { root, state } = setup('a{color:red}b{color:blue}');
+  const records = state.records;
+  const first = ruleRecordOf(records, root.first);
+  const entry = new RuleRecord(undefined, ['c'], 'c');
+  records.insertEntry(records.root.index, first.index, entry);
+  assert.equal(records.links.nextSibling(first.index), entry.index);
 });

@@ -22,6 +22,16 @@ import type { RuleRecord } from './ruleRecord.js';
  */
 export declare function substitute(records: BlockRecords, record: number, replacements: number[]): void;
 /**
+ * Places the unplaced entry `entry` in the chain of `sibling`'s container, right
+ * before `sibling`.
+ *
+ * @param {BlockRecords} records
+ * @param {number} sibling the index of the entry that `entry` stands before
+ * @param {RuleRecord} entry
+ * @return {void}
+ */
+export declare function insertBefore(records: BlockRecords, sibling: number, entry: RuleRecord): void;
+/**
  * Moves the rule `record` to the end of the chain of the block at `target`.
  *
  * @param {BlockRecords} records

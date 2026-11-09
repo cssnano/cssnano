@@ -30,6 +30,7 @@ import {
   ruleRecordOf,
   blockRecordOf,
   buildTestRecords,
+  placeUnlinked,
 } from './liveRecords.js';
 import {
   adopt,
@@ -37,6 +38,8 @@ import {
   moveRule,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -248,10 +251,10 @@ test('linkLast into a plain rule that is linked nowhere should throw under consi
   const { root, state } = setup('a{color:red}');
   const rule = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
   const [declaration] = rule.declarationsOf(state.records);
-  const orphan = state.records.recordRule(
-    postcss.parse('b{width:1px}').first,
-    ['b'],
-    'b'
+  const orphan = placeUnlinked(
+    state.records,
+    state.records.root.index,
+    new RuleRecord(postcss.parse('b{width:1px}').first, ['b'], 'b')
   );
   state.records.unlink(declaration.index);
   assert.throws(
@@ -316,10 +319,10 @@ test('assertNoOverDuplication should throw when a declaration is written more of
   appendChild(
     state.records,
     record,
-    state.records.blockDeclaration(
-      added,
-      state.properties,
-      state.declarationIds
+    placeUnlinked(
+      state.records,
+      state.records.root.index,
+      recordDeclaration(added, state.properties, state.declarationIds)
     )
   );
   assert.throws(

@@ -44,7 +44,7 @@ export declare function containers(records: BlockRecords): Generator<BlockRecord
  * says the output depends on it: a rule with a comment is kept as written.
  *
  * @param {BlockRecords} records
- * @param {number} index an index that `recordRule` gave
+ * @param {number} index an index that the arena gave
  * @return {number}
  */
 export declare function childCountOf(records: BlockRecords, index: number): number;
@@ -53,7 +53,7 @@ export declare function childCountOf(records: BlockRecords, index: number): numb
  * when it holds no other child.
  *
  * @param {BlockRecords} records
- * @param {number} index an index that `recordRule` gave
+ * @param {number} index an index that the arena gave
  * @return {boolean}
  */
 export declare function holdsOnlyDeclarationsOf(records: BlockRecords, index: number): boolean;

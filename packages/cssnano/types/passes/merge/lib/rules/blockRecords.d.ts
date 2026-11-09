@@ -1,7 +1,4 @@
-import type { CSSToken } from '@csstools/css-tokenizer';
-import type { ChildNode, Container, Rule } from 'postcss';
-import type { DeclarationKeys } from '../../../ir/declarationKey.js';
-import type { PropertyTable } from '../../../ir/propertyTable.js';
+import type { ChildNode, Container } from 'postcss';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
@@ -52,25 +49,38 @@ export declare class BlockRecords {
      */
     constructor(root: BlockRecord, consistencyChecks: boolean);
     /**
-     * Adds a block record to the arena, which gives it the next index.
+     * Gives an entry the next index of the arena and keeps it there, then links
+     * it at the end of the chain of `container`. The entry is unplaced, its index
+     * -1, until this call.
      *
-     * @param {BlockRecord} block
+     * @param {number} container
+     * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
      * @return {void}
      */
-    add(block: BlockRecord): void;
+    appendEntry(container: number, entry: BlockRecord | RuleRecord | DeclarationRecord | NodeEntry): void;
+    /**
+     * Gives an unplaced entry the next index of the arena and links it after
+     * `after` in the chain of `container`, which is the head when `after` is -1.
+     *
+     * @param {number} container
+     * @param {number} after
+     * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
+     * @return {void}
+     */
+    insertEntry(container: number, after: number, entry: BlockRecord | RuleRecord | DeclarationRecord | NodeEntry): void;
     /**
      * @param {ArenaIndex} index an index that the arena gave
      * @return {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry}
      */
     entry(index: ArenaIndex): BlockRecord | RuleRecord | DeclarationRecord | NodeEntry;
     /**
-     * @param {number} index an index that `add` gave, or -1 for no block
+     * @param {number} index an index that the arena gave, or -1 for no block
      * @return {BlockRecord | undefined} undefined for -1
      * @throws {Error} under checks, when the entry at `index` is not a block
      */
     block(index: number): BlockRecord | undefined;
     /**
-     * @param {number} index an index that `add` or `recordRule` gave, or -1 for none
+     * @param {number} index an index that the arena gave, or -1 for none
      * @return {BlockRecord | RuleRecord | undefined} the container at `index`, a block or a rule,
      * or undefined for -1
      * @throws {Error} under checks, when the entry at `index` is neither
@@ -82,7 +92,7 @@ export declare class BlockRecords {
      */
     blockEntry(index: number): BlockRecord | undefined;
     /**
-     * @param {number} index an index that `recordRule` gave; under checks, throws when the root does not reach it
+     * @param {number} index an index that the arena gave; under checks, throws when the root does not reach it
      */
     rule(index: number): RuleRecord | undefined;
     /**
@@ -160,35 +170,5 @@ export declare class BlockRecords {
      * @return {void}
      */
     addMergedNodes(reported: Set<Container>): void;
-    /**
-     * Builds the record of a declaration that is a child of a block and adds it
-     * to the arena, which gives it the next index.
-     *
-     * @param {import('postcss').Declaration} node
-     * @param {PropertyTable} properties the keys of the property names
-     * @param {DeclarationKeys} declarations the ids of the declarations
-     * @return {DeclarationRecord}
-     */
-    blockDeclaration(node: import('postcss').Declaration, properties: PropertyTable, declarations: DeclarationKeys): DeclarationRecord;
-    /**
-     * Adds a bare node, a comment or a statement at-rule, to the arena.
-     *
-     * @param {NodeEntry} entry
-     * @return {NodeEntry}
-     */
-    bareEntry(entry: NodeEntry): NodeEntry;
-    /**
-     * Builds the record of a rule and adds it to the arena. The caller links its
-     * children, in order, and places the rule. The selector arguments are the
-     * rule's, in PostCSS's form, so a caller passes them rather than read the node.
-     *
-     * @param {Rule | undefined} rule the node, or undefined for a merged rule
-     * @param {string[]} selectors
-     * @param {string} selector
-     * @param {string} [sourceSelector] set only when the source text differs from the selector
-     * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
-     * @return {RuleRecord}
-     */
-    recordRule(rule: Rule | undefined, selectors: string[], selector: string, sourceSelector?: string, tokens?: readonly CSSToken[]): RuleRecord;
 }
 //# sourceMappingURL=blockRecords.d.ts.map

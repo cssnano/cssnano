@@ -21,10 +21,12 @@ import {
   buildTestRecords,
   declarationIds,
   ruleRecordOf,
+  placeUnlinked,
 } from './liveRecords.js';
 import { adopt } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {Container, Root, Rule} from 'postcss' */
@@ -105,7 +107,9 @@ test('enclosingContainer should give the rule that nests the rule, and the block
 test('childCount should count a comment linked into a block', () => {
   const { root, records } = setup('@media print{a{color:red}}');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
-  const comment = records.bareEntry(
+  const comment = placeUnlinked(
+    records,
+    records.root.index,
     new NodeEntry(
       postcss.comment({ text: 'c' }),
       COMMENT,
@@ -165,10 +169,14 @@ test('declarationKeys should list a declaration that linkAfter puts in the middl
   const { root, records } = setup('a{color:red;top:0}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
   const [color] = rule.declarationsOf(records);
-  const width = records.blockDeclaration(
-    postcss.decl({ prop: 'width', value: '1px' }),
-    new PropertyTable(),
-    new DeclarationKeys()
+  const width = placeUnlinked(
+    records,
+    records.root.index,
+    recordDeclaration(
+      postcss.decl({ prop: 'width', value: '1px' }),
+      new PropertyTable(),
+      new DeclarationKeys()
+    )
   );
   records.linkAfter(rule.index, color.index, width.index);
   assert.deepEqual(
@@ -181,10 +189,14 @@ test('declarationsOf should list the declaration that linkLast appends to its ru
   const { root, records } = setup('a{color:red}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
   declarationKeys(records, rule.index);
-  const top = records.blockDeclaration(
-    postcss.decl({ prop: 'top', value: '0' }),
-    new PropertyTable(),
-    new DeclarationKeys()
+  const top = placeUnlinked(
+    records,
+    records.root.index,
+    recordDeclaration(
+      postcss.decl({ prop: 'top', value: '0' }),
+      new PropertyTable(),
+      new DeclarationKeys()
+    )
   );
   records.linkLast(rule.index, top.index);
   assert.deepEqual(
@@ -197,10 +209,14 @@ test('firstDeclaration and nextDeclaration should walk a declaration that linkAf
   const { root, records } = setup('a{color:red;top:0}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
   const color = firstDeclaration(records, rule.index);
-  const width = records.blockDeclaration(
-    postcss.decl({ prop: 'width', value: '1px' }),
-    new PropertyTable(),
-    new DeclarationKeys()
+  const width = placeUnlinked(
+    records,
+    records.root.index,
+    recordDeclaration(
+      postcss.decl({ prop: 'width', value: '1px' }),
+      new PropertyTable(),
+      new DeclarationKeys()
+    )
   );
   records.linkAfter(rule.index, color.index, width.index);
   const props = [];
@@ -219,10 +235,14 @@ test('declarationKeys should list the ids in their new order after linkAfter put
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
   const [color, top] = rule.declarationsOf(records);
   declarationKeys(records, rule.index);
-  const width = records.blockDeclaration(
-    postcss.decl({ prop: 'width', value: '1px' }),
-    new PropertyTable(),
-    new DeclarationKeys()
+  const width = placeUnlinked(
+    records,
+    records.root.index,
+    recordDeclaration(
+      postcss.decl({ prop: 'width', value: '1px' }),
+      new PropertyTable(),
+      new DeclarationKeys()
+    )
   );
   records.linkAfter(rule.index, color.index, width.index);
   assert.deepEqual(declarationIds(records, rule.index), [

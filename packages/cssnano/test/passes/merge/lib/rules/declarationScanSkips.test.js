@@ -14,6 +14,7 @@ import {
   blockRecordOf,
   ruleRecordOf,
   buildTestRecords,
+  placeUnlinked,
 } from './liveRecords.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 
@@ -57,7 +58,9 @@ test('linking an entry into an at-rule block that a sweep unlinked should throw 
     ruleRecordOf(records, p).index,
     ruleRecordOf(records, layer.first).index
   );
-  const comment = records.bareEntry(
+  const comment = placeUnlinked(
+    records,
+    records.root.index,
     new NodeEntry(
       postcss.comment({ text: 'x' }),
       COMMENT,

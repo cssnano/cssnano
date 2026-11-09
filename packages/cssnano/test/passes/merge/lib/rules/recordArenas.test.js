@@ -9,6 +9,7 @@ import {
   ruleRecordOf,
   buildTestRecords,
   withCorruptedLinks,
+  placeUnlinked,
 } from './liveRecords.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
@@ -80,7 +81,11 @@ test('a rule recorded mid-run should take the next index of the arena', () => {
   const { state } = setup('a{color:red}b{width:1px}');
   const { records } = state;
   const count = records.entryCount();
-  const added = records.recordRule(postcss.rule({ selector: 'c' }), ['c'], 'c');
+  const added = placeUnlinked(
+    records,
+    records.root.index,
+    new RuleRecord(postcss.rule({ selector: 'c' }), ['c'], 'c')
+  );
   assert.equal(added.index, count);
   records.linkLast(records.root.index, added.index);
   assert.equal(records.rule(added.index), added);

@@ -7,6 +7,8 @@ import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { assertLinearTime } from '../linearTiming.js';
 import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { placeUnlinked } from '../../../../../test/passes/merge/lib/rules/liveRecords.js';
 
 /**
  * The records of `css`, as the run builds them. The first rule of a stylesheet
@@ -42,14 +44,18 @@ function timeAppendsAndReads(size) {
   const nodes = Array.from({ length: size }, (_, i) =>
     postcss.decl({ prop: `--c${i}`, value: '0' })
   );
+  // The records are placed before the clock starts, so only the append is timed.
+  const declarations = nodes.map((node) =>
+    placeUnlinked(
+      records,
+      records.root.index,
+      recordDeclaration(node, state.properties, state.declarationIds)
+    )
+  );
   let seen = 0;
   const start = performance.now();
-  for (const node of nodes) {
-    appendChild(
-      records,
-      rule,
-      records.blockDeclaration(node, state.properties, state.declarationIds)
-    );
+  for (const declaration of declarations) {
+    appendChild(records, rule, declaration);
     seen += declarationKeys(records, rule.index).kept.length;
   }
   const elapsed = performance.now() - start;

@@ -42,6 +42,23 @@ export function substitute(records, record, replacements) {
 }
 
 /**
+ * Places the unplaced entry `entry` in the chain of `sibling`'s container, right
+ * before `sibling`.
+ *
+ * @param {BlockRecords} records
+ * @param {number} sibling the index of the entry that `entry` stands before
+ * @param {RuleRecord} entry
+ * @return {void}
+ */
+export function insertBefore(records, sibling, entry) {
+  records.insertEntry(
+    records.links.parentOf(sibling),
+    records.links.prevSibling(sibling),
+    entry
+  );
+}
+
+/**
  * Moves the rule `record` to the end of the chain of the block at `target`.
  *
  * @param {BlockRecords} records

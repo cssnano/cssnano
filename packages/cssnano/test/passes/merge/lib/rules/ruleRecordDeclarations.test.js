@@ -9,6 +9,7 @@ import {
   claimAt,
   declarationIds,
   ruleRecordOf,
+  placeUnlinked,
 } from './liveRecords.js';
 import {
   appendChild,
@@ -21,9 +22,10 @@ import {
   NodeEntry,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
-/** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
+import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 
 /**
  * The records of `css`, built as the run builds them, with the record of its
@@ -56,8 +58,8 @@ const arenaOf = (css, consistencyChecks = false) => {
  * @return {RuleRecord}
  */
 const mergedRule = (records) => {
-  const rule = records.recordRule(postcss.rule({ selector: 'b' }), ['b'], 'b');
-  records.linkLast(records.root.index, rule.index);
+  const rule = new RuleRecord(postcss.rule({ selector: 'b' }), ['b'], 'b');
+  records.appendEntry(records.root.index, rule);
   return rule;
 };
 
@@ -231,10 +233,14 @@ test('unlinking a declaration should clear the declaration keys of its parent, w
  * @return {import('../../../../../src/passes/ir/declarationRecord.js').DeclarationRecord}
  */
 const freshDeclaration = ({ state, records }, prop) =>
-  records.blockDeclaration(
-    postcss.decl({ prop, value: '0' }),
-    state.properties,
-    state.declarationIds
+  placeUnlinked(
+    records,
+    records.root.index,
+    recordDeclaration(
+      postcss.decl({ prop, value: '0' }),
+      state.properties,
+      state.declarationIds
+    )
   );
 
 test('appendChild of a declaration should keep the entry of the rule and list the appended id last', () => {
@@ -295,7 +301,9 @@ test('takeLinkOf of a declaration of one rule into another should give each rule
 test('appendChild of a comment should make the next read return the same entry', () => {
   const { records, record } = arenaOf('a{color:red}');
   const keys = declarationKeys(records, record.index);
-  const note = records.bareEntry(
+  const note = placeUnlinked(
+    records,
+    records.root.index,
     new NodeEntry(
       postcss.comment({ text: 'c' }),
       COMMENT,

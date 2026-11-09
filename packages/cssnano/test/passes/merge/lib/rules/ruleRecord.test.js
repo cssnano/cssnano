@@ -20,6 +20,7 @@ import {
   claimAt,
   declarationIds,
   ruleRecordOf,
+  placeUnlinked,
 } from './liveRecords.js';
 import {
   appendChild,
@@ -27,6 +28,7 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
@@ -59,7 +61,11 @@ const arenaOf = (css, consistencyChecks = false) => {
  * @param {import('postcss').Declaration} node
  */
 const declarationOf = (state, node) =>
-  state.records.blockDeclaration(node, state.properties, state.declarationIds);
+  placeUnlinked(
+    state.records,
+    state.records.root.index,
+    recordDeclaration(node, state.properties, state.declarationIds)
+  );
 
 test('compatible should look up each selector once across repeated reads', () => {
   const record = new RuleRecord(postcss.rule(), ['a', 'b']);
@@ -99,7 +105,11 @@ test('recordRule should give the record of a rule the rule as its node', () => {
   const rule = postcss.parse('a{color:red}').first;
   const { state } = arenaOf('a{}');
   assert.equal(
-    state.records.recordRule(rule, rule.selectors, rule.selector).node,
+    placeUnlinked(
+      state.records,
+      state.records.root.index,
+      new RuleRecord(rule, rule.selectors, rule.selector)
+    ).node,
     rule
   );
 });
@@ -296,7 +306,9 @@ test('appendChild should count an appended comment among the children without ad
   appendChild(
     records,
     record,
-    state.records.bareEntry(
+    placeUnlinked(
+      state.records,
+      state.records.root.index,
       new NodeEntry(
         postcss.comment({ text: 'note' }),
         COMMENT,

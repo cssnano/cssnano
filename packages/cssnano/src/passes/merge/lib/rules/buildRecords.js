@@ -1,5 +1,7 @@
 import cssnanoUtils from '#utils';
 import { BlockRecords } from './blockRecords.js';
+import { RuleRecord } from './ruleRecord.js';
+import { recordDeclaration } from '../../../ir/declarationRecord.js';
 import {
   atRuleKind,
   BlockRecord,
@@ -16,7 +18,6 @@ import { sourceSelector } from '../../../../utils/sourceText.js';
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /** @import {AtRule, ChildNode, Comment, Container, Root, Rule} from 'postcss' */
-/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
@@ -51,7 +52,6 @@ export function buildRecords(root, context) {
     new BlockRecord(root, STYLESHEET, '', '', false, NO_PRELUDE),
     consistencyChecks
   );
-  records.add(records.root);
   records.root.leadingWhitespace = root.first?.raws.before ?? null;
   let nodes = 0;
   let declarations = 0;
@@ -70,7 +70,7 @@ export function buildRecords(root, context) {
       if (isRuleOrAtRule(child)) nodes++;
       if (child.type === 'rule') {
         const source = sourceSelector(child);
-        const record = records.recordRule(
+        const record = new RuleRecord(
           child,
           child.selectors,
           child.selector,
@@ -78,7 +78,7 @@ export function buildRecords(root, context) {
           textTable.stored(child)
         );
         record.before = child.raws.before ?? null;
-        records.linkLast(container.index, record.index);
+        records.appendEntry(container.index, record);
         // A rule that holds a rule or an at-rule nests, and gets its context.
         if (child.nodes.some(isRuleOrAtRule)) {
           record.context = containerContext(
@@ -100,8 +100,7 @@ export function buildRecords(root, context) {
           context.declarations.preludeId(child)
         );
         nested.before = child.raws.before ?? null;
-        records.add(nested);
-        records.linkLast(container.index, nested.index);
+        records.appendEntry(container.index, nested);
         nested.context = containerContext(
           context.declarations,
           container.context,
@@ -110,35 +109,29 @@ export function buildRecords(root, context) {
         fillChildren(nested);
       } else if (child.type === 'decl') {
         declarations++;
-        const declaration = records.blockDeclaration(
-          child,
-          context.properties,
-          context.declarations
+        records.appendEntry(
+          container.index,
+          recordDeclaration(child, context.properties, context.declarations)
         );
-        records.linkLast(container.index, declaration.index);
       } else if (child.type === 'atrule') {
         const name = asciiLowerCase(child.name);
         const kind = atRuleKind(name);
-        const entry = records.bareEntry(
-          new NodeEntry(
-            child,
-            kind,
-            name,
-            child.params,
-            kind === LAYER && isAnonymousLayer(child, textTable),
-            context.declarations.preludeId(child)
-          )
+        const entry = new NodeEntry(
+          child,
+          kind,
+          name,
+          child.params,
+          kind === LAYER && isAnonymousLayer(child, textTable),
+          context.declarations.preludeId(child)
         );
         entry.before = child.raws.before ?? null;
-        records.linkLast(container.index, entry.index);
+        records.appendEntry(container.index, entry);
       } else {
-        const entry = records.bareEntry(
-          new NodeEntry(child, COMMENT, '', '', false, NO_PRELUDE)
-        );
+        const entry = new NodeEntry(child, COMMENT, '', '', false, NO_PRELUDE);
         entry.before = child.raws.before ?? null;
         entry.text = /** @type {Comment} */ (child).text;
         entry.important = cssnanoUtils.isImportantComment(entry.text);
-        records.linkLast(container.index, entry.index);
+        records.appendEntry(container.index, entry);
       }
     }
   };

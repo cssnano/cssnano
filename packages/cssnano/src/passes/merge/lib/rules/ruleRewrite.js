@@ -2,11 +2,15 @@
 import { childCountOf } from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { findGroup, selectorsLength } from './sharedRuleGroup.js';
-import { moveDeclarations, removeDeclarations } from './arenaEdits.js';
+import {
+  insertBefore,
+  moveDeclarations,
+  removeDeclarations,
+} from './arenaEdits.js';
+import { RuleRecord } from './ruleRecord.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
@@ -120,21 +124,19 @@ export function buildMergedRule(
   // The merged rule prints the raws of the rule it was merged from, or of
   // the template that rule printed, when it was merged too.
   const template = second.template === -1 ? second.index : second.template;
-  const receivingRecord = records.recordRule(
+  const receivingRecord = new RuleRecord(
     undefined,
     selectors,
-    selectors.join()
+    selectors.join(),
+    undefined,
+    undefined
   );
   receivingRecord.mark();
   receivingRecord.template = template;
   receivingRecord.before = second.before;
   // The merged rule takes the place before the later rule, so no rule holds
   // children while it is unlinked. The sweep's replacement keeps that place.
-  records.linkAfter(
-    records.links.parentOf(second.index),
-    records.links.prevSibling(second.index),
-    receivingRecord.index
-  );
+  insertBefore(records, second.index, receivingRecord);
   if (!group) mergeState.storeJoined(receivingRecord, first, second);
   // The merged rule takes the declarations of the earlier rule themselves.
   moveDeclarations(

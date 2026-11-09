@@ -15,6 +15,7 @@ import {
   buildTestRecords,
   claimAt,
   declarationIds,
+  placeUnlinked,
 } from './liveRecords.js';
 import { removeDeclarations } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import {
@@ -22,6 +23,7 @@ import {
   receivingDeclarations,
 } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 
@@ -63,10 +65,14 @@ test('DeclarationCache#appended should make the checked read throw out of step w
   const rule = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
   const { records } = state;
   receivingDeclarations(records, rule.index);
-  const width = records.blockDeclaration(
-    postcss.decl({ prop: 'width', value: '0' }),
-    state.properties,
-    state.declarationIds
+  const width = placeUnlinked(
+    records,
+    records.root.index,
+    recordDeclaration(
+      postcss.decl({ prop: 'width', value: '0' }),
+      state.properties,
+      state.declarationIds
+    )
   );
   const stamp = records.declarationStamps.stampOf(rule.index);
   records.declarations.appended(rule.index, width, stamp, stamp);
