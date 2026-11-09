@@ -51,15 +51,14 @@ const PENDING_EDITS = 'a container has edits its child list does not show';
  * @return {DeclarationRecord}
  */
 export function recordDeclaration(node, declarations) {
-  const record = new DeclarationRecord(
+  return new DeclarationRecord(
+    node.raws.before ?? null,
     node.prop,
     node.value,
     node.important === true,
     keysOfName(node.prop),
     declarations.keyOf(node)
   );
-  record.before = node.raws.before ?? null;
-  return record;
 }
 
 /**

@@ -10,6 +10,12 @@ import { DECLARATION } from '../merge/lib/rules/blockRecord.js';
  * life.
  */
 export declare class DeclarationRecord {
+    /** @type {typeof DECLARATION} DECLARATION, which the window reads with the other records */
+    kind: typeof DECLARATION;
+    /** @type {ArenaIndex} the place of the record in the arena of a block's entries, -1 until added */
+    index: ArenaIndex;
+    /** @type {string | null} the whitespace before the declaration, as its node gives it at the build */
+    before: string | null;
     /** @type {string} the property name as written */
     prop: string;
     /** @type {string} the value as written */
@@ -20,27 +26,14 @@ export declare class DeclarationRecord {
     keys: PropertyKeys;
     /** @type {number} equal for declarations that print the same, within one run */
     id: number;
-    /** @type {ArenaIndex} the place of the record in the arena of a block's entries, -1 until added */
-    index: ArenaIndex;
-    /** @type {typeof DECLARATION} DECLARATION, which the window reads with the other records */
-    kind: typeof DECLARATION;
-    /** @type {string} '' for a declaration, which has no at-rule name */
-    name: string;
-    /** @type {string} '' for a declaration, which has no prelude */
-    params: string;
-    /** @type {boolean} false for a declaration, which is no layer */
-    anonymous: boolean;
-    /** @type {number} NO_PRELUDE for a declaration */
-    preludeId: number;
-    /** @type {string | null} the whitespace before the declaration, as its node gives it at the build */
-    before: string | null;
     /**
+     * @param {string | null} before
      * @param {string} prop
      * @param {string} value
      * @param {boolean} important
      * @param {PropertyKeys} keys
      * @param {number} id
      */
-    constructor(prop: string, value: string, important: boolean, keys: PropertyKeys, id: number);
+    constructor(before: string | null, prop: string, value: string, important: boolean, keys: PropertyKeys, id: number);
 }
 //# sourceMappingURL=declarationRecord.d.ts.map
