@@ -30,6 +30,10 @@
 // another oracle. Probe one mutant with --only and a --suites module whose
 // generator builds the shape it needs.
 //
+// --stale-only applies every mutation in memory and stops there: it prints the
+// stale fragments and runs no mutant. It writes no results file, so it refuses
+// --out, --baseline and --only.
+//
 // --only keeps the mutants whose "<catalog>: <name>" matches the regex; a
 // pattern that matches none fails the run. Survivors, unchanged mutants and
 // mutants no run reaches fail the run unless the group or --allow-unkilled
@@ -66,6 +70,7 @@ const { values } = parseArgs({
     full: { type: 'boolean' },
     timeout: { type: 'string' },
     'allow-unkilled': { type: 'boolean' },
+    'stale-only': { type: 'boolean' },
   },
 });
 
@@ -159,6 +164,16 @@ try {
     throw new Error('Mutation testing requires Node 24 or later');
   }
   // Another run may be writing here; a later write would replace its results.
+  if (values['stale-only']) {
+    const refused = ['out', 'baseline', 'only'].filter(
+      (key) => values[key] !== undefined
+    );
+    if (refused.length) {
+      throw new Error(
+        `--stale-only cannot be combined with --${refused.join(', --')}`
+      );
+    }
+  }
   if (values.out !== undefined && existsSync(resolve(values.out))) {
     throw new Error(
       `--out ${values.out} already exists; choose another path or remove it`
@@ -192,9 +207,10 @@ try {
     `Running ${total} mutants of ${loaded.reduce((n, { catalogs }) => n + catalogs.length, 0)} catalogs ${shown}`
   );
 
-  console.log(
-    `mutation: started pid=${process.pid} out=${values.out === undefined ? 'mutation-results/' : resolve(values.out)}`
-  );
+  const outShown = values['stale-only']
+    ? 'none'
+    : ((values.out && resolve(values.out)) ?? 'mutation-results/');
+  console.log(`mutation: started pid=${process.pid} out=${outShown}`);
 
   const stale = await findStale(loaded.flatMap(({ catalogs }) => catalogs));
   if (stale.length) {
@@ -206,7 +222,7 @@ try {
     for (const { name, detail } of stale)
       console.log(`stale: ${name} | ${detail}`);
     process.exitCode = 1;
-  } else {
+  } else if (!values['stale-only']) {
     for (const { run, catalogs } of loaded) {
       const check = checks[run.check];
       harnessError = check.harnessError;
@@ -231,7 +247,7 @@ try {
       );
     }
   }
-  path = writeResults(results);
+  path = values['stale-only'] ? undefined : writeResults(results);
   // Stale mutants were never judged, so they cannot be regressions.
   if (values.baseline !== undefined && !results.some(isStale)) {
     const before = JSON.parse(readFileSync(values.baseline, 'utf8')).results;
