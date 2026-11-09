@@ -52,7 +52,7 @@ test('substitute should put the replacement in the chain where the rule stood', 
   const replacement = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
+    new RuleRecord(['x'], 'x')
   );
   const mediaIndex = indexOfBlock(state, media);
   substitute(state.records, ruleRecordOf(state.records, a).index, [
@@ -73,7 +73,7 @@ test('substitute should keep a replacement that already stands before the replac
   const fresh = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
+    new RuleRecord(['x'], 'x')
   );
   state.records.moveBefore(
     state.records.links.nextSibling(ruleRecordOf(state.records, a).index),
@@ -178,7 +178,7 @@ test('insertEntryBefore links the entry it places right before the sibling it is
   const records = state.records;
   const first = ruleRecordOf(records, root.first);
   const second = records.links.nextSibling(first.index);
-  const entry = new RuleRecord(undefined, ['c'], 'c');
+  const entry = new RuleRecord(['c'], 'c');
   records.insertEntryBefore(second, entry);
   assert.equal(records.links.nextSibling(first.index), entry.index);
   assert.equal(records.links.prevSibling(second), entry.index);

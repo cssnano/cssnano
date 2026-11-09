@@ -9,6 +9,7 @@ import {
   buildTestRecords,
   declarationIds,
   ruleRecordOf,
+  nodesOf,
 } from './liveRecords.js';
 import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
@@ -238,7 +239,10 @@ test('assertRecordsMatchTree should throw when a declaration left the rule witho
     true
   );
   /** @type {import('postcss').Rule} */ (root.first).first?.remove();
-  assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
+  assert.throws(
+    () => assertRecordsMatchTree(state.records, nodesOf(state.records)),
+    /out of step/v
+  );
 });
 
 test('under consistency checks, blockOf should throw for an unlinked record, since its rule stands in no block', () => {

@@ -1,18 +1,14 @@
-/** @import {ChildNode, Declaration} from 'postcss' */
-/** @import {DeclarationKeys} from './declarationKey.js' */
-/** @import {PropertyKeys, PropertyTable} from './propertyTable.js' */
+/** @import {PropertyKeys} from './propertyTable.js' */
 /** @import {ArenaIndex} from '../merge/lib/rules/blockRecord.js' */
 import { DECLARATION, NO_PRELUDE } from '../merge/lib/rules/blockRecord.js';
 
 /**
- * One declaration of a merge run, held beside the PostCSS node it describes.
+ * One declaration of a merge run, with the facts its records keep.
  * Rule merging moves and removes declarations but never changes their
  * property, value or importance, so these facts stay true for the record's
  * life.
  */
 export class DeclarationRecord {
-  /** @type {Declaration} the declaration the record describes */
-  node;
   /** @type {string} the property name as written */
   prop;
   /** @type {string} the value as written */
@@ -39,57 +35,17 @@ export class DeclarationRecord {
   before = '';
 
   /**
-   * @param {Declaration} node
    * @param {string} prop
    * @param {string} value
    * @param {boolean} important
    * @param {PropertyKeys} keys
    * @param {number} id
    */
-  constructor(node, prop, value, important, keys, id) {
-    this.node = node;
+  constructor(prop, value, important, keys, id) {
     this.prop = prop;
     this.value = value;
     this.important = important;
     this.keys = keys;
     this.id = id;
   }
-}
-
-/**
- * Whether a declaration record describes the declaration node it stands for, in
- * the facts a record keeps.
- *
- * @param {DeclarationRecord} record
- * @param {ChildNode} node the node the record stands for
- * @return {boolean}
- */
-export function describesNode(record, node) {
-  const declaration = /** @type {Declaration} */ (node);
-  return (
-    record.prop === declaration.prop &&
-    record.value === declaration.value &&
-    record.important === (declaration.important === true)
-  );
-}
-
-/**
- * The record of a declaration of the run's stylesheet.
- *
- * @param {Declaration} node
- * @param {PropertyTable} properties
- * @param {DeclarationKeys} declarations
- * @return {DeclarationRecord}
- */
-export function recordDeclaration(node, properties, declarations) {
-  const record = new DeclarationRecord(
-    node,
-    node.prop,
-    node.value,
-    node.important === true,
-    properties.keysOf(node.prop),
-    declarations.keyOf(node)
-  );
-  record.before = node.raws.before ?? null;
-  return record;
 }

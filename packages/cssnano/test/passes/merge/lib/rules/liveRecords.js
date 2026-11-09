@@ -14,6 +14,7 @@ import { TextTable } from '../../../../../src/values/textTable.js';
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {ArenaIndex} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js' */
+/** @import {NodeTable} from '../../../../../src/passes/merge/lib/rules/nodeTable.js' */
 
 /**
  * The live entry of `block` standing for `node`: the record of a rule, or the
@@ -28,18 +29,18 @@ import { TextTable } from '../../../../../src/values/textTable.js';
 function liveEntryOf(records, block, node) {
   for (const entry of childEntriesOf(records, block.index)) {
     if (entry.kind === RULE) {
-      if (entry.node === node) return entry;
+      if (nodeOfEntry(records, entry) === node) return entry;
       if (entry.context !== -1) {
         const found = liveEntryOf(records, entry, node);
         if (found) return found;
       }
     } else if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) {
-      if (entry.node === node) return entry;
+      if (nodeOfEntry(records, entry) === node) return entry;
       const found = liveEntryOf(records, entry, node);
       if (found) return found;
     } else if (
       (entry.kind === COMMENT || entry.kind === AT_RULE_STATEMENT) &&
-      entry.node === node
+      nodeOfEntry(records, entry) === node
     ) {
       return entry;
     }
@@ -87,7 +88,7 @@ export function entryOf(records, node) {
  * @throws {Error} when no live container record stands for the container
  */
 export function blockRecordOf(records, node) {
-  if (node === records.root.node) return records.root;
+  if (node === nodeOfEntry(records, records.root)) return records.root;
   const found = liveEntryOf(records, records.root, node);
   if (found.kind === RULE && found.context !== -1) return found;
   if (found.kind === STYLESHEET || found.kind === AT_RULE_BLOCK) return found;
@@ -126,12 +127,42 @@ export function buildTestRecords(
   textTable = new TextTable(),
   consistencyChecks = false
 ) {
-  return buildRecords(root, {
+  const { records, nodes } = buildRecords(root, {
     textTable,
     declarations: state.declarationIds,
     properties: state.properties,
     consistencyChecks,
   });
+  nodeTables.set(records, nodes);
+  return records;
+}
+
+/** @type {WeakMap<BlockRecords, NodeTable>} the node table of each records object a test built */
+const nodeTables = new WeakMap();
+
+/**
+ * The node table of records built by `buildTestRecords`, which write-back and
+ * the tree checks take beside the records.
+ *
+ * @param {BlockRecords} records
+ * @return {NodeTable}
+ */
+export function nodesOf(records) {
+  const nodes = nodeTables.get(records);
+  if (nodes === undefined)
+    throw new Error('records not built by buildTestRecords');
+  return nodes;
+}
+
+/**
+ * The PostCSS node of the entry, from the table `buildTestRecords` kept.
+ *
+ * @param {BlockRecords} records
+ * @param {{index: number}} entry
+ * @return {any}
+ */
+export function nodeOfEntry(records, entry) {
+  return nodesOf(records)[entry.index];
 }
 
 /**

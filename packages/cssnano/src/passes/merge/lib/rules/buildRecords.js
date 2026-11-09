@@ -1,7 +1,7 @@
 import cssnanoUtils from '#utils';
 import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
-import { recordDeclaration } from '../../../ir/declarationRecord.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
@@ -20,7 +20,10 @@ import { sourceSelector } from '../../../../utils/sourceText.js';
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
-/** @import {AtRule, ChildNode, Comment, Container, Root, Rule} from 'postcss' */
+/** @import {AtRule, ChildNode, Comment, Container, Declaration, Root, Rule} from 'postcss' */
+/** @import {NodeTable} from './nodeTable.js' */
+/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
@@ -41,48 +44,81 @@ export function isRuleOrAtRule(node) {
 const PENDING_EDITS = 'a container has edits its child list does not show';
 
 /**
- * Builds the records of a stylesheet from its tree, once per run. Each child is
- * linked into the chain of its parent, and every rule is a container whose
- * children form its own chain.
+ * The record of a declaration of the run's stylesheet.
+ *
+ * @param {Declaration} node
+ * @param {PropertyTable} properties
+ * @param {DeclarationKeys} declarations
+ * @return {DeclarationRecord}
+ */
+export function recordDeclaration(node, properties, declarations) {
+  const record = new DeclarationRecord(
+    node.prop,
+    node.value,
+    node.important === true,
+    properties.keysOf(node.prop),
+    declarations.keyOf(node)
+  );
+  record.before = node.raws.before ?? null;
+  return record;
+}
+
+/**
+ * Builds the records of a stylesheet from its tree, once per run, and the node
+ * of each of their entries. Each child is linked into the chain of its parent,
+ * and every rule is a container whose children form its own chain.
  *
  * @param {Root} root
  * @param {RunContext} context the run's state, which gives the tokens and ids the records keep
- * @return {BlockRecords}
+ * @return {{records: BlockRecords, nodes: NodeTable}}
  */
 export function buildRecords(root, context) {
   const { textTable, consistencyChecks } = context;
   const records = new BlockRecords(
-    new BlockRecord(root, STYLESHEET, NO_AT_RULE, '', '', false, NO_PRELUDE),
+    new BlockRecord(STYLESHEET, NO_AT_RULE, '', '', false, NO_PRELUDE),
     consistencyChecks
   );
+  /** @type {NodeTable} the node of each entry, by index; the root is entry 0 */
+  const nodes = [root];
   records.root.leadingWhitespace = root.first?.raws.before ?? null;
-  let nodes = 0;
+  let counted = 0;
   let declarations = 0;
+  /**
+   * Places a child's entry at the end of its container's chain, with its node.
+   * An entry takes the next index, which is the next slot of the table.
+   *
+   * @param {number} container
+   * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
+   * @param {ChildNode} node
+   */
+  const place = (container, entry, node) => {
+    records.appendEntry(container, entry);
+    nodes.push(node);
+  };
   /**
    * Links each child of a container, which holds its context already, in
    * document order. A rule is linked into its parent, then its children.
    *
    * @param {BlockRecord | RuleRecord} container
+   * @param {Container} node the container's node
    */
-  const fillChildren = (container) => {
+  const fillChildren = (container, node) => {
     // The build reads the child lists, which a pending edit has not rebuilt yet.
-    const node = /** @type {Container} */ (records.nodeOf(container.index));
     if (consistencyChecks && hasPendingEdits(node)) {
       throw new Error(PENDING_EDITS);
     }
     for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
-      if (isRuleOrAtRule(child)) nodes++;
+      if (isRuleOrAtRule(child)) counted++;
       if (child.type === 'rule') {
         const source = sourceSelector(child);
         const record = new RuleRecord(
-          child,
           child.selectors,
           child.selector,
           source === child.selector ? undefined : source,
           textTable.stored(child)
         );
         record.before = child.raws.before ?? null;
-        records.appendEntry(container.index, record);
+        place(container.index, record, child);
         // A rule that holds a rule or an at-rule nests, and gets its context.
         if (child.nodes.some(isRuleOrAtRule)) {
           record.context = containerContext(
@@ -91,12 +127,11 @@ export function buildRecords(root, context) {
             record
           );
         }
-        fillChildren(record);
+        fillChildren(record, child);
       } else if (child.type === 'atrule' && child.nodes) {
         const name = asciiLowerCase(child.name);
         const category = atRuleKindOf(name);
         const nested = new BlockRecord(
-          child,
           AT_RULE_BLOCK,
           category,
           name,
@@ -105,24 +140,24 @@ export function buildRecords(root, context) {
           context.declarations.preludeId(child)
         );
         nested.before = child.raws.before ?? null;
-        records.appendEntry(container.index, nested);
+        place(container.index, nested, child);
         nested.context = containerContext(
           context.declarations,
           container.context,
           nested
         );
-        fillChildren(nested);
+        fillChildren(nested, child);
       } else if (child.type === 'decl') {
         declarations++;
-        records.appendEntry(
+        place(
           container.index,
-          recordDeclaration(child, context.properties, context.declarations)
+          recordDeclaration(child, context.properties, context.declarations),
+          child
         );
       } else if (child.type === 'atrule') {
         const name = asciiLowerCase(child.name);
         const category = atRuleKindOf(name);
         const entry = new NodeEntry(
-          child,
           AT_RULE_STATEMENT,
           category,
           name,
@@ -131,10 +166,9 @@ export function buildRecords(root, context) {
           context.declarations.preludeId(child)
         );
         entry.before = child.raws.before ?? null;
-        records.appendEntry(container.index, entry);
+        place(container.index, entry, child);
       } else {
         const entry = new NodeEntry(
-          child,
           COMMENT,
           NO_AT_RULE,
           '',
@@ -145,7 +179,7 @@ export function buildRecords(root, context) {
         entry.before = child.raws.before ?? null;
         entry.text = /** @type {Comment} */ (child).text;
         entry.important = cssnanoUtils.isImportantComment(entry.text);
-        records.appendEntry(container.index, entry);
+        place(container.index, entry, child);
       }
     }
   };
@@ -155,9 +189,9 @@ export function buildRecords(root, context) {
     -1,
     records.root
   );
-  fillChildren(records.root);
+  fillChildren(records.root, root);
   records.settle();
   // N + D + 1 rounds bound a run, see `runMerge`.
-  records.maxRounds = nodes + declarations + 1;
-  return records;
+  records.maxRounds = counted + declarations + 1;
+  return { records, nodes };
 }

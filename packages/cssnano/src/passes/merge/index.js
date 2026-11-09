@@ -16,6 +16,7 @@ import { writeBack } from './lib/rules/writeBack.js';
 import { createRunContext } from '../ir/runContext.js';
 import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
+/** @import {BlockRecords} from './lib/rules/blockRecords.js' */
 
 /** @import {AtRule, Container, Root, Rule} from 'postcss' */
 
@@ -126,21 +127,21 @@ function runFirstRound(css, support, blocks, textTable, reached) {
  * @param {Root} css
  * @param {readonly string[]} browsers
  * @param {ReturnType<typeof createRunContext>} context
- * @param {readonly ((records: ReturnType<typeof buildRecords>, browsers: readonly string[], context: ReturnType<typeof createRunContext>) => void)[]} transforms
+ * @param {readonly ((records: BlockRecords, browsers: readonly string[], context: ReturnType<typeof createRunContext>) => void)[]} transforms
  * @return {void}
  */
 function runRecords(css, browsers, context, transforms) {
-  const records = buildRecords(css, context);
+  const { records, nodes } = buildRecords(css, context);
   const release = context.consistencyChecks
-    ? guardWindow(records, context.textTable)
+    ? guardWindow(context.textTable)
     : undefined;
   try {
     for (const transform of transforms) transform(records, browsers, context);
   } finally {
     release?.();
   }
-  writeBack(records, context.textTable, context.createdBlocks);
-  assertRecordsMatchTree(records);
+  writeBack(records, nodes, context.textTable, context.createdBlocks);
+  assertRecordsMatchTree(records, nodes);
 }
 
 /** The transforms that run over the records, in order, for each path of the pass. */

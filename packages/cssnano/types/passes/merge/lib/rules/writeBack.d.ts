@@ -1,20 +1,18 @@
 import { TextTable } from '../../../../values/textTable.js';
 import type { ChildNode, Container } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
+import type { NodeTable } from './nodeTable.js';
 import type { BlockRecord as Block } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
-/** @import {ChildNode, Container} from 'postcss' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord as Block} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
 /**
  * The nodes of the children the block at `index` holds now, in order.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes
  * @param {number} index
  * @return {ChildNode[]}
  */
-export declare function childNodesOf(records: BlockRecords, index: number): ChildNode[];
+export declare function childNodesOf(records: BlockRecords, nodes: NodeTable, index: number): ChildNode[];
 export type ContainerRecord = Block | RuleRecord;
 /** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule, whose children form its chain */
 /**
@@ -22,10 +20,11 @@ export type ContainerRecord = Block | RuleRecord;
  * order and stops at the first difference, without a list of live children.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes
  * @param {ContainerRecord} block
  * @return {boolean}
  */
-export declare function differs(records: BlockRecords, block: ContainerRecord): boolean;
+export declare function differs(records: BlockRecords, nodes: NodeTable, block: ContainerRecord): boolean;
 export type Rebuilt = {
     container: Container;
     /**
@@ -63,9 +62,10 @@ export declare function replaceChildren(rebuilt: Rebuilt[]): void;
  * does not reach gets none.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes the node of each entry, from the build; write-back adds the merged rules' nodes
  * @param {TextTable} [textTable] the table the selectors are written through
  * @param {Set<Container> | null} [reported] receives the node of each rule a merge created that the tree reaches
  * @return {void}
  */
-export declare function writeBack(records: BlockRecords, textTable?: TextTable, reported?: Set<Container> | null): void;
+export declare function writeBack(records: BlockRecords, nodes: NodeTable, textTable?: TextTable, reported?: Set<Container> | null): void;
 //# sourceMappingURL=writeBack.d.ts.map

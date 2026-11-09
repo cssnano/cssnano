@@ -1,4 +1,3 @@
-import type { ChildNode, Container } from 'postcss';
 import type { BlockRecord, NodeEntry } from './blockRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type { LinkReader } from './blockLinks.js';
@@ -122,14 +121,6 @@ export declare class BlockRecords {
      */
     entryCount(): number;
     /**
-     * The PostCSS node of the entry at `index`, which is a rule, a block, a
-     * declaration or a bare node.
-     *
-     * @param {number} index
-     * @return {ChildNode}
-     */
-    nodeOf(index: number): ChildNode;
-    /**
      * Settles the links once the build has linked the children, so that only
      * edits after the build count as edits. Entries from here on are the merges'.
      *
@@ -140,13 +131,5 @@ export declare class BlockRecords {
      * @return {number} the entries the build made, which precede every entry a merge added
      */
     get builtCount(): number;
-    /**
-     * Adds the node of each rule a merge created that has one, in arena order,
-     * which is the order the merges made them. Write-back calls it after its walk.
-     *
-     * @param {Set<Container>} reported
-     * @return {void}
-     */
-    addMergedNodes(reported: Set<Container>): void;
 }
 //# sourceMappingURL=blockRecords.d.ts.map

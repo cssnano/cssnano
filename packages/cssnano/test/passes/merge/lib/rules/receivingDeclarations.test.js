@@ -14,7 +14,7 @@ import {
   ruleRecordOf,
   placeUnlinked,
 } from './liveRecords.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */

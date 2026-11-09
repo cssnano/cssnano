@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import {
   declarationIsEqual,

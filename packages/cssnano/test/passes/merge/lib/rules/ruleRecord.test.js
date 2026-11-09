@@ -16,12 +16,14 @@ import { isDeclarationRule } from '../../../../../src/passes/merge/lib/rules/dec
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { nodeOf } from '../../../../../src/passes/merge/lib/rules/nodeTable.js';
 import {
   buildTestRecords,
   claimAt,
   declarationIds,
   ruleRecordOf,
   placeUnlinked,
+  nodesOf,
 } from './liveRecords.js';
 import {
   appendChild,
@@ -29,7 +31,7 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
@@ -69,7 +71,7 @@ const declarationOf = (state, node) =>
   );
 
 test('compatible should look up each selector once across repeated reads', () => {
-  const record = new RuleRecord(postcss.rule(), ['a', 'b']);
+  const record = new RuleRecord(['a', 'b']);
   const looked = [];
   const lookupOnce = (selector) => {
     looked.push(selector);
@@ -81,38 +83,35 @@ test('compatible should look up each selector once across repeated reads', () =>
 });
 
 test('compatible should be false once addSelectors adds an incompatible selector', () => {
-  const record = new RuleRecord(postcss.rule(), ['a']);
+  const record = new RuleRecord(['a']);
   assert.equal(record.compatible(lookupB), true);
   record.addSelectors(['b'], lookupB);
   assert.equal(record.compatible(lookupB), false);
 });
 
 test('compatible should be false after absorbEarlier takes an incompatible earlier rule', () => {
-  const later = new RuleRecord(postcss.rule(), ['a']);
-  const earlier = new RuleRecord(postcss.rule(), ['b']);
+  const later = new RuleRecord(['a']);
+  const earlier = new RuleRecord(['b']);
   later.absorbEarlier(earlier, lookupB);
   assert.equal(later.compatible(lookupB), false);
 });
 
 test('hasSameSelectors should be false after addSelectors grows one of two equal lists', () => {
-  const a = new RuleRecord(postcss.rule(), ['.a']);
-  const b = new RuleRecord(postcss.rule(), ['.a']);
+  const a = new RuleRecord(['.a']);
+  const b = new RuleRecord(['.a']);
   assert.equal(a.hasSameSelectors(b, selectorIds), true);
   a.addSelectors(['.b'], lookup);
   assert.equal(a.hasSameSelectors(b, selectorIds), false);
 });
 
-test('recordRule should give the record of a rule the rule as its node', () => {
-  const rule = postcss.parse('a{color:red}').first;
+test('a rule placed after the build has no node in the table until write-back', () => {
   const { state } = arenaOf('a{}');
-  assert.equal(
-    placeUnlinked(
-      state.records,
-      state.records.root.index,
-      new RuleRecord(rule, rule.selectors, rule.selector)
-    ).node,
-    rule
+  const { index } = placeUnlinked(
+    state.records,
+    state.records.root.index,
+    new RuleRecord(['b'], 'b')
   );
+  assert.equal(nodeOf(nodesOf(state.records), index), undefined);
 });
 
 test('declarationKeys should list the id of each declaration in order', () => {
@@ -168,50 +167,50 @@ test('absorbEarlier should keep the cached declaration keys since it leaves the 
 });
 
 test('elementKeys should list the distinct element of each selector', () => {
-  const record = new RuleRecord(postcss.rule(), ['div h1', 'h1', 'p']);
+  const record = new RuleRecord(['div h1', 'h1', 'p']);
   assert.deepEqual(record.elementKeys(), ['h1', 'p']);
 });
 
 test('elementKeys should be null when a selector has no element key since it could match any element', () => {
-  const record = new RuleRecord(postcss.rule(), ['h1', '.a']);
+  const record = new RuleRecord(['h1', '.a']);
   assert.equal(record.elementKeys(), null);
 });
 
 test('elementKeys should be null for a rule without selectors since an empty key list would claim the rule writes to no element', () => {
-  const record = new RuleRecord(postcss.rule(), []);
+  const record = new RuleRecord([]);
   assert.equal(record.elementKeys(), null);
 });
 
 test('addSelectors should add the elements of the new selectors to the element keys', () => {
-  const record = new RuleRecord(postcss.rule(), ['h1']);
+  const record = new RuleRecord(['h1']);
   record.elementKeys();
   record.addSelectors(['p', 'h1'], lookup);
   assert.deepEqual(record.elementKeys(), ['h1', 'p']);
 });
 
 test('addSelectors should make the element keys null when a new selector has no element key', () => {
-  const record = new RuleRecord(postcss.rule(), ['h1']);
+  const record = new RuleRecord(['h1']);
   record.elementKeys();
   record.addSelectors(['.a'], lookup);
   assert.equal(record.elementKeys(), null);
 });
 
 test('addSelectors should keep null element keys since later selectors cannot restore a key', () => {
-  const record = new RuleRecord(postcss.rule(), ['.a']);
+  const record = new RuleRecord(['.a']);
   record.elementKeys();
   record.addSelectors(['h1'], lookup);
   assert.equal(record.elementKeys(), null);
 });
 
 test('addSelectors should leave element keys derivable when they were never read', () => {
-  const record = new RuleRecord(postcss.rule(), ['h1']);
+  const record = new RuleRecord(['h1']);
   record.addSelectors(['p'], lookup);
   assert.deepEqual(record.elementKeys(), ['h1', 'p']);
 });
 
 test('absorbEarlier should put the elements of both rules in the element keys', () => {
-  const record = new RuleRecord(postcss.rule(), ['p']);
-  const earlier = new RuleRecord(postcss.rule(), ['h1']);
+  const record = new RuleRecord(['p']);
+  const earlier = new RuleRecord(['h1']);
   record.elementKeys();
   earlier.elementKeys();
   record.absorbEarlier(earlier, lookup);
@@ -219,41 +218,41 @@ test('absorbEarlier should put the elements of both rules in the element keys', 
 });
 
 test('absorbEarlier should make the element keys null when the earlier rule has an unknown element', () => {
-  const record = new RuleRecord(postcss.rule(), ['p']);
-  const earlier = new RuleRecord(postcss.rule(), ['.a']);
+  const record = new RuleRecord(['p']);
+  const earlier = new RuleRecord(['.a']);
   earlier.elementKeys();
   record.absorbEarlier(earlier, lookup);
   assert.equal(record.elementKeys(), null);
 });
 
 test('absorbEarlier should make the element keys null when this rule has an unknown element', () => {
-  const record = new RuleRecord(postcss.rule(), ['.a']);
-  const earlier = new RuleRecord(postcss.rule(), ['h1']);
+  const record = new RuleRecord(['.a']);
+  const earlier = new RuleRecord(['h1']);
   earlier.elementKeys();
   record.absorbEarlier(earlier, lookup);
   assert.equal(record.elementKeys(), null);
 });
 
 test('addSelectors should return the element keys the new selectors add', () => {
-  const record = new RuleRecord(postcss.rule(), ['h1']);
+  const record = new RuleRecord(['h1']);
   record.elementKeys();
   assert.deepEqual(record.addSelectors(['p', 'h1', 'em'], lookup), ['p', 'em']);
 });
 
 test('addSelectors should return no element keys when the new selectors add none', () => {
-  const record = new RuleRecord(postcss.rule(), ['h1']);
+  const record = new RuleRecord(['h1']);
   record.elementKeys();
   assert.deepEqual(record.addSelectors(['h1'], lookup), []);
 });
 
 test('addSelectors should return null when a new selector has no element key, since its writes may reach any element', () => {
-  const record = new RuleRecord(postcss.rule(), ['h1']);
+  const record = new RuleRecord(['h1']);
   record.elementKeys();
   assert.equal(record.addSelectors(['.a'], lookup), null);
 });
 
 test('addSelectors should return null when the element keys were never read, since none are listed to extend', () => {
-  const record = new RuleRecord(postcss.rule(), ['h1']);
+  const record = new RuleRecord(['h1']);
   assert.equal(record.addSelectors(['p'], lookup), null);
 });
 
@@ -310,15 +309,7 @@ test('appendChild should count an appended comment among the children without ad
     placeUnlinked(
       state.records,
       state.records.root.index,
-      new NodeEntry(
-        postcss.comment({ text: 'note' }),
-        COMMENT,
-        NO_AT_RULE,
-        '',
-        '',
-        false,
-        NO_PRELUDE
-      )
+      new NodeEntry(COMMENT, NO_AT_RULE, '', '', false, NO_PRELUDE)
     )
   );
   assert.equal(childCountOf(records, record.index), 2);
@@ -349,7 +340,10 @@ test('assertRecordsMatchTree should throw under consistency checks when a commen
   );
   state.records = buildTestRecords(root, state, undefined, true);
   root.first.append(postcss.comment({ text: 'note' }));
-  assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
+  assert.throws(
+    () => assertRecordsMatchTree(state.records, nodesOf(state.records)),
+    /out of step/v
+  );
 });
 
 test('appendChild should give an appended declaration without raws.before the whitespace of the last child', () => {

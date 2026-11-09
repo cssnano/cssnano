@@ -104,7 +104,7 @@ export const mutations = [
   {
     name: 'a rule record skips the check of its declarations against the tree',
     target: source('treeMatch.js'),
-    find: '!describesNode(item, records.nodeOf(item.index))',
+    find: '!describesNode(item, nodeOf(nodes, item.index))',
     replace: 'false',
   },
   {
@@ -151,13 +151,6 @@ export const mutations = [
     replace: '  };\n  reach(records.root);\n  visitChildren(records.root);',
   },
   {
-    name: 'an append edits the node of the rule at once',
-    target: source('arenaEdits.js'),
-    find: '  records.moveLast(rule.index, child.index);\n',
-    replace:
-      '  records.moveLast(rule.index, child.index);\n  rule.node.append(child.node);\n',
-  },
-  {
     name: 'a removal of declarations stamps no container',
     target: source('blockLinks.js'),
     find: '    this.#stamp(block);\n    this.#parent[index] = -1;\n',
@@ -179,7 +172,7 @@ export const mutations = [
   {
     name: 'write-back leaves a departed rule in its block',
     target: source('writeBack.js'),
-    find: '  if (records.links.childCount(block.index) !== nodes.length) return true;\n',
+    find: '  if (records.links.childCount(block.index) !== children.length) return true;\n',
     replace: '',
   },
 

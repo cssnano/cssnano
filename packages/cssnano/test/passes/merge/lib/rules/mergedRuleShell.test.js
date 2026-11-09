@@ -5,6 +5,7 @@ import { transformPlugin } from '#passes/merge';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { nodeOf } from '../../../../../src/passes/merge/lib/rules/nodeTable.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { RULE } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 
@@ -114,9 +115,9 @@ test('a merged rule should have no node until write-back', () => {
   );
   const textTable = new TextTable();
   const context = createRunContext(textTable);
-  const records = buildRecords(root, context);
+  const { records, nodes } = buildRecords(root, context);
   runMerge(records, ['chrome 120'], context);
   const index = mergedIndexOf(records, 'h1,h2');
   assert.notEqual(index, -1, 'the pair merges into h1,h2');
-  assert.equal(records.nodeOf(index), undefined);
+  assert.equal(nodeOf(nodes, index), undefined);
 });

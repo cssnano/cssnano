@@ -9,6 +9,7 @@ import {
   ruleRecordOf,
   blockRecordOf,
   buildTestRecords,
+  nodeOfEntry,
 } from './liveRecords.js';
 
 /** @import {Container, Rule} from 'postcss' */
@@ -28,6 +29,6 @@ test('childEntriesOf should yield the rule record, the at-rule block record and 
     entries[1],
     blockRecordOf(state.records, /** @type {Container} */ (media))
   );
-  assert.equal(entries[2].node, comment);
+  assert.equal(nodeOfEntry(state.records, entries[2]), comment);
   assert.equal(entries[2].kind, COMMENT);
 });

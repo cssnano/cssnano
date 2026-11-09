@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
@@ -16,6 +16,8 @@ import {
   buildTestRecords,
   declarationIds,
   ruleRecordOf,
+  nodesOf,
+  nodeOfEntry,
 } from './liveRecords.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { DECLARATION } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
@@ -39,8 +41,11 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   appendToDeclarations(state, receiving.index, incoming.index);
   assert.equal(receiving.declarationsOf(state.records).at(-1), moved);
   state.records.detach(incoming.index);
-  writeBack(state.records);
-  assert.equal(moved.node.parent, receiving.node);
+  writeBack(state.records, nodesOf(state.records));
+  assert.equal(
+    nodeOfEntry(state.records, moved).parent,
+    nodeOfEntry(state.records, receiving)
+  );
 });
 
 test('recordDeclaration gives an important declaration an id that differs from an unset one', () => {
@@ -72,13 +77,15 @@ test('a rule record reads its declaration keys from the ids of its records', () 
 
 test('assertRecordsMatchTree throws under consistency checks when a declaration value changed behind its record', () => {
   const { root, state } = setup('a{color:red}');
-  assert.doesNotThrow(() => assertRecordsMatchTree(state.records));
+  assert.doesNotThrow(() =>
+    assertRecordsMatchTree(state.records, nodesOf(state.records))
+  );
   const declaration = /** @type {import('postcss').Declaration} */ (
     root.first.first
   );
   declaration.value = 'blue';
   assert.throws(
-    () => assertRecordsMatchTree(state.records),
+    () => assertRecordsMatchTree(state.records, nodesOf(state.records)),
     /stale declarations/v
   );
 });
@@ -88,8 +95,11 @@ test('a declaration in a rule that nests is a declaration record in its chain, a
   const rule = ruleRecordOf(state.records, root.first);
   const [color] = childEntriesOf(state.records, rule.index);
   assert.ok(color.kind === DECLARATION);
-  assert.equal(childNodesOf(state.records, rule.index)[0], root.first.first);
-  assert.equal(color.node, root.first.first);
+  assert.equal(
+    childNodesOf(state.records, nodesOf(state.records), rule.index)[0],
+    root.first.first
+  );
+  assert.equal(nodeOfEntry(state.records, color), root.first.first);
 });
 
 test('declarationKeys of a rule that nests are the ids of its chain declarations', () => {

@@ -11,7 +11,7 @@ import {
   STYLESHEET,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { blockRecordOf, buildTestRecords } from './liveRecords.js';
+import { blockRecordOf, buildTestRecords, nodeOfEntry } from './liveRecords.js';
 
 /** @import {Container} from 'postcss' */
 
@@ -64,7 +64,7 @@ test('a comment of a block is a bare arena entry that the block chain links', ()
   const index = state.records.links.firstChild(block.index);
   const entry = state.records.entry(index);
   assert.ok(entry.kind === COMMENT || entry.kind === AT_RULE_STATEMENT);
-  assert.equal(entry.node.type, 'comment');
+  assert.equal(nodeOfEntry(state.records, entry).type, 'comment');
   assert.equal(entry.index, index);
 });
 

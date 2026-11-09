@@ -1,4 +1,3 @@
-/** @import {ChildNode, Container} from 'postcss' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 /*
@@ -81,9 +80,6 @@ export function isRuleOrAtRuleKind(kind) {
  * the same facts, with neutral values where they do not apply.
  */
 export class BlockRecord {
-  /** @type {Container} */
-  node;
-
   /** @type {typeof STYLESHEET | typeof AT_RULE_BLOCK} what the block is */
   kind;
 
@@ -136,7 +132,6 @@ export class BlockRecord {
   leadingWhitespace = null;
 
   /**
-   * @param {Container} node
    * @param {typeof STYLESHEET | typeof AT_RULE_BLOCK} kind
    * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for the stylesheet
    * @param {string} name the folded name, or ''
@@ -144,8 +139,7 @@ export class BlockRecord {
    * @param {boolean} anonymous
    * @param {number} preludeId
    */
-  constructor(node, kind, atRuleKind, name, params, anonymous, preludeId) {
-    this.node = node;
+  constructor(kind, atRuleKind, name, params, anonymous, preludeId) {
     this.kind = kind;
     this.atRuleKind = atRuleKind;
     this.name = name;
@@ -164,9 +158,6 @@ export class BlockRecord {
  * so that a block's children hold indices alone.
  */
 export class NodeEntry {
-  /** @type {ChildNode} the node the entry stands for */
-  node;
-
   /** @type {ArenaIndex} the place of the entry in the arena, -1 until added */
   index = /** @type {ArenaIndex} */ (-1);
 
@@ -198,7 +189,6 @@ export class NodeEntry {
   important = false;
 
   /**
-   * @param {ChildNode} node
    * @param {typeof COMMENT | typeof AT_RULE_STATEMENT} kind
    * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for a comment
    * @param {string} name
@@ -206,8 +196,7 @@ export class NodeEntry {
    * @param {boolean} anonymous
    * @param {number} preludeId
    */
-  constructor(node, kind, atRuleKind, name, params, anonymous, preludeId) {
-    this.node = node;
+  constructor(kind, atRuleKind, name, params, anonymous, preludeId) {
     this.kind = kind;
     this.atRuleKind = atRuleKind;
     this.name = name;

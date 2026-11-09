@@ -13,6 +13,7 @@ import {
   ruleRecordOf,
   buildTestRecords,
   claimAt,
+  nodesOf,
 } from './lib/rules/liveRecords.js';
 import { removeDeclarations } from '../../../src/passes/merge/lib/rules/arenaEdits.js';
 
@@ -61,6 +62,6 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
   );
   removeRules(mergeState, new Set([incoming.index]));
   assert.equal(joinNonAdjacent(mergeState.records.root, mergeState), true);
-  writeBack(mergeState.records);
+  writeBack(mergeState.records, nodesOf(mergeState.records));
   assert.equal(root.toString(), '@media (x){@media (y){p,q{width:1px}}}');
 });

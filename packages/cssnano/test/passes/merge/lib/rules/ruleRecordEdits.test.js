@@ -12,7 +12,12 @@ import {
   replaceChildren,
   writeBack,
 } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
-import { ruleRecordOf, buildTestRecords, claimAt } from './liveRecords.js';
+import {
+  ruleRecordOf,
+  buildTestRecords,
+  claimAt,
+  nodesOf,
+} from './liveRecords.js';
 import {
   moveDeclarations,
   removeDeclarations,
@@ -70,7 +75,7 @@ test('an unedited rule keeps its node array through a write-back of another rule
     record.index,
     claimAt(state.records, record, [0])
   );
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   assert.equal(a.nodes, kept);
 });
 
@@ -102,7 +107,7 @@ test('a receiving rule keeps its node unchanged until write-back', () => {
     ...claimAt(state.records, from, [0]),
   ]);
   assert.equal(b.nodes.length, 1);
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   assert.equal(b.nodes.length, 2);
 });
 
@@ -114,7 +119,7 @@ test('a declaration handed to another rule has that rule as parent after write-b
   moveDeclarations(state.records, from.index, to.index, [
     ...claimAt(state.records, from, [0]),
   ]);
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   assert.equal(/** @type {Declaration} */ (b.last).prop, 'color');
   assert.equal(b.last.parent, b);
 });
@@ -158,7 +163,7 @@ test('a removed rule leaves the tree at write-back', () => {
   const receiving = ruleRecordOf(state.records, b);
   appendToDeclarations(state, receiving.index, incoming.index);
   removeRules(state, new Set([incoming.index]));
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   assert.deepEqual(root.nodes, [b]);
   assert.equal(a.parent, undefined);
 });
@@ -170,14 +175,16 @@ test('a removed rule keeps its child array, since write-back does not empty it',
   const incoming = ruleRecordOf(state.records, a);
   appendToDeclarations(state, receiving.index, incoming.index);
   removeRules(state, new Set([incoming.index]));
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   assert.equal(a.nodes.length, 1);
 });
 
 test('a rule whose child points to another container fails the consistency check', () => {
   const { root, state } = setup('a{color:red}b{width:1px}');
   const [a, b] = twoRules(root);
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   /** @type {ChildNode} */ (a.first).parent = b;
-  assert.throws(() => assertRecordsMatchTree(state.records));
+  assert.throws(() =>
+    assertRecordsMatchTree(state.records, nodesOf(state.records))
+  );
 });

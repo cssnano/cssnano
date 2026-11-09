@@ -10,20 +10,12 @@ import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 /** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {BlockLinks} from '../../../../../src/passes/merge/lib/rules/blockLinks.js' */
-import {
-  assertSweepLowers,
-  sweepPotential,
-} from '../../../../../src/passes/merge/lib/rules/sweepPotential.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   remove,
   takePlaceOf,
 } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { assertRecordsWellFormed } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
-import {
-  assertNoOverDuplication,
-  tallyDeclarations,
-} from '../../../../../src/passes/merge/lib/rules/overDuplication.js';
 import { mergePass } from '../../../../../src/passes/merge/index.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
@@ -32,15 +24,16 @@ import {
   blockRecordOf,
   buildTestRecords,
   placeUnlinked,
+  nodesOf,
+  nodeOfEntry,
 } from './liveRecords.js';
 import {
   adopt,
-  appendChild,
   moveRule,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { nodeOf } from '../../../../../src/passes/merge/lib/rules/nodeTable.js';
 
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -59,7 +52,9 @@ function setup(css) {
 test('buildRecords should link the rules of a block in document order', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
-  const [a, b] = /** @type {Rule[]} */ (media.node.nodes);
+  const [a, b] = /** @type {Rule[]} */ (
+    nodeOfEntry(state.records, media).nodes
+  );
   const { links } = state.records;
   const first = links.firstChild(media.index);
   assert.equal(first, ruleRecordOf(state.records, a).index);
@@ -85,7 +80,9 @@ test('assertRecordsMatchTree should accept records built from a stylesheet', () 
   const { state } = setup(
     '@media (x){@media (y){p{width:1px}q{height:2px}}}a{color:red;b{width:1px}}'
   );
-  assert.doesNotThrow(() => assertRecordsMatchTree(state.records));
+  assert.doesNotThrow(() =>
+    assertRecordsMatchTree(state.records, nodesOf(state.records))
+  );
 });
 
 test('assertRecordsMatchTree should throw when the chain holds the rules in another order than the tree', () => {
@@ -93,9 +90,12 @@ test('assertRecordsMatchTree should throw when the chain holds the rules in anot
   const media = /** @type {BlockRecord} */ (
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
-  const [a] = /** @type {Rule[]} */ (media.node.nodes);
+  const [a] = /** @type {Rule[]} */ (nodeOfEntry(state.records, media).nodes);
   moveRule(state.records, media.index, ruleRecordOf(state.records, a).index);
-  assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
+  assert.throws(
+    () => assertRecordsMatchTree(state.records, nodesOf(state.records)),
+    /out of step/v
+  );
 });
 
 test('assertRecordsMatchTree should throw when a block chain lacks a child the tree holds', () => {
@@ -104,9 +104,15 @@ test('assertRecordsMatchTree should throw when a block chain lacks a child the t
     blockRecordOf(state.records, /** @type {any} */ (root.first))
   );
   state.records.detach(
-    ruleRecordOf(state.records, /** @type {Rule} */ (media.node.first)).index
+    ruleRecordOf(
+      state.records,
+      /** @type {Rule} */ (nodeOfEntry(state.records, media).first)
+    ).index
   );
-  assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
+  assert.throws(
+    () => assertRecordsMatchTree(state.records, nodesOf(state.records)),
+    /out of step/v
+  );
 });
 
 test('the merge pass should keep the records in step with the tree through its joins', () => {
@@ -123,9 +129,13 @@ test('childNodesOf should equal the children of the stylesheet after a sweep dro
     '@media print{a{color:red}}@media print{a{color:red}}'
   );
   runScan(state);
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   assert.deepEqual(
-    childNodesOf(state.records, state.records.root.index),
+    childNodesOf(
+      state.records,
+      nodesOf(state.records),
+      state.records.root.index
+    ),
     root.nodes
   );
 });
@@ -135,9 +145,13 @@ test('childNodesOf should equal the children of the stylesheet after a join move
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   joinNonAdjacent(state.records.root, state);
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   assert.deepEqual(
-    childNodesOf(state.records, state.records.root.index),
+    childNodesOf(
+      state.records,
+      nodesOf(state.records),
+      state.records.root.index
+    ),
     root.nodes
   );
 });
@@ -145,9 +159,13 @@ test('childNodesOf should equal the children of the stylesheet after a join move
 test('childNodesOf should equal the children of the stylesheet after a join removes a rule', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
   joinNonAdjacent(state.records.root, state);
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   assert.deepEqual(
-    childNodesOf(state.records, state.records.root.index),
+    childNodesOf(
+      state.records,
+      nodesOf(state.records),
+      state.records.root.index
+    ),
     root.nodes
   );
 });
@@ -160,11 +178,19 @@ test('childNodesOf should equal the children of the stylesheet after a join remo
  */
 function childCountAround(css) {
   const { state } = setup(css);
-  const was = childNodesOf(state.records, state.records.root.index).length;
+  const was = childNodesOf(
+    state.records,
+    nodesOf(state.records),
+    state.records.root.index
+  ).length;
   joinNonAdjacent(state.records.root, state);
   return {
     was,
-    now: childNodesOf(state.records, state.records.root.index).length,
+    now: childNodesOf(
+      state.records,
+      nodesOf(state.records),
+      state.records.root.index
+    ).length,
   };
 }
 
@@ -194,9 +220,20 @@ test('joinNonAdjacent should leave fewer live children when a block moves down o
 
 test('childNodesOf should return a fresh array of the children, not the entries', () => {
   const { state } = setup('a{color:red}');
-  const children = childNodesOf(state.records, state.records.root.index);
+  const children = childNodesOf(
+    state.records,
+    nodesOf(state.records),
+    state.records.root.index
+  );
   children.length = 0;
-  assert.equal(childNodesOf(state.records, state.records.root.index).length, 1);
+  assert.equal(
+    childNodesOf(
+      state.records,
+      nodesOf(state.records),
+      state.records.root.index
+    ).length,
+    1
+  );
 });
 
 test('the chains should stay well formed after a move of children', () => {
@@ -255,7 +292,7 @@ test('moveLast into a plain rule that is linked nowhere should throw under consi
   const orphan = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(postcss.parse('b{width:1px}').first, ['b'], 'b')
+    new RuleRecord(['b'], 'b')
   );
   state.records.detach(declaration.index);
   assert.throws(
@@ -276,90 +313,17 @@ test('the chains should stay well formed after a rule moves to the end of a bloc
   assertRecordsWellFormed(state);
 });
 
-test('assertSweepLowers should throw when a sweep moved a rule and the potential stayed equal', () => {
-  assert.throws(
-    () => assertSweepLowers([2, 2, 3], [2, 2, 3], true),
-    /potential/v
-  );
-});
-
-test('assertSweepLowers should throw when a sweep raised the potential', () => {
-  assert.throws(
-    () => assertSweepLowers([2, 2, 3], [2, 3, 2], false),
-    /potential/v
-  );
-});
-
-test('assertSweepLowers should accept a move that lowers the parent count alone', () => {
-  assert.doesNotThrow(() => assertSweepLowers([2, 2, 3], [2, 2, 2], true));
-});
-
-test('runScan should keep the declaration and rule counts and lower the parent count of a pure move', () => {
-  const { state } = setup(
-    '@media print{.a{color:red}}@media print{.b{color:blue}}'
-  );
-  const start = sweepPotential(state.records, null);
-  runScan(state);
-  const end = sweepPotential(state.records, start.numbers);
-  assert.deepEqual(start.potential, [2, 2, 3]);
-  assert.deepEqual(end.potential, [2, 2, 2]);
-});
-
-test('assertNoOverDuplication should accept records built from a stylesheet that repeats a declaration', () => {
-  const { state } = setup('a{color:red}b{color:red}');
-  assert.doesNotThrow(() => assertNoOverDuplication(state.records, null));
-});
-
-test('assertNoOverDuplication should throw when a declaration is written more often than the input wrote it', () => {
-  const { root, state } = setup('a{color:red}');
-  // runMerge takes this tally when it starts, after dedupe.
-  const input = tallyDeclarations(state.records);
-  const rule = /** @type {Rule} */ (root.first);
-  const record = ruleRecordOf(state.records, rule);
-  const added = postcss.decl({ prop: 'color', value: 'red' });
-  appendChild(
-    state.records,
-    record,
-    placeUnlinked(
-      state.records,
-      state.records.root.index,
-      recordDeclaration(added, state.properties, state.declarationIds)
-    )
-  );
-  assert.throws(
-    () => assertNoOverDuplication(state.records, input),
-    /more often than the input/v
-  );
-});
-
-test('assertNoOverDuplication should throw when a chain reaches a rule that a second chain also reaches', () => {
-  const { root, state } = setup('r{a{width:1px}}b{color:red}');
-  const [outer, second] = /** @type {Rule[]} */ (root.nodes);
-  const nestedIndex = ruleRecordOf(state.records, outer).index;
-  // Linking `b` into the nested chain through the raw links table, as a bug
-  // inside it would, leaves its sibling link in the root chain, so the walk
-  // reaches `b` from both chains.
-  /** @type {BlockLinks} */ (state.records.links).linkLast(
-    nestedIndex,
-    ruleRecordOf(state.records, second).index
-  );
-  assert.throws(
-    () => assertNoOverDuplication(state.records, null),
-    /reach a node twice/v
-  );
-});
-
 test('links.firstChild should give the entry after the first rule once that rule is unlinked', () => {
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
   const first = ruleRecordOf(
     state.records,
-    /** @type {Rule} */ (media.node.first)
+    /** @type {Rule} */ (nodeOfEntry(state.records, media).first)
   );
   state.records.detach(first.index);
   assert.equal(
-    state.records.nodeOf(state.records.links.firstChild(media.index)),
-    media.node.nodes[1]
+    nodeOf(nodesOf(state.records), state.records.links.firstChild(media.index)),
+    nodeOfEntry(state.records, media).nodes[1]
   );
 });
 

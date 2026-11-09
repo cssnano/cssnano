@@ -23,11 +23,13 @@ import {
   declarationIds,
   ruleRecordOf,
   placeUnlinked,
+  nodeOfEntry,
+  nodesOf,
 } from './liveRecords.js';
 import { adopt } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {Container, Root, Rule} from 'postcss' */
@@ -96,10 +98,13 @@ test('enclosingContainer should give the at-rule block that holds an at-rule blo
 test('enclosingContainer should give the rule that nests the rule, and the block that holds that rule', () => {
   const { root, records } = setup('@media (x){a{color:red;b{width:1px}}}');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
-  const outer = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
+  const outer = ruleRecordOf(
+    records,
+    /** @type {Rule} */ (nodeOfEntry(records, media).first)
+  );
   const inner = ruleRecordOf(
     records,
-    /** @type {Rule} */ (outer.node.nodes[1])
+    /** @type {Rule} */ (nodeOfEntry(records, outer).nodes[1])
   );
   assert.equal(records.enclosingContainer(inner.index), outer);
   assert.equal(records.enclosingContainer(outer.index), media);
@@ -111,15 +116,7 @@ test('childCount should count a comment linked into a block', () => {
   const comment = placeUnlinked(
     records,
     records.root.index,
-    new NodeEntry(
-      postcss.comment({ text: 'c' }),
-      COMMENT,
-      NO_AT_RULE,
-      '',
-      '',
-      false,
-      NO_PRELUDE
-    )
+    new NodeEntry(COMMENT, NO_AT_RULE, '', '', false, NO_PRELUDE)
   );
   records.moveLast(media.index, comment.index);
   assert.equal(records.links.childCount(media.index), 2);
@@ -128,7 +125,10 @@ test('childCount should count a comment linked into a block', () => {
 test('childCount should drop by one when a rule is unlinked from its block', () => {
   const { root, records } = setup('@media print{a{color:red}b{width:1px}}');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
-  const rule = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
+  const rule = ruleRecordOf(
+    records,
+    /** @type {Rule} */ (nodeOfEntry(records, media).first)
+  );
   records.detach(rule.index);
   assert.equal(records.links.childCount(media.index), 1);
 });
@@ -136,7 +136,10 @@ test('childCount should drop by one when a rule is unlinked from its block', () 
 test('childCount should move with an entry that moveBefore puts in another block', () => {
   const { root, records } = setup('@media print{a{color:red}}/* c */');
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
-  const rule = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
+  const rule = ruleRecordOf(
+    records,
+    /** @type {Rule} */ (nodeOfEntry(records, media).first)
+  );
   // The comment follows the at-rule in the root's chain.
   const comment = records.links.nextSibling(media.index);
   assert.equal(records.links.childCount(records.root.index), 2);
@@ -261,7 +264,9 @@ test('declarationKeys should list the ids in their new order after moveBefore pu
  * @return {string[]} the children of the container at `index`, as their text
  */
 function chainText(records, index) {
-  return childNodesOf(records, index).map((node) => node.toString());
+  return childNodesOf(records, nodesOf(records), index).map((node) =>
+    node.toString()
+  );
 }
 
 test('moveBefore should move an entry of another container into the chain of the later entry, under checks', () => {
@@ -271,8 +276,14 @@ test('moveBefore should move an entry of another container into the chain of the
   const [x, y] = /** @type {Container[]} */ (root.nodes).map((node) =>
     blockRecordOf(records, node)
   );
-  const earlier = ruleRecordOf(records, /** @type {Rule} */ (x.node.first));
-  const later = ruleRecordOf(records, /** @type {Rule} */ (y.node.first));
+  const earlier = ruleRecordOf(
+    records,
+    /** @type {Rule} */ (nodeOfEntry(records, x).first)
+  );
+  const later = ruleRecordOf(
+    records,
+    /** @type {Rule} */ (nodeOfEntry(records, y).first)
+  );
   records.moveBefore(later.index, earlier.index);
   records.detach(later.index);
   assert.deepEqual(chainText(records, x.index), []);
@@ -286,10 +297,13 @@ test('moveBefore should put an earlier sibling where the later one stood, when i
     '@media p{a{color:red}b{width:1px}c{height:1px}}'
   );
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
-  const earlier = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
+  const earlier = ruleRecordOf(
+    records,
+    /** @type {Rule} */ (nodeOfEntry(records, media).first)
+  );
   const later = ruleRecordOf(
     records,
-    /** @type {Rule} */ (media.node.nodes[1])
+    /** @type {Rule} */ (nodeOfEntry(records, media).nodes[1])
   );
   records.moveBefore(later.index, earlier.index);
   records.detach(later.index);
@@ -305,10 +319,13 @@ test('moveBefore should put an earlier sibling where the later one stood, when a
     '@media p{a{color:red}m{margin:0}b{width:1px}}'
   );
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
-  const earlier = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
+  const earlier = ruleRecordOf(
+    records,
+    /** @type {Rule} */ (nodeOfEntry(records, media).first)
+  );
   const later = ruleRecordOf(
     records,
-    /** @type {Rule} */ (media.node.nodes[2])
+    /** @type {Rule} */ (nodeOfEntry(records, media).nodes[2])
   );
   records.moveBefore(later.index, earlier.index);
   records.detach(later.index);
@@ -326,11 +343,11 @@ test('moveBefore should make the earlier sibling the last entry when the later o
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
   const earlier = ruleRecordOf(
     records,
-    /** @type {Rule} */ (media.node.nodes[1])
+    /** @type {Rule} */ (nodeOfEntry(records, media).nodes[1])
   );
   const later = ruleRecordOf(
     records,
-    /** @type {Rule} */ (media.node.nodes[2])
+    /** @type {Rule} */ (nodeOfEntry(records, media).nodes[2])
   );
   records.moveBefore(later.index, earlier.index);
   records.detach(later.index);
@@ -347,10 +364,13 @@ test('moveBefore should put an unlinked earlier entry where the later one stood'
     '@media p{a{color:red}b{width:1px}c{height:1px}}'
   );
   const media = blockRecordOf(records, /** @type {Container} */ (root.first));
-  const earlier = ruleRecordOf(records, /** @type {Rule} */ (media.node.first));
+  const earlier = ruleRecordOf(
+    records,
+    /** @type {Rule} */ (nodeOfEntry(records, media).first)
+  );
   const later = ruleRecordOf(
     records,
-    /** @type {Rule} */ (media.node.nodes[1])
+    /** @type {Rule} */ (nodeOfEntry(records, media).nodes[1])
   );
   records.detach(earlier.index);
   records.moveBefore(later.index, earlier.index);

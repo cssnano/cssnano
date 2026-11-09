@@ -1,6 +1,5 @@
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
-import type { Rule } from 'postcss';
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { SelectorRange } from '../../../../values/selectorRanges.js';
 import type { SelectorIds } from '../../../ir/selectorIds.js';
@@ -22,27 +21,12 @@ export type SelectorRanges = {
 export declare class SelectorList {
     #private;
     /**
-     * @param {Rule | undefined} node
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
      * @param {string} [sourceSelector] the source text, set only when it differs from the selector
      * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
      */
-    constructor(node: Rule | undefined, selectors: string[], selector: string, sourceSelector?: string, tokens?: readonly CSSToken[]);
-    /**
-     * @return {Rule} the rule the list belongs to. A merged rule has none until
-     * write-back gives it one, so a caller reads it only after that.
-     */
-    get node(): Rule;
-    /** @return {boolean} whether the rule has a node yet */
-    get hasNode(): boolean;
-    /**
-     * Gives a merged rule its node. Write-back calls it once, for a rule that
-     * the tree reaches.
-     *
-     * @param {Rule} node
-     */
-    giveNode(node: Rule): void;
+    constructor(selectors: string[], selector: string, sourceSelector?: string, tokens?: readonly CSSToken[]);
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
     /** @return {string} the selector, in PostCSS's form */

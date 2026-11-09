@@ -14,6 +14,7 @@ import {
   buildTestRecords,
   withCorruptedLinks,
   placeUnlinked,
+  nodeOfEntry,
 } from './liveRecords.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
@@ -69,8 +70,8 @@ test('buildRecords should index the stylesheet as entry 0, then each rule and ea
   const { records } = state;
   assert.equal(records.root.index, 0);
   assert.equal(records.entryCount(), 5);
-  assert.equal(records.rule(1).node.selector, 'a');
-  assert.equal(records.rule(3).node.selector, 'b');
+  assert.equal(nodeOfEntry(state.records, records.rule(1)).selector, 'a');
+  assert.equal(nodeOfEntry(state.records, records.rule(3)).selector, 'b');
   assert.equal(records.rule(5), undefined);
 });
 
@@ -90,7 +91,7 @@ test('a rule recorded mid-run should take the next index of the arena', () => {
   const added = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'c' }), ['c'], 'c')
+    new RuleRecord(['c'], 'c')
   );
   assert.equal(added.index, count);
   records.moveLast(records.root.index, added.index);

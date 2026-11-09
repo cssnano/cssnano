@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { buildTestRecords } from './liveRecords.js';
+import { buildTestRecords, nodeOfEntry } from './liveRecords.js';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import {
@@ -152,6 +152,7 @@ function allGroups(options) {
       first: mergeState.records.rule(links[i]),
       second: mergeState.records.rule(links[i + 1]),
       group,
+      records: mergeState.records,
     }));
   });
 }
@@ -167,8 +168,8 @@ test('earliestPairReaching should reach the first rule of the pair from the last
 
 test('findGroup should form a group whose second rule holds a comment in the generated stylesheets, so the property below covers that pair', () => {
   assert.ok(
-    allGroups({ comments: true }).some(({ second }) =>
-      second.node.nodes.some((node) => node.type === 'comment')
+    allGroups({ comments: true }).some(({ second, records }) =>
+      nodeOfEntry(records, second).nodes.some((node) => node.type === 'comment')
     )
   );
 });
@@ -180,7 +181,9 @@ test('earliestPairReaching should reach the first rule of a pair whose second ru
 test('findGroup should form a group whose pair spans two equal blocks in the generated stylesheets, so the property below covers that pair', () => {
   assert.ok(
     allGroups({ blocks: true }).some(
-      ({ first, second }) => first.node.parent !== second.node.parent
+      ({ first, second, records }) =>
+        nodeOfEntry(records, first).parent !==
+        nodeOfEntry(records, second).parent
     )
   );
 });

@@ -2,12 +2,10 @@ import { SelectorList } from './selectorList.js';
 import { RULE } from './blockRecord.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import type { Rule } from 'postcss';
 import type { ArenaIndex } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {Rule} from 'postcss' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
@@ -50,13 +48,12 @@ export declare class RuleRecord extends SelectorList {
     /** @type {string | null} the whitespace before the rule, as its node gives it at the build */
     before: string | null;
     /**
-     * @param {Rule | undefined} node the rule the record describes; undefined for a merged rule until write-back
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
      * @param {string} [sourceSelector] the source text, set only when it differs from the selector
      * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
      */
-    constructor(node: Rule | undefined, selectors: string[], selector: string, sourceSelector?: string, tokens?: readonly CSSToken[]);
+    constructor(selectors: string[], selector: string, sourceSelector?: string, tokens?: readonly CSSToken[]);
     /**
      * The declarations of the rule, in order, read from its chain at the call. A
      * reader that indexes them by position takes this array.

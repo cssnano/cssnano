@@ -1,5 +1,4 @@
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 import { BlockLinks } from './blockLinks.js';
@@ -345,21 +344,6 @@ export class BlockRecords {
   }
 
   /**
-   * The PostCSS node of the entry at `index`, which is a rule, a block, a
-   * declaration or a bare node.
-   *
-   * @param {number} index
-   * @return {ChildNode}
-   */
-  nodeOf(index) {
-    return /** @type {ChildNode} */ (
-      /** @type {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} */ (
-        this.#entries[index]
-      ).node
-    );
-  }
-
-  /**
    * Settles the links once the build has linked the children, so that only
    * edits after the build count as edits. Entries from here on are the merges'.
    *
@@ -375,21 +359,5 @@ export class BlockRecords {
    */
   get builtCount() {
     return this.#built;
-  }
-
-  /**
-   * Adds the node of each rule a merge created that has one, in arena order,
-   * which is the order the merges made them. Write-back calls it after its walk.
-   *
-   * @param {Set<Container>} reported
-   * @return {void}
-   */
-  addMergedNodes(reported) {
-    for (let index = this.#built; index < this.#entries.length; index++) {
-      const entry = this.#entries[index];
-      if (entry.kind === RULE && entry.hasNode) {
-        reported.add(/** @type {Rule} */ (this.nodeOf(index)));
-      }
-    }
   }
 }

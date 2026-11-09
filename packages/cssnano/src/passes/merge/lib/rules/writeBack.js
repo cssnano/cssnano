@@ -1,25 +1,30 @@
 import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
 import { TextTable } from '../../../../values/textTable.js';
-import { createChildNodes } from './nodeTable.js';
+import { addMergedNodes, createChildNodes, nodeOf } from './nodeTable.js';
 import { writeSelector } from './writeSelector.js';
 
 /** @import {ChildNode, Container} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {NodeTable} from './nodeTable.js' */
 /** @import {BlockRecord as Block} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+
+const TABLE_LENGTH =
+  'the node table does not have one slot per entry the build made';
 
 /**
  * The nodes of the children the block at `index` holds now, in order.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes
  * @param {number} index
  * @return {ChildNode[]}
  */
-export function childNodesOf(records, index) {
+export function childNodesOf(records, nodes, index) {
   /** @type {ChildNode[]} */ const children = [];
   let entry = records.links.firstChild(index);
   while (entry !== -1) {
-    children.push(records.nodeOf(entry));
+    children.push(/** @type {ChildNode} */ (nodeOf(nodes, entry)));
     entry = records.links.nextSibling(entry);
   }
   return children;
@@ -32,21 +37,22 @@ export function childNodesOf(records, index) {
  * order and stops at the first difference, without a list of live children.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes
  * @param {ContainerRecord} block
  * @return {boolean}
  */
-export function differs(records, block) {
-  const nodes = /** @type {ChildNode[]} */ (
-    /** @type {Container} */ (records.nodeOf(block.index)).nodes
+export function differs(records, nodes, block) {
+  const children = /** @type {ChildNode[]} */ (
+    /** @type {Container} */ (nodeOf(nodes, block.index)).nodes
   );
-  if (records.links.childCount(block.index) !== nodes.length) return true;
+  if (records.links.childCount(block.index) !== children.length) return true;
   let at = 0;
   for (
     let entry = records.links.firstChild(block.index);
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
-    if (nodes[at++] !== records.nodeOf(entry)) return true;
+    if (children[at++] !== nodeOf(nodes, entry)) return true;
   }
   return false;
 }
@@ -89,17 +95,20 @@ export function replaceChildren(rebuilt) {
  * leaves its node's whitespace as it is.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes
  * @param {number} container the index of the rebuilt container's record
  * @return {void}
  */
-function writeBefore(records, container) {
+function writeBefore(records, nodes, container) {
   for (
     let entry = records.links.firstChild(container);
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
     const { before } = records.entry(entry);
-    if (before !== null) records.nodeOf(entry).raws.before = before;
+    if (before !== null) {
+      /** @type {ChildNode} */ (nodeOf(nodes, entry)).raws.before = before;
+    }
   }
 }
 
@@ -113,25 +122,30 @@ function writeBefore(records, container) {
  * does not reach gets none.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes the node of each entry, from the build; write-back adds the merged rules' nodes
  * @param {TextTable} [textTable] the table the selectors are written through
  * @param {Set<Container> | null} [reported] receives the node of each rule a merge created that the tree reaches
  * @return {void}
  */
 export function writeBack(
   records,
+  nodes,
   textTable = new TextTable(),
   reported = null
 ) {
+  if (records.consistencyChecks && nodes.length !== records.builtCount) {
+    throw new Error(TABLE_LENGTH);
+  }
   /** @type {(Rebuilt & {index: number})[]} */
   const rebuilt = [];
   /** @param {ContainerRecord} container */
   const visit = (container) => {
-    if (differs(records, container)) {
-      createChildNodes(records, container.index);
+    if (differs(records, nodes, container)) {
+      createChildNodes(records, nodes, container.index);
       rebuilt.push({
-        container: /** @type {Container} */ (records.nodeOf(container.index)),
+        container: /** @type {Container} */ (nodeOf(nodes, container.index)),
         index: container.index,
-        children: childNodesOf(records, container.index),
+        children: childNodesOf(records, nodes, container.index),
         leading:
           container === records.root ? container.leadingWhitespace : null,
       });
@@ -143,14 +157,14 @@ export function writeBack(
     ) {
       const record = records.entry(entry);
       if (record.kind === RULE) {
-        writeSelector(record, records, textTable);
+        writeSelector(record, records, nodes, textTable);
         if (record.context !== -1) {
           visit(record);
         } else if (records.links.isEdited(record.index)) {
           rebuilt.push({
-            container: /** @type {Container} */ (records.nodeOf(record.index)),
+            container: /** @type {Container} */ (nodeOf(nodes, record.index)),
             index: record.index,
-            children: childNodesOf(records, record.index),
+            children: childNodesOf(records, nodes, record.index),
             leading: null,
           });
         }
@@ -160,11 +174,11 @@ export function writeBack(
     }
   };
   visit(records.root);
-  if (reported) records.addMergedNodes(reported);
+  if (reported) addMergedNodes(records, nodes, reported);
   replaceChildren(rebuilt);
-  for (const { index } of rebuilt) writeBefore(records, index);
+  for (const { index } of rebuilt) writeBefore(records, nodes, index);
   // The first child of the stylesheet takes the leading whitespace last.
-  const root = /** @type {Container} */ (records.nodeOf(records.root.index));
+  const root = /** @type {Container} */ (nodeOf(nodes, records.root.index));
   const first = root.first;
   const { leadingWhitespace } = records.root;
   if (first && leadingWhitespace !== null) {

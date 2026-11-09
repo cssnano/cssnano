@@ -2,12 +2,14 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { assertLinearTime } from '../linearTiming.js';
 import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import {
+  buildRecords,
+  recordDeclaration,
+} from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { placeUnlinked } from '../../../../../test/passes/merge/lib/rules/liveRecords.js';
 
 /**
@@ -19,7 +21,7 @@ import { placeUnlinked } from '../../../../../test/passes/merge/lib/rules/liveRe
  */
 function recordsOf(css) {
   const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(postcss.parse(css), state);
+  state.records = buildRecords(postcss.parse(css), state).records;
   return { state, rule: state.records.rule(1) };
 }
 

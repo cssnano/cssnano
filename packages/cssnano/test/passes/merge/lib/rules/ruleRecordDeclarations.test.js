@@ -10,6 +10,7 @@ import {
   declarationIds,
   ruleRecordOf,
   placeUnlinked,
+  nodeOfEntry,
 } from './liveRecords.js';
 import {
   appendChild,
@@ -23,7 +24,7 @@ import {
   NodeEntry,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
@@ -59,7 +60,7 @@ const arenaOf = (css, consistencyChecks = false) => {
  * @return {RuleRecord}
  */
 const mergedRule = (records) => {
-  const rule = new RuleRecord(postcss.rule({ selector: 'b' }), ['b'], 'b');
+  const rule = new RuleRecord(['b'], 'b');
   records.appendEntry(records.root.index, rule);
   return rule;
 };
@@ -185,7 +186,7 @@ test('moveDeclarations should keep the raws.before of a moved declaration', () =
     ...claimAt(records, record, [1]),
   ]);
   const [taken] = target.declarationsOf(records);
-  assert.equal(taken.node.raws.before, '\n    ');
+  assert.equal(nodeOfEntry(records, taken).raws.before, '\n    ');
 });
 
 test('moveDeclarations should drop the keys of the moved declarations from the declaration keys', () => {
@@ -306,15 +307,7 @@ test('appendChild of a comment should make the next read return the same entry',
   const note = placeUnlinked(
     records,
     records.root.index,
-    new NodeEntry(
-      postcss.comment({ text: 'c' }),
-      COMMENT,
-      NO_AT_RULE,
-      '',
-      '',
-      false,
-      NO_PRELUDE
-    )
+    new NodeEntry(COMMENT, NO_AT_RULE, '', '', false, NO_PRELUDE)
   );
   appendChild(records, record, note);
   assert.equal(declarationKeys(records, record.index), keys);

@@ -1,6 +1,4 @@
-/** @import {ChildNode, Container} from 'postcss' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-import type { ChildNode, Container } from 'postcss';
 export declare const STYLESHEET = 0;
 export declare const RULE = 1;
 export declare const DECLARATION = 2;
@@ -59,8 +57,6 @@ export declare function isRuleOrAtRuleKind(kind: number): boolean;
  * the same facts, with neutral values where they do not apply.
  */
 export declare class BlockRecord {
-    /** @type {Container} */
-    node: Container;
     /** @type {typeof STYLESHEET | typeof AT_RULE_BLOCK} what the block is */
     kind: typeof STYLESHEET | typeof AT_RULE_BLOCK;
     /** @type {number} the category of an at-rule, NO_AT_RULE for the stylesheet */
@@ -102,7 +98,6 @@ export declare class BlockRecord {
      */
     leadingWhitespace: string | null;
     /**
-     * @param {Container} node
      * @param {typeof STYLESHEET | typeof AT_RULE_BLOCK} kind
      * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for the stylesheet
      * @param {string} name the folded name, or ''
@@ -110,7 +105,7 @@ export declare class BlockRecord {
      * @param {boolean} anonymous
      * @param {number} preludeId
      */
-    constructor(node: Container, kind: typeof STYLESHEET | typeof AT_RULE_BLOCK, atRuleKind: number, name: string, params: string, anonymous: boolean, preludeId: number);
+    constructor(kind: typeof STYLESHEET | typeof AT_RULE_BLOCK, atRuleKind: number, name: string, params: string, anonymous: boolean, preludeId: number);
 }
 /**
  * A child of a block that is neither a rule, an at-rule with a block, nor a
@@ -118,8 +113,6 @@ export declare class BlockRecord {
  * so that a block's children hold indices alone.
  */
 export declare class NodeEntry {
-    /** @type {ChildNode} the node the entry stands for */
-    node: ChildNode;
     /** @type {ArenaIndex} the place of the entry in the arena, -1 until added */
     index: ArenaIndex;
     /** @type {typeof COMMENT | typeof AT_RULE_STATEMENT} what the entry is */
@@ -141,7 +134,6 @@ export declare class NodeEntry {
     /** @type {boolean} whether a comment is important, which the merge keeps */
     important: boolean;
     /**
-     * @param {ChildNode} node
      * @param {typeof COMMENT | typeof AT_RULE_STATEMENT} kind
      * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for a comment
      * @param {string} name
@@ -149,6 +141,6 @@ export declare class NodeEntry {
      * @param {boolean} anonymous
      * @param {number} preludeId
      */
-    constructor(node: ChildNode, kind: typeof COMMENT | typeof AT_RULE_STATEMENT, atRuleKind: number, name: string, params: string, anonymous: boolean, preludeId: number);
+    constructor(kind: typeof COMMENT | typeof AT_RULE_STATEMENT, atRuleKind: number, name: string, params: string, anonymous: boolean, preludeId: number);
 }
 //# sourceMappingURL=blockRecord.d.ts.map

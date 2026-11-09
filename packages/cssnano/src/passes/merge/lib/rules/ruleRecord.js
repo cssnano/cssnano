@@ -3,7 +3,6 @@ import { DECLARATION, NO_PRELUDE, RULE } from './blockRecord.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {Rule} from 'postcss' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
@@ -56,14 +55,13 @@ export class RuleRecord extends SelectorList {
   before = '';
 
   /**
-   * @param {Rule | undefined} node the rule the record describes; undefined for a merged rule until write-back
    * @param {string[]} selectors
    * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
    * @param {string} [sourceSelector] the source text, set only when it differs from the selector
    * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
    */
-  constructor(node, selectors, selector, sourceSelector, tokens) {
-    super(node, selectors, selector, sourceSelector, tokens);
+  constructor(selectors, selector, sourceSelector, tokens) {
+    super(selectors, selector, sourceSelector, tokens);
   }
 
   /**

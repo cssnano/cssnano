@@ -1,16 +1,11 @@
-/** @import {ChildNode} from 'postcss' */
-/** @import {BlockRecords} from './blockRecords.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
-import type { BlockRecords } from './blockRecords.js';
 import type { TextTable } from '../../../../values/textTable.js';
 /**
- * Makes each property of each node the records reach, own or inherited, and
- * each table read of the window throw, and returns a function that restores
- * them. A node keeps its own descriptor, or none when it inherits the property.
+ * Makes each table read of the window throw, and returns a function that
+ * restores them.
  *
- * @param {BlockRecords} records
  * @param {TextTable} textTable
- * @return {() => void} restores the properties and the table
+ * @return {() => void} restores the table
  */
-export declare function guardWindow(records: BlockRecords, textTable: TextTable): () => void;
+export declare function guardWindow(textTable: TextTable): () => void;
 //# sourceMappingURL=windowGuard.d.ts.map

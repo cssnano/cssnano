@@ -22,6 +22,8 @@ import {
   ruleRecordOf,
   buildTestRecords,
   placeUnlinked,
+  nodeOfEntry,
+  nodesOf,
 } from './liveRecords.js';
 import {
   adopt,
@@ -58,8 +60,11 @@ function liveLabels(state) {
     (entry) => {
       if (entry.kind === RULE) return entry.selectors[0];
       if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK)
-        return `@${entry.node.name}`;
-      return entry.node?.type ?? /** @type {ChildNode} */ (entry).type;
+        return `@${nodeOfEntry(state.records, entry).name}`;
+      return (
+        nodeOfEntry(state.records, entry)?.type ??
+        /** @type {ChildNode} */ (entry).type
+      );
     }
   );
 }
@@ -79,7 +84,7 @@ test('substitute with one replacement should put it where the rule stood', () =>
   const replacement = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
+    new RuleRecord(['x'], 'x')
   );
   substitute(state.records, record.index, [replacement.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'c']);
@@ -92,12 +97,12 @@ test('substitute with several replacements should keep their order where the rul
   const first = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
+    new RuleRecord(['x'], 'x')
   );
   const second = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'y' }), ['y'], 'y')
+    new RuleRecord(['y'], 'y')
   );
   substitute(state.records, record.index, [first.index, second.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'y', 'c']);
@@ -129,7 +134,9 @@ test('adopt should splice the source children after the target, keeping a rule t
   );
   assert.notEqual(/** @type {RuleRecord} */ (entries[1]).context, -1);
   assert.deepEqual(
-    childNodesOf(state.records, targetBlock.index).map((node) => node.type),
+    childNodesOf(state.records, nodesOf(state.records), targetBlock.index).map(
+      (node) => node.type
+    ),
     ['rule', 'rule']
   );
 });
@@ -198,9 +205,11 @@ test('removeRules of the first child should leave the rest as the live entries o
   removeRules(state, new Set([ruleRecordOf(state.records, a).index]));
   assert.deepEqual(liveLabels(state), ['b']);
   assert.deepEqual(
-    childNodesOf(state.records, state.records.root.index).map(
-      (node) => node.type
-    ),
+    childNodesOf(
+      state.records,
+      nodesOf(state.records),
+      state.records.root.index
+    ).map((node) => node.type),
     ['rule']
   );
 });

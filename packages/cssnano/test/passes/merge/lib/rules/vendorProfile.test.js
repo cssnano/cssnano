@@ -139,7 +139,7 @@ function ruleWith(selector) {
  * @return {RuleRecord} the record of a rule, for the selector facts it keeps
  */
 function metaOf(rule) {
-  return new RuleRecord(rule, rule.selectors);
+  return new RuleRecord(rule.selectors);
 }
 
 test('getVendorProfile should match the list profile after addSelectors grows a rule whose profile was already computed', () => {

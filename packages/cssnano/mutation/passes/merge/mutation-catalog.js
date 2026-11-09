@@ -22,8 +22,8 @@ export const test = new URL('../../../test/passes/merge/*.js', import.meta.url)
 export const mutations = [
   {
     name: 'skip reporting the receiving block',
-    target: source('blockRecords.js'),
-    find: '        reported.add(/** @type {Rule} */ (this.nodeOf(index)));\n',
+    target: source('nodeTable.js'),
+    find: '      reported.add(/** @type {Rule} */ (nodes[index]));\n',
     replace: '',
   },
 ];

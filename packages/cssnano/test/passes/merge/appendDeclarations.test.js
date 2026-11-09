@@ -7,7 +7,11 @@ import {
   removeRules,
 } from '../../../src/passes/merge/lib/rules/treeEdits.js';
 import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
-import { ruleRecordOf, buildTestRecords } from './lib/rules/liveRecords.js';
+import {
+  ruleRecordOf,
+  buildTestRecords,
+  nodesOf,
+} from './lib/rules/liveRecords.js';
 
 // The incoming rule leaves the tree once the placement drops it, so the tree
 // reads the joined declarations on `a` alone.
@@ -30,7 +34,7 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
     mergeState,
     new Set([ruleRecordOf(mergeState.records, incoming).index])
   );
-  writeBack(mergeState.records);
+  writeBack(mergeState.records, nodesOf(mergeState.records));
 
   assert.equal(root.toString(), '@media print{a{color:red;width:1px}}');
 });

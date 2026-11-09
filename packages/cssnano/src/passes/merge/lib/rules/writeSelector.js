@@ -1,11 +1,13 @@
 import { comma } from '../../../../values/punctuationTokens.js';
 import { joinRanges } from '../../../../values/joinRanges.js';
 import { tokensText } from '../../../../values/tokensText.js';
+import { nodeOf } from './nodeTable.js';
 
 /** @import {Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
+/** @import {NodeTable} from './nodeTable.js' */
 
 /**
  * The tokens a marked rule's pieces join to, when they spell its selector as
@@ -46,11 +48,12 @@ function writeTemplateRaws(node, template) {
  *
  * @param {RuleRecord} record
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes
  * @param {TextTable} textTable
  * @return {void}
  */
-export function writeSelector(record, records, textTable) {
-  const node = /** @type {Rule} */ (records.nodeOf(record.index));
+export function writeSelector(record, records, nodes, textTable) {
+  const node = /** @type {Rule} */ (nodeOf(nodes, record.index));
   if (record.marked) {
     const list = record.tokens ?? joinedPieces(record);
     if (list === undefined) {
@@ -62,7 +65,7 @@ export function writeSelector(record, records, textTable) {
     if (record.template !== -1) {
       writeTemplateRaws(
         node,
-        /** @type {import('postcss').Rule} */ (records.nodeOf(record.template))
+        /** @type {import('postcss').Rule} */ (nodeOf(nodes, record.template))
       );
     }
   } else if (record.tokens !== undefined && !record.listStored) {

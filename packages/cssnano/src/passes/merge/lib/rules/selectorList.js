@@ -5,7 +5,6 @@ import { selectorRanges } from '../../../../values/selectorRanges.js';
 import { tokens as tokenize } from '../../../../utils/value.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Rule} from 'postcss' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {SelectorRange} from '../../../../values/selectorRanges.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
@@ -31,8 +30,6 @@ const noElementKeys = Object.freeze([]);
  * source text when its comments make it differ, and the tokens of that text.
  */
 export class SelectorList {
-  /** @type {Rule | undefined} the rule the list belongs to; undefined for a merged rule until write-back creates it */
-  #node;
   /** @type {string[]} */
   #selectors;
   /** @type {string} the selector the rule spells, in PostCSS's form */
@@ -61,14 +58,12 @@ export class SelectorList {
   #ranges;
 
   /**
-   * @param {Rule | undefined} node
    * @param {string[]} selectors
    * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
    * @param {string} [sourceSelector] the source text, set only when it differs from the selector
    * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
    */
-  constructor(node, selectors, selector, sourceSelector, tokens) {
-    this.#node = node;
+  constructor(selectors, selector, sourceSelector, tokens) {
     this.#selectors = selectors;
     this.#selector = selector;
     this.#sourceSelector = sourceSelector;
@@ -81,29 +76,6 @@ export class SelectorList {
     this.#pieces = undefined;
     this.#compatible = undefined;
     this.#ranges = undefined;
-  }
-
-  /**
-   * @return {Rule} the rule the list belongs to. A merged rule has none until
-   * write-back gives it one, so a caller reads it only after that.
-   */
-  get node() {
-    return /** @type {Rule} */ (this.#node);
-  }
-
-  /** @return {boolean} whether the rule has a node yet */
-  get hasNode() {
-    return this.#node !== undefined;
-  }
-
-  /**
-   * Gives a merged rule its node. Write-back calls it once, for a rule that
-   * the tree reaches.
-   *
-   * @param {Rule} node
-   */
-  giveNode(node) {
-    this.#node = node;
   }
 
   /** @return {string[]} change it only through the methods of this class */

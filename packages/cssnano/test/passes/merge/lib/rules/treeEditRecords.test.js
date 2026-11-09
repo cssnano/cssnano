@@ -23,7 +23,7 @@ import {
   receivingDeclarations,
 } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 

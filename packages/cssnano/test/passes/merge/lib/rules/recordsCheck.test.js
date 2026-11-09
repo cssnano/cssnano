@@ -18,6 +18,7 @@ import {
   buildTestRecords,
   withCorruptedLinks,
   placeUnlinked,
+  nodeOfEntry,
 } from './liveRecords.js';
 import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
@@ -82,7 +83,7 @@ test('moveLast should throw under checks when the root is moved into a chain', (
   const { state } = setup('a{color:red;b{width:1px}}');
   const holder = ruleRecordOf(
     state.records,
-    /** @type {Rule} */ (state.records.root.node.first)
+    /** @type {Rule} */ (nodeOfEntry(state.records, state.records.root).first)
   );
   assert.throws(
     () => state.records.moveLast(holder.index, state.records.root.index),
@@ -125,20 +126,12 @@ test('assertRecordsWellFormed should accept the chains after a rule moves out of
 
 test('moveLast should throw under checks when the block is outside the tree', () => {
   const { state } = setup('a{color:red}');
-  const detached = new BlockRecord(postcss.atRule({ name: 'media' }), false);
+  const detached = new BlockRecord(false);
   placeUnlinked(state.records, state.records.root.index, detached);
   const comment = placeUnlinked(
     state.records,
     state.records.root.index,
-    new NodeEntry(
-      postcss.comment({ text: 'x' }),
-      COMMENT,
-      NO_AT_RULE,
-      '',
-      '',
-      false,
-      NO_PRELUDE
-    )
+    new NodeEntry(COMMENT, NO_AT_RULE, '', '', false, NO_PRELUDE)
   );
   assert.throws(
     () => state.records.moveLast(detached.index, comment.index),

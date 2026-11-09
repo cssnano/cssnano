@@ -1,6 +1,6 @@
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
-import { buildTestRecords } from './liveRecords.js';
+import { buildTestRecords, nodesOf } from './liveRecords.js';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
@@ -31,34 +31,42 @@ test('a second write-back should leave the child array of a block that already m
   const sequence = new RuleSequence(state.records);
   const first = sequence.head;
   sequence.moveIntoParent(state.records, first, sequence.nextOf(first));
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   const media = /** @type {Container} */ (root.first);
   const kept = media.nodes;
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   assert.equal(media.nodes, kept);
-  assert.doesNotThrow(() => assertRecordsMatchTree(state.records));
+  assert.doesNotThrow(() =>
+    assertRecordsMatchTree(state.records, nodesOf(state.records))
+  );
 });
 
 test('assertRecordsMatchTree should throw when a child of the stylesheet prints other whitespace than its record holds', () => {
   const { root, state } = setup('a{color:red}\nb{width:1px}');
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   root.nodes[1].raws.before = ' ';
-  assert.throws(() => assertRecordsMatchTree(state.records));
+  assert.throws(() =>
+    assertRecordsMatchTree(state.records, nodesOf(state.records))
+  );
 });
 
 test('assertRecordsMatchTree should throw when a declaration prints other whitespace than its record holds', () => {
   const { root, state } = setup('a{\n  color:red}');
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   const rule = /** @type {Container} */ (root.first);
   /** @type {import('postcss').ChildNode} */ (rule.first).raws.before = '';
-  assert.throws(() => assertRecordsMatchTree(state.records));
+  assert.throws(() =>
+    assertRecordsMatchTree(state.records, nodesOf(state.records))
+  );
 });
 
 test('assertRecordsMatchTree should accept a node whose record leaves its whitespace to the printer', () => {
   const { root, state } = setup('a{color:red}\nb{width:1px}');
-  writeBack(state.records);
+  writeBack(state.records, nodesOf(state.records));
   const [, second] = childEntriesOf(state.records, state.records.root.index);
   second.before = null;
   root.nodes[1].raws.before = ' ';
-  assert.doesNotThrow(() => assertRecordsMatchTree(state.records));
+  assert.doesNotThrow(() =>
+    assertRecordsMatchTree(state.records, nodesOf(state.records))
+  );
 });

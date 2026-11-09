@@ -62,15 +62,7 @@ test('linking an entry into an at-rule block that a sweep unlinked should throw 
   const comment = placeUnlinked(
     records,
     records.root.index,
-    new NodeEntry(
-      postcss.comment({ text: 'x' }),
-      COMMENT,
-      NO_AT_RULE,
-      '',
-      '',
-      false,
-      NO_PRELUDE
-    )
+    new NodeEntry(COMMENT, NO_AT_RULE, '', '', false, NO_PRELUDE)
   );
   assert.throws(
     () => records.moveLast(block.index, comment.index),

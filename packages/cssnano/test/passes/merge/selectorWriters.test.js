@@ -187,10 +187,10 @@ suite('the merge pass writes selectors through its records', () => {
 
   test("a marked record whose selector equals its node's comment-free text prints without the comment", () => {
     const root = postcss.parse('a /*x*/, c {color:red}');
-    const records = buildRecords(root, createRunContext());
+    const { records, nodes } = buildRecords(root, createRunContext());
     const rule = records.rule(records.links.firstChild(records.root.index));
     rule.mark();
-    writeBack(records, new TextTable());
+    writeBack(records, nodes, new TextTable());
     assert.equal(root.toString(), 'a , c {color:red}');
   });
 });
@@ -203,15 +203,15 @@ suite('the merge pass writes selectors through its records', () => {
  */
 function whitespaceRecordsOf(css, consistencyChecks = false) {
   const root = postcss.parse(css);
-  const records = buildRecords(
+  const { records, nodes } = buildRecords(
     root,
     createRunContext(new TextTable(), consistencyChecks)
   );
-  return { root, records };
+  return { root, records, nodes };
 }
 
 test('write-back gives a rule the whitespace its record holds, in the stylesheet it rebuilds', () => {
-  const { root, records } = whitespaceRecordsOf(
+  const { root, records, nodes } = whitespaceRecordsOf(
     'a{color:red}\nb{color:blue}\nc{top:0}'
   );
   const second = root.nodes[1];
@@ -219,7 +219,7 @@ test('write-back gives a rule the whitespace its record holds, in the stylesheet
   const middle = records.links.nextSibling(first);
   records.rule(middle).before = '\n\n';
   removeRules({ records }, new Set([records.links.nextSibling(middle)]));
-  writeBack(records);
+  writeBack(records, nodes);
   assert.equal(second.raws.before, '\n\n');
 });
 
@@ -228,14 +228,14 @@ test('write-back gives a rule the whitespace its record holds, in the stylesheet
  * the children accompanies.
  */
 function recordEditedAlone(consistencyChecks = false) {
-  const { root, records } = whitespaceRecordsOf(
+  const { root, records, nodes } = whitespaceRecordsOf(
     'a{color:red}\nb{color:blue}',
     consistencyChecks
   );
   records.rule(
     records.links.nextSibling(records.links.firstChild(records.root.index))
   ).before = '\n\n';
-  writeBack(records);
+  writeBack(records, nodes);
   return { root, records };
 }
 
@@ -249,11 +249,11 @@ test('write-back leaves the whitespace of a rule in a container it does not rebu
 test('the consistency check reports a record whose whitespace write-back did not write', () => {
   // The arena fixes its checks when it is built, so it is built under checks.
   const { records } = recordEditedAlone(true);
-  assert.throws(() => assertRecordsMatchTree(records));
+  assert.throws(() => assertRecordsMatchTree(records, nodes));
 });
 
 test('write-back gives a rule nested in an at-rule the whitespace its record holds', () => {
-  const { root, records } = whitespaceRecordsOf(
+  const { root, records, nodes } = whitespaceRecordsOf(
     '@media x{a{color:red}\nb{color:blue}}'
   );
   const media = records.blockEntry(
@@ -264,19 +264,19 @@ test('write-back gives a rule nested in an at-rule the whitespace its record hol
   );
   nested.before = '\n\n';
   removeRules({ records }, new Set([records.links.firstChild(media.index)]));
-  writeBack(records);
+  writeBack(records, nodes);
   assert.equal(root.first.last.raws.before, '\n\n');
 });
 
 test('takePlaceOf gives the earlier record the whitespace of the later one, which write-back writes', () => {
-  const { root, records } = whitespaceRecordsOf('a{}\n\nb{}\n');
+  const { root, records, nodes } = whitespaceRecordsOf('a{}\n\nb{}\n');
   const earlier = records.rule(records.links.firstChild(records.root.index));
   const later = records.rule(
     records.links.nextSibling(records.links.firstChild(records.root.index))
   );
   takePlaceOf(records, earlier.index, later.index);
   assert.equal(earlier.before, '\n\n');
-  writeBack(records);
+  writeBack(records, nodes);
   assert.equal(root.first.raws.before, '\n\n');
 });
 
@@ -303,11 +303,11 @@ test('a rule merged again prints the raws of the rule its first merge took them 
 });
 
 test('write-back stores no tokens of a rule the root does not reach', () => {
-  const { records } = whitespaceRecordsOf('a{color:red}b{color:red}');
+  const { records, nodes } = whitespaceRecordsOf('a{color:red}b{color:red}');
   const first = records.rule(records.links.firstChild(records.root.index));
   first.tokensOf();
   records.detach(first.index);
   const table = new TextTable();
-  writeBack(records, table);
-  assert.equal(table.stored(first.node), undefined);
+  writeBack(records, nodes, table);
+  assert.equal(table.stored(nodes[first.index]), undefined);
 });

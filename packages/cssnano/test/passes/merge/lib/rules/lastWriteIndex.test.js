@@ -51,10 +51,7 @@ function conflictsAfterWrite(written, queried) {
 }
 
 /** An arena for the index calls that read no nested block. */
-const noBlocks = new BlockRecords(
-  new BlockRecord(postcss.root(), false),
-  false
-);
+const noBlocks = new BlockRecords(new BlockRecord(false), false);
 
 // The index is an independent implementation of isConflictingProp, which stays
 // the definition of when two properties set the same underlying property.
