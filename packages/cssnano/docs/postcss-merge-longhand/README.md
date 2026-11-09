@@ -11,7 +11,7 @@ This transform is part of the `cssnano` merge pass and is not a published packag
 Merge longhand properties into shorthand; works with `margin`, `padding`,
 `inset`, `scroll-margin`, `scroll-padding`, `border`, `columns`, `column-rule`,
 `gap`, `flex-flow`, `overflow`, `overscroll-behavior` and the box alignment
-`place-*` shorthands. For more examples see the [tests](test).
+`place-*` shorthands. For more examples see the [tests](../../test/passes/merge/lib/longhand/).
 
 ### Input
 

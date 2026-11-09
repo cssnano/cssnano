@@ -60,7 +60,7 @@ h2 {
 
 However, you can mitigate this by including [postcss-minify-font-values][mfv]
 *before* this plugin, which will take care of normalising quotes, and
-deduplicating. For more examples, see the [tests](test).
+deduplicating. For more examples, see the [tests](../../test/postcss-discard-unused/).
 
 
 ## Usage
@@ -119,4 +119,4 @@ MIT © [Ben Briggs](https://beneb.info)
 
 
 [postcss]: https://github.com/postcss/postcss
-[mfv]:     https://github.com/cssnano/cssnano/tree/main/packages/postcss-minify-font-values
+[mfv]:     https://github.com/cssnano/cssnano/tree/main/packages/cssnano/docs/postcss-minify-font-values

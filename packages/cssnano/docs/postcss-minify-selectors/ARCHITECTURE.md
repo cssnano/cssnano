@@ -1,15 +1,16 @@
 # Selector Minifier Architecture
 
-This package provides spec-compliant, high-performance CSS selector minification.
-The public PostCSS plugin is exported from `src/index.js`; all modules under `src/lib/`
-are internal implementation details and not package subpath exports.
+The selector minifier of the `cssnano` presets. It lives in
+`packages/cssnano/src/plugins/postcss-minify-selectors/`: `index.js` defines the
+stage that the presets' host plugin runs on each rule's selector list, and the
+modules under `lib/` are internal.
 
 ## Pipeline Lifecycle
 
 Selector processing proceeds through four decoupled phases:
 
 ```text
-PostCSS Rule
+Selector list of a rule
   │
   ├─► 1. Fast-path classifier (bypass immutable ASCII selectors)
   │
@@ -23,9 +24,10 @@ PostCSS Rule
   └─► 4. Output Serializer (unchanged source slices + changed output sequences)
 ```
 
-1. **Fast-path classification**: Checks simple ASCII selectors against a narrow allowlist
-   of spellings whose bytes normalization cannot alter. Matching rules bypass arena
-   allocation and serialization entirely, preserving raw PostCSS metadata.
+1. **Fast-path classification** (`lib/fixedPointSelector.js`): Checks simple ASCII
+   selectors against a narrow allowlist of spellings whose bytes normalization cannot
+   alter. Matching rules bypass arena allocation and serialization entirely, so their
+   selector text is left as it is.
 2. **Arena parsing**: Converts token spans into a flat, immutable preorder arena.
    Constructs segregated payload tables and records parse status, specificity, and
    semantic barrier facts.

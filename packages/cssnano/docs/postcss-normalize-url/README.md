@@ -27,7 +27,7 @@ h1 {
 This module strips unnecessary quotes and whitespace from `url()` tokens. It
 keeps the URL itself byte-identical: removing dot segments or duplicate slashes,
 decoding percent-escapes or stripping a host's trailing dot are not equivalences
-for every server. For more examples, see the [tests](test).
+for every server. For more examples, see the [tests](../../test/postcss-normalize-url/).
 
 ## Security
 

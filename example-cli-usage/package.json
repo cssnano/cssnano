@@ -15,7 +15,7 @@
     "url": "https://github.com/cssnano/cssnano/issues"
   },
   "engines": {
-    "node": "^18 || ^20 || >=22.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0"
   },
   "license": "MIT",
   "author": {

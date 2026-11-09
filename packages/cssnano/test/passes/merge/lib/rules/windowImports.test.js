@@ -8,8 +8,8 @@ const SRC = join(dirname(fileURLToPath(import.meta.url)), '../../../../../src');
 
 /**
  * Files the window reaches that hold no postcss at runtime: the write-back and
- * the guard, which are allowed for good, and the longhand merge, which step 11
- * retires.
+ * the guard, which are allowed for good, and the longhand merge, which still
+ * edits nodes.
  */
 const UNWALKED = new Set([
   'passes/merge/lib/rules/writeBack.js',

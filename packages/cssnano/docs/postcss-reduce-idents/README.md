@@ -71,7 +71,7 @@ name of the animation depends on the order the value is matched in, so neither
 is touched.
 
 It works for `@keyframes`, `@counter-style`, custom `counter` values and grid area definitions. See the
-[documentation][idents] for more information, or the [tests](test) for more
+[documentation][idents] for more information, or the [tests](../../test/postcss-reduce-idents/) for more
 examples.
 
 
@@ -118,7 +118,7 @@ Pass `false` to disable reducing `grid-template`, `grid-area`, `grid-column`, `g
 ##### encoder
 
 Type: `function`  
-Default: [`lib/encode.js`](https://github.com/cssnano/cssnano/blob/main/packages/postcss-reduce-idents/src/lib/encode.js)
+Default: [`lib/encode.js`](https://github.com/cssnano/cssnano/blob/main/packages/cssnano/src/plugins/postcss-reduce-idents/lib/encode.js)
 
 Pass a custom function to encode the identifier with (e.g.: as a way of prefixing them automatically).
 

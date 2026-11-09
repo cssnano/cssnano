@@ -26,7 +26,7 @@ export const benchmarkCases = {
 // Named lists of cases that one command runs in turn on a single pair of
 // worktrees, which saves the install of a run per case.
 export const benchmarkSets = {
-  // The cases step 9 of the merge IR plan reports.
+  // The rule merging and duplicate discarding cases of the merge records.
   'merge-ir': Object.freeze([
     'merge-rules-dense',
     'merge-rules-nested-declarations',

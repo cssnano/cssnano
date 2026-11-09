@@ -1,6 +1,6 @@
 /**
- * A frozen copy of `discardDuplicates` as it stood before the records port
- * (step 7 of the merge IR roadmap). It is the differential oracle the
+ * A frozen copy of `discardDuplicates` as it stood before it moved onto the
+ * merge records. It is the differential oracle the
  * mutation suites compare the port with. Its helpers are copied, not
  * imported from the package, into `referenceHelpers.js`.
  */

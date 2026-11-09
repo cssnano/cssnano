@@ -19,7 +19,7 @@ console.log(result.css);
 // => 'h1{color:red}'
 ```
 
-For more examples see the [tests](test).
+For more examples see the [tests](../../test/postcss-colormin/).
 
 
 ## Usage

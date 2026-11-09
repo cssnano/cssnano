@@ -8,7 +8,7 @@ This plugin is part of `cssnano` and is no longer published as a separate packag
 
 ## Example
 
-For more examples see the [tests](test).
+For more examples see the [tests](../../test/postcss-discard-empty/).
 
 ### Input
 

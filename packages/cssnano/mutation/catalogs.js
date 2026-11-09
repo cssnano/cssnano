@@ -197,8 +197,9 @@ export const catalogs = [
 
 const catalogUrl = (path) => new URL(path, import.meta.url);
 
-// `merge` is the three runs of step 9 of the merge IR plan, not every merge
-// catalog; the longhand catalogs run with `--all`.
+// `merge` is the merge gate: the rule merging, duplicate discarding and
+// link catalogs, not every merge catalog; the longhand catalogs run with
+// `--all`.
 //
 // A group is what one command judges: each run names its catalogs, the check
 // that judges them and whether unkilled mutants fail it. The fuzz oracles

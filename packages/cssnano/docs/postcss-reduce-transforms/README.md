@@ -9,7 +9,7 @@ This plugin is part of `cssnano` and is no longer published as a separate packag
 ## Example
 
 This module will reduce transform functions where possible. For more examples,
-see the [tests](test).
+see the [tests](../../test/postcss-reduce-transforms/).
 
 ### Input
 

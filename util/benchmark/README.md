@@ -5,7 +5,7 @@
 | Command                                              | Use it to                                                  |
 | ---------------------------------------------------- | ---------------------------------------------------------- |
 | `pnpm run bench:check --case=a` or `--case=a,b`      | compare the working tree with `HEAD` (agents: this or `--set`) |
-| `pnpm run bench:check --set=merge-ir`                | run the four merge cases of step 9 in turn, on one pair of worktrees |
+| `pnpm run bench:check --set=merge-ir`                | run the four merge cases of the set in turn, on one pair of worktrees |
 | `pnpm run bench:check --package=<p>`                 | run every focused case of a plugin                         |
 | `pnpm run bench:check --corpus --budget=30m`         | compare on the framework corpus (`bench:compare` is this)  |
 | `pnpm run bench:profile --case=<name>`               | write a CPU profile of one process to `bench-results/`     |
