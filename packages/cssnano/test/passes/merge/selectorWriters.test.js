@@ -236,7 +236,7 @@ function recordEditedAlone(consistencyChecks = false) {
     records.links.nextSibling(records.links.firstChild(records.root.index))
   ).before = '\n\n';
   writeBack(records, nodes);
-  return { root, records };
+  return { root, records, nodes };
 }
 
 // Every change of whitespace comes with a change of children; a record edited
@@ -248,7 +248,7 @@ test('write-back leaves the whitespace of a rule in a container it does not rebu
 
 test('the consistency check reports a record whose whitespace write-back did not write', () => {
   // The arena fixes its checks when it is built, so it is built under checks.
-  const { records } = recordEditedAlone(true);
+  const { records, nodes } = recordEditedAlone(true);
   assert.throws(() => assertRecordsMatchTree(records, nodes));
 });
 

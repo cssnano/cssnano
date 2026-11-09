@@ -13,16 +13,18 @@ import {
 import { placeUnlinked } from '../../../../../test/passes/merge/lib/rules/liveRecords.js';
 
 /**
- * The records of `css`, as the run builds them. The first rule of a stylesheet
- * is the entry after its root, so it has index 1.
+ * The records of `css`, as the run builds them, with the run context they
+ * share with the merge state. The first rule of a stylesheet is the entry after
+ * its root, so it has index 1.
  *
  * @param {string} css
- * @return {{state: MergeState, rule: import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord}}
+ * @return {{state: MergeState, context: import('../../../../../src/passes/ir/runContext.js').RunContext, rule: import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord}}
  */
 function recordsOf(css) {
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(postcss.parse(css), state).records;
-  return { state, rule: state.records.rule(1) };
+  const context = createRunContext();
+  const state = new MergeState(['chrome 120'], context);
+  state.records = buildRecords(postcss.parse(css), context).records;
+  return { state, context, rule: state.records.rule(1) };
 }
 
 /**
@@ -41,7 +43,7 @@ function ruleOf(count) {
  * @return {number} milliseconds
  */
 function timeAppendsAndReads(size) {
-  const { state, rule } = recordsOf('a{}');
+  const { state, context, rule } = recordsOf('a{}');
   const { records } = state;
   const nodes = Array.from({ length: size }, (_, i) =>
     postcss.decl({ prop: `--c${i}`, value: '0' })
@@ -51,7 +53,7 @@ function timeAppendsAndReads(size) {
     placeUnlinked(
       records,
       records.root.index,
-      recordDeclaration(node, state.properties, state.declarationIds)
+      recordDeclaration(node, context.properties, context.declarations)
     )
   );
   let seen = 0;
@@ -76,8 +78,15 @@ function timeAppendsAndReads(size) {
 function timeUnlinksThenRead(size) {
   const { state, rule } = recordsOf(ruleOf(size));
   const { records } = state;
+  const declarations = [];
+  for (
+    let index = records.links.firstChild(rule.index);
+    index !== -1;
+    index = records.links.nextSibling(index)
+  )
+    declarations.push(index);
   const start = performance.now();
-  for (let i = 0; i < size; i += 2) records.detach(declarations[i].index);
+  for (let i = 0; i < size; i += 2) records.detach(declarations[i]);
   const left = declarationKeys(records, rule.index).kept.length;
   const elapsed = performance.now() - start;
   if (left < 0) throw new Error('unreachable');
