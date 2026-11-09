@@ -5,6 +5,7 @@ import {
   generateFamilyCases,
   generateResetCases,
 } from '../../../../../script/passes/merge/rules/lib/mergeOracle.js';
+import '../../../../../script/passes/merge/enableChecks.js';
 
 test('preset-default keeps the computed styles of generated family stylesheets, seed 7', () => {
   assert.equal(firstMergeFailure(generateFamilyCases(7, 300)), undefined);

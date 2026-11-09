@@ -1,42 +1,51 @@
-import { invalidate } from '../../../ir/blockTable.js';
+import {
+  childCountOf,
+  holdsOnlyDeclarationsOf,
+  childEntriesOf,
+} from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import RepeatScan from './repeatScan.js';
 import { filterRuleIntersections } from './declarations.js';
 import { isKeyframes } from './sameContainer.js';
+import { removeRules } from './treeEdits.js';
+import { RuleRecord } from './ruleRecord.js';
+import { removeDeclarations } from './arenaEdits.js';
+import { declarationKeys } from './declarationCache.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
-/** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
 /** @import MergeState from './mergeState.js' */
+/** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
 
 /**
  * A rule made only of declarations. Comments and nested rules would be
  * stranded or reordered by moving declarations out of the rule.
  *
- * @param {ChildNode} node
- * @return {node is Rule}
+ * @param {BlockRecords} records the arena that holds the rule's children
+ * @param {RuleRecord} record
+ * @return {boolean}
  */
-export const isDeclarationRule = (node) =>
-  node.type === 'rule' &&
-  node.nodes.length > 0 &&
-  node.nodes.every((child) => child.type === 'decl');
+export const isDeclarationRule = (records, record) =>
+  record.context === -1 &&
+  childCountOf(records, record.index) > 0 &&
+  holdsOnlyDeclarationsOf(records, record.index);
 
 /**
- * The positions in `later` of declarations that repeat every one of
+ * The arena indices of the declarations in `later` that repeat every one of
  * `declarations`, or null when a repeat does not stand first for its
  * property, since removing it would then change what `later` sets.
  *
- * @param {Declaration[]} declarations
- * @param {Declaration[]} later
- * @param {PropertyTable} table
- * @return {Set<number> | null}
+ * @param {DeclarationRecord[]} declarations
+ * @param {DeclarationRecord[]} later
+ * @return {Set<ArenaIndex> | null} the arena indices of the later declarations
  */
-export function claimRepeats(declarations, later, table) {
+export function claimRepeats(declarations, later) {
   const { intersection, claimedIndices } = filterRuleIntersections(
     declarations,
     declarations,
-    later,
-    table
+    later
   );
   return intersection.length === declarations.length ? claimedIndices : null;
 }
@@ -49,28 +58,11 @@ function listLength(selectors) {
 }
 
 /**
- * Removes `rules` from `parent` with one pass over its children.
- *
- * @param {Container} parent
- * @param {Set<Rule>} rules
- */
-function detach(parent, rules) {
-  if (rules.size === 0) return;
-  invalidate(parent);
-  const kept = /** @type {ChildNode[]} */ (parent.nodes).filter(
-    (node) => !rules.has(/** @type {Rule} */ (node))
-  );
-  parent.removeAll();
-  parent.append(kept);
-}
-
-/**
  * @typedef {object} Group
- * @property {Rule} rule
- * @property {number} position
- * @property {Declaration[]} declarations
- * @property {number[]} keys declaration keys, in order
- * @property {Set<string> | null} selectors listed selectors, built on demand
+ * @property {RuleRecord} rule
+ * @property {ChainPosition} position its place among the live entries of the block
+ * @property {DeclarationRecord[]} declarations
+ * @property {Set<number> | null} selectors the ids of the listed selectors, built on demand
  * @property {number} bytes declaration bytes, each with its separator, or -1
  */
 
@@ -80,27 +72,26 @@ function detach(parent, rules) {
  * group takes. A later rule that keeps no declaration is removed with its
  * selector and braces, so that join always shortens the output.
  *
+ * @param {BlockRecords} records
  * @param {Group} group
- * @param {Rule} later
- * @param {MergeState} mergeState
+ * @param {RuleRecord} later
+ * @param {import('../../../ir/selectorIds.js').SelectorIds} selectorIds
  * @return {{added: string[], gain: number}}
  */
-function joinGain(group, later, mergeState) {
+function joinGain(records, group, later, selectorIds) {
   if (group.bytes < 0) {
     group.bytes = group.declarations.reduce(
       (total, declaration) => total + minifiedLength(declaration),
       0
     );
   }
-  const listed = (group.selectors ??= new Set(
-    mergeState.meta(group.rule).selectors
-  ));
-  const laterSelectors = mergeState.meta(later).selectors;
+  const listed = (group.selectors ??= new Set(group.rule.idsOf(selectorIds)));
+  const laterSelectors = later.selectors;
   const added = [...new Set(laterSelectors)].filter(
-    (selector) => !listed.has(selector)
+    (selector) => !listed.has(selectorIds.idOf(selector))
   );
   const removed =
-    group.declarations.length === later.nodes.length
+    group.declarations.length === childCountOf(records, later.index)
       ? group.bytes + listLength(laterSelectors)
       : group.bytes;
   return { added, gain: removed - listLength(added) };
@@ -114,25 +105,30 @@ function joinGain(group, later, mergeState) {
  * rule, the group, keeps its position and its declarations, so it can take
  * further rules.
  *
- * @param {Container} parent
+ * @param {BlockRecord} block
  * @param {MergeState} mergeState
  * @return {boolean}
  */
-export default function joinByDeclarations(parent, mergeState) {
-  if (isKeyframes(parent)) return false;
-  const nodes = /** @type {ChildNode[]} */ (parent.nodes).slice();
-  const keyLists = nodes.map((node) =>
-    isDeclarationRule(node) ? mergeState.declarationKeysOf(node) : null
+export default function joinByDeclarations(block, mergeState) {
+  if (isKeyframes(block)) return false;
+  const entries = childEntriesOf(mergeState.records, block.index);
+  const declarationRules = entries.map(
+    (entry) =>
+      entry instanceof RuleRecord &&
+      isDeclarationRule(mergeState.records, entry)
   );
-  // Rules can only join where they share a declaration.
+  // Rules can only join where they share a declaration. The keys are read
+  // here, before any edit, so no loop holds a rule's keys across an edit.
   const scan = new RepeatScan();
-  for (const [i, own] of keyLists.entries()) {
-    if (!own) continue;
-    for (const key of own.keySet) scan.see(key, i);
+  for (const [i, entry] of entries.entries()) {
+    if (!declarationRules[i]) continue;
+    const record = /** @type {RuleRecord} */ (entry);
+    for (const key of declarationKeys(mergeState.records, record.index).keySet)
+      scan.see(key, i);
   }
   if (scan.start === Infinity) return false;
 
-  const index = new LastWriteIndex(mergeState.properties);
+  const index = new LastWriteIndex();
   const keysOf = mergeState.elementKeysOf;
   // Groups by their first declaration, in document order: a rule that
   // repeats a group's declarations repeats that one too.
@@ -140,58 +136,73 @@ export default function joinByDeclarations(parent, mergeState) {
   const groups = new Map();
   // Rules whose selector lists grew; their text is written once at the end,
   // since rewriting a long list on every join would cost quadratic time.
-  /** @type {Set<Rule>} */
+  /** @type {Set<ArenaIndex>} the indices of the rules that grew */
   const grown = new Set();
   // Rules that gave up every declaration, detached together at the end:
   // removing each one splices the parent's array, which takes quadratic time.
-  /** @type {Set<Rule>} */
+  /** @type {Set<ArenaIndex>} the indices of the rules that gave up every declaration */
   const emptied = new Set();
-  for (let position = scan.start; position < nodes.length; position++) {
-    const node = nodes[position];
-    if (keyLists[position]) {
-      const rule = /** @type {Rule} */ (node);
-      const outcome = joinIntoGroup(rule);
+  for (
+    let position = /** @type {ChainPosition} */ (scan.start);
+    position < entries.length;
+    position++
+  ) {
+    const entry = entries[position];
+    if (declarationRules[position]) {
+      const record = /** @type {RuleRecord} */ (entry);
+      const outcome = joinIntoGroup(record);
       if (outcome === 'emptied') continue;
-      // A trimmed rule was forgotten, so its keys are derived anew.
-      register(rule, position, mergeState.declarationKeysOf(rule).keys);
+      register(record, position);
     }
-    index.recordNode(node, position, keysOf);
+    index.recordNode(mergeState.records, entry, position, keysOf);
   }
-  for (const rule of grown) mergeState.spellSelectors(rule);
-  detach(parent, emptied);
+  for (const grownIndex of grown) {
+    mergeState.spellSelectors(
+      /** @type {RuleRecord} */ (mergeState.records.rule(grownIndex))
+    );
+  }
+  removeRules(mergeState, emptied);
   return grown.size > 0;
 
   /**
-   * @param {Rule} rule
-   * @param {number} position
-   * @param {number[]} keys
+   * @param {RuleRecord} rule
+   * @param {ChainPosition} position
    */
-  function register(rule, position, keys) {
+  function register(rule, position) {
+    // A trimmed rule's record took its remaining declarations, so its keys are new.
+    const { kept } = declarationKeys(mergeState.records, rule.index);
+    // A declaration-only rule holds a declaration, so its first id exists.
+    const firstId = /** @type {DeclarationRecord} */ (
+      mergeState.records.entry(kept[0])
+    ).id;
     /** @type {Group} */
     const group = {
       rule,
       position,
-      declarations: /** @type {Declaration[]} */ (rule.nodes),
-      keys,
+      declarations: rule.declarationsOf(mergeState.records),
       selectors: null,
       bytes: -1,
     };
-    const same = groups.get(keys[0]);
+    const same = groups.get(firstId);
     if (same) same.push(group);
-    else groups.set(keys[0], [group]);
+    else groups.set(firstId, [group]);
   }
 
   /**
-   * @param {Rule} later
+   * @param {RuleRecord} laterRecord
    * @return {'emptied' | 'trimmed' | null} whether the rule gave up all its
    * declarations, some of them, or joined no group
    */
-  function joinIntoGroup(later) {
-    const laterDeclarations = /** @type {Declaration[]} */ (later.nodes);
-    const laterSet = mergeState.declarationKeysOf(later).keySet;
+  function joinIntoGroup(laterRecord) {
+    const { records } = mergeState;
+    const laterDeclarations = laterRecord.declarationsOf(records);
+    const laterSet = declarationKeys(
+      mergeState.records,
+      laterRecord.index
+    ).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
-    const laterKeys = keysOf(later);
-    /** @type {{group: Group, claimed: Set<number>, added: string[], gain: number} | null} */
+    const laterKeys = keysOf(laterRecord);
+    /** @type {{group: Group, claimed: Set<ArenaIndex>, added: string[], gain: number} | null} */
     let best = null;
     for (const id of laterSet) {
       const candidates = groups.get(id) ?? [];
@@ -209,11 +220,20 @@ export default function joinByDeclarations(parent, mergeState) {
           break;
         if (
           group.declarations.length > laterDeclarations.length ||
-          !group.keys.every((key) => laterSet.has(key))
+          !declarationKeys(records, group.rule.index).kept.every((kept) =>
+            laterSet.has(
+              /** @type {DeclarationRecord} */ (records.entry(kept)).id
+            )
+          )
         ) {
           continue;
         }
-        const { added, gain } = joinGain(group, later, mergeState);
+        const { added, gain } = joinGain(
+          records,
+          group,
+          laterRecord,
+          mergeState.selectorIds
+        );
         // A join that breaks even still takes the shared declarations out of
         // the way of later rules that can join the group. On a tie, the
         // nearest group has the least to cross.
@@ -227,26 +247,29 @@ export default function joinByDeclarations(parent, mergeState) {
         }
         const claimedIndices = claimRepeats(
           group.declarations,
-          laterDeclarations,
-          mergeState.properties
+          laterDeclarations
         );
         if (!claimedIndices) continue;
-        const claimed = [...claimedIndices].map((j) => laterDeclarations[j]);
+        const claimed = [...claimedIndices].map(
+          (declarationIndex) =>
+            /** @type {DeclarationRecord} */ (records.entry(declarationIndex))
+        );
         if (index.conflictsSince(claimed, group.position, laterKeys)) continue;
-        if (!mergeState.canMerge(group.rule, later)) continue;
+        if (!mergeState.canMerge(group.rule, laterRecord)) continue;
         best = { group, claimed: claimedIndices, added, gain };
       }
     }
     if (!best) return null;
     const { group, claimed, added } = best;
-    const listed = keysOf(group.rule) !== null;
-    const gained = mergeState.addSelectors(group.rule, added, later);
-    for (const selector of added) group.selectors?.add(selector);
+    const groupRecord = group.rule;
+    const listed = keysOf(groupRecord) !== null;
+    const gained = mergeState.addSelectors(groupRecord, added, laterRecord);
+    for (const selector of added) {
+      group.selectors?.add(mergeState.selectorIds.idOf(selector));
+    }
     if (listed) recordGained(group, gained);
-    grown.add(group.rule);
-    const outcome = withdraw(later, laterDeclarations, claimed);
-    mergeState.forget(later);
-    mergeState.markCompatible(group.rule);
+    grown.add(group.rule.index);
+    const outcome = withdraw(laterRecord, claimed);
     return outcome;
   }
 
@@ -262,26 +285,23 @@ export default function joinByDeclarations(parent, mergeState) {
   function recordGained(group, gained) {
     if (gained?.length === 0) return;
     for (const declaration of group.declarations)
-      index.record(declaration, group.position, gained);
+      index.record(declaration.keys, group.position, gained);
   }
 
   /**
-   * @param {Rule} later
-   * @param {Declaration[]} declarations
-   * @param {Set<number>} claimed indices of the declarations that leave
+   * @param {RuleRecord} later
+   * @param {Set<ArenaIndex>} claimed the declarations that leave
    * @return {'emptied' | 'trimmed'}
    */
-  function withdraw(later, declarations, claimed) {
+  function withdraw(later, claimed) {
     // The group's writes already stand at its position, so the declarations
     // that leave `later` record nothing.
-    if (claimed.size === declarations.length) {
-      emptied.add(later);
+    const { records } = mergeState;
+    if (claimed.size === declarationKeys(records, later.index).kept.length) {
+      emptied.add(later.index);
       return 'emptied';
     }
-    // Removing shifts positions, so the nodes are picked first.
-    const leaving = [...claimed].map((j) => declarations[j]);
-    invalidate(later);
-    for (const declaration of leaving) declaration.remove();
+    removeDeclarations(records, later.index, claimed);
     return 'trimmed';
   }
 }

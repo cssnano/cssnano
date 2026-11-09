@@ -22,6 +22,16 @@ declare function requiredSupport(declaration: import('postcss').Declaration, tex
  */
 declare function inheritSupport(source: import('postcss').Declaration, clone: import('postcss').Declaration, textTable: TextTable): void;
 /**
+ * inheritedSupport is populated only by inheritSupport(), which records each
+ * declaration the plugin clones. A declaration's presence proves it was
+ * synthesized by the plugin. Values the plugin invented, such as `currentcolor`
+ * standing for `border: medium none`, cannot be fallbacks the author wrote.
+ *
+ * @param {import('postcss').Declaration} declaration
+ * @return {boolean} whether the plugin created the declaration
+ */
+declare function isDerived(declaration: import('postcss').Declaration): boolean;
+/**
  * @param {import('postcss').Declaration} declaration
  * @param {TextTable} textTable
  * @return {boolean} whether some target may drop the declaration because it
@@ -55,5 +65,5 @@ declare function isFallback(earlier: import('postcss').Declaration, later: impor
  * @return {boolean}
  */
 declare function strandsFallback(earlier: import('postcss').Declaration, later: import('postcss').Declaration, textTable: TextTable): boolean;
-export { requiredSupport, mergeBlockingSupport, needsUnmetSupport, inheritSupport, isFallback, strandsFallback, withTargetSupport, };
+export { requiredSupport, mergeBlockingSupport, needsUnmetSupport, inheritSupport, isDerived, isFallback, strandsFallback, withTargetSupport, };
 //# sourceMappingURL=isFallback.d.ts.map

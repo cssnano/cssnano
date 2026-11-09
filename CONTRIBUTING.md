@@ -18,44 +18,58 @@ cd cssnano
 pnpm install
 ```
 
-Tests that assert running time or scaling, and slow fuzz sweeps, live in each package's `perf/`
-directory, outside `test/`, so the OS and Node matrix and the coverage run skip
-them. Run them with `pnpm test:performance`; CI runs them once on Linux and the
-result does not gate pull requests.
-
-You can run the tests with:
+`pnpm test` is the one test command. With no arguments it runs every check a
+pull request must pass: types, lint, format, every test, the site's tests,
+the framework fixtures and the mutation baselines. A step that cannot run
+here, such as the site's tests without the site's own install, is reported
+as skipped, not passed. It prints a line as each step starts and
+ends, keeps each step's output in `test-results/`, and ends with
+`test: done status=pass|fail`. With paths it runs only those tests:
 
 ```shell
 pnpm test
+pnpm test packages/cssnano/test/postcss-colormin/
 ```
 
-Mutation testing is an opt-in test-quality check for realistic faults in a
+When a change alters the output on purpose, `pnpm build:integration` updates
+the framework fixtures; review the diff before committing.
+
+Tests that assert running time or scaling, and slow fuzz sweeps, live in each package's `perf/`
+directory, outside `test/`, so the OS and Node matrix and the coverage run skip
+them. Run one with `node --test <file>`; CI runs them all once on Linux and the
+result does not gate pull requests.
+
+Mutation testing checks whether the tests notice realistic faults in a
 plugin. It requires Node 24 or later and applies curated mutations in memory in an
-isolated child process; source files are never changed. Run the initial slice
-with:
+isolated child process; source files are never changed. Run a named group of
+catalogs with:
 
 ```shell
-pnpm test:mutation
+pnpm mutation --group merge
 ```
 
-`pnpm test:mutation:oracle` runs the catalogs that declare `suites`
-against the fuzz suites instead of a test file and reports the mutants the
-oracles miss. For each suite it counts the cases that executed the mutated
-code (`reached=`) and the cases whose output changed (`changed=`). A mutant
-that no case runs is `not reached`, and one that runs without changing any
-output is `unchanged`. Both call for a corpus that exercises the mutant;
-only a `survived` mutant shows an output change that the oracle accepted.
-Register a new catalog in
-`packages/cssnano/mutation/catalogs.js`; both commands read that list.
+Groups are listed in `packages/cssnano/mutation/catalogs.js`, which is also
+where to register a new catalog. `pnpm mutation --all` reruns every catalog
+against its own test file, and `pnpm mutation --all --check oracle
+--allow-unkilled` runs the catalogs that declare `suites` against the fuzz
+suites. A mutant is only caught when the
+run reports it as `killed`: `survived`, `unchanged` and `not reached` mean the
+tests or oracles did not notice the fault, and `errored` and `timed out` mean
+it was not judged.
+
+Running the mutants is opt-in and not part of CI. `pnpm test` only checks
+the mutation baselines: that the test file of each test-checked catalog
+passes unmutated, so its mutants can be judged.
 
 ### Benchmarking
 
 Benchmark comparisons are advisory, not regression gates. Each block runs a
 fresh process per side in a balanced order and decides two endpoints, the
-warm runtime and the cold start, against a 10% margin. A run stops as soon as
-both endpoints have a verdict, or at its time budget. See
-[the benchmark README](util/benchmark/README.md) for the verdict rule and its
-limits.
+warm runtime and the cold start, against a 10% margin. After its minimum
+blocks, a run stops as soon as both endpoints have a verdict, or at its time
+budget. See
+[the benchmark README](https://github.com/cssnano/cssnano/blob/main/util/benchmark/README.md)
+for the verdict rule and its limits.
 
 ```shell
 pnpm bench:check -- --package=<plugin> --budget=90s
@@ -68,14 +82,9 @@ cases and prints one line per case. `--corpus` runs the framework corpus, and
 `bench:compare` is an alias for it. `bench:profile` writes a CPU profile of one
 process. The benchmark README lists the other options.
 
-The comparison CLI exits 0 for a generated report, including an inconclusive
-report. Invalid artifacts, execution failures, and correctness mismatches exit
-nonzero. Performance conclusions remain advisory and cannot fail the command
-until an explicitly documented `--policy=gate` mode is introduced.
-
-Mutation testing is not part of the required test or CI path. A surviving
-mutation means the current tests did not detect that simulated fault; a
-timeout or harness error is reported separately.
+The command exits 0 whenever it produces a report, whatever the verdicts;
+a case whose two sides produce different CSS ends as `output changed` in that
+report. A run that fails or cannot clean up its worktrees exits nonzero.
 
 We recommend that you look in the issue tracker to find anything tagged
 [help wanted][help wanted]; that's the first port of call for getting stuck
@@ -93,7 +102,7 @@ To help us generate the changelog, follow the [conventional commits](https://www
 The documentation website is also included with the repository, under `/site`.
 It runs [Astro](https://astro.build/) and requires a separate `pnpm install`
 to pull down the dependencies. You can then browse the documentation locally
-by running `pnpm start`.
+by running `pnpm start` in `site/`.
 
 Note that some of the documentation is automatically generated and should not
 be edited by hand.

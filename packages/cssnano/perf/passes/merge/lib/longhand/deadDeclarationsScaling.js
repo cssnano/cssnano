@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { discardDeadDeclarations } from '../../../../../src/passes/merge/lib/longhand/decl/crossKindCoverage.js';
 import { BoxSupport } from '../../../../../src/passes/merge/lib/longhand/targetSupport.js';
+import { TextTable } from '../../../../../src/values/textTable.js';
 import { assertLinearTime } from '../linearTiming.js';
 
 const units = [
@@ -75,7 +76,7 @@ function timeRun(size) {
     /** @type {postcss.Rule} */ (postcss.parse(css).first).nodes
   );
   const start = performance.now();
-  discardDeadDeclarations(lane, support);
+  discardDeadDeclarations(lane, support, new TextTable());
   return performance.now() - start;
 }
 

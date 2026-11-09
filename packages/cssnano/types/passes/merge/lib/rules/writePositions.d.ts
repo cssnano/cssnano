@@ -1,11 +1,16 @@
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import type { PropertyTable } from '../../../ir/propertyTable.js';
-export type PositionList = {
-    positions: number[];
-    cursor: number;
-    claimed?: Set<number>;
-    claimedSize: number;
-};
+/** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
+import type { PropertyKeys } from '../../../ir/propertyTable.js';
+/**
+ * The positions one claimer has claimed, and the cursor it holds in each list
+ * it reads. Claims only grow, so a cursor moves forward once. A new claimer
+ * holds no cursors, so it starts every list from its first position.
+ */
+export declare class Claims {
+    /** @type {Set<number>} the positions claimed so far */
+    claimed: Set<number>;
+    /** @type {Map<number[], number>} the position each list's cursor is at */
+    cursors: Map<number[], number>;
+}
 /**
  * The position of every write, grouped by the keys `PropertyWrites` uses, so
  * the earliest unclaimed conflicting write is read from the lists those keys
@@ -14,26 +19,20 @@ export type PositionList = {
  */
 export declare class WritePositions {
     #private;
-    /** @param {PropertyTable} table keys every declaration this index sees */
-    constructor(table: PropertyTable);
     /**
-     * @param {{prop: string}} declaration
+     * @param {PropertyKeys} keys the keys of a declaration's property name
      * @param {number} position greater than every position recorded so far
      */
-    record(declaration: {
-        prop: string;
-    }, position: number): void;
+    record(keys: PropertyKeys, position: number): void;
     /**
      * The earliest unclaimed position of a write that conflicts with
      * `declaration`, or -1. Its keys are those `PropertyWrites.lastConflict`
      * reads.
      *
-     * @param {{prop: string}} declaration not `all`
-     * @param {Set<number>} claimed
+     * @param {PropertyKeys} keys of a property that is not `all`
+     * @param {Claims} claims the claimer's positions and cursors
      * @return {number}
      */
-    firstUnclaimed(declaration: {
-        prop: string;
-    }, claimed: Set<number>): number;
+    firstUnclaimed(keys: PropertyKeys, claims: Claims): number;
 }
 //# sourceMappingURL=writePositions.d.ts.map

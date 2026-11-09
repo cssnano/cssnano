@@ -1,9 +1,19 @@
+import {
+  childCountOf,
+  firstDeclaration,
+  nextDeclaration,
+} from './blockChildren.js';
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
-import { PropertyWrites } from './lastWriteIndex.js';
+import { PropertyWrites } from './propertyWrites.js';
+import { declarationKeys } from './declarationCache.js';
 /** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 
-/** @import {ChildNode, Container, Declaration, Rule} from 'postcss' */
-/** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import RuleSequence, {Placement} from './ruleSequence.js' */
+/** @import DeclarationScan from './declarationScan.js' */
 
 /** @param {string[]} selectors @return {number} */
 export function selectorsLength(selectors) {
@@ -24,33 +34,36 @@ export const SHARING_WINDOW = 10;
 const PAIR_REACH = SHARING_WINDOW + 1;
 
 /**
- * Whether a declaration among `nodes`, other than the `claimed` ones, sets a
- * property of `shared`. Standing after the shared rule, it blocks every
- * later rule from handing over the shared declarations.
+ * Whether a declaration of `rule`, other than the `claimed` ones, sets a
+ * property of `shared`. Standing after the shared rule, it blocks every later
+ * rule from handing over the shared declarations.
  *
- * @param {ChildNode[]} nodes
- * @param {Set<number> | null} claimed positions among the declarations
- * @param {Declaration[]} shared
- * @param {PropertyTable} table
+ * @param {BlockRecords} records the arena that holds the rule's children
+ * @param {RuleRecord} rule
+ * @param {Set<ArenaIndex> | null | undefined} claimed the arena indices of the declarations of `rule` that repeat `shared`
+ * @param {DeclarationRecord[]} shared
  * @return {boolean}
  */
-function overridesShared(nodes, claimed, shared, table) {
-  const sharedWrites = new PropertyWrites(table);
+function overridesShared(records, rule, claimed, shared) {
+  const sharedWrites = new PropertyWrites();
   for (const declaration of shared) {
-    sharedWrites.record(declaration, 0);
+    sharedWrites.record(declaration.keys, 0);
   }
-  let position = 0;
-  for (const node of nodes) {
-    if (node.type !== 'decl' || claimed?.has(position++)) continue;
-    if (sharedWrites.lastConflict(node) !== -1) return true;
+  for (
+    let declaration = firstDeclaration(records, rule.index);
+    declaration !== undefined;
+    declaration = nextDeclaration(records, declaration)
+  ) {
+    if (claimed?.has(declaration.index)) continue;
+    if (sharedWrites.lastConflict(declaration.keys) !== -1) return true;
   }
   return false;
 }
 
 /**
  * @typedef {object} Follower
- * @property {Rule} rule
- * @property {Set<number>} claimed where it repeats the shared declarations
+ * @property {RuleRecord} rule
+ * @property {Set<ArenaIndex>} claimed the arena indices of the declarations where it repeats the shared declarations
  */
 
 /**
@@ -63,28 +76,32 @@ function overridesShared(nodes, claimed, shared, table) {
  * Whether the rule at `link` stands among declarations only in `parent`, as
  * the shared rule does, and sets every shared declaration.
  *
- * @param {RuleLink | null} link
- * @param {Container} parent
- * @param {number[]} firstKeys the declaration keys of the earlier rule
- * @param {Set<number>} sharedIndices where the shared declarations stand in it
- * @param {import('./mergeState.js').default} mergeState
- * @return {link is RuleLink}
+ * @param {ArenaIndex | -1} link the index of the rule, -1 for none
+ * @param {ArenaIndex | -1} parent the index of the block the rules stand in
+ * @param {DeclarationRecord[]} shared the shared declarations
+ * @param {BlockRecords} records the arena that holds the rules' blocks
+ * @return {boolean}
  */
-function repeatsShared(link, parent, firstKeys, sharedIndices, mergeState) {
-  if (!link || link.slot.parent !== parent || !isDeclarationRule(link.rule)) {
+function repeatsShared(link, parent, shared, records) {
+  if (link === -1) return false;
+  const rule = /** @type {RuleRecord} */ (records.rule(link));
+  if (
+    records.links.parentOf(rule.index) !== parent ||
+    !isDeclarationRule(records, rule)
+  ) {
     return false;
   }
-  const { keySet } = mergeState.declarationKeysOf(link.rule);
-  for (const index of sharedIndices) {
-    if (!keySet.has(firstKeys[index])) return false;
+  const { keySet } = declarationKeys(records, rule.index);
+  for (const declaration of shared) {
+    if (!keySet.has(declaration.id)) return false;
   }
   return true;
 }
 
 /**
- * @param {Rule[]} members
- * @param {Rule} later
- * @param {Container} parent
+ * @param {RuleRecord[]} members
+ * @param {RuleRecord} later
+ * @param {ArenaIndex | -1} parent the index of the block the rules stand in
  * @param {import('./mergeState.js').default} mergeState
  * @return {boolean} whether `later` can share a selector list with every member
  */
@@ -107,84 +124,66 @@ function mergesWithAll(members, later, parent, mergeState) {
  * rule after it. What a rule saves follows from lengths alone, so those
  * checks run only for a prefix that would pay.
  *
- * @param {Rule} first
- * @param {RuleLink} second
- * @param {Set<number>} claimedEarlierIndices where the shared declarations stand in `first`
- * @param {Set<number>} claimedIndices where they stand in `second`
+ * @param {RuleRecord} first
+ * @param {ArenaIndex} second the index of the later rule of the pair
+ * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
+ * @param {Set<ArenaIndex>} claimedIndices the arena indices of the declarations of `second` that repeat them
  * @param {number} sharedBytes
  * @param {number} prefixed the bytes of the shared declarations a later plugin may remove
  * @param {number} delta how much the pair alone lengthens the output
  * @param {import('./mergeState.js').default} mergeState
  * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
+ * @param {DeclarationScan} scan
  * @return {Group | null}
  */
 export function findGroup(
   first,
   second,
-  claimedEarlierIndices,
+  shared,
   claimedIndices,
   sharedBytes,
   prefixed,
   delta,
   mergeState,
   sequence,
-  outsideDeclarations
+  scan
 ) {
-  const parent = second.slot.parent;
-  const firstKeys = mergeState.declarationKeysOf(first).keys;
-  if (
-    !repeatsShared(
-      second.next,
-      parent,
-      firstKeys,
-      claimedEarlierIndices,
-      mergeState
-    )
-  )
+  const { records } = mergeState;
+  const secondRule = /** @type {RuleRecord} */ (records.rule(second));
+  const parent = records.links.parentOf(secondRule.index);
+  if (!repeatsShared(sequence.nextOf(second), parent, shared, records))
     return null;
-  const shared = mergeState
-    .meta(first)
-    .declarations.filter((_, index) => claimedEarlierIndices.has(index));
-  if (
-    overridesShared(
-      second.rule.nodes,
-      claimedIndices,
-      shared,
-      mergeState.properties
-    )
-  )
-    return null;
+  if (overridesShared(records, secondRule, claimedIndices, shared)) return null;
 
-  const listed = new Set(mergeState.meta(first).selectors);
-  for (const selector of mergeState.meta(second.rule).selectors) {
+  const listed = new Set(first.selectors);
+  for (const selector of secondRule.selectors) {
     listed.add(selector);
   }
   const listedBefore = listed.size;
-  /** @type {RuleLink[]} */
+  /** @type {number[]} */
   const candidates = [];
   /** @type {Follower[]} */
   const followers = [];
-  const members = [first, second.rule];
+  const members = [first, secondRule];
   let blocked = false;
   let best = delta;
   let size = 0;
   let listedAtBest = listedBefore;
   let running = delta;
   for (
-    let link = /** @type {RuleLink | null} */ (second.next), seen = 0;
-    seen < SHARING_WINDOW &&
-    repeatsShared(link, parent, firstKeys, claimedEarlierIndices, mergeState);
-    link = link.next, seen++
+    let link = sequence.nextOf(second), seen = 0;
+    seen < SHARING_WINDOW && repeatsShared(link, parent, shared, records);
+    link = sequence.nextOf(link), seen++
   ) {
-    const selectors = mergeState.meta(link.rule).selectors;
+    const linked = /** @type {RuleRecord} */ (records.rule(link));
+    const selectors = linked.selectors;
     for (const selector of selectors) {
       if (listed.has(selector)) continue;
       listed.add(selector);
       running += 1 + selector.length;
     }
     running -= sharedBytes;
-    if (link.rule.nodes.length === shared.length) {
+    if (childCountOf(records, linked.index) === shared.length) {
       running -= selectorsLength(selectors) + 1;
     }
     candidates.push(link);
@@ -197,18 +196,15 @@ export function findGroup(
     while (!blocked && followers.length < candidates.length) {
       const index = followers.length;
       const candidate = candidates[index];
-      const later = candidate.rule;
-      const claimed = claimRepeats(
-        shared,
-        /** @type {Declaration[]} */ (later.nodes),
-        mergeState.properties
-      );
+      const later = /** @type {RuleRecord} */ (records.rule(candidate));
+      const claimed = claimedBy(shared, later, records);
+      const previous = index ? candidates[index - 1] : second;
       if (
         !claimed ||
-        sequence.declarationBetween(
-          index ? candidates[index - 1] : second,
-          candidate,
-          outsideDeclarations
+        scan.declarationBetween(
+          records,
+          /** @type {RuleRecord} */ (records.rule(previous)),
+          later
         ) ||
         !mergesWithAll(members, later, parent, mergeState)
       ) {
@@ -216,12 +212,7 @@ export function findGroup(
       }
       followers.push({ rule: later, claimed });
       members.push(later);
-      blocked = overridesShared(
-        later.nodes,
-        claimed,
-        shared,
-        mergeState.properties
-      );
+      blocked = overridesShared(records, later, claimed, shared);
     }
     if (followers.length < candidates.length) break;
     best = running;
@@ -237,10 +228,25 @@ export function findGroup(
 }
 
 /**
+ * The arena indices of the declarations of `later` that repeat `shared`, or
+ * null when `later` cannot join: a rule that nests never joins.
+ *
+ * @param {DeclarationRecord[]} shared
+ * @param {RuleRecord} later
+ * @param {BlockRecords} records
+ * @return {Set<ArenaIndex> | null}
+ */
+function claimedBy(shared, later, records) {
+  return later.context !== -1
+    ? null
+    : claimRepeats(shared, later.declarationsOf(records));
+}
+
+/**
  * Keeps in `scratch` only the keys that `keySet` holds, compacting in place.
  *
  * @param {number[]} scratch
- * @param {Set<number>} keySet
+ * @param {ReadonlySet<number>} keySet
  * @return {void}
  */
 function keepKeysIn(scratch, keySet) {
@@ -257,16 +263,18 @@ function keepKeysIn(scratch, keySet) {
  * joins a group only by repeating the shared declarations, so the walk stops
  * at the first rule that breaks that run or after `PAIR_REACH` links.
  *
- * @param {RuleLink} link a rule that a rewrite placed
- * @param {RuleLink} resume the sweep's resume point; only pairs before it count
+ * @param {RuleSequence} sequence
+ * @param {ArenaIndex} link the index of a rule that a rewrite placed
+ * @param {ArenaIndex | -1} resume the sweep's resume point; only pairs before it count
  * @param {number} offset how many links `link` stands after the first new rule
  * @param {number[]} scratch the declaration keys still shared by the walk
  * @param {import('./mergeState.js').default} mergeState
- * @param {{link: RuleLink | null, distance: number}} earliest the best pair so
- * far, and its distance in links from the first new rule
+ * @param {{link: ArenaIndex | -1, distance: number}} earliest the best pair so far, as
+ * the index of its earlier rule, and its distance in links from the first new rule
  * @return {void}
  */
 export function earliestPairReaching(
+  sequence,
   link,
   resume,
   offset,
@@ -274,20 +282,24 @@ export function earliestPairReaching(
   mergeState,
   earliest
 ) {
-  const parent = link.slot.parent;
-  const own = mergeState.declarationKeysOf(link.rule);
+  const { records } = mergeState;
+  const linked = /** @type {RuleRecord} */ (records.rule(link));
+  const parent = records.links.parentOf(linked.index);
   let passed = false;
   let member = link;
   for (let depth = 1; ; depth++) {
-    const prev = /** @type {RuleLink} */ (member.prev);
-    if (!prev.rule) break;
-    const other = mergeState.declarationKeysOf(prev.rule);
+    const prev = sequence.prevOf(member);
+    if (prev === -1) break;
+    const prevRule = /** @type {RuleRecord} */ (records.rule(prev));
+    const other = declarationKeys(records, prevRule.index);
     if (depth === 1) {
       // Seed from the smaller key list, which bounds the first intersection.
+      const own = declarationKeys(records, linked.index);
       const [from, to] =
-        own.keys.length <= other.keys.length ? [own, other] : [other, own];
+        own.kept.length <= other.kept.length ? [own, other] : [other, own];
       scratch.length = 0;
-      for (const key of from.keys) {
+      for (const index of from.kept) {
+        const key = /** @type {DeclarationRecord} */ (records.entry(index)).id;
         if (to.keySet.has(key)) scratch.push(key);
       }
     } else {
@@ -297,13 +309,13 @@ export function earliestPairReaching(
     // Walking back, the links past `resume` are earlier than it.
     if (passed) {
       const distance = depth - offset;
-      if (!earliest.link || distance > earliest.distance) {
+      if (earliest.link === -1 || distance > earliest.distance) {
         earliest.link = prev;
         earliest.distance = distance;
       }
     }
     if (prev === resume) passed = true;
-    if (depth >= PAIR_REACH || prev.slot.parent !== parent) break;
+    if (depth >= PAIR_REACH || records.links.parentOf(prev) !== parent) break;
     member = prev;
   }
 }

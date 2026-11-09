@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { buildTestRecords } from './liveRecords.js';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import {
@@ -6,14 +7,15 @@ import {
   intersect,
 } from '../../../../../src/passes/merge/lib/rules/declarations.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
+import DeclarationScan from '../../../../../src/passes/merge/lib/rules/declarationScan.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import {
   earliestPairReaching,
   findGroup,
   SHARING_WINDOW,
 } from '../../../../../src/passes/merge/lib/rules/sharedRuleGroup.js';
 import { longSelector, sharedBackground } from './sharedRuleGroupFixtures.js';
+import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 
 // Park-Miller generator: products stay below 2 ** 53, and the repository
 // forbids bitwise operators.
@@ -58,48 +60,49 @@ function stylesheet(seed, { comments = false, blocks = false } = {}) {
 function groupsOf(css) {
   const root = postcss.parse(css);
   const mergeState = new MergeState(['Chrome 120']);
-  const sequence = new RuleSequence(root, new TextTable());
-  const outsideDeclarations = new WeakMap();
+  mergeState.records = buildTestRecords(root, mergeState);
+  const sequence = new RuleSequence(mergeState.records);
+  const scan = new DeclarationScan();
+  /** @type {number[]} */
   const links = [];
-  for (let link = sequence.head.next; link; link = link.next) links.push(link);
+  for (let link = sequence.head; link !== -1; link = sequence.nextOf(link)) {
+    links.push(link);
+  }
+  const rule = (/** @type {number} */ index) => mergeState.records.rule(index);
   const found = [];
   for (const [i, first] of links.entries()) {
     const second = links[i + 1];
-    if (!second) break;
-    const metaFirst = mergeState.meta(first.rule);
-    const metaSecond = mergeState.meta(second.rule);
+    if (second === undefined) break;
     const shared = intersect(
-      metaFirst.declarations,
-      mergeState.declarationKeysOf(second.rule).keySet,
-      mergeState.declarationKey
+      rule(first).declarationsOf(mergeState.records),
+      declarationKeys(mergeState.records, rule(second).index).keySet
     );
     if (shared.length === 0) continue;
-    const { claimedEarlierIndices, claimedIndices } = filterRuleIntersections(
+    const { intersection, claimedIndices } = filterRuleIntersections(
       shared,
-      [...metaFirst.declarations],
-      [...metaSecond.declarations],
-      mergeState.properties
+      [...rule(first).declarationsOf(mergeState.records)],
+      [...rule(second).declarationsOf(mergeState.records)]
     );
-    if (claimedEarlierIndices.size === 0) continue;
+    if (intersection.length === 0) continue;
     const sharedBytes = shared.reduce(
       (total, { prop, value }) => total + prop.length + value.length + 2,
       0
     );
     const group = findGroup(
-      first.rule,
+      rule(first),
       second,
-      claimedEarlierIndices,
+      intersection,
       claimedIndices,
       sharedBytes,
       0,
       0,
       mergeState,
       sequence,
-      outsideDeclarations
+      scan
     );
     if (group) found.push({ i, group });
   }
-  return { links, found, mergeState };
+  return { links, found, mergeState, sequence };
 }
 
 const seeds = Array.from({ length: 200 }, (_, i) => i + 1);
@@ -113,11 +116,14 @@ const seeds = Array.from({ length: 200 }, (_, i) => i + 1);
 function assertEveryGroupReached(options) {
   const scratch = [];
   for (const seed of seeds) {
-    const { links, found, mergeState } = groupsOf(stylesheet(seed, options));
+    const { links, found, mergeState, sequence } = groupsOf(
+      stylesheet(seed, options)
+    );
     for (const { i, group } of found) {
       const last = links[i + 1 + group.followers.length];
-      const earliest = { link: null, distance: 0 };
+      const earliest = { link: -1, distance: 0 };
       earliestPairReaching(
+        sequence,
         last,
         links[i + 1],
         0,
@@ -141,10 +147,10 @@ function assertEveryGroupReached(options) {
  */
 function allGroups(options) {
   return seeds.flatMap((seed) => {
-    const { links, found } = groupsOf(stylesheet(seed, options));
+    const { links, found, mergeState } = groupsOf(stylesheet(seed, options));
     return found.map(({ i, group }) => ({
-      first: links[i],
-      second: links[i + 1],
+      first: mergeState.records.rule(links[i]),
+      second: mergeState.records.rule(links[i + 1]),
       group,
     }));
   });
@@ -162,7 +168,7 @@ test('earliestPairReaching should reach the first rule of the pair from the last
 test('findGroup should form a group whose second rule holds a comment in the generated stylesheets, so the property below covers that pair', () => {
   assert.ok(
     allGroups({ comments: true }).some(({ second }) =>
-      second.rule.nodes.some((node) => node.type === 'comment')
+      second.node.nodes.some((node) => node.type === 'comment')
     )
   );
 });
@@ -174,7 +180,7 @@ test('earliestPairReaching should reach the first rule of a pair whose second ru
 test('findGroup should form a group whose pair spans two equal blocks in the generated stylesheets, so the property below covers that pair', () => {
   assert.ok(
     allGroups({ blocks: true }).some(
-      ({ first, second }) => first.slot.parent !== second.slot.parent
+      ({ first, second }) => first.node.parent !== second.node.parent
     )
   );
 });

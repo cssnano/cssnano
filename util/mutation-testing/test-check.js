@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import {
   countTests,
   mapWithConcurrency,
+  withProgress,
   notReachedMarker,
   outcome,
   report,
@@ -31,6 +32,17 @@ const {
 const cleanEnvironment = { ...inheritedEnvironment, NO_COLOR: '1' };
 
 export const harnessError = 'Mutation harness error';
+
+/**
+ * Runs a catalog's test file unmutated, the way each mutant runs it, so a
+ * baseline that fails here fails every mutant of the catalog.
+ *
+ * @param {string} testPath
+ * @param {number} timeout
+ */
+export function runBaseline(testPath, timeout) {
+  return runNode([...testFlags, testPath], cleanEnvironment, timeout);
+}
 
 // Parallel runs share cores, so a single run can take several times its solo time.
 export const defaultTimeout = 30000;
@@ -106,24 +118,45 @@ export async function run(catalogs, { timeout, allowUnkilled }) {
   const baselines = await mapWithConcurrency(
     distinctTestPaths,
     availableParallelism(),
-    (testPath) => runNode([...testFlags, testPath], cleanEnvironment, timeout)
+    (testPath) => runBaseline(testPath, timeout)
   );
   const baselineResults = new Map(
     distinctTestPaths.map((testPath, index) => [testPath, baselines[index]])
   );
 
   const runnable = [];
+  // A catalog that cannot be judged still lists its mutants, as errored, so
+  // that no result file silently lacks them.
+  const skipped = [];
+  const skip = (entry, diagnostic) => {
+    process.exitCode = 1;
+    for (const { mutation } of entry.mutations) {
+      skipped.push({
+        name: `${entry.label}${mutation.name}`,
+        status: outcome.errored,
+        diagnostic,
+      });
+    }
+  };
   for (const entry of entries) {
     const baseline = baselineResults.get(entry.test);
     if (baseline.timedOut || baseline.code !== 0) {
       printFailure(`${entry.label}baseline failed`, baseline);
-      process.exitCode = 1;
+      // The first line of a test report is usually a passing test.
+      const lines = (baseline.stderr.trim() || baseline.stdout.trim()).split(
+        '\n'
+      );
+      const cause = lines.find((line) => /^\s*✖|Error/v.test(line)) ?? lines[0];
+      skip(
+        entry,
+        `baseline failed (${baseline.timedOut ? 'timed out' : `exit ${baseline.code ?? baseline.signal}`})${cause ? `: ${cause}` : ''}`
+      );
       continue;
     }
     // A file that registers no test passes, so every mutant would survive.
     if (!countTests(baseline.stdout, entry.test)) {
       console.error(`${entry.label}baseline ran no tests: ${entry.test}`);
-      process.exitCode = 1;
+      skip(entry, 'baseline ran no tests');
       continue;
     }
     for (const mutation of entry.mutations) {
@@ -131,20 +164,24 @@ export async function run(catalogs, { timeout, allowUnkilled }) {
     }
   }
 
+  // Hyperthreads and the shared cache make a full pool several times slower
+  // per mutant, which turns healthy runs into false timeouts.
   const outcomes = await mapWithConcurrency(
     runnable,
-    availableParallelism(),
-    ({ mutation, target, testPath }) =>
+    Math.max(1, Math.floor(availableParallelism() / 2)),
+    withProgress(runnable.length, ({ mutation, target, testPath }) =>
       runMutation({ mutation, target, testPath, timeout })
+    )
   );
 
-  const failed = report(
-    outcomes.map(({ mutation, result, status }, index) => ({
+  const results = [
+    ...skipped,
+    ...outcomes.map(({ mutation, result, status }, index) => ({
       name: `${runnable[index].label}${mutation.name}`,
       status,
       diagnostic: result.stderr.trim() || result.stdout.trim(),
     })),
-    { allowUnkilled }
-  );
-  if (failed) process.exitCode = 1;
+  ];
+  if (report(results, { allowUnkilled })) process.exitCode = 1;
+  return results;
 }

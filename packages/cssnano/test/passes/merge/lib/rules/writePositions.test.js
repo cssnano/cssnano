@@ -1,8 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { isConflictingProp } from '../../../../../script/passes/ir/lib/propertyRelations.js';
-import { WritePositions } from '../../../../../src/passes/merge/lib/rules/writePositions.js';
+import {
+  Claims,
+  WritePositions,
+} from '../../../../../src/passes/merge/lib/rules/writePositions.js';
 import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
+
+const table = new PropertyTable();
+/** The keys of a property name, as a write index takes them. */
+const keys = (prop) => table.keysOf(prop);
 
 /**
  * An index holding one write per entry of `writes`, at that entry's position.
@@ -11,11 +18,23 @@ import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
  * @return {WritePositions}
  */
 function indexOf(writes) {
-  const index = new WritePositions(new PropertyTable());
+  const index = new WritePositions();
   for (const [position, prop] of writes.entries()) {
-    index.record({ prop }, position);
+    index.record(keys(prop), position);
   }
   return index;
+}
+
+/**
+ * A claimer that has claimed the positions of `claimed`.
+ *
+ * @param {Iterable<number>} claimed
+ * @return {Claims}
+ */
+function claimsOf(claimed) {
+  const claims = new Claims();
+  for (const position of claimed) claims.claimed.add(position);
+  return claims;
 }
 
 // Claims only grow over the life of an index, so each claimed set below has an
@@ -32,7 +51,7 @@ test('write positions give the earliest of several conflicting writes, skipping 
           !claimed.has(position) && isConflictingProp(queried, written)
       );
       assert.strictEqual(
-        index.firstUnclaimed({ prop: queried }, claimed),
+        index.firstUnclaimed(keys(queried), claimsOf(claimed)),
         expected,
         `${queried}, claimed ${[...claimed]}`
       );
@@ -42,9 +61,9 @@ test('write positions give the earliest of several conflicting writes, skipping 
 
 test('write positions give the position of a custom property write only when its name matches exactly', () => {
   const index = indexOf(['--Foo', '--foo']);
-  assert.strictEqual(index.firstUnclaimed({ prop: '--foo' }, new Set()), 1);
-  assert.strictEqual(index.firstUnclaimed({ prop: '--Foo' }, new Set()), 0);
-  assert.strictEqual(index.firstUnclaimed({ prop: '--Foo' }, new Set([0])), -1);
+  assert.strictEqual(index.firstUnclaimed(keys('--foo'), claimsOf([])), 1);
+  assert.strictEqual(index.firstUnclaimed(keys('--Foo'), claimsOf([])), 0);
+  assert.strictEqual(index.firstUnclaimed(keys('--Foo'), claimsOf([0])), -1);
 });
 
 test('write positions skip claimed writes and report none once every conflicting write is claimed', () => {
@@ -52,31 +71,24 @@ test('write positions skip claimed writes and report none once every conflicting
   // a conflict and the answer is the margin-left write at position 2.
   const writes = ['margin', 'margin-top', 'margin-left'];
   assert.strictEqual(
-    indexOf(writes).firstUnclaimed({ prop: 'margin-left' }, new Set([0])),
+    indexOf(writes).firstUnclaimed(keys('margin-left'), claimsOf([0])),
     2
   );
   assert.strictEqual(
-    indexOf(writes).firstUnclaimed({ prop: 'margin-left' }, new Set([0, 2])),
+    indexOf(writes).firstUnclaimed(keys('margin-left'), claimsOf([0, 2])),
     -1
   );
 });
 
 test('write positions refuse to answer for all, which the caller rejects first', () => {
   assert.throws(
-    () =>
-      new WritePositions(new PropertyTable()).firstUnclaimed(
-        { prop: 'all' },
-        new Set()
-      ),
+    () => new WritePositions().firstUnclaimed(keys('all'), claimsOf([])),
     RangeError
   );
 });
 
-test('write positions answer for a different claimed set on the same index as for a fresh one', () => {
+test('firstUnclaimed should restart its cursor when a new claimer reads the same lists', () => {
   const index = indexOf(['color', 'color', 'color']);
-  assert.strictEqual(
-    index.firstUnclaimed({ prop: 'color' }, new Set([0, 1])),
-    2
-  );
-  assert.strictEqual(index.firstUnclaimed({ prop: 'color' }, new Set()), 0);
+  assert.strictEqual(index.firstUnclaimed(keys('color'), claimsOf([0, 1])), 2);
+  assert.strictEqual(index.firstUnclaimed(keys('color'), claimsOf([])), 0);
 });

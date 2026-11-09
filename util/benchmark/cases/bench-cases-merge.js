@@ -32,6 +32,7 @@ const creators = {
   mergeLonghand: await loadTransform('mergeLonghand'),
   discardDuplicates: await loadTransform('discardDuplicates'),
   mergeRules: await loadTransform('mergeRules'),
+  dedupeThenMerge: await loadTransform('dedupeThenMerge'),
 };
 
 /**
@@ -52,6 +53,13 @@ function mergeCase(transform, css, options = {}) {
     css,
   };
 }
+
+// Repeated rules, repeated @media blocks and duplicate declarations.
+const duplicatesDense = Array.from({ length: 200 }, (_, index) => {
+  const rule = `.dup-${index % 50}{color:red;color:red;width:${index % 7}px}`;
+  const media = `@media (min-width:${index % 20}px){.m-${index % 10}{margin:0;margin:0}}`;
+  return `${rule}${media}.u-${index}{--v:${index};--v:${index}}`;
+}).join('');
 
 /* Focused merge-longhand cases: the no-op negative path (single standalone
  * shorthands, and multi-declaration rules that revert), and the concrete
@@ -203,6 +211,18 @@ export const mergeCases = {
         `.join-${index}{color:red;width:1px}.noise-${index}{--v:${index}}`
     ).join('')
   ),
+  // Few rules, each a block of declarations, comments and nested rules.
+  'merge-rules-nested-declarations': mergeCase(
+    'mergeRules',
+    Array.from({ length: 12 }, (_, index) => {
+      const body = Array.from(
+        { length: 60 },
+        (unused, noiseIndex) =>
+          `/* ${index}-${noiseIndex} */--v${noiseIndex}:${noiseIndex};`
+      ).join('');
+      return `.host-${index}{${body}.leaf-${index}{color:red;display:block}}`;
+    }).join('')
+  ),
   // As in picnic: a block joins its counterpart only after the block after it.
   'merge-rules-media-runs': mergeCase(
     'mergeRules',
@@ -219,4 +239,8 @@ export const mergeCases = {
       ),
     ].join('')
   ),
+  // Repeated rules, repeated @media blocks and duplicate declarations.
+  'merge-duplicates-dense': mergeCase('discardDuplicates', duplicatesDense),
+  // The dedupe of the same input, then the rule merge that follows it.
+  'merge-pass-duplicates': mergeCase('dedupeThenMerge', duplicatesDense),
 };

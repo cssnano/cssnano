@@ -1,121 +1,76 @@
+import { holdsOnlyDeclarationsOf } from './blockChildren.js';
 import {
   filterRuleIntersections,
   intersect,
   sameDeclarationsAndOrder,
 } from './declarations.js';
-import { getDecls } from './ruleMeta.js';
-import { appendDeclarations, buildMergedRule } from './ruleRewrite.js';
+import { buildMergedRule } from './ruleRewrite.js';
+import { appendToDeclarations } from './treeEdits.js';
+import { declarationKeys } from './declarationCache.js';
 
-/** @import {Container, Rule} from 'postcss' */
-/** @import RuleSequence, {Placement, RuleLink} from './ruleSequence.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import RuleSequence, {Placement} from './ruleSequence.js' */
+/** @import DeclarationScan from './declarationScan.js' */
 /** @import MergeState from './mergeState.js' */
-
-/**
- * @param {Rule} first
- * @param {Rule} second
- * @param {MergeState} mergeState
- * @param {RuleLink} secondLink
- * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
- * @return {Placement | null} the rules that replace the pair, or null when
- * sharing the declarations would not make the output shorter
- */
-function partialMerge(
-  first,
-  second,
-  mergeState,
-  secondLink,
-  sequence,
-  outsideDeclarations
-) {
-  const metaFirst = mergeState.meta(first);
-  const metaSecond = mergeState.meta(second);
-  let intersection = intersect(
-    metaFirst.declarations,
-    mergeState.declarationKeysOf(second).keySet,
-    mergeState.declarationKey
-  );
-  if (intersection.length === 0) return null;
-  const filtered = filterRuleIntersections(
-    intersection,
-    [...metaFirst.declarations],
-    [...metaSecond.declarations],
-    mergeState.properties
-  );
-  intersection = filtered.intersection;
-  if (intersection.length === 0) return null;
-  return buildMergedRule(
-    first,
-    second,
-    filtered.claimedEarlierIndices,
-    filtered.claimedIndices,
-    mergeState,
-    secondLink,
-    sequence,
-    outsideDeclarations
-  );
-}
 
 /**
  * Rules with the same declarations in the same order become one rule with
  * both selectors.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {MergeState} mergeState
  * @return {Placement | null}
  */
 export function mergeMatchingDeclarations(first, second, mergeState) {
   if (
-    !first.nodes.every((node) => node.type === 'decl') ||
-    !second.nodes.every((node) => node.type === 'decl') ||
+    first.context !== -1 ||
+    second.context !== -1 ||
+    !holdsOnlyDeclarationsOf(mergeState.records, first.index) ||
+    !holdsOnlyDeclarationsOf(mergeState.records, second.index) ||
     !sameDeclarationsAndOrder(
-      mergeState.meta(second).declarations,
-      mergeState.meta(first).declarations
+      mergeState.records,
+      declarationKeys(mergeState.records, second.index).kept,
+      declarationKeys(mergeState.records, first.index).kept
     )
   )
     return null;
   // Repeating the same declarations under the same selector changes nothing,
   // and a selector list that repeats the selector is longer than one rule.
-  if (mergeState.meta(first).hasSameSelectors(mergeState.meta(second))) {
-    mergeState.forget(second);
-    return { first: [first], second: [] };
+  if (first.hasSameSelectors(second, mergeState.selectorIds)) {
+    return { first: [first.index], second: [] };
   }
   mergeState.absorbEarlier(second, first);
   mergeState.spellSelectors(second);
-  mergeState.forget(first);
-  mergeState.markCompatible(second);
-  return { first: [], second: [second] };
+  return { first: [], second: [second.index] };
 }
 
 /**
  * Rules with the same selector become one rule with both declaration lists.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {MergeState} mergeState
  * @return {Placement | null}
  */
 export function mergeMatchingSelectors(first, second, mergeState) {
-  if (!mergeState.meta(first).hasSameSelectors(mergeState.meta(second)))
-    return null;
-  appendDeclarations(first, second, mergeState.properties);
-  mergeState.meta(first).setDeclarations(getDecls(first));
-  mergeState.forget(second);
-  return { first: [first], second: [] };
+  if (!first.hasSameSelectors(second, mergeState.selectorIds)) return null;
+  appendToDeclarations(mergeState, first.index, second.index);
+  return { first: [first.index], second: [] };
 }
 
 /**
  * Rules that share declarations hand them to a rule of their own.
  *
- * @param {Rule} first
- * @param {Rule} second
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @param {MergeState} mergeState
- * @param {RuleLink} secondLink
+ * @param {ArenaIndex} secondLink the index of `second` in the sweep
  * @param {RuleSequence} sequence
- * @param {WeakMap<Container, boolean>} outsideDeclarations
- * @return {Placement | null} null when sharing the declarations would not
- * make the output shorter
+ * @param {DeclarationScan} scan
+ * @return {Placement | null} the rules that replace the pair, or null when
+ * sharing the declarations would not make the output shorter
  */
 export function mergeSharedDeclarations(
   first,
@@ -123,19 +78,30 @@ export function mergeSharedDeclarations(
   mergeState,
   secondLink,
   sequence,
-  outsideDeclarations
+  scan
 ) {
-  const placement = partialMerge(
+  const { records } = mergeState;
+  const firstDeclarations = first.declarationsOf(records);
+  let intersection = intersect(
+    firstDeclarations,
+    declarationKeys(records, second.index).keySet
+  );
+  if (intersection.length === 0) return null;
+  const filtered = filterRuleIntersections(
+    intersection,
+    firstDeclarations,
+    second.declarationsOf(records)
+  );
+  intersection = filtered.intersection;
+  if (intersection.length === 0) return null;
+  return buildMergedRule(
     first,
     second,
+    intersection,
+    filtered.claimedIndices,
     mergeState,
     secondLink,
     sequence,
-    outsideDeclarations
+    scan
   );
-  if (!placement) return null;
-  // The rules that replace the pair are described afresh when needed.
-  mergeState.forget(first);
-  mergeState.forget(second);
-  return placement;
 }

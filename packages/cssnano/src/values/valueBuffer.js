@@ -139,14 +139,15 @@ class ValueBuffer {
 
   /**
    * Reports a problem with the value. The host turns each message into a
-   * warning on the declaration, tagged with the plugin name when given.
+   * warning on the declaration, tagged with `opts.plugin` when given. The
+   * shape matches PostCSS's `Result.warn(text, opts)`.
    *
    * @param {string} message
-   * @param {string} [plugin]
+   * @param {{plugin?: string}} [opts]
    */
-  warn(message, plugin) {
+  warn(message, opts) {
     if (this.#warnings === undefined) this.#warnings = [];
-    this.#warnings.push({ message, plugin });
+    this.#warnings.push({ message, plugin: opts?.plugin });
   }
 
   /**

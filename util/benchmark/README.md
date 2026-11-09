@@ -4,16 +4,38 @@
 
 | Command                                              | Use it to                                                  |
 | ---------------------------------------------------- | ---------------------------------------------------------- |
-| `pnpm run bench:check --case=a,b` or `--package=<p>` | compare the working tree with `HEAD` (agents: this only)   |
+| `pnpm run bench:check --case=a` or `--case=a,b`      | compare the working tree with `HEAD` (agents: this or `--set`) |
+| `pnpm run bench:check --set=merge-ir`                | run the four merge cases of the set in turn, on one pair of worktrees |
+| `pnpm run bench:check --package=<p>`                 | run every focused case of a plugin                         |
 | `pnpm run bench:check --corpus --budget=30m`         | compare on the framework corpus (`bench:compare` is this)  |
 | `pnpm run bench:profile --case=<name>`               | write a CPU profile of one process to `bench-results/`     |
-| `pnpm run test:benchmark:simulation`                 | check that the decision rule keeps its error rates         |
+| `node util/benchmark/simulation.js`                  | check that the decision rule keeps its error rates         |
+
+Pass exactly one of `--case`, `--package`, `--set` and `--corpus`. Sets are
+in `cases/index.js`.
 
 `--base=<ref>` and `--candidate=<ref>` compare two revisions instead of `HEAD`
-and the working tree. `--budget=<90s|5m>` is shared equally by the cases
-(default `2m`). `--pin-core=<n>` reduces scheduler noise. `--json` prints one
-line per case. `--keep` leaves the worktrees for inspection. `--seed=<value>`
-replays a block schedule; each run draws its own seed otherwise.
+and the working tree. `--budget=<90s|5m>` is the time **each case** may use
+(default `10m`, install excluded). A case that has not decided by then ends as
+`inconclusive: time budget reached`; that is the result, so do not rerun it
+with a larger budget. `--pin-core=<n>` reduces scheduler noise. `--json`
+prints one line per case. `--keep` leaves the worktrees for inspection.
+`--seed=<value>` replays a block schedule; each run draws its own seed
+otherwise.
+
+## Reading a run
+
+Run it in the background and wait for it to exit. The output has three parts:
+
+1. a progress line after every block,
+   `bench: <case> block 6/20 elapsed=42s runtime=pending cold-start=pending`
+   (the verdicts appear from block 4),
+2. a row per case when it finishes, repeated under `bench: summary` at the end,
+3. the last line, which holds the whole outcome:
+   `bench: done status=pass cases=4 regression=0 improvement=1 within-margin=2 inconclusive=1 results=<file>`.
+
+`status` says whether the harness finished; a `regression` count does not fail
+the run, because results are advisory. A run without a `done` line crashed.
 
 The working tree is snapshotted with a private index, so untracked files are
 included while your index and branch are untouched. Both sides run the harness
@@ -65,7 +87,7 @@ slower. The table reports the ratio, its interval, the verdict and a reason:
 | `runtime slower beyond the margin`                  | regression on the runtime endpoint (or the cold start) |
 | `cold start faster beyond the margin`               | improvement on the cold start endpoint               |
 | `within the margin`                                 | both endpoints are inside the margin                 |
-| `time budget reached`                               | the budget, not the noise, ended the run; rerun with a larger budget |
+| `time budget reached`                               | the budget, not the noise, ended the run; the case is inconclusive |
 | `output changed: <case>`                            | the two sides produced different CSS                 |
 | `noise is too large to rule out a meaningful change` | all blocks were used and an interval still spans the margin |
 
@@ -76,7 +98,7 @@ slower. The table reports the ratio, its interval, the verdict and a reason:
 - Results are advisory. They are not a regression gate, and a result inside the
   margin is not a finding.
 - The calibration assumes independent blocks. Autocorrelated noise is reported
-  by `test:benchmark:simulation` but has no error band, so its verdicts are not
+  by `simulation.js` but has no error band, so its verdicts are not
   calibrated.
 - The cold start is one sample per process and is noisier than the runtime, so
   it often needs more blocks.
@@ -86,7 +108,8 @@ slower. The table reports the ratio, its interval, the verdict and a reason:
 
 ## Files
 
-- `bench.js`: the driver, block loop, verdict table and `results.json`.
+- `bench.js`: the driver, block loop and `results.json`.
+- `report.js`: the case rows and the done line.
 - `child.js`: one fresh process; prints one JSON line on stdout.
 - `stats.js`: the crossover fit, the decision rule and the balanced schedule.
 - `distributions.js`: normal and Student t quantiles.

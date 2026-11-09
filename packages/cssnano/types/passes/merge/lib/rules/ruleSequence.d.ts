@@ -1,73 +1,79 @@
-import type { Container, Root, Rule } from 'postcss';
-import type { TextTable } from '../../../../values/textTable.js';
-import type { Slot } from './slotIndex.js';
-export type RuleLink = {
-    rule: Rule;
-    slot: Slot;
-    prev: RuleLink | null;
-    next: RuleLink | null;
-};
+import type { ArenaIndex } from './blockRecord.js';
+import type { BlockRecords } from './blockRecords.js';
 export type Placement = {
     /**
-     * replaces the earlier rule, in its slot
+     * the indices of the rules that replace the earlier
+     * rule, in its slot
      */
-    first: Rule[];
+    first: ArenaIndex[];
     /**
-     * replaces the later rule, in its slot
+     * the indices of the rules that replace the later
+     * rule, in its slot
      */
-    second: Rule[];
+    second: ArenaIndex[];
     /**
-     * replaces each rule after the later one that
-     * joined the merge, in its slot
+     * the indices of the rules that replace each
+     * rule after the later one that joined the merge, in its slot
      */
-    following?: Rule[][];
+    following?: ArenaIndex[][];
 };
+/** @import {ArenaIndex} from './blockRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/**
+ * The rules that stand in the slots of a pair after it is merged.
+ *
+ * @typedef {object} Placement
+ * @property {ArenaIndex[]} first the indices of the rules that replace the earlier
+ * rule, in its slot
+ * @property {ArenaIndex[]} second the indices of the rules that replace the later
+ * rule, in its slot
+ * @property {ArenaIndex[][]} [following] the indices of the rules that replace each
+ * rule after the later one that joined the merge, in its slot
+ */
 /**
  * Every rule of a stylesheet in stylesheet order, including rules nested in
- * other rules, rewritten in place and written back once.
+ * other rules, rewritten in the block records. The order is two arrays indexed
+ * by rule: each rule names the rule before it and the rule after it, with -1 at
+ * either end. A rule made during the sweep takes an index past the arrays,
+ * which they grow to hold. The methods that edit the records take them as an
+ * argument; the sequence keeps no reference to them.
  */
 export default class RuleSequence {
     #private;
-    /** @type {RuleLink} a sentinel that precedes the first rule */
-    head: RuleLink;
+    /** @type {ArenaIndex | -1} the index of the first rule, -1 when there is none */
+    head: ArenaIndex | -1;
+    /** @param {BlockRecords} records */
+    constructor(records: BlockRecords);
     /**
-     * @param {Root} root
-     * @param {TextTable} textTable the selector tokens the walk stored
+     * @param {ArenaIndex | -1} index
+     * @return {ArenaIndex | -1} the index of the rule after the rule at `index`, -1 at the end
      */
-    constructor(root: Root, textTable: TextTable);
+    nextOf(index: ArenaIndex | -1): ArenaIndex | -1;
     /**
-     * @param {RuleLink} first
-     * @param {RuleLink} second
-     * @param {WeakMap<Container, boolean>} outsideDeclarations see
-     * `DeclarationScan#declarationBetween`
-     * @return {boolean} whether a declaration outside both rules lies between them
+     * @param {ArenaIndex | -1} index
+     * @return {ArenaIndex | -1} the index of the rule before the rule at `index`, -1 at the start
      */
-    declarationBetween(first: RuleLink, second: RuleLink, outsideDeclarations: WeakMap<Container, boolean>): boolean;
+    prevOf(index: ArenaIndex | -1): ArenaIndex | -1;
     /**
-     * Moves the rule of `second` to the end of the parent of `first`. It follows
-     * `first` and holds no nested rules, so passing the rest of that parent
-     * leaves the order of the rules unchanged.
+     * Moves the rule at `second` to the end of the parent of the rule at `first`.
+     * It follows `first` and holds no nested rules, so passing the rest of that
+     * parent leaves the order of the rules unchanged.
      *
-     * @param {RuleLink} first
-     * @param {RuleLink} second
+     * @param {BlockRecords} records
+     * @param {ArenaIndex} first
+     * @param {ArenaIndex} second
      * @return {boolean} whether the parents differed
      */
-    moveIntoParent(first: RuleLink, second: RuleLink): boolean;
+    moveIntoParent(records: BlockRecords, first: ArenaIndex, second: ArenaIndex): boolean;
     /**
-     * Replaces the pair `first` and the link after it, and the links after
+     * Replaces the pair at `first` and the rule after it, and the rules after
      * those that joined, with the `placement` rules.
      *
-     * @param {RuleLink} first
+     * @param {BlockRecords} records
+     * @param {ArenaIndex} first
      * @param {Placement} placement
-     * @return {RuleLink} the link of the first replacement
+     * @return {ArenaIndex | -1} the index of the first replacement
      */
-    replacePair(first: RuleLink, placement: Placement): RuleLink;
-    /**
-     * Writes the sequence into the stylesheet, rebuilding each changed container
-     * once from its children and the rules now in its slots.
-     *
-     * @return {void}
-     */
-    write(): void;
+    replacePair(records: BlockRecords, first: ArenaIndex, placement: Placement): ArenaIndex | -1;
 }
 //# sourceMappingURL=ruleSequence.d.ts.map

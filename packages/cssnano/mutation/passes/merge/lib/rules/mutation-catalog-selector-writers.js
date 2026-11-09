@@ -21,27 +21,58 @@ export const test = new URL(
 
 export const mutations = [
   {
+    name: 'a merged rule takes its template from the rule merged, even when that one was merged',
+    target: source('ruleRewrite.js'),
+    find: '  const template = second.template === -1 ? second.index : second.template;',
+    replace: '  const template = second.index;',
+  },
+  {
+    name: 'write-back leaves the ownSemicolon of a merged rule unwritten',
+    target: source('writeBack.js'),
+    find: '  raws.ownSemicolon = source.ownSemicolon;',
+    replace: '',
+  },
+  {
+    name: 'write-back skips the whitespace the records hold',
+    target: source('writeBack.js'),
+    find: '  for (const { index } of rebuilt) writeBefore(records, index);',
+    replace: '',
+  },
+  {
+    name: 'write-back assigns the whitespace of root children only',
+    target: source('writeBack.js'),
+    find: '    if (before !== null) records.nodeOf(entry).raws.before = before;',
+    replace:
+      '    if (before !== null && container === records.root.index) records.nodeOf(entry).raws.before = before;',
+  },
+  {
+    name: 'takePlaceOf keeps the whitespace of the earlier entry',
+    target: source('treeEdits.js'),
+    find: '  records.entry(earlier).before = records.entry(later).before;',
+    replace: '',
+  },
+  {
     name: 'store the joined selector list as text, dropping its tokens',
-    find: '        this.#textTable.write(rule, list);',
-    replace: '        this.#textTable.setText(rule, tokensText(list));',
+    target: source('writeBack.js'),
+    find: '      textTable.write(record.node, list);\n      record.markStored();',
+    replace:
+      '      textTable.setText(record.node, tokensText(list));\n      record.markStored();',
   },
   {
     name: 'store a clone or joined rule as text, dropping its tokens',
-    find: '      this.#textTable.record(rule, rule.selector, list);',
-    replace: '      this.#textTable.setText(rule, rule.selector);',
+    target: source('mergeState.js'),
+    find: '    if (tokensText(list) === record.selector) record.setTokens(list);',
+    replace: '    if (tokensText(list) === record.selector) void list;',
   },
   {
-    name: 'forget the rules a merge spelled, so their tokens are never stored',
-    find: '    this.#spelled.add(rule);',
-    replace: '    void rule;',
-  },
-  {
-    name: 'drop the token ranges a clone keeps, so its element keys tokenize',
-    find: '    this.#storePieces(clone, this.piecesOf(rule), separatorOf(source));',
-    replace: '    this.#storePieces(clone, null, separatorOf(source));',
+    name: 'forget the rules a merge spelled, so their selector is never marked',
+    target: source('mergeState.js'),
+    find: '    record.setSelector(record.selectorText());\n    record.mark();',
+    replace: '    record.setSelector(record.selectorText());',
   },
   {
     name: 'drop the token ranges of the selectors a rule gains by repeated declarations',
+    target: source('mergeState.js'),
     find: '    const from = own === null ? null : this.piecesOf(source);',
     replace: '    const from = null;',
   },
