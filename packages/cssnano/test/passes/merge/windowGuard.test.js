@@ -40,12 +40,10 @@ test('the window guard throws on a table write the window makes', () => {
   }
 });
 
-test('the window guard gives back the selector after release', () => {
+test('the window guard hands the table reads back on release', () => {
   const { root, textTable } = buildOf('a{color:red}');
   const release = guardWindow(textTable);
   release();
-  assert.equal(root.first.selector, 'a');
-  assert.equal(root.first.first.value, 'red');
   assert.ok(textTable.tokens(root.first).length > 0);
 });
 

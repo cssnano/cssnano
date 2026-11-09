@@ -17,7 +17,6 @@ import { createRunContext } from '../ir/runContext.js';
 import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
 /** @import {BlockRecords} from './lib/rules/blockRecords.js' */
-
 /** @import {AtRule, Container, Root, Rule} from 'postcss' */
 
 /**

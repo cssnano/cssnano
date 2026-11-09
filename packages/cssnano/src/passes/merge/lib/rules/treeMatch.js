@@ -13,11 +13,10 @@ import { nodeOf } from './nodeTable.js';
 import { isRuleOrAtRule } from './buildRecords.js';
 import { differs } from './writeBack.js';
 
-/** @import {AtRule, Declaration, Root, Rule} from 'postcss' */
+/** @import {AtRule, ChildNode, Declaration, Root, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {NodeTable} from './nodeTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecord as Block, NodeEntry} from './blockRecord.js' */
 /** @import {ContainerRecord} from './writeBack.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -54,8 +53,8 @@ function describesNode(record, node) {
  * @return {void}
  */
 function checkAtRuleFacts(nodes, entry) {
-  if (nodeOf(nodes, entry.index)?.type !== 'atrule') return;
   const node = /** @type {AtRule} */ (nodeOf(nodes, entry.index));
+  if (node.type !== 'atrule') return;
   const name = asciiLowerCase(node.name);
   if (
     entry.atRuleKind !== atRuleKindOf(name) ||
@@ -140,7 +139,10 @@ function checkBlockRecord(records, nodes, block) {
         ) {
           throw new Error(STALE);
         }
-        if (nodeOf(nodes, entry)?.parent !== nodeOf(nodes, block.index)) {
+        if (
+          /** @type {ChildNode} */ (nodeOf(nodes, entry)).parent !==
+          nodeOf(nodes, block.index)
+        ) {
           throw new Error(OUT_OF_STEP);
         }
       }

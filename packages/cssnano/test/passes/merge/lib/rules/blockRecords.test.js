@@ -115,6 +115,26 @@ test('assertRecordsMatchTree should throw when a block chain lacks a child the t
   );
 });
 
+test('the tree check throws when a built entry has no node', () => {
+  const { root, state } = setup('@media print{a{color:red}}');
+  const media = blockRecordOf(state.records, /** @type {any} */ (root.first));
+  const rule = ruleRecordOf(
+    state.records,
+    /** @type {Rule} */ (nodeOfEntry(state.records, media).first)
+  );
+  const declaration = state.records.links.firstChild(rule.index);
+  for (const index of [media.index, declaration]) {
+    const nodes = nodesOf(state.records);
+    const saved = nodes[index];
+    nodes[index] = undefined;
+    assert.throws(
+      () => assertRecordsMatchTree(state.records, nodes),
+      /out of step|stale/v
+    );
+    nodes[index] = saved;
+  }
+});
+
 test('the merge pass should keep the records in step with the tree through its joins', () => {
   // Nested at-rules whose blocks join, and rules that join across them, each
   // visit a sweep and a join that edit records.
