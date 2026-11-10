@@ -1,4 +1,5 @@
 import type { RuleRecord } from '../../types/passes/merge/lib/rules/ruleRecord.js';
+import type { BlockRecords } from '../../types/passes/merge/lib/rules/blockRecords.js';
 
 // Type-level checks: a rule's selector ids and its merged flag are read-only
 // outside the edits of its selector list. Each line marked below must fail to
@@ -20,4 +21,15 @@ export function readRuleFields(rule: RuleRecord): readonly number[] {
   void text;
   void items;
   return marked ? rule.selectorIds : [];
+}
+
+// A read through the records: the rule's fields need no cast.
+export function readRuleThroughRecords(
+  records: BlockRecords,
+  index: number
+): readonly number[] {
+  const rule = records.rule(index);
+  if (rule === undefined) return [];
+  const compatible: boolean = rule.compatible;
+  return compatible ? rule.selectorIds : [];
 }

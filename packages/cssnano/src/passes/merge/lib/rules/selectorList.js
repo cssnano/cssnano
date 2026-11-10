@@ -1,5 +1,6 @@
 /** @import {TokenListId, TokenLists} from '../../../ir/tokenLists.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 import { elementKeyOf } from './elementKeys.js';
 import { selectorInfoOf } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
@@ -24,7 +25,7 @@ const noElementKeys = Object.freeze([]);
  * The vendor summary of a rule whose facts are not folded yet. It is shared,
  * so nothing may add to it: `fillSummaries` gives each rule its own.
  */
-const UNFOLDED_VENDOR = new VendorPrefixSummary(null, false);
+export const UNFOLDED_VENDOR = new VendorPrefixSummary(null, false);
 
 /**
  * The fields this module writes, which are readonly everywhere else.
@@ -41,69 +42,11 @@ const UNFOLDED_VENDOR = new VendorPrefixSummary(null, false);
  * The one writable view of a rule's list and summaries. Only the functions
  * of this module write them.
  *
- * @param {SelectorList} list
+ * @param {RuleRecord} list
  * @return {WritableSummaries}
  */
 function writableIds(list) {
   return /** @type {WritableSummaries} */ (/** @type {unknown} */ (list));
-}
-
-/**
- * The selector list of a rule, with the facts folded from its ids. It is the
- * base of `RuleRecord`, not a member of it, so a rule is one object with one
- * layout. The summaries are kept in step by the functions of this module.
- */
-export class SelectorList {
-  /**
-   * The interned id of each selector, in order. A selector's id is the same
-   * for every rule that holds an equal item. It is read-only: only the
-   * functions of this module move or append ids.
-   *
-   * @readonly
-   * @type {readonly TokenListId[]}
-   */
-  selectorIds;
-
-  /**
-   * Whether every selector suits the target browsers.
-   *
-   * @readonly
-   * @type {boolean}
-   */
-  compatible = false;
-
-  /**
-   * The vendor prefix summary of the selectors.
-   *
-   * @readonly
-   * @type {VendorPrefixSummary}
-   */
-  vendor = UNFOLDED_VENDOR;
-
-  /**
-   * The element keys of the selectors, or null when a selector has none. The
-   * list is empty when the rule has no selectors.
-   *
-   * @readonly
-   * @type {RuleElementKeys | null}
-   */
-  elementKeys = null;
-
-  /**
-   * Whether an edit changed the rule's list, so write-back must write its
-   * selector. Every edit that changes the ids sets it.
-   *
-   * @readonly
-   * @type {boolean}
-   */
-  marked = false;
-
-  /**
-   * @param {readonly TokenListId[]} selectorIds the interned id of each selector
-   */
-  constructor(selectorIds) {
-    this.selectorIds = selectorIds;
-  }
 }
 
 /**
@@ -126,7 +69,7 @@ export function fillSummaries(records, tokenLists, browsers) {
  *
  * @param {BlockRecords} records
  * @param {number} parent the index of a container
- * @return {Generator<SelectorList>}
+ * @return {Generator<RuleRecord>}
  */
 function* rulesUnder(records, parent) {
   for (
@@ -136,7 +79,7 @@ function* rulesUnder(records, parent) {
   ) {
     const entry = records.entry(index);
     if (entry.kind === RULE) {
-      yield /** @type {SelectorList} */ (entry);
+      yield /** @type {RuleRecord} */ (entry);
       yield* rulesUnder(records, index);
     } else if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) {
       yield* rulesUnder(records, index);
@@ -148,7 +91,7 @@ function* rulesUnder(records, parent) {
  * The rules the root reaches, at any depth, in document order.
  *
  * @param {BlockRecords} records
- * @return {Generator<SelectorList>}
+ * @return {Generator<RuleRecord>}
  */
 export function reachedRules(records) {
   return rulesUnder(records, records.root.index);
@@ -157,7 +100,7 @@ export function reachedRules(records) {
 /**
  * Gives a rule the summaries of its whole list, folded from its ids.
  *
- * @param {SelectorList} list
+ * @param {RuleRecord} list
  * @param {TokenLists} tokenLists
  * @param {readonly string[]} browsers
  * @return {void}
@@ -174,7 +117,7 @@ function fillRule(list, tokenLists, browsers) {
  * Folds the facts of the selectors from index `from` on into a rule's
  * summaries, which must already cover the selectors before them.
  *
- * @param {SelectorList} list
+ * @param {RuleRecord} list
  * @param {number} from
  * @param {TokenLists} tokenLists
  * @param {readonly string[]} browsers
@@ -213,7 +156,7 @@ export function extendSummaries(list, from, tokenLists, browsers) {
  * those listed, or null when the elements are not listed
  */
 export function addSelectors(records, index, ids, tokenLists, browsers) {
-  const list = /** @type {SelectorList} */ (records.rule(index));
+  const list = /** @type {RuleRecord} */ (records.rule(index));
   const from = list.selectorIds.length;
   const listed = list.elementKeys?.list.length;
   const own = writableIds(list);
@@ -226,7 +169,7 @@ export function addSelectors(records, index, ids, tokenLists, browsers) {
 /**
  * The element keys a rule gained since it listed `listed` of them.
  *
- * @param {SelectorList} list
+ * @param {RuleRecord} list
  * @param {number | undefined} listed the length of its list before the change, or undefined when unlisted
  * @return {readonly string[] | null}
  */
@@ -247,8 +190,8 @@ function gainedKeys(list, listed) {
  * @return {void}
  */
 export function absorbEarlier(records, laterIndex, earlierIndex) {
-  const later = /** @type {SelectorList} */ (records.rule(laterIndex));
-  const earlier = /** @type {SelectorList} */ (records.rule(earlierIndex));
+  const later = /** @type {RuleRecord} */ (records.rule(laterIndex));
+  const earlier = /** @type {RuleRecord} */ (records.rule(earlierIndex));
   const compatible = earlier.compatible && later.compatible;
   const vendor = earlier.vendor.concat(later.vendor);
   const keys = joinKeys(earlier.elementKeys, later.elementKeys);
@@ -269,9 +212,9 @@ export function absorbEarlier(records, laterIndex, earlierIndex) {
  * rule's ids, then the second's. `target` holds no id of the two yet, and it
  * must be given its ids, then `extendSummaries` for any ids after them.
  *
- * @param {SelectorList} target a new rule, unplaced, whose ids are the two rules' ids
- * @param {SelectorList} first
- * @param {SelectorList} second
+ * @param {RuleRecord} target a new rule, unplaced, whose ids are the two rules' ids
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
  * @return {void}
  */
 export function combineSummaries(target, first, second) {

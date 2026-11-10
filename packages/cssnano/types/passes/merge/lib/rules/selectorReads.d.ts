@@ -4,7 +4,7 @@ import type { BlockRecords } from './blockRecords.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
-/** @import {SelectorList} from './selectorList.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /**
  * The reads of a rule's selector list. Each reads the summaries that
  * `selectorList.js` folds, or the ids, and writes nothing.

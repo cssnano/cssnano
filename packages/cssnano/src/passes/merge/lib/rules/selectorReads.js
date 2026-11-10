@@ -3,7 +3,7 @@
 /** @import {RuleElementKeys} from './elementKeys.js' */
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import { extendSummaries, reachedRules } from './selectorList.js';
-/** @import {SelectorList} from './selectorList.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 /**
  * The reads of a rule's selector list. Each reads the summaries that
@@ -30,13 +30,13 @@ export function summariesHold(records, tokenLists, browsers) {
  * Whether a rule's stored summaries equal the fold of its ids, folded into a
  * scratch summary that the rule does not hold.
  *
- * @param {SelectorList} list
+ * @param {RuleRecord} list
  * @param {TokenLists} tokenLists
  * @param {readonly string[]} browsers
  * @return {boolean}
  */
 function foldHolds(list, tokenLists, browsers) {
-  const fold = /** @type {SelectorList} */ (
+  const fold = /** @type {RuleRecord} */ (
     /** @type {unknown} */ ({
       selectorIds: list.selectorIds,
       compatible: true,
@@ -74,7 +74,7 @@ function sameElementKeys(first, second) {
  * @return {boolean}
  */
 export function compatibleOf(records, index) {
-  return /** @type {SelectorList} */ (records.rule(index)).compatible;
+  return /** @type {RuleRecord} */ (records.rule(index)).compatible;
 }
 
 /**
@@ -83,7 +83,7 @@ export function compatibleOf(records, index) {
  * @return {VendorPrefixSummary}
  */
 export function vendorSummaryOf(records, index) {
-  return /** @type {SelectorList} */ (records.rule(index)).vendor;
+  return /** @type {RuleRecord} */ (records.rule(index)).vendor;
 }
 
 /**
@@ -96,7 +96,7 @@ export function vendorSummaryOf(records, index) {
  * @return {string[] | null}
  */
 export function elementKeysOf(records, index) {
-  const keys = /** @type {SelectorList} */ (records.rule(index)).elementKeys;
+  const keys = /** @type {RuleRecord} */ (records.rule(index)).elementKeys;
   return keys?.list.length ? keys.list : null;
 }
 
@@ -110,9 +110,8 @@ export function elementKeysOf(records, index) {
  * @return {boolean}
  */
 export function hasSameSelectors(records, firstIndex, secondIndex) {
-  const ids = /** @type {SelectorList} */ (records.rule(firstIndex))
-    .selectorIds;
-  const otherIds = /** @type {SelectorList} */ (records.rule(secondIndex))
+  const ids = /** @type {RuleRecord} */ (records.rule(firstIndex)).selectorIds;
+  const otherIds = /** @type {RuleRecord} */ (records.rule(secondIndex))
     .selectorIds;
   if (ids.length !== otherIds.length) return false;
   for (let at = 0; at < ids.length; at++) {

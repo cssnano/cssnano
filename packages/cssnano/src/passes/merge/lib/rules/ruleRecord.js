@@ -1,19 +1,65 @@
 /** @import {TokenListId} from '../../../ir/tokenLists.js' */
-import { SelectorList } from './selectorList.js';
+import { UNFOLDED_VENDOR } from './selectorList.js';
 import { DECLARATION, NO_PRELUDE, RULE } from './blockRecord.js';
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RuleElementKeys} from './elementKeys.js' */
+/** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
 /**
- * What the merge knows of a rule: its selector list, which the base class
- * derives facts from, and its children. The children form a chain in the arena
+ * What the merge knows of a rule: its selector list, with the facts folded from
+ * its ids, and its children. The children form a chain in the arena
  * of `BlockRecords`, so the record refers to no other record. Every field is
  * set up front so all instances share one object layout.
  */
-export class RuleRecord extends SelectorList {
+export class RuleRecord {
+  /**
+   * The interned id of each selector, in order. A selector's id is the same
+   * for every rule that holds an equal item. It is read-only: only the
+   * functions of this module move or append ids.
+   *
+   * @readonly
+   * @type {readonly TokenListId[]}
+   */
+  selectorIds;
+
+  /**
+   * Whether every selector suits the target browsers.
+   *
+   * @readonly
+   * @type {boolean}
+   */
+  compatible = false;
+
+  /**
+   * The vendor prefix summary of the selectors.
+   *
+   * @readonly
+   * @type {VendorPrefixSummary}
+   */
+  vendor = UNFOLDED_VENDOR;
+
+  /**
+   * The element keys of the selectors, or null when a selector has none. The
+   * list is empty when the rule has no selectors.
+   *
+   * @readonly
+   * @type {RuleElementKeys | null}
+   */
+  elementKeys = null;
+
+  /**
+   * Whether an edit changed the rule's list, so write-back must write its
+   * selector. Every edit that changes the ids sets it.
+   *
+   * @readonly
+   * @type {boolean}
+   */
+  marked = false;
+
   /**
    * The id of the circumstances under which the rule applies its children, as
    * `containerContext` gives it. It is set once, at the build, for a rule that
@@ -56,7 +102,7 @@ export class RuleRecord extends SelectorList {
    * @param {readonly TokenListId[]} selectorIds the interned id of each selector
    */
   constructor(selectorIds) {
-    super(selectorIds);
+    this.selectorIds = selectorIds;
   }
 
   /**

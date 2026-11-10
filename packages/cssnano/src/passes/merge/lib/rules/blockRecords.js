@@ -279,7 +279,8 @@ export class BlockRecords {
    */
   rule(index) {
     if (this.consistencyChecks) assertReached(this, index);
-    return /** @type {RuleRecord | undefined} */ (this.#entries[index]);
+    const entry = this.#entries[index];
+    return entry?.kind === RULE ? entry : undefined;
   }
 
   /**
