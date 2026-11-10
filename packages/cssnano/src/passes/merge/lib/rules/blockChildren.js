@@ -142,3 +142,27 @@ export function inheritWhitespace(child, last) {
   const sample = last.before;
   if (sample !== null) child.before = sample.replaceAll(/\S/gv, '');
 }
+
+/**
+ * The declarations of the rule at `index`, in order, read from its chain at the
+ * call. A reader that indexes them by position takes this array.
+ *
+ * @param {BlockRecords} records the arena that holds the rule's children
+ * @param {number} index the rule's index
+ * @return {DeclarationRecord[]}
+ */
+export function declarationsOf(records, index) {
+  // Under checks, `rule` throws when the root does not reach this rule.
+  records.rule(index);
+  /** @type {DeclarationRecord[]} */
+  const declarations = [];
+  for (
+    let entry = records.links.firstChild(index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    const item = records.entry(entry);
+    if (item.kind === DECLARATION) declarations.push(item);
+  }
+  return declarations;
+}

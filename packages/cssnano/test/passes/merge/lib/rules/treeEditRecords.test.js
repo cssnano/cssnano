@@ -1,6 +1,9 @@
+import {
+  declarationsOf,
+  childEntriesOf,
+} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import { elementKeysOf } from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
-import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -57,7 +60,7 @@ test('appendToDeclarations should empty the incoming rule, which stays reached u
     ruleRecordOf(state.records, receiving).index,
     ruleRecordOf(state.records, incoming).index
   );
-  assert.deepEqual(record.declarationsOf(state.records), []);
+  assert.deepEqual(declarationsOf(state.records, record.index), []);
 });
 
 // The entry of a rule names its declarations by position, so an append that
@@ -129,9 +132,10 @@ test('appendToDeclarations should give the receiving rule the declarations of th
     ruleRecordOf(state.records, incoming).index
   );
   assert.deepEqual(
-    ruleRecordOf(state.records, receiving)
-      .declarationsOf(state.records)
-      .map((d) => d.prop),
+    declarationsOf(
+      state.records,
+      ruleRecordOf(state.records, receiving).index
+    ).map((d) => d.prop),
     ['color', 'width']
   );
 });
@@ -150,9 +154,10 @@ test('appendToDeclarations should give the record of the receiving rule keys for
   );
   assert.deepEqual(
     declarationIds(state.records, ruleRecordOf(state.records, receiving).index),
-    ruleRecordOf(state.records, receiving)
-      .declarationsOf(state.records)
-      .map((d) => d.id)
+    declarationsOf(
+      state.records,
+      ruleRecordOf(state.records, receiving).index
+    ).map((d) => d.id)
   );
 });
 
@@ -179,9 +184,9 @@ test('removeDeclarations should leave the record with the declarations that rema
     claimAt(state.records, record, [0])
   );
   assert.deepEqual(
-    ruleRecordOf(state.records, rule)
-      .declarationsOf(state.records)
-      .map((d) => d.prop),
+    declarationsOf(state.records, ruleRecordOf(state.records, rule).index).map(
+      (d) => d.prop
+    ),
     ['width']
   );
 });

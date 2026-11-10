@@ -88,7 +88,10 @@ test('substitute with one replacement should put it where the rule stood', () =>
   const replacement = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(selectorIdsOf(new SelectorIds(), state.tokenLists, ['x']))
+    new RuleRecord(
+      '',
+      selectorIdsOf(new SelectorIds(), state.tokenLists, ['x'])
+    )
   );
   substitute(state.records, record.index, [replacement.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'c']);
@@ -101,12 +104,18 @@ test('substitute with several replacements should keep their order where the rul
   const first = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(selectorIdsOf(new SelectorIds(), state.tokenLists, ['x']))
+    new RuleRecord(
+      '',
+      selectorIdsOf(new SelectorIds(), state.tokenLists, ['x'])
+    )
   );
   const second = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(selectorIdsOf(new SelectorIds(), state.tokenLists, ['y']))
+    new RuleRecord(
+      '',
+      selectorIdsOf(new SelectorIds(), state.tokenLists, ['y'])
+    )
   );
   substitute(state.records, record.index, [first.index, second.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'y', 'c']);

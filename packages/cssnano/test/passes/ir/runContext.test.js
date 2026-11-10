@@ -45,7 +45,7 @@ test('a run context created with consistency checks makes a link into a removed 
   const entry = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(selectorIdsOf(selectorIds, tokenLists, ['x']))
+    new RuleRecord('', selectorIdsOf(selectorIds, tokenLists, ['x']))
   );
   assert.throws(() => records.moveLast(rule.index, entry.index));
 });

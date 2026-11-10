@@ -1,5 +1,8 @@
+import {
+  declarationsOf,
+  childEntriesOf,
+} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import { fillSummaries } from '../../../../../src/passes/merge/lib/rules/selectorList.js';
-import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
@@ -108,7 +111,7 @@ export function blockRecordOf(records, node) {
  * @return {Set<import('../../../../../src/passes/merge/lib/rules/blockRecord.js').ArenaIndex>}
  */
 export function claimAt(records, rule, positions) {
-  const declarations = rule.declarationsOf(records);
+  const declarations = declarationsOf(records, rule.index);
   return new Set(positions.map((position) => declarations[position].index));
 }
 

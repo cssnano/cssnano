@@ -1,3 +1,4 @@
+import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
   childNodesOf,
   replaceChildren,
@@ -341,9 +342,10 @@ test('appendToDeclarations should see each declaration it appended, so a repeat 
     ruleRecordOf(state.records, incoming).index
   );
   assert.deepEqual(
-    ruleRecordOf(state.records, receiving)
-      .declarationsOf(state.records)
-      .map((declaration) => declaration.prop),
+    declarationsOf(
+      state.records,
+      ruleRecordOf(state.records, receiving).index
+    ).map((declaration) => declaration.prop),
     ['color', 'width']
   );
 });

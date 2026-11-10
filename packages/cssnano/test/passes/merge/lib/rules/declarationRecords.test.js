@@ -1,4 +1,7 @@
-import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import {
+  declarationsOf,
+  childEntriesOf,
+} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import {
   childNodesOf,
@@ -37,9 +40,9 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const receiving = ruleRecordOf(state.records, root.first.first);
   const incoming = ruleRecordOf(state.records, root.first.last);
-  const moved = incoming.declarationsOf(state.records)[0];
+  const moved = declarationsOf(state.records, incoming.index)[0];
   appendToDeclarations(state, receiving.index, incoming.index);
-  assert.equal(receiving.declarationsOf(state.records).at(-1), moved);
+  assert.equal(declarationsOf(state.records, receiving.index).at(-1), moved);
   state.records.detach(incoming.index);
   writeBack(state.records, nodesOf(state.records), state.tokenLists);
   assert.equal(
@@ -68,7 +71,9 @@ test('a rule record reads its declaration keys from the ids of its records', () 
   const rule = ruleRecordOf(state.records, root.first);
   assert.deepEqual(
     declarationIds(state.records, rule.index),
-    rule.declarationsOf(state.records).map((declaration) => declaration.id)
+    declarationsOf(state.records, rule.index).map(
+      (declaration) => declaration.id
+    )
   );
 });
 

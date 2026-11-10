@@ -1,3 +1,4 @@
+import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -62,9 +63,9 @@ function propsOf({ records, entries }) {
   return entries?.flatMap((entry) => {
     if (!(entry.kind === RULE)) return [entry.prop];
     if (entry.context === -1) {
-      return entry
-        .declarationsOf(records)
-        .map((declaration) => declaration.prop);
+      return declarationsOf(records, entry.index).map(
+        (declaration) => declaration.prop
+      );
     }
     return chainProps(records, entry.index);
   });

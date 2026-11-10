@@ -3,6 +3,7 @@ import {
   childCountOf,
   holdsOnlyDeclarationsOf,
   childEntriesOf,
+  declarationsOf,
 } from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import LastWriteIndex from './lastWriteIndex.js';
@@ -187,7 +188,7 @@ export default function joinByDeclarations(block, mergeState) {
     const group = {
       rule,
       position,
-      declarations: rule.declarationsOf(mergeState.records),
+      declarations: declarationsOf(mergeState.records, rule.index),
       selectors: null,
       bytes: -1,
     };
@@ -203,7 +204,7 @@ export default function joinByDeclarations(block, mergeState) {
    */
   function joinIntoGroup(laterRecord) {
     const { records } = mergeState;
-    const laterDeclarations = laterRecord.declarationsOf(records);
+    const laterDeclarations = declarationsOf(records, laterRecord.index);
     const laterSet = declarationKeys(
       mergeState.records,
       laterRecord.index

@@ -1,3 +1,4 @@
+import { declarationsOf } from '../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { buildTestRecords } from './lib/rules/liveRecords.js';
 import { test } from 'node:test';
@@ -107,7 +108,8 @@ test('under consistency checks, reading the record of a rule whose declarations 
   // RuleSequence#replacePair unlinks a rule that no child remains in.
   mergeState.records.detach(first);
   assert.throws(
-    () => mergeState.records.rule(first).declarationsOf(mergeState.records),
+    () =>
+      declarationsOf(mergeState.records, mergeState.records.rule(first).index),
     /does not reach/v
   );
 });
@@ -115,6 +117,6 @@ test('under consistency checks, reading the record of a rule whose declarations 
 test('without consistency checks, reading the record of a rule whose declarations all merge away should not throw', () => {
   const { mergeState, first } = mergedAway(false);
   assert.doesNotThrow(() =>
-    mergeState.records.rule(first).declarationsOf(mergeState.records)
+    declarationsOf(mergeState.records, mergeState.records.rule(first).index)
   );
 });

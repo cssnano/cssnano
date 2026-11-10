@@ -1,3 +1,4 @@
+import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { buildTestRecords, nodeOfEntry } from './liveRecords.js';
 import { test } from 'node:test';
@@ -74,14 +75,14 @@ function groupsOf(css) {
     const second = links[i + 1];
     if (second === undefined) break;
     const shared = intersect(
-      rule(first).declarationsOf(mergeState.records),
+      declarationsOf(mergeState.records, rule(first).index),
       declarationKeys(mergeState.records, rule(second).index).keySet
     );
     if (shared.length === 0) continue;
     const { intersection, claimedIndices } = filterRuleIntersections(
       shared,
-      [...rule(first).declarationsOf(mergeState.records)],
-      [...rule(second).declarationsOf(mergeState.records)]
+      [...declarationsOf(mergeState.records, rule(first).index)],
+      [...declarationsOf(mergeState.records, rule(second).index)]
     );
     if (intersection.length === 0) continue;
     const sharedBytes = shared.reduce(

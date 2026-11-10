@@ -1,4 +1,4 @@
-import { holdsOnlyDeclarationsOf } from './blockChildren.js';
+import { declarationsOf, holdsOnlyDeclarationsOf } from './blockChildren.js';
 import {
   filterRuleIntersections,
   intersect,
@@ -83,7 +83,7 @@ export function mergeSharedDeclarations(
   scan
 ) {
   const { records } = mergeState;
-  const firstDeclarations = first.declarationsOf(records);
+  const firstDeclarations = declarationsOf(records, first.index);
   let intersection = intersect(
     firstDeclarations,
     declarationKeys(records, second.index).keySet
@@ -92,7 +92,7 @@ export function mergeSharedDeclarations(
   const filtered = filterRuleIntersections(
     intersection,
     firstDeclarations,
-    second.declarationsOf(records)
+    declarationsOf(records, second.index)
   );
   intersection = filtered.intersection;
   if (intersection.length === 0) return null;

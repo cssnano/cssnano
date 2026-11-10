@@ -68,7 +68,7 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
   const added = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(selectorIdsOf(selectorIds, tokenLists, ['x']))
+    new RuleRecord('', selectorIdsOf(selectorIds, tokenLists, ['x']))
   );
   sequence.replacePair(records, a, {
     first: [a],
@@ -89,7 +89,7 @@ test('replacePair should chain the placed rules in the order first, second, then
     placeUnlinked(
       records,
       records.root.index,
-      new RuleRecord(selectorIdsOf(selectorIds, tokenLists, [selector]))
+      new RuleRecord('', selectorIdsOf(selectorIds, tokenLists, [selector]))
     ).index;
   const x = made('x');
   const y = made('y');

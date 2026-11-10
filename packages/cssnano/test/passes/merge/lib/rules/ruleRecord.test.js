@@ -1,3 +1,4 @@
+import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import { selectorIdsOf } from './selectorIdsOf.js';
 
 import assert from 'node:assert/strict';
@@ -37,7 +38,7 @@ const tokenLists = new TokenLists();
 
 /** A record of `selectors`, with the ids of this file's interner. */
 const ruleOf = (selectors) =>
-  new RuleRecord(selectorIdsOf(selectorIds, tokenLists, selectors));
+  new RuleRecord('', selectorIdsOf(selectorIds, tokenLists, selectors));
 
 /**
  * The records of `css`, built as the run builds them, with the record of its
@@ -118,7 +119,7 @@ test('a rule placed after the build has no node in the table until write-back', 
 
 test('declarationKeys should list the id of each declaration in order', () => {
   const { records, record } = arenaOf('a{color:red;top:0}');
-  const [color, top] = record.declarationsOf(records);
+  const [color, top] = declarationsOf(records, record.index);
   assert.deepEqual(declarationIds(records, record.index), [color.id, top.id]);
 });
 
@@ -126,7 +127,9 @@ test('declarationKeys should offer the same keys as a set for membership tests',
   const { records, record } = arenaOf('a{color:red;top:0}');
   assert.deepEqual(
     declarationKeys(records, record.index).keySet,
-    new Set(record.declarationsOf(records).map((declaration) => declaration.id))
+    new Set(
+      declarationsOf(records, record.index).map((declaration) => declaration.id)
+    )
   );
 });
 
@@ -148,9 +151,9 @@ test('appendChild should make declarationKeys reflect the appended declaration',
   );
   assert.deepEqual(
     declarationIds(records, record.index),
-    record.declarationsOf(records).map((declaration) => declaration.id)
+    declarationsOf(records, record.index).map((declaration) => declaration.id)
   );
-  assert.equal(record.declarationsOf(records).length, 2);
+  assert.equal(declarationsOf(records, record.index).length, 2);
 });
 
 test('addSelectors should keep the cached declaration keys since it leaves the declarations alone', () => {

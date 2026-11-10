@@ -1,11 +1,8 @@
 import type { TokenListId } from '../../../ir/tokenLists.js';
 import { RULE } from './blockRecord.js';
-import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleElementKeys } from './elementKeys.js';
 import type { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { ArenaIndex } from './blockRecord.js';
-import type { BlockRecords } from './blockRecords.js';
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
 /** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
@@ -69,14 +66,6 @@ export declare class RuleRecord {
     index: ArenaIndex;
     /** @type {typeof RULE} RULE, which the window reads with the other records */
     kind: typeof RULE;
-    /** @type {string} '' for a rule, which has no at-rule name */
-    name: string;
-    /** @type {string} '' for a rule, which has no prelude */
-    params: string;
-    /** @type {boolean} false for a rule, which is no layer */
-    anonymous: boolean;
-    /** @type {number} NO_PRELUDE for a rule */
-    preludeId: number;
     /**
      * The arena index of the rule whose raws a merged rule prints, or -1 for a
      * rule that keeps its own. A merged rule copies the raws of its template.
@@ -87,16 +76,9 @@ export declare class RuleRecord {
     /** @type {string | null} the whitespace before the rule, as its node gives it at the build */
     before: string | null;
     /**
+     * @param {string | null} before the whitespace before the rule
      * @param {readonly TokenListId[]} selectorIds the interned id of each selector
      */
-    constructor(selectorIds: readonly TokenListId[]);
-    /**
-     * The declarations of the rule, in order, read from its chain at the call. A
-     * reader that indexes them by position takes this array.
-     *
-     * @param {BlockRecords} records the arena that holds the rule's children
-     * @return {DeclarationRecord[]}
-     */
-    declarationsOf(records: BlockRecords): DeclarationRecord[];
+    constructor(before: string | null, selectorIds: readonly TokenListId[]);
 }
 //# sourceMappingURL=ruleRecord.d.ts.map

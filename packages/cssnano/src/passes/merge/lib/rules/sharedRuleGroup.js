@@ -3,6 +3,7 @@ import {
   childCountOf,
   firstDeclaration,
   nextDeclaration,
+  declarationsOf,
 } from './blockChildren.js';
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
 import { PropertyWrites } from './propertyWrites.js';
@@ -233,7 +234,7 @@ export function findGroup(
 function claimedBy(shared, later, records) {
   return later.context !== -1
     ? null
-    : claimRepeats(shared, later.declarationsOf(records));
+    : claimRepeats(shared, declarationsOf(records, later.index));
 }
 
 /**

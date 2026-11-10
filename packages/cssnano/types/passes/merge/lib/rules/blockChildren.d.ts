@@ -74,4 +74,13 @@ export declare function inheritWhitespace(child: {
 }, last: {
     before: string | null;
 } | undefined): void;
+/**
+ * The declarations of the rule at `index`, in order, read from its chain at the
+ * call. A reader that indexes them by position takes this array.
+ *
+ * @param {BlockRecords} records the arena that holds the rule's children
+ * @param {number} index the rule's index
+ * @return {DeclarationRecord[]}
+ */
+export declare function declarationsOf(records: BlockRecords, index: number): DeclarationRecord[];
 //# sourceMappingURL=blockChildren.d.ts.map

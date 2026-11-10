@@ -1,3 +1,4 @@
+import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -77,13 +78,10 @@ test('a comment entry holds the neutral facts of a comment', () => {
   assert.equal(entry.preludeId, NO_PRELUDE);
 });
 
-test('a rule record and the stylesheet hold the neutral facts of their kinds', () => {
+test('a rule record holds its kind, and the stylesheet holds neutral at-rule facts', () => {
   const { root, records } = recordsOf('a{color:red}');
   const rule = ruleRecordOf(records, root.first);
   assert.equal(rule.kind, RULE);
-  assert.equal(rule.name, '');
-  assert.equal(rule.params, '');
-  assert.equal(rule.preludeId, NO_PRELUDE);
   assert.equal(records.root.kind, STYLESHEET);
   assert.equal(records.root.name, '');
   assert.equal(records.root.params, '');
@@ -178,7 +176,7 @@ test('every record of a node without raws.before holds null, so write-back leave
   assert.deepEqual(
     [
       ruleRecordOf(records, rule).before,
-      ruleRecordOf(records, rule).declarationsOf(records)[0].before,
+      declarationsOf(records, ruleRecordOf(records, rule).index)[0].before,
       blockRecordOf(records, media).before,
       entryOf(records, statement).before,
       entryOf(records, comment).before,

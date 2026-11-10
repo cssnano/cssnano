@@ -1,4 +1,5 @@
 import {
+  declarationsOf,
   firstDeclaration,
   nextDeclaration,
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
@@ -173,7 +174,7 @@ test('moveLast should throw under checks when a rule is linked into a rule that 
 test('declarationKeys should list a declaration that moveBefore puts in the middle of a rule in its new place', () => {
   const { root, records } = setup('a{color:red;top:0}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
-  const [color] = rule.declarationsOf(records);
+  const [color] = declarationsOf(records, rule.index);
   const width = placeUnlinked(
     records,
     records.root.index,
@@ -184,7 +185,7 @@ test('declarationKeys should list a declaration that moveBefore puts in the midd
   );
   records.moveBefore(records.links.nextSibling(color.index), width.index);
   assert.deepEqual(
-    rule.declarationsOf(records).map((declaration) => declaration.prop),
+    declarationsOf(records, rule.index).map((declaration) => declaration.prop),
     ['color', 'width', 'top']
   );
 });
@@ -203,7 +204,7 @@ test('declarationsOf should list the declaration that moveLast appends to its ru
   );
   records.moveLast(rule.index, top.index);
   assert.deepEqual(
-    rule.declarationsOf(records).map((declaration) => declaration.prop),
+    declarationsOf(records, rule.index).map((declaration) => declaration.prop),
     ['color', 'top']
   );
 });
@@ -235,7 +236,7 @@ test('firstDeclaration and nextDeclaration should walk a declaration that moveBe
 test('declarationKeys should list the ids in their new order after moveBefore puts a declaration in the middle of a rule', () => {
   const { root, records } = setup('a{color:red;top:0}');
   const rule = ruleRecordOf(records, /** @type {Rule} */ (root.first));
-  const [color, top] = rule.declarationsOf(records);
+  const [color, top] = declarationsOf(records, rule.index);
   declarationKeys(records, rule.index);
   const width = placeUnlinked(
     records,

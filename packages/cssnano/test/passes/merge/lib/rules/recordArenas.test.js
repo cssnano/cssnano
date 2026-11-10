@@ -97,7 +97,7 @@ test('a rule recorded mid-run should take the next index of the arena', () => {
   const added = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(selectorIdsOf(selectorIds, tokenLists, ['c']))
+    new RuleRecord('', selectorIdsOf(selectorIds, tokenLists, ['c']))
   );
   assert.equal(added.index, count);
   records.moveLast(records.root.index, added.index);

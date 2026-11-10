@@ -127,9 +127,9 @@ export function buildRecords(root, context) {
       if (isRuleOrAtRule(child)) counted++;
       if (child.type === 'rule') {
         const record = new RuleRecord(
+          child.raws.before ?? null,
           idsOfItems(selectorIds, tokenLists, child.selectors)
         );
-        record.before = child.raws.before ?? null;
         place(container.index, record, child);
         // A rule that holds a rule or an at-rule nests, and gets its context.
         if (child.nodes.some(isRuleOrAtRule)) {

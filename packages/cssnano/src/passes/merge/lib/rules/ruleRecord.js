@@ -1,8 +1,7 @@
 /** @import {TokenListId} from '../../../ir/tokenLists.js' */
 import { UNFOLDED_VENDOR } from './selectorList.js';
-import { DECLARATION, NO_PRELUDE, RULE } from './blockRecord.js';
+import { RULE } from './blockRecord.js';
 
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
 /** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
@@ -75,18 +74,6 @@ export class RuleRecord {
   /** @type {typeof RULE} RULE, which the window reads with the other records */
   kind = RULE;
 
-  /** @type {string} '' for a rule, which has no at-rule name */
-  name = '';
-
-  /** @type {string} '' for a rule, which has no prelude */
-  params = '';
-
-  /** @type {boolean} false for a rule, which is no layer */
-  anonymous = false;
-
-  /** @type {number} NO_PRELUDE for a rule */
-  preludeId = NO_PRELUDE;
-
   /**
    * The arena index of the rule whose raws a merged rule prints, or -1 for a
    * rule that keeps its own. A merged rule copies the raws of its template.
@@ -96,35 +83,14 @@ export class RuleRecord {
   template = -1;
 
   /** @type {string | null} the whitespace before the rule, as its node gives it at the build */
-  before = '';
+  before;
 
   /**
+   * @param {string | null} before the whitespace before the rule
    * @param {readonly TokenListId[]} selectorIds the interned id of each selector
    */
-  constructor(selectorIds) {
+  constructor(before, selectorIds) {
+    this.before = before;
     this.selectorIds = selectorIds;
-  }
-
-  /**
-   * The declarations of the rule, in order, read from its chain at the call. A
-   * reader that indexes them by position takes this array.
-   *
-   * @param {BlockRecords} records the arena that holds the rule's children
-   * @return {DeclarationRecord[]}
-   */
-  declarationsOf(records) {
-    // Under checks, `rule` throws when the root does not reach this rule.
-    records.rule(this.index);
-    /** @type {DeclarationRecord[]} */
-    const declarations = [];
-    for (
-      let entry = records.links.firstChild(this.index);
-      entry !== -1;
-      entry = records.links.nextSibling(entry)
-    ) {
-      const item = records.entry(entry);
-      if (item.kind === DECLARATION) declarations.push(item);
-    }
-    return declarations;
   }
 }

@@ -1,3 +1,4 @@
+import { declarationsOf } from '../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -53,5 +54,5 @@ test('appendToDeclarations sees each declaration it appended, so a repeat of it 
   const to = ruleRecordOf(mergeState.records, receiving);
   const from = ruleRecordOf(mergeState.records, incoming);
   appendToDeclarations(mergeState, to.index, from.index);
-  assert.equal(to.declarationsOf(mergeState.records).length, 1);
+  assert.equal(declarationsOf(mergeState.records, to.index).length, 1);
 });

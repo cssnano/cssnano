@@ -1,3 +1,4 @@
+import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -65,7 +66,7 @@ test('receivingDeclarations should return the same entry after appendChild, with
 
 test('receivingDeclarations should return a new entry with new writes after a declaration leaves the rule', () => {
   const { records, record } = arenaOf('a{color:red;width:1px}');
-  const [color] = record.declarationsOf(records);
+  const [color] = declarationsOf(records, record.index);
   const before = receivingDeclarations(records, record.index);
   records.detach(color.index);
   const after = receivingDeclarations(records, record.index);
@@ -78,7 +79,7 @@ test('receivingDeclarations should return a new entry with new writes after a de
 test('receivingDeclarations should build the writes of an entry that declarationKeys read, with every declaration', () => {
   const arena = arenaOf('a{color:red}');
   const { records, record } = arena;
-  const [color] = record.declarationsOf(records);
+  const [color] = declarationsOf(records, record.index);
   const keys = declarationKeys(records, record.index);
   const width = freshDeclaration(arena, 'width');
   appendChild(records, record, width);
@@ -91,7 +92,7 @@ test('receivingDeclarations should build the writes of an entry that declaration
 
 test('receivingDeclarations should throw out of step under checks when the writes miss a declaration of the rule', () => {
   const { records, record } = arenaOf('a{color:red;width:1px}', true);
-  const [color] = record.declarationsOf(records);
+  const [color] = declarationsOf(records, record.index);
   const entry = receivingDeclarations(records, record.index);
   // The writes name only `color`, as if the append of `width` missed them.
   entry.writes = new PropertyWrites();

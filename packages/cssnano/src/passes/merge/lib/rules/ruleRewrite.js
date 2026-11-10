@@ -124,7 +124,7 @@ export function buildMergedRule(
   // The merged rule prints the raws of the rule it was merged from, or of
   // the template that rule printed, when it was merged too.
   const template = second.template === -1 ? second.index : second.template;
-  const receivingRecord = new RuleRecord(selectorIds);
+  const receivingRecord = new RuleRecord(second.before, selectorIds);
   // The summaries of the two rules' selectors are combined, and the group's
   // added selectors are folded after them.
   combineSummaries(receivingRecord, first, second);
@@ -135,7 +135,6 @@ export function buildMergedRule(
     browsers
   );
   receivingRecord.template = template;
-  receivingRecord.before = second.before;
   // The merged rule takes the place before the later rule, so no rule holds
   // children while it is unlinked. The sweep's replacement keeps that place.
   placeBefore(records, second.index, receivingRecord);

@@ -1,3 +1,4 @@
+import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import { selectorIdsOf } from './selectorIdsOf.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
@@ -334,11 +335,11 @@ test('records.rule should throw under consistency checks for a plain rule unlink
 test('moveLast into a plain rule that is linked nowhere should throw under consistency checks', () => {
   const { root, state } = setup('a{color:red}');
   const rule = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
-  const [declaration] = rule.declarationsOf(state.records);
+  const [declaration] = declarationsOf(state.records, rule.index);
   const orphan = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(selectorIdsOf(selectorIds, tokenLists, ['b']))
+    new RuleRecord('', selectorIdsOf(selectorIds, tokenLists, ['b']))
   );
   state.records.detach(declaration.index);
   assert.throws(
