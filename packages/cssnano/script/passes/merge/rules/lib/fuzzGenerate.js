@@ -22,6 +22,14 @@ const explicit = [
   ['a /deep/ b', 'invalid-selector', true],
   ['#1a', 'invalid-selector', true],
   ['a::before b', 'invalid-selector', true],
+  // Text that only looks like `:host` or a mixin: both checks must merge it.
+  ['[title=":host"]', 'host-in-attribute', false, 'Chrome 120'],
+  ['.a\\:host', 'escaped-colon-class', false, 'Chrome 120'],
+  ['a\\:', 'escaped-colon-element', false, 'Chrome 120'],
+  // Real `:host` and mixin selectors: both checks must refuse them.
+  [':host', 'host-guard', false, 'Chrome 120'],
+  [':host(.a)', 'host-function-guard', false, 'Chrome 120'],
+  ['a:', 'trailing-colon-guard', false, 'Chrome 120'],
 ];
 
 function random(seed) {
@@ -95,13 +103,15 @@ function generatedSelector(rand, index) {
 /** Return deterministic inputs and coverage metadata for a seed. */
 export function generateCases(seed = 0x5eed, count = 400) {
   const rand = random(seed);
-  const cases = explicit.map(([selector, branch, invalid], index) => ({
-    selector,
-    branch,
-    browsers: modes[index % modes.length],
-    features: featureMetadata(selector),
-    invalid: invalid === true,
-  }));
+  const cases = explicit.map(
+    ([selector, branch, invalid, browsers], index) => ({
+      selector,
+      branch,
+      browsers: browsers ?? modes[index % modes.length],
+      features: featureMetadata(selector),
+      invalid: invalid === true,
+    })
+  );
   while (cases.length < count) {
     const { selector, invalid } =
       rand() < 0.12
