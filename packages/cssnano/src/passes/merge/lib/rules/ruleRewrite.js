@@ -145,7 +145,6 @@ export function buildMergedRule(
     tokenLists,
     browsers
   );
-  receivingRecord.mark();
   receivingRecord.template = template;
   receivingRecord.before = second.before;
   // The merged rule takes the place before the later rule, so no rule holds

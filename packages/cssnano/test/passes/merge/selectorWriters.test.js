@@ -165,7 +165,7 @@ suite('the merge pass writes selectors through its records', () => {
     const context = createRunContext();
     const { records, nodes } = buildRecords(root, context);
     const rule = records.rule(records.links.firstChild(records.root.index));
-    rule.mark();
+    rule.setSelector(rule.selector);
     writeBack(records, nodes, context.tokenLists, new TextTable());
     assert.equal(root.toString(), 'a,c {color:red}');
   });
@@ -282,7 +282,7 @@ test('write-back stores no selector of a marked rule the root does not reach', (
     'a{color:red}b{color:red}'
   );
   const first = records.rule(records.links.firstChild(records.root.index));
-  first.mark();
+  first.setSelector(first.selector);
   records.detach(first.index);
   const table = new TextTable();
   writeBack(records, nodes, tokenLists, table);

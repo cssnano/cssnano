@@ -74,8 +74,8 @@ export const mutations = [
   },
   {
     name: 'forget the rules a merge spelled, so their selector is never marked',
-    target: source('mergeState.js'),
-    find: '    record.setSelector(record.selectorText());\n    record.mark();',
-    replace: '    record.setSelector(record.selectorText());',
+    target: source('selectorList.js'),
+    find: '    this.#selector = selector;\n    writableIds(this).marked = true;',
+    replace: '    this.#selector = selector;',
   },
 ];

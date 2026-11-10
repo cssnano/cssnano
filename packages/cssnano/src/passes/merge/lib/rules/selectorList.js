@@ -34,6 +34,7 @@ const UNFOLDED_VENDOR = new VendorPrefixSummary(null, false);
  * @property {boolean} compatible
  * @property {VendorPrefixSummary} vendor
  * @property {RuleElementKeys | null} elementKeys
+ * @property {boolean} marked
  */
 
 /**
@@ -57,8 +58,6 @@ export class SelectorList {
   #selectors;
   /** @type {string} the selector the rule spells, in PostCSS's form */
   #selector;
-  /** @type {boolean} whether the selector was written by a merge, and must be written back */
-  #marked = false;
   /** @type {string | undefined} the selectors joined by commas, once known */
   #selectorText;
 
@@ -98,6 +97,15 @@ export class SelectorList {
   elementKeys = null;
 
   /**
+   * Whether an edit changed the rule's list, so write-back must write its
+   * selector. Every edit that changes the ids sets it.
+   *
+   * @readonly
+   * @type {boolean}
+   */
+  marked = false;
+
+  /**
    * @param {string[]} selectors
    * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
    * @param {readonly TokenListId[]} selectorIds the interned id of each of `selectors`
@@ -118,23 +126,14 @@ export class SelectorList {
     return this.#selector;
   }
 
-  /** @return {boolean} whether a merge wrote the selector, so write-back assigns it */
-  get marked() {
-    return this.#marked;
-  }
-
-  /** Marks the selector as written by a merge. */
-  mark() {
-    this.#marked = true;
-  }
-
   /**
-   * Sets the selector the rule spells.
+   * Sets the selector the rule spells, and marks the rule for write-back.
    *
    * @param {string} selector
    */
   setSelector(selector) {
     this.#selector = selector;
+    writableIds(this).marked = true;
   }
 
   /** @return {string} */
@@ -288,8 +287,9 @@ export function addSelectors(
   const from = list.selectorIds.length;
   const listed = list.elementKeys?.list.length;
   list.appendSelectors(selectors);
-  const own = writableIds(list).selectorIds;
-  for (const id of ids) own.push(id);
+  const own = writableIds(list);
+  for (const id of ids) own.selectorIds.push(id);
+  own.marked = true;
   extendSummaries(list, from, tokenLists, browsers);
   return gainedKeys(list, listed);
 }
@@ -332,6 +332,7 @@ export function absorbEarlier(records, laterIndex, earlierIndex) {
   own.compatible = compatible;
   own.vendor = vendor;
   own.elementKeys = keys;
+  own.marked = true;
   writableIds(earlier).selectorIds = NO_SELECTORS;
 }
 
@@ -348,6 +349,7 @@ export function absorbEarlier(records, laterIndex, earlierIndex) {
 export function combineSummaries(target, first, second) {
   const own = writableIds(target);
   own.compatible = first.compatible && second.compatible;
+  own.marked = true;
   own.vendor = first.vendor.concat(second.vendor);
   // A copy, since both inputs stay alive as they are.
   const keys = first.elementKeys;

@@ -15,6 +15,7 @@ export type WritableSummaries = {
     compatible: boolean;
     vendor: VendorPrefixSummary;
     elementKeys: RuleElementKeys | null;
+    marked: boolean;
 };
 /**
  * The selector list of a rule, with the facts folded from its ids. It is the
@@ -55,6 +56,14 @@ export declare class SelectorList {
      */
     readonly elementKeys: RuleElementKeys | null;
     /**
+     * Whether an edit changed the rule's list, so write-back must write its
+     * selector. Every edit that changes the ids sets it.
+     *
+     * @readonly
+     * @type {boolean}
+     */
+    readonly marked: boolean;
+    /**
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
      * @param {readonly TokenListId[]} selectorIds the interned id of each of `selectors`
@@ -64,12 +73,8 @@ export declare class SelectorList {
     get selectors(): string[];
     /** @return {string} the selector, in PostCSS's form */
     get selector(): string;
-    /** @return {boolean} whether a merge wrote the selector, so write-back assigns it */
-    get marked(): boolean;
-    /** Marks the selector as written by a merge. */
-    mark(): void;
     /**
-     * Sets the selector the rule spells.
+     * Sets the selector the rule spells, and marks the rule for write-back.
      *
      * @param {string} selector
      */

@@ -91,14 +91,13 @@ export default class MergeState {
   }
 
   /**
-   * Sets the selector of a rule from its list and marks it, so write-back
-   * assigns the text. The tokens of the old text are dropped.
+   * Sets the selector of a rule from its list, which marks it so write-back
+   * assigns the text.
    *
    * @param {RuleRecord} record
    */
   spellSelectors(record) {
     record.setSelector(record.selectorText());
-    record.mark();
   }
 
   /**
