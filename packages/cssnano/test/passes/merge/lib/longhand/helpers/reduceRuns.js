@@ -19,6 +19,7 @@ import {
   reduceColumns,
 } from '../../../../../../src/passes/merge/lib/longhand/decl/columns.js';
 import { applyChildEdits } from '../../../../../../src/passes/merge/lib/deferredChildEdits.js';
+import { longstandingFeatures } from '../../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 
 /** @import {Container, Declaration} from 'postcss'; */
 /** @import {BoxGroup} from '../../../../../../src/passes/merge/lib/longhand/decl/boxGroups.js'; */
@@ -87,7 +88,7 @@ export function reduceBoxRuns(rule, name, support = defaultSupport) {
     const box = boxDeclarations(group, run, rule);
     if (box.decls.length === 0) continue;
     if (box.flow.size === 0) box.flow = null;
-    reduceBox(rule, box, support, textTable);
+    reduceBox(rule, box, support, textTable, longstandingFeatures);
   }
   applyChildEdits(rule);
 }
@@ -97,7 +98,8 @@ export function reduceColumnsRuns(rule) {
   reduceFamilyRuns(
     rule,
     (d) => allColumnProps.has(d.prop.toLowerCase()),
-    (decls, lanes) => reduceColumns(rule, decls, lanes, new TextTable())
+    (decls, lanes) =>
+      reduceColumns(rule, decls, lanes, new TextTable(), longstandingFeatures)
   );
 }
 
@@ -106,7 +108,14 @@ export function reduceBorderRadiusRuns(rule) {
   reduceFamilyRuns(
     rule,
     (d) => allRadiusProperties.has(d.prop.toLowerCase()),
-    (decls, lanes) => reduceBorderRadius(rule, decls, lanes, new TextTable())
+    (decls, lanes) =>
+      reduceBorderRadius(
+        rule,
+        decls,
+        lanes,
+        new TextTable(),
+        longstandingFeatures
+      )
   );
 }
 
@@ -136,6 +145,7 @@ export function reduceBorderRuns(rule) {
   reduceFamilyRuns(
     rule,
     (d) => allPhysicalBorderProperties.has(d.prop.toLowerCase()),
-    (decls) => reduceBorder(rule, decls, foreign, textTable)
+    (decls) =>
+      reduceBorder(rule, decls, foreign, textTable, longstandingFeatures)
   );
 }

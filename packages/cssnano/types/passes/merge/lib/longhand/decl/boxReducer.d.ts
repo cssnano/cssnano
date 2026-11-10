@@ -56,7 +56,8 @@ export declare function addBoxDeclaration(state: {
  * @param {BoxDeclarations} box
  * @param {import('../targetSupport.js').BoxSupport} support
  * @param {TextTable} textTable the tokens the walk left for the declarations
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export declare function reduceBox(rule: Container, box: BoxDeclarations, support: import('../targetSupport.js').BoxSupport, textTable: TextTable): void;
+export declare function reduceBox(rule: Container, box: BoxDeclarations, support: import('../targetSupport.js').BoxSupport, textTable: TextTable, features: ReadonlySet<string>): void;
 //# sourceMappingURL=boxReducer.d.ts.map

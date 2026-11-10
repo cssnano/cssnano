@@ -7,7 +7,6 @@ import {
   longhandContext,
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { TextTable } from '../../../src/values/textTable.js';
-import { withTargetSupport } from '../../../src/passes/merge/lib/longhand/isFallback.js';
 import { clearSupportCache } from '../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { resolveTargets } from '#utils/browser-targets';
@@ -30,10 +29,11 @@ function canonicalizeBlocks(css) {
     placeShorthands,
     boxSupport,
     pairShorthands,
-    new TextTable()
+    new TextTable(),
+    features
   );
   try {
-    withTargetSupport(features, () => {
+    {
       canonicalize(root, context);
       root.walk((node) => {
         if (node.type !== 'rule' && node.type !== 'atrule') return;
@@ -41,7 +41,7 @@ function canonicalizeBlocks(css) {
         canonicalize(node, context);
       });
       finishColumns(context);
-    });
+    }
   } finally {
     clearSupportCache();
   }

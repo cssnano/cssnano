@@ -5,7 +5,6 @@ import {
   finishColumns,
   longhandContext,
 } from './lib/longhand/canonicalize.js';
-import { withTargetSupport } from './lib/longhand/isFallback.js';
 import { clearSupportCache } from './lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import runMerge from './lib/rules/selectorMerger.js';
@@ -51,23 +50,6 @@ function canonicalizeInTree(container, css, context) {
 }
 
 /**
- * Runs `work` under the longhand support of the targets, as the longhand
- * plugin does, and clears the support cache afterwards.
- *
- * @template T
- * @param {ReturnType<typeof targetSupportOf>['features']} features
- * @param {() => T} work
- * @return {T}
- */
-function inLonghandSupport(features, work) {
-  try {
-    return withTargetSupport(features, work);
-  } finally {
-    clearSupportCache();
-  }
-}
-
-/**
  * The first longhand round: canonicalizes the stylesheet and every block that
  * holds a declaration, then finishes the columns. Each such block is recorded
  * in `blocks` when a second round will canonicalize it again.
@@ -102,21 +84,24 @@ function canonicalizeFirstRound(css, first, blocks, reached) {
  * @param {Root} css
  * @param {ReturnType<typeof targetSupportOf>} support
  * @param {Set<Container> | undefined} blocks
- * @param {TextTable} textTable the tokens the host walk left
+ * @param {ReturnType<typeof createRunContext>} context the run whose tokens and support the round reads
  * @param {readonly (Rule | AtRule)[]} [reached] the rules and at-rules the host walk reached
  * @return {ReturnType<typeof longhandContext>} the context of the round, which the second round reuses
  */
-function runFirstRound(css, support, blocks, textTable, reached) {
-  const { placeShorthands, boxSupport, pairShorthands, features } = support;
+function runFirstRound(css, support, blocks, context, reached) {
+  const { placeShorthands, boxSupport, pairShorthands } = support;
   const first = longhandContext(
     placeShorthands,
     boxSupport,
     pairShorthands,
-    textTable
+    context.textTable,
+    context.features
   );
-  inLonghandSupport(features, () =>
-    canonicalizeFirstRound(css, first, blocks, reached)
-  );
+  try {
+    canonicalizeFirstRound(css, first, blocks, reached);
+  } finally {
+    clearSupportCache();
+  }
   return first;
 }
 
@@ -192,7 +177,11 @@ export function mergePass(
     css,
     browsers,
     rules,
-    createRunContext(textTable, consistencyChecks),
+    createRunContext(
+      textTable,
+      consistencyChecks,
+      targetSupportOf(browsers).features
+    ),
     reached
   );
 }
@@ -209,7 +198,7 @@ export function mergePass(
  */
 function runTransforms(css, browsers, rules, context, reached) {
   const support = targetSupportOf(browsers);
-  const { placeShorthands, boxSupport, pairShorthands, features } = support;
+  const { placeShorthands, boxSupport, pairShorthands } = support;
 
   // A second round canonicalizes every block recorded here, because removing
   // duplicates or merging rules can expose a reduction the first round left.
@@ -217,7 +206,7 @@ function runTransforms(css, browsers, rules, context, reached) {
   // round also canonicalizes.
   /** @type {Set<Container>} */
   const blocks = new Set();
-  const first = runFirstRound(css, support, blocks, context.textTable, reached);
+  const first = runFirstRound(css, support, blocks, context, reached);
 
   context.createdBlocks = blocks;
   runRecords(css, browsers, context, rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY);
@@ -229,18 +218,21 @@ function runTransforms(css, browsers, rules, context, reached) {
     placeShorthands,
     boxSupport,
     pairShorthands,
-    context.textTable
+    context.textTable,
+    context.features
   );
   // Carried over: a stale `true` only keeps columns unreduced, and any
   // column-setting declaration a merge moved sits in a block rescanned here.
   secondContext.setsOtherColumn = first.setsOtherColumn;
   secondContext.shorthandMemoTable = first.shorthandMemoTable;
   secondContext.familyRecords = first.familyRecords;
-  inLonghandSupport(features, () => {
+  try {
     canonicalize(css, secondContext);
     for (const block of blocks) canonicalizeInTree(block, css, secondContext);
     finishColumns(secondContext);
-  });
+  } finally {
+    clearSupportCache();
+  }
 }
 
 /** The guard for the `rules` option, shared with the preset that validates it. */
@@ -287,7 +279,13 @@ export default pluginCreator;
  */
 const transformHooks = Object.freeze({
   mergeLonghand(css, browsers) {
-    runFirstRound(css, targetSupportOf(browsers), undefined, new TextTable());
+    const support = targetSupportOf(browsers);
+    runFirstRound(
+      css,
+      support,
+      undefined,
+      createRunContext(new TextTable(), undefined, support.features)
+    );
   },
   discardDuplicates(css, _browsers, consistencyChecks) {
     runRecords(

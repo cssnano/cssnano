@@ -11,8 +11,9 @@ import type { Container, Declaration } from 'postcss';
  * @param {boolean} lane
  * @param {Set<Declaration>} fallbacks
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-export declare function generateCandidates(cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, hasReset: boolean, lane: boolean, fallbacks: Set<Declaration>, textTable: TextTable): {
+export declare function generateCandidates(cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, hasReset: boolean, lane: boolean, fallbacks: Set<Declaration>, textTable: TextTable, features: ReadonlySet<string>): {
     decls: {
         prop: string;
         value: string;

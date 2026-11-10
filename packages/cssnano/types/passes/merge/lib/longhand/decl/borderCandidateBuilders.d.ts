@@ -27,17 +27,19 @@ declare function declarationsOfCells(cellHistory: Set<Declaration>[], cellIndexe
  * @param {Set<number>} barrierCells
  * @param {Set<Declaration>} fallbacks
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {number[]}
  */
-declare function getAvailableSides(cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, textTable: TextTable): number[];
+declare function getAvailableSides(cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, textTable: TextTable, features: ReadonlySet<string>): number[];
 /**
  * @param {Set<Declaration>[]} cellHistory
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {number[]}
  */
-declare function getAvailableComponents(cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, textTable: TextTable): number[];
+declare function getAvailableComponents(cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, textTable: TextTable, features: ReadonlySet<string>): number[];
 /**
  * @param {number[][]} groups
  * @param {string[]} cells
@@ -81,9 +83,10 @@ declare function createLeafCandidate(cells: string[], touched: Set<number>, bloc
  * @param {boolean} lane
  * @param {Set<Declaration>} fallbacks
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {{ decls: { prop: string, value: string }[], rank: number, mask: number, resetIndex: number, coveredCells: Set<number> }[]}
  */
-declare function createResetCandidates(hasReset: boolean, touched: Set<number>, barrierCells: Set<number>, cellHistory: Set<Declaration>[], cells: string[], cellComponents: (ValueComponent | undefined)[], lane: boolean, fallbacks: Set<Declaration>, textTable: TextTable): {
+declare function createResetCandidates(hasReset: boolean, touched: Set<number>, barrierCells: Set<number>, cellHistory: Set<Declaration>[], cells: string[], cellComponents: (ValueComponent | undefined)[], lane: boolean, fallbacks: Set<Declaration>, textTable: TextTable, features: ReadonlySet<string>): {
     decls: {
         prop: string;
         value: string;

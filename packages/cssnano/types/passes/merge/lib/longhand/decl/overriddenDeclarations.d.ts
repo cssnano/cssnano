@@ -7,7 +7,7 @@ export type CrossPropertyRule = {
     /**
      * whether a later declaration of another property always wins over the earlier
      */
-    overrides: (earlier: Declaration, later: Declaration, textTable: TextTable) => boolean;
+    overrides: (earlier: Declaration, later: Declaration, textTable: TextTable, features: ReadonlySet<string>) => boolean;
     /**
      * the
      * lowercased properties a declaration sets; with it, only later declarations
@@ -18,26 +18,29 @@ export type CrossPropertyRule = {
 /**
  * @param {Container} container - a style rule
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export declare function discardOverriddenDeclarations(container: Container, textTable: TextTable): void;
+export declare function discardOverriddenDeclarations(container: Container, textTable: TextTable, features: ReadonlySet<string>): void;
 /**
  * @param {ChildNode[]} nodes - declarations in source order, such as one
  * importance lane of a family; `all` declarations and nested rules bound runs
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @param {ReadonlySet<string>} [trustedProperties] - lowercased names the
  * caller validated, whose duplicates need no matching shape
  * @param {CrossPropertyRule} [crossPropertyRule] - the family's precedence
  * between different properties, such as a shorthand over its longhands
  * @return {void}
  */
-export declare function discardOverriddenInList(nodes: ChildNode[], textTable: TextTable, trustedProperties?: ReadonlySet<string>, crossPropertyRule?: CrossPropertyRule): void;
+export declare function discardOverriddenInList(nodes: ChildNode[], textTable: TextTable, features: ReadonlySet<string>, trustedProperties?: ReadonlySet<string>, crossPropertyRule?: CrossPropertyRule): void;
 /**
  * @param {Declaration[][]} lanes - the normal and important lanes of a family
  * @param {TextTable} textTable - forwarded
+ * @param {ReadonlySet<string>} features - forwarded
  * @param {ReadonlySet<string>} [trustedProperties] - forwarded
  * @param {CrossPropertyRule} [crossPropertyRule] - forwarded
  * @return {void}
  */
-export declare function discardOverriddenInLanes(lanes: Declaration[][], textTable: TextTable, trustedProperties?: ReadonlySet<string>, crossPropertyRule?: CrossPropertyRule): void;
+export declare function discardOverriddenInLanes(lanes: Declaration[][], textTable: TextTable, features: ReadonlySet<string>, trustedProperties?: ReadonlySet<string>, crossPropertyRule?: CrossPropertyRule): void;
 //# sourceMappingURL=overriddenDeclarations.d.ts.map

@@ -9,7 +9,8 @@ import type { Declaration } from 'postcss';
  * order; barriers that belong to no family are skipped
  * @param {import('../targetSupport.js').BoxSupport} support
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export declare function discardDeadDeclarations(lane: Declaration[], support: import('../targetSupport.js').BoxSupport, textTable: import('../../../../../values/textTable.js').TextTable): void;
+export declare function discardDeadDeclarations(lane: Declaration[], support: import('../targetSupport.js').BoxSupport, textTable: import('../../../../../values/textTable.js').TextTable, features: ReadonlySet<string>): void;
 //# sourceMappingURL=crossKindCoverage.d.ts.map

@@ -22,6 +22,7 @@ const cellCount = writingModes.length * 4;
  * declarations with their properties
  * @param {import('../targetSupport.js').BoxSupport} support
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean} whether later declarations set every cell of the
  * declaration, without leaving it to apply in any target
  */
@@ -31,7 +32,8 @@ function coversEveryCell(
   plain,
   others,
   support,
-  textTable
+  textTable,
+  features
 ) {
   for (const cell of property.cells) {
     if (plain[cell] === 1) continue;
@@ -43,7 +45,8 @@ function coversEveryCell(
           !isFallback(
             declaration,
             /** @type {Declaration} */ (candidates[at]),
-            textTable
+            textTable,
+            features
           ) &&
           support.understandsWherever(
             property,
@@ -66,9 +69,10 @@ function coversEveryCell(
  * order; barriers that belong to no family are skipped
  * @param {import('../targetSupport.js').BoxSupport} support
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export function discardDeadDeclarations(lane, support, textTable) {
+export function discardDeadDeclarations(lane, support, textTable, features) {
   const plain = new Uint8Array(cellCount);
   /* Per cell, the later declarations that may cover it, each followed by its
    * property so the check looks neither up. */
@@ -92,12 +96,13 @@ export function discardDeadDeclarations(lane, support, textTable) {
       plain,
       others,
       support,
-      textTable
+      textTable,
+      features
     );
     if (isCovered) {
       detach(declaration);
     } else if (
-      !needsUnmetSupport(declaration, textTable) &&
+      !needsUnmetSupport(declaration, textTable, features) &&
       support.supportsAll(property.name)
     ) {
       for (const cell of cells) plain[cell] = 1;

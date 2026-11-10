@@ -76,6 +76,7 @@ function shorthandTokens(horizontal, vertical) {
  * @param {Set<Declaration>} fallbackDefinitions
  * @param {boolean} isImportant
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
 function commitSlotVector(
   rule,
@@ -83,12 +84,13 @@ function commitSlotVector(
   liveDefinitions,
   fallbackDefinitions,
   isImportant,
-  textTable
+  textTable,
+  features
 ) {
   /* Preserve CSS-wide keywords without merging to respect author inheritance contracts */
   if (slotVector.some((s) => s && isGlobalKeyword(s.value))) return;
 
-  const full = flushableSlots(slotVector, textTable);
+  const full = flushableSlots(slotVector, textTable, features);
   if (!full) return;
 
   // Every slot of a radius lane keeps its range, as `assign` receives it.
@@ -120,8 +122,9 @@ function commitSlotVector(
  * @param {RadiusDeclarationDescriptor[]} laneDescriptors
  * @param {boolean} isImportant
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-function coalesceLane(rule, laneDescriptors, isImportant, textTable) {
+function coalesceLane(rule, laneDescriptors, isImportant, textTable, features) {
   const lane = new SlotLane(
     8,
     (slots, contributing, fallbacks) =>
@@ -131,9 +134,11 @@ function coalesceLane(rule, laneDescriptors, isImportant, textTable) {
         contributing,
         fallbacks,
         isImportant,
-        textTable
+        textTable,
+        features
       ),
-    textTable
+    textTable,
+    features
   );
 
   for (const desc of laneDescriptors) {
@@ -245,13 +250,15 @@ function canonicalizeSingleton(desc, textTable) {
  *
  * @param {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} lanes
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-function eliminateRedundantDeclarations(lanes, textTable) {
+function eliminateRedundantDeclarations(lanes, textTable, features) {
   for (const lane of lanes) {
     // A barrier descriptor holds its `all` declaration.
     discardOverriddenInList(
       lane.map((descriptor) => descriptor.decl),
       textTable,
+      features,
       allRadiusProperties
     );
   }
@@ -262,8 +269,9 @@ function eliminateRedundantDeclarations(lanes, textTable) {
  * @param {Declaration[]} decls
  * @param {[Declaration[], Declaration[]]} lanes
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-export function reduceBorderRadius(rule, decls, lanes, textTable) {
+export function reduceBorderRadius(rule, decls, lanes, textTable, features) {
   if (!rule.nodes || rule.nodes.length === 0 || decls.length === 0) return;
 
   const partitioned = partitionLanes(rule, lanes, textTable);
@@ -271,7 +279,7 @@ export function reduceBorderRadius(rule, decls, lanes, textTable) {
 
   const { lanes: descriptorLanes, radiusDescriptors } = partitioned;
 
-  eliminateRedundantDeclarations(descriptorLanes, textTable);
+  eliminateRedundantDeclarations(descriptorLanes, textTable, features);
 
   const liveDecls = radiusDescriptors.filter((d) => d.decl.parent);
   if (liveDecls.length <= 1) {
@@ -282,7 +290,7 @@ export function reduceBorderRadius(rule, decls, lanes, textTable) {
   for (const isImportant of [false, true]) {
     const laneDescriptors = descriptorLanes[isImportant ? 1 : 0];
     if (laneDescriptors.some((d) => !d.isBarrier && d.decl.parent === rule)) {
-      coalesceLane(rule, laneDescriptors, isImportant, textTable);
+      coalesceLane(rule, laneDescriptors, isImportant, textTable, features);
     }
   }
 }

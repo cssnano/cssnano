@@ -1,4 +1,5 @@
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -21,6 +22,7 @@ function discard(css, trustedProperties, crossPropertyRule) {
   discardOverriddenInList(
     declarations,
     new TextTable(),
+    longstandingFeatures,
     trustedProperties,
     crossPropertyRule
   );

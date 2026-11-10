@@ -5,18 +5,15 @@ import {
   reduceColumns,
   setsOtherColumnProperty,
 } from './decl/columns.js';
-import { addBoxDeclaration, reduceBox } from './decl/boxReducer.js';
+import { addBoxDeclaration } from './decl/boxReducer.js';
 import { aliasedGroup, boxProperties } from './decl/boxGroups.js';
-import { reduceBorder } from './decl/borderReducer.js';
-import { reduceBorderRadius } from './decl/borderRadiusReducer.js';
 import {
   allPhysicalBorderProperties,
   allRadiusProperties,
 } from './decl/borderData.js';
 import { alignmentProperties } from './decl/alignmentForms.js';
-import { reduceAlignmentFamily } from './decl/alignmentReducer.js';
 import { pairFamilyOf } from './decl/pairForms.js';
-import { reducePairFamily } from './decl/pairReducer.js';
+import { reduceClassifiedContainer } from './classifiedReducers.js';
 /** @import {BoxSupport} from './targetSupport.js' */
 /** @import {FoldedText, TextTable} from '../../../../values/textTable.js' */
 import { endsDeclarationRun } from './decl/declarationRuns.js';
@@ -32,7 +29,6 @@ import {
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
-/** @import {BoxDeclarations} from './decl/boxReducer.js'; */
 /** @import {BoxGroup} from './decl/boxGroups.js'; */
 
 /**
@@ -70,6 +66,7 @@ function alignmentFamilyOf(prop) {
  *   placeShorthands: boolean,
  *   boxSupport: BoxSupport,
  *   pairShorthands: ReadonlySet<string>,
+ *   features: ReadonlySet<string>,
  *   textTable: TextTable
  * }} MergeContext
  */
@@ -93,64 +90,6 @@ function alignmentFamilyOf(prop) {
  *   lanes: [Declaration[], Declaration[]]
  * }} FamilyDeclarations
  */
-
-/**
- * Runs property-family reducers on classified declarations for a container.
- * @param {Container} container
- * @param {{
- *   boxes: Map<BoxGroup, BoxDeclarations> | null,
- *   borderRadiusDecls: Declaration[],
- *   borderRadiusLanes: [Declaration[], Declaration[]],
- *   columnDecls: Declaration[],
- *   columnLanes: [Declaration[], Declaration[]],
- *   borderDeclarations: Declaration[],
- *   hasForeignBorder: boolean,
- *   families: Map<FamilyDeclarations['family'], FamilyDeclarations> | null,
- * }} state
- * @param {MergeContext} context
- * @return {void}
- */
-function reduceClassifiedContainer(container, state, context) {
-  if (state.boxes) {
-    for (const box of state.boxes.values()) {
-      reduceBox(container, box, context.boxSupport, context.textTable);
-    }
-  }
-  if (state.borderRadiusDecls.length) {
-    reduceBorderRadius(
-      container,
-      state.borderRadiusDecls,
-      state.borderRadiusLanes,
-      context.textTable
-    );
-  }
-  if (state.borderDeclarations.length) {
-    reduceBorder(
-      container,
-      state.borderDeclarations,
-      state.hasForeignBorder,
-      context.textTable
-    );
-  }
-  if (state.families) {
-    for (const { family, decls, lanes } of state.families.values()) {
-      if ('longhands' in family) {
-        reducePairFamily(container, family, decls, lanes, context.textTable);
-      } else {
-        reduceAlignmentFamily(
-          container,
-          family,
-          decls,
-          lanes,
-          context.textTable
-        );
-      }
-    }
-  }
-  if (state.columnDecls.length) {
-    context.columnRules.push([container, state.columnDecls, state.columnLanes]);
-  }
-}
 
 /**
  * Adds a declaration to its shorthand family, creating the family on first use.
@@ -290,7 +229,11 @@ function processContainer(container, context) {
   // Before classification, so the family reducers never see detached nodes.
   // Style rules only: at-rule descriptors follow their own validity rules.
   if (container.type === 'rule') {
-    discardOverriddenDeclarations(container, context.textTable);
+    discardOverriddenDeclarations(
+      container,
+      context.textTable,
+      context.features
+    );
     applyChildEdits(container);
   }
 
@@ -340,13 +283,15 @@ function processContainer(container, context) {
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
  * @param {TextTable} textTable the tokens the walk left for the declarations
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {MergeContext} the state that the rounds of one run share
  */
 export function longhandContext(
   placeShorthands,
   boxSupport,
   pairShorthands,
-  textTable
+  textTable,
+  features
 ) {
   return {
     columnRules: [],
@@ -356,6 +301,7 @@ export function longhandContext(
     placeShorthands,
     boxSupport,
     pairShorthands,
+    features,
     textTable,
   };
 }
@@ -370,7 +316,7 @@ export function longhandContext(
 export function finishColumns(context) {
   if (!context.setsOtherColumn) {
     for (const [rule, decls, lanes] of context.columnRules) {
-      reduceColumns(rule, decls, lanes, context.textTable);
+      reduceColumns(rule, decls, lanes, context.textTable, context.features);
     }
     // A rule may hold several runs; rebuild it once, after all of them.
     for (const [rule] of context.columnRules) applyChildEdits(rule);

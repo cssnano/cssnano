@@ -1,38 +1,8 @@
-import {
-  blocksMerge,
-  longstandingFeatures,
-  supportDependenciesOf,
-} from './syntaxFeatures.js';
+import { blocksMerge, supportDependenciesOf } from './syntaxFeatures.js';
 
 /** @import {TextTable} from '../../../../values/textTable.js' */
 
 const EMPTY_SET = new Set();
-
-/**
- * The newer syntax every browserslist target parses. OnceExit is synchronous,
- * so the file being processed is the only one that can observe this binding.
- * The default assumes targets at the support floor and nothing newer, which
- * keeps direct callers strict.
- *
- * @type {ReadonlySet<string>}
- */
-let targetSupport = longstandingFeatures;
-
-/**
- * @template T
- * @param {ReadonlySet<string>} supported - features every target supports
- * @param {() => T} run
- * @return {T}
- */
-function withTargetSupport(supported, run) {
-  const previous = targetSupport;
-  targetSupport = supported;
-  try {
-    return run();
-  } finally {
-    targetSupport = previous;
-  }
-}
 
 /**
  * Recording support when cloning declarations preserves which support the
@@ -81,12 +51,13 @@ function isDerived(declaration) {
 /**
  * @param {import('postcss').Declaration} declaration
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean} whether some target may drop the declaration because it
  * lacks syntax the declaration needs
  */
-function needsUnmetSupport(declaration, textTable) {
+function needsUnmetSupport(declaration, textTable, features) {
   for (const feature of requiredSupport(declaration, textTable)) {
-    if (!targetSupport.has(feature)) return true;
+    if (!features.has(feature)) return true;
   }
   return false;
 }
@@ -94,14 +65,15 @@ function needsUnmetSupport(declaration, textTable) {
 /**
  * @param {import('postcss').Declaration} declaration
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {Set<string>} the support out of `requiredSupport` that stops a
  * merge
  */
-function mergeBlockingSupport(declaration, textTable) {
+function mergeBlockingSupport(declaration, textTable, features) {
   /** @type {Set<string> | undefined} */
   let blocking;
   for (const feature of requiredSupport(declaration, textTable)) {
-    if (blocksMerge(feature) && !targetSupport.has(feature)) {
+    if (blocksMerge(feature) && !features.has(feature)) {
       blocking ??= new Set();
       blocking.add(feature);
     }
@@ -116,14 +88,15 @@ function mergeBlockingSupport(declaration, textTable) {
  * @param {import('postcss').Declaration} earlier
  * @param {import('postcss').Declaration} later
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean} whether earlier is a fallback for later
  */
-function isFallback(earlier, later, textTable) {
+function isFallback(earlier, later, textTable, features) {
   const needed = requiredSupport(later, textTable);
   if (needed.size === 0) return false;
   const available = requiredSupport(earlier, textTable);
   for (const feature of needed) {
-    if (!available.has(feature) && !targetSupport.has(feature)) return true;
+    if (!available.has(feature) && !features.has(feature)) return true;
   }
   return false;
 }
@@ -135,15 +108,16 @@ function isFallback(earlier, later, textTable) {
  * @param {import('postcss').Declaration} earlier
  * @param {import('postcss').Declaration} later
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function strandsFallback(earlier, later, textTable) {
+function strandsFallback(earlier, later, textTable, features) {
   if (!isDerived(earlier)) {
-    return isFallback(earlier, later, textTable);
+    return isFallback(earlier, later, textTable, features);
   }
 
-  return !mergeBlockingSupport(later, textTable).isSubsetOf(
-    mergeBlockingSupport(earlier, textTable)
+  return !mergeBlockingSupport(later, textTable, features).isSubsetOf(
+    mergeBlockingSupport(earlier, textTable, features)
   );
 }
 
@@ -155,5 +129,4 @@ export {
   isDerived,
   isFallback,
   strandsFallback,
-  withTargetSupport,
 };

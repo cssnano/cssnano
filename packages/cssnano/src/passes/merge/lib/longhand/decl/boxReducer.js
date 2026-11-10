@@ -97,18 +97,19 @@ function hasInvalid(decls, textTable) {
  * @param {BoxDeclarations} box
  * @param {import('../targetSupport.js').BoxSupport} support
  * @param {TextTable} textTable the tokens the walk left for the declarations
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export function reduceBox(rule, box, support, textTable) {
+export function reduceBox(rule, box, support, textTable, features) {
   const { group, decls, lanes } = box;
   if (!rule.nodes) return;
 
   if (decls.length === 0 || hasInvalid(decls, textTable)) return;
 
-  discardOverriddenInLanes(lanes, textTable, group.properties);
+  discardOverriddenInLanes(lanes, textTable, features, group.properties);
   if (box.flow) {
     for (const lane of lanes) {
-      discardDeadDeclarations(lane, support, textTable);
+      discardDeadDeclarations(lane, support, textTable, features);
     }
   }
 
@@ -138,7 +139,8 @@ export function reduceBox(rule, box, support, textTable) {
         laneDecls,
         lane,
         support.supportsAll(group.physical.shorthand),
-        textTable
+        textTable,
+        features
       );
     }
     if (!box.flow) continue;
@@ -149,7 +151,8 @@ export function reduceBox(rule, box, support, textTable) {
         laneDecls,
         lane,
         support.supportsAll(family.shorthand),
-        textTable
+        textTable,
+        features
       );
     }
   }

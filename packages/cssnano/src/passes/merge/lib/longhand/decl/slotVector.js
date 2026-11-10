@@ -63,17 +63,21 @@ function slotVectorReady(slots, textTable) {
  *
  * @param {{ value: string, decl: Declaration }[]} full
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function supportProvenanceMatches(full, textTable) {
-  const s0 = mergeBlockingSupport(full[0].decl, textTable);
+function supportProvenanceMatches(full, textTable, features) {
+  const s0 = mergeBlockingSupport(full[0].decl, textTable, features);
   // A shorthand fills adjacent slots with one declaration; compare it once.
   let previous = full[0].decl;
   for (let i = 1; i < full.length; i++) {
     const decl = full[i].decl;
     if (decl === previous) continue;
     previous = decl;
-    if (s0.symmetricDifference(mergeBlockingSupport(decl, textTable)).size) {
+    if (
+      s0.symmetricDifference(mergeBlockingSupport(decl, textTable, features))
+        .size
+    ) {
       return false;
     }
   }
@@ -86,8 +90,9 @@ function supportProvenanceMatches(full, textTable) {
  * vector ready to be merged, or `null` if any slot is missing, custom,
  * conflicting on CSS-wide keywords, or has mismatched support provenance
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-export function flushableSlots(slots, textTable) {
+export function flushableSlots(slots, textTable, features) {
   const full = slotVectorReady(slots, textTable);
   if (!full) return null;
 
@@ -97,7 +102,7 @@ export function flushableSlots(slots, textTable) {
     const sv = asciiLowerCase(s.value);
     if (kw ? sv !== v0 : cssWideKeywords.has(sv)) return null;
   }
-  if (!supportProvenanceMatches(full, textTable)) return null;
+  if (!supportProvenanceMatches(full, textTable, features)) return null;
 
   return full;
 }
@@ -114,9 +119,10 @@ export function flushableSlots(slots, textTable) {
  * a shorthand
  * @param {Declaration} decl
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function shouldResetSlots(slots, first, count, decl, textTable) {
+function shouldResetSlots(slots, first, count, decl, textTable, features) {
   if (count < slots.length && isCssWideKeyword(decl.value)) {
     return true;
   }
@@ -125,7 +131,8 @@ function shouldResetSlots(slots, first, count, decl, textTable) {
       isFallback(
         /** @type {{ decl: Declaration }} */ (slots[i]).decl,
         decl,
-        textTable
+        textTable,
+        features
       )
     ) {
       return true;
@@ -143,15 +150,19 @@ function shouldResetSlots(slots, first, count, decl, textTable) {
 export class SlotLane {
   /** @type {import('../../../../../values/textTable.js').TextTable} */
   #textTable;
+  /** @type {ReadonlySet<string>} */
+  #features;
 
   /**
    * @param {number} size - how many slots the family has
    * @param {(slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void} commit
    * called with the state whenever the run ends, before it is cleared
    * @param {import('../../../../../values/textTable.js').TextTable} textTable
+   * @param {ReadonlySet<string>} features the features every target supports
    */
-  constructor(size, commit, textTable) {
+  constructor(size, commit, textTable, features) {
     this.#textTable = textTable;
+    this.#features = features;
     /** @type {SlotVector} */
     this.slots = Array.from({ length: size }, () => null);
     /** @type {Set<Declaration>} */
@@ -189,7 +200,14 @@ export class SlotLane {
     const wasFull = this.slots.every(Boolean);
     if (
       wasFull &&
-      shouldResetSlots(this.slots, first, count, decl, this.#textTable)
+      shouldResetSlots(
+        this.slots,
+        first,
+        count,
+        decl,
+        this.#textTable,
+        this.#features
+      )
     ) {
       this.reset();
     }
@@ -227,10 +245,13 @@ export class SlotLane {
   #retainFallbacks(idx, previous, decl, fallbackSettled) {
     const behind = this.slotFallbacks?.[idx];
     const isPreviousFallback =
-      !fallbackSettled && isFallback(previous, decl, this.#textTable);
+      !fallbackSettled &&
+      isFallback(previous, decl, this.#textTable, this.#features);
     if (behind === undefined && !isPreviousFallback) return;
     const kept =
-      behind?.filter((d) => isFallback(d, decl, this.#textTable)) ?? [];
+      behind?.filter((d) =>
+        isFallback(d, decl, this.#textTable, this.#features)
+      ) ?? [];
     const pruned = behind !== undefined && kept.length < behind.length;
     if (isPreviousFallback) {
       kept.push(previous);

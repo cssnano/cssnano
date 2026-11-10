@@ -2,6 +2,7 @@ import { DeclarationKeys } from './declarationKey.js';
 import { TextTable } from '../../values/textTable.js';
 import { TokenLists } from './tokenLists.js';
 import { consistencyChecksEnabled } from './consistencyChecks.js';
+import { longstandingFeatures } from '../merge/lib/longhand/syntaxFeatures.js';
 
 /** @import {Container} from 'postcss' */
 
@@ -15,6 +16,7 @@ import { consistencyChecksEnabled } from './consistencyChecks.js';
  *   textTable: TextTable,
  *   tokenLists: TokenLists,
  *   consistencyChecks: boolean,
+ *   features: ReadonlySet<string>,
  * }} RunContext
  */
 
@@ -25,11 +27,13 @@ import { consistencyChecksEnabled } from './consistencyChecks.js';
  *
  * @param {TextTable} [textTable]
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
+ * @param {ReadonlySet<string>} [features] the features every browser target supports; the strict floor otherwise
  * @return {RunContext}
  */
 export function createRunContext(
   textTable = new TextTable(),
-  consistencyChecks = consistencyChecksEnabled()
+  consistencyChecks = consistencyChecksEnabled(),
+  features = longstandingFeatures
 ) {
   return {
     declarations: new DeclarationKeys(),
@@ -37,5 +41,6 @@ export function createRunContext(
     textTable,
     tokenLists: new TokenLists(),
     consistencyChecks,
+    features,
   };
 }

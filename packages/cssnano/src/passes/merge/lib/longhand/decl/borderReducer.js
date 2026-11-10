@@ -87,15 +87,16 @@ function normalizeBorderSingleton(d, textTable) {
  * @param {Declaration} prev
  * @param {Declaration} d
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function isDeclarationFallback(prev, d, textTable) {
+function isDeclarationFallback(prev, d, textTable, features) {
   if (asciiLowerCase(prev.prop) === asciiLowerCase(d.prop)) {
-    return isFallback(prev, d, textTable);
+    return isFallback(prev, d, textTable, features);
   }
   return (
-    mergeBlockingSupport(d, textTable).size > 0 &&
-    isFallback(prev, d, textTable)
+    mergeBlockingSupport(d, textTable, features).size > 0 &&
+    isFallback(prev, d, textTable, features)
   );
 }
 /**
@@ -107,10 +108,21 @@ function isDeclarationFallback(prev, d, textTable) {
  * @param {boolean} isBarrier
  * @param {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-function updateCell(idx, d, value, part, isBarrier, state, textTable) {
+function updateCell(
+  idx,
+  d,
+  value,
+  part,
+  isBarrier,
+  state,
+  textTable,
+  features
+) {
   for (const prev of state.cellHistory[idx]) {
-    if (isDeclarationFallback(prev, d, textTable)) state.fallbacks.add(prev);
+    if (isDeclarationFallback(prev, d, textTable, features))
+      state.fallbacks.add(prev);
   }
   if (isBarrier) {
     state.barrierCells.add(idx);
@@ -126,8 +138,9 @@ function updateCell(idx, d, value, part, isBarrier, state, textTable) {
  * @param {Declaration} d
  * @param {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-function applySegmentDeclaration(d, state, textTable) {
+function applySegmentDeclaration(d, state, textTable, features) {
   const prop = asciiLowerCase(d.prop);
   const tokens = declarationTokens(textTable, d);
   // Segment members passed the family guard: no global keyword, explodable.
@@ -152,7 +165,8 @@ function applySegmentDeclaration(d, state, textTable) {
           componentParts[c],
           isBarrier,
           state,
-          textTable
+          textTable,
+          features
         );
       }
     }
@@ -169,7 +183,8 @@ function applySegmentDeclaration(d, state, textTable) {
         parts[s],
         isBarrier,
         state,
-        textTable
+        textTable,
+        features
       );
     }
   } else {
@@ -185,7 +200,8 @@ function applySegmentDeclaration(d, state, textTable) {
         parts.length === 1 ? parts[0] : undefined,
         isBarrier,
         state,
-        textTable
+        textTable,
+        features
       );
     }
   }
@@ -193,9 +209,10 @@ function applySegmentDeclaration(d, state, textTable) {
 /**
  * @param {Declaration[]} segment
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }}
  */
-function analyzeSegment(segment, textTable) {
+function analyzeSegment(segment, textTable, features) {
   /** @type {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} */
   const state = {
     cells: Array.from({ length: 12 }, () => ''),
@@ -207,7 +224,7 @@ function analyzeSegment(segment, textTable) {
     resetFound: false,
   };
   for (const d of segment) {
-    applySegmentDeclaration(d, state, textTable);
+    applySegmentDeclaration(d, state, textTable, features);
   }
   return state;
 }
@@ -217,8 +234,9 @@ function analyzeSegment(segment, textTable) {
  * @param {Declaration[]} segment
  * @param {boolean} lane
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-function reduceSegment(rule, segment, lane, textTable) {
+function reduceSegment(rule, segment, lane, textTable, features) {
   if (segment.length === 0) return;
   if (segment.length === 1) {
     const d = segment[0];
@@ -228,7 +246,7 @@ function reduceSegment(rule, segment, lane, textTable) {
     return;
   }
 
-  const state = analyzeSegment(segment, textTable);
+  const state = analyzeSegment(segment, textTable, features);
   if (state.touched.size === 0) return;
 
   const hasReset = state.resetFound;
@@ -241,7 +259,8 @@ function reduceSegment(rule, segment, lane, textTable) {
     hasReset,
     lane,
     state.fallbacks,
-    textTable
+    textTable,
+    features
   );
 
   const best = selectBestCandidate(
@@ -262,15 +281,16 @@ function reduceSegment(rule, segment, lane, textTable) {
  * @param {Declaration[]} laneDecls
  * @param {boolean} lane
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-function processLane(rule, laneDecls, lane, textTable) {
+function processLane(rule, laneDecls, lane, textTable, features) {
   /** @type {Declaration[]} */
   let segment = [];
 
   for (const d of laneDecls) {
     if (detectDeclaration(d) || !canExplode(d, textTable)) {
       if (segment.length) {
-        reduceSegment(rule, segment, lane, textTable);
+        reduceSegment(rule, segment, lane, textTable, features);
         segment = [];
       }
       continue;
@@ -279,7 +299,7 @@ function processLane(rule, laneDecls, lane, textTable) {
   }
 
   if (segment.length) {
-    reduceSegment(rule, segment, lane, textTable);
+    reduceSegment(rule, segment, lane, textTable, features);
   }
 }
 
@@ -294,13 +314,14 @@ function processLane(rule, laneDecls, lane, textTable) {
  * @param {Declaration} node
  * @param {Declaration} lastNode
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function isOverriddenByShorthand(node, lastNode, textTable) {
+function isOverriddenByShorthand(node, lastNode, textTable, features) {
   return (
     /** @type {number} */ (getLevel(node.prop)) >
       /** @type {number} */ (getLevel(lastNode.prop)) &&
-    !strandsFallback(node, lastNode, textTable)
+    !strandsFallback(node, lastNode, textTable, features)
   );
 }
 
@@ -315,9 +336,16 @@ const borderPrecedence = {
  * @param {Declaration[]} decls
  * @param {boolean} hasForeignBorder
  * @param {TextTable} textTable the tokens the walk left for the declarations
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export function reduceBorder(rule, decls, hasForeignBorder, textTable) {
+export function reduceBorder(
+  rule,
+  decls,
+  hasForeignBorder,
+  textTable,
+  features
+) {
   if (!rule.nodes || hasForeignBorder) return;
 
   if (
@@ -339,6 +367,7 @@ export function reduceBorder(rule, decls, hasForeignBorder, textTable) {
   discardOverriddenInList(
     decls,
     textTable,
+    features,
     allPhysicalBorderProperties,
     borderPrecedence
   );
@@ -354,7 +383,7 @@ export function reduceBorder(rule, decls, hasForeignBorder, textTable) {
       (d) => Boolean(d.important) === lane && d.parent
     );
     if (laneDecls.length) {
-      processLane(rule, laneDecls, lane, textTable);
+      processLane(rule, laneDecls, lane, textTable, features);
     }
   }
 }

@@ -120,10 +120,11 @@ export function shortestWithFreeSlots(values, free, minify) {
  * @param {BoxFamily} family
  * @param {Declaration[]} laneDecls
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {number[]} for each slot, the position of the last declaration of
  * the family that sets it and that every target parses, or `-1`
  */
-function lastPlainSetters(family, laneDecls, textTable) {
+function lastPlainSetters(family, laneDecls, textTable, features) {
   const last = family.longhands.map(() => -1);
   for (const [index, declaration] of laneDecls.entries()) {
     const property = boxProperties.get(asciiLowerCase(declaration.prop));
@@ -131,7 +132,7 @@ function lastPlainSetters(family, laneDecls, textTable) {
       declaration.parent === undefined ||
       property?.family !== family ||
       detectDeclaration(declaration) ||
-      needsUnmetSupport(declaration, textTable)
+      needsUnmetSupport(declaration, textTable, features)
     ) {
       continue;
     }
@@ -157,9 +158,10 @@ function lastPlainSetters(family, laneDecls, textTable) {
  * @param {Map<Declaration, Declaration> | undefined} inserted - the shorthand
  * a commit put after a declaration
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-function freeOverriddenSlots(family, laneDecls, inserted, textTable) {
+function freeOverriddenSlots(family, laneDecls, inserted, textTable, features) {
   const { parse, minify } = formsOf(family);
   /** @type {number[] | undefined} */
   let lastOverrider;
@@ -174,12 +176,12 @@ function freeOverriddenSlots(family, laneDecls, inserted, textTable) {
       property.slot !== shorthandSlot ||
       detectDeclaration(target) ||
       !isExplodable(target, textTable) ||
-      mergeBlockingSupport(target, textTable).size > 0
+      mergeBlockingSupport(target, textTable, features).size > 0
     ) {
       continue;
     }
 
-    lastOverrider ??= lastPlainSetters(family, laneDecls, textTable);
+    lastOverrider ??= lastPlainSetters(family, laneDecls, textTable, features);
     if (lastOverrider.every((setter) => setter <= index)) continue;
 
     const values = parse(target.value);
@@ -205,6 +207,7 @@ function freeOverriddenSlots(family, laneDecls, inserted, textTable) {
  * @param {Map<Declaration, Declaration> | undefined} inserted
  * @return {void}
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
 function flush(
   rule,
@@ -215,9 +218,10 @@ function flush(
   important,
   mayInsert,
   inserted,
-  textTable
+  textTable,
+  features
 ) {
-  const full = flushableSlots(slots, textTable);
+  const full = flushableSlots(slots, textTable, features);
   if (!full) return;
 
   const kw = isCssWideKeyword(full[0].value);
@@ -256,6 +260,7 @@ function flush(
  * @param {boolean} important
  * @param {boolean} mayInsert - whether every target supports the shorthand
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
 export function reduceFamilyLane(
@@ -264,7 +269,8 @@ export function reduceFamilyLane(
   laneDecls,
   important,
   mayInsert,
-  textTable
+  textTable,
+  features
 ) {
   const count = family.longhands.length;
   /** @type {Map<Declaration, Declaration> | undefined} */
@@ -285,10 +291,12 @@ export function reduceFamilyLane(
         important,
         mayInsert,
         inserted,
-        textTable
+        textTable,
+        features
       );
     },
-    textTable
+    textTable,
+    features
   );
 
   for (position = 0; position < laneDecls.length; position++) {
@@ -329,5 +337,5 @@ export function reduceFamilyLane(
   lane.reset();
 
   if (laneDecls.length > 1)
-    freeOverriddenSlots(family, laneDecls, inserted, textTable);
+    freeOverriddenSlots(family, laneDecls, inserted, textTable, features);
 }

@@ -25,9 +25,18 @@ const { asciiLowerCase } = cssnanoUtils;
  * @param {boolean} important
  * @param {Map<Declaration, string>} parsed - normalized values
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-function mergeSegment(rule, family, segment, important, parsed, textTable) {
+function mergeSegment(
+  rule,
+  family,
+  segment,
+  important,
+  parsed,
+  textTable,
+  features
+) {
   if (segment.length !== family.longhands.length) return;
   /** @type {(string | null)[]} */
   const slots = family.longhands.map(() => null);
@@ -40,7 +49,7 @@ function mergeSegment(rule, family, segment, important, parsed, textTable) {
 
   // A newer-syntax component is dropped, with the others, where unsupported.
   const [first, ...rest] = segment.map((d) =>
-    mergeBlockingSupport(d, textTable)
+    mergeBlockingSupport(d, textTable, features)
   );
   if (rest.some((support) => support.symmetricDifference(first).size)) return;
 
@@ -70,9 +79,17 @@ function mergeSegment(rule, family, segment, important, parsed, textTable) {
  * @param {[Declaration[], Declaration[]]} lanes - the declarations and `all`
  *   split by importance
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export function reducePairFamily(rule, family, declarations, lanes, textTable) {
+export function reducePairFamily(
+  rule,
+  family,
+  declarations,
+  lanes,
+  textTable,
+  features
+) {
   // The shorthand and aliases such as grid-gap share the cascade.
   if (
     declarations.some((d) => !family.longhands.includes(asciiLowerCase(d.prop)))
@@ -101,9 +118,17 @@ export function reducePairFamily(rule, family, declarations, lanes, textTable) {
         segment.push(decl);
         continue;
       }
-      mergeSegment(rule, family, segment, important, parsed, textTable);
+      mergeSegment(
+        rule,
+        family,
+        segment,
+        important,
+        parsed,
+        textTable,
+        features
+      );
       segment = [];
     }
-    mergeSegment(rule, family, segment, important, parsed, textTable);
+    mergeSegment(rule, family, segment, important, parsed, textTable, features);
   }
 }

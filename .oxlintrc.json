@@ -238,7 +238,6 @@
           {
             "allowed": [
               "packages/cssnano/src/passes/ir/consistencyChecks.js#enabled",
-              "packages/cssnano/src/passes/merge/lib/longhand/isFallback.js#targetSupport",
               "packages/cssnano/src/passes/merge/lib/longhand/isFallback.js#inheritedSupport",
               "packages/cssnano/src/passes/merge/lib/longhand/spec.js#setsCache",
               "packages/cssnano/src/passes/merge/lib/longhand/targetSupport.js#profiles",

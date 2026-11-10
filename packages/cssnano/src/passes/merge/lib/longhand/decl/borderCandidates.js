@@ -85,6 +85,7 @@ function compareCandidates(a, b, lane) {
  * @param {boolean} lane
  * @param {Set<Declaration>} fallbacks
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
 export function generateCandidates(
   cells,
@@ -95,20 +96,23 @@ export function generateCandidates(
   hasReset,
   lane,
   fallbacks,
-  textTable
+  textTable,
+  features
 ) {
   const availSides = getAvailableSides(
     cellHistory,
     touched,
     barrierCells,
     fallbacks,
-    textTable
+    textTable,
+    features
   );
   const availComps = getAvailableComponents(
     cellHistory,
     touched,
     barrierCells,
-    textTable
+    textTable,
+    features
   );
 
   const protectedCells = new Set(
@@ -140,7 +144,8 @@ export function generateCandidates(
     cellComponents,
     lane,
     fallbacks,
-    textTable
+    textTable,
+    features
   );
 
   const compCands = getSubsets(availComps).map((sub) =>

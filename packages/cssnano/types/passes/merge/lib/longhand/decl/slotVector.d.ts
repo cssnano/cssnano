@@ -21,11 +21,12 @@ export declare function declCost(prop: string, value: string, important?: boolea
  * vector ready to be merged, or `null` if any slot is missing, custom,
  * conflicting on CSS-wide keywords, or has mismatched support provenance
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
 export declare function flushableSlots(slots: ({
     value: string;
     decl: Declaration;
-} | null)[], textTable: import('../../../../../values/textTable.js').TextTable): {
+} | null)[], textTable: import('../../../../../values/textTable.js').TextTable, features: ReadonlySet<string>): {
     value: string;
     decl: Declaration;
 }[] | null;
@@ -55,8 +56,9 @@ export declare class SlotLane {
      * @param {(slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void} commit
      * called with the state whenever the run ends, before it is cleared
      * @param {import('../../../../../values/textTable.js').TextTable} textTable
+     * @param {ReadonlySet<string>} features the features every target supports
      */
-    constructor(size: number, commit: (slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void, textTable: import('../../../../../values/textTable.js').TextTable);
+    constructor(size: number, commit: (slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void, textTable: import('../../../../../values/textTable.js').TextTable, features: ReadonlySet<string>);
     /** Commits the run, then starts an empty one. */
     reset(): void;
     /**

@@ -14,6 +14,7 @@ export type MergeContext = {
     placeShorthands: boolean;
     boxSupport: BoxSupport;
     pairShorthands: ReadonlySet<string>;
+    features: ReadonlySet<string>;
     textTable: TextTable;
 };
 export type FamilyRecord = {
@@ -32,9 +33,10 @@ export type FamilyDeclarations = {
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
  * @param {TextTable} textTable the tokens the walk left for the declarations
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {MergeContext} the state that the rounds of one run share
  */
-export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, textTable: TextTable): MergeContext;
+export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, textTable: TextTable, features: ReadonlySet<string>): MergeContext;
 /**
  * Reduces the column rules once every block of the stylesheet is canonicalized,
  * since whether a column property is set elsewhere is a whole-stylesheet fact.

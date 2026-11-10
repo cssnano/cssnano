@@ -7,7 +7,6 @@ import {
   finishColumns,
   longhandContext,
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
-import { withTargetSupport } from '../../../src/passes/merge/lib/longhand/isFallback.js';
 import { clearSupportCache } from '../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { minifiedLength } from '../../../src/passes/ir/minifiedLength.js';
@@ -44,10 +43,11 @@ test('canonicalizing a framework block twice gives the same block and never a lo
       placeShorthands,
       boxSupport,
       pairShorthands,
-      new TextTable()
+      new TextTable(),
+      features
     );
     try {
-      withTargetSupport(features, () => {
+      {
         canonicalize(root, context);
         /** @type {import('postcss').Container[]} */
         const blocks = [];
@@ -77,7 +77,7 @@ test('canonicalizing a framework block twice gives the same block and never a lo
             `${file}: a second canonicalization changed a block`
           );
         }
-      });
+      }
     } finally {
       clearSupportCache();
     }

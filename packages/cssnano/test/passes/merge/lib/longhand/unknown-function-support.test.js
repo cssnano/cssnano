@@ -1,4 +1,5 @@
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
@@ -126,7 +127,8 @@ describe('support required by a function', () => {
     assert.deepEqual(
       mergeBlockingSupport(
         postcss.decl({ prop: 'width', value: 'calc(anchor-size(width))' }),
-        new TextTable()
+        new TextTable(),
+        longstandingFeatures
       ),
       new Set(['calc', 'function:anchor-size'])
     );

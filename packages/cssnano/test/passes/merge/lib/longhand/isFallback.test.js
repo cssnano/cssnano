@@ -2,6 +2,7 @@ import { TextTable } from '../../../../../src/values/textTable.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
+import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import {
   isFallback,
   mergeBlockingSupport,
@@ -79,7 +80,8 @@ test('treats an earlier longstanding unit as a fallback for a later newer unit',
     isFallback(
       earlier,
       postcss.decl({ prop: 'width', value: '5dvh' }),
-      new TextTable()
+      new TextTable(),
+      longstandingFeatures
     ),
     true
   );
@@ -91,7 +93,8 @@ test('does not treat a later longstanding unit as needing a fallback', () => {
     isFallback(
       earlier,
       postcss.decl({ prop: 'width', value: '2em' }),
-      new TextTable()
+      new TextTable(),
+      longstandingFeatures
     ),
     false
   );
@@ -101,7 +104,8 @@ test('does not block a merge for rgba(), which authors write without fallbacks',
   assert.equal(
     mergeBlockingSupport(
       postcss.decl({ prop: 'color', value: 'rgba(0,0,0,.5)' }),
-      new TextTable()
+      new TextTable(),
+      longstandingFeatures
     ).size,
     0
   );
@@ -111,7 +115,8 @@ test('blocks a merge for calc(), which Opera Mini drops', () => {
   assert.deepEqual(
     mergeBlockingSupport(
       postcss.decl({ prop: 'width', value: 'calc(1px)' }),
-      new TextTable()
+      new TextTable(),
+      longstandingFeatures
     ),
     new Set(['calc'])
   );
@@ -121,7 +126,8 @@ test('blocks a merge for a newer unit', () => {
   assert.deepEqual(
     mergeBlockingSupport(
       postcss.decl({ prop: 'width', value: '5dvh' }),
-      new TextTable()
+      new TextTable(),
+      longstandingFeatures
     ),
     new Set(['unit:dvh'])
   );

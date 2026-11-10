@@ -53,7 +53,8 @@ export declare function shortestWithFreeSlots(values: string[], free: boolean[],
  * @param {boolean} important
  * @param {boolean} mayInsert - whether every target supports the shorthand
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export declare function reduceFamilyLane(rule: Container, family: BoxFamily, laneDecls: Declaration[], important: boolean, mayInsert: boolean, textTable: import('../../../../../values/textTable.js').TextTable): void;
+export declare function reduceFamilyLane(rule: Container, family: BoxFamily, laneDecls: Declaration[], important: boolean, mayInsert: boolean, textTable: import('../../../../../values/textTable.js').TextTable, features: ReadonlySet<string>): void;
 //# sourceMappingURL=slotSolver.d.ts.map

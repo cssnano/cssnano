@@ -31,14 +31,15 @@ export { allColumnProps, setsOtherColumnProperty } from './columnsValue.js';
  * @param {Declaration[]} laneDecls
  * @param {boolean} important
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-function processLane(rule, laneDecls, important, textTable) {
+function processLane(rule, laneDecls, important, textTable, features) {
   /** @type {Map<Declaration, Declaration>} */
   const inserted = new Map();
   const lane = new SlotLane(
     2,
     (slots, contributing, fallbacks) => {
-      const full = flushableSlots(slots, textTable);
+      const full = flushableSlots(slots, textTable, features);
       if (!full) return;
 
       commitShorthand(
@@ -55,7 +56,8 @@ function processLane(rule, laneDecls, important, textTable) {
         textTable
       );
     },
-    textTable
+    textTable,
+    features
   );
 
   for (const decl of laneDecls) {
@@ -104,6 +106,7 @@ function processLane(rule, laneDecls, important, textTable) {
     discardOverriddenInList(
       remaining,
       textTable,
+      features,
       allColumnProps,
       columnsPrecedence
     );
@@ -116,11 +119,11 @@ function processLane(rule, laneDecls, important, textTable) {
  * @type {import('./overriddenDeclarations.js').CrossPropertyRule}
  */
 const columnsPrecedence = {
-  overrides: (node, lastNode, textTable) =>
+  overrides: (node, lastNode, textTable, features) =>
     asciiLowerCase(lastNode.prop) === columns &&
     asciiLowerCase(node.prop) !== columns &&
     isValidColumns(lastNode, textTable) &&
-    !isFallback(node, lastNode, textTable),
+    !isFallback(node, lastNode, textTable, features),
 };
 
 /**
@@ -150,12 +153,13 @@ function normalizeSingleton(s, textTable) {
  * @param {Declaration[]} decls
  * @param {[Declaration[], Declaration[]]} familyLanes
  * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  */
-export function reduceColumns(rule, decls, familyLanes, textTable) {
+export function reduceColumns(rule, decls, familyLanes, textTable, features) {
   if (!rule.nodes) return;
   if (decls.length === 0 || decls.some((d) => isInvalid(d, textTable))) return;
 
-  discardOverriddenInLanes(familyLanes, textTable, allColumnProps);
+  discardOverriddenInLanes(familyLanes, textTable, features, allColumnProps);
 
   const live = decls.filter((d) => d.parent);
   if (live.length <= 1) {
@@ -168,7 +172,7 @@ export function reduceColumns(rule, decls, familyLanes, textTable) {
       (d) => d.parent === rule
     );
     if (hasNonAll(laneDecls)) {
-      processLane(rule, laneDecls, lane, textTable);
+      processLane(rule, laneDecls, lane, textTable, features);
     }
   }
 }

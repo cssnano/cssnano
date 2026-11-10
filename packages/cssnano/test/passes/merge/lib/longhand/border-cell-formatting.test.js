@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import { suite, test } from 'node:test';
 
 // The counter must hook the tokenizer before the walk loads it.
@@ -45,7 +46,7 @@ suite('border candidates format the cells from the stored tokens', () => {
     );
     const rule = /** @type {import('postcss').Rule} */ (root.first);
     const before = tokenizeTotal();
-    reduceBorder(rule, [...rule.nodes], false, table);
+    reduceBorder(rule, [...rule.nodes], false, table, longstandingFeatures);
     assert.equal(tokenizeTotal() - before, 0);
   });
 
@@ -55,7 +56,7 @@ suite('border candidates format the cells from the stored tokens', () => {
     );
     const rule = /** @type {import('postcss').Rule} */ (root.first);
     const before = tokenizeTotal();
-    reduceBorder(rule, [...rule.nodes], false, table);
+    reduceBorder(rule, [...rule.nodes], false, table, longstandingFeatures);
     assert.equal(tokenizeTotal() - before, 0);
   });
 });

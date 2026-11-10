@@ -17,7 +17,6 @@ import {
   longhandContext,
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { TextTable } from '../../../src/values/textTable.js';
-import { withTargetSupport } from '../../../src/passes/merge/lib/longhand/isFallback.js';
 import { clearSupportCache } from '../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
@@ -77,11 +76,12 @@ function blocksChangedBySecondRound(css) {
     placeShorthands,
     boxSupport,
     pairShorthands,
-    new TextTable()
+    new TextTable(),
+    features
   );
   const changed = [];
   try {
-    withTargetSupport(features, () => {
+    {
       const blocks = [root];
       root.walk((node) => {
         if (node.type !== 'rule' && node.type !== 'atrule') return;
@@ -94,7 +94,7 @@ function blocksChangedBySecondRound(css) {
         if (block.toString() !== before) changed.push(before);
       }
       finishColumns(context);
-    });
+    }
   } finally {
     clearSupportCache();
   }

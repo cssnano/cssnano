@@ -45,7 +45,7 @@ function addToBucket(buckets, key, declaration) {
 
 /**
  * @typedef {object} CrossPropertyRule
- * @property {(earlier: Declaration, later: Declaration, textTable: TextTable) => boolean} overrides
+ * @property {(earlier: Declaration, later: Declaration, textTable: TextTable, features: ReadonlySet<string>) => boolean} overrides
  * whether a later declaration of another property always wins over the earlier
  * @property {(node: Declaration) => Iterable<string>} [footprint] the
  * lowercased properties a declaration sets; with it, only later declarations
@@ -79,14 +79,18 @@ class OverrideFrontier {
   #cache;
   /** @type {TextTable} */
   #textTable;
+  /** @type {ReadonlySet<string>} */
+  #features;
 
   /**
    * @param {TextTable} textTable the tokens the walk left for the declarations
+   * @param {ReadonlySet<string>} features the features every target supports
    * @param {ReadonlySet<string>} [trustedProperties] lowercased names
    * @param {CrossPropertyRule} [crossPropertyRule]
    */
-  constructor(textTable, trustedProperties, crossPropertyRule) {
+  constructor(textTable, features, trustedProperties, crossPropertyRule) {
     this.#textTable = textTable;
+    this.#features = features;
     this.#trustedProperties = trustedProperties;
     this.#crossPropertyRule = crossPropertyRule;
     if (crossPropertyRule?.footprint) {
@@ -175,10 +179,11 @@ class OverrideFrontier {
     const bucket = buckets.get(key);
     if (bucket === undefined) return false;
     if (!Array.isArray(bucket)) {
-      return !isFallback(node, bucket, this.#textTable);
+      return !isFallback(node, bucket, this.#textTable, this.#features);
     }
     for (const later of bucket) {
-      if (!isFallback(node, later, this.#textTable)) return true;
+      if (!isFallback(node, later, this.#textTable, this.#features))
+        return true;
     }
     return false;
   }
@@ -233,11 +238,13 @@ class OverrideFrontier {
       const survivors = source.get(property);
       if (survivors === undefined) continue;
       if (!Array.isArray(survivors)) {
-        if (rule.overrides(node, survivors, this.#textTable)) return true;
+        if (rule.overrides(node, survivors, this.#textTable, this.#features))
+          return true;
         continue;
       }
       for (const later of survivors) {
-        if (rule.overrides(node, later, this.#textTable)) return true;
+        if (rule.overrides(node, later, this.#textTable, this.#features))
+          return true;
       }
     }
     return false;
@@ -279,12 +286,14 @@ class OverrideFrontier {
 /**
  * @param {Container} container - a style rule
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export function discardOverriddenDeclarations(container, textTable) {
+export function discardOverriddenDeclarations(container, textTable, features) {
   discardOverriddenInList(
     /** @type {ChildNode[]} */ (container.nodes),
-    textTable
+    textTable,
+    features
   );
 }
 
@@ -292,6 +301,7 @@ export function discardOverriddenDeclarations(container, textTable) {
  * @param {ChildNode[]} nodes - declarations in source order, such as one
  * importance lane of a family; `all` declarations and nested rules bound runs
  * @param {TextTable} textTable
+ * @param {ReadonlySet<string>} features the features every target supports
  * @param {ReadonlySet<string>} [trustedProperties] - lowercased names the
  * caller validated, whose duplicates need no matching shape
  * @param {CrossPropertyRule} [crossPropertyRule] - the family's precedence
@@ -301,11 +311,13 @@ export function discardOverriddenDeclarations(container, textTable) {
 export function discardOverriddenInList(
   nodes,
   textTable,
+  features,
   trustedProperties,
   crossPropertyRule
 ) {
   const frontier = new OverrideFrontier(
     textTable,
+    features,
     trustedProperties,
     crossPropertyRule
   );
@@ -326,6 +338,7 @@ export function discardOverriddenInList(
 /**
  * @param {Declaration[][]} lanes - the normal and important lanes of a family
  * @param {TextTable} textTable - forwarded
+ * @param {ReadonlySet<string>} features - forwarded
  * @param {ReadonlySet<string>} [trustedProperties] - forwarded
  * @param {CrossPropertyRule} [crossPropertyRule] - forwarded
  * @return {void}
@@ -333,6 +346,7 @@ export function discardOverriddenInList(
 export function discardOverriddenInLanes(
   lanes,
   textTable,
+  features,
   trustedProperties,
   crossPropertyRule
 ) {
@@ -340,6 +354,7 @@ export function discardOverriddenInLanes(
     discardOverriddenInList(
       lane,
       textTable,
+      features,
       trustedProperties,
       crossPropertyRule
     );
