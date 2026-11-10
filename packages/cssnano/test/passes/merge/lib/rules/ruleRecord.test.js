@@ -146,8 +146,8 @@ test('appendChild should make declarationKeys reflect the appended declaration',
   declarationKeys(records, record.index);
   appendChild(
     records,
-    record,
-    declarationOf(state, postcss.decl({ prop: 'top', value: '0' }))
+    record.index,
+    declarationOf(state, postcss.decl({ prop: 'top', value: '0' })).index
   );
   assert.deepEqual(
     declarationIds(records, record.index),

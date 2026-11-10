@@ -95,12 +95,12 @@ test('assertNoOverDuplication should throw when a declaration is written more of
   const added = postcss.decl({ prop: 'color', value: 'red' });
   appendChild(
     state.records,
-    record,
+    record.index,
     placeUnlinked(
       state.records,
       state.records.root.index,
       recordDeclaration(added, state.declarationIds)
-    )
+    ).index
   );
   assert.throws(
     () => assertNoOverDuplication(state.records, input),

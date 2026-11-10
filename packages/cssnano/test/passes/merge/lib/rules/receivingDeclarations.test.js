@@ -57,7 +57,7 @@ test('receivingDeclarations should return the same entry after appendChild, with
   const { records, record } = arena;
   const before = receivingDeclarations(records, record.index);
   const width = freshDeclaration(arena, 'width');
-  appendChild(records, record, width);
+  appendChild(records, record.index, width.index);
   const after = receivingDeclarations(records, record.index);
   assert.equal(after, before);
   assert.equal(after.kept.at(-1), width.index);
@@ -82,7 +82,7 @@ test('receivingDeclarations should build the writes of an entry that declaration
   const [color] = declarationsOf(records, record.index);
   const keys = declarationKeys(records, record.index);
   const width = freshDeclaration(arena, 'width');
-  appendChild(records, record, width);
+  appendChild(records, record.index, width.index);
   assert.equal(keys.writes, undefined);
   const after = receivingDeclarations(records, record.index);
   assert.equal(after, keys);

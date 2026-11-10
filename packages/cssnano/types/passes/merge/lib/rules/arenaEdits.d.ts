@@ -58,11 +58,11 @@ export declare function adopt(records: BlockRecords, target: ArenaIndex, source:
  * write-back. A child that is linked elsewhere moves to the end.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord} rule
- * @param {DeclarationRecord | NodeEntry} child
+ * @param {ArenaIndex} rule the index of the rule
+ * @param {ArenaIndex} child the index of the child
  * @return {void}
  */
-export declare function appendChild(records: BlockRecords, rule: RuleRecord, child: DeclarationRecord | NodeEntry): void;
+export declare function appendChild(records: BlockRecords, rule: ArenaIndex, child: ArenaIndex): void;
 /**
  * Removes the declarations at the arena indices `claimed` from the chain of
  * the rule at `rule`. The node drops them at write-back.

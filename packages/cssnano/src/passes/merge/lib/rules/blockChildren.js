@@ -133,14 +133,16 @@ export function childEntriesOf(records, index) {
  * Gives an appended child the whitespace of the last child when it has none, as
  * PostCSS gives it, so the records keep what the node will print.
  *
- * @param {{before: string | null}} child the record of the appended child
- * @param {{before: string | null} | undefined} last the record of the child before `child`
+ * @param {BlockRecords} records the arena that holds both children
+ * @param {ArenaIndex} child the index of the appended child
+ * @param {ArenaIndex | -1} last the index of the child before `child`, or -1 for none
  * @return {void}
  */
-export function inheritWhitespace(child, last) {
-  if (child.before !== null || last === undefined) return;
-  const sample = last.before;
-  if (sample !== null) child.before = sample.replaceAll(/\S/gv, '');
+export function inheritWhitespace(records, child, last) {
+  const entry = records.entry(child);
+  if (entry.before !== null || last === -1) return;
+  const sample = records.entry(last).before;
+  if (sample !== null) entry.before = sample.replaceAll(/\S/gv, '');
 }
 
 /**

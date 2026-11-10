@@ -257,13 +257,31 @@ const freshDeclaration = ({ state, records }, prop) =>
     recordDeclaration(postcss.decl({ prop, value: '0' }), state.declarationIds)
   );
 
+test('appendChild should give a declaration with no whitespace before it the whitespace of the last child, without its other characters', () => {
+  // PostCSS keeps the stray semicolon in the raw before `width`.
+  const arena = arenaOf('a{color:red;;\n  width:1px}');
+  const { records, record } = arena;
+  const top = freshDeclaration(arena, 'top');
+  appendChild(records, record.index, top.index);
+  assert.equal(top.before, '\n  ');
+});
+
+test('appendChild should keep the whitespace of a declaration that has its own', () => {
+  const arena = arenaOf('a{color:red;\n  width:1px}');
+  const { records, record } = arena;
+  const top = freshDeclaration(arena, 'top');
+  top.before = ' ';
+  appendChild(records, record.index, top.index);
+  assert.equal(top.before, ' ');
+});
+
 test('appendChild of a declaration should keep the entry of the rule and list the appended id last', () => {
   const arena = arenaOf('a{color:red}');
   const { records, record } = arena;
   const [color] = declarationsOf(records, record.index);
   const before = declarationKeys(records, record.index);
   const top = freshDeclaration(arena, 'top');
-  appendChild(records, record, top);
+  appendChild(records, record.index, top.index);
   assert.equal(declarationKeys(records, record.index), before);
   assert.deepEqual(declarationIds(records, record.index), [color.id, top.id]);
 });
@@ -275,7 +293,7 @@ test('appendChild of a declaration after an unlink should list the ids without t
   const before = declarationKeys(records, record.index);
   records.detach(color.index);
   const top = freshDeclaration(arena, 'top');
-  appendChild(records, record, top);
+  appendChild(records, record.index, top.index);
   const after = declarationKeys(records, record.index);
   assert.notEqual(after, before);
   assert.deepEqual(declarationIds(records, record.index), [width.id, top.id]);
@@ -321,7 +339,7 @@ test('appendChild of a comment should make the next read return the same entry',
     records.root.index,
     new NodeEntry(COMMENT, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
   );
-  appendChild(records, record, note);
+  appendChild(records, record.index, note.index);
   assert.equal(declarationKeys(records, record.index), keys);
 });
 

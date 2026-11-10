@@ -59,7 +59,7 @@ function timeAppendsAndReads(size) {
   let seen = 0;
   const start = performance.now();
   for (const declaration of declarations) {
-    appendChild(records, rule, declaration);
+    appendChild(records, rule.index, declaration.index);
     seen += declarationKeys(records, rule.index).kept.length;
   }
   const elapsed = performance.now() - start;

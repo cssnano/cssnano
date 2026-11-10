@@ -1,5 +1,5 @@
 import type { BlockRecords } from './blockRecords.js';
-import type { BlockRecord, NodeEntry } from './blockRecord.js';
+import type { ArenaIndex, BlockRecord, NodeEntry } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /**
@@ -65,15 +65,12 @@ export declare function childEntriesOf(records: BlockRecords, index: number): (R
  * Gives an appended child the whitespace of the last child when it has none, as
  * PostCSS gives it, so the records keep what the node will print.
  *
- * @param {{before: string | null}} child the record of the appended child
- * @param {{before: string | null} | undefined} last the record of the child before `child`
+ * @param {BlockRecords} records the arena that holds both children
+ * @param {ArenaIndex} child the index of the appended child
+ * @param {ArenaIndex | -1} last the index of the child before `child`, or -1 for none
  * @return {void}
  */
-export declare function inheritWhitespace(child: {
-    before: string | null;
-}, last: {
-    before: string | null;
-} | undefined): void;
+export declare function inheritWhitespace(records: BlockRecords, child: ArenaIndex, last: ArenaIndex | -1): void;
 /**
  * The declarations of the rule at `index`, in order, read from its chain at the
  * call. A reader that indexes them by position takes this array.

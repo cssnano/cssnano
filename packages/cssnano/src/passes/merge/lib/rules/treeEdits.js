@@ -95,11 +95,8 @@ export function appendToDeclarations(mergeState, receiving, incoming) {
       )
         continue;
     }
-    appendChild(
-      records,
-      /** @type {RuleRecord} */ (records.rule(receiving)),
-      child
-    );
+    records.rule(receiving);
+    appendChild(records, receiving, first);
   }
 }
 

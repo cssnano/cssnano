@@ -103,14 +103,13 @@ export function adopt(records, target, source) {
  * write-back. A child that is linked elsewhere moves to the end.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord} rule
- * @param {DeclarationRecord | NodeEntry} child
+ * @param {ArenaIndex} rule the index of the rule
+ * @param {ArenaIndex} child the index of the child
  * @return {void}
  */
 export function appendChild(records, rule, child) {
-  const last = records.links.lastChild(rule.index);
-  inheritWhitespace(child, last === -1 ? undefined : records.entry(last));
-  records.moveLast(rule.index, child.index);
+  inheritWhitespace(records, child, records.links.lastChild(rule));
+  records.moveLast(rule, child);
 }
 
 /**
@@ -140,14 +139,8 @@ export function removeDeclarations(records, rule, claimed) {
  */
 export function moveDeclarations(records, source, target, claimed) {
   if (records.consistencyChecks) assertMovesInOrder(records, source, claimed);
-  const receiving = /** @type {RuleRecord} */ (records.rule(target));
-  for (const index of claimed) {
-    appendChild(
-      records,
-      receiving,
-      /** @type {DeclarationRecord} */ (records.entry(index))
-    );
-  }
+  records.rule(target);
+  for (const index of claimed) appendChild(records, target, index);
 }
 
 const NOT_A_CHILD =
