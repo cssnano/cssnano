@@ -33,7 +33,7 @@ test('different selector items have different ids', () => {
 
 test("each id's token list spells its selector item", () => {
   const context = createRunContext();
-  const { records } = buildRecords(
+  const { records, nodes } = buildRecords(
     postcss.parse('a /* x */, b{color:red}c,a{color:red}b{color:red}'),
     context
   );
@@ -42,7 +42,10 @@ test("each id's token list spells its selector item", () => {
     const entry = records.entry(index);
     if (entry.kind !== RULE) continue;
     for (const [at, id] of entry.selectorIds.entries()) {
-      assert.equal(tokensText(context.tokenLists.get(id)), entry.selectors[at]);
+      assert.equal(
+        tokensText(context.tokenLists.get(id)),
+        nodes[index].selectors[at]
+      );
       checked++;
     }
   }
@@ -51,7 +54,7 @@ test("each id's token list spells its selector item", () => {
 
 test("a selector's facts are the same in every rule that holds it, at any offset and beside any comment", () => {
   const context = createRunContext();
-  const { records } = buildRecords(
+  const { records, nodes } = buildRecords(
     postcss.parse(
       'a,::-webkit-scrollbar{color:red}::-webkit-scrollbar{color:red}a /* x */, ::-webkit-scrollbar{color:red}'
     ),
@@ -61,7 +64,7 @@ test("a selector's facts are the same in every rule that holds it, at any offset
   for (let index = 1; index < records.entryCount(); index++) {
     const entry = records.entry(index);
     if (entry.kind !== RULE) continue;
-    const at = entry.selectors.indexOf('::-webkit-scrollbar');
+    const at = nodes[index].selectors.indexOf('::-webkit-scrollbar');
     facts.push(
       selectorInfoOf(context.tokenLists.get(entry.selectorIds[at]), [
         'chrome 120',

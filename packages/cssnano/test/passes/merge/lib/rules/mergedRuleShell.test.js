@@ -8,6 +8,7 @@ import { fillSummaries } from '../../../../../src/passes/merge/lib/rules/selecto
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { nodeOf } from '../../../../../src/passes/merge/lib/rules/nodeTable.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { tokensText } from '../../../../../src/values/tokensText.js';
 import { RULE } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
@@ -21,13 +22,14 @@ const plugin = transformPlugin('mergeRules');
  * @param {string} selectors
  * @return {number}
  */
-function mergedIndexOf(records, selectors) {
+function mergedIndexOf(records, tokenLists, selectors) {
   for (let index = 0; index < records.entryCount(); index++) {
     const entry = records.entry(index);
     if (
       entry.kind === RULE &&
       !entry.departed &&
-      entry.selectors.join() === selectors &&
+      entry.selectorIds.map((id) => tokensText(tokenLists.get(id))).join() ===
+        selectors &&
       records.links.parentOf(index) !== -1
     ) {
       return index;
@@ -119,7 +121,7 @@ test('a merged rule should have no node until write-back', () => {
   const { records, nodes } = buildRecords(root, context);
   fillSummaries(records, context.tokenLists, ['chrome 120']);
   runMerge(records, ['chrome 120'], context);
-  const index = mergedIndexOf(records, 'h1,h2');
+  const index = mergedIndexOf(records, context.tokenLists, 'h1,h2');
   assert.notEqual(index, -1, 'the pair merges into h1,h2');
   assert.equal(nodeOf(nodes, index), undefined);
 });

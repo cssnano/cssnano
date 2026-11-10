@@ -114,7 +114,7 @@ test('last-write index recordNode records each rule declaration under its elemen
  * @return {string[] | null}
  */
 const keysOfRule = (record) =>
-  record.selectors.includes('*') ? null : record.selectors;
+  record.elementKeys?.list.length ? record.elementKeys.list : null;
 
 /**
  * The live entries of the stylesheet of `css`, with the arena that holds them,

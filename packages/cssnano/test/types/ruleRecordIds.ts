@@ -13,5 +13,11 @@ export function readRuleFields(rule: RuleRecord): readonly number[] {
   rule.selectorIds.push(1);
   // @ts-expect-error the merged flag has no setter
   rule.marked = true;
+  // @ts-expect-error a rule holds no selector text
+  const text: string = rule.selector;
+  // @ts-expect-error a rule holds no selector text
+  const items: string[] = rule.selectors;
+  void text;
+  void items;
   return marked ? rule.selectorIds : [];
 }

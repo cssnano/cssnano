@@ -70,8 +70,7 @@ function checkAtRuleFacts(nodes, entry) {
 
 /**
  * Throws when a rule's ids do not spell the items of its node's selector list:
- * the list of each id spells the item at its place, and the rule's selectors
- * are those items.
+ * the list of each id spells the item at its place.
  *
  * @param {TokenLists} tokenLists
  * @param {RuleRecord} record
@@ -80,18 +79,10 @@ function checkAtRuleFacts(nodes, entry) {
  */
 function checkRuleSelectors(tokenLists, record, rule) {
   const items = rule.selectors;
-  const { selectorIds, selectors } = record;
-  if (
-    selectorIds.length !== items.length ||
-    selectors.length !== items.length
-  ) {
-    throw new Error(OUT_OF_STEP);
-  }
+  const { selectorIds } = record;
+  if (selectorIds.length !== items.length) throw new Error(OUT_OF_STEP);
   for (let at = 0; at < items.length; at++) {
-    if (
-      tokensText(tokenLists.get(selectorIds[at])) !== items[at] ||
-      selectors[at] !== items[at]
-    ) {
+    if (tokensText(tokenLists.get(selectorIds[at])) !== items[at]) {
       throw new Error(OUT_OF_STEP);
     }
   }

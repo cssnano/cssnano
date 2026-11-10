@@ -127,8 +127,6 @@ export function buildRecords(root, context) {
       if (isRuleOrAtRule(child)) counted++;
       if (child.type === 'rule') {
         const record = new RuleRecord(
-          child.selectors,
-          child.selector,
           idsOfItems(selectorIds, tokenLists, child.selectors)
         );
         record.before = child.raws.before ?? null;

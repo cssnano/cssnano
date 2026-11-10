@@ -14,6 +14,17 @@ import {
 } from './liveRecords.js';
 import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { tokensText } from '../../../../../src/values/tokensText.js';
+
+/**
+ * The text of each selector of a rule, from its token lists.
+ *
+ * @param {MergeState} state
+ * @param {import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord} record
+ * @return {string[]}
+ */
+const selectorTexts = (state, record) =>
+  record.selectorIds.map((id) => tokensText(state.tokenLists.get(id)));
 
 const createState = (consistencyChecks = false) =>
   new MergeState(
@@ -39,12 +50,7 @@ test('addSelectors should keep the record of the rule', () => {
   const record = ruleRecordOf(state.records, root.first);
   state.addSelectors(
     ruleRecordOf(state.records, root.first),
-    ['b', 'c'],
-    ['b', 'c'].map((selector) => {
-      const source = ruleRecordOf(state.records, root.last);
-      return source.selectorIds[source.selectors.indexOf(selector)];
-    }),
-    ruleRecordOf(state.records, root.last)
+    ruleRecordOf(state.records, root.last).selectorIds
   );
   assert.equal(ruleRecordOf(state.records, root.first), record);
 });
@@ -54,18 +60,12 @@ test('addSelectors should append the selectors to the rule description', () => {
   const root = withRecords(state, postcss.parse('a{color:red}b,c{color:red}'));
   state.addSelectors(
     ruleRecordOf(state.records, root.first),
-    ['b', 'c'],
-    ['b', 'c'].map((selector) => {
-      const source = ruleRecordOf(state.records, root.last);
-      return source.selectorIds[source.selectors.indexOf(selector)];
-    }),
-    ruleRecordOf(state.records, root.last)
+    ruleRecordOf(state.records, root.last).selectorIds
   );
-  assert.deepEqual(ruleRecordOf(state.records, root.first).selectors, [
-    'a',
-    'b',
-    'c',
-  ]);
+  assert.deepEqual(
+    selectorTexts(state, ruleRecordOf(state.records, root.first)),
+    ['a', 'b', 'c']
+  );
 });
 
 test('absorbEarlier should list the earlier rule selectors first', () => {
@@ -75,10 +75,10 @@ test('absorbEarlier should list the earlier rule selectors first', () => {
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
-  assert.deepEqual(ruleRecordOf(state.records, root.last).selectors, [
-    'a',
-    'b',
-  ]);
+  assert.deepEqual(
+    selectorTexts(state, ruleRecordOf(state.records, root.last)),
+    ['a', 'b']
+  );
 });
 
 test('under consistency checks, a read of an earlier rule that absorbEarlier then unlinks should throw', () => {
@@ -110,7 +110,7 @@ test('without consistency checks, a read of an earlier rule that absorbEarlier t
     ruleRecordOf(state.records, root.first)
   );
   state.records.detach(record.index);
-  assert.doesNotThrow(() => record.selectors);
+  assert.doesNotThrow(() => record.selectorIds);
 });
 
 test('absorbEarlier should leave the record of the later rule readable', () => {
@@ -120,10 +120,10 @@ test('absorbEarlier should leave the record of the later rule readable', () => {
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
-  assert.deepEqual(ruleRecordOf(state.records, root.last).selectors, [
-    'a',
-    'b',
-  ]);
+  assert.deepEqual(
+    selectorTexts(state, ruleRecordOf(state.records, root.last)),
+    ['a', 'b']
+  );
 });
 
 test('canMerge should accept a pair of compatible rules', () => {
@@ -181,15 +181,9 @@ test('canMerge should reject a rule that gained an unsupported selector after it
     ),
     true
   );
-  state.addSelectors(
-    ruleRecordOf(state.records, root.first),
-    ['c:has(d)'],
-    ['c:has(d)'].map((selector) => {
-      const source = ruleRecordOf(state.records, root.last);
-      return source.selectorIds[source.selectors.indexOf(selector)];
-    }),
-    ruleRecordOf(state.records, root.last)
-  );
+  state.addSelectors(ruleRecordOf(state.records, root.first), [
+    ruleRecordOf(state.records, root.last).selectorIds[0],
+  ]);
   assert.equal(
     state.canMerge(
       ruleRecordOf(state.records, root.first),

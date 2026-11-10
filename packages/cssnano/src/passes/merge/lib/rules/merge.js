@@ -43,7 +43,6 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
     return { first: [first.index], second: [] };
   }
   mergeState.absorbEarlier(second, first);
-  mergeState.spellSelectors(second);
   return { first: [], second: [second.index] };
 }
 

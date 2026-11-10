@@ -36,12 +36,8 @@ const selectorIds = new SelectorIds();
 const tokenLists = new TokenLists();
 
 /** A record of `selectors`, with the ids of this file's interner. */
-const ruleOf = (selectors, selector) =>
-  new RuleRecord(
-    selectors,
-    selector,
-    selectorIdsOf(selectorIds, tokenLists, selectors)
-  );
+const ruleOf = (selectors) =>
+  new RuleRecord(selectorIdsOf(selectorIds, tokenLists, selectors));
 
 /**
  * The records of `css`, built as the run builds them, with the record of its
@@ -81,7 +77,6 @@ test('compatibleOf should be false once addSelectors adds an incompatible select
   addSelectors(
     folded.records,
     index,
-    ['a:unknown-pseudo'],
     selectorIdsOf(new SelectorIds(), folded.state.tokenLists, [
       'a:unknown-pseudo',
     ]),
@@ -104,7 +99,6 @@ test('hasSameSelectors should be false after addSelectors grows one of two equal
   addSelectors(
     folded.records,
     a,
-    ['.b'],
     selectorIdsOf(new SelectorIds(), folded.state.tokenLists, ['.b']),
     folded.state.tokenLists,
     ['chrome 120']
@@ -117,7 +111,7 @@ test('a rule placed after the build has no node in the table until write-back', 
   const { index } = placeUnlinked(
     state.records,
     state.records.root.index,
-    ruleOf(['b'], 'b')
+    ruleOf(['b'])
   );
   assert.equal(nodeOf(nodesOf(state.records), index), undefined);
 });
@@ -165,7 +159,6 @@ test('addSelectors should keep the cached declaration keys since it leaves the d
   addSelectors(
     records,
     record.index,
-    ['b'],
     selectorIdsOf(new SelectorIds(), state.tokenLists, ['b']),
     state.tokenLists,
     ['chrome 120']

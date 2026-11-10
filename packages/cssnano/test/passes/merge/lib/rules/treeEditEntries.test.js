@@ -33,10 +33,7 @@ import {
   substitute,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
-import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
-
-const selectorIds = new SelectorIds();
-const tokenLists = new TokenLists();
+import { tokensText } from '../../../../../src/values/tokensText.js';
 
 /** @import {ChildNode, Container, Root, Rule} from 'postcss' */
 
@@ -64,7 +61,8 @@ function setup(css) {
 function liveLabels(state) {
   return childEntriesOf(state.records, state.records.root.index).map(
     (entry) => {
-      if (entry.kind === RULE) return entry.selectors[0];
+      if (entry.kind === RULE)
+        return tokensText(state.tokenLists.get(entry.selectorIds[0]));
       if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK)
         return `@${nodeOfEntry(state.records, entry).name}`;
       return (
@@ -90,7 +88,7 @@ test('substitute with one replacement should put it where the rule stood', () =>
   const replacement = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, tokenLists, ['x']))
+    new RuleRecord(selectorIdsOf(new SelectorIds(), state.tokenLists, ['x']))
   );
   substitute(state.records, record.index, [replacement.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'c']);
@@ -103,12 +101,12 @@ test('substitute with several replacements should keep their order where the rul
   const first = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, tokenLists, ['x']))
+    new RuleRecord(selectorIdsOf(new SelectorIds(), state.tokenLists, ['x']))
   );
   const second = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['y'], 'y', selectorIdsOf(selectorIds, tokenLists, ['y']))
+    new RuleRecord(selectorIdsOf(new SelectorIds(), state.tokenLists, ['y']))
   );
   substitute(state.records, record.index, [first.index, second.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'y', 'c']);
@@ -200,7 +198,12 @@ test('a rule that appendToDeclarations empties is readable until an edit unlinks
     ruleRecordOf(state.records, receiving).index,
     incomingIndex
   );
-  assert.equal(state.records.rule(incomingIndex)?.selectors[0], 'b');
+  assert.equal(
+    tokensText(
+      state.tokenLists.get(state.records.rule(incomingIndex).selectorIds[0])
+    ),
+    'b'
+  );
   remove(state.records, ruleRecordOf(state.records, incoming).index);
   assert.throws(() => state.records.rule(incomingIndex), /does not reach/v);
 });

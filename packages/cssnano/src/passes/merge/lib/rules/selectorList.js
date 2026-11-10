@@ -54,13 +54,6 @@ function writableIds(list) {
  * layout. The summaries are kept in step by the functions of this module.
  */
 export class SelectorList {
-  /** @type {string[]} */
-  #selectors;
-  /** @type {string} the selector the rule spells, in PostCSS's form */
-  #selector;
-  /** @type {string | undefined} the selectors joined by commas, once known */
-  #selectorText;
-
   /**
    * The interned id of each selector, in order. A selector's id is the same
    * for every rule that holds an equal item. It is read-only: only the
@@ -106,65 +99,10 @@ export class SelectorList {
   marked = false;
 
   /**
-   * @param {string[]} selectors
-   * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-   * @param {readonly TokenListId[]} selectorIds the interned id of each of `selectors`
+   * @param {readonly TokenListId[]} selectorIds the interned id of each selector
    */
-  constructor(selectors, selector, selectorIds) {
-    this.#selectors = selectors;
-    this.#selector = selector;
+  constructor(selectorIds) {
     this.selectorIds = selectorIds;
-  }
-
-  /** @return {string[]} change it only through the methods of this class */
-  get selectors() {
-    return this.#selectors;
-  }
-
-  /** @return {string} the selector, in PostCSS's form */
-  get selector() {
-    return this.#selector;
-  }
-
-  /**
-   * Sets the selector the rule spells, and marks the rule for write-back.
-   *
-   * @param {string} selector
-   */
-  setSelector(selector) {
-    this.#selector = selector;
-    writableIds(this).marked = true;
-  }
-
-  /** @return {string} */
-  selectorText() {
-    this.#selectorText ??= this.#selectors.join(',');
-    return this.#selectorText;
-  }
-
-  /**
-   * Appends selectors to the text list, which the ids of the same rule follow.
-   *
-   * @param {string[]} selectors
-   */
-  appendSelectors(selectors) {
-    this.#selectorText = undefined;
-    for (const selector of selectors) this.#selectors.push(selector);
-  }
-
-  /**
-   * Takes the selectors of `earlier` ahead of this list's, as the earlier list
-   * grows in place. The joined text is concatenated, since joining a long list
-   * again on every merge would take quadratic time. `earlier` keeps no array.
-   *
-   * @param {SelectorList} earlier
-   */
-  takeEarlier(earlier) {
-    const text = `${earlier.selectorText()},${this.selectorText()}`;
-    const selectors = earlier.#selectors;
-    for (const selector of this.#selectors) selectors.push(selector);
-    this.#selectors = selectors;
-    this.#selectorText = text;
   }
 }
 
@@ -268,25 +206,16 @@ export function extendSummaries(list, from, tokenLists, browsers) {
  *
  * @param {BlockRecords} records
  * @param {number} index the rule's index
- * @param {string[]} selectors appended to the rule's selectors
- * @param {readonly TokenListId[]} ids the id of each of `selectors`
+ * @param {readonly TokenListId[]} ids the id of each selector appended
  * @param {TokenLists} tokenLists
  * @param {readonly string[]} browsers
  * @return {readonly string[] | null} the element keys the selectors add to
  * those listed, or null when the elements are not listed
  */
-export function addSelectors(
-  records,
-  index,
-  selectors,
-  ids,
-  tokenLists,
-  browsers
-) {
+export function addSelectors(records, index, ids, tokenLists, browsers) {
   const list = /** @type {SelectorList} */ (records.rule(index));
   const from = list.selectorIds.length;
   const listed = list.elementKeys?.list.length;
-  list.appendSelectors(selectors);
   const own = writableIds(list);
   for (const id of ids) own.selectorIds.push(id);
   own.marked = true;
@@ -323,7 +252,6 @@ export function absorbEarlier(records, laterIndex, earlierIndex) {
   const compatible = earlier.compatible && later.compatible;
   const vendor = earlier.vendor.concat(later.vendor);
   const keys = joinKeys(earlier.elementKeys, later.elementKeys);
-  later.takeEarlier(earlier);
   // The earlier list's id array moves here, so the earlier rule keeps no array.
   const ids = /** @type {TokenListId[]} */ (writableIds(earlier).selectorIds);
   for (const id of later.selectorIds) ids.push(id);

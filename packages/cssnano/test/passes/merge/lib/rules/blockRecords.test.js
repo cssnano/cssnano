@@ -338,7 +338,7 @@ test('moveLast into a plain rule that is linked nowhere should throw under consi
   const orphan = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['b'], 'b', selectorIdsOf(selectorIds, tokenLists, ['b']))
+    new RuleRecord(selectorIdsOf(selectorIds, tokenLists, ['b']))
   );
   state.records.detach(declaration.index);
   assert.throws(

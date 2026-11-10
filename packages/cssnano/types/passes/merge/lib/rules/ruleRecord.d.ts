@@ -46,11 +46,9 @@ export declare class RuleRecord extends SelectorList {
     /** @type {string | null} the whitespace before the rule, as its node gives it at the build */
     before: string | null;
     /**
-     * @param {string[]} selectors
-     * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-     * @param {readonly TokenListId[]} selectorIds the interned id of each of `selectors`
+     * @param {readonly TokenListId[]} selectorIds the interned id of each selector
      */
-    constructor(selectors: string[], selector: string, selectorIds: readonly TokenListId[]);
+    constructor(selectorIds: readonly TokenListId[]);
     /**
      * The declarations of the rule, in order, read from its chain at the call. A
      * reader that indexes them by position takes this array.

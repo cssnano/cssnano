@@ -63,8 +63,7 @@ function overridesShared(records, rule, claimed, shared) {
 /**
  * @typedef {object} Group
  * @property {Follower[]} followers the rules that join the shared rule
- * @property {string[]} added the selectors they add to it
- * @property {TokenListId[]} addedIds the ids of those selectors, in the same order
+ * @property {TokenListId[]} addedIds the ids of the selectors they add to it, in order
  */
 
 /**
@@ -152,9 +151,7 @@ export function findGroup(
 
   const listed = new Set(first.selectorIds);
   for (const id of secondRule.selectorIds) listed.add(id);
-  /** @type {string[]} the selectors the group adds, in order of first use */
-  const addedSelectors = [];
-  /** @type {TokenListId[]} the ids of those selectors */
+  /** @type {TokenListId[]} the ids of the selectors the group adds, in order of first use */
   const addedIds = [];
   /** @type {number[]} */
   const candidates = [];
@@ -172,12 +169,10 @@ export function findGroup(
     link = sequence.nextOf(link), seen++
   ) {
     const linked = /** @type {RuleRecord} */ (records.rule(link));
-    const selectors = linked.selectors;
     const ids = linked.selectorIds;
     for (let at = 0; at < ids.length; at++) {
       if (listed.has(ids[at])) continue;
       listed.add(ids[at]);
-      addedSelectors.push(selectors[at]);
       addedIds.push(ids[at]);
       running += 1 + selectorTextLength(mergeState.tokenLists, ids[at]);
     }
@@ -216,13 +211,12 @@ export function findGroup(
     if (followers.length < candidates.length) break;
     best = running;
     size = candidates.length;
-    addedAtBest = addedSelectors.length;
+    addedAtBest = addedIds.length;
     if (blocked) break;
   }
   if (size === 0) return null;
   return {
     followers: followers.slice(0, size),
-    added: addedSelectors.slice(0, addedAtBest),
     addedIds: addedIds.slice(0, addedAtBest),
   };
 }

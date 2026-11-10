@@ -73,31 +73,19 @@ export default class MergeState {
    * vendor prefix profile in step.
    *
    * @param {RuleRecord} record
-   * @param {string[]} selectors some of the selectors of `source`, in the
-   * order of their first occurrence there
-   * @param {readonly TokenListId[]} ids the id of each of `selectors`
+   * @param {readonly TokenListId[]} ids the id of each selector the rule gains,
+   * in order
    * @return {readonly string[] | null} the element keys the selectors add, or
    * null when the rule's elements are not listed
    */
-  addSelectors(record, selectors, ids) {
+  addSelectors(record, ids) {
     return addSummarySelectors(
       this.records,
       record.index,
-      selectors,
       ids,
       this.#tokenLists,
       this.#browsers
     );
-  }
-
-  /**
-   * Sets the selector of a rule from its list, which marks it so write-back
-   * assigns the text.
-   *
-   * @param {RuleRecord} record
-   */
-  spellSelectors(record) {
-    record.setSelector(record.selectorText());
   }
 
   /**

@@ -1,4 +1,5 @@
 import { elementKeysOf } from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
+import { tokensText } from '../../../../../src/values/tokensText.js';
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -93,7 +94,12 @@ test('appendToDeclarations should leave the record of the receiving rule readabl
     ruleRecordOf(state.records, receiving).index,
     ruleRecordOf(state.records, incoming).index
   );
-  assert.deepEqual(ruleRecordOf(state.records, receiving).selectors, ['a']);
+  assert.deepEqual(
+    ruleRecordOf(state.records, receiving).selectorIds.map((id) =>
+      tokensText(state.tokenLists.get(id))
+    ),
+    ['a']
+  );
 });
 
 test('appendToDeclarations should keep the record of the receiving rule', () => {
@@ -221,7 +227,12 @@ test('removeRules should leave the record of a rule it keeps readable', () => {
   const [kept, removed] = /** @type {Rule[]} */ (root.nodes);
   ruleRecordOf(state.records, kept);
   removeRules(state, new Set([ruleRecordOf(state.records, removed).index]));
-  assert.deepEqual(ruleRecordOf(state.records, kept).selectors, ['a']);
+  assert.deepEqual(
+    ruleRecordOf(state.records, kept).selectorIds.map((id) =>
+      tokensText(state.tokenLists.get(id))
+    ),
+    ['a']
+  );
 });
 
 test('takePlaceOf should link the earlier rule where the later one stood', () => {

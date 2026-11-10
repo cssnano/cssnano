@@ -16,6 +16,8 @@ const { assertRecordsMatchTree } =
   await import('../../../src/passes/merge/lib/rules/treeMatch.js');
 const { writeBack } =
   await import('../../../src/passes/merge/lib/rules/writeBack.js');
+const { addSelectors } =
+  await import('../../../src/passes/merge/lib/rules/selectorList.js');
 const { createRunContext } =
   await import('../../../src/passes/ir/runContext.js');
 const { resolveTargets } = await import('../../../src/utils/browserTargets.js');
@@ -165,7 +167,7 @@ suite('the merge pass writes selectors through its records', () => {
     const context = createRunContext();
     const { records, nodes } = buildRecords(root, context);
     const rule = records.rule(records.links.firstChild(records.root.index));
-    rule.setSelector(rule.selector);
+    addSelectors(records, rule.index, [], context.tokenLists, []);
     writeBack(records, nodes, context.tokenLists, new TextTable());
     assert.equal(root.toString(), 'a,c {color:red}');
   });
@@ -282,7 +284,7 @@ test('write-back stores no selector of a marked rule the root does not reach', (
     'a{color:red}b{color:red}'
   );
   const first = records.rule(records.links.firstChild(records.root.index));
-  first.setSelector(first.selector);
+  addSelectors(records, first.index, [], tokenLists, []);
   records.detach(first.index);
   const table = new TextTable();
   writeBack(records, nodes, tokenLists, table);

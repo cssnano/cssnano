@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
+import { tokensText } from '../../../../../src/values/tokensText.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { RULE } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.js';
@@ -75,7 +76,6 @@ test('a list extended by addSelectors has the summaries of the whole list', () =
   addSelectors(
     folded.records,
     index,
-    VENDOR,
     idsIn(folded.state.tokenLists, VENDOR),
     folded.state.tokenLists,
     browsers
@@ -127,7 +127,9 @@ function mergedSummaries(css, selectors) {
       entry.kind === RULE &&
       !entry.departed &&
       records.links.parentOf(index) !== -1 &&
-      entry.selectors.join() === selectors
+      entry.selectorIds
+        .map((id) => tokensText(context.tokenLists.get(id)))
+        .join() === selectors
     ) {
       return summariesOf(records, index);
     }

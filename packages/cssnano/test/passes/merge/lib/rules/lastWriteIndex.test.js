@@ -28,7 +28,8 @@ const decl = (prop) => ({ keys: keys(prop) });
 const unknownElements = () => null;
 
 // Element keys of a rule record: its selectors.
-const keysOfSelectors = (record) => record.selectors;
+const keysOfSelectors = (record) =>
+  record.elementKeys?.list.length ? record.elementKeys.list : null;
 
 /**
  * The first node of `css`, with the records of its stylesheet.

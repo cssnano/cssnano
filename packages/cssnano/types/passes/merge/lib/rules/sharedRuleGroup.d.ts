@@ -24,11 +24,7 @@ export type Group = {
      */
     followers: Follower[];
     /**
-     * the selectors they add to it
-     */
-    added: string[];
-    /**
-     * the ids of those selectors, in the same order
+     * the ids of the selectors they add to it, in order
      */
     addedIds: TokenListId[];
 };

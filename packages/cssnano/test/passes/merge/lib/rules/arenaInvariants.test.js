@@ -77,7 +77,7 @@ test('childCountOf should throw for an unreached rule under checks', () => {
 test('the selectors of an unreached rule should be readable without checks', () => {
   const state = createState(false);
   const record = unreachedRecord(state, 'a{color:red}b{color:red}', false);
-  assert.doesNotThrow(() => record.selectors);
+  assert.doesNotThrow(() => record.selectorIds);
 });
 
 test('the rule of an unreached record should throw under checks', () => {

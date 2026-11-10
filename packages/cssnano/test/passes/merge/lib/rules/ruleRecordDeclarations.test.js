@@ -66,11 +66,7 @@ const arenaOf = (css, consistencyChecks = false) => {
  * @return {RuleRecord}
  */
 const mergedRule = (records) => {
-  const rule = new RuleRecord(
-    ['b'],
-    'b',
-    selectorIdsOf(selectorIds, tokenLists, ['b'])
-  );
+  const rule = new RuleRecord(selectorIdsOf(selectorIds, tokenLists, ['b']));
   records.appendEntry(records.root.index, rule);
   return rule;
 };

@@ -22,14 +22,7 @@ const browsers = ['chrome 120'];
 function add(folded, index, selectors) {
   const { state, records } = folded;
   const ids = selectorIdsOf(new SelectorIds(), state.tokenLists, selectors);
-  return addSelectors(
-    records,
-    index,
-    selectors,
-    ids,
-    state.tokenLists,
-    browsers
-  );
+  return addSelectors(records, index, ids, state.tokenLists, browsers);
 }
 
 test('elementKeysOf should list the distinct element of each selector', () => {

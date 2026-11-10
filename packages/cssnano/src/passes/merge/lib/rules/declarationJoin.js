@@ -84,8 +84,8 @@ function listLength(tokenLists, ids) {
  * @param {TokenLists} tokenLists
  * @param {Group} group
  * @param {RuleRecord} later
- * @return {{added: string[], addedIds: TokenListId[], gain: number}} the selectors
- * the join adds, with their ids
+ * @return {{addedIds: TokenListId[], gain: number}} the ids of the selectors
+ * the join adds
  */
 function joinGain(records, tokenLists, group, later) {
   if (group.bytes < 0) {
@@ -95,9 +95,7 @@ function joinGain(records, tokenLists, group, later) {
     );
   }
   const listed = (group.selectors ??= new Set(group.rule.selectorIds));
-  const laterSelectors = later.selectors;
   const laterIds = later.selectorIds;
-  const added = [];
   const addedIds = [];
   const seen = new Set();
   for (let at = 0; at < laterIds.length; at++) {
@@ -105,14 +103,13 @@ function joinGain(records, tokenLists, group, later) {
     if (seen.has(id)) continue;
     seen.add(id);
     if (listed.has(id)) continue;
-    added.push(laterSelectors[at]);
     addedIds.push(id);
   }
   const removed =
     group.declarations.length === childCountOf(records, later.index)
       ? group.bytes + listLength(tokenLists, laterIds)
       : group.bytes;
-  return { added, addedIds, gain: removed - listLength(tokenLists, addedIds) };
+  return { addedIds, gain: removed - listLength(tokenLists, addedIds) };
 }
 
 /**
@@ -172,11 +169,6 @@ export default function joinByDeclarations(block, mergeState) {
     }
     index.recordNode(mergeState.records, entry, position);
   }
-  for (const grownIndex of grown) {
-    mergeState.spellSelectors(
-      /** @type {RuleRecord} */ (mergeState.records.rule(grownIndex))
-    );
-  }
   removeRules(mergeState, emptied);
   return grown.size > 0;
 
@@ -218,7 +210,7 @@ export default function joinByDeclarations(block, mergeState) {
     ).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
     const laterKeys = elementKeysOf(mergeState.records, laterRecord.index);
-    /** @type {{group: Group, claimed: Set<ArenaIndex>, added: string[], addedIds: TokenListId[], gain: number} | null} */
+    /** @type {{group: Group, claimed: Set<ArenaIndex>, addedIds: TokenListId[], gain: number} | null} */
     let best = null;
     for (const id of laterSet) {
       const candidates = groups.get(id) ?? [];
@@ -244,7 +236,7 @@ export default function joinByDeclarations(block, mergeState) {
         ) {
           continue;
         }
-        const { added, addedIds, gain } = joinGain(
+        const { addedIds, gain } = joinGain(
           records,
           mergeState.tokenLists,
           group,
@@ -272,15 +264,15 @@ export default function joinByDeclarations(block, mergeState) {
         );
         if (index.conflictsSince(claimed, group.position, laterKeys)) continue;
         if (!mergeState.canMerge(group.rule, laterRecord)) continue;
-        best = { group, claimed: claimedIndices, added, addedIds, gain };
+        best = { group, claimed: claimedIndices, addedIds, gain };
       }
     }
     if (!best) return null;
-    const { group, claimed, added, addedIds } = best;
+    const { group, claimed, addedIds } = best;
     const groupRecord = group.rule;
     const listed =
       elementKeysOf(mergeState.records, groupRecord.index) !== null;
-    const gained = mergeState.addSelectors(groupRecord, added, addedIds);
+    const gained = mergeState.addSelectors(groupRecord, addedIds);
     for (const id of addedIds) group.selectors?.add(id);
     if (listed) recordGained(group, gained);
     grown.add(group.rule.index);

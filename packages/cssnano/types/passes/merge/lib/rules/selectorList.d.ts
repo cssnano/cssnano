@@ -23,7 +23,6 @@ export type WritableSummaries = {
  * layout. The summaries are kept in step by the functions of this module.
  */
 export declare class SelectorList {
-    #private;
     /**
      * The interned id of each selector, in order. A selector's id is the same
      * for every rule that holds an equal item. It is read-only: only the
@@ -64,37 +63,9 @@ export declare class SelectorList {
      */
     readonly marked: boolean;
     /**
-     * @param {string[]} selectors
-     * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-     * @param {readonly TokenListId[]} selectorIds the interned id of each of `selectors`
+     * @param {readonly TokenListId[]} selectorIds the interned id of each selector
      */
-    constructor(selectors: string[], selector: string, selectorIds: readonly TokenListId[]);
-    /** @return {string[]} change it only through the methods of this class */
-    get selectors(): string[];
-    /** @return {string} the selector, in PostCSS's form */
-    get selector(): string;
-    /**
-     * Sets the selector the rule spells, and marks the rule for write-back.
-     *
-     * @param {string} selector
-     */
-    setSelector(selector: string): void;
-    /** @return {string} */
-    selectorText(): string;
-    /**
-     * Appends selectors to the text list, which the ids of the same rule follow.
-     *
-     * @param {string[]} selectors
-     */
-    appendSelectors(selectors: string[]): void;
-    /**
-     * Takes the selectors of `earlier` ahead of this list's, as the earlier list
-     * grows in place. The joined text is concatenated, since joining a long list
-     * again on every merge would take quadratic time. `earlier` keeps no array.
-     *
-     * @param {SelectorList} earlier
-     */
-    takeEarlier(earlier: SelectorList): void;
+    constructor(selectorIds: readonly TokenListId[]);
 }
 /**
  * Folds the summaries of every rule the root reaches. Every read of a summary
@@ -129,14 +100,13 @@ export declare function extendSummaries(list: SelectorList, from: number, tokenL
  *
  * @param {BlockRecords} records
  * @param {number} index the rule's index
- * @param {string[]} selectors appended to the rule's selectors
- * @param {readonly TokenListId[]} ids the id of each of `selectors`
+ * @param {readonly TokenListId[]} ids the id of each selector appended
  * @param {TokenLists} tokenLists
  * @param {readonly string[]} browsers
  * @return {readonly string[] | null} the element keys the selectors add to
  * those listed, or null when the elements are not listed
  */
-export declare function addSelectors(records: BlockRecords, index: number, selectors: string[], ids: readonly TokenListId[], tokenLists: TokenLists, browsers: readonly string[]): readonly string[] | null;
+export declare function addSelectors(records: BlockRecords, index: number, ids: readonly TokenListId[], tokenLists: TokenLists, browsers: readonly string[]): readonly string[] | null;
 /**
  * Gives `later` the selectors of `earlier`, which stands before it and is
  * dropped by the caller. Its summaries combine without a fact read: the

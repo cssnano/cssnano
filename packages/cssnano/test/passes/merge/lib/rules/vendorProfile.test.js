@@ -15,6 +15,7 @@ import { VendorPrefixSummary } from '../../../../../src/passes/merge/lib/rules/v
 import { selectorInfoOf } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { tokens as tokenize } from '../../../../../src/utils/value.js';
+import { tokensText } from '../../../../../src/values/tokensText.js';
 
 const browsers = ['chrome 120'];
 /** The ids of `selectors` in the table of a folded stylesheet's state. */
@@ -150,7 +151,6 @@ test('vendorSummaryOf should match the list profile after addSelectors grows a r
   addSelectors(
     folded.records,
     index,
-    ['::-webkit-scrollbar', '.b'],
     selectorIdsOf(new SelectorIds(), folded.state.tokenLists, [
       '::-webkit-scrollbar',
       '.b',
@@ -165,25 +165,13 @@ test('vendorSummaryOf should match the list profile after addSelectors grows a r
   );
 });
 
-test('selectorText should list the selectors added by addSelectors after the text was already read', () => {
-  const folded = foldedRules('.a{color:red}');
-  const [index] = folded.rules;
-  const rule = folded.records.rule(index);
-  rule.selectorText();
-  addSelectors(
-    folded.records,
-    index,
-    ['.b', '.c'],
-    selectorIdsOf(new SelectorIds(), folded.state.tokenLists, ['.b', '.c']),
-    folded.state.tokenLists,
-    browsers
+test('a comma inside :is() does not split a selector, so the list has two selectors', () => {
+  const { records, rules, state } = foldedRules(':is(a,b),c{color:red}');
+  const ids = records.rule(rules[0]).selectorIds;
+  assert.deepEqual(
+    ids.map((id) => tokensText(state.tokenLists.get(id))),
+    [':is(a,b)', 'c']
   );
-  assert.equal(rule.selectorText(), '.a,.b,.c');
-});
-
-test('selectorText should keep a comma inside :is() within one selector', () => {
-  const { records, rules } = foldedRules(':is(a,b),c{color:red}');
-  assert.equal(records.rule(rules[0]).selectorText(), ':is(a,b),c');
 });
 
 test('selectorInfoOf should report no vendor prefix for a class whose name contains -moz-', () => {
@@ -242,32 +230,20 @@ test('hasSameSelectors should follow a list that grew after the two lists were c
   const [a, b] = folded.rules;
   const { state, records } = folded;
   assert.equal(hasSameSelectors(records, a, b), true);
-  addSelectors(
-    records,
-    a,
-    ['.c'],
-    idsIn(state, ['.c']),
-    state.tokenLists,
-    browsers
-  );
-  addSelectors(
-    records,
-    b,
-    ['.d'],
-    idsIn(state, ['.d']),
-    state.tokenLists,
-    browsers
-  );
+  addSelectors(records, a, idsIn(state, ['.c']), state.tokenLists, browsers);
+  addSelectors(records, b, idsIn(state, ['.d']), state.tokenLists, browsers);
   assert.equal(hasSameSelectors(records, a, b), false);
 });
 
 test('absorbEarlier should list the selectors of the earlier rule first', () => {
-  const { records, rules } = foldedRules('.a,.b{}.c{}');
+  const { records, rules, state } = foldedRules('.a,.b{}.c{}');
   const [earlier, later] = rules;
   absorbEarlier(records, later, earlier);
   assert.deepEqual(
-    [records.rule(later).selectors, records.rule(later).selectorText()],
-    [['.a', '.b', '.c'], '.a,.b,.c']
+    records
+      .rule(later)
+      .selectorIds.map((id) => tokensText(state.tokenLists.get(id))),
+    ['.a', '.b', '.c']
   );
 });
 

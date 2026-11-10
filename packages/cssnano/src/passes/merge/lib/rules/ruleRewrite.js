@@ -71,8 +71,6 @@ export function buildMergedRule(
   sequence,
   scan
 ) {
-  const firstSelectors = first.selectors;
-  const secondSelectors = second.selectors;
   const { records } = mergeState;
   let sharedBytes = 0;
   // A later plugin, such as Autoprefixer, removes an outdated prefixed
@@ -118,11 +116,6 @@ export function buildMergedRule(
         );
   if (delta >= 0 && !group) return null;
 
-  const selectors = [
-    ...firstSelectors,
-    ...secondSelectors,
-    ...(group?.added ?? []),
-  ];
   const selectorIds = [
     ...first.selectorIds,
     ...second.selectorIds,
@@ -131,11 +124,7 @@ export function buildMergedRule(
   // The merged rule prints the raws of the rule it was merged from, or of
   // the template that rule printed, when it was merged too.
   const template = second.template === -1 ? second.index : second.template;
-  const receivingRecord = new RuleRecord(
-    selectors,
-    selectors.join(),
-    selectorIds
-  );
+  const receivingRecord = new RuleRecord(selectorIds);
   // The summaries of the two rules' selectors are combined, and the group's
   // added selectors are folded after them.
   combineSummaries(receivingRecord, first, second);
