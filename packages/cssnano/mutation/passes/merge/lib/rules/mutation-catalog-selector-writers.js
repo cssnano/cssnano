@@ -14,8 +14,10 @@ function source(module) {
 export const target = source('mergeState.js');
 // node --test expands this glob; a directory path would resolve to a single
 // entry module instead of running every split test file.
+// The summary guard runs with it, since it holds the summaries that the
+// merged rules of these writers must keep.
 export const test = new URL(
-  '../../../../../test/passes/merge/selectorWriters.test.js',
+  '../../../../../test/passes/merge/{selectorWriters,lib/rules/selectorSummaryGuard}.test.js',
   import.meta.url
 ).href;
 
@@ -57,6 +59,18 @@ export const mutations = [
     find: '  textTable.write(node, joinedList(record, tokenLists));',
     replace:
       "  textTable.setText(node, joinedList(record, tokenLists).map((token) => token[1]).join(''));",
+  },
+  {
+    name: 'a merged rule takes no combined summaries of the two lists it is built from',
+    target: source('ruleRewrite.js'),
+    find: '  combineSummaries(receivingRecord, first, second);',
+    replace: '',
+  },
+  {
+    name: 'a merged rule takes no summaries of the selectors a group adds to it',
+    target: source('ruleRewrite.js'),
+    find: '  extendSummaries(\n    receivingRecord,\n    first.selectorIds.length + second.selectorIds.length,\n    tokenLists,\n    browsers\n  );',
+    replace: '',
   },
   {
     name: 'forget the rules a merge spelled, so their selector is never marked',
