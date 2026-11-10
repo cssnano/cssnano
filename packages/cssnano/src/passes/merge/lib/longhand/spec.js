@@ -23,9 +23,6 @@ function shorthand(name) {
   return definition;
 }
 
-/** @type {Map<string, Set<string>>} */
-const setsCache = new Map();
-
 /**
  * All properties set when applying a shorthand: recursively follows each
  * shorthand through its named longhands and implicit resets. A property that
@@ -40,19 +37,10 @@ const setsCache = new Map();
  * @return {Set<string>}
  */
 function setsLonghands(name) {
-  const cached = setsCache.get(name);
-
-  if (cached) {
-    return cached;
-  }
-
   const definition = shorthands.get(name);
 
   if (!definition) {
-    const own = new Set([name]);
-
-    setsCache.set(name, own);
-    return own;
+    return new Set([name]);
   }
 
   /** @type {Set<string>} */
@@ -64,7 +52,6 @@ function setsLonghands(name) {
     }
   }
 
-  setsCache.set(name, reached);
   return reached;
 }
 export const sides = data.sides;
