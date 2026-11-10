@@ -1,0 +1,15 @@
+{
+  "jsPlugins": ["../../../merge-ir-plugin.js"],
+  "rules": {
+    "merge-ir/checks-only-read": [
+      "error",
+      {
+        "modules": [
+          "util/oxlint/fixtures/merge-ir/checks-only-read/check.js",
+          "util/oxlint/fixtures/merge-ir/checks-only-read/clean.js"
+        ],
+        "allowed": []
+      }
+    ]
+  }
+}

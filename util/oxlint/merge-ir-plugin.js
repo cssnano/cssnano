@@ -6,6 +6,8 @@
 
 import { relative, sep } from 'node:path';
 import noPostcssInWindow from './noPostcssInWindow.js';
+import portRules from './portRules.js';
+import scopeRules from './scopeRules.js';
 
 const LINK_METHODS = new Set(['linkBefore', 'linkLast', 'unlink']);
 const CACHE_READS = new Set(['keysOf', 'receivingOf']);
@@ -318,5 +320,8 @@ export default {
     'no-cache-local': noCacheLocal,
     'no-postcss-in-window': noPostcssInWindow,
     'arena-edits-only': arenaEditsOnly,
+    ...portRules,
+    'no-module-state': scopeRules.noModuleState,
+    'no-captured-loop-state': scopeRules.noCapturedLoopState,
   },
 };

@@ -1,0 +1,13 @@
+{
+  "jsPlugins": ["../../../merge-ir-plugin.js"],
+  "rules": {
+    "merge-ir/no-module-state": [
+      "error",
+      {
+        "allowed": [
+          "util/oxlint/fixtures/merge-ir/no-module-state/allowed.js#cache"
+        ]
+      }
+    ]
+  }
+}

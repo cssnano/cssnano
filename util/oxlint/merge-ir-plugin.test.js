@@ -180,3 +180,76 @@ test('arena-edits-only reports each arena edit called outside the edit modules',
 test('arena-edits-only accepts the arena edits of an allowed module', () => {
   assert.deepEqual(lintFixture('arena-edits-only', 'allowed.js'), []);
 });
+
+test('no-module-state reports a module-level let and a constant table a function mutates', () => {
+  assert.deepEqual(lintFixture('no-module-state', 'reports.js'), [
+    {
+      line: 1,
+      message: 'a module-level let or var holds state that a run changes',
+    },
+    {
+      line: 2,
+      message: 'a module-level table that a function body mutates',
+    },
+  ]);
+});
+
+test('no-module-state accepts a table filled at top level and function-local state', () => {
+  assert.deepEqual(lintFixture('no-module-state', 'clean.js'), []);
+});
+
+test('no-module-state accepts a mutated table named in the allow list', () => {
+  assert.deepEqual(lintFixture('no-module-state', 'allowed.js'), []);
+});
+
+test('no-captured-loop-state reports a closure that assigns to an enclosing binding and one that reads a reassigned-in-loop let', () => {
+  assert.deepEqual(lintFixture('no-captured-loop-state', 'reports.js'), [
+    {
+      line: 4,
+      message: 'a closure assigns to a binding of an enclosing function',
+    },
+    {
+      line: 13,
+      message:
+        'a closure reads a let that its function reassigns inside a loop',
+    },
+  ]);
+});
+
+test('no-captured-loop-state accepts closures that read const or unlooped let bindings', () => {
+  assert.deepEqual(lintFixture('no-captured-loop-state', 'clean.js'), []);
+});
+
+test('no-record-extends reports each class that extends another', () => {
+  assert.deepEqual(lintFixture('no-record-extends', 'reports.js'), [
+    { line: 2, message: 'a record class extends another' },
+    { line: 3, message: 'a record class extends another' },
+  ]);
+});
+
+test('no-record-extends accepts a class without a superclass', () => {
+  assert.deepEqual(lintFixture('no-record-extends', 'clean.js'), []);
+});
+
+test('checks-only-read reports a member assignment to a parameter and an arena edit in a check module', () => {
+  assert.deepEqual(lintFixture('checks-only-read', 'check.js'), [
+    {
+      line: 2,
+      message: 'a check assigns to a member of a parameter',
+    },
+    { line: 3, message: 'a check calls an arena edit' },
+  ]);
+});
+
+test('checks-only-read accepts reads and writes to local objects in a check module', () => {
+  assert.deepEqual(lintFixture('checks-only-read', 'clean.js'), []);
+});
+
+test('checks-only-read applies to any assert function outside the check modules', () => {
+  assert.deepEqual(lintFixture('checks-only-read', 'asserts.js'), [
+    {
+      line: 2,
+      message: 'a check assigns to a member of a parameter',
+    },
+  ]);
+});
