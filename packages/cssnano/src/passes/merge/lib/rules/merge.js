@@ -7,6 +7,7 @@ import {
 import { buildMergedRule } from './ruleRewrite.js';
 import { appendToDeclarations } from './treeEdits.js';
 import { declarationKeys } from './declarationCache.js';
+import { hasSameSelectors } from './selectorReads.js';
 
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
@@ -38,7 +39,7 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
     return null;
   // Repeating the same declarations under the same selector changes nothing,
   // and a selector list that repeats the selector is longer than one rule.
-  if (first.hasSameSelectors(second)) {
+  if (hasSameSelectors(mergeState.records, first.index, second.index)) {
     return { first: [first.index], second: [] };
   }
   mergeState.absorbEarlier(second, first);
@@ -55,7 +56,9 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
  * @return {Placement | null}
  */
 export function mergeMatchingSelectors(first, second, mergeState) {
-  if (!first.hasSameSelectors(second)) return null;
+  if (!hasSameSelectors(mergeState.records, first.index, second.index)) {
+    return null;
+  }
   appendToDeclarations(mergeState, first.index, second.index);
   return { first: [first.index], second: [] };
 }

@@ -29,13 +29,11 @@ export default class MergeState {
      */
     get tokenLists(): import('../../../ir/tokenLists.js').TokenLists;
     /**
-     * The elements the rule can match. An arrow function, so it passes as a
-     * callback without a closure per call.
+     * The target browsers, which the selector facts of the run depend on.
      *
-     * @param {RuleRecord} record
-     * @return {string[] | null}
+     * @return {readonly string[]}
      */
-    elementKeysOf: (record: RuleRecord) => string[] | null;
+    get browsers(): readonly string[];
     /**
      * The ids of the run's declarations: equal declarations, with the same
      * property, value, importance and hack prefix, share an id.

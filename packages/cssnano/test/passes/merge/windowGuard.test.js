@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
+import { fillSummaries } from '../../../src/passes/merge/lib/rules/selectorList.js';
 import { buildRecords } from '../../../src/passes/merge/lib/rules/buildRecords.js';
 import { guardWindow } from '../../../src/passes/merge/lib/rules/windowGuard.js';
 import runMerge from '../../../src/passes/merge/lib/rules/selectorMerger.js';
@@ -18,6 +19,7 @@ function buildOf(css) {
   const textTable = new TextTable();
   const context = createRunContext(textTable);
   const { records, nodes } = buildRecords(root, context);
+  fillSummaries(records, context.tokenLists, ['chrome 120']);
   return { root, textTable, context, records, nodes };
 }
 

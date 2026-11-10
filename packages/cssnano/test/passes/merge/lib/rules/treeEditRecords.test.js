@@ -1,3 +1,4 @@
+import { elementKeysOf } from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -198,17 +199,13 @@ test('removeDeclarations should give the record keys for the declarations that r
 test('removeDeclarations should keep the element keys of the record', () => {
   const { root, state } = setup('a,b{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  state.elementKeysOf(ruleRecordOf(state.records, rule));
   const record = ruleRecordOf(state.records, rule);
   removeDeclarations(
     state.records,
     record.index,
     claimAt(state.records, record, [0])
   );
-  assert.deepEqual(state.elementKeysOf(ruleRecordOf(state.records, rule)), [
-    'a',
-    'b',
-  ]);
+  assert.deepEqual(elementKeysOf(state.records, record.index), ['a', 'b']);
 });
 
 test('removeRules should unlink each rule it removes, so the root no longer reaches it', () => {

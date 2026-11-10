@@ -1,4 +1,3 @@
-import type { TokenListId } from '../../../ir/tokenLists.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
 /**
  * The key of one selector, as `RuleRecord#elementKeys` lists it, or null when a
@@ -21,14 +20,4 @@ export type RuleElementKeys = {
  * @property {string[]} list
  * @property {Set<string>} seen
  */
-/**
- * Adds the keys of the selectors from index `from` on to `keys`.
- *
- * @param {RuleElementKeys} keys
- * @param {readonly TokenListId[]} ids the id of each selector of the list
- * @param {number} from
- * @param {(id: TokenListId) => string | null} keyOf
- * @return {boolean} false when a selector has no key, so the elements are unknown
- */
-export declare function addElementKeys(keys: RuleElementKeys, ids: readonly TokenListId[], from: number, keyOf: (id: TokenListId) => string | null): boolean;
 //# sourceMappingURL=elementKeys.d.ts.map

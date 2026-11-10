@@ -1,3 +1,4 @@
+import { fillSummaries } from '../../../../../src/passes/merge/lib/rules/selectorList.js';
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
   AT_RULE_BLOCK,
@@ -135,6 +136,8 @@ export function buildTestRecords(
     tokenLists,
     consistencyChecks,
   });
+  // The driver folds the summaries before any transform, and so does a test.
+  fillSummaries(records, tokenLists, state.browsers);
   nodeTables.set(records, nodes);
   tokenListTables.set(records, tokenLists);
   return records;

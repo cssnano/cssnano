@@ -8,8 +8,6 @@ import type { BlockRecords } from './blockRecords.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
-/** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /**
  * What the merge knows of a rule: its selector list, which the base class

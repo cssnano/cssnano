@@ -8,6 +8,7 @@ import {
   STYLESHEET,
 } from './blockRecord.js';
 import { PropertyWrites } from './propertyWrites.js';
+import { elementKeysOf } from './selectorReads.js';
 
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -73,7 +74,7 @@ export default class LastWriteIndex {
 
   /**
    * Record every write a child of the parent makes, under the element keys
-   * `keysOf` gives its rule. An at-rule that is not a conditional group rule is
+   * `elementKeysOf` gives its rule. An at-rule that is not a conditional group rule is
    * a barrier, since moving anything across it is not known to preserve the
    * cascade.
    *
@@ -81,11 +82,10 @@ export default class LastWriteIndex {
    * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry a
    * live entry of a block
    * @param {number} position
-   * @param {(record: RuleRecord) => string[] | null} keysOf
    * @return {void}
    */
-  recordNode(records, entry, position, keysOf) {
-    this.#recordNode(records, entry, position, null, keysOf);
+  recordNode(records, entry, position) {
+    this.#recordNode(records, entry, position, null);
   }
 
   /**
@@ -93,13 +93,12 @@ export default class LastWriteIndex {
    * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry
    * @param {number} position
    * @param {string[] | null} keys
-   * @param {(record: RuleRecord) => string[] | null} keysOf
    */
-  #recordNode(records, entry, position, keys, keysOf) {
+  #recordNode(records, entry, position, keys) {
     if (entry.kind === RULE) {
-      const own = keysOf(entry);
+      const own = elementKeysOf(records, entry.index);
       if (entry.context !== -1) {
-        this.#recordBlock(records, entry.index, position, own, keysOf);
+        this.#recordBlock(records, entry.index, position, own);
         return;
       }
       // A rule without a block writes its declarations only.
@@ -112,7 +111,7 @@ export default class LastWriteIndex {
     } else if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) {
       // Only an at-rule has a block record among the entries.
       if (entry.atRuleKind === CONDITIONAL_GROUP) {
-        this.#recordBlock(records, entry.index, position, keys, keysOf);
+        this.#recordBlock(records, entry.index, position, keys);
       } else {
         this.#lastBarrier = Math.max(this.#lastBarrier, position);
       }
@@ -134,16 +133,15 @@ export default class LastWriteIndex {
    * @param {number} block the index of the block, or of the rule that nests
    * @param {number} position
    * @param {string[] | null} keys
-   * @param {(record: RuleRecord) => string[] | null} keysOf
    */
-  #recordBlock(records, block, position, keys, keysOf) {
+  #recordBlock(records, block, position, keys) {
     const { links } = records;
     for (
       let entry = links.firstChild(block);
       entry !== -1;
       entry = links.nextSibling(entry)
     ) {
-      this.#recordNode(records, records.entry(entry), position, keys, keysOf);
+      this.#recordNode(records, records.entry(entry), position, keys);
     }
   }
 
@@ -186,20 +184,20 @@ export default class LastWriteIndex {
 
   /**
    * `conflictsSince` for entries that move with their rules: rule records,
-   * whose declarations take the keys `keysOf` gives, and bare declarations,
+   * whose declarations take the keys `elementKeysOf` gives, and bare declarations,
    * which count every write. Unknown keys count every write.
    *
    * @param {BlockRecords} records
    * @param {(RuleRecord | DeclarationRecord)[]} entries
    * @param {number} position
-   * @param {(record: RuleRecord) => string[] | null} keysOf
    * @return {boolean}
    */
-  conflictsSinceIn(records, entries, position, keysOf) {
+  conflictsSinceIn(records, entries, position) {
     const elements = this.#elementScratch;
     elements.clear();
     for (const entry of entries) {
-      const own = entry.kind === RULE ? keysOf(entry) : null;
+      const own =
+        entry.kind === RULE ? elementKeysOf(records, entry.index) : null;
       if (own === null)
         return this.#conflictsIn(records, entries, position, null);
       for (const key of own) elements.add(key);
@@ -269,21 +267,20 @@ export default class LastWriteIndex {
 
   /**
    * Entries that moved to `position` are written there now: each rule record
-   * writes its declarations under the element keys `keysOf` gives it. Every
+   * writes its declarations under the element keys `elementKeysOf` gives it. Every
    * entry only ever moves forward, so a later write to the same property
    * is kept.
    *
    * @param {BlockRecords} records
    * @param {(RuleRecord | DeclarationRecord)[]} entries
    * @param {number} position
-   * @param {(record: RuleRecord) => string[] | null} keysOf
    */
-  moveWrites(records, entries, position, keysOf) {
+  moveWrites(records, entries, position) {
     const { links } = records;
     for (const entry of entries) {
       if (entry.kind === RULE) {
         // `record` only reads the keys, so the record's own list is passed as is.
-        const keys = keysOf(entry);
+        const keys = elementKeysOf(records, entry.index);
         const own = keys?.length ? keys : null;
         if (entry.context === -1) {
           for (

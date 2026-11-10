@@ -1,7 +1,9 @@
 /** @import {BlockRecords} from './blockRecords.js' */
 import { childCountOf } from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
-import { findGroup, selectorsLength } from './sharedRuleGroup.js';
+import { findGroup } from './sharedRuleGroup.js';
+import { combineSummaries, extendSummaries } from './selectorList.js';
+import { listTextLength } from './selectorReads.js';
 import {
   moveDeclarations,
   placeBefore,
@@ -85,16 +87,17 @@ export function buildMergedRule(
     }
   }
   // The shared rule repeats both selector lists; a rule left empty is dropped.
+  const { tokenLists, browsers } = mergeState;
   let delta =
-    selectorsLength(firstSelectors) +
-    selectorsLength(secondSelectors) +
+    listTextLength(tokenLists, first.selectorIds) +
+    listTextLength(tokenLists, second.selectorIds) +
     2 -
     sharedBytes;
   if (childCountOf(records, first.index) === shared.length) {
-    delta -= selectorsLength(firstSelectors) + 1;
+    delta -= listTextLength(tokenLists, first.selectorIds) + 1;
   }
   if (childCountOf(records, second.index) === claimedIndices.size) {
-    delta -= selectorsLength(secondSelectors) + 1;
+    delta -= listTextLength(tokenLists, second.selectorIds) + 1;
   }
   // A pair that shortens the output merges alone: the rules after it may
   // join the shared rule later, when it is known which rule it can join.
@@ -132,6 +135,15 @@ export function buildMergedRule(
     selectors,
     selectors.join(),
     selectorIds
+  );
+  // The summaries of the two rules' selectors are combined, and the group's
+  // added selectors are folded after them.
+  combineSummaries(receivingRecord, first, second);
+  extendSummaries(
+    receivingRecord,
+    first.selectorIds.length + second.selectorIds.length,
+    tokenLists,
+    browsers
   );
   receivingRecord.mark();
   receivingRecord.template = template;

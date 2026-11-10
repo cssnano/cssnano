@@ -12,6 +12,7 @@ import { tokensText } from '../../../../values/tokensText.js';
 import { nodeOf } from './nodeTable.js';
 import { isRuleOrAtRule } from './buildRecords.js';
 import { differs } from './writeBack.js';
+import { summariesHold } from './selectorReads.js';
 
 /** @import {AtRule, ChildNode, Declaration, Root, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -26,6 +27,7 @@ const { asciiLowerCase } = cssnanoUtils;
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 const STALE = 'stale declarations of a rule record';
+const SUMMARIES = 'stored summaries of a rule differ from the fold of its ids';
 
 /**
  * Whether a declaration record describes the declaration node it stands for, in
@@ -189,9 +191,11 @@ function checkBlockRecord(records, nodes, tokenLists, block) {
  * @param {BlockRecords} records
  * @param {NodeTable} nodes
  * @param {TokenLists} tokenLists the run's token lists, which the ids name
+ * @param {readonly string[]} browsers the target browsers, which the summaries fold
  * @return {void}
  */
-export function assertRecordsMatchTree(records, nodes, tokenLists) {
+export function assertRecordsMatchTree(records, nodes, tokenLists, browsers) {
   if (!records.consistencyChecks) return;
   checkBlockRecord(records, nodes, tokenLists, records.root);
+  if (!summariesHold(records, tokenLists, browsers)) throw new Error(SUMMARIES);
 }

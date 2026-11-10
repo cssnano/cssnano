@@ -1,6 +1,9 @@
 /** @import {TokenListId} from '../../../ir/tokenLists.js' */
-import { selectorInfoOf } from './ensureCompatibility.js';
-import { elementKeyOf } from './elementKeys.js';
+import {
+  absorbEarlier as absorbSummaries,
+  addSelectors as addSummarySelectors,
+} from './selectorList.js';
+import { compatibleOf, vendorSummaryOf } from './selectorReads.js';
 import { createRunContext } from '../../../ir/runContext.js';
 import { isKeyframes, sameContainer } from './sameContainer.js';
 
@@ -12,12 +15,10 @@ import { isKeyframes, sameContainer } from './sameContainer.js';
  * The state shared by every merge of one stylesheet.
  */
 export default class MergeState {
-  /** @type {import('./selectorList.js').SelectorLookup} */
-  #lookup;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
   #declarations;
-  /** @type {(id: TokenListId) => string | null} */
-  #elementKeyOf;
+  /** @type {readonly string[]} */
+  #browsers;
   /** @type {import('../../../ir/tokenLists.js').TokenLists} */
   #tokenLists;
   /**
@@ -35,8 +36,7 @@ export default class MergeState {
   constructor(browsers, context = createRunContext()) {
     const { tokenLists } = context;
     this.#tokenLists = tokenLists;
-    this.#lookup = (id) => selectorInfoOf(tokenLists.get(id), browsers);
-    this.#elementKeyOf = (id) => elementKeyOf(tokenLists.get(id));
+    this.#browsers = browsers;
     this.#declarations = context.declarations;
   }
 
@@ -50,13 +50,13 @@ export default class MergeState {
   }
 
   /**
-   * The elements the rule can match. An arrow function, so it passes as a
-   * callback without a closure per call.
+   * The target browsers, which the selector facts of the run depend on.
    *
-   * @param {RuleRecord} record
-   * @return {string[] | null}
+   * @return {readonly string[]}
    */
-  elementKeysOf = (record) => record.elementKeys(this.#elementKeyOf);
+  get browsers() {
+    return this.#browsers;
+  }
 
   /**
    * The ids of the run's declarations: equal declarations, with the same
@@ -80,11 +80,13 @@ export default class MergeState {
    * null when the rule's elements are not listed
    */
   addSelectors(record, selectors, ids) {
-    return record.addSelectors(
+    return addSummarySelectors(
+      this.records,
+      record.index,
       selectors,
       ids,
-      this.#lookup,
-      this.#elementKeyOf
+      this.#tokenLists,
+      this.#browsers
     );
   }
 
@@ -107,7 +109,7 @@ export default class MergeState {
    * @param {RuleRecord} earlier
    */
   absorbEarlier(later, earlier) {
-    later.absorbEarlier(earlier, this.#lookup, this.#elementKeyOf);
+    absorbSummaries(this.records, later.index, earlier.index);
   }
 
   /**
@@ -162,11 +164,11 @@ export default class MergeState {
     // The vendor check follows compatibility, because an incompatible selector
     // has no known prefix.
     return (
-      recordA.compatible(this.#lookup) &&
-      recordB.compatible(this.#lookup) &&
-      recordA
-        .vendorProfile(this.#lookup)
-        .allowsMerge(recordB.vendorProfile(this.#lookup))
+      compatibleOf(this.records, recordA.index) &&
+      compatibleOf(this.records, recordB.index) &&
+      vendorSummaryOf(this.records, recordA.index).allowsMerge(
+        vendorSummaryOf(this.records, recordB.index)
+      )
     );
   }
 }

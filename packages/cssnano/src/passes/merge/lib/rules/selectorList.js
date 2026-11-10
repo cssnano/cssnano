@@ -1,18 +1,11 @@
-/** @import {TokenListId} from '../../../ir/tokenLists.js' */
-import { addElementKeys } from './elementKeys.js';
-import { selectorsCompatible } from './ensureCompatibility.js';
+/** @import {TokenListId, TokenLists} from '../../../ir/tokenLists.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+import { elementKeyOf } from './elementKeys.js';
+import { selectorInfoOf } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
+import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
 
 /** @import {RuleElementKeys} from './elementKeys.js' */
-/**
- * The facts of a selector item, found from the tokens its id's list holds.
- *
- * @typedef {(id: TokenListId) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup
- */
-/** @typedef {(id: TokenListId) => string | null} ElementKeyOf */
-
-/** @type {readonly string[]} */
-const noElementKeys = Object.freeze([]);
 
 /**
  * The ids of a rule whose list has moved to another rule. It is frozen, so a
@@ -24,23 +17,40 @@ export const NO_SELECTORS = /** @type {TokenListId[]} */ (
   /** @type {unknown} */ (Object.freeze([]))
 );
 
+/** @type {readonly string[]} */
+const noElementKeys = Object.freeze([]);
+
 /**
- * The one writable view of a rule's ids. Only the edits of this module write
- * them, as a move or an append that also changes the list's text.
+ * The vendor summary of a rule whose facts are not folded yet. It is shared,
+ * so nothing may add to it: `fillSummaries` gives each rule its own.
+ */
+const UNFOLDED_VENDOR = new VendorPrefixSummary(null, false);
+
+/**
+ * The fields this module writes, which are readonly everywhere else.
+ *
+ * @typedef {object} WritableSummaries
+ * @property {TokenListId[]} selectorIds
+ * @property {boolean} compatible
+ * @property {VendorPrefixSummary} vendor
+ * @property {RuleElementKeys | null} elementKeys
+ */
+
+/**
+ * The one writable view of a rule's list and summaries. Only the functions
+ * of this module write them.
  *
  * @param {SelectorList} list
- * @return {{selectorIds: TokenListId[]}}
+ * @return {WritableSummaries}
  */
 function writableIds(list) {
-  return /** @type {{selectorIds: TokenListId[]}} */ (
-    /** @type {unknown} */ (list)
-  );
+  return /** @type {WritableSummaries} */ (/** @type {unknown} */ (list));
 }
 
 /**
- * The selector list of a rule with the facts derived from it, each computed on
- * first use and then grown incrementally as the list grows. It is the base of
- * `RuleRecord`, not a member of it, so a rule is one object with one layout.
+ * The selector list of a rule, with the facts folded from its ids. It is the
+ * base of `RuleRecord`, not a member of it, so a rule is one object with one
+ * layout. The summaries are kept in step by the functions of this module.
  */
 export class SelectorList {
   /** @type {string[]} */
@@ -49,24 +59,43 @@ export class SelectorList {
   #selector;
   /** @type {boolean} whether the selector was written by a merge, and must be written back */
   #marked = false;
-  /** @type {VendorPrefixSummary | undefined} */
-  #vendor;
   /** @type {string | undefined} the selectors joined by commas, once known */
   #selectorText;
-  /** @type {RuleElementKeys | null | undefined} null when a selector has no element key */
-  #elementKeys;
-  /** @type {boolean | undefined} whether every selector suits the target browsers, once read */
-  #compatible;
 
   /**
    * The interned id of each selector, in order. A selector's id is the same
-   * for every rule that holds an equal item. It is read-only: only the edits
-   * of this class move or append ids, through `writableIds`.
+   * for every rule that holds an equal item. It is read-only: only the
+   * functions of this module move or append ids.
    *
    * @readonly
    * @type {readonly TokenListId[]}
    */
   selectorIds;
+
+  /**
+   * Whether every selector suits the target browsers.
+   *
+   * @readonly
+   * @type {boolean}
+   */
+  compatible = false;
+
+  /**
+   * The vendor prefix summary of the selectors.
+   *
+   * @readonly
+   * @type {VendorPrefixSummary}
+   */
+  vendor = UNFOLDED_VENDOR;
+
+  /**
+   * The element keys of the selectors, or null when a selector has none. The
+   * list is empty when the rule has no selectors.
+   *
+   * @readonly
+   * @type {RuleElementKeys | null}
+   */
+  elementKeys = null;
 
   /**
    * @param {string[]} selectors
@@ -77,10 +106,6 @@ export class SelectorList {
     this.#selectors = selectors;
     this.#selector = selector;
     this.selectorIds = selectorIds;
-    this.#vendor = undefined;
-    this.#selectorText = undefined;
-    this.#elementKeys = undefined;
-    this.#compatible = undefined;
   }
 
   /** @return {string[]} change it only through the methods of this class */
@@ -112,49 +137,6 @@ export class SelectorList {
     this.#selector = selector;
   }
 
-  /**
-   * @param {SelectorLookup} lookup
-   * @return {VendorPrefixSummary}
-   */
-  vendorProfile(lookup) {
-    if (this.#vendor === undefined) {
-      // A loop, since `map` would pass each index as a second argument.
-      const infos = [];
-      for (const id of this.selectorIds) infos.push(lookup(id));
-      this.#vendor = VendorPrefixSummary.of(infos);
-    }
-    return this.#vendor;
-  }
-
-  /**
-   * Whether every selector is compatible with the target browsers. It is read
-   * once and then kept: a grown list ANDs in the answer for its new selectors.
-   *
-   * @param {SelectorLookup} lookup
-   * @return {boolean}
-   */
-  compatible(lookup) {
-    this.#compatible ??= selectorsCompatible(this.selectorIds, lookup);
-    return this.#compatible;
-  }
-
-  /**
-   * The elements the selector list can match, as `elementKeyOf` in
-   * `elementKeys.js` describes them, or null when any selector has no key or
-   * there are none, which must not read as a rule that writes to no element.
-   * A caller must not hold the list across a change to the list.
-   *
-   * @param {ElementKeyOf} keyOf the key of the selector with an id
-   * @return {string[] | null}
-   */
-  elementKeys(keyOf) {
-    if (this.#elementKeys === undefined) {
-      this.#elementKeys = { list: [], seen: new Set() };
-      this.#addElementKeys(0, keyOf);
-    }
-    return this.#elementKeys?.list.length ? this.#elementKeys.list : null;
-  }
-
   /** @return {string} */
   selectorText() {
     this.#selectorText ??= this.#selectors.join(',');
@@ -162,105 +144,235 @@ export class SelectorList {
   }
 
   /**
-   * Two lists are the same when they have the same selectors in the same
-   * order. A selector holds no top-level comma, so the joined texts of two
-   * lists are equal exactly when their selectors are, and the ids compare the
-   * selectors without joining them.
+   * Appends selectors to the text list, which the ids of the same rule follow.
    *
-   * @param {SelectorList} other
-   * @return {boolean}
+   * @param {string[]} selectors
    */
-  hasSameSelectors(other) {
-    const ids = this.selectorIds;
-    const otherIds = other.selectorIds;
-    if (ids.length !== otherIds.length) return false;
-    for (let at = 0; at < ids.length; at++) {
-      if (ids[at] !== otherIds[at]) return false;
-    }
-    return true;
-  }
-
-  /**
-   * @param {string[]} selectors appended to the list
-   * @param {readonly TokenListId[]} ids the id of each of `selectors`
-   * @param {SelectorLookup} lookup
-   * @param {ElementKeyOf} keyOf
-   * @return {readonly string[] | null} the element keys the selectors add to
-   * those listed, or null when the elements are not listed
-   */
-  addSelectors(selectors, ids, lookup, keyOf) {
+  appendSelectors(selectors) {
     this.#selectorText = undefined;
-    const from = this.#selectors.length;
     for (const selector of selectors) this.#selectors.push(selector);
-    for (const id of ids) this.#vendor?.add(lookup(id));
-    const own = writableIds(this).selectorIds;
-    for (const id of ids) own.push(id);
-    if (this.#compatible) {
-      this.#compatible = selectorsCompatible(ids, lookup);
-    }
-    return this.#gainElementKeys(from, keyOf);
   }
 
   /**
-   * Takes the place of a list that stood before this one, so its selectors
-   * come first. The earlier list grows in place and passes to this one, and
-   * the joined text is concatenated from the two texts: copying or re-joining
-   * a long list on every merge would take quadratic time.
+   * Takes the selectors of `earlier` ahead of this list's, as the earlier list
+   * grows in place. The joined text is concatenated, since joining a long list
+   * again on every merge would take quadratic time. `earlier` keeps no array.
    *
-   * @param {SelectorList} earlier left unusable
-   * @param {SelectorLookup} lookup
-   * @param {ElementKeyOf} keyOf
+   * @param {SelectorList} earlier
    */
-  absorbEarlier(earlier, lookup, keyOf) {
-    // Both answers are read before the lists join, while each list is its own.
-    const compatible = earlier.compatible(lookup) && this.compatible(lookup);
+  takeEarlier(earlier) {
     const text = `${earlier.selectorText()},${this.selectorText()}`;
-    const vendor = earlier
-      .vendorProfile(lookup)
-      .concat(this.vendorProfile(lookup));
     const selectors = earlier.#selectors;
-    const from = selectors.length;
     for (const selector of this.#selectors) selectors.push(selector);
     this.#selectors = selectors;
-    // The earlier list's id array moves here, so the earlier rule keeps no array.
-    const ids = /** @type {TokenListId[]} */ (writableIds(earlier).selectorIds);
-    for (const id of this.selectorIds) ids.push(id);
-    writableIds(this).selectorIds = ids;
-    writableIds(earlier).selectorIds = NO_SELECTORS;
     this.#selectorText = text;
-    this.#vendor = vendor;
-    // Extends the earlier list's keys only if they are known: deriving them
-    // from a long list would repeat on every merge.
-    this.#elementKeys = earlier.#elementKeys;
-    this.#addElementKeys(from, keyOf);
-    this.#compatible = compatible;
   }
+}
 
-  /**
-   * Adds the keys of the selectors from index `from` on.
-   *
-   * @param {number} from
-   * @param {ElementKeyOf} keyOf
-   */
-  #addElementKeys(from, keyOf) {
-    if (
-      this.#elementKeys &&
-      !addElementKeys(this.#elementKeys, this.selectorIds, from, keyOf)
-    ) {
-      this.#elementKeys = null;
+/**
+ * Folds the summaries of every rule the root reaches. Every read of a summary
+ * then finds it filled, so no read writes a field.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} browsers
+ * @return {void}
+ */
+export function fillSummaries(records, tokenLists, browsers) {
+  for (const rule of reachedRules(records)) {
+    fillRule(rule, tokenLists, browsers);
+  }
+}
+
+/**
+ * The rules under `parent` that the root reaches, at any depth, in document order.
+ *
+ * @param {BlockRecords} records
+ * @param {number} parent the index of a container
+ * @return {Generator<SelectorList>}
+ */
+function* rulesUnder(records, parent) {
+  for (
+    let index = records.links.firstChild(parent);
+    index !== -1;
+    index = records.links.nextSibling(index)
+  ) {
+    const entry = records.entry(index);
+    if (entry.kind === RULE) {
+      yield /** @type {SelectorList} */ (entry);
+      yield* rulesUnder(records, index);
+    } else if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) {
+      yield* rulesUnder(records, index);
     }
   }
+}
 
-  /**
-   * @param {number} from
-   * @param {ElementKeyOf} keyOf
-   * @return {readonly string[] | null}
-   */
-  #gainElementKeys(from, keyOf) {
-    const listed = this.#elementKeys?.list.length;
-    this.#addElementKeys(from, keyOf);
-    const list = this.#elementKeys?.list;
-    if (listed === undefined || list === undefined) return null;
-    return list.length === listed ? noElementKeys : list.slice(listed);
+/**
+ * The rules the root reaches, at any depth, in document order.
+ *
+ * @param {BlockRecords} records
+ * @return {Generator<SelectorList>}
+ */
+export function reachedRules(records) {
+  return rulesUnder(records, records.root.index);
+}
+
+/**
+ * Gives a rule the summaries of its whole list, folded from its ids.
+ *
+ * @param {SelectorList} list
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} browsers
+ * @return {void}
+ */
+function fillRule(list, tokenLists, browsers) {
+  const own = writableIds(list);
+  own.compatible = true;
+  own.vendor = new VendorPrefixSummary(null, false);
+  own.elementKeys = { list: [], seen: new Set() };
+  extendSummaries(list, 0, tokenLists, browsers);
+}
+
+/**
+ * Folds the facts of the selectors from index `from` on into a rule's
+ * summaries, which must already cover the selectors before them.
+ *
+ * @param {SelectorList} list
+ * @param {number} from
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} browsers
+ * @return {void}
+ */
+export function extendSummaries(list, from, tokenLists, browsers) {
+  const own = writableIds(list);
+  const ids = list.selectorIds;
+  for (let at = from; at < ids.length; at++) {
+    const tokens = tokenLists.get(ids[at]);
+    const info = selectorInfoOf(tokens, browsers);
+    if (!info.compatible) own.compatible = false;
+    own.vendor.add(info);
+    const keys = own.elementKeys;
+    if (keys !== null) {
+      const key = elementKeyOf(tokens);
+      if (key === null) {
+        own.elementKeys = null;
+      } else if (!keys.seen.has(key)) {
+        keys.seen.add(key);
+        keys.list.push(key);
+      }
+    }
   }
+}
+
+/**
+ * Appends selectors to a placed rule, with their ids and facts.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index the rule's index
+ * @param {string[]} selectors appended to the rule's selectors
+ * @param {readonly TokenListId[]} ids the id of each of `selectors`
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} browsers
+ * @return {readonly string[] | null} the element keys the selectors add to
+ * those listed, or null when the elements are not listed
+ */
+export function addSelectors(
+  records,
+  index,
+  selectors,
+  ids,
+  tokenLists,
+  browsers
+) {
+  const list = /** @type {SelectorList} */ (records.rule(index));
+  const from = list.selectorIds.length;
+  const listed = list.elementKeys?.list.length;
+  list.appendSelectors(selectors);
+  const own = writableIds(list).selectorIds;
+  for (const id of ids) own.push(id);
+  extendSummaries(list, from, tokenLists, browsers);
+  return gainedKeys(list, listed);
+}
+
+/**
+ * The element keys a rule gained since it listed `listed` of them.
+ *
+ * @param {SelectorList} list
+ * @param {number | undefined} listed the length of its list before the change, or undefined when unlisted
+ * @return {readonly string[] | null}
+ */
+function gainedKeys(list, listed) {
+  const keys = list.elementKeys;
+  if (listed === undefined || keys === null) return null;
+  return keys.list.length === listed ? noElementKeys : keys.list.slice(listed);
+}
+
+/**
+ * Gives `later` the selectors of `earlier`, which stands before it and is
+ * dropped by the caller. Its summaries combine without a fact read: the
+ * element keys of the earlier selectors come first.
+ *
+ * @param {BlockRecords} records
+ * @param {number} laterIndex
+ * @param {number} earlierIndex
+ * @return {void}
+ */
+export function absorbEarlier(records, laterIndex, earlierIndex) {
+  const later = /** @type {SelectorList} */ (records.rule(laterIndex));
+  const earlier = /** @type {SelectorList} */ (records.rule(earlierIndex));
+  const compatible = earlier.compatible && later.compatible;
+  const vendor = earlier.vendor.concat(later.vendor);
+  const keys = joinKeys(earlier.elementKeys, later.elementKeys);
+  later.takeEarlier(earlier);
+  // The earlier list's id array moves here, so the earlier rule keeps no array.
+  const ids = /** @type {TokenListId[]} */ (writableIds(earlier).selectorIds);
+  for (const id of later.selectorIds) ids.push(id);
+  const own = writableIds(later);
+  own.selectorIds = ids;
+  own.compatible = compatible;
+  own.vendor = vendor;
+  own.elementKeys = keys;
+  writableIds(earlier).selectorIds = NO_SELECTORS;
+}
+
+/**
+ * The summaries of a rule made from two rules' selectors, in order: the first
+ * rule's ids, then the second's. `target` holds no id of the two yet, and it
+ * must be given its ids, then `extendSummaries` for any ids after them.
+ *
+ * @param {SelectorList} target a new rule, unplaced, whose ids are the two rules' ids
+ * @param {SelectorList} first
+ * @param {SelectorList} second
+ * @return {void}
+ */
+export function combineSummaries(target, first, second) {
+  const own = writableIds(target);
+  own.compatible = first.compatible && second.compatible;
+  own.vendor = first.vendor.concat(second.vendor);
+  // A copy, since both inputs stay alive as they are.
+  const keys = first.elementKeys;
+  own.elementKeys = joinKeys(
+    keys === null ? null : { list: [...keys.list], seen: new Set(keys.list) },
+    second.elementKeys
+  );
+}
+
+/**
+ * The keys of `earlier` followed by those of `later`, in first-seen order,
+ * added to `earlier`'s set, which the caller owns. Null when either list
+ * holds a null.
+ *
+ * @param {RuleElementKeys | null} earlier
+ * @param {RuleElementKeys | null} later
+ * @return {RuleElementKeys | null}
+ */
+function joinKeys(earlier, later) {
+  if (earlier === null || later === null) return null;
+  for (const key of later.list) {
+    if (!earlier.seen.has(key)) {
+      earlier.seen.add(key);
+      earlier.list.push(key);
+    }
+  }
+  return earlier;
 }

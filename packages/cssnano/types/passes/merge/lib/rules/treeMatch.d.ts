@@ -10,7 +10,8 @@ import type { TokenLists } from '../../../ir/tokenLists.js';
  * @param {BlockRecords} records
  * @param {NodeTable} nodes
  * @param {TokenLists} tokenLists the run's token lists, which the ids name
+ * @param {readonly string[]} browsers the target browsers, which the summaries fold
  * @return {void}
  */
-export declare function assertRecordsMatchTree(records: BlockRecords, nodes: NodeTable, tokenLists: TokenLists): void;
+export declare function assertRecordsMatchTree(records: BlockRecords, nodes: NodeTable, tokenLists: TokenLists, browsers: readonly string[]): void;
 //# sourceMappingURL=treeMatch.d.ts.map

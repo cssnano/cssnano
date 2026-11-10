@@ -12,6 +12,7 @@ import runMerge from './lib/rules/selectorMerger.js';
 import { buildRecords } from './lib/rules/buildRecords.js';
 import { guardWindow } from './lib/rules/windowGuard.js';
 import { assertRecordsMatchTree } from './lib/rules/treeMatch.js';
+import { fillSummaries } from './lib/rules/selectorList.js';
 import { writeBack } from './lib/rules/writeBack.js';
 import { createRunContext } from '../ir/runContext.js';
 import { TextTable } from '../../values/textTable.js';
@@ -131,6 +132,9 @@ function runFirstRound(css, support, blocks, textTable, reached) {
  */
 function runRecords(css, browsers, context, transforms) {
   const { records, nodes } = buildRecords(css, context);
+  // Every rule's selector summaries are folded before any transform, so no
+  // read fills one, and the tree check finds them even when rules are not merged.
+  fillSummaries(records, context.tokenLists, browsers);
   const release = context.consistencyChecks
     ? guardWindow(context.textTable)
     : undefined;
@@ -146,7 +150,7 @@ function runRecords(css, browsers, context, transforms) {
     context.textTable,
     context.createdBlocks
   );
-  assertRecordsMatchTree(records, nodes, context.tokenLists);
+  assertRecordsMatchTree(records, nodes, context.tokenLists, browsers);
 }
 
 /** The transforms that run over the records, in order, for each path of the pass. */

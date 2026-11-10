@@ -34,7 +34,7 @@ export default class LastWriteIndex {
     record(keys: PropertyKeys, position: number, elements?: readonly string[] | null): void;
     /**
      * Record every write a child of the parent makes, under the element keys
-     * `keysOf` gives its rule. An at-rule that is not a conditional group rule is
+     * `elementKeysOf` gives its rule. An at-rule that is not a conditional group rule is
      * a barrier, since moving anything across it is not known to preserve the
      * cascade.
      *
@@ -42,10 +42,9 @@ export default class LastWriteIndex {
      * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry a
      * live entry of a block
      * @param {number} position
-     * @param {(record: RuleRecord) => string[] | null} keysOf
      * @return {void}
      */
-    recordNode(records: BlockRecords, entry: DeclarationRecord | RuleRecord | BlockRecord | NodeEntry, position: number, keysOf: (record: RuleRecord) => string[] | null): void;
+    recordNode(records: BlockRecords, entry: DeclarationRecord | RuleRecord | BlockRecord | NodeEntry, position: number): void;
     /**
      * Whether a write after `position` conflicts with one of `declarations`,
      * counting only writes that can set an element in `elements`, the non-empty
@@ -59,27 +58,25 @@ export default class LastWriteIndex {
     conflictsSince(declarations: DeclarationRecord[], position: number, elements?: Iterable<string> | null): boolean;
     /**
      * `conflictsSince` for entries that move with their rules: rule records,
-     * whose declarations take the keys `keysOf` gives, and bare declarations,
+     * whose declarations take the keys `elementKeysOf` gives, and bare declarations,
      * which count every write. Unknown keys count every write.
      *
      * @param {BlockRecords} records
      * @param {(RuleRecord | DeclarationRecord)[]} entries
      * @param {number} position
-     * @param {(record: RuleRecord) => string[] | null} keysOf
      * @return {boolean}
      */
-    conflictsSinceIn(records: BlockRecords, entries: (RuleRecord | DeclarationRecord)[], position: number, keysOf: (record: RuleRecord) => string[] | null): boolean;
+    conflictsSinceIn(records: BlockRecords, entries: (RuleRecord | DeclarationRecord)[], position: number): boolean;
     /**
      * Entries that moved to `position` are written there now: each rule record
-     * writes its declarations under the element keys `keysOf` gives it. Every
+     * writes its declarations under the element keys `elementKeysOf` gives it. Every
      * entry only ever moves forward, so a later write to the same property
      * is kept.
      *
      * @param {BlockRecords} records
      * @param {(RuleRecord | DeclarationRecord)[]} entries
      * @param {number} position
-     * @param {(record: RuleRecord) => string[] | null} keysOf
      */
-    moveWrites(records: BlockRecords, entries: (RuleRecord | DeclarationRecord)[], position: number, keysOf: (record: RuleRecord) => string[] | null): void;
+    moveWrites(records: BlockRecords, entries: (RuleRecord | DeclarationRecord)[], position: number): void;
 }
 //# sourceMappingURL=lastWriteIndex.d.ts.map

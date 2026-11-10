@@ -1,22 +1,16 @@
-import { elementKeyOfIds, selectorIdsOf } from './selectorIdsOf.js';
-import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
+import { foldedRules } from './summaryFixtures.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
-import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
+import { elementKeysOf } from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
 
-const selectorIds = new SelectorIds();
-const tokenLists = new TokenLists();
-
-// The keys of a rule's selectors, as the merge reads them.
+// The element keys of a rule whose selectors are `selectors`, as the merge
+// reads them from the folded arena.
 /** @param {string[]} selectors */
-const elementKeys = (selectors) =>
-  new RuleRecord(
-    selectors,
-    [],
-    selectorIdsOf(selectorIds, tokenLists, selectors)
-  ).elementKeys(elementKeyOfIds(tokenLists));
+const elementKeys = (selectors) => {
+  const { records, rules } = foldedRules(`${selectors.join(',')}{}`);
+  return elementKeysOf(records, rules[0]);
+};
 
 test('element key of a type selector is its lowercase name', () => {
   assert.deepEqual(elementKeys(['H1']), ['h1']);

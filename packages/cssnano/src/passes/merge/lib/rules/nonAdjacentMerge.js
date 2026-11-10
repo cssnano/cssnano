@@ -185,7 +185,6 @@ function joinBlocksBackward(block, mergeState) {
   if (scan.start === Infinity) return false;
 
   const index = new LastWriteIndex();
-  const keysOf = mergeState.elementKeysOf;
   const { records } = mergeState;
   /** @type {Map<string | number, {block: number, position: number}>} */
   const next = new Map();
@@ -210,8 +209,7 @@ function joinBlocksBackward(block, mergeState) {
         position: at,
       });
     }
-    if (at === position)
-      index.recordNode(records, entry, last - position, keysOf);
+    if (at === position) index.recordNode(records, entry, last - position);
   }
   return joined;
 
@@ -224,7 +222,7 @@ function joinBlocksBackward(block, mergeState) {
   function joinBlock(earlier, later, laterPosition) {
     const laterEntries = subtreeEntries(mergeState.records, later);
     if (!laterEntries) return null;
-    if (!index.conflictsSinceIn(records, laterEntries, laterPosition, keysOf)) {
+    if (!index.conflictsSinceIn(records, laterEntries, laterPosition)) {
       adopt(mergeState.records, earlier.index, later.index);
       remove(mergeState.records, later.index);
       return 'up';
@@ -232,10 +230,8 @@ function joinBlocksBackward(block, mergeState) {
     // The earlier block's content stays first, so source order is kept.
     const earlierEntries = subtreeEntries(mergeState.records, earlier);
     if (!earlierEntries) return null;
-    if (
-      !index.conflictsSinceIn(records, earlierEntries, laterPosition, keysOf)
-    ) {
-      index.moveWrites(records, earlierEntries, laterPosition, keysOf);
+    if (!index.conflictsSinceIn(records, earlierEntries, laterPosition)) {
+      index.moveWrites(records, earlierEntries, laterPosition);
       adopt(mergeState.records, earlier.index, later.index);
       takePlaceOf(mergeState.records, earlier.index, later.index);
       return 'down';
@@ -262,7 +258,6 @@ function joinInParent(block, mergeState, rules) {
   if (scan.start === Infinity) return false;
 
   const index = new LastWriteIndex();
-  const keysOf = mergeState.elementKeysOf;
   const { records } = mergeState;
   // Each entry is named by its place in `entries`, which is not changed.
   /** @type {Map<string | number, {origin: number, position: number}>} */
@@ -302,7 +297,7 @@ function joinInParent(block, mergeState, rules) {
     if (key !== null) {
       latest.set(key, { origin: position, position });
     }
-    index.recordNode(records, entry, position, keysOf);
+    index.recordNode(records, entry, position);
   }
   return joined;
 
@@ -330,14 +325,14 @@ function joinInParent(block, mergeState, rules) {
     if (!mergeState.canMerge(earlier, later)) return null;
     // Writes are recorded before the rewrite, while both rules still hold their
     // declarations and cached element keys. Equal selectors give equal keys.
-    if (!index.conflictsSinceIn(records, [later], earlierPosition, keysOf)) {
-      index.moveWrites(records, [later], earlierPosition, keysOf);
+    if (!index.conflictsSinceIn(records, [later], earlierPosition)) {
+      index.moveWrites(records, [later], earlierPosition);
       receive(earlier, later);
       remove(mergeState.records, later.index);
       return 'up';
     }
-    if (!index.conflictsSinceIn(records, [earlier], earlierPosition, keysOf)) {
-      index.moveWrites(records, [earlier, later], laterPosition, keysOf);
+    if (!index.conflictsSinceIn(records, [earlier], earlierPosition)) {
+      index.moveWrites(records, [earlier, later], laterPosition);
       receive(earlier, later);
       // A move edits the parent at once, after the pending removals.
       takePlaceOf(mergeState.records, earlier.index, later.index);
@@ -356,10 +351,8 @@ function joinInParent(block, mergeState, rules) {
   function joinBlock(earlier, later, earlierPosition, laterPosition) {
     const laterEntries = subtreeEntries(mergeState.records, later);
     if (!laterEntries) return null;
-    if (
-      !index.conflictsSinceIn(records, laterEntries, earlierPosition, keysOf)
-    ) {
-      index.moveWrites(records, laterEntries, earlierPosition, keysOf);
+    if (!index.conflictsSinceIn(records, laterEntries, earlierPosition)) {
+      index.moveWrites(records, laterEntries, earlierPosition);
       adopt(mergeState.records, earlier.index, later.index);
       remove(mergeState.records, later.index);
       return 'up';
@@ -367,11 +360,9 @@ function joinInParent(block, mergeState, rules) {
     // The earlier block's content stays first, so source order is kept.
     const earlierEntries = subtreeEntries(mergeState.records, earlier);
     if (!earlierEntries) return null;
-    if (
-      !index.conflictsSinceIn(records, earlierEntries, earlierPosition, keysOf)
-    ) {
-      index.moveWrites(records, earlierEntries, laterPosition, keysOf);
-      index.moveWrites(records, laterEntries, laterPosition, keysOf);
+    if (!index.conflictsSinceIn(records, earlierEntries, earlierPosition)) {
+      index.moveWrites(records, earlierEntries, laterPosition);
+      index.moveWrites(records, laterEntries, laterPosition);
       adopt(mergeState.records, earlier.index, later.index);
       takePlaceOf(mergeState.records, earlier.index, later.index);
       return 'down';

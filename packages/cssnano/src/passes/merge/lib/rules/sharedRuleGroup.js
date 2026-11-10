@@ -7,6 +7,7 @@ import {
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
 import { PropertyWrites } from './propertyWrites.js';
 import { declarationKeys } from './declarationCache.js';
+import { listTextLength, selectorTextLength } from './selectorReads.js';
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -14,13 +15,6 @@ import { declarationKeys } from './declarationCache.js';
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
-
-/** @param {string[]} selectors @return {number} */
-export function selectorsLength(selectors) {
-  let total = selectors.length - 1;
-  for (const selector of selectors) total += selector.length;
-  return total;
-}
 
 // How many rules after the pair may join the shared rule. A constant bound
 // keeps the search linear in the stylesheet. `findGroup` reads it forward and
@@ -185,11 +179,11 @@ export function findGroup(
       listed.add(ids[at]);
       addedSelectors.push(selectors[at]);
       addedIds.push(ids[at]);
-      running += 1 + selectors[at].length;
+      running += 1 + selectorTextLength(mergeState.tokenLists, ids[at]);
     }
     running -= sharedBytes;
     if (childCountOf(records, linked.index) === shared.length) {
-      running -= selectorsLength(selectors) + 1;
+      running -= listTextLength(mergeState.tokenLists, ids) + 1;
     }
     candidates.push(link);
     // Every member repeats the prefixed declarations, which a later plugin

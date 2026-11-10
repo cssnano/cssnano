@@ -103,24 +103,3 @@ export function elementKeyOf(tokens) {
  * @property {string[]} list
  * @property {Set<string>} seen
  */
-
-/**
- * Adds the keys of the selectors from index `from` on to `keys`.
- *
- * @param {RuleElementKeys} keys
- * @param {readonly TokenListId[]} ids the id of each selector of the list
- * @param {number} from
- * @param {(id: TokenListId) => string | null} keyOf
- * @return {boolean} false when a selector has no key, so the elements are unknown
- */
-export function addElementKeys(keys, ids, from, keyOf) {
-  for (let index = from; index < ids.length; index++) {
-    const key = keyOf(ids[index]);
-    if (key === null) return false;
-    if (!keys.seen.has(key)) {
-      keys.seen.add(key);
-      keys.list.push(key);
-    }
-  }
-  return true;
-}

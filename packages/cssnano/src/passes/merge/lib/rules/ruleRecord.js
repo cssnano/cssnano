@@ -5,8 +5,6 @@ import { DECLARATION, NO_PRELUDE, RULE } from './blockRecord.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
-/** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
 /**

@@ -10,8 +10,6 @@ import type DeclarationScan from './declarationScan.js';
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
-/** @param {string[]} selectors @return {number} */
-export declare function selectorsLength(selectors: string[]): number;
 export declare const SHARING_WINDOW = 10;
 export type Follower = {
     rule: RuleRecord;

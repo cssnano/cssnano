@@ -9,6 +9,7 @@ import RuleSequence from './ruleSequence.js';
 import DeclarationScan from './declarationScan.js';
 import { sameContainer } from './sameContainer.js';
 import { declarationKeys } from './declarationCache.js';
+import { hasSameSelectors } from './selectorReads.js';
 
 /** @import {ArenaIndex} from './blockRecord.js' */
 
@@ -94,7 +95,7 @@ export function mergeBenefit(mergeState, firstIndex, secondIndex) {
   const second = /** @type {RuleRecord} */ (records.rule(secondIndex));
   const a = declarationKeys(records, firstIndex);
   const b = declarationKeys(records, secondIndex);
-  if (first.hasSameSelectors(second)) {
+  if (hasSameSelectors(records, first.index, second.index)) {
     return a.kept.length + b.kept.length;
   }
   const [smaller, larger] =
