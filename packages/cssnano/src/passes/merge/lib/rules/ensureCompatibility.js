@@ -14,22 +14,6 @@ export const simpleSelectorRe = new RegExp(
 );
 
 /**
- * @param {string} selector
- * @return {boolean}
- */
-function isCssMixin(selector) {
-  return selector[selector.length - 1] === ':';
-}
-
-/**
- * @param {string} selector
- * @return {boolean}
- */
-function isHostPseudoClass(selector) {
-  return selector.includes(':host');
-}
-
-/**
  * What the merge checks need to know about one selector. `prefix` is
  * `undefined` for an incompatible selector, which never merges, and for one
  * that mixes vendor prefixes.
@@ -128,15 +112,6 @@ export function createSelectorLookup(browsers, cache = new Map()) {
  * @return {boolean}
  */
 export function selectorsCompatible(selectors, lookup, list) {
-  // Should not merge mixins
-  if (selectors.some(isCssMixin)) {
-    return false;
-  }
-
-  // Should not merge :host selector https://github.com/angular/angular-cli/issues/18672
-  if (selectors.some(isHostPseudoClass)) {
-    return false;
-  }
   for (let index = 0; index < selectors.length; index++) {
     if (!lookup(selectors[index], list, index).compatible) return false;
   }
