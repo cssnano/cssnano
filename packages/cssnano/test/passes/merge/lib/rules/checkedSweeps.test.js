@@ -64,6 +64,14 @@ test('runScan should keep the declaration and rule counts and lower the parent c
   assert.deepEqual(end.potential, [2, 2, 2]);
 });
 
+test('buildRecords should bound the rounds by the rules, at-rules and declarations, not the comments', () => {
+  // Four rules and at-rules (a, @media, b, @import) and three declarations.
+  const { state } = setup(
+    'a{color:red}/* c */@media x{b{c:d;e:f}}@import "y";'
+  );
+  assert.equal(state.records.maxRounds, 8);
+});
+
 test('assertNoOverDuplication should accept records built from a stylesheet that repeats a declaration', () => {
   const { state } = setup('a{color:red}b{color:red}');
   assert.doesNotThrow(() => assertNoOverDuplication(state.records, null));

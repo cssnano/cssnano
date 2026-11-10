@@ -97,8 +97,6 @@ export function buildRecords(root, context) {
   /** @type {NodeTable} the node of each entry, by index; the root is entry 0 */
   const nodes = [root];
   records.leadingWhitespace = root.first?.raws.before ?? null;
-  let counted = 0;
-  let declarations = 0;
   /**
    * Places a child's entry at the end of its container's chain, with its node.
    * An entry takes the next index, which is the next slot of the table.
@@ -114,17 +112,21 @@ export function buildRecords(root, context) {
   /**
    * Links each child of a container, which holds its context already, in
    * document order. A rule is linked into its parent, then its children.
+   * Returns the rules, at-rules and declarations under the container, which
+   * bound the rounds of a run.
    *
    * @param {BlockRecord | RuleRecord} container
    * @param {Container} node the container's node
+   * @return {number}
    */
   const fillChildren = (container, node) => {
     // The build reads the child lists, which a pending edit has not rebuilt yet.
     if (consistencyChecks && hasPendingEdits(node)) {
       throw new Error(PENDING_EDITS);
     }
+    let count = 0;
     for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
-      if (isRuleOrAtRule(child)) counted++;
+      if (child.type !== 'comment') count++;
       if (child.type === 'rule') {
         const record = new RuleRecord(
           child.raws.before ?? null,
@@ -139,7 +141,7 @@ export function buildRecords(root, context) {
             record
           );
         }
-        fillChildren(record, child);
+        count += fillChildren(record, child);
       } else if (child.type === 'atrule' && child.nodes) {
         const name = asciiLowerCase(child.name);
         const category = atRuleKindOf(name);
@@ -158,9 +160,8 @@ export function buildRecords(root, context) {
           container.context,
           nested
         );
-        fillChildren(nested, child);
+        count += fillChildren(nested, child);
       } else if (child.type === 'decl') {
-        declarations++;
         place(
           container.index,
           recordDeclaration(child, context.declarations),
@@ -195,6 +196,7 @@ export function buildRecords(root, context) {
         place(container.index, entry, child);
       }
     }
+    return count;
   };
   // The stylesheet's context is the one for no enclosing container.
   records.root.context = containerContext(
@@ -202,9 +204,9 @@ export function buildRecords(root, context) {
     -1,
     records.root
   );
-  fillChildren(records.root, root);
+  const count = fillChildren(records.root, root);
   records.settle();
   // N + D + 1 rounds bound a run, see `runMerge`.
-  records.maxRounds = counted + declarations + 1;
+  records.maxRounds = count + 1;
   return { records, nodes };
 }
