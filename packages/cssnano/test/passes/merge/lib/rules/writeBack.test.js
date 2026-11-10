@@ -1,6 +1,6 @@
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
-import { buildTestRecords, nodesOf } from './liveRecords.js';
+import { buildTestRecords, nodesOf, tokenListsOf } from './liveRecords.js';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
@@ -37,7 +37,11 @@ test('a second write-back should leave the child array of a block that already m
   writeBack(state.records, nodesOf(state.records));
   assert.equal(media.nodes, kept);
   assert.doesNotThrow(() =>
-    assertRecordsMatchTree(state.records, nodesOf(state.records))
+    assertRecordsMatchTree(
+      state.records,
+      nodesOf(state.records),
+      tokenListsOf(state.records)
+    )
   );
 });
 
@@ -46,7 +50,11 @@ test('assertRecordsMatchTree should throw when a child of the stylesheet prints 
   writeBack(state.records, nodesOf(state.records));
   root.nodes[1].raws.before = ' ';
   assert.throws(() =>
-    assertRecordsMatchTree(state.records, nodesOf(state.records))
+    assertRecordsMatchTree(
+      state.records,
+      nodesOf(state.records),
+      tokenListsOf(state.records)
+    )
   );
 });
 
@@ -56,7 +64,11 @@ test('assertRecordsMatchTree should throw when a declaration prints other whites
   const rule = /** @type {Container} */ (root.first);
   /** @type {import('postcss').ChildNode} */ (rule.first).raws.before = '';
   assert.throws(() =>
-    assertRecordsMatchTree(state.records, nodesOf(state.records))
+    assertRecordsMatchTree(
+      state.records,
+      nodesOf(state.records),
+      tokenListsOf(state.records)
+    )
   );
 });
 
@@ -67,6 +79,10 @@ test('assertRecordsMatchTree should accept a node whose record leaves its whites
   second.before = null;
   root.nodes[1].raws.before = ' ';
   assert.doesNotThrow(() =>
-    assertRecordsMatchTree(state.records, nodesOf(state.records))
+    assertRecordsMatchTree(
+      state.records,
+      nodesOf(state.records),
+      tokenListsOf(state.records)
+    )
   );
 });

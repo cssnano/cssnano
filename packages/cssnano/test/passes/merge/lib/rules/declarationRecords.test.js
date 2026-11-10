@@ -17,6 +17,7 @@ import {
   ruleRecordOf,
   nodesOf,
   nodeOfEntry,
+  tokenListsOf,
 } from './liveRecords.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { DECLARATION } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
@@ -74,14 +75,23 @@ test('a rule record reads its declaration keys from the ids of its records', () 
 test('assertRecordsMatchTree throws under consistency checks when a declaration value changed behind its record', () => {
   const { root, state } = setup('a{color:red}');
   assert.doesNotThrow(() =>
-    assertRecordsMatchTree(state.records, nodesOf(state.records))
+    assertRecordsMatchTree(
+      state.records,
+      nodesOf(state.records),
+      tokenListsOf(state.records)
+    )
   );
   const declaration = /** @type {import('postcss').Declaration} */ (
     root.first.first
   );
   declaration.value = 'blue';
   assert.throws(
-    () => assertRecordsMatchTree(state.records, nodesOf(state.records)),
+    () =>
+      assertRecordsMatchTree(
+        state.records,
+        nodesOf(state.records),
+        tokenListsOf(state.records)
+      ),
     /stale declarations/v
   );
 });

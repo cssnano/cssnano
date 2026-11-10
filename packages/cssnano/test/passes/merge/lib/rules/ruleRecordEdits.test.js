@@ -17,6 +17,7 @@ import {
   buildTestRecords,
   claimAt,
   nodesOf,
+  tokenListsOf,
 } from './liveRecords.js';
 import {
   moveDeclarations,
@@ -185,6 +186,10 @@ test('a rule whose child points to another container fails the consistency check
   writeBack(state.records, nodesOf(state.records));
   /** @type {ChildNode} */ (a.first).parent = b;
   assert.throws(() =>
-    assertRecordsMatchTree(state.records, nodesOf(state.records))
+    assertRecordsMatchTree(
+      state.records,
+      nodesOf(state.records),
+      tokenListsOf(state.records)
+    )
   );
 });

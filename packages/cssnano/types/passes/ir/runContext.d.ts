@@ -1,5 +1,6 @@
 import { DeclarationKeys } from './declarationKey.js';
 import { TextTable } from '../../values/textTable.js';
+import { TokenLists } from './tokenLists.js';
 import type { SelectorInfo } from '../merge/lib/rules/ensureCompatibility.js';
 import type { Container } from 'postcss';
 export type RunContext = {
@@ -7,6 +8,7 @@ export type RunContext = {
     createdBlocks: Set<Container> | null;
     selectorCompatibility: Map<string, SelectorInfo>;
     textTable: TextTable;
+    tokenLists: TokenLists;
     consistencyChecks: boolean;
 };
 /** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
@@ -20,6 +22,7 @@ export type RunContext = {
  *   createdBlocks: Set<Container> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
  *   textTable: TextTable,
+ *   tokenLists: TokenLists,
  *   consistencyChecks: boolean,
  * }} RunContext
  */

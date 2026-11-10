@@ -140,7 +140,7 @@ function runRecords(css, browsers, context, transforms) {
     release?.();
   }
   writeBack(records, nodes, context.textTable, context.createdBlocks);
-  assertRecordsMatchTree(records, nodes);
+  assertRecordsMatchTree(records, nodes, context.tokenLists);
 }
 
 /** The transforms that run over the records, in order, for each path of the pass. */

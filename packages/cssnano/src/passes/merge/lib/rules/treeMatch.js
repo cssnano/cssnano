@@ -20,6 +20,7 @@ import { differs } from './writeBack.js';
 /** @import {BlockRecord as Block, NodeEntry} from './blockRecord.js' */
 /** @import {ContainerRecord} from './writeBack.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -66,16 +67,47 @@ function checkAtRuleFacts(nodes, entry) {
 }
 
 /**
+ * Throws when a rule's ids do not spell the items of its node's selector list:
+ * the list of each id spells the item at its place, and the rule's selectors
+ * are those items.
+ *
+ * @param {TokenLists} tokenLists
+ * @param {RuleRecord} record
+ * @param {Rule} rule
+ * @return {void}
+ */
+function checkRuleSelectors(tokenLists, record, rule) {
+  const items = rule.selectors;
+  const { selectorIds, selectors } = record;
+  if (
+    selectorIds.length !== items.length ||
+    selectors.length !== items.length
+  ) {
+    throw new Error(OUT_OF_STEP);
+  }
+  for (let at = 0; at < items.length; at++) {
+    if (
+      tokensText(tokenLists.get(selectorIds[at])) !== items[at] ||
+      selectors[at] !== items[at]
+    ) {
+      throw new Error(OUT_OF_STEP);
+    }
+  }
+}
+
+/**
  * Throws when the record of a rule is not linked in the container that holds
- * it, or does not nest exactly when the tree's rule holds rules or at-rules.
+ * it, does not nest exactly when the tree's rule holds rules or at-rules, or
+ * its selectors differ from the tree's.
  *
  * @param {BlockRecords} records
  * @param {NodeTable} nodes
+ * @param {TokenLists} tokenLists
  * @param {ContainerRecord} block the container whose chain holds the rule
  * @param {RuleRecord} record
  * @return {void}
  */
-function checkRuleRecord(records, nodes, block, record) {
+function checkRuleRecord(records, nodes, tokenLists, block, record) {
   const rule = /** @type {Rule} */ (nodeOf(nodes, record.index));
   if (records.links.parentOf(record.index) !== block.index) {
     throw new Error(OUT_OF_STEP);
@@ -84,11 +116,12 @@ function checkRuleRecord(records, nodes, block, record) {
   if (nests !== rule.nodes.some(isRuleOrAtRule)) {
     throw new Error(OUT_OF_STEP);
   }
+  checkRuleSelectors(tokenLists, record, rule);
   const { tokens } = record;
   if (tokens !== undefined && tokensText(tokens) !== record.sourceText) {
     throw new Error(OUT_OF_STEP);
   }
-  checkBlockRecord(records, nodes, record);
+  checkBlockRecord(records, nodes, tokenLists, record);
 }
 
 /**
@@ -99,10 +132,11 @@ function checkRuleRecord(records, nodes, block, record) {
  *
  * @param {BlockRecords} records
  * @param {NodeTable} nodes
+ * @param {TokenLists} tokenLists
  * @param {ContainerRecord} block
  * @return {void}
  */
-function checkBlockRecord(records, nodes, block) {
+function checkBlockRecord(records, nodes, tokenLists, block) {
   if (differs(records, nodes, block)) throw new Error(OUT_OF_STEP);
   const plain = block.kind === RULE && block.context === -1;
   for (
@@ -124,10 +158,10 @@ function checkBlockRecord(records, nodes, block) {
       throw new Error(STALE);
     }
     if (item.kind === RULE) {
-      checkRuleRecord(records, nodes, block, item);
+      checkRuleRecord(records, nodes, tokenLists, block, item);
     } else if (item.kind === STYLESHEET || item.kind === AT_RULE_BLOCK) {
       checkAtRuleFacts(nodes, item);
-      checkBlockRecord(records, nodes, item);
+      checkBlockRecord(records, nodes, tokenLists, item);
     } else {
       if (item.kind === COMMENT || item.kind === AT_RULE_STATEMENT) {
         checkAtRuleFacts(nodes, item);
@@ -152,14 +186,16 @@ function checkBlockRecord(records, nodes, block) {
 
 /**
  * Under consistency checks, throws when the records and the tree disagree:
- * each container must hold the nodes it holds, in order, and each rule must
- * stand in the slot its record names. Writes nothing.
+ * each container must hold the nodes it holds, in order, each rule must
+ * stand in the slot its record names, and its selectors must spell the tree's.
+ * Writes nothing.
  *
  * @param {BlockRecords} records
  * @param {NodeTable} nodes
+ * @param {TokenLists} tokenLists the run's token lists, which the ids name
  * @return {void}
  */
-export function assertRecordsMatchTree(records, nodes) {
+export function assertRecordsMatchTree(records, nodes, tokenLists) {
   if (!records.consistencyChecks) return;
-  checkBlockRecord(records, nodes, records.root);
+  checkBlockRecord(records, nodes, tokenLists, records.root);
 }

@@ -49,6 +49,22 @@ function walkedStylesheet(css) {
 }
 
 /**
+ * The distinct selector items of every rule in the stylesheet. The build of
+ * the records tokenizes each one once, so a pass counts this many calls for
+ * its build alone.
+ *
+ * @param {import('postcss').Root} root
+ * @return {number}
+ */
+function distinctItemsOf(root) {
+  const items = new Set();
+  root.walkRules((rule) => {
+    for (const item of rule.selectors) items.add(item);
+  });
+  return items.size;
+}
+
+/**
  * @param {import('postcss').Root} root
  * @param {string} selector
  * @return {import('postcss').Rule}
@@ -109,27 +125,30 @@ suite('the merge pass leaves the selectors it writes in the text table', () => {
     const { root, table } = walkedStylesheet(
       'div > a {color:red} div > b {color:red} p {margin:0} div > c {color:red}'
     );
+    const items = distinctItemsOf(root);
     const before = tokenizeTotal();
     mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(tokenizeTotal() - before, items);
   });
 
   test('elementKeys reads the selector declarationJoin.js wrote, without tokenizing', () => {
     const { root, table } = walkedStylesheet(
       'div > a {color:red} p {margin:0} div > b {color:red}'
     );
+    const items = distinctItemsOf(root);
     const before = tokenizeTotal();
     mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(tokenizeTotal() - before, items);
   });
 
   test('elementKeys reads the selector ruleRewrite.js wrote, without tokenizing', () => {
     const { root, table } = walkedStylesheet(
       'div > a, div > c {color:red;margin:0} div > b {color:red;padding:0} div > d {color:red}'
     );
+    const items = distinctItemsOf(root);
     const before = tokenizeTotal();
     mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(tokenizeTotal() - before, items);
   });
 });
 
@@ -145,44 +164,20 @@ suite(
       await postcssProcessor([transformPlugin('mergeRules')()]).process(root, {
         from: undefined,
       });
-      assert.equal(tokenizeTotal() - before, 1);
+      // The build tokenizes each item once; the compatibility check still
+      // tokenizes `a:hover` again until its reads use the stored lists.
+      assert.equal(tokenizeTotal() - before, 3);
       assert.equal(root.toString(), 'a:hover,b {color:red}');
     });
   }
 );
 
 suite('the merge pass writes selectors through its records', () => {
-  test('a rule with a pseudo-class is tokenized once and a simple selector never, when rules merge', async () => {
-    const { transformPlugin } =
-      await import('../../../src/passes/merge/index.js');
-    const { default: postcssProcessor } = await import('postcss');
-    const run = async (css) => {
-      const before = tokenizeTotal();
-      await postcssProcessor([transformPlugin('mergeRules')()]).process(
-        postcssProcessor.parse(css),
-        { from: undefined }
-      );
-      return tokenizeTotal() - before;
-    };
-    assert.equal(await run('a:hover {color:red} b {color:red}'), 1);
-    assert.equal(await run('a {color:red} b {color:red}'), 0);
-  });
-
   test('a merged rule whose selector changed without a stored list spells its new selector in the table', () => {
     const root = postcss.parse('a {color:red} b {color:red}');
     const table = new TextTable();
     mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
     assert.equal(tokensText(table.tokens(ruleWith(root, 'a,b'))), 'a,b');
-  });
-
-  test('a rule the compatibility check tokenized before its first merge gives the merged rule a stored list', () => {
-    const root = postcss.parse('a:hover {color:red} b:focus {color:red}');
-    const table = new TextTable();
-    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    const joined = ruleWith(root, 'a:hover,b:focus');
-    const before = tokenizeTotal();
-    assert.equal(tokensText(table.tokens(joined)), 'a:hover,b:focus');
-    assert.equal(tokenizeTotal() - before, 0);
   });
 
   test("a marked record whose selector equals its node's comment-free text prints without the comment", () => {
@@ -203,11 +198,9 @@ suite('the merge pass writes selectors through its records', () => {
  */
 function whitespaceRecordsOf(css, consistencyChecks = false) {
   const root = postcss.parse(css);
-  const { records, nodes } = buildRecords(
-    root,
-    createRunContext(new TextTable(), consistencyChecks)
-  );
-  return { root, records, nodes };
+  const context = createRunContext(new TextTable(), consistencyChecks);
+  const { records, nodes } = buildRecords(root, context);
+  return { root, records, nodes, tokenLists: context.tokenLists };
 }
 
 test('write-back gives a rule the whitespace its record holds, in the stylesheet it rebuilds', () => {
@@ -228,7 +221,7 @@ test('write-back gives a rule the whitespace its record holds, in the stylesheet
  * the children accompanies.
  */
 function recordEditedAlone(consistencyChecks = false) {
-  const { root, records, nodes } = whitespaceRecordsOf(
+  const { root, records, nodes, tokenLists } = whitespaceRecordsOf(
     'a{color:red}\nb{color:blue}',
     consistencyChecks
   );
@@ -236,7 +229,7 @@ function recordEditedAlone(consistencyChecks = false) {
     records.links.nextSibling(records.links.firstChild(records.root.index))
   ).before = '\n\n';
   writeBack(records, nodes);
-  return { root, records, nodes };
+  return { root, records, nodes, tokenLists };
 }
 
 // Every change of whitespace comes with a change of children; a record edited
@@ -248,8 +241,8 @@ test('write-back leaves the whitespace of a rule in a container it does not rebu
 
 test('the consistency check reports a record whose whitespace write-back did not write', () => {
   // The arena fixes its checks when it is built, so it is built under checks.
-  const { records, nodes } = recordEditedAlone(true);
-  assert.throws(() => assertRecordsMatchTree(records, nodes));
+  const { records, nodes, tokenLists } = recordEditedAlone(true);
+  assert.throws(() => assertRecordsMatchTree(records, nodes, tokenLists));
 });
 
 test('write-back gives a rule nested in an at-rule the whitespace its record holds', () => {

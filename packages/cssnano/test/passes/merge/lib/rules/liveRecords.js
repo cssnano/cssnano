@@ -9,6 +9,7 @@ import {
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
@@ -127,17 +128,37 @@ export function buildTestRecords(
   textTable = new TextTable(),
   consistencyChecks = false
 ) {
+  const tokenLists = new TokenLists();
   const { records, nodes } = buildRecords(root, {
     textTable,
     declarations: state.declarationIds,
+    tokenLists,
     consistencyChecks,
   });
   nodeTables.set(records, nodes);
+  tokenListTables.set(records, tokenLists);
   return records;
 }
 
 /** @type {WeakMap<BlockRecords, NodeTable>} the node table of each records object a test built */
 const nodeTables = new WeakMap();
+
+/** @type {WeakMap<BlockRecords, TokenLists>} the token lists of each records object a test built */
+const tokenListTables = new WeakMap();
+
+/**
+ * The token lists of records built by `buildTestRecords`, which the tree
+ * checks take beside the records.
+ *
+ * @param {BlockRecords} records
+ * @return {TokenLists}
+ */
+export function tokenListsOf(records) {
+  const tokenLists = tokenListTables.get(records);
+  if (tokenLists === undefined)
+    throw new Error('records not built by buildTestRecords');
+  return tokenLists;
+}
 
 /**
  * The node table of records built by `buildTestRecords`, which write-back and

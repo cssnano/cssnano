@@ -28,6 +28,7 @@ import {
   placeUnlinked,
   nodesOf,
   nodeOfEntry,
+  tokenListsOf,
 } from './liveRecords.js';
 import {
   adopt,
@@ -85,7 +86,11 @@ test('assertRecordsMatchTree should accept records built from a stylesheet', () 
     '@media (x){@media (y){p{width:1px}q{height:2px}}}a{color:red;b{width:1px}}'
   );
   assert.doesNotThrow(() =>
-    assertRecordsMatchTree(state.records, nodesOf(state.records))
+    assertRecordsMatchTree(
+      state.records,
+      nodesOf(state.records),
+      tokenListsOf(state.records)
+    )
   );
 });
 
@@ -97,7 +102,12 @@ test('assertRecordsMatchTree should throw when the chain holds the rules in anot
   const [a] = /** @type {Rule[]} */ (nodeOfEntry(state.records, media).nodes);
   moveRule(state.records, media.index, ruleRecordOf(state.records, a).index);
   assert.throws(
-    () => assertRecordsMatchTree(state.records, nodesOf(state.records)),
+    () =>
+      assertRecordsMatchTree(
+        state.records,
+        nodesOf(state.records),
+        tokenListsOf(state.records)
+      ),
     /out of step/v
   );
 });
@@ -114,7 +124,12 @@ test('assertRecordsMatchTree should throw when a block chain lacks a child the t
     ).index
   );
   assert.throws(
-    () => assertRecordsMatchTree(state.records, nodesOf(state.records)),
+    () =>
+      assertRecordsMatchTree(
+        state.records,
+        nodesOf(state.records),
+        tokenListsOf(state.records)
+      ),
     /out of step/v
   );
 });
@@ -132,7 +147,12 @@ test('the tree check throws when a built entry has no node', () => {
     const saved = nodes[index];
     nodes[index] = undefined;
     assert.throws(
-      () => assertRecordsMatchTree(state.records, nodes),
+      () =>
+        assertRecordsMatchTree(
+          state.records,
+          nodes,
+          tokenListsOf(state.records)
+        ),
       /out of step|stale/v
     );
     nodes[index] = saved;

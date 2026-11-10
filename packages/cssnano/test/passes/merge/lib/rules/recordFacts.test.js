@@ -21,6 +21,7 @@ import {
   entryOf,
   ruleRecordOf,
   nodesOf,
+  tokenListsOf,
 } from './liveRecords.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 
@@ -140,7 +141,9 @@ test('a prelude id differs when the params differ', () => {
 test('the tree check throws when an at-rule record names another at-rule than its node', () => {
   const { root, records } = recordsOf('@media print{a{color:red}}');
   root.first.name = 'supports';
-  assert.throws(() => assertRecordsMatchTree(records, nodesOf(records)));
+  assert.throws(() =>
+    assertRecordsMatchTree(records, nodesOf(records), tokenListsOf(records))
+  );
 });
 
 /**

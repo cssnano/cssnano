@@ -25,6 +25,7 @@ import {
   ruleRecordOf,
   placeUnlinked,
   nodesOf,
+  tokenListsOf,
 } from './liveRecords.js';
 import {
   appendChild,
@@ -366,7 +367,12 @@ test('assertRecordsMatchTree should throw under consistency checks when a commen
   state.records = buildTestRecords(root, state, undefined, true);
   root.first.append(postcss.comment({ text: 'note' }));
   assert.throws(
-    () => assertRecordsMatchTree(state.records, nodesOf(state.records)),
+    () =>
+      assertRecordsMatchTree(
+        state.records,
+        nodesOf(state.records),
+        tokenListsOf(state.records)
+      ),
     /out of step/v
   );
 });

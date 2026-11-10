@@ -2,6 +2,7 @@ import cssnanoUtils from '#utils';
 import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
 import { SelectorIds } from '../../../ir/selectorIds.js';
+import { tokens as tokenize } from '../../../../utils/value.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { keysOfName } from '../../../ir/propertyTable.js';
 import {
@@ -72,9 +73,22 @@ export function recordDeclaration(node, declarations) {
  * @return {{records: BlockRecords, nodes: NodeTable}}
  */
 export function buildRecords(root, context) {
-  const { textTable, consistencyChecks } = context;
+  const { textTable, tokenLists, consistencyChecks } = context;
   // The ids of this build's selectors. Each rule keeps the ids of its items.
   const selectorIds = new SelectorIds();
+  /**
+   * The id of a selector item. An item new to the build gets the next index of
+   * the run's token lists, with its own tokens, so the id names its list. The
+   * run's lists are empty when the build starts.
+   *
+   * @param {string} selector
+   * @return {number}
+   */
+  const internSelector = (selector) => {
+    const id = selectorIds.idOf(selector);
+    if (id === tokenLists.length) tokenLists.push(tokenize(selector));
+    return id;
+  };
   const records = new BlockRecords(
     new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
     consistencyChecks
@@ -115,7 +129,7 @@ export function buildRecords(root, context) {
         const record = new RuleRecord(
           child.selectors,
           child.selector,
-          child.selectors.map((selector) => selectorIds.idOf(selector)),
+          child.selectors.map(internSelector),
           source === child.selector ? undefined : source,
           textTable.stored(child)
         );

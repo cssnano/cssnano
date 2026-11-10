@@ -10,6 +10,7 @@ import {
   declarationIds,
   ruleRecordOf,
   nodesOf,
+  tokenListsOf,
 } from './liveRecords.js';
 import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
@@ -252,7 +253,12 @@ test('assertRecordsMatchTree should throw when a declaration left the rule witho
   );
   /** @type {import('postcss').Rule} */ (root.first).first?.remove();
   assert.throws(
-    () => assertRecordsMatchTree(state.records, nodesOf(state.records)),
+    () =>
+      assertRecordsMatchTree(
+        state.records,
+        nodesOf(state.records),
+        tokenListsOf(state.records)
+      ),
     /out of step/v
   );
 });
