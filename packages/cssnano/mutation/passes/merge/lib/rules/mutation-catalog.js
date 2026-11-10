@@ -72,6 +72,12 @@ export const mutations = [
     replace: '',
   },
   {
+    name: 'key the non-adjacent join of rules on their selector text, not their ids',
+    target: source('nonAdjacentMerge.js'),
+    find: 'listKey(entry.selectorIds)',
+    replace: 'entry.selectorText()',
+  },
+  {
     name: 'keep a downward join anchored at the earlier rule',
     target: source('nonAdjacentMerge.js'),
     find: "      if (direction === 'down') {",

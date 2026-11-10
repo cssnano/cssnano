@@ -4,23 +4,39 @@
 // double the analyses, so a summary folded again on every merge would fail.
 // Checks are off: this file imports no enableChecks.js.
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { Session } from 'node:inspector/promises';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import preset from '../../../../../src/presets/default.js';
+import { executionCount } from '../../../../../../../util/mutation-testing/fragmentReach.js';
 
 const session = new Session();
 session.connect();
 await session.post('Profiler.enable');
+// Block coverage gives the iterations of a loop, the count of its body.
 await session.post('Profiler.startPreciseCoverage', {
   callCount: true,
-  detailed: false,
+  detailed: true,
 });
 
 const ANALYSES = /** @type {const} */ ([
   ['/passes/merge/lib/rules/ensureCompatibility.js', 'selectorInfoOf'],
   ['/passes/merge/lib/rules/elementKeys.js', 'elementKeyOf'],
 ]);
+
+/**
+ * The loops of selector reads, each by the source of its body: the iterations
+ * of the body are the iterations of the loop.
+ */
+const LOOPS = /** @type {const} */ ([
+  ['/passes/merge/lib/rules/selectorReads.js', 'key += ids[at];'],
+]);
+
+const SELECTOR_READS = new URL(
+  '../../../../../src/passes/merge/lib/rules/selectorReads.js',
+  import.meta.url
+);
 
 /** The bound on the ratio of the analyses at 2n to those at n. */
 const BOUND = 2.1;
@@ -43,17 +59,34 @@ function analysisCalls(coverage) {
 }
 
 /**
- * Runs the full preset over `css` and returns the selector analyses it made.
- * The take before the run drops the counts of the imports.
+ * @param {import('node:inspector').Profiler.ScriptCoverage[]} coverage
+ * @return {number} the iterations of the loops of selector reads in the coverage taken
+ */
+function loopIterations(coverage) {
+  const source = readFileSync(SELECTOR_READS, 'utf8');
+  let iterations = 0;
+  for (const script of coverage) {
+    for (const [module, body] of LOOPS) {
+      if (!script.url.endsWith(module)) continue;
+      iterations += executionCount(script.functions, source.indexOf(body));
+    }
+  }
+  return iterations;
+}
+
+/**
+ * Runs the full preset over `css` and returns the selector analyses it made and
+ * the iterations of the loops of selector reads. The take before the run drops
+ * the counts of the imports.
  *
  * @param {string} css
- * @return {Promise<number>}
+ * @return {Promise<{calls: number, iterations: number}>}
  */
 async function analysesOf(css) {
   await session.post('Profiler.takePreciseCoverage');
   await postcss(preset()).process(css, { from: undefined });
   const { result } = await session.post('Profiler.takePreciseCoverage');
-  return analysisCalls(result);
+  return { calls: analysisCalls(result), iterations: loopIterations(result) };
 }
 
 /**
@@ -76,10 +109,15 @@ function repeat(unit, count) {
 async function assertLinearAnalyses(unit, n) {
   const half = await analysesOf(repeat(unit, n));
   const full = await analysesOf(repeat(unit, 2 * n));
-  assert.ok(half > 0, 'the run makes no selector analyses');
+  assert.ok(half.calls > 0, 'the run makes no selector analyses');
   assert.ok(
-    full <= BOUND * half,
-    `${half} analyses at ${n}, ${full} at ${2 * n}`
+    full.calls <= BOUND * half.calls,
+    `${half.calls} analyses at ${n}, ${full.calls} at ${2 * n}`
+  );
+  assert.ok(half.iterations > 0, 'the run runs no loop of selector reads');
+  assert.ok(
+    full.iterations <= BOUND * half.iterations,
+    `${half.iterations} loop iterations at ${n}, ${full.iterations} at ${2 * n}`
   );
 }
 

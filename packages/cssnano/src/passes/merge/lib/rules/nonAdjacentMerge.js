@@ -13,6 +13,7 @@ import {
 import { isKeyframes } from './sameContainer.js';
 import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
 import { adopt } from './arenaEdits.js';
+import { listKey } from './selectorReads.js';
 
 /** @import MergeState from './mergeState.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -95,7 +96,7 @@ export function subtreeEntries(records, block) {
  */
 function joinKey(entry, joinRules) {
   if (entry.kind === RULE) {
-    return joinRules ? `{${entry.selectorText()}` : null;
+    return joinRules ? `{${listKey(entry.selectorIds)}` : null;
   }
   // `@font-face` and `@page` have block records too, so the name decides.
   // Siblings share their enclosing blocks, so their contexts are equal exactly
