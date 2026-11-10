@@ -64,14 +64,6 @@ export class BlockRecords {
   leadingWhitespace = null;
 
   /**
-   * The most rounds a run may take before it throws. Set from the counts of
-   * rules, at-rules and declarations when the records are built.
-   *
-   * @type {number}
-   */
-  maxRounds = Infinity;
-
-  /**
    * @param {BlockRecord} root the record of the stylesheet
    * @param {boolean} consistencyChecks whether the arena and its tables check their reads and edits
    */

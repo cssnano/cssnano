@@ -73,14 +73,6 @@ test('sweepPotential should number nested blocks in document order, each before 
   assert.deepEqual(sweepPotential(state.records, null).potential, [4, 3, 5]);
 });
 
-test('buildRecords should bound the rounds by the rules, at-rules and declarations, not the comments', () => {
-  // Four rules and at-rules (a, @media, b, @import) and three declarations.
-  const { state } = setup(
-    'a{color:red}/* c */@media x{b{c:d;e:f}}@import "y";'
-  );
-  assert.equal(state.records.maxRounds, 8);
-});
-
 test('assertNoOverDuplication should accept records built from a stylesheet that repeats a declaration', () => {
   const { state } = setup('a{color:red}b{color:red}');
   assert.doesNotThrow(() => assertNoOverDuplication(state.records, null));

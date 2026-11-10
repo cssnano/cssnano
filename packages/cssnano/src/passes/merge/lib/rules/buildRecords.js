@@ -112,21 +112,17 @@ export function buildRecords(root, context) {
   /**
    * Links each child of a container, which holds its context already, in
    * document order. A rule is linked into its parent, then its children.
-   * Returns the rules, at-rules and declarations under the container, which
-   * bound the rounds of a run.
    *
    * @param {BlockRecord | RuleRecord} container
    * @param {Container} node the container's node
-   * @return {number}
+   * @return {void}
    */
   const fillChildren = (container, node) => {
     // The build reads the child lists, which a pending edit has not rebuilt yet.
     if (consistencyChecks && hasPendingEdits(node)) {
       throw new Error(PENDING_EDITS);
     }
-    let count = 0;
     for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
-      if (child.type !== 'comment') count++;
       if (child.type === 'rule') {
         const record = new RuleRecord(
           child.raws.before ?? null,
@@ -141,7 +137,7 @@ export function buildRecords(root, context) {
             record
           );
         }
-        count += fillChildren(record, child);
+        fillChildren(record, child);
       } else if (child.type === 'atrule' && child.nodes) {
         const name = asciiLowerCase(child.name);
         const category = atRuleKindOf(name);
@@ -160,7 +156,7 @@ export function buildRecords(root, context) {
           container.context,
           nested
         );
-        count += fillChildren(nested, child);
+        fillChildren(nested, child);
       } else if (child.type === 'decl') {
         place(
           container.index,
@@ -196,7 +192,6 @@ export function buildRecords(root, context) {
         place(container.index, entry, child);
       }
     }
-    return count;
   };
   // The stylesheet's context is the one for no enclosing container.
   records.root.context = containerContext(
@@ -204,9 +199,7 @@ export function buildRecords(root, context) {
     -1,
     records.root
   );
-  const count = fillChildren(records.root, root);
+  fillChildren(records.root, root);
   records.settle();
-  // N + D + 1 rounds bound a run, see `runMerge`.
-  records.maxRounds = count + 1;
   return { records, nodes };
 }

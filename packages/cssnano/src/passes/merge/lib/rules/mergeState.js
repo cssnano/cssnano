@@ -30,6 +30,14 @@ export default class MergeState {
   records = /** @type {BlockRecords} */ (/** @type {unknown} */ (null));
 
   /**
+   * The most rounds the joins of the run may take before it throws. `runMerge`
+   * sets it from the live entries when it starts.
+   *
+   * @type {number}
+   */
+  maxRounds = Infinity;
+
+  /**
    * @param {readonly string[]} browsers
    * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
    */
