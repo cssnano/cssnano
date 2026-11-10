@@ -5,7 +5,6 @@ import {
   finishColumns,
   longhandContext,
 } from './lib/longhand/canonicalize.js';
-import { clearSupportCache } from './lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import runMerge from './lib/rules/selectorMerger.js';
 import { buildRecords } from './lib/rules/buildRecords.js';
@@ -97,11 +96,7 @@ function runFirstRound(css, support, blocks, context, reached) {
     context.textTable,
     context.features
   );
-  try {
-    canonicalizeFirstRound(css, first, blocks, reached);
-  } finally {
-    clearSupportCache();
-  }
+  canonicalizeFirstRound(css, first, blocks, reached);
   return first;
 }
 
@@ -226,13 +221,9 @@ function runTransforms(css, browsers, rules, context, reached) {
   secondContext.setsOtherColumn = first.setsOtherColumn;
   secondContext.shorthandMemoTable = first.shorthandMemoTable;
   secondContext.familyRecords = first.familyRecords;
-  try {
-    canonicalize(css, secondContext);
-    for (const block of blocks) canonicalizeInTree(block, css, secondContext);
-    finishColumns(secondContext);
-  } finally {
-    clearSupportCache();
-  }
+  canonicalize(css, secondContext);
+  for (const block of blocks) canonicalizeInTree(block, css, secondContext);
+  finishColumns(secondContext);
 }
 
 /** The guard for the `rules` option, shared with the preset that validates it. */

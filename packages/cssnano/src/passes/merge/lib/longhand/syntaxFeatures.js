@@ -53,8 +53,6 @@ const supportDependentFunctions = new Set([
 ]);
 
 const EMPTY_SET = new Set();
-/** @type {Map<string, Set<string>>} */
-const supportDepsCache = new Map();
 
 /* Units that every browser back to `longstandingFloor` in targetSupport.js
  * parses: the browser-compat-data browsers, and Opera Mini per caniuse, which
@@ -268,11 +266,6 @@ export function supportDependenciesOf(decl, textTable) {
     return EMPTY_SET;
   }
 
-  const cached = supportDepsCache.get(value);
-  if (cached !== undefined) {
-    return cached;
-  }
-
   /** @type {Set<string>} */
   const features = new Set();
   /* Whether each enclosing function or block is math, innermost last. */
@@ -302,16 +295,5 @@ export function supportDependenciesOf(decl, textTable) {
     if (feature !== undefined) features.add(feature);
   }
 
-  supportDepsCache.set(value, features);
   return features;
-}
-
-/**
- * Values repeat within a file, not across files: drop the memo so a
- * long-running process does not keep every value it has seen.
- *
- * @return {void}
- */
-export function clearSupportCache() {
-  supportDepsCache.clear();
 }

@@ -7,7 +7,6 @@ import {
   longhandContext,
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { TextTable } from '../../../src/values/textTable.js';
-import { clearSupportCache } from '../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { resolveTargets } from '#utils/browser-targets';
 
@@ -32,19 +31,13 @@ function canonicalizeBlocks(css) {
     new TextTable(),
     features
   );
-  try {
-    {
-      canonicalize(root, context);
-      root.walk((node) => {
-        if (node.type !== 'rule' && node.type !== 'atrule') return;
-        if (!node.nodes?.some((child) => child.type === 'decl')) return;
-        canonicalize(node, context);
-      });
-      finishColumns(context);
-    }
-  } finally {
-    clearSupportCache();
-  }
+  canonicalize(root, context);
+  root.walk((node) => {
+    if (node.type !== 'rule' && node.type !== 'atrule') return;
+    if (!node.nodes?.some((child) => child.type === 'decl')) return;
+    canonicalize(node, context);
+  });
+  finishColumns(context);
   return root.toString();
 }
 

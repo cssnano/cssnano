@@ -17,7 +17,6 @@ import {
   longhandContext,
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { TextTable } from '../../../src/values/textTable.js';
-import { clearSupportCache } from '../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 import {
@@ -80,24 +79,18 @@ function blocksChangedBySecondRound(css) {
     features
   );
   const changed = [];
-  try {
-    {
-      const blocks = [root];
-      root.walk((node) => {
-        if (node.type !== 'rule' && node.type !== 'atrule') return;
-        if (!node.nodes?.some((child) => child.type === 'decl')) return;
-        blocks.push(node);
-      });
-      for (const block of blocks) {
-        const before = block.toString();
-        canonicalize(block, context);
-        if (block.toString() !== before) changed.push(before);
-      }
-      finishColumns(context);
-    }
-  } finally {
-    clearSupportCache();
+  const blocks = [root];
+  root.walk((node) => {
+    if (node.type !== 'rule' && node.type !== 'atrule') return;
+    if (!node.nodes?.some((child) => child.type === 'decl')) return;
+    blocks.push(node);
+  });
+  for (const block of blocks) {
+    const before = block.toString();
+    canonicalize(block, context);
+    if (block.toString() !== before) changed.push(before);
   }
+  finishColumns(context);
   return changed;
 }
 

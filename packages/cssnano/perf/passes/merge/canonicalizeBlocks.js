@@ -7,7 +7,6 @@ import {
   finishColumns,
   longhandContext,
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
-import { clearSupportCache } from '../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { minifiedLength } from '../../../src/passes/ir/minifiedLength.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
@@ -46,40 +45,34 @@ test('canonicalizing a framework block twice gives the same block and never a lo
       new TextTable(),
       features
     );
-    try {
-      {
-        canonicalize(root, context);
-        /** @type {import('postcss').Container[]} */
-        const blocks = [];
-        root.walk((node) => {
-          if (node.type !== 'rule' && node.type !== 'atrule') return;
-          if (node.nodes?.some((child) => child.type === 'decl')) {
-            blocks.push(node);
-          }
-        });
-        const lengthsBefore = blocks.map(blockLength);
-        for (const block of blocks) canonicalize(block, context);
-        finishColumns(context);
-        const once = blocks.map((block) => block.toString());
-        const lengthsOnce = blocks.map(blockLength);
-        for (const [index, length] of lengthsOnce.entries()) {
-          assert.ok(
-            length <= lengthsBefore[index],
-            `${file}: canonicalization made a block longer`
-          );
-        }
-        for (const block of blocks) canonicalize(block, context);
-        finishColumns(context);
-        for (const [index, block] of blocks.entries()) {
-          assert.strictEqual(
-            block.toString(),
-            once[index],
-            `${file}: a second canonicalization changed a block`
-          );
-        }
+    canonicalize(root, context);
+    /** @type {import('postcss').Container[]} */
+    const blocks = [];
+    root.walk((node) => {
+      if (node.type !== 'rule' && node.type !== 'atrule') return;
+      if (node.nodes?.some((child) => child.type === 'decl')) {
+        blocks.push(node);
       }
-    } finally {
-      clearSupportCache();
+    });
+    const lengthsBefore = blocks.map(blockLength);
+    for (const block of blocks) canonicalize(block, context);
+    finishColumns(context);
+    const once = blocks.map((block) => block.toString());
+    const lengthsOnce = blocks.map(blockLength);
+    for (const [index, length] of lengthsOnce.entries()) {
+      assert.ok(
+        length <= lengthsBefore[index],
+        `${file}: canonicalization made a block longer`
+      );
+    }
+    for (const block of blocks) canonicalize(block, context);
+    finishColumns(context);
+    for (const [index, block] of blocks.entries()) {
+      assert.strictEqual(
+        block.toString(),
+        once[index],
+        `${file}: a second canonicalization changed a block`
+      );
     }
   }
 });

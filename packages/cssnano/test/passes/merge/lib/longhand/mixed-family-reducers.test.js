@@ -16,6 +16,7 @@ import {
 } from './helpers/reduceRuns.js';
 import { importanceLanes } from './helpers/importanceLanes.js';
 import { applyChildEdits } from '../../../../../src/passes/merge/lib/deferredChildEdits.js';
+import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 
 describe('mixed-family internal reducers and helpers', () => {
   test('reduces each family from a whole rule', () => {
@@ -138,7 +139,9 @@ describe('mixed-family internal reducers and helpers', () => {
     reduceBorder(
       borderRule,
       /** @type {import('postcss').Declaration[]} */ (borderRule.nodes),
-      true
+      true,
+      new TextTable(),
+      longstandingFeatures
     );
     applyChildEdits(borderRule);
     assert.strictEqual(
@@ -149,7 +152,9 @@ describe('mixed-family internal reducers and helpers', () => {
     reduceBorder(
       borderRule,
       /** @type {import('postcss').Declaration[]} */ (borderRule.nodes),
-      false
+      false,
+      new TextTable(),
+      longstandingFeatures
     );
     applyChildEdits(borderRule);
     assert.strictEqual(borderRoot.toString(), 'a{border:2px solid red}');

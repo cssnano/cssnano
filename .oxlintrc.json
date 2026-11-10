@@ -243,7 +243,6 @@
               "packages/cssnano/src/passes/merge/lib/longhand/targetSupport.js#profiles",
               "packages/cssnano/src/passes/merge/lib/longhand/targetSupport.js#supportByTargets",
               "packages/cssnano/src/passes/merge/lib/longhand/decl/columnsValue.js#parsedDeclarations",
-              "packages/cssnano/src/passes/merge/lib/longhand/syntaxFeatures.js#supportDepsCache",
               "packages/cssnano/src/passes/merge/lib/deferredChildEdits.js#pendingEdits"
             ]
           }

@@ -23,11 +23,4 @@ export declare function blocksMerge(feature: string): boolean;
  * declaration's value
  */
 export declare function supportDependenciesOf(decl: import('postcss').Declaration, textTable: import('../../../../values/textTable.js').TextTable): Set<string>;
-/**
- * Values repeat within a file, not across files: drop the memo so a
- * long-running process does not keep every value it has seen.
- *
- * @return {void}
- */
-export declare function clearSupportCache(): void;
 //# sourceMappingURL=syntaxFeatures.d.ts.map
