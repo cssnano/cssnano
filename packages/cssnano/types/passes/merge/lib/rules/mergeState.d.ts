@@ -25,6 +25,12 @@ export default class MergeState {
      */
     constructor(browsers: readonly string[], context?: import('../../../ir/runContext.js').RunContext);
     /**
+     * The token lists of the run, which the ids of the records name.
+     *
+     * @return {import('../../../ir/tokenLists.js').TokenLists}
+     */
+    get tokenLists(): import('../../../ir/tokenLists.js').TokenLists;
+    /**
      * The elements the rule can match. An arrow function, so it passes as a
      * callback without a closure per call.
      *

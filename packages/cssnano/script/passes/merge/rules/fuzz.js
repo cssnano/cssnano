@@ -3,10 +3,8 @@ import postcss from 'postcss';
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import browserslist from 'browserslist';
 const plugin = transformPlugin('mergeRules');
-import {
-  createSelectorLookup,
-  selectorsCompatible,
-} from '../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
+import { selectorInfoOf } from '../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
+import { tokens as tokenize } from '../../../../src/utils/value.js';
 import {
   ensureCompatibility as legacyCompatibility,
   noVendor,
@@ -30,13 +28,17 @@ import { withTargets } from '../../../../../../util/testHelpers.js';
 import { transformPlugin } from '#passes/merge';
 
 /**
+ * Whether every selector is compatible with the browsers, each judged from the
+ * tokens of its own text, as the merge window judges an item.
+ *
  * @param {string[]} selectors
  * @param {string[]=} browsers
- * @param {Map<string, SelectorInfo>=} cache
  * @return {boolean}
  */
-export function currentCompatibility(selectors, browsers, cache) {
-  return selectorsCompatible(selectors, createSelectorLookup(browsers, cache));
+export function currentCompatibility(selectors, browsers) {
+  return selectors.every(
+    (selector) => selectorInfoOf(tokenize(selector), browsers).compatible
+  );
 }
 
 /** Return a canonical structural description, independent of generated names. */

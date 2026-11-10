@@ -16,8 +16,9 @@ import { TextTable } from '../../../src/values/textTable.js';
 function buildOf(css) {
   const root = postcss.parse(css);
   const textTable = new TextTable();
-  const { records, nodes } = buildRecords(root, createRunContext(textTable));
-  return { root, textTable, records, nodes };
+  const context = createRunContext(textTable);
+  const { records, nodes } = buildRecords(root, context);
+  return { root, textTable, context, records, nodes };
 }
 
 test('the window guard throws on a read of the table tokens of a rule', () => {
@@ -48,12 +49,12 @@ test('the window guard hands the table reads back on release', () => {
 });
 
 test('guardWindow lets a merge of two rules through the window, where the merged rule takes its template source', () => {
-  const { root, textTable, records, nodes } = buildOf(
+  const { root, textTable, context, records, nodes } = buildOf(
     'h1{color:red}h2{color:red;text-decoration:underline}'
   );
   const release = guardWindow(textTable);
   try {
-    runMerge(records, ['chrome 120'], createRunContext(textTable));
+    runMerge(records, ['chrome 120'], context);
   } finally {
     release();
   }

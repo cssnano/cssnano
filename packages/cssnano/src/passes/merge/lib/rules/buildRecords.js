@@ -44,6 +44,7 @@ export function isRuleOrAtRule(node) {
 }
 
 const PENDING_EDITS = 'a container has edits its child list does not show';
+const NONEMPTY_TOKEN_LISTS = 'the build needs an empty table of token lists';
 
 /**
  * The record of a declaration of the run's stylesheet.
@@ -74,12 +75,13 @@ export function recordDeclaration(node, declarations) {
  */
 export function buildRecords(root, context) {
   const { textTable, tokenLists, consistencyChecks } = context;
+  // An id is the index of its list, so the run's lists must be empty here.
+  if (tokenLists.length !== 0) throw new Error(NONEMPTY_TOKEN_LISTS);
   // The ids of this build's selectors. Each rule keeps the ids of its items.
   const selectorIds = new SelectorIds();
   /**
    * The id of a selector item. An item new to the build gets the next index of
-   * the run's token lists, with its own tokens, so the id names its list. The
-   * run's lists are empty when the build starts.
+   * the run's token lists, with its own tokens, so the id names its list.
    *
    * @param {string} selector
    * @return {number}

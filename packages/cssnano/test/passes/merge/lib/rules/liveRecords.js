@@ -9,13 +9,13 @@ import {
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
-import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {ArenaIndex} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js' */
 /** @import {NodeTable} from '../../../../../src/passes/merge/lib/rules/nodeTable.js' */
+/** @import {TokenLists} from '../../../../../src/passes/ir/tokenLists.js' */
 
 /**
  * The live entry of `block` standing for `node`: the record of a rule, or the
@@ -128,7 +128,7 @@ export function buildTestRecords(
   textTable = new TextTable(),
   consistencyChecks = false
 ) {
-  const tokenLists = new TokenLists();
+  const tokenLists = state.tokenLists;
   const { records, nodes } = buildRecords(root, {
     textTable,
     declarations: state.declarationIds,

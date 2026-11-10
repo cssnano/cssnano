@@ -1,26 +1,24 @@
-import type { SelectorList } from './selectorList.js';
-export declare const simpleSelectorRe: RegExp;
+import type { CSSToken } from '@csstools/css-tokenizer';
 export type SelectorInfo = {
     compatible: boolean;
     prefix: string | undefined;
     msPlaceholder: boolean;
 };
 /**
- * Looks up selectors in a cache that is shared by every check, so each
- * distinct selector is scanned once per stylesheet. A lookup that names the
- * list a selector belongs to parses it from that list's tokens. Do not pass
- * it to `map`, which would give the index as the list.
+ * The facts of the selector that a token list spells, for the browsers given.
+ * The scan runs first, since it is far cheaper than a parse, and it stops at
+ * the first unsupported token, so it never learns the prefix of an
+ * incompatible selector.
  *
+ * @param {readonly CSSToken[]} tokens the tokens of one selector item
  * @param {readonly string[]} browsers
- * @param {Map<string, SelectorInfo>} [cache]
- * @return {(selector: string, list?: SelectorList, index?: number) => SelectorInfo}
+ * @return {SelectorInfo}
  */
-export declare function createSelectorLookup(browsers: readonly string[], cache?: Map<string, SelectorInfo>): (selector: string, list?: SelectorList, index?: number) => SelectorInfo;
+export declare function selectorInfoOf(tokens: readonly CSSToken[], browsers: readonly string[]): SelectorInfo;
 /**
- * @param {string[]} selectors
- * @param {(selector: string, list?: SelectorList, index?: number) => SelectorInfo} lookup
- * @param {SelectorList} [list] the list whose own selectors these are, when they are
+ * @param {readonly number[]} ids the id of each selector of a list
+ * @param {(id: number) => SelectorInfo} lookup
  * @return {boolean}
  */
-export declare function selectorsCompatible(selectors: string[], lookup: (selector: string, list?: SelectorList, index?: number) => SelectorInfo, list?: SelectorList): boolean;
+export declare function selectorsCompatible(ids: readonly number[], lookup: (id: number) => SelectorInfo): boolean;
 //# sourceMappingURL=ensureCompatibility.d.ts.map

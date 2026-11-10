@@ -1,23 +1,13 @@
-import type { RangePiece } from '../../../../values/joinRanges.js';
+import type { CSSToken } from '@csstools/css-tokenizer';
 /**
  * The key of one selector, as `RuleRecord#elementKeys` lists it, or null when a
  * type name cannot describe its element, as with classes, pseudo-classes and
- * escapes. Two different names cannot match one element. A token range of
- * the selector, when given, gives the key without tokenizing its text.
+ * escapes. Two different names cannot match one element.
  *
- * @param {string} selector
- * @param {RangePiece | null} [piece] the selector's tokens, which spell it
+ * @param {readonly CSSToken[]} tokens the tokens of one selector item
  * @return {string | null}
  */
-export declare function elementKeyOf(selector: string, piece?: RangePiece | null): string | null;
-/**
- * A memoized `elementKeyOf`, so each distinct selector is tokenized once per
- * stylesheet, however many times its rule is described again.
- *
- * @param {Map<string, string | null>} [cache]
- * @return {(selector: string, piece?: RangePiece | null) => string | null}
- */
-export declare function createElementKeyLookup(cache?: Map<string, string | null>): (selector: string, piece?: RangePiece | null) => string | null;
+export declare function elementKeyOf(tokens: readonly CSSToken[]): string | null;
 export type RuleElementKeys = {
     list: string[];
     seen: Set<string>;
@@ -31,15 +21,13 @@ export type RuleElementKeys = {
  * @property {Set<string>} seen
  */
 /**
- * Adds the keys of the selectors from index `from` on to `keys`, each with its
- * token range when the rule holds one.
+ * Adds the keys of the selectors from index `from` on to `keys`.
  *
  * @param {RuleElementKeys} keys
- * @param {string[]} selectors
+ * @param {readonly number[]} ids the id of each selector of the list
  * @param {number} from
- * @param {RangePiece[] | null | undefined} pieces one per selector, or unknown
- * @param {(selector: string, piece: RangePiece | null) => string | null} keyOf
+ * @param {(id: number) => string | null} keyOf
  * @return {boolean} false when a selector has no key, so the elements are unknown
  */
-export declare function addElementKeys(keys: RuleElementKeys, selectors: string[], from: number, pieces: RangePiece[] | null | undefined, keyOf: (selector: string, piece: RangePiece | null) => string | null): boolean;
+export declare function addElementKeys(keys: RuleElementKeys, ids: readonly number[], from: number, keyOf: (id: number) => string | null): boolean;
 //# sourceMappingURL=elementKeys.d.ts.map

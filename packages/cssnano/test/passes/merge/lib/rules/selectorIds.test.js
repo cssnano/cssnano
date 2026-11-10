@@ -5,6 +5,7 @@ import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRec
 import { RULE } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
+import { selectorInfoOf } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
 
 /** The rule records of a stylesheet, in document order. */
 function rulesOf(css) {
@@ -46,4 +47,29 @@ test("each id's token list spells its selector item", () => {
     }
   }
   assert.equal(checked, 5);
+});
+
+test("a selector's facts are the same in every rule that holds it, at any offset and beside any comment", () => {
+  const context = createRunContext();
+  const { records } = buildRecords(
+    postcss.parse(
+      'a,::-webkit-scrollbar{color:red}::-webkit-scrollbar{color:red}a /* x */, ::-webkit-scrollbar{color:red}'
+    ),
+    context
+  );
+  const facts = [];
+  for (let index = 1; index < records.entryCount(); index++) {
+    const entry = records.entry(index);
+    if (entry.kind !== RULE) continue;
+    const at = entry.selectors.indexOf('::-webkit-scrollbar');
+    facts.push(
+      selectorInfoOf(context.tokenLists.get(entry.selectorIds[at]), [
+        'chrome 120',
+      ])
+    );
+  }
+  assert.equal(facts.length, 3);
+  assert.deepEqual(facts[1], facts[0]);
+  assert.deepEqual(facts[2], facts[0]);
+  assert.equal(facts[0].prefix, '-webkit-');
 });

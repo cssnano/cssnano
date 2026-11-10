@@ -1,4 +1,9 @@
-import { selectorIdsOf } from './selectorIdsOf.js';
+import {
+  elementKeyOfIds,
+  selectorIdsOf,
+  tokenListsOfIds,
+} from './selectorIdsOf.js';
+import { tokensText } from '../../../../../src/values/tokensText.js';
 import {
   childCountOf,
   holdsOnlyDeclarationsOf,
@@ -39,11 +44,15 @@ import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/bui
 
 const lookup = () => ({});
 const selectorIds = new SelectorIds();
+const keyOf = elementKeyOfIds(selectorIds);
 
 /** A record of `selectors`, with the ids of this file's interner. */
 const ruleOf = (selectors, selector) =>
   new RuleRecord(selectors, selector, selectorIdsOf(selectorIds, selectors));
-const lookupB = (selector) => ({ compatible: selector !== 'b' });
+/** The facts of the ids of this file's interner: `b` is incompatible. */
+const lookupB = (id) => ({
+  compatible: tokensText(tokenListsOfIds(selectorIds).get(id)) !== 'b',
+});
 
 /**
  * The records of `css`, built as the run builds them, with the record of its
@@ -79,26 +88,26 @@ const declarationOf = (state, node) =>
 test('compatible should look up each selector once across repeated reads', () => {
   const record = ruleOf(['a', 'b']);
   const looked = [];
-  const lookupOnce = (selector) => {
-    looked.push(selector);
+  const lookupOnce = (id) => {
+    looked.push(id);
     return { compatible: true };
   };
   record.compatible(lookupOnce);
   record.compatible(lookupOnce);
-  assert.deepEqual(looked, ['a', 'b']);
+  assert.deepEqual(looked, record.selectorIds);
 });
 
 test('compatible should be false once addSelectors adds an incompatible selector', () => {
   const record = ruleOf(['a']);
   assert.equal(record.compatible(lookupB), true);
-  record.addSelectors(['b'], selectorIdsOf(selectorIds, ['b']), lookupB);
+  record.addSelectors(['b'], selectorIdsOf(selectorIds, ['b']), lookupB, keyOf);
   assert.equal(record.compatible(lookupB), false);
 });
 
 test('compatible should be false after absorbEarlier takes an incompatible earlier rule', () => {
   const later = ruleOf(['a']);
   const earlier = ruleOf(['b']);
-  later.absorbEarlier(earlier, lookupB);
+  later.absorbEarlier(earlier, lookupB, keyOf);
   assert.equal(later.compatible(lookupB), false);
 });
 
@@ -106,7 +115,7 @@ test('hasSameSelectors should be false after addSelectors grows one of two equal
   const a = ruleOf(['.a']);
   const b = ruleOf(['.a']);
   assert.equal(a.hasSameSelectors(b), true);
-  a.addSelectors(['.b'], selectorIdsOf(selectorIds, ['.b']), lookup);
+  a.addSelectors(['.b'], selectorIdsOf(selectorIds, ['.b']), lookup, keyOf);
   assert.equal(a.hasSameSelectors(b), false);
 });
 
@@ -160,7 +169,7 @@ test('appendChild should make declarationKeys reflect the appended declaration',
 test('addSelectors should keep the cached declaration keys since it leaves the declarations alone', () => {
   const { records, record } = arenaOf('a{color:red}');
   const keys = declarationKeys(records, record.index);
-  record.addSelectors(['b'], selectorIdsOf(selectorIds, ['b']), lookup);
+  record.addSelectors(['b'], selectorIdsOf(selectorIds, ['b']), lookup, keyOf);
   assert.equal(declarationKeys(records, record.index), keys);
 });
 
@@ -168,118 +177,8 @@ test('absorbEarlier should keep the cached declaration keys since it leaves the 
   const { records, record } = arenaOf('b{color:red}');
   const earlier = arenaOf('a{color:red}').record;
   const keys = declarationKeys(records, record.index);
-  record.absorbEarlier(earlier, lookup);
+  record.absorbEarlier(earlier, lookup, keyOf);
   assert.equal(declarationKeys(records, record.index), keys);
-});
-
-test('elementKeys should list the distinct element of each selector', () => {
-  const record = ruleOf(['div h1', 'h1', 'p']);
-  assert.deepEqual(record.elementKeys(), ['h1', 'p']);
-});
-
-test('elementKeys should be null when a selector has no element key since it could match any element', () => {
-  const record = ruleOf(['h1', '.a']);
-  assert.equal(record.elementKeys(), null);
-});
-
-test('elementKeys should be null for a rule without selectors since an empty key list would claim the rule writes to no element', () => {
-  const record = ruleOf([]);
-  assert.equal(record.elementKeys(), null);
-});
-
-test('addSelectors should add the elements of the new selectors to the element keys', () => {
-  const record = ruleOf(['h1']);
-  record.elementKeys();
-  record.addSelectors(
-    ['p', 'h1'],
-    selectorIdsOf(selectorIds, ['p', 'h1']),
-    lookup
-  );
-  assert.deepEqual(record.elementKeys(), ['h1', 'p']);
-});
-
-test('addSelectors should make the element keys null when a new selector has no element key', () => {
-  const record = ruleOf(['h1']);
-  record.elementKeys();
-  record.addSelectors(['.a'], selectorIdsOf(selectorIds, ['.a']), lookup);
-  assert.equal(record.elementKeys(), null);
-});
-
-test('addSelectors should keep null element keys since later selectors cannot restore a key', () => {
-  const record = ruleOf(['.a']);
-  record.elementKeys();
-  record.addSelectors(['h1'], selectorIdsOf(selectorIds, ['h1']), lookup);
-  assert.equal(record.elementKeys(), null);
-});
-
-test('addSelectors should leave element keys derivable when they were never read', () => {
-  const record = ruleOf(['h1']);
-  record.addSelectors(['p'], selectorIdsOf(selectorIds, ['p']), lookup);
-  assert.deepEqual(record.elementKeys(), ['h1', 'p']);
-});
-
-test('absorbEarlier should put the elements of both rules in the element keys', () => {
-  const record = ruleOf(['p']);
-  const earlier = ruleOf(['h1']);
-  record.elementKeys();
-  earlier.elementKeys();
-  record.absorbEarlier(earlier, lookup);
-  assert.deepEqual(record.elementKeys()?.toSorted(), ['h1', 'p']);
-});
-
-test('absorbEarlier should make the element keys null when the earlier rule has an unknown element', () => {
-  const record = ruleOf(['p']);
-  const earlier = ruleOf(['.a']);
-  earlier.elementKeys();
-  record.absorbEarlier(earlier, lookup);
-  assert.equal(record.elementKeys(), null);
-});
-
-test('absorbEarlier should make the element keys null when this rule has an unknown element', () => {
-  const record = ruleOf(['.a']);
-  const earlier = ruleOf(['h1']);
-  earlier.elementKeys();
-  record.absorbEarlier(earlier, lookup);
-  assert.equal(record.elementKeys(), null);
-});
-
-test('addSelectors should return the element keys the new selectors add', () => {
-  const record = ruleOf(['h1']);
-  record.elementKeys();
-  assert.deepEqual(
-    record.addSelectors(
-      ['p', 'h1', 'em'],
-      selectorIdsOf(selectorIds, ['p', 'h1', 'em']),
-      lookup
-    ),
-    ['p', 'em']
-  );
-});
-
-test('addSelectors should return no element keys when the new selectors add none', () => {
-  const record = ruleOf(['h1']);
-  record.elementKeys();
-  assert.deepEqual(
-    record.addSelectors(['h1'], selectorIdsOf(selectorIds, ['h1']), lookup),
-    []
-  );
-});
-
-test('addSelectors should return null when a new selector has no element key, since its writes may reach any element', () => {
-  const record = ruleOf(['h1']);
-  record.elementKeys();
-  assert.equal(
-    record.addSelectors(['.a'], selectorIdsOf(selectorIds, ['.a']), lookup),
-    null
-  );
-});
-
-test('addSelectors should return null when the element keys were never read, since none are listed to extend', () => {
-  const record = ruleOf(['h1']);
-  assert.equal(
-    record.addSelectors(['p'], selectorIdsOf(selectorIds, ['p']), lookup),
-    null
-  );
 });
 
 test('childCount should count a comment that a rule holds, which declarations leave out', () => {

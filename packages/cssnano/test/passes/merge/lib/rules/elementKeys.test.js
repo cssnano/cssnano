@@ -1,7 +1,8 @@
-import { selectorIdsOf } from './selectorIdsOf.js';
+import { elementKeyOfIds, selectorIdsOf } from './selectorIdsOf.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import postcss from 'postcss';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 
 const selectorIds = new SelectorIds();
@@ -13,7 +14,7 @@ const elementKeys = (selectors) =>
     selectors,
     [],
     selectorIdsOf(selectorIds, selectors)
-  ).elementKeys();
+  ).elementKeys(elementKeyOfIds(selectorIds));
 
 test('element key of a type selector is its lowercase name', () => {
   assert.deepEqual(elementKeys(['H1']), ['h1']);
@@ -107,8 +108,9 @@ test('element keys of a selector list hold each selector key once', () => {
   assert.deepEqual(elementKeys(['h1', 'h2', 'h1']), ['h1', 'h2']);
 });
 
-test('element key of a selector with surrounding whitespace is its type', () => {
-  assert.deepEqual(elementKeys([' h1 ']), ['h1']);
+test('element keys of the items PostCSS gives a list are the types of their trimmed text', () => {
+  const [rule] = postcss.parse(' h1 ,  b  , a /* x */ {}').nodes;
+  assert.deepEqual(elementKeys(rule.selectors), ['h1', 'b', 'a']);
 });
 
 test('element key of a vendor-prefixed pseudo-element is unknown, since browsers alias it to a standard one', () => {

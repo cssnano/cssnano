@@ -164,9 +164,9 @@ suite(
       await postcssProcessor([transformPlugin('mergeRules')()]).process(root, {
         from: undefined,
       });
-      // The build tokenizes each item once; the compatibility check still
-      // tokenizes `a:hover` again until its reads use the stored lists.
-      assert.equal(tokenizeTotal() - before, 3);
+      // The build tokenizes each item once, and the compatibility check reads
+      // those lists, so no selector is tokenized again.
+      assert.equal(tokenizeTotal() - before, 2);
       assert.equal(root.toString(), 'a:hover,b {color:red}');
     });
   }

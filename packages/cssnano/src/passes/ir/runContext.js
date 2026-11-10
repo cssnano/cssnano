@@ -3,7 +3,6 @@ import { TextTable } from '../../values/textTable.js';
 import { TokenLists } from './tokenLists.js';
 import { consistencyChecksEnabled } from './consistencyChecks.js';
 
-/** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
 /** @import {Container} from 'postcss' */
 
 /**
@@ -13,7 +12,6 @@ import { consistencyChecksEnabled } from './consistencyChecks.js';
  * @typedef {{
  *   declarations: DeclarationKeys,
  *   createdBlocks: Set<Container> | null,
- *   selectorCompatibility: Map<string, SelectorInfo>,
  *   textTable: TextTable,
  *   tokenLists: TokenLists,
  *   consistencyChecks: boolean,
@@ -36,7 +34,6 @@ export function createRunContext(
   return {
     declarations: new DeclarationKeys(),
     createdBlocks: null,
-    selectorCompatibility: new Map(),
     textTable,
     tokenLists: new TokenLists(),
     consistencyChecks,

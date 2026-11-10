@@ -1,24 +1,9 @@
 import cssnanoUtils from '#utils';
-import { simpleSelectorRe } from './ensureCompatibility.js';
 import { isVendorExtension } from './pseudoSupport.js';
 
-const { asciiLowerCase, TokenType, tokens: tokenizeCss } = cssnanoUtils;
+const { asciiLowerCase, TokenType } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {RangePiece} from '../../../../values/joinRanges.js' */
-
-/**
- * The tokens of a selector, without trailing whitespace.
- *
- * @param {string} selector
- * @return {CSSToken[]}
- */
-function tokenize(selector) {
-  const result = tokenizeCss(selector);
-  while (result.length && result.at(-1)?.[0] === TokenType.Whitespace)
-    result.pop();
-  return result;
-}
 
 /**
  * Index of the first token of the subject: the compound after the last
@@ -100,43 +85,13 @@ function keyOfTokens(tokens, start, end) {
 /**
  * The key of one selector, as `RuleRecord#elementKeys` lists it, or null when a
  * type name cannot describe its element, as with classes, pseudo-classes and
- * escapes. Two different names cannot match one element. A token range of
- * the selector, when given, gives the key without tokenizing its text.
+ * escapes. Two different names cannot match one element.
  *
- * @param {string} selector
- * @param {RangePiece | null} [piece] the selector's tokens, which spell it
+ * @param {readonly CSSToken[]} tokens the tokens of one selector item
  * @return {string | null}
  */
-export function elementKeyOf(selector, piece = null) {
-  // Most selectors are type, class and id compounds joined by spaces, whose
-  // subject is plain text, so they need no tokens.
-  if (simpleSelectorRe.test(selector)) {
-    const subject = selector.slice(selector.lastIndexOf(' ') + 1);
-    return subject.includes('.') || subject.includes('#')
-      ? null
-      : asciiLowerCase(subject);
-  }
-  if (piece) return keyOfTokens(piece.list, piece.start, piece.end);
-  const tokens = tokenize(selector);
+export function elementKeyOf(tokens) {
   return keyOfTokens(tokens, 0, tokens.length);
-}
-
-/**
- * A memoized `elementKeyOf`, so each distinct selector is tokenized once per
- * stylesheet, however many times its rule is described again.
- *
- * @param {Map<string, string | null>} [cache]
- * @return {(selector: string, piece?: RangePiece | null) => string | null}
- */
-export function createElementKeyLookup(cache = new Map()) {
-  return (selector, piece) => {
-    let key = cache.get(selector);
-    if (key === undefined) {
-      key = elementKeyOf(selector, piece);
-      cache.set(selector, key);
-    }
-    return key;
-  };
 }
 
 /**
@@ -149,19 +104,17 @@ export function createElementKeyLookup(cache = new Map()) {
  */
 
 /**
- * Adds the keys of the selectors from index `from` on to `keys`, each with its
- * token range when the rule holds one.
+ * Adds the keys of the selectors from index `from` on to `keys`.
  *
  * @param {RuleElementKeys} keys
- * @param {string[]} selectors
+ * @param {readonly number[]} ids the id of each selector of the list
  * @param {number} from
- * @param {RangePiece[] | null | undefined} pieces one per selector, or unknown
- * @param {(selector: string, piece: RangePiece | null) => string | null} keyOf
+ * @param {(id: number) => string | null} keyOf
  * @return {boolean} false when a selector has no key, so the elements are unknown
  */
-export function addElementKeys(keys, selectors, from, pieces, keyOf) {
-  for (let index = from; index < selectors.length; index++) {
-    const key = keyOf(selectors[index], pieces?.[index] ?? null);
+export function addElementKeys(keys, ids, from, keyOf) {
+  for (let index = from; index < ids.length; index++) {
+    const key = keyOf(ids[index]);
     if (key === null) return false;
     if (!keys.seen.has(key)) {
       keys.seen.add(key);

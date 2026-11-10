@@ -1,17 +1,22 @@
-import { selectorIdsOf } from './selectorIdsOf.js';
+import { elementKeyOfIds, factsOfIds, selectorIdsOf } from './selectorIdsOf.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 import { VendorPrefixSummary } from '../../../../../src/passes/merge/lib/rules/vendorPrefixSummary.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
-import { createSelectorLookup } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
+import { selectorInfoOf } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
+import { tokens as tokenize } from '../../../../../src/utils/value.js';
 
-const lookup = createSelectorLookup(['chrome 120']);
+const browsers = ['chrome 120'];
 const selectorIds = new SelectorIds();
+/** The facts of a selector's text, judged from its own tokens. */
+const infoOf = (selector) => selectorInfoOf(tokenize(selector), browsers);
+/** The facts of the ids that the records of this file hold. */
+const lookup = factsOfIds(selectorIds, browsers);
 const profileOf = (selectors) =>
-  VendorPrefixSummary.of(selectors.map((selector) => lookup(selector)));
+  VendorPrefixSummary.of(selectors.map((selector) => infoOf(selector)));
 
 // Reference verdict: merging two selector lists keeps the same vendor
 // prefix on both sides and never joins two `-ms-input-placeholder` lists.
@@ -105,7 +110,7 @@ test('VendorPrefixSummary.add should yield the profile of the concatenated list 
     for (const more of lists) {
       const folded = profileOf(a);
       for (const selector of more) {
-        folded.add(lookup(selector));
+        folded.add(infoOf(selector));
       }
       assert.deepEqual(folded, profileOf([...a, ...more]));
     }
@@ -154,7 +159,8 @@ test('getVendorProfile should match the list profile after addSelectors grows a 
   record.addSelectors(
     ['::-webkit-scrollbar', '.b'],
     selectorIdsOf(selectorIds, ['::-webkit-scrollbar', '.b']),
-    lookup
+    lookup,
+    elementKeyOfIds(selectorIds)
   );
   assert.deepEqual(record.vendorProfile(lookup), profileOf(record.selectors));
 });
@@ -165,7 +171,8 @@ test('getSelectorText should list the selectors added by addSelectors after the 
   record.addSelectors(
     ['.b', '.c'],
     selectorIdsOf(selectorIds, ['.b', '.c']),
-    lookup
+    lookup,
+    elementKeyOfIds(selectorIds)
   );
   assert.equal(record.selectorText(), '.a,.b,.c');
 });
@@ -175,56 +182,40 @@ test('getSelectorText should keep a comma inside :is() within one selector', () 
   assert.equal(record.selectorText(), ':is(a,b),c');
 });
 
-test('createSelectorLookup should report no vendor prefix for a class whose name contains -moz-', () => {
-  assert.equal(lookup('.x-moz-y').prefix, '');
+test('selectorInfoOf should report no vendor prefix for a class whose name contains -moz-', () => {
+  assert.equal(infoOf('.x-moz-y').prefix, '');
 });
 
-test('createSelectorLookup should report no vendor prefix for an attribute value that contains :-moz-', () => {
-  assert.equal(lookup('a[title=":-moz-x"]').prefix, '');
+test('selectorInfoOf should report no vendor prefix for an attribute value that contains :-moz-', () => {
+  assert.equal(infoOf('a[title=":-moz-x"]').prefix, '');
 });
 
-test('createSelectorLookup should report the lower case prefix of a pseudo name written in upper case', () => {
-  assert.equal(lookup('a::-WEBKIT-scrollbar').prefix, '-webkit-');
+test('selectorInfoOf should report the lower case prefix of a pseudo name written in upper case', () => {
+  assert.equal(infoOf('a::-WEBKIT-scrollbar').prefix, '-webkit-');
 });
 
-test('createSelectorLookup should report the prefix of a pseudo name whose hyphen is a hex escape', () => {
-  assert.equal(lookup('a::\\2d moz-x').prefix, '-moz-');
+test('selectorInfoOf should report the prefix of a pseudo name whose hyphen is a hex escape', () => {
+  assert.equal(infoOf('a::\\2d moz-x').prefix, '-moz-');
 });
 
-test('createSelectorLookup should report the BlackBerry -rim- prefix of a pseudo name', () => {
-  assert.equal(lookup('a::-rim-x').prefix, '-rim-');
+test('selectorInfoOf should report the BlackBerry -rim- prefix of a pseudo name', () => {
+  assert.equal(infoOf('a::-rim-x').prefix, '-rim-');
 });
 
-test('createSelectorLookup should leave the prefix unknown when one selector mixes two vendor prefixes', () => {
-  assert.equal(lookup('a::-moz-x::-webkit-y').prefix, undefined);
+test('selectorInfoOf should leave the prefix unknown when one selector mixes two vendor prefixes', () => {
+  assert.equal(infoOf('a::-moz-x::-webkit-y').prefix, undefined);
 });
 
-test('createSelectorLookup should mark an incompatible selector as such, with no prefix', () => {
-  assert.deepEqual(lookup('a::-moz-x:unknown-pseudo'), {
+test('selectorInfoOf should mark an incompatible selector as such, with no prefix', () => {
+  assert.deepEqual(infoOf('a::-moz-x:unknown-pseudo'), {
     compatible: false,
     prefix: undefined,
     msPlaceholder: false,
   });
 });
 
-test('createSelectorLookup should flag :-ms-input-placeholder in any letter case', () => {
-  assert.equal(lookup('a:-MS-Input-Placeholder').msPlaceholder, true);
-});
-
-test('createSelectorLookup should scan a selector only once when it repeats', () => {
-  const cache = new Map();
-  const cached = createSelectorLookup(['chrome 120'], cache);
-  const get = cache.get.bind(cache);
-  let scans = 0;
-  cache.get = (key) => {
-    const hit = get(key);
-    if (hit === undefined) scans++;
-    return hit;
-  };
-  cached('a::-moz-x');
-  cached('a::-moz-x');
-  cached('a::-moz-x');
-  assert.equal(scans, 1);
+test('selectorInfoOf should flag :-ms-input-placeholder in any letter case', () => {
+  assert.equal(infoOf('a:-MS-Input-Placeholder').msPlaceholder, true);
 });
 
 test('hasSameSelectors should hold for rules whose lists are equal', () => {

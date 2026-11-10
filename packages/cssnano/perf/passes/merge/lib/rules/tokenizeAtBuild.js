@@ -25,7 +25,7 @@ const { default: preset } =
   await import('../../../../../src/presets/default.js');
 
 const ANALYSES = /** @type {const} */ ([
-  ['/passes/merge/lib/rules/ensureCompatibility.js', 'computeSelectorInfo'],
+  ['/passes/merge/lib/rules/ensureCompatibility.js', 'selectorInfoOf'],
   ['/passes/merge/lib/rules/elementKeys.js', 'elementKeyOf'],
 ]);
 

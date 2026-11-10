@@ -1,5 +1,5 @@
-import { createSelectorLookup } from './ensureCompatibility.js';
-import { createElementKeyLookup } from './elementKeys.js';
+import { selectorInfoOf } from './ensureCompatibility.js';
+import { elementKeyOf } from './elementKeys.js';
 import { comma } from '../../../../values/punctuationTokens.js';
 import { createRunContext } from '../../../ir/runContext.js';
 import { isKeyframes, sameContainer } from './sameContainer.js';
@@ -21,8 +21,10 @@ export default class MergeState {
   #lookup;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
   #declarations;
-  /** @type {(selector: string, piece?: RangePiece | null) => string | null} */
-  #elementKeyOf = createElementKeyLookup();
+  /** @type {(id: number) => string | null} */
+  #elementKeyOf;
+  /** @type {import('../../../ir/tokenLists.js').TokenLists} */
+  #tokenLists;
   /**
    * The block and rule records of the stylesheet. The driver builds them, and
    * `runMerge` sets them before any edit reads them.
@@ -36,11 +38,20 @@ export default class MergeState {
    * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
    */
   constructor(browsers, context = createRunContext()) {
-    this.#lookup = createSelectorLookup(
-      browsers,
-      context.selectorCompatibility
-    );
+    const { tokenLists } = context;
+    this.#tokenLists = tokenLists;
+    this.#lookup = (id) => selectorInfoOf(tokenLists.get(id), browsers);
+    this.#elementKeyOf = (id) => elementKeyOf(tokenLists.get(id));
     this.#declarations = context.declarations;
+  }
+
+  /**
+   * The token lists of the run, which the ids of the records name.
+   *
+   * @return {import('../../../ir/tokenLists.js').TokenLists}
+   */
+  get tokenLists() {
+    return this.#tokenLists;
   }
 
   /**

@@ -1,21 +1,17 @@
-import { addElementKeys, elementKeyOf } from './elementKeys.js';
+import { addElementKeys } from './elementKeys.js';
 import { selectorsCompatible } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
-import { selectorRanges } from '../../../../values/selectorRanges.js';
 import { tokens as tokenize } from '../../../../utils/value.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {SelectorRange} from '../../../../values/selectorRanges.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
-/** @typedef {(selector: string, list?: SelectorList, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
-/** @typedef {(selector: string, piece: RangePiece | null) => string | null} ElementKeyOf */
 /**
- * The token ranges of a list's selectors, for the tokens of the text the list
- * spells. `spans` is usable only while it matches the selectors one for one.
+ * The facts of a selector item, found from the tokens its id's list holds.
  *
- * @typedef {{source: string, tokens: readonly CSSToken[], spans: SelectorRange[]}} SelectorRanges
+ * @typedef {(id: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup
  */
+/** @typedef {(id: number) => string | null} ElementKeyOf */
 
 /** @type {readonly string[]} */
 const noElementKeys = Object.freeze([]);
@@ -72,8 +68,6 @@ export class SelectorList {
   #pieces;
   /** @type {boolean | undefined} whether every selector suits the target browsers, once read */
   #compatible;
-  /** @type {SelectorRanges | undefined} derived at the first read, dropped when the selectors change */
-  #ranges;
 
   /**
    * The interned id of each selector, in order. A selector's id is the same
@@ -104,7 +98,6 @@ export class SelectorList {
     this.#elementKeys = undefined;
     this.#pieces = undefined;
     this.#compatible = undefined;
-    this.#ranges = undefined;
   }
 
   /** @return {string[]} change it only through the methods of this class */
@@ -153,7 +146,6 @@ export class SelectorList {
     this.#sourceSelector = undefined;
     this.#tokens = undefined;
     this.#listStored = false;
-    this.#ranges = undefined;
   }
 
   /**
@@ -164,7 +156,6 @@ export class SelectorList {
   setTokens(tokens) {
     this.#tokens = tokens;
     this.#listStored = false;
-    this.#ranges = undefined;
     if (this.#pieces === null) this.#pieces = undefined;
   }
 
@@ -183,25 +174,6 @@ export class SelectorList {
     return /** @type {readonly CSSToken[]} */ (this.#tokens);
   }
 
-  /**
-   * The token ranges of the selectors, found in the tokens of the source text.
-   * They are derived at the first read, and derived again only when the tokens
-   * change.
-   *
-   * @return {SelectorRanges}
-   */
-  rangesOf() {
-    const tokens = this.tokensOf();
-    if (this.#ranges?.tokens !== tokens) {
-      this.#ranges = {
-        source: this.sourceText,
-        tokens,
-        spans: selectorRanges(tokens),
-      };
-    }
-    return this.#ranges;
-  }
-
   /** @param {RangePiece[] | null} pieces one per selector, or null */
   setPieces(pieces) {
     this.#pieces = pieces;
@@ -218,11 +190,9 @@ export class SelectorList {
    */
   vendorProfile(lookup) {
     if (this.#vendor === undefined) {
-      // A loop, since `map` would pass each index to a lookup that takes a list.
+      // A loop, since `map` would pass each index as a second argument.
       const infos = [];
-      for (const [index, selector] of this.#selectors.entries()) {
-        infos.push(lookup(selector, this, index));
-      }
+      for (const id of this.selectorIds) infos.push(lookup(id));
       this.#vendor = VendorPrefixSummary.of(infos);
     }
     return this.#vendor;
@@ -236,7 +206,7 @@ export class SelectorList {
    * @return {boolean}
    */
   compatible(lookup) {
-    this.#compatible ??= selectorsCompatible(this.#selectors, lookup, this);
+    this.#compatible ??= selectorsCompatible(this.selectorIds, lookup);
     return this.#compatible;
   }
 
@@ -246,10 +216,10 @@ export class SelectorList {
    * there are none, which must not read as a rule that writes to no element.
    * A caller must not hold the list across a change to the list.
    *
-   * @param {ElementKeyOf} [keyOf] the key of one selector
+   * @param {ElementKeyOf} keyOf the key of the selector with an id
    * @return {string[] | null}
    */
-  elementKeys(keyOf = elementKeyOf) {
+  elementKeys(keyOf) {
     if (this.#elementKeys === undefined) {
       this.#elementKeys = { list: [], seen: new Set() };
       this.#addElementKeys(0, keyOf);
@@ -286,25 +256,22 @@ export class SelectorList {
    * @param {string[]} selectors appended to the list
    * @param {readonly number[]} ids the id of each of `selectors`
    * @param {SelectorLookup} lookup
-   * @param {ElementKeyOf} [keyOf]
+   * @param {ElementKeyOf} keyOf
    * @param {RangePiece[] | null} [pieces] the token range of each selector of
    * the list after the call, or null when they are not known
    * @return {readonly string[] | null} the element keys the selectors add to
    * those listed, or null when the elements are not listed
    */
-  addSelectors(selectors, ids, lookup, keyOf = elementKeyOf, pieces = null) {
+  addSelectors(selectors, ids, lookup, keyOf, pieces = null) {
     this.#selectorText = undefined;
-    this.#ranges = undefined;
     const from = this.#selectors.length;
-    for (const selector of selectors) {
-      this.#selectors.push(selector);
-      this.#vendor?.add(lookup(selector));
-    }
+    for (const selector of selectors) this.#selectors.push(selector);
+    for (const id of ids) this.#vendor?.add(lookup(id));
     const own = writableIds(this).selectorIds;
     for (const id of ids) own.push(id);
     this.#pieces = pieces;
     if (this.#compatible) {
-      this.#compatible = selectorsCompatible(selectors, lookup, this);
+      this.#compatible = selectorsCompatible(ids, lookup);
     }
     return this.#gainElementKeys(from, keyOf);
   }
@@ -317,9 +284,9 @@ export class SelectorList {
    *
    * @param {SelectorList} earlier left unusable
    * @param {SelectorLookup} lookup
-   * @param {ElementKeyOf} [keyOf]
+   * @param {ElementKeyOf} keyOf
    */
-  absorbEarlier(earlier, lookup, keyOf = elementKeyOf) {
+  absorbEarlier(earlier, lookup, keyOf) {
     // Both answers are read before the lists join, while each list is its own.
     const compatible = earlier.compatible(lookup) && this.compatible(lookup);
     const text = `${earlier.selectorText()},${this.selectorText()}`;
@@ -337,7 +304,6 @@ export class SelectorList {
     writableIds(earlier).selectorIds = NO_SELECTORS;
     this.#selectorText = text;
     this.#vendor = vendor;
-    this.#ranges = undefined;
     // Grows the earlier list's pieces in place, as its selectors grow.
     const earlierPieces = earlier.#pieces;
     const ownPieces = this.#pieces;
@@ -355,8 +321,7 @@ export class SelectorList {
   }
 
   /**
-   * Adds the keys of the selectors from index `from` on, each with its token
-   * range when the list holds one.
+   * Adds the keys of the selectors from index `from` on.
    *
    * @param {number} from
    * @param {ElementKeyOf} keyOf
@@ -364,13 +329,7 @@ export class SelectorList {
   #addElementKeys(from, keyOf) {
     if (
       this.#elementKeys &&
-      !addElementKeys(
-        this.#elementKeys,
-        this.#selectors,
-        from,
-        this.#pieces,
-        keyOf
-      )
+      !addElementKeys(this.#elementKeys, this.selectorIds, from, keyOf)
     ) {
       this.#elementKeys = null;
     }
