@@ -121,6 +121,7 @@ export function buildRecords(root, context) {
         if (child.nodes.some(isRuleOrAtRule)) {
           record.context = containerContext(
             context.declarations,
+            context.selectorIds,
             container.context,
             record
           );
@@ -141,6 +142,7 @@ export function buildRecords(root, context) {
         place(container.index, nested, child);
         nested.context = containerContext(
           context.declarations,
+          context.selectorIds,
           container.context,
           nested
         );
@@ -185,6 +187,7 @@ export function buildRecords(root, context) {
   // The stylesheet's context is the one for no enclosing container.
   records.root.context = containerContext(
     context.declarations,
+    context.selectorIds,
     -1,
     records.root
   );

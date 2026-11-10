@@ -86,7 +86,7 @@ function computeNodeId(interner, node) {
     // An important comment is kept by minifiers, so its text tells blocks apart.
     if (isImportantComment(node.text)) trie = step(trie, node.text);
   } else if (node.type === 'rule') {
-    trie = step(trie, node.selector);
+    trie = step(trie, node.selectors.join(','));
   } else if (node.type === 'atrule') {
     trie = step(trie, node.name);
     trie = step(trie, node.params);
@@ -138,11 +138,11 @@ function childScope(scope, key) {
  */
 function dedupeRule(rule, seenRuleDecls, interner) {
   let isSubsequent = true;
-  let declMap = seenRuleDecls.get(rule.selector);
+  let declMap = seenRuleDecls.get(rule.selectors.join(','));
   if (!declMap) {
     isSubsequent = false;
     declMap = new Map();
-    seenRuleDecls.set(rule.selector, declMap);
+    seenRuleDecls.set(rule.selectors.join(','), declMap);
   }
 
   let hasContainers = false;

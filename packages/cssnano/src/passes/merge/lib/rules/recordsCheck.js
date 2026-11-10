@@ -147,13 +147,16 @@ export function assertOwnershipIsTree(records) {
  */
 export function assertContextsCurrent(mergeState) {
   if (!mergeState.records.consistencyChecks) return;
-  const { records, declarationIds } = mergeState;
+  const { records, declarationIds, selectorIds } = mergeState;
   for (const block of containers(records)) {
     const holder = records.enclosingContainer(block.index);
     // An emptied block is unlinked and applies nothing, so it has no place to keep.
     if (holder === undefined && block !== records.root) continue;
     const parent = holder?.context ?? -1;
-    if (block.context !== containerContext(declarationIds, parent, block)) {
+    if (
+      block.context !==
+      containerContext(declarationIds, selectorIds, parent, block)
+    ) {
       throw new Error('a block keeps the context of another place');
     }
   }

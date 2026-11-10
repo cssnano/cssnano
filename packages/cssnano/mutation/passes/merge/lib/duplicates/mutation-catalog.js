@@ -14,7 +14,7 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'give each rule its own declarations, whatever its selector',
-    find: '  let declMap = ruleDecls.get(selector);',
+    find: '  let declMap = ruleDecls.get(listKey);',
     replace: '  let declMap = undefined;',
   },
   {

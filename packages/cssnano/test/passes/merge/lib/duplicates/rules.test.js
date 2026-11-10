@@ -172,3 +172,27 @@ test(
   'should remove earlier rule sharing selector when all declarations are deduplicated even if comments remain',
   processCSS('h1{/*comment*/color:red}h1{color:red}', 'h1{color:red}')
 );
+
+test(
+  'rules whose selector lists differ only in the whitespace around their commas share their duplicate declarations',
+  processCSS(
+    'a,b{margin:0;color:red}a, b{color:red}',
+    'a,b{margin:0}a, b{color:red}'
+  )
+);
+
+test(
+  'keyframe rules whose selector lists differ only in the whitespace around their commas share their duplicate declarations',
+  processCSS(
+    '@keyframes x{0%,100%{margin:0;color:red}0%, 100%{color:red}}',
+    '@keyframes x{0%,100%{margin:0}0%, 100%{color:red}}'
+  )
+);
+
+test(
+  'at-rules whose rules differ only in the whitespace around their commas are duplicates',
+  processCSS(
+    '@media print{a,b{color:red}}@media print{a, b{color:red}}',
+    '@media print{a, b{color:red}}'
+  )
+);

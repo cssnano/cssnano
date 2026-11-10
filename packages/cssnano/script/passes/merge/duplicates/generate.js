@@ -6,7 +6,8 @@ import { random } from '../../../../../../util/fuzzRng.js';
 // dedupe must tell apart or equate. `ALT` repeats the shapes of `BASE` with
 // other names, so a sibling pair drawn with both differs in one place only.
 const BASE = Object.freeze({
-  selectors: ['a', 'a', 'b', '.c', 'a b'],
+  // `a,b`, `a, b` and `a /**/, b` are one selector list spelled three ways.
+  selectors: ['a', 'a', 'b', '.c', 'a b', 'a,b', 'a, b', 'a /**/, b'],
   declarations: [
     'color:red',
     'color:red',

@@ -130,6 +130,7 @@ export function buildTestRecords(
   const { records, nodes } = buildRecords(root, {
     textTable,
     declarations: state.declarationIds,
+    selectorIds: state.selectorIds,
     consistencyChecks,
   });
   nodeTables.set(records, nodes);

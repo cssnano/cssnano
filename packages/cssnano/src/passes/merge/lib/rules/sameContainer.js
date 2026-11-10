@@ -15,6 +15,7 @@ const ANONYMOUS = Symbol('anonymous layer');
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {SelectorIds} from '../../../ir/selectorIds.js' */
 
 /**
  * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
@@ -33,17 +34,21 @@ export function isKeyframes(container) {
  * The id of the circumstances under which a block applies its content: its own
  * prelude and those of its enclosing blocks. Blocks with equal ids apply their
  * content the same way. At-rule names fold ASCII case, rules compare their
- * selectors, and each anonymous layer is a context of its own.
+ * selector lists by the ids of their selectors, and each anonymous layer is a
+ * context of its own.
  *
  * @param {DeclarationKeys} keys the run's interner
+ * @param {SelectorIds} selectorIds the run's selector ids
  * @param {number} parentContext the context of the enclosing block, -1 for the stylesheet
  * @param {BlockRecord | RuleRecord} block the block, or the rule that nests
  * @return {number}
  */
-export function containerContext(keys, parentContext, block) {
+export function containerContext(keys, selectorIds, parentContext, block) {
   let trie = step(step(keys.root, CONTEXT), parentContext);
   if (block.kind === RULE) {
-    trie = step(step(trie, 'rule'), /** @type {RuleRecord} */ (block).selector);
+    trie = step(trie, 'rule');
+    for (const id of /** @type {RuleRecord} */ (block).idsOf(selectorIds))
+      trie = step(trie, id);
   } else if (block.kind === STYLESHEET) {
     trie = step(trie, 'root');
   } else {
