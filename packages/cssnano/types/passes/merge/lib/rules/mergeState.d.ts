@@ -1,9 +1,6 @@
-import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
@@ -47,25 +44,16 @@ export default class MergeState {
     get declarationIds(): import('../../../ir/declarationKey.js').DeclarationKeys;
     /**
      * Appends selectors of `source` to the rule's selector list, keeping its
-     * vendor prefix profile and its token ranges in step.
+     * vendor prefix profile in step.
      *
      * @param {RuleRecord} record
      * @param {string[]} selectors some of the selectors of `source`, in the
      * order of their first occurrence there
      * @param {readonly number[]} ids the id of each of `selectors`
-     * @param {RuleRecord} source
      * @return {readonly string[] | null} the element keys the selectors add, or
      * null when the rule's elements are not listed
      */
-    addSelectors(record: RuleRecord, selectors: string[], ids: readonly number[], source: RuleRecord): readonly string[] | null;
-    /**
-     * The token range of each selector of the rule, read from the tokens the
-     * record holds without tokenizing, or null when it holds none.
-     *
-     * @param {RuleRecord} record
-     * @return {RangePiece[] | null}
-     */
-    piecesOf(record: RuleRecord): RangePiece[] | null;
+    addSelectors(record: RuleRecord, selectors: string[], ids: readonly number[]): readonly string[] | null;
     /**
      * Sets the selector of a rule from its list and marks it, so write-back
      * assigns the text. The tokens of the old text are dropped.
@@ -73,15 +61,6 @@ export default class MergeState {
      * @param {RuleRecord} record
      */
     spellSelectors(record: RuleRecord): void;
-    /**
-     * Gives the record the tokens of a rule joined from the selectors of `first`
-     * and `second`, in that order, with a comma between each, as `join()` writes it.
-     *
-     * @param {RuleRecord} record the merged rule, whose selector is the join
-     * @param {RuleRecord} first
-     * @param {RuleRecord} second
-     */
-    storeJoined(record: RuleRecord, first: RuleRecord, second: RuleRecord): void;
     /**
      * Gives `later` the selectors of `earlier`, which stands before it and is
      * dropped by the caller.

@@ -16,10 +16,11 @@ test('the node table has one slot per entry the build made', () => {
 });
 
 test('write-back throws under checks when the node table lacks a slot for an entry the build made', () => {
+  const context = createRunContext(new TextTable(), true);
   const { records, nodes } = buildRecords(
     postcss.parse('a{color:red}'),
-    createRunContext(new TextTable(), true)
+    context
   );
   nodes.pop();
-  assert.throws(() => writeBack(records, nodes));
+  assert.throws(() => writeBack(records, nodes, context.tokenLists));
 });

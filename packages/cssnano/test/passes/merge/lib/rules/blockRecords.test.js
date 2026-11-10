@@ -173,7 +173,7 @@ test('childNodesOf should equal the children of the stylesheet after a sweep dro
     '@media print{a{color:red}}@media print{a{color:red}}'
   );
   runScan(state);
-  writeBack(state.records, nodesOf(state.records));
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
   assert.deepEqual(
     childNodesOf(
       state.records,
@@ -189,7 +189,7 @@ test('childNodesOf should equal the children of the stylesheet after a join move
     '@media print{a{color:red}}@media print{b{width:1px}}'
   );
   joinNonAdjacent(state.records.root, state);
-  writeBack(state.records, nodesOf(state.records));
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
   assert.deepEqual(
     childNodesOf(
       state.records,
@@ -203,7 +203,7 @@ test('childNodesOf should equal the children of the stylesheet after a join move
 test('childNodesOf should equal the children of the stylesheet after a join removes a rule', () => {
   const { root, state } = setup('a{color:red}b{color:red}');
   joinNonAdjacent(state.records.root, state);
-  writeBack(state.records, nodesOf(state.records));
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
   assert.deepEqual(
     childNodesOf(
       state.records,

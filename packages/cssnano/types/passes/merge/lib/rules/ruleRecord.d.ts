@@ -1,10 +1,8 @@
 import { SelectorList } from './selectorList.js';
 import { RULE } from './blockRecord.js';
-import type { CSSToken } from '@csstools/css-tokenizer';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type { BlockRecords } from './blockRecords.js';
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
@@ -51,10 +49,8 @@ export declare class RuleRecord extends SelectorList {
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
      * @param {readonly number[]} selectorIds the interned id of each of `selectors`
-     * @param {string} [sourceSelector] the source text, set only when it differs from the selector
-     * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
      */
-    constructor(selectors: string[], selector: string, selectorIds: readonly number[], sourceSelector?: string, tokens?: readonly CSSToken[]);
+    constructor(selectors: string[], selector: string, selectorIds: readonly number[]);
     /**
      * The declarations of the rule, in order, read from its chain at the call. A
      * reader that indexes them by position takes this array.

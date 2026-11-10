@@ -117,10 +117,6 @@ function checkRuleRecord(records, nodes, tokenLists, block, record) {
     throw new Error(OUT_OF_STEP);
   }
   checkRuleSelectors(tokenLists, record, rule);
-  const { tokens } = record;
-  if (tokens !== undefined && tokensText(tokens) !== record.sourceText) {
-    throw new Error(OUT_OF_STEP);
-  }
   checkBlockRecord(records, nodes, tokenLists, record);
 }
 

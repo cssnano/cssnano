@@ -19,7 +19,6 @@ import {
 } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
 import { hasPendingEdits } from '../deferredChildEdits.js';
-import { sourceSelector } from '../../../../utils/sourceText.js';
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
@@ -127,13 +126,10 @@ export function buildRecords(root, context) {
     for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
       if (isRuleOrAtRule(child)) counted++;
       if (child.type === 'rule') {
-        const source = sourceSelector(child);
         const record = new RuleRecord(
           child.selectors,
           child.selector,
-          child.selectors.map(internSelector),
-          source === child.selector ? undefined : source,
-          textTable.stored(child)
+          child.selectors.map(internSelector)
         );
         record.before = child.raws.before ?? null;
         place(container.index, record, child);

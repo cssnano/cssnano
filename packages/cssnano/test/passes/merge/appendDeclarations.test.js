@@ -34,7 +34,11 @@ test('appendToDeclarations drops an equal declaration from the incoming rule and
     mergeState,
     new Set([ruleRecordOf(mergeState.records, incoming).index])
   );
-  writeBack(mergeState.records, nodesOf(mergeState.records));
+  writeBack(
+    mergeState.records,
+    nodesOf(mergeState.records),
+    mergeState.tokenLists
+  );
 
   assert.equal(root.toString(), '@media print{a{color:red;width:1px}}');
 });

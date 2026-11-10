@@ -266,12 +266,7 @@ export default function joinByDeclarations(block, mergeState) {
     const { group, claimed, added, addedIds } = best;
     const groupRecord = group.rule;
     const listed = keysOf(groupRecord) !== null;
-    const gained = mergeState.addSelectors(
-      groupRecord,
-      added,
-      addedIds,
-      laterRecord
-    );
+    const gained = mergeState.addSelectors(groupRecord, added, addedIds);
     for (const id of addedIds) group.selectors?.add(id);
     if (listed) recordGained(group, gained);
     grown.add(group.rule.index);

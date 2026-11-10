@@ -62,6 +62,10 @@ test('joinNonAdjacent: an edit reported to a nested rule makes its enclosing at-
   );
   removeRules(mergeState, new Set([incoming.index]));
   assert.equal(joinNonAdjacent(mergeState.records.root, mergeState), true);
-  writeBack(mergeState.records, nodesOf(mergeState.records));
+  writeBack(
+    mergeState.records,
+    nodesOf(mergeState.records),
+    mergeState.tokenLists
+  );
   assert.equal(root.toString(), '@media (x){@media (y){p,q{width:1px}}}');
 });

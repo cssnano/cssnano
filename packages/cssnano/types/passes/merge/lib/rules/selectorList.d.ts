@@ -1,6 +1,4 @@
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
-import type { CSSToken } from '@csstools/css-tokenizer';
-import type { RangePiece } from '../../../../values/joinRanges.js';
 export type SelectorLookup = (id: number) => import('./ensureCompatibility.js').SelectorInfo;
 export type ElementKeyOf = (id: number) => string | null;
 /**
@@ -14,9 +12,6 @@ export declare const NO_SELECTORS: number[];
  * The selector list of a rule with the facts derived from it, each computed on
  * first use and then grown incrementally as the list grows. It is the base of
  * `RuleRecord`, not a member of it, so a rule is one object with one layout.
- *
- * It also holds the text the rule spells: the selector in PostCSS's form, the
- * source text when its comments make it differ, and the tokens of that text.
  */
 export declare class SelectorList {
     #private;
@@ -33,49 +28,22 @@ export declare class SelectorList {
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
      * @param {readonly number[]} selectorIds the interned id of each of `selectors`
-     * @param {string} [sourceSelector] the source text, set only when it differs from the selector
-     * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
      */
-    constructor(selectors: string[], selector: string, selectorIds: readonly number[], sourceSelector?: string, tokens?: readonly CSSToken[]);
+    constructor(selectors: string[], selector: string, selectorIds: readonly number[]);
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
     /** @return {string} the selector, in PostCSS's form */
     get selector(): string;
-    /** @return {string} the text the list spells, with its comments */
-    get sourceText(): string;
-    /** @return {readonly CSSToken[] | undefined} the tokens of the source text, undefined until known */
-    get tokens(): readonly CSSToken[] | undefined;
-    /** @return {boolean} whether the table holds the tokens, so they need no write-back */
-    get listStored(): boolean;
     /** @return {boolean} whether a merge wrote the selector, so write-back assigns it */
     get marked(): boolean;
     /** Marks the selector as written by a merge. */
     mark(): void;
     /**
-     * Sets the selector the rule spells. Its source text and tokens belonged to
-     * the old text, so they are dropped.
+     * Sets the selector the rule spells.
      *
      * @param {string} selector
      */
     setSelector(selector: string): void;
-    /**
-     * Gives the list tokens that the table does not hold yet, which write-back stores.
-     *
-     * @param {readonly CSSToken[]} tokens the tokens of the source text
-     */
-    setTokens(tokens: readonly CSSToken[]): void;
-    /** Records that write-back stored the tokens in the table. */
-    markStored(): void;
-    /**
-     * The tokens of the source text, which the first reader tokenizes and keeps.
-     *
-     * @return {readonly CSSToken[]}
-     */
-    tokensOf(): readonly CSSToken[];
-    /** @param {RangePiece[] | null} pieces one per selector, or null */
-    setPieces(pieces: RangePiece[] | null): void;
-    /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
-    get pieces(): RangePiece[] | null | undefined;
     /**
      * @param {SelectorLookup} lookup
      * @return {VendorPrefixSummary}
@@ -116,12 +84,10 @@ export declare class SelectorList {
      * @param {readonly number[]} ids the id of each of `selectors`
      * @param {SelectorLookup} lookup
      * @param {ElementKeyOf} keyOf
-     * @param {RangePiece[] | null} [pieces] the token range of each selector of
-     * the list after the call, or null when they are not known
      * @return {readonly string[] | null} the element keys the selectors add to
      * those listed, or null when the elements are not listed
      */
-    addSelectors(selectors: string[], ids: readonly number[], lookup: SelectorLookup, keyOf: ElementKeyOf, pieces?: RangePiece[] | null): readonly string[] | null;
+    addSelectors(selectors: string[], ids: readonly number[], lookup: SelectorLookup, keyOf: ElementKeyOf): readonly string[] | null;
     /**
      * Takes the place of a list that stood before this one, so its selectors
      * come first. The earlier list grows in place and passes to this one, and

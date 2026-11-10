@@ -58,6 +58,6 @@ test('guardWindow lets a merge of two rules through the window, where the merged
   } finally {
     release();
   }
-  writeBack(records, nodes, textTable);
+  writeBack(records, nodes, context.tokenLists, textTable);
   assert.ok(root.nodes.some((node) => node.selector === 'h1,h2'));
 });

@@ -31,10 +31,10 @@ test('a second write-back should leave the child array of a block that already m
   const sequence = new RuleSequence(state.records);
   const first = sequence.head;
   sequence.moveIntoParent(state.records, first, sequence.nextOf(first));
-  writeBack(state.records, nodesOf(state.records));
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
   const media = /** @type {Container} */ (root.first);
   const kept = media.nodes;
-  writeBack(state.records, nodesOf(state.records));
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
   assert.equal(media.nodes, kept);
   assert.doesNotThrow(() =>
     assertRecordsMatchTree(
@@ -47,7 +47,7 @@ test('a second write-back should leave the child array of a block that already m
 
 test('assertRecordsMatchTree should throw when a child of the stylesheet prints other whitespace than its record holds', () => {
   const { root, state } = setup('a{color:red}\nb{width:1px}');
-  writeBack(state.records, nodesOf(state.records));
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
   root.nodes[1].raws.before = ' ';
   assert.throws(() =>
     assertRecordsMatchTree(
@@ -60,7 +60,7 @@ test('assertRecordsMatchTree should throw when a child of the stylesheet prints 
 
 test('assertRecordsMatchTree should throw when a declaration prints other whitespace than its record holds', () => {
   const { root, state } = setup('a{\n  color:red}');
-  writeBack(state.records, nodesOf(state.records));
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
   const rule = /** @type {Container} */ (root.first);
   /** @type {import('postcss').ChildNode} */ (rule.first).raws.before = '';
   assert.throws(() =>
@@ -74,7 +74,7 @@ test('assertRecordsMatchTree should throw when a declaration prints other whites
 
 test('assertRecordsMatchTree should accept a node whose record leaves its whitespace to the printer', () => {
   const { root, state } = setup('a{color:red}\nb{width:1px}');
-  writeBack(state.records, nodesOf(state.records));
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
   const [, second] = childEntriesOf(state.records, state.records.root.index);
   second.before = null;
   root.nodes[1].raws.before = ' ';

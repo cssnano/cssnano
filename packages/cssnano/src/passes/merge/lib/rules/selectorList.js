@@ -1,10 +1,7 @@
 import { addElementKeys } from './elementKeys.js';
 import { selectorsCompatible } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
-import { tokens as tokenize } from '../../../../utils/value.js';
 
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
 /**
  * The facts of a selector item, found from the tokens its id's list holds.
@@ -41,21 +38,12 @@ function writableIds(list) {
  * The selector list of a rule with the facts derived from it, each computed on
  * first use and then grown incrementally as the list grows. It is the base of
  * `RuleRecord`, not a member of it, so a rule is one object with one layout.
- *
- * It also holds the text the rule spells: the selector in PostCSS's form, the
- * source text when its comments make it differ, and the tokens of that text.
  */
 export class SelectorList {
   /** @type {string[]} */
   #selectors;
   /** @type {string} the selector the rule spells, in PostCSS's form */
   #selector;
-  /** @type {string | undefined} the source text, when it differs from the selector */
-  #sourceSelector;
-  /** @type {readonly CSSToken[] | undefined} the tokens of the source text, once known */
-  #tokens;
-  /** @type {boolean} whether the table holds `#tokens` for the text the node spells */
-  #listStored;
   /** @type {boolean} whether the selector was written by a merge, and must be written back */
   #marked = false;
   /** @type {VendorPrefixSummary | undefined} */
@@ -64,8 +52,6 @@ export class SelectorList {
   #selectorText;
   /** @type {RuleElementKeys | null | undefined} null when a selector has no element key */
   #elementKeys;
-  /** @type {RangePiece[] | null | undefined} the token range of each selector; null when unknown */
-  #pieces;
   /** @type {boolean | undefined} whether every selector suits the target browsers, once read */
   #compatible;
 
@@ -83,20 +69,14 @@ export class SelectorList {
    * @param {string[]} selectors
    * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
    * @param {readonly number[]} selectorIds the interned id of each of `selectors`
-   * @param {string} [sourceSelector] the source text, set only when it differs from the selector
-   * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
    */
-  constructor(selectors, selector, selectorIds, sourceSelector, tokens) {
+  constructor(selectors, selector, selectorIds) {
     this.#selectors = selectors;
     this.#selector = selector;
     this.selectorIds = selectorIds;
-    this.#sourceSelector = sourceSelector;
-    this.#tokens = tokens;
-    this.#listStored = tokens !== undefined;
     this.#vendor = undefined;
     this.#selectorText = undefined;
     this.#elementKeys = undefined;
-    this.#pieces = undefined;
     this.#compatible = undefined;
   }
 
@@ -110,21 +90,6 @@ export class SelectorList {
     return this.#selector;
   }
 
-  /** @return {string} the text the list spells, with its comments */
-  get sourceText() {
-    return this.#sourceSelector ?? this.#selector;
-  }
-
-  /** @return {readonly CSSToken[] | undefined} the tokens of the source text, undefined until known */
-  get tokens() {
-    return this.#tokens;
-  }
-
-  /** @return {boolean} whether the table holds the tokens, so they need no write-back */
-  get listStored() {
-    return this.#listStored;
-  }
-
   /** @return {boolean} whether a merge wrote the selector, so write-back assigns it */
   get marked() {
     return this.#marked;
@@ -136,52 +101,12 @@ export class SelectorList {
   }
 
   /**
-   * Sets the selector the rule spells. Its source text and tokens belonged to
-   * the old text, so they are dropped.
+   * Sets the selector the rule spells.
    *
    * @param {string} selector
    */
   setSelector(selector) {
     this.#selector = selector;
-    this.#sourceSelector = undefined;
-    this.#tokens = undefined;
-    this.#listStored = false;
-  }
-
-  /**
-   * Gives the list tokens that the table does not hold yet, which write-back stores.
-   *
-   * @param {readonly CSSToken[]} tokens the tokens of the source text
-   */
-  setTokens(tokens) {
-    this.#tokens = tokens;
-    this.#listStored = false;
-    if (this.#pieces === null) this.#pieces = undefined;
-  }
-
-  /** Records that write-back stored the tokens in the table. */
-  markStored() {
-    this.#listStored = true;
-  }
-
-  /**
-   * The tokens of the source text, which the first reader tokenizes and keeps.
-   *
-   * @return {readonly CSSToken[]}
-   */
-  tokensOf() {
-    if (this.#tokens === undefined) this.setTokens(tokenize(this.sourceText));
-    return /** @type {readonly CSSToken[]} */ (this.#tokens);
-  }
-
-  /** @param {RangePiece[] | null} pieces one per selector, or null */
-  setPieces(pieces) {
-    this.#pieces = pieces;
-  }
-
-  /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
-  get pieces() {
-    return this.#pieces;
   }
 
   /**
@@ -257,19 +182,16 @@ export class SelectorList {
    * @param {readonly number[]} ids the id of each of `selectors`
    * @param {SelectorLookup} lookup
    * @param {ElementKeyOf} keyOf
-   * @param {RangePiece[] | null} [pieces] the token range of each selector of
-   * the list after the call, or null when they are not known
    * @return {readonly string[] | null} the element keys the selectors add to
    * those listed, or null when the elements are not listed
    */
-  addSelectors(selectors, ids, lookup, keyOf, pieces = null) {
+  addSelectors(selectors, ids, lookup, keyOf) {
     this.#selectorText = undefined;
     const from = this.#selectors.length;
     for (const selector of selectors) this.#selectors.push(selector);
     for (const id of ids) this.#vendor?.add(lookup(id));
     const own = writableIds(this).selectorIds;
     for (const id of ids) own.push(id);
-    this.#pieces = pieces;
     if (this.#compatible) {
       this.#compatible = selectorsCompatible(ids, lookup);
     }
@@ -304,15 +226,6 @@ export class SelectorList {
     writableIds(earlier).selectorIds = NO_SELECTORS;
     this.#selectorText = text;
     this.#vendor = vendor;
-    // Grows the earlier list's pieces in place, as its selectors grow.
-    const earlierPieces = earlier.#pieces;
-    const ownPieces = this.#pieces;
-    if (earlierPieces && ownPieces) {
-      for (const piece of ownPieces) earlierPieces.push(piece);
-      this.#pieces = earlierPieces;
-    } else {
-      this.#pieces = null;
-    }
     // Extends the earlier list's keys only if they are known: deriving them
     // from a long list would repeat on every merge.
     this.#elementKeys = earlier.#elementKeys;

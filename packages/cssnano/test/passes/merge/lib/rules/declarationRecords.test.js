@@ -41,7 +41,7 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   appendToDeclarations(state, receiving.index, incoming.index);
   assert.equal(receiving.declarationsOf(state.records).at(-1), moved);
   state.records.detach(incoming.index);
-  writeBack(state.records, nodesOf(state.records));
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
   assert.equal(
     nodeOfEntry(state.records, moved).parent,
     nodeOfEntry(state.records, receiving)

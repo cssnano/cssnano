@@ -1,26 +1,33 @@
 import { comma } from '../../../../values/punctuationTokens.js';
-import { joinRanges } from '../../../../values/joinRanges.js';
-import { tokensText } from '../../../../values/tokensText.js';
+import { renumber } from '../../../../values/renumber.js';
 import { nodeOf } from './nodeTable.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Rule} from 'postcss' */
-/** @import {BlockRecords} from './blockRecords.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
 /** @import {NodeTable} from './nodeTable.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 /**
- * The tokens a marked rule's pieces join to, when they spell its selector as
- * it is written, or undefined.
+ * The tokens of a marked rule's selector as it is written: the lists of its
+ * ids, joined by a bare comma. The lists are shared, and renumbering copies
+ * only the tokens whose positions move.
  *
  * @param {RuleRecord} record
- * @return {readonly import('@csstools/css-tokenizer').CSSToken[] | undefined}
+ * @param {TokenLists} tokenLists
+ * @return {CSSToken[]}
  */
-function joinedPieces(record) {
-  const { pieces } = record;
-  if (!pieces) return undefined;
-  const list = joinRanges(pieces, [comma()]);
-  return tokensText(list) === record.selectorText() ? list : undefined;
+function joinedList(record, tokenLists) {
+  /** @type {CSSToken[]} */
+  const joined = [];
+  const { selectorIds } = record;
+  for (let index = 0; index < selectorIds.length; index++) {
+    if (index > 0) joined.push(comma());
+    for (const token of tokenLists.get(selectorIds[index])) joined.push(token);
+  }
+  renumber(joined);
+  return joined;
 }
 
 /**
@@ -41,35 +48,24 @@ function writeTemplateRaws(node, template) {
 }
 
 /**
- * Writes the selector of a rule the root reaches, through the table: the text,
- * and the tokens the record holds or joins from its pieces. Then stores the
- * tokens of an unmarked rule that the compatibility check tokenized, so a later
- * reader of the table does not tokenize them again.
+ * Writes the selector of a marked rule the root reaches, through the table: the
+ * tokens of its ids joined as the rule is written. A rule that no merge marked
+ * keeps its node's text, so it is not written.
  *
  * @param {RuleRecord} record
- * @param {BlockRecords} records
  * @param {NodeTable} nodes
  * @param {TextTable} textTable
+ * @param {TokenLists} tokenLists
  * @return {void}
  */
-export function writeSelector(record, records, nodes, textTable) {
+export function writeSelector(record, nodes, textTable, tokenLists) {
+  if (!record.marked) return;
   const node = /** @type {Rule} */ (nodeOf(nodes, record.index));
-  if (record.marked) {
-    const list = record.tokens ?? joinedPieces(record);
-    if (list === undefined) {
-      textTable.setText(node, record.selector);
-    } else {
-      textTable.write(node, list);
-      record.markStored();
-    }
-    if (record.template !== -1) {
-      writeTemplateRaws(
-        node,
-        /** @type {import('postcss').Rule} */ (nodeOf(nodes, record.template))
-      );
-    }
-  } else if (record.tokens !== undefined && !record.listStored) {
-    textTable.write(node, record.tokens);
-    record.markStored();
+  textTable.write(node, joinedList(record, tokenLists));
+  if (record.template !== -1) {
+    writeTemplateRaws(
+      node,
+      /** @type {import('postcss').Rule} */ (nodeOf(nodes, record.template))
+    );
   }
 }

@@ -8,6 +8,7 @@ import { writeSelector } from './writeSelector.js';
 /** @import {NodeTable} from './nodeTable.js' */
 /** @import {BlockRecord as Block} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 const TABLE_LENGTH =
   'the node table does not have one slot per entry the build made';
@@ -123,6 +124,7 @@ function writeBefore(records, nodes, container) {
  *
  * @param {BlockRecords} records
  * @param {NodeTable} nodes the node of each entry, from the build; write-back adds the merged rules' nodes
+ * @param {TokenLists} tokenLists the run's token lists, which the ids of the rules name
  * @param {TextTable} [textTable] the table the selectors are written through
  * @param {Set<Container> | null} [reported] receives the node of each rule a merge created that the tree reaches
  * @return {void}
@@ -130,6 +132,7 @@ function writeBefore(records, nodes, container) {
 export function writeBack(
   records,
   nodes,
+  tokenLists,
   textTable = new TextTable(),
   reported = null
 ) {
@@ -156,7 +159,7 @@ export function writeBack(
     ) {
       const record = records.entry(entry);
       if (record.kind === RULE) {
-        writeSelector(record, records, nodes, textTable);
+        writeSelector(record, nodes, textTable, tokenLists);
         if (record.context !== -1) {
           visit(record);
         } else if (records.links.isEdited(record.index)) {

@@ -139,7 +139,6 @@ export function buildMergedRule(
   // The merged rule takes the place before the later rule, so no rule holds
   // children while it is unlinked. The sweep's replacement keeps that place.
   placeBefore(records, second.index, receivingRecord);
-  if (!group) mergeState.storeJoined(receivingRecord, first, second);
   // The merged rule takes the declarations of the earlier rule themselves.
   moveDeclarations(
     records,
