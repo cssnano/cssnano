@@ -159,8 +159,10 @@ export function buildMergedRule(
   };
   if (group) {
     placement.following = group.followers.map(({ rule, claimed }) => {
-      removeDeclarations(records, rule.index, claimed);
-      return indicesOf(leftoverOf(records, rule));
+      removeDeclarations(records, rule, claimed);
+      return indicesOf(
+        leftoverOf(records, /** @type {RuleRecord} */ (records.rule(rule)))
+      );
     });
   }
   return placement;

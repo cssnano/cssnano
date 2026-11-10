@@ -57,7 +57,7 @@ function overridesShared(records, rule, claimed, shared) {
 
 /**
  * @typedef {object} Follower
- * @property {RuleRecord} rule
+ * @property {ArenaIndex} rule the index of the rule, which the rewrite edits before it reads the rule again
  * @property {Set<ArenaIndex>} claimed the arena indices of the declarations where it repeats the shared declarations
  */
 
@@ -94,15 +94,17 @@ function repeatsShared(link, parent, shared, records) {
 }
 
 /**
- * @param {RuleRecord[]} members
+ * @param {ArenaIndex[]} members the indices of the rules of the group
  * @param {RuleRecord} later
  * @param {ArenaIndex | -1} parent the index of the block the rules stand in
  * @param {import('./mergeState.js').default} mergeState
  * @return {boolean} whether `later` can share a selector list with every member
  */
 function mergesWithAll(members, later, parent, mergeState) {
+  const { records } = mergeState;
   for (const member of members) {
-    if (!mergeState.canMerge(member, later, parent, parent)) return false;
+    const record = /** @type {RuleRecord} */ (records.rule(member));
+    if (!mergeState.canMerge(record, later, parent, parent)) return false;
   }
   return true;
 }
@@ -158,7 +160,7 @@ export function findGroup(
   const candidates = [];
   /** @type {Follower[]} */
   const followers = [];
-  const members = [first, secondRule];
+  const members = [first.index, secondRule.index];
   let blocked = false;
   let best = delta;
   let size = 0;
@@ -205,8 +207,8 @@ export function findGroup(
       ) {
         break;
       }
-      followers.push({ rule: later, claimed });
-      members.push(later);
+      followers.push({ rule: later.index, claimed });
+      members.push(later.index);
       blocked = overridesShared(records, later, claimed, shared);
     }
     if (followers.length < candidates.length) break;

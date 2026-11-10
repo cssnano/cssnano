@@ -12,7 +12,10 @@ import type DeclarationScan from './declarationScan.js';
 /** @import DeclarationScan from './declarationScan.js' */
 export declare const SHARING_WINDOW = 10;
 export type Follower = {
-    rule: RuleRecord;
+    /**
+     * the index of the rule, which the rewrite edits before it reads the rule again
+     */
+    rule: ArenaIndex;
     /**
      * the arena indices of the declarations where it repeats the shared declarations
      */
