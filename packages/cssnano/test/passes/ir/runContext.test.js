@@ -1,3 +1,5 @@
+import { selectorIdsOf } from '../merge/lib/rules/selectorIdsOf.js';
+import { SelectorIds } from '../../../src/passes/ir/selectorIds.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -7,6 +9,8 @@ import { buildRecords } from '../../../src/passes/merge/lib/rules/buildRecords.j
 import { TextTable } from '../../../src/values/textTable.js';
 import { RuleRecord } from '../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { placeUnlinked } from '../merge/lib/rules/liveRecords.js';
+
+const selectorIds = new SelectorIds();
 
 /**
  * @param {string} css one declaration
@@ -39,7 +43,7 @@ test('a run context created with consistency checks makes a link into a removed 
   const entry = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(['x'], 'x')
+    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, ['x']))
   );
   assert.throws(() => records.moveLast(rule.index, entry.index));
 });

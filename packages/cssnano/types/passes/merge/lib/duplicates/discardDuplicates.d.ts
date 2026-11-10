@@ -1,7 +1,6 @@
 import type { BlockRecords } from '../rules/blockRecords.js';
 import type { RunContext } from '../../../ir/runContext.js';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
-import type { SelectorIds } from '../../../ir/selectorIds.js';
 export type Scope = {
     decls?: Set<number>;
     ruleDecls?: Map<string, Set<number>>;
@@ -10,7 +9,6 @@ export type Scope = {
 export type Run = {
     records: BlockRecords;
     keys: DeclarationKeys;
-    selectorIds: SelectorIds;
     layered: Set<number>;
 };
 /**

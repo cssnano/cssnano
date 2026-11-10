@@ -1,3 +1,5 @@
+import { selectorIdsOf } from './selectorIdsOf.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import {
   childNodesOf,
@@ -34,6 +36,8 @@ import {
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { nodeOf } from '../../../../../src/passes/merge/lib/rules/nodeTable.js';
+
+const selectorIds = new SelectorIds();
 
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -312,7 +316,7 @@ test('moveLast into a plain rule that is linked nowhere should throw under consi
   const orphan = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['b'], 'b')
+    new RuleRecord(['b'], 'b', selectorIdsOf(selectorIds, ['b']))
   );
   state.records.detach(declaration.index);
   assert.throws(

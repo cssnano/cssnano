@@ -94,7 +94,7 @@ export function mergeBenefit(mergeState, firstIndex, secondIndex) {
   const second = /** @type {RuleRecord} */ (records.rule(secondIndex));
   const a = declarationKeys(records, firstIndex);
   const b = declarationKeys(records, secondIndex);
-  if (first.hasSameSelectors(second, mergeState.selectorIds)) {
+  if (first.hasSameSelectors(second)) {
     return a.kept.length + b.kept.length;
   }
   const [smaller, larger] =

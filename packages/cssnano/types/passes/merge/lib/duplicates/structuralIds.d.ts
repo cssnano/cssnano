@@ -1,7 +1,6 @@
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { BlockRecord, NodeEntry } from '../rules/blockRecord.js';
 import type { RuleRecord } from '../rules/ruleRecord.js';
-import type { SelectorIds } from '../../../ir/selectorIds.js';
 /**
  * The id of a comment: ordinary comments share one, and an important comment
  * steps its text.
@@ -26,11 +25,10 @@ export declare function statementId(keys: DeclarationKeys, layered: Set<number>,
  * reads as one list give one path.
  *
  * @param {DeclarationKeys} keys
- * @param {SelectorIds} selectorIds
  * @param {Set<number>} layered
  * @param {BlockRecord | RuleRecord} container the rule, or the block at-rule
  * @param {number[]} childIds the ids of the kept entries, back to front
  * @return {number}
  */
-export declare function containerId(keys: DeclarationKeys, selectorIds: SelectorIds, layered: Set<number>, container: BlockRecord | RuleRecord, childIds: number[]): number;
+export declare function containerId(keys: DeclarationKeys, layered: Set<number>, container: BlockRecord | RuleRecord, childIds: number[]): number;
 //# sourceMappingURL=structuralIds.d.ts.map

@@ -50,10 +50,11 @@ export declare class RuleRecord extends SelectorList {
     /**
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
+     * @param {readonly number[]} selectorIds the interned id of each of `selectors`
      * @param {string} [sourceSelector] the source text, set only when it differs from the selector
      * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
      */
-    constructor(selectors: string[], selector: string, sourceSelector?: string, tokens?: readonly CSSToken[]);
+    constructor(selectors: string[], selector: string, selectorIds: readonly number[], sourceSelector?: string, tokens?: readonly CSSToken[]);
     /**
      * The declarations of the rule, in order, read from its chain at the call. A
      * reader that indexes them by position takes this array.

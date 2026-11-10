@@ -1,3 +1,5 @@
+import { selectorIdsOf } from './selectorIdsOf.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -13,6 +15,8 @@ import {
   nodeOfEntry,
 } from './liveRecords.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+
+const selectorIds = new SelectorIds();
 
 /**
  * @param {string} css
@@ -62,7 +66,7 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
   const added = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(['x'], 'x')
+    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, ['x']))
   );
   sequence.replacePair(records, a, {
     first: [a],
@@ -83,7 +87,11 @@ test('replacePair should chain the placed rules in the order first, second, then
     placeUnlinked(
       records,
       records.root.index,
-      new RuleRecord([selector], selector)
+      new RuleRecord(
+        [selector],
+        selector,
+        selectorIdsOf(selectorIds, [selector])
+      )
     ).index;
   const x = made('x');
   const y = made('y');

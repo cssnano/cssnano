@@ -14,7 +14,7 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'ignore the selector in the structural id of a rule',
-    find: '    for (const id of /** @type {RuleRecord} */ (container).idsOf(selectorIds))\n      path = step(path, id);',
+    find: '    for (const id of /** @type {RuleRecord} */ (container).selectorIds)\n      path = step(path, id);',
     replace: '',
   },
   {

@@ -28,6 +28,10 @@ export type Group = {
      * the selectors they add to it
      */
     added: string[];
+    /**
+     * the ids of those selectors, in the same order
+     */
+    addedIds: number[];
 };
 /**
  * The rules after the pair that join the shared rule: the prefix of the rules

@@ -1,5 +1,4 @@
 import { DeclarationKeys } from './declarationKey.js';
-import { SelectorIds } from './selectorIds.js';
 import { TextTable } from '../../values/textTable.js';
 import { consistencyChecksEnabled } from './consistencyChecks.js';
 
@@ -12,7 +11,6 @@ import { consistencyChecksEnabled } from './consistencyChecks.js';
  *
  * @typedef {{
  *   declarations: DeclarationKeys,
- *   selectorIds: SelectorIds,
  *   createdBlocks: Set<Container> | null,
  *   selectorCompatibility: Map<string, SelectorInfo>,
  *   textTable: TextTable,
@@ -35,7 +33,6 @@ export function createRunContext(
 ) {
   return {
     declarations: new DeclarationKeys(),
-    selectorIds: new SelectorIds(),
     createdBlocks: null,
     selectorCompatibility: new Map(),
     textTable,

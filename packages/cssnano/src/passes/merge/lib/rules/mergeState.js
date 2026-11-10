@@ -21,8 +21,6 @@ export default class MergeState {
   #lookup;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
   #declarations;
-  /** @type {import('../../../ir/selectorIds.js').SelectorIds} */
-  #selectorIds;
   /** @type {(selector: string, piece?: RangePiece | null) => string | null} */
   #elementKeyOf = createElementKeyLookup();
   /**
@@ -43,7 +41,6 @@ export default class MergeState {
       context.selectorCompatibility
     );
     this.#declarations = context.declarations;
-    this.#selectorIds = context.selectorIds;
   }
 
   /**
@@ -69,26 +66,18 @@ export default class MergeState {
   }
 
   /**
-   * The ids of the run's selectors, which list comparisons read.
-   *
-   * @return {import('../../../ir/selectorIds.js').SelectorIds}
-   */
-  get selectorIds() {
-    return this.#selectorIds;
-  }
-
-  /**
    * Appends selectors of `source` to the rule's selector list, keeping its
    * vendor prefix profile and its token ranges in step.
    *
    * @param {RuleRecord} record
    * @param {string[]} selectors some of the selectors of `source`, in the
    * order of their first occurrence there
+   * @param {readonly number[]} ids the id of each of `selectors`
    * @param {RuleRecord} source
    * @return {readonly string[] | null} the element keys the selectors add, or
    * null when the rule's elements are not listed
    */
-  addSelectors(record, selectors, source) {
+  addSelectors(record, selectors, ids, source) {
     const own = this.piecesOf(record);
     const from = own === null ? null : this.piecesOf(source);
     const pieces =
@@ -102,6 +91,7 @@ export default class MergeState {
           );
     return record.addSelectors(
       selectors,
+      ids,
       this.#lookup,
       this.#elementKeyOf,
       pieces

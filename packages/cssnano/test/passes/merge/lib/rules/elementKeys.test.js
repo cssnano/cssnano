@@ -1,10 +1,19 @@
+import { selectorIdsOf } from './selectorIdsOf.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 
+const selectorIds = new SelectorIds();
+
 // The keys of a rule's selectors, as the merge reads them.
 /** @param {string[]} selectors */
-const elementKeys = (selectors) => new RuleRecord(selectors, []).elementKeys();
+const elementKeys = (selectors) =>
+  new RuleRecord(
+    selectors,
+    [],
+    selectorIdsOf(selectorIds, selectors)
+  ).elementKeys();
 
 test('element key of a type selector is its lowercase name', () => {
   assert.deepEqual(elementKeys(['H1']), ['h1']);

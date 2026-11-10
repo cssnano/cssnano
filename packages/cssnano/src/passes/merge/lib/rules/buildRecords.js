@@ -1,6 +1,7 @@
 import cssnanoUtils from '#utils';
 import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
+import { SelectorIds } from '../../../ir/selectorIds.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { keysOfName } from '../../../ir/propertyTable.js';
 import {
@@ -72,6 +73,8 @@ export function recordDeclaration(node, declarations) {
  */
 export function buildRecords(root, context) {
   const { textTable, consistencyChecks } = context;
+  // The ids of this build's selectors. Each rule keeps the ids of its items.
+  const selectorIds = new SelectorIds();
   const records = new BlockRecords(
     new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
     consistencyChecks
@@ -112,6 +115,7 @@ export function buildRecords(root, context) {
         const record = new RuleRecord(
           child.selectors,
           child.selector,
+          child.selectors.map((selector) => selectorIds.idOf(selector)),
           source === child.selector ? undefined : source,
           textTable.stored(child)
         );
@@ -121,7 +125,6 @@ export function buildRecords(root, context) {
         if (child.nodes.some(isRuleOrAtRule)) {
           record.context = containerContext(
             context.declarations,
-            context.selectorIds,
             container.context,
             record
           );
@@ -142,7 +145,6 @@ export function buildRecords(root, context) {
         place(container.index, nested, child);
         nested.context = containerContext(
           context.declarations,
-          context.selectorIds,
           container.context,
           nested
         );
@@ -187,7 +189,6 @@ export function buildRecords(root, context) {
   // The stylesheet's context is the one for no enclosing container.
   records.root.context = containerContext(
     context.declarations,
-    context.selectorIds,
     -1,
     records.root
   );

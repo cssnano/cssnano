@@ -2,7 +2,6 @@ import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
 import type { RangePiece } from '../../../../values/joinRanges.js';
 import type { SelectorRange } from '../../../../values/selectorRanges.js';
-import type { SelectorIds } from '../../../ir/selectorIds.js';
 export type SelectorLookup = (selector: string, list?: SelectorList, index?: number) => import('./ensureCompatibility.js').SelectorInfo;
 export type ElementKeyOf = (selector: string, piece: RangePiece | null) => string | null;
 export type SelectorRanges = {
@@ -10,6 +9,13 @@ export type SelectorRanges = {
     tokens: readonly CSSToken[];
     spans: SelectorRange[];
 };
+/**
+ * The ids of a rule whose list has moved to another rule. It is frozen, so a
+ * push onto it throws and an edit of the moved rule fails at once.
+ *
+ * @type {number[]}
+ */
+export declare const NO_SELECTORS: number[];
 /**
  * The selector list of a rule with the facts derived from it, each computed on
  * first use and then grown incrementally as the list grows. It is the base of
@@ -21,12 +27,22 @@ export type SelectorRanges = {
 export declare class SelectorList {
     #private;
     /**
+     * The interned id of each selector, in order. A selector's id is the same
+     * for every rule that holds an equal item. It is read-only: only the edits
+     * of this class move or append ids, through `writableIds`.
+     *
+     * @readonly
+     * @type {readonly number[]}
+     */
+    readonly selectorIds: readonly number[];
+    /**
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
+     * @param {readonly number[]} selectorIds the interned id of each of `selectors`
      * @param {string} [sourceSelector] the source text, set only when it differs from the selector
      * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
      */
-    constructor(selectors: string[], selector: string, sourceSelector?: string, tokens?: readonly CSSToken[]);
+    constructor(selectors: string[], selector: string, selectorIds: readonly number[], sourceSelector?: string, tokens?: readonly CSSToken[]);
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
     /** @return {string} the selector, in PostCSS's form */
@@ -100,26 +116,18 @@ export declare class SelectorList {
     /** @return {string} */
     selectorText(): string;
     /**
-     * The interned id of each selector, in order. They are read on the first
-     * comparison, and an edit of the selectors drops them.
-     *
-     * @param {SelectorIds} selectorIds
-     * @return {readonly number[]}
-     */
-    idsOf(selectorIds: SelectorIds): readonly number[];
-    /**
      * Two lists are the same when they have the same selectors in the same
      * order. A selector holds no top-level comma, so the joined texts of two
      * lists are equal exactly when their selectors are, and the ids compare the
      * selectors without joining them.
      *
      * @param {SelectorList} other
-     * @param {SelectorIds} selectorIds
      * @return {boolean}
      */
-    hasSameSelectors(other: SelectorList, selectorIds: SelectorIds): boolean;
+    hasSameSelectors(other: SelectorList): boolean;
     /**
      * @param {string[]} selectors appended to the list
+     * @param {readonly number[]} ids the id of each of `selectors`
      * @param {SelectorLookup} lookup
      * @param {ElementKeyOf} [keyOf]
      * @param {RangePiece[] | null} [pieces] the token range of each selector of
@@ -127,7 +135,7 @@ export declare class SelectorList {
      * @return {readonly string[] | null} the element keys the selectors add to
      * those listed, or null when the elements are not listed
      */
-    addSelectors(selectors: string[], lookup: SelectorLookup, keyOf?: ElementKeyOf, pieces?: RangePiece[] | null): readonly string[] | null;
+    addSelectors(selectors: string[], ids: readonly number[], lookup: SelectorLookup, keyOf?: ElementKeyOf, pieces?: RangePiece[] | null): readonly string[] | null;
     /**
      * Takes the place of a list that stood before this one, so its selectors
      * come first. The earlier list grows in place and passes to this one, and

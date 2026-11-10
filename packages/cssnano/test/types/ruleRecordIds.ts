@@ -1,0 +1,17 @@
+import type { RuleRecord } from '../../types/passes/merge/lib/rules/ruleRecord.js';
+
+// Type-level checks: a rule's selector ids and its merged flag are read-only
+// outside the edits of its selector list. Each line marked below must fail to
+// type-check. The function is never called; it is here for the types step.
+export function readRuleFields(rule: RuleRecord): readonly number[] {
+  const marked: boolean = rule.marked;
+  // @ts-expect-error the ids are assigned only by the edits of the list
+  rule.selectorIds = [];
+  // @ts-expect-error an element of the ids is not written
+  rule.selectorIds[0] = 1;
+  // @ts-expect-error the ids are not appended to
+  rule.selectorIds.push(1);
+  // @ts-expect-error the merged flag has no setter
+  rule.marked = true;
+  return marked ? rule.selectorIds : [];
+}

@@ -75,26 +75,35 @@ function listLength(selectors) {
  * @param {BlockRecords} records
  * @param {Group} group
  * @param {RuleRecord} later
- * @param {import('../../../ir/selectorIds.js').SelectorIds} selectorIds
- * @return {{added: string[], gain: number}}
+ * @return {{added: string[], addedIds: number[], gain: number}} the selectors
+ * the join adds, with their ids
  */
-function joinGain(records, group, later, selectorIds) {
+function joinGain(records, group, later) {
   if (group.bytes < 0) {
     group.bytes = group.declarations.reduce(
       (total, declaration) => total + minifiedLength(declaration),
       0
     );
   }
-  const listed = (group.selectors ??= new Set(group.rule.idsOf(selectorIds)));
+  const listed = (group.selectors ??= new Set(group.rule.selectorIds));
   const laterSelectors = later.selectors;
-  const added = [...new Set(laterSelectors)].filter(
-    (selector) => !listed.has(selectorIds.idOf(selector))
-  );
+  const laterIds = later.selectorIds;
+  const added = [];
+  const addedIds = [];
+  const seen = new Set();
+  for (let at = 0; at < laterIds.length; at++) {
+    const id = laterIds[at];
+    if (seen.has(id)) continue;
+    seen.add(id);
+    if (listed.has(id)) continue;
+    added.push(laterSelectors[at]);
+    addedIds.push(id);
+  }
   const removed =
     group.declarations.length === childCountOf(records, later.index)
       ? group.bytes + listLength(laterSelectors)
       : group.bytes;
-  return { added, gain: removed - listLength(added) };
+  return { added, addedIds, gain: removed - listLength(added) };
 }
 
 /**
@@ -201,7 +210,7 @@ export default function joinByDeclarations(block, mergeState) {
     ).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
     const laterKeys = keysOf(laterRecord);
-    /** @type {{group: Group, claimed: Set<ArenaIndex>, added: string[], gain: number} | null} */
+    /** @type {{group: Group, claimed: Set<ArenaIndex>, added: string[], addedIds: number[], gain: number} | null} */
     let best = null;
     for (const id of laterSet) {
       const candidates = groups.get(id) ?? [];
@@ -227,12 +236,7 @@ export default function joinByDeclarations(block, mergeState) {
         ) {
           continue;
         }
-        const { added, gain } = joinGain(
-          records,
-          group,
-          laterRecord,
-          mergeState.selectorIds
-        );
+        const { added, addedIds, gain } = joinGain(records, group, laterRecord);
         // A join that breaks even still takes the shared declarations out of
         // the way of later rules that can join the group. On a tie, the
         // nearest group has the least to cross.
@@ -255,17 +259,20 @@ export default function joinByDeclarations(block, mergeState) {
         );
         if (index.conflictsSince(claimed, group.position, laterKeys)) continue;
         if (!mergeState.canMerge(group.rule, laterRecord)) continue;
-        best = { group, claimed: claimedIndices, added, gain };
+        best = { group, claimed: claimedIndices, added, addedIds, gain };
       }
     }
     if (!best) return null;
-    const { group, claimed, added } = best;
+    const { group, claimed, added, addedIds } = best;
     const groupRecord = group.rule;
     const listed = keysOf(groupRecord) !== null;
-    const gained = mergeState.addSelectors(groupRecord, added, laterRecord);
-    for (const selector of added) {
-      group.selectors?.add(mergeState.selectorIds.idOf(selector));
-    }
+    const gained = mergeState.addSelectors(
+      groupRecord,
+      added,
+      addedIds,
+      laterRecord
+    );
+    for (const id of addedIds) group.selectors?.add(id);
     if (listed) recordGained(group, gained);
     grown.add(group.rule.index);
     const outcome = withdraw(laterRecord, claimed);

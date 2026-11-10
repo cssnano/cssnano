@@ -1,3 +1,5 @@
+import { selectorIdsOf } from './selectorIdsOf.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import { childNodesOf } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import assert from 'node:assert/strict';
@@ -31,6 +33,8 @@ import {
   substitute,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+
+const selectorIds = new SelectorIds();
 
 /** @import {ChildNode, Container, Root, Rule} from 'postcss' */
 
@@ -84,7 +88,7 @@ test('substitute with one replacement should put it where the rule stood', () =>
   const replacement = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['x'], 'x')
+    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, ['x']))
   );
   substitute(state.records, record.index, [replacement.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'c']);
@@ -97,12 +101,12 @@ test('substitute with several replacements should keep their order where the rul
   const first = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['x'], 'x')
+    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, ['x']))
   );
   const second = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['y'], 'y')
+    new RuleRecord(['y'], 'y', selectorIdsOf(selectorIds, ['y']))
   );
   substitute(state.records, record.index, [first.index, second.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'y', 'c']);

@@ -19,7 +19,6 @@ import { commentId, containerId, statementId } from './structuralIds.js';
 /** @import {BlockRecords} from '../rules/blockRecords.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {SelectorIds} from '../../../ir/selectorIds.js' */
 
 // The entry was removed; a kept entry returns its structural id, or 0 when no
 // ancestor needs one.
@@ -39,7 +38,6 @@ const REMOVED = -1;
  * @typedef {{
  *   records: BlockRecords,
  *   keys: DeclarationKeys,
- *   selectorIds: SelectorIds,
  *   layered: Set<number>,
  * }} Run
  */
@@ -157,7 +155,7 @@ function dedupeRule(run, rule, scope, wantIds) {
   const { records } = run;
   const { links } = records;
   // The ids of a selector list spell it one way, so spacing around commas is not a difference.
-  const listKey = rule.idsOf(run.selectorIds).join(',');
+  const listKey = rule.selectorIds.join(',');
   const ruleDecls = (scope.ruleDecls ??= new Map());
   let declMap = ruleDecls.get(listKey);
   const isSubsequent = declMap !== undefined;
@@ -190,7 +188,7 @@ function dedupeRule(run, rule, scope, wantIds) {
   const childIds = dedupeEntries(run, rule, {}, wantIds);
   if (hasContainers && !hasNestedEntry(records, rule)) rule.context = -1;
   return wantIds && childIds
-    ? containerId(run.keys, run.selectorIds, run.layered, rule, childIds)
+    ? containerId(run.keys, run.layered, rule, childIds)
     : 0;
 }
 
@@ -229,9 +227,7 @@ function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
       childScope(scope, block.context),
       wantIds
     );
-    return wantIds && ids
-      ? containerId(run.keys, run.selectorIds, run.layered, block, ids)
-      : 0;
+    return wantIds && ids ? containerId(run.keys, run.layered, block, ids) : 0;
   }
 
   // Identical preludes apply their contents under the same condition; other
@@ -256,9 +252,7 @@ function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
   // An imported style sheet may declare layers, so even an identical earlier
   // @import can fix a layer's place in the layer order.
   if (block.atRuleKind === IMPORT)
-    return wantIds && ids
-      ? containerId(run.keys, run.selectorIds, run.layered, block, ids)
-      : 0;
+    return wantIds && ids ? containerId(run.keys, run.layered, block, ids) : 0;
   return keepAtRule(run, block, ids, seenAtRules);
 }
 
@@ -273,13 +267,7 @@ function dedupeBlock(run, block, scope, seenAtRules, wantIds) {
  * @return {number}
  */
 function keepAtRule(run, block, ids, seenAtRules) {
-  const id = containerId(
-    run.keys,
-    run.selectorIds,
-    run.layered,
-    block,
-    ids ?? []
-  );
+  const id = containerId(run.keys, run.layered, block, ids ?? []);
   if (seenAtRules.has(id) && !run.layered.has(id)) {
     remove(run.records, block.index);
     return REMOVED;
@@ -329,7 +317,6 @@ export function discardDuplicates(records, _browsers, context) {
     {
       records,
       keys: context.declarations,
-      selectorIds: context.selectorIds,
       layered: new Set(),
     },
     records.root,

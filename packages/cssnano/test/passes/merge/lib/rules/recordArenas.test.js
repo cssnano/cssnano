@@ -1,3 +1,5 @@
+import { selectorIdsOf } from './selectorIdsOf.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { containers } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -19,6 +21,8 @@ import {
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+
+const selectorIds = new SelectorIds();
 
 /** @import {Root, Rule} from 'postcss' */
 /** @import {BlockLinks} from '../../../../../src/passes/merge/lib/rules/blockLinks.js' */
@@ -91,7 +95,7 @@ test('a rule recorded mid-run should take the next index of the arena', () => {
   const added = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(['c'], 'c')
+    new RuleRecord(['c'], 'c', selectorIdsOf(selectorIds, ['c']))
   );
   assert.equal(added.index, count);
   records.moveLast(records.root.index, added.index);

@@ -120,10 +120,19 @@ export function buildMergedRule(
     ...secondSelectors,
     ...(group?.added ?? []),
   ];
+  const selectorIds = [
+    ...first.selectorIds,
+    ...second.selectorIds,
+    ...(group?.addedIds ?? []),
+  ];
   // The merged rule prints the raws of the rule it was merged from, or of
   // the template that rule printed, when it was merged too.
   const template = second.template === -1 ? second.index : second.template;
-  const receivingRecord = new RuleRecord(selectors, selectors.join());
+  const receivingRecord = new RuleRecord(
+    selectors,
+    selectors.join(),
+    selectorIds
+  );
   receivingRecord.mark();
   receivingRecord.template = template;
   receivingRecord.before = second.before;

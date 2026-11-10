@@ -15,7 +15,6 @@ const ANONYMOUS = Symbol('anonymous layer');
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {SelectorIds} from '../../../ir/selectorIds.js' */
 
 /**
  * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
@@ -38,16 +37,15 @@ export function isKeyframes(container) {
  * context of its own.
  *
  * @param {DeclarationKeys} keys the run's interner
- * @param {SelectorIds} selectorIds the run's selector ids
  * @param {number} parentContext the context of the enclosing block, -1 for the stylesheet
  * @param {BlockRecord | RuleRecord} block the block, or the rule that nests
  * @return {number}
  */
-export function containerContext(keys, selectorIds, parentContext, block) {
+export function containerContext(keys, parentContext, block) {
   let trie = step(step(keys.root, CONTEXT), parentContext);
   if (block.kind === RULE) {
     trie = step(trie, 'rule');
-    for (const id of /** @type {RuleRecord} */ (block).idsOf(selectorIds))
+    for (const id of /** @type {RuleRecord} */ (block).selectorIds)
       trie = step(trie, id);
   } else if (block.kind === STYLESHEET) {
     trie = step(trie, 'root');

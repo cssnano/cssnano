@@ -39,6 +39,10 @@ test('addSelectors should keep the record of the rule', () => {
   state.addSelectors(
     ruleRecordOf(state.records, root.first),
     ['b', 'c'],
+    ['b', 'c'].map((selector) => {
+      const source = ruleRecordOf(state.records, root.last);
+      return source.selectorIds[source.selectors.indexOf(selector)];
+    }),
     ruleRecordOf(state.records, root.last)
   );
   assert.equal(ruleRecordOf(state.records, root.first), record);
@@ -50,6 +54,10 @@ test('addSelectors should append the selectors to the rule description', () => {
   state.addSelectors(
     ruleRecordOf(state.records, root.first),
     ['b', 'c'],
+    ['b', 'c'].map((selector) => {
+      const source = ruleRecordOf(state.records, root.last);
+      return source.selectorIds[source.selectors.indexOf(selector)];
+    }),
     ruleRecordOf(state.records, root.last)
   );
   assert.deepEqual(ruleRecordOf(state.records, root.first).selectors, [
@@ -175,6 +183,10 @@ test('canMerge should reject a rule that gained an unsupported selector after it
   state.addSelectors(
     ruleRecordOf(state.records, root.first),
     ['c:has(d)'],
+    ['c:has(d)'].map((selector) => {
+      const source = ruleRecordOf(state.records, root.last);
+      return source.selectorIds[source.selectors.indexOf(selector)];
+    }),
     ruleRecordOf(state.records, root.last)
   );
   assert.equal(

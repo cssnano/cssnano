@@ -5,7 +5,6 @@ import { LAYER, RULE } from '../rules/blockRecord.js';
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {BlockRecord, NodeEntry} from '../rules/blockRecord.js' */
 /** @import {RuleRecord} from '../rules/ruleRecord.js' */
-/** @import {SelectorIds} from '../../../ir/selectorIds.js' */
 
 const { isImportantComment } = cssnanoUtils;
 
@@ -64,18 +63,17 @@ export function statementId(keys, layered, entry) {
  * reads as one list give one path.
  *
  * @param {DeclarationKeys} keys
- * @param {SelectorIds} selectorIds
  * @param {Set<number>} layered
  * @param {BlockRecord | RuleRecord} container the rule, or the block at-rule
  * @param {number[]} childIds the ids of the kept entries, back to front
  * @return {number}
  */
-export function containerId(keys, selectorIds, layered, container, childIds) {
+export function containerId(keys, layered, container, childIds) {
   let path;
   let declaresLayer = false;
   if (container.kind === RULE) {
     path = step(keys.root, 'rule');
-    for (const id of /** @type {RuleRecord} */ (container).idsOf(selectorIds))
+    for (const id of /** @type {RuleRecord} */ (container).selectorIds)
       path = step(path, id);
   } else {
     path = keys.preludeTrie(container.preludeId);

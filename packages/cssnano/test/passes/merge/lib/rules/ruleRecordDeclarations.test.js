@@ -1,3 +1,5 @@
+import { selectorIdsOf } from './selectorIdsOf.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { childCountOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -28,6 +30,8 @@ import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/bui
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+
+const selectorIds = new SelectorIds();
 
 /**
  * The records of `css`, built as the run builds them, with the record of its
@@ -60,7 +64,7 @@ const arenaOf = (css, consistencyChecks = false) => {
  * @return {RuleRecord}
  */
 const mergedRule = (records) => {
-  const rule = new RuleRecord(['b'], 'b');
+  const rule = new RuleRecord(['b'], 'b', selectorIdsOf(selectorIds, ['b']));
   records.appendEntry(records.root.index, rule);
   return rule;
 };

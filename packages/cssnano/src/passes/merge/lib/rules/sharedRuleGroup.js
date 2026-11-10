@@ -69,6 +69,7 @@ function overridesShared(records, rule, claimed, shared) {
  * @typedef {object} Group
  * @property {Follower[]} followers the rules that join the shared rule
  * @property {string[]} added the selectors they add to it
+ * @property {number[]} addedIds the ids of those selectors, in the same order
  */
 
 /**
@@ -154,11 +155,12 @@ export function findGroup(
     return null;
   if (overridesShared(records, secondRule, claimedIndices, shared)) return null;
 
-  const listed = new Set(first.selectors);
-  for (const selector of secondRule.selectors) {
-    listed.add(selector);
-  }
-  const listedBefore = listed.size;
+  const listed = new Set(first.selectorIds);
+  for (const id of secondRule.selectorIds) listed.add(id);
+  /** @type {string[]} the selectors the group adds, in order of first use */
+  const addedSelectors = [];
+  /** @type {number[]} the ids of those selectors */
+  const addedIds = [];
   /** @type {number[]} */
   const candidates = [];
   /** @type {Follower[]} */
@@ -167,7 +169,7 @@ export function findGroup(
   let blocked = false;
   let best = delta;
   let size = 0;
-  let listedAtBest = listedBefore;
+  let addedAtBest = 0;
   let running = delta;
   for (
     let link = sequence.nextOf(second), seen = 0;
@@ -176,10 +178,13 @@ export function findGroup(
   ) {
     const linked = /** @type {RuleRecord} */ (records.rule(link));
     const selectors = linked.selectors;
-    for (const selector of selectors) {
-      if (listed.has(selector)) continue;
-      listed.add(selector);
-      running += 1 + selector.length;
+    const ids = linked.selectorIds;
+    for (let at = 0; at < ids.length; at++) {
+      if (listed.has(ids[at])) continue;
+      listed.add(ids[at]);
+      addedSelectors.push(selectors[at]);
+      addedIds.push(ids[at]);
+      running += 1 + selectors[at].length;
     }
     running -= sharedBytes;
     if (childCountOf(records, linked.index) === shared.length) {
@@ -216,13 +221,14 @@ export function findGroup(
     if (followers.length < candidates.length) break;
     best = running;
     size = candidates.length;
-    listedAtBest = listed.size;
+    addedAtBest = addedSelectors.length;
     if (blocked) break;
   }
   if (size === 0) return null;
   return {
     followers: followers.slice(0, size),
-    added: [...listed].slice(listedBefore, listedAtBest),
+    added: addedSelectors.slice(0, addedAtBest),
+    addedIds: addedIds.slice(0, addedAtBest),
   };
 }
 

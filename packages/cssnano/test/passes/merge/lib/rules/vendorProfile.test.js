@@ -1,3 +1,4 @@
+import { selectorIdsOf } from './selectorIdsOf.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -139,21 +140,33 @@ function ruleWith(selector) {
  * @return {RuleRecord} the record of a rule, for the selector facts it keeps
  */
 function metaOf(rule) {
-  return new RuleRecord(rule.selectors);
+  return new RuleRecord(
+    rule.selectors,
+    undefined,
+    selectorIdsOf(selectorIds, rule.selectors)
+  );
 }
 
 test('getVendorProfile should match the list profile after addSelectors grows a rule whose profile was already computed', () => {
   const rule = ruleWith('.a');
   const record = metaOf(rule);
   record.vendorProfile(lookup);
-  record.addSelectors(['::-webkit-scrollbar', '.b'], lookup);
+  record.addSelectors(
+    ['::-webkit-scrollbar', '.b'],
+    selectorIdsOf(selectorIds, ['::-webkit-scrollbar', '.b']),
+    lookup
+  );
   assert.deepEqual(record.vendorProfile(lookup), profileOf(record.selectors));
 });
 
 test('getSelectorText should list the selectors added by addSelectors after the text was already read', () => {
   const record = metaOf(ruleWith('.a'));
   record.selectorText();
-  record.addSelectors(['.b', '.c'], lookup);
+  record.addSelectors(
+    ['.b', '.c'],
+    selectorIdsOf(selectorIds, ['.b', '.c']),
+    lookup
+  );
   assert.equal(record.selectorText(), '.a,.b,.c');
 });
 
@@ -217,28 +230,28 @@ test('createSelectorLookup should scan a selector only once when it repeats', ()
 test('hasSameSelectors should hold for rules whose lists are equal', () => {
   const a = metaOf(ruleWith('.a,.b'));
   const b = metaOf(ruleWith('.a,.b'));
-  assert.equal(a.hasSameSelectors(b, selectorIds), true);
+  assert.equal(a.hasSameSelectors(b), true);
 });
 
 test('hasSameSelectors should fail for lists of equal length that differ', () => {
   const a = metaOf(ruleWith('.a,.b'));
   const b = metaOf(ruleWith('.a,.c'));
-  assert.equal(a.hasSameSelectors(b, selectorIds), false);
+  assert.equal(a.hasSameSelectors(b), false);
 });
 
 test('hasSameSelectors should tell :is(a,b) from the list a,b, because a nested comma is not a list separator', () => {
   const a = metaOf(ruleWith(':is(a,b)'));
   const b = metaOf(ruleWith('a,b'));
-  assert.equal(a.hasSameSelectors(b, selectorIds), false);
+  assert.equal(a.hasSameSelectors(b), false);
 });
 
 test('hasSameSelectors should follow a list that grew after the two lists were compared', () => {
   const a = metaOf(ruleWith('.a'));
   const b = metaOf(ruleWith('.a'));
-  assert.equal(a.hasSameSelectors(b, selectorIds), true);
-  a.addSelectors(['.c'], lookup);
-  b.addSelectors(['.d'], lookup);
-  assert.equal(a.hasSameSelectors(b, selectorIds), false);
+  assert.equal(a.hasSameSelectors(b), true);
+  a.addSelectors(['.c'], selectorIdsOf(selectorIds, ['.c']), lookup);
+  b.addSelectors(['.d'], selectorIdsOf(selectorIds, ['.d']), lookup);
+  assert.equal(a.hasSameSelectors(b), false);
 });
 
 test('absorbEarlier should list the selectors of the earlier rule first', () => {

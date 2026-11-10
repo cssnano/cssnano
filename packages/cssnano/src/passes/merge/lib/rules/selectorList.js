@@ -8,7 +8,6 @@ import { tokens as tokenize } from '../../../../utils/value.js';
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
 /** @import {SelectorRange} from '../../../../values/selectorRanges.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
-/** @import {SelectorIds} from '../../../ir/selectorIds.js' */
 /** @typedef {(selector: string, list?: SelectorList, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
 /** @typedef {(selector: string, piece: RangePiece | null) => string | null} ElementKeyOf */
 /**
@@ -20,6 +19,27 @@ import { tokens as tokenize } from '../../../../utils/value.js';
 
 /** @type {readonly string[]} */
 const noElementKeys = Object.freeze([]);
+
+/**
+ * The ids of a rule whose list has moved to another rule. It is frozen, so a
+ * push onto it throws and an edit of the moved rule fails at once.
+ *
+ * @type {number[]}
+ */
+export const NO_SELECTORS = /** @type {number[]} */ (
+  /** @type {unknown} */ (Object.freeze([]))
+);
+
+/**
+ * The one writable view of a rule's ids. Only the edits of this module write
+ * them, as a move or an append that also changes the list's text.
+ *
+ * @param {SelectorList} list
+ * @return {{selectorIds: number[]}}
+ */
+function writableIds(list) {
+  return /** @type {{selectorIds: number[]}} */ (/** @type {unknown} */ (list));
+}
 
 /**
  * The selector list of a rule with the facts derived from it, each computed on
@@ -46,8 +66,6 @@ export class SelectorList {
   #vendor;
   /** @type {string | undefined} the selectors joined by commas, once known */
   #selectorText;
-  /** @type {number[] | undefined} the interned id of each selector, once a comparison asks */
-  #ids;
   /** @type {RuleElementKeys | null | undefined} null when a selector has no element key */
   #elementKeys;
   /** @type {RangePiece[] | null | undefined} the token range of each selector; null when unknown */
@@ -58,20 +76,31 @@ export class SelectorList {
   #ranges;
 
   /**
+   * The interned id of each selector, in order. A selector's id is the same
+   * for every rule that holds an equal item. It is read-only: only the edits
+   * of this class move or append ids, through `writableIds`.
+   *
+   * @readonly
+   * @type {readonly number[]}
+   */
+  selectorIds;
+
+  /**
    * @param {string[]} selectors
    * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
+   * @param {readonly number[]} selectorIds the interned id of each of `selectors`
    * @param {string} [sourceSelector] the source text, set only when it differs from the selector
    * @param {readonly CSSToken[]} [tokens] the stored tokens of the source text
    */
-  constructor(selectors, selector, sourceSelector, tokens) {
+  constructor(selectors, selector, selectorIds, sourceSelector, tokens) {
     this.#selectors = selectors;
     this.#selector = selector;
+    this.selectorIds = selectorIds;
     this.#sourceSelector = sourceSelector;
     this.#tokens = tokens;
     this.#listStored = tokens !== undefined;
     this.#vendor = undefined;
     this.#selectorText = undefined;
-    this.#ids = undefined;
     this.#elementKeys = undefined;
     this.#pieces = undefined;
     this.#compatible = undefined;
@@ -235,31 +264,18 @@ export class SelectorList {
   }
 
   /**
-   * The interned id of each selector, in order. They are read on the first
-   * comparison, and an edit of the selectors drops them.
-   *
-   * @param {SelectorIds} selectorIds
-   * @return {readonly number[]}
-   */
-  idsOf(selectorIds) {
-    this.#ids ??= this.#selectors.map((selector) => selectorIds.idOf(selector));
-    return this.#ids;
-  }
-
-  /**
    * Two lists are the same when they have the same selectors in the same
    * order. A selector holds no top-level comma, so the joined texts of two
    * lists are equal exactly when their selectors are, and the ids compare the
    * selectors without joining them.
    *
    * @param {SelectorList} other
-   * @param {SelectorIds} selectorIds
    * @return {boolean}
    */
-  hasSameSelectors(other, selectorIds) {
-    if (this.#selectors.length !== other.#selectors.length) return false;
-    const ids = this.idsOf(selectorIds);
-    const otherIds = other.idsOf(selectorIds);
+  hasSameSelectors(other) {
+    const ids = this.selectorIds;
+    const otherIds = other.selectorIds;
+    if (ids.length !== otherIds.length) return false;
     for (let at = 0; at < ids.length; at++) {
       if (ids[at] !== otherIds[at]) return false;
     }
@@ -268,6 +284,7 @@ export class SelectorList {
 
   /**
    * @param {string[]} selectors appended to the list
+   * @param {readonly number[]} ids the id of each of `selectors`
    * @param {SelectorLookup} lookup
    * @param {ElementKeyOf} [keyOf]
    * @param {RangePiece[] | null} [pieces] the token range of each selector of
@@ -275,15 +292,16 @@ export class SelectorList {
    * @return {readonly string[] | null} the element keys the selectors add to
    * those listed, or null when the elements are not listed
    */
-  addSelectors(selectors, lookup, keyOf = elementKeyOf, pieces = null) {
+  addSelectors(selectors, ids, lookup, keyOf = elementKeyOf, pieces = null) {
     this.#selectorText = undefined;
-    this.#ids = undefined;
     this.#ranges = undefined;
     const from = this.#selectors.length;
     for (const selector of selectors) {
       this.#selectors.push(selector);
       this.#vendor?.add(lookup(selector));
     }
+    const own = writableIds(this).selectorIds;
+    for (const id of ids) own.push(id);
     this.#pieces = pieces;
     if (this.#compatible) {
       this.#compatible = selectorsCompatible(selectors, lookup, this);
@@ -312,8 +330,12 @@ export class SelectorList {
     const from = selectors.length;
     for (const selector of this.#selectors) selectors.push(selector);
     this.#selectors = selectors;
+    // The earlier list's id array moves here, so the earlier rule keeps no array.
+    const ids = /** @type {number[]} */ (writableIds(earlier).selectorIds);
+    for (const id of this.selectorIds) ids.push(id);
+    writableIds(this).selectorIds = ids;
+    writableIds(earlier).selectorIds = NO_SELECTORS;
     this.#selectorText = text;
-    this.#ids = undefined;
     this.#vendor = vendor;
     this.#ranges = undefined;
     // Grows the earlier list's pieces in place, as its selectors grow.
