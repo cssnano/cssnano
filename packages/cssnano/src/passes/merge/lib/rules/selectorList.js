@@ -1,3 +1,4 @@
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 import { addElementKeys } from './elementKeys.js';
 import { selectorsCompatible } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
@@ -6,9 +7,9 @@ import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 /**
  * The facts of a selector item, found from the tokens its id's list holds.
  *
- * @typedef {(id: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup
+ * @typedef {(id: TokenListId) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup
  */
-/** @typedef {(id: number) => string | null} ElementKeyOf */
+/** @typedef {(id: TokenListId) => string | null} ElementKeyOf */
 
 /** @type {readonly string[]} */
 const noElementKeys = Object.freeze([]);
@@ -17,9 +18,9 @@ const noElementKeys = Object.freeze([]);
  * The ids of a rule whose list has moved to another rule. It is frozen, so a
  * push onto it throws and an edit of the moved rule fails at once.
  *
- * @type {number[]}
+ * @type {TokenListId[]}
  */
-export const NO_SELECTORS = /** @type {number[]} */ (
+export const NO_SELECTORS = /** @type {TokenListId[]} */ (
   /** @type {unknown} */ (Object.freeze([]))
 );
 
@@ -28,10 +29,12 @@ export const NO_SELECTORS = /** @type {number[]} */ (
  * them, as a move or an append that also changes the list's text.
  *
  * @param {SelectorList} list
- * @return {{selectorIds: number[]}}
+ * @return {{selectorIds: TokenListId[]}}
  */
 function writableIds(list) {
-  return /** @type {{selectorIds: number[]}} */ (/** @type {unknown} */ (list));
+  return /** @type {{selectorIds: TokenListId[]}} */ (
+    /** @type {unknown} */ (list)
+  );
 }
 
 /**
@@ -61,14 +64,14 @@ export class SelectorList {
    * of this class move or append ids, through `writableIds`.
    *
    * @readonly
-   * @type {readonly number[]}
+   * @type {readonly TokenListId[]}
    */
   selectorIds;
 
   /**
    * @param {string[]} selectors
    * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-   * @param {readonly number[]} selectorIds the interned id of each of `selectors`
+   * @param {readonly TokenListId[]} selectorIds the interned id of each of `selectors`
    */
   constructor(selectors, selector, selectorIds) {
     this.#selectors = selectors;
@@ -179,7 +182,7 @@ export class SelectorList {
 
   /**
    * @param {string[]} selectors appended to the list
-   * @param {readonly number[]} ids the id of each of `selectors`
+   * @param {readonly TokenListId[]} ids the id of each of `selectors`
    * @param {SelectorLookup} lookup
    * @param {ElementKeyOf} keyOf
    * @return {readonly string[] | null} the element keys the selectors add to
@@ -220,7 +223,7 @@ export class SelectorList {
     for (const selector of this.#selectors) selectors.push(selector);
     this.#selectors = selectors;
     // The earlier list's id array moves here, so the earlier rule keeps no array.
-    const ids = /** @type {number[]} */ (writableIds(earlier).selectorIds);
+    const ids = /** @type {TokenListId[]} */ (writableIds(earlier).selectorIds);
     for (const id of this.selectorIds) ids.push(id);
     writableIds(this).selectorIds = ids;
     writableIds(earlier).selectorIds = NO_SELECTORS;

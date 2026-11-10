@@ -1,3 +1,4 @@
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 import { isInvalidSelector } from '#postcss-minify-selectors';
 import { scanCompatibility } from './selectorScan.js';
 import { tokensText } from '../../../../values/tokensText.js';
@@ -52,8 +53,8 @@ export function selectorInfoOf(tokens, browsers) {
 }
 
 /**
- * @param {readonly number[]} ids the id of each selector of a list
- * @param {(id: number) => SelectorInfo} lookup
+ * @param {readonly TokenListId[]} ids the id of each selector of a list
+ * @param {(id: TokenListId) => SelectorInfo} lookup
  * @return {boolean}
  */
 export function selectorsCompatible(ids, lookup) {

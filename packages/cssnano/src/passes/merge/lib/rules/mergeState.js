@@ -1,3 +1,4 @@
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 import { selectorInfoOf } from './ensureCompatibility.js';
 import { elementKeyOf } from './elementKeys.js';
 import { createRunContext } from '../../../ir/runContext.js';
@@ -15,7 +16,7 @@ export default class MergeState {
   #lookup;
   /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
   #declarations;
-  /** @type {(id: number) => string | null} */
+  /** @type {(id: TokenListId) => string | null} */
   #elementKeyOf;
   /** @type {import('../../../ir/tokenLists.js').TokenLists} */
   #tokenLists;
@@ -74,7 +75,7 @@ export default class MergeState {
    * @param {RuleRecord} record
    * @param {string[]} selectors some of the selectors of `source`, in the
    * order of their first occurrence there
-   * @param {readonly number[]} ids the id of each of `selectors`
+   * @param {readonly TokenListId[]} ids the id of each of `selectors`
    * @return {readonly string[] | null} the element keys the selectors add, or
    * null when the rule's elements are not listed
    */

@@ -33,8 +33,10 @@ import {
   substitute,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 
 /** @import {ChildNode, Container, Root, Rule} from 'postcss' */
 
@@ -88,7 +90,7 @@ test('substitute with one replacement should put it where the rule stood', () =>
   const replacement = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, ['x']))
+    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, tokenLists, ['x']))
   );
   substitute(state.records, record.index, [replacement.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'c']);
@@ -101,12 +103,12 @@ test('substitute with several replacements should keep their order where the rul
   const first = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, ['x']))
+    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, tokenLists, ['x']))
   );
   const second = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['y'], 'y', selectorIdsOf(selectorIds, ['y']))
+    new RuleRecord(['y'], 'y', selectorIdsOf(selectorIds, tokenLists, ['y']))
   );
   substitute(state.records, record.index, [first.index, second.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'y', 'c']);

@@ -1,13 +1,14 @@
+import type { TokenListId } from '../../../ir/tokenLists.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
-export type SelectorLookup = (id: number) => import('./ensureCompatibility.js').SelectorInfo;
-export type ElementKeyOf = (id: number) => string | null;
+export type SelectorLookup = (id: TokenListId) => import('./ensureCompatibility.js').SelectorInfo;
+export type ElementKeyOf = (id: TokenListId) => string | null;
 /**
  * The ids of a rule whose list has moved to another rule. It is frozen, so a
  * push onto it throws and an edit of the moved rule fails at once.
  *
- * @type {number[]}
+ * @type {TokenListId[]}
  */
-export declare const NO_SELECTORS: number[];
+export declare const NO_SELECTORS: TokenListId[];
 /**
  * The selector list of a rule with the facts derived from it, each computed on
  * first use and then grown incrementally as the list grows. It is the base of
@@ -21,15 +22,15 @@ export declare class SelectorList {
      * of this class move or append ids, through `writableIds`.
      *
      * @readonly
-     * @type {readonly number[]}
+     * @type {readonly TokenListId[]}
      */
-    readonly selectorIds: readonly number[];
+    readonly selectorIds: readonly TokenListId[];
     /**
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-     * @param {readonly number[]} selectorIds the interned id of each of `selectors`
+     * @param {readonly TokenListId[]} selectorIds the interned id of each of `selectors`
      */
-    constructor(selectors: string[], selector: string, selectorIds: readonly number[]);
+    constructor(selectors: string[], selector: string, selectorIds: readonly TokenListId[]);
     /** @return {string[]} change it only through the methods of this class */
     get selectors(): string[];
     /** @return {string} the selector, in PostCSS's form */
@@ -81,13 +82,13 @@ export declare class SelectorList {
     hasSameSelectors(other: SelectorList): boolean;
     /**
      * @param {string[]} selectors appended to the list
-     * @param {readonly number[]} ids the id of each of `selectors`
+     * @param {readonly TokenListId[]} ids the id of each of `selectors`
      * @param {SelectorLookup} lookup
      * @param {ElementKeyOf} keyOf
      * @return {readonly string[] | null} the element keys the selectors add to
      * those listed, or null when the elements are not listed
      */
-    addSelectors(selectors: string[], ids: readonly number[], lookup: SelectorLookup, keyOf: ElementKeyOf): readonly string[] | null;
+    addSelectors(selectors: string[], ids: readonly TokenListId[], lookup: SelectorLookup, keyOf: ElementKeyOf): readonly string[] | null;
     /**
      * Takes the place of a list that stood before this one, so its selectors
      * come first. The earlier list grows in place and passes to this one, and

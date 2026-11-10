@@ -3,15 +3,21 @@ import { test } from 'node:test';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { elementKeyOfIds, selectorIdsOf } from './selectorIdsOf.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 // The element keys of a rule, as its selector list adds and absorbs them.
 const selectorIds = new SelectorIds();
-const keyOf = elementKeyOfIds(selectorIds);
+const tokenLists = new TokenLists();
+const keyOf = elementKeyOfIds(tokenLists);
 const lookup = () => ({});
 
 /** A record of `selectors`, with the ids of this file's interner. */
 const ruleOf = (selectors, selector) =>
-  new RuleRecord(selectors, selector, selectorIdsOf(selectorIds, selectors));
+  new RuleRecord(
+    selectors,
+    selector,
+    selectorIdsOf(selectorIds, tokenLists, selectors)
+  );
 
 test('elementKeys should list the distinct element of each selector', () => {
   const record = ruleOf(['div h1', 'h1', 'p']);
@@ -33,7 +39,7 @@ test('addSelectors should add the elements of the new selectors to the element k
   record.elementKeys(keyOf);
   record.addSelectors(
     ['p', 'h1'],
-    selectorIdsOf(selectorIds, ['p', 'h1']),
+    selectorIdsOf(selectorIds, tokenLists, ['p', 'h1']),
     lookup,
     keyOf
   );
@@ -45,7 +51,7 @@ test('addSelectors should make the element keys null when a new selector has no 
   record.elementKeys(keyOf);
   record.addSelectors(
     ['.a'],
-    selectorIdsOf(selectorIds, ['.a']),
+    selectorIdsOf(selectorIds, tokenLists, ['.a']),
     lookup,
     keyOf
   );
@@ -57,7 +63,7 @@ test('addSelectors should keep null element keys since later selectors cannot re
   record.elementKeys(keyOf);
   record.addSelectors(
     ['h1'],
-    selectorIdsOf(selectorIds, ['h1']),
+    selectorIdsOf(selectorIds, tokenLists, ['h1']),
     lookup,
     keyOf
   );
@@ -66,7 +72,12 @@ test('addSelectors should keep null element keys since later selectors cannot re
 
 test('addSelectors should leave element keys derivable when they were never read', () => {
   const record = ruleOf(['h1']);
-  record.addSelectors(['p'], selectorIdsOf(selectorIds, ['p']), lookup, keyOf);
+  record.addSelectors(
+    ['p'],
+    selectorIdsOf(selectorIds, tokenLists, ['p']),
+    lookup,
+    keyOf
+  );
   assert.deepEqual(record.elementKeys(keyOf), ['h1', 'p']);
 });
 
@@ -101,7 +112,7 @@ test('addSelectors should return the element keys the new selectors add', () => 
   assert.deepEqual(
     record.addSelectors(
       ['p', 'h1', 'em'],
-      selectorIdsOf(selectorIds, ['p', 'h1', 'em']),
+      selectorIdsOf(selectorIds, tokenLists, ['p', 'h1', 'em']),
       lookup,
       keyOf
     ),
@@ -115,7 +126,7 @@ test('addSelectors should return no element keys when the new selectors add none
   assert.deepEqual(
     record.addSelectors(
       ['h1'],
-      selectorIdsOf(selectorIds, ['h1']),
+      selectorIdsOf(selectorIds, tokenLists, ['h1']),
       lookup,
       keyOf
     ),
@@ -129,7 +140,7 @@ test('addSelectors should return null when a new selector has no element key, si
   assert.equal(
     record.addSelectors(
       ['.a'],
-      selectorIdsOf(selectorIds, ['.a']),
+      selectorIdsOf(selectorIds, tokenLists, ['.a']),
       lookup,
       keyOf
     ),
@@ -142,7 +153,7 @@ test('addSelectors should return null when the element keys were never read, sin
   assert.equal(
     record.addSelectors(
       ['p'],
-      selectorIdsOf(selectorIds, ['p']),
+      selectorIdsOf(selectorIds, tokenLists, ['p']),
       lookup,
       keyOf
     ),

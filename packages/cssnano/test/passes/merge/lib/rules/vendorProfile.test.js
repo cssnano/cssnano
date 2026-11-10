@@ -8,13 +8,15 @@ import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord
 import { selectorInfoOf } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { tokens as tokenize } from '../../../../../src/utils/value.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const browsers = ['chrome 120'];
 const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 /** The facts of a selector's text, judged from its own tokens. */
 const infoOf = (selector) => selectorInfoOf(tokenize(selector), browsers);
 /** The facts of the ids that the records of this file hold. */
-const lookup = factsOfIds(selectorIds, browsers);
+const lookup = factsOfIds(tokenLists, browsers);
 const profileOf = (selectors) =>
   VendorPrefixSummary.of(selectors.map((selector) => infoOf(selector)));
 
@@ -148,7 +150,7 @@ function metaOf(rule) {
   return new RuleRecord(
     rule.selectors,
     undefined,
-    selectorIdsOf(selectorIds, rule.selectors)
+    selectorIdsOf(selectorIds, tokenLists, rule.selectors)
   );
 }
 
@@ -158,9 +160,9 @@ test('getVendorProfile should match the list profile after addSelectors grows a 
   record.vendorProfile(lookup);
   record.addSelectors(
     ['::-webkit-scrollbar', '.b'],
-    selectorIdsOf(selectorIds, ['::-webkit-scrollbar', '.b']),
+    selectorIdsOf(selectorIds, tokenLists, ['::-webkit-scrollbar', '.b']),
     lookup,
-    elementKeyOfIds(selectorIds)
+    elementKeyOfIds(tokenLists)
   );
   assert.deepEqual(record.vendorProfile(lookup), profileOf(record.selectors));
 });
@@ -170,9 +172,9 @@ test('getSelectorText should list the selectors added by addSelectors after the 
   record.selectorText();
   record.addSelectors(
     ['.b', '.c'],
-    selectorIdsOf(selectorIds, ['.b', '.c']),
+    selectorIdsOf(selectorIds, tokenLists, ['.b', '.c']),
     lookup,
-    elementKeyOfIds(selectorIds)
+    elementKeyOfIds(tokenLists)
   );
   assert.equal(record.selectorText(), '.a,.b,.c');
 });
@@ -240,8 +242,16 @@ test('hasSameSelectors should follow a list that grew after the two lists were c
   const a = metaOf(ruleWith('.a'));
   const b = metaOf(ruleWith('.a'));
   assert.equal(a.hasSameSelectors(b), true);
-  a.addSelectors(['.c'], selectorIdsOf(selectorIds, ['.c']), lookup);
-  b.addSelectors(['.d'], selectorIdsOf(selectorIds, ['.d']), lookup);
+  a.addSelectors(
+    ['.c'],
+    selectorIdsOf(selectorIds, tokenLists, ['.c']),
+    lookup
+  );
+  b.addSelectors(
+    ['.d'],
+    selectorIdsOf(selectorIds, tokenLists, ['.d']),
+    lookup
+  );
   assert.equal(a.hasSameSelectors(b), false);
 });
 

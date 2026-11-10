@@ -1,3 +1,4 @@
+import type { TokenListId } from '../../../ir/tokenLists.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
@@ -49,11 +50,11 @@ export default class MergeState {
      * @param {RuleRecord} record
      * @param {string[]} selectors some of the selectors of `source`, in the
      * order of their first occurrence there
-     * @param {readonly number[]} ids the id of each of `selectors`
+     * @param {readonly TokenListId[]} ids the id of each of `selectors`
      * @return {readonly string[] | null} the element keys the selectors add, or
      * null when the rule's elements are not listed
      */
-    addSelectors(record: RuleRecord, selectors: string[], ids: readonly number[]): readonly string[] | null;
+    addSelectors(record: RuleRecord, selectors: string[], ids: readonly TokenListId[]): readonly string[] | null;
     /**
      * Sets the selector of a rule from its list and marks it, so write-back
      * assigns the text. The tokens of the old text are dropped.

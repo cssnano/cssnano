@@ -15,8 +15,10 @@ import {
   nodeOfEntry,
 } from './liveRecords.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 
 /**
  * @param {string} css
@@ -66,7 +68,7 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
   const added = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, ['x']))
+    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, tokenLists, ['x']))
   );
   sequence.replacePair(records, a, {
     first: [a],
@@ -90,7 +92,7 @@ test('replacePair should chain the placed rules in the order first, second, then
       new RuleRecord(
         [selector],
         selector,
-        selectorIdsOf(selectorIds, [selector])
+        selectorIdsOf(selectorIds, tokenLists, [selector])
       )
     ).index;
   const x = made('x');

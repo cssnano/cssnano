@@ -1,6 +1,13 @@
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 /**
+ * The index of a token list, which is the id of a selector whose tokens it
+ * holds.
+ *
+ * @typedef {number & {readonly brand: unique symbol}} TokenListId
+ */
+
+/**
  * The token lists of one run, each at its index. A selector's id is the index
  * of the list that spells it, so a list is found by its id. Lists are only
  * appended: a list, or a token in one, is never edited once pushed, since many
@@ -17,14 +24,14 @@ export class TokenLists {
 
   /**
    * @param {readonly CSSToken[]} tokens the tokens of one selector item
-   * @return {number} the index of the list
+   * @return {TokenListId} the index of the list
    */
   push(tokens) {
-    return this.#lists.push(tokens) - 1;
+    return /** @type {TokenListId} */ (this.#lists.push(tokens) - 1);
   }
 
   /**
-   * @param {number} index an index that `push` returned
+   * @param {TokenListId} index an index that `push` returned
    * @return {readonly CSSToken[]}
    */
   get(index) {

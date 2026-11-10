@@ -1,8 +1,8 @@
+/** @import {TokenLists, TokenListId} from '../../../ir/tokenLists.js' */
 import cssnanoUtils from '#utils';
 import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
 import { SelectorIds } from '../../../ir/selectorIds.js';
-import { tokens as tokenize } from '../../../../utils/value.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { keysOfName } from '../../../ir/propertyTable.js';
 import {
@@ -42,8 +42,22 @@ export function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
 }
 
+/**
+ * The ids of a rule's selector items, each new item given its list in the
+ * run's table, in the order of the items.
+ *
+ * @param {SelectorIds} selectorIds
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} items
+ * @return {TokenListId[]}
+ */
+function idsOfItems(selectorIds, tokenLists, items) {
+  const ids = [];
+  for (const item of items) ids.push(selectorIds.idOf(tokenLists, item));
+  return ids;
+}
+
 const PENDING_EDITS = 'a container has edits its child list does not show';
-const NONEMPTY_TOKEN_LISTS = 'the build needs an empty table of token lists';
 
 /**
  * The record of a declaration of the run's stylesheet.
@@ -74,22 +88,8 @@ export function recordDeclaration(node, declarations) {
  */
 export function buildRecords(root, context) {
   const { textTable, tokenLists, consistencyChecks } = context;
-  // An id is the index of its list, so the run's lists must be empty here.
-  if (tokenLists.length !== 0) throw new Error(NONEMPTY_TOKEN_LISTS);
   // The ids of this build's selectors. Each rule keeps the ids of its items.
   const selectorIds = new SelectorIds();
-  /**
-   * The id of a selector item. An item new to the build gets the next index of
-   * the run's token lists, with its own tokens, so the id names its list.
-   *
-   * @param {string} selector
-   * @return {number}
-   */
-  const internSelector = (selector) => {
-    const id = selectorIds.idOf(selector);
-    if (id === tokenLists.length) tokenLists.push(tokenize(selector));
-    return id;
-  };
   const records = new BlockRecords(
     new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
     consistencyChecks
@@ -129,7 +129,7 @@ export function buildRecords(root, context) {
         const record = new RuleRecord(
           child.selectors,
           child.selector,
-          child.selectors.map(internSelector)
+          idsOfItems(selectorIds, tokenLists, child.selectors)
         );
         record.before = child.raws.before ?? null;
         place(container.index, record, child);

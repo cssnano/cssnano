@@ -1,3 +1,5 @@
+import type { TokenListId } from '../../../ir/tokenLists.js';
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 import { SelectorList } from './selectorList.js';
 import { RULE } from './blockRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
@@ -48,9 +50,9 @@ export declare class RuleRecord extends SelectorList {
     /**
      * @param {string[]} selectors
      * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-     * @param {readonly number[]} selectorIds the interned id of each of `selectors`
+     * @param {readonly TokenListId[]} selectorIds the interned id of each of `selectors`
      */
-    constructor(selectors: string[], selector: string, selectorIds: readonly number[]);
+    constructor(selectors: string[], selector: string, selectorIds: readonly TokenListId[]);
     /**
      * The declarations of the rule, in order, read from its chain at the call. A
      * reader that indexes them by position takes this array.

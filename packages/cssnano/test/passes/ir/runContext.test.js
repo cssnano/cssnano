@@ -9,8 +9,10 @@ import { buildRecords } from '../../../src/passes/merge/lib/rules/buildRecords.j
 import { TextTable } from '../../../src/values/textTable.js';
 import { RuleRecord } from '../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { placeUnlinked } from '../merge/lib/rules/liveRecords.js';
+import { TokenLists } from '../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 
 /**
  * @param {string} css one declaration
@@ -43,7 +45,7 @@ test('a run context created with consistency checks makes a link into a removed 
   const entry = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, ['x']))
+    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, tokenLists, ['x']))
   );
   assert.throws(() => records.moveLast(rule.index, entry.index));
 });

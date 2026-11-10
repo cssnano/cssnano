@@ -1,8 +1,4 @@
-import {
-  elementKeyOfIds,
-  selectorIdsOf,
-  tokenListsOfIds,
-} from './selectorIdsOf.js';
+import { elementKeyOfIds, selectorIdsOf } from './selectorIdsOf.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
 import {
   childCountOf,
@@ -39,19 +35,25 @@ import {
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 
 const lookup = () => ({});
 const selectorIds = new SelectorIds();
-const keyOf = elementKeyOfIds(selectorIds);
+const tokenLists = new TokenLists();
+const keyOf = elementKeyOfIds(tokenLists);
 
 /** A record of `selectors`, with the ids of this file's interner. */
 const ruleOf = (selectors, selector) =>
-  new RuleRecord(selectors, selector, selectorIdsOf(selectorIds, selectors));
+  new RuleRecord(
+    selectors,
+    selector,
+    selectorIdsOf(selectorIds, tokenLists, selectors)
+  );
 /** The facts of the ids of this file's interner: `b` is incompatible. */
 const lookupB = (id) => ({
-  compatible: tokensText(tokenListsOfIds(selectorIds).get(id)) !== 'b',
+  compatible: tokensText(tokenLists.get(id)) !== 'b',
 });
 
 /**
@@ -100,7 +102,12 @@ test('compatible should look up each selector once across repeated reads', () =>
 test('compatible should be false once addSelectors adds an incompatible selector', () => {
   const record = ruleOf(['a']);
   assert.equal(record.compatible(lookupB), true);
-  record.addSelectors(['b'], selectorIdsOf(selectorIds, ['b']), lookupB, keyOf);
+  record.addSelectors(
+    ['b'],
+    selectorIdsOf(selectorIds, tokenLists, ['b']),
+    lookupB,
+    keyOf
+  );
   assert.equal(record.compatible(lookupB), false);
 });
 
@@ -115,7 +122,12 @@ test('hasSameSelectors should be false after addSelectors grows one of two equal
   const a = ruleOf(['.a']);
   const b = ruleOf(['.a']);
   assert.equal(a.hasSameSelectors(b), true);
-  a.addSelectors(['.b'], selectorIdsOf(selectorIds, ['.b']), lookup, keyOf);
+  a.addSelectors(
+    ['.b'],
+    selectorIdsOf(selectorIds, tokenLists, ['.b']),
+    lookup,
+    keyOf
+  );
   assert.equal(a.hasSameSelectors(b), false);
 });
 
@@ -169,7 +181,12 @@ test('appendChild should make declarationKeys reflect the appended declaration',
 test('addSelectors should keep the cached declaration keys since it leaves the declarations alone', () => {
   const { records, record } = arenaOf('a{color:red}');
   const keys = declarationKeys(records, record.index);
-  record.addSelectors(['b'], selectorIdsOf(selectorIds, ['b']), lookup, keyOf);
+  record.addSelectors(
+    ['b'],
+    selectorIdsOf(selectorIds, tokenLists, ['b']),
+    lookup,
+    keyOf
+  );
   assert.equal(declarationKeys(records, record.index), keys);
 });
 

@@ -37,8 +37,10 @@ import {
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { nodeOf } from '../../../../../src/passes/merge/lib/rules/nodeTable.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -336,7 +338,7 @@ test('moveLast into a plain rule that is linked nowhere should throw under consi
   const orphan = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['b'], 'b', selectorIdsOf(selectorIds, ['b']))
+    new RuleRecord(['b'], 'b', selectorIdsOf(selectorIds, tokenLists, ['b']))
   );
   state.records.detach(declaration.index);
   assert.throws(

@@ -1,3 +1,4 @@
+import type { TokenListId } from '../../../ir/tokenLists.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
@@ -31,7 +32,7 @@ export type Group = {
     /**
      * the ids of those selectors, in the same order
      */
-    addedIds: number[];
+    addedIds: TokenListId[];
 };
 /**
  * The rules after the pair that join the shared rule: the prefix of the rules

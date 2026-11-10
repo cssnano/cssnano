@@ -1,3 +1,4 @@
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 import { SelectorList } from './selectorList.js';
 import { DECLARATION, NO_PRELUDE, RULE } from './blockRecord.js';
 
@@ -56,7 +57,7 @@ export class RuleRecord extends SelectorList {
   /**
    * @param {string[]} selectors
    * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-   * @param {readonly number[]} selectorIds the interned id of each of `selectors`
+   * @param {readonly TokenListId[]} selectorIds the interned id of each of `selectors`
    */
   constructor(selectors, selector, selectorIds) {
     super(selectors, selector, selectorIds);

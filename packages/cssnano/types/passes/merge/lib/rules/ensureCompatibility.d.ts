@@ -1,3 +1,4 @@
+import type { TokenListId } from '../../../ir/tokenLists.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
 export type SelectorInfo = {
     compatible: boolean;
@@ -16,9 +17,9 @@ export type SelectorInfo = {
  */
 export declare function selectorInfoOf(tokens: readonly CSSToken[], browsers: readonly string[]): SelectorInfo;
 /**
- * @param {readonly number[]} ids the id of each selector of a list
- * @param {(id: number) => SelectorInfo} lookup
+ * @param {readonly TokenListId[]} ids the id of each selector of a list
+ * @param {(id: TokenListId) => SelectorInfo} lookup
  * @return {boolean}
  */
-export declare function selectorsCompatible(ids: readonly number[], lookup: (id: number) => SelectorInfo): boolean;
+export declare function selectorsCompatible(ids: readonly TokenListId[], lookup: (id: TokenListId) => SelectorInfo): boolean;
 //# sourceMappingURL=ensureCompatibility.d.ts.map

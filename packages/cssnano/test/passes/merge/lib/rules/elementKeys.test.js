@@ -4,8 +4,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 
 // The keys of a rule's selectors, as the merge reads them.
 /** @param {string[]} selectors */
@@ -13,8 +15,8 @@ const elementKeys = (selectors) =>
   new RuleRecord(
     selectors,
     [],
-    selectorIdsOf(selectorIds, selectors)
-  ).elementKeys(elementKeyOfIds(selectorIds));
+    selectorIdsOf(selectorIds, tokenLists, selectors)
+  ).elementKeys(elementKeyOfIds(tokenLists));
 
 test('element key of a type selector is its lowercase name', () => {
   assert.deepEqual(elementKeys(['H1']), ['h1']);

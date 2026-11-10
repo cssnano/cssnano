@@ -1,3 +1,4 @@
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 import {
   childCountOf,
   firstDeclaration,
@@ -69,7 +70,7 @@ function overridesShared(records, rule, claimed, shared) {
  * @typedef {object} Group
  * @property {Follower[]} followers the rules that join the shared rule
  * @property {string[]} added the selectors they add to it
- * @property {number[]} addedIds the ids of those selectors, in the same order
+ * @property {TokenListId[]} addedIds the ids of those selectors, in the same order
  */
 
 /**
@@ -159,7 +160,7 @@ export function findGroup(
   for (const id of secondRule.selectorIds) listed.add(id);
   /** @type {string[]} the selectors the group adds, in order of first use */
   const addedSelectors = [];
-  /** @type {number[]} the ids of those selectors */
+  /** @type {TokenListId[]} the ids of those selectors */
   const addedIds = [];
   /** @type {number[]} */
   const candidates = [];

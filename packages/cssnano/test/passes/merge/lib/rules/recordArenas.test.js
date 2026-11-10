@@ -21,8 +21,10 @@ import {
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 
 /** @import {Root, Rule} from 'postcss' */
 /** @import {BlockLinks} from '../../../../../src/passes/merge/lib/rules/blockLinks.js' */
@@ -95,7 +97,7 @@ test('a rule recorded mid-run should take the next index of the arena', () => {
   const added = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(['c'], 'c', selectorIdsOf(selectorIds, ['c']))
+    new RuleRecord(['c'], 'c', selectorIdsOf(selectorIds, tokenLists, ['c']))
   );
   assert.equal(added.index, count);
   records.moveLast(records.root.index, added.index);

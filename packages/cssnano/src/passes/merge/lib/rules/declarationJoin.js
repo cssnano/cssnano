@@ -1,3 +1,4 @@
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 import {
   childCountOf,
   holdsOnlyDeclarationsOf,
@@ -75,7 +76,7 @@ function listLength(selectors) {
  * @param {BlockRecords} records
  * @param {Group} group
  * @param {RuleRecord} later
- * @return {{added: string[], addedIds: number[], gain: number}} the selectors
+ * @return {{added: string[], addedIds: TokenListId[], gain: number}} the selectors
  * the join adds, with their ids
  */
 function joinGain(records, group, later) {
@@ -210,7 +211,7 @@ export default function joinByDeclarations(block, mergeState) {
     ).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
     const laterKeys = keysOf(laterRecord);
-    /** @type {{group: Group, claimed: Set<ArenaIndex>, added: string[], addedIds: number[], gain: number} | null} */
+    /** @type {{group: Group, claimed: Set<ArenaIndex>, added: string[], addedIds: TokenListId[], gain: number} | null} */
     let best = null;
     for (const id of laterSet) {
       const candidates = groups.get(id) ?? [];

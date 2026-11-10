@@ -23,8 +23,10 @@ import {
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 
 /** @import {Container, Root, Rule} from 'postcss' */
 
@@ -56,7 +58,7 @@ test('substitute should put the replacement in the chain where the rule stood', 
   const replacement = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, ['x']))
+    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, tokenLists, ['x']))
   );
   const mediaIndex = indexOfBlock(state, media);
   substitute(state.records, ruleRecordOf(state.records, a).index, [
@@ -77,7 +79,7 @@ test('substitute should keep a replacement that already stands before the replac
   const fresh = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, ['x']))
+    new RuleRecord(['x'], 'x', selectorIdsOf(selectorIds, tokenLists, ['x']))
   );
   state.records.moveBefore(
     state.records.links.nextSibling(ruleRecordOf(state.records, a).index),
@@ -182,7 +184,11 @@ test('insertEntryBefore links the entry it places right before the sibling it is
   const records = state.records;
   const first = ruleRecordOf(records, root.first);
   const second = records.links.nextSibling(first.index);
-  const entry = new RuleRecord(['c'], 'c', selectorIdsOf(selectorIds, ['c']));
+  const entry = new RuleRecord(
+    ['c'],
+    'c',
+    selectorIdsOf(selectorIds, tokenLists, ['c'])
+  );
   records.insertEntryBefore(second, entry);
   assert.equal(records.links.nextSibling(first.index), entry.index);
   assert.equal(records.links.prevSibling(second), entry.index);

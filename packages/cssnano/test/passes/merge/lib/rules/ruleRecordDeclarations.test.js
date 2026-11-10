@@ -30,8 +30,10 @@ import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/bui
 
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 
 /**
  * The records of `css`, built as the run builds them, with the record of its
@@ -64,7 +66,11 @@ const arenaOf = (css, consistencyChecks = false) => {
  * @return {RuleRecord}
  */
 const mergedRule = (records) => {
-  const rule = new RuleRecord(['b'], 'b', selectorIdsOf(selectorIds, ['b']));
+  const rule = new RuleRecord(
+    ['b'],
+    'b',
+    selectorIdsOf(selectorIds, tokenLists, ['b'])
+  );
   records.appendEntry(records.root.index, rule);
   return rule;
 };

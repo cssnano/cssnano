@@ -1,5 +1,14 @@
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 import type { CSSToken } from '@csstools/css-tokenizer';
+export type TokenListId = number & {
+    readonly brand: unique symbol;
+};
+/**
+ * The index of a token list, which is the id of a selector whose tokens it
+ * holds.
+ *
+ * @typedef {number & {readonly brand: unique symbol}} TokenListId
+ */
 /**
  * The token lists of one run, each at its index. A selector's id is the index
  * of the list that spells it, so a list is found by its id. Lists are only
@@ -12,13 +21,13 @@ export declare class TokenLists {
     get length(): number;
     /**
      * @param {readonly CSSToken[]} tokens the tokens of one selector item
-     * @return {number} the index of the list
+     * @return {TokenListId} the index of the list
      */
-    push(tokens: readonly CSSToken[]): number;
+    push(tokens: readonly CSSToken[]): TokenListId;
     /**
-     * @param {number} index an index that `push` returned
+     * @param {TokenListId} index an index that `push` returned
      * @return {readonly CSSToken[]}
      */
-    get(index: number): readonly CSSToken[];
+    get(index: TokenListId): readonly CSSToken[];
 }
 //# sourceMappingURL=tokenLists.d.ts.map
