@@ -1,4 +1,3 @@
-import { RuleRecord } from './ruleRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type RuleSequence, { Placement } from './ruleSequence.js';
@@ -14,8 +13,11 @@ import type DeclarationScan from './declarationScan.js';
  * of the source, which a minifier removes, so a merge that pays only in
  * source bytes would grow the output.
  *
- * @param {RuleRecord} first
- * @param {RuleRecord} second
+ * The records of the pair and of the shared declarations are read before the
+ * first edit; from there on the rewrite holds their indices.
+ *
+ * @param {ArenaIndex} firstIndex the index of the earlier rule of the pair
+ * @param {ArenaIndex} secondIndex the index of the later rule
  * @param {DeclarationRecord[]} shared the shared declarations, in their order in `first`
  * @param {Set<ArenaIndex>} claimedIndices the arena indices of the declarations of `second` that repeat `shared`
  * @param {import('./mergeState.js').default} mergeState
@@ -24,5 +26,5 @@ import type DeclarationScan from './declarationScan.js';
  * @param {DeclarationScan} scan
  * @return {Placement | null} null when the output would not get shorter
  */
-export declare function buildMergedRule(first: RuleRecord, second: RuleRecord, shared: DeclarationRecord[], claimedIndices: Set<ArenaIndex>, mergeState: import('./mergeState.js').default, secondLink: ArenaIndex, sequence: RuleSequence, scan: DeclarationScan): Placement | null;
+export declare function buildMergedRule(firstIndex: ArenaIndex, secondIndex: ArenaIndex, shared: DeclarationRecord[], claimedIndices: Set<ArenaIndex>, mergeState: import('./mergeState.js').default, secondLink: ArenaIndex, sequence: RuleSequence, scan: DeclarationScan): Placement | null;
 //# sourceMappingURL=ruleRewrite.d.ts.map

@@ -25,8 +25,8 @@ export const mutations = [
   {
     name: 'a merged rule takes its template from the rule merged, even when that one was merged',
     target: source('ruleRewrite.js'),
-    find: '  const template = second.template === -1 ? second.index : second.template;',
-    replace: '  const template = second.index;',
+    find: '  const template = second.template === -1 ? secondIndex : second.template;',
+    replace: '  const template = secondIndex;',
   },
   {
     name: 'write-back leaves the ownSemicolon of a merged rule unwritten',

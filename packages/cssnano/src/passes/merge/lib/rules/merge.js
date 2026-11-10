@@ -97,8 +97,8 @@ export function mergeSharedDeclarations(
   intersection = filtered.intersection;
   if (intersection.length === 0) return null;
   return buildMergedRule(
-    first,
-    second,
+    first.index,
+    second.index,
     intersection,
     filtered.claimedIndices,
     mergeState,

@@ -29,9 +29,9 @@ export declare function substitute(records: BlockRecords, record: ArenaIndex, re
  * @param {BlockRecords} records
  * @param {ArenaIndex} sibling a linked entry that `entry` stands before
  * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
- * @return {void}
+ * @return {ArenaIndex} the index the arena gave the entry
  */
-export declare function placeBefore(records: BlockRecords, sibling: ArenaIndex, entry: BlockRecord | RuleRecord | DeclarationRecord | NodeEntry): void;
+export declare function placeBefore(records: BlockRecords, sibling: ArenaIndex, entry: BlockRecord | RuleRecord | DeclarationRecord | NodeEntry): ArenaIndex;
 /**
  * Moves the rule `record` to the end of the chain of the block at `target`.
  *

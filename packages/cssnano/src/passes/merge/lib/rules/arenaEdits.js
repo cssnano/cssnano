@@ -59,10 +59,11 @@ export function substitute(records, record, replacements) {
  * @param {BlockRecords} records
  * @param {ArenaIndex} sibling a linked entry that `entry` stands before
  * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
- * @return {void}
+ * @return {ArenaIndex} the index the arena gave the entry
  */
 export function placeBefore(records, sibling, entry) {
   records.insertEntryBefore(sibling, entry);
+  return /** @type {ArenaIndex} */ (entry.index);
 }
 
 /**
