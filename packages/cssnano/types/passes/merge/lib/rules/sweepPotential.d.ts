@@ -1,7 +1,4 @@
 import type { BlockRecords } from './blockRecords.js';
-import type { BlockRecord } from './blockRecord.js';
-import type { RuleRecord } from './ruleRecord.js';
-export type Container = BlockRecord | RuleRecord;
 /**
  * The potential that a sweep never raises: the declarations of the live rules
  * that hold no block, then those rules, then the sum over them of the number

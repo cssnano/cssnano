@@ -64,6 +64,15 @@ test('runScan should keep the declaration and rule counts and lower the parent c
   assert.deepEqual(end.potential, [2, 2, 2]);
 });
 
+test('sweepPotential should number nested blocks in document order, each before the blocks it holds', () => {
+  // Numbers: the stylesheet 0, @media m 1, @supports s 2, @media n 3, so the
+  // rules stand in blocks 0, 2 and 3.
+  const { state } = setup(
+    'a{x:1}@media m{@supports s{b{y:1;z:2}}}@media n{c{w:1}}'
+  );
+  assert.deepEqual(sweepPotential(state.records, null).potential, [4, 3, 5]);
+});
+
 test('buildRecords should bound the rounds by the rules, at-rules and declarations, not the comments', () => {
   // Four rules and at-rules (a, @media, b, @import) and three declarations.
   const { state } = setup(
