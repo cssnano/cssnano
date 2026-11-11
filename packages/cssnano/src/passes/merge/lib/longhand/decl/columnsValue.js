@@ -79,24 +79,13 @@ function tokenizeColumns(value, list) {
   return { value, hasTopLevelSlash, terms };
 }
 
-/** @type {WeakMap<Declaration, { value: string, parsed: ReturnType<typeof tokenizeColumns> }>} */
-const parsedDeclarations = new WeakMap();
-
 /**
  * @param {Declaration} d
  * @param {TextTable} textTable
  * @return {ReturnType<typeof tokenizeColumns>}
  */
 export function parsedValue(d, textTable) {
-  let cached = parsedDeclarations.get(d);
-  if (!cached || cached.value !== d.value) {
-    cached = {
-      value: d.value,
-      parsed: tokenizeColumns(d.value, declaredValueTokens(textTable, d)),
-    };
-    parsedDeclarations.set(d, cached);
-  }
-  return cached.parsed;
+  return tokenizeColumns(d.value, declaredValueTokens(textTable, d));
 }
 
 /**
