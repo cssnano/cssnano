@@ -239,8 +239,6 @@
             "allowed": [
               "packages/cssnano/src/passes/ir/consistencyChecks.js#enabled",
               "packages/cssnano/src/passes/merge/lib/longhand/isFallback.js#inheritedSupport",
-              "packages/cssnano/src/passes/merge/lib/longhand/targetSupport.js#profiles",
-              "packages/cssnano/src/passes/merge/lib/longhand/targetSupport.js#supportByTargets",
               "packages/cssnano/src/passes/merge/lib/deferredChildEdits.js#pendingEdits"
             ]
           }

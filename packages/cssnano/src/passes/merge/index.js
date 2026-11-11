@@ -168,15 +168,13 @@ export function mergePass(
   reached,
   consistencyChecks
 ) {
+  const support = targetSupportOf(browsers);
   runTransforms(
     css,
     browsers,
+    support,
     rules,
-    createRunContext(
-      textTable,
-      consistencyChecks,
-      targetSupportOf(browsers).features
-    ),
+    createRunContext(textTable, consistencyChecks, support.features),
     reached
   );
 }
@@ -186,13 +184,13 @@ export function mergePass(
  *
  * @param {Root} css
  * @param {readonly string[]} browsers
+ * @param {ReturnType<typeof targetSupportOf>} support what the targets support, from `browsers`
  * @param {boolean} rules whether rules are merged
  * @param {ReturnType<typeof createRunContext>} context
  * @param {readonly (Rule | AtRule)[] | undefined} reached
  * @return {void}
  */
-function runTransforms(css, browsers, rules, context, reached) {
-  const support = targetSupportOf(browsers);
+function runTransforms(css, browsers, support, rules, context, reached) {
   const { placeShorthands, boxSupport, pairShorthands } = support;
 
   // A second round canonicalizes every block recorded here, because removing

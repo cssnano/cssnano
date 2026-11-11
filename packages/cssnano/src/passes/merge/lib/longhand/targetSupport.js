@@ -2,7 +2,6 @@ import placeMinimums from './data/placeSupport.json' with { type: 'json' };
 import pairMinimums from './data/pairSupport.json' with { type: 'json' };
 import boxSupport from './data/boxPropertySupport.json' with { type: 'json' };
 import featureMinimums from './data/featureSupport.json' with { type: 'json' };
-import { boxProperties } from './decl/boxGroups.js';
 import { pairFamilies } from './decl/pairForms.js';
 import { longstandingFeatures } from './syntaxFeatures.js';
 import {
@@ -43,19 +42,13 @@ function reaches(entry, minimums) {
 /**
  * Support only grows with the version, so a target list meets a minimum
  * exactly when the oldest target of each engine does. Summarizing the list
- * once makes each feature check cost the number of engines, not of targets.
+ * takes one pass over the targets, so a feature check costs the targets once
+ * and then the number of engines.
  *
- * @type {WeakMap<readonly string[], ReadonlyMap<string, EngineProfile>>}
- */
-const profiles = new WeakMap();
-
-/**
  * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
  * @return {ReadonlyMap<string, EngineProfile>}
  */
 function profileOf(browsers) {
-  let profile = profiles.get(browsers);
-  if (profile !== undefined) return profile;
   /** @type {Map<string, EngineProfile>} */
   const byEngine = new Map();
   for (const entry of browsers) {
@@ -78,9 +71,7 @@ function profileOf(browsers) {
       engine.oldest = lowest;
     }
   }
-  profile = byEngine;
-  profiles.set(browsers, profile);
-  return profile;
+  return byEngine;
 }
 
 /**
@@ -188,10 +179,6 @@ export function featuresSupportedByAll(browsers) {
 
 /** @import {BoxProperty} from './decl/boxGroups.js' */
 
-const unknown = 0;
-const no = 1;
-const yes = 2;
-
 const boxMinimums =
   /** @type {Record<string, string | Record<string, string>>} */ (
     boxSupport.properties
@@ -248,13 +235,6 @@ export class BoxSupport {
   /** @type {readonly string[]} */
   #browsers;
   #targetCount;
-  /** @type {Map<string, ReadonlySet<string>>} */
-  #supporting = new Map();
-  /** @type {Map<string, ReadonlySet<string>>} */
-  #understanding = new Map();
-  /* Answers by pair of properties, found when first asked: a rule asks about
-   * the same few pairs for every side it sets. */
-  #answers = new Uint8Array(boxProperties.size ** 2);
 
   /** @param {readonly string[]} browsers */
   constructor(browsers) {
@@ -263,25 +243,12 @@ export class BoxSupport {
   }
 
   /**
-   * @param {Map<string, ReadonlySet<string>>} cache
    * @param {(entry: string, property: string) => boolean} test
    * @param {string} property
-   * @return {ReadonlySet<string>}
+   * @return {Set<string>} the distinct targets the test accepts
    */
-  #targetsWhere(cache, test, property) {
-    let targets = cache.get(property);
-    if (targets === undefined) {
-      targets = new Set(
-        this.#browsers.filter((entry) => test(entry, property))
-      );
-      cache.set(property, targets);
-    }
-    return targets;
-  }
-
-  /** @param {string} property */
-  #targetsSupporting(property) {
-    return this.#targetsWhere(this.#supporting, reachesBoxProperty, property);
+  #targetsWhere(test, property) {
+    return new Set(this.#browsers.filter((entry) => test(entry, property)));
   }
 
   /**
@@ -291,7 +258,10 @@ export class BoxSupport {
   supportsAll(property) {
     if (targetsAreUnknown(this.#browsers))
       return isUniversalBoxProperty(property);
-    return this.#targetsSupporting(property).size === this.#targetCount;
+    return (
+      this.#targetsWhere(reachesBoxProperty, property).size ===
+      this.#targetCount
+    );
   }
 
   /**
@@ -304,10 +274,9 @@ export class BoxSupport {
     if (targetsAreUnknown(this.#browsers))
       return isUniversalBoxProperty(later.name);
     return this.#targetsWhere(
-      this.#understanding,
       mayUnderstandBoxProperty,
       earlier.name
-    ).isSubsetOf(this.#targetsSupporting(later.name));
+    ).isSubsetOf(this.#targetsWhere(reachesBoxProperty, later.name));
   }
 
   /**
@@ -318,13 +287,7 @@ export class BoxSupport {
    * showing
    */
   understandsWherever(earlier, later) {
-    const slot = earlier.index * boxProperties.size + later.index;
-    let answer = this.#answers[slot];
-    if (answer === unknown) {
-      answer = this.#covers(earlier, later) ? yes : no;
-      this.#answers[slot] = answer;
-    }
-    return answer === yes;
+    return this.#covers(earlier, later);
   }
 }
 
@@ -337,27 +300,17 @@ export class BoxSupport {
  */
 
 /**
- * Targets are shared by every file of a build, so what they support is worked
- * out once per list rather than once per file.
+ * What the targets support, worked out for one merge run. The caller takes it
+ * once and passes it on, so each run pays for it once.
  *
- * @type {WeakMap<readonly string[], TargetSupport>}
- */
-const supportByTargets = new WeakMap();
-
-/**
  * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
  * @return {TargetSupport}
  */
 export function targetSupportOf(browsers) {
-  let support = supportByTargets.get(browsers);
-  if (support === undefined) {
-    support = {
-      placeShorthands: supportsPlaceShorthands(browsers),
-      boxSupport: new BoxSupport(browsers),
-      pairShorthands: supportedPairShorthands(browsers),
-      features: featuresSupportedByAll(browsers),
-    };
-    supportByTargets.set(browsers, support);
-  }
-  return support;
+  return {
+    placeShorthands: supportsPlaceShorthands(browsers),
+    boxSupport: new BoxSupport(browsers),
+    pairShorthands: supportedPairShorthands(browsers),
+    features: featuresSupportedByAll(browsers),
+  };
 }

@@ -2,9 +2,23 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { targetSupportOf } from '../../../../../src/passes/merge/lib/longhand/targetSupport.js';
 
-test('target support is worked out once for a list shared by many files', () => {
+test('the same targets give the same support, so a run may work it out once and pass it on', () => {
   const targets = Object.freeze(['chrome 120', 'safari 17']);
-  assert.equal(targetSupportOf(targets), targetSupportOf(targets));
+  const first = targetSupportOf(targets);
+  const second = targetSupportOf(targets);
+  assert.deepEqual(
+    [...first.features].toSorted(),
+    [...second.features].toSorted()
+  );
+  assert.deepEqual(
+    [...first.pairShorthands].toSorted(),
+    [...second.pairShorthands].toSorted()
+  );
+  assert.equal(first.placeShorthands, second.placeShorthands);
+  assert.equal(
+    first.boxSupport.supportsAll('inset'),
+    second.boxSupport.supportsAll('inset')
+  );
 });
 
 test('the oldest target of an engine decides whether a feature is supported by all', () => {
