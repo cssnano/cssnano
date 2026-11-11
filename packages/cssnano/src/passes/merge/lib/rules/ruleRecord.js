@@ -76,7 +76,8 @@ export class RuleRecord {
 
   /**
    * The arena index of the rule whose raws a merged rule prints, or -1 for a
-   * rule that keeps its own. A merged rule copies the raws of its template.
+   * rule that keeps its own. A merged rule copies the raws of its template,
+   * so the template always holds a node.
    *
    * @type {number}
    */

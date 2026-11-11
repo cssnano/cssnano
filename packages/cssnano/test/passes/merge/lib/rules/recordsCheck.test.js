@@ -3,7 +3,12 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { assertRecordsWellFormed } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
+import {
+  assertRecordsWellFormed,
+  assertTemplatesHaveNodes,
+} from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
+import { DeclarationRecord } from '../../../../../src/passes/ir/declarationRecord.js';
+import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import {
   BlockRecord,
   COMMENT,
@@ -20,6 +25,7 @@ import {
   withCorruptedLinks,
   placeUnlinked,
   nodeOfEntry,
+  nodesOf,
 } from './liveRecords.js';
 import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
@@ -156,4 +162,42 @@ test('assertRecordsWellFormed should accept a declaration that moveLast moves in
   );
   state.records.moveLast(ruleRecordOf(state.records, c).index, color);
   assert.doesNotThrow(() => assertRecordsWellFormed(state));
+});
+
+test('every record header holds a template, -1 for a record that prints its own raws', () => {
+  const keys = /** @type {any} */ (null);
+  assert.equal(
+    new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
+      .template,
+    -1
+  );
+  assert.equal(
+    new NodeEntry(COMMENT, null, NO_AT_RULE, '', '', false, NO_PRELUDE, 'x')
+      .template,
+    -1
+  );
+  assert.equal(
+    new DeclarationRecord(null, 'color', 'red', false, keys, 0).template,
+    -1
+  );
+  assert.equal(new RuleRecord(null, []).template, -1);
+});
+
+test('assertTemplatesHaveNodes should accept a rule whose template has a node', () => {
+  const { root, state } = setup('a{color:red}b{color:red}');
+  ruleRecordOf(state.records, /** @type {any} */ (root.last)).template =
+    ruleRecordOf(state.records, /** @type {any} */ (root.first)).index;
+  assert.doesNotThrow(() =>
+    assertTemplatesHaveNodes(state.records, nodesOf(state.records))
+  );
+});
+
+test('assertTemplatesHaveNodes should throw when a rule names a template that has no node', () => {
+  const { root, state } = setup('a{color:red}b{color:red}');
+  ruleRecordOf(state.records, /** @type {any} */ (root.last)).template =
+    ruleRecordOf(state.records, /** @type {any} */ (root.first)).index;
+  assert.throws(
+    () => assertTemplatesHaveNodes(state.records, []),
+    /template has no node/v
+  );
 });

@@ -27,6 +27,13 @@ export declare class DeclarationRecord {
     /** @type {number} equal for declarations that print the same, within one run */
     id: number;
     /**
+     * The arena index of the record whose raws a merged entry prints, or -1 for
+     * an entry that keeps its own raws. Every record shape holds it.
+     *
+     * @type {number}
+     */
+    template: number;
+    /**
      * @param {string | null} before
      * @param {string} prop
      * @param {string} value

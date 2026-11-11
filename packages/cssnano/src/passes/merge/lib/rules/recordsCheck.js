@@ -1,10 +1,13 @@
 import { containers } from './blockChildren.js';
+import { nodeOf } from './nodeTable.js';
 import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {NodeTable} from './nodeTable.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
 /** @typedef {BlockRecord | RuleRecord} Container */
 
@@ -155,6 +158,25 @@ export function assertContextsCurrent(mergeState) {
     const parent = holder?.context ?? -1;
     if (block.context !== containerContext(declarationIds, parent, block)) {
       throw new Error('a block keeps the context of another place');
+    }
+  }
+}
+
+/**
+ * Under consistency checks, throws when an entry names a template that has no
+ * node, so write-back would print a merged rule from nothing. Write-back calls
+ * it once the node table holds the build's nodes.
+ *
+ * @param {BlockRecords} records
+ * @param {NodeTable} nodes
+ * @return {void}
+ */
+export function assertTemplatesHaveNodes(records, nodes) {
+  if (!records.consistencyChecks) return;
+  for (let index = 0; index < records.entryCount(); index++) {
+    const { template } = records.entry(/** @type {ArenaIndex} */ (index));
+    if (template !== -1 && nodeOf(nodes, template) === undefined) {
+      throw new Error("a record's template has no node");
     }
   }
 }

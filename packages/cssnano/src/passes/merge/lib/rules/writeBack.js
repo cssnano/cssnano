@@ -2,6 +2,7 @@ import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
 import { TextTable } from '../../../../values/textTable.js';
 import { addMergedNodes, createChildNodes, nodeOf } from './nodeTable.js';
 import { writeSelector } from './writeSelector.js';
+import { assertTemplatesHaveNodes } from './recordsCheck.js';
 
 /** @import {ChildNode, Container} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -139,6 +140,7 @@ export function writeBack(
   if (records.consistencyChecks && nodes.length !== records.builtCount) {
     throw new Error(TABLE_LENGTH);
   }
+  assertTemplatesHaveNodes(records, nodes);
   /** @type {(Rebuilt & {index: number})[]} */
   const rebuilt = [];
   /** @param {ContainerRecord} container */

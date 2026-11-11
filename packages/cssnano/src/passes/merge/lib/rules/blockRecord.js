@@ -111,6 +111,14 @@ export class BlockRecord {
   /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
   preludeId;
 
+  /**
+   * The arena index of the record whose raws a merged entry prints, or -1 for
+   * an entry that keeps its own raws. Every record shape holds it.
+   *
+   * @type {number}
+   */
+  template = -1;
+
   /** @type {boolean} whether the block applies nothing once it is empty */
   droppable;
 
@@ -175,6 +183,14 @@ export class NodeEntry {
 
   /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
   preludeId;
+
+  /**
+   * The arena index of the record whose raws a merged entry prints, or -1 for
+   * an entry that keeps its own raws. Every record shape holds it.
+   *
+   * @type {number}
+   */
+  template = -1;
 
   /** @type {string} the text of a comment, '' for an at-rule */
   text;

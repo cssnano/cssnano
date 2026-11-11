@@ -45,3 +45,17 @@ test('merge keeps source.start and source.input on a rule that joins two rules w
     assert.ok(node.source?.input, `${node.toString()} has source.input`);
   }
 });
+
+test('merge keeps source.start and source.input on a rule merged from a rule that was already merged', () => {
+  const root = merge(
+    'a{color:red;margin:0}b{color:red;margin:0}c{color:red;padding:0}d{color:red;padding:0}'
+  );
+  assert.equal(
+    root.toString(),
+    'a,b{margin:0}a,b,c,d{color:red}c,d{padding:0}'
+  );
+  for (const node of nodesOf(root)) {
+    assert.ok(node.source?.start, `${node.toString()} has source.start`);
+    assert.ok(node.source?.input, `${node.toString()} has source.input`);
+  }
+});

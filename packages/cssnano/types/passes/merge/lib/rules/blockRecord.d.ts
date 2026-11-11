@@ -80,6 +80,13 @@ export declare class BlockRecord {
     anonymous: boolean;
     /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
     preludeId: number;
+    /**
+     * The arena index of the record whose raws a merged entry prints, or -1 for
+     * an entry that keeps its own raws. Every record shape holds it.
+     *
+     * @type {number}
+     */
+    template: number;
     /** @type {boolean} whether the block applies nothing once it is empty */
     droppable: boolean;
     /**
@@ -123,6 +130,13 @@ export declare class NodeEntry {
     anonymous: boolean;
     /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
     preludeId: number;
+    /**
+     * The arena index of the record whose raws a merged entry prints, or -1 for
+     * an entry that keeps its own raws. Every record shape holds it.
+     *
+     * @type {number}
+     */
+    template: number;
     /** @type {string} the text of a comment, '' for an at-rule */
     text: string;
     /** @type {boolean} whether a comment is important, which the merge keeps */

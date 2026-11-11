@@ -1,6 +1,7 @@
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
+import type { NodeTable } from './nodeTable.js';
 import type MergeState from './mergeState.js';
 export type Container = BlockRecord | RuleRecord;
 /**
@@ -35,4 +36,14 @@ export declare function assertOwnershipIsTree(records: BlockRecords): void;
  * @return {void}
  */
 export declare function assertContextsCurrent(mergeState: MergeState): void;
+/**
+ * Under consistency checks, throws when an entry names a template that has no
+ * node, so write-back would print a merged rule from nothing. Write-back calls
+ * it once the node table holds the build's nodes.
+ *
+ * @param {BlockRecords} records
+ * @param {NodeTable} nodes
+ * @return {void}
+ */
+export declare function assertTemplatesHaveNodes(records: BlockRecords, nodes: NodeTable): void;
 //# sourceMappingURL=recordsCheck.d.ts.map
