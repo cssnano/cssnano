@@ -4,6 +4,10 @@ export type DeclarationFields = {
     important?: boolean;
     raws: {
         before?: string;
+        value?: {
+            value: string;
+            raw: string;
+        };
     };
 };
 export type AtRuleFields = {

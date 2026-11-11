@@ -1,9 +1,10 @@
 import { propertyNameKey } from './propertyName.js';
 
 /**
- * The fields of a declaration that its key reads.
+ * The fields of a declaration that its key reads. `raws.value` is the value
+ * as written, when PostCSS stripped comments from `value`.
  *
- * @typedef {{prop: string, value: string, important?: boolean, raws: {before?: string}}} DeclarationFields
+ * @typedef {{prop: string, value: string, important?: boolean, raws: {before?: string, value?: {value: string, raw: string}}}} DeclarationFields
  */
 /**
  * The fields of an at-rule that its prelude id reads.
@@ -58,6 +59,24 @@ function trimValue(value) {
 }
 
 /**
+ * The text a declaration is identified by. A value with an important comment
+ * is identified by the value as written, since the comment is part of what the
+ * author kept; any other value is identified by `value`. A string that contains
+ * `/*!` has the same text as written, so it keys as before.
+ *
+ * @param {DeclarationFields} declaration
+ * @return {string}
+ */
+function identityValueOf(declaration) {
+  const raw = declaration.raws.value;
+  const written =
+    raw?.value === declaration.value
+      ? (raw.raw ?? declaration.value)
+      : declaration.value;
+  return written.includes('/*!') ? written : declaration.value;
+}
+
+/**
  * Numbers the declarations and other structural descriptions of one run of the
  * pass. Equal descriptions get equal integers, so callers compare ids rather
  * than trees. Nothing may keep an id across runs.
@@ -80,7 +99,7 @@ export class DeclarationKeys {
   keyOf(declaration) {
     let trie = step(this.root, 'decl');
     trie = step(trie, propertyNameKey(declaration.prop));
-    trie = step(trie, declaration.value);
+    trie = step(trie, identityValueOf(declaration));
     trie = step(trie, declaration.important === true);
     return this.leafOf(step(trie, hackPrefixOf(declaration)));
   }
