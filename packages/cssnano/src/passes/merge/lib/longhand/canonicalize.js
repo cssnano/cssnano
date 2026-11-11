@@ -29,7 +29,6 @@ import {
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
-/** @import {BoxGroup} from './decl/boxGroups.js'; */
 
 /**
  * @typedef {object} Options
@@ -62,25 +61,12 @@ function alignmentFamilyOf(prop) {
  *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
  *   setsOtherColumn: boolean,
  *   shorthandMemoTable: Map<string, FoldedText | null>,
- *   familyRecords: Map<string, FamilyRecord>,
  *   placeShorthands: boolean,
  *   boxSupport: BoxSupport,
  *   pairShorthands: ReadonlySet<string>,
  *   features: ReadonlySet<string>,
  *   textTable: TextTable
  * }} MergeContext
- */
-
-/**
- * Which families a lowercased property name belongs to, resolved once per run
- * by the same lookups the classifier used per declaration.
- *
- * @typedef {{
- *   pair: PairFamily | undefined,
- *   boxProperty: ReturnType<typeof boxProperties.get>,
- *   boxGroup: BoxGroup | undefined,
- *   alignment: AlignmentFamilyConfig | undefined,
- * }} FamilyRecord
  */
 
 /**
@@ -112,27 +98,6 @@ function addFamilyDeclaration(state, family, child, laneIndex) {
 }
 
 /**
- * The family record of a property name, resolved on first use in the run.
- *
- * @param {string} prop - lowercased property name
- * @param {Omit<MergeContext, 'columnRules'>} context
- * @return {FamilyRecord}
- */
-function familyRecordOf(prop, context) {
-  const known = context.familyRecords.get(prop);
-  if (known) return known;
-  const boxProperty = boxProperties.get(prop);
-  const record = {
-    pair: pairFamilyOf(prop),
-    boxProperty,
-    boxGroup: boxProperty?.family.group ?? aliasedGroup(prop),
-    alignment: alignmentFamilyOf(prop),
-  };
-  context.familyRecords.set(prop, record);
-  return record;
-}
-
-/**
  * Classifies a single declaration into the container accumulation state.
  *
  * @param {Declaration} child
@@ -143,9 +108,8 @@ function familyRecordOf(prop, context) {
  * @return {void}
  */
 function classifyDeclaration(child, prop, laneIndex, state, context) {
-  const record = familyRecordOf(prop, context);
   // Families the targets cannot parse are not collected, so they stay as written.
-  const { pair } = record;
+  const pair = pairFamilyOf(prop);
   if (pair && context.pairShorthands.has(pair.shorthand)) {
     addFamilyDeclaration(state, pair, child, laneIndex);
   }
@@ -176,7 +140,8 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
     }
     return;
   }
-  const { boxProperty, boxGroup } = record;
+  const boxProperty = boxProperties.get(prop);
+  const boxGroup = boxProperty?.family.group ?? aliasedGroup(prop);
   if (boxGroup) {
     addBoxDeclaration(state, child, boxProperty, boxGroup, laneIndex);
     foldShorthandDeclaration(
@@ -189,7 +154,7 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
   }
   // Only when every target supports place-* may one be synthesized.
   const alignmentFamily = context.placeShorthands
-    ? record.alignment
+    ? alignmentFamilyOf(prop)
     : undefined;
   foldShorthandDeclaration(
     child,
@@ -297,7 +262,6 @@ export function longhandContext(
     columnRules: [],
     setsOtherColumn: false,
     shorthandMemoTable: new Map(),
-    familyRecords: new Map(),
     placeShorthands,
     boxSupport,
     pairShorthands,

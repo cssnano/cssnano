@@ -220,7 +220,6 @@ function runTransforms(css, browsers, rules, context, reached) {
   // column-setting declaration a merge moved sits in a block rescanned here.
   secondContext.setsOtherColumn = first.setsOtherColumn;
   secondContext.shorthandMemoTable = first.shorthandMemoTable;
-  secondContext.familyRecords = first.familyRecords;
   canonicalize(css, secondContext);
   for (const block of blocks) canonicalizeInTree(block, css, secondContext);
   finishColumns(secondContext);
