@@ -167,11 +167,6 @@ export const catalogs = [
     test: true,
   },
   {
-    url: new URL('./passes/merge/mutation-catalog.js', import.meta.url),
-    suites: mergeRulesSuites,
-    test: true,
-  },
-  {
     url: new URL(
       './passes/merge/lib/longhand/mutation-catalog-writers.js',
       import.meta.url

@@ -1,6 +1,6 @@
 import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
 import { TextTable } from '../../../../values/textTable.js';
-import { addMergedNodes, createChildNodes, nodeOf } from './nodeTable.js';
+import { createChildNodes, nodeOf } from './nodeTable.js';
 import { writeSelector } from './writeSelector.js';
 import { assertTemplatesHaveNodes } from './recordsCheck.js';
 
@@ -127,15 +127,13 @@ function writeBefore(records, nodes, container) {
  * @param {NodeTable} nodes the node of each entry, from the build; write-back adds the merged rules' nodes
  * @param {TokenLists} tokenLists the run's token lists, which the ids of the rules name
  * @param {TextTable} [textTable] the table the selectors are written through
- * @param {Set<Container> | null} [reported] receives the node of each rule a merge created that the tree reaches
  * @return {void}
  */
 export function writeBack(
   records,
   nodes,
   tokenLists,
-  textTable = new TextTable(),
-  reported = null
+  textTable = new TextTable()
 ) {
   if (records.consistencyChecks && nodes.length !== records.builtCount) {
     throw new Error(TABLE_LENGTH);
@@ -178,7 +176,6 @@ export function writeBack(
     }
   };
   visit(records.root);
-  if (reported) addMergedNodes(records, nodes, reported);
   replaceChildren(rebuilt);
   for (const { index } of rebuilt) writeBefore(records, nodes, index);
   // The first child of the stylesheet takes the leading whitespace last.

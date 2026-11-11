@@ -1,9 +1,8 @@
 import postcss from 'postcss';
 import { RULE } from './blockRecord.js';
 
-/** @import {ChildNode, Container, Root, Rule} from 'postcss' */
+/** @import {ChildNode, Root} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex} from './blockRecord.js' */
 
 /**
  * The PostCSS node of each entry, by the entry's arena index. The build fills
@@ -52,26 +51,6 @@ export function createChildNodes(records, nodes, container) {
           source: template.source,
         })
       );
-    }
-  }
-}
-
-/**
- * Adds the node of each rule a merge created that write-back has given one, in
- * arena order, which is the order the merges made them.
- *
- * @param {BlockRecords} records
- * @param {NodeTable} nodes
- * @param {Set<Container>} reported
- * @return {void}
- */
-export function addMergedNodes(records, nodes, reported) {
-  for (let index = records.builtCount; index < records.entryCount(); index++) {
-    if (
-      records.entry(/** @type {ArenaIndex} */ (index)).kind === RULE &&
-      nodeOf(nodes, index) !== undefined
-    ) {
-      reported.add(/** @type {Rule} */ (nodes[index]));
     }
   }
 }

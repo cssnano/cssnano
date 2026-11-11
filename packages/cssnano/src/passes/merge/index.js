@@ -16,65 +16,25 @@ import { createRunContext } from '../ir/runContext.js';
 import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
 /** @import {BlockRecords} from './lib/rules/blockRecords.js' */
-/** @import {AtRule, Container, Root, Rule} from 'postcss' */
+/** @import {Root} from 'postcss' */
 
 /**
- * Whether the node still hangs under the stylesheet. A block that a merge or a
- * removal dropped does not, and the second round leaves it alone.
+ * One longhand round: canonicalizes the stylesheet's own declarations, then
+ * every rule and at-rule that holds a declaration, in document order, then
+ * finishes the columns.
  *
- * @param {Container} container
- * @param {Root} css
- * @return {boolean}
- */
-function inTree(container, css) {
-  /** @type {Container | undefined} */
-  let node = container;
-  for (; node; node = /** @type {Container | undefined} */ (node.parent)) {
-    if (node === css) return true;
-  }
-  return false;
-}
-
-/**
- * Canonicalizes a block that is still in the stylesheet and holds a declaration.
- *
- * @param {Container} container
  * @param {Root} css
  * @param {ReturnType<typeof longhandContext>} context
  * @return {void}
  */
-function canonicalizeInTree(container, css, context) {
-  if (!container.nodes?.some((n) => n.type === 'decl')) return;
-  if (inTree(container, css)) canonicalize(container, context);
-}
-
-/**
- * The first longhand round: canonicalizes the stylesheet and every block that
- * holds a declaration, then finishes the columns. Each such block is recorded
- * in `blocks` when a second round will canonicalize it again.
- *
- * @param {Root} css
- * @param {ReturnType<typeof longhandContext>} first
- * @param {Set<Container> | undefined} blocks receives each block that holds a declaration, when a second round runs
- * @param {readonly (Rule | AtRule)[] | undefined} reached the rules and at-rules of the stylesheet in
- *   document order, when the host walk collected them; the stylesheet is walked otherwise
- * @return {void}
- */
-function canonicalizeFirstRound(css, first, blocks, reached) {
-  canonicalize(css, first);
-  /** @param {import('postcss').ChildNode} node */
-  const visit = (node) => {
+function canonicalizeRound(css, context) {
+  canonicalize(css, context);
+  css.walk((node) => {
     if (node.type !== 'rule' && node.type !== 'atrule') return;
     if (!node.nodes?.some((n) => n.type === 'decl')) return;
-    canonicalize(node, first);
-    if (blocks) blocks.add(node);
-  };
-  if (reached) {
-    for (const node of reached) visit(node);
-  } else {
-    css.walk(visit);
-  }
-  finishColumns(first);
+    canonicalize(node, context);
+  });
+  finishColumns(context);
 }
 
 /**
@@ -82,12 +42,10 @@ function canonicalizeFirstRound(css, first, blocks, reached) {
  *
  * @param {Root} css
  * @param {ReturnType<typeof targetSupportOf>} support
- * @param {Set<Container> | undefined} blocks
  * @param {ReturnType<typeof createRunContext>} context the run whose tokens and support the round reads
- * @param {readonly (Rule | AtRule)[]} [reached] the rules and at-rules the host walk reached
  * @return {ReturnType<typeof longhandContext>} the context of the round, which the second round reuses
  */
-function runFirstRound(css, support, blocks, context, reached) {
+function runFirstRound(css, support, context) {
   const { placeShorthands, boxSupport, pairShorthands } = support;
   const first = longhandContext(
     placeShorthands,
@@ -96,7 +54,7 @@ function runFirstRound(css, support, blocks, context, reached) {
     context.textTable,
     context.features
   );
-  canonicalizeFirstRound(css, first, blocks, reached);
+  canonicalizeRound(css, first);
   return first;
 }
 
@@ -123,13 +81,7 @@ function runRecords(css, browsers, context, transforms) {
   } finally {
     release?.();
   }
-  writeBack(
-    records,
-    nodes,
-    context.tokenLists,
-    context.textTable,
-    context.createdBlocks
-  );
+  writeBack(records, nodes, context.tokenLists, context.textTable);
   assertRecordsMatchTree(records, nodes, context.tokenLists, browsers);
 }
 
@@ -154,8 +106,6 @@ const MERGE_ONLY = Object.freeze([runMerge]);
  * @param {{ rules?: boolean }} [options]
  * @param {unknown} [_result] the PostCSS result, which the merge does not use
  * @param {TextTable} [textTable] the selector tokens the host walk left
- * @param {readonly (Rule | AtRule)[]} [reached] the rules and at-rules the host walk reached,
- *   in document order, so the pass need not walk the stylesheet to find them
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {void}
  */
@@ -165,7 +115,6 @@ export function mergePass(
   { rules = true } = {},
   _result,
   textTable,
-  reached,
   consistencyChecks
 ) {
   const support = targetSupportOf(browsers);
@@ -174,8 +123,7 @@ export function mergePass(
     browsers,
     support,
     rules,
-    createRunContext(textTable, consistencyChecks, support.features),
-    reached
+    createRunContext(textTable, consistencyChecks, support.features)
   );
 }
 
@@ -187,21 +135,12 @@ export function mergePass(
  * @param {ReturnType<typeof targetSupportOf>} support what the targets support, from `browsers`
  * @param {boolean} rules whether rules are merged
  * @param {ReturnType<typeof createRunContext>} context
- * @param {readonly (Rule | AtRule)[] | undefined} reached
  * @return {void}
  */
-function runTransforms(css, browsers, support, rules, context, reached) {
+function runTransforms(css, browsers, support, rules, context) {
   const { placeShorthands, boxSupport, pairShorthands } = support;
 
-  // A second round canonicalizes every block recorded here, because removing
-  // duplicates or merging rules can expose a reduction the first round left.
-  // The merge adds each rule it creates to the same set, which the second
-  // round also canonicalizes.
-  /** @type {Set<Container>} */
-  const blocks = new Set();
-  const first = runFirstRound(css, support, blocks, context, reached);
-
-  context.createdBlocks = blocks;
+  const first = runFirstRound(css, support, context);
   runRecords(css, browsers, context, rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY);
 
   // Canonicalizing is not idempotent: a block the first round reduced can
@@ -217,9 +156,7 @@ function runTransforms(css, browsers, support, rules, context, reached) {
   // Carried over: a stale `true` only keeps columns unreduced, and any
   // column-setting declaration a merge moved sits in a block rescanned here.
   secondContext.setsOtherColumn = first.setsOtherColumn;
-  canonicalize(css, secondContext);
-  for (const block of blocks) canonicalizeInTree(block, css, secondContext);
-  finishColumns(secondContext);
+  canonicalizeRound(css, secondContext);
 }
 
 /** The guard for the `rules` option, shared with the preset that validates it. */
@@ -270,7 +207,6 @@ const transformHooks = Object.freeze({
     runFirstRound(
       css,
       support,
-      undefined,
       createRunContext(new TextTable(), undefined, support.features)
     );
   },

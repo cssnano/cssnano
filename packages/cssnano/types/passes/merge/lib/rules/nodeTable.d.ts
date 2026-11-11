@@ -1,9 +1,8 @@
-import type { ChildNode, Container, Root } from 'postcss';
+import type { ChildNode, Root } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
 export type NodeTable = (Root | ChildNode | undefined)[];
-/** @import {ChildNode, Container, Root, Rule} from 'postcss' */
+/** @import {ChildNode, Root} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex} from './blockRecord.js' */
 /**
  * The PostCSS node of each entry, by the entry's arena index. The build fills
  * a slot for each entry it makes; write-back pushes a slot for each merged rule
@@ -30,14 +29,4 @@ export declare function nodeOf(nodes: NodeTable, index: number): Root | ChildNod
  * @return {void}
  */
 export declare function createChildNodes(records: BlockRecords, nodes: NodeTable, container: number): void;
-/**
- * Adds the node of each rule a merge created that write-back has given one, in
- * arena order, which is the order the merges made them.
- *
- * @param {BlockRecords} records
- * @param {NodeTable} nodes
- * @param {Set<Container>} reported
- * @return {void}
- */
-export declare function addMergedNodes(records: BlockRecords, nodes: NodeTable, reported: Set<Container>): void;
 //# sourceMappingURL=nodeTable.d.ts.map
