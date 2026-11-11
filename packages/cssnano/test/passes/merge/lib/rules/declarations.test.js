@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
+import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import {
   declarationIsEqual,
   filterRuleIntersections,
 } from '../../../../../src/passes/merge/lib/rules/declarations.js';
 
-const declarationIds = new DeclarationKeys();
+const context = createRunContext();
 
 /**
  * The record of the first declaration in `css`.
@@ -19,14 +19,14 @@ const declarationIds = new DeclarationKeys();
 function recordOf(css) {
   const root = postcss.parse(`a{${css}}`);
   const node = /** @type {import('postcss').Declaration} */ (root.first?.first);
-  return recordDeclaration(node, declarationIds);
+  return recordDeclaration(node, context);
 }
 
 test('declarationIsEqual treats important: false the same as an unset important flag', () => {
   const unset = recordOf('border-radius:1px');
   const explicitFalse = recordDeclaration(
     postcss.decl({ prop: 'border-radius', value: '1px', important: false }),
-    declarationIds
+    context
   );
   assert.equal(declarationIsEqual(unset, explicitFalse), true);
   assert.equal(declarationIsEqual(explicitFalse, unset), true);
@@ -49,7 +49,7 @@ function recordsOf(css) {
   return rule.nodes.map((node) =>
     recordDeclaration(
       /** @type {import('postcss').Declaration} */ (node),
-      declarationIds
+      context
     )
   );
 }

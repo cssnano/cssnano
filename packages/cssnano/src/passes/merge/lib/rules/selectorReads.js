@@ -143,9 +143,7 @@ export function listKey(ids) {
  * @return {number}
  */
 export function selectorTextLength(tokenLists, id) {
-  let length = 0;
-  for (const token of tokenLists.get(id)) length += token[1].length;
-  return length;
+  return tokenLists.textLength(id);
 }
 
 /**

@@ -11,15 +11,14 @@ const OVER_WRITTEN =
   'a declaration is written more often than the input wrote it';
 
 /**
- * The key by which a declaration is counted: its property, value and
+ * The key by which a declaration is counted: its property, value list and
  * `!important` flag, so a copy of a declaration counts as the same one.
  *
- * @param {{prop: string, value: string, important?: boolean}} node a
- * declaration record, or a PostCSS declaration
+ * @param {DeclarationRecord} record
  * @return {string}
  */
-function declarationKey(node) {
-  return JSON.stringify([node.prop, node.value, Boolean(node.important)]);
+function declarationKey(record) {
+  return JSON.stringify([record.prop, record.valueList, record.important]);
 }
 
 /**

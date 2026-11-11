@@ -1,15 +1,3 @@
-export type DeclarationFields = {
-    prop: string;
-    value: string;
-    important?: boolean;
-    raws: {
-        before?: string;
-        value?: {
-            value: string;
-            raw: string;
-        };
-    };
-};
 export type AtRuleFields = {
     name: string;
     params: string;
@@ -18,6 +6,7 @@ export type AtRuleFields = {
         afterName?: string;
     };
 };
+import type { TokenListId } from './tokenLists.js';
 export type Trie = Map<unknown, unknown>;
 /**
  * Nested maps keyed by the components of a structural description. Each
@@ -37,10 +26,10 @@ export declare function step(trie: Trie, key: unknown): Trie;
  * declaration's identity. A stray `;` before the declaration is not a hack,
  * and a declaration without `raws.before` has none.
  *
- * @param {DeclarationFields} declaration
+ * @param {string | null} before the declaration's `raws.before`, or null for none
  * @return {string}
  */
-export declare function hackPrefixOf(declaration: DeclarationFields): string;
+export declare function hackPrefixOf(before: string | null): string;
 /**
  * Numbers the declarations and other structural descriptions of one run of the
  * pass. Equal descriptions get equal integers, so callers compare ids rather
@@ -51,14 +40,17 @@ export declare class DeclarationKeys {
     /** @type {Trie} */
     root: Trie;
     /**
-     * The key of a declaration: the same property, value, importance and hack
-     * prefix. Names fold ASCII case, except custom properties, which are
+     * The key of a declaration: the same property, value list, importance and
+     * hack prefix. Names fold ASCII case, except custom properties, which are
      * case-sensitive.
      *
-     * @param {DeclarationFields} declaration
+     * @param {string} prop
+     * @param {TokenListId} valueList the id of the value, which equal values share
+     * @param {boolean} important
+     * @param {string | null} before the declaration's `raws.before`
      * @return {number}
      */
-    keyOf(declaration: DeclarationFields): number;
+    keyOf(prop: string, valueList: TokenListId, important: boolean, before: string | null): number;
     /**
      * The id of an at-rule's prelude: its name, its params and its trimmed
      * `raws.before` and `raws.afterName`. Ids of the preludes are kept with

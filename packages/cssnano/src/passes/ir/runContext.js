@@ -1,6 +1,7 @@
 import { DeclarationKeys } from './declarationKey.js';
 import { TextTable } from '../../values/textTable.js';
 import { TokenLists } from './tokenLists.js';
+import { ValueIds } from './valueIds.js';
 import { consistencyChecksEnabled } from './consistencyChecks.js';
 import { longstandingFeatures } from '../merge/lib/longhand/syntaxFeatures.js';
 
@@ -15,6 +16,7 @@ import { longstandingFeatures } from '../merge/lib/longhand/syntaxFeatures.js';
  *   createdBlocks: Set<Container> | null,
  *   textTable: TextTable,
  *   tokenLists: TokenLists,
+ *   valueIds: ValueIds,
  *   consistencyChecks: boolean,
  *   features: ReadonlySet<string>,
  * }} RunContext
@@ -40,6 +42,7 @@ export function createRunContext(
     createdBlocks: null,
     textTable,
     tokenLists: new TokenLists(),
+    valueIds: new ValueIds(),
     consistencyChecks,
     features,
   };

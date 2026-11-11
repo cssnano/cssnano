@@ -5,7 +5,10 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { remove } from '../../../src/passes/merge/lib/rules/treeEdits.js';
-import { buildRecords } from '../../../src/passes/merge/lib/rules/buildRecords.js';
+import {
+  buildRecords,
+  recordDeclaration,
+} from '../../../src/passes/merge/lib/rules/buildRecords.js';
 import { TextTable } from '../../../src/values/textTable.js';
 import { RuleRecord } from '../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { placeUnlinked } from '../merge/lib/rules/liveRecords.js';
@@ -26,15 +29,24 @@ function declarationOf(css) {
 
 test('should assign a declaration the same key in a second run as a fresh run does', () => {
   const first = createRunContext();
-  first.declarations.keyOf(declarationOf('color:red'));
-  first.declarations.keyOf(declarationOf('width:1px'));
+  recordDeclaration(declarationOf('color:red'), first);
+  recordDeclaration(declarationOf('width:1px'), first);
 
   const second = createRunContext();
   const fresh = createRunContext();
   assert.equal(
-    second.declarations.keyOf(declarationOf('height:1px')),
-    fresh.declarations.keyOf(declarationOf('height:1px'))
+    recordDeclaration(declarationOf('height:1px'), second).id,
+    recordDeclaration(declarationOf('height:1px'), fresh).id
   );
+});
+
+test('a second run gets a fresh value table, so a value of the first run is pushed again', () => {
+  const first = createRunContext();
+  recordDeclaration(declarationOf('color:red'), first);
+
+  const second = createRunContext();
+  recordDeclaration(declarationOf('color:red'), second);
+  assert.equal(second.tokenLists.length, 1);
 });
 
 test('a run context created with consistency checks makes a link into a removed rule throw', () => {

@@ -134,9 +134,8 @@ export function buildTestRecords(
 ) {
   const tokenLists = state.tokenLists;
   const { records, nodes } = buildRecords(root, {
+    ...state.runContext,
     textTable,
-    declarations: state.declarationIds,
-    tokenLists,
     consistencyChecks,
   });
   // The driver folds the summaries before any transform, and so does a test.

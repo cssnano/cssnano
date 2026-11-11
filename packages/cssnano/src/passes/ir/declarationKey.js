@@ -1,16 +1,12 @@
 import { propertyNameKey } from './propertyName.js';
 
 /**
- * The fields of a declaration that its key reads. `raws.value` is the value
- * as written, when PostCSS stripped comments from `value`.
- *
- * @typedef {{prop: string, value: string, important?: boolean, raws: {before?: string, value?: {value: string, raw: string}}}} DeclarationFields
- */
-/**
  * The fields of an at-rule that its prelude id reads.
  *
  * @typedef {{name: string, params: string, raws: {before?: string, afterName?: string}}} AtRuleFields
  */
+
+/** @import {TokenListId} from './tokenLists.js' */
 
 // Marks the end of a component path in a trie, so the id of a path cannot be
 // confused with a component.
@@ -43,11 +39,11 @@ export function step(trie, key) {
  * declaration's identity. A stray `;` before the declaration is not a hack,
  * and a declaration without `raws.before` has none.
  *
- * @param {DeclarationFields} declaration
+ * @param {string | null} before the declaration's `raws.before`, or null for none
  * @return {string}
  */
-export function hackPrefixOf(declaration) {
-  return declaration.raws.before?.replaceAll(';', '').trim() ?? '';
+export function hackPrefixOf(before) {
+  return before?.replaceAll(';', '').trim() ?? '';
 }
 
 /**
@@ -56,24 +52,6 @@ export function hackPrefixOf(declaration) {
  */
 function trimValue(value) {
   return value ? value.trim() : value;
-}
-
-/**
- * The text a declaration is identified by. A value with an important comment
- * is identified by the value as written, since the comment is part of what the
- * author kept; any other value is identified by `value`. A string that contains
- * `/*!` has the same text as written, so it keys as before.
- *
- * @param {DeclarationFields} declaration
- * @return {string}
- */
-function identityValueOf(declaration) {
-  const raw = declaration.raws.value;
-  const written =
-    raw?.value === declaration.value
-      ? (raw.raw ?? declaration.value)
-      : declaration.value;
-  return written.includes('/*!') ? written : declaration.value;
 }
 
 /**
@@ -89,19 +67,22 @@ export class DeclarationKeys {
   #preludes = new Map();
 
   /**
-   * The key of a declaration: the same property, value, importance and hack
-   * prefix. Names fold ASCII case, except custom properties, which are
+   * The key of a declaration: the same property, value list, importance and
+   * hack prefix. Names fold ASCII case, except custom properties, which are
    * case-sensitive.
    *
-   * @param {DeclarationFields} declaration
+   * @param {string} prop
+   * @param {TokenListId} valueList the id of the value, which equal values share
+   * @param {boolean} important
+   * @param {string | null} before the declaration's `raws.before`
    * @return {number}
    */
-  keyOf(declaration) {
+  keyOf(prop, valueList, important, before) {
     let trie = step(this.root, 'decl');
-    trie = step(trie, propertyNameKey(declaration.prop));
-    trie = step(trie, identityValueOf(declaration));
-    trie = step(trie, declaration.important === true);
-    return this.leafOf(step(trie, hackPrefixOf(declaration)));
+    trie = step(trie, propertyNameKey(prop));
+    trie = step(trie, valueList);
+    trie = step(trie, important);
+    return this.leafOf(step(trie, hackPrefixOf(before)));
   }
 
   /**

@@ -30,6 +30,12 @@ export default class MergeState {
      */
     constructor(browsers: readonly string[], context?: import('../../../ir/runContext.js').RunContext);
     /**
+     * The state of the run, which the records of its declarations are built from.
+     *
+     * @return {import('../../../ir/runContext.js').RunContext}
+     */
+    get runContext(): import('../../../ir/runContext.js').RunContext;
+    /**
      * The token lists of the run, which the ids of the records name.
      *
      * @return {import('../../../ir/tokenLists.js').TokenLists}

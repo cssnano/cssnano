@@ -50,11 +50,7 @@ function timeAppendsAndReads(size) {
   );
   // The records are placed before the clock starts, so only the append is timed.
   const declarations = nodes.map((node) =>
-    placeUnlinked(
-      records,
-      records.root.index,
-      recordDeclaration(node, context.declarations)
-    )
+    placeUnlinked(records, records.root.index, recordDeclaration(node, context))
   );
   let seen = 0;
   const start = performance.now();

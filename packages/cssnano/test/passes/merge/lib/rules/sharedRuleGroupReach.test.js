@@ -86,7 +86,8 @@ function groupsOf(css) {
     );
     if (intersection.length === 0) continue;
     const sharedBytes = shared.reduce(
-      (total, { prop, value }) => total + prop.length + value.length + 2,
+      (total, { prop, valueList }) =>
+        total + prop.length + mergeState.tokenLists.textLength(valueList) + 2,
       0
     );
     const group = findGroup(

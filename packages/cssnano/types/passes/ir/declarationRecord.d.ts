@@ -1,6 +1,8 @@
 import type { PropertyKeys } from './propertyTable.js';
+import type { TokenListId } from './tokenLists.js';
 import type { ArenaIndex } from '../merge/lib/rules/blockRecord.js';
 /** @import {PropertyKeys} from './propertyTable.js' */
+/** @import {TokenListId} from './tokenLists.js' */
 /** @import {ArenaIndex} from '../merge/lib/rules/blockRecord.js' */
 import { DECLARATION } from '../merge/lib/rules/blockRecord.js';
 /**
@@ -18,8 +20,8 @@ export declare class DeclarationRecord {
     before: string | null;
     /** @type {string} the property name as written */
     prop: string;
-    /** @type {string} the value as written */
-    value: string;
+    /** @type {TokenListId} the value's list, which the run's value table gives; equal values share it */
+    valueList: TokenListId;
     /** @type {boolean} whether the declaration is !important */
     important: boolean;
     /** @type {PropertyKeys} the keys of the property name */
@@ -65,13 +67,13 @@ export declare class DeclarationRecord {
     /**
      * @param {string | null} before
      * @param {string} prop
-     * @param {string} value
+     * @param {TokenListId} valueList
      * @param {boolean} important
      * @param {PropertyKeys} keys
      * @param {number} id
      * @param {string | null} between
      * @param {string | null} importantSpelling
      */
-    constructor(before: string | null, prop: string, value: string, important: boolean, keys: PropertyKeys, id: number, between: string | null, importantSpelling: string | null);
+    constructor(before: string | null, prop: string, valueList: TokenListId, important: boolean, keys: PropertyKeys, id: number, between: string | null, importantSpelling: string | null);
 }
 //# sourceMappingURL=declarationRecord.d.ts.map

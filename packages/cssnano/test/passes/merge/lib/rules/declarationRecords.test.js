@@ -10,7 +10,7 @@ import {
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
+import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
@@ -52,7 +52,7 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
 });
 
 test('recordDeclaration gives an important declaration an id that differs from an unset one', () => {
-  const keys = new DeclarationKeys();
+  const keys = createRunContext();
   const plain = recordDeclaration(
     postcss.decl({ prop: 'color', value: 'red' }),
     keys

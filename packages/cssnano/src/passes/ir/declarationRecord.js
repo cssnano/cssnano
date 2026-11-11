@@ -1,4 +1,5 @@
 /** @import {PropertyKeys} from './propertyTable.js' */
+/** @import {TokenListId} from './tokenLists.js' */
 /** @import {ArenaIndex} from '../merge/lib/rules/blockRecord.js' */
 import { DECLARATION } from '../merge/lib/rules/blockRecord.js';
 
@@ -17,8 +18,8 @@ export class DeclarationRecord {
   before;
   /** @type {string} the property name as written */
   prop;
-  /** @type {string} the value as written */
-  value;
+  /** @type {TokenListId} the value's list, which the run's value table gives; equal values share it */
+  valueList;
   /** @type {boolean} whether the declaration is !important */
   important;
   /** @type {PropertyKeys} the keys of the property name */
@@ -66,7 +67,7 @@ export class DeclarationRecord {
   /**
    * @param {string | null} before
    * @param {string} prop
-   * @param {string} value
+   * @param {TokenListId} valueList
    * @param {boolean} important
    * @param {PropertyKeys} keys
    * @param {number} id
@@ -76,7 +77,7 @@ export class DeclarationRecord {
   constructor(
     before,
     prop,
-    value,
+    valueList,
     important,
     keys,
     id,
@@ -85,7 +86,7 @@ export class DeclarationRecord {
   ) {
     this.before = before;
     this.prop = prop;
-    this.value = value;
+    this.valueList = valueList;
     this.important = important;
     this.keys = keys;
     this.id = id;

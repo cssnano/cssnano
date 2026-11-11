@@ -26,6 +26,11 @@ export declare class TokenLists {
     push(tokens: readonly CSSToken[]): TokenListId;
     /**
      * @param {TokenListId} index an index that `push` returned
+     * @return {number} the length of the text the list spells
+     */
+    textLength(index: TokenListId): number;
+    /**
+     * @param {TokenListId} index an index that `push` returned
      * @return {readonly CSSToken[]}
      */
     get(index: TokenListId): readonly CSSToken[];

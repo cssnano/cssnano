@@ -92,7 +92,7 @@ export const mutations = [
   {
     name: 'ignore !important in the declaration key',
     target: irSource('declarationKey.js'),
-    find: '    trie = step(trie, declaration.important === true);\n',
+    find: '    trie = step(trie, important);\n',
     replace: '',
   },
   {
@@ -104,7 +104,7 @@ export const mutations = [
   {
     name: 'a rule record skips the check of its declarations against the tree',
     target: source('treeMatch.js'),
-    find: '!describesNode(item, nodeOf(nodes, item.index))',
+    find: '!describesNode(tokenLists, item, nodeOf(nodes, item.index))',
     replace: 'false',
   },
   {

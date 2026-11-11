@@ -19,8 +19,10 @@ import {
 } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
 import { hasPendingEdits } from '../deferredChildEdits.js';
+import { keepsValueAsWritten } from '../longhand/keptValue.js';
+import { tokenizeMode } from '../../../../values/tokenizeMode.js';
 
-const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
+const { asciiLowerCase, isAnonymousLayer, sourceValue } = cssnanoUtils;
 
 /** @import {AtRule, ChildNode, Comment, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {NodeTable} from './nodeTable.js' */
@@ -60,22 +62,48 @@ function idsOfItems(selectorIds, tokenLists, items) {
 const PENDING_EDITS = 'a container has edits its child list does not show';
 
 /**
+ * The id of the value a declaration's record holds. A value with an important
+ * comment is kept as written, since the comment is part of what the author kept;
+ * any other value is the cleaned `value`, which PostCSS gives.
+ *
+ * @param {Declaration} node
+ * @param {RunContext} context
+ * @return {TokenListId}
+ */
+function valueListOf(node, context) {
+  const { textTable, tokenLists, valueIds } = context;
+  const mode = tokenizeMode(node.prop);
+  if (keepsValueAsWritten(textTable, node)) {
+    const written = sourceValue(node);
+    return valueIds.idOf(tokenLists, mode, written, textTable.tokens(node));
+  }
+  // The stored tokens spell the written text, which is the cleaned value only
+  // when no comment was stripped from it.
+  const stored =
+    sourceValue(node) === node.value ? textTable.stored(node) : undefined;
+  return valueIds.idOf(tokenLists, mode, node.value, stored);
+}
+
+/**
  * The record of a declaration of the run's stylesheet.
  *
  * @param {Declaration} node
- * @param {DeclarationKeys} declarations
+ * @param {RunContext} context
  * @return {DeclarationRecord}
  */
-export function recordDeclaration(node, declarations) {
+export function recordDeclaration(node, context) {
+  const before = node.raws.before ?? null;
+  const important = node.important === true;
+  const valueList = valueListOf(node, context);
   return new DeclarationRecord(
-    node.raws.before ?? null,
+    before,
     node.prop,
-    node.value,
-    node.important === true,
+    valueList,
+    important,
     keysOfName(node.prop),
-    declarations.keyOf(node),
+    context.declarations.keyOf(node.prop, valueList, important, before),
     node.raws.between ?? null,
-    node.important === true ? (node.raws.important ?? null) : null
+    important ? (node.raws.important ?? null) : null
   );
 }
 
@@ -160,11 +188,7 @@ export function buildRecords(root, context) {
         );
         fillChildren(nested, child);
       } else if (child.type === 'decl') {
-        place(
-          container.index,
-          recordDeclaration(child, context.declarations),
-          child
-        );
+        place(container.index, recordDeclaration(child, context), child);
       } else if (child.type === 'atrule') {
         const name = asciiLowerCase(child.name);
         const category = atRuleKindOf(name);

@@ -91,7 +91,7 @@ function listLength(tokenLists, ids) {
 function joinGain(records, tokenLists, group, later) {
   if (group.bytes < 0) {
     group.bytes = group.declarations.reduce(
-      (total, declaration) => total + minifiedLength(declaration),
+      (total, declaration) => total + minifiedLength(tokenLists, declaration),
       0
     );
   }

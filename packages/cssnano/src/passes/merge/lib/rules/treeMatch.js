@@ -14,6 +14,7 @@ import { isRuleOrAtRule } from './buildRecords.js';
 import { differs } from './writeBack.js';
 import { summariesHold } from './selectorReads.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {AtRule, ChildNode, Declaration, Root, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {NodeTable} from './nodeTable.js' */
@@ -23,7 +24,18 @@ import { summariesHold } from './selectorReads.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
-const { asciiLowerCase } = cssnanoUtils;
+const { asciiLowerCase, isImportantComment, sourceValue, TokenType } =
+  cssnanoUtils;
+
+/**
+ * @param {CSSToken} token
+ * @return {boolean} whether the token is a comment that `!` marks as important
+ */
+function isImportantCommentToken(token) {
+  return (
+    token[0] === TokenType.Comment && isImportantComment(token[1].slice(2))
+  );
+}
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 const STALE = 'stale declarations of a rule record';
@@ -32,17 +44,24 @@ const SUMMARIES = 'stored summaries of a rule differ from the fold of its ids';
 /**
  * Whether a declaration record describes the declaration node it stands for, in
  * the facts a record keeps, the spellings of its colon and important flag included.
+ * A value list with an important comment spells the value as written; any
+ * other spells the node's value.
  *
+ * @param {TokenLists} tokenLists
  * @param {DeclarationRecord} record
  * @param {ChildNode | Root | undefined} node the node the record stands for
  * @return {boolean}
  */
-function describesNode(record, node) {
+function describesNode(tokenLists, record, node) {
   const declaration = /** @type {Declaration} */ (node);
   const important = declaration.important === true;
+  const list = tokenLists.get(record.valueList);
+  const spelled = list.some(isImportantCommentToken)
+    ? sourceValue(declaration)
+    : declaration.value;
   return (
     record.prop === declaration.prop &&
-    record.value === declaration.value &&
+    tokensText(list) === spelled &&
     record.important === important &&
     record.between === (declaration.raws.between ?? null) &&
     record.importantSpelling ===
@@ -162,7 +181,7 @@ function checkBlockRecord(records, nodes, tokenLists, block) {
       if (plain) {
         if (
           item.kind === DECLARATION &&
-          !describesNode(item, nodeOf(nodes, item.index))
+          !describesNode(tokenLists, item, nodeOf(nodes, item.index))
         ) {
           throw new Error(STALE);
         }

@@ -177,7 +177,7 @@ test('every record header holds a template, -1 for a record that prints its own 
     -1
   );
   assert.equal(
-    new DeclarationRecord(null, 'color', 'red', false, keys, 0, null, null)
+    new DeclarationRecord(null, 'color', 0, false, keys, 0, null, null)
       .template,
     -1
   );

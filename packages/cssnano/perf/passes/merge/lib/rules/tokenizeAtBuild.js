@@ -12,6 +12,7 @@ import postcss from 'postcss';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
+import { tokenizeMode } from '../../../../../src/values/tokenizeMode.js';
 
 const session = new Session();
 session.connect();
@@ -55,6 +56,21 @@ function distinctItemsOf(root) {
 }
 
 /**
+ * @param {postcss.Root} root
+ * @return {number} the distinct (tokenizer mode, value) pairs of the declarations, which
+ * the build tokenizes once each, since a value is interned by its text and mode
+ */
+function distinctValuesOf(root) {
+  const values = new Set();
+  root.walkDecls((decl) => {
+    values.add(
+      `${tokenizeMode(decl.prop) ? 'range' : 'default'}\0${decl.value}`
+    );
+  });
+  return values.size;
+}
+
+/**
  * @param {import('node:inspector').Profiler.ScriptCoverage[]} coverage
  * @return {number} the calls of the selector analyses in the coverage taken
  */
@@ -76,9 +92,9 @@ await session.post('Profiler.takePreciseCoverage');
 
 for (const file of readdirSync(frameworksDir).toSorted()) {
   const css = readFileSync(new URL(file, frameworksDir), 'utf8');
-  test(`the build of ${basename(file, '.css')} tokenizes each distinct selector item once`, async () => {
+  test(`the build of ${basename(file, '.css')} pushes one list per distinct selector item and per distinct value`, async () => {
     const root = postcss.parse(css);
-    const distinct = distinctItemsOf(root);
+    const distinct = distinctItemsOf(root) + distinctValuesOf(root);
     pushes = 0;
     buildRecords(root, createRunContext());
     assert.equal(pushes, distinct);

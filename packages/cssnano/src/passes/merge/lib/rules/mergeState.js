@@ -15,8 +15,8 @@ import { isKeyframes, sameContainer } from './sameContainer.js';
  * The state shared by every merge of one stylesheet.
  */
 export default class MergeState {
-  /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
-  #declarations;
+  /** @type {import('../../../ir/runContext.js').RunContext} */
+  #context;
   /** @type {readonly string[]} */
   #browsers;
   /** @type {import('../../../ir/tokenLists.js').TokenLists} */
@@ -42,10 +42,18 @@ export default class MergeState {
    * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
    */
   constructor(browsers, context = createRunContext()) {
-    const { tokenLists } = context;
-    this.#tokenLists = tokenLists;
+    this.#context = context;
+    this.#tokenLists = context.tokenLists;
     this.#browsers = browsers;
-    this.#declarations = context.declarations;
+  }
+
+  /**
+   * The state of the run, which the records of its declarations are built from.
+   *
+   * @return {import('../../../ir/runContext.js').RunContext}
+   */
+  get runContext() {
+    return this.#context;
   }
 
   /**
@@ -73,7 +81,7 @@ export default class MergeState {
    * @return {import('../../../ir/declarationKey.js').DeclarationKeys}
    */
   get declarationIds() {
-    return this.#declarations;
+    return this.#context.declarations;
   }
 
   /**

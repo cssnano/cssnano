@@ -1,12 +1,14 @@
 import { DeclarationKeys } from './declarationKey.js';
 import { TextTable } from '../../values/textTable.js';
 import { TokenLists } from './tokenLists.js';
+import { ValueIds } from './valueIds.js';
 import type { Container } from 'postcss';
 export type RunContext = {
     declarations: DeclarationKeys;
     createdBlocks: Set<Container> | null;
     textTable: TextTable;
     tokenLists: TokenLists;
+    valueIds: ValueIds;
     consistencyChecks: boolean;
     features: ReadonlySet<string>;
 };
@@ -20,6 +22,7 @@ export type RunContext = {
  *   createdBlocks: Set<Container> | null,
  *   textTable: TextTable,
  *   tokenLists: TokenLists,
+ *   valueIds: ValueIds,
  *   consistencyChecks: boolean,
  *   features: ReadonlySet<string>,
  * }} RunContext

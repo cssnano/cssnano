@@ -69,12 +69,13 @@ export function buildMergedRule(
   const { records } = mergeState;
   const first = /** @type {RuleRecord} */ (records.rule(firstIndex));
   const second = /** @type {RuleRecord} */ (records.rule(secondIndex));
+  const { tokenLists, browsers } = mergeState;
   let sharedBytes = 0;
   // A later plugin, such as Autoprefixer, removes an outdated prefixed
   // declaration from the rule that sets it, which a shared rule leaves alone.
   let prefixed = 0;
   for (const declaration of shared) {
-    const length = minifiedLength(declaration);
+    const length = minifiedLength(tokenLists, declaration);
     sharedBytes += length;
     const { prop } = declaration;
     if (prop.charCodeAt(0) === 45 && prop.charCodeAt(1) !== 45) {
@@ -82,7 +83,6 @@ export function buildMergedRule(
     }
   }
   // The shared rule repeats both selector lists; a rule left empty is dropped.
-  const { tokenLists, browsers } = mergeState;
   let delta =
     listTextLength(tokenLists, first.selectorIds) +
     listTextLength(tokenLists, second.selectorIds) +

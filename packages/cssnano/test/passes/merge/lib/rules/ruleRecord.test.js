@@ -68,7 +68,7 @@ const declarationOf = (state, node) =>
   placeUnlinked(
     state.records,
     state.records.root.index,
-    recordDeclaration(node, state.declarationIds)
+    recordDeclaration(node, state.runContext)
   );
 
 test('compatibleOf should be false once addSelectors adds an incompatible selector', () => {

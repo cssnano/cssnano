@@ -5,6 +5,7 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import {
   buildTestRecords,
   declarationIds,
@@ -281,40 +282,41 @@ test('without consistency checks, blockOf should not throw for an unlinked recor
 
 const declarationsOf = (css) => postcss.parse(css).first.nodes;
 
-test('declarationIds.keyOf should give equal declarations the same key', () => {
+test('recordDeclaration ids should give equal declarations the same key', () => {
   const state = createState();
   const [first] = declarationsOf('a{color:red}');
   const [second] = declarationsOf('b{color:red}');
   assert.equal(
-    state.declarationIds.keyOf(first),
-    state.declarationIds.keyOf(second)
+    recordDeclaration(first, state.runContext).id,
+    recordDeclaration(second, state.runContext).id
   );
 });
 
-test('declarationIds.keyOf should give declarations with different values different keys', () => {
+test('recordDeclaration ids should give declarations with different values different keys', () => {
   const state = createState();
   const [red, blue] = declarationsOf('a{color:red;color:blue}');
   assert.notEqual(
-    state.declarationIds.keyOf(red),
-    state.declarationIds.keyOf(blue)
+    recordDeclaration(red, state.runContext).id,
+    recordDeclaration(blue, state.runContext).id
   );
 });
 
-test('declarationIds.keyOf should tell an important declaration from a plain one', () => {
+test('recordDeclaration ids should tell an important declaration from a plain one', () => {
   const state = createState();
   const [plain, important] = declarationsOf('a{color:red;color:red!important}');
   assert.notEqual(
-    state.declarationIds.keyOf(plain),
-    state.declarationIds.keyOf(important)
+    recordDeclaration(plain, state.runContext).id,
+    recordDeclaration(important, state.runContext).id
   );
 });
 
-test('declarationIds.keyOf should keep a key after other declarations are numbered', () => {
+test('recordDeclaration ids should keep a key after other declarations are numbered', () => {
   const state = createState();
   const [red, blue] = declarationsOf('a{color:red;color:blue}');
-  const key = state.declarationIds.keyOf(red);
-  state.declarationIds.keyOf(blue);
-  assert.equal(state.declarationIds.keyOf(red), key);
+  const key = recordDeclaration(red, state.runContext).id;
+  // A later declaration takes its own id, so the first key must not move.
+  assert.notEqual(recordDeclaration(blue, state.runContext).id, key);
+  assert.equal(recordDeclaration(red, state.runContext).id, key);
 });
 
 test('declarationKeys of a record should give equal declarations of different rules the same key', () => {

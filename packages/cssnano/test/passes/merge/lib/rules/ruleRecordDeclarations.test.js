@@ -254,7 +254,7 @@ const freshDeclaration = ({ state, records }, prop) =>
   placeUnlinked(
     records,
     records.root.index,
-    recordDeclaration(postcss.decl({ prop, value: '0' }), state.declarationIds)
+    recordDeclaration(postcss.decl({ prop, value: '0' }), state.runContext)
   );
 
 test('appendChild should give a declaration with no whitespace before it the whitespace of the last child, without its other characters', () => {

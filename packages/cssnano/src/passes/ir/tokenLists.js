@@ -16,6 +16,13 @@
 export class TokenLists {
   /** @type {(readonly CSSToken[])[]} */
   #lists = [];
+  /**
+   * The length of the text each list spells, summed once when it is pushed, so
+   * a join reads a length in constant time.
+   *
+   * @type {number[]}
+   */
+  #textLengths = [];
 
   /** @return {number} the number of lists pushed so far */
   get length() {
@@ -27,7 +34,18 @@ export class TokenLists {
    * @return {TokenListId} the index of the list
    */
   push(tokens) {
+    let length = 0;
+    for (const token of tokens) length += token[1].length;
+    this.#textLengths.push(length);
     return /** @type {TokenListId} */ (this.#lists.push(tokens) - 1);
+  }
+
+  /**
+   * @param {TokenListId} index an index that `push` returned
+   * @return {number} the length of the text the list spells
+   */
+  textLength(index) {
+    return this.#textLengths[index];
   }
 
   /**

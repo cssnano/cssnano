@@ -2,7 +2,6 @@ import { BlockRecords } from './blockRecords.js';
 import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { ChildNode, Declaration, Root } from 'postcss';
 import type { NodeTable } from './nodeTable.js';
-import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 import type { RunContext } from '../../../ir/runContext.js';
 /** @import {AtRule, ChildNode, Comment, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {NodeTable} from './nodeTable.js' */
@@ -23,10 +22,10 @@ export declare function isRuleOrAtRule(node: ChildNode): boolean;
  * The record of a declaration of the run's stylesheet.
  *
  * @param {Declaration} node
- * @param {DeclarationKeys} declarations
+ * @param {RunContext} context
  * @return {DeclarationRecord}
  */
-export declare function recordDeclaration(node: Declaration, declarations: DeclarationKeys): DeclarationRecord;
+export declare function recordDeclaration(node: Declaration, context: RunContext): DeclarationRecord;
 /**
  * Builds the records of a stylesheet from its tree, once per run, and the node
  * of each of their entries. Each child is linked into the chain of its parent,

@@ -75,7 +75,7 @@ test('DeclarationCache#appended should make the checked read throw out of step w
     records.root.index,
     recordDeclaration(
       postcss.decl({ prop: 'width', value: '0' }),
-      state.declarationIds
+      state.runContext
     )
   );
   const stamp = records.declarationStamps.stampOf(rule.index);
@@ -203,7 +203,12 @@ test('removeDeclarations should give the record keys for the declarations that r
   );
   assert.deepEqual(
     declarationIds(state.records, ruleRecordOf(state.records, rule).index),
-    [state.declarationIds.keyOf(/** @type {Declaration} */ (rule.last))]
+    [
+      recordDeclaration(
+        /** @type {Declaration} */ (rule.last),
+        state.runContext
+      ).id,
+    ]
   );
 });
 

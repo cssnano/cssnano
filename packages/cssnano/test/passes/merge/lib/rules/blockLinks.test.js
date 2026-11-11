@@ -10,7 +10,6 @@ import {
   NO_PRELUDE,
   NodeEntry,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
-import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -180,7 +179,7 @@ test('declarationKeys should list a declaration that moveBefore puts in the midd
     records.root.index,
     recordDeclaration(
       postcss.decl({ prop: 'width', value: '1px' }),
-      new DeclarationKeys()
+      createRunContext()
     )
   );
   records.moveBefore(records.links.nextSibling(color.index), width.index);
@@ -199,7 +198,7 @@ test('declarationsOf should list the declaration that moveLast appends to its ru
     records.root.index,
     recordDeclaration(
       postcss.decl({ prop: 'top', value: '0' }),
-      new DeclarationKeys()
+      createRunContext()
     )
   );
   records.moveLast(rule.index, top.index);
@@ -218,7 +217,7 @@ test('firstDeclaration and nextDeclaration should walk a declaration that moveBe
     records.root.index,
     recordDeclaration(
       postcss.decl({ prop: 'width', value: '1px' }),
-      new DeclarationKeys()
+      createRunContext()
     )
   );
   records.moveBefore(records.links.nextSibling(color.index), width.index);
@@ -243,7 +242,7 @@ test('declarationKeys should list the ids in their new order after moveBefore pu
     records.root.index,
     recordDeclaration(
       postcss.decl({ prop: 'width', value: '1px' }),
-      new DeclarationKeys()
+      createRunContext()
     )
   );
   records.moveBefore(records.links.nextSibling(color.index), width.index);
