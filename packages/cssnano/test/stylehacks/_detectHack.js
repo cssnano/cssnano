@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import { detectDeclaration } from '../../src/utils/stylehacks/index.js';
+import { hasHack } from '../../src/utils/stylehacks/index.js';
 
 /** @param {string} css */
 function containsHack(css) {
   let detected = false;
   postcss.parse(css).walkDecls((declaration) => {
-    if (detectDeclaration(declaration)) {
+    if (hasHack(declaration.raws.before, declaration.prop, declaration.value)) {
       detected = true;
     }
   });

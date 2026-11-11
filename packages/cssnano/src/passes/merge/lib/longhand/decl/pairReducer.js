@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import { detectDeclaration } from '#stylehacks';
+import { hasHack } from '#stylehacks';
 import {
   isCssWideKeyword,
   sharesShorthandKeyword,
@@ -101,7 +101,7 @@ export function reducePairFamily(
   /** @type {Map<Declaration, string>} */
   const parsed = new Map();
   for (const decl of declarations) {
-    if (detectDeclaration(decl)) return;
+    if (hasHack(decl.raws.before, decl.prop, decl.value)) return;
     const slot = family.longhands.indexOf(asciiLowerCase(decl.prop));
     const value = family.parseValue[slot](decl, textTable);
     if (value === null) return;

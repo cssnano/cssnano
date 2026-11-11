@@ -3,7 +3,7 @@ import {
   discardOverriddenInLanes,
   discardOverriddenInList,
 } from './overriddenDeclarations.js';
-import { detectDeclaration } from '#stylehacks';
+import { hasHack } from '#stylehacks';
 import canExplode from '../canExplode.js';
 import { isFallback } from '../isFallback.js';
 import { SlotLane, commitShorthand, flushableSlots } from './slotVector.js';
@@ -66,7 +66,7 @@ function processLane(rule, laneDecls, important, textTable, features) {
 
     if (
       isAll(decl) ||
-      detectDeclaration(decl) ||
+      hasHack(decl.raws.before, decl.prop, decl.value) ||
       (isShort && !canExplode(decl, textTable))
     ) {
       lane.reset();
@@ -134,7 +134,7 @@ function normalizeSingleton(s, textTable) {
   if (
     !s ||
     asciiLowerCase(s.prop) !== columns ||
-    detectDeclaration(s) ||
+    hasHack(s.raws.before, s.prop, s.value) ||
     !canExplode(s, textTable)
   ) {
     return;

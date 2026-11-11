@@ -7,7 +7,7 @@ import { expandFourSides } from '../parseTrbl.js';
 import parseWidthStyleColor from '../parseWsc.js';
 import { declarationTokens, splitComponents } from '../componentRanges.js';
 import { setsLonghands } from '../spec.js';
-import { detectDeclaration } from '#stylehacks';
+import { hasHack } from '#stylehacks';
 import hasSubstitution from '../hasSubstitution.js';
 import canExplode from '../canExplode.js';
 import {
@@ -70,7 +70,8 @@ function borderBrowserKeeps(declaration, textTable) {
  * @param {TextTable} textTable
  */
 function normalizeBorderSingleton(d, textTable) {
-  if (detectDeclaration(d) || !canExplode(d, textTable)) return;
+  if (hasHack(d.raws.before, d.prop, d.value) || !canExplode(d, textTable))
+    return;
   const p = asciiLowerCase(d.prop);
   if (borderAndSideShorthands.has(p)) {
     d.prop = p;
@@ -288,7 +289,7 @@ function processLane(rule, laneDecls, lane, textTable, features) {
   let segment = [];
 
   for (const d of laneDecls) {
-    if (detectDeclaration(d) || !canExplode(d, textTable)) {
+    if (hasHack(d.raws.before, d.prop, d.value) || !canExplode(d, textTable)) {
       if (segment.length) {
         reduceSegment(rule, segment, lane, textTable, features);
         segment = [];
@@ -358,7 +359,8 @@ export function reduceBorder(
       return (
         isCssWideKeyword(d.value) ||
         isCustomShorthand ||
-        (!detectDeclaration(d) && !borderBrowserKeeps(d, textTable))
+        (!hasHack(d.raws.before, d.prop, d.value) &&
+          !borderBrowserKeeps(d, textTable))
       );
     })
   )

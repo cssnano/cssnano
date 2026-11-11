@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import { detectDeclaration } from '#stylehacks';
+import { hasHack } from '#stylehacks';
 import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
 import { isLengthValue } from '../lengthGrammar.js';
 import { isUnresolved } from '../unresolved.js';
@@ -302,7 +302,7 @@ function isValidColumnProperty(d, textTable) {
  * @return {boolean}
  */
 export const isInvalid = (d, textTable) =>
-  !detectDeclaration(d) &&
+  !hasHack(d.raws.before, d.prop, d.value) &&
   (asciiLowerCase(d.prop) === columns
     ? !isValidColumns(d, textTable)
     : !isValidColumnProperty(d, textTable));

@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import { detectDeclaration } from '#stylehacks';
+import { hasHack } from '#stylehacks';
 import { normalizeValue } from './minifyShorthandValues.js';
 import { TextTable } from '../../../../values/textTable.js';
 import { sourceValue } from '../../../../utils/sourceText.js';
@@ -44,7 +44,11 @@ export function foldShorthandDeclaration(
   property = asciiLowerCase(decl.prop),
   table = new TextTable()
 ) {
-  if (!foldableShorthands.has(property) || detectDeclaration(decl)) return;
+  if (
+    !foldableShorthands.has(property) ||
+    hasHack(decl.raws.before, decl.prop, decl.value)
+  )
+    return;
   const folded = normalizeValue(
     property,
     sourceValue(decl),
