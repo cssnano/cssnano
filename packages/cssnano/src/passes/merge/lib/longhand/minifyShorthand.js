@@ -2,7 +2,7 @@ import cssnanoUtils from '#utils';
 import { hasHack } from '#stylehacks';
 import { normalizeValue } from './minifyShorthandValues.js';
 import { TextTable } from '../../../../values/textTable.js';
-import { sourceValue } from '../../../../utils/sourceText.js';
+import { declaredValueTokens } from '../../../../values/declaredValueTokens.js';
 
 /** @import {Container} from 'postcss' */
 
@@ -51,8 +51,8 @@ export function foldShorthandDeclaration(
     return;
   const folded = normalizeValue(
     property,
-    sourceValue(decl),
-    table.tokens(decl)
+    decl.value,
+    declaredValueTokens(table, decl)
   );
   if (!folded || folded.text === decl.value) return;
   table.assignFolded(decl, folded);

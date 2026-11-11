@@ -1,4 +1,5 @@
 import cssnanoUtils from '#utils';
+import { declaredValueTokens } from '../../../../values/declaredValueTokens.js';
 
 const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
 /**
@@ -35,5 +36,5 @@ export function opensCustomPropertyVar(input) {
  */
 export default (node, textTable) => {
   if (!node.value.includes('--') && !node.value.includes('\\')) return false;
-  return opensCustomPropertyVar(textTable.tokens(node));
+  return opensCustomPropertyVar(declaredValueTokens(textTable, node));
 };

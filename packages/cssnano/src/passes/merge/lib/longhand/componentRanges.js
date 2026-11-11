@@ -1,5 +1,6 @@
 import { list } from 'postcss';
 import cssnanoUtils from '#utils';
+import { declaredValueTokens } from '../../../../values/declaredValueTokens.js';
 
 const { TokenType, tokenEnd, tokenStart } = cssnanoUtils;
 
@@ -145,7 +146,9 @@ export function splitComponents(value, tokens) {
  * @return {readonly CSSToken[] | undefined}
  */
 export function declarationTokens(textTable, decl) {
-  return decl.value.includes('(') ? textTable.tokens(decl) : undefined;
+  return decl.value.includes('(')
+    ? declaredValueTokens(textTable, decl)
+    : undefined;
 }
 
 /**

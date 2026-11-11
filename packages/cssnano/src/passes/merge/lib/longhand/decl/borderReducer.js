@@ -75,12 +75,14 @@ function normalizeBorderSingleton(d, textTable) {
   const p = asciiLowerCase(d.prop);
   if (borderAndSideShorthands.has(p)) {
     d.prop = p;
+    delete d.raws.value;
     textTable.setText(
       d,
       minifyWidthStyleColor(d.value, declarationTokens(textTable, d))
     );
   } else if (allSidesBorderShorthands.includes(p)) {
     d.prop = p;
+    delete d.raws.value;
     textTable.setText(d, minifyTrbl(d.value));
   }
 }

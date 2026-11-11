@@ -144,6 +144,7 @@ function normalizeSingleton(s, textTable) {
   const norm = normalize(parsed);
   if (s.value !== norm || s.prop !== columns) {
     s.prop = columns;
+    delete s.raws.value;
     textTable.setText(s, norm);
   }
 }

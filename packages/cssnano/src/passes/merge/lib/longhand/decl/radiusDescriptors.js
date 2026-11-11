@@ -1,6 +1,7 @@
 import cssnanoUtils from '#utils';
 import { hasHack } from '#stylehacks';
 import canExplode from '../canExplode.js';
+import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
 import { isAll } from './importanceLanes.js';
 import {
   parseCornerRadius,
@@ -12,7 +13,7 @@ import {
   physicalRadiusProperties,
 } from './borderData.js';
 
-const { asciiLowerCase, sourceValue } = cssnanoUtils;
+const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container, Declaration} from 'postcss'; */
 
@@ -57,7 +58,7 @@ function createRadiusDescriptor(node, prop, isHacked, textTable) {
     return {
       decl: node,
       prop,
-      val: sourceValue(node),
+      val: node.value,
       isBarrier: false,
       isHacked: true,
       isGlobalKeyword: false,
@@ -72,12 +73,12 @@ function createRadiusDescriptor(node, prop, isHacked, textTable) {
     return null;
   }
 
-  const val = sourceValue(node);
+  const val = node.value;
   const isGlobal = isGlobalKeyword(val);
 
   let parsed = null;
   if (!isGlobal) {
-    const list = textTable.tokens(node);
+    const list = declaredValueTokens(textTable, node);
     parsed = isShorthand
       ? parseRadiusShorthand(val, list)
       : parseCornerRadius(val, list);

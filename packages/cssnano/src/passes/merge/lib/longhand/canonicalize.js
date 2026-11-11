@@ -17,6 +17,7 @@ import { reduceClassifiedContainer } from './classifiedReducers.js';
 /** @import {BoxSupport} from './targetSupport.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
 import { endsDeclarationRun } from './decl/declarationRuns.js';
+import { keepsValueAsWritten } from './keptValue.js';
 import { applyChildEdits } from '../deferredChildEdits.js';
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
 import { decodedPropertyName, isAll } from './decl/importanceLanes.js';
@@ -191,8 +192,12 @@ function processContainer(container, context) {
   let state = createContainerState();
   for (const child of container.nodes) {
     // Declarations after a nested rule cascade after its declarations, so a
-    // shorthand merged across it would override them.
-    if (endsDeclarationRun(child)) {
+    // shorthand merged across it would override them. A value kept as written
+    // bounds the run the same way.
+    if (
+      endsDeclarationRun(child) ||
+      (child.type === 'decl' && keepsValueAsWritten(context.textTable, child))
+    ) {
       runs.push(state);
       state = createContainerState();
       continue;

@@ -300,6 +300,7 @@ export function commitShorthand(
 
   if (toRemove.length === 1 && asciiLowerCase(toRemove[0].prop) === prop) {
     toRemove[0].prop = prop;
+    delete toRemove[0].raws.value;
     textTable.setText(toRemove[0], shorthandVal);
     return toRemove[0];
   }

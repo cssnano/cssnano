@@ -10,6 +10,7 @@ import {
   shapeKey,
 } from './shapeEquivalence.js';
 import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
+import { keepsValueAsWritten } from '../keptValue.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ChildNode, Container, Declaration} from 'postcss' */
@@ -323,9 +324,10 @@ export function discardOverriddenInList(
     const node = nodes[index];
     if (node.type !== 'decl') {
       if (endsDeclarationRun(node)) frontier.reset();
-    } else if (isAll(node)) {
+    } else if (isAll(node) || keepsValueAsWritten(textTable, node)) {
       /* `all` bounds the run instead of overriding what precedes it: a
-       * browser without `all` ignores it and keeps the earlier declarations. */
+       * browser without `all` ignores it and keeps the earlier declarations.
+       * A value kept as written is never removed, so it only bounds the run. */
       frontier.reset();
     } else {
       frontier.visit(node);

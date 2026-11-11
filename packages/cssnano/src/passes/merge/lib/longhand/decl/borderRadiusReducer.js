@@ -224,6 +224,8 @@ function canonicalizeSingleton(desc, textTable) {
     const horizontal = minifiedSides(shorthandParsed.horizontal);
     const vertical = minifiedSides(shorthandParsed.vertical);
     decl.prop = 'border-radius';
+    // A renamed declaration is rewritten, so its value drops the comments.
+    delete decl.raws.value;
     // An unchanged text keeps the list the walk stored for it.
     const text = shorthandText(horizontal, vertical);
     if (text !== decl.value) {
@@ -234,6 +236,7 @@ function canonicalizeSingleton(desc, textTable) {
       /** @type {NonNullable<ReturnType<typeof parseCornerRadius>>} */ (parsed);
     if (cornerParsed[0].raw === cornerParsed[1].raw) {
       decl.prop = /** @type {string} */ (prop);
+      delete decl.raws.value;
       if (cornerParsed[0].raw !== decl.value) {
         textTable.record(
           decl,

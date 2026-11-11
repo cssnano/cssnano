@@ -36,7 +36,10 @@ describe('shorthand identity fail-closed contracts', () => {
     'rejects environment substitutions',
     passthroughCSS('a{inset:env(x) env(x)}')
   );
-  test('rejects comments', passthroughCSS('a{gap:1px /* same */ 1px}'));
+  test(
+    'a plain comment inside a shorthand value goes when the value folds',
+    processCSS('a{gap:1px /* same */ 1px}', 'a{gap:1px}')
+  );
   test(
     'rejects malformed values',
     passthroughCSS('a{gap:calc(1px +) calc(1px +)}')
