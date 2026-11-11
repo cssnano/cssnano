@@ -11,3 +11,20 @@ updates:
         patterns:
           - "*"
 
+  - package-ecosystem: "npm"
+    directories:
+      - "/"
+      - "/site"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    groups:
+      lint-and-website:
+        patterns:
+          - "oxfmt"
+          - "oxlint"
+          - "knip"
+          - "astro"
+    versioning-strategy: increase
+    
