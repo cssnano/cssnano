@@ -31,7 +31,7 @@ const SUMMARIES = 'stored summaries of a rule differ from the fold of its ids';
 
 /**
  * Whether a declaration record describes the declaration node it stands for, in
- * the facts a record keeps.
+ * the facts a record keeps, the spellings of its colon and important flag included.
  *
  * @param {DeclarationRecord} record
  * @param {ChildNode | Root | undefined} node the node the record stands for
@@ -39,10 +39,14 @@ const SUMMARIES = 'stored summaries of a rule differ from the fold of its ids';
  */
 function describesNode(record, node) {
   const declaration = /** @type {Declaration} */ (node);
+  const important = declaration.important === true;
   return (
     record.prop === declaration.prop &&
     record.value === declaration.value &&
-    record.important === (declaration.important === true)
+    record.important === important &&
+    record.between === (declaration.raws.between ?? null) &&
+    record.importantSpelling ===
+      (important ? (declaration.raws.important ?? null) : null)
   );
 }
 

@@ -73,7 +73,9 @@ export function recordDeclaration(node, declarations) {
     node.value,
     node.important === true,
     keysOfName(node.prop),
-    declarations.keyOf(node)
+    declarations.keyOf(node),
+    node.raws.between ?? null,
+    node.important === true ? (node.raws.important ?? null) : null
   );
 }
 

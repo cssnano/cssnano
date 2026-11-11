@@ -177,7 +177,8 @@ test('every record header holds a template, -1 for a record that prints its own 
     -1
   );
   assert.equal(
-    new DeclarationRecord(null, 'color', 'red', false, keys, 0).template,
+    new DeclarationRecord(null, 'color', 'red', false, keys, 0, null, null)
+      .template,
     -1
   );
   assert.equal(new RuleRecord(null, []).template, -1);

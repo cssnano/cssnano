@@ -26,6 +26,36 @@ export class DeclarationRecord {
   /** @type {number} equal for declarations that print the same, within one run */
   id;
   /**
+   * The text between the property and the value, as the node's raws give it,
+   * or null when the node has none and the printer infers it.
+   *
+   * @type {string | null}
+   */
+  between;
+  /**
+   * The spelling of the important flag as the node's raws give it, or null when
+   * the declaration is not important or the printer infers the flag.
+   *
+   * @type {string | null}
+   */
+  importantSpelling;
+  /**
+   * The features a browser must support for the declaration to apply, when the
+   * merge derived it from another declaration. Null for a declaration the
+   * author wrote.
+   *
+   * @type {ReadonlySet<string> | null}
+   */
+  inheritedSupport = null;
+  /**
+   * Whether an edit changed the declaration, so write-back must write it. The
+   * build sets nothing.
+   *
+   * @type {boolean}
+   */
+  marked = false;
+
+  /**
    * The arena index of the record whose raws a merged entry prints, or -1 for
    * an entry that keeps its own raws. Every record shape holds it.
    *
@@ -40,13 +70,26 @@ export class DeclarationRecord {
    * @param {boolean} important
    * @param {PropertyKeys} keys
    * @param {number} id
+   * @param {string | null} between
+   * @param {string | null} importantSpelling
    */
-  constructor(before, prop, value, important, keys, id) {
+  constructor(
+    before,
+    prop,
+    value,
+    important,
+    keys,
+    id,
+    between,
+    importantSpelling
+  ) {
     this.before = before;
     this.prop = prop;
     this.value = value;
     this.important = important;
     this.keys = keys;
     this.id = id;
+    this.between = between;
+    this.importantSpelling = importantSpelling;
   }
 }
