@@ -219,7 +219,6 @@ function runTransforms(css, browsers, rules, context, reached) {
   // Carried over: a stale `true` only keeps columns unreduced, and any
   // column-setting declaration a merge moved sits in a block rescanned here.
   secondContext.setsOtherColumn = first.setsOtherColumn;
-  secondContext.shorthandMemoTable = first.shorthandMemoTable;
   canonicalize(css, secondContext);
   for (const block of blocks) canonicalizeInTree(block, css, secondContext);
   finishColumns(secondContext);

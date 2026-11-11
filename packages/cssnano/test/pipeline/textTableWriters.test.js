@@ -248,7 +248,7 @@ suite('the text table reads the text the merge longhand writers wrote', () => {
     const root = postcss.parse('a { gap: 1px 1px; gap: 2px }');
     const table = new TextTable();
     const nodes = root.first.nodes;
-    foldShorthandDeclaration(nodes[0], undefined, 'gap', table);
+    foldShorthandDeclaration(nodes[0], 'gap', table);
     table.tokens(nodes[1]);
     const before = tokenizeTotal();
     discardOverriddenInList(nodes, table);
@@ -259,7 +259,7 @@ suite('the text table reads the text the merge longhand writers wrote', () => {
     const root = postcss.parse('a { gap: 1px 1px }');
     const table = new TextTable();
     const decl = root.first.first;
-    foldShorthandDeclaration(decl, undefined, 'gap', table);
+    foldShorthandDeclaration(decl, 'gap', table);
     assert.deepEqual(
       table.stored(decl)?.map((token) => token.slice(0, 4)),
       tokens(decl.value).map((token) => token.slice(0, 4))
@@ -270,9 +270,9 @@ suite('the text table reads the text the merge longhand writers wrote', () => {
     const root = postcss.parse('a { gap: 1px 1px }');
     const table = new TextTable();
     const decl = root.first.first;
-    foldShorthandDeclaration(decl, undefined, 'gap', table);
+    foldShorthandDeclaration(decl, 'gap', table);
     const before = tokenizeTotal();
-    foldShorthandDeclaration(decl, undefined, 'gap', table);
+    foldShorthandDeclaration(decl, 'gap', table);
     assert.equal(tokenizeTotal() - before, 0);
   });
 });

@@ -5,7 +5,6 @@ import { TextTable } from '../../../../values/textTable.js';
 import { sourceValue } from '../../../../utils/sourceText.js';
 
 /** @import {Container} from 'postcss' */
-/** @import {FoldedText} from '../../../../values/textTable.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -30,11 +29,11 @@ export const foldableShorthands = new Set([
 ]);
 
 /**
- * In-place peephole rewrite: folds identity components of a shorthand declaration
- * using a memoization table to cache pure value transformations across the AST.
+ * In-place peephole rewrite: folds identity components of a shorthand
+ * declaration. Each declaration is folded on its own; the fold is cheap enough
+ * that a memo per property and source was not worth keeping.
  *
  * @param {import('postcss').Declaration} decl
- * @param {Map<string, FoldedText | null>} [memoTable]
  * @param {string} [property] - the lowercased property name, when known
  * @param {TextTable} [table] the text table the walk left, which holds the
  * declaration's tokens; a fresh one when omitted
@@ -42,23 +41,15 @@ export const foldableShorthands = new Set([
  */
 export function foldShorthandDeclaration(
   decl,
-  memoTable,
   property = asciiLowerCase(decl.prop),
   table = new TextTable()
 ) {
   if (!foldableShorthands.has(property) || detectDeclaration(decl)) return;
-  const source = sourceValue(decl);
-  const memoKey = `${property}\0${source}`;
-  let folded;
-  if (memoTable) {
-    folded = memoTable.get(memoKey);
-    if (folded === undefined && !memoTable.has(memoKey)) {
-      folded = normalizeValue(property, source, table.tokens(decl));
-      memoTable.set(memoKey, folded);
-    }
-  } else {
-    folded = normalizeValue(property, source, table.tokens(decl));
-  }
+  const folded = normalizeValue(
+    property,
+    sourceValue(decl),
+    table.tokens(decl)
+  );
   if (!folded || folded.text === decl.value) return;
   table.assignFolded(decl, folded);
 }
@@ -66,24 +57,14 @@ export function foldShorthandDeclaration(
 /**
  * Folds immediate shorthand declarations within a container (e.g. root or at-rule).
  * @param {Container} container
- * @param {Map<string, FoldedText | null>} shorthandMemoTable
  * @param {TextTable} textTable
  * @return {void}
  */
-export function foldContainerDeclarations(
-  container,
-  shorthandMemoTable,
-  textTable
-) {
+export function foldContainerDeclarations(container, textTable) {
   if (!container.nodes) return;
   for (const node of container.nodes) {
     if (node.type === 'decl') {
-      foldShorthandDeclaration(
-        node,
-        shorthandMemoTable,
-        asciiLowerCase(node.prop),
-        textTable
-      );
+      foldShorthandDeclaration(node, asciiLowerCase(node.prop), textTable);
     }
   }
 }
@@ -95,10 +76,8 @@ export function foldContainerDeclarations(
  * @return {void}
  */
 export default function minifyShorthandIdentities(root) {
-  /** @type {Map<string, FoldedText | null>} */
-  const memoTable = new Map();
   const table = new TextTable();
   root.walkDecls((decl) =>
-    foldShorthandDeclaration(decl, memoTable, asciiLowerCase(decl.prop), table)
+    foldShorthandDeclaration(decl, asciiLowerCase(decl.prop), table)
   );
 }

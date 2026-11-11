@@ -15,7 +15,7 @@ import { alignmentProperties } from './decl/alignmentForms.js';
 import { pairFamilyOf } from './decl/pairForms.js';
 import { reduceClassifiedContainer } from './classifiedReducers.js';
 /** @import {BoxSupport} from './targetSupport.js' */
-/** @import {FoldedText, TextTable} from '../../../../values/textTable.js' */
+/** @import {TextTable} from '../../../../values/textTable.js' */
 import { endsDeclarationRun } from './decl/declarationRuns.js';
 import { applyChildEdits } from '../deferredChildEdits.js';
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
@@ -60,7 +60,6 @@ function alignmentFamilyOf(prop) {
  * @typedef {{
  *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
  *   setsOtherColumn: boolean,
- *   shorthandMemoTable: Map<string, FoldedText | null>,
  *   placeShorthands: boolean,
  *   boxSupport: BoxSupport,
  *   pairShorthands: ReadonlySet<string>,
@@ -120,12 +119,7 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
     } else if (allPhysicalBorderProperties.has(prop)) {
       state.borderDeclarations.push(child);
     } else if (foldableShorthands.has(prop)) {
-      foldShorthandDeclaration(
-        child,
-        context.shorthandMemoTable,
-        prop,
-        context.textTable
-      );
+      foldShorthandDeclaration(child, prop, context.textTable);
     } else {
       state.hasForeignBorder = true;
     }
@@ -144,24 +138,14 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
   const boxGroup = boxProperty?.family.group ?? aliasedGroup(prop);
   if (boxGroup) {
     addBoxDeclaration(state, child, boxProperty, boxGroup, laneIndex);
-    foldShorthandDeclaration(
-      child,
-      context.shorthandMemoTable,
-      prop,
-      context.textTable
-    );
+    foldShorthandDeclaration(child, prop, context.textTable);
     return;
   }
   // Only when every target supports place-* may one be synthesized.
   const alignmentFamily = context.placeShorthands
     ? alignmentFamilyOf(prop)
     : undefined;
-  foldShorthandDeclaration(
-    child,
-    context.shorthandMemoTable,
-    prop,
-    context.textTable
-  );
+  foldShorthandDeclaration(child, prop, context.textTable);
   if (alignmentFamily) {
     addFamilyDeclaration(state, alignmentFamily, child, laneIndex);
   }
@@ -261,7 +245,6 @@ export function longhandContext(
   return {
     columnRules: [],
     setsOtherColumn: false,
-    shorthandMemoTable: new Map(),
     placeShorthands,
     boxSupport,
     pairShorthands,
@@ -298,11 +281,7 @@ export function finishColumns(context) {
  */
 export function canonicalize(block, context) {
   if (block.type === 'root') {
-    foldContainerDeclarations(
-      block,
-      context.shorthandMemoTable,
-      context.textTable
-    );
+    foldContainerDeclarations(block, context.textTable);
     return;
   }
   processContainer(block, context);

@@ -62,7 +62,7 @@ suite('the longhand readers take a declaration from the text table', () => {
     const { root, table } = walkedStylesheet('a{transition:opacity 0s ease}');
     const decl = root.first.first;
     const before = tokenizeTotal();
-    foldShorthandDeclaration(decl, new Map(), 'transition', table);
+    foldShorthandDeclaration(decl, 'transition', table);
     assert.equal(tokenizeTotal() - before, 0);
   });
 
