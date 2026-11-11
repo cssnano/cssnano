@@ -75,8 +75,6 @@ class OverrideFrontier {
   #shapes = [new Map(), new Map()];
   /** @type {[Map<string, Survivors>, Map<string, Survivors>] | undefined} */
   #footprints;
-  /** @type {Map<string, readonly CSSToken[]> | undefined} */
-  #cache;
   /** @type {TextTable} */
   #textTable;
   /** @type {ReadonlySet<string>} */
@@ -155,8 +153,7 @@ class OverrideFrontier {
    * @return {readonly CSSToken[]} the tokens of the node's value
    */
   #listOf(node) {
-    this.#cache ??= new Map();
-    return declaredValueTokens(this.#textTable, node, this.#cache);
+    return declaredValueTokens(this.#textTable, node);
   }
 
   /**
