@@ -59,14 +59,6 @@ export function atRuleKindOf(name) {
 
 /**
  * @param {number} kind
- * @return {boolean} whether the kind is an at-rule with a block or a statement at-rule
- */
-export function isAtRuleKind(kind) {
-  return kind === AT_RULE_BLOCK || kind === AT_RULE_STATEMENT;
-}
-
-/**
- * @param {number} kind
  * @return {boolean} whether an entry of the kind is a rule, an at-rule or the stylesheet, not a declaration or a comment
  */
 export function isRuleOrAtRuleKind(kind) {

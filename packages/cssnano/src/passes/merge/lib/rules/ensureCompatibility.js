@@ -51,15 +51,3 @@ export function selectorInfoOf(tokens, browsers) {
     msPlaceholder: state.msPlaceholder,
   };
 }
-
-/**
- * @param {readonly TokenListId[]} ids the id of each selector of a list
- * @param {(id: TokenListId) => SelectorInfo} lookup
- * @return {boolean}
- */
-export function selectorsCompatible(ids, lookup) {
-  for (const id of ids) {
-    if (!lookup(id).compatible) return false;
-  }
-  return true;
-}

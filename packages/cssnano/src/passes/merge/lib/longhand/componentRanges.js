@@ -52,7 +52,7 @@ export function componentRanges(tokens) {
  * @return {boolean} whether the tokens split where `list.space` splits the
  * string; a comment or a bad token makes it split inside a word
  */
-export function splitsAsTokens(tokens) {
+function splitsAsTokens(tokens) {
   for (const part of tokens) {
     switch (part[0]) {
       case TokenType.Comment:

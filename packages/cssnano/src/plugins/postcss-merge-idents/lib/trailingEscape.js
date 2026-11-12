@@ -104,4 +104,4 @@ function trailingEscape(decl) {
     : undefined;
 }
 
-export { endsWithDanglingEscape, preludeTokens, trailingEscape };
+export { preludeTokens, trailingEscape };

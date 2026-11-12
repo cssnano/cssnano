@@ -4,7 +4,7 @@
 
 import { relative, sep } from 'node:path';
 
-export const FUNCTION_TYPES = new Set([
+const FUNCTION_TYPES = new Set([
   'FunctionDeclaration',
   'FunctionExpression',
   'ArrowFunctionExpression',

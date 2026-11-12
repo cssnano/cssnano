@@ -78,7 +78,7 @@ function reduceFamilyRuns(list, belongsToFamily, reduce) {
  * @param {BlockDeclarations} list
  * @return {BoxDeclarations}
  */
-export function boxDeclarations(group, run, list) {
+function boxDeclarations(group, run, list) {
   const members = run.filter((p) =>
     group.properties.has(list.at(p).prop.toLowerCase())
   );

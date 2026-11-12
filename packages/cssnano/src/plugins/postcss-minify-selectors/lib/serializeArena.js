@@ -45,7 +45,7 @@ function appendEmitTokens(list, arena, emit) {
  * @param {(CSSToken | undefined)[]} list
  * @param {string} next
  */
-export function appendTerminator(list, next) {
+function appendTerminator(list, next) {
   const last = list.at(-1);
   if (
     last !== undefined &&

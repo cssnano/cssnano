@@ -63,7 +63,7 @@ export function writeBlock(block, run) {
  * @param {string} css declarations, such as `width: 5dvh; height: 1px`
  * @return {DeclarationItem[]}
  */
-export function itemsOf(css) {
+function itemsOf(css) {
   const { list } = readBlock(
     /** @type {Container} */ (postcss.parse(`a{${css}}`).first),
     createRunContext(new TextTable())

@@ -14,17 +14,17 @@ export function step(trie, key) {
 }
 
 /** @param {string} name @return {string} */
-export function asciiLowerCase(name) {
+function asciiLowerCase(name) {
   return name.replaceAll(/[A-Z]+/gv, (upper) => upper.toLowerCase());
 }
 
 /** @param {string} prop @return {string} */
-export function propertyNameKey(prop) {
+function propertyNameKey(prop) {
   return prop.startsWith('--') ? prop : asciiLowerCase(prop);
 }
 
 /** @param {Declaration} declaration @return {string} */
-export function hackPrefixOf(declaration) {
+function hackPrefixOf(declaration) {
   return declaration.raws.before?.replaceAll(';', '').trim() ?? '';
 }
 
@@ -69,7 +69,7 @@ export function detach(node) {
 }
 
 /** @param {ChildNode[]} children @param {ChildNode} node @param {Container} container */
-export function appendInDocumentOrder(children, node, container) {
+function appendInDocumentOrder(children, node, container) {
   if (node.parent === container) children.push(node);
 }
 

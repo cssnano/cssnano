@@ -42,11 +42,6 @@ export declare const NO_PRELUDE = -1;
 export declare function atRuleKindOf(name: string): number;
 /**
  * @param {number} kind
- * @return {boolean} whether the kind is an at-rule with a block or a statement at-rule
- */
-export declare function isAtRuleKind(kind: number): boolean;
-/**
- * @param {number} kind
  * @return {boolean} whether an entry of the kind is a rule, an at-rule or the stylesheet, not a declaration or a comment
  */
 export declare function isRuleOrAtRuleKind(kind: number): boolean;

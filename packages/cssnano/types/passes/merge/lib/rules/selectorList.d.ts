@@ -3,14 +3,6 @@ import type { BlockRecords } from './blockRecords.js';
 import type { RuleRecord } from './ruleRecord.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { RuleElementKeys } from './elementKeys.js';
-/** @import {RuleElementKeys} from './elementKeys.js' */
-/**
- * The ids of a rule whose list has moved to another rule. It is frozen, so a
- * push onto it throws and an edit of the moved rule fails at once.
- *
- * @type {TokenListId[]}
- */
-export declare const NO_SELECTORS: TokenListId[];
 /**
  * The vendor summary of a rule whose facts are not folded yet. It is shared,
  * so nothing may add to it: `fillSummaries` gives each rule its own.

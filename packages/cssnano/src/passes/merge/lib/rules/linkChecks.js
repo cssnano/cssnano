@@ -59,7 +59,7 @@ export function assertCanLink(records, block, index) {
  * @return {void}
  * @throws {Error} when a rule or an at-rule is linked into a rule that holds no rules
  */
-export function assertCanHold(records, block, index) {
+function assertCanHold(records, block, index) {
   const holder = records.container(block);
   if (holder?.kind === RULE && holder.context === -1) {
     const entry = records.entry(
@@ -75,7 +75,7 @@ export function assertCanHold(records, block, index) {
  * @return {void}
  * @throws {Error} when a walk up `parentOf` from `block` does not reach the root
  */
-export function assertReachesRoot(records, block) {
+function assertReachesRoot(records, block) {
   let at = block;
   while (at !== records.root.index) {
     at = records.links.parentOf(at);

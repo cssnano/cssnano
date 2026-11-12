@@ -28,15 +28,6 @@ declare function endsWithHack(token: CSSToken): boolean;
  */
 declare function startsWithHack(token: CSSToken | undefined): boolean;
 /**
- * The whitespace after a token and the first character of the text after it,
- * read from the tokens that follow `index`.
- *
- * @param {readonly CSSToken[]} tokens
- * @param {number} index
- * @return {HackTail}
- */
-declare function hackTail(tokens: readonly CSSToken[], index: number): HackTail;
-/**
  * The token with the text given and the data kept. The text must read back
  * as the same token, such as a token whose escape loses a folded space.
  *
@@ -60,5 +51,5 @@ declare function replaceToken(index: number, tokens: CSSToken[]): TokenEdit;
  * @param {number} index
  */
 declare function unhack(edits: TokenEdit[], tokens: readonly CSSToken[], index: number): void;
-export { endsWithHack, hackTail, isSeparatedByDelimiter, replaceToken, respelled, startsWithHack, unhack, };
+export { endsWithHack, isSeparatedByDelimiter, replaceToken, respelled, startsWithHack, unhack, };
 //# sourceMappingURL=ieHack.d.ts.map

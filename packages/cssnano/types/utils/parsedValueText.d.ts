@@ -9,11 +9,4 @@ import type { CSSToken } from '@csstools/css-tokenizer';
  * @return {CSSToken[]}
  */
 export declare function parsedValueTokens(input: readonly CSSToken[]): CSSToken[];
-/**
- * The text of the value as PostCSS parses it.
- *
- * @param {readonly CSSToken[]} input
- * @return {string}
- */
-export declare function parsedValueText(input: readonly CSSToken[]): string;
 //# sourceMappingURL=parsedValueText.d.ts.map

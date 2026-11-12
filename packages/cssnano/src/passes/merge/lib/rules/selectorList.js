@@ -14,7 +14,7 @@ import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
  *
  * @type {TokenListId[]}
  */
-export const NO_SELECTORS = /** @type {TokenListId[]} */ (
+const NO_SELECTORS = /** @type {TokenListId[]} */ (
   /** @type {unknown} */ (Object.freeze([]))
 );
 

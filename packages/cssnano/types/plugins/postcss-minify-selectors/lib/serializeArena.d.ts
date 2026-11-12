@@ -2,15 +2,6 @@ import type { CSSToken } from '@csstools/css-tokenizer';
 export type SelectorArena = import('./arena.js').SelectorArena;
 export type Emit = import('./outputOverlay.js').Emit;
 /**
- * The tokenizer keeps a hex escape's terminator in the escape's ident or hash,
- * so a terminator restored before whitespace joins that token's text. Before a
- * hex digit the next emit would continue the ident, which no joined token list
- * can spell.
- * @param {(CSSToken | undefined)[]} list
- * @param {string} next
- */
-export declare function appendTerminator(list: (CSSToken | undefined)[], next: string): void;
-/**
  * The tokens that spell `joinPieces(pieces)`, joined as `serializeNormalized`
  * joins emits. A piece without a token, or a restored terminator no token can
  * hold, makes the result undefined.

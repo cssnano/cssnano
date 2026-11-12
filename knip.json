@@ -1,18 +1,36 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "tags": ["-lintignore"],
-  "ignore": ["**/types/**", "example-cli-usage/**", ".agents/**", ".codex/**"],
+  "ignore": [
+    "**/types/**",
+    "example-cli-usage/**",
+    ".agents/**",
+    ".codex/**",
+    "util/oxlint/fixtures/**"
+  ],
   "ignoreBinaries": ["build"],
   "workspaces": {
     ".": {
       "entry": [
         "util/countTokenize.js",
         "util/tokenizerCalls.js",
-        "util/benchmark/analyze-cpuprofile.js"
-      ]
+        "util/benchmark/analyze-cpuprofile.js",
+        "util/**/*.test.js",
+        "util/benchmark/simulation.js",
+        "util/benchmark/e2e/bench.e2e.js",
+        "util/pluginTiming.js",
+        "util/presetSnapshot.js",
+        "util/uncoveredBranches.js"
+      ],
+      "ignoreDependencies": ["@csstools/css-tokenizer"]
     },
     "packages/postcss-svgo": {
-      "entry": ["perf/*.js"]
+      "entry": [
+        "perf/*.js",
+        "test/**/*.test.js",
+        "test/fuzz.js",
+        "test/fixtures/*.config.js"
+      ]
     },
     "packages/cssnano": {
       "entry": [
@@ -20,7 +38,16 @@
         "test/types/*.ts",
         "script/**/fuzz*.js",
         "script/**/browserDiff.js",
-        "script/**/compareSize.js"
+        "script/**/compareSize.js",
+        "test/**/*.test.js",
+        "script/**/*.test.js",
+        "script/passes/merge/{rawsSnapshot,staleCheck}.js",
+        "script/passes/merge/rules/{rebuildCounts,roundCounts}.js",
+        "test/**/*.test.cjs",
+        "test/**/fuzz.js",
+        "test/config_loading/*.js",
+        "test/postcss-minify-selectors/{foldSemantics,wptInspired}.js",
+        "test/presets/default/fixtures/*.js"
       ]
     }
   }
