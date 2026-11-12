@@ -1,14 +1,11 @@
 import type { BoxSupport } from './targetSupport.js';
-import type { TextTable } from '../../../../values/textTable.js';
 import type { RunContext } from '../../../ir/runContext.js';
 import type { TokenLists } from '../../../ir/tokenLists.js';
 import type { ValueIds } from '../../../ir/valueIds.js';
-import type { Container } from 'postcss';
-import type { NodeBlock } from './nodeDeclarations.js';
 import type { BlockDeclarations } from './blockDeclarations.js';
 import type { BlockRecords } from '../rules/blockRecords.js';
 import type { ArenaIndex } from '../rules/blockRecord.js';
-export type Block = NodeBlock | {
+export type Block = {
     container: ArenaIndex;
     list: BlockDeclarations;
 };
@@ -27,10 +24,9 @@ export type MergeContext = {
     pairShorthands: ReadonlySet<string>;
     features: ReadonlySet<string>;
     run: RunContext;
-    textTable: TextTable;
     tokenLists: TokenLists;
     valueIds: ValueIds;
-    records?: BlockRecords;
+    records: BlockRecords;
 };
 export type FamilyDeclarations = {
     family: PairFamily | AlignmentFamilyConfig;
@@ -42,11 +38,10 @@ export type FamilyDeclarations = {
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
  * @param {RunContext} run the run whose tables and features the rounds read
- * @param {BlockRecords} [records] the records a round on the records edits; a
- * round on nodes omits it
+ * @param {BlockRecords} records the records the round reads and edits
  * @return {MergeContext} the state that the rounds of one run share
  */
-export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, run: RunContext, records?: BlockRecords): MergeContext;
+export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, run: RunContext, records: BlockRecords): MergeContext;
 /**
  * Reduces the column rules once every block of the stylesheet is canonicalized,
  * since whether a column property is set elsewhere is a whole-stylesheet fact.
@@ -57,19 +52,8 @@ export declare function longhandContext(placeShorthands: boolean, boxSupport: Bo
  */
 export declare function finishColumns(context: MergeContext): void;
 /**
- * The longhand reducers on one block. The root only folds its own shorthands,
- * since its declarations have no rule to reduce them in. Column rules wait for
- * `finishColumns`, which needs the whole stylesheet.
- *
- * @param {Container} block
- * @param {MergeContext} context
- * @return {void}
- */
-export declare function canonicalize(block: Container, context: MergeContext): void;
-/**
  * The longhand round on the records: the root's own declarations are folded,
  * then every block that holds a declaration, then the columns are finished.
- * It is the round of `canonicalize` for a round on the records.
  *
  * @param {BlockRecords} records
  * @param {MergeContext} context a context made with the records

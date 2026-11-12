@@ -5,32 +5,6 @@ import { blocksMerge, supportDependenciesOf } from './syntaxFeatures.js';
 const EMPTY_SET = new Set();
 
 /**
- * The support a clone needed from its source, by node. A round reads it back
- * when it builds the list, so a clone stays derived across rounds.
- *
- * @type {WeakMap<import('postcss').Declaration, ReadonlySet<string>>}
- */
-const inheritedSupport = new WeakMap();
-
-/**
- * @param {import('postcss').Declaration} node
- * @return {ReadonlySet<string> | null} the support the clone needed, or `null`
- * for a declaration the author wrote
- */
-export function inheritedSupportOf(node) {
-  return inheritedSupport.get(node) ?? null;
-}
-
-/**
- * @param {import('postcss').Declaration} node a clone the plugin made
- * @param {ReadonlySet<string>} support the support the clone needed
- * @return {void}
- */
-export function setInheritedSupport(node, support) {
-  inheritedSupport.set(node, support);
-}
-
-/**
  * @param {DeclarationItem} declaration
  * @return {Set<string>} every feature a browser had to support for the
  * declaration to apply: the ones its value uses, and the ones the declaration

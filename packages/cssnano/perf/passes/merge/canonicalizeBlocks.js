@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import postcss from 'postcss';
+import { buildRecords } from '../../../src/passes/merge/lib/rules/buildRecords.js';
+import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
 import {
-  canonicalize,
-  finishColumns,
+  canonicalizeRecords,
   longhandContext,
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
-import { minifiedLength } from '../../../src/passes/ir/minifiedLength.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 import { TextTable } from '../../../src/values/textTable.js';
 
@@ -17,62 +17,37 @@ const fixtures = new URL('../../../../../frameworks/', import.meta.url);
 const browsers = resolveTargets({}, undefined);
 
 /**
- * The minified bytes of the declarations a block sets.
+ * One longhand round on the records of a stylesheet, written back to its text.
  *
- * @param {import('postcss').Container} block
- * @return {number}
+ * @param {string} css
+ * @return {string}
  */
-function blockLength(block) {
-  let total = 0;
-  for (const child of block.nodes) {
-    if (child.type === 'decl') total += minifiedLength(child);
-  }
-  return total;
-}
-
-// A block that canonicalizes again must not change, and one canonicalization
-// must never make a block longer. Both are checked over the framework fixtures,
-// with one context shared by the two calls, as the merge pass shares it.
-test('canonicalizing a framework block twice gives the same block and never a longer one', () => {
+function roundOf(css) {
+  const root = postcss.parse(css);
   const { placeShorthands, boxSupport, pairShorthands, features } =
     targetSupportOf(browsers);
+  const run = createRunContext(new TextTable(), undefined, features);
+  const { records, nodes } = buildRecords(root, run);
+  canonicalizeRecords(
+    records,
+    longhandContext(placeShorthands, boxSupport, pairShorthands, run, records)
+  );
+  writeBack(records, nodes, run.tokenLists, run.textTable);
+  return root.toString();
+}
+
+// A stylesheet that goes through the round again must not change, and one round
+// must never make it longer. Both are checked over the framework fixtures.
+test('a longhand round over a framework fixture gives the same text when it runs again, and never a longer one', () => {
   for (const file of readdirSync(fixtures)) {
     if (!file.endsWith('.css')) continue;
-    const root = postcss.parse(readFileSync(new URL(file, fixtures), 'utf8'));
-    const context = longhandContext(
-      placeShorthands,
-      boxSupport,
-      pairShorthands,
-      createRunContext(new TextTable(), undefined, features)
+    const css = readFileSync(new URL(file, fixtures), 'utf8');
+    const once = roundOf(css);
+    assert.ok(once.length <= css.length, `${file}: the round made it longer`);
+    assert.strictEqual(
+      roundOf(once),
+      once,
+      `${file}: a second round changed it`
     );
-    canonicalize(root, context);
-    /** @type {import('postcss').Container[]} */
-    const blocks = [];
-    root.walk((node) => {
-      if (node.type !== 'rule' && node.type !== 'atrule') return;
-      if (node.nodes?.some((child) => child.type === 'decl')) {
-        blocks.push(node);
-      }
-    });
-    const lengthsBefore = blocks.map(blockLength);
-    for (const block of blocks) canonicalize(block, context);
-    finishColumns(context);
-    const once = blocks.map((block) => block.toString());
-    const lengthsOnce = blocks.map(blockLength);
-    for (const [index, length] of lengthsOnce.entries()) {
-      assert.ok(
-        length <= lengthsBefore[index],
-        `${file}: canonicalization made a block longer`
-      );
-    }
-    for (const block of blocks) canonicalize(block, context);
-    finishColumns(context);
-    for (const [index, block] of blocks.entries()) {
-      assert.strictEqual(
-        block.toString(),
-        once[index],
-        `${file}: a second canonicalization changed a block`
-      );
-    }
   }
 });

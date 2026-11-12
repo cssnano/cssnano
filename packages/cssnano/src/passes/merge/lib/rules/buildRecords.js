@@ -19,7 +19,6 @@ import {
 } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
 import { valueListOf } from '../valueList.js';
-import { inheritedSupportOf } from '../longhand/isFallback.js';
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
@@ -79,9 +78,6 @@ export function recordDeclaration(node, context) {
     node.raws.between ?? null,
     important ? (node.raws.important ?? null) : null
   );
-  // Until the first round stops marking its clones on their nodes, a clone
-  // keeps the support it needed.
-  record.inheritedSupport = inheritedSupportOf(node);
   return record;
 }
 

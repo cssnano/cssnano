@@ -1,6 +1,7 @@
 import { createRunContext } from '../../../../../../src/passes/ir/runContext.js';
 import { isAll } from '../../../../../../src/passes/merge/lib/longhand/decl/importanceLanes.js';
 import { declarationRuns, importanceLanes } from './importanceLanes.js';
+import { readBlock, writeBlock } from './declarationItems.js';
 import {
   allPhysicalBorderProperties,
   allRadiusProperties,
@@ -22,10 +23,6 @@ import {
   allColumnProps,
   reduceColumns,
 } from '../../../../../../src/passes/merge/lib/longhand/decl/columns.js';
-import {
-  commitToNodes,
-  declarationsFromNodes,
-} from '../../../../../../src/passes/merge/lib/longhand/nodeDeclarations.js';
 import { longstandingFeatures } from '../../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import {
   canonicalizeRecords,
@@ -51,10 +48,10 @@ const defaultSupport = new BoxSupport(['ie 11']);
  * @return {void}
  */
 export function reduceBlockOf(rule, reduce) {
-  const textTable = new TextTable();
-  const block = declarationsFromNodes(rule, createRunContext(textTable));
+  const run = createRunContext(new TextTable());
+  const block = readBlock(rule, run);
   reduce(block.list);
-  commitToNodes(block, textTable);
+  writeBlock(block, run);
 }
 
 /**

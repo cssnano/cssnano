@@ -1,9 +1,7 @@
 import { resolveTargets } from '#utils/browser-targets';
 import { discardDuplicates } from './lib/duplicates/discardDuplicates.js';
 import {
-  canonicalize,
   canonicalizeRecords,
-  finishColumns,
   longhandContext,
 } from './lib/longhand/canonicalize.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
@@ -20,67 +18,66 @@ import { assertValid, isBoolean } from '../../optionGuards.js';
 /** @import {Root} from 'postcss' */
 
 /**
- * One longhand round: canonicalizes the stylesheet's own declarations, then
- * every rule and at-rule that holds a declaration, in document order, then
- * finishes the columns.
- *
- * @param {Root} css
- * @param {ReturnType<typeof longhandContext>} context
- * @return {void}
+ * The two longhand rounds of one run. Each reads the records of the run's
+ * stylesheet and edits them through the round's context. The first round runs
+ * before the merge transforms; the second runs after them, on the blocks they
+ * left. The first round's whole-stylesheet fact, whether a column property is
+ * set elsewhere, is carried to the second.
  */
-function canonicalizeRound(css, context) {
-  canonicalize(css, context);
-  css.walk((node) => {
-    if (node.type !== 'rule' && node.type !== 'atrule') return;
-    if (!node.nodes?.some((n) => n.type === 'decl')) return;
-    canonicalize(node, context);
-  });
-  finishColumns(context);
-}
+class LonghandRounds {
+  /** @type {ReturnType<typeof targetSupportOf>} */
+  #support;
+  /** @type {boolean} */
+  #setsOtherColumn = false;
 
-/**
- * Runs the first longhand round under the longhand support of the targets.
- *
- * @param {Root} css
- * @param {ReturnType<typeof targetSupportOf>} support
- * @param {ReturnType<typeof createRunContext>} context the run whose tokens and support the round reads
- * @return {ReturnType<typeof longhandContext>} the context of the round, which the second round reuses
- */
-function runFirstRound(css, support, context) {
-  const { placeShorthands, boxSupport, pairShorthands } = support;
-  const first = longhandContext(
-    placeShorthands,
-    boxSupport,
-    pairShorthands,
-    context
-  );
-  canonicalizeRound(css, first);
-  return first;
-}
+  /** @param {ReturnType<typeof targetSupportOf>} support */
+  constructor(support) {
+    this.#support = support;
+  }
 
-/**
- * The second longhand round, a transform of the records: it runs after the
- * merge transforms, so the blocks it reads are the ones the merge left.
- *
- * @param {ReturnType<typeof targetSupportOf>} support
- * @param {boolean} setsOtherColumn whether the first round saw a column property set elsewhere
- * @return {(records: BlockRecords, browsers: readonly string[], context: ReturnType<typeof createRunContext>) => void}
- */
-function secondRound(support, setsOtherColumn) {
-  const { placeShorthands, boxSupport, pairShorthands } = support;
-  return (records, _browsers, context) => {
-    const round = longhandContext(
+  /**
+   * The first round, on the records the build made.
+   *
+   * @param {BlockRecords} records
+   * @param {ReturnType<typeof createRunContext>} context
+   * @return {void}
+   */
+  first(records, context) {
+    const round = this.#roundOf(records, context);
+    canonicalizeRecords(records, round);
+    this.#setsOtherColumn = round.setsOtherColumn;
+  }
+
+  /**
+   * The second round, on the records after the merge transforms.
+   *
+   * @param {BlockRecords} records
+   * @param {ReturnType<typeof createRunContext>} context
+   * @return {void}
+   */
+  second(records, context) {
+    const round = this.#roundOf(records, context);
+    // Carried over: a stale `true` only keeps columns unreduced, and any
+    // column-setting declaration a merge moved sits in a block rescanned here.
+    round.setsOtherColumn = this.#setsOtherColumn;
+    canonicalizeRecords(records, round);
+  }
+
+  /**
+   * @param {BlockRecords} records
+   * @param {ReturnType<typeof createRunContext>} context
+   * @return {ReturnType<typeof longhandContext>}
+   */
+  #roundOf(records, context) {
+    const { placeShorthands, boxSupport, pairShorthands } = this.#support;
+    return longhandContext(
       placeShorthands,
       boxSupport,
       pairShorthands,
       context,
       records
     );
-    // Carried over: a stale `true` only keeps columns unreduced, and any
-    // column-setting declaration a merge moved sits in a block rescanned here.
-    round.setsOtherColumn = setsOtherColumn;
-    canonicalizeRecords(records, round);
-  };
+  }
 }
 
 /**
@@ -154,6 +151,9 @@ export function mergePass(
 
 /**
  * Runs the merge transforms of `mergePass` over one stylesheet with its run context.
+ * Canonicalizing is not idempotent: a block the first round reduced can reduce
+ * again, so every block still in the stylesheet gets the second round, as the
+ * second merge-longhand run of the default preset gave it.
  *
  * @param {Root} css
  * @param {readonly string[]} browsers
@@ -163,13 +163,11 @@ export function mergePass(
  * @return {void}
  */
 function runTransforms(css, browsers, support, rules, context) {
-  const first = runFirstRound(css, support, context);
-  // Canonicalizing is not idempotent: a block the first round reduced can
-  // reduce again, so every block still in the stylesheet gets the second round,
-  // as the second merge-longhand run of the default preset gave it.
+  const rounds = new LonghandRounds(support);
   runRecords(css, browsers, context, [
+    (records, _browsers, run) => rounds.first(records, run),
     ...(rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY),
-    secondRound(support, first.setsOtherColumn),
+    (records, _browsers, run) => rounds.second(records, run),
   ]);
 }
 
@@ -218,10 +216,12 @@ export default pluginCreator;
 const transformHooks = Object.freeze({
   mergeLonghand(css, browsers) {
     const support = targetSupportOf(browsers);
-    runFirstRound(
+    const rounds = new LonghandRounds(support);
+    runRecords(
       css,
-      support,
-      createRunContext(new TextTable(), undefined, support.features)
+      browsers,
+      createRunContext(new TextTable(), undefined, support.features),
+      [(records, _browsers, run) => rounds.first(records, run)]
     );
   },
   discardDuplicates(css, _browsers, consistencyChecks) {

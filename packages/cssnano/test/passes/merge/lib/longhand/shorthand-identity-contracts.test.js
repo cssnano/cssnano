@@ -6,9 +6,7 @@ import {
   repositoryFile,
 } from '../../../../../../../util/testHelpers.js';
 const plugin = transformPlugin('mergeLonghand');
-import minifyShorthandIdentities, {
-  foldShorthandDeclaration,
-} from '../../../../../src/passes/merge/lib/longhand/minifyShorthand.js';
+import { foldShorthandDeclaration } from '../../../../../src/passes/merge/lib/longhand/minifyShorthand.js';
 import { transformPlugin } from '#passes/merge';
 import { blockOf } from './helpers/declarationItems.js';
 
@@ -177,12 +175,6 @@ describe('shorthand identity rule integration contracts', () => {
     assert.strictEqual(result.css, 'a{gap:1rem}');
   });
 
-  test('preserves backward-compatible root walk with minifyShorthandIdentities', () => {
-    const root = postcss.parse('a{gap:1rem 1rem}');
-    minifyShorthandIdentities(root);
-    assert.strictEqual(root.toString(), 'a{gap:1rem}');
-  });
-
   test(
     'normalizes direct declarations inside nested at-rules',
     processCSS(
@@ -222,7 +214,7 @@ describe('shorthand identity rule integration contracts', () => {
     assert.strictEqual(list.at(0).value, 'red');
   });
 
-  test('executes a single AST walk across the stylesheet', async () => {
+  test('the merge does not walk the AST, since its longhand rounds read the records', async () => {
     let walkCalls = 0;
     function countingPlugin() {
       return {
@@ -242,7 +234,7 @@ describe('shorthand identity rule integration contracts', () => {
       '@media (min-width:600px){gap:1rem 1rem;a{inset:0 0 0 0}}b{overflow:hidden hidden}',
       { from: repositoryFile }
     );
-    assert.strictEqual(walkCalls, 1, 'should only walk the AST once');
+    assert.strictEqual(walkCalls, 0, 'should not walk the AST');
     assert.strictEqual(
       result.css,
       '@media (min-width:600px){gap:1rem;a{inset:0}}b{overflow:hidden}'

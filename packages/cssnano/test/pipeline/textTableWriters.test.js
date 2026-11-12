@@ -24,9 +24,9 @@ const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
 const { foldShorthandDeclaration } =
   await import('../../src/passes/merge/lib/longhand/minifyShorthand.js');
-const { declarationsFromNodes } =
-  await import('../../src/passes/merge/lib/longhand/nodeDeclarations.js');
-const { reduceBlock } =
+const { readBlock } =
+  await import('../passes/merge/lib/longhand/helpers/declarationItems.js');
+const { reduceBlock, itemTokensSpellText } =
   await import('../passes/merge/lib/longhand/helpers/declarationItems.js');
 const { longstandingFeatures } =
   await import('../../src/passes/merge/lib/longhand/syntaxFeatures.js');
@@ -248,7 +248,7 @@ suite('the text table reads the text the merge longhand writers wrote', () => {
   test('overriddenDeclarations reads the text minifyShorthand wrote, without tokenizing', () => {
     const root = postcss.parse('a { gap: 1px 1px; gap: 2px }');
     const table = new TextTable();
-    const block = declarationsFromNodes(root.first, createRunContext(table));
+    const block = readBlock(root.first, createRunContext(table));
     foldShorthandDeclaration(block.list, 0, 'gap');
     const before = tokenizeTotal();
     discardOverriddenInList(block.list, block.list.chain, longstandingFeatures);
@@ -258,20 +258,16 @@ suite('the text table reads the text the merge longhand writers wrote', () => {
   test("minifyShorthand's edited tokens spell text()", () => {
     const root = postcss.parse('a { gap: 1px 1px }');
     const table = new TextTable();
-    reduceBlock(root.first, table, (list) =>
+    const reduced = reduceBlock(root.first, table, (list) =>
       foldShorthandDeclaration(list, 0, 'gap')
     );
-    const decl = root.first.first;
-    assert.deepEqual(
-      table.stored(decl)?.map((token) => token.slice(0, 4)),
-      tokens(decl.value).map((token) => token.slice(0, 4))
-    );
+    assert.ok(itemTokensSpellText(reduced));
   });
 
   test('foldShorthandDeclaration reads the text it wrote, without tokenizing', () => {
     const root = postcss.parse('a { gap: 1px 1px }');
     const table = new TextTable();
-    const block = declarationsFromNodes(root.first, createRunContext(table));
+    const block = readBlock(root.first, createRunContext(table));
     foldShorthandDeclaration(block.list, 0, 'gap');
     const before = tokenizeTotal();
     foldShorthandDeclaration(block.list, 0, 'gap');

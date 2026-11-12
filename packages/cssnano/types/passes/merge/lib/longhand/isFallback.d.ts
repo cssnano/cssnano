@@ -1,17 +1,5 @@
 import type { DeclarationItem } from './blockDeclarations.js';
 /**
- * @param {import('postcss').Declaration} node
- * @return {ReadonlySet<string> | null} the support the clone needed, or `null`
- * for a declaration the author wrote
- */
-export declare function inheritedSupportOf(node: import('postcss').Declaration): ReadonlySet<string> | null;
-/**
- * @param {import('postcss').Declaration} node a clone the plugin made
- * @param {ReadonlySet<string>} support the support the clone needed
- * @return {void}
- */
-export declare function setInheritedSupport(node: import('postcss').Declaration, support: ReadonlySet<string>): void;
-/**
  * @param {DeclarationItem} declaration
  * @return {Set<string>} every feature a browser had to support for the
  * declaration to apply: the ones its value uses, and the ones the declaration

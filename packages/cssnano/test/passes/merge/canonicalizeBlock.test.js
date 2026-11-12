@@ -1,44 +1,20 @@
-import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import {
-  canonicalize,
-  finishColumns,
-  longhandContext,
-} from '../../../src/passes/merge/lib/longhand/canonicalize.js';
-import { TextTable } from '../../../src/values/textTable.js';
-import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { resolveTargets } from '#utils/browser-targets';
+import { secondRoundOfText } from './lib/longhand/helpers/reduceRuns.js';
 
 const browsers = resolveTargets({}, { opts: { from: 'block.css' } });
 
 /**
- * Canonicalizes every declaration block of `css` with one context, then runs
- * the column step, the way the merge pass does in its first round, and returns
- * the stylesheet text.
+ * Canonicalizes every declaration block of `css` in one longhand round on the
+ * records, then writes the records back, and returns the stylesheet text.
  *
  * @param {string} css
  * @return {string}
  */
 function canonicalizeBlocks(css) {
-  const root = postcss.parse(css);
-  const { placeShorthands, boxSupport, pairShorthands, features } =
-    targetSupportOf(browsers);
-  const context = longhandContext(
-    placeShorthands,
-    boxSupport,
-    pairShorthands,
-    createRunContext(new TextTable(), undefined, features)
-  );
-  canonicalize(root, context);
-  root.walk((node) => {
-    if (node.type !== 'rule' && node.type !== 'atrule') return;
-    if (!node.nodes?.some((child) => child.type === 'decl')) return;
-    canonicalize(node, context);
-  });
-  finishColumns(context);
-  return root.toString();
+  return secondRoundOfText(css, browsers);
 }
 
 /** @param {string} css */

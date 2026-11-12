@@ -1,10 +1,7 @@
 import cssnanoUtils from '#utils';
 import { hasHack } from '#stylehacks';
 import { normalizeValue } from './minifyShorthandValues.js';
-import { TextTable } from '../../../../values/textTable.js';
-import { createRunContext } from '../../../ir/runContext.js';
 import { RUN_END } from './blockDeclarations.js';
-import { commitToNodes, declarationsFromNodes } from './nodeDeclarations.js';
 
 /** @import {AtRule, Root, Rule} from 'postcss' */
 /** @import {BlockDeclarations} from './blockDeclarations.js' */
@@ -70,25 +67,5 @@ export function foldContainerDeclarations(list, chain) {
     if (position !== RUN_END && !list.at(position).kept) {
       foldShorthandDeclaration(list, position);
     }
-  }
-}
-
-/**
- * Full AST traversal fallback for standalone shorthand identity canonicalization.
- *
- * @param {import('postcss').Root} root
- * @return {void}
- */
-export default function minifyShorthandIdentities(root) {
-  const run = createRunContext(new TextTable());
-  /** @type {(Root | Rule | AtRule)[]} */
-  const containers = [root];
-  root.walk((node) => {
-    if (node.type === 'rule' || node.type === 'atrule') containers.push(node);
-  });
-  for (const container of containers) {
-    const block = declarationsFromNodes(container, run);
-    foldContainerDeclarations(block.list, block.list.chain);
-    commitToNodes(block, run.textTable);
   }
 }

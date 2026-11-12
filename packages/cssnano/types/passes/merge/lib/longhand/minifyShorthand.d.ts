@@ -24,11 +24,4 @@ export declare function foldShorthandDeclaration(list: BlockDeclarations, positi
  * @return {void}
  */
 export declare function foldContainerDeclarations(list: BlockDeclarations, chain: readonly number[]): void;
-/**
- * Full AST traversal fallback for standalone shorthand identity canonicalization.
- *
- * @param {import('postcss').Root} root
- * @return {void}
- */
-export default function minifyShorthandIdentities(root: import('postcss').Root): void;
 //# sourceMappingURL=minifyShorthand.d.ts.map

@@ -10,8 +10,12 @@ const { walkStylesheet } = await import('../../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../../src/values/textTable.js');
 const { foldShorthandDeclaration } =
   await import('../../../src/passes/merge/lib/longhand/minifyShorthand.js');
-const { declarationsFromNodes } =
-  await import('../../../src/passes/merge/lib/longhand/nodeDeclarations.js');
+const { readBlock } =
+  await import('./lib/longhand/helpers/declarationItems.js');
+const { buildRecords } =
+  await import('../../../src/passes/merge/lib/rules/buildRecords.js');
+const { declarationsFromRecords } =
+  await import('../../../src/passes/merge/lib/longhand/recordDeclarations.js');
 const { longstandingFeatures } =
   await import('../../../src/passes/merge/lib/longhand/syntaxFeatures.js');
 const { boxBrowserKeeps } =
@@ -71,7 +75,7 @@ function walkedStylesheet(css) {
  * @param {InstanceType<typeof TextTable>} table
  */
 function blockOf(root, table) {
-  return declarationsFromNodes(root.first, createRunContext(table)).list;
+  return readBlock(root.first, createRunContext(table)).list;
 }
 
 suite('the longhand readers take a declaration from the text table', () => {
@@ -163,22 +167,25 @@ suite('the longhand readers take a declaration from the text table', () => {
     assert.equal(tokenizeTotal() - before, 0);
   });
 
-  test('the block build tokenizes decl.value once when PostCSS stripped a comment, since the stored list spells the comment', () => {
+  test('the block build tokenizes decl.value once when PostCSS stripped a comment, and the selector once', () => {
     const { root, table } = walkedStylesheet(
       'a{align-content:safe /* x */ center}'
     );
     const before = tokenizeTotal();
     blockOf(root, table);
-    assert.equal(tokenizeTotal() - before, 1);
+    // One tokenization for the selector `a`, one for the value PostCSS cleaned.
+    assert.equal(tokenizeTotal() - before, 2);
   });
 
-  test('the block lists of one run tokenize a value repeated on another declaration once, since the run interns the text', () => {
+  test('one build of the records tokenizes a value repeated on another rule once, since the run interns the text', () => {
     const root = postcss.parse('a{margin:0 1px}b{margin:0 1px}');
     const run = createRunContext(new TextTable());
     const before = tokenizeTotal();
-    declarationsFromNodes(root.first, run);
-    declarationsFromNodes(root.last, run);
-    assert.equal(tokenizeTotal() - before, 1);
+    const { records, nodes } = buildRecords(root, run);
+    declarationsFromRecords(records, run, nodes.indexOf(root.first));
+    declarationsFromRecords(records, run, nodes.indexOf(root.last));
+    // Two selectors, one value.
+    assert.equal(tokenizeTotal() - before, 3);
   });
 
   test('parseRadiusShorthand reads the list stored for the node, without tokenizing', () => {

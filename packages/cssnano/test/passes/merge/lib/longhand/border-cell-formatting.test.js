@@ -17,8 +17,7 @@ const { minifyCells } =
   await import('../../../../../src/passes/merge/lib/longhand/decl/borderCells.js');
 const { default: minifyWidthStyleColor } =
   await import('../../../../../src/passes/merge/lib/longhand/minifyWsc.js');
-const { declarationsFromNodes } =
-  await import('../../../../../src/passes/merge/lib/longhand/nodeDeclarations.js');
+const { readBlock } = await import('./helpers/declarationItems.js');
 const { RUN_END } =
   await import('../../../../../src/passes/merge/lib/longhand/blockDeclarations.js');
 const { wholeText } =
@@ -69,10 +68,7 @@ suite('border candidates format the cells from the stored tokens', () => {
     const { root, table } = walkedStylesheet(
       'a{border-top:calc(1px) solid red;border-right:calc(1px) solid red;border-bottom:calc(1px) solid red;border-left:calc(1px) solid red}'
     );
-    const list = declarationsFromNodes(
-      root.first,
-      createRunContext(table)
-    ).list;
+    const list = readBlock(root.first, createRunContext(table)).list;
     const positions = [...list.chain].filter((p) => p !== RUN_END);
     const added = tokenizedByReduce(() =>
       reduceBorder(list, positions, false, longstandingFeatures)
@@ -85,10 +81,7 @@ suite('border candidates format the cells from the stored tokens', () => {
     const { root, table } = walkedStylesheet(
       'a{border:calc(1px) solid red;border-top-width:2px}'
     );
-    const list = declarationsFromNodes(
-      root.first,
-      createRunContext(table)
-    ).list;
+    const list = readBlock(root.first, createRunContext(table)).list;
     const positions = [...list.chain].filter((p) => p !== RUN_END);
     const added = tokenizedByReduce(() =>
       reduceBorder(list, positions, false, longstandingFeatures)
