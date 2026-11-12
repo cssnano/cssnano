@@ -1,4 +1,4 @@
-import { createRunContext } from '../../../../src/passes/ir/runContext.js';
+import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
