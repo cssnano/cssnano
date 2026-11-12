@@ -7,23 +7,16 @@
 // 20,000 biased sheets, no shape made those created blocks non-canonical, so
 // the per-report driver cases in driver.test.js are the authoritative check
 // for those sites.
-import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { mergePass } from '../../../src/passes/merge/index.js';
-import {
-  canonicalize,
-  finishColumns,
-  longhandContext,
-} from '../../../src/passes/merge/lib/longhand/canonicalize.js';
-import { TextTable } from '../../../src/values/textTable.js';
-import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 import {
   generateFamilyCases,
   generateResetCases,
 } from '../../../script/passes/merge/rules/lib/mergeOracle.js';
+import { secondRoundOfText } from './lib/longhand/helpers/reduceRuns.js';
 
 const browsers = resolveTargets({}, undefined);
 
@@ -61,47 +54,15 @@ const inputs = [
   ...generateResetCases(0x5eed, 100).map(({ css }) => css),
 ];
 
-/**
- * Canonicalizes every block of the stylesheet's output once more, as the
- * second round would, and returns the blocks whose text changes.
- *
- * @param {string} css the output of a merge pass
- * @return {string[]} the text of each block that changed, before and after
- */
-function blocksChangedBySecondRound(css) {
-  const root = postcss.parse(css);
-  const { placeShorthands, boxSupport, pairShorthands, features } =
-    targetSupportOf(browsers);
-  const context = longhandContext(
-    placeShorthands,
-    boxSupport,
-    pairShorthands,
-    createRunContext(new TextTable(), undefined, features)
-  );
-  const changed = [];
-  const blocks = [root];
-  root.walk((node) => {
-    if (node.type !== 'rule' && node.type !== 'atrule') return;
-    if (!node.nodes?.some((child) => child.type === 'decl')) return;
-    blocks.push(node);
-  });
-  for (const block of blocks) {
-    const before = block.toString();
-    canonicalize(block, context);
-    if (block.toString() !== before) changed.push(before);
-  }
-  finishColumns(context);
-  return changed;
-}
-
 for (const [label, options] of rows) {
-  test(`after mergePass with ${label}, canonicalizing any block of the output changes nothing`, () => {
+  test(`after mergePass with ${label}, the second round changes no block of the output`, () => {
     const failures = [];
     for (const css of inputs) {
       const root = postcss.parse(css);
       mergePass(root, browsers, options);
-      const changed = blocksChangedBySecondRound(root.toString());
-      if (changed.length > 0) failures.push({ input: css, changed });
+      const output = root.toString();
+      const second = secondRoundOfText(output, browsers);
+      if (second !== output) failures.push({ input: css, output, second });
     }
     assert.deepEqual(failures, []);
   });

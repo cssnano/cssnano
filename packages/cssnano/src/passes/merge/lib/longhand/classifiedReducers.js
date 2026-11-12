@@ -7,12 +7,12 @@ import { reducePairFamily } from './decl/pairReducer.js';
 /** @import {BoxDeclarations} from './decl/boxReducer.js'; */
 /** @import {BoxGroup} from './decl/boxGroups.js'; */
 /** @import {FamilyDeclarations, MergeContext} from './canonicalize.js'; */
-/** @import {NodeBlock} from './nodeDeclarations.js'; */
+/** @import {Block} from './canonicalize.js'; */
 
 /**
  * Runs property-family reducers on classified declarations for a block. The
  * declarations are positions in the block's list.
- * @param {NodeBlock} block
+ * @param {Block} block
  * @param {{
  *   boxes: Map<BoxGroup, BoxDeclarations> | null,
  *   borderRadiusDecls: number[],

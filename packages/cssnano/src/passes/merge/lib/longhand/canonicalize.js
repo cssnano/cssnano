@@ -28,12 +28,26 @@ import {
 } from './minifyShorthand.js';
 import { RUN_END } from './blockDeclarations.js';
 import { commitToNodes, declarationsFromNodes } from './nodeDeclarations.js';
+import { declarationsFromRecords } from './recordDeclarations.js';
+import { firstDeclaration } from '../rules/blockChildren.js';
+import { commitDeclarations } from '../rules/arenaEdits.js';
+import { AT_RULE_BLOCK, RULE } from '../rules/blockRecord.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {Container} from 'postcss'; */
 /** @import {NodeBlock} from './nodeDeclarations.js'; */
 /** @import {BlockDeclarations} from './blockDeclarations.js'; */
+/** @import {BlockRecords} from '../rules/blockRecords.js'; */
+/** @import {ArenaIndex} from '../rules/blockRecord.js'; */
+
+/**
+ * A block of one round: its list and container. A round on nodes reads a
+ * `NodeBlock`; a round on the records reads a record block, whose container is
+ * its arena index.
+ *
+ * @typedef {NodeBlock | {container: ArenaIndex, list: BlockDeclarations}} Block
+ */
 
 /**
  * @typedef {object} Options
@@ -63,15 +77,17 @@ function alignmentFamilyOf(prop) {
 
 /**
  * @typedef {{
- *   columnRules: {block: NodeBlock, positions: number[], lanes: [number[], number[]]}[],
+ *   columnRules: {block: Block, positions: number[], lanes: [number[], number[]]}[],
  *   setsOtherColumn: boolean,
  *   placeShorthands: boolean,
  *   boxSupport: BoxSupport,
  *   pairShorthands: ReadonlySet<string>,
  *   features: ReadonlySet<string>,
+ *   run: RunContext,
  *   textTable: TextTable,
  *   tokenLists: TokenLists,
- *   valueIds: ValueIds
+ *   valueIds: ValueIds,
+ *   records?: BlockRecords
  * }} MergeContext
  */
 
@@ -175,17 +191,38 @@ function createContainerState() {
 }
 
 /**
- * Classifies declarations within a container, runs reducers, and tracks column candidates.
- * @param {Container} container
- * @param {NodeBlock} block
+ * Writes a block's list back: to its nodes on a round on nodes, to its records
+ * on a round on the records.
+ *
+ * @param {Block} block
  * @param {MergeContext} context
  * @return {void}
  */
-function processContainer(container, block, context) {
+function commitBlock(block, context) {
+  if (context.records) {
+    commitDeclarations(
+      context.records,
+      context.run,
+      /** @type {ArenaIndex} */ (block.container),
+      block.list
+    );
+  } else {
+    commitToNodes(/** @type {NodeBlock} */ (block), context.textTable);
+  }
+}
+
+/**
+ * Classifies declarations within a block, runs reducers, and tracks column candidates.
+ * @param {Block} block
+ * @param {boolean} styleRule whether the block is a style rule
+ * @param {MergeContext} context
+ * @return {void}
+ */
+function processContainer(block, styleRule, context) {
   const { list } = block;
   // Before classification, so the family reducers never see removed items.
   // Style rules only: at-rule descriptors follow their own validity rules.
-  if (container.type === 'rule') {
+  if (styleRule) {
     discardOverriddenDeclarations(list, context.features);
   }
 
@@ -232,7 +269,7 @@ function processContainer(container, block, context) {
   for (const run of runs) reduceClassifiedContainer(block, run, context);
   // A column rule waits for `finishColumns`, which commits its block once.
   if (!runs.some((run) => run.columnDecls.length > 0)) {
-    commitToNodes(block, context.textTable);
+    commitBlock(block, context);
   }
 }
 
@@ -241,13 +278,16 @@ function processContainer(container, block, context) {
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
  * @param {RunContext} run the run whose tables and features the rounds read
+ * @param {BlockRecords} [records] the records a round on the records edits; a
+ * round on nodes omits it
  * @return {MergeContext} the state that the rounds of one run share
  */
 export function longhandContext(
   placeShorthands,
   boxSupport,
   pairShorthands,
-  run
+  run,
+  records
 ) {
   return {
     columnRules: [],
@@ -256,9 +296,11 @@ export function longhandContext(
     boxSupport,
     pairShorthands,
     features: run.features,
+    run,
     textTable: run.textTable,
     tokenLists: run.tokenLists,
     valueIds: run.valueIds,
+    records,
   };
 }
 
@@ -277,7 +319,7 @@ export function finishColumns(context) {
     }
   }
   const blocks = new Set(context.columnRules.map((rule) => rule.block));
-  for (const block of blocks) commitToNodes(block, context.textTable);
+  for (const block of blocks) commitBlock(block, context);
 }
 
 /**
@@ -297,5 +339,58 @@ export function canonicalize(block, context) {
     return;
   }
   if (!block.nodes) return;
-  processContainer(block, declarationsFromNodes(block, context), context);
+  processContainer(
+    declarationsFromNodes(block, context),
+    block.type === 'rule',
+    context
+  );
+}
+
+/**
+ * Canonicalizes the blocks a record chain holds, in document order: each rule
+ * and at-rule block that holds a declaration, then the blocks it nests.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index the block whose chain is walked
+ * @param {MergeContext} context
+ * @return {void}
+ */
+function canonicalizeChildren(records, index, context) {
+  for (
+    let entry = records.links.firstChild(index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    const record = records.entry(entry);
+    if (record.kind !== RULE && record.kind !== AT_RULE_BLOCK) continue;
+    if (firstDeclaration(records, entry) !== undefined) {
+      processContainer(
+        {
+          container: entry,
+          list: declarationsFromRecords(records, context.run, entry),
+        },
+        record.kind === RULE,
+        context
+      );
+    }
+    canonicalizeChildren(records, entry, context);
+  }
+}
+
+/**
+ * The longhand round on the records: the root's own declarations are folded,
+ * then every block that holds a declaration, then the columns are finished.
+ * It is the round of `canonicalize` for a round on the records.
+ *
+ * @param {BlockRecords} records
+ * @param {MergeContext} context a context made with the records
+ * @return {void}
+ */
+export function canonicalizeRecords(records, context) {
+  const root = /** @type {ArenaIndex} */ (records.root.index);
+  const list = declarationsFromRecords(records, context.run, root);
+  foldContainerDeclarations(list, list.chain);
+  commitBlock({ container: root, list }, context);
+  canonicalizeChildren(records, root, context);
+  finishColumns(context);
 }

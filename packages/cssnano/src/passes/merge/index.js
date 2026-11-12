@@ -2,6 +2,7 @@ import { resolveTargets } from '#utils/browser-targets';
 import { discardDuplicates } from './lib/duplicates/discardDuplicates.js';
 import {
   canonicalize,
+  canonicalizeRecords,
   finishColumns,
   longhandContext,
 } from './lib/longhand/canonicalize.js';
@@ -55,6 +56,31 @@ function runFirstRound(css, support, context) {
   );
   canonicalizeRound(css, first);
   return first;
+}
+
+/**
+ * The second longhand round, a transform of the records: it runs after the
+ * merge transforms, so the blocks it reads are the ones the merge left.
+ *
+ * @param {ReturnType<typeof targetSupportOf>} support
+ * @param {boolean} setsOtherColumn whether the first round saw a column property set elsewhere
+ * @return {(records: BlockRecords, browsers: readonly string[], context: ReturnType<typeof createRunContext>) => void}
+ */
+function secondRound(support, setsOtherColumn) {
+  const { placeShorthands, boxSupport, pairShorthands } = support;
+  return (records, _browsers, context) => {
+    const round = longhandContext(
+      placeShorthands,
+      boxSupport,
+      pairShorthands,
+      context,
+      records
+    );
+    // Carried over: a stale `true` only keeps columns unreduced, and any
+    // column-setting declaration a merge moved sits in a block rescanned here.
+    round.setsOtherColumn = setsOtherColumn;
+    canonicalizeRecords(records, round);
+  };
 }
 
 /**
@@ -137,24 +163,14 @@ export function mergePass(
  * @return {void}
  */
 function runTransforms(css, browsers, support, rules, context) {
-  const { placeShorthands, boxSupport, pairShorthands } = support;
-
   const first = runFirstRound(css, support, context);
-  runRecords(css, browsers, context, rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY);
-
   // Canonicalizing is not idempotent: a block the first round reduced can
   // reduce again, so every block still in the stylesheet gets the second round,
   // as the second merge-longhand run of the default preset gave it.
-  const secondContext = longhandContext(
-    placeShorthands,
-    boxSupport,
-    pairShorthands,
-    context
-  );
-  // Carried over: a stale `true` only keeps columns unreduced, and any
-  // column-setting declaration a merge moved sits in a block rescanned here.
-  secondContext.setsOtherColumn = first.setsOtherColumn;
-  canonicalizeRound(css, secondContext);
+  runRecords(css, browsers, context, [
+    ...(rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY),
+    secondRound(support, first.setsOtherColumn),
+  ]);
 }
 
 /** The guard for the `rules` option, shared with the preset that validates it. */

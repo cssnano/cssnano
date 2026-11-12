@@ -5,12 +5,19 @@ import type { TokenLists } from '../../../ir/tokenLists.js';
 import type { ValueIds } from '../../../ir/valueIds.js';
 import type { Container } from 'postcss';
 import type { NodeBlock } from './nodeDeclarations.js';
+import type { BlockDeclarations } from './blockDeclarations.js';
+import type { BlockRecords } from '../rules/blockRecords.js';
+import type { ArenaIndex } from '../rules/blockRecord.js';
+export type Block = NodeBlock | {
+    container: ArenaIndex;
+    list: BlockDeclarations;
+};
 export type Options = object;
 import type { PairFamily } from './decl/pairForms.js';
 import type { AlignmentFamilyConfig } from './decl/alignmentForms.js';
 export type MergeContext = {
     columnRules: {
-        block: NodeBlock;
+        block: Block;
         positions: number[];
         lanes: [number[], number[]];
     }[];
@@ -19,9 +26,11 @@ export type MergeContext = {
     boxSupport: BoxSupport;
     pairShorthands: ReadonlySet<string>;
     features: ReadonlySet<string>;
+    run: RunContext;
     textTable: TextTable;
     tokenLists: TokenLists;
     valueIds: ValueIds;
+    records?: BlockRecords;
 };
 export type FamilyDeclarations = {
     family: PairFamily | AlignmentFamilyConfig;
@@ -33,9 +42,11 @@ export type FamilyDeclarations = {
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
  * @param {RunContext} run the run whose tables and features the rounds read
+ * @param {BlockRecords} [records] the records a round on the records edits; a
+ * round on nodes omits it
  * @return {MergeContext} the state that the rounds of one run share
  */
-export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, run: RunContext): MergeContext;
+export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, run: RunContext, records?: BlockRecords): MergeContext;
 /**
  * Reduces the column rules once every block of the stylesheet is canonicalized,
  * since whether a column property is set elsewhere is a whole-stylesheet fact.
@@ -55,4 +66,14 @@ export declare function finishColumns(context: MergeContext): void;
  * @return {void}
  */
 export declare function canonicalize(block: Container, context: MergeContext): void;
+/**
+ * The longhand round on the records: the root's own declarations are folded,
+ * then every block that holds a declaration, then the columns are finished.
+ * It is the round of `canonicalize` for a round on the records.
+ *
+ * @param {BlockRecords} records
+ * @param {MergeContext} context a context made with the records
+ * @return {void}
+ */
+export declare function canonicalizeRecords(records: BlockRecords, context: MergeContext): void;
 //# sourceMappingURL=canonicalize.d.ts.map

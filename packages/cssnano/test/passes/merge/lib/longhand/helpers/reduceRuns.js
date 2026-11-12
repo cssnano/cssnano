@@ -14,7 +14,10 @@ import {
   boxGroups,
   boxProperties,
 } from '../../../../../../src/passes/merge/lib/longhand/decl/boxGroups.js';
-import { BoxSupport } from '../../../../../../src/passes/merge/lib/longhand/targetSupport.js';
+import {
+  BoxSupport,
+  targetSupportOf,
+} from '../../../../../../src/passes/merge/lib/longhand/targetSupport.js';
 import {
   allColumnProps,
   reduceColumns,
@@ -24,6 +27,13 @@ import {
   declarationsFromNodes,
 } from '../../../../../../src/passes/merge/lib/longhand/nodeDeclarations.js';
 import { longstandingFeatures } from '../../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
+import {
+  canonicalizeRecords,
+  longhandContext,
+} from '../../../../../../src/passes/merge/lib/longhand/canonicalize.js';
+import { buildRecords } from '../../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { writeBack } from '../../../../../../src/passes/merge/lib/rules/writeBack.js';
+import postcss from 'postcss';
 
 /** @import {Container} from 'postcss'; */
 /** @import {BlockDeclarations} from '../../../../../../src/passes/merge/lib/longhand/blockDeclarations.js'; */
@@ -168,4 +178,30 @@ export function reduceBorderRuns(rule) {
       (decls) => reduceBorder(list, decls, foreign, longstandingFeatures)
     );
   });
+}
+
+/**
+ * Runs the second longhand round on the records of a stylesheet's text, writes
+ * the records back, and returns the text, as the merge pass does after its
+ * merges.
+ *
+ * @param {string} css
+ * @param {readonly string[]} browsers the resolved browser targets
+ * @return {string}
+ */
+export function secondRoundOfText(css, browsers) {
+  const root = postcss.parse(css);
+  const support = targetSupportOf(browsers);
+  const run = createRunContext(new TextTable(), undefined, support.features);
+  const { records, nodes } = buildRecords(root, run);
+  const context = longhandContext(
+    support.placeShorthands,
+    support.boxSupport,
+    support.pairShorthands,
+    run,
+    records
+  );
+  canonicalizeRecords(records, context);
+  writeBack(records, nodes, run.tokenLists, run.textTable);
+  return root.toString();
 }

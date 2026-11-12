@@ -1,15 +1,15 @@
 import type { BoxDeclarations } from './decl/boxReducer.js';
 import type { BoxGroup } from './decl/boxGroups.js';
 import type { FamilyDeclarations, MergeContext } from './canonicalize.js';
-import type { NodeBlock } from './nodeDeclarations.js';
+import type { Block } from './canonicalize.js';
 /** @import {BoxDeclarations} from './decl/boxReducer.js'; */
 /** @import {BoxGroup} from './decl/boxGroups.js'; */
 /** @import {FamilyDeclarations, MergeContext} from './canonicalize.js'; */
-/** @import {NodeBlock} from './nodeDeclarations.js'; */
+/** @import {Block} from './canonicalize.js'; */
 /**
  * Runs property-family reducers on classified declarations for a block. The
  * declarations are positions in the block's list.
- * @param {NodeBlock} block
+ * @param {Block} block
  * @param {{
  *   boxes: Map<BoxGroup, BoxDeclarations> | null,
  *   borderRadiusDecls: number[],
@@ -23,7 +23,7 @@ import type { NodeBlock } from './nodeDeclarations.js';
  * @param {MergeContext} context
  * @return {void}
  */
-export declare function reduceClassifiedContainer(block: NodeBlock, state: {
+export declare function reduceClassifiedContainer(block: Block, state: {
     boxes: Map<BoxGroup, BoxDeclarations> | null;
     borderRadiusDecls: number[];
     borderRadiusLanes: [number[], number[]];

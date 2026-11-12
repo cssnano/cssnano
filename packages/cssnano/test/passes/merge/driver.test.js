@@ -210,15 +210,15 @@ function runHook(name, root) {
     .css;
 }
 
-// Each longhand round walks the tree once to find its blocks, so turning rules
-// off still walks it once per round.
-test('mergePass with rules off walks the root once per longhand round', () => {
+// The first round walks the tree once to find its blocks. The second round
+// walks the records, so turning rules off still walks the tree once.
+test('mergePass with rules off walks the root once, for its first longhand round', () => {
   assert.equal(
     rootWalkCount(
       'a{border-top:1px solid red;border-right:1px solid red;border-bottom:1px solid red;border-left:1px solid red;border-image:none}b{color:blue}a{border-image:none}',
       (root) => mergePass(root, targets, { rules: false })
     ),
-    2
+    1
   );
 });
 
@@ -237,10 +237,10 @@ test('the discardDuplicates transform does not walk the root', () => {
   );
 });
 
-test('the full merge pass walks the root once per longhand round, two in all', () => {
+test('the full merge pass walks the root once, for its first longhand round', () => {
   assert.equal(
     rootWalkCount('a{color:red}', (root) => mergePass(root, targets)),
-    2
+    1
   );
 });
 
