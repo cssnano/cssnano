@@ -104,7 +104,6 @@ export {
   requiredSupport,
   mergeBlockingSupport,
   needsUnmetSupport,
-  isDerived,
   isFallback,
   strandsFallback,
 };

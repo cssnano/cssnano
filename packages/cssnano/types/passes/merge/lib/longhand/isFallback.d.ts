@@ -7,17 +7,6 @@ import type { DeclarationItem } from './blockDeclarations.js';
  */
 declare function requiredSupport(declaration: DeclarationItem): Set<string>;
 /**
- * A declaration the plugin cloned carries its own support requirement, which
- * values alone cannot recover. An author-written declaration has none, so its
- * presence tells that the plugin created the declaration. Values the plugin
- * invented, such as `currentcolor` standing for `border: medium none`, cannot
- * be fallbacks the author wrote.
- *
- * @param {DeclarationItem} declaration
- * @return {boolean} whether the plugin created the declaration
- */
-declare function isDerived(declaration: DeclarationItem): boolean;
-/**
  * @param {DeclarationItem} declaration
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean} whether some target may drop the declaration because it
@@ -51,5 +40,5 @@ declare function isFallback(earlier: DeclarationItem, later: DeclarationItem, fe
  * @return {boolean}
  */
 declare function strandsFallback(earlier: DeclarationItem, later: DeclarationItem, features: ReadonlySet<string>): boolean;
-export { requiredSupport, mergeBlockingSupport, needsUnmetSupport, isDerived, isFallback, strandsFallback, };
+export { requiredSupport, mergeBlockingSupport, needsUnmetSupport, isFallback, strandsFallback, };
 //# sourceMappingURL=isFallback.d.ts.map

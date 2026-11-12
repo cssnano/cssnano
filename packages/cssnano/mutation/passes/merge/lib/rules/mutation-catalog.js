@@ -132,6 +132,12 @@ export const mutations = [
     replace: '    this.#linkBefore(sibling, index);\n',
   },
   {
+    name: 'a clone that drops the support its source required',
+    target: source('arenaEdits.js'),
+    find: '  record.inheritedSupport = item.inheritedSupport;\n',
+    replace: '',
+  },
+  {
     name: 'a move of children that unlinks the moved entries without linking them',
     target: source('arenaEdits.js'),
     find: '    records.moveLast(target, entry);\n',
