@@ -1,78 +1,85 @@
 import { blocksMerge, supportDependenciesOf } from './syntaxFeatures.js';
 
-/** @import {TextTable} from '../../../../values/textTable.js' */
+/** @import {DeclarationItem} from './blockDeclarations.js' */
 
 const EMPTY_SET = new Set();
 
 /**
- * Recording support when cloning declarations preserves which support the
- * original declaration required, which values alone cannot recover.
+ * The support a clone needed from its source, by node. A round reads it back
+ * when it builds the list, so a clone stays derived across rounds.
  *
- * @type {WeakMap<import('postcss').Declaration, Set<string>>}
+ * @type {WeakMap<import('postcss').Declaration, ReadonlySet<string>>}
  */
 const inheritedSupport = new WeakMap();
 
 /**
- * @param {import('postcss').Declaration} declaration
- * @param {TextTable} textTable
+ * @param {import('postcss').Declaration} node
+ * @return {ReadonlySet<string> | null} the support the clone needed, or `null`
+ * for a declaration the author wrote
+ */
+export function inheritedSupportOf(node) {
+  return inheritedSupport.get(node) ?? null;
+}
+
+/**
+ * @param {import('postcss').Declaration} node a clone the plugin made
+ * @param {ReadonlySet<string>} support the support the clone needed
+ * @return {void}
+ */
+export function setInheritedSupport(node, support) {
+  inheritedSupport.set(node, support);
+}
+
+/**
+ * @param {DeclarationItem} declaration
  * @return {Set<string>} every feature a browser had to support for the
  * declaration to apply: the ones its value uses, and the ones the declaration
  * it was cloned from needed
  */
-function requiredSupport(declaration, textTable) {
-  const inherited = inheritedSupport.get(declaration);
-  const own = supportDependenciesOf(declaration, textTable);
-  return inherited === undefined ? own : own.union(inherited);
+function requiredSupport(declaration) {
+  const own = supportDependenciesOf(declaration);
+  return declaration.inheritedSupport === null
+    ? own
+    : own.union(declaration.inheritedSupport);
 }
 
 /**
- * @param {import('postcss').Declaration} source
- * @param {import('postcss').Declaration} clone taken from source
- * @param {TextTable} textTable
- * @return {void}
- */
-function inheritSupport(source, clone, textTable) {
-  inheritedSupport.set(clone, requiredSupport(source, textTable));
-}
-
-/**
- * inheritedSupport is populated only by inheritSupport(), which records each
- * declaration the plugin clones. A declaration's presence proves it was
- * synthesized by the plugin. Values the plugin invented, such as `currentcolor`
- * standing for `border: medium none`, cannot be fallbacks the author wrote.
+ * A declaration the plugin cloned carries its own support requirement, which
+ * values alone cannot recover. An author-written declaration has none, so its
+ * presence tells that the plugin created the declaration. Values the plugin
+ * invented, such as `currentcolor` standing for `border: medium none`, cannot
+ * be fallbacks the author wrote.
  *
- * @param {import('postcss').Declaration} declaration
+ * @param {DeclarationItem} declaration
  * @return {boolean} whether the plugin created the declaration
  */
 function isDerived(declaration) {
-  return inheritedSupport.has(declaration);
+  return declaration.inheritedSupport !== null;
 }
 
 /**
- * @param {import('postcss').Declaration} declaration
- * @param {TextTable} textTable
+ * @param {DeclarationItem} declaration
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean} whether some target may drop the declaration because it
  * lacks syntax the declaration needs
  */
-function needsUnmetSupport(declaration, textTable, features) {
-  for (const feature of requiredSupport(declaration, textTable)) {
+function needsUnmetSupport(declaration, features) {
+  for (const feature of requiredSupport(declaration)) {
     if (!features.has(feature)) return true;
   }
   return false;
 }
 
 /**
- * @param {import('postcss').Declaration} declaration
- * @param {TextTable} textTable
+ * @param {DeclarationItem} declaration
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {Set<string>} the support out of `requiredSupport` that stops a
  * merge
  */
-function mergeBlockingSupport(declaration, textTable, features) {
+function mergeBlockingSupport(declaration, features) {
   /** @type {Set<string> | undefined} */
   let blocking;
-  for (const feature of requiredSupport(declaration, textTable)) {
+  for (const feature of requiredSupport(declaration)) {
     if (blocksMerge(feature) && !features.has(feature)) {
       blocking ??= new Set();
       blocking.add(feature);
@@ -85,16 +92,15 @@ function mergeBlockingSupport(declaration, textTable, features) {
  * A later declaration requiring new support is assumed to enhance an earlier
  * one. Dropping the earlier changes rendering.
  *
- * @param {import('postcss').Declaration} earlier
- * @param {import('postcss').Declaration} later
- * @param {TextTable} textTable
+ * @param {DeclarationItem} earlier
+ * @param {DeclarationItem} later
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean} whether earlier is a fallback for later
  */
-function isFallback(earlier, later, textTable, features) {
-  const needed = requiredSupport(later, textTable);
+function isFallback(earlier, later, features) {
+  const needed = requiredSupport(later);
   if (needed.size === 0) return false;
-  const available = requiredSupport(earlier, textTable);
+  const available = requiredSupport(earlier);
   for (const feature of needed) {
     if (!available.has(feature) && !features.has(feature)) return true;
   }
@@ -105,19 +111,18 @@ function isFallback(earlier, later, textTable, features) {
  * Author-written declarations are checked against all required support;
  * plugin-created declarations only against the features that block a merge.
  *
- * @param {import('postcss').Declaration} earlier
- * @param {import('postcss').Declaration} later
- * @param {TextTable} textTable
+ * @param {DeclarationItem} earlier
+ * @param {DeclarationItem} later
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function strandsFallback(earlier, later, textTable, features) {
+function strandsFallback(earlier, later, features) {
   if (!isDerived(earlier)) {
-    return isFallback(earlier, later, textTable, features);
+    return isFallback(earlier, later, features);
   }
 
-  return !mergeBlockingSupport(later, textTable, features).isSubsetOf(
-    mergeBlockingSupport(earlier, textTable, features)
+  return !mergeBlockingSupport(later, features).isSubsetOf(
+    mergeBlockingSupport(earlier, features)
   );
 }
 
@@ -125,7 +130,6 @@ export {
   requiredSupport,
   mergeBlockingSupport,
   needsUnmetSupport,
-  inheritSupport,
   isDerived,
   isFallback,
   strandsFallback,

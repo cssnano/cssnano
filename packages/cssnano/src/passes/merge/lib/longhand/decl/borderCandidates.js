@@ -1,7 +1,5 @@
 import cssnanoUtils from '#utils';
-import { detach } from '../../deferredChildEdits.js';
-import insertCloned from '../insertCloned.js';
-/** @import {TextTable} from '../../../../../values/textTable.js' */
+/** @import {BlockDeclarations} from '../blockDeclarations.js' */
 /** @import {ValueComponent} from '../componentRanges.js' */
 import { setsLonghands } from '../spec.js';
 import {
@@ -23,9 +21,26 @@ import {
   getAvailableComponents,
   getAvailableSides,
 } from './borderCandidateBuilders.js';
+import { declCost } from './slotVector.js';
 
 const { asciiLowerCase } = cssnanoUtils;
-/** @import {Container, Declaration} from 'postcss'; */
+
+/**
+ * The byte cost of the declarations at the positions, as `declSize` gives it.
+ *
+ * @param {BlockDeclarations} list
+ * @param {Iterable<number>} positions
+ * @param {boolean} [important]
+ * @return {number}
+ */
+export function positionsSize(list, positions, important) {
+  let sum = 0;
+  for (const position of positions) {
+    const d = list.at(position);
+    sum += declCost(d.prop, d.value, important);
+  }
+  return sum;
+}
 
 /* Selection and application for the border reducer: given the candidates the
  * builders produce and the segment analysis state (final cell values, cell
@@ -78,13 +93,13 @@ function compareCandidates(a, b, lane) {
 /**
  * @param {string[]} cells
  * @param {(ValueComponent | undefined)[]} cellComponents
- * @param {Set<Declaration>[]} cellHistory
+ * @param {Set<number>[]} cellHistory
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
  * @param {boolean} hasReset
  * @param {boolean} lane
- * @param {Set<Declaration>} fallbacks
- * @param {TextTable} textTable
+ * @param {Set<number>} fallbacks
+ * @param {BlockDeclarations} list
  * @param {ReadonlySet<string>} features the features every target supports
  */
 export function generateCandidates(
@@ -96,7 +111,7 @@ export function generateCandidates(
   hasReset,
   lane,
   fallbacks,
-  textTable,
+  list,
   features
 ) {
   const availSides = getAvailableSides(
@@ -104,14 +119,14 @@ export function generateCandidates(
     touched,
     barrierCells,
     fallbacks,
-    textTable,
+    list,
     features
   );
   const availComps = getAvailableComponents(
     cellHistory,
     touched,
     barrierCells,
-    textTable,
+    list,
     features
   );
 
@@ -124,8 +139,8 @@ export function generateCandidates(
     [...touched].filter((idx) => {
       return [...cellHistory[idx]].some(
         (d) =>
-          asciiLowerCase(d.prop) === cellProperties[idx] &&
-          asciiLowerCase(d.value) === asciiLowerCase(cells[idx])
+          asciiLowerCase(list.at(d).prop) === cellProperties[idx] &&
+          asciiLowerCase(list.at(d).value) === asciiLowerCase(cells[idx])
       );
     })
   );
@@ -144,7 +159,7 @@ export function generateCandidates(
     cellComponents,
     lane,
     fallbacks,
-    textTable,
+    list,
     features
   );
 
@@ -178,15 +193,17 @@ export function generateCandidates(
   return [...resetCands, ...compCands, ...sideCands, leafCand];
 }
 /**
+ * @param {BlockDeclarations} list
  * @param {{ decls: { prop: string, value: string }[], rank: number, mask: number, resetIndex?: number, coveredCells: Set<number> }[]} candidates
- * @param {Set<Declaration>[]} cellHistory
- * @param {Set<Declaration>} fallbacks
+ * @param {Set<number>[]} cellHistory
+ * @param {Set<number>} fallbacks
  * @param {Set<number>} touched
  * @param {boolean} lane
- * @param {Declaration[]} segment
- * @return {{ cand: (typeof candidates)[0], repList: Declaration[], removable: Declaration[], diff: number, size: number, fallbacks: Set<Declaration> } | null}
+ * @param {number[]} segment
+ * @return {{ cand: (typeof candidates)[0], repList: number[], removable: number[], diff: number, size: number, fallbacks: Set<number> } | null}
  */
 export function selectBestCandidate(
+  list,
   candidates,
   cellHistory,
   fallbacks,
@@ -196,9 +213,9 @@ export function selectBestCandidate(
 ) {
   const allTouchedDecls = declarationsOfCells(cellHistory, touched);
   const allRemovable = [...allTouchedDecls].filter((d) => !fallbacks.has(d));
-  const originalSize = declSize(allRemovable, lane);
+  const originalSize = positionsSize(list, allRemovable, lane);
 
-  /** @type {{ cand: (typeof candidates)[0], repList: Declaration[], removable: Declaration[], diff: number, size: number, fallbacks: Set<Declaration> } | null} */
+  /** @type {{ cand: (typeof candidates)[0], repList: number[], removable: number[], diff: number, size: number, fallbacks: Set<number> } | null} */
   let best = null;
 
   for (const cand of candidates) {
@@ -217,7 +234,7 @@ export function selectBestCandidate(
      * drop those values. Synthetic leaves normally complete the footprint;
      * barriers and preserved fallbacks deliberately prevent that completion. */
     const removesOutsideFootprint = removable.some((d) =>
-      [...setsLonghands(asciiLowerCase(d.prop))].some((p) => {
+      [...setsLonghands(asciiLowerCase(list.at(d).prop))].some((p) => {
         const cellIndex = borderPropertyToCellIndex.get(p);
         return cellIndex !== undefined && !cand.coveredCells.has(cellIndex);
       })
@@ -225,7 +242,7 @@ export function selectBestCandidate(
     if (removesOutsideFootprint) continue;
 
     const remaining = allRemovable.filter((d) => !removableSet.has(d));
-    const size = candSize + declSize(remaining, lane);
+    const size = candSize + positionsSize(list, remaining, lane);
     if (size > originalSize) continue;
     const diff = size - originalSize;
 
@@ -244,13 +261,12 @@ export function selectBestCandidate(
 }
 
 /**
- * @param {Container} rule
- * @param {{ cand: { decls: { prop: string, value: string }[], rank: number, mask: number, coveredCells: Set<number> }, repList: Declaration[], removable: Declaration[], diff: number, size: number, fallbacks: Set<Declaration> }} best
- * @param {Declaration[]} segment
+ * @param {BlockDeclarations} list
+ * @param {{ cand: { decls: { prop: string, value: string }[], rank: number, mask: number, coveredCells: Set<number> }, repList: number[], removable: number[], diff: number, size: number, fallbacks: Set<number> }} best
+ * @param {number[]} segment
  * @param {boolean} lane
- * @param {TextTable} textTable
  */
-export function applyBestCandidate(rule, best, segment, lane, textTable) {
+export function applyBestCandidate(list, best, segment, lane) {
   const {
     cand: bestCand,
     repList,
@@ -268,16 +284,17 @@ export function applyBestCandidate(rule, best, segment, lane, textTable) {
 
     const isIdentical =
       bestCand.decls.length === repList.length &&
-      bestCand.decls.every(
-        (d, i) => d.prop === repList[i].prop && d.value === repList[i].value
-      );
+      bestCand.decls.every((d, i) => {
+        const represented = list.at(repList[i]);
+        return d.prop === represented.prop && d.value === represented.value;
+      });
     if (isIdentical) return;
   }
 
   const representedDecls = new Set(repList);
 
   const anchor = repList.at(-1);
-  if (!anchor) return;
+  if (anchor === undefined) return;
 
   /** @type {{prop: string, value: string}[]} */
   const toInsert = [];
@@ -289,10 +306,10 @@ export function applyBestCandidate(rule, best, segment, lane, textTable) {
       const alreadyPresent = segment.find(
         (d) =>
           !representedDecls.has(d) &&
-          asciiLowerCase(d.prop) === p &&
-          asciiLowerCase(d.value) === asciiLowerCase(candDecl.value)
+          asciiLowerCase(list.at(d).prop) === p &&
+          asciiLowerCase(list.at(d).value) === asciiLowerCase(candDecl.value)
       );
-      if (!alreadyPresent) {
+      if (alreadyPresent === undefined) {
         toInsert.push(candDecl);
       }
     }
@@ -300,17 +317,12 @@ export function applyBestCandidate(rule, best, segment, lane, textTable) {
 
   let prev = anchor;
   for (const { prop, value } of toInsert) {
-    prev = insertCloned(
-      rule,
-      prev,
-      { prop, value, important: lane },
-      textTable
-    );
+    prev = list.insertClone(prev, { prop, value, important: lane });
   }
 
   for (const d of representedDecls) {
     if (!fallbacks.has(d)) {
-      detach(d);
+      list.remove(d);
     }
   }
 }

@@ -1,4 +1,3 @@
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
@@ -13,6 +12,7 @@ import {
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
 import { transformPlugin } from '#passes/merge';
+import { itemOf } from './helpers/declarationItems.js';
 
 /**
  * A browser that does not parse a function drops the declaration whole, so a
@@ -32,7 +32,7 @@ async function run(css, browsers) {
 }
 
 const requires = (/** @type {string} */ value) =>
-  requiredSupport(postcss.decl({ prop: 'width', value }), new TextTable());
+  requiredSupport(itemOf(`width: ${value}`));
 
 const targets = ['ie 11', 'chrome 120'];
 
@@ -126,8 +126,7 @@ describe('support required by a function', () => {
   test('blocks a merge for a function no data covers', () => {
     assert.deepEqual(
       mergeBlockingSupport(
-        postcss.decl({ prop: 'width', value: 'calc(anchor-size(width))' }),
-        new TextTable(),
+        itemOf('width: calc(anchor-size(width))'),
         longstandingFeatures
       ),
       new Set(['calc', 'function:anchor-size'])

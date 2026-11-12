@@ -17,10 +17,9 @@ export declare const longstandingFeatures: ReadonlySet<string>;
  */
 export declare function blocksMerge(feature: string): boolean;
 /**
- * @param {import('postcss').Declaration} decl
- * @param {import('../../../../values/textTable.js').TextTable} textTable
+ * @param {import('./blockDeclarations.js').DeclarationItem} decl
  * @return {Set<string>} the features a browser must support to parse the
  * declaration's value
  */
-export declare function supportDependenciesOf(decl: import('postcss').Declaration, textTable: import('../../../../values/textTable.js').TextTable): Set<string>;
+export declare function supportDependenciesOf(decl: import('./blockDeclarations.js').DeclarationItem): Set<string>;
 //# sourceMappingURL=syntaxFeatures.d.ts.map

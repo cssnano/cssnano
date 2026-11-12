@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import { transformPass } from '../../../../../src/passes/merge/index.js';
 import { isFallback } from '../../../../../src/passes/merge/lib/longhand/isFallback.js';
 import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
+import { itemOf } from './helpers/declarationItems.js';
 
 // `margin:5dvh` needs a feature only modern browsers parse, so whether the
 // `margin:1px` before it is a fallback depends on the targets.
@@ -47,12 +47,8 @@ describe('the target support of one run', () => {
 
 describe('isFallback called without a run', () => {
   test('keeps an earlier declaration that the strict default lacks support for', () => {
-    const textTable = new TextTable();
-    const earlier = postcss.parse('a{margin:1px}').first.first;
-    const later = postcss.parse('a{margin:5dvh}').first.first;
-    assert.equal(
-      isFallback(earlier, later, textTable, longstandingFeatures),
-      true
-    );
+    const earlier = itemOf('margin: 1px');
+    const later = itemOf('margin: 5dvh');
+    assert.equal(isFallback(earlier, later, longstandingFeatures), true);
   });
 });

@@ -1,8 +1,7 @@
 export default _default;
 /**
- * @param {import('postcss').Declaration} prop
- * @param {import('../../../../values/textTable.js').TextTable} textTable
+ * @param {import('./blockDeclarations.js').DeclarationItem} prop
  * @param {boolean} [includeCustomProps]
  */
-declare function _default(prop: import('postcss').Declaration, textTable: import('../../../../values/textTable.js').TextTable, includeCustomProps?: boolean): boolean;
+declare function _default(prop: import('./blockDeclarations.js').DeclarationItem, includeCustomProps?: boolean): boolean;
 //# sourceMappingURL=canExplode.d.ts.map

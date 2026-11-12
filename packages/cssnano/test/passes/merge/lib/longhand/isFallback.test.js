@@ -1,25 +1,21 @@
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import postcss from 'postcss';
 import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import {
   isFallback,
   mergeBlockingSupport,
   requiredSupport,
 } from '../../../../../src/passes/merge/lib/longhand/isFallback.js';
+import { itemOf } from './helpers/declarationItems.js';
 
 test('recognizes escaped support-dependent function names', () => {
-  const declaration = postcss.decl({ value: 'v\\61r(--value)' });
+  const declaration = itemOf('width: v\\61r(--value)');
 
-  assert.deepEqual(
-    requiredSupport(declaration, new TextTable()),
-    new Set(['var'])
-  );
+  assert.deepEqual(requiredSupport(declaration), new Set(['var']));
 });
 
 const requires = (/** @type {string} */ value) =>
-  requiredSupport(postcss.decl({ prop: 'width', value }), new TextTable());
+  requiredSupport(itemOf(`width: ${value}`));
 
 test('requires unit support for a newer length unit', () => {
   assert.deepEqual(requires('5DVH'), new Set(['unit:dvh']));
@@ -75,60 +71,39 @@ test('requires nothing for longstanding units and six-digit hex colours', () => 
 });
 
 test('treats an earlier longstanding unit as a fallback for a later newer unit', () => {
-  const earlier = postcss.decl({ prop: 'width', value: '1px' });
+  const earlier = itemOf('width: 1px');
   assert.equal(
-    isFallback(
-      earlier,
-      postcss.decl({ prop: 'width', value: '5dvh' }),
-      new TextTable(),
-      longstandingFeatures
-    ),
+    isFallback(earlier, itemOf('width: 5dvh'), longstandingFeatures),
     true
   );
 });
 
 test('does not treat a later longstanding unit as needing a fallback', () => {
-  const earlier = postcss.decl({ prop: 'width', value: '1px' });
+  const earlier = itemOf('width: 1px');
   assert.equal(
-    isFallback(
-      earlier,
-      postcss.decl({ prop: 'width', value: '2em' }),
-      new TextTable(),
-      longstandingFeatures
-    ),
+    isFallback(earlier, itemOf('width: 2em'), longstandingFeatures),
     false
   );
 });
 
 test('does not block a merge for rgba(), which authors write without fallbacks', () => {
   assert.equal(
-    mergeBlockingSupport(
-      postcss.decl({ prop: 'color', value: 'rgba(0,0,0,.5)' }),
-      new TextTable(),
-      longstandingFeatures
-    ).size,
+    mergeBlockingSupport(itemOf('color: rgba(0,0,0,.5)'), longstandingFeatures)
+      .size,
     0
   );
 });
 
 test('blocks a merge for calc(), which Opera Mini drops', () => {
   assert.deepEqual(
-    mergeBlockingSupport(
-      postcss.decl({ prop: 'width', value: 'calc(1px)' }),
-      new TextTable(),
-      longstandingFeatures
-    ),
+    mergeBlockingSupport(itemOf('width: calc(1px)'), longstandingFeatures),
     new Set(['calc'])
   );
 });
 
 test('blocks a merge for a newer unit', () => {
   assert.deepEqual(
-    mergeBlockingSupport(
-      postcss.decl({ prop: 'width', value: '5dvh' }),
-      new TextTable(),
-      longstandingFeatures
-    ),
+    mergeBlockingSupport(itemOf('width: 5dvh'), longstandingFeatures),
     new Set(['unit:dvh'])
   );
 });

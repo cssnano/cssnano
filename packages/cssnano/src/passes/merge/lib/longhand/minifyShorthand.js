@@ -2,9 +2,12 @@ import cssnanoUtils from '#utils';
 import { hasHack } from '#stylehacks';
 import { normalizeValue } from './minifyShorthandValues.js';
 import { TextTable } from '../../../../values/textTable.js';
-import { declaredValueTokens } from '../../../../values/declaredValueTokens.js';
+import { createRunContext } from '../../../ir/runContext.js';
+import { RUN_END } from './blockDeclarations.js';
+import { commitToNodes, declarationsFromNodes } from './nodeDeclarations.js';
 
-/** @import {Container} from 'postcss' */
+/** @import {AtRule, Root, Rule} from 'postcss' */
+/** @import {BlockDeclarations} from './blockDeclarations.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -33,42 +36,39 @@ export const foldableShorthands = new Set([
  * declaration. Each declaration is folded on its own; the fold is cheap enough
  * that a memo per property and source was not worth keeping.
  *
- * @param {import('postcss').Declaration} decl
+ * @param {BlockDeclarations} list
+ * @param {number} position
  * @param {string} [property] - the lowercased property name, when known
- * @param {TextTable} [table] the text table the walk left, which holds the
- * declaration's tokens; a fresh one when omitted
  * @return {void}
  */
 export function foldShorthandDeclaration(
-  decl,
-  property = asciiLowerCase(decl.prop),
-  table = new TextTable()
+  list,
+  position,
+  property = asciiLowerCase(list.at(position).prop)
 ) {
+  const decl = list.at(position);
   if (
     !foldableShorthands.has(property) ||
-    hasHack(decl.raws.before, decl.prop, decl.value)
+    hasHack(decl.before, decl.prop, decl.value)
   )
     return;
-  const folded = normalizeValue(
-    property,
-    decl.value,
-    declaredValueTokens(table, decl)
-  );
+  const folded = normalizeValue(property, decl.value, decl.tokens);
   if (!folded || folded.text === decl.value) return;
-  table.assignFolded(decl, folded);
+  list.rewrite(position, decl.prop, folded.text, folded.tokens);
 }
 
 /**
- * Folds immediate shorthand declarations within a container (e.g. root or at-rule).
- * @param {Container} container
- * @param {TextTable} textTable
+ * Folds the shorthand declarations of a container's block. A value with an
+ * important comment is kept as written, so it is left as it is.
+ *
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} chain - the positions of the block's declarations
  * @return {void}
  */
-export function foldContainerDeclarations(container, textTable) {
-  if (!container.nodes) return;
-  for (const node of container.nodes) {
-    if (node.type === 'decl') {
-      foldShorthandDeclaration(node, asciiLowerCase(node.prop), textTable);
+export function foldContainerDeclarations(list, chain) {
+  for (const position of chain) {
+    if (position !== RUN_END && !list.at(position).kept) {
+      foldShorthandDeclaration(list, position);
     }
   }
 }
@@ -80,8 +80,15 @@ export function foldContainerDeclarations(container, textTable) {
  * @return {void}
  */
 export default function minifyShorthandIdentities(root) {
-  const table = new TextTable();
-  root.walkDecls((decl) =>
-    foldShorthandDeclaration(decl, asciiLowerCase(decl.prop), table)
-  );
+  const run = createRunContext(new TextTable());
+  /** @type {(Root | Rule | AtRule)[]} */
+  const containers = [root];
+  root.walk((node) => {
+    if (node.type === 'rule' || node.type === 'atrule') containers.push(node);
+  });
+  for (const container of containers) {
+    const block = declarationsFromNodes(container, run);
+    foldContainerDeclarations(block.list, block.list.chain);
+    commitToNodes(block, run.textTable);
+  }
 }

@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
-import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import { suite, test } from 'node:test';
 
-// The counter must hook the tokenizer before the walk loads it.
+// The counter must hook the tokenizer before any module below loads it.
 const { counter } = await import('../../../../../../../util/countTokenize.js');
+const { longstandingFeatures } =
+  await import('../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js');
+const { createRunContext } =
+  await import('../../../../../src/passes/ir/runContext.js');
 const { default: postcss } = await import('postcss');
 const { walkStylesheet } =
   await import('../../../../../src/pipeline/traversal.js');
@@ -14,12 +17,34 @@ const { minifyCells } =
   await import('../../../../../src/passes/merge/lib/longhand/decl/borderCells.js');
 const { default: minifyWidthStyleColor } =
   await import('../../../../../src/passes/merge/lib/longhand/minifyWsc.js');
+const { declarationsFromNodes } =
+  await import('../../../../../src/passes/merge/lib/longhand/nodeDeclarations.js');
+const { RUN_END } =
+  await import('../../../../../src/passes/merge/lib/longhand/blockDeclarations.js');
 const { wholeText } =
   await import('../../../../../src/passes/merge/lib/longhand/componentRanges.js');
 
-/** @returns {number} tokenize calls made so far */
-function tokenizeTotal() {
-  return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
+/**
+ * Runs `reduce` and returns the text of each tokenize call it made, in order.
+ * The counter records every call, so a text tokenized twice appears twice,
+ * whatever earlier tests in the process tokenized.
+ *
+ * @param {() => void} reduce
+ * @return {string[]} the texts `reduce` tokenized, sorted
+ */
+function tokenizedByReduce(reduce) {
+  const texts = [];
+  const record = counter.record;
+  counter.record = (input) => {
+    texts.push(input.css);
+    record.call(counter, input);
+  };
+  try {
+    reduce();
+  } finally {
+    counter.record = record;
+  }
+  return texts.toSorted();
 }
 
 const helpers = { result: { warn() {} } };
@@ -40,24 +65,35 @@ function walkedStylesheet(css) {
 }
 
 suite('border candidates format the cells from the stored tokens', () => {
-  test("border candidates format a side's width, style and color without tokenizing", () => {
+  test('border candidates tokenize only the new side components, each once', () => {
     const { root, table } = walkedStylesheet(
       'a{border-top:calc(1px) solid red;border-right:calc(1px) solid red;border-bottom:calc(1px) solid red;border-left:calc(1px) solid red}'
     );
-    const rule = /** @type {import('postcss').Rule} */ (root.first);
-    const before = tokenizeTotal();
-    reduceBorder(rule, [...rule.nodes], false, table, longstandingFeatures);
-    assert.equal(tokenizeTotal() - before, 0);
+    const list = declarationsFromNodes(
+      root.first,
+      createRunContext(table)
+    ).list;
+    const positions = [...list.chain].filter((p) => p !== RUN_END);
+    const added = tokenizedByReduce(() =>
+      reduceBorder(list, positions, false, longstandingFeatures)
+    );
+    // Each side component is tokenized once; the whole input values are not.
+    assert.deepEqual(added, ['calc(1px)', 'red', 'solid']);
   });
 
-  test("reset candidates format a side's width, style and color without tokenizing", () => {
+  test('reset candidates tokenize no text when they format a side', () => {
     const { root, table } = walkedStylesheet(
       'a{border:calc(1px) solid red;border-top-width:2px}'
     );
-    const rule = /** @type {import('postcss').Rule} */ (root.first);
-    const before = tokenizeTotal();
-    reduceBorder(rule, [...rule.nodes], false, table, longstandingFeatures);
-    assert.equal(tokenizeTotal() - before, 0);
+    const list = declarationsFromNodes(
+      root.first,
+      createRunContext(table)
+    ).list;
+    const positions = [...list.chain].filter((p) => p !== RUN_END);
+    const added = tokenizedByReduce(() =>
+      reduceBorder(list, positions, false, longstandingFeatures)
+    );
+    assert.deepEqual(added, []);
   });
 });
 

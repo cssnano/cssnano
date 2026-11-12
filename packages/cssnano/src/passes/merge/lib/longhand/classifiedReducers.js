@@ -7,77 +7,62 @@ import { reducePairFamily } from './decl/pairReducer.js';
 /** @import {BoxDeclarations} from './decl/boxReducer.js'; */
 /** @import {BoxGroup} from './decl/boxGroups.js'; */
 /** @import {FamilyDeclarations, MergeContext} from './canonicalize.js'; */
-/** @import {Container, Declaration} from 'postcss'; */
+/** @import {NodeBlock} from './nodeDeclarations.js'; */
 
 /**
- * Runs property-family reducers on classified declarations for a container.
- * @param {Container} container
+ * Runs property-family reducers on classified declarations for a block. The
+ * declarations are positions in the block's list.
+ * @param {NodeBlock} block
  * @param {{
  *   boxes: Map<BoxGroup, BoxDeclarations> | null,
- *   borderRadiusDecls: Declaration[],
- *   borderRadiusLanes: [Declaration[], Declaration[]],
- *   columnDecls: Declaration[],
- *   columnLanes: [Declaration[], Declaration[]],
- *   borderDeclarations: Declaration[],
+ *   borderRadiusDecls: number[],
+ *   borderRadiusLanes: [number[], number[]],
+ *   columnDecls: number[],
+ *   columnLanes: [number[], number[]],
+ *   borderDeclarations: number[],
  *   hasForeignBorder: boolean,
  *   families: Map<FamilyDeclarations['family'], FamilyDeclarations> | null,
  * }} state
  * @param {MergeContext} context
  * @return {void}
  */
-export function reduceClassifiedContainer(container, state, context) {
+export function reduceClassifiedContainer(block, state, context) {
+  const { list } = block;
   if (state.boxes) {
     for (const box of state.boxes.values()) {
-      reduceBox(
-        container,
-        box,
-        context.boxSupport,
-        context.textTable,
-        context.features
-      );
+      reduceBox(list, box, context.boxSupport, context.features);
     }
   }
   if (state.borderRadiusDecls.length) {
     reduceBorderRadius(
-      container,
+      list,
       state.borderRadiusDecls,
       state.borderRadiusLanes,
-      context.textTable,
       context.features
     );
   }
   if (state.borderDeclarations.length) {
     reduceBorder(
-      container,
+      list,
       state.borderDeclarations,
       state.hasForeignBorder,
-      context.textTable,
       context.features
     );
   }
   if (state.families) {
     for (const { family, decls, lanes } of state.families.values()) {
       if ('longhands' in family) {
-        reducePairFamily(
-          container,
-          family,
-          decls,
-          lanes,
-          context.textTable,
-          context.features
-        );
+        reducePairFamily(list, family, decls, lanes, context.features);
       } else {
-        reduceAlignmentFamily(
-          container,
-          family,
-          decls,
-          lanes,
-          context.textTable
-        );
+        reduceAlignmentFamily(list, family, decls, lanes);
       }
     }
   }
   if (state.columnDecls.length) {
-    context.columnRules.push([container, state.columnDecls, state.columnLanes]);
+    context.columnRules.push({
+      block,
+      positions: state.columnDecls,
+      lanes: state.columnLanes,
+    });
   }
 }

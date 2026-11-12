@@ -4,11 +4,8 @@ import { expandFourSides, fourSideCount } from '../parseTrbl.js';
 import { isGlobalKeyword } from '../validateRadius.js';
 import { allRadiusProperties } from './borderData.js';
 import { partitionLanes } from './radiusDescriptors.js';
-import { joinRanges } from '../../../../../values/joinRanges.js';
-import { delim, whitespace } from '../../../../../values/punctuationTokens.js';
 
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Container, Declaration} from 'postcss'; */
+/** @import {BlockDeclarations} from '../blockDeclarations.js'; */
 /** @import {SlotVector} from './slotVector.js'; */
 /** @import {RadiusDeclarationDescriptor} from './radiusDescriptors.js'; */
 /** @import {parseCornerRadius, parseRadiusShorthand} from '../validateRadius.js'; */
@@ -48,49 +45,27 @@ function shorthandText(horizontal, vertical) {
 }
 
 /**
- * The tokens that spell `shorthandText`, built from the sides' ranges.
- *
- * @param {Component[]} horizontal
- * @param {Component[]} vertical
- * @return {CSSToken[]}
- */
-function shorthandTokens(horizontal, vertical) {
-  const h = joinRanges(horizontal, [whitespace()]);
-  if (sidesText(horizontal) === sidesText(vertical)) return h;
-  const v = joinRanges(vertical, [whitespace()]);
-  return joinRanges(
-    [
-      { list: h, start: 0, end: h.length },
-      { list: v, start: 0, end: v.length },
-    ],
-    [delim('/')]
-  );
-}
-
-/**
  * Synthesizes and commits a merged shorthand declaration if cost-model benefit is non-negative.
  *
- * @param {Container} rule
+ * @param {BlockDeclarations} list
  * @param {SlotVector} slotVector
- * @param {Set<Declaration>} liveDefinitions
- * @param {Set<Declaration>} fallbackDefinitions
+ * @param {Set<number>} liveDefinitions
+ * @param {Set<number>} fallbackDefinitions
  * @param {boolean} isImportant
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @param {ReadonlySet<string>} features the features every target supports
  */
 function commitSlotVector(
-  rule,
+  list,
   slotVector,
   liveDefinitions,
   fallbackDefinitions,
   isImportant,
-  textTable,
   features
 ) {
   /* Preserve CSS-wide keywords without merging to respect author inheritance contracts */
   if (slotVector.some((s) => s && isGlobalKeyword(s.value))) return;
 
-  const full = flushableSlots(slotVector, textTable, features);
+  const full = flushableSlots(slotVector, list, features);
   if (!full) return;
 
   // Every slot of a radius lane keeps its range, as `assign` receives it.
@@ -100,49 +75,39 @@ function commitSlotVector(
   const horizontal = minifiedSides([sides[0], sides[2], sides[4], sides[6]]);
   const vertical = minifiedSides([sides[1], sides[3], sides[5], sides[7]]);
 
-  const value = shorthandText(horizontal, vertical);
-  const written = commitShorthand(
-    rule,
-    full,
-    liveDefinitions,
-    fallbackDefinitions,
-    { prop: 'border-radius', value, important: isImportant },
-    textTable
-  );
-  // The list is built only for a declaration that was written.
-  if (written) {
-    textTable.record(written, value, shorthandTokens(horizontal, vertical));
-  }
+  commitShorthand(list, full, liveDefinitions, fallbackDefinitions, {
+    prop: 'border-radius',
+    value: shorthandText(horizontal, vertical),
+    important: isImportant,
+  });
 }
 
 /**
  * Executes greedy vector coalescing over a lane's IR descriptors.
  *
- * @param {Container} rule
+ * @param {BlockDeclarations} list
  * @param {RadiusDeclarationDescriptor[]} laneDescriptors
  * @param {boolean} isImportant
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @param {ReadonlySet<string>} features the features every target supports
  */
-function coalesceLane(rule, laneDescriptors, isImportant, textTable, features) {
+function coalesceLane(list, laneDescriptors, isImportant, features) {
   const lane = new SlotLane(
     8,
     (slots, contributing, fallbacks) =>
       commitSlotVector(
-        rule,
+        list,
         slots,
         contributing,
         fallbacks,
         isImportant,
-        textTable,
         features
       ),
-    textTable,
+    list,
     features
   );
 
   for (const desc of laneDescriptors) {
-    if (desc.decl.parent !== rule) continue;
+    if (list.at(desc.decl).removed) continue;
 
     if (
       desc.isBarrier ||
@@ -181,8 +146,9 @@ function coalesceLane(rule, laneDescriptors, isImportant, textTable, features) {
 
     // A CSS-wide keyword sets both radii of the corner, with no range to keep.
     if (desc.isGlobalKeyword) {
-      lane.assign(idx * 2, desc.decl.value, desc.decl, wasFull);
-      lane.assign(idx * 2 + 1, desc.decl.value, desc.decl, wasFull);
+      const value = list.at(desc.decl).value;
+      lane.assign(idx * 2, value, desc.decl, wasFull);
+      lane.assign(idx * 2 + 1, value, desc.decl, wasFull);
       continue;
     }
     const parsed = /** @type {ReturnType<typeof parseCornerRadius>} */ (
@@ -202,10 +168,10 @@ function coalesceLane(rule, laneDescriptors, isImportant, textTable, features) {
 /**
  * Applies peephole canonicalization / algebraic folding to a standalone declaration.
  *
+ * @param {BlockDeclarations} list
  * @param {RadiusDeclarationDescriptor} desc
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function canonicalizeSingleton(desc, textTable) {
+function canonicalizeSingleton(list, desc) {
   const {
     decl,
     prop,
@@ -223,27 +189,12 @@ function canonicalizeSingleton(desc, textTable) {
       );
     const horizontal = minifiedSides(shorthandParsed.horizontal);
     const vertical = minifiedSides(shorthandParsed.vertical);
-    decl.prop = 'border-radius';
-    // A renamed declaration is rewritten, so its value drops the comments.
-    delete decl.raws.value;
-    // An unchanged text keeps the list the walk stored for it.
-    const text = shorthandText(horizontal, vertical);
-    if (text !== decl.value) {
-      textTable.record(decl, text, shorthandTokens(horizontal, vertical));
-    }
+    list.rewrite(decl, 'border-radius', shorthandText(horizontal, vertical));
   } else if (desc.longhandIndex !== -1) {
     const cornerParsed =
       /** @type {NonNullable<ReturnType<typeof parseCornerRadius>>} */ (parsed);
     if (cornerParsed[0].raw === cornerParsed[1].raw) {
-      decl.prop = /** @type {string} */ (prop);
-      delete decl.raws.value;
-      if (cornerParsed[0].raw !== decl.value) {
-        textTable.record(
-          decl,
-          cornerParsed[0].raw,
-          joinRanges([cornerParsed[0]], [])
-        );
-      }
+      list.rewrite(decl, /** @type {string} */ (prop), cornerParsed[0].raw);
     }
   }
 }
@@ -251,16 +202,16 @@ function canonicalizeSingleton(desc, textTable) {
 /**
  * Intra-block dead-store elimination, bounded by `all` declarations.
  *
+ * @param {BlockDeclarations} list
  * @param {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} lanes
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @param {ReadonlySet<string>} features the features every target supports
  */
-function eliminateRedundantDeclarations(lanes, textTable, features) {
+function eliminateRedundantDeclarations(list, lanes, features) {
   for (const lane of lanes) {
     // A barrier descriptor holds its `all` declaration.
     discardOverriddenInList(
+      list,
       lane.map((descriptor) => descriptor.decl),
-      textTable,
       features,
       allRadiusProperties
     );
@@ -268,32 +219,31 @@ function eliminateRedundantDeclarations(lanes, textTable, features) {
 }
 
 /**
- * @param {Container} rule
- * @param {Declaration[]} decls
- * @param {[Declaration[], Declaration[]]} lanes
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {BlockDeclarations} list
+ * @param {number[]} decls - positions in `list`
+ * @param {[number[], number[]]} lanes
  * @param {ReadonlySet<string>} features the features every target supports
  */
-export function reduceBorderRadius(rule, decls, lanes, textTable, features) {
-  if (!rule.nodes || rule.nodes.length === 0 || decls.length === 0) return;
+export function reduceBorderRadius(list, decls, lanes, features) {
+  if (decls.length === 0) return;
 
-  const partitioned = partitionLanes(rule, lanes, textTable);
+  const partitioned = partitionLanes(list, lanes);
   if (!partitioned) return;
 
   const { lanes: descriptorLanes, radiusDescriptors } = partitioned;
 
-  eliminateRedundantDeclarations(descriptorLanes, textTable, features);
+  eliminateRedundantDeclarations(list, descriptorLanes, features);
 
-  const liveDecls = radiusDescriptors.filter((d) => d.decl.parent);
+  const liveDecls = radiusDescriptors.filter((d) => !list.at(d.decl).removed);
   if (liveDecls.length <= 1) {
-    if (liveDecls[0]) canonicalizeSingleton(liveDecls[0], textTable);
+    if (liveDecls[0]) canonicalizeSingleton(list, liveDecls[0]);
     return;
   }
 
   for (const isImportant of [false, true]) {
     const laneDescriptors = descriptorLanes[isImportant ? 1 : 0];
-    if (laneDescriptors.some((d) => !d.isBarrier && d.decl.parent === rule)) {
-      coalesceLane(rule, laneDescriptors, isImportant, textTable, features);
+    if (laneDescriptors.some((d) => !d.isBarrier && !list.at(d.decl).removed)) {
+      coalesceLane(list, laneDescriptors, isImportant, features);
     }
   }
 }

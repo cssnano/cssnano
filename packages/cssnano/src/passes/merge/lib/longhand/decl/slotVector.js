@@ -1,17 +1,15 @@
 import cssnanoUtils from '#utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { cssWideKeywords } from '../spec.js';
-import { detach } from '../../deferredChildEdits.js';
-import insertCloned from '../insertCloned.js';
 import isCustomProp from '../isCustomProp.js';
 import { isFallback, mergeBlockingSupport } from '../isFallback.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {Container, Declaration} from 'postcss'; */
+/** @import {BlockDeclarations} from '../blockDeclarations.js'; */
 /** @import {RangePiece} from '../../../../../values/joinRanges.js'; */
 /**
- * @typedef {({ value: string, decl: Declaration, range?: RangePiece } | null)[]} SlotVector
+ * @typedef {({ value: string, decl: number, range?: RangePiece } | null)[]} SlotVector
  * `range` holds the tokens that spell `value`, when the reducer keeps them.
  */
 
@@ -46,14 +44,14 @@ export function declCost(prop, value, important) {
  */
 
 /**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
+ * @param {({ value: string, decl: number } | null)[]} slots
+ * @param {BlockDeclarations} list
+ * @return {{ value: string, decl: number }[] | null} the fully-filled
  * vector, or `null` while any slot is empty or holds a custom property
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function slotVectorReady(slots, textTable) {
-  if (slots.some((s) => !s || isCustomProp(s.decl, textTable))) return null;
-  return /** @type {{ value: string, decl: Declaration }[]} */ (slots);
+function slotVectorReady(slots, list) {
+  if (slots.some((s) => !s || isCustomProp(list.at(s.decl)))) return null;
+  return /** @type {{ value: string, decl: number }[]} */ (slots);
 }
 
 /**
@@ -61,13 +59,13 @@ function slotVectorReady(slots, textTable) {
  * declaration it represents: when one slot's support provenance differs from
  * the first, the values are not interchangeable.
  *
- * @param {{ value: string, decl: Declaration }[]} full
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {{ value: string, decl: number }[]} full
+ * @param {BlockDeclarations} list
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function supportProvenanceMatches(full, textTable, features) {
-  const s0 = mergeBlockingSupport(full[0].decl, textTable, features);
+function supportProvenanceMatches(full, list, features) {
+  const s0 = mergeBlockingSupport(list.at(full[0].decl), features);
   // A shorthand fills adjacent slots with one declaration; compare it once.
   let previous = full[0].decl;
   for (let i = 1; i < full.length; i++) {
@@ -75,8 +73,7 @@ function supportProvenanceMatches(full, textTable, features) {
     if (decl === previous) continue;
     previous = decl;
     if (
-      s0.symmetricDifference(mergeBlockingSupport(decl, textTable, features))
-        .size
+      s0.symmetricDifference(mergeBlockingSupport(list.at(decl), features)).size
     ) {
       return false;
     }
@@ -85,15 +82,15 @@ function supportProvenanceMatches(full, textTable, features) {
 }
 
 /**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
+ * @param {({ value: string, decl: number } | null)[]} slots
+ * @param {BlockDeclarations} list
+ * @param {ReadonlySet<string>} features the features every target supports
+ * @return {{ value: string, decl: number }[] | null} the fully-filled
  * vector ready to be merged, or `null` if any slot is missing, custom,
  * conflicting on CSS-wide keywords, or has mismatched support provenance
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
- * @param {ReadonlySet<string>} features the features every target supports
  */
-export function flushableSlots(slots, textTable, features) {
-  const full = slotVectorReady(slots, textTable);
+export function flushableSlots(slots, list, features) {
+  const full = slotVectorReady(slots, list);
   if (!full) return null;
 
   const v0 = asciiLowerCase(full[0].value);
@@ -102,7 +99,7 @@ export function flushableSlots(slots, textTable, features) {
     const sv = asciiLowerCase(s.value);
     if (kw ? sv !== v0 : cssWideKeywords.has(sv)) return null;
   }
-  if (!supportProvenanceMatches(full, textTable, features)) return null;
+  if (!supportProvenanceMatches(full, list, features)) return null;
 
   return full;
 }
@@ -113,25 +110,25 @@ export function flushableSlots(slots, textTable, features) {
  * keyword resets every slot it touches. Only a fully-filled vector can need
  * this; callers check that first.
  *
- * @param {({ value: string, decl: Declaration } | null)[]} slots
+ * @param {({ value: string, decl: number } | null)[]} slots
  * @param {number} first - the first slot the declaration writes
  * @param {number} count - how many consecutive slots it writes; all slots for
  * a shorthand
- * @param {Declaration} decl
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {number} position - the declaration's position in `list`
+ * @param {BlockDeclarations} list
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function shouldResetSlots(slots, first, count, decl, textTable, features) {
+function shouldResetSlots(slots, first, count, position, list, features) {
+  const decl = list.at(position);
   if (count < slots.length && isCssWideKeyword(decl.value)) {
     return true;
   }
   for (let i = first; i < first + count; i++) {
     if (
       isFallback(
-        /** @type {{ decl: Declaration }} */ (slots[i]).decl,
+        list.at(/** @type {{ decl: number }} */ (slots[i]).decl),
         decl,
-        textTable,
         features
       )
     ) {
@@ -148,31 +145,31 @@ function shouldResetSlots(slots, first, count, decl, textTable, features) {
  * slot and `reset` wherever a declaration ends the run.
  */
 export class SlotLane {
-  /** @type {import('../../../../../values/textTable.js').TextTable} */
-  #textTable;
+  /** @type {BlockDeclarations} */
+  #list;
   /** @type {ReadonlySet<string>} */
   #features;
 
   /**
    * @param {number} size - how many slots the family has
-   * @param {(slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void} commit
+   * @param {(slots: SlotVector, contributing: Set<number>, fallbacks: Set<number>) => void} commit
    * called with the state whenever the run ends, before it is cleared
-   * @param {import('../../../../../values/textTable.js').TextTable} textTable
+   * @param {BlockDeclarations} list
    * @param {ReadonlySet<string>} features the features every target supports
    */
-  constructor(size, commit, textTable, features) {
-    this.#textTable = textTable;
+  constructor(size, commit, list, features) {
+    this.#list = list;
     this.#features = features;
     /** @type {SlotVector} */
     this.slots = Array.from({ length: size }, () => null);
-    /** @type {Set<Declaration>} */
+    /** @type {Set<number>} */
     this.contributing = new Set();
-    /** @type {Set<Declaration>} */
+    /** @type {Set<number>} */
     this.fallbacks = new Set();
     /**
      * The fallbacks behind each slot's declaration, allocated with the first.
      *
-     * @type {(Declaration[] | undefined)[] | undefined}
+     * @type {(number[] | undefined)[] | undefined}
      */
     this.slotFallbacks = undefined;
     this.commit = commit;
@@ -193,7 +190,7 @@ export class SlotLane {
    *
    * @param {number} first
    * @param {number} count
-   * @param {Declaration} decl
+   * @param {number} decl - the declaration's position in the list
    * @return {boolean} whether the vector was full beforehand, to pass to `assign`
    */
   begin(first, count, decl) {
@@ -205,7 +202,7 @@ export class SlotLane {
         first,
         count,
         decl,
-        this.#textTable,
+        this.#list,
         this.#features
       )
     ) {
@@ -217,7 +214,7 @@ export class SlotLane {
   /**
    * @param {number} idx
    * @param {string} value
-   * @param {Declaration} decl
+   * @param {number} decl - the declaration's position in the list
    * @param {boolean} wasFull - as returned by `begin`
    * @param {RangePiece} [range] the tokens that spell `value`, when kept
    */
@@ -236,22 +233,22 @@ export class SlotLane {
    * `decl`.
    *
    * @param {number} idx
-   * @param {Declaration} previous - the declaration `decl` overwrites
-   * @param {Declaration} decl
+   * @param {number} previous - the declaration `decl` overwrites
+   * @param {number} decl
    * @param {boolean} fallbackSettled - the caller already found, through
    * `shouldResetSlots`, that `previous` is no fallback for `decl`
    * @return {void}
    */
   #retainFallbacks(idx, previous, decl, fallbackSettled) {
+    const list = this.#list;
+    const later = list.at(decl);
     const behind = this.slotFallbacks?.[idx];
     const isPreviousFallback =
-      !fallbackSettled &&
-      isFallback(previous, decl, this.#textTable, this.#features);
+      !fallbackSettled && isFallback(list.at(previous), later, this.#features);
     if (behind === undefined && !isPreviousFallback) return;
     const kept =
-      behind?.filter((d) =>
-        isFallback(d, decl, this.#textTable, this.#features)
-      ) ?? [];
+      behind?.filter((d) => isFallback(list.at(d), later, this.#features)) ??
+      [];
     const pruned = behind !== undefined && kept.length < behind.length;
     if (isPreviousFallback) {
       kept.push(previous);
@@ -262,9 +259,9 @@ export class SlotLane {
     if (!pruned) return;
     // A shorthand can be a fallback in several slots.
     this.fallbacks.clear();
-    for (const list of this.slotFallbacks) {
-      if (list === undefined) continue;
-      for (const d of list) this.fallbacks.add(d);
+    for (const slotKept of this.slotFallbacks) {
+      if (slotKept === undefined) continue;
+      for (const d of slotKept) this.fallbacks.add(d);
     }
   }
 }
@@ -275,52 +272,43 @@ export class SlotLane {
  * profitable cover is inserted after the final represented declaration while
  * the represented, non-fallback declarations are removed.
  *
- * @param {Container} rule
- * @param {{ value: string, decl: Declaration }[]} full
- * @param {Set<Declaration>} contributing
- * @param {Set<Declaration>} fallbacks
- * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
+ * @param {BlockDeclarations} list
+ * @param {{ value: string, decl: number }[]} full
+ * @param {Set<number>} contributing
+ * @param {Set<number>} fallbacks
+ * @param {{ prop: string, value: string, important: boolean, inserted?: Map<number, number>, mayInsert?: boolean }} target
  * `mayInsert: false` limits the commit to the in-place rewrite, for a shorthand
  * that some target does not support.
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
- * @returns {Declaration | undefined} the declaration that now spells the
+ * @returns {number | undefined} the declaration that now spells the
  * shorthand, or undefined when nothing was written
  */
-export function commitShorthand(
-  rule,
-  full,
-  contributing,
-  fallbacks,
-  target,
-  textTable
-) {
+export function commitShorthand(list, full, contributing, fallbacks, target) {
   const { prop, value: shorthandVal, important } = target;
   const toRemove = Array.from(contributing).filter((d) => !fallbacks.has(d));
   if (toRemove.length === 0) return undefined;
 
-  if (toRemove.length === 1 && asciiLowerCase(toRemove[0].prop) === prop) {
-    toRemove[0].prop = prop;
-    delete toRemove[0].raws.value;
-    textTable.setText(toRemove[0], shorthandVal);
+  const first = list.at(toRemove[0]);
+  if (toRemove.length === 1 && asciiLowerCase(first.prop) === prop) {
+    list.rewrite(toRemove[0], prop, shorthandVal);
     return toRemove[0];
   }
   if (target.mayInsert === false) return undefined;
 
   let remSize = -declCost(prop, shorthandVal, important);
   for (const d of toRemove) {
-    remSize += declCost(d.prop, d.value, d.important);
+    const item = list.at(d);
+    remSize += declCost(item.prop, item.value, item.important);
   }
 
   if (remSize < 0) return undefined;
   const a = toRemove.at(-1);
-  if (!a) return undefined;
-  const inserted = insertCloned(
-    rule,
-    a,
-    { prop, value: shorthandVal, important },
-    textTable
-  );
+  if (a === undefined) return undefined;
+  const inserted = list.insertClone(a, {
+    prop,
+    value: shorthandVal,
+    important,
+  });
   if (target.inserted) target.inserted.set(a, inserted);
-  for (const d of toRemove) detach(d);
+  for (const d of toRemove) list.remove(d);
   return inserted;
 }

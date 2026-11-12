@@ -18,11 +18,9 @@ import {
   STYLESHEET,
 } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
-import { hasPendingEdits } from '../deferredChildEdits.js';
-import { keepsValueAsWritten } from '../longhand/keptValue.js';
-import { tokenizeMode } from '../../../../values/tokenizeMode.js';
+import { valueListOf } from '../valueList.js';
 
-const { asciiLowerCase, isAnonymousLayer, sourceValue } = cssnanoUtils;
+const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /** @import {AtRule, ChildNode, Comment, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {NodeTable} from './nodeTable.js' */
@@ -57,31 +55,6 @@ function idsOfItems(selectorIds, tokenLists, items) {
   const ids = [];
   for (const item of items) ids.push(selectorIds.idOf(tokenLists, item));
   return ids;
-}
-
-const PENDING_EDITS = 'a container has edits its child list does not show';
-
-/**
- * The id of the value a declaration's record holds. A value with an important
- * comment is kept as written, since the comment is part of what the author kept;
- * any other value is the cleaned `value`, which PostCSS gives.
- *
- * @param {Declaration} node
- * @param {RunContext} context
- * @return {TokenListId}
- */
-function valueListOf(node, context) {
-  const { textTable, tokenLists, valueIds } = context;
-  const mode = tokenizeMode(node.prop);
-  if (keepsValueAsWritten(textTable, node)) {
-    const written = sourceValue(node);
-    return valueIds.idOf(tokenLists, mode, written, textTable.tokens(node));
-  }
-  // The stored tokens spell the written text, which is the cleaned value only
-  // when no comment was stripped from it.
-  const stored =
-    sourceValue(node) === node.value ? textTable.stored(node) : undefined;
-  return valueIds.idOf(tokenLists, mode, node.value, stored);
 }
 
 /**
@@ -148,10 +121,6 @@ export function buildRecords(root, context) {
    * @return {void}
    */
   const fillChildren = (container, node) => {
-    // The build reads the child lists, which a pending edit has not rebuilt yet.
-    if (consistencyChecks && hasPendingEdits(node)) {
-      throw new Error(PENDING_EDITS);
-    }
     for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
       if (child.type === 'rule') {
         const record = new RuleRecord(

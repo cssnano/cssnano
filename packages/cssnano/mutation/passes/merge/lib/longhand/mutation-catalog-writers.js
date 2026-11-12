@@ -12,8 +12,8 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'assign a folded shorthand as a string, dropping its tokens',
-    find: '  table.assignFolded(decl, folded);',
-    replace: '  table.setText(decl, folded.text);',
+    name: 'shorthand fold writer: rewrite a folded shorthand without its tokens',
+    find: '  list.rewrite(position, decl.prop, folded.text, folded.tokens);',
+    replace: '  list.rewrite(position, decl.prop, folded.text);',
   },
 ];

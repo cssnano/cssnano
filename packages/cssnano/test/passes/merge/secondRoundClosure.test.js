@@ -7,6 +7,7 @@
 // 20,000 biased sheets, no shape made those created blocks non-canonical, so
 // the per-report driver cases in driver.test.js are the authoritative check
 // for those sites.
+import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
@@ -75,8 +76,7 @@ function blocksChangedBySecondRound(css) {
     placeShorthands,
     boxSupport,
     pairShorthands,
-    new TextTable(),
-    features
+    createRunContext(new TextTable(), undefined, features)
   );
   const changed = [];
   const blocks = [root];

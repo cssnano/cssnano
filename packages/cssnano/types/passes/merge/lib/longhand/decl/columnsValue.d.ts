@@ -1,5 +1,4 @@
-import type { Declaration } from 'postcss';
-import type { TextTable } from '../../../../../values/textTable.js';
+import type { DeclarationItem } from '../blockDeclarations.js';
 export declare const columns = "columns";
 /** Slot of each longhand in the parsed `columns` value. */
 export declare const columnSlots: Map<string, number>;
@@ -21,11 +20,10 @@ declare function tokenizeColumns(value: string, list: readonly import('@csstools
     }[];
 };
 /**
- * @param {Declaration} d
- * @param {TextTable} textTable
+ * @param {DeclarationItem} d
  * @return {ReturnType<typeof tokenizeColumns>}
  */
-export declare function parsedValue(d: Declaration, textTable: TextTable): ReturnType<typeof tokenizeColumns>;
+export declare function parsedValue(d: DeclarationItem): ReturnType<typeof tokenizeColumns>;
 /**
  * Normalize a columns shorthand definition. Both longhand initial values
  * are 'auto', and omitted values reset to initial, so 'auto' can be dropped.
@@ -50,22 +48,19 @@ export declare function parseColumns(parsed: ReturnType<typeof tokenizeColumns>,
  * Check if a declaration sets column properties beyond column-width/count.
  * The `columns: <width> / <height>` form sets column-height via top-level slash.
  *
- * @param {Declaration} declaration
- * @param {TextTable} textTable
+ * @param {DeclarationItem} declaration
  * @return {boolean}
  */
-export declare const setsOtherColumnProperty: (declaration: Declaration, textTable: TextTable) => boolean;
+export declare const setsOtherColumnProperty: (declaration: DeclarationItem) => boolean;
 /**
- * @param {Declaration} d
- * @param {TextTable} textTable
+ * @param {DeclarationItem} d
  * @return {boolean}
  */
-export declare function isValidColumns(d: Declaration, textTable: TextTable): boolean;
+export declare function isValidColumns(d: DeclarationItem): boolean;
 /**
- * @param {Declaration} d
- * @param {TextTable} textTable
+ * @param {DeclarationItem} d
  * @return {boolean}
  */
-export declare const isInvalid: (d: Declaration, textTable: TextTable) => boolean;
+export declare const isInvalid: (d: DeclarationItem) => boolean;
 export {};
 //# sourceMappingURL=columnsValue.d.ts.map

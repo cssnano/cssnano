@@ -13,17 +13,17 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'synthesize a reset from cells whose support provenance differs',
-    find: '  if (!hasConsistentSupport(allDecls, textTable, features)) return [];',
+    find: '  if (!hasConsistentSupport(allDecls, list, features)) return [];',
     replace: '  if (false) return [];',
   },
   {
     name: 'ignore a non-border fallback when admitting a reset candidate',
-    find: "  for (const d of fallbacks) {\n    if (asciiLowerCase(d.prop) !== 'border') return [];\n  }",
+    find: "  for (const d of fallbacks) {\n    if (asciiLowerCase(list.at(d).prop) !== 'border') return [];\n  }",
     replace: '  void fallbacks;',
   },
   {
     name: 'ignore a declaration with its own support requirement',
-    find: '      needsUnmetSupport(d, textTable, features)\n    ) {',
+    find: '      needsUnmetSupport(list.at(d), features)\n    ) {',
     replace: '      false\n    ) {',
   },
 ];

@@ -1,10 +1,9 @@
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { discardOverriddenInList } from '../../../../../src/passes/merge/lib/longhand/decl/overriddenDeclarations.js';
-import { applyChildEdits } from '../../../../../src/passes/merge/lib/deferredChildEdits.js';
+import { reduceBlockOf } from './helpers/reduceRuns.js';
 
 /**
  * @param {string} css
@@ -14,19 +13,15 @@ import { applyChildEdits } from '../../../../../src/passes/merge/lib/deferredChi
  */
 function discard(css, trustedProperties, crossPropertyRule) {
   const root = postcss.parse(css);
-  const rule = /** @type {import('postcss').Rule} */ (root.first);
-  const declarations = /** @type {import('postcss').Declaration[]} */ (
-    rule.nodes.filter((node) => node.type === 'decl')
+  reduceBlockOf(/** @type {import('postcss').Rule} */ (root.first), (list) =>
+    discardOverriddenInList(
+      list,
+      list.chain,
+      longstandingFeatures,
+      trustedProperties,
+      crossPropertyRule
+    )
   );
-
-  discardOverriddenInList(
-    declarations,
-    new TextTable(),
-    longstandingFeatures,
-    trustedProperties,
-    crossPropertyRule
-  );
-  applyChildEdits(rule);
   return root.toString();
 }
 

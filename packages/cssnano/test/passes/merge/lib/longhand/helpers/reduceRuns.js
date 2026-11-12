@@ -1,3 +1,4 @@
+import { createRunContext } from '../../../../../../src/passes/ir/runContext.js';
 import { isAll } from '../../../../../../src/passes/merge/lib/longhand/decl/importanceLanes.js';
 import { declarationRuns, importanceLanes } from './importanceLanes.js';
 import {
@@ -18,30 +19,47 @@ import {
   allColumnProps,
   reduceColumns,
 } from '../../../../../../src/passes/merge/lib/longhand/decl/columns.js';
-import { applyChildEdits } from '../../../../../../src/passes/merge/lib/deferredChildEdits.js';
+import {
+  commitToNodes,
+  declarationsFromNodes,
+} from '../../../../../../src/passes/merge/lib/longhand/nodeDeclarations.js';
 import { longstandingFeatures } from '../../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 
-/** @import {Container, Declaration} from 'postcss'; */
+/** @import {Container} from 'postcss'; */
+/** @import {BlockDeclarations} from '../../../../../../src/passes/merge/lib/longhand/blockDeclarations.js'; */
 /** @import {BoxGroup} from '../../../../../../src/passes/merge/lib/longhand/decl/boxGroups.js'; */
 /** @import {BoxDeclarations} from '../../../../../../src/passes/merge/lib/longhand/decl/boxReducer.js'; */
 
 const defaultSupport = new BoxSupport(['ie 11']);
 
 /**
- * Calls a family reducer once for every run of declarations in the rule, with
- * the declarations and importance lanes that the plugin hands it, then applies
- * the edits the way the plugin does.
+ * Reads the block of a rule, runs a reduction on its list, then writes the
+ * block back, as the plugin does for one block.
  *
  * @param {Container} rule
- * @param {(declaration: Declaration) => boolean} belongsToFamily
- * @param {(decls: Declaration[], lanes: [Declaration[], Declaration[]]) => void} reduce
+ * @param {(list: BlockDeclarations) => void} reduce
+ * @return {void}
  */
-function reduceFamilyRuns(rule, belongsToFamily, reduce) {
-  for (const run of declarationRuns(rule)) {
+export function reduceBlockOf(rule, reduce) {
+  const textTable = new TextTable();
+  const block = declarationsFromNodes(rule, createRunContext(textTable));
+  reduce(block.list);
+  commitToNodes(block, textTable);
+}
+
+/**
+ * Calls a family reducer once for every run of declarations in the block, with
+ * the positions and importance lanes that the plugin hands it.
+ *
+ * @param {BlockDeclarations} list
+ * @param {(position: number) => boolean} belongsToFamily
+ * @param {(decls: number[], lanes: [number[], number[]]) => void} reduce
+ */
+function reduceFamilyRuns(list, belongsToFamily, reduce) {
+  for (const run of declarationRuns(list)) {
     const decls = run.filter(belongsToFamily);
-    if (decls.length > 0) reduce(decls, importanceLanes(rule, decls));
+    if (decls.length > 0) reduce(decls, importanceLanes(list, decls));
   }
-  applyChildEdits(rule);
 }
 
 /**
@@ -49,22 +67,24 @@ function reduceFamilyRuns(rule, belongsToFamily, reduce) {
  * properties, and the lanes, which also hold what may alias them.
  *
  * @param {BoxGroup} group
- * @param {Declaration[]} run
- * @param {Container} rule
+ * @param {number[]} run positions in `list`
+ * @param {BlockDeclarations} list
  * @return {BoxDeclarations}
  */
-export function boxDeclarations(group, run, rule) {
-  const members = run.filter((d) => group.properties.has(d.prop.toLowerCase()));
+export function boxDeclarations(group, run, list) {
+  const members = run.filter((p) =>
+    group.properties.has(list.at(p).prop.toLowerCase())
+  );
   const kinds = members.map(
-    (d) => boxProperties.get(d.prop.toLowerCase())?.family
+    (p) => boxProperties.get(list.at(p).prop.toLowerCase())?.family
   );
   return {
     group,
     decls: members,
     lanes: importanceLanes(
-      rule,
-      run.filter((d) => {
-        const prop = d.prop.toLowerCase();
+      list,
+      run.filter((p) => {
+        const prop = list.at(p).prop.toLowerCase();
         return group.properties.has(prop) || aliasedGroup(prop) === group;
       })
     ),
@@ -83,69 +103,69 @@ export function reduceBoxRuns(rule, name, support = defaultSupport) {
   const group = /** @type {BoxGroup} */ (
     boxGroups.find((candidate) => candidate.name === name)
   );
-  const textTable = new TextTable();
-  for (const run of declarationRuns(rule)) {
-    const box = boxDeclarations(group, run, rule);
-    if (box.decls.length === 0) continue;
-    if (box.flow.size === 0) box.flow = null;
-    reduceBox(rule, box, support, textTable, longstandingFeatures);
-  }
-  applyChildEdits(rule);
+  reduceBlockOf(rule, (list) => {
+    for (const run of declarationRuns(list)) {
+      const box = boxDeclarations(group, run, list);
+      if (box.decls.length === 0) continue;
+      if (box.flow.size === 0) box.flow = null;
+      reduceBox(list, box, support, longstandingFeatures);
+    }
+  });
 }
 
 /** @param {Container} rule */
 export function reduceColumnsRuns(rule) {
-  reduceFamilyRuns(
-    rule,
-    (d) => allColumnProps.has(d.prop.toLowerCase()),
-    (decls, lanes) =>
-      reduceColumns(rule, decls, lanes, new TextTable(), longstandingFeatures)
+  reduceBlockOf(rule, (list) =>
+    reduceFamilyRuns(
+      list,
+      (p) => allColumnProps.has(list.at(p).prop.toLowerCase()),
+      (decls, lanes) => reduceColumns(list, decls, lanes, longstandingFeatures)
+    )
   );
 }
 
 /** @param {Container} rule */
 export function reduceBorderRadiusRuns(rule) {
-  reduceFamilyRuns(
-    rule,
-    (d) => allRadiusProperties.has(d.prop.toLowerCase()),
-    (decls, lanes) =>
-      reduceBorderRadius(
-        rule,
-        decls,
-        lanes,
-        new TextTable(),
-        longstandingFeatures
-      )
+  reduceBlockOf(rule, (list) =>
+    reduceFamilyRuns(
+      list,
+      (p) => allRadiusProperties.has(list.at(p).prop.toLowerCase()),
+      (decls, lanes) =>
+        reduceBorderRadius(list, decls, lanes, longstandingFeatures)
+    )
   );
 }
 
 /**
- * @param {Container} rule
+ * @param {BlockDeclarations} list
  * @return {boolean} whether a declaration outside the physical border family
  * could cascade with it
  */
-function hasForeignBorder(rule) {
-  return (rule.nodes ?? []).some((node) => {
-    if (node.type !== 'decl') return false;
-    if (isAll(node)) return true;
-    const p = node.prop.toLowerCase();
-    return (
-      p.startsWith('border-') &&
-      p !== 'border-spacing' &&
-      !allRadiusProperties.has(p) &&
-      !allPhysicalBorderProperties.has(p)
-    );
-  });
+function hasForeignBorder(list) {
+  for (let p = 0; p < list.length; p++) {
+    const item = list.at(p);
+    if (isAll(item)) return true;
+    const prop = item.prop.toLowerCase();
+    if (
+      prop.startsWith('border-') &&
+      prop !== 'border-spacing' &&
+      !allRadiusProperties.has(prop) &&
+      !allPhysicalBorderProperties.has(prop)
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /** @param {Container} rule */
 export function reduceBorderRuns(rule) {
-  const foreign = hasForeignBorder(rule);
-  const textTable = new TextTable();
-  reduceFamilyRuns(
-    rule,
-    (d) => allPhysicalBorderProperties.has(d.prop.toLowerCase()),
-    (decls) =>
-      reduceBorder(rule, decls, foreign, textTable, longstandingFeatures)
-  );
+  reduceBlockOf(rule, (list) => {
+    const foreign = hasForeignBorder(list);
+    reduceFamilyRuns(
+      list,
+      (p) => allPhysicalBorderProperties.has(list.at(p).prop.toLowerCase()),
+      (decls) => reduceBorder(list, decls, foreign, longstandingFeatures)
+    );
+  });
 }

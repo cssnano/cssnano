@@ -51,8 +51,7 @@ function runFirstRound(css, support, context) {
     placeShorthands,
     boxSupport,
     pairShorthands,
-    context.textTable,
-    context.features
+    context
   );
   canonicalizeRound(css, first);
   return first;
@@ -150,8 +149,7 @@ function runTransforms(css, browsers, support, rules, context) {
     placeShorthands,
     boxSupport,
     pairShorthands,
-    context.textTable,
-    context.features
+    context
   );
   // Carried over: a stale `true` only keeps columns unreduced, and any
   // column-setting declaration a merge moved sits in a block rescanned here.

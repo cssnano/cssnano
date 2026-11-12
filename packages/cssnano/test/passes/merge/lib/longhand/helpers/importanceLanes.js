@@ -1,29 +1,29 @@
-import { endsDeclarationRun } from '../../../../../../src/passes/merge/lib/longhand/decl/declarationRuns.js';
+import { RUN_END } from '../../../../../../src/passes/merge/lib/longhand/blockDeclarations.js';
 import { isAll } from '../../../../../../src/passes/merge/lib/longhand/decl/importanceLanes.js';
 
-/** @import {Container, Declaration} from 'postcss'; */
+/** @import {BlockDeclarations} from '../../../../../../src/passes/merge/lib/longhand/blockDeclarations.js' */
 
 /* The plugin collects runs and lanes while it classifies declarations; tests
- * that call a reducer directly rebuild them from the rule. */
+ * that call a reducer directly rebuild them from the block. */
 
 /**
- * Splits the declarations of a container into runs that may be merged
- * independently.
+ * Splits the declarations of a block into runs that may be merged
+ * independently, by position in the list.
  *
- * @param {Container} container
- * @return {Declaration[][]}
+ * @param {BlockDeclarations} list
+ * @return {number[][]}
  */
-export function declarationRuns(container) {
-  /** @type {Declaration[][]} */
+export function declarationRuns(list) {
+  /** @type {number[][]} */
   const runs = [];
-  /** @type {Declaration[]} */
+  /** @type {number[]} */
   let run = [];
-  for (const node of container.nodes ?? []) {
-    if (endsDeclarationRun(node)) {
+  for (const entry of list.chain) {
+    if (entry === RUN_END) {
       if (run.length > 0) runs.push(run);
       run = [];
-    } else if (node.type === 'decl') {
-      run.push(node);
+    } else {
+      run.push(entry);
     }
   }
   if (run.length > 0) runs.push(run);
@@ -34,31 +34,31 @@ export function declarationRuns(container) {
  * Reconstruct the normal and important lanes in rule order. A matching `all`
  * declaration is retained only as a segment boundary for family reducers.
  *
- * @param {Container} rule
- * @param {Declaration[]} declarations
- * @return {[Declaration[], Declaration[]]}
+ * @param {BlockDeclarations} list
+ * @param {number[]} declarations positions in `list`
+ * @return {[number[], number[]]}
  */
-export function importanceLanes(rule, declarations) {
-  const live = declarations.filter((d) => d.parent === rule);
-  /** @type {[Declaration[], Declaration[]]} */
+export function importanceLanes(list, declarations) {
+  const live = declarations.filter((p) => !list.at(p).removed);
+  /** @type {[number[], number[]]} */
   const lanes = [[], []];
 
-  if (!rule.nodes?.some((n) => n.type === 'decl' && isAll(n))) {
-    for (const node of live) {
-      lanes[node.important ? 1 : 0].push(node);
+  if (!list.chain.some((p) => p !== RUN_END && isAll(list.at(p)))) {
+    for (const p of live) {
+      lanes[list.at(p).important ? 1 : 0].push(p);
     }
     return lanes;
   }
 
   // Another run of the same rule cannot be overridden by or override these.
   const liveSet = new Set(live);
-  const scope = declarationRuns(rule)
-    .filter((run) => run.some((d) => liveSet.has(d)))
+  const scope = declarationRuns(list)
+    .filter((run) => run.some((p) => liveSet.has(p)))
     .flat();
 
-  for (const node of scope) {
-    if (liveSet.has(node) || isAll(node)) {
-      lanes[node.important ? 1 : 0].push(node);
+  for (const p of scope) {
+    if (liveSet.has(p) || isAll(list.at(p))) {
+      lanes[list.at(p).important ? 1 : 0].push(p);
     }
   }
 

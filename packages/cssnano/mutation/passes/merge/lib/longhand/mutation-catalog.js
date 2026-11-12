@@ -13,10 +13,10 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'mix !important declarations into the normal lane',
-    find: `  const laneDecls = live.filter(
-      (d) => Boolean(d.important) === lane && d.parent
+    find: `    const laneDecls = live.filter(
+      (p) => Boolean(list.at(p).important) === lane && !list.at(p).removed
     );`,
-    replace: '  const laneDecls = live.filter((d) => d.parent);',
+    replace: '    const laneDecls = live.filter((p) => !list.at(p).removed);',
   },
   {
     name: 'let substituted values fill border cells without a barrier',
@@ -25,12 +25,12 @@ export const mutations = [
   },
   {
     name: 'reduce segments containing style hacks',
-    find: '    if (hasHack(d.raws.before, d.prop, d.value) || !canExplode(d, textTable)) {',
-    replace: '    if (!canExplode(d, textTable)) {',
+    find: '    if (hasHack(d.before, d.prop, d.value) || !canExplode(d)) {',
+    replace: '    if (!canExplode(d)) {',
   },
   {
     name: 'drop declarations a later one needs as a fallback',
-    find: '    !strandsFallback(node, lastNode, textTable, features)\n  );',
+    find: '    !strandsFallback(node, lastNode, features)\n  );',
     replace: '    true\n  );',
   },
 ];

@@ -4,10 +4,8 @@ import { shorthand, initialValues, cssWideKeywords } from '../spec.js';
 import { isLengthValue } from '../lengthGrammar.js';
 import { isUnresolved } from '../unresolved.js';
 import { closingTokens } from '../valueComponents.js';
-import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
 
-/** @import {Declaration} from 'postcss'; */
-/** @import {TextTable} from '../../../../../values/textTable.js' */
+/** @import {DeclarationItem} from '../blockDeclarations.js'; */
 
 const { TokenType, asciiLowerCase, closeForOpening } = cssnanoUtils;
 
@@ -80,12 +78,11 @@ function tokenizeColumns(value, list) {
 }
 
 /**
- * @param {Declaration} d
- * @param {TextTable} textTable
+ * @param {DeclarationItem} d
  * @return {ReturnType<typeof tokenizeColumns>}
  */
-export function parsedValue(d, textTable) {
-  return tokenizeColumns(d.value, declaredValueTokens(textTable, d));
+export function parsedValue(d) {
+  return tokenizeColumns(d.value, d.tokens);
 }
 
 /**
@@ -213,14 +210,13 @@ export function parseColumns(parsed, roles = termRoles(parsed)) {
  * Check if a declaration sets column properties beyond column-width/count.
  * The `columns: <width> / <height>` form sets column-height via top-level slash.
  *
- * @param {Declaration} declaration
- * @param {TextTable} textTable
+ * @param {DeclarationItem} declaration
  * @return {boolean}
  */
-export const setsOtherColumnProperty = (declaration, textTable) =>
+export const setsOtherColumnProperty = (declaration) =>
   otherColumnProperties.has(asciiLowerCase(declaration.prop)) ||
   (asciiLowerCase(declaration.prop) === columns &&
-    parsedValue(declaration, textTable).hasTopLevelSlash);
+    parsedValue(declaration).hasTopLevelSlash);
 
 /** @param {string} text @return {boolean} */
 const isUnresolvedText = (text) => {
@@ -235,13 +231,12 @@ const isKeywordOrUnresolved = (v) =>
   v === auto || cssWideKeywords.has(v) || isUnresolvedText(v);
 
 /**
- * @param {Declaration} d
- * @param {TextTable} textTable
+ * @param {DeclarationItem} d
  * @return {boolean}
  */
-export function isValidColumns(d, textTable) {
+export function isValidColumns(d) {
   if (!d.value) return false;
-  const parsed = parsedValue(d, textTable);
+  const parsed = parsedValue(d);
   const roles = termRoles(parsed);
   if (parseColumns(parsed, roles)) return true;
   if (parsed.hasTopLevelSlash) return true;
@@ -280,15 +275,14 @@ export function isValidColumns(d, textTable) {
 }
 
 /**
- * @param {Declaration} d
- * @param {TextTable} textTable
+ * @param {DeclarationItem} d
  * @return {boolean}
  */
-function isValidColumnProperty(d, textTable) {
+function isValidColumnProperty(d) {
   const value = asciiLowerCase(d.value);
   if (!value) return false;
   if (isKeywordOrUnresolved(value)) return true;
-  const parsed = parsedValue(d, textTable);
+  const parsed = parsedValue(d);
   return (
     parsed.terms.length === 1 &&
     componentRole(parsed.terms[0]) ===
@@ -297,12 +291,11 @@ function isValidColumnProperty(d, textTable) {
 }
 
 /**
- * @param {Declaration} d
- * @param {TextTable} textTable
+ * @param {DeclarationItem} d
  * @return {boolean}
  */
-export const isInvalid = (d, textTable) =>
-  !hasHack(d.raws.before, d.prop, d.value) &&
+export const isInvalid = (d) =>
+  !hasHack(d.before, d.prop, d.value) &&
   (asciiLowerCase(d.prop) === columns
-    ? !isValidColumns(d, textTable)
-    : !isValidColumnProperty(d, textTable));
+    ? !isValidColumns(d)
+    : !isValidColumnProperty(d));

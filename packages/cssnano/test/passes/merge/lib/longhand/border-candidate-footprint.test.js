@@ -1,8 +1,7 @@
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import postcss from 'postcss';
 import { generateCandidates } from '../../../../../src/passes/merge/lib/longhand/decl/borderCandidates.js';
+import { blockOf } from './helpers/declarationItems.js';
 
 const sides = ['top', 'right', 'bottom', 'left'];
 const components = ['width', 'style', 'color'];
@@ -36,12 +35,16 @@ function physicalLonghands(prop) {
  * @return {Generator<{touched: Set<number>, candidates: {prop: string, value: string}[][]}>}
  */
 function* everyTouchedSet(hasReset) {
+  // Cell `i` is the declaration at position `i` of the block.
+  const list = blockOf(
+    `a{${cellNames.map((name) => `${name}:initial-value`).join(';')}}`
+  );
   for (let set = 1; set < 2 ** 12; set++) {
     const touched = new Set();
-    const cellHistory = cellNames.map((name, index) => {
+    const cellHistory = cellNames.map((_, index) => {
       if (Math.floor(set / 2 ** index) % 2 === 0) return new Set();
       touched.add(index);
-      return new Set([postcss.decl({ prop: name, value: 'initial-value' })]);
+      return new Set([index]);
     });
     const cells = cellNames.map((_, index) => values[index % 3]);
     const candidates = generateCandidates(
@@ -53,7 +56,7 @@ function* everyTouchedSet(hasReset) {
       hasReset,
       false,
       new Set(),
-      new TextTable()
+      list
     );
     yield { touched, candidates: candidates.map((c) => c.decls) };
   }

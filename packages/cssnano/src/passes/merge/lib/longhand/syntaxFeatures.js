@@ -1,6 +1,5 @@
 import { isAsciiDigit } from './asciiCharacters.js';
 import { withoutVendorPrefix } from './vendorPrefix.js';
-import { declaredValueTokens } from '../../../../values/declaredValueTokens.js';
 /**
  * The syntax a declaration value needs a browser to parse: functions, units,
  * keywords and notations that some browser lacks, spelled as features such
@@ -255,12 +254,11 @@ function featureOf(token, inMath) {
 }
 
 /**
- * @param {import('postcss').Declaration} decl
- * @param {import('../../../../values/textTable.js').TextTable} textTable
+ * @param {import('./blockDeclarations.js').DeclarationItem} decl
  * @return {Set<string>} the features a browser must support to parse the
  * declaration's value
  */
-export function supportDependenciesOf(decl, textTable) {
+export function supportDependenciesOf(decl) {
   const value = decl.value;
   if (!mayNeedSupport(value)) {
     return EMPTY_SET;
@@ -273,7 +271,7 @@ export function supportDependenciesOf(decl, textTable) {
   const enclosing = [];
   let dividing = false;
 
-  for (const token of declaredValueTokens(textTable, decl)) {
+  for (const token of decl.tokens) {
     const type = token[0];
     if (type === TokenType.Whitespace || type === TokenType.Comment) continue;
     const inMath = enclosing.at(-1) === true;

@@ -1,5 +1,4 @@
-import { TextTable } from '../../../../values/textTable.js';
-import type { Container } from 'postcss';
+import type { BlockDeclarations } from './blockDeclarations.js';
 /**
  * Shorthand properties whose redundant axes, sides, or default components can be
  * algebraically folded in-place without inter-declaration data dependencies.
@@ -10,20 +9,21 @@ export declare const foldableShorthands: Set<string>;
  * declaration. Each declaration is folded on its own; the fold is cheap enough
  * that a memo per property and source was not worth keeping.
  *
- * @param {import('postcss').Declaration} decl
+ * @param {BlockDeclarations} list
+ * @param {number} position
  * @param {string} [property] - the lowercased property name, when known
- * @param {TextTable} [table] the text table the walk left, which holds the
- * declaration's tokens; a fresh one when omitted
  * @return {void}
  */
-export declare function foldShorthandDeclaration(decl: import('postcss').Declaration, property?: string, table?: TextTable): void;
+export declare function foldShorthandDeclaration(list: BlockDeclarations, position: number, property?: string): void;
 /**
- * Folds immediate shorthand declarations within a container (e.g. root or at-rule).
- * @param {Container} container
- * @param {TextTable} textTable
+ * Folds the shorthand declarations of a container's block. A value with an
+ * important comment is kept as written, so it is left as it is.
+ *
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} chain - the positions of the block's declarations
  * @return {void}
  */
-export declare function foldContainerDeclarations(container: Container, textTable: TextTable): void;
+export declare function foldContainerDeclarations(list: BlockDeclarations, chain: readonly number[]): void;
 /**
  * Full AST traversal fallback for standalone shorthand identity canonicalization.
  *

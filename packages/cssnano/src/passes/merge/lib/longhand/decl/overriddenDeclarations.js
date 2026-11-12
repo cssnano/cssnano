@@ -1,24 +1,20 @@
 import cssnanoUtils from '#utils';
 import { hasHack } from '#stylehacks';
-import { detach } from '../../deferredChildEdits.js';
 import { isFallback } from '../isFallback.js';
-import { endsDeclarationRun } from './declarationRuns.js';
+import { RUN_END } from '../blockDeclarations.js';
 import { isAll } from './importanceLanes.js';
 import {
   hasScientificNotation,
   mayHaveExponent,
   shapeKey,
 } from './shapeEquivalence.js';
-import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
-import { keepsValueAsWritten } from '../keptValue.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ChildNode, Container, Declaration} from 'postcss' */
-/** @import {TextTable} from '../../../../../values/textTable.js' */
+/** @import {BlockDeclarations, DeclarationItem} from '../blockDeclarations.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @typedef {Declaration | Declaration[]} Survivors */
+/** @typedef {number | number[]} Survivors positions in the list */
 
 /* Whether one fallback covers another compares what each needs, so no index
  * answers it in constant time. Keeping a few candidates per key bounds the
@@ -30,25 +26,25 @@ export const candidateLimit = 16;
  *
  * @param {Map<string, Survivors>} buckets
  * @param {string} key
- * @param {Declaration} declaration
+ * @param {number} position
  * @return {void}
  */
-function addToBucket(buckets, key, declaration) {
+function addToBucket(buckets, key, position) {
   const existing = buckets.get(key);
   if (existing === undefined) {
-    buckets.set(key, declaration);
+    buckets.set(key, position);
   } else if (!Array.isArray(existing)) {
-    buckets.set(key, [existing, declaration]);
+    buckets.set(key, [existing, position]);
   } else if (existing.length < candidateLimit) {
-    existing.push(declaration);
+    existing.push(position);
   }
 }
 
 /**
  * @typedef {object} CrossPropertyRule
- * @property {(earlier: Declaration, later: Declaration, textTable: TextTable, features: ReadonlySet<string>) => boolean} overrides
+ * @property {(earlier: DeclarationItem, later: DeclarationItem, features: ReadonlySet<string>) => boolean} overrides
  * whether a later declaration of another property always wins over the earlier
- * @property {(node: Declaration) => Iterable<string>} [footprint] the
+ * @property {(node: DeclarationItem) => Iterable<string>} [footprint] the
  * lowercased properties a declaration sets; with it, only later declarations
  * whose footprint holds a property the earlier one sets are compared
  */
@@ -76,19 +72,19 @@ class OverrideFrontier {
   #shapes = [new Map(), new Map()];
   /** @type {[Map<string, Survivors>, Map<string, Survivors>] | undefined} */
   #footprints;
-  /** @type {TextTable} */
-  #textTable;
+  /** @type {BlockDeclarations} */
+  #list;
   /** @type {ReadonlySet<string>} */
   #features;
 
   /**
-   * @param {TextTable} textTable the tokens the walk left for the declarations
+   * @param {BlockDeclarations} list
    * @param {ReadonlySet<string>} features the features every target supports
    * @param {ReadonlySet<string>} [trustedProperties] lowercased names
    * @param {CrossPropertyRule} [crossPropertyRule]
    */
-  constructor(textTable, features, trustedProperties, crossPropertyRule) {
-    this.#textTable = textTable;
+  constructor(list, features, trustedProperties, crossPropertyRule) {
+    this.#list = list;
     this.#features = features;
     this.#trustedProperties = trustedProperties;
     this.#crossPropertyRule = crossPropertyRule;
@@ -98,10 +94,11 @@ class OverrideFrontier {
   }
 
   /**
-   * @param {Declaration} node
-   * @return {boolean} whether the node was removed
+   * @param {number} position
+   * @return {boolean} whether the declaration was removed
    */
-  visit(node) {
+  visit(position) {
+    const node = this.#list.at(position);
     if (node.prop.startsWith('--')) return false;
 
     const laneIndex = node.important ? 1 : 0;
@@ -111,7 +108,7 @@ class OverrideFrontier {
     // Style hacks target specific browsers: never drop one or let one win.
     if (
       (survivors !== undefined || this.#crossPropertyRule !== undefined) &&
-      hasHack(node.raws.before, node.prop, node.value)
+      hasHack(node.before, node.prop, node.value)
     ) {
       return false;
     }
@@ -120,52 +117,43 @@ class OverrideFrontier {
     if (survivors !== undefined) {
       key = this.#keyOf(node, name);
       if (
-        this.#isOverriddenByDuplicate(node, survivors, key, name, laneIndex)
+        this.#isOverriddenByDuplicate(position, survivors, key, name, laneIndex)
       ) {
-        detach(node);
+        this.#list.remove(position);
         return true;
       }
     }
-    if (this.#isOverriddenByOtherProperty(node, laneIndex)) {
-      detach(node);
+    if (this.#isOverriddenByOtherProperty(position, laneIndex)) {
+      this.#list.remove(position);
       return true;
     }
-    this.#retain(node, lane, name, laneIndex, key);
+    this.#retain(position, lane, name, laneIndex, key);
     return false;
   }
 
   /**
-   * @param {Declaration} node
+   * @param {DeclarationItem} node
    * @param {string} name - lowercased
    * @return {string | undefined} the shape key, undefined when incomparable
    */
   #keyOf(node, name) {
     if (this.#trustedProperties?.has(name)) {
-      return mayHaveExponent(node.value) &&
-        hasScientificNotation(this.#listOf(node))
+      return mayHaveExponent(node.value) && hasScientificNotation(node.tokens)
         ? 'e'
         : '';
     }
-    return shapeKey(this.#listOf(node), name);
+    return shapeKey(node.tokens, name);
   }
 
   /**
-   * @param {Declaration} node
-   * @return {readonly CSSToken[]} the tokens of the node's value
-   */
-  #listOf(node) {
-    return declaredValueTokens(this.#textTable, node);
-  }
-
-  /**
-   * @param {Declaration} node
+   * @param {number} position
    * @param {Survivors} survivors
    * @param {string | undefined} key
    * @param {string} name
    * @param {number} laneIndex
    * @return {boolean}
    */
-  #isOverriddenByDuplicate(node, survivors, key, name, laneIndex) {
+  #isOverriddenByDuplicate(position, survivors, key, name, laneIndex) {
     // An incomparable value is equal to nothing, not even itself.
     if (key === undefined) return false;
     const shapes = this.#shapes[laneIndex];
@@ -176,12 +164,12 @@ class OverrideFrontier {
     }
     const bucket = buckets.get(key);
     if (bucket === undefined) return false;
+    const node = this.#list.at(position);
     if (!Array.isArray(bucket)) {
-      return !isFallback(node, bucket, this.#textTable, this.#features);
+      return !isFallback(node, this.#list.at(bucket), this.#features);
     }
     for (const later of bucket) {
-      if (!isFallback(node, later, this.#textTable, this.#features))
-        return true;
+      if (!isFallback(node, this.#list.at(later), this.#features)) return true;
     }
     return false;
   }
@@ -201,33 +189,35 @@ class OverrideFrontier {
       this.#addSurvivor(buckets, survivors, name);
       return buckets;
     }
-    for (const declaration of survivors) {
-      this.#addSurvivor(buckets, declaration, name);
+    for (const position of survivors) {
+      this.#addSurvivor(buckets, position, name);
     }
     return buckets;
   }
 
   /**
    * @param {Map<string, Survivors>} buckets
-   * @param {Declaration} declaration
+   * @param {number} position
    * @param {string} name - lowercased
    * @return {void}
    */
-  #addSurvivor(buckets, declaration, name) {
-    if (hasHack(declaration.raws.before, declaration.prop, declaration.value))
+  #addSurvivor(buckets, position, name) {
+    const declaration = this.#list.at(position);
+    if (hasHack(declaration.before, declaration.prop, declaration.value))
       return;
     const key = this.#keyOf(declaration, name);
-    if (key !== undefined) addToBucket(buckets, key, declaration);
+    if (key !== undefined) addToBucket(buckets, key, position);
   }
 
   /**
-   * @param {Declaration} node
+   * @param {number} position
    * @param {number} laneIndex
    * @return {boolean}
    */
-  #isOverriddenByOtherProperty(node, laneIndex) {
+  #isOverriddenByOtherProperty(position, laneIndex) {
     const rule = this.#crossPropertyRule;
     if (rule === undefined) return false;
+    const node = this.#list.at(position);
     const footprints = this.#footprints?.[laneIndex];
     const candidates = rule.footprint
       ? rule.footprint(node)
@@ -237,12 +227,12 @@ class OverrideFrontier {
       const survivors = source.get(property);
       if (survivors === undefined) continue;
       if (!Array.isArray(survivors)) {
-        if (rule.overrides(node, survivors, this.#textTable, this.#features))
+        if (rule.overrides(node, this.#list.at(survivors), this.#features))
           return true;
         continue;
       }
       for (const later of survivors) {
-        if (rule.overrides(node, later, this.#textTable, this.#features))
+        if (rule.overrides(node, this.#list.at(later), this.#features))
           return true;
       }
     }
@@ -250,24 +240,24 @@ class OverrideFrontier {
   }
 
   /**
-   * @param {Declaration} node
+   * @param {number} position
    * @param {Map<string, Survivors>} lane
    * @param {string} name
    * @param {number} laneIndex
    * @param {string | undefined} key - the node's shape key, if it has one
    * @return {void}
    */
-  #retain(node, lane, name, laneIndex, key) {
-    addToBucket(lane, name, node);
+  #retain(position, lane, name, laneIndex, key) {
+    addToBucket(lane, name, position);
     if (key !== undefined) {
       const buckets = this.#shapes[laneIndex].get(name);
-      if (buckets !== undefined) addToBucket(buckets, key, node);
+      if (buckets !== undefined) addToBucket(buckets, key, position);
     }
     const footprints = this.#footprints?.[laneIndex];
     const footprint = this.#crossPropertyRule?.footprint;
     if (footprints === undefined || footprint === undefined) return;
-    for (const property of footprint(node)) {
-      addToBucket(footprints, property, node);
+    for (const property of footprint(this.#list.at(position))) {
+      addToBucket(footprints, property, position);
     }
   }
 
@@ -283,23 +273,19 @@ class OverrideFrontier {
 }
 
 /**
- * @param {Container} container - a style rule
- * @param {TextTable} textTable
+ * @param {BlockDeclarations} list
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export function discardOverriddenDeclarations(container, textTable, features) {
-  discardOverriddenInList(
-    /** @type {ChildNode[]} */ (container.nodes),
-    textTable,
-    features
-  );
+export function discardOverriddenDeclarations(list, features) {
+  discardOverriddenInList(list, list.chain, features);
 }
 
 /**
- * @param {ChildNode[]} nodes - declarations in source order, such as one
- * importance lane of a family; `all` declarations and nested rules bound runs
- * @param {TextTable} textTable
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} positions - declarations in source order, such as
+ * one importance lane of a family; `all` declarations, nested rules and values
+ * kept as written bound runs, so `RUN_END` marks a run end in a chain
  * @param {ReadonlySet<string>} features the features every target supports
  * @param {ReadonlySet<string>} [trustedProperties] - lowercased names the
  * caller validated, whose duplicates need no matching shape
@@ -308,52 +294,55 @@ export function discardOverriddenDeclarations(container, textTable, features) {
  * @return {void}
  */
 export function discardOverriddenInList(
-  nodes,
-  textTable,
+  list,
+  positions,
   features,
   trustedProperties,
   crossPropertyRule
 ) {
   const frontier = new OverrideFrontier(
-    textTable,
+    list,
     features,
     trustedProperties,
     crossPropertyRule
   );
-  for (let index = nodes.length - 1; index >= 0; index--) {
-    const node = nodes[index];
-    if (node.type !== 'decl') {
-      if (endsDeclarationRun(node)) frontier.reset();
-    } else if (isAll(node) || keepsValueAsWritten(textTable, node)) {
-      /* `all` bounds the run instead of overriding what precedes it: a
-       * browser without `all` ignores it and keeps the earlier declarations.
-       * A value kept as written is never removed, so it only bounds the run. */
+  for (let index = positions.length - 1; index >= 0; index--) {
+    const position = positions[index];
+    if (position === RUN_END) {
+      frontier.reset();
+      continue;
+    }
+    const node = list.at(position);
+    /* `all` bounds the run instead of overriding what precedes it: a
+     * browser without `all` ignores it and keeps the earlier declarations.
+     * A value kept as written is never removed, so it only bounds the run. */
+    if (isAll(node) || node.kept) {
       frontier.reset();
     } else {
-      frontier.visit(node);
+      frontier.visit(position);
     }
   }
 }
 
 /**
- * @param {Declaration[][]} lanes - the normal and important lanes of a family
- * @param {TextTable} textTable - forwarded
+ * @param {BlockDeclarations} list
+ * @param {readonly (readonly number[])[]} lanes - the normal and important lanes of a family
  * @param {ReadonlySet<string>} features - forwarded
  * @param {ReadonlySet<string>} [trustedProperties] - forwarded
  * @param {CrossPropertyRule} [crossPropertyRule] - forwarded
  * @return {void}
  */
 export function discardOverriddenInLanes(
+  list,
   lanes,
-  textTable,
   features,
   trustedProperties,
   crossPropertyRule
 ) {
   for (const lane of lanes) {
     discardOverriddenInList(
+      list,
       lane,
-      textTable,
       features,
       trustedProperties,
       crossPropertyRule

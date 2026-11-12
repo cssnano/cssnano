@@ -1,3 +1,4 @@
+import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
@@ -42,8 +43,7 @@ test('canonicalizing a framework block twice gives the same block and never a lo
       placeShorthands,
       boxSupport,
       pairShorthands,
-      new TextTable(),
-      features
+      createRunContext(new TextTable(), undefined, features)
     );
     canonicalize(root, context);
     /** @type {import('postcss').Container[]} */

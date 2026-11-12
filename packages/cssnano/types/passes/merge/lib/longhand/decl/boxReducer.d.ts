@@ -1,18 +1,17 @@
-import type { Container, Declaration } from 'postcss';
+import type { BlockDeclarations } from '../blockDeclarations.js';
 import type { BoxFamily } from './boxGroups.js';
 import type { BoxGroup, BoxProperty } from './boxGroups.js';
-import type { TextTable } from '../../../../../values/textTable.js';
 export type BoxDeclarations = {
     group: BoxGroup;
     /**
-     * - the properties of the group
+     * - positions of the properties of the group
      */
-    decls: Declaration[];
+    decls: number[];
     /**
-     * - the normal and the
+     * - the positions of the normal and the
      * important lane, which also hold what may alias a property of the group
      */
-    lanes: [Declaration[], Declaration[]];
+    lanes: [number[], number[]];
     /**
      * - whether a physical property appears
      */
@@ -23,15 +22,14 @@ export type BoxDeclarations = {
      */
     flow: Set<BoxFamily> | null;
 };
-/** @import {Container, Declaration} from 'postcss'; */
+/** @import {BlockDeclarations, DeclarationItem} from '../blockDeclarations.js'; */
 /** @import {BoxFamily} from './boxGroups.js'; */
 /** @import {BoxGroup, BoxProperty} from './boxGroups.js'; */
-/** @import {TextTable} from '../../../../../values/textTable.js'; */
 /**
  * @typedef {object} BoxDeclarations What one run of a rule declares of a group.
  * @property {BoxGroup} group
- * @property {Declaration[]} decls - the properties of the group
- * @property {[Declaration[], Declaration[]]} lanes - the normal and the
+ * @property {number[]} decls - positions of the properties of the group
+ * @property {[number[], number[]]} lanes - the positions of the normal and the
  * important lane, which also hold what may alias a property of the group
  * @property {boolean} physical - whether a physical property appears
  * @property {Set<BoxFamily> | null} flow - the flow-relative families that
@@ -42,7 +40,7 @@ export type BoxDeclarations = {
  * alias a member joins the lanes only, where it stops values moving across it.
  *
  * @param {{ boxes: Map<BoxGroup, BoxDeclarations> | null }} state
- * @param {Declaration} child
+ * @param {number} child - the position of the declaration in its list
  * @param {BoxProperty | undefined} boxProperty
  * @param {BoxGroup} boxGroup
  * @param {number} laneIndex
@@ -50,14 +48,13 @@ export type BoxDeclarations = {
  */
 export declare function addBoxDeclaration(state: {
     boxes: Map<BoxGroup, BoxDeclarations> | null;
-}, child: Declaration, boxProperty: BoxProperty | undefined, boxGroup: BoxGroup, laneIndex: number): void;
+}, child: number, boxProperty: BoxProperty | undefined, boxGroup: BoxGroup, laneIndex: number): void;
 /**
- * @param {Container} rule
+ * @param {BlockDeclarations} list
  * @param {BoxDeclarations} box
  * @param {import('../targetSupport.js').BoxSupport} support
- * @param {TextTable} textTable the tokens the walk left for the declarations
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export declare function reduceBox(rule: Container, box: BoxDeclarations, support: import('../targetSupport.js').BoxSupport, textTable: TextTable, features: ReadonlySet<string>): void;
+export declare function reduceBox(list: BlockDeclarations, box: BoxDeclarations, support: import('../targetSupport.js').BoxSupport, features: ReadonlySet<string>): void;
 //# sourceMappingURL=boxReducer.d.ts.map

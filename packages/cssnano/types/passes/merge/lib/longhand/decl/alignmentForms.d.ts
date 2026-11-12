@@ -1,4 +1,4 @@
-import type { Declaration } from 'postcss';
+import type { DeclarationItem } from '../blockDeclarations.js';
 export type AlignmentFamilyConfig = {
     shorthand: string;
     slots: Map<string, number>;
@@ -19,11 +19,10 @@ export declare const alignmentProperties: Map<string, AlignmentFamilyConfig>;
  * separately. CSS-wide keywords and substitutions are taken as written.
  *
  * @param {AlignmentFamilyConfig} family
- * @param {Declaration} decl
+ * @param {DeclarationItem} decl
  * @return {[string | null, string | null] | null}
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export declare function parseAlignmentDeclaration(family: AlignmentFamilyConfig, decl: Declaration, textTable: import('../../../../../values/textTable.js').TextTable): [string | null, string | null] | null;
+export declare function parseAlignmentDeclaration(family: AlignmentFamilyConfig, decl: DeclarationItem): [string | null, string | null] | null;
 export declare const widelySupported: Set<string>;
 /**
  * Whether one shorthand can replace the declarations without changing what

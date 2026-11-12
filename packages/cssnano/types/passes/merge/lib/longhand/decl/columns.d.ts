@@ -1,12 +1,11 @@
-import type { Container, Declaration } from 'postcss';
-/** @import {Container, Declaration} from 'postcss'; */
+import type { BlockDeclarations } from '../blockDeclarations.js';
+/** @import {BlockDeclarations} from '../blockDeclarations.js'; */
 export { allColumnProps, setsOtherColumnProperty } from './columnsValue.js';
 /**
- * @param {Container} rule
- * @param {Declaration[]} decls
- * @param {[Declaration[], Declaration[]]} familyLanes
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} decls - the column declarations of the run
+ * @param {[number[], number[]]} familyLanes
  * @param {ReadonlySet<string>} features the features every target supports
  */
-export declare function reduceColumns(rule: Container, decls: Declaration[], familyLanes: [Declaration[], Declaration[]], textTable: import('../../../../../values/textTable.js').TextTable, features: ReadonlySet<string>): void;
+export declare function reduceColumns(list: BlockDeclarations, decls: readonly number[], familyLanes: [number[], number[]], features: ReadonlySet<string>): void;
 //# sourceMappingURL=columns.d.ts.map

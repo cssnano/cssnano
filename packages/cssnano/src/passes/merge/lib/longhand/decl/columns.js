@@ -22,52 +22,45 @@ import {
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {Container, Declaration} from 'postcss'; */
+/** @import {BlockDeclarations} from '../blockDeclarations.js'; */
 
 export { allColumnProps, setsOtherColumnProperty } from './columnsValue.js';
 
 /**
- * @param {Container} rule
- * @param {Declaration[]} laneDecls
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} laneDecls
  * @param {boolean} important
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @param {ReadonlySet<string>} features the features every target supports
  */
-function processLane(rule, laneDecls, important, textTable, features) {
-  /** @type {Map<Declaration, Declaration>} */
+function processLane(list, laneDecls, important, features) {
+  /** @type {Map<number, number>} */
   const inserted = new Map();
   const lane = new SlotLane(
     2,
     (slots, contributing, fallbacks) => {
-      const full = flushableSlots(slots, textTable, features);
+      const full = flushableSlots(slots, list, features);
       if (!full) return;
 
-      commitShorthand(
-        rule,
-        full,
-        contributing,
-        fallbacks,
-        {
-          prop: columns,
-          value: normalize([full[0].value, full[1].value]),
-          important,
-          inserted,
-        },
-        textTable
-      );
+      commitShorthand(list, full, contributing, fallbacks, {
+        prop: columns,
+        value: normalize([full[0].value, full[1].value]),
+        important,
+        inserted,
+      });
     },
-    textTable,
+    list,
     features
   );
 
   for (const decl of laneDecls) {
-    const p = asciiLowerCase(decl.prop);
+    const item = list.at(decl);
+    const p = asciiLowerCase(item.prop);
     const isShort = p === columns;
 
     if (
-      isAll(decl) ||
-      hasHack(decl.raws.before, decl.prop, decl.value) ||
-      (isShort && !canExplode(decl, textTable))
+      isAll(item) ||
+      hasHack(item.before, item.prop, item.value) ||
+      (isShort && !canExplode(item))
     ) {
       lane.reset();
       continue;
@@ -77,7 +70,7 @@ function processLane(rule, laneDecls, important, textTable, features) {
     const wasFull = lane.begin(Math.max(idx, 0), idx === -1 ? 2 : 1, decl);
 
     if (isShort) {
-      const parsed = parseColumns(parsedValue(decl, textTable));
+      const parsed = parseColumns(parsedValue(item));
       if (!parsed) {
         lane.reset();
         continue;
@@ -85,27 +78,27 @@ function processLane(rule, laneDecls, important, textTable, features) {
       lane.assign(0, parsed[0], decl, wasFull);
       lane.assign(1, parsed[1], decl, wasFull);
     } else {
-      lane.assign(idx, decl.value, decl, wasFull);
+      lane.assign(idx, item.value, decl, wasFull);
     }
   }
 
   lane.reset();
 
-  /** @type {Declaration[]} */
+  /** @type {number[]} */
   const remaining = [];
   for (const d of laneDecls) {
     const repl = inserted.get(d);
-    if (repl) {
+    if (repl !== undefined) {
       remaining.push(repl);
-    } else if (d.parent === rule) {
+    } else if (!list.at(d).removed) {
       remaining.push(d);
     }
   }
 
   if (remaining.length > 1) {
     discardOverriddenInList(
+      list,
       remaining,
-      textTable,
       features,
       allColumnProps,
       columnsPrecedence
@@ -119,61 +112,58 @@ function processLane(rule, laneDecls, important, textTable, features) {
  * @type {import('./overriddenDeclarations.js').CrossPropertyRule}
  */
 const columnsPrecedence = {
-  overrides: (node, lastNode, textTable, features) =>
+  overrides: (node, lastNode, features) =>
     asciiLowerCase(lastNode.prop) === columns &&
     asciiLowerCase(node.prop) !== columns &&
-    isValidColumns(lastNode, textTable) &&
-    !isFallback(node, lastNode, textTable, features),
+    isValidColumns(lastNode) &&
+    !isFallback(node, lastNode, features),
 };
 
 /**
- * @param {Declaration | undefined} s
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {BlockDeclarations} list
+ * @param {number | undefined} position
  */
-function normalizeSingleton(s, textTable) {
+function normalizeSingleton(list, position) {
+  if (position === undefined) return;
+  const s = list.at(position);
   if (
-    !s ||
     asciiLowerCase(s.prop) !== columns ||
-    hasHack(s.raws.before, s.prop, s.value) ||
-    !canExplode(s, textTable)
+    hasHack(s.before, s.prop, s.value) ||
+    !canExplode(s)
   ) {
     return;
   }
-  const parsed = parseColumns(parsedValue(s, textTable));
+  const parsed = parseColumns(parsedValue(s));
   if (!parsed) return;
   const norm = normalize(parsed);
   if (s.value !== norm || s.prop !== columns) {
-    s.prop = columns;
-    delete s.raws.value;
-    textTable.setText(s, norm);
+    list.rewrite(position, columns, norm);
   }
 }
 
 /**
- * @param {Container} rule
- * @param {Declaration[]} decls
- * @param {[Declaration[], Declaration[]]} familyLanes
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} decls - the column declarations of the run
+ * @param {[number[], number[]]} familyLanes
  * @param {ReadonlySet<string>} features the features every target supports
  */
-export function reduceColumns(rule, decls, familyLanes, textTable, features) {
-  if (!rule.nodes) return;
-  if (decls.length === 0 || decls.some((d) => isInvalid(d, textTable))) return;
+export function reduceColumns(list, decls, familyLanes, features) {
+  if (decls.length === 0 || decls.some((d) => isInvalid(list.at(d)))) return;
 
-  discardOverriddenInLanes(familyLanes, textTable, features, allColumnProps);
+  discardOverriddenInLanes(list, familyLanes, features, allColumnProps);
 
-  const live = decls.filter((d) => d.parent);
+  const live = decls.filter((d) => !list.at(d).removed);
   if (live.length <= 1) {
-    normalizeSingleton(live[0], textTable);
+    normalizeSingleton(list, live[0]);
     return;
   }
 
   for (const lane of [false, true]) {
     const laneDecls = familyLanes[lane ? 1 : 0].filter(
-      (d) => d.parent === rule
+      (d) => !list.at(d).removed
     );
-    if (hasNonAll(laneDecls)) {
-      processLane(rule, laneDecls, lane, textTable, features);
+    if (hasNonAll(list, laneDecls)) {
+      processLane(list, laneDecls, lane, features);
     }
   }
 }

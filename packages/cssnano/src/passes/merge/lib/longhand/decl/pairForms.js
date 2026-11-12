@@ -6,14 +6,12 @@ import { isBorderStyle, isBorderWidth, isColor } from '../validateWsc.js';
 import { isUnresolved } from '../unresolved.js';
 import { isLengthValue, parseDimension } from '../lengthGrammar.js';
 import { splitValue } from '../valueComponents.js';
-import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
 /**
  * @typedef {(
- *   decl: import('postcss').Declaration,
- *   textTable: import('../../../../../values/textTable.js').TextTable,
+ *   decl: import('../blockDeclarations.js').DeclarationItem,
  * ) => string | null} Parser
  */
 
@@ -44,16 +42,11 @@ function keywordParser(keywords) {
  * The one component of a value, or undefined when a top-level comma, slash or
  * whitespace divides it. Brackets keep their contents together.
  *
- * @param {import('postcss').Declaration} decl
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {import('../blockDeclarations.js').DeclarationItem} decl
  * @return {import('../valueComponents.js').Component | undefined}
  */
-function singleComponent(decl, textTable) {
-  const parts = splitValue(
-    decl.value,
-    '/',
-    declaredValueTokens(textTable, decl)
-  );
+function singleComponent(decl) {
+  const parts = splitValue(decl.value, '/', decl.tokens);
   if (parts?.length !== 1) return undefined;
   const [{ components }] = parts;
   return components.length === 1 ? components[0] : undefined;
@@ -63,15 +56,14 @@ function singleComponent(decl, textTable) {
  * Parses `normal | <length-percentage [0,∞]>` for a value that is a single
  * token. A function such as `calc()` or `var()` is not compared.
  *
- * @param {import('postcss').Declaration} decl
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {import('../blockDeclarations.js').DeclarationItem} decl
  * @return {string | null}
  */
-function parseGap(decl, textTable) {
+function parseGap(decl) {
   const trimmed = decl.value.trim();
   const lower = asciiLowerCase(trimmed);
   if (lower === 'normal' || isCssWideKeyword(trimmed)) return trimmed;
-  if (singleComponent(decl, textTable)?.tokens.length !== 1) return null;
+  if (singleComponent(decl)?.tokens.length !== 1) return null;
   const dimension = parseDimension(lower);
   if (
     !dimension ||
@@ -162,10 +154,10 @@ const ruleInitials = ['medium', 'none', 'currentcolor'];
  * @return {Parser}
  */
 function ruleComponent(is) {
-  return (decl, textTable) => {
+  return (decl) => {
     const trimmed = decl.value.trim();
     if (isCssWideKeyword(trimmed)) return trimmed;
-    const component = singleComponent(decl, textTable);
+    const component = singleComponent(decl);
     if (
       !component ||
       isUnresolved(component.tokens, 0, component.tokens.length)

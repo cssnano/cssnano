@@ -10,6 +10,7 @@ import minifyShorthandIdentities, {
   foldShorthandDeclaration,
 } from '../../../../../src/passes/merge/lib/longhand/minifyShorthand.js';
 import { transformPlugin } from '#passes/merge';
+import { blockOf } from './helpers/declarationItems.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -204,21 +205,21 @@ describe('shorthand identity rule integration contracts', () => {
   );
 
   test('folds shorthand declaration without memoTable', () => {
-    const decl = postcss.decl({ prop: 'gap', value: '1rem 1rem' });
-    foldShorthandDeclaration(decl);
-    assert.strictEqual(decl.value, '1rem');
+    const list = blockOf('a{gap: 1rem 1rem}');
+    foldShorthandDeclaration(list, 0);
+    assert.strictEqual(list.at(0).value, '1rem');
   });
 
   test('ignores declarations with stylehacks during in-place folding', () => {
-    const decl = postcss.decl({ prop: '_gap', value: '1rem 1rem' });
-    foldShorthandDeclaration(decl);
-    assert.strictEqual(decl.value, '1rem 1rem');
+    const list = blockOf('a{_gap: 1rem 1rem}');
+    foldShorthandDeclaration(list, 0);
+    assert.strictEqual(list.at(0).value, '1rem 1rem');
   });
 
   test('ignores non-shorthand declarations during in-place folding', () => {
-    const decl = postcss.decl({ prop: 'color', value: 'red' });
-    foldShorthandDeclaration(decl);
-    assert.strictEqual(decl.value, 'red');
+    const list = blockOf('a{color: red}');
+    foldShorthandDeclaration(list, 0);
+    assert.strictEqual(list.at(0).value, 'red');
   });
 
   test('executes a single AST walk across the stylesheet', async () => {

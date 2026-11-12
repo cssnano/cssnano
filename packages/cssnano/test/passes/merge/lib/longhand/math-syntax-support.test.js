@@ -1,4 +1,3 @@
-import { TextTable } from '../../../../../src/values/textTable.js';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
@@ -9,6 +8,7 @@ import {
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
 import { transformPlugin } from '#passes/merge';
+import { itemOf } from './helpers/declarationItems.js';
 
 /**
  * A browser that parses calc() but not newer syntax inside it, such as the
@@ -27,7 +27,7 @@ async function run(css, browsers) {
 }
 
 const requires = (/** @type {string} */ value) =>
-  requiredSupport(postcss.decl({ prop: 'width', value }), new TextTable());
+  requiredSupport(itemOf(`width: ${value}`));
 
 /** @param {string} top */
 const marginSides = (top) =>

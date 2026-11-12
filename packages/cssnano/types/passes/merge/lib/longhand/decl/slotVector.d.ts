@@ -1,8 +1,8 @@
-import type { Container, Declaration } from 'postcss';
+import type { BlockDeclarations } from '../blockDeclarations.js';
 import type { RangePiece } from '../../../../../values/joinRanges.js';
 export type SlotVector = ({
     value: string;
-    decl: Declaration;
+    decl: number;
     range?: RangePiece;
 } | null)[];
 /**
@@ -16,19 +16,19 @@ export type SlotVector = ({
  */
 export declare function declCost(prop: string, value: string, important?: boolean): number;
 /**
- * @param {({ value: string, decl: Declaration } | null)[]} slots
- * @return {{ value: string, decl: Declaration }[] | null} the fully-filled
+ * @param {({ value: string, decl: number } | null)[]} slots
+ * @param {BlockDeclarations} list
+ * @param {ReadonlySet<string>} features the features every target supports
+ * @return {{ value: string, decl: number }[] | null} the fully-filled
  * vector ready to be merged, or `null` if any slot is missing, custom,
  * conflicting on CSS-wide keywords, or has mismatched support provenance
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
- * @param {ReadonlySet<string>} features the features every target supports
  */
 export declare function flushableSlots(slots: ({
     value: string;
-    decl: Declaration;
-} | null)[], textTable: import('../../../../../values/textTable.js').TextTable, features: ReadonlySet<string>): {
+    decl: number;
+} | null)[], list: BlockDeclarations, features: ReadonlySet<string>): {
     value: string;
-    decl: Declaration;
+    decl: number;
 }[] | null;
 /**
  * The state of one importance lane of a slot-lane reducer: the slot vector, the
@@ -40,25 +40,25 @@ export declare class SlotLane {
     #private;
     /** @type {SlotVector} */
     slots: SlotVector;
-    /** @type {Set<Declaration>} */
-    contributing: Set<Declaration>;
-    /** @type {Set<Declaration>} */
-    fallbacks: Set<Declaration>;
+    /** @type {Set<number>} */
+    contributing: Set<number>;
+    /** @type {Set<number>} */
+    fallbacks: Set<number>;
     /**
      * The fallbacks behind each slot's declaration, allocated with the first.
      *
-     * @type {(Declaration[] | undefined)[] | undefined}
+     * @type {(number[] | undefined)[] | undefined}
      */
-    slotFallbacks: (Declaration[] | undefined)[] | undefined;
-    commit: (slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void;
+    slotFallbacks: (number[] | undefined)[] | undefined;
+    commit: (slots: SlotVector, contributing: Set<number>, fallbacks: Set<number>) => void;
     /**
      * @param {number} size - how many slots the family has
-     * @param {(slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void} commit
+     * @param {(slots: SlotVector, contributing: Set<number>, fallbacks: Set<number>) => void} commit
      * called with the state whenever the run ends, before it is cleared
-     * @param {import('../../../../../values/textTable.js').TextTable} textTable
+     * @param {BlockDeclarations} list
      * @param {ReadonlySet<string>} features the features every target supports
      */
-    constructor(size: number, commit: (slots: SlotVector, contributing: Set<Declaration>, fallbacks: Set<Declaration>) => void, textTable: import('../../../../../values/textTable.js').TextTable, features: ReadonlySet<string>);
+    constructor(size: number, commit: (slots: SlotVector, contributing: Set<number>, fallbacks: Set<number>) => void, list: BlockDeclarations, features: ReadonlySet<string>);
     /** Commits the run, then starts an empty one. */
     reset(): void;
     /**
@@ -67,18 +67,18 @@ export declare class SlotLane {
      *
      * @param {number} first
      * @param {number} count
-     * @param {Declaration} decl
+     * @param {number} decl - the declaration's position in the list
      * @return {boolean} whether the vector was full beforehand, to pass to `assign`
      */
-    begin(first: number, count: number, decl: Declaration): boolean;
+    begin(first: number, count: number, decl: number): boolean;
     /**
      * @param {number} idx
      * @param {string} value
-     * @param {Declaration} decl
+     * @param {number} decl - the declaration's position in the list
      * @param {boolean} wasFull - as returned by `begin`
      * @param {RangePiece} [range] the tokens that spell `value`, when kept
      */
-    assign(idx: number, value: string, decl: Declaration, wasFull: boolean, range?: RangePiece): void;
+    assign(idx: number, value: string, decl: number, wasFull: boolean, range?: RangePiece): void;
 }
 /**
  * Commits a fully-filled slot vector when its shorthand wins the byte-cost
@@ -86,25 +86,24 @@ export declare class SlotLane {
  * profitable cover is inserted after the final represented declaration while
  * the represented, non-fallback declarations are removed.
  *
- * @param {Container} rule
- * @param {{ value: string, decl: Declaration }[]} full
- * @param {Set<Declaration>} contributing
- * @param {Set<Declaration>} fallbacks
- * @param {{ prop: string, value: string, important: boolean, inserted?: Map<Declaration, Declaration>, mayInsert?: boolean }} target
+ * @param {BlockDeclarations} list
+ * @param {{ value: string, decl: number }[]} full
+ * @param {Set<number>} contributing
+ * @param {Set<number>} fallbacks
+ * @param {{ prop: string, value: string, important: boolean, inserted?: Map<number, number>, mayInsert?: boolean }} target
  * `mayInsert: false` limits the commit to the in-place rewrite, for a shorthand
  * that some target does not support.
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
- * @returns {Declaration | undefined} the declaration that now spells the
+ * @returns {number | undefined} the declaration that now spells the
  * shorthand, or undefined when nothing was written
  */
-export declare function commitShorthand(rule: Container, full: {
+export declare function commitShorthand(list: BlockDeclarations, full: {
     value: string;
-    decl: Declaration;
-}[], contributing: Set<Declaration>, fallbacks: Set<Declaration>, target: {
+    decl: number;
+}[], contributing: Set<number>, fallbacks: Set<number>, target: {
     prop: string;
     value: string;
     important: boolean;
-    inserted?: Map<Declaration, Declaration>;
+    inserted?: Map<number, number>;
     mayInsert?: boolean;
-}, textTable: import('../../../../../values/textTable.js').TextTable): Declaration | undefined;
+}): number | undefined;
 //# sourceMappingURL=slotVector.d.ts.map

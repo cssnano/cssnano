@@ -1,6 +1,5 @@
 import cssnanoUtils from '#utils';
 import { hasHack } from '#stylehacks';
-import { detach } from '../../deferredChildEdits.js';
 import { isFallback, needsUnmetSupport } from '../isFallback.js';
 import { boxProperties, writingModes } from './boxGroups.js';
 import { isAll } from './importanceLanes.js';
@@ -8,33 +7,34 @@ import { candidateLimit } from './overriddenDeclarations.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {Declaration} from 'postcss'; */
+/** @import {BlockDeclarations} from '../blockDeclarations.js'; */
 /** @import {BoxProperty} from './boxGroups.js'; */
 
 const cellCount = writingModes.length * 4;
 
 /**
- * @param {Declaration} declaration
+ * @param {BlockDeclarations} list
+ * @param {number} declaration - the position of the declaration
  * @param {BoxProperty} property - the property of the declaration
  * @param {Uint8Array} plain - the cells a later declaration that every target
  * parses sets
- * @param {(Declaration | BoxProperty)[][]} others - per cell, later
- * declarations with their properties
+ * @param {(number | BoxProperty)[][]} others - per cell, later declarations
+ * with their properties
  * @param {import('../targetSupport.js').BoxSupport} support
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean} whether later declarations set every cell of the
  * declaration, without leaving it to apply in any target
  */
 function coversEveryCell(
+  list,
   declaration,
   property,
   plain,
   others,
   support,
-  textTable,
   features
 ) {
+  const item = list.at(declaration);
   for (const cell of property.cells) {
     if (plain[cell] === 1) continue;
     const candidates = others[cell];
@@ -43,9 +43,8 @@ function coversEveryCell(
       for (let at = 0; at < candidates.length && !covered; at += 2) {
         covered =
           !isFallback(
-            declaration,
-            /** @type {Declaration} */ (candidates[at]),
-            textTable,
+            item,
+            list.at(/** @type {number} */ (candidates[at])),
             features
           ) &&
           support.understandsWherever(
@@ -65,23 +64,24 @@ function coversEveryCell(
  * alias each other. A later declaration does not count when the earlier is
  * its fallback, or when some target understands the earlier but not the later.
  *
- * @param {Declaration[]} lane - one importance lane of a group in source
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} lane - one importance lane of a group in source
  * order; barriers that belong to no family are skipped
  * @param {import('../targetSupport.js').BoxSupport} support
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export function discardDeadDeclarations(lane, support, textTable, features) {
+export function discardDeadDeclarations(list, lane, support, features) {
   const plain = new Uint8Array(cellCount);
   /* Per cell, the later declarations that may cover it, each followed by its
    * property so the check looks neither up. */
-  /** @type {(Declaration | BoxProperty)[][]} */
+  /** @type {(number | BoxProperty)[][]} */
   let others = [];
 
   for (let index = lane.length - 1; index >= 0; index--) {
-    const declaration = lane[index];
-    if (declaration.parent === undefined) continue;
+    const position = lane[index];
+    const declaration = list.at(position);
+    if (declaration.removed) continue;
     if (isAll(declaration)) {
       plain.fill(0);
       others = [];
@@ -90,23 +90,23 @@ export function discardDeadDeclarations(lane, support, textTable, features) {
     const property = boxProperties.get(asciiLowerCase(declaration.prop));
     if (
       property === undefined ||
-      hasHack(declaration.raws.before, declaration.prop, declaration.value)
+      hasHack(declaration.before, declaration.prop, declaration.value)
     )
       continue;
     const { cells } = property;
     const isCovered = coversEveryCell(
-      declaration,
+      list,
+      position,
       property,
       plain,
       others,
       support,
-      textTable,
       features
     );
     if (isCovered) {
-      detach(declaration);
+      list.remove(position);
     } else if (
-      !needsUnmetSupport(declaration, textTable, features) &&
+      !needsUnmetSupport(declaration, features) &&
       support.supportsAll(property.name)
     ) {
       for (const cell of cells) plain[cell] = 1;
@@ -114,7 +114,7 @@ export function discardDeadDeclarations(lane, support, textTable, features) {
       for (const cell of cells) {
         const candidates = (others[cell] ??= []);
         if (candidates.length < candidateLimit * 2) {
-          candidates.push(declaration, property);
+          candidates.push(position, property);
         }
       }
     }

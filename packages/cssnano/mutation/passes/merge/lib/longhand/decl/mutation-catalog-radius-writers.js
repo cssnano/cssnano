@@ -1,6 +1,6 @@
-export const name = 'merge-longhand: border-radius writers';
+export const name = 'merge-longhand: declaration commit writes';
 export const target = new URL(
-  '../../../../../../src/passes/merge/lib/longhand/decl/borderRadiusReducer.js',
+  '../../../../../../src/passes/merge/lib/longhand/nodeDeclarations.js',
   import.meta.url
 ).href;
 // node --test expands this glob; a directory path would resolve to a single
@@ -12,18 +12,15 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'assign a committed border-radius shorthand as a string, dropping its tokens',
-    find: '    textTable.record(written, value, shorthandTokens(horizontal, vertical));',
-    replace: '    textTable.setText(written, value);',
+    name: 'assign a rewritten declaration as a string, dropping its tokens',
+    find: '  node.prop = item.prop;\n  delete node.raws.value;\n  textTable.record(node, item.value, item.tokens);',
+    replace:
+      '  node.prop = item.prop;\n  delete node.raws.value;\n  textTable.setText(node, item.value);',
   },
   {
-    name: 'assign a folded border-radius shorthand as a string, dropping its tokens',
-    find: '      textTable.record(decl, text, shorthandTokens(horizontal, vertical));',
-    replace: '      textTable.setText(decl, text);',
-  },
-  {
-    name: 'assign a folded border-radius corner as a string, dropping its tokens',
-    find: '        textTable.record(\n          decl,\n          cornerParsed[0].raw,\n          joinRanges([cornerParsed[0]], [])\n        );',
-    replace: '        textTable.setText(decl, cornerParsed[0].raw);',
+    name: 'assign a cloned declaration as a string, dropping its tokens',
+    find: '  delete node.raws.value;\n  textTable.record(node, item.value, item.tokens);\n  if (item.inheritedSupport',
+    replace:
+      '  delete node.raws.value;\n  textTable.setText(node, item.value);\n  if (item.inheritedSupport',
   },
 ];

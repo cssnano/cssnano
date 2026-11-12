@@ -7,8 +7,7 @@
 export declare function opensCustomPropertyVar(input: readonly import('@csstools/css-tokenizer').CSSToken[]): boolean;
 export default _default;
 /**
- * @param {import('postcss').Declaration} node
- * @param {import('../../../../values/textTable.js').TextTable} textTable the tokens the walk left for the declaration
+ * @param {import('./blockDeclarations.js').DeclarationItem} node
  */
-declare function _default(node: import('postcss').Declaration, textTable: import('../../../../values/textTable.js').TextTable): boolean;
+declare function _default(node: import('./blockDeclarations.js').DeclarationItem): boolean;
 //# sourceMappingURL=isCustomProp.d.ts.map

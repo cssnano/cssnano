@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 // The counter must hook the tokenizer before the walk loads it.
 const { counter } = await import('../../../../util/countTokenize.js');
+const { createRunContext } = await import('../../src/passes/ir/runContext.js');
 const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../src/pipeline/traversal.js');
 const { mergePass } = await import('../../src/passes/merge/index.js');
@@ -23,12 +24,12 @@ const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
 const { foldShorthandDeclaration } =
   await import('../../src/passes/merge/lib/longhand/minifyShorthand.js');
-const { reduceBorderRadius } =
-  await import('../../src/passes/merge/lib/longhand/decl/borderRadiusReducer.js');
-const { partitionLanes } =
-  await import('../../src/passes/merge/lib/longhand/decl/radiusDescriptors.js');
-const { applyChildEdits } =
-  await import('../../src/passes/merge/lib/deferredChildEdits.js');
+const { declarationsFromNodes } =
+  await import('../../src/passes/merge/lib/longhand/nodeDeclarations.js');
+const { reduceBlock } =
+  await import('../passes/merge/lib/longhand/helpers/declarationItems.js');
+const { longstandingFeatures } =
+  await import('../../src/passes/merge/lib/longhand/syntaxFeatures.js');
 const { discardOverriddenInList } =
   await import('../../src/passes/merge/lib/longhand/decl/overriddenDeclarations.js');
 
@@ -247,19 +248,20 @@ suite('the text table reads the text the merge longhand writers wrote', () => {
   test('overriddenDeclarations reads the text minifyShorthand wrote, without tokenizing', () => {
     const root = postcss.parse('a { gap: 1px 1px; gap: 2px }');
     const table = new TextTable();
-    const nodes = root.first.nodes;
-    foldShorthandDeclaration(nodes[0], 'gap', table);
-    table.tokens(nodes[1]);
+    const block = declarationsFromNodes(root.first, createRunContext(table));
+    foldShorthandDeclaration(block.list, 0, 'gap');
     const before = tokenizeTotal();
-    discardOverriddenInList(nodes, table);
+    discardOverriddenInList(block.list, block.list.chain, longstandingFeatures);
     assert.equal(tokenizeTotal() - before, 0);
   });
 
   test("minifyShorthand's edited tokens spell text()", () => {
     const root = postcss.parse('a { gap: 1px 1px }');
     const table = new TextTable();
+    reduceBlock(root.first, table, (list) =>
+      foldShorthandDeclaration(list, 0, 'gap')
+    );
     const decl = root.first.first;
-    foldShorthandDeclaration(decl, 'gap', table);
     assert.deepEqual(
       table.stored(decl)?.map((token) => token.slice(0, 4)),
       tokens(decl.value).map((token) => token.slice(0, 4))
@@ -269,93 +271,13 @@ suite('the text table reads the text the merge longhand writers wrote', () => {
   test('foldShorthandDeclaration reads the text it wrote, without tokenizing', () => {
     const root = postcss.parse('a { gap: 1px 1px }');
     const table = new TextTable();
-    const decl = root.first.first;
-    foldShorthandDeclaration(decl, 'gap', table);
+    const block = declarationsFromNodes(root.first, createRunContext(table));
+    foldShorthandDeclaration(block.list, 0, 'gap');
     const before = tokenizeTotal();
-    foldShorthandDeclaration(decl, 'gap', table);
+    foldShorthandDeclaration(block.list, 0, 'gap');
     assert.equal(tokenizeTotal() - before, 0);
   });
 });
-
-suite(
-  'the border-radius reader reads the text the border-radius writer wrote',
-  () => {
-    test('radiusDescriptors reads the text borderRadiusReducer wrote, without tokenizing', () => {
-      const root = postcss.parse('a { border-radius: 1px 1px }');
-      const table = new TextTable();
-      const rule = root.first;
-      const nodes = [...rule.nodes];
-      reduceBorderRadius(rule, nodes, [nodes, []], table);
-      assert.equal(rule.first.value, '1px');
-      const before = tokenizeTotal();
-      partitionLanes(rule, [rule.nodes, []], table);
-      assert.equal(tokenizeTotal() - before, 0);
-    });
-
-    test("borderRadiusReducer's edited tokens spell text()", () => {
-      const root = postcss.parse(
-        'a { border-radius: 1px 2px 1px 2px / 3px 4px }'
-      );
-      const table = new TextTable();
-      const rule = root.first;
-      const nodes = [...rule.nodes];
-      reduceBorderRadius(rule, nodes, [nodes, []], table);
-      const decl = rule.first;
-      assert.deepEqual(
-        table.stored(decl)?.map((token) => token.slice(0, 4)),
-        tokens(decl.value).map((token) => token.slice(0, 4))
-      );
-    });
-
-    test("borderRadiusReducer's edited corner tokens spell text()", () => {
-      const root = postcss.parse('a { border-top-left-radius: 1px 1px }');
-      const table = new TextTable();
-      const rule = root.first;
-      const nodes = [...rule.nodes];
-      reduceBorderRadius(rule, nodes, [nodes, []], table);
-      const decl = rule.first;
-      assert.deepEqual(
-        table.stored(decl)?.map((token) => token.slice(0, 4)),
-        tokens(decl.value).map((token) => token.slice(0, 4))
-      );
-    });
-
-    test("borderRadiusReducer's rewritten shorthand tokens spell text()", () => {
-      const root = postcss.parse(
-        'a { border-radius: 1px 2px 1px 2px / 3px 4px; border-top-left-radius: 5px !important }'
-      );
-      const table = new TextTable();
-      const rule = root.first;
-      const nodes = [...rule.nodes];
-      const lanes = [
-        nodes.filter((node) => !node.important),
-        nodes.filter((node) => node.important),
-      ];
-      reduceBorderRadius(rule, nodes, lanes, table);
-      const decl = rule.first;
-      assert.deepEqual(
-        table.stored(decl)?.map((token) => token.slice(0, 4)),
-        tokens(decl.value).map((token) => token.slice(0, 4))
-      );
-    });
-
-    test("borderRadiusReducer's merged tokens spell text()", () => {
-      const root = postcss.parse(
-        'a { border-top-left-radius: 1px; border-top-right-radius: 2px; border-bottom-right-radius: 1px; border-bottom-left-radius: 2px }'
-      );
-      const table = new TextTable();
-      const rule = root.first;
-      const nodes = [...rule.nodes];
-      reduceBorderRadius(rule, nodes, [nodes, []], table);
-      applyChildEdits(rule);
-      const merged = rule.nodes.find((node) => node.prop === 'border-radius');
-      assert.deepEqual(
-        table.stored(merged)?.map((token) => token.slice(0, 4)),
-        tokens(merged.value).map((token) => token.slice(0, 4))
-      );
-    });
-  }
-);
 
 suite('the merge longhand writers no traced reader reads', () => {
   test("borderReducer's singleton write drops raws.value", () => {

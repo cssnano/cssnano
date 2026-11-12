@@ -1,9 +1,12 @@
+import { createRunContext } from '../../../../src/passes/ir/runContext.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { discardDeadDeclarations } from '../../../../../src/passes/merge/lib/longhand/decl/crossKindCoverage.js';
 import { BoxSupport } from '../../../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { declarationsFromNodes } from '../../../../../src/passes/merge/lib/longhand/nodeDeclarations.js';
+import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
 import { assertLinearTime } from '../linearTiming.js';
 
 const units = [
@@ -72,11 +75,14 @@ function createCSS(size) {
 function timeRun(size) {
   const css = createCSS(size);
   const support = new BoxSupport(['chrome 120']);
-  const lane = /** @type {postcss.Declaration[]} */ (
-    /** @type {postcss.Rule} */ (postcss.parse(css).first).nodes
+  const textTable = new TextTable();
+  const { list } = declarationsFromNodes(
+    /** @type {postcss.Rule} */ (postcss.parse(css).first),
+    createRunContext(textTable)
   );
+  const lane = Array.from({ length: list.length }, (_, position) => position);
   const start = performance.now();
-  discardDeadDeclarations(lane, support, new TextTable());
+  discardDeadDeclarations(list, lane, support, longstandingFeatures);
   return performance.now() - start;
 }
 

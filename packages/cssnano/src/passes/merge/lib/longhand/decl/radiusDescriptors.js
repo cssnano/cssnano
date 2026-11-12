@@ -1,7 +1,6 @@
 import cssnanoUtils from '#utils';
 import { hasHack } from '#stylehacks';
 import canExplode from '../canExplode.js';
-import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
 import { isAll } from './importanceLanes.js';
 import {
   parseCornerRadius,
@@ -15,13 +14,13 @@ import {
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {Container, Declaration} from 'postcss'; */
+/** @import {BlockDeclarations, DeclarationItem} from '../blockDeclarations.js'; */
 
 /**
  * Intermediate Representation (IR) descriptor for a declaration in the border-radius family.
  *
  * @typedef {object} RadiusDeclarationDescriptor
- * @property {Declaration} decl
+ * @property {number} decl the position of the declaration in its list
  * @property {string} [prop]
  * @property {string} [val]
  * @property {boolean} isBarrier
@@ -42,13 +41,13 @@ const longhandIndexByName = new Map(
  * Creates an IR descriptor for a radius declaration.
  * Returns null if the declaration violates syntax or domain grammar.
  *
- * @param {Declaration} node
+ * @param {number} position
+ * @param {DeclarationItem} node
  * @param {string} prop
  * @param {boolean} isHacked
  * @return {RadiusDeclarationDescriptor | null}
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function createRadiusDescriptor(node, prop, isHacked, textTable) {
+function createRadiusDescriptor(position, node, prop, isHacked) {
   const isShorthand = prop === 'border-radius';
   const longhandIndex = isShorthand
     ? -1
@@ -56,7 +55,7 @@ function createRadiusDescriptor(node, prop, isHacked, textTable) {
 
   if (isHacked) {
     return {
-      decl: node,
+      decl: position,
       prop,
       val: node.value,
       isBarrier: false,
@@ -78,15 +77,15 @@ function createRadiusDescriptor(node, prop, isHacked, textTable) {
 
   let parsed = null;
   if (!isGlobal) {
-    const list = declaredValueTokens(textTable, node);
+    const tokens = node.tokens;
     parsed = isShorthand
-      ? parseRadiusShorthand(val, list)
-      : parseCornerRadius(val, list);
+      ? parseRadiusShorthand(val, tokens)
+      : parseCornerRadius(val, tokens);
     if (parsed === null) return null;
   }
 
   return {
-    decl: node,
+    decl: position,
     prop,
     val,
     isBarrier: false,
@@ -94,28 +93,29 @@ function createRadiusDescriptor(node, prop, isHacked, textTable) {
     isGlobalKeyword: isGlobal,
     isShorthand,
     longhandIndex,
-    canExplode: isShorthand ? canExplode(node, textTable) : false,
+    canExplode: isShorthand ? canExplode(node) : false,
     parsed,
   };
 }
 
 /**
- * Appends a node descriptor to lanes or returns false on invalid syntax.
- * @param {Declaration} node
+ * Appends a declaration's descriptor to lanes or returns false on invalid syntax.
+ * @param {BlockDeclarations} list
+ * @param {number} position
  * @param {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} lanes
  * @param {RadiusDeclarationDescriptor[]} radiusDescriptors
  * @return {boolean}
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-function appendRadiusNode(node, lanes, radiusDescriptors, textTable) {
+function appendRadiusNode(list, position, lanes, radiusDescriptors) {
+  const node = list.at(position);
   const laneIndex = node.important ? 1 : 0;
   if (isAll(node)) {
-    lanes[laneIndex].push({ decl: node, isBarrier: true });
+    lanes[laneIndex].push({ decl: position, isBarrier: true });
     return true;
   }
   const prop = asciiLowerCase(node.prop);
-  const isHacked = Boolean(hasHack(node.raws.before, node.prop, node.value));
-  const desc = createRadiusDescriptor(node, prop, isHacked, textTable);
+  const isHacked = Boolean(hasHack(node.before, node.prop, node.value));
+  const desc = createRadiusDescriptor(position, node, prop, isHacked);
   if (!desc) return false;
   lanes[laneIndex].push(desc);
   radiusDescriptors.push(desc);
@@ -124,22 +124,21 @@ function appendRadiusNode(node, lanes, radiusDescriptors, textTable) {
 
 /**
  * Partitions family lanes into descriptor lanes.
- * @param {Container} rule
- * @param {[Declaration[], Declaration[]]} familyLanes
+ * @param {BlockDeclarations} list
+ * @param {[number[], number[]]} familyLanes
  * @return {{ lanes: [RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]], radiusDescriptors: RadiusDeclarationDescriptor[] } | null}
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export function partitionLanes(rule, familyLanes, textTable) {
+export function partitionLanes(list, familyLanes) {
   /** @type {[RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]]} */
   const lanes = [[], []];
   /** @type {RadiusDeclarationDescriptor[]} */
   const radiusDescriptors = [];
 
   for (const lane of familyLanes) {
-    for (const node of lane) {
+    for (const position of lane) {
       if (
-        node.parent === rule &&
-        !appendRadiusNode(node, lanes, radiusDescriptors, textTable)
+        !list.at(position).removed &&
+        !appendRadiusNode(list, position, lanes, radiusDescriptors)
       ) {
         return null;
       }

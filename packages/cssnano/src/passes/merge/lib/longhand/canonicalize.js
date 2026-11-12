@@ -16,9 +16,9 @@ import { pairFamilyOf } from './decl/pairForms.js';
 import { reduceClassifiedContainer } from './classifiedReducers.js';
 /** @import {BoxSupport} from './targetSupport.js' */
 /** @import {TextTable} from '../../../../values/textTable.js' */
-import { endsDeclarationRun } from './decl/declarationRuns.js';
-import { keepsValueAsWritten } from './keptValue.js';
-import { applyChildEdits } from '../deferredChildEdits.js';
+/** @import {RunContext} from '../../../ir/runContext.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
+/** @import {ValueIds} from '../../../ir/valueIds.js' */
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
 import { decodedPropertyName, isAll } from './decl/importanceLanes.js';
 import {
@@ -26,10 +26,14 @@ import {
   foldContainerDeclarations,
   foldShorthandDeclaration,
 } from './minifyShorthand.js';
+import { RUN_END } from './blockDeclarations.js';
+import { commitToNodes, declarationsFromNodes } from './nodeDeclarations.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {Container, Declaration} from 'postcss'; */
+/** @import {Container} from 'postcss'; */
+/** @import {NodeBlock} from './nodeDeclarations.js'; */
+/** @import {BlockDeclarations} from './blockDeclarations.js'; */
 
 /**
  * @typedef {object} Options
@@ -59,21 +63,23 @@ function alignmentFamilyOf(prop) {
 
 /**
  * @typedef {{
- *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
+ *   columnRules: {block: NodeBlock, positions: number[], lanes: [number[], number[]]}[],
  *   setsOtherColumn: boolean,
  *   placeShorthands: boolean,
  *   boxSupport: BoxSupport,
  *   pairShorthands: ReadonlySet<string>,
  *   features: ReadonlySet<string>,
- *   textTable: TextTable
+ *   textTable: TextTable,
+ *   tokenLists: TokenLists,
+ *   valueIds: ValueIds
  * }} MergeContext
  */
 
 /**
  * @typedef {{
  *   family: PairFamily | AlignmentFamilyConfig,
- *   decls: Declaration[],
- *   lanes: [Declaration[], Declaration[]]
+ *   decls: number[],
+ *   lanes: [number[], number[]]
  * }} FamilyDeclarations
  */
 
@@ -82,7 +88,7 @@ function alignmentFamilyOf(prop) {
  *
  * @param {Parameters<typeof reduceClassifiedContainer>[1]} state
  * @param {FamilyDeclarations['family']} family
- * @param {Declaration} child
+ * @param {number} child
  * @param {number} laneIndex
  * @return {void}
  */
@@ -100,14 +106,15 @@ function addFamilyDeclaration(state, family, child, laneIndex) {
 /**
  * Classifies a single declaration into the container accumulation state.
  *
- * @param {Declaration} child
+ * @param {BlockDeclarations} list
+ * @param {number} child - the position of the declaration in `list`
  * @param {string} prop
  * @param {number} laneIndex
  * @param {Parameters<typeof reduceClassifiedContainer>[1]} state
  * @param {Omit<MergeContext, 'columnRules'>} context
  * @return {void}
  */
-function classifyDeclaration(child, prop, laneIndex, state, context) {
+function classifyDeclaration(list, child, prop, laneIndex, state, context) {
   // Families the targets cannot parse are not collected, so they stay as written.
   const pair = pairFamilyOf(prop);
   if (pair && context.pairShorthands.has(pair.shorthand)) {
@@ -120,15 +127,14 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
     } else if (allPhysicalBorderProperties.has(prop)) {
       state.borderDeclarations.push(child);
     } else if (foldableShorthands.has(prop)) {
-      foldShorthandDeclaration(child, prop, context.textTable);
+      foldShorthandDeclaration(list, child, prop);
     } else {
       state.hasForeignBorder = true;
     }
     return;
   }
   if (prop.startsWith('column')) {
-    const { textTable } = context;
-    context.setsOtherColumn ||= setsOtherColumnProperty(child, textTable);
+    context.setsOtherColumn ||= setsOtherColumnProperty(list.at(child));
     if (allColumnProps.has(prop)) {
       state.columnDecls.push(child);
       state.columnLanes[laneIndex].push(child);
@@ -139,14 +145,14 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
   const boxGroup = boxProperty?.family.group ?? aliasedGroup(prop);
   if (boxGroup) {
     addBoxDeclaration(state, child, boxProperty, boxGroup, laneIndex);
-    foldShorthandDeclaration(child, prop, context.textTable);
+    foldShorthandDeclaration(list, child, prop);
     return;
   }
   // Only when every target supports place-* may one be synthesized.
   const alignmentFamily = context.placeShorthands
     ? alignmentFamilyOf(prop)
     : undefined;
-  foldShorthandDeclaration(child, prop, context.textTable);
+  foldShorthandDeclaration(list, child, prop);
   if (alignmentFamily) {
     addFamilyDeclaration(state, alignmentFamily, child, laneIndex);
   }
@@ -171,55 +177,50 @@ function createContainerState() {
 /**
  * Classifies declarations within a container, runs reducers, and tracks column candidates.
  * @param {Container} container
+ * @param {NodeBlock} block
  * @param {MergeContext} context
  * @return {void}
  */
-function processContainer(container, context) {
-  if (!container.nodes) return;
-  // Before classification, so the family reducers never see detached nodes.
+function processContainer(container, block, context) {
+  const { list } = block;
+  // Before classification, so the family reducers never see removed items.
   // Style rules only: at-rule descriptors follow their own validity rules.
   if (container.type === 'rule') {
-    discardOverriddenDeclarations(
-      container,
-      context.textTable,
-      context.features
-    );
-    applyChildEdits(container);
+    discardOverriddenDeclarations(list, context.features);
   }
 
-  // Reducers remove nodes, so reduce only after the loop has read them all.
+  // Reducers remove items, so reduce only after the loop has read them all.
   const runs = [];
   let state = createContainerState();
-  for (const child of container.nodes) {
+  for (const entry of list.chain) {
     // Declarations after a nested rule cascade after its declarations, so a
     // shorthand merged across it would override them. A value kept as written
     // bounds the run the same way.
-    if (
-      endsDeclarationRun(child) ||
-      (child.type === 'decl' && keepsValueAsWritten(context.textTable, child))
-    ) {
+    if (entry === RUN_END || list.at(entry).kept) {
       runs.push(state);
       state = createContainerState();
       continue;
     }
-    if (child.type !== 'decl') continue;
+    const child = list.at(entry);
+    if (child.removed) continue;
     const laneIndex = child.important ? 1 : 0;
     if (isAll(child)) {
       state.hasForeignBorder = true;
       if (state.boxes) {
         for (const box of state.boxes.values())
-          box.lanes[laneIndex].push(child);
+          box.lanes[laneIndex].push(entry);
       }
-      state.borderRadiusLanes[laneIndex].push(child);
-      state.columnLanes[laneIndex].push(child);
+      state.borderRadiusLanes[laneIndex].push(entry);
+      state.columnLanes[laneIndex].push(entry);
       for (const family of state.families?.values() ?? []) {
-        family.lanes[laneIndex].push(child);
+        family.lanes[laneIndex].push(entry);
       }
       continue;
     }
 
     classifyDeclaration(
-      child,
+      list,
+      entry,
       asciiLowerCase(child.prop),
       laneIndex,
       state,
@@ -228,24 +229,25 @@ function processContainer(container, context) {
   }
 
   runs.push(state);
-  for (const run of runs) reduceClassifiedContainer(container, run, context);
-  applyChildEdits(container);
+  for (const run of runs) reduceClassifiedContainer(block, run, context);
+  // A column rule waits for `finishColumns`, which commits its block once.
+  if (!runs.some((run) => run.columnDecls.length > 0)) {
+    commitToNodes(block, context.textTable);
+  }
 }
 
 /**
  * @param {boolean} placeShorthands
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
- * @param {TextTable} textTable the tokens the walk left for the declarations
- * @param {ReadonlySet<string>} features the features every target supports
+ * @param {RunContext} run the run whose tables and features the rounds read
  * @return {MergeContext} the state that the rounds of one run share
  */
 export function longhandContext(
   placeShorthands,
   boxSupport,
   pairShorthands,
-  textTable,
-  features
+  run
 ) {
   return {
     columnRules: [],
@@ -253,26 +255,29 @@ export function longhandContext(
     placeShorthands,
     boxSupport,
     pairShorthands,
-    features,
-    textTable,
+    features: run.features,
+    textTable: run.textTable,
+    tokenLists: run.tokenLists,
+    valueIds: run.valueIds,
   };
 }
 
 /**
  * Reduces the column rules once every block of the stylesheet is canonicalized,
  * since whether a column property is set elsewhere is a whole-stylesheet fact.
+ * Each column block is committed once, after its column reducers.
  *
  * @param {MergeContext} context
  * @return {void}
  */
 export function finishColumns(context) {
   if (!context.setsOtherColumn) {
-    for (const [rule, decls, lanes] of context.columnRules) {
-      reduceColumns(rule, decls, lanes, context.textTable, context.features);
+    for (const { block, positions, lanes } of context.columnRules) {
+      reduceColumns(block.list, positions, lanes, context.features);
     }
-    // A rule may hold several runs; rebuild it once, after all of them.
-    for (const [rule] of context.columnRules) applyChildEdits(rule);
   }
+  const blocks = new Set(context.columnRules.map((rule) => rule.block));
+  for (const block of blocks) commitToNodes(block, context.textTable);
 }
 
 /**
@@ -286,8 +291,11 @@ export function finishColumns(context) {
  */
 export function canonicalize(block, context) {
   if (block.type === 'root') {
-    foldContainerDeclarations(block, context.textTable);
+    const root = declarationsFromNodes(block, context);
+    foldContainerDeclarations(root.list, root.list.chain);
+    commitToNodes(root, context.textTable);
     return;
   }
-  processContainer(block, context);
+  if (!block.nodes) return;
+  processContainer(block, declarationsFromNodes(block, context), context);
 }

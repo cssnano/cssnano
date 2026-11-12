@@ -3,11 +3,17 @@ import { suite, test } from 'node:test';
 
 // The counter must hook the tokenizer before the walk loads it.
 const { counter } = await import('../../../../../util/countTokenize.js');
+const { createRunContext } =
+  await import('../../../src/passes/ir/runContext.js');
 const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../../src/values/textTable.js');
 const { foldShorthandDeclaration } =
   await import('../../../src/passes/merge/lib/longhand/minifyShorthand.js');
+const { declarationsFromNodes } =
+  await import('../../../src/passes/merge/lib/longhand/nodeDeclarations.js');
+const { longstandingFeatures } =
+  await import('../../../src/passes/merge/lib/longhand/syntaxFeatures.js');
 const { boxBrowserKeeps } =
   await import('../../../src/passes/merge/lib/longhand/validateBox.js');
 const { isColor, isValidWidthStyleColor } =
@@ -57,12 +63,23 @@ function walkedStylesheet(css) {
   return { root, table };
 }
 
+/**
+ * The block of the rule's declarations, read through the table, as the build
+ * reads it before a reader runs.
+ *
+ * @param {import('postcss').Root} root
+ * @param {InstanceType<typeof TextTable>} table
+ */
+function blockOf(root, table) {
+  return declarationsFromNodes(root.first, createRunContext(table)).list;
+}
+
 suite('the longhand readers take a declaration from the text table', () => {
   test("splitValue reads the declaration's tokens through the table, without tokenizing", () => {
     const { root, table } = walkedStylesheet('a{transition:opacity 0s ease}');
-    const decl = root.first.first;
+    const list = blockOf(root, table);
     const before = tokenizeTotal();
-    foldShorthandDeclaration(decl, 'transition', table);
+    foldShorthandDeclaration(list, 0, 'transition');
     assert.equal(tokenizeTotal() - before, 0);
   });
 
@@ -86,9 +103,9 @@ suite('the longhand readers take a declaration from the text table', () => {
 
   test('isCustomProp reads the value from the table, without tokenizing', () => {
     const { root, table } = walkedStylesheet('a{margin:var(--x) 1px}');
-    const decl = root.first.first;
+    const item = blockOf(root, table).at(0);
     const before = tokenizeTotal();
-    assert.equal(isCustomProp(decl, table), true);
+    assert.equal(isCustomProp(item), true);
     assert.equal(tokenizeTotal() - before, 0);
   });
 
@@ -115,42 +132,52 @@ suite('the longhand readers take a declaration from the text table', () => {
 
   test('shapeEquivalence reads the declaration from the table, without tokenizing', () => {
     const { root, table } = walkedStylesheet('a{margin:0 1px;margin:0 2px}');
+    const list = blockOf(root, table);
     const before = tokenizeTotal();
-    discardOverriddenDeclarations(root.first, table);
+    discardOverriddenDeclarations(list, longstandingFeatures);
     assert.equal(tokenizeTotal() - before, 0);
   });
 
   test('requiredSupport reads the list stored for the node, without tokenizing', () => {
     const { root, table } = walkedStylesheet('a{width:7dvh}');
+    const item = blockOf(root, table).at(0);
     const before = tokenizeTotal();
-    requiredSupport(root.first.first, table);
+    requiredSupport(item);
     assert.equal(tokenizeTotal() - before, 0);
   });
 
   test('isValidColumns reads the list stored for the node, without tokenizing', () => {
     const { root, table } = walkedStylesheet('a{columns:2 100px}');
+    const item = blockOf(root, table).at(0);
     const before = tokenizeTotal();
-    assert.equal(isValidColumns(root.first.first, table), true);
+    assert.equal(isValidColumns(item), true);
     assert.equal(tokenizeTotal() - before, 0);
   });
 
   test('alignmentForms reads the list stored for the node, without tokenizing', () => {
     const { root, table } = walkedStylesheet('a{align-content:safe center}');
-    const decl = root.first.first;
+    const item = blockOf(root, table).at(0);
     const family = alignmentProperties.get('align-content');
     const before = tokenizeTotal();
-    parseAlignmentDeclaration(family, decl, table);
+    parseAlignmentDeclaration(family, item);
     assert.equal(tokenizeTotal() - before, 0);
   });
 
-  test('alignmentForms tokenizes decl.value once when PostCSS stripped a comment, since the stored list spells the comment', () => {
+  test('the block build tokenizes decl.value once when PostCSS stripped a comment, since the stored list spells the comment', () => {
     const { root, table } = walkedStylesheet(
       'a{align-content:safe /* x */ center}'
     );
-    const decl = root.first.first;
-    const family = alignmentProperties.get('align-content');
     const before = tokenizeTotal();
-    parseAlignmentDeclaration(family, decl, table);
+    blockOf(root, table);
+    assert.equal(tokenizeTotal() - before, 1);
+  });
+
+  test('the block lists of one run tokenize a value repeated on another declaration once, since the run interns the text', () => {
+    const root = postcss.parse('a{margin:0 1px}b{margin:0 1px}');
+    const run = createRunContext(new TextTable());
+    const before = tokenizeTotal();
+    declarationsFromNodes(root.first, run);
+    declarationsFromNodes(root.last, run);
     assert.equal(tokenizeTotal() - before, 1);
   });
 
@@ -164,10 +191,10 @@ suite('the longhand readers take a declaration from the text table', () => {
 
   test('a pair family parser reads the list stored for the node, without tokenizing', () => {
     const { root, table } = walkedStylesheet('a{row-gap:1px}');
-    const decl = root.first.first;
+    const item = blockOf(root, table).at(0);
     const gap = pairFamilies.find((family) => family.shorthand === 'gap');
     const before = tokenizeTotal();
-    assert.equal(gap.parseValue[0](decl, table), '1px');
+    assert.equal(gap.parseValue[0](item), '1px');
     assert.equal(tokenizeTotal() - before, 0);
   });
 });

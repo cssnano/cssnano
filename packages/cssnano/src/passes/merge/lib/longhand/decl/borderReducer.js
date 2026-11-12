@@ -36,21 +36,19 @@ import {
 } from './borderCandidates.js';
 
 const { asciiLowerCase } = cssnanoUtils;
-/** @import {Container, Declaration} from 'postcss'; */
-/** @import {TextTable} from '../../../../../values/textTable.js'; */
+/** @import {BlockDeclarations, DeclarationItem} from '../blockDeclarations.js'; */
 /** @import {ValueComponent} from '../componentRanges.js' */
 
 /**
- * @param {Declaration} declaration
- * @param {TextTable} textTable the tokens the walk left for the declaration
+ * @param {DeclarationItem} declaration
  * @return {boolean}
  */
-function borderBrowserKeeps(declaration, textTable) {
+function borderBrowserKeeps(declaration) {
   if (isCssWideKeyword(declaration.value)) {
     return true;
   }
   const prop = asciiLowerCase(declaration.prop);
-  const tokens = declarationTokens(textTable, declaration);
+  const tokens = declarationTokens(declaration);
   if (borderAndSideShorthands.has(prop)) {
     return parseWidthStyleColor(declaration.value, tokens) !== null;
   }
@@ -66,65 +64,68 @@ function borderBrowserKeeps(declaration, textTable) {
 }
 
 /**
- * @param {Declaration} d
- * @param {TextTable} textTable
+ * @param {BlockDeclarations} list
+ * @param {number} position
  */
-function normalizeBorderSingleton(d, textTable) {
-  if (hasHack(d.raws.before, d.prop, d.value) || !canExplode(d, textTable))
-    return;
+function normalizeBorderSingleton(list, position) {
+  const d = list.at(position);
+  if (hasHack(d.before, d.prop, d.value) || !canExplode(d)) return;
   const p = asciiLowerCase(d.prop);
   if (borderAndSideShorthands.has(p)) {
-    d.prop = p;
-    delete d.raws.value;
-    textTable.setText(
-      d,
-      minifyWidthStyleColor(d.value, declarationTokens(textTable, d))
+    list.rewrite(
+      position,
+      p,
+      minifyWidthStyleColor(d.value, declarationTokens(d))
     );
   } else if (allSidesBorderShorthands.includes(p)) {
-    d.prop = p;
-    delete d.raws.value;
-    textTable.setText(d, minifyTrbl(d.value));
+    list.rewrite(position, p, minifyTrbl(d.value));
   }
 }
+
 /**
- * @param {Declaration} prev
- * @param {Declaration} d
- * @param {TextTable} textTable
+ * @param {BlockDeclarations} list
+ * @param {number} prev
+ * @param {number} d
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function isDeclarationFallback(prev, d, textTable, features) {
-  if (asciiLowerCase(prev.prop) === asciiLowerCase(d.prop)) {
-    return isFallback(prev, d, textTable, features);
+function isDeclarationFallback(list, prev, d, features) {
+  const earlier = list.at(prev);
+  const later = list.at(d);
+  if (asciiLowerCase(earlier.prop) === asciiLowerCase(later.prop)) {
+    return isFallback(earlier, later, features);
   }
   return (
-    mergeBlockingSupport(d, textTable, features).size > 0 &&
-    isFallback(prev, d, textTable, features)
+    mergeBlockingSupport(later, features).size > 0 &&
+    isFallback(earlier, later, features)
   );
 }
+
 /**
+ * @typedef {object} SegmentState
+ * @property {string[]} cells
+ * @property {(ValueComponent | undefined)[]} cellComponents
+ * @property {Set<number>[]} cellHistory
+ * @property {Set<number>} touched
+ * @property {Set<number>} barrierCells
+ * @property {Set<number>} fallbacks
+ * @property {boolean} resetFound
+ */
+
+/**
+ * @param {BlockDeclarations} list
  * @param {number} idx
- * @param {Declaration} d
+ * @param {number} d - the declaration's position
  * @param {string} value
  * @param {ValueComponent | undefined} part the component `value` is, when the
  * declaration's value split into components
  * @param {boolean} isBarrier
- * @param {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
- * @param {TextTable} textTable
+ * @param {SegmentState} state
  * @param {ReadonlySet<string>} features the features every target supports
  */
-function updateCell(
-  idx,
-  d,
-  value,
-  part,
-  isBarrier,
-  state,
-  textTable,
-  features
-) {
+function updateCell(list, idx, d, value, part, isBarrier, state, features) {
   for (const prev of state.cellHistory[idx]) {
-    if (isDeclarationFallback(prev, d, textTable, features))
+    if (isDeclarationFallback(list, prev, d, features))
       state.fallbacks.add(prev);
   }
   if (isBarrier) {
@@ -137,15 +138,17 @@ function updateCell(
   state.cellHistory[idx].add(d);
   state.touched.add(idx);
 }
+
 /**
- * @param {Declaration} d
- * @param {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} state
- * @param {TextTable} textTable
+ * @param {BlockDeclarations} list
+ * @param {number} position
+ * @param {SegmentState} state
  * @param {ReadonlySet<string>} features the features every target supports
  */
-function applySegmentDeclaration(d, state, textTable, features) {
+function applySegmentDeclaration(list, position, state, features) {
+  const d = list.at(position);
   const prop = asciiLowerCase(d.prop);
-  const tokens = declarationTokens(textTable, d);
+  const tokens = declarationTokens(d);
   // Segment members passed the family guard: no global keyword, explodable.
   const isBarrier = hasSubstitution(d.value, tokens);
 
@@ -162,13 +165,13 @@ function applySegmentDeclaration(d, state, textTable, features) {
     for (const s of sList) {
       for (let c = 0; c < 3; c++) {
         updateCell(
+          list,
           s * 3 + c,
-          d,
+          position,
           triple[c],
           componentParts[c],
           isBarrier,
           state,
-          textTable,
           features
         );
       }
@@ -180,13 +183,13 @@ function applySegmentDeclaration(d, state, textTable, features) {
     const parts = expandFourSides(splitComponents(d.value, tokens));
     for (let s = 0; s < 4; s++) {
       updateCell(
+        list,
         s * 3 + c,
-        d,
+        position,
         parts[s]?.raw,
         parts[s],
         isBarrier,
         state,
-        textTable,
         features
       );
     }
@@ -197,26 +200,27 @@ function applySegmentDeclaration(d, state, textTable, features) {
     if (s !== -1 && c !== -1) {
       const parts = splitComponents(d.value, tokens);
       updateCell(
+        list,
         s * 3 + c,
-        d,
+        position,
         d.value,
         parts.length === 1 ? parts[0] : undefined,
         isBarrier,
         state,
-        textTable,
         features
       );
     }
   }
 }
+
 /**
- * @param {Declaration[]} segment
- * @param {TextTable} textTable
+ * @param {BlockDeclarations} list
+ * @param {number[]} segment
  * @param {ReadonlySet<string>} features the features every target supports
- * @return {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }}
+ * @return {SegmentState}
  */
-function analyzeSegment(segment, textTable, features) {
-  /** @type {{ cells: string[], cellComponents: (ValueComponent | undefined)[], cellHistory: Set<Declaration>[], touched: Set<number>, barrierCells: Set<number>, fallbacks: Set<Declaration>, resetFound: boolean }} */
+function analyzeSegment(list, segment, features) {
+  /** @type {SegmentState} */
   const state = {
     cells: Array.from({ length: 12 }, () => ''),
     cellComponents: Array.from({ length: 12 }),
@@ -226,30 +230,30 @@ function analyzeSegment(segment, textTable, features) {
     fallbacks: new Set(),
     resetFound: false,
   };
-  for (const d of segment) {
-    applySegmentDeclaration(d, state, textTable, features);
+  for (const position of segment) {
+    applySegmentDeclaration(list, position, state, features);
   }
   return state;
 }
 
 /**
- * @param {Container} rule
- * @param {Declaration[]} segment
+ * @param {BlockDeclarations} list
+ * @param {number[]} segment
  * @param {boolean} lane
- * @param {TextTable} textTable
  * @param {ReadonlySet<string>} features the features every target supports
  */
-function reduceSegment(rule, segment, lane, textTable, features) {
+function reduceSegment(list, segment, lane, features) {
   if (segment.length === 0) return;
   if (segment.length === 1) {
-    const d = segment[0];
+    const position = segment[0];
+    const d = list.at(position);
     if (allSidesBorderShorthands.includes(asciiLowerCase(d.prop))) {
-      textTable.setText(d, minifyTrbl(d.value));
+      list.rewrite(position, d.prop, minifyTrbl(d.value));
     }
     return;
   }
 
-  const state = analyzeSegment(segment, textTable, features);
+  const state = analyzeSegment(list, segment, features);
   if (state.touched.size === 0) return;
 
   const hasReset = state.resetFound;
@@ -262,11 +266,12 @@ function reduceSegment(rule, segment, lane, textTable, features) {
     hasReset,
     lane,
     state.fallbacks,
-    textTable,
+    list,
     features
   );
 
   const best = selectBestCandidate(
+    list,
     candidates,
     state.cellHistory,
     state.fallbacks,
@@ -276,33 +281,33 @@ function reduceSegment(rule, segment, lane, textTable, features) {
   );
   if (!best) return;
 
-  applyBestCandidate(rule, best, segment, lane, textTable);
+  applyBestCandidate(list, best, segment, lane);
 }
 
 /**
- * @param {Container} rule
- * @param {Declaration[]} laneDecls
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} laneDecls
  * @param {boolean} lane
- * @param {TextTable} textTable
  * @param {ReadonlySet<string>} features the features every target supports
  */
-function processLane(rule, laneDecls, lane, textTable, features) {
-  /** @type {Declaration[]} */
+function processLane(list, laneDecls, lane, features) {
+  /** @type {number[]} */
   let segment = [];
 
-  for (const d of laneDecls) {
-    if (hasHack(d.raws.before, d.prop, d.value) || !canExplode(d, textTable)) {
+  for (const position of laneDecls) {
+    const d = list.at(position);
+    if (hasHack(d.before, d.prop, d.value) || !canExplode(d)) {
       if (segment.length) {
-        reduceSegment(rule, segment, lane, textTable, features);
+        reduceSegment(list, segment, lane, features);
         segment = [];
       }
       continue;
     }
-    segment.push(d);
+    segment.push(position);
   }
 
   if (segment.length) {
-    reduceSegment(rule, segment, lane, textTable, features);
+    reduceSegment(list, segment, lane, features);
   }
 }
 
@@ -314,17 +319,16 @@ function processLane(rule, laneDecls, lane, textTable, features) {
  * rejected substitutions and ignored values in the family, and style hacks
  * never win, so the later declaration is a valid, substitution-free shorthand.
  *
- * @param {Declaration} node
- * @param {Declaration} lastNode
- * @param {TextTable} textTable
+ * @param {DeclarationItem} node
+ * @param {DeclarationItem} lastNode
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function isOverriddenByShorthand(node, lastNode, textTable, features) {
+function isOverriddenByShorthand(node, lastNode, features) {
   return (
     /** @type {number} */ (getLevel(node.prop)) >
       /** @type {number} */ (getLevel(lastNode.prop)) &&
-    !strandsFallback(node, lastNode, textTable, features)
+    !strandsFallback(node, lastNode, features)
   );
 }
 
@@ -335,59 +339,52 @@ const borderPrecedence = {
 };
 
 /**
- * @param {Container} rule
- * @param {Declaration[]} decls
+ * @param {BlockDeclarations} list
+ * @param {number[]} decls - positions in `list`
  * @param {boolean} hasForeignBorder
- * @param {TextTable} textTable the tokens the walk left for the declarations
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export function reduceBorder(
-  rule,
-  decls,
-  hasForeignBorder,
-  textTable,
-  features
-) {
-  if (!rule.nodes || hasForeignBorder) return;
+export function reduceBorder(list, decls, hasForeignBorder, features) {
+  if (hasForeignBorder) return;
 
   if (
     decls.length === 0 ||
-    decls.some((d) => {
+    decls.some((position) => {
+      const d = list.at(position);
       const p = asciiLowerCase(d.prop);
       const isCustomShorthand =
         allBorderShorthands.has(p) &&
-        hasSubstitution(d.value, declarationTokens(textTable, d));
+        hasSubstitution(d.value, declarationTokens(d));
       return (
         isCssWideKeyword(d.value) ||
         isCustomShorthand ||
-        (!hasHack(d.raws.before, d.prop, d.value) &&
-          !borderBrowserKeeps(d, textTable))
+        (!hasHack(d.before, d.prop, d.value) && !borderBrowserKeeps(d))
       );
     })
   )
     return;
 
   discardOverriddenInList(
+    list,
     decls,
-    textTable,
     features,
     allPhysicalBorderProperties,
     borderPrecedence
   );
 
-  const live = decls.filter((d) => d.parent);
+  const live = decls.filter((p) => !list.at(p).removed);
   if (live.length <= 1) {
-    if (live[0]) normalizeBorderSingleton(live[0], textTable);
+    if (live[0] !== undefined) normalizeBorderSingleton(list, live[0]);
     return;
   }
 
   for (const lane of [false, true]) {
     const laneDecls = live.filter(
-      (d) => Boolean(d.important) === lane && d.parent
+      (p) => Boolean(list.at(p).important) === lane && !list.at(p).removed
     );
     if (laneDecls.length) {
-      processLane(rule, laneDecls, lane, textTable, features);
+      processLane(list, laneDecls, lane, features);
     }
   }
 }

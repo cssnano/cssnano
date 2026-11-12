@@ -1,6 +1,5 @@
 import { list } from 'postcss';
 import cssnanoUtils from '#utils';
-import { declaredValueTokens } from '../../../../values/declaredValueTokens.js';
 
 const { TokenType, tokenEnd, tokenStart } = cssnanoUtils;
 
@@ -138,17 +137,14 @@ export function splitComponents(value, tokens) {
 }
 
 /**
- * The tokens a declaration's value has in the text table, when the value has a
- * `(` to type; a value without one needs none.
+ * The tokens of a declaration's value, when the value has a `(` to type; a
+ * value without one needs none.
  *
- * @param {import('../../../../values/textTable.js').TextTable} textTable
- * @param {import('postcss').Declaration} decl
+ * @param {import('./blockDeclarations.js').DeclarationItem} decl
  * @return {readonly CSSToken[] | undefined}
  */
-export function declarationTokens(textTable, decl) {
-  return decl.value.includes('(')
-    ? declaredValueTokens(textTable, decl)
-    : undefined;
+export function declarationTokens(decl) {
+  return decl.value.includes('(') ? decl.tokens : undefined;
 }
 
 /**

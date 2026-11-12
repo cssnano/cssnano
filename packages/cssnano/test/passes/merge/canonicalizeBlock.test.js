@@ -1,3 +1,4 @@
+import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
@@ -28,8 +29,7 @@ function canonicalizeBlocks(css) {
     placeShorthands,
     boxSupport,
     pairShorthands,
-    new TextTable(),
-    features
+    createRunContext(new TextTable(), undefined, features)
   );
   canonicalize(root, context);
   root.walk((node) => {

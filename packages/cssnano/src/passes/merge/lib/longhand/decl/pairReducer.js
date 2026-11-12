@@ -10,46 +10,36 @@ import { hasNonAll, repeatsProperty } from './importanceLanes.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {Container, Declaration} from 'postcss'; */
 /** @import {PairFamily} from './pairForms.js'; */
-/** @import {TextTable} from '../../../../../values/textTable.js'; */
+/** @import {BlockDeclarations} from '../blockDeclarations.js'; */
 
 /**
  * Replaces the longhands of one lane with the shorthand. A repeated
  * longhand has been rejected by the caller, so no declaration is a fallback
  * for another, and each longhand occurs at most once per segment.
  *
- * @param {Container} rule
+ * @param {BlockDeclarations} list
  * @param {PairFamily} family
- * @param {Declaration[]} segment
+ * @param {number[]} segment - positions in `list`
  * @param {boolean} important
- * @param {Map<Declaration, string>} parsed - normalized values
- * @param {TextTable} textTable
+ * @param {Map<number, string>} parsed - normalized values, by position
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-function mergeSegment(
-  rule,
-  family,
-  segment,
-  important,
-  parsed,
-  textTable,
-  features
-) {
+function mergeSegment(list, family, segment, important, parsed, features) {
   if (segment.length !== family.longhands.length) return;
   /** @type {(string | null)[]} */
   const slots = family.longhands.map(() => null);
-  for (const decl of segment) {
-    slots[family.longhands.indexOf(asciiLowerCase(decl.prop))] =
-      parsed.get(decl) ?? null;
+  for (const position of segment) {
+    slots[family.longhands.indexOf(asciiLowerCase(list.at(position).prop))] =
+      parsed.get(position) ?? null;
   }
   if (slots.includes(null)) return;
   const values = /** @type {string[]} */ (slots);
 
   // A newer-syntax component is dropped, with the others, where unsupported.
-  const [first, ...rest] = segment.map((d) =>
-    mergeBlockingSupport(d, textTable, features)
+  const [first, ...rest] = segment.map((position) =>
+    mergeBlockingSupport(list.at(position), features)
   );
   if (rest.some((support) => support.symmetricDifference(first).size)) return;
 
@@ -57,14 +47,11 @@ function mergeSegment(
 
   const value = isCssWideKeyword(values[0]) ? values[0] : family.emit(values);
   if (value === null) return;
-  commitShorthand(
-    rule,
-    [],
-    new Set(segment),
-    new Set(),
-    { prop: family.shorthand, value, important },
-    textTable
-  );
+  commitShorthand(list, [], new Set(segment), new Set(), {
+    prop: family.shorthand,
+    value,
+    important,
+  });
 }
 
 /**
@@ -73,62 +60,49 @@ function mergeSegment(
  * written: a declaration it does not understand could be a fallback or a
  * hack, and the shorthand would reorder it.
  *
- * @param {Container} rule
+ * @param {BlockDeclarations} list
  * @param {PairFamily} family
- * @param {Declaration[]} declarations
- * @param {[Declaration[], Declaration[]]} lanes - the declarations and `all`
- *   split by importance
- * @param {TextTable} textTable
+ * @param {number[]} declarations - positions in `list`
+ * @param {[number[], number[]]} lanes - the declarations and `all` split by
+ *   importance
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export function reducePairFamily(
-  rule,
-  family,
-  declarations,
-  lanes,
-  textTable,
-  features
-) {
+export function reducePairFamily(list, family, declarations, lanes, features) {
   // The shorthand and aliases such as grid-gap share the cascade.
   if (
-    declarations.some((d) => !family.longhands.includes(asciiLowerCase(d.prop)))
+    declarations.some(
+      (d) => !family.longhands.includes(asciiLowerCase(list.at(d).prop))
+    )
   ) {
     return;
   }
-  if (lanes.some(repeatsProperty)) return;
+  if (lanes.some((lane) => repeatsProperty(list, lane))) return;
 
-  /** @type {Map<Declaration, string>} */
+  /** @type {Map<number, string>} */
   const parsed = new Map();
-  for (const decl of declarations) {
-    if (hasHack(decl.raws.before, decl.prop, decl.value)) return;
+  for (const position of declarations) {
+    const decl = list.at(position);
+    if (hasHack(decl.before, decl.prop, decl.value)) return;
     const slot = family.longhands.indexOf(asciiLowerCase(decl.prop));
-    const value = family.parseValue[slot](decl, textTable);
+    const value = family.parseValue[slot](decl);
     if (value === null) return;
-    parsed.set(decl, value);
+    parsed.set(position, value);
   }
 
   for (const important of [false, true]) {
     const laneDecls = lanes[important ? 1 : 0];
-    if (!hasNonAll(laneDecls)) continue;
-    /** @type {Declaration[]} */
+    if (!hasNonAll(list, laneDecls)) continue;
+    /** @type {number[]} */
     let segment = [];
-    for (const decl of laneDecls) {
-      if (parsed.has(decl)) {
-        segment.push(decl);
+    for (const position of laneDecls) {
+      if (parsed.has(position)) {
+        segment.push(position);
         continue;
       }
-      mergeSegment(
-        rule,
-        family,
-        segment,
-        important,
-        parsed,
-        textTable,
-        features
-      );
+      mergeSegment(list, family, segment, important, parsed, features);
       segment = [];
     }
-    mergeSegment(rule, family, segment, important, parsed, textTable, features);
+    mergeSegment(list, family, segment, important, parsed, features);
   }
 }

@@ -1,17 +1,16 @@
-import type { Container, Declaration } from 'postcss';
+import type { BlockDeclarations, DeclarationItem } from '../blockDeclarations.js';
 import type { BoxFamily } from './boxGroups.js';
-/** @import {Container, Declaration} from 'postcss'; */
+/** @import {BlockDeclarations, DeclarationItem} from '../blockDeclarations.js'; */
 /** @import {BoxFamily} from './boxGroups.js'; */
 /**
  * A substitution function such as `var()` or `env()` may stand for any number
  * of tokens, so a shorthand that holds one cannot be split into its slots.
  * `hasSubstitution` also rejects a custom property, so `canExplode` skips it.
  *
- * @param {Declaration} declaration - a shorthand
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {DeclarationItem} declaration - a shorthand
  * @return {boolean}
  */
-export declare function isExplodable(declaration: Declaration, textTable: import('../../../../../values/textTable.js').TextTable): boolean;
+export declare function isExplodable(declaration: DeclarationItem): boolean;
 /**
  * @param {BoxFamily} family
  * @return {{ parse: (value: string) => string[], minify: (value: string | string[]) => string }}
@@ -46,15 +45,14 @@ export declare function shortestWithFreeSlots(values: string[], free: boolean[],
  * understand. The other axis of a flow-relative family never does. Creating
  * or growing a shorthand also needs every target to support it.
  *
- * @param {Container} rule
+ * @param {BlockDeclarations} list
  * @param {BoxFamily} family
- * @param {Declaration[]} laneDecls - the group's declarations of one
- * importance, in source order
+ * @param {readonly number[]} laneDecls - the group's declarations of one
+ * importance, in source order, by position in `list`
  * @param {boolean} important
  * @param {boolean} mayInsert - whether every target supports the shorthand
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  * @param {ReadonlySet<string>} features the features every target supports
  * @return {void}
  */
-export declare function reduceFamilyLane(rule: Container, family: BoxFamily, laneDecls: Declaration[], important: boolean, mayInsert: boolean, textTable: import('../../../../../values/textTable.js').TextTable, features: ReadonlySet<string>): void;
+export declare function reduceFamilyLane(list: BlockDeclarations, family: BoxFamily, laneDecls: readonly number[], important: boolean, mayInsert: boolean, features: ReadonlySet<string>): void;
 //# sourceMappingURL=slotSolver.d.ts.map
