@@ -337,7 +337,7 @@ test('appendChild of a comment should make the next read return the same entry',
   const note = placeUnlinked(
     records,
     records.root.index,
-    new NodeEntry(COMMENT, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
+    new NodeEntry(COMMENT, '', NO_AT_RULE, '', false, NO_PRELUDE)
   );
   appendChild(records, record.index, note.index);
   assert.equal(declarationKeys(records, record.index), keys);

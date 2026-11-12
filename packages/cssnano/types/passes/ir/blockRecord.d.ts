@@ -69,8 +69,6 @@ export declare class BlockRecord {
     atRuleKind: number;
     /** @type {string} the folded name of an at-rule, '' for the stylesheet */
     name: string;
-    /** @type {string} the prelude of an at-rule, '' for the stylesheet */
-    params: string;
     /** @type {boolean} whether the block is a layer with no name, or only comments as its prelude */
     anonymous: boolean;
     /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
@@ -112,6 +110,13 @@ export declare class BlockRecord {
      */
     afterName: string | null;
     /**
+     * Whether an edit wrote the prelude, so write-back assigns its text to the
+     * node. The list of the prelude is `preludeId`.
+     *
+     * @type {boolean}
+     */
+    marked: boolean;
+    /**
      * The id of the circumstances under which the block applies its content, as
      * `containerContext` gives it. A block moves only between equal containers,
      * so the id holds for the whole run.
@@ -124,11 +129,10 @@ export declare class BlockRecord {
      * @param {string | null} before
      * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for the stylesheet
      * @param {string} name the folded name, or ''
-     * @param {string} params the prelude, or ''
      * @param {boolean} anonymous
      * @param {number} preludeId
      */
-    constructor(kind: typeof STYLESHEET | typeof AT_RULE_BLOCK, before: string | null, atRuleKind: number, name: string, params: string, anonymous: boolean, preludeId: number);
+    constructor(kind: typeof STYLESHEET | typeof AT_RULE_BLOCK, before: string | null, atRuleKind: number, name: string, anonymous: boolean, preludeId: number);
 }
 /**
  * A child of a block that is neither a rule, an at-rule with a block, nor a
@@ -146,8 +150,6 @@ export declare class NodeEntry {
     atRuleKind: number;
     /** @type {string} the folded name of an at-rule, '' for a comment */
     name: string;
-    /** @type {string} the prelude of an at-rule, '' for a comment */
-    params: string;
     /** @type {boolean} whether a layer statement is anonymous */
     anonymous: boolean;
     /** @type {number} the interned id of the at-rule's prelude, or NO_PRELUDE */
@@ -177,16 +179,22 @@ export declare class NodeEntry {
      */
     afterName: string | null;
     /**
+     * Whether an edit wrote the prelude, so write-back assigns its text to the
+     * node. The list of the prelude is `preludeId`.
+     *
+     * @type {boolean}
+     */
+    marked: boolean;
+    /**
      * @param {typeof COMMENT | typeof AT_RULE_STATEMENT} kind
      * @param {string | null} before
      * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for a comment
      * @param {string} name
-     * @param {string} params
      * @param {boolean} anonymous
      * @param {number} preludeId
      * @param {string} [text] the text of a comment
      * @param {boolean} [important] whether a comment is important
      */
-    constructor(kind: typeof COMMENT | typeof AT_RULE_STATEMENT, before: string | null, atRuleKind: number, name: string, params: string, anonymous: boolean, preludeId: number, text?: string, important?: boolean);
+    constructor(kind: typeof COMMENT | typeof AT_RULE_STATEMENT, before: string | null, atRuleKind: number, name: string, anonymous: boolean, preludeId: number, text?: string, important?: boolean);
 }
 //# sourceMappingURL=blockRecord.d.ts.map

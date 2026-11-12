@@ -50,7 +50,7 @@ export const mutations = [
   {
     name: 'join at-rules of one name whatever their conditions',
     target: source('sameContainer.js'),
-    find: '        : step(trie, block.params);',
+    find: '        : step(trie, block.preludeId);',
     replace: '        : trie;',
   },
   {

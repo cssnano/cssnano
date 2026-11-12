@@ -34,9 +34,10 @@ test(
   processCSS('@foo x{ a{x:1}}@foo x{a{x:1}}', '@foo x{a{x:1}}')
 );
 
+// At-rule names are ASCII case-insensitive, so the two at-rules are one.
 test(
-  'should keep at-rules whose names differ only by case because at-rule names compare case-sensitively',
-  passthroughCSS('@Foo x{.a{x:1}}@foo x{.a{x:1}}')
+  'should remove an at-rule whose name differs from a later one only by ASCII case',
+  processCSS('@Foo x{.a{x:1}}@foo x{.a{x:1}}', '@foo x{.a{x:1}}')
 );
 
 test(

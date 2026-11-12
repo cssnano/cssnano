@@ -1,6 +1,7 @@
 import { DeclarationRecord } from './declarationRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
+import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ArenaIndex } from './blockRecord.js';
 import type { NodeEntry } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
@@ -8,6 +9,7 @@ import type { BlockDeclarations } from '../merge/lib/longhand/blockDeclarations.
 import type { RunContext } from './runContext.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -89,6 +91,17 @@ export declare function removeDeclarations(records: BlockRecords, rule: ArenaInd
  * @return {void}
  */
 export declare function moveDeclarations(records: BlockRecords, source: ArenaIndex, target: ArenaIndex, claimed: ArenaIndex[]): void;
+/**
+ * Writes the prelude of an at-rule: its list is interned in the run, and the
+ * record marks the prelude so write-back assigns its text. The walk of the
+ * write reaches every entry, so the edit stamps nothing.
+ *
+ * @param {RunContext} context
+ * @param {BlockRecord | NodeEntry} record the at-rule's block or statement record
+ * @param {readonly CSSToken[]} list the prelude's tokens
+ * @return {void}
+ */
+export declare function writePrelude(context: RunContext, record: BlockRecord | NodeEntry, list: readonly CSSToken[]): void;
 /**
  * Commits the working list of one block to the arena: the one edit the longhand
  * rounds make. The clones are placed first, each right after its source, so a

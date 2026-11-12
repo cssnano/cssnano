@@ -46,7 +46,7 @@ export const mutations = [
   {
     name: 'write-back skips the whitespace the records hold',
     target: irSource('writeBack.js'),
-    find: '  writeRawsOf(records, nodes, records.root.index);',
+    find: '  writeRawsOf(records, nodes, tokenLists, records.root.index);',
     replace: '',
   },
   {

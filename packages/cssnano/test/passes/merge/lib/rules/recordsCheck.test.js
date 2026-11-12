@@ -138,7 +138,6 @@ test('moveLast should throw under checks when the block is outside the tree', ()
     '',
     NO_AT_RULE,
     '',
-    '',
     false,
     NO_PRELUDE
   );
@@ -146,7 +145,7 @@ test('moveLast should throw under checks when the block is outside the tree', ()
   const comment = placeUnlinked(
     state.records,
     state.records.root.index,
-    new NodeEntry(COMMENT, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
+    new NodeEntry(COMMENT, '', NO_AT_RULE, '', false, NO_PRELUDE)
   );
   assert.throws(
     () => state.records.moveLast(detached.index, comment.index),
@@ -167,12 +166,11 @@ test('assertRecordsWellFormed should accept a declaration that moveLast moves in
 test('every record header holds a template, -1 for a record that prints its own raws', () => {
   const keys = /** @type {any} */ (null);
   assert.equal(
-    new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
-      .template,
+    new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', false, NO_PRELUDE).template,
     -1
   );
   assert.equal(
-    new NodeEntry(COMMENT, null, NO_AT_RULE, '', '', false, NO_PRELUDE, 'x')
+    new NodeEntry(COMMENT, null, NO_AT_RULE, '', false, NO_PRELUDE, 'x')
       .template,
     -1
   );

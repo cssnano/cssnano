@@ -2,7 +2,7 @@ import cssnanoUtils from '#utils';
 import { step } from '../../../ir/declarationKey.js';
 import { LAYER, RULE } from '../../../ir/blockRecord.js';
 
-/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
+/** @import {DeclarationKeys, Trie} from '../../../ir/declarationKey.js' */
 /** @import {BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
 /** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 
@@ -46,6 +46,32 @@ export function commentId(keys, text) {
 }
 
 /**
+ * The trimmed text of a raw, or null for a raw the node has none of.
+ *
+ * @param {string | null} text
+ * @return {string | null}
+ */
+function trimmed(text) {
+  return text ? text.trim() : text;
+}
+
+/**
+ * The path of an at-rule's prelude: its folded name, the id of its list, and
+ * its trimmed `before` and `afterName`. A statement ends the path, and a block
+ * extends it.
+ *
+ * @param {DeclarationKeys} keys
+ * @param {BlockRecord | NodeEntry} entry
+ * @return {Trie}
+ */
+function preludePathOf(keys, entry) {
+  let path = step(step(keys.root, 'atrule'), entry.name);
+  path = step(path, entry.preludeId);
+  path = step(path, trimmed(entry.before));
+  return step(path, trimmed(entry.afterName));
+}
+
+/**
  * The id of a statement at-rule, which has no block: its prelude's id.
  *
  * @param {DeclarationKeys} keys
@@ -54,7 +80,11 @@ export function commentId(keys, text) {
  * @return {number}
  */
 export function statementId(keys, layered, entry) {
-  return markLayered(layered, entry.preludeId, entry.atRuleKind === LAYER);
+  return markLayered(
+    layered,
+    keys.leafOf(preludePathOf(keys, entry)),
+    entry.atRuleKind === LAYER
+  );
 }
 
 /**
@@ -76,7 +106,7 @@ export function containerId(keys, layered, container, childIds) {
     for (const id of /** @type {RuleRecord} */ (container).selectorIds)
       path = step(path, id);
   } else {
-    path = keys.preludeTrie(container.preludeId);
+    path = preludePathOf(keys, container);
     declaresLayer = container.atRuleKind === LAYER;
   }
   path = step(path, BLOCK);

@@ -29,8 +29,8 @@ export const mutations = [
   },
   {
     name: 'treat a layer statement as not declaring a layer',
-    find: '  return markLayered(layered, entry.preludeId, entry.atRuleKind === LAYER);',
-    replace: '  return markLayered(layered, entry.preludeId, false);',
+    find: '    entry.atRuleKind === LAYER',
+    replace: '    false',
   },
   {
     name: 'let an empty block equal a statement with the same prelude',
@@ -45,38 +45,38 @@ export const mutations = [
   {
     name: 'ignore the at-rule params in its prelude id',
     target: new URL(
-      '../../../../../src/passes/ir/declarationKey.js',
+      '../../../../../src/passes/merge/lib/duplicates/structuralIds.js',
       import.meta.url
     ).href,
-    find: '    path = step(path, node.params);',
+    find: '  path = step(path, entry.preludeId);',
     replace: '',
   },
   {
     name: 'ignore raws.before in the prelude id of an at-rule',
     target: new URL(
-      '../../../../../src/passes/ir/declarationKey.js',
+      '../../../../../src/passes/merge/lib/duplicates/structuralIds.js',
       import.meta.url
     ).href,
-    find: '    path = step(path, trimValue(node.raws.before));',
+    find: '  path = step(path, trimmed(entry.before));',
     replace: '',
   },
   {
     name: 'ignore raws.afterName in the prelude id of an at-rule',
     target: new URL(
-      '../../../../../src/passes/ir/declarationKey.js',
+      '../../../../../src/passes/merge/lib/duplicates/structuralIds.js',
       import.meta.url
     ).href,
-    find: '    path = step(path, trimValue(node.raws.afterName));',
+    find: '  return step(path, trimmed(entry.afterName));',
     replace: '',
   },
   {
     name: 'compare the at-rule raws untrimmed',
     target: new URL(
-      '../../../../../src/passes/ir/declarationKey.js',
+      '../../../../../src/passes/merge/lib/duplicates/structuralIds.js',
       import.meta.url
     ).href,
-    find: '  return value ? value.trim() : value;',
-    replace: '  return value;',
+    find: '  return text ? text.trim() : text;',
+    replace: '  return text;',
   },
   {
     name: 'let an important comment id not step its text',

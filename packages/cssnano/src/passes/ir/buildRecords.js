@@ -1,5 +1,6 @@
 /** @import {TokenLists, TokenListId} from './tokenLists.js' */
 import cssnanoUtils from '#utils';
+import { sourceParams } from '../../utils/sourceText.js';
 import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
 import { SelectorIds } from './selectorIds.js';
@@ -96,6 +97,23 @@ export function recordDeclaration(node, context) {
 }
 
 /**
+ * The id of an at-rule's prelude: the list of its params, interned in the run,
+ * so equal preludes share an id. The stored tokens serve when they spell the
+ * params as written.
+ *
+ * @param {import('postcss').AtRule} node
+ * @param {RunContext} context
+ * @return {TokenListId}
+ */
+function preludeIdOf(node, context) {
+  // A node a plugin created may have no params, which its prelude spells as none.
+  const params = node.params ?? '';
+  const stored =
+    sourceParams(node) === params ? context.textTable.stored(node) : undefined;
+  return context.valueIds.idOf(context.tokenLists, undefined, params, stored);
+}
+
+/**
  * Builds the records of a stylesheet from its tree, once per run, and the node
  * of each of their entries. Each child is linked into the chain of its parent,
  * and every rule is a container whose children form its own chain.
@@ -109,7 +127,7 @@ export function buildRecords(root, context) {
   // The ids of this build's selectors. Each rule keeps the ids of its items.
   const selectorIds = new SelectorIds();
   const records = new BlockRecords(
-    new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
+    new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', false, NO_PRELUDE),
     consistencyChecks
   );
   /** @type {NodeTable} the node of each entry, by index; the root is entry 0 */
@@ -162,9 +180,8 @@ export function buildRecords(root, context) {
           child.raws.before ?? null,
           category,
           name,
-          child.params,
           category === LAYER && isAnonymousLayer(child, textTable),
-          context.declarations.preludeId(child)
+          preludeIdOf(child, context)
         );
         holdContainerRaws(nested, child);
         nested.afterName = child.raws.afterName ?? null;
@@ -185,9 +202,8 @@ export function buildRecords(root, context) {
           child.raws.before ?? null,
           category,
           name,
-          child.params,
           category === LAYER && isAnonymousLayer(child, textTable),
-          context.declarations.preludeId(child)
+          preludeIdOf(child, context)
         );
         entry.between = child.raws.between ?? null;
         entry.afterName = child.raws.afterName ?? null;
@@ -198,7 +214,6 @@ export function buildRecords(root, context) {
           COMMENT,
           child.raws.before ?? null,
           NO_AT_RULE,
-          '',
           '',
           false,
           NO_PRELUDE,

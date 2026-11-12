@@ -6,9 +6,11 @@ import {
 import { DeclarationRecord } from './declarationRecord.js';
 import { keysOfName } from './propertyTable.js';
 import { tokenizeMode } from '../../values/tokenizeMode.js';
+import { tokensText } from '../../values/tokensText.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -186,6 +188,26 @@ function rewriteRecord(context, record, item) {
     record.valueList,
     record.important,
     record.before
+  );
+  record.marked = true;
+}
+
+/**
+ * Writes the prelude of an at-rule: its list is interned in the run, and the
+ * record marks the prelude so write-back assigns its text. The walk of the
+ * write reaches every entry, so the edit stamps nothing.
+ *
+ * @param {RunContext} context
+ * @param {BlockRecord | NodeEntry} record the at-rule's block or statement record
+ * @param {readonly CSSToken[]} list the prelude's tokens
+ * @return {void}
+ */
+export function writePrelude(context, record, list) {
+  record.preludeId = context.valueIds.idOf(
+    context.tokenLists,
+    undefined,
+    tokensText(list),
+    list
   );
   record.marked = true;
 }

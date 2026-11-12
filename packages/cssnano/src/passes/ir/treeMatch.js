@@ -22,7 +22,7 @@ import { summariesHold } from '../merge/lib/rules/selectorReads.js';
 /** @import {BlockRecord as Block, NodeEntry} from './blockRecord.js' */
 /** @import {ContainerRecord} from './writeBack.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {TokenLists} from './tokenLists.js' */
+/** @import {TokenListId, TokenLists} from './tokenLists.js' */
 
 const { asciiLowerCase, isImportantComment, sourceValue, TokenType } =
   cssnanoUtils;
@@ -71,21 +71,22 @@ function describesNode(tokenLists, record, node) {
 
 /**
  * Throws when an at-rule record names another kind, name or prelude than the
- * at-rule the tree holds. The prelude id is not compared, since it counts the
- * raws too.
+ * at-rule the tree holds. The prelude is compared as its list's text.
  *
  * @param {NodeTable} nodes
+ * @param {TokenLists} tokenLists
  * @param {Block | NodeEntry} entry
  * @return {void}
  */
-function checkAtRuleFacts(nodes, entry) {
+function checkAtRuleFacts(nodes, tokenLists, entry) {
   const node = /** @type {AtRule} */ (nodeOf(nodes, entry.index));
   if (node.type !== 'atrule') return;
   const name = asciiLowerCase(node.name);
   if (
     entry.atRuleKind !== atRuleKindOf(name) ||
     entry.name !== name ||
-    entry.params !== node.params
+    tokensText(tokenLists.get(/** @type {TokenListId} */ (entry.preludeId))) !==
+      (node.params ?? '')
   ) {
     throw new Error(OUT_OF_STEP);
   }
@@ -215,11 +216,11 @@ function checkBlockRecord(records, nodes, tokenLists, block) {
     if (item.kind === RULE) {
       checkRuleRecord(records, nodes, tokenLists, block, item);
     } else if (item.kind === STYLESHEET || item.kind === AT_RULE_BLOCK) {
-      checkAtRuleFacts(nodes, item);
+      checkAtRuleFacts(nodes, tokenLists, item);
       checkBlockRecord(records, nodes, tokenLists, item);
     } else {
       if (item.kind === COMMENT || item.kind === AT_RULE_STATEMENT) {
-        checkAtRuleFacts(nodes, item);
+        checkAtRuleFacts(nodes, tokenLists, item);
       }
       if (plain) {
         if (

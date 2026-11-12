@@ -54,7 +54,7 @@ export function containerContext(keys, parentContext, block) {
     trie =
       block.atRuleKind === LAYER && block.anonymous
         ? step(step(trie, ANONYMOUS), block.index)
-        : step(trie, block.params);
+        : step(trie, block.preludeId);
   }
   return keys.leafOf(trie);
 }

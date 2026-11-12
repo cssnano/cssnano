@@ -94,9 +94,6 @@ export class BlockRecord {
   /** @type {string} the folded name of an at-rule, '' for the stylesheet */
   name;
 
-  /** @type {string} the prelude of an at-rule, '' for the stylesheet */
-  params;
-
   /** @type {boolean} whether the block is a layer with no name, or only comments as its prelude */
   anonymous;
 
@@ -146,6 +143,14 @@ export class BlockRecord {
   afterName = null;
 
   /**
+   * Whether an edit wrote the prelude, so write-back assigns its text to the
+   * node. The list of the prelude is `preludeId`.
+   *
+   * @type {boolean}
+   */
+  marked = false;
+
+  /**
    * The id of the circumstances under which the block applies its content, as
    * `containerContext` gives it. A block moves only between equal containers,
    * so the id holds for the whole run.
@@ -159,16 +164,14 @@ export class BlockRecord {
    * @param {string | null} before
    * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for the stylesheet
    * @param {string} name the folded name, or ''
-   * @param {string} params the prelude, or ''
    * @param {boolean} anonymous
    * @param {number} preludeId
    */
-  constructor(kind, before, atRuleKind, name, params, anonymous, preludeId) {
+  constructor(kind, before, atRuleKind, name, anonymous, preludeId) {
     this.kind = kind;
     this.before = before;
     this.atRuleKind = atRuleKind;
     this.name = name;
-    this.params = params;
     this.anonymous = anonymous;
     this.preludeId = preludeId;
     // A conditional group is dropped when empty, and so is a named layer.
@@ -197,9 +200,6 @@ export class NodeEntry {
 
   /** @type {string} the folded name of an at-rule, '' for a comment */
   name;
-
-  /** @type {string} the prelude of an at-rule, '' for a comment */
-  params;
 
   /** @type {boolean} whether a layer statement is anonymous */
   anonymous;
@@ -237,11 +237,18 @@ export class NodeEntry {
   afterName = null;
 
   /**
+   * Whether an edit wrote the prelude, so write-back assigns its text to the
+   * node. The list of the prelude is `preludeId`.
+   *
+   * @type {boolean}
+   */
+  marked = false;
+
+  /**
    * @param {typeof COMMENT | typeof AT_RULE_STATEMENT} kind
    * @param {string | null} before
    * @param {number} atRuleKind the category of the at-rule, NO_AT_RULE for a comment
    * @param {string} name
-   * @param {string} params
    * @param {boolean} anonymous
    * @param {number} preludeId
    * @param {string} [text] the text of a comment
@@ -252,7 +259,6 @@ export class NodeEntry {
     before,
     atRuleKind,
     name,
-    params,
     anonymous,
     preludeId,
     text = '',
@@ -262,7 +268,6 @@ export class NodeEntry {
     this.before = before;
     this.atRuleKind = atRuleKind;
     this.name = name;
-    this.params = params;
     this.anonymous = anonymous;
     this.preludeId = preludeId;
     this.text = text;

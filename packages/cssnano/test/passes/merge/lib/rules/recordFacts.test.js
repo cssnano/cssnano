@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
+import { containerId } from '../../../../../src/passes/merge/lib/duplicates/structuralIds.js';
 import {
   COMMENT,
   CONDITIONAL_GROUP,
@@ -73,7 +75,6 @@ test('a comment entry holds the neutral facts of a comment', () => {
   const entry = entryOf(records, root.first);
   assert.equal(entry.kind, COMMENT);
   assert.equal(entry.name, '');
-  assert.equal(entry.params, '');
   assert.equal(entry.anonymous, false);
   assert.equal(entry.preludeId, NO_PRELUDE);
 });
@@ -84,7 +85,6 @@ test('a rule record holds its kind, and the stylesheet holds neutral at-rule fac
   assert.equal(rule.kind, RULE);
   assert.equal(records.root.kind, STYLESHEET);
   assert.equal(records.root.name, '');
-  assert.equal(records.root.params, '');
 });
 
 test('an anonymous layer block is not droppable, and a named layer block is', () => {
@@ -109,21 +109,23 @@ test('a prelude id ignores the whitespace before the at-rule', () => {
   );
 });
 
-test('a prelude id differs when a comment follows the at-rule name', () => {
+test('a structural id differs when a comment follows the at-rule name', () => {
   const { root, records } = recordsOf('@media/*c*/x{}@media x{}');
   const [first, second] = root.nodes;
+  const keys = new DeclarationKeys();
   assert.notEqual(
-    entryOf(records, first).preludeId,
-    entryOf(records, second).preludeId
+    containerId(keys, new Set(), entryOf(records, first), []),
+    containerId(keys, new Set(), entryOf(records, second), [])
   );
 });
 
-test('a prelude id differs when a stray semicolon precedes the at-rule', () => {
+test('a structural id differs when a stray semicolon precedes the at-rule', () => {
   const { root, records } = recordsOf(';@media x{}@media x{}');
   const [first, second] = root.nodes;
+  const keys = new DeclarationKeys();
   assert.notEqual(
-    entryOf(records, first).preludeId,
-    entryOf(records, second).preludeId
+    containerId(keys, new Set(), entryOf(records, first), []),
+    containerId(keys, new Set(), entryOf(records, second), [])
   );
 });
 

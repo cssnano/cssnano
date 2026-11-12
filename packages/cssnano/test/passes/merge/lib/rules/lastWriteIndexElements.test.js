@@ -25,7 +25,7 @@ const decl = (prop) => ({ keys: keys(prop) });
 const unknownElements = () => null;
 /** An arena for the index calls that read no nested block. */
 const noBlocks = new BlockRecords(
-  new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
+  new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', false, NO_PRELUDE),
   false
 );
 

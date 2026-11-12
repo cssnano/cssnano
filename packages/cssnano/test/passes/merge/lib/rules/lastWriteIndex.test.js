@@ -57,7 +57,7 @@ function conflictsAfterWrite(written, queried) {
 
 /** An arena for the index calls that read no nested block. */
 const noBlocks = new BlockRecords(
-  new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
+  new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', false, NO_PRELUDE),
   false
 );
 

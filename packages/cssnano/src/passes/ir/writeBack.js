@@ -16,7 +16,7 @@ import { assertTemplatesHaveNodes } from './recordsCheck.js';
 /** @import {NodeTable} from './nodeTable.js' */
 /** @import {BlockRecord as Block, NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {TokenLists} from './tokenLists.js' */
+/** @import {TokenListId, TokenLists} from './tokenLists.js' */
 /** @import {DeclarationRecord} from './declarationRecord.js' */
 
 const TABLE_LENGTH =
@@ -105,10 +105,11 @@ export function replaceChildren(rebuilt) {
  *
  * @param {BlockRecords} records
  * @param {NodeTable} nodes
+ * @param {TokenLists} tokenLists
  * @param {number} container the index of a container record the root reaches
  * @return {void}
  */
-function writeRawsOf(records, nodes, container) {
+function writeRawsOf(records, nodes, tokenLists, container) {
   for (
     let entry = records.links.firstChild(container);
     entry !== -1;
@@ -119,12 +120,16 @@ function writeRawsOf(records, nodes, container) {
     if (record.before !== null) node.raws.before = record.before;
     if (record.kind === RULE || record.kind === AT_RULE_BLOCK) {
       writeContainerRaws(record, /** @type {Rule | AtRule} */ (node));
-      if (record.kind === AT_RULE_BLOCK && record.afterName !== null) {
-        /** @type {AtRule} */ (node).raws.afterName = record.afterName;
+      if (record.kind === AT_RULE_BLOCK) {
+        writeParams(record, /** @type {AtRule} */ (node), tokenLists);
+        if (record.afterName !== null) {
+          /** @type {AtRule} */ (node).raws.afterName = record.afterName;
+        }
       }
-      writeRawsOf(records, nodes, entry);
+      writeRawsOf(records, nodes, tokenLists, entry);
     } else if (record.kind === AT_RULE_STATEMENT) {
       writeStatementRaws(record, /** @type {AtRule} */ (node));
+      writeParams(record, /** @type {AtRule} */ (node), tokenLists);
     }
   }
 }
@@ -140,6 +145,24 @@ function writeContainerRaws(record, node) {
   if (record.between !== null) node.raws.between = record.between;
   if (record.after !== null) node.raws.after = record.after;
   if (record.semicolon !== null) node.raws.semicolon = record.semicolon;
+}
+
+/**
+ * Assigns the prelude of a marked at-rule, as its list spells it, and drops the
+ * raw params that spelled the prelude before. An unmarked at-rule keeps its
+ * node text.
+ *
+ * @param {Block | NodeEntry} record
+ * @param {AtRule} node
+ * @param {TokenLists} tokenLists
+ * @return {void}
+ */
+function writeParams(record, node, tokenLists) {
+  if (!record.marked) return;
+  node.params = tokensText(
+    tokenLists.get(/** @type {TokenListId} */ (record.preludeId))
+  );
+  delete node.raws.params;
 }
 
 /**
@@ -265,7 +288,7 @@ export function writeBack(
   replaceChildren(rebuilt);
   const rootNode = /** @type {Root} */ (nodeOf(nodes, records.root.index));
   if (records.root.after !== null) rootNode.raws.after = records.root.after;
-  writeRawsOf(records, nodes, records.root.index);
+  writeRawsOf(records, nodes, tokenLists, records.root.index);
   // The first child of the stylesheet takes the leading whitespace last.
   const root = /** @type {Container} */ (nodeOf(nodes, records.root.index));
   const first = root.first;

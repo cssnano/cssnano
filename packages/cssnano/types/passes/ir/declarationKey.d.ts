@@ -1,11 +1,3 @@
-export type AtRuleFields = {
-    name: string;
-    params: string;
-    raws: {
-        before?: string;
-        afterName?: string;
-    };
-};
 import type { TokenListId } from './tokenLists.js';
 export type Trie = Map<unknown, unknown>;
 /**
@@ -51,23 +43,6 @@ export declare class DeclarationKeys {
      * @return {number}
      */
     keyOf(prop: string, valueList: TokenListId, important: boolean, before: string | null): number;
-    /**
-     * The id of an at-rule's prelude: its name, its params and its trimmed
-     * `raws.before` and `raws.afterName`. Ids of the preludes are kept with
-     * their paths, for `preludeTrie`.
-     *
-     * @param {AtRuleFields} node
-     * @return {number}
-     */
-    preludeId(node: AtRuleFields): number;
-    /**
-     * The path that a prelude id ends, from `preludeId`, which a structural id
-     * extends.
-     *
-     * @param {number} id
-     * @return {Trie}
-     */
-    preludeTrie(id: number): Trie;
     /**
      * The id of the path that ends at `trie`, assigned on first use.
      *

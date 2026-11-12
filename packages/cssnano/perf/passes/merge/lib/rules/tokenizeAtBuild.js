@@ -57,8 +57,9 @@ function distinctItemsOf(root) {
 
 /**
  * @param {postcss.Root} root
- * @return {number} the distinct (tokenizer mode, value) pairs of the declarations, which
- * the build tokenizes once each, since a value is interned by its text and mode
+ * @return {number} the distinct (tokenizer mode, text) pairs of the declarations and
+ * of the at-rule preludes, which the build tokenizes once each, since a value
+ * and a prelude are interned by their text and mode
  */
 function distinctValuesOf(root) {
   const values = new Set();
@@ -66,6 +67,9 @@ function distinctValuesOf(root) {
     values.add(
       `${tokenizeMode(decl.prop) ? 'range' : 'default'}\0${decl.value}`
     );
+  });
+  root.walkAtRules((atRule) => {
+    values.add(`default\0${atRule.params}`);
   });
   return values.size;
 }

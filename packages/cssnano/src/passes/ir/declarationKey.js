@@ -1,11 +1,5 @@
 import { propertyNameKey } from './propertyName.js';
 
-/**
- * The fields of an at-rule that its prelude id reads.
- *
- * @typedef {{name: string, params: string, raws: {before?: string, afterName?: string}}} AtRuleFields
- */
-
 /** @import {TokenListId} from './tokenLists.js' */
 
 // Marks the end of a component path in a trie, so the id of a path cannot be
@@ -47,14 +41,6 @@ export function hackPrefixOf(before) {
 }
 
 /**
- * @param {string | undefined} value
- * @return {string | undefined}
- */
-function trimValue(value) {
-  return value ? value.trim() : value;
-}
-
-/**
  * Numbers the declarations and other structural descriptions of one run of the
  * pass. Equal descriptions get equal integers, so callers compare ids rather
  * than trees. Nothing may keep an id across runs.
@@ -63,8 +49,6 @@ export class DeclarationKeys {
   /** @type {Trie} */
   root = new Map();
   #lastId = 0;
-  /** @type {Map<number, Trie>} the path of each prelude id, which structural ids extend */
-  #preludes = new Map();
 
   /**
    * The key of a declaration: the same property, value list, importance and
@@ -83,35 +67,6 @@ export class DeclarationKeys {
     trie = step(trie, valueList);
     trie = step(trie, important);
     return this.leafOf(step(trie, hackPrefixOf(before)));
-  }
-
-  /**
-   * The id of an at-rule's prelude: its name, its params and its trimmed
-   * `raws.before` and `raws.afterName`. Ids of the preludes are kept with
-   * their paths, for `preludeTrie`.
-   *
-   * @param {AtRuleFields} node
-   * @return {number}
-   */
-  preludeId(node) {
-    let path = step(step(this.root, 'atrule'), node.name);
-    path = step(path, node.params);
-    path = step(path, trimValue(node.raws.before));
-    path = step(path, trimValue(node.raws.afterName));
-    const id = this.leafOf(path);
-    this.#preludes.set(id, path);
-    return id;
-  }
-
-  /**
-   * The path that a prelude id ends, from `preludeId`, which a structural id
-   * extends.
-   *
-   * @param {number} id
-   * @return {Trie}
-   */
-  preludeTrie(id) {
-    return /** @type {Trie} */ (this.#preludes.get(id));
   }
 
   /**
