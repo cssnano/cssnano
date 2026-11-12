@@ -288,6 +288,22 @@ test('a checked read throws when a rewrite changes an id without touching the de
   assert.throws(() => declarationKeys(records, container));
 });
 
+test('a checked commit throws when a declaration of the list has left its rule after the list was read', () => {
+  const setupped = setup('a{color:red;width:1px}');
+  const { records, state } = setupped;
+  const container = containerOf(setupped.root, records, 0);
+  const [color] = declarationIndices(records, container);
+  const list = declarationsFromRecords(records, state.runContext, container);
+  records.detach(color);
+  list.rewrite(1, 'width', '2px');
+  assert.throws(
+    () => commitDeclarations(records, state.runContext, container, list),
+    {
+      message: 'a declaration is removed from a rule that does not hold it',
+    }
+  );
+});
+
 test('a commit of a block with no edit prints the input, comments included', () => {
   const setupped = setup('a{color:red/*x*/;width:1px}');
   const text = editAndWrite(

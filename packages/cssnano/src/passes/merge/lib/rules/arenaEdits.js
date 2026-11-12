@@ -1,5 +1,4 @@
 import {
-  declarationsOf,
   firstDeclaration,
   inheritWhitespace,
   nextDeclaration,
@@ -234,15 +233,14 @@ function cloneRecordOf(context, item, anchor, anchorIndex) {
  * @return {void}
  */
 export function commitDeclarations(records, context, container, list) {
-  // The authored items are the declarations of the chain, in chain order, as
-  // the list was read from it; the clones follow them.
-  const authored = declarationsOf(records, container);
+  if (!list.edited) return;
+  // The authored items come first, as the list was read; the clones follow.
   /** @type {ArenaIndex[]} the arena index of each item, by position */
-  const placed = authored.map(
-    (record) => /** @type {ArenaIndex} */ (record.index)
-  );
+  const placed = [...list.indexes];
+  const authored = placed.length;
+  if (context.consistencyChecks) assertChildrenOf(records, container, placed);
   let edited = false;
-  for (let position = authored.length; position < list.length; position++) {
+  for (let position = authored; position < list.length; position++) {
     const item = list.at(position);
     const anchor = placed[item.source];
     const record = cloneRecordOf(
@@ -265,7 +263,7 @@ export function commitDeclarations(records, context, container, list) {
   }
   if (removed.size > 0) removeDeclarations(records, container, removed);
 
-  for (let position = 0; position < authored.length; position++) {
+  for (let position = 0; position < authored; position++) {
     const item = list.at(position);
     if (item.rewritten && !item.removed) {
       rewriteRecord(

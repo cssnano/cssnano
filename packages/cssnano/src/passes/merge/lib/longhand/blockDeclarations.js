@@ -2,6 +2,7 @@ import cssnanoUtils from '#utils';
 import { requiredSupport } from './isFallback.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {ArenaIndex} from '../rules/blockRecord.js' */
 
 /**
  * A declaration of one block, as the longhand reducers edit it: its text and
@@ -31,22 +32,30 @@ export const RUN_END = -1;
  * The declarations of one block in chain order, with the run ends among them.
  * The reducers read the items and make their edits through the methods, so
  * every item is addressed by its position: an authored declaration by its place
- * in the chain, a clone by the place it was pushed at.
+ * in the chain, a clone by the place it was pushed at. The list keeps the arena
+ * index of each authored declaration, so a commit needs no second read.
  */
 export class BlockDeclarations {
   /** @type {DeclarationItem[]} */
   #items;
   /** @type {readonly number[]} */
   #chain;
+  /** @type {readonly ArenaIndex[]} */
+  #indexes;
+  /** @type {boolean} */
+  #edited = false;
 
   /**
    * @param {DeclarationItem[]} items the authored declarations, in chain order
    * @param {readonly number[]} chain the positions of `items` in chain order,
    * with `RUN_END` where a run of declarations ends
+   * @param {readonly ArenaIndex[]} indexes the arena index of each authored
+   * declaration, by position in `items`
    */
-  constructor(items, chain) {
+  constructor(items, chain, indexes) {
     this.#items = items;
     this.#chain = chain;
+    this.#indexes = indexes;
   }
 
   /**
@@ -55,6 +64,16 @@ export class BlockDeclarations {
    */
   get chain() {
     return this.#chain;
+  }
+
+  /** @return {readonly ArenaIndex[]} the arena index of each authored declaration, by position */
+  get indexes() {
+    return this.#indexes;
+  }
+
+  /** @return {boolean} whether an edit changed the list since it was read */
+  get edited() {
+    return this.#edited;
   }
 
   /** @return {number} the declarations, authored and cloned */
@@ -81,6 +100,7 @@ export class BlockDeclarations {
    * @return {void}
    */
   rewrite(position, prop, value, tokens) {
+    this.#edited = true;
     const item = this.#items[position];
     item.prop = prop;
     if (tokens !== undefined) {
@@ -97,6 +117,7 @@ export class BlockDeclarations {
    * @return {void}
    */
   remove(position) {
+    this.#edited = true;
     this.#items[position].removed = true;
   }
 
@@ -110,6 +131,7 @@ export class BlockDeclarations {
    * @return {number} the position of the clone
    */
   insertClone(source, change) {
+    this.#edited = true;
     const from = this.#items[source];
     this.#items.push({
       prop: change.prop,

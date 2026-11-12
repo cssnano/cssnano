@@ -79,6 +79,8 @@ export function declarationsFromRecords(records, context, container) {
   const items = [];
   /** @type {number[]} */
   const chain = [];
+  /** @type {ArenaIndex[]} */
+  const indexes = [];
   for (
     let entry = records.links.firstChild(container);
     entry !== -1;
@@ -86,11 +88,13 @@ export function declarationsFromRecords(records, context, container) {
   ) {
     const record = records.entry(/** @type {ArenaIndex} */ (entry));
     if (record.kind === DECLARATION) {
+      const declaration = /** @type {DeclarationRecord} */ (record);
       chain.push(items.length);
-      items.push(itemOf(/** @type {DeclarationRecord} */ (record), context));
+      items.push(itemOf(declaration, context));
+      indexes.push(/** @type {ArenaIndex} */ (declaration.index));
     } else if (endsRun(records, record)) {
       chain.push(RUN_END);
     }
   }
-  return new BlockDeclarations(items, chain);
+  return new BlockDeclarations(items, chain, indexes);
 }

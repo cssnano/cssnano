@@ -1,4 +1,5 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
+import type { ArenaIndex } from '../rules/blockRecord.js';
 export type DeclarationItem = {
     prop: string;
     /**
@@ -40,6 +41,7 @@ export type DeclarationItem = {
     source: number;
 };
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {ArenaIndex} from '../rules/blockRecord.js' */
 /**
  * A declaration of one block, as the longhand reducers edit it: its text and
  * tokens, the raws a style hack or a clone reads, and what an edit did to it.
@@ -66,7 +68,8 @@ export declare const RUN_END = -1;
  * The declarations of one block in chain order, with the run ends among them.
  * The reducers read the items and make their edits through the methods, so
  * every item is addressed by its position: an authored declaration by its place
- * in the chain, a clone by the place it was pushed at.
+ * in the chain, a clone by the place it was pushed at. The list keeps the arena
+ * index of each authored declaration, so a commit needs no second read.
  */
 export declare class BlockDeclarations {
     #private;
@@ -74,13 +77,19 @@ export declare class BlockDeclarations {
      * @param {DeclarationItem[]} items the authored declarations, in chain order
      * @param {readonly number[]} chain the positions of `items` in chain order,
      * with `RUN_END` where a run of declarations ends
+     * @param {readonly ArenaIndex[]} indexes the arena index of each authored
+     * declaration, by position in `items`
      */
-    constructor(items: DeclarationItem[], chain: readonly number[]);
+    constructor(items: DeclarationItem[], chain: readonly number[], indexes: readonly ArenaIndex[]);
     /**
      * @return {readonly number[]} the positions of the declarations in chain
      * order, with `RUN_END` where a run ends
      */
     get chain(): readonly number[];
+    /** @return {readonly ArenaIndex[]} the arena index of each authored declaration, by position */
+    get indexes(): readonly ArenaIndex[];
+    /** @return {boolean} whether an edit changed the list since it was read */
+    get edited(): boolean;
     /** @return {number} the declarations, authored and cloned */
     get length(): number;
     /**
