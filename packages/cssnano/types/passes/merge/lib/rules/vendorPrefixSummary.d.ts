@@ -41,6 +41,13 @@ export declare class VendorPrefixSummary {
      */
     concat(other: VendorPrefixSummary): VendorPrefixSummary;
     /**
+     * Whether two summaries hold the same prefix facts.
+     *
+     * @param {VendorPrefixSummary} other
+     * @return {boolean}
+     */
+    sameAs(other: VendorPrefixSummary): boolean;
+    /**
      * Whether two selector lists may share a rule: both unprefixed, or both
      * carrying the same single prefix, except that two `-ms-input-placeholder`
      * lists never merge because Edge and Internet Explorer disagree on the

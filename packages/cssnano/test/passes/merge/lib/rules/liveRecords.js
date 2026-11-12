@@ -1,9 +1,15 @@
-import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
-  BlockRecord,
-  NodeEntry,
+  declarationsOf,
+  childEntriesOf,
+} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { fillSummaries } from '../../../../../src/passes/merge/lib/rules/selectorList.js';
+import {
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
+  COMMENT,
+  RULE,
+  STYLESHEET,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
@@ -12,6 +18,8 @@ import { TextTable } from '../../../../../src/values/textTable.js';
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @import {ArenaIndex} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
 /** @import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js' */
+/** @import {NodeTable} from '../../../../../src/passes/merge/lib/rules/nodeTable.js' */
+/** @import {TokenLists} from '../../../../../src/passes/ir/tokenLists.js' */
 
 /**
  * The live entry of `block` standing for `node`: the record of a rule, or the
@@ -25,17 +33,20 @@ import { TextTable } from '../../../../../src/values/textTable.js';
  */
 function liveEntryOf(records, block, node) {
   for (const entry of childEntriesOf(records, block.index)) {
-    if (entry instanceof RuleRecord) {
-      if (entry.node === node) return entry;
+    if (entry.kind === RULE) {
+      if (nodeOfEntry(records, entry) === node) return entry;
       if (entry.context !== -1) {
         const found = liveEntryOf(records, entry, node);
         if (found) return found;
       }
-    } else if (entry instanceof BlockRecord) {
-      if (entry.node === node) return entry;
+    } else if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) {
+      if (nodeOfEntry(records, entry) === node) return entry;
       const found = liveEntryOf(records, entry, node);
       if (found) return found;
-    } else if (entry instanceof NodeEntry && entry.node === node) {
+    } else if (
+      (entry.kind === COMMENT || entry.kind === AT_RULE_STATEMENT) &&
+      nodeOfEntry(records, entry) === node
+    ) {
       return entry;
     }
   }
@@ -52,7 +63,7 @@ function liveEntryOf(records, block, node) {
  */
 export function ruleRecordOf(records, rule) {
   const found = liveEntryOf(records, records.root, rule);
-  if (found instanceof RuleRecord) return found;
+  if (found.kind === RULE) return found;
   throw new Error('no live rule record for the rule');
 }
 
@@ -82,10 +93,10 @@ export function entryOf(records, node) {
  * @throws {Error} when no live container record stands for the container
  */
 export function blockRecordOf(records, node) {
-  if (node === records.root.node) return records.root;
+  if (node === nodeOfEntry(records, records.root)) return records.root;
   const found = liveEntryOf(records, records.root, node);
-  if (found instanceof RuleRecord && found.context !== -1) return found;
-  if (found instanceof BlockRecord) return found;
+  if (found.kind === RULE && found.context !== -1) return found;
+  if (found.kind === STYLESHEET || found.kind === AT_RULE_BLOCK) return found;
   throw new Error('no live block record for the container');
 }
 
@@ -100,7 +111,7 @@ export function blockRecordOf(records, node) {
  * @return {Set<import('../../../../../src/passes/merge/lib/rules/blockRecord.js').ArenaIndex>}
  */
 export function claimAt(records, rule, positions) {
-  const declarations = rule.declarationsOf(records);
+  const declarations = declarationsOf(records, rule.index);
   return new Set(positions.map((position) => declarations[position].index));
 }
 
@@ -121,12 +132,62 @@ export function buildTestRecords(
   textTable = new TextTable(),
   consistencyChecks = false
 ) {
-  return buildRecords(root, {
+  const tokenLists = state.tokenLists;
+  const { records, nodes } = buildRecords(root, {
+    ...state.runContext,
     textTable,
-    declarations: state.declarationIds,
-    properties: state.properties,
     consistencyChecks,
   });
+  // The driver folds the summaries before any transform, and so does a test.
+  fillSummaries(records, tokenLists, state.browsers);
+  nodeTables.set(records, nodes);
+  tokenListTables.set(records, tokenLists);
+  return records;
+}
+
+/** @type {WeakMap<BlockRecords, NodeTable>} the node table of each records object a test built */
+const nodeTables = new WeakMap();
+
+/** @type {WeakMap<BlockRecords, TokenLists>} the token lists of each records object a test built */
+const tokenListTables = new WeakMap();
+
+/**
+ * The token lists of records built by `buildTestRecords`, which the tree
+ * checks take beside the records.
+ *
+ * @param {BlockRecords} records
+ * @return {TokenLists}
+ */
+export function tokenListsOf(records) {
+  const tokenLists = tokenListTables.get(records);
+  if (tokenLists === undefined)
+    throw new Error('records not built by buildTestRecords');
+  return tokenLists;
+}
+
+/**
+ * The node table of records built by `buildTestRecords`, which write-back and
+ * the tree checks take beside the records.
+ *
+ * @param {BlockRecords} records
+ * @return {NodeTable}
+ */
+export function nodesOf(records) {
+  const nodes = nodeTables.get(records);
+  if (nodes === undefined)
+    throw new Error('records not built by buildTestRecords');
+  return nodes;
+}
+
+/**
+ * The PostCSS node of the entry, from the table `buildTestRecords` kept.
+ *
+ * @param {BlockRecords} records
+ * @param {{index: number}} entry
+ * @return {any}
+ */
+export function nodeOfEntry(records, entry) {
+  return nodesOf(records)[entry.index];
 }
 
 /**
@@ -185,6 +246,6 @@ export function declarationIds(records, index) {
  */
 export function placeUnlinked(records, container, entry) {
   records.appendEntry(container, /** @type {any} */ (entry));
-  records.unlink(/** @type {any} */ (entry).index);
+  records.detach(/** @type {any} */ (entry).index);
   return entry;
 }

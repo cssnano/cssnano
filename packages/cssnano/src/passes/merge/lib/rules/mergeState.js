@@ -1,15 +1,12 @@
-import { createSelectorLookup } from './ensureCompatibility.js';
-import { createElementKeyLookup } from './elementKeys.js';
-import { comma } from '../../../../values/punctuationTokens.js';
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
+import {
+  absorbEarlier as absorbSummaries,
+  addSelectors as addSummarySelectors,
+} from './selectorList.js';
+import { compatibleOf, vendorSummaryOf } from './selectorReads.js';
 import { createRunContext } from '../../../ir/runContext.js';
 import { isKeyframes, sameContainer } from './sameContainer.js';
-import { joinRanges } from '../../../../values/joinRanges.js';
-import { selectorPieces } from '../../../../values/selectorRanges.js';
-import { tokensText } from '../../../../values/tokensText.js';
 
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
@@ -18,20 +15,12 @@ import { tokensText } from '../../../../values/tokensText.js';
  * The state shared by every merge of one stylesheet.
  */
 export default class MergeState {
-  /**
-   * The keys of the property names this stylesheet's merges compare.
-   *
-   * @type {PropertyTable}
-   */
-  properties;
-  /** @type {import('./selectorList.js').SelectorLookup} */
-  #lookup;
-  /** @type {import('../../../ir/declarationKey.js').DeclarationKeys} */
-  #declarations;
-  /** @type {import('../../../ir/selectorIds.js').SelectorIds} */
-  #selectorIds;
-  /** @type {(selector: string, piece?: RangePiece | null) => string | null} */
-  #elementKeyOf = createElementKeyLookup();
+  /** @type {import('../../../ir/runContext.js').RunContext} */
+  #context;
+  /** @type {readonly string[]} */
+  #browsers;
+  /** @type {import('../../../ir/tokenLists.js').TokenLists} */
+  #tokenLists;
   /**
    * The block and rule records of the stylesheet. The driver builds them, and
    * `runMerge` sets them before any edit reads them.
@@ -41,30 +30,49 @@ export default class MergeState {
   records = /** @type {BlockRecords} */ (/** @type {unknown} */ (null));
 
   /**
+   * The most rounds the joins of the run may take before it throws. `runMerge`
+   * sets it from the live entries when it starts.
+   *
+   * @type {number}
+   */
+  maxRounds = Infinity;
+
+  /**
    * @param {readonly string[]} browsers
    * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
    */
   constructor(browsers, context = createRunContext()) {
-    this.#lookup = createSelectorLookup(
-      browsers,
-      context.selectorCompatibility
-    );
-    this.#declarations = context.declarations;
-    this.#selectorIds = context.selectorIds;
-    this.properties = context.properties;
+    this.#context = context;
+    this.#tokenLists = context.tokenLists;
+    this.#browsers = browsers;
   }
 
   /**
-   * The elements the rule can match. An arrow function, so it passes as a
-   * callback without a closure per call.
+   * The state of the run, which the records of its declarations are built from.
    *
-   * @param {RuleRecord} record
-   * @return {string[] | null}
+   * @return {import('../../../ir/runContext.js').RunContext}
    */
-  elementKeysOf = (record) => {
-    this.piecesOf(record);
-    return record.elementKeys(this.#elementKeyOf);
-  };
+  get runContext() {
+    return this.#context;
+  }
+
+  /**
+   * The token lists of the run, which the ids of the records name.
+   *
+   * @return {import('../../../ir/tokenLists.js').TokenLists}
+   */
+  get tokenLists() {
+    return this.#tokenLists;
+  }
+
+  /**
+   * The target browsers, which the selector facts of the run depend on.
+   *
+   * @return {readonly string[]}
+   */
+  get browsers() {
+    return this.#browsers;
+  }
 
   /**
    * The ids of the run's declarations: equal declarations, with the same
@@ -73,104 +81,27 @@ export default class MergeState {
    * @return {import('../../../ir/declarationKey.js').DeclarationKeys}
    */
   get declarationIds() {
-    return this.#declarations;
-  }
-
-  /**
-   * The ids of the run's selectors, which list comparisons read.
-   *
-   * @return {import('../../../ir/selectorIds.js').SelectorIds}
-   */
-  get selectorIds() {
-    return this.#selectorIds;
+    return this.#context.declarations;
   }
 
   /**
    * Appends selectors of `source` to the rule's selector list, keeping its
-   * vendor prefix profile and its token ranges in step.
+   * vendor prefix profile in step.
    *
    * @param {RuleRecord} record
-   * @param {string[]} selectors some of the selectors of `source`, in the
-   * order of their first occurrence there
-   * @param {RuleRecord} source
+   * @param {readonly TokenListId[]} ids the id of each selector the rule gains,
+   * in order
    * @return {readonly string[] | null} the element keys the selectors add, or
    * null when the rule's elements are not listed
    */
-  addSelectors(record, selectors, source) {
-    const own = this.piecesOf(record);
-    const from = own === null ? null : this.piecesOf(source);
-    const pieces =
-      from === null
-        ? null
-        : appendPieces(
-            /** @type {RangePiece[]} */ (own),
-            selectors,
-            source.selectors,
-            from
-          );
-    return record.addSelectors(
-      selectors,
-      this.#lookup,
-      this.#elementKeyOf,
-      pieces
+  addSelectors(record, ids) {
+    return addSummarySelectors(
+      this.records,
+      record.index,
+      ids,
+      this.#tokenLists,
+      this.#browsers
     );
-  }
-
-  /**
-   * The token range of each selector of the rule, read from the tokens the
-   * record holds without tokenizing, or null when it holds none.
-   *
-   * @param {RuleRecord} record
-   * @return {RangePiece[] | null}
-   */
-  piecesOf(record) {
-    if (record.pieces === undefined) {
-      const { tokens } = record;
-      record.setPieces(
-        tokens === undefined ? null : selectorPieces(tokens, record.selectors)
-      );
-    }
-    return /** @type {RangePiece[] | null} */ (record.pieces);
-  }
-
-  /**
-   * Sets the selector of a rule from its list and marks it, so write-back
-   * assigns the text. The tokens of the old text are dropped.
-   *
-   * @param {RuleRecord} record
-   */
-  spellSelectors(record) {
-    record.setSelector(record.selectorText());
-    record.mark();
-  }
-
-  /**
-   * Gives the record the tokens of a rule joined from the selectors of `first`
-   * and `second`, in that order, with a comma between each, as `join()` writes it.
-   *
-   * @param {RuleRecord} record the merged rule, whose selector is the join
-   * @param {RuleRecord} first
-   * @param {RuleRecord} second
-   */
-  storeJoined(record, first, second) {
-    const earlier = this.piecesOf(first);
-    const later = this.piecesOf(second);
-    if (earlier === null || later === null) return;
-    this.#storePieces(record, earlier.concat(later), [comma()]);
-  }
-
-  /**
-   * Gives the record the list the pieces join to, when it spells the record's
-   * selector as it is written. Otherwise the record keeps no list.
-   *
-   * @param {RuleRecord} record
-   * @param {RangePiece[] | null} pieces
-   * @param {readonly CSSToken[]} separator
-   */
-  #storePieces(record, pieces, separator) {
-    if (pieces === null) return;
-    const list = joinRanges(pieces, separator);
-    if (tokensText(list) === record.selector) record.setTokens(list);
   }
 
   /**
@@ -181,14 +112,7 @@ export default class MergeState {
    * @param {RuleRecord} earlier
    */
   absorbEarlier(later, earlier) {
-    // The compatibility check tokenizes a list that holds no tokens yet, so
-    // both checks run before the pieces are read, which cache a missing list.
-    earlier.compatible(this.#lookup);
-    later.compatible(this.#lookup);
-    // Both lists of pieces are known before the absorb joins them.
-    this.piecesOf(earlier);
-    this.piecesOf(later);
-    later.absorbEarlier(earlier, this.#lookup, this.#elementKeyOf);
+    absorbSummaries(this.records, later.index, earlier.index);
   }
 
   /**
@@ -243,30 +167,11 @@ export default class MergeState {
     // The vendor check follows compatibility, because an incompatible selector
     // has no known prefix.
     return (
-      recordA.compatible(this.#lookup) &&
-      recordB.compatible(this.#lookup) &&
-      recordA
-        .vendorProfile(this.#lookup)
-        .allowsMerge(recordB.vendorProfile(this.#lookup))
+      compatibleOf(this.records, recordA.index) &&
+      compatibleOf(this.records, recordB.index) &&
+      vendorSummaryOf(this.records, recordA.index).allowsMerge(
+        vendorSummaryOf(this.records, recordB.index)
+      )
     );
   }
-}
-
-/**
- * Appends to `pieces` the piece of each selector, found in one pass over the
- * source list, since the selectors follow its order.
- *
- * @param {RangePiece[]} pieces grown in place
- * @param {readonly string[]} selectors
- * @param {readonly string[]} sourceSelectors
- * @param {readonly RangePiece[]} sourcePieces one per source selector
- * @return {RangePiece[]}
- */
-function appendPieces(pieces, selectors, sourceSelectors, sourcePieces) {
-  let index = 0;
-  for (const selector of selectors) {
-    while (sourceSelectors[index] !== selector) index++;
-    pieces.push(sourcePieces[index]);
-  }
-  return pieces;
 }

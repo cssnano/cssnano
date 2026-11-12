@@ -16,7 +16,8 @@ export declare function isKeyframes(container: BlockRecord | RuleRecord | undefi
  * The id of the circumstances under which a block applies its content: its own
  * prelude and those of its enclosing blocks. Blocks with equal ids apply their
  * content the same way. At-rule names fold ASCII case, rules compare their
- * selectors, and each anonymous layer is a context of its own.
+ * selector lists by the ids of their selectors, and each anonymous layer is a
+ * context of its own.
  *
  * @param {DeclarationKeys} keys the run's interner
  * @param {number} parentContext the context of the enclosing block, -1 for the stylesheet

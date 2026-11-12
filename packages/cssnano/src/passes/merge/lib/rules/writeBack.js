@@ -1,176 +1,64 @@
-import postcss from 'postcss';
-import { childNodesOf } from './blockChildren.js';
-import cssnanoUtils from '#utils';
-import { atRuleKind, BlockRecord, NodeEntry } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { comma } from '../../../../values/punctuationTokens.js';
-import { joinRanges } from '../../../../values/joinRanges.js';
+import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
 import { TextTable } from '../../../../values/textTable.js';
 import { tokensText } from '../../../../values/tokensText.js';
+import { createChildNodes, nodeOf } from './nodeTable.js';
+import { writeSelector } from './writeSelector.js';
+import { assertTemplatesHaveNodes } from './recordsCheck.js';
 
-/** @import {AtRule, ChildNode, Container} from 'postcss' */
+/** @import {ChildNode, Container} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex, BlockRecord as Block} from './blockRecord.js' */
+/** @import {NodeTable} from './nodeTable.js' */
+/** @import {BlockRecord as Block} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+
+const TABLE_LENGTH =
+  'the node table does not have one slot per entry the build made';
+
+/**
+ * The nodes of the children the block at `index` holds now, in order.
+ *
+ * @param {BlockRecords} records
+ * @param {NodeTable} nodes
+ * @param {number} index
+ * @return {ChildNode[]}
+ */
+export function childNodesOf(records, nodes, index) {
+  /** @type {ChildNode[]} */ const children = [];
+  let entry = records.links.firstChild(index);
+  while (entry !== -1) {
+    children.push(/** @type {ChildNode} */ (nodeOf(nodes, entry)));
+    entry = records.links.nextSibling(entry);
+  }
+  return children;
+}
 
 /** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule, whose children form its chain */
 
-const { asciiLowerCase } = cssnanoUtils;
-
-const OUT_OF_STEP = 'block record out of step with the tree';
-const STALE = 'stale declarations of a rule record';
-
 /**
- * Whether the live children of a container differ from the nodes it holds.
- * Compares in order and stops at the first difference, without building the
- * list of live children.
+ * Whether the live children of a container differ from its nodes. Compares in
+ * order and stops at the first difference, without a list of live children.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes
  * @param {ContainerRecord} block
  * @return {boolean}
  */
-function differs(records, block) {
-  const nodes = /** @type {ChildNode[]} */ (block.node.nodes);
-  if (records.links.childCount(block.index) !== nodes.length) return true;
+export function differs(records, nodes, block) {
+  const children = /** @type {ChildNode[]} */ (
+    /** @type {Container} */ (nodeOf(nodes, block.index)).nodes
+  );
+  if (records.links.childCount(block.index) !== children.length) return true;
   let at = 0;
   for (
     let entry = records.links.firstChild(block.index);
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
-    if (nodes[at++] !== records.nodeOf(entry)) return true;
+    if (children[at++] !== nodeOf(nodes, entry)) return true;
   }
   return false;
-}
-
-/**
- * @param {ChildNode} node
- * @return {boolean} whether the node holds rules or at-rules
- */
-function isRuleOrAtRule(node) {
-  return node.type === 'rule' || node.type === 'atrule';
-}
-
-/**
- * Whether a declaration record describes the declaration node it stands for, in
- * the facts a record keeps.
- *
- * @param {DeclarationRecord} child
- * @return {boolean}
- */
-function describes(child) {
-  const { node } = child;
-  return (
-    child.prop === node.prop &&
-    child.value === node.value &&
-    child.important === (node.important === true)
-  );
-}
-
-/**
- * Throws when an at-rule record names another kind, name or prelude than the
- * at-rule the tree holds. The prelude id is not compared, since it counts the
- * raws too.
- *
- * @param {BlockRecord | NodeEntry} entry
- * @return {void}
- */
-function checkAtRuleFacts(entry) {
-  if (entry.node.type !== 'atrule') return;
-  const node = /** @type {AtRule} */ (entry.node);
-  const name = asciiLowerCase(node.name);
-  if (
-    entry.kind !== atRuleKind(name) ||
-    entry.name !== name ||
-    entry.params !== node.params
-  ) {
-    throw new Error(OUT_OF_STEP);
-  }
-}
-
-/**
- * Throws when the record of a rule is not linked in the container that holds
- * it, or does not nest exactly when the tree's rule holds rules or at-rules.
- *
- * @param {BlockRecords} records
- * @param {ContainerRecord} block the container whose chain holds the rule
- * @param {RuleRecord} record
- * @return {void}
- */
-function checkRuleRecord(records, block, record) {
-  const rule = record.node;
-  if (records.links.parentOf(record.index) !== block.index) {
-    throw new Error(OUT_OF_STEP);
-  }
-  const nests = record.context !== -1;
-  if (nests !== rule.nodes.some(isRuleOrAtRule)) {
-    throw new Error(OUT_OF_STEP);
-  }
-  const { tokens } = record;
-  if (tokens !== undefined && tokensText(tokens) !== record.sourceText) {
-    throw new Error(OUT_OF_STEP);
-  }
-  checkBlockRecord(records, record);
-}
-
-/**
- * Throws when the live children of a container are not the nodes it holds, and
- * checks the rule records and nested blocks its chain links. A plain rule's
- * declarations must also describe their nodes, and its children must be its
- * nodes' children.
- *
- * @param {BlockRecords} records
- * @param {ContainerRecord} block
- * @return {void}
- */
-function checkBlockRecord(records, block) {
-  if (differs(records, block)) throw new Error(OUT_OF_STEP);
-  const plain = block instanceof RuleRecord && block.context === -1;
-  for (
-    let entry = records.links.firstChild(block.index);
-    entry !== -1;
-    entry = records.links.nextSibling(entry)
-  ) {
-    const item = records.entry(entry);
-    // The first child of the stylesheet prints the stylesheet's leading
-    // whitespace instead of its own.
-    const expected =
-      block === records.root && entry === records.links.firstChild(block.index)
-        ? block.leadingWhitespace
-        : item.before;
-    if (expected !== null && records.nodeOf(entry).raws.before !== expected) {
-      throw new Error(STALE);
-    }
-    if (item instanceof RuleRecord) {
-      checkRuleRecord(records, block, item);
-    } else if (item instanceof BlockRecord) {
-      checkAtRuleFacts(item);
-      checkBlockRecord(records, item);
-    } else {
-      if (item instanceof NodeEntry) checkAtRuleFacts(item);
-      if (plain) {
-        if (item instanceof DeclarationRecord && !describes(item)) {
-          throw new Error(STALE);
-        }
-        if (records.nodeOf(entry).parent !== block.node) {
-          throw new Error(OUT_OF_STEP);
-        }
-      }
-    }
-  }
-}
-
-/**
- * Under consistency checks, throws when the records and the tree disagree:
- * each container must hold the nodes it holds, in order, and each rule must
- * stand in the slot its record names. Writes nothing.
- *
- * @param {BlockRecords} records
- * @return {void}
- */
-export function assertRecordsMatchTree(records) {
-  if (!records.consistencyChecks) return;
-  checkBlockRecord(records, records.root);
 }
 
 /**
@@ -205,117 +93,66 @@ export function replaceChildren(rebuilt) {
 }
 
 /**
- * The tokens a marked rule's pieces join to, when they spell its selector as
- * it is written, or undefined.
- *
- * @param {RuleRecord} record
- * @return {readonly import('@csstools/css-tokenizer').CSSToken[] | undefined}
- */
-function joinedPieces(record) {
-  const { pieces } = record;
-  if (!pieces) return undefined;
-  const list = joinRanges(pieces, [comma()]);
-  return tokensText(list) === record.selectorText() ? list : undefined;
-}
-
-/**
- * Gives a merged rule the raws that print its template: the space between the
- * selector and the block, the space after the block, and the semicolons.
- *
- * @param {import('postcss').Rule} node the merged rule
- * @param {import('postcss').Rule} template the rule whose raws it prints
- * @return {void}
- */
-function writeTemplateRaws(node, template) {
-  const { raws } = node;
-  const source = template.raws;
-  raws.between = source.between;
-  raws.after = source.after;
-  raws.semicolon = source.semicolon;
-  raws.ownSemicolon = source.ownSemicolon;
-}
-
-/**
- * Writes the selector of a rule the root reaches, through the table: the text,
- * and the tokens the record holds or joins from its pieces. Then stores the
- * tokens of an unmarked rule that the compatibility check tokenized, so a later
- * reader of the table does not tokenize them again.
- *
- * @param {RuleRecord} record
- * @param {BlockRecords} records
- * @param {TextTable} textTable
- * @return {void}
- */
-function writeSelector(record, records, textTable) {
-  if (record.marked) {
-    const list = record.tokens ?? joinedPieces(record);
-    if (list === undefined) {
-      textTable.setText(record.node, record.selector);
-    } else {
-      textTable.write(record.node, list);
-      record.markStored();
-    }
-    if (record.template !== -1) {
-      writeTemplateRaws(
-        record.node,
-        /** @type {import('postcss').Rule} */ (records.nodeOf(record.template))
-      );
-    }
-  } else if (record.tokens !== undefined && !record.listStored) {
-    textTable.write(record.node, record.tokens);
-    record.markStored();
-  }
-}
-
-/**
  * Assigns the whitespace before each child of a rebuilt container from the
  * records, where a merge may have changed it. Runs after the append, which
  * rewrites the whitespace of the nodes it places. A record whose value is null
  * leaves its node's whitespace as it is.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes
  * @param {number} container the index of the rebuilt container's record
  * @return {void}
  */
-function writeBefore(records, container) {
+function writeBefore(records, nodes, container) {
   for (
     let entry = records.links.firstChild(container);
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
     const { before } = records.entry(entry);
-    if (before !== null) records.nodeOf(entry).raws.before = before;
+    if (before !== null) {
+      /** @type {ChildNode} */ (nodeOf(nodes, entry)).raws.before = before;
+    }
   }
 }
 
 /**
- * Gives each merged rule among the children of a rebuilt container its node,
- * with the template's source. Write-back fills the rest.
+ * Writes a marked declaration in place: its property and the text of its value
+ * list, and no raw value, since the raw spelled the text before the rewrite.
  *
- * @param {BlockRecords} records
- * @param {number} container the index of the rebuilt container
+ * @param {DeclarationRecord} record
+ * @param {NodeTable} nodes
+ * @param {TokenLists} tokenLists
  * @return {void}
  */
-function createChildNodes(records, container) {
+function writeDeclaration(record, nodes, tokenLists) {
+  if (!record.marked) return;
+  const node = /** @type {import('postcss').Declaration} */ (
+    nodeOf(nodes, record.index)
+  );
+  node.prop = record.prop;
+  node.value = tokensText(tokenLists.get(record.valueList));
+  delete node.raws.value;
+}
+
+/**
+ * Writes the marked declarations of the chain of the rule at `index`, in place.
+ *
+ * @param {BlockRecords} records
+ * @param {NodeTable} nodes
+ * @param {TokenLists} tokenLists
+ * @param {number} index the rule's index
+ * @return {void}
+ */
+function writeDeclarationsOf(records, nodes, tokenLists, index) {
   for (
-    let entry = records.links.firstChild(container);
+    let entry = records.links.firstChild(index);
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
     const record = records.entry(entry);
-    if (record instanceof RuleRecord && !record.hasNode) {
-      const template = /** @type {import('postcss').Rule} */ (
-        records.nodeOf(record.template)
-      );
-      // The node has no selector yet, which PostCSS's props type does not allow.
-      record.giveNode(
-        postcss.rule(
-          /** @type {import('postcss').RuleProps} */ ({
-            source: template.source,
-          })
-        )
-      );
-    }
+    if (record.kind === DECLARATION)
+      writeDeclaration(record, nodes, tokenLists);
   }
 }
 
@@ -329,27 +166,32 @@ function createChildNodes(records, container) {
  * does not reach gets none.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes the node of each entry, from the build; write-back adds the merged rules' nodes
+ * @param {TokenLists} tokenLists the run's token lists, which the ids of the rules name
  * @param {TextTable} [textTable] the table the selectors are written through
- * @param {Set<Container> | null} [reported] receives the node of each rule a merge created that the tree reaches
  * @return {void}
  */
 export function writeBack(
   records,
-  textTable = new TextTable(),
-  reported = null
+  nodes,
+  tokenLists,
+  textTable = new TextTable()
 ) {
+  if (records.consistencyChecks && nodes.length !== records.builtCount) {
+    throw new Error(TABLE_LENGTH);
+  }
+  assertTemplatesHaveNodes(records, nodes);
   /** @type {(Rebuilt & {index: number})[]} */
   const rebuilt = [];
   /** @param {ContainerRecord} container */
   const visit = (container) => {
-    if (differs(records, container)) {
-      createChildNodes(records, container.index);
+    if (differs(records, nodes, container)) {
+      createChildNodes(records, nodes, container.index, tokenLists);
       rebuilt.push({
-        container: /** @type {Container} */ (container.node),
+        container: /** @type {Container} */ (nodeOf(nodes, container.index)),
         index: container.index,
-        children: childNodesOf(records, container.index),
-        leading:
-          container === records.root ? container.leadingWhitespace : null,
+        children: childNodesOf(records, nodes, container.index),
+        leading: container === records.root ? records.leadingWhitespace : null,
       });
     }
     for (
@@ -358,30 +200,38 @@ export function writeBack(
       entry = records.links.nextSibling(entry)
     ) {
       const record = records.entry(entry);
-      if (record instanceof RuleRecord) {
-        writeSelector(record, records, textTable);
+      if (record.kind === RULE) {
+        writeSelector(record, nodes, textTable, tokenLists);
         if (record.context !== -1) {
           visit(record);
-        } else if (records.links.isEdited(record.index)) {
-          rebuilt.push({
-            container: /** @type {Container} */ (record.node),
-            index: record.index,
-            children: childNodesOf(records, record.index),
-            leading: null,
-          });
+        } else {
+          if (records.links.isEdited(record.index)) {
+            createChildNodes(records, nodes, record.index, tokenLists);
+            rebuilt.push({
+              container: /** @type {Container} */ (nodeOf(nodes, record.index)),
+              index: record.index,
+              children: childNodesOf(records, nodes, record.index),
+              leading: null,
+            });
+          }
+          if (records.declarationStamps.isTouched(record.index)) {
+            writeDeclarationsOf(records, nodes, tokenLists, record.index);
+          }
         }
-      } else if (record instanceof BlockRecord) {
+      } else if (record.kind === STYLESHEET || record.kind === AT_RULE_BLOCK) {
         visit(record);
+      } else if (record.kind === DECLARATION) {
+        writeDeclaration(record, nodes, tokenLists);
       }
     }
   };
   visit(records.root);
-  if (reported) records.addMergedNodes(reported);
   replaceChildren(rebuilt);
-  for (const { index } of rebuilt) writeBefore(records, index);
+  for (const { index } of rebuilt) writeBefore(records, nodes, index);
   // The first child of the stylesheet takes the leading whitespace last.
-  const first = records.root.node.first;
-  const { leadingWhitespace } = records.root;
+  const root = /** @type {Container} */ (nodeOf(nodes, records.root.index));
+  const first = root.first;
+  const { leadingWhitespace } = records;
   if (first && leadingWhitespace !== null) {
     first.raws.before = leadingWhitespace;
   }

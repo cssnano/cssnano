@@ -1,9 +1,7 @@
-import { BlockRecord } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
+import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
 import { declarationKeys } from './declarationCache.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @typedef {BlockRecord | RuleRecord} Container */
 
 const POTENTIAL =
   'a sweep raised its potential, or moved a rule without lowering it';
@@ -28,26 +26,32 @@ export function sweepPotential(records, numbers) {
   let rules = 0;
   let parents = 0;
   let number = 0;
-  /** @param {Container} block */
-  const visit = (block) => {
-    if (numbers === null) ids[block.index] = number++;
-    const id = ids[block.index];
+  // A stack of blocks still to visit. Each block pushes the blocks it holds
+  // from the last, so they pop in document order, each before its own.
+  const pending = [records.root.index];
+  while (pending.length > 0) {
+    const index = /** @type {number} */ (pending.pop());
+    if (numbers === null) ids[index] = number++;
+    const id = ids[index];
     for (
-      let entry = links.firstChild(block.index);
+      let entry = links.lastChild(index);
       entry !== -1;
-      entry = links.nextSibling(entry)
+      entry = links.prevSibling(entry)
     ) {
       const item = records.entry(entry);
-      if (item instanceof RuleRecord && item.context === -1) {
+      if (item.kind === RULE && item.context === -1) {
         declarations += declarationKeys(records, item.index).kept.length;
         rules++;
         parents += id;
-      } else if (item instanceof BlockRecord || item instanceof RuleRecord) {
-        visit(item);
+      } else if (
+        item.kind === RULE ||
+        item.kind === STYLESHEET ||
+        item.kind === AT_RULE_BLOCK
+      ) {
+        pending.push(item.index);
       }
     }
-  };
-  visit(records.root);
+  }
   return { potential: [declarations, rules, parents], numbers: ids };
 }
 

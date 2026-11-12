@@ -59,11 +59,10 @@ import { walkAfterMerge } from './afterMerge.js';
 
 /**
  * A pass that runs over the stylesheet after the walk, with the browsers of the
- * run, the options of its entry, the result for its messages, the text table
- * the walk filled and the rules and at-rules the walk reached, in document
- * order, or undefined when no walk ran. `targets` is set when the pass reads
+ * run, the options of its entry, the result for its messages and the text table
+ * the walk filled. `targets` is set when the pass reads
  * the browser targets; otherwise it gets none.
- * @typedef {{pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result, table: TextTable, blocks: readonly (import('postcss').Rule | import('postcss').AtRule)[] | undefined) => void, options: Record<PropertyKey, unknown>, targets: boolean}} PassRun
+ * @typedef {{pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result, table: TextTable) => void, options: Record<PropertyKey, unknown>, targets: boolean}} PassRun
  */
 
 /**
@@ -169,15 +168,11 @@ export function hostPlugin(
       return {
         OnceExit(root, helpers) {
           const table = new TextTable();
-          /** @type {(import('postcss').Rule | import('postcss').AtRule)[] | undefined} */
-          let blocks;
           if (members.length > 0 || transforms.size > 0) {
-            // The passes reuse the blocks the walk reaches rather than walk again.
-            if (runs.length > 0) blocks = [];
-            walkStylesheet(stages, root, helpers, transforms, table, blocks);
+            walkStylesheet(stages, root, helpers, transforms, table);
           }
           for (const { pass, options, browsers } of runs) {
-            pass(root, browsers, options, helpers.result, table, blocks);
+            pass(root, browsers, options, helpers.result, table);
           }
           if (after.size > 0 || symbols.size > 0) {
             walkAfterMerge(root, helpers.result, after, symbols, table);

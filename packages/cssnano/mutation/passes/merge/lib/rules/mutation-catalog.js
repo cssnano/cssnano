@@ -68,8 +68,8 @@ export const mutations = [
   {
     name: 'rules nested in rules of different selectors share a context',
     target: source('sameContainer.js'),
-    find: "trie = step(step(trie, 'rule'), /** @type {RuleRecord} */ (block).selector);",
-    replace: "trie = step(trie, 'rule');",
+    find: '    for (const id of /** @type {RuleRecord} */ (block).selectorIds)\n      trie = step(trie, id);',
+    replace: '',
   },
   {
     name: 'keep a downward join anchored at the earlier rule',
@@ -80,19 +80,19 @@ export const mutations = [
   {
     name: 'move a block down in the backward pass across a conflicting write',
     target: source('nonAdjacentMerge.js'),
-    find: '!index.conflictsSinceIn(records, earlierEntries, laterPosition, keysOf)',
+    find: '!index.conflictsSinceIn(records, earlierEntries, laterPosition)',
     replace: 'true',
   },
   {
     name: 'forget the writes of a block moved down in the backward pass',
     target: source('nonAdjacentMerge.js'),
-    find: '      index.moveWrites(records, earlierEntries, laterPosition, keysOf);\n      adopt(mergeState.records, earlier.index, later.index);',
+    find: '      index.moveWrites(records, earlierEntries, laterPosition);\n      adopt(mergeState.records, earlier.index, later.index);',
     replace: '      adopt(mergeState.records, earlier.index, later.index);',
   },
   {
     name: 'ignore !important in the declaration key',
     target: irSource('declarationKey.js'),
-    find: '    trie = step(trie, declaration.important === true);\n',
+    find: '    trie = step(trie, important);\n',
     replace: '',
   },
   {
@@ -103,45 +103,45 @@ export const mutations = [
   },
   {
     name: 'a rule record skips the check of its declarations against the tree',
-    target: source('writeBack.js'),
-    find: '      if (item instanceof DeclarationRecord && !describes(item)) {',
-    replace: '      if (false) {',
+    target: source('treeMatch.js'),
+    find: '!describesNode(tokenLists, item, nodeOf(nodes, item.index))',
+    replace: 'false',
   },
   {
     name: 'a removal of a rule that leaves it in its chain',
     target: source('treeEdits.js'),
-    find: '  records.unlink(entry.index);\n',
+    find: '  records.detach(index);\n',
     replace: '',
   },
   {
     name: 'a removal of a rule set that leaves its rules in their chains',
     target: source('treeEdits.js'),
-    find: '    arena.unlink(index);\n',
+    find: '    arena.detach(index);\n',
     replace: '',
   },
   {
     name: 'a sweep that leaves an emptied block in its chain',
     target: source('ruleSequence.js'),
-    find: '      records.unlink(at);\n',
+    find: '      remove(records, at);\n',
     replace: '',
   },
   {
-    name: 'a takePlaceOf that leaves the earlier entry in its old chain',
-    target: source('blockLinks.js'),
-    find: '    this.unlink(earlier);\n',
+    name: 'a move before a sibling that leaves the moved entry in its old chain',
+    target: source('blockRecords.js'),
+    find: '    this.detach(index);\n    this.#linkBefore(sibling, index);\n',
+    replace: '    this.#linkBefore(sibling, index);\n',
+  },
+  {
+    name: 'a clone that drops the support its source required',
+    target: source('arenaEdits.js'),
+    find: '  record.inheritedSupport = item.inheritedSupport;\n',
     replace: '',
   },
   {
     name: 'a move of children that unlinks the moved entries without linking them',
     target: source('arenaEdits.js'),
-    find: '    records.linkLast(target, entry);\n',
-    replace: '',
-  },
-  {
-    name: 'a move that leaves the moved rule in its old chain',
-    target: source('arenaEdits.js'),
-    find: 'export function moveRule(records, target, record) {\n  records.unlink(record);\n',
-    replace: 'export function moveRule(records, target, record) {\n',
+    find: '    records.moveLast(target, entry);\n',
+    replace: '    records.detach(entry);\n',
   },
   {
     name: 'move into the later parent',
@@ -155,27 +155,6 @@ export const mutations = [
     target: source('recordsCheck.js'),
     find: '    if (count !== links.childCount(block.index)) throw new Error(OUT_OF_STEP);\n  };\n  reach(records.root);\n  visitChildren(records.root);',
     replace: '  };\n  reach(records.root);\n  visitChildren(records.root);',
-  },
-  {
-    name: 'moving declarations hands over no record',
-    target: source('arenaEdits.js'),
-    find: '    records.unlink(index);\n    appendChild(\n      records,\n      receiving,',
-    replace:
-      '    records.unlink(index);\n    void (\n      records,\n      receiving,',
-  },
-  {
-    name: 'moving declarations removes the moved node at once',
-    target: source('arenaEdits.js'),
-    find: '    records.unlink(index);\n    appendChild(',
-    replace:
-      '    records.unlink(index);\n    records.entry(index).node.remove();\n    appendChild(',
-  },
-  {
-    name: 'an append edits the node of the rule at once',
-    target: source('arenaEdits.js'),
-    find: '  records.linkLast(rule.index, child.index);\n',
-    replace:
-      '  records.linkLast(rule.index, child.index);\n  rule.node.append(child.node);\n',
   },
   {
     name: 'a removal of declarations stamps no container',
@@ -199,7 +178,7 @@ export const mutations = [
   {
     name: 'write-back leaves a departed rule in its block',
     target: source('writeBack.js'),
-    find: '  if (records.links.childCount(block.index) !== nodes.length) return true;\n',
+    find: '  if (records.links.childCount(block.index) !== children.length) return true;\n',
     replace: '',
   },
 

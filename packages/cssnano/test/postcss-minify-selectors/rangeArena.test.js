@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import cssnanoUtils from '#utils';
-import { selectorRanges } from '../../src/values/selectorRanges.js';
+import { selectorRanges } from '../../../../util/selectorRanges.js';
 import { tokensText } from '../../src/values/tokensText.js';
 import { normalizeArena } from '../../src/plugins/postcss-minify-selectors/lib/normalizeArena.js';
 import { parseSelectorArena } from '../../src/plugins/postcss-minify-selectors/lib/parseArena.js';

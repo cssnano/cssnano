@@ -1,23 +1,30 @@
+/** @import {TokenLists, TokenListId} from '../../../ir/tokenLists.js' */
 import cssnanoUtils from '#utils';
 import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
-import { recordDeclaration } from '../../../ir/declarationRecord.js';
+import { SelectorIds } from '../../../ir/selectorIds.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { keysOfName } from '../../../ir/propertyTable.js';
 import {
-  atRuleKind,
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
+  atRuleKindOf,
   BlockRecord,
   COMMENT,
   LAYER,
+  NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
   STYLESHEET,
 } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
-import { hasPendingEdits } from '../deferredChildEdits.js';
-import { sourceSelector } from '../../../../utils/sourceText.js';
+import { valueListOf } from '../valueList.js';
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
-/** @import {AtRule, ChildNode, Comment, Container, Root, Rule} from 'postcss' */
+/** @import {AtRule, ChildNode, Comment, Container, Declaration, Root, Rule} from 'postcss' */
+/** @import {NodeTable} from './nodeTable.js' */
+/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
@@ -31,54 +38,97 @@ const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
  * @param {ChildNode} node
  * @return {boolean} whether the node holds rules or at-rules
  */
-function isRuleOrAtRule(node) {
+export function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
 }
 
-const PENDING_EDITS = 'a container has edits its child list does not show';
+/**
+ * The ids of a rule's selector items, each new item given its list in the
+ * run's table, in the order of the items.
+ *
+ * @param {SelectorIds} selectorIds
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} items
+ * @return {TokenListId[]}
+ */
+function idsOfItems(selectorIds, tokenLists, items) {
+  const ids = [];
+  for (const item of items) ids.push(selectorIds.idOf(tokenLists, item));
+  return ids;
+}
 
 /**
- * Builds the records of a stylesheet from its tree, once per run. Each child is
- * linked into the chain of its parent, and every rule is a container whose
- * children form its own chain.
+ * The record of a declaration of the run's stylesheet.
+ *
+ * @param {Declaration} node
+ * @param {RunContext} context
+ * @return {DeclarationRecord}
+ */
+export function recordDeclaration(node, context) {
+  const before = node.raws.before ?? null;
+  const important = node.important === true;
+  const valueList = valueListOf(node, context);
+  const record = new DeclarationRecord(
+    before,
+    node.prop,
+    valueList,
+    important,
+    keysOfName(node.prop),
+    context.declarations.keyOf(node.prop, valueList, important, before),
+    node.raws.between ?? null,
+    important ? (node.raws.important ?? null) : null
+  );
+  return record;
+}
+
+/**
+ * Builds the records of a stylesheet from its tree, once per run, and the node
+ * of each of their entries. Each child is linked into the chain of its parent,
+ * and every rule is a container whose children form its own chain.
  *
  * @param {Root} root
  * @param {RunContext} context the run's state, which gives the tokens and ids the records keep
- * @return {BlockRecords}
+ * @return {{records: BlockRecords, nodes: NodeTable}}
  */
 export function buildRecords(root, context) {
-  const { textTable, consistencyChecks } = context;
+  const { textTable, tokenLists, consistencyChecks } = context;
+  // The ids of this build's selectors. Each rule keeps the ids of its items.
+  const selectorIds = new SelectorIds();
   const records = new BlockRecords(
-    new BlockRecord(root, STYLESHEET, '', '', false, NO_PRELUDE),
+    new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
     consistencyChecks
   );
-  records.root.leadingWhitespace = root.first?.raws.before ?? null;
-  let nodes = 0;
-  let declarations = 0;
+  /** @type {NodeTable} the node of each entry, by index; the root is entry 0 */
+  const nodes = [root];
+  records.leadingWhitespace = root.first?.raws.before ?? null;
+  /**
+   * Places a child's entry at the end of its container's chain, with its node.
+   * An entry takes the next index, which is the next slot of the table.
+   *
+   * @param {number} container
+   * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
+   * @param {ChildNode} node
+   */
+  const place = (container, entry, node) => {
+    records.appendEntry(container, entry);
+    nodes.push(node);
+  };
   /**
    * Links each child of a container, which holds its context already, in
    * document order. A rule is linked into its parent, then its children.
    *
    * @param {BlockRecord | RuleRecord} container
+   * @param {Container} node the container's node
+   * @return {void}
    */
-  const fillChildren = (container) => {
-    // The build reads the child lists, which a pending edit has not rebuilt yet.
-    if (consistencyChecks && hasPendingEdits(container.node)) {
-      throw new Error(PENDING_EDITS);
-    }
-    for (const child of /** @type {ChildNode[]} */ (container.node.nodes)) {
-      if (isRuleOrAtRule(child)) nodes++;
+  const fillChildren = (container, node) => {
+    for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
       if (child.type === 'rule') {
-        const source = sourceSelector(child);
         const record = new RuleRecord(
-          child,
-          child.selectors,
-          child.selector,
-          source === child.selector ? undefined : source,
-          textTable.stored(child)
+          child.raws.before ?? null,
+          idsOfItems(selectorIds, tokenLists, child.selectors)
         );
-        record.before = child.raws.before ?? null;
-        records.appendEntry(container.index, record);
+        place(container.index, record, child);
         // A rule that holds a rule or an at-rule nests, and gets its context.
         if (child.nodes.some(isRuleOrAtRule)) {
           record.context = containerContext(
@@ -87,51 +137,55 @@ export function buildRecords(root, context) {
             record
           );
         }
-        fillChildren(record);
+        fillChildren(record, child);
       } else if (child.type === 'atrule' && child.nodes) {
         const name = asciiLowerCase(child.name);
-        const kind = atRuleKind(name);
+        const category = atRuleKindOf(name);
         const nested = new BlockRecord(
-          child,
-          kind,
+          AT_RULE_BLOCK,
+          child.raws.before ?? null,
+          category,
           name,
           child.params,
-          kind === LAYER && isAnonymousLayer(child, textTable),
+          category === LAYER && isAnonymousLayer(child, textTable),
           context.declarations.preludeId(child)
         );
-        nested.before = child.raws.before ?? null;
-        records.appendEntry(container.index, nested);
+        place(container.index, nested, child);
         nested.context = containerContext(
           context.declarations,
           container.context,
           nested
         );
-        fillChildren(nested);
+        fillChildren(nested, child);
       } else if (child.type === 'decl') {
-        declarations++;
-        records.appendEntry(
-          container.index,
-          recordDeclaration(child, context.properties, context.declarations)
-        );
+        place(container.index, recordDeclaration(child, context), child);
       } else if (child.type === 'atrule') {
         const name = asciiLowerCase(child.name);
-        const kind = atRuleKind(name);
+        const category = atRuleKindOf(name);
         const entry = new NodeEntry(
-          child,
-          kind,
+          AT_RULE_STATEMENT,
+          child.raws.before ?? null,
+          category,
           name,
           child.params,
-          kind === LAYER && isAnonymousLayer(child, textTable),
+          category === LAYER && isAnonymousLayer(child, textTable),
           context.declarations.preludeId(child)
         );
-        entry.before = child.raws.before ?? null;
-        records.appendEntry(container.index, entry);
+        place(container.index, entry, child);
       } else {
-        const entry = new NodeEntry(child, COMMENT, '', '', false, NO_PRELUDE);
-        entry.before = child.raws.before ?? null;
-        entry.text = /** @type {Comment} */ (child).text;
-        entry.important = cssnanoUtils.isImportantComment(entry.text);
-        records.appendEntry(container.index, entry);
+        const text = /** @type {Comment} */ (child).text;
+        const entry = new NodeEntry(
+          COMMENT,
+          child.raws.before ?? null,
+          NO_AT_RULE,
+          '',
+          '',
+          false,
+          NO_PRELUDE,
+          text,
+          cssnanoUtils.isImportantComment(text)
+        );
+        place(container.index, entry, child);
       }
     }
   };
@@ -141,9 +195,7 @@ export function buildRecords(root, context) {
     -1,
     records.root
   );
-  fillChildren(records.root);
+  fillChildren(records.root, root);
   records.settle();
-  // N + D + 1 rounds bound a run, see `runMerge`.
-  records.maxRounds = nodes + declarations + 1;
-  return records;
+  return { records, nodes };
 }

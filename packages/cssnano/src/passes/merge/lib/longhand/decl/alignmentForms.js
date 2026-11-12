@@ -3,12 +3,11 @@ import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { cssWideKeywords } from '../spec.js';
 import isCustomProp from '../isCustomProp.js';
 import { splitValue } from '../valueComponents.js';
-import { declaredValueTokens } from '../../../../../values/declaredValueTokens.js';
 import shorthandData from '../data/shorthandIdentities.json' with { type: 'json' };
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {Declaration} from 'postcss'; */
+/** @import {DeclarationItem} from '../blockDeclarations.js'; */
 
 /**
  * @typedef {{
@@ -81,11 +80,10 @@ for (const family of Object.values(alignmentFamilies)) {
  * Returns null if the value is invalid or malformed per CSS Box Alignment 3.
  *
  * @param {AlignmentFamilyConfig} family
- * @param {Declaration} decl
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
+ * @param {DeclarationItem} decl
  * @return {[string, string] | null}
  */
-function parseAlignmentShorthand(family, decl, textTable) {
+function parseAlignmentShorthand(family, decl) {
   const trimmed = decl.value.trim();
   const lower = asciiLowerCase(trimmed);
   if (!/[\s\\]/v.test(lower)) {
@@ -94,11 +92,7 @@ function parseAlignmentShorthand(family, decl, textTable) {
     }
   }
 
-  const parsed = splitValue(
-    decl.value,
-    undefined,
-    declaredValueTokens(textTable, decl)
-  );
+  const parsed = splitValue(decl.value, undefined, decl.tokens);
   if (!parsed || parsed.length !== 1) return null;
   const components = parsed[0].components;
   if (components.length < 1 || components.length > 4) return null;
@@ -134,28 +128,23 @@ function parseAlignmentShorthand(family, decl, textTable) {
  * separately. CSS-wide keywords and substitutions are taken as written.
  *
  * @param {AlignmentFamilyConfig} family
- * @param {Declaration} decl
+ * @param {DeclarationItem} decl
  * @return {[string | null, string | null] | null}
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export function parseAlignmentDeclaration(family, decl, textTable) {
+export function parseAlignmentDeclaration(family, decl) {
   const value = decl.value?.trim();
   if (!value) return null;
   const prop = asciiLowerCase(decl.prop);
   if (prop === family.shorthand) {
-    return parseAlignmentShorthand(family, decl, textTable);
+    return parseAlignmentShorthand(family, decl);
   }
   const slot = family.slots.get(prop);
   if (slot === undefined) return null;
 
   let normalized = value;
-  if (!isCssWideKeyword(value) && !isCustomProp(decl, textTable)) {
+  if (!isCssWideKeyword(value) && !isCustomProp(decl)) {
     if (/[\s\\]/v.test(value)) {
-      const parsed = splitValue(
-        decl.value,
-        undefined,
-        declaredValueTokens(textTable, decl)
-      );
+      const parsed = splitValue(decl.value, undefined, decl.tokens);
       if (!parsed || parsed.length !== 1) return null;
       const components = parsed[0].components;
       if (components.length > 2) return null;

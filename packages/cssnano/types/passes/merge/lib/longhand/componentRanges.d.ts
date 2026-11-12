@@ -30,12 +30,6 @@ export type ValueComponent = {
  */
 export declare function componentRanges(tokens: readonly CSSToken[]): number[];
 /**
- * @param {readonly CSSToken[]} tokens
- * @return {boolean} whether the tokens split where `list.space` splits the
- * string; a comment or a bad token makes it split inside a word
- */
-export declare function splitsAsTokens(tokens: readonly CSSToken[]): boolean;
-/**
  * The tokens a value spells: the list the caller has, or one tokenization of a
  * value with a `(`. A value without one has no function, so it needs none.
  *
@@ -75,14 +69,13 @@ export declare function rangeText(value: string, spelled: readonly CSSToken[], s
  */
 export declare function splitComponents(value: string, tokens?: readonly CSSToken[]): ValueComponent[];
 /**
- * The tokens a declaration's value has in the text table, when the value has a
- * `(` to type; a value without one needs none.
+ * The tokens of a declaration's value, when the value has a `(` to type; a
+ * value without one needs none.
  *
- * @param {import('../../../../values/textTable.js').TextTable} textTable
- * @param {import('postcss').Declaration} decl
+ * @param {import('./blockDeclarations.js').DeclarationItem} decl
  * @return {readonly CSSToken[] | undefined}
  */
-export declare function declarationTokens(textTable: import('../../../../values/textTable.js').TextTable, decl: import('postcss').Declaration): readonly CSSToken[] | undefined;
+export declare function declarationTokens(decl: import('./blockDeclarations.js').DeclarationItem): readonly CSSToken[] | undefined;
 /**
  * A text as one component over its own tokens, which are read only when the
  * text has a `(`.

@@ -8,6 +8,7 @@
     //"suspicious": "error"
   },
   "rules": {
+    "no-undef": "error",
     "array-callback-return": "error",
     "complexity": "error",
     "guard-for-in": "error",
@@ -90,6 +91,21 @@
   },
   "overrides": [
     {
+      "files": ["site/**"],
+      "env": { "browser": true },
+      "globals": { "Astro": "readonly" }
+    },
+    {
+      // Defined by the site build; declared for the compiler in env.d.ts.
+      "files": ["site/src/utils/embeddedBrowserTargets.js"],
+      "globals": { "CSSNANO_PLAYGROUND_TARGETS": "readonly" }
+    },
+    {
+      // Runs inside the browser through `evaluate`.
+      "files": ["util/valueValidity.js"],
+      "globals": { "CSS": "readonly" }
+    },
+    {
       "files": ["packages/cssnano/src/passes/merge/**"],
       "rules": {
         "merge-ir/link-edits-through-arena": [
@@ -99,10 +115,9 @@
               "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js"
             ],
             "required": [
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#linkAfter",
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#linkBefore",
               "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#linkLast",
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#unlink",
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#takeLinkOf"
+              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#detach"
             ]
           }
         ],
@@ -181,16 +196,48 @@
           {
             "allowed": [
               "packages/cssnano/src/passes/merge/lib/rules/writeBack.js",
+              "packages/cssnano/src/passes/merge/lib/rules/nodeTable.js",
+              "packages/cssnano/src/passes/merge/lib/rules/writeSelector.js",
+              "packages/cssnano/src/passes/merge/lib/rules/treeMatch.js",
               "packages/cssnano/src/passes/merge/lib/rules/buildRecords.js",
-              "packages/cssnano/src/passes/merge/lib/rules/windowGuard.js",
-              "packages/cssnano/src/passes/ir/runContext.js",
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecord.js",
+              "packages/cssnano/src/passes/ir/runContext.js"
+            ]
+          }
+        ],
+        "merge-ir/arena-edits-only": [
+          "error",
+          {
+            "allowed": [
               "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js",
-              "packages/cssnano/src/passes/merge/lib/rules/ruleRecord.js",
-              "packages/cssnano/src/passes/merge/lib/rules/selectorList.js",
-              "packages/cssnano/src/passes/merge/lib/rules/blockChildren.js",
-              "packages/cssnano/src/passes/ir/declarationRecord.js",
-              "packages/cssnano/src/passes/ir/declarationKey.js"
+              "packages/cssnano/src/passes/merge/lib/rules/arenaEdits.js",
+              "packages/cssnano/src/passes/merge/lib/rules/treeEdits.js",
+              "packages/cssnano/src/passes/merge/lib/rules/buildRecords.js"
+            ]
+          }
+        ],
+        "merge-ir/no-record-extends": "error",
+        "merge-ir/checks-only-read": [
+          "error",
+          {
+            "modules": [
+              "packages/cssnano/src/passes/ir/consistencyChecks.js",
+              "packages/cssnano/src/passes/merge/lib/rules/recordsCheck.js",
+              "packages/cssnano/src/passes/merge/lib/rules/linkChecks.js"
+            ],
+            "allowed": []
+          }
+        ],
+        "merge-ir/no-captured-loop-state": ["error", { "allowed": [] }]
+      }
+    },
+    {
+      "files": ["packages/cssnano/src/passes/**"],
+      "rules": {
+        "merge-ir/no-module-state": [
+          "error",
+          {
+            "allowed": [
+              "packages/cssnano/src/passes/ir/consistencyChecks.js#enabled"
             ]
           }
         ]
@@ -198,6 +245,7 @@
     }
   ],
   "env": {
-    "builtin": true
+    "builtin": true,
+    "node": true
   }
 }

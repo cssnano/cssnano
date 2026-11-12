@@ -1,28 +1,29 @@
 import {
-  childNodesOf,
+  declarationsOf,
   childEntriesOf,
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
+import {
+  childNodesOf,
+  writeBack,
+} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
-import {
-  DeclarationRecord,
-  recordDeclaration,
-} from '../../../../../src/passes/ir/declarationRecord.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
+import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import {
-  assertRecordsMatchTree,
-  writeBack,
-} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import {
   buildTestRecords,
   declarationIds,
   ruleRecordOf,
+  nodesOf,
+  nodeOfEntry,
+  tokenListsOf,
 } from './liveRecords.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { DECLARATION } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 
 /**
  * @param {string} css
@@ -39,25 +40,25 @@ test('appendToDeclarations moves the record of an incoming declaration into the 
   const { root, state } = setup('@media print{a{color:red}b{width:1px}}');
   const receiving = ruleRecordOf(state.records, root.first.first);
   const incoming = ruleRecordOf(state.records, root.first.last);
-  const moved = incoming.declarationsOf(state.records)[0];
+  const moved = declarationsOf(state.records, incoming.index)[0];
   appendToDeclarations(state, receiving.index, incoming.index);
-  assert.equal(receiving.declarationsOf(state.records).at(-1), moved);
-  state.records.unlink(incoming.index);
-  writeBack(state.records);
-  assert.equal(moved.node.parent, receiving.node);
+  assert.equal(declarationsOf(state.records, receiving.index).at(-1), moved);
+  state.records.detach(incoming.index);
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
+  assert.equal(
+    nodeOfEntry(state.records, moved).parent,
+    nodeOfEntry(state.records, receiving)
+  );
 });
 
 test('recordDeclaration gives an important declaration an id that differs from an unset one', () => {
-  const properties = new PropertyTable();
-  const keys = new DeclarationKeys();
+  const keys = createRunContext();
   const plain = recordDeclaration(
     postcss.decl({ prop: 'color', value: 'red' }),
-    properties,
     keys
   );
   const important = recordDeclaration(
     postcss.decl({ prop: 'color', value: 'red', important: true }),
-    properties,
     keys
   );
   assert.equal(important.important, true);
@@ -70,19 +71,32 @@ test('a rule record reads its declaration keys from the ids of its records', () 
   const rule = ruleRecordOf(state.records, root.first);
   assert.deepEqual(
     declarationIds(state.records, rule.index),
-    rule.declarationsOf(state.records).map((declaration) => declaration.id)
+    declarationsOf(state.records, rule.index).map(
+      (declaration) => declaration.id
+    )
   );
 });
 
 test('assertRecordsMatchTree throws under consistency checks when a declaration value changed behind its record', () => {
   const { root, state } = setup('a{color:red}');
-  assert.doesNotThrow(() => assertRecordsMatchTree(state.records));
+  assert.doesNotThrow(() =>
+    assertRecordsMatchTree(
+      state.records,
+      nodesOf(state.records),
+      tokenListsOf(state.records)
+    )
+  );
   const declaration = /** @type {import('postcss').Declaration} */ (
     root.first.first
   );
   declaration.value = 'blue';
   assert.throws(
-    () => assertRecordsMatchTree(state.records),
+    () =>
+      assertRecordsMatchTree(
+        state.records,
+        nodesOf(state.records),
+        tokenListsOf(state.records)
+      ),
     /stale declarations/v
   );
 });
@@ -91,16 +105,19 @@ test('a declaration in a rule that nests is a declaration record in its chain, a
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
   const [color] = childEntriesOf(state.records, rule.index);
-  assert.ok(color instanceof DeclarationRecord);
-  assert.equal(childNodesOf(state.records, rule.index)[0], root.first.first);
-  assert.equal(color.node, root.first.first);
+  assert.ok(color.kind === DECLARATION);
+  assert.equal(
+    childNodesOf(state.records, nodesOf(state.records), rule.index)[0],
+    root.first.first
+  );
+  assert.equal(nodeOfEntry(state.records, color), root.first.first);
 });
 
 test('declarationKeys of a rule that nests are the ids of its chain declarations', () => {
   const { root, state } = setup('a{color:red;b{width:1px}}');
   const rule = ruleRecordOf(state.records, root.first);
   const ids = childEntriesOf(state.records, rule.index)
-    .filter((entry) => entry instanceof DeclarationRecord)
+    .filter((entry) => entry.kind === DECLARATION)
     .map((entry) => entry.id);
   assert.deepEqual(declarationIds(state.records, rule.index), ids);
 });

@@ -1,56 +1,47 @@
-import { boxProperties } from './decl/boxGroups.js';
 import type { BoxSupport } from './targetSupport.js';
-import type { FoldedText, TextTable } from '../../../../values/textTable.js';
-import type { Container, Declaration } from 'postcss';
-import type { BoxGroup } from './decl/boxGroups.js';
-export type Options = object;
+import type { RunContext } from '../../../ir/runContext.js';
+import type { BlockDeclarations } from './blockDeclarations.js';
+import type { BlockRecords } from '../rules/blockRecords.js';
+import type { ArenaIndex } from '../rules/blockRecord.js';
+export type Block = {
+    container: ArenaIndex;
+    list: BlockDeclarations;
+};
 import type { PairFamily } from './decl/pairForms.js';
 import type { AlignmentFamilyConfig } from './decl/alignmentForms.js';
 export type MergeContext = {
-    columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][];
+    columnRules: {
+        block: Block;
+        positions: number[];
+        lanes: [number[], number[]];
+    }[];
     setsOtherColumn: boolean;
-    shorthandMemoTable: Map<string, FoldedText | null>;
-    familyRecords: Map<string, FamilyRecord>;
     placeShorthands: boolean;
     boxSupport: BoxSupport;
     pairShorthands: ReadonlySet<string>;
-    textTable: TextTable;
-};
-export type FamilyRecord = {
-    pair: PairFamily | undefined;
-    boxProperty: ReturnType<typeof boxProperties.get>;
-    boxGroup: BoxGroup | undefined;
-    alignment: AlignmentFamilyConfig | undefined;
+    features: ReadonlySet<string>;
+    run: RunContext;
 };
 export type FamilyDeclarations = {
     family: PairFamily | AlignmentFamilyConfig;
-    decls: Declaration[];
-    lanes: [Declaration[], Declaration[]];
+    decls: number[];
+    lanes: [number[], number[]];
 };
 /**
  * @param {boolean} placeShorthands
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
- * @param {TextTable} textTable the tokens the walk left for the declarations
+ * @param {RunContext} run the run whose tables and features the rounds read
  * @return {MergeContext} the state that the rounds of one run share
  */
-export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, textTable: TextTable): MergeContext;
+export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, run: RunContext): MergeContext;
 /**
- * Reduces the column rules once every block of the stylesheet is canonicalized,
- * since whether a column property is set elsewhere is a whole-stylesheet fact.
+ * The longhand round on the records: the root's own declarations are folded,
+ * then every block that holds a declaration, then the columns are finished.
  *
- * @param {MergeContext} context
+ * @param {BlockRecords} records
+ * @param {MergeContext} context a context made with the records
  * @return {void}
  */
-export declare function finishColumns(context: MergeContext): void;
-/**
- * The longhand reducers on one block. The root only folds its own shorthands,
- * since its declarations have no rule to reduce them in. Column rules wait for
- * `finishColumns`, which needs the whole stylesheet.
- *
- * @param {Container} block
- * @param {MergeContext} context
- * @return {void}
- */
-export declare function canonicalize(block: Container, context: MergeContext): void;
+export declare function canonicalizeRecords(records: BlockRecords, context: MergeContext): void;
 //# sourceMappingURL=canonicalize.d.ts.map

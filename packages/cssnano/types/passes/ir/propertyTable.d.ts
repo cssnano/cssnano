@@ -33,17 +33,10 @@ export type PropertyKeys = {
     bare: string;
 };
 /**
- * The keys of each property name a conflict query has seen during one run of
- * the pass. A table belongs to the merge state of one stylesheet, so a name
- * seen in one stylesheet is not kept for the next. Custom properties are left
- * out: their keys are trivial and their names unbounded.
+ * The keys of one property name: what a conflict query reads for it.
+ *
+ * @param {string} prop
+ * @return {PropertyKeys}
  */
-export declare class PropertyTable {
-    #private;
-    /**
-     * @param {string} prop
-     * @return {PropertyKeys}
-     */
-    keysOf(prop: string): PropertyKeys;
-}
+export declare function keysOfName(prop: string): PropertyKeys;
 //# sourceMappingURL=propertyTable.d.ts.map

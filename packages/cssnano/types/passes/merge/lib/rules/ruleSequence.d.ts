@@ -17,7 +17,8 @@ export type Placement = {
      */
     following?: ArenaIndex[][];
 };
-/** @import {ArenaIndex} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /**
  * The rules that stand in the slots of a pair after it is merged.

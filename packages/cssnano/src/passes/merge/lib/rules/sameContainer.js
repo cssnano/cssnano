@@ -1,5 +1,11 @@
 import { step } from '../../../ir/declarationKey.js';
-import { KEYFRAMES, LAYER, RULE, STYLESHEET } from './blockRecord.js';
+import {
+  AT_RULE_BLOCK,
+  KEYFRAMES,
+  LAYER,
+  RULE,
+  STYLESHEET,
+} from './blockRecord.js';
 
 // The first steps of a context's path, apart from those of declarations and
 // of the structural ids that duplicate removal takes from the same interner.
@@ -18,14 +24,17 @@ const ANONYMOUS = Symbol('anonymous layer');
  * @return {boolean}
  */
 export function isKeyframes(container) {
-  return container?.kind === KEYFRAMES;
+  return (
+    container?.kind === AT_RULE_BLOCK && container.atRuleKind === KEYFRAMES
+  );
 }
 
 /**
  * The id of the circumstances under which a block applies its content: its own
  * prelude and those of its enclosing blocks. Blocks with equal ids apply their
  * content the same way. At-rule names fold ASCII case, rules compare their
- * selectors, and each anonymous layer is a context of its own.
+ * selector lists by the ids of their selectors, and each anonymous layer is a
+ * context of its own.
  *
  * @param {DeclarationKeys} keys the run's interner
  * @param {number} parentContext the context of the enclosing block, -1 for the stylesheet
@@ -35,13 +44,15 @@ export function isKeyframes(container) {
 export function containerContext(keys, parentContext, block) {
   let trie = step(step(keys.root, CONTEXT), parentContext);
   if (block.kind === RULE) {
-    trie = step(step(trie, 'rule'), /** @type {RuleRecord} */ (block).selector);
+    trie = step(trie, 'rule');
+    for (const id of /** @type {RuleRecord} */ (block).selectorIds)
+      trie = step(trie, id);
   } else if (block.kind === STYLESHEET) {
     trie = step(trie, 'root');
   } else {
     trie = step(step(trie, 'atrule'), block.name);
     trie =
-      block.kind === LAYER && block.anonymous
+      block.atRuleKind === LAYER && block.anonymous
         ? step(step(trie, ANONYMOUS), block.index)
         : step(trie, block.params);
   }

@@ -14,29 +14,15 @@ import type { BlockRecords } from './blockRecords.js';
  */
 export declare function assertReached(records: BlockRecords, index: number): void;
 /**
- * Under checks, the container that receives `index` must reach the root, and
- * a rule or an at-rule may join only a rule that nests.
+ * Under checks, the entry at `index` must stand in no chain, since a second
+ * link would leave it in two; the container that receives it must reach the
+ * root, and a rule or an at-rule may join only a rule that nests.
  *
  * @param {BlockRecords} records
  * @param {number} block the container that receives the entry
  * @param {number} index the entry that is linked into it
  * @return {void}
- * @throws {Error} under checks, when the link would lose the entry
+ * @throws {Error} under checks, when the link would lose the entry or leave it in two chains
  */
 export declare function assertCanLink(records: BlockRecords, block: number, index: number): void;
-/**
- * @param {BlockRecords} records
- * @param {number} block a container
- * @param {number} index the entry linked into it
- * @return {void}
- * @throws {Error} when a rule or an at-rule is linked into a rule that holds no rules
- */
-export declare function assertCanHold(records: BlockRecords, block: number, index: number): void;
-/**
- * @param {BlockRecords} records
- * @param {number} block
- * @return {void}
- * @throws {Error} when a walk up `parentOf` from `block` does not reach the root
- */
-export declare function assertReachesRoot(records: BlockRecords, block: number): void;
 //# sourceMappingURL=linkChecks.d.ts.map

@@ -5,22 +5,17 @@ import {
   reduceColumns,
   setsOtherColumnProperty,
 } from './decl/columns.js';
-import { addBoxDeclaration, reduceBox } from './decl/boxReducer.js';
+import { addBoxDeclaration } from './decl/boxReducer.js';
 import { aliasedGroup, boxProperties } from './decl/boxGroups.js';
-import { reduceBorder } from './decl/borderReducer.js';
-import { reduceBorderRadius } from './decl/borderRadiusReducer.js';
 import {
   allPhysicalBorderProperties,
   allRadiusProperties,
 } from './decl/borderData.js';
 import { alignmentProperties } from './decl/alignmentForms.js';
-import { reduceAlignmentFamily } from './decl/alignmentReducer.js';
 import { pairFamilyOf } from './decl/pairForms.js';
-import { reducePairFamily } from './decl/pairReducer.js';
+import { reduceClassifiedContainer } from './classifiedReducers.js';
 /** @import {BoxSupport} from './targetSupport.js' */
-/** @import {FoldedText, TextTable} from '../../../../values/textTable.js' */
-import { endsDeclarationRun } from './decl/declarationRuns.js';
-import { applyChildEdits } from '../deferredChildEdits.js';
+/** @import {RunContext} from '../../../ir/runContext.js' */
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
 import { decodedPropertyName, isAll } from './decl/importanceLanes.js';
 import {
@@ -28,15 +23,23 @@ import {
   foldContainerDeclarations,
   foldShorthandDeclaration,
 } from './minifyShorthand.js';
+import { RUN_END } from './blockDeclarations.js';
+import { declarationsFromRecords } from './recordDeclarations.js';
+import { firstDeclaration } from '../rules/blockChildren.js';
+import { commitDeclarations } from '../rules/arenaEdits.js';
+import { AT_RULE_BLOCK, RULE } from '../rules/blockRecord.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
-/** @import {Container, Declaration} from 'postcss'; */
-/** @import {BoxDeclarations} from './decl/boxReducer.js'; */
-/** @import {BoxGroup} from './decl/boxGroups.js'; */
+/** @import {BlockDeclarations} from './blockDeclarations.js'; */
+/** @import {BlockRecords} from '../rules/blockRecords.js'; */
+/** @import {ArenaIndex} from '../rules/blockRecord.js'; */
 
 /**
- * @typedef {object} Options
+ * A block of a round: its list, and the arena index of the block or rule the
+ * list was read from.
+ *
+ * @typedef {{container: ArenaIndex, list: BlockDeclarations}} Block
  */
 
 /**
@@ -63,101 +66,30 @@ function alignmentFamilyOf(prop) {
 
 /**
  * @typedef {{
- *   columnRules: [Container, Declaration[], [Declaration[], Declaration[]]][],
+ *   columnRules: {block: Block, positions: number[], lanes: [number[], number[]]}[],
  *   setsOtherColumn: boolean,
- *   shorthandMemoTable: Map<string, FoldedText | null>,
- *   familyRecords: Map<string, FamilyRecord>,
  *   placeShorthands: boolean,
  *   boxSupport: BoxSupport,
  *   pairShorthands: ReadonlySet<string>,
- *   textTable: TextTable
+ *   features: ReadonlySet<string>,
+ *   run: RunContext
  * }} MergeContext
- */
-
-/**
- * Which families a lowercased property name belongs to, resolved once per run
- * by the same lookups the classifier used per declaration.
- *
- * @typedef {{
- *   pair: PairFamily | undefined,
- *   boxProperty: ReturnType<typeof boxProperties.get>,
- *   boxGroup: BoxGroup | undefined,
- *   alignment: AlignmentFamilyConfig | undefined,
- * }} FamilyRecord
  */
 
 /**
  * @typedef {{
  *   family: PairFamily | AlignmentFamilyConfig,
- *   decls: Declaration[],
- *   lanes: [Declaration[], Declaration[]]
+ *   decls: number[],
+ *   lanes: [number[], number[]]
  * }} FamilyDeclarations
  */
-
-/**
- * Runs property-family reducers on classified declarations for a container.
- * @param {Container} container
- * @param {{
- *   boxes: Map<BoxGroup, BoxDeclarations> | null,
- *   borderRadiusDecls: Declaration[],
- *   borderRadiusLanes: [Declaration[], Declaration[]],
- *   columnDecls: Declaration[],
- *   columnLanes: [Declaration[], Declaration[]],
- *   borderDeclarations: Declaration[],
- *   hasForeignBorder: boolean,
- *   families: Map<FamilyDeclarations['family'], FamilyDeclarations> | null,
- * }} state
- * @param {MergeContext} context
- * @return {void}
- */
-function reduceClassifiedContainer(container, state, context) {
-  if (state.boxes) {
-    for (const box of state.boxes.values()) {
-      reduceBox(container, box, context.boxSupport, context.textTable);
-    }
-  }
-  if (state.borderRadiusDecls.length) {
-    reduceBorderRadius(
-      container,
-      state.borderRadiusDecls,
-      state.borderRadiusLanes,
-      context.textTable
-    );
-  }
-  if (state.borderDeclarations.length) {
-    reduceBorder(
-      container,
-      state.borderDeclarations,
-      state.hasForeignBorder,
-      context.textTable
-    );
-  }
-  if (state.families) {
-    for (const { family, decls, lanes } of state.families.values()) {
-      if ('longhands' in family) {
-        reducePairFamily(container, family, decls, lanes, context.textTable);
-      } else {
-        reduceAlignmentFamily(
-          container,
-          family,
-          decls,
-          lanes,
-          context.textTable
-        );
-      }
-    }
-  }
-  if (state.columnDecls.length) {
-    context.columnRules.push([container, state.columnDecls, state.columnLanes]);
-  }
-}
 
 /**
  * Adds a declaration to its shorthand family, creating the family on first use.
  *
  * @param {Parameters<typeof reduceClassifiedContainer>[1]} state
  * @param {FamilyDeclarations['family']} family
- * @param {Declaration} child
+ * @param {number} child
  * @param {number} laneIndex
  * @return {void}
  */
@@ -173,40 +105,19 @@ function addFamilyDeclaration(state, family, child, laneIndex) {
 }
 
 /**
- * The family record of a property name, resolved on first use in the run.
- *
- * @param {string} prop - lowercased property name
- * @param {Omit<MergeContext, 'columnRules'>} context
- * @return {FamilyRecord}
- */
-function familyRecordOf(prop, context) {
-  const known = context.familyRecords.get(prop);
-  if (known) return known;
-  const boxProperty = boxProperties.get(prop);
-  const record = {
-    pair: pairFamilyOf(prop),
-    boxProperty,
-    boxGroup: boxProperty?.family.group ?? aliasedGroup(prop),
-    alignment: alignmentFamilyOf(prop),
-  };
-  context.familyRecords.set(prop, record);
-  return record;
-}
-
-/**
  * Classifies a single declaration into the container accumulation state.
  *
- * @param {Declaration} child
+ * @param {BlockDeclarations} list
+ * @param {number} child - the position of the declaration in `list`
  * @param {string} prop
  * @param {number} laneIndex
  * @param {Parameters<typeof reduceClassifiedContainer>[1]} state
  * @param {Omit<MergeContext, 'columnRules'>} context
  * @return {void}
  */
-function classifyDeclaration(child, prop, laneIndex, state, context) {
-  const record = familyRecordOf(prop, context);
+function classifyDeclaration(list, child, prop, laneIndex, state, context) {
   // Families the targets cannot parse are not collected, so they stay as written.
-  const { pair } = record;
+  const pair = pairFamilyOf(prop);
   if (pair && context.pairShorthands.has(pair.shorthand)) {
     addFamilyDeclaration(state, pair, child, laneIndex);
   }
@@ -217,47 +128,32 @@ function classifyDeclaration(child, prop, laneIndex, state, context) {
     } else if (allPhysicalBorderProperties.has(prop)) {
       state.borderDeclarations.push(child);
     } else if (foldableShorthands.has(prop)) {
-      foldShorthandDeclaration(
-        child,
-        context.shorthandMemoTable,
-        prop,
-        context.textTable
-      );
+      foldShorthandDeclaration(list, child, prop);
     } else {
       state.hasForeignBorder = true;
     }
     return;
   }
   if (prop.startsWith('column')) {
-    const { textTable } = context;
-    context.setsOtherColumn ||= setsOtherColumnProperty(child, textTable);
+    context.setsOtherColumn ||= setsOtherColumnProperty(list.at(child));
     if (allColumnProps.has(prop)) {
       state.columnDecls.push(child);
       state.columnLanes[laneIndex].push(child);
     }
     return;
   }
-  const { boxProperty, boxGroup } = record;
+  const boxProperty = boxProperties.get(prop);
+  const boxGroup = boxProperty?.family.group ?? aliasedGroup(prop);
   if (boxGroup) {
     addBoxDeclaration(state, child, boxProperty, boxGroup, laneIndex);
-    foldShorthandDeclaration(
-      child,
-      context.shorthandMemoTable,
-      prop,
-      context.textTable
-    );
+    foldShorthandDeclaration(list, child, prop);
     return;
   }
   // Only when every target supports place-* may one be synthesized.
   const alignmentFamily = context.placeShorthands
-    ? record.alignment
+    ? alignmentFamilyOf(prop)
     : undefined;
-  foldShorthandDeclaration(
-    child,
-    context.shorthandMemoTable,
-    prop,
-    context.textTable
-  );
+  foldShorthandDeclaration(list, child, prop);
   if (alignmentFamily) {
     addFamilyDeclaration(state, alignmentFamily, child, laneIndex);
   }
@@ -280,49 +176,65 @@ function createContainerState() {
 }
 
 /**
- * Classifies declarations within a container, runs reducers, and tracks column candidates.
- * @param {Container} container
+ * Writes a block's list back to its records.
+ *
+ * @param {BlockRecords} records
+ * @param {Block} block
  * @param {MergeContext} context
  * @return {void}
  */
-function processContainer(container, context) {
-  if (!container.nodes) return;
-  // Before classification, so the family reducers never see detached nodes.
+function commitBlock(records, block, context) {
+  commitDeclarations(records, context.run, block.container, block.list);
+}
+
+/**
+ * Classifies declarations within a block, runs reducers, and tracks column candidates.
+ * @param {BlockRecords} records
+ * @param {Block} block
+ * @param {boolean} styleRule whether the block is a style rule
+ * @param {MergeContext} context
+ * @return {void}
+ */
+function processContainer(records, block, styleRule, context) {
+  const { list } = block;
+  // Before classification, so the family reducers never see removed items.
   // Style rules only: at-rule descriptors follow their own validity rules.
-  if (container.type === 'rule') {
-    discardOverriddenDeclarations(container, context.textTable);
-    applyChildEdits(container);
+  if (styleRule) {
+    discardOverriddenDeclarations(list, context.features);
   }
 
-  // Reducers remove nodes, so reduce only after the loop has read them all.
+  // Reducers remove items, so reduce only after the loop has read them all.
   const runs = [];
   let state = createContainerState();
-  for (const child of container.nodes) {
+  for (const entry of list.chain) {
     // Declarations after a nested rule cascade after its declarations, so a
-    // shorthand merged across it would override them.
-    if (endsDeclarationRun(child)) {
+    // shorthand merged across it would override them. A value kept as written
+    // bounds the run the same way.
+    if (entry === RUN_END || list.at(entry).kept) {
       runs.push(state);
       state = createContainerState();
       continue;
     }
-    if (child.type !== 'decl') continue;
+    const child = list.at(entry);
+    if (child.removed) continue;
     const laneIndex = child.important ? 1 : 0;
     if (isAll(child)) {
       state.hasForeignBorder = true;
       if (state.boxes) {
         for (const box of state.boxes.values())
-          box.lanes[laneIndex].push(child);
+          box.lanes[laneIndex].push(entry);
       }
-      state.borderRadiusLanes[laneIndex].push(child);
-      state.columnLanes[laneIndex].push(child);
+      state.borderRadiusLanes[laneIndex].push(entry);
+      state.columnLanes[laneIndex].push(entry);
       for (const family of state.families?.values() ?? []) {
-        family.lanes[laneIndex].push(child);
+        family.lanes[laneIndex].push(entry);
       }
       continue;
     }
 
     classifyDeclaration(
-      child,
+      list,
+      entry,
       asciiLowerCase(child.prop),
       laneIndex,
       state,
@@ -331,69 +243,105 @@ function processContainer(container, context) {
   }
 
   runs.push(state);
-  for (const run of runs) reduceClassifiedContainer(container, run, context);
-  applyChildEdits(container);
+  for (const run of runs) reduceClassifiedContainer(block, run, context);
+  // A column rule waits for `finishColumns`, which commits its block once.
+  if (!runs.some((run) => run.columnDecls.length > 0)) {
+    commitBlock(records, block, context);
+  }
 }
 
 /**
  * @param {boolean} placeShorthands
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
- * @param {TextTable} textTable the tokens the walk left for the declarations
+ * @param {RunContext} run the run whose tables and features the rounds read
  * @return {MergeContext} the state that the rounds of one run share
  */
 export function longhandContext(
   placeShorthands,
   boxSupport,
   pairShorthands,
-  textTable
+  run
 ) {
   return {
     columnRules: [],
     setsOtherColumn: false,
-    shorthandMemoTable: new Map(),
-    familyRecords: new Map(),
     placeShorthands,
     boxSupport,
     pairShorthands,
-    textTable,
+    features: run.features,
+    run,
   };
 }
 
 /**
  * Reduces the column rules once every block of the stylesheet is canonicalized,
  * since whether a column property is set elsewhere is a whole-stylesheet fact.
+ * Each column block is committed once, after its column reducers.
  *
+ * @param {BlockRecords} records
  * @param {MergeContext} context
  * @return {void}
  */
-export function finishColumns(context) {
+function finishColumns(records, context) {
   if (!context.setsOtherColumn) {
-    for (const [rule, decls, lanes] of context.columnRules) {
-      reduceColumns(rule, decls, lanes, context.textTable);
+    for (const { block, positions, lanes } of context.columnRules) {
+      reduceColumns(block.list, positions, lanes, context.features);
     }
-    // A rule may hold several runs; rebuild it once, after all of them.
-    for (const [rule] of context.columnRules) applyChildEdits(rule);
+  }
+  const blocks = new Set(context.columnRules.map((rule) => rule.block));
+  for (const block of blocks) commitBlock(records, block, context);
+  // Each round rescans every block, so the next one gathers its column facts
+  // afresh.
+  context.columnRules = [];
+  context.setsOtherColumn = false;
+}
+
+/**
+ * Canonicalizes the blocks a record chain holds, in document order: each rule
+ * and at-rule block that holds a declaration, then the blocks it nests.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index the block whose chain is walked
+ * @param {MergeContext} context
+ * @return {void}
+ */
+function canonicalizeChildren(records, index, context) {
+  for (
+    let entry = records.links.firstChild(index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    const record = records.entry(entry);
+    if (record.kind !== RULE && record.kind !== AT_RULE_BLOCK) continue;
+    if (firstDeclaration(records, entry) !== undefined) {
+      processContainer(
+        records,
+        {
+          container: entry,
+          list: declarationsFromRecords(records, context.run, entry),
+        },
+        record.kind === RULE,
+        context
+      );
+    }
+    canonicalizeChildren(records, entry, context);
   }
 }
 
 /**
- * The longhand reducers on one block. The root only folds its own shorthands,
- * since its declarations have no rule to reduce them in. Column rules wait for
- * `finishColumns`, which needs the whole stylesheet.
+ * The longhand round on the records: the root's own declarations are folded,
+ * then every block that holds a declaration, then the columns are finished.
  *
- * @param {Container} block
- * @param {MergeContext} context
+ * @param {BlockRecords} records
+ * @param {MergeContext} context a context made with the records
  * @return {void}
  */
-export function canonicalize(block, context) {
-  if (block.type === 'root') {
-    foldContainerDeclarations(
-      block,
-      context.shorthandMemoTable,
-      context.textTable
-    );
-    return;
-  }
-  processContainer(block, context);
+export function canonicalizeRecords(records, context) {
+  const root = /** @type {ArenaIndex} */ (records.root.index);
+  const list = declarationsFromRecords(records, context.run, root);
+  foldContainerDeclarations(list, list.chain);
+  commitBlock(records, { container: root, list }, context);
+  canonicalizeChildren(records, root, context);
+  finishColumns(records, context);
 }

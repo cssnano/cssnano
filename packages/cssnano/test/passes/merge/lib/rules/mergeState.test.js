@@ -2,16 +2,30 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import {
   buildTestRecords,
   declarationIds,
   ruleRecordOf,
+  nodesOf,
+  tokenListsOf,
 } from './liveRecords.js';
 import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { tokensText } from '../../../../../src/values/tokensText.js';
+
+/**
+ * The text of each selector of a rule, from its token lists.
+ *
+ * @param {MergeState} state
+ * @param {import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord} record
+ * @return {string[]}
+ */
+const selectorTexts = (state, record) =>
+  record.selectorIds.map((id) => tokensText(state.tokenLists.get(id)));
 
 const createState = (consistencyChecks = false) =>
   new MergeState(
@@ -37,8 +51,7 @@ test('addSelectors should keep the record of the rule', () => {
   const record = ruleRecordOf(state.records, root.first);
   state.addSelectors(
     ruleRecordOf(state.records, root.first),
-    ['b', 'c'],
-    ruleRecordOf(state.records, root.last)
+    ruleRecordOf(state.records, root.last).selectorIds
   );
   assert.equal(ruleRecordOf(state.records, root.first), record);
 });
@@ -48,14 +61,12 @@ test('addSelectors should append the selectors to the rule description', () => {
   const root = withRecords(state, postcss.parse('a{color:red}b,c{color:red}'));
   state.addSelectors(
     ruleRecordOf(state.records, root.first),
-    ['b', 'c'],
-    ruleRecordOf(state.records, root.last)
+    ruleRecordOf(state.records, root.last).selectorIds
   );
-  assert.deepEqual(ruleRecordOf(state.records, root.first).selectors, [
-    'a',
-    'b',
-    'c',
-  ]);
+  assert.deepEqual(
+    selectorTexts(state, ruleRecordOf(state.records, root.first)),
+    ['a', 'b', 'c']
+  );
 });
 
 test('absorbEarlier should list the earlier rule selectors first', () => {
@@ -65,10 +76,10 @@ test('absorbEarlier should list the earlier rule selectors first', () => {
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
-  assert.deepEqual(ruleRecordOf(state.records, root.last).selectors, [
-    'a',
-    'b',
-  ]);
+  assert.deepEqual(
+    selectorTexts(state, ruleRecordOf(state.records, root.last)),
+    ['a', 'b']
+  );
 });
 
 test('under consistency checks, a read of an earlier rule that absorbEarlier then unlinks should throw', () => {
@@ -83,7 +94,7 @@ test('under consistency checks, a read of an earlier rule that absorbEarlier the
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
-  state.records.unlink(record.index);
+  state.records.detach(record.index);
   assert.throws(() => state.records.rule(record.index), /does not reach/v);
 });
 
@@ -99,8 +110,8 @@ test('without consistency checks, a read of an earlier rule that absorbEarlier t
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
-  state.records.unlink(record.index);
-  assert.doesNotThrow(() => record.selectors);
+  state.records.detach(record.index);
+  assert.doesNotThrow(() => record.selectorIds);
 });
 
 test('absorbEarlier should leave the record of the later rule readable', () => {
@@ -110,10 +121,10 @@ test('absorbEarlier should leave the record of the later rule readable', () => {
     ruleRecordOf(state.records, root.last),
     ruleRecordOf(state.records, root.first)
   );
-  assert.deepEqual(ruleRecordOf(state.records, root.last).selectors, [
-    'a',
-    'b',
-  ]);
+  assert.deepEqual(
+    selectorTexts(state, ruleRecordOf(state.records, root.last)),
+    ['a', 'b']
+  );
 });
 
 test('canMerge should accept a pair of compatible rules', () => {
@@ -171,11 +182,9 @@ test('canMerge should reject a rule that gained an unsupported selector after it
     ),
     true
   );
-  state.addSelectors(
-    ruleRecordOf(state.records, root.first),
-    ['c:has(d)'],
-    ruleRecordOf(state.records, root.last)
-  );
+  state.addSelectors(ruleRecordOf(state.records, root.first), [
+    ruleRecordOf(state.records, root.last).selectorIds[0],
+  ]);
   assert.equal(
     state.canMerge(
       ruleRecordOf(state.records, root.first),
@@ -238,7 +247,15 @@ test('assertRecordsMatchTree should throw when a declaration left the rule witho
     true
   );
   /** @type {import('postcss').Rule} */ (root.first).first?.remove();
-  assert.throws(() => assertRecordsMatchTree(state.records), /out of step/v);
+  assert.throws(
+    () =>
+      assertRecordsMatchTree(
+        state.records,
+        nodesOf(state.records),
+        tokenListsOf(state.records)
+      ),
+    /out of step/v
+  );
 });
 
 test('under consistency checks, blockOf should throw for an unlinked record, since its rule stands in no block', () => {
@@ -248,7 +265,7 @@ test('under consistency checks, blockOf should throw for an unlinked record, sin
     state.records,
     /** @type {import('postcss').Rule} */ (root.first)
   );
-  state.records.unlink(record.index);
+  state.records.detach(record.index);
   assert.throws(() => state.blockOf(record), /does not reach/v);
 });
 
@@ -259,46 +276,47 @@ test('without consistency checks, blockOf should not throw for an unlinked recor
     state.records,
     /** @type {import('postcss').Rule} */ (root.first)
   );
-  state.records.unlink(record.index);
+  state.records.detach(record.index);
   assert.doesNotThrow(() => state.blockOf(record));
 });
 
 const declarationsOf = (css) => postcss.parse(css).first.nodes;
 
-test('declarationIds.keyOf should give equal declarations the same key', () => {
+test('recordDeclaration ids should give equal declarations the same key', () => {
   const state = createState();
   const [first] = declarationsOf('a{color:red}');
   const [second] = declarationsOf('b{color:red}');
   assert.equal(
-    state.declarationIds.keyOf(first),
-    state.declarationIds.keyOf(second)
+    recordDeclaration(first, state.runContext).id,
+    recordDeclaration(second, state.runContext).id
   );
 });
 
-test('declarationIds.keyOf should give declarations with different values different keys', () => {
+test('recordDeclaration ids should give declarations with different values different keys', () => {
   const state = createState();
   const [red, blue] = declarationsOf('a{color:red;color:blue}');
   assert.notEqual(
-    state.declarationIds.keyOf(red),
-    state.declarationIds.keyOf(blue)
+    recordDeclaration(red, state.runContext).id,
+    recordDeclaration(blue, state.runContext).id
   );
 });
 
-test('declarationIds.keyOf should tell an important declaration from a plain one', () => {
+test('recordDeclaration ids should tell an important declaration from a plain one', () => {
   const state = createState();
   const [plain, important] = declarationsOf('a{color:red;color:red!important}');
   assert.notEqual(
-    state.declarationIds.keyOf(plain),
-    state.declarationIds.keyOf(important)
+    recordDeclaration(plain, state.runContext).id,
+    recordDeclaration(important, state.runContext).id
   );
 });
 
-test('declarationIds.keyOf should keep a key after other declarations are numbered', () => {
+test('recordDeclaration ids should keep a key after other declarations are numbered', () => {
   const state = createState();
   const [red, blue] = declarationsOf('a{color:red;color:blue}');
-  const key = state.declarationIds.keyOf(red);
-  state.declarationIds.keyOf(blue);
-  assert.equal(state.declarationIds.keyOf(red), key);
+  const key = recordDeclaration(red, state.runContext).id;
+  // A later declaration takes its own id, so the first key must not move.
+  assert.notEqual(recordDeclaration(blue, state.runContext).id, key);
+  assert.equal(recordDeclaration(red, state.runContext).id, key);
 });
 
 test('declarationKeys of a record should give equal declarations of different rules the same key', () => {

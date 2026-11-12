@@ -1,6 +1,12 @@
 import { propertyNameKey } from './propertyName.js';
 
-/** @import {AtRule, Declaration} from 'postcss' */
+/**
+ * The fields of an at-rule that its prelude id reads.
+ *
+ * @typedef {{name: string, params: string, raws: {before?: string, afterName?: string}}} AtRuleFields
+ */
+
+/** @import {TokenListId} from './tokenLists.js' */
 
 // Marks the end of a component path in a trie, so the id of a path cannot be
 // confused with a component.
@@ -33,11 +39,11 @@ export function step(trie, key) {
  * declaration's identity. A stray `;` before the declaration is not a hack,
  * and a declaration without `raws.before` has none.
  *
- * @param {Declaration} declaration
+ * @param {string | null} before the declaration's `raws.before`, or null for none
  * @return {string}
  */
-export function hackPrefixOf(declaration) {
-  return declaration.raws.before?.replaceAll(';', '').trim() ?? '';
+export function hackPrefixOf(before) {
+  return before?.replaceAll(';', '').trim() ?? '';
 }
 
 /**
@@ -61,19 +67,22 @@ export class DeclarationKeys {
   #preludes = new Map();
 
   /**
-   * The key of a declaration: the same property, value, importance and hack
-   * prefix. Names fold ASCII case, except custom properties, which are
+   * The key of a declaration: the same property, value list, importance and
+   * hack prefix. Names fold ASCII case, except custom properties, which are
    * case-sensitive.
    *
-   * @param {Declaration} declaration
+   * @param {string} prop
+   * @param {TokenListId} valueList the id of the value, which equal values share
+   * @param {boolean} important
+   * @param {string | null} before the declaration's `raws.before`
    * @return {number}
    */
-  keyOf(declaration) {
+  keyOf(prop, valueList, important, before) {
     let trie = step(this.root, 'decl');
-    trie = step(trie, propertyNameKey(declaration.prop));
-    trie = step(trie, declaration.value);
-    trie = step(trie, declaration.important === true);
-    return this.leafOf(step(trie, hackPrefixOf(declaration)));
+    trie = step(trie, propertyNameKey(prop));
+    trie = step(trie, valueList);
+    trie = step(trie, important);
+    return this.leafOf(step(trie, hackPrefixOf(before)));
   }
 
   /**
@@ -81,7 +90,7 @@ export class DeclarationKeys {
    * `raws.before` and `raws.afterName`. Ids of the preludes are kept with
    * their paths, for `preludeTrie`.
    *
-   * @param {AtRule} node
+   * @param {AtRuleFields} node
    * @return {number}
    */
   preludeId(node) {

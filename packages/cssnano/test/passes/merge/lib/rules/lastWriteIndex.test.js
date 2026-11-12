@@ -6,17 +6,21 @@ import data from '../../../../../script/passes/ir/lib/propertyGroups.json' with 
 import LastWriteIndex from '../../../../../src/passes/merge/lib/rules/lastWriteIndex.js';
 import { PropertyWrites } from '../../../../../src/passes/merge/lib/rules/propertyWrites.js';
 import { isConflictingProp } from '../../../../../script/passes/ir/lib/propertyRelations.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
+import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
 import { BlockRecords } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import {
+  BlockRecord,
+  NO_AT_RULE,
+  NO_PRELUDE,
+  STYLESHEET,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { ruleRecordOf, entryOf, buildTestRecords } from './liveRecords.js';
 
 /** @param {string} prop */
-const table = new PropertyTable();
 /** The keys of a property name, as a write index takes them. */
-const keys = (prop) => table.keysOf(prop);
+const keys = (prop) => keysOfName(prop);
 /** A declaration record holding the keys of a property name. */
 const decl = (prop) => ({ keys: keys(prop) });
 
@@ -24,7 +28,8 @@ const decl = (prop) => ({ keys: keys(prop) });
 const unknownElements = () => null;
 
 // Element keys of a rule record: its selectors.
-const keysOfSelectors = (record) => record.selectors;
+const keysOfSelectors = (record) =>
+  record.elementKeys?.list.length ? record.elementKeys.list : null;
 
 /**
  * The first node of `css`, with the records of its stylesheet.
@@ -52,7 +57,7 @@ function conflictsAfterWrite(written, queried) {
 
 /** An arena for the index calls that read no nested block. */
 const noBlocks = new BlockRecords(
-  new BlockRecord(postcss.root(), false),
+  new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
   false
 );
 

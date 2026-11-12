@@ -1,12 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
 import isCustomProp from '../../../../../src/passes/merge/lib/longhand/isCustomProp.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
+import { itemOf } from './helpers/declarationItems.js';
 
 /* Checks a declaration the way the merge pass does: through the text table. */
-const check = (value) =>
-  isCustomProp(postcss.decl({ prop: 'margin', value }), new TextTable());
+const check = (value) => isCustomProp(itemOf(`margin: ${value}`));
 
 test('recognizes a custom property after a comment in var()', () => {
   assert.equal(check('var(/* comment */ --x)'), true);

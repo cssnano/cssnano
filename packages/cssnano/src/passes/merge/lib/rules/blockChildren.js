@@ -1,9 +1,8 @@
-/** @import {ChildNode} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {NodeEntry, ArenaIndex} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord, NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-import { BlockRecord, RULE } from './blockRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 /**
  * The first declaration at or after `index` in the chain, or undefined.
@@ -19,7 +18,7 @@ function declarationFrom(records, index) {
     at = records.links.nextSibling(/** @type {ArenaIndex} */ (at))
   ) {
     const entry = records.entry(/** @type {ArenaIndex} */ (at));
-    if (entry instanceof DeclarationRecord) return entry;
+    if (entry.kind === DECLARATION) return entry;
   }
   return undefined;
 }
@@ -55,7 +54,7 @@ export function nextDeclaration(records, declaration) {
 export function* blocks(records) {
   for (let index = 0; index < records.entryCount(); index++) {
     const entry = records.entry(/** @type {ArenaIndex} */ (index));
-    if (entry instanceof BlockRecord) yield entry;
+    if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) yield entry;
   }
 }
 
@@ -69,12 +68,8 @@ export function* blocks(records) {
 export function* containers(records) {
   for (let index = 0; index < records.entryCount(); index++) {
     const entry = records.entry(/** @type {ArenaIndex} */ (index));
-    if (entry instanceof BlockRecord) yield entry;
-    else if (
-      entry.kind === RULE &&
-      /** @type {RuleRecord} */ (entry).context !== -1
-    )
-      yield /** @type {RuleRecord} */ (entry);
+    if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) yield entry;
+    else if (entry.kind === RULE && entry.context !== -1) yield entry;
   }
 }
 
@@ -135,36 +130,41 @@ export function childEntriesOf(records, index) {
 }
 
 /**
- * The children the block at `index` holds now, in order: the node of each
- * entry of its chain.
+ * Gives an appended child the whitespace of the last child when it has none, as
+ * PostCSS gives it, so the records keep what the node will print.
  *
- * @param {BlockRecords} records
- * @param {number} index
- * @return {ChildNode[]}
+ * @param {BlockRecords} records the arena that holds both children
+ * @param {ArenaIndex} child the index of the appended child
+ * @param {ArenaIndex | -1} last the index of the child before `child`, or -1 for none
+ * @return {void}
  */
-export function childNodesOf(records, index) {
-  /** @type {ChildNode[]} */
-  const children = [];
+export function inheritWhitespace(records, child, last) {
+  const entry = records.entry(child);
+  if (entry.before !== null || last === -1) return;
+  const sample = records.entry(last).before;
+  if (sample !== null) entry.before = sample.replaceAll(/\S/gv, '');
+}
+
+/**
+ * The declarations of the rule at `index`, in order, read from its chain at the
+ * call. A reader that indexes them by position takes this array.
+ *
+ * @param {BlockRecords} records the arena that holds the rule's children
+ * @param {number} index the rule's index
+ * @return {DeclarationRecord[]}
+ */
+export function declarationsOf(records, index) {
+  // Under checks, `rule` throws when the root does not reach this rule.
+  records.rule(index);
+  /** @type {DeclarationRecord[]} */
+  const declarations = [];
   for (
     let entry = records.links.firstChild(index);
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
-    children.push(records.nodeOf(entry));
+    const item = records.entry(entry);
+    if (item.kind === DECLARATION) declarations.push(item);
   }
-  return children;
-}
-
-/**
- * Gives an appended child the whitespace of the last child when it has none, as
- * PostCSS gives it, so the records keep what the node will print.
- *
- * @param {{before: string | null}} child the record of the appended child
- * @param {{before: string | null} | undefined} last the record of the child before `child`
- * @return {void}
- */
-export function inheritWhitespace(child, last) {
-  if (child.before !== null || last === undefined) return;
-  const sample = last.before;
-  if (sample !== null) child.before = sample.replaceAll(/\S/gv, '');
+  return declarations;
 }

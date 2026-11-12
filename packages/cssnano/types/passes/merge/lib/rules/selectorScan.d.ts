@@ -6,14 +6,14 @@ export type ScanState = AttributeScanState & {
     msPlaceholder: boolean;
 };
 /**
- * Scan selector tokens for the compatibility features checked here, and
- * record the vendor prefix of its pseudo names in `state`. This is
+ * Scan the tokens of one selector for the compatibility features checked here,
+ * and record the vendor prefix of its pseudo names in `state`. This is
  * deliberately not a selector parser.
  *
- * @param {string} selector
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} tokens the tokens of the selector, without an end-of-file token
  * @param {readonly string[]} browsers
  * @param {ScanState} state
  * @return {boolean}
  */
-export declare function scanCompatibility(selector: string, browsers: readonly string[], state: ScanState): boolean;
+export declare function scanCompatibility(tokens: readonly import('@csstools/css-tokenizer').CSSToken[], browsers: readonly string[], state: ScanState): boolean;
 //# sourceMappingURL=selectorScan.d.ts.map
