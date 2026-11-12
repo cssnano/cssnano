@@ -1,7 +1,5 @@
 import type { BoxSupport } from './targetSupport.js';
 import type { RunContext } from '../../../ir/runContext.js';
-import type { TokenLists } from '../../../ir/tokenLists.js';
-import type { ValueIds } from '../../../ir/valueIds.js';
 import type { BlockDeclarations } from './blockDeclarations.js';
 import type { BlockRecords } from '../rules/blockRecords.js';
 import type { ArenaIndex } from '../rules/blockRecord.js';
@@ -9,7 +7,6 @@ export type Block = {
     container: ArenaIndex;
     list: BlockDeclarations;
 };
-export type Options = object;
 import type { PairFamily } from './decl/pairForms.js';
 import type { AlignmentFamilyConfig } from './decl/alignmentForms.js';
 export type MergeContext = {
@@ -24,8 +21,6 @@ export type MergeContext = {
     pairShorthands: ReadonlySet<string>;
     features: ReadonlySet<string>;
     run: RunContext;
-    tokenLists: TokenLists;
-    valueIds: ValueIds;
     records: BlockRecords;
 };
 export type FamilyDeclarations = {

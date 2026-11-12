@@ -24,7 +24,7 @@ const { sourceValue } = cssnanoUtils;
  * @param {TextTable} textTable
  * @return {boolean}
  */
-export function keepsValueAsWritten(node, textTable) {
+function keepsValueAsWritten(node, textTable) {
   return (
     sourceValue(node).includes('/*') &&
     holdsImportantComment(textTable.tokens(node))

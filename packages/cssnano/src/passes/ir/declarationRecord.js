@@ -4,10 +4,10 @@
 import { DECLARATION } from '../merge/lib/rules/blockRecord.js';
 
 /**
- * One declaration of a merge run, with the facts its records keep.
- * Rule merging moves and removes declarations but never changes their
- * property, value or importance, so these facts stay true for the record's
- * life.
+ * One declaration of a merge run, with the facts its records keep. Rule
+ * merging moves and removes declarations but never changes their property,
+ * value or importance. The longhand rounds change them through
+ * `commitDeclarations`, which sets `marked`.
  */
 export class DeclarationRecord {
   /** @type {typeof DECLARATION} DECLARATION, which the window reads with the other records */

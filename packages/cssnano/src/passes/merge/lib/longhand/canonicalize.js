@@ -16,8 +16,6 @@ import { pairFamilyOf } from './decl/pairForms.js';
 import { reduceClassifiedContainer } from './classifiedReducers.js';
 /** @import {BoxSupport} from './targetSupport.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
-/** @import {TokenLists} from '../../../ir/tokenLists.js' */
-/** @import {ValueIds} from '../../../ir/valueIds.js' */
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
 import { decodedPropertyName, isAll } from './decl/importanceLanes.js';
 import {
@@ -42,10 +40,6 @@ const { asciiLowerCase } = cssnanoUtils;
  * list was read from.
  *
  * @typedef {{container: ArenaIndex, list: BlockDeclarations}} Block
- */
-
-/**
- * @typedef {object} Options
  */
 
 /**
@@ -79,8 +73,6 @@ function alignmentFamilyOf(prop) {
  *   pairShorthands: ReadonlySet<string>,
  *   features: ReadonlySet<string>,
  *   run: RunContext,
- *   tokenLists: TokenLists,
- *   valueIds: ValueIds,
  *   records: BlockRecords
  * }} MergeContext
  */
@@ -280,8 +272,6 @@ export function longhandContext(
     pairShorthands,
     features: run.features,
     run,
-    tokenLists: run.tokenLists,
-    valueIds: run.valueIds,
     records,
   };
 }
