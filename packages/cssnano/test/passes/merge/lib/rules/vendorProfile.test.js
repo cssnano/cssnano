@@ -1,16 +1,30 @@
+import { selectorIdsOf } from './selectorIdsOf.js';
+import { foldedRules } from './summaryFixtures.js';
+import {
+  absorbEarlier,
+  addSelectors,
+} from '../../../../../src/passes/merge/lib/rules/selectorList.js';
+import {
+  hasSameSelectors,
+  vendorSummaryOf,
+} from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import postcss from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 import { VendorPrefixSummary } from '../../../../../src/passes/merge/lib/rules/vendorPrefixSummary.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
-import { createSelectorLookup } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
+import { selectorInfoOf } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
+import { tokens as tokenize } from '../../../../../src/utils/value.js';
+import { tokensText } from '../../../../../src/values/tokensText.js';
 
-const lookup = createSelectorLookup(['chrome 120']);
-const selectorIds = new SelectorIds();
+const browsers = ['chrome 120'];
+/** The ids of `selectors` in the table of a folded stylesheet's state. */
+const idsIn = (state, selectors) =>
+  selectorIdsOf(new SelectorIds(), state.tokenLists, selectors);
+/** The facts of a selector's text, judged from its own tokens. */
+const infoOf = (selector) => selectorInfoOf(tokenize(selector), browsers);
 const profileOf = (selectors) =>
-  VendorPrefixSummary.of(selectors.map((selector) => lookup(selector)));
+  VendorPrefixSummary.of(selectors.map((selector) => infoOf(selector)));
 
 // Reference verdict: merging two selector lists keeps the same vendor
 // prefix on both sides and never joins two `-ms-input-placeholder` lists.
@@ -104,7 +118,7 @@ test('VendorPrefixSummary.add should yield the profile of the concatenated list 
     for (const more of lists) {
       const folded = profileOf(a);
       for (const selector of more) {
-        folded.add(lookup(selector));
+        folded.add(infoOf(selector));
       }
       assert.deepEqual(folded, profileOf([...a, ...more]));
     }
@@ -130,130 +144,114 @@ test('VendorPrefixSummary.concat should leave both operands unchanged', () => {
   assert.deepEqual([a, b], [profileOf(['.a']), profileOf(['::-moz-x'])]);
 });
 
-function ruleWith(selector) {
-  return postcss.parse(`${selector}{color:red}`).first;
-}
-
-/**
- * @param {import('postcss').Rule} rule
- * @return {RuleRecord} the record of a rule, for the selector facts it keeps
- */
-function metaOf(rule) {
-  return new RuleRecord(rule, rule.selectors);
-}
-
-test('getVendorProfile should match the list profile after addSelectors grows a rule whose profile was already computed', () => {
-  const rule = ruleWith('.a');
-  const record = metaOf(rule);
-  record.vendorProfile(lookup);
-  record.addSelectors(['::-webkit-scrollbar', '.b'], lookup);
-  assert.deepEqual(record.vendorProfile(lookup), profileOf(record.selectors));
+test('vendorSummaryOf should match the list profile after addSelectors grows a rule whose profile was already read', () => {
+  const folded = foldedRules('.a{color:red}');
+  const [index] = folded.rules;
+  vendorSummaryOf(folded.records, index);
+  addSelectors(
+    folded.records,
+    index,
+    selectorIdsOf(new SelectorIds(), folded.state.tokenLists, [
+      '::-webkit-scrollbar',
+      '.b',
+    ]),
+    folded.state.tokenLists,
+    browsers
+  );
+  assert.ok(
+    vendorSummaryOf(folded.records, index).sameAs(
+      profileOf(['.a', '::-webkit-scrollbar', '.b'])
+    )
+  );
 });
 
-test('getSelectorText should list the selectors added by addSelectors after the text was already read', () => {
-  const record = metaOf(ruleWith('.a'));
-  record.selectorText();
-  record.addSelectors(['.b', '.c'], lookup);
-  assert.equal(record.selectorText(), '.a,.b,.c');
+test('a comma inside :is() does not split a selector, so the list has two selectors', () => {
+  const { records, rules, state } = foldedRules(':is(a,b),c{color:red}');
+  const ids = records.rule(rules[0]).selectorIds;
+  assert.deepEqual(
+    ids.map((id) => tokensText(state.tokenLists.get(id))),
+    [':is(a,b)', 'c']
+  );
 });
 
-test('getSelectorText should keep a comma inside :is() within one selector', () => {
-  const record = metaOf(ruleWith(':is(a,b),c'));
-  assert.equal(record.selectorText(), ':is(a,b),c');
+test('selectorInfoOf should report no vendor prefix for a class whose name contains -moz-', () => {
+  assert.equal(infoOf('.x-moz-y').prefix, '');
 });
 
-test('createSelectorLookup should report no vendor prefix for a class whose name contains -moz-', () => {
-  assert.equal(lookup('.x-moz-y').prefix, '');
+test('selectorInfoOf should report no vendor prefix for an attribute value that contains :-moz-', () => {
+  assert.equal(infoOf('a[title=":-moz-x"]').prefix, '');
 });
 
-test('createSelectorLookup should report no vendor prefix for an attribute value that contains :-moz-', () => {
-  assert.equal(lookup('a[title=":-moz-x"]').prefix, '');
+test('selectorInfoOf should report the lower case prefix of a pseudo name written in upper case', () => {
+  assert.equal(infoOf('a::-WEBKIT-scrollbar').prefix, '-webkit-');
 });
 
-test('createSelectorLookup should report the lower case prefix of a pseudo name written in upper case', () => {
-  assert.equal(lookup('a::-WEBKIT-scrollbar').prefix, '-webkit-');
+test('selectorInfoOf should report the prefix of a pseudo name whose hyphen is a hex escape', () => {
+  assert.equal(infoOf('a::\\2d moz-x').prefix, '-moz-');
 });
 
-test('createSelectorLookup should report the prefix of a pseudo name whose hyphen is a hex escape', () => {
-  assert.equal(lookup('a::\\2d moz-x').prefix, '-moz-');
+test('selectorInfoOf should report the BlackBerry -rim- prefix of a pseudo name', () => {
+  assert.equal(infoOf('a::-rim-x').prefix, '-rim-');
 });
 
-test('createSelectorLookup should report the BlackBerry -rim- prefix of a pseudo name', () => {
-  assert.equal(lookup('a::-rim-x').prefix, '-rim-');
+test('selectorInfoOf should leave the prefix unknown when one selector mixes two vendor prefixes', () => {
+  assert.equal(infoOf('a::-moz-x::-webkit-y').prefix, undefined);
 });
 
-test('createSelectorLookup should leave the prefix unknown when one selector mixes two vendor prefixes', () => {
-  assert.equal(lookup('a::-moz-x::-webkit-y').prefix, undefined);
-});
-
-test('createSelectorLookup should mark an incompatible selector as such, with no prefix', () => {
-  assert.deepEqual(lookup('a::-moz-x:unknown-pseudo'), {
+test('selectorInfoOf should mark an incompatible selector as such, with no prefix', () => {
+  assert.deepEqual(infoOf('a::-moz-x:unknown-pseudo'), {
     compatible: false,
     prefix: undefined,
     msPlaceholder: false,
   });
 });
 
-test('createSelectorLookup should flag :-ms-input-placeholder in any letter case', () => {
-  assert.equal(lookup('a:-MS-Input-Placeholder').msPlaceholder, true);
-});
-
-test('createSelectorLookup should scan a selector only once when it repeats', () => {
-  const cache = new Map();
-  const cached = createSelectorLookup(['chrome 120'], cache);
-  const get = cache.get.bind(cache);
-  let scans = 0;
-  cache.get = (key) => {
-    const hit = get(key);
-    if (hit === undefined) scans++;
-    return hit;
-  };
-  cached('a::-moz-x');
-  cached('a::-moz-x');
-  cached('a::-moz-x');
-  assert.equal(scans, 1);
+test('selectorInfoOf should flag :-ms-input-placeholder in any letter case', () => {
+  assert.equal(infoOf('a:-MS-Input-Placeholder').msPlaceholder, true);
 });
 
 test('hasSameSelectors should hold for rules whose lists are equal', () => {
-  const a = metaOf(ruleWith('.a,.b'));
-  const b = metaOf(ruleWith('.a,.b'));
-  assert.equal(a.hasSameSelectors(b, selectorIds), true);
+  const { records, rules } = foldedRules('.a,.b{}.a,.b{}');
+  assert.equal(hasSameSelectors(records, rules[0], rules[1]), true);
 });
 
 test('hasSameSelectors should fail for lists of equal length that differ', () => {
-  const a = metaOf(ruleWith('.a,.b'));
-  const b = metaOf(ruleWith('.a,.c'));
-  assert.equal(a.hasSameSelectors(b, selectorIds), false);
+  const { records, rules } = foldedRules('.a,.b{}.a,.c{}');
+  assert.equal(hasSameSelectors(records, rules[0], rules[1]), false);
 });
 
 test('hasSameSelectors should tell :is(a,b) from the list a,b, because a nested comma is not a list separator', () => {
-  const a = metaOf(ruleWith(':is(a,b)'));
-  const b = metaOf(ruleWith('a,b'));
-  assert.equal(a.hasSameSelectors(b, selectorIds), false);
+  const { records, rules } = foldedRules(':is(a,b){}a,b{}');
+  assert.equal(hasSameSelectors(records, rules[0], rules[1]), false);
 });
 
 test('hasSameSelectors should follow a list that grew after the two lists were compared', () => {
-  const a = metaOf(ruleWith('.a'));
-  const b = metaOf(ruleWith('.a'));
-  assert.equal(a.hasSameSelectors(b, selectorIds), true);
-  a.addSelectors(['.c'], lookup);
-  b.addSelectors(['.d'], lookup);
-  assert.equal(a.hasSameSelectors(b, selectorIds), false);
+  const folded = foldedRules('.a{}.a{}');
+  const [a, b] = folded.rules;
+  const { state, records } = folded;
+  assert.equal(hasSameSelectors(records, a, b), true);
+  addSelectors(records, a, idsIn(state, ['.c']), state.tokenLists, browsers);
+  addSelectors(records, b, idsIn(state, ['.d']), state.tokenLists, browsers);
+  assert.equal(hasSameSelectors(records, a, b), false);
 });
 
 test('absorbEarlier should list the selectors of the earlier rule first', () => {
-  const earlier = metaOf(ruleWith('.a,.b'));
-  const later = metaOf(ruleWith('.c'));
-  later.absorbEarlier(earlier, lookup);
+  const { records, rules, state } = foldedRules('.a,.b{}.c{}');
+  const [earlier, later] = rules;
+  absorbEarlier(records, later, earlier);
   assert.deepEqual(
-    [later.selectors, later.selectorText()],
-    [['.a', '.b', '.c'], '.a,.b,.c']
+    records
+      .rule(later)
+      .selectorIds.map((id) => tokensText(state.tokenLists.get(id))),
+    ['.a', '.b', '.c']
   );
 });
 
 test('absorbEarlier should give the profile of the combined list', () => {
-  const earlier = metaOf(ruleWith('.a'));
-  const later = metaOf(ruleWith('::-moz-x'));
-  later.absorbEarlier(earlier, lookup);
-  assert.deepEqual(later.vendorProfile(lookup), profileOf(['.a', '::-moz-x']));
+  const { records, rules } = foldedRules('.a{}::-moz-x{}');
+  const [earlier, later] = rules;
+  absorbEarlier(records, later, earlier);
+  assert.ok(
+    vendorSummaryOf(records, later).sameAs(profileOf(['.a', '::-moz-x']))
+  );
 });

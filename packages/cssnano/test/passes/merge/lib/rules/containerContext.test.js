@@ -3,7 +3,7 @@ import {
   containers,
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import { test } from 'node:test';
-import { buildTestRecords } from './liveRecords.js';
+import { buildTestRecords, nodeOfEntry } from './liveRecords.js';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import cssnanoUtils from '../../../../../src/utils/index.js';
@@ -64,7 +64,7 @@ function sameBlock(a, b, textTable) {
 function sameChain(records, a, b, textTable) {
   if (!a || !b) return !a && !b;
   return (
-    sameBlock(a.node, b.node, textTable) &&
+    sameBlock(nodeOfEntry(records, a), nodeOfEntry(records, b), textTable) &&
     sameChain(
       records,
       records.enclosingContainer(a.index),

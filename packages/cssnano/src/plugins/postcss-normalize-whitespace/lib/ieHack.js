@@ -235,7 +235,6 @@ function unhack(edits, tokens, index) {
 
 export {
   endsWithHack,
-  hackTail,
   isSeparatedByDelimiter,
   replaceToken,
   respelled,

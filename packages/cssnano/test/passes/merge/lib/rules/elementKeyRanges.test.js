@@ -3,9 +3,7 @@ import { suite, test } from 'node:test';
 
 // The counter must hook the tokenizer before the key module loads.
 const { counter } = await import('../../../../../../../util/countTokenize.js');
-const { default: cssnanoUtils } = await import('#utils');
-const { selectorPieces } =
-  await import('../../../../../src/values/selectorRanges.js');
+const { tokens: tokenize } = await import('../../../../../src/utils/value.js');
 const { elementKeyOf } =
   await import('../../../../../src/passes/merge/lib/rules/elementKeys.js');
 
@@ -14,8 +12,7 @@ function tokenizeTotal() {
   return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
 }
 
-// The selectors of the element key cases in elementKeys.test.js, with the
-// simple compounds the fast path settles left out of the range contract.
+// The selectors of the element key cases in elementKeys.test.js.
 const selectors = [
   'H1',
   'div span',
@@ -33,35 +30,19 @@ const selectors = [
   ':is(h1)',
 ];
 
-/**
- * The token range of a selector that is the only one of its list.
- *
- * @param {string} selector
- * @return {import('../../../../../src/values/selectorRanges.js').RangePiece}
- */
-function rangeOf(selector) {
-  const [piece] = selectorPieces(cssnanoUtils.tokens(selector), [selector]);
-  assert.ok(piece, `no token range for ${selector}`);
-  return piece;
-}
-
-suite('elementKeyOf reads a selector from its token range', () => {
-  test("elementKeyOf gives the same key from a selector's token range as from its text", () => {
-    const fromRanges = selectors.map((selector) =>
-      elementKeyOf(selector, rangeOf(selector))
-    );
-    assert.deepEqual(
-      fromRanges,
-      selectors.map((selector) => elementKeyOf(selector))
-    );
+suite('elementKeyOf reads a selector from its token list', () => {
+  test('elementKeyOf gives the lowercase type of the last compound of a token list', () => {
+    assert.equal(elementKeyOf(tokenize('div > H1::BEFORE')), 'h1::before');
   });
 
-  test("elementKeyOf reads a selector's token range without tokenizing", () => {
-    const pieces = selectors.map(rangeOf);
+  test('elementKeyOf gives null for a token list whose last compound has a class', () => {
+    assert.equal(elementKeyOf(tokenize('div .a')), null);
+  });
+
+  test("elementKeyOf reads a selector's token list without tokenizing", () => {
+    const lists = selectors.map((selector) => tokenize(selector));
     const before = tokenizeTotal();
-    for (const [index, selector] of selectors.entries()) {
-      elementKeyOf(selector, pieces[index]);
-    }
+    for (const list of lists) elementKeyOf(list);
     assert.equal(tokenizeTotal() - before, 0);
   });
 });

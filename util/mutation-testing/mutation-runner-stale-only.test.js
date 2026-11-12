@@ -93,3 +93,28 @@ test('the stale-only check refuses --out, --baseline and --only', async () => {
     ]
   );
 });
+
+function runAll(extra) {
+  return new Promise((resolve) => {
+    const child = spawn(
+      process.execPath,
+      [runnerPath, '--all', '--stale-only', ...extra],
+      { stdio: ['ignore', 'pipe', 'pipe'] }
+    );
+    let stdout = '';
+    child.stdout.on('data', (chunk) => (stdout += chunk));
+    child.on('close', () => resolve(stdout));
+  });
+}
+
+const count = /^Running \d+ mutants of \d+ catalogs/mv;
+
+// Without the plan line both runs would compare equal while selecting nothing.
+test('--all without --check selects the catalogs the test check runs', async () => {
+  const [implicit, explicit] = await Promise.all([
+    runAll([]),
+    runAll(['--check', 'test']),
+  ]);
+  const [plan] = explicit.match(count) ?? assert.fail(explicit);
+  assert.equal(implicit.match(count)?.[0], plan);
+});

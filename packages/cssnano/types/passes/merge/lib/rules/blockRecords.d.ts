@@ -1,21 +1,10 @@
-import type { ChildNode, Container } from 'postcss';
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ChildNode, Container, Rule} from 'postcss' */
-/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { BlockRecord } from './blockRecord.js';
-import type { NodeEntry } from './blockRecord.js';
+import type { BlockRecord, NodeEntry } from './blockRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type { LinkReader } from './blockLinks.js';
 import type { DeclarationStampReader } from './declarationStamps.js';
 import type { DeclarationCacheReader } from './declarationCache.js';
-/** @import {NodeEntry} from './blockRecord.js' */
-/** @import {ArenaIndex} from './blockRecord.js' */
-/** @import {LinkReader} from './blockLinks.js' */
-/** @import {DeclarationStampReader} from './declarationStamps.js' */
-/** @import {DeclarationCacheReader} from './declarationCache.js' */
-import { RuleRecord } from './ruleRecord.js';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { RuleRecord } from './ruleRecord.js';
 /**
  * The records of one run. One arena holds every block record, every rule record,
  * every declaration of a block and every bare node of a block, each at the next
@@ -37,12 +26,13 @@ export declare class BlockRecords {
     /** @type {DeclarationCacheReader} the declaration ids, read here and extended through this arena */
     declarations: DeclarationCacheReader;
     /**
-     * The most rounds a run may take before it throws. Set from the counts of
-     * rules, at-rules and declarations when the records are built.
+     * The whitespace before the first child of the stylesheet, which PostCSS
+     * hands on when that child is removed, or null when the node has none and
+     * the printer infers it.
      *
-     * @type {number}
+     * @type {string | null}
      */
-    maxRounds: number;
+    leadingWhitespace: string | null;
     /**
      * @param {BlockRecord} root the record of the stylesheet
      * @param {boolean} consistencyChecks whether the arena and its tables check their reads and edits
@@ -59,15 +49,49 @@ export declare class BlockRecords {
      */
     appendEntry(container: number, entry: BlockRecord | RuleRecord | DeclarationRecord | NodeEntry): void;
     /**
-     * Gives an unplaced entry the next index of the arena and links it after
-     * `after` in the chain of `container`, which is the head when `after` is -1.
+     * Gives an unplaced entry the next index of the arena and links it right
+     * before `sibling`, in the chain that holds `sibling`.
      *
-     * @param {number} container
-     * @param {number} after
+     * @param {ArenaIndex} sibling a linked entry
      * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
      * @return {void}
      */
-    insertEntry(container: number, after: number, entry: BlockRecord | RuleRecord | DeclarationRecord | NodeEntry): void;
+    insertEntryBefore(sibling: ArenaIndex, entry: BlockRecord | RuleRecord | DeclarationRecord | NodeEntry): void;
+    /**
+     * Takes a placed entry out of its chain, if it is linked, then links it at
+     * the end of the chain of `container`.
+     *
+     * @param {ArenaIndex} container
+     * @param {ArenaIndex} index
+     * @return {void}
+     */
+    moveLast(container: ArenaIndex, index: ArenaIndex): void;
+    /**
+     * Takes a placed entry out of its chain, if it is linked, then links it right
+     * before `sibling`.
+     *
+     * @param {ArenaIndex} sibling a linked entry that is not `index`
+     * @param {ArenaIndex} index
+     * @return {void}
+     */
+    moveBefore(sibling: ArenaIndex, index: ArenaIndex): void;
+    /**
+     * Takes the entry at `index` out of its chain. The entry keeps its own
+     * subtree, and a later move may place it again.
+     *
+     * @param {ArenaIndex} index
+     * @return {void}
+     */
+    detach(index: ArenaIndex): void;
+    /**
+     * Moves the declaration stamp of `container` without a link change, after a
+     * declaration of its chain was rewritten in place. Its edit stamp stays, so
+     * write-back writes the rewrite without rebuilding the container.
+     *
+     * @param {number} container an index that the arena gave
+     * @return {void}
+     */
+    touchDeclarations(container: number): void;
     /**
      * @param {ArenaIndex} index an index that the arena gave
      * @return {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry}
@@ -103,54 +127,9 @@ export declare class BlockRecords {
      */
     enclosingContainer(index: number): BlockRecord | RuleRecord | undefined;
     /**
-     * Links the entry at `index` after `after` in the chain of the container at
-     * `block`, which is the head when `after` is -1. Under checks, a container
-     * that does not reach the root through `parentOf` throws, since its entries
-     * would be lost, and a rule or an at-rule may join only a rule that nests.
-     *
-     * @param {number} block
-     * @param {number} after
-     * @param {number} index an entry that is linked nowhere, or was unlinked
-     * @return {void}
-     */
-    linkAfter(block: number, after: number, index: number): void;
-    /**
-     * Links the entry at `index` at the end of the chain of the block at `block`.
-     *
-     * @param {number} block
-     * @param {number} index an entry that is linked nowhere, or was unlinked
-     * @return {void}
-     */
-    linkLast(block: number, index: number): void;
-    /**
-     * Takes the entry at `index` out of its chain. The entry keeps its own
-     * subtree, and a later link may place it again.
-     *
-     * @param {number} index
-     * @return {void}
-     */
-    unlink(index: number): void;
-    /**
-     * Puts the entry `earlier` in the chain where `later` stands, and unlinks
-     * `later`.
-     *
-     * @param {number} later a linked entry
-     * @param {number} earlier an entry that is linked elsewhere, or nowhere
-     * @return {void}
-     */
-    takeLinkOf(later: number, earlier: number): void;
-    /**
      * @return {number} the entries the arena holds, dropped ones included
      */
     entryCount(): number;
-    /**
-     * The PostCSS node of the entry at `index`, which is a rule, a block, a
-     * declaration or a bare node.
-     *
-     * @param {number} index
-     * @return {ChildNode}
-     */
-    nodeOf(index: number): ChildNode;
     /**
      * Settles the links once the build has linked the children, so that only
      * edits after the build count as edits. Entries from here on are the merges'.
@@ -162,13 +141,5 @@ export declare class BlockRecords {
      * @return {number} the entries the build made, which precede every entry a merge added
      */
     get builtCount(): number;
-    /**
-     * Adds the node of each rule a merge created that has one, in arena order,
-     * which is the order the merges made them. Write-back calls it after its walk.
-     *
-     * @param {Set<Container>} reported
-     * @return {void}
-     */
-    addMergedNodes(reported: Set<Container>): void;
 }
 //# sourceMappingURL=blockRecords.d.ts.map

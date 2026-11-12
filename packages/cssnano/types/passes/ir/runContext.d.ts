@@ -1,42 +1,36 @@
 import { DeclarationKeys } from './declarationKey.js';
-import { PropertyTable } from './propertyTable.js';
-import { SelectorIds } from './selectorIds.js';
 import { TextTable } from '../../values/textTable.js';
-import type { SelectorInfo } from '../merge/lib/rules/ensureCompatibility.js';
-import type { Container } from 'postcss';
+import { TokenLists } from './tokenLists.js';
+import { ValueIds } from './valueIds.js';
 export type RunContext = {
-    properties: PropertyTable;
     declarations: DeclarationKeys;
-    selectorIds: SelectorIds;
-    createdBlocks: Set<Container> | null;
-    selectorCompatibility: Map<string, SelectorInfo>;
     textTable: TextTable;
+    tokenLists: TokenLists;
+    valueIds: ValueIds;
     consistencyChecks: boolean;
+    features: ReadonlySet<string>;
 };
-/** @import {SelectorInfo} from '../merge/lib/rules/ensureCompatibility.js' */
-/** @import {Container} from 'postcss' */
 /**
  * The state one run of the merge pass shares across its transforms. Nothing in
  * it may outlive the run: its ids mean nothing to another stylesheet.
  *
  * @typedef {{
- *   properties: PropertyTable,
  *   declarations: DeclarationKeys,
- *   selectorIds: SelectorIds,
- *   createdBlocks: Set<Container> | null,
- *   selectorCompatibility: Map<string, SelectorInfo>,
  *   textTable: TextTable,
+ *   tokenLists: TokenLists,
+ *   valueIds: ValueIds,
  *   consistencyChecks: boolean,
+ *   features: ReadonlySet<string>,
  * }} RunContext
  */
 /**
- * A fresh context for one run. `createdBlocks` stays null unless the caller
- * collects the rules a merge creates. `textTable` holds the selector tokens the
- * host walk left, which the run reads.
+ * A fresh context for one run. `textTable` holds the selector tokens the host
+ * walk left, which the run reads.
  *
  * @param {TextTable} [textTable]
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
+ * @param {ReadonlySet<string>} [features] the features every browser target supports; the strict floor otherwise
  * @return {RunContext}
  */
-export declare function createRunContext(textTable?: TextTable, consistencyChecks?: boolean): RunContext;
+export declare function createRunContext(textTable?: TextTable, consistencyChecks?: boolean, features?: ReadonlySet<string>): RunContext;
 //# sourceMappingURL=runContext.d.ts.map

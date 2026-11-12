@@ -1,4 +1,12 @@
-import type { AtRule, Declaration } from 'postcss';
+export type AtRuleFields = {
+    name: string;
+    params: string;
+    raws: {
+        before?: string;
+        afterName?: string;
+    };
+};
+import type { TokenListId } from './tokenLists.js';
 export type Trie = Map<unknown, unknown>;
 /**
  * Nested maps keyed by the components of a structural description. Each
@@ -18,10 +26,10 @@ export declare function step(trie: Trie, key: unknown): Trie;
  * declaration's identity. A stray `;` before the declaration is not a hack,
  * and a declaration without `raws.before` has none.
  *
- * @param {Declaration} declaration
+ * @param {string | null} before the declaration's `raws.before`, or null for none
  * @return {string}
  */
-export declare function hackPrefixOf(declaration: Declaration): string;
+export declare function hackPrefixOf(before: string | null): string;
 /**
  * Numbers the declarations and other structural descriptions of one run of the
  * pass. Equal descriptions get equal integers, so callers compare ids rather
@@ -32,23 +40,26 @@ export declare class DeclarationKeys {
     /** @type {Trie} */
     root: Trie;
     /**
-     * The key of a declaration: the same property, value, importance and hack
-     * prefix. Names fold ASCII case, except custom properties, which are
+     * The key of a declaration: the same property, value list, importance and
+     * hack prefix. Names fold ASCII case, except custom properties, which are
      * case-sensitive.
      *
-     * @param {Declaration} declaration
+     * @param {string} prop
+     * @param {TokenListId} valueList the id of the value, which equal values share
+     * @param {boolean} important
+     * @param {string | null} before the declaration's `raws.before`
      * @return {number}
      */
-    keyOf(declaration: Declaration): number;
+    keyOf(prop: string, valueList: TokenListId, important: boolean, before: string | null): number;
     /**
      * The id of an at-rule's prelude: its name, its params and its trimmed
      * `raws.before` and `raws.afterName`. Ids of the preludes are kept with
      * their paths, for `preludeTrie`.
      *
-     * @param {AtRule} node
+     * @param {AtRuleFields} node
      * @return {number}
      */
-    preludeId(node: AtRule): number;
+    preludeId(node: AtRuleFields): number;
     /**
      * The path that a prelude id ends, from `preludeId`, which a structural id
      * extends.

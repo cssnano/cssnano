@@ -4,13 +4,10 @@ const { TokenType } = cssnanoUtils;
 const decoded = /** @type {typeof cssnanoUtils.decoded} */ (
   cssnanoUtils.decoded
 );
-const tokenEnd = /** @type {typeof cssnanoUtils.tokenEnd} */ (
-  cssnanoUtils.tokenEnd
-);
 
 /** @typedef {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens']} Tokens */
 
-export { TokenType, decoded, tokenEnd };
+export { TokenType, decoded };
 
 export const openingTypes = new Set([
   TokenType.Function,
@@ -132,57 +129,4 @@ export function featureValueIndex(input, open) {
   const colon = significantIndex(input, name + 1, 1);
   if (input[colon]?.[0] !== TokenType.Colon) return -1;
   return significantIndex(input, colon + 1, 1);
-}
-
-/**
- * @param {string} source
- * @param {{start:number,end:number}[]} segments
- * @param {{start:number,end:number,text:string}[]} edits
- * @return {string[]}
- */
-export function serializeSegments(source, segments, edits) {
-  let segmentIndex = 0;
-  let previousEnd = -1;
-  let previousEdit;
-  for (const edit of edits) {
-    if (
-      previousEdit &&
-      edit.start === previousEdit.start &&
-      edit.end === previousEdit.end &&
-      edit.text === previousEdit.text
-    ) {
-      continue;
-    }
-    while (
-      segmentIndex < segments.length &&
-      edit.start >= segments[segmentIndex].end
-    ) {
-      segmentIndex++;
-    }
-    const segment = segments[segmentIndex];
-    if (
-      !segment ||
-      edit.start < segment.start ||
-      edit.start < previousEnd ||
-      edit.end < edit.start ||
-      edit.end > segment.end
-    ) {
-      return segments.map(({ start, end }) => source.slice(start, end));
-    }
-    previousEnd = edit.end;
-    previousEdit = edit;
-  }
-  let editIndex = 0;
-  return segments.map(({ start, end }) => {
-    let cursor = start;
-    let result = '';
-    while (editIndex < edits.length && edits[editIndex].start < end) {
-      const edit = edits[editIndex++];
-      if (edit.start < start || edit.start < cursor) continue;
-      result += source.slice(cursor, edit.start) + edit.text;
-      cursor = edit.end;
-    }
-    result += source.slice(cursor, end);
-    return result;
-  });
 }

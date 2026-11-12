@@ -66,24 +66,23 @@ export declare class BlockLinks {
      */
     childCount(index: number): number;
     /**
-     * Links the entry at `index` after `after` in the chain of the container at
-     * `block`, which is the head when `after` is -1. The arena checks the link
-     * before it calls this.
-     *
-     * @param {number} block
-     * @param {number} after
-     * @param {number} index an entry that is linked nowhere, or was unlinked
-     * @return {void}
-     */
-    linkAfter(block: number, after: number, index: number): void;
-    /**
      * Links the entry at `index` at the end of the chain of the block at `block`.
      *
      * @param {number} block
-     * @param {number} index an entry that is linked nowhere, or was unlinked
+     * @param {number} index an entry that is linked nowhere
      * @return {void}
      */
     linkLast(block: number, index: number): void;
+    /**
+     * Links the entry at `index` right before `sibling` in the chain that holds
+     * `sibling`.
+     *
+     * @param {number} sibling a linked entry
+     * @param {number} index an entry that is linked nowhere
+     * @return {void}
+     * @throws {Error} under checks, when `sibling` is linked nowhere
+     */
+    linkBefore(sibling: number, index: number): void;
     /**
      * Takes the entry at `index` out of its chain. The entry keeps its own
      * subtree, and a later link may place it again.
@@ -92,14 +91,5 @@ export declare class BlockLinks {
      * @return {void}
      */
     unlink(index: number): void;
-    /**
-     * Puts the entry `earlier` in the chain where `later` stands, and unlinks
-     * `later`.
-     *
-     * @param {number} later a linked entry
-     * @param {number} earlier an entry that is linked elsewhere, or nowhere
-     * @return {void}
-     */
-    takeLinkOf(later: number, earlier: number): void;
 }
 //# sourceMappingURL=blockLinks.d.ts.map

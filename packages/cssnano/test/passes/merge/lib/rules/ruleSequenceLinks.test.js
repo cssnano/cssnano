@@ -1,3 +1,5 @@
+import { selectorIdsOf } from './selectorIdsOf.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -10,8 +12,13 @@ import {
   ruleRecordOf,
   buildTestRecords,
   placeUnlinked,
+  nodeOfEntry,
 } from './liveRecords.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
+
+const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 
 /**
  * @param {string} css
@@ -61,7 +68,7 @@ test('replacePair should link a rule made mid-sweep at its own index, between it
   const added = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
+    new RuleRecord('', selectorIdsOf(selectorIds, tokenLists, ['x']))
   );
   sequence.replacePair(records, a, {
     first: [a],
@@ -82,7 +89,7 @@ test('replacePair should chain the placed rules in the order first, second, then
     placeUnlinked(
       records,
       records.root.index,
-      new RuleRecord(postcss.rule({ selector }), [selector], selector)
+      new RuleRecord('', selectorIdsOf(selectorIds, tokenLists, [selector]))
     ).index;
   const x = made('x');
   const y = made('y');
@@ -103,7 +110,9 @@ test('replacePair should chain the placed rules in the order first, second, then
 test('a sweep move that empties a nested at-rule block should unlink it and then its emptied parent', () => {
   const state = setup('@layer outer{@layer inner{b{width:1px}}}p{color:red}');
   const { records } = state;
-  const [outer, p] = /** @type {any[]} */ (state.records.root.node.nodes);
+  const [outer, p] = /** @type {any[]} */ (
+    nodeOfEntry(state.records, state.records.root).nodes
+  );
   const inner = outer.first;
   const innerBlock = blockRecordOf(records, inner);
   const outerBlock = blockRecordOf(records, outer);
@@ -119,7 +128,9 @@ test('a sweep move that empties a nested at-rule block should unlink it and then
 test('a sweep that empties an at-rule nested in a rule should unlink the at-rule and leave the rule in its chain, with a lower count', () => {
   const state = setup('a{@layer inner{b{width:1px}}}p{color:red}');
   const { records } = state;
-  const [a, p] = /** @type {any[]} */ (records.root.node.nodes);
+  const [a, p] = /** @type {any[]} */ (
+    nodeOfEntry(state.records, records.root).nodes
+  );
   const innerBlock = blockRecordOf(records, a.first);
   const nesting = ruleRecordOf(records, a);
   new RuleSequence(records).moveIntoParent(

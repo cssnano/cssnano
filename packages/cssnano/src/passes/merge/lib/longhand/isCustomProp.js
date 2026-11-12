@@ -30,10 +30,9 @@ export function opensCustomPropertyVar(input) {
 }
 
 /**
- * @param {import('postcss').Declaration} node
- * @param {import('../../../../values/textTable.js').TextTable} textTable the tokens the walk left for the declaration
+ * @param {import('./blockDeclarations.js').DeclarationItem} node
  */
-export default (node, textTable) => {
+export default (node) => {
   if (!node.value.includes('--') && !node.value.includes('\\')) return false;
-  return opensCustomPropertyVar(textTable.tokens(node));
+  return opensCustomPropertyVar(node.tokens);
 };

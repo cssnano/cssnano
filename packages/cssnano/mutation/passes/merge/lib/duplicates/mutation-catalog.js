@@ -14,7 +14,7 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'give each rule its own declarations, whatever its selector',
-    find: '  let declMap = ruleDecls.get(selector);',
+    find: '  let declMap = ruleDecls.get(listKey);',
     replace: '  let declMap = undefined;',
   },
   {
@@ -40,12 +40,13 @@ export const mutations = [
   },
   {
     name: 'drop a repeated block that declares a named layer',
-    find: '  if (seenAtRules.has(id) && !run.layered.has(id)) {\n    remove(run.records, block);',
-    replace: '  if (seenAtRules.has(id)) {\n    remove(run.records, block);',
+    find: '  if (seenAtRules.has(id) && !run.layered.has(id)) {\n    remove(run.records, block.index);',
+    replace:
+      '  if (seenAtRules.has(id)) {\n    remove(run.records, block.index);',
   },
   {
     name: 'let an important comment not count as content',
-    find: '(entry).important) {',
+    find: 'entry.important) {',
     replace: 'false) {',
   },
   {
@@ -75,7 +76,7 @@ export const mutations = [
   },
   {
     name: 'drop a repeated @import',
-    find: '  if (entry.kind === LAYER || entry.kind === IMPORT) {',
-    replace: '  if (entry.kind === LAYER) {',
+    find: '  if (entry.atRuleKind === LAYER || entry.atRuleKind === IMPORT) {',
+    replace: '  if (entry.atRuleKind === LAYER) {',
   },
 ];

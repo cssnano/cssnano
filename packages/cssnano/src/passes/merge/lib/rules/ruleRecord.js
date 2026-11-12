@@ -1,22 +1,64 @@
-import { SelectorList } from './selectorList.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { NO_PRELUDE, RULE } from './blockRecord.js';
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
+import { UNFOLDED_VENDOR } from './selectorList.js';
+import { RULE } from './blockRecord.js';
 
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Rule} from 'postcss' */
+/** @import {RuleElementKeys} from './elementKeys.js' */
+/** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {ElementKeyOf, SelectorLookup} from './selectorList.js' */
-/** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 
 /**
- * What the merge knows of a rule: its selector list, which the base class
- * derives facts from, and its children. The children form a chain in the arena
+ * What the merge knows of a rule: its selector list, with the facts folded from
+ * its ids, and its children. The children form a chain in the arena
  * of `BlockRecords`, so the record refers to no other record. Every field is
  * set up front so all instances share one object layout.
  */
-export class RuleRecord extends SelectorList {
+export class RuleRecord {
+  /**
+   * The interned id of each selector, in order. A selector's id is the same
+   * for every rule that holds an equal item. It is read-only: only the
+   * functions of this module move or append ids.
+   *
+   * @readonly
+   * @type {readonly TokenListId[]}
+   */
+  selectorIds;
+
+  /**
+   * Whether every selector suits the target browsers.
+   *
+   * @readonly
+   * @type {boolean}
+   */
+  compatible = false;
+
+  /**
+   * The vendor prefix summary of the selectors.
+   *
+   * @readonly
+   * @type {VendorPrefixSummary}
+   */
+  vendor = UNFOLDED_VENDOR;
+
+  /**
+   * The element keys of the selectors, or null when a selector has none. The
+   * list is empty when the rule has no selectors.
+   *
+   * @readonly
+   * @type {RuleElementKeys | null}
+   */
+  elementKeys = null;
+
+  /**
+   * Whether an edit changed the rule's list, so write-back must write its
+   * selector. Every edit that changes the ids sets it.
+   *
+   * @readonly
+   * @type {boolean}
+   */
+  marked = false;
+
   /**
    * The id of the circumstances under which the rule applies its children, as
    * `containerContext` gives it. It is set once, at the build, for a rule that
@@ -29,63 +71,27 @@ export class RuleRecord extends SelectorList {
   /** @type {ArenaIndex} the place of the record in the arena of its records, -1 until added */
   index = /** @type {ArenaIndex} */ (-1);
 
-  /** @type {number} RULE, which the window reads with the other records */
+  /** @type {typeof RULE} RULE, which the window reads with the other records */
   kind = RULE;
-
-  /** @type {string} '' for a rule, which has no at-rule name */
-  name = '';
-
-  /** @type {string} '' for a rule, which has no prelude */
-  params = '';
-
-  /** @type {boolean} false for a rule, which is no layer */
-  anonymous = false;
-
-  /** @type {number} NO_PRELUDE for a rule */
-  preludeId = NO_PRELUDE;
 
   /**
    * The arena index of the rule whose raws a merged rule prints, or -1 for a
-   * rule that keeps its own. A merged rule copies the raws of its template.
+   * rule that keeps its own. A merged rule copies the raws of its template,
+   * so the template always holds a node.
    *
    * @type {number}
    */
   template = -1;
 
   /** @type {string | null} the whitespace before the rule, as its node gives it at the build */
-  before = '';
+  before;
 
   /**
-   * @param {Rule | undefined} node the rule the record describes; undefined for a merged rule until write-back
-   * @param {string[]} selectors
-   * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-   * @param {string | undefined} sourceSelector the source text, set only when it differs from the selector
-   * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
+   * @param {string | null} before the whitespace before the rule
+   * @param {readonly TokenListId[]} selectorIds the interned id of each selector
    */
-  constructor(node, selectors, selector, sourceSelector, tokens) {
-    super(node, selectors, selector, sourceSelector, tokens);
-  }
-
-  /**
-   * The declarations of the rule, in order, read from its chain at the call. A
-   * reader that indexes them by position takes this array.
-   *
-   * @param {BlockRecords} records the arena that holds the rule's children
-   * @return {DeclarationRecord[]}
-   */
-  declarationsOf(records) {
-    // Under checks, `rule` throws when the root does not reach this rule.
-    records.rule(this.index);
-    /** @type {DeclarationRecord[]} */
-    const declarations = [];
-    for (
-      let entry = records.links.firstChild(this.index);
-      entry !== -1;
-      entry = records.links.nextSibling(entry)
-    ) {
-      const item = records.entry(entry);
-      if (item instanceof DeclarationRecord) declarations.push(item);
-    }
-    return declarations;
+  constructor(before, selectorIds) {
+    this.before = before;
+    this.selectorIds = selectorIds;
   }
 }

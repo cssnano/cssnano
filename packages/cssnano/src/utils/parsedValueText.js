@@ -32,18 +32,6 @@ export function parsedValueTokens(input) {
 }
 
 /**
- * The text of the value as PostCSS parses it.
- *
- * @param {readonly CSSToken[]} input
- * @return {string}
- */
-export function parsedValueText(input) {
-  let text = '';
-  for (const token of parsedValueTokens(input)) text += token[1];
-  return text;
-}
-
-/**
  * @param {CSSToken | undefined} token
  * @return {boolean}
  */

@@ -1,6 +1,7 @@
 import {} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
   COMMENT,
+  NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
@@ -61,17 +62,10 @@ test('linking an entry into an at-rule block that a sweep unlinked should throw 
   const comment = placeUnlinked(
     records,
     records.root.index,
-    new NodeEntry(
-      postcss.comment({ text: 'x' }),
-      COMMENT,
-      '',
-      '',
-      false,
-      NO_PRELUDE
-    )
+    new NodeEntry(COMMENT, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
   );
   assert.throws(
-    () => records.linkLast(block.index, comment.index),
+    () => records.moveLast(block.index, comment.index),
     /outside the tree/v
   );
 });

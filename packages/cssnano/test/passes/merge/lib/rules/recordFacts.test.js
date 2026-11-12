@@ -1,3 +1,4 @@
+import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -14,12 +15,14 @@ import {
   STYLESHEET,
 } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
 import {
   blockRecordOf,
   buildTestRecords,
   entryOf,
   ruleRecordOf,
+  nodesOf,
+  tokenListsOf,
 } from './liveRecords.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 
@@ -41,25 +44,28 @@ function recordsOf(css) {
 
 test('an at-rule block record takes the kind of its folded name', () => {
   const { root, records } = recordsOf('@MEDIA print{a{color:red}}');
-  assert.equal(blockRecordOf(records, root.first).kind, CONDITIONAL_GROUP);
+  assert.equal(
+    blockRecordOf(records, root.first).atRuleKind,
+    CONDITIONAL_GROUP
+  );
   assert.equal(blockRecordOf(records, root.first).name, 'media');
 });
 
 test('a vendor-prefixed keyframes block is keyframes', () => {
   const { root, records } = recordsOf('@-webkit-keyframes x{from{top:0}}');
-  assert.equal(blockRecordOf(records, root.first).kind, KEYFRAMES);
+  assert.equal(blockRecordOf(records, root.first).atRuleKind, KEYFRAMES);
 });
 
 test('an at-rule whose name spells keyframes with a Kelvin sign is not keyframes', () => {
   // U+212A KELVIN SIGN folds to k under Unicode case mapping, but not under ASCII folding.
   const kelvin = String.fromCodePoint(0x212a);
   const { root, records } = recordsOf(`@${kelvin}eyframes x{from{top:0}}`);
-  assert.equal(blockRecordOf(records, root.first).kind, OTHER_AT_RULE);
+  assert.equal(blockRecordOf(records, root.first).atRuleKind, OTHER_AT_RULE);
 });
 
 test('a statement at-rule takes the kind of an import', () => {
   const { root, records } = recordsOf('@import "x.css";');
-  assert.equal(entryOf(records, root.first).kind, IMPORT);
+  assert.equal(entryOf(records, root.first).atRuleKind, IMPORT);
 });
 
 test('a comment entry holds the neutral facts of a comment', () => {
@@ -72,13 +78,10 @@ test('a comment entry holds the neutral facts of a comment', () => {
   assert.equal(entry.preludeId, NO_PRELUDE);
 });
 
-test('a rule record and the stylesheet hold the neutral facts of their kinds', () => {
+test('a rule record holds its kind, and the stylesheet holds neutral at-rule facts', () => {
   const { root, records } = recordsOf('a{color:red}');
   const rule = ruleRecordOf(records, root.first);
   assert.equal(rule.kind, RULE);
-  assert.equal(rule.name, '');
-  assert.equal(rule.params, '');
-  assert.equal(rule.preludeId, NO_PRELUDE);
   assert.equal(records.root.kind, STYLESHEET);
   assert.equal(records.root.name, '');
   assert.equal(records.root.params, '');
@@ -90,7 +93,7 @@ test('an anonymous layer block is not droppable, and a named layer block is', ()
   );
   const anonymous = blockRecordOf(records, root.first);
   const named = blockRecordOf(records, root.last);
-  assert.equal(anonymous.kind, LAYER);
+  assert.equal(anonymous.atRuleKind, LAYER);
   assert.equal(anonymous.anonymous, true);
   assert.equal(anonymous.droppable, false);
   assert.equal(named.anonymous, false);
@@ -136,7 +139,9 @@ test('a prelude id differs when the params differ', () => {
 test('the tree check throws when an at-rule record names another at-rule than its node', () => {
   const { root, records } = recordsOf('@media print{a{color:red}}');
   root.first.name = 'supports';
-  assert.throws(() => assertRecordsMatchTree(records));
+  assert.throws(() =>
+    assertRecordsMatchTree(records, nodesOf(records), tokenListsOf(records))
+  );
 });
 
 /**
@@ -171,7 +176,7 @@ test('every record of a node without raws.before holds null, so write-back leave
   assert.deepEqual(
     [
       ruleRecordOf(records, rule).before,
-      ruleRecordOf(records, rule).declarationsOf(records)[0].before,
+      declarationsOf(records, ruleRecordOf(records, rule).index)[0].before,
       blockRecordOf(records, media).before,
       entryOf(records, statement).before,
       entryOf(records, comment).before,
@@ -182,10 +187,10 @@ test('every record of a node without raws.before holds null, so write-back leave
 
 test('the stylesheet holds null as its leading whitespace when its first child has no raws.before', () => {
   const { records } = recordsOfBuiltTree();
-  assert.equal(records.root.leadingWhitespace, null);
+  assert.equal(records.leadingWhitespace, null);
 });
 
 test('an empty stylesheet holds null as its leading whitespace', () => {
   const { records } = recordsOf('');
-  assert.equal(records.root.leadingWhitespace, null);
+  assert.equal(records.leadingWhitespace, null);
 });

@@ -14,13 +14,8 @@ const vendorPrefix =
 /** The retained substring test, which also matched class names and strings. */
 export const noVendor = (selector) => !vendorPrefix.test(selector);
 
-const isCssMixin = (selector) => selector.at(-1) === ':';
-const isHostPseudoClass = (selector) => selector.includes(':host');
-
 /** The selector-parser implementation retained as a test/development oracle. */
 export function ensureCompatibility(selectors, browsers) {
-  if (selectors.some(isCssMixin) || selectors.some(isHostPseudoClass))
-    return false;
   return selectors.every((selector) => {
     if (simpleSelectorRe.test(selector)) return true;
     let compatible = true;

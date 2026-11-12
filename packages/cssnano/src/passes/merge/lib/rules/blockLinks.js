@@ -149,15 +149,14 @@ export class BlockLinks {
 
   /**
    * Links the entry at `index` after `after` in the chain of the container at
-   * `block`, which is the head when `after` is -1. The arena checks the link
-   * before it calls this.
+   * `block`, which is the head when `after` is -1.
    *
    * @param {number} block
    * @param {number} after
-   * @param {number} index an entry that is linked nowhere, or was unlinked
+   * @param {number} index an entry that is linked nowhere
    * @return {void}
    */
-  linkAfter(block, after, index) {
+  #linkAfter(block, after, index) {
     const next = after === -1 ? this.#first[block] : this.#next[after];
     this.#parent[index] = block;
     this.#prev[index] = after;
@@ -174,11 +173,25 @@ export class BlockLinks {
    * Links the entry at `index` at the end of the chain of the block at `block`.
    *
    * @param {number} block
-   * @param {number} index an entry that is linked nowhere, or was unlinked
+   * @param {number} index an entry that is linked nowhere
    * @return {void}
    */
   linkLast(block, index) {
-    this.linkAfter(block, this.#last[block], index);
+    this.#linkAfter(block, this.#last[block], index);
+  }
+
+  /**
+   * Links the entry at `index` right before `sibling` in the chain that holds
+   * `sibling`.
+   *
+   * @param {number} sibling a linked entry
+   * @param {number} index an entry that is linked nowhere
+   * @return {void}
+   * @throws {Error} under checks, when `sibling` is linked nowhere
+   */
+  linkBefore(sibling, index) {
+    this.#assertLinked(sibling);
+    this.#linkAfter(this.#parent[sibling], this.#prev[sibling], index);
   }
 
   /**
@@ -202,22 +215,6 @@ export class BlockLinks {
     this.#parent[index] = -1;
     this.#prev[index] = -1;
     this.#next[index] = -1;
-  }
-
-  /**
-   * Puts the entry `earlier` in the chain where `later` stands, and unlinks
-   * `later`.
-   *
-   * @param {number} later a linked entry
-   * @param {number} earlier an entry that is linked elsewhere, or nowhere
-   * @return {void}
-   */
-  takeLinkOf(later, earlier) {
-    this.unlink(earlier);
-    // The unlink above may have been the entry before `later`, so the
-    // neighbour is read after it.
-    this.linkAfter(this.#parent[later], this.#prev[later], earlier);
-    this.unlink(later);
   }
 
   /**

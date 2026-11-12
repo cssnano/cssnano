@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { joinRanges } from '../../src/values/joinRanges.js';
-import { selectorRanges } from '../../src/values/selectorRanges.js';
+import { selectorRanges } from '../../../../util/selectorRanges.js';
 import { tokensText } from '../../src/values/tokensText.js';
 import { comma } from '../../src/values/punctuationTokens.js';
 import { tokens } from '../../src/utils/value.js';

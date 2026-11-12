@@ -2,25 +2,29 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { assertLinearTime } from '../linearTiming.js';
 import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import {
+  buildRecords,
+  recordDeclaration,
+} from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 import { placeUnlinked } from '../../../../../test/passes/merge/lib/rules/liveRecords.js';
 
 /**
- * The records of `css`, as the run builds them. The first rule of a stylesheet
- * is the entry after its root, so it has index 1.
+ * The records of `css`, as the run builds them, with the run context they
+ * share with the merge state. The first rule of a stylesheet is the entry after
+ * its root, so it has index 1.
  *
  * @param {string} css
- * @return {{state: MergeState, rule: import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord}}
+ * @return {{state: MergeState, context: import('../../../../../src/passes/ir/runContext.js').RunContext, rule: import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord}}
  */
 function recordsOf(css) {
-  const state = new MergeState(['chrome 120'], createRunContext());
-  state.records = buildRecords(postcss.parse(css), state);
-  return { state, rule: state.records.rule(1) };
+  const context = createRunContext();
+  const state = new MergeState(['chrome 120'], context);
+  state.records = buildRecords(postcss.parse(css), context).records;
+  return { state, context, rule: state.records.rule(1) };
 }
 
 /**
@@ -39,23 +43,19 @@ function ruleOf(count) {
  * @return {number} milliseconds
  */
 function timeAppendsAndReads(size) {
-  const { state, rule } = recordsOf('a{}');
+  const { state, context, rule } = recordsOf('a{}');
   const { records } = state;
   const nodes = Array.from({ length: size }, (_, i) =>
     postcss.decl({ prop: `--c${i}`, value: '0' })
   );
   // The records are placed before the clock starts, so only the append is timed.
   const declarations = nodes.map((node) =>
-    placeUnlinked(
-      records,
-      records.root.index,
-      recordDeclaration(node, state.properties, state.declarationIds)
-    )
+    placeUnlinked(records, records.root.index, recordDeclaration(node, context))
   );
   let seen = 0;
   const start = performance.now();
   for (const declaration of declarations) {
-    appendChild(records, rule, declaration);
+    appendChild(records, rule.index, declaration.index);
     seen += declarationKeys(records, rule.index).kept.length;
   }
   const elapsed = performance.now() - start;
@@ -74,8 +74,15 @@ function timeAppendsAndReads(size) {
 function timeUnlinksThenRead(size) {
   const { state, rule } = recordsOf(ruleOf(size));
   const { records } = state;
+  const declarations = [];
+  for (
+    let index = records.links.firstChild(rule.index);
+    index !== -1;
+    index = records.links.nextSibling(index)
+  )
+    declarations.push(index);
   const start = performance.now();
-  for (let i = 0; i < size; i += 2) records.links.unlink(declarations[i].index);
+  for (let i = 0; i < size; i += 2) records.detach(declarations[i]);
   const left = declarationKeys(records, rule.index).kept.length;
   const elapsed = performance.now() - start;
   if (left < 0) throw new Error('unreachable');

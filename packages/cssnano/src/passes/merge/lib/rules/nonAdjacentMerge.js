@@ -3,20 +3,23 @@ import LastWriteIndex from './lastWriteIndex.js';
 import joinByDeclarations from './declarationJoin.js';
 import RepeatScan from './repeatScan.js';
 import {
-  BlockRecord,
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
   CONDITIONAL_GROUP,
-  isAtRuleKind,
+  DECLARATION,
   RULE,
+  STYLESHEET,
 } from './blockRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import { RuleRecord } from './ruleRecord.js';
 import { isKeyframes } from './sameContainer.js';
 import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
 import { adopt } from './arenaEdits.js';
+import { listKey } from './selectorReads.js';
 
 /** @import MergeState from './mergeState.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
-/** @import {NodeEntry} from './blockRecord.js' */
+/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 /**
  * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry
@@ -25,17 +28,20 @@ import { adopt } from './arenaEdits.js';
  * @return {boolean} see `collectEntries`
  */
 function collectFrom(records, entry, entries) {
-  if (entry instanceof RuleRecord) {
+  if (entry.kind === RULE) {
     entries.push(entry);
     return entry.context === -1
       ? true
       : collectEntries(records, entry, entries);
-  } else if (entry instanceof BlockRecord) {
-    if (entry.kind !== CONDITIONAL_GROUP) return false;
+  } else if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) {
+    if (entry.atRuleKind !== CONDITIONAL_GROUP) return false;
     return collectEntries(records, entry, entries);
-  } else if (entry instanceof DeclarationRecord) {
+  } else if (entry.kind === DECLARATION) {
     entries.push(entry);
-  } else if (isAtRuleKind(entry.kind) && entry.kind !== CONDITIONAL_GROUP) {
+  } else if (
+    entry.kind === AT_RULE_STATEMENT &&
+    entry.atRuleKind !== CONDITIONAL_GROUP
+  ) {
     return false;
   }
   return true;
@@ -58,7 +64,7 @@ function collectEntries(records, block, entries) {
     entry = links.nextSibling(entry)
   ) {
     const item = records.entry(entry);
-    if (ruleOwned && item instanceof DeclarationRecord) continue;
+    if (ruleOwned && item.kind === DECLARATION) continue;
     if (!collectFrom(records, item, entries)) return false;
   }
   return true;
@@ -89,14 +95,14 @@ export function subtreeEntries(records, block) {
  * @return {string | number | null}
  */
 function joinKey(entry, joinRules) {
-  if (entry instanceof RuleRecord) {
-    return joinRules ? `{${entry.selectorText()}` : null;
+  if (entry.kind === RULE) {
+    return joinRules ? `{${listKey(entry.selectorIds)}` : null;
   }
   // `@font-face` and `@page` have block records too, so the name decides.
   // Siblings share their enclosing blocks, so their contexts are equal exactly
   // when their names and preludes are.
-  if (entry instanceof BlockRecord) {
-    if (entry.kind === CONDITIONAL_GROUP) return entry.context;
+  if (entry.kind === AT_RULE_BLOCK && entry.atRuleKind === CONDITIONAL_GROUP) {
+    return entry.context;
   }
   return null;
 }
@@ -180,7 +186,6 @@ function joinBlocksBackward(block, mergeState) {
   if (scan.start === Infinity) return false;
 
   const index = new LastWriteIndex();
-  const keysOf = mergeState.elementKeysOf;
   const { records } = mergeState;
   /** @type {Map<string | number, {block: number, position: number}>} */
   const next = new Map();
@@ -205,8 +210,7 @@ function joinBlocksBackward(block, mergeState) {
         position: at,
       });
     }
-    if (at === position)
-      index.recordNode(records, entry, last - position, keysOf);
+    if (at === position) index.recordNode(records, entry, last - position);
   }
   return joined;
 
@@ -219,18 +223,16 @@ function joinBlocksBackward(block, mergeState) {
   function joinBlock(earlier, later, laterPosition) {
     const laterEntries = subtreeEntries(mergeState.records, later);
     if (!laterEntries) return null;
-    if (!index.conflictsSinceIn(records, laterEntries, laterPosition, keysOf)) {
+    if (!index.conflictsSinceIn(records, laterEntries, laterPosition)) {
       adopt(mergeState.records, earlier.index, later.index);
-      remove(mergeState.records, later);
+      remove(mergeState.records, later.index);
       return 'up';
     }
     // The earlier block's content stays first, so source order is kept.
     const earlierEntries = subtreeEntries(mergeState.records, earlier);
     if (!earlierEntries) return null;
-    if (
-      !index.conflictsSinceIn(records, earlierEntries, laterPosition, keysOf)
-    ) {
-      index.moveWrites(records, earlierEntries, laterPosition, keysOf);
+    if (!index.conflictsSinceIn(records, earlierEntries, laterPosition)) {
+      index.moveWrites(records, earlierEntries, laterPosition);
       adopt(mergeState.records, earlier.index, later.index);
       takePlaceOf(mergeState.records, earlier.index, later.index);
       return 'down';
@@ -257,7 +259,6 @@ function joinInParent(block, mergeState, rules) {
   if (scan.start === Infinity) return false;
 
   const index = new LastWriteIndex();
-  const keysOf = mergeState.elementKeysOf;
   const { records } = mergeState;
   // Each entry is named by its place in `entries`, which is not changed.
   /** @type {Map<string | number, {origin: number, position: number}>} */
@@ -270,7 +271,7 @@ function joinInParent(block, mergeState, rules) {
     if (earlier) {
       const earlierEntry = entries[earlier.origin];
       const direction =
-        entry instanceof RuleRecord
+        entry.kind === RULE
           ? joinRule(
               /** @type {RuleRecord} */ (earlierEntry),
               entry,
@@ -297,7 +298,7 @@ function joinInParent(block, mergeState, rules) {
     if (key !== null) {
       latest.set(key, { origin: position, position });
     }
-    index.recordNode(records, entry, position, keysOf);
+    index.recordNode(records, entry, position);
   }
   return joined;
 
@@ -325,14 +326,14 @@ function joinInParent(block, mergeState, rules) {
     if (!mergeState.canMerge(earlier, later)) return null;
     // Writes are recorded before the rewrite, while both rules still hold their
     // declarations and cached element keys. Equal selectors give equal keys.
-    if (!index.conflictsSinceIn(records, [later], earlierPosition, keysOf)) {
-      index.moveWrites(records, [later], earlierPosition, keysOf);
+    if (!index.conflictsSinceIn(records, [later], earlierPosition)) {
+      index.moveWrites(records, [later], earlierPosition);
       receive(earlier, later);
-      remove(mergeState.records, later);
+      remove(mergeState.records, later.index);
       return 'up';
     }
-    if (!index.conflictsSinceIn(records, [earlier], earlierPosition, keysOf)) {
-      index.moveWrites(records, [earlier, later], laterPosition, keysOf);
+    if (!index.conflictsSinceIn(records, [earlier], earlierPosition)) {
+      index.moveWrites(records, [earlier, later], laterPosition);
       receive(earlier, later);
       // A move edits the parent at once, after the pending removals.
       takePlaceOf(mergeState.records, earlier.index, later.index);
@@ -351,22 +352,18 @@ function joinInParent(block, mergeState, rules) {
   function joinBlock(earlier, later, earlierPosition, laterPosition) {
     const laterEntries = subtreeEntries(mergeState.records, later);
     if (!laterEntries) return null;
-    if (
-      !index.conflictsSinceIn(records, laterEntries, earlierPosition, keysOf)
-    ) {
-      index.moveWrites(records, laterEntries, earlierPosition, keysOf);
+    if (!index.conflictsSinceIn(records, laterEntries, earlierPosition)) {
+      index.moveWrites(records, laterEntries, earlierPosition);
       adopt(mergeState.records, earlier.index, later.index);
-      remove(mergeState.records, later);
+      remove(mergeState.records, later.index);
       return 'up';
     }
     // The earlier block's content stays first, so source order is kept.
     const earlierEntries = subtreeEntries(mergeState.records, earlier);
     if (!earlierEntries) return null;
-    if (
-      !index.conflictsSinceIn(records, earlierEntries, earlierPosition, keysOf)
-    ) {
-      index.moveWrites(records, earlierEntries, laterPosition, keysOf);
-      index.moveWrites(records, laterEntries, laterPosition, keysOf);
+    if (!index.conflictsSinceIn(records, earlierEntries, earlierPosition)) {
+      index.moveWrites(records, earlierEntries, laterPosition);
+      index.moveWrites(records, laterEntries, laterPosition);
       adopt(mergeState.records, earlier.index, later.index);
       takePlaceOf(mergeState.records, earlier.index, later.index);
       return 'down';

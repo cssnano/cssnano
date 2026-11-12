@@ -5,11 +5,10 @@ import {
   Claims,
   WritePositions,
 } from '../../../../../src/passes/merge/lib/rules/writePositions.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
+import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
 
-const table = new PropertyTable();
 /** The keys of a property name, as a write index takes them. */
-const keys = (prop) => table.keysOf(prop);
+const keys = (prop) => keysOfName(prop);
 
 /**
  * An index holding one write per entry of `writes`, at that entry's position.

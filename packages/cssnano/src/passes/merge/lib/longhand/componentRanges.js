@@ -52,7 +52,7 @@ export function componentRanges(tokens) {
  * @return {boolean} whether the tokens split where `list.space` splits the
  * string; a comment or a bad token makes it split inside a word
  */
-export function splitsAsTokens(tokens) {
+function splitsAsTokens(tokens) {
   for (const part of tokens) {
     switch (part[0]) {
       case TokenType.Comment:
@@ -137,15 +137,14 @@ export function splitComponents(value, tokens) {
 }
 
 /**
- * The tokens a declaration's value has in the text table, when the value has a
- * `(` to type; a value without one needs none.
+ * The tokens of a declaration's value, when the value has a `(` to type; a
+ * value without one needs none.
  *
- * @param {import('../../../../values/textTable.js').TextTable} textTable
- * @param {import('postcss').Declaration} decl
+ * @param {import('./blockDeclarations.js').DeclarationItem} decl
  * @return {readonly CSSToken[] | undefined}
  */
-export function declarationTokens(textTable, decl) {
-  return decl.value.includes('(') ? textTable.tokens(decl) : undefined;
+export function declarationTokens(decl) {
+  return decl.value.includes('(') ? decl.tokens : undefined;
 }
 
 /**

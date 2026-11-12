@@ -1,7 +1,10 @@
 import { parseCornerRadius, parseRadiusShorthand } from '../validateRadius.js';
-import type { Container, Declaration } from 'postcss';
+import type { BlockDeclarations } from '../blockDeclarations.js';
 export type RadiusDeclarationDescriptor = {
-    decl: Declaration;
+    /**
+     * the position of the declaration in its list
+     */
+    decl: number;
     prop?: string;
     val?: string;
     isBarrier: boolean;
@@ -14,12 +17,11 @@ export type RadiusDeclarationDescriptor = {
 };
 /**
  * Partitions family lanes into descriptor lanes.
- * @param {Container} rule
- * @param {[Declaration[], Declaration[]]} familyLanes
+ * @param {BlockDeclarations} list
+ * @param {[number[], number[]]} familyLanes
  * @return {{ lanes: [RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]], radiusDescriptors: RadiusDeclarationDescriptor[] } | null}
- * @param {import('../../../../../values/textTable.js').TextTable} textTable
  */
-export declare function partitionLanes(rule: Container, familyLanes: [Declaration[], Declaration[]], textTable: import('../../../../../values/textTable.js').TextTable): {
+export declare function partitionLanes(list: BlockDeclarations, familyLanes: [number[], number[]]): {
     lanes: [RadiusDeclarationDescriptor[], RadiusDeclarationDescriptor[]];
     radiusDescriptors: RadiusDeclarationDescriptor[];
 } | null;

@@ -80,6 +80,16 @@ export type TargetSupport = {
     features: ReadonlySet<string>;
 };
 /**
+ * @typedef {object} TargetSupport
+ * @property {boolean} placeShorthands
+ * @property {BoxSupport} boxSupport
+ * @property {ReadonlySet<string>} pairShorthands
+ * @property {ReadonlySet<string>} features
+ */
+/**
+ * What the targets support, worked out for one merge run. The caller takes it
+ * once and passes it on, so each run pays for it once.
+ *
  * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
  * @return {TargetSupport}
  */

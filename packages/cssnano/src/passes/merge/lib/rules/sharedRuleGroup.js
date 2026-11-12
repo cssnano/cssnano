@@ -1,12 +1,14 @@
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 import {
   childCountOf,
   firstDeclaration,
   nextDeclaration,
+  declarationsOf,
 } from './blockChildren.js';
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
 import { PropertyWrites } from './propertyWrites.js';
 import { declarationKeys } from './declarationCache.js';
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+import { listTextLength, selectorTextLength } from './selectorReads.js';
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -14,13 +16,6 @@ import { declarationKeys } from './declarationCache.js';
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
-
-/** @param {string[]} selectors @return {number} */
-export function selectorsLength(selectors) {
-  let total = selectors.length - 1;
-  for (const selector of selectors) total += selector.length;
-  return total;
-}
 
 // How many rules after the pair may join the shared rule. A constant bound
 // keeps the search linear in the stylesheet. `findGroup` reads it forward and
@@ -62,14 +57,14 @@ function overridesShared(records, rule, claimed, shared) {
 
 /**
  * @typedef {object} Follower
- * @property {RuleRecord} rule
+ * @property {ArenaIndex} rule the index of the rule, which the rewrite edits before it reads the rule again
  * @property {Set<ArenaIndex>} claimed the arena indices of the declarations where it repeats the shared declarations
  */
 
 /**
  * @typedef {object} Group
  * @property {Follower[]} followers the rules that join the shared rule
- * @property {string[]} added the selectors they add to it
+ * @property {TokenListId[]} addedIds the ids of the selectors they add to it, in order
  */
 
 /**
@@ -99,15 +94,17 @@ function repeatsShared(link, parent, shared, records) {
 }
 
 /**
- * @param {RuleRecord[]} members
+ * @param {ArenaIndex[]} members the indices of the rules of the group
  * @param {RuleRecord} later
  * @param {ArenaIndex | -1} parent the index of the block the rules stand in
  * @param {import('./mergeState.js').default} mergeState
  * @return {boolean} whether `later` can share a selector list with every member
  */
 function mergesWithAll(members, later, parent, mergeState) {
+  const { records } = mergeState;
   for (const member of members) {
-    if (!mergeState.canMerge(member, later, parent, parent)) return false;
+    const record = /** @type {RuleRecord} */ (records.rule(member));
+    if (!mergeState.canMerge(record, later, parent, parent)) return false;
   }
   return true;
 }
@@ -155,20 +152,19 @@ export function findGroup(
     return null;
   if (overridesShared(records, secondRule, claimedIndices, shared)) return null;
 
-  const listed = new Set(first.selectors);
-  for (const selector of secondRule.selectors) {
-    listed.add(selector);
-  }
-  const listedBefore = listed.size;
+  const listed = new Set(first.selectorIds);
+  for (const id of secondRule.selectorIds) listed.add(id);
+  /** @type {TokenListId[]} the ids of the selectors the group adds, in order of first use */
+  const addedIds = [];
   /** @type {number[]} */
   const candidates = [];
   /** @type {Follower[]} */
   const followers = [];
-  const members = [first, secondRule];
+  const members = [first.index, secondRule.index];
   let blocked = false;
   let best = delta;
   let size = 0;
-  let listedAtBest = listedBefore;
+  let addedAtBest = 0;
   let running = delta;
   for (
     let link = sequence.nextOf(second), seen = 0;
@@ -176,15 +172,16 @@ export function findGroup(
     link = sequence.nextOf(link), seen++
   ) {
     const linked = /** @type {RuleRecord} */ (records.rule(link));
-    const selectors = linked.selectors;
-    for (const selector of selectors) {
-      if (listed.has(selector)) continue;
-      listed.add(selector);
-      running += 1 + selector.length;
+    const ids = linked.selectorIds;
+    for (let at = 0; at < ids.length; at++) {
+      if (listed.has(ids[at])) continue;
+      listed.add(ids[at]);
+      addedIds.push(ids[at]);
+      running += 1 + selectorTextLength(mergeState.tokenLists, ids[at]);
     }
     running -= sharedBytes;
     if (childCountOf(records, linked.index) === shared.length) {
-      running -= selectorsLength(selectors) + 1;
+      running -= listTextLength(mergeState.tokenLists, ids) + 1;
     }
     candidates.push(link);
     // Every member repeats the prefixed declarations, which a later plugin
@@ -210,20 +207,20 @@ export function findGroup(
       ) {
         break;
       }
-      followers.push({ rule: later, claimed });
-      members.push(later);
+      followers.push({ rule: later.index, claimed });
+      members.push(later.index);
       blocked = overridesShared(records, later, claimed, shared);
     }
     if (followers.length < candidates.length) break;
     best = running;
     size = candidates.length;
-    listedAtBest = listed.size;
+    addedAtBest = addedIds.length;
     if (blocked) break;
   }
   if (size === 0) return null;
   return {
     followers: followers.slice(0, size),
-    added: [...listed].slice(listedBefore, listedAtBest),
+    addedIds: addedIds.slice(0, addedAtBest),
   };
 }
 
@@ -239,7 +236,7 @@ export function findGroup(
 function claimedBy(shared, later, records) {
   return later.context !== -1
     ? null
-    : claimRepeats(shared, later.declarationsOf(records));
+    : claimRepeats(shared, declarationsOf(records, later.index));
 }
 
 /**
