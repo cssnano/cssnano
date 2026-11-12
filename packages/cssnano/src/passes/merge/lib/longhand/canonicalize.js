@@ -294,7 +294,7 @@ export function longhandContext(
  * @param {MergeContext} context
  * @return {void}
  */
-export function finishColumns(context) {
+function finishColumns(context) {
   if (!context.setsOtherColumn) {
     for (const { block, positions, lanes } of context.columnRules) {
       reduceColumns(block.list, positions, lanes, context.features);

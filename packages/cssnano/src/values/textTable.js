@@ -87,19 +87,6 @@ class TextTable {
   }
 
   /**
-   * Stores a list whose text the caller knows. The node is assigned only when
-   * it does not already spell the text.
-   *
-   * @param {TextNode} node
-   * @param {string} text
-   * @param {readonly CSSToken[]} list
-   */
-  record(node, text, list) {
-    assign(node, text);
-    this.#entries.set(node, { text, tokens: list });
-  }
-
-  /**
    * Stores an entry a memo already holds, so the node and the memo share one
    * list. The node is assigned only when it does not already spell the text.
    *

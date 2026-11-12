@@ -43,15 +43,6 @@ export type FamilyDeclarations = {
  */
 export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, run: RunContext, records: BlockRecords): MergeContext;
 /**
- * Reduces the column rules once every block of the stylesheet is canonicalized,
- * since whether a column property is set elsewhere is a whole-stylesheet fact.
- * Each column block is committed once, after its column reducers.
- *
- * @param {MergeContext} context
- * @return {void}
- */
-export declare function finishColumns(context: MergeContext): void;
-/**
  * The longhand round on the records: the root's own declarations are folded,
  * then every block that holds a declaration, then the columns are finished.
  *

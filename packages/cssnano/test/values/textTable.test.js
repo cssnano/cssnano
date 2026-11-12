@@ -55,7 +55,7 @@ test('TextTable.write stores the given list itself', () => {
   assert.equal(table.tokens(rule), list);
 });
 
-test('TextTable.record assigns the selector only when the text differs', () => {
+test('TextTable.write assigns the selector only when the text differs', () => {
   const rule = firstRule('a {}');
   let assignments = 0;
   let selector = rule.selector;
@@ -67,9 +67,9 @@ test('TextTable.record assigns the selector only when the text differs', () => {
     },
   });
   const table = new TextTable();
-  table.record(rule, 'a', tokens('a'));
+  table.write(rule, tokens('a'));
   assert.equal(assignments, 0);
-  table.record(rule, 'b', tokens('b'));
+  table.write(rule, tokens('b'));
   assert.equal(assignments, 1);
   assert.equal(selector, 'b');
 });
@@ -100,11 +100,11 @@ function firstDecl(css) {
   );
 }
 
-test("the table reads a declaration's value from the list recorded for it, without tokenizing", () => {
+test("the table reads a declaration's value from the list written for it, without tokenizing", () => {
   const decl = firstDecl('a { margin: 0 1px }');
   const table = new TextTable();
   const list = tokens('0 1px');
-  table.record(decl, '0 1px', list);
+  table.write(decl, list);
   assert.equal(table.tokens(decl), list);
 });
 
@@ -139,7 +139,7 @@ test('TextTable.assignFolded shares a folded entry that carries tokens, so memo 
 test('TextTable.assignFolded stores no list for a folded text that has none', () => {
   const decl = firstDecl('a { margin: 0 1px }');
   const table = new TextTable();
-  table.record(decl, '0 1px', tokens('0 1px'));
+  table.write(decl, tokens('0 1px'));
   table.assignFolded(decl, { text: '1px', tokens: undefined });
   assert.equal(decl.value, '1px');
   assert.equal(table.stored(decl), undefined);
