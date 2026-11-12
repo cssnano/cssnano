@@ -6,10 +6,9 @@ import {
   repositoryFile,
 } from '../../../../../../../util/testHelpers.js';
 const plugin = transformPlugin('mergeLonghand');
-import minifyShorthandIdentities, {
-  foldShorthandDeclaration,
-} from '../../../../../src/passes/merge/lib/longhand/minifyShorthand.js';
+import { foldShorthandDeclaration } from '../../../../../src/passes/merge/lib/longhand/minifyShorthand.js';
 import { transformPlugin } from '#passes/merge';
+import { blockOf } from './helpers/declarationItems.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -36,7 +35,10 @@ describe('shorthand identity fail-closed contracts', () => {
     'rejects environment substitutions',
     passthroughCSS('a{inset:env(x) env(x)}')
   );
-  test('rejects comments', passthroughCSS('a{gap:1px /* same */ 1px}'));
+  test(
+    'a plain comment inside a shorthand value goes when the value folds',
+    processCSS('a{gap:1px /* same */ 1px}', 'a{gap:1px}')
+  );
   test(
     'rejects malformed values',
     passthroughCSS('a{gap:calc(1px +) calc(1px +)}')
@@ -173,12 +175,6 @@ describe('shorthand identity rule integration contracts', () => {
     assert.strictEqual(result.css, 'a{gap:1rem}');
   });
 
-  test('preserves backward-compatible root walk with minifyShorthandIdentities', () => {
-    const root = postcss.parse('a{gap:1rem 1rem}');
-    minifyShorthandIdentities(root);
-    assert.strictEqual(root.toString(), 'a{gap:1rem}');
-  });
-
   test(
     'normalizes direct declarations inside nested at-rules',
     processCSS(
@@ -201,24 +197,24 @@ describe('shorthand identity rule integration contracts', () => {
   );
 
   test('folds shorthand declaration without memoTable', () => {
-    const decl = postcss.decl({ prop: 'gap', value: '1rem 1rem' });
-    foldShorthandDeclaration(decl);
-    assert.strictEqual(decl.value, '1rem');
+    const list = blockOf('a{gap: 1rem 1rem}');
+    foldShorthandDeclaration(list, 0);
+    assert.strictEqual(list.at(0).value, '1rem');
   });
 
   test('ignores declarations with stylehacks during in-place folding', () => {
-    const decl = postcss.decl({ prop: '_gap', value: '1rem 1rem' });
-    foldShorthandDeclaration(decl);
-    assert.strictEqual(decl.value, '1rem 1rem');
+    const list = blockOf('a{_gap: 1rem 1rem}');
+    foldShorthandDeclaration(list, 0);
+    assert.strictEqual(list.at(0).value, '1rem 1rem');
   });
 
   test('ignores non-shorthand declarations during in-place folding', () => {
-    const decl = postcss.decl({ prop: 'color', value: 'red' });
-    foldShorthandDeclaration(decl);
-    assert.strictEqual(decl.value, 'red');
+    const list = blockOf('a{color: red}');
+    foldShorthandDeclaration(list, 0);
+    assert.strictEqual(list.at(0).value, 'red');
   });
 
-  test('executes a single AST walk across the stylesheet', async () => {
+  test('the merge does not walk the AST, since its longhand rounds read the records', async () => {
     let walkCalls = 0;
     function countingPlugin() {
       return {
@@ -238,7 +234,7 @@ describe('shorthand identity rule integration contracts', () => {
       '@media (min-width:600px){gap:1rem 1rem;a{inset:0 0 0 0}}b{overflow:hidden hidden}',
       { from: repositoryFile }
     );
-    assert.strictEqual(walkCalls, 1, 'should only walk the AST once');
+    assert.strictEqual(walkCalls, 0, 'should not walk the AST');
     assert.strictEqual(
       result.css,
       '@media (min-width:600px){gap:1rem;a{inset:0}}b{overflow:hidden}'

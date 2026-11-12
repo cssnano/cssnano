@@ -1,20 +1,21 @@
+import type { TokenListId } from '../../../ir/tokenLists.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type RuleSequence from './ruleSequence.js';
 import type DeclarationScan from './declarationScan.js';
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
-/** @param {string[]} selectors @return {number} */
-export declare function selectorsLength(selectors: string[]): number;
 export declare const SHARING_WINDOW = 10;
 export type Follower = {
-    rule: RuleRecord;
+    /**
+     * the index of the rule, which the rewrite edits before it reads the rule again
+     */
+    rule: ArenaIndex;
     /**
      * the arena indices of the declarations where it repeats the shared declarations
      */
@@ -26,9 +27,9 @@ export type Group = {
      */
     followers: Follower[];
     /**
-     * the selectors they add to it
+     * the ids of the selectors they add to it, in order
      */
-    added: string[];
+    addedIds: TokenListId[];
 };
 /**
  * The rules after the pair that join the shared rule: the prefix of the rules

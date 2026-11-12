@@ -1,69 +1,44 @@
-import type { TextTable } from '../../../../values/textTable.js';
+import type { DeclarationItem } from './blockDeclarations.js';
 /**
- * @template T
- * @param {ReadonlySet<string>} supported - features every target supports
- * @param {() => T} run
- * @return {T}
- */
-declare function withTargetSupport<T>(supported: ReadonlySet<string>, run: () => T): T;
-/**
- * @param {import('postcss').Declaration} declaration
- * @param {TextTable} textTable
+ * @param {DeclarationItem} declaration
  * @return {Set<string>} every feature a browser had to support for the
  * declaration to apply: the ones its value uses, and the ones the declaration
  * it was cloned from needed
  */
-declare function requiredSupport(declaration: import('postcss').Declaration, textTable: TextTable): Set<string>;
+declare function requiredSupport(declaration: DeclarationItem): Set<string>;
 /**
- * @param {import('postcss').Declaration} source
- * @param {import('postcss').Declaration} clone taken from source
- * @param {TextTable} textTable
- * @return {void}
- */
-declare function inheritSupport(source: import('postcss').Declaration, clone: import('postcss').Declaration, textTable: TextTable): void;
-/**
- * inheritedSupport is populated only by inheritSupport(), which records each
- * declaration the plugin clones. A declaration's presence proves it was
- * synthesized by the plugin. Values the plugin invented, such as `currentcolor`
- * standing for `border: medium none`, cannot be fallbacks the author wrote.
- *
- * @param {import('postcss').Declaration} declaration
- * @return {boolean} whether the plugin created the declaration
- */
-declare function isDerived(declaration: import('postcss').Declaration): boolean;
-/**
- * @param {import('postcss').Declaration} declaration
- * @param {TextTable} textTable
+ * @param {DeclarationItem} declaration
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean} whether some target may drop the declaration because it
  * lacks syntax the declaration needs
  */
-declare function needsUnmetSupport(declaration: import('postcss').Declaration, textTable: TextTable): boolean;
+declare function needsUnmetSupport(declaration: DeclarationItem, features: ReadonlySet<string>): boolean;
 /**
- * @param {import('postcss').Declaration} declaration
- * @param {TextTable} textTable
+ * @param {DeclarationItem} declaration
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {Set<string>} the support out of `requiredSupport` that stops a
  * merge
  */
-declare function mergeBlockingSupport(declaration: import('postcss').Declaration, textTable: TextTable): Set<string>;
+declare function mergeBlockingSupport(declaration: DeclarationItem, features: ReadonlySet<string>): Set<string>;
 /**
  * A later declaration requiring new support is assumed to enhance an earlier
  * one. Dropping the earlier changes rendering.
  *
- * @param {import('postcss').Declaration} earlier
- * @param {import('postcss').Declaration} later
- * @param {TextTable} textTable
+ * @param {DeclarationItem} earlier
+ * @param {DeclarationItem} later
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean} whether earlier is a fallback for later
  */
-declare function isFallback(earlier: import('postcss').Declaration, later: import('postcss').Declaration, textTable: TextTable): boolean;
+declare function isFallback(earlier: DeclarationItem, later: DeclarationItem, features: ReadonlySet<string>): boolean;
 /**
  * Author-written declarations are checked against all required support;
  * plugin-created declarations only against the features that block a merge.
  *
- * @param {import('postcss').Declaration} earlier
- * @param {import('postcss').Declaration} later
- * @param {TextTable} textTable
+ * @param {DeclarationItem} earlier
+ * @param {DeclarationItem} later
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-declare function strandsFallback(earlier: import('postcss').Declaration, later: import('postcss').Declaration, textTable: TextTable): boolean;
-export { requiredSupport, mergeBlockingSupport, needsUnmetSupport, inheritSupport, isDerived, isFallback, strandsFallback, withTargetSupport, };
+declare function strandsFallback(earlier: DeclarationItem, later: DeclarationItem, features: ReadonlySet<string>): boolean;
+export { requiredSupport, mergeBlockingSupport, needsUnmetSupport, isFallback, strandsFallback, };
 //# sourceMappingURL=isFallback.d.ts.map

@@ -1,7 +1,9 @@
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 import {
   childCountOf,
   holdsOnlyDeclarationsOf,
   childEntriesOf,
+  declarationsOf,
 } from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import LastWriteIndex from './lastWriteIndex.js';
@@ -9,15 +11,17 @@ import RepeatScan from './repeatScan.js';
 import { filterRuleIntersections } from './declarations.js';
 import { isKeyframes } from './sameContainer.js';
 import { removeRules } from './treeEdits.js';
-import { RuleRecord } from './ruleRecord.js';
+import { RULE } from './blockRecord.js';
 import { removeDeclarations } from './arenaEdits.js';
 import { declarationKeys } from './declarationCache.js';
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
+import { elementKeysOf, listTextLength } from './selectorReads.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 /** @import MergeState from './mergeState.js' */
 /** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 /**
  * A rule made only of declarations. Comments and nested rules would be
@@ -50,11 +54,16 @@ export function claimRepeats(declarations, later) {
   return intersection.length === declarations.length ? claimedIndices : null;
 }
 
-/** @param {Iterable<string>} selectors */
-function listLength(selectors) {
-  let total = 0;
-  for (const selector of selectors) total += 1 + selector.length;
-  return total;
+/**
+ * The length of a list of selectors in the output: each selector and a comma
+ * after it.
+ *
+ * @param {TokenLists} tokenLists
+ * @param {readonly TokenListId[]} ids
+ * @return {number}
+ */
+function listLength(tokenLists, ids) {
+  return listTextLength(tokenLists, ids) + 1;
 }
 
 /**
@@ -73,28 +82,35 @@ function listLength(selectors) {
  * selector and braces, so that join always shortens the output.
  *
  * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
  * @param {Group} group
  * @param {RuleRecord} later
- * @param {import('../../../ir/selectorIds.js').SelectorIds} selectorIds
- * @return {{added: string[], gain: number}}
+ * @return {{addedIds: TokenListId[], gain: number}} the ids of the selectors
+ * the join adds
  */
-function joinGain(records, group, later, selectorIds) {
+function joinGain(records, tokenLists, group, later) {
   if (group.bytes < 0) {
     group.bytes = group.declarations.reduce(
-      (total, declaration) => total + minifiedLength(declaration),
+      (total, declaration) => total + minifiedLength(tokenLists, declaration),
       0
     );
   }
-  const listed = (group.selectors ??= new Set(group.rule.idsOf(selectorIds)));
-  const laterSelectors = later.selectors;
-  const added = [...new Set(laterSelectors)].filter(
-    (selector) => !listed.has(selectorIds.idOf(selector))
-  );
+  const listed = (group.selectors ??= new Set(group.rule.selectorIds));
+  const laterIds = later.selectorIds;
+  const addedIds = [];
+  const seen = new Set();
+  for (let at = 0; at < laterIds.length; at++) {
+    const id = laterIds[at];
+    if (seen.has(id)) continue;
+    seen.add(id);
+    if (listed.has(id)) continue;
+    addedIds.push(id);
+  }
   const removed =
     group.declarations.length === childCountOf(records, later.index)
-      ? group.bytes + listLength(laterSelectors)
+      ? group.bytes + listLength(tokenLists, laterIds)
       : group.bytes;
-  return { added, gain: removed - listLength(added) };
+  return { addedIds, gain: removed - listLength(tokenLists, addedIds) };
 }
 
 /**
@@ -114,8 +130,7 @@ export default function joinByDeclarations(block, mergeState) {
   const entries = childEntriesOf(mergeState.records, block.index);
   const declarationRules = entries.map(
     (entry) =>
-      entry instanceof RuleRecord &&
-      isDeclarationRule(mergeState.records, entry)
+      entry.kind === RULE && isDeclarationRule(mergeState.records, entry)
   );
   // Rules can only join where they share a declaration. The keys are read
   // here, before any edit, so no loop holds a rule's keys across an edit.
@@ -129,7 +144,6 @@ export default function joinByDeclarations(block, mergeState) {
   if (scan.start === Infinity) return false;
 
   const index = new LastWriteIndex();
-  const keysOf = mergeState.elementKeysOf;
   // Groups by their first declaration, in document order: a rule that
   // repeats a group's declarations repeats that one too.
   /** @type {Map<number, Group[]>} */
@@ -154,12 +168,7 @@ export default function joinByDeclarations(block, mergeState) {
       if (outcome === 'emptied') continue;
       register(record, position);
     }
-    index.recordNode(mergeState.records, entry, position, keysOf);
-  }
-  for (const grownIndex of grown) {
-    mergeState.spellSelectors(
-      /** @type {RuleRecord} */ (mergeState.records.rule(grownIndex))
-    );
+    index.recordNode(mergeState.records, entry, position);
   }
   removeRules(mergeState, emptied);
   return grown.size > 0;
@@ -179,7 +188,7 @@ export default function joinByDeclarations(block, mergeState) {
     const group = {
       rule,
       position,
-      declarations: rule.declarationsOf(mergeState.records),
+      declarations: declarationsOf(mergeState.records, rule.index),
       selectors: null,
       bytes: -1,
     };
@@ -195,14 +204,14 @@ export default function joinByDeclarations(block, mergeState) {
    */
   function joinIntoGroup(laterRecord) {
     const { records } = mergeState;
-    const laterDeclarations = laterRecord.declarationsOf(records);
+    const laterDeclarations = declarationsOf(records, laterRecord.index);
     const laterSet = declarationKeys(
       mergeState.records,
       laterRecord.index
     ).keySet;
     // Every declaration of `later`, claimed or not, is written by `later`.
-    const laterKeys = keysOf(laterRecord);
-    /** @type {{group: Group, claimed: Set<ArenaIndex>, added: string[], gain: number} | null} */
+    const laterKeys = elementKeysOf(mergeState.records, laterRecord.index);
+    /** @type {{group: Group, claimed: Set<ArenaIndex>, addedIds: TokenListId[], gain: number} | null} */
     let best = null;
     for (const id of laterSet) {
       const candidates = groups.get(id) ?? [];
@@ -228,11 +237,11 @@ export default function joinByDeclarations(block, mergeState) {
         ) {
           continue;
         }
-        const { added, gain } = joinGain(
+        const { addedIds, gain } = joinGain(
           records,
+          mergeState.tokenLists,
           group,
-          laterRecord,
-          mergeState.selectorIds
+          laterRecord
         );
         // A join that breaks even still takes the shared declarations out of
         // the way of later rules that can join the group. On a tie, the
@@ -256,17 +265,16 @@ export default function joinByDeclarations(block, mergeState) {
         );
         if (index.conflictsSince(claimed, group.position, laterKeys)) continue;
         if (!mergeState.canMerge(group.rule, laterRecord)) continue;
-        best = { group, claimed: claimedIndices, added, gain };
+        best = { group, claimed: claimedIndices, addedIds, gain };
       }
     }
     if (!best) return null;
-    const { group, claimed, added } = best;
+    const { group, claimed, addedIds } = best;
     const groupRecord = group.rule;
-    const listed = keysOf(groupRecord) !== null;
-    const gained = mergeState.addSelectors(groupRecord, added, laterRecord);
-    for (const selector of added) {
-      group.selectors?.add(mergeState.selectorIds.idOf(selector));
-    }
+    const listed =
+      elementKeysOf(mergeState.records, groupRecord.index) !== null;
+    const gained = mergeState.addSelectors(groupRecord, addedIds);
+    for (const id of addedIds) group.selectors?.add(id);
     if (listed) recordGained(group, gained);
     grown.add(group.rule.index);
     const outcome = withdraw(laterRecord, claimed);

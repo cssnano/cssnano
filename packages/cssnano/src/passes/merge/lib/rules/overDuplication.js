@@ -1,24 +1,24 @@
 import { firstDeclaration, nextDeclaration } from './blockChildren.js';
-import { BlockRecord } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 const TWICE = 'the records reach a node twice';
 const OVER_WRITTEN =
   'a declaration is written more often than the input wrote it';
 
 /**
- * The key by which a declaration is counted: its property, value and
+ * The key by which a declaration is counted: its property, value list and
  * `!important` flag, so a copy of a declaration counts as the same one.
  *
- * @param {{prop: string, value: string, important?: boolean}} node a
- * declaration record, or a PostCSS declaration
+ * @param {DeclarationRecord} record
  * @return {string}
  */
-function declarationKey(node) {
-  return JSON.stringify([node.prop, node.value, Boolean(node.important)]);
+function declarationKey(record) {
+  return JSON.stringify([record.prop, record.valueList, record.important]);
 }
 
 /**
@@ -68,14 +68,14 @@ export function tallyDeclarations(records) {
       entry = links.nextSibling(entry)
     ) {
       const item = records.entry(entry);
-      if (item instanceof RuleRecord) {
+      if (item.kind === RULE) {
         visitRule(item);
-      } else if (item instanceof BlockRecord) {
+      } else if (item.kind === STYLESHEET || item.kind === AT_RULE_BLOCK) {
         reach(entry);
         walk(item);
       } else {
         reach(entry);
-        if (item instanceof DeclarationRecord) count(item);
+        if (item.kind === DECLARATION) count(item);
       }
     }
   };

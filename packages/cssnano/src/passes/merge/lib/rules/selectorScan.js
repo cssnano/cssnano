@@ -1,4 +1,4 @@
-import { tokenizer, TokenType } from '@csstools/css-tokenizer';
+import { TokenType } from '@csstools/css-tokenizer';
 import { advanceAttribute } from './attributeSelector.js';
 import {
   cssSel2,
@@ -135,16 +135,16 @@ function isSelectorTokenSupported(state, type, value, name, browsers) {
 }
 
 /**
- * Scan selector tokens for the compatibility features checked here, and
- * record the vendor prefix of its pseudo names in `state`. This is
+ * Scan the tokens of one selector for the compatibility features checked here,
+ * and record the vendor prefix of its pseudo names in `state`. This is
  * deliberately not a selector parser.
  *
- * @param {string} selector
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} tokens the tokens of the selector, without an end-of-file token
  * @param {readonly string[]} browsers
  * @param {ScanState} state
  * @return {boolean}
  */
-export function scanCompatibility(selector, browsers, state) {
+export function scanCompatibility(tokens, browsers, state) {
   // A comment between two non-whitespace tokens may be the `/**/` separator
   // that keeps them from fusing (`div/**/span`); such a selector may be
   // invalid, and merging it into a list would make browsers drop the list.
@@ -152,39 +152,32 @@ export function scanCompatibility(selector, browsers, state) {
   let previousType;
   let separatorComment = false;
 
-  try {
-    const tokenStream = tokenizer({ css: selector });
-    while (!tokenStream.endOfFile()) {
-      const token = tokenStream.nextToken();
-      const type = token[0];
-      const value = token[1];
-      const name =
-        type === TokenType.Ident || type === TokenType.Function
-          ? token[4].value
-          : '';
+  for (const token of tokens) {
+    const type = token[0];
+    const value = token[1];
+    const name =
+      type === TokenType.Ident || type === TokenType.Function
+        ? token[4].value
+        : '';
 
-      if (type === TokenType.EOF) break;
-      if (state.attributeStage === 'none') {
-        if (type === TokenType.Comment) {
-          separatorComment ||=
-            previousType !== undefined && previousType !== TokenType.Whitespace;
-          continue;
-        }
-        if (separatorComment && type !== TokenType.Whitespace) return false;
-        separatorComment = false;
+    if (state.attributeStage === 'none') {
+      if (type === TokenType.Comment) {
+        separatorComment ||=
+          previousType !== undefined && previousType !== TokenType.Whitespace;
+        continue;
       }
-      if (type !== TokenType.Comment) previousType = type;
-      if (state.attributeStage !== 'none') {
-        if (!advanceAttribute(state, type, value, browsers)) return false;
-      } else if (
-        !trackDelimiters(state, type) ||
-        !isSelectorTokenSupported(state, type, value, name, browsers)
-      ) {
-        return false;
-      }
+      if (separatorComment && type !== TokenType.Whitespace) return false;
+      separatorComment = false;
     }
-  } catch {
-    return false;
+    if (type !== TokenType.Comment) previousType = type;
+    if (state.attributeStage !== 'none') {
+      if (!advanceAttribute(state, type, value, browsers)) return false;
+    } else if (
+      !trackDelimiters(state, type) ||
+      !isSelectorTokenSupported(state, type, value, name, browsers)
+    ) {
+      return false;
+    }
   }
   return !state.pseudoPrefix && state.delimiters.length === 0;
 }

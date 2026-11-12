@@ -54,11 +54,13 @@ export function commentId(keys, text) {
  * @return {number}
  */
 export function statementId(keys, layered, entry) {
-  return markLayered(layered, entry.preludeId, entry.kind === LAYER);
+  return markLayered(layered, entry.preludeId, entry.atRuleKind === LAYER);
 }
 
 /**
- * The id of a rule or of a block at-rule, from the ids of its kept entries.
+ * The id of a rule or of a block at-rule, from the ids of its kept entries. A
+ * rule's path steps by the id of each of its selectors, so spellings that PostCSS
+ * reads as one list give one path.
  *
  * @param {DeclarationKeys} keys
  * @param {Set<number>} layered
@@ -70,13 +72,12 @@ export function containerId(keys, layered, container, childIds) {
   let path;
   let declaresLayer = false;
   if (container.kind === RULE) {
-    path = step(
-      step(keys.root, 'rule'),
-      /** @type {RuleRecord} */ (container).selector
-    );
+    path = step(keys.root, 'rule');
+    for (const id of /** @type {RuleRecord} */ (container).selectorIds)
+      path = step(path, id);
   } else {
     path = keys.preludeTrie(container.preludeId);
-    declaresLayer = container.kind === LAYER;
+    declaresLayer = container.atRuleKind === LAYER;
   }
   path = step(path, BLOCK);
   for (const id of childIds) {

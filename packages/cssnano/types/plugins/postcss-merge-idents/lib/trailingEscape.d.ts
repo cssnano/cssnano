@@ -1,11 +1,5 @@
 import type { TextTable } from '../../../values/textTable.js';
 /**
- * @param {string} value
- * @return {boolean} whether the last backslash escapes nothing inside the
- *   value, i.e. the value ends in an odd number of backslashes
- */
-declare function endsWithDanglingEscape(value: string): boolean;
-/**
  * The tokens of an at-rule's prelude. A dangling backslash escapes the space
  * that PostCSS keeps in `raws.between`, so that space joins the prelude;
  * otherwise the between-block space holds only whitespace and comments, and
@@ -27,5 +21,5 @@ declare function preludeTokens(atRule: import('postcss').AtRule, table: TextTabl
  *   `undefined` when the code point after a trailing backslash is unknown
  */
 declare function trailingEscape(decl: import('postcss').Declaration): string | undefined;
-export { endsWithDanglingEscape, preludeTokens, trailingEscape };
+export { preludeTokens, trailingEscape };
 //# sourceMappingURL=trailingEscape.d.ts.map

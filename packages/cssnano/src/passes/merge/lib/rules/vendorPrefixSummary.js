@@ -77,6 +77,19 @@ export class VendorPrefixSummary {
     );
   }
 
+  /**
+   * Whether two summaries hold the same prefix facts.
+   *
+   * @param {VendorPrefixSummary} other
+   * @return {boolean}
+   */
+  sameAs(other) {
+    return (
+      this.#prefix === other.#prefix &&
+      this.#msPlaceholder === other.#msPlaceholder
+    );
+  }
+
   /** @return {boolean} */
   #isUnprefixed() {
     return this.#prefix === null || this.#prefix === '';

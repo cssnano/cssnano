@@ -1,12 +1,16 @@
-import {
-  childNodesOf,
-  childEntriesOf,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { selectorIdsOf } from './selectorIdsOf.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
+import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childNodesOf } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import {
+  AT_RULE_BLOCK,
+  RULE,
+  STYLESHEET,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import {
@@ -20,6 +24,8 @@ import {
   ruleRecordOf,
   buildTestRecords,
   placeUnlinked,
+  nodeOfEntry,
+  nodesOf,
 } from './liveRecords.js';
 import {
   adopt,
@@ -27,6 +33,7 @@ import {
   substitute,
 } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { tokensText } from '../../../../../src/values/tokensText.js';
 
 /** @import {ChildNode, Container, Root, Rule} from 'postcss' */
 
@@ -54,9 +61,14 @@ function setup(css) {
 function liveLabels(state) {
   return childEntriesOf(state.records, state.records.root.index).map(
     (entry) => {
-      if (entry instanceof RuleRecord) return entry.selectors[0];
-      if (entry instanceof BlockRecord) return `@${entry.node.name}`;
-      return entry.node?.type ?? /** @type {ChildNode} */ (entry).type;
+      if (entry.kind === RULE)
+        return tokensText(state.tokenLists.get(entry.selectorIds[0]));
+      if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK)
+        return `@${nodeOfEntry(state.records, entry).name}`;
+      return (
+        nodeOfEntry(state.records, entry)?.type ??
+        /** @type {ChildNode} */ (entry).type
+      );
     }
   );
 }
@@ -76,7 +88,10 @@ test('substitute with one replacement should put it where the rule stood', () =>
   const replacement = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
+    new RuleRecord(
+      '',
+      selectorIdsOf(new SelectorIds(), state.tokenLists, ['x'])
+    )
   );
   substitute(state.records, record.index, [replacement.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'c']);
@@ -89,12 +104,18 @@ test('substitute with several replacements should keep their order where the rul
   const first = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'x' }), ['x'], 'x')
+    new RuleRecord(
+      '',
+      selectorIdsOf(new SelectorIds(), state.tokenLists, ['x'])
+    )
   );
   const second = placeUnlinked(
     state.records,
     state.records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'y' }), ['y'], 'y')
+    new RuleRecord(
+      '',
+      selectorIdsOf(new SelectorIds(), state.tokenLists, ['y'])
+    )
   );
   substitute(state.records, record.index, [first.index, second.index]);
   assert.deepEqual(liveLabels(state), ['a', 'x', 'y', 'c']);
@@ -126,7 +147,9 @@ test('adopt should splice the source children after the target, keeping a rule t
   );
   assert.notEqual(/** @type {RuleRecord} */ (entries[1]).context, -1);
   assert.deepEqual(
-    childNodesOf(state.records, targetBlock.index).map((node) => node.type),
+    childNodesOf(state.records, nodesOf(state.records), targetBlock.index).map(
+      (node) => node.type
+    ),
     ['rule', 'rule']
   );
 });
@@ -162,7 +185,7 @@ test('takePlaceOf should put the earlier at-rule block where the later block sto
 test('remove should take a rule out of the live entries', () => {
   const { root, state } = setup('a{color:red}b{width:1px}c{height:1px}');
   const [, b] = /** @type {Rule[]} */ (root.nodes);
-  remove(state.records, ruleRecordOf(state.records, b));
+  remove(state.records, ruleRecordOf(state.records, b).index);
   assert.deepEqual(liveLabels(state), ['a', 'c']);
 });
 
@@ -171,7 +194,7 @@ test('remove should take an at-rule block out of the live entries', () => {
     'a{color:red}@media print{b{width:1px}}c{height:1px}'
   );
   const [, media] = /** @type {Container[]} */ (root.nodes);
-  remove(state.records, blockRecordOf(state.records, media));
+  remove(state.records, blockRecordOf(state.records, media).index);
   assert.deepEqual(liveLabels(state), ['a', 'c']);
 });
 
@@ -184,8 +207,13 @@ test('a rule that appendToDeclarations empties is readable until an edit unlinks
     ruleRecordOf(state.records, receiving).index,
     incomingIndex
   );
-  assert.equal(state.records.rule(incomingIndex)?.selectors[0], 'b');
-  remove(state.records, ruleRecordOf(state.records, incoming));
+  assert.equal(
+    tokensText(
+      state.tokenLists.get(state.records.rule(incomingIndex).selectorIds[0])
+    ),
+    'b'
+  );
+  remove(state.records, ruleRecordOf(state.records, incoming).index);
   assert.throws(() => state.records.rule(incomingIndex), /does not reach/v);
 });
 
@@ -195,9 +223,11 @@ test('removeRules of the first child should leave the rest as the live entries o
   removeRules(state, new Set([ruleRecordOf(state.records, a).index]));
   assert.deepEqual(liveLabels(state), ['b']);
   assert.deepEqual(
-    childNodesOf(state.records, state.records.root.index).map(
-      (node) => node.type
-    ),
+    childNodesOf(
+      state.records,
+      nodesOf(state.records),
+      state.records.root.index
+    ).map((node) => node.type),
     ['rule']
   );
 });

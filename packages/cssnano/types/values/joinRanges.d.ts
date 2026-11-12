@@ -1,10 +1,17 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
-import type { SelectorRange } from './selectorRanges.js';
+export type SelectorRange = {
+    start: number;
+    end: number;
+};
 export type RangePiece = SelectorRange & {
     list: readonly CSSToken[];
 };
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {SelectorRange} from './selectorRanges.js' */
+/**
+ * The token index range of one selector: `end` is exclusive.
+ *
+ * @typedef {{start: number, end: number}} SelectorRange
+ */
 /**
  * A token range of one list, such as a selector's range in its rule's tokens.
  *

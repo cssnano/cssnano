@@ -1,15 +1,18 @@
+/** @import {TokenLists} from './tokenLists.js' */
+/** @import {DeclarationRecord} from './declarationRecord.js' */
+
 /**
  * The bytes a declaration takes in minified output: its name, its value, the
  * colon and the separator after it. `!important` adds ten bytes.
  *
- * @param {{prop: string, value: string, important?: boolean}} declaration a
- * PostCSS declaration, or a declaration record, which holds the same facts
+ * @param {TokenLists} tokenLists the run's lists, which hold the length of each value
+ * @param {DeclarationRecord} declaration
  * @return {number}
  */
-export function minifiedLength(declaration) {
+export function minifiedLength(tokenLists, declaration) {
   return (
     declaration.prop.length +
-    declaration.value.length +
+    tokenLists.textLength(declaration.valueList) +
     (declaration.important ? 10 : 0) +
     2
   );

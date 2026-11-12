@@ -4,7 +4,7 @@ import data from '../../../script/passes/ir/lib/propertyGroups.json' with { type
 import { isConflictingProp } from '../../../script/passes/ir/lib/propertyRelations.js';
 import { conflicts } from '../../../script/passes/ir/lib/tableConflicts.js';
 import { setsLonghands } from '../../../src/passes/merge/lib/longhand/spec.js';
-import { PropertyTable } from '../../../src/passes/ir/propertyTable.js';
+import { keysOfName } from '../../../src/passes/ir/propertyTable.js';
 
 // Every property the webref data names, plus its aliases.
 const known = [
@@ -88,14 +88,13 @@ test('the shipped relation matches the current relation for a name that is not a
 });
 
 test('a property table keys custom properties by their exact, case-sensitive name', () => {
-  const table = new PropertyTable();
-  assert.strictEqual(table.keysOf('--Foo').key, '--Foo');
-  assert.strictEqual(table.keysOf('--\\66 oo').key, '--foo');
-  assert.notStrictEqual(table.keysOf('--Foo').key, table.keysOf('--foo').key);
+  assert.strictEqual(keysOfName('--Foo').key, '--Foo');
+  assert.strictEqual(keysOfName('--\\66 oo').key, '--foo');
+  assert.notStrictEqual(keysOfName('--Foo').key, keysOfName('--foo').key);
 });
 
 test('a property table keys a known name to its longhands and their group sides', () => {
-  const keys = new PropertyTable().keysOf('margin-inline-start');
+  const keys = keysOfName('margin-inline-start');
   assert.strictEqual(keys.custom, false);
   assert.strictEqual(keys.known, true);
   assert.deepStrictEqual(keys.longhands, [
@@ -108,7 +107,6 @@ test('a property table keys a known name to its longhands and their group sides'
 });
 
 test('a property table keys all as all, which no other key is compared against', () => {
-  const table = new PropertyTable();
-  assert.deepStrictEqual(table.keysOf('all'), { custom: false, all: true });
-  assert.deepStrictEqual(table.keysOf('\\61 ll'), { custom: false, all: true });
+  assert.deepStrictEqual(keysOfName('all'), { custom: false, all: true });
+  assert.deepStrictEqual(keysOfName('\\61 ll'), { custom: false, all: true });
 });

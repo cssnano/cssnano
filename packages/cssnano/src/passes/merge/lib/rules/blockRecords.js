@@ -1,19 +1,19 @@
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import { BlockLinks } from './blockLinks.js';
 import { DeclarationStamps } from './declarationStamps.js';
 import { DeclarationCache } from './declarationCache.js';
 import { assertCanLink, assertReached } from './linkChecks.js';
-import { BlockRecord } from './blockRecord.js';
-/** @import {NodeEntry} from './blockRecord.js' */
+import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
+/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {LinkReader} from './blockLinks.js' */
 /** @import {DeclarationStampReader} from './declarationStamps.js' */
 /** @import {DeclarationCacheReader} from './declarationCache.js' */
-import { RuleRecord } from './ruleRecord.js';
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+
+const MOVED_ROOT = 'the root is moved into a chain';
 
 /**
  * The records of one run. One arena holds every block record, every rule record,
@@ -55,12 +55,13 @@ export class BlockRecords {
   declarations;
 
   /**
-   * The most rounds a run may take before it throws. Set from the counts of
-   * rules, at-rules and declarations when the records are built.
+   * The whitespace before the first child of the stylesheet, which PostCSS
+   * hands on when that child is removed, or null when the node has none and
+   * the printer infers it.
    *
-   * @type {number}
+   * @type {string | null}
    */
-  maxRounds = Infinity;
+  leadingWhitespace = null;
 
   /**
    * @param {BlockRecord} root the record of the stylesheet
@@ -87,21 +88,61 @@ export class BlockRecords {
    */
   appendEntry(container, entry) {
     this.#placeUnplaced(entry);
-    this.linkLast(container, entry.index);
+    this.#linkLast(container, entry.index);
   }
 
   /**
-   * Gives an unplaced entry the next index of the arena and links it after
-   * `after` in the chain of `container`, which is the head when `after` is -1.
+   * Gives an unplaced entry the next index of the arena and links it right
+   * before `sibling`, in the chain that holds `sibling`.
    *
-   * @param {number} container
-   * @param {number} after
+   * @param {ArenaIndex} sibling a linked entry
    * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
    * @return {void}
    */
-  insertEntry(container, after, entry) {
+  insertEntryBefore(sibling, entry) {
     this.#placeUnplaced(entry);
-    this.linkAfter(container, after, entry.index);
+    this.#linkBefore(sibling, entry.index);
+  }
+
+  /**
+   * Takes a placed entry out of its chain, if it is linked, then links it at
+   * the end of the chain of `container`.
+   *
+   * @param {ArenaIndex} container
+   * @param {ArenaIndex} index
+   * @return {void}
+   */
+  moveLast(container, index) {
+    this.#assertMovable(index);
+    this.detach(index);
+    this.#linkLast(container, index);
+  }
+
+  /**
+   * Takes a placed entry out of its chain, if it is linked, then links it right
+   * before `sibling`.
+   *
+   * @param {ArenaIndex} sibling a linked entry that is not `index`
+   * @param {ArenaIndex} index
+   * @return {void}
+   */
+  moveBefore(sibling, index) {
+    this.#assertMovable(index);
+    this.detach(index);
+    this.#linkBefore(sibling, index);
+  }
+
+  /**
+   * Takes the entry at `index` out of its chain. The entry keeps its own
+   * subtree, and a later move may place it again.
+   *
+   * @param {ArenaIndex} index
+   * @return {void}
+   */
+  detach(index) {
+    const block = this.links.parentOf(index);
+    this.#links.unlink(index);
+    this.#touchDeclaration(block, index);
   }
 
   /**
@@ -141,9 +182,21 @@ export class BlockRecords {
    * @return {void}
    */
   #touchDeclaration(container, index) {
-    if (container !== -1 && this.#entries[index] instanceof DeclarationRecord) {
+    if (container !== -1 && this.#entries[index]?.kind === DECLARATION) {
       this.#declarationStamps.touch(container);
     }
+  }
+
+  /**
+   * Moves the declaration stamp of `container` without a link change, after a
+   * declaration of its chain was rewritten in place. Its edit stamp stays, so
+   * write-back writes the rewrite without rebuilding the container.
+   *
+   * @param {number} container an index that the arena gave
+   * @return {void}
+   */
+  touchDeclarations(container) {
+    this.#declarationStamps.touch(container);
   }
 
   /**
@@ -157,7 +210,7 @@ export class BlockRecords {
    */
   #appendDeclaration(block, index, before) {
     const entry = this.#entries[index];
-    if (!(entry instanceof DeclarationRecord)) return;
+    if (entry?.kind !== DECLARATION) return;
     if (this.#links.nextSibling(/** @type {ArenaIndex} */ (index)) !== -1) {
       return;
     }
@@ -187,7 +240,7 @@ export class BlockRecords {
     if (
       index !== -1 &&
       this.consistencyChecks &&
-      !(entry instanceof BlockRecord)
+      !(entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK)
     ) {
       throw new Error('a block is read at an entry that is not a block');
     }
@@ -203,7 +256,9 @@ export class BlockRecords {
   container(index) {
     const entry = this.#entries[index];
     const isContainer =
-      entry instanceof BlockRecord || entry instanceof RuleRecord;
+      entry?.kind === STYLESHEET ||
+      entry?.kind === AT_RULE_BLOCK ||
+      entry?.kind === RULE;
     if (index !== -1 && this.consistencyChecks && !isContainer) {
       throw new Error(
         'a container is read at an entry that is neither a block nor a rule'
@@ -218,7 +273,9 @@ export class BlockRecords {
    */
   blockEntry(index) {
     const entry = this.#entries[index];
-    return entry instanceof BlockRecord ? entry : undefined;
+    return entry?.kind === STYLESHEET || entry?.kind === AT_RULE_BLOCK
+      ? entry
+      : undefined;
   }
 
   /**
@@ -226,7 +283,8 @@ export class BlockRecords {
    */
   rule(index) {
     if (this.consistencyChecks) assertReached(this, index);
-    return /** @type {RuleRecord | undefined} */ (this.#entries[index]);
+    const entry = this.#entries[index];
+    return entry?.kind === RULE ? entry : undefined;
   }
 
   /**
@@ -240,32 +298,16 @@ export class BlockRecords {
   }
 
   /**
-   * Links the entry at `index` after `after` in the chain of the container at
-   * `block`, which is the head when `after` is -1. Under checks, a container
-   * that does not reach the root through `parentOf` throws, since its entries
-   * would be lost, and a rule or an at-rule may join only a rule that nests.
-   *
-   * @param {number} block
-   * @param {number} after
-   * @param {number} index an entry that is linked nowhere, or was unlinked
-   * @return {void}
-   */
-  linkAfter(block, after, index) {
-    assertCanLink(this, block, index);
-    const before = this.#declarationStamps.stampOf(block);
-    this.#links.linkAfter(block, after, index);
-    this.#touchDeclaration(block, index);
-    this.#appendDeclaration(block, index, before);
-  }
-
-  /**
    * Links the entry at `index` at the end of the chain of the block at `block`.
+   * Under checks, a container that does not reach the root through `parentOf`
+   * throws, since its entries would be lost, and a rule or an at-rule may join
+   * only a rule that nests.
    *
    * @param {number} block
-   * @param {number} index an entry that is linked nowhere, or was unlinked
+   * @param {number} index an entry that is linked nowhere
    * @return {void}
    */
-  linkLast(block, index) {
+  #linkLast(block, index) {
     assertCanLink(this, block, index);
     const before = this.#declarationStamps.stampOf(block);
     this.#links.linkLast(block, index);
@@ -274,34 +316,37 @@ export class BlockRecords {
   }
 
   /**
-   * Takes the entry at `index` out of its chain. The entry keeps its own
-   * subtree, and a later link may place it again.
+   * Links the entry at `index` right before `sibling`, in the chain that holds
+   * `sibling`. The same checks as `#linkLast` apply to that chain.
    *
-   * @param {number} index
+   * @param {ArenaIndex} sibling a linked entry
+   * @param {number} index an entry that is linked nowhere
    * @return {void}
    */
-  unlink(index) {
-    const block = this.links.parentOf(index);
-    this.#links.unlink(index);
+  #linkBefore(sibling, index) {
+    const block = this.links.parentOf(sibling);
+    // Reading the sibling's neighbour throws under checks when it is linked
+    // nowhere, before its -1 container reaches `assertCanLink`.
+    this.links.prevSibling(sibling);
+    assertCanLink(this, block, index);
+    const before = this.#declarationStamps.stampOf(block);
+    this.#links.linkBefore(sibling, index);
     this.#touchDeclaration(block, index);
+    this.#appendDeclaration(block, index, before);
   }
 
   /**
-   * Puts the entry `earlier` in the chain where `later` stands, and unlinks
-   * `later`.
+   * Under checks, throws when the entry to move is the root, which has no
+   * container to join.
    *
-   * @param {number} later a linked entry
-   * @param {number} earlier an entry that is linked elsewhere, or nowhere
+   * @param {ArenaIndex} index
    * @return {void}
+   * @throws {Error} under checks, when `index` is the root
    */
-  takeLinkOf(later, earlier) {
-    const to = this.links.parentOf(later);
-    assertCanLink(this, to, earlier);
-    const from = this.links.parentOf(earlier);
-    this.#links.takeLinkOf(later, earlier);
-    this.#touchDeclaration(from, earlier);
-    this.#touchDeclaration(to, earlier);
-    this.#touchDeclaration(to, later);
+  #assertMovable(index) {
+    if (this.consistencyChecks && index === this.root.index) {
+      throw new Error(MOVED_ROOT);
+    }
   }
 
   /**
@@ -312,21 +357,6 @@ export class BlockRecords {
   }
 
   /**
-   * The PostCSS node of the entry at `index`, which is a rule, a block, a
-   * declaration or a bare node.
-   *
-   * @param {number} index
-   * @return {ChildNode}
-   */
-  nodeOf(index) {
-    return /** @type {ChildNode} */ (
-      /** @type {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} */ (
-        this.#entries[index]
-      ).node
-    );
-  }
-
-  /**
    * Settles the links once the build has linked the children, so that only
    * edits after the build count as edits. Entries from here on are the merges'.
    *
@@ -334,6 +364,7 @@ export class BlockRecords {
    */
   settle() {
     this.#links.settle();
+    this.#declarationStamps.settle();
     this.#built = this.#entries.length;
   }
 
@@ -342,21 +373,5 @@ export class BlockRecords {
    */
   get builtCount() {
     return this.#built;
-  }
-
-  /**
-   * Adds the node of each rule a merge created that has one, in arena order,
-   * which is the order the merges made them. Write-back calls it after its walk.
-   *
-   * @param {Set<Container>} reported
-   * @return {void}
-   */
-  addMergedNodes(reported) {
-    for (let index = this.#built; index < this.#entries.length; index++) {
-      const entry = this.#entries[index];
-      if (entry instanceof RuleRecord && entry.hasNode) {
-        reported.add(entry.node);
-      }
-    }
   }
 }

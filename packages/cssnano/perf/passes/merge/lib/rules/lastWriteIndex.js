@@ -3,16 +3,14 @@ import { test } from 'node:test';
 import data from '../../../../../script/passes/ir/lib/propertyGroups.json' with { type: 'json' };
 import LastWriteIndex from '../../../../../src/passes/merge/lib/rules/lastWriteIndex.js';
 import { isConflictingProp } from '../../../../../script/passes/ir/lib/propertyRelations.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
-
-const table = new PropertyTable();
+import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
 
 /**
  * A declaration record holding the keys of a property name.
  *
  * @param {string} prop
  */
-const decl = (prop) => ({ keys: table.keysOf(prop) });
+const decl = (prop) => ({ keys: keysOfName(prop) });
 
 // The index is an independent implementation of isConflictingProp, which stays
 // the definition of when two properties set the same underlying property.
@@ -42,7 +40,7 @@ test('last-write index agrees with isConflictingProp when many properties were w
   const sample = catalogue.filter((_, i) => i % 7 === 0);
   const index = new LastWriteIndex();
   for (const [i, prop] of sample.entries()) {
-    index.record(table.keysOf(prop), i + 1);
+    index.record(keysOfName(prop), i + 1);
   }
   for (const queried of catalogue) {
     for (let since = 0; since < sample.length; since++) {

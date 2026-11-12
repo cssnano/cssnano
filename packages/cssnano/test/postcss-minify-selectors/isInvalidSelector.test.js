@@ -6,7 +6,7 @@ import { test } from 'node:test';
 const { counter } = await import('../../../../util/countTokenize.js');
 const { default: postcss } = await import('postcss');
 const { TextTable } = await import('../../src/values/textTable.js');
-const { selectorRanges } = await import('../../src/values/selectorRanges.js');
+const { selectorRanges } = await import('../../../../util/selectorRanges.js');
 const { isInvalidSelector } =
   await import('../../src/plugins/postcss-minify-selectors/lib/isInvalidSelector.js');
 

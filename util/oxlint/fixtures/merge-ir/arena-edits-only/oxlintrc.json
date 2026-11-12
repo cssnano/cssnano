@@ -1,0 +1,11 @@
+{
+  "jsPlugins": ["../../../merge-ir-plugin.js"],
+  "rules": {
+    "merge-ir/arena-edits-only": [
+      "error",
+      {
+        "allowed": ["util/oxlint/fixtures/merge-ir/arena-edits-only/allowed.js"]
+      }
+    ]
+  }
+}

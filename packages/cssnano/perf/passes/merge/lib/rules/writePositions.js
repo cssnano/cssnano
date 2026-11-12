@@ -6,7 +6,7 @@ import {
   Claims,
   WritePositions,
 } from '../../../../../src/passes/merge/lib/rules/writePositions.js';
-import { PropertyTable } from '../../../../../src/passes/ir/propertyTable.js';
+import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
 
 const names = [
   ...new Set([
@@ -22,8 +22,6 @@ const names = [
   ]),
 ].filter((name) => name !== 'all');
 
-const table = new PropertyTable();
-
 /**
  * @param {string[]} writes
  * @return {WritePositions}
@@ -31,7 +29,7 @@ const table = new PropertyTable();
 function indexOf(writes) {
   const index = new WritePositions();
   for (const [position, prop] of writes.entries()) {
-    index.record(table.keysOf(prop), position);
+    index.record(keysOfName(prop), position);
   }
   return index;
 }
@@ -58,12 +56,12 @@ test('write positions find the earliest unclaimed write that conflicts, as isCon
     const firstClaimed = indexOf(writes);
     for (const queried of names) {
       assert.strictEqual(
-        unclaimed.firstUnclaimed(table.keysOf(queried), claimsOf([])),
+        unclaimed.firstUnclaimed(keysOfName(queried), claimsOf([])),
         isConflictingProp(queried, written) ? 0 : -1,
         `${queried} against ${written}`
       );
       assert.strictEqual(
-        firstClaimed.firstUnclaimed(table.keysOf(queried), claimsOf([0])),
+        firstClaimed.firstUnclaimed(keysOfName(queried), claimsOf([0])),
         isConflictingProp(queried, written) ? 1 : -1,
         `${queried} against ${written}, with the first write claimed`
       );

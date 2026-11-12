@@ -1,13 +1,7 @@
-import type { ChildNode } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
-import type { NodeEntry } from './blockRecord.js';
+import type { ArenaIndex, BlockRecord, NodeEntry } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
-/** @import {ChildNode} from 'postcss' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {NodeEntry, ArenaIndex} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
-import { BlockRecord } from './blockRecord.js';
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /**
  * The first declaration the container at `index` holds now.
  *
@@ -68,25 +62,22 @@ export declare function holdsOnlyDeclarationsOf(records: BlockRecords, index: nu
  */
 export declare function childEntriesOf(records: BlockRecords, index: number): (RuleRecord | BlockRecord | DeclarationRecord | NodeEntry)[];
 /**
- * The children the block at `index` holds now, in order: the node of each
- * entry of its chain.
- *
- * @param {BlockRecords} records
- * @param {number} index
- * @return {ChildNode[]}
- */
-export declare function childNodesOf(records: BlockRecords, index: number): ChildNode[];
-/**
  * Gives an appended child the whitespace of the last child when it has none, as
  * PostCSS gives it, so the records keep what the node will print.
  *
- * @param {{before: string | null}} child the record of the appended child
- * @param {{before: string | null} | undefined} last the record of the child before `child`
+ * @param {BlockRecords} records the arena that holds both children
+ * @param {ArenaIndex} child the index of the appended child
+ * @param {ArenaIndex | -1} last the index of the child before `child`, or -1 for none
  * @return {void}
  */
-export declare function inheritWhitespace(child: {
-    before: string | null;
-}, last: {
-    before: string | null;
-} | undefined): void;
+export declare function inheritWhitespace(records: BlockRecords, child: ArenaIndex, last: ArenaIndex | -1): void;
+/**
+ * The declarations of the rule at `index`, in order, read from its chain at the
+ * call. A reader that indexes them by position takes this array.
+ *
+ * @param {BlockRecords} records the arena that holds the rule's children
+ * @param {number} index the rule's index
+ * @return {DeclarationRecord[]}
+ */
+export declare function declarationsOf(records: BlockRecords, index: number): DeclarationRecord[];
 //# sourceMappingURL=blockChildren.d.ts.map

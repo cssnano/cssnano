@@ -4,6 +4,7 @@ import { anyAffected } from '#utils/browser-bugs';
 import { tokenizeMode } from '../../values/tokenizeMode.js';
 import { comma } from '../../values/punctuationTokens.js';
 import { unicodeRange } from '../../values/unicodeRange.js';
+import { sameTokenText } from '../../values/sameTokenText.js';
 
 /** @import { TokenUnicodeRange } from '@csstools/css-tokenizer' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -68,19 +69,6 @@ function isValidRange(token) {
 }
 
 /**
- * @param {readonly CSSToken[]} a
- * @param {readonly CSSToken[]} b
- * @return {boolean} whether the two lists have the same token texts
- */
-function sameTexts(a, b) {
-  if (a.length !== b.length) return false;
-  for (let index = 0; index < a.length; index++) {
-    if (a[index][1] !== b[index][1]) return false;
-  }
-  return true;
-}
-
-/**
  * The edits that rewrite a unicode-range value. A valid list without comments
  * is rebuilt as the union of its ranges. Otherwise each range is rewritten
  * where it stands, so a canonical range keeps its token.
@@ -121,7 +109,7 @@ function transform(list, isLegacy = false) {
       if (i > 0) replacement.push(comma());
       replacement.push(unicodeRange(merged[i], merged[i + 1], prefix));
     }
-    return sameTexts(list, replacement)
+    return sameTokenText(list, replacement)
       ? []
       : [{ start: 0, end: list.length, tokens: replacement }];
   }

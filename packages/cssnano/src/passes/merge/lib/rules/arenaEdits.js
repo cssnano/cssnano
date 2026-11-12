@@ -3,13 +3,18 @@ import {
   inheritWhitespace,
   nextDeclaration,
 } from './blockChildren.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { keysOfName } from '../../../ir/propertyTable.js';
+import { tokenizeMode } from '../../../../values/tokenizeMode.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockDeclarations, DeclarationItem} from '../longhand/blockDeclarations.js' */
+/** @import {RunContext} from '../../../ir/runContext.js' */
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 
 /*
  * The edits that compose the arena's link wrappers. Each takes the arena
@@ -23,52 +28,59 @@ import {
  * nowhere.
  *
  * @param {BlockRecords} records
- * @param {number} record the index of the rule that is replaced
- * @param {number[]} replacements
+ * @param {ArenaIndex} record the index of the rule that is replaced
+ * @param {ArenaIndex[]} replacements
  * @return {void}
  */
 export function substitute(records, record, replacements) {
-  // The replacements take the chain where the record stood, which may be
-  // the record itself; it is read before the record leaves the chain.
-  const holder = records.links.parentOf(record);
-  const standing = /** @type {number} */ (records.links.prevSibling(record));
-  records.unlink(record);
-  let after = standing;
+  // A replacement that already stands before the record stays. The record may
+  // be one of the replacements, which keeps it in place: the ones after it
+  // then go before the entry that followed it, so the order holds.
+  // A record that is substituted is linked, so its container is an index.
+  const holder = /** @type {ArenaIndex} */ (records.links.parentOf(record));
+  const standing = records.links.prevSibling(record);
+  /** @type {ArenaIndex | -1 | undefined} the entry after the kept record, read when the record is passed */
+  let following;
+  let kept = false;
   for (const replacement of replacements) {
     if (replacement === standing) continue;
-    records.linkAfter(holder, after, replacement);
-    after = replacement;
+    if (replacement === record) {
+      kept = true;
+    } else if (!kept) {
+      records.moveBefore(record, replacement);
+    } else {
+      following ??= records.links.nextSibling(record);
+      if (following === -1) records.moveLast(holder, replacement);
+      else records.moveBefore(following, replacement);
+    }
   }
+  if (!kept) records.detach(record);
 }
 
 /**
- * Places the unplaced entry `entry` in the chain of `sibling`'s container, right
- * before `sibling`.
+ * Places the unplaced entry `entry` right before `sibling`, in the chain that
+ * holds `sibling`.
  *
  * @param {BlockRecords} records
- * @param {number} sibling the index of the entry that `entry` stands before
- * @param {RuleRecord} entry
- * @return {void}
+ * @param {ArenaIndex} sibling a linked entry that `entry` stands before
+ * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
+ * @return {ArenaIndex} the index the arena gave the entry
  */
-export function insertBefore(records, sibling, entry) {
-  records.insertEntry(
-    records.links.parentOf(sibling),
-    records.links.prevSibling(sibling),
-    entry
-  );
+export function placeBefore(records, sibling, entry) {
+  records.insertEntryBefore(sibling, entry);
+  return /** @type {ArenaIndex} */ (entry.index);
 }
 
 /**
  * Moves the rule `record` to the end of the chain of the block at `target`.
  *
  * @param {BlockRecords} records
- * @param {number} target the index of the block that takes the rule
- * @param {number} record the index of the rule
+ * @param {ArenaIndex} target the index of the block that takes the rule
+ * @param {ArenaIndex} record the index of the rule
  * @return {void}
  */
 export function moveRule(records, target, record) {
-  records.unlink(record);
-  records.linkLast(target, record);
+  records.moveLast(target, record);
 }
 
 /**
@@ -77,8 +89,8 @@ export function moveRule(records, target, record) {
  * removes it. A nested block keeps its rule, which moves with the chain.
  *
  * @param {BlockRecords} records
- * @param {number} target
- * @param {number} source
+ * @param {ArenaIndex} target
+ * @param {ArenaIndex} source
  * @return {void}
  */
 export function adopt(records, target, source) {
@@ -86,8 +98,7 @@ export function adopt(records, target, source) {
   records.block(source);
   let entry = records.links.firstChild(source);
   while (entry !== -1) {
-    records.unlink(entry);
-    records.linkLast(target, entry);
+    records.moveLast(target, entry);
     entry = records.links.firstChild(source);
   }
 }
@@ -95,17 +106,16 @@ export function adopt(records, target, source) {
 /**
  * Appends a child to the chain of a rule, after its last child, and gives the
  * child the whitespace of that child when it has none. The node takes it at
- * write-back. The child must be linked nowhere, or unlinked.
+ * write-back. A child that is linked elsewhere moves to the end.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord} rule
- * @param {DeclarationRecord | NodeEntry} child
+ * @param {ArenaIndex} rule the index of the rule
+ * @param {ArenaIndex} child the index of the child
  * @return {void}
  */
 export function appendChild(records, rule, child) {
-  const last = records.links.lastChild(rule.index);
-  inheritWhitespace(child, last === -1 ? undefined : records.entry(last));
-  records.linkLast(rule.index, child.index);
+  inheritWhitespace(records, child, records.links.lastChild(rule));
+  records.moveLast(rule, child);
 }
 
 /**
@@ -119,7 +129,7 @@ export function appendChild(records, rule, child) {
  */
 export function removeDeclarations(records, rule, claimed) {
   if (records.consistencyChecks) assertChildrenOf(records, rule, claimed);
-  for (const index of claimed) records.unlink(index);
+  for (const index of claimed) records.detach(index);
 }
 
 /**
@@ -135,15 +145,136 @@ export function removeDeclarations(records, rule, claimed) {
  */
 export function moveDeclarations(records, source, target, claimed) {
   if (records.consistencyChecks) assertMovesInOrder(records, source, claimed);
-  const receiving = /** @type {RuleRecord} */ (records.rule(target));
-  for (const index of claimed) {
-    records.unlink(index);
-    appendChild(
-      records,
-      receiving,
-      /** @type {DeclarationRecord} */ (records.entry(index))
-    );
+  records.rule(target);
+  for (const index of claimed) appendChild(records, target, index);
+}
+
+/**
+ * The value list of a working item, interned in the run's table. The item
+ * always holds its tokens, so no text is tokenized here.
+ *
+ * @param {RunContext} context
+ * @param {DeclarationItem} item
+ * @return {TokenListId}
+ */
+function valueListOfItem(context, item) {
+  return context.valueIds.idOf(
+    context.tokenLists,
+    tokenizeMode(item.prop),
+    item.value,
+    item.tokens
+  );
+}
+
+/**
+ * Gives an authored declaration the fields of its rewritten item. The raw value
+ * is dropped at write-back, which `marked` tells it to do.
+ *
+ * @param {RunContext} context
+ * @param {DeclarationRecord} record
+ * @param {DeclarationItem} item
+ * @return {void}
+ */
+function rewriteRecord(context, record, item) {
+  if (item.prop !== record.prop) {
+    record.prop = item.prop;
+    record.keys = keysOfName(item.prop);
   }
+  record.valueList = valueListOfItem(context, item);
+  record.id = context.declarations.keyOf(
+    record.prop,
+    record.valueList,
+    record.important,
+    record.before
+  );
+  record.marked = true;
+}
+
+/**
+ * The record of a clone: the item's fields, with the support its source
+ * required and a template that has a node.
+ *
+ * @param {RunContext} context
+ * @param {DeclarationItem} item
+ * @param {DeclarationRecord} anchor the record of the clone's source
+ * @param {ArenaIndex} anchorIndex the index of `anchor`
+ * @return {DeclarationRecord}
+ */
+function cloneRecordOf(context, item, anchor, anchorIndex) {
+  const valueList = valueListOfItem(context, item);
+  const before = item.before ?? null;
+  const record = new DeclarationRecord(
+    before,
+    item.prop,
+    valueList,
+    item.important,
+    keysOfName(item.prop),
+    context.declarations.keyOf(item.prop, valueList, item.important, before),
+    item.between ?? null,
+    item.importantSpelling ?? null
+  );
+  record.inheritedSupport = item.inheritedSupport;
+  record.marked = true;
+  record.template = anchor.template !== -1 ? anchor.template : anchorIndex;
+  return record;
+}
+
+/**
+ * Commits the working list of one block to the arena: the one edit the longhand
+ * rounds make. The clones are placed first, each right after its source, so a
+ * removed source still fixes where they land. Then the removals, then the
+ * rewrites. The block's declaration stamp moves once when anything was
+ * rewritten or cloned.
+ *
+ * @param {BlockRecords} records
+ * @param {RunContext} context
+ * @param {ArenaIndex} container the index of the block or rule the list was read from
+ * @param {BlockDeclarations} list the list, as the reducers left it
+ * @return {void}
+ */
+export function commitDeclarations(records, context, container, list) {
+  if (!list.edited) return;
+  // The authored items come first, as the list was read; the clones follow.
+  /** @type {ArenaIndex[]} the arena index of each item, by position */
+  const placed = [...list.indexes];
+  const authored = placed.length;
+  if (context.consistencyChecks) assertChildrenOf(records, container, placed);
+  let edited = false;
+  for (let position = authored; position < list.length; position++) {
+    const item = list.at(position);
+    const anchor = placed[item.source];
+    const record = cloneRecordOf(
+      context,
+      item,
+      /** @type {DeclarationRecord} */ (records.entry(anchor)),
+      anchor
+    );
+    const next = records.links.nextSibling(anchor);
+    if (next === -1) records.appendEntry(container, record);
+    else placeBefore(records, next, record);
+    placed.push(/** @type {ArenaIndex} */ (record.index));
+    edited = true;
+  }
+
+  /** @type {Set<ArenaIndex>} */
+  const removed = new Set();
+  for (let position = 0; position < list.length; position++) {
+    if (list.at(position).removed) removed.add(placed[position]);
+  }
+  if (removed.size > 0) removeDeclarations(records, container, removed);
+
+  for (let position = 0; position < authored; position++) {
+    const item = list.at(position);
+    if (item.rewritten && !item.removed) {
+      rewriteRecord(
+        context,
+        /** @type {DeclarationRecord} */ (records.entry(placed[position])),
+        item
+      );
+      edited = true;
+    }
+  }
+  if (edited) records.touchDeclarations(container);
 }
 
 const NOT_A_CHILD =

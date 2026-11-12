@@ -20,7 +20,9 @@ export declare function commentId(keys: DeclarationKeys, text: string): number;
  */
 export declare function statementId(keys: DeclarationKeys, layered: Set<number>, entry: NodeEntry): number;
 /**
- * The id of a rule or of a block at-rule, from the ids of its kept entries.
+ * The id of a rule or of a block at-rule, from the ids of its kept entries. A
+ * rule's path steps by the id of each of its selectors, so spellings that PostCSS
+ * reads as one list give one path.
  *
  * @param {DeclarationKeys} keys
  * @param {Set<number>} layered

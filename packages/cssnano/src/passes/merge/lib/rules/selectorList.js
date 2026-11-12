@@ -1,397 +1,251 @@
-import { addElementKeys, elementKeyOf } from './elementKeys.js';
-import { selectorsCompatible } from './ensureCompatibility.js';
+/** @import {TokenListId, TokenLists} from '../../../ir/tokenLists.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
+import { elementKeyOf } from './elementKeys.js';
+import { selectorInfoOf } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
-import { selectorRanges } from '../../../../values/selectorRanges.js';
-import { tokens as tokenize } from '../../../../utils/value.js';
+import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
 
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Rule} from 'postcss' */
-/** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {SelectorRange} from '../../../../values/selectorRanges.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
-/** @import {SelectorIds} from '../../../ir/selectorIds.js' */
-/** @typedef {(selector: string, list?: SelectorList, index?: number) => import('./ensureCompatibility.js').SelectorInfo} SelectorLookup */
-/** @typedef {(selector: string, piece: RangePiece | null) => string | null} ElementKeyOf */
+
 /**
- * The token ranges of a list's selectors, for the tokens of the text the list
- * spells. `spans` is usable only while it matches the selectors one for one.
+ * The ids of a rule whose list has moved to another rule. It is frozen, so a
+ * push onto it throws and an edit of the moved rule fails at once.
  *
- * @typedef {{source: string, tokens: readonly CSSToken[], spans: SelectorRange[]}} SelectorRanges
+ * @type {TokenListId[]}
  */
+const NO_SELECTORS = /** @type {TokenListId[]} */ (
+  /** @type {unknown} */ (Object.freeze([]))
+);
 
 /** @type {readonly string[]} */
 const noElementKeys = Object.freeze([]);
 
 /**
- * The selector list of a rule with the facts derived from it, each computed on
- * first use and then grown incrementally as the list grows. It is the base of
- * `RuleRecord`, not a member of it, so a rule is one object with one layout.
- *
- * It also holds the text the rule spells: the selector in PostCSS's form, the
- * source text when its comments make it differ, and the tokens of that text.
+ * The vendor summary of a rule whose facts are not folded yet. It is shared,
+ * so nothing may add to it: `fillSummaries` gives each rule its own.
  */
-export class SelectorList {
-  /** @type {Rule | undefined} the rule the list belongs to; undefined for a merged rule until write-back creates it */
-  #node;
-  /** @type {string[]} */
-  #selectors;
-  /** @type {string} the selector the rule spells, in PostCSS's form */
-  #selector;
-  /** @type {string | undefined} the source text, when it differs from the selector */
-  #sourceSelector;
-  /** @type {readonly CSSToken[] | undefined} the tokens of the source text, once known */
-  #tokens;
-  /** @type {boolean} whether the table holds `#tokens` for the text the node spells */
-  #listStored;
-  /** @type {boolean} whether the selector was written by a merge, and must be written back */
-  #marked = false;
-  /** @type {VendorPrefixSummary | undefined} */
-  #vendor;
-  /** @type {string | undefined} the selectors joined by commas, once known */
-  #selectorText;
-  /** @type {number[] | undefined} the interned id of each selector, once a comparison asks */
-  #ids;
-  /** @type {RuleElementKeys | null | undefined} null when a selector has no element key */
-  #elementKeys;
-  /** @type {RangePiece[] | null | undefined} the token range of each selector; null when unknown */
-  #pieces;
-  /** @type {boolean | undefined} whether every selector suits the target browsers, once read */
-  #compatible;
-  /** @type {SelectorRanges | undefined} derived at the first read, dropped when the selectors change */
-  #ranges;
+export const UNFOLDED_VENDOR = new VendorPrefixSummary(null, false);
 
-  /**
-   * @param {Rule | undefined} node
-   * @param {string[]} selectors
-   * @param {string} selector the selector as PostCSS gives it, which drops a comment only where no tokens join
-   * @param {string | undefined} sourceSelector the source text, set only when it differs from the selector
-   * @param {readonly CSSToken[] | undefined} tokens the stored tokens of the source text
-   */
-  constructor(node, selectors, selector, sourceSelector, tokens) {
-    this.#node = node;
-    this.#selectors = selectors;
-    this.#selector = selector;
-    this.#sourceSelector = sourceSelector;
-    this.#tokens = tokens;
-    this.#listStored = tokens !== undefined;
-    this.#vendor = undefined;
-    this.#selectorText = undefined;
-    this.#ids = undefined;
-    this.#elementKeys = undefined;
-    this.#pieces = undefined;
-    this.#compatible = undefined;
-    this.#ranges = undefined;
+/**
+ * The fields this module writes, which are readonly everywhere else.
+ *
+ * @typedef {object} WritableSummaries
+ * @property {TokenListId[]} selectorIds
+ * @property {boolean} compatible
+ * @property {VendorPrefixSummary} vendor
+ * @property {RuleElementKeys | null} elementKeys
+ * @property {boolean} marked
+ */
+
+/**
+ * The one writable view of a rule's list and summaries. Only the functions
+ * of this module write them.
+ *
+ * @param {RuleRecord} list
+ * @return {WritableSummaries}
+ */
+function writableIds(list) {
+  return /** @type {WritableSummaries} */ (/** @type {unknown} */ (list));
+}
+
+/**
+ * Folds the summaries of every rule the root reaches. Every read of a summary
+ * then finds it filled, so no read writes a field.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} browsers
+ * @return {void}
+ */
+export function fillSummaries(records, tokenLists, browsers) {
+  for (const rule of reachedRules(records)) {
+    fillRule(rule, tokenLists, browsers);
   }
+}
 
-  /**
-   * @return {Rule} the rule the list belongs to. A merged rule has none until
-   * write-back gives it one, so a caller reads it only after that.
-   */
-  get node() {
-    return /** @type {Rule} */ (this.#node);
-  }
-
-  /** @return {boolean} whether the rule has a node yet */
-  get hasNode() {
-    return this.#node !== undefined;
-  }
-
-  /**
-   * Gives a merged rule its node. Write-back calls it once, for a rule that
-   * the tree reaches.
-   *
-   * @param {Rule} node
-   */
-  giveNode(node) {
-    this.#node = node;
-  }
-
-  /** @return {string[]} change it only through the methods of this class */
-  get selectors() {
-    return this.#selectors;
-  }
-
-  /** @return {string} the selector, in PostCSS's form */
-  get selector() {
-    return this.#selector;
-  }
-
-  /** @return {string} the text the list spells, with its comments */
-  get sourceText() {
-    return this.#sourceSelector ?? this.#selector;
-  }
-
-  /** @return {readonly CSSToken[] | undefined} the tokens of the source text, undefined until known */
-  get tokens() {
-    return this.#tokens;
-  }
-
-  /** @return {boolean} whether the table holds the tokens, so they need no write-back */
-  get listStored() {
-    return this.#listStored;
-  }
-
-  /** @return {boolean} whether a merge wrote the selector, so write-back assigns it */
-  get marked() {
-    return this.#marked;
-  }
-
-  /** Marks the selector as written by a merge. */
-  mark() {
-    this.#marked = true;
-  }
-
-  /**
-   * Sets the selector the rule spells. Its source text and tokens belonged to
-   * the old text, so they are dropped.
-   *
-   * @param {string} selector
-   */
-  setSelector(selector) {
-    this.#selector = selector;
-    this.#sourceSelector = undefined;
-    this.#tokens = undefined;
-    this.#listStored = false;
-    this.#ranges = undefined;
-  }
-
-  /**
-   * Gives the list tokens that the table does not hold yet, which write-back stores.
-   *
-   * @param {readonly CSSToken[]} tokens the tokens of the source text
-   */
-  setTokens(tokens) {
-    this.#tokens = tokens;
-    this.#listStored = false;
-    this.#ranges = undefined;
-    if (this.#pieces === null) this.#pieces = undefined;
-  }
-
-  /** Records that write-back stored the tokens in the table. */
-  markStored() {
-    this.#listStored = true;
-  }
-
-  /**
-   * The tokens of the source text, which the first reader tokenizes and keeps.
-   *
-   * @return {readonly CSSToken[]}
-   */
-  tokensOf() {
-    if (this.#tokens === undefined) this.setTokens(tokenize(this.sourceText));
-    return /** @type {readonly CSSToken[]} */ (this.#tokens);
-  }
-
-  /**
-   * The token ranges of the selectors, found in the tokens of the source text.
-   * They are derived at the first read, and derived again only when the tokens
-   * change.
-   *
-   * @return {SelectorRanges}
-   */
-  rangesOf() {
-    const tokens = this.tokensOf();
-    if (this.#ranges?.tokens !== tokens) {
-      this.#ranges = {
-        source: this.sourceText,
-        tokens,
-        spans: selectorRanges(tokens),
-      };
+/**
+ * The rules under `parent` that the root reaches, at any depth, in document order.
+ *
+ * @param {BlockRecords} records
+ * @param {number} parent the index of a container
+ * @return {Generator<RuleRecord>}
+ */
+function* rulesUnder(records, parent) {
+  for (
+    let index = records.links.firstChild(parent);
+    index !== -1;
+    index = records.links.nextSibling(index)
+  ) {
+    const entry = records.entry(index);
+    if (entry.kind === RULE) {
+      yield /** @type {RuleRecord} */ (entry);
+      yield* rulesUnder(records, index);
+    } else if (entry.kind === STYLESHEET || entry.kind === AT_RULE_BLOCK) {
+      yield* rulesUnder(records, index);
     }
-    return this.#ranges;
   }
+}
 
-  /** @param {RangePiece[] | null} pieces one per selector, or null */
-  setPieces(pieces) {
-    this.#pieces = pieces;
-  }
+/**
+ * The rules the root reaches, at any depth, in document order.
+ *
+ * @param {BlockRecords} records
+ * @return {Generator<RuleRecord>}
+ */
+export function reachedRules(records) {
+  return rulesUnder(records, records.root.index);
+}
 
-  /** @return {RangePiece[] | null | undefined} null when the token ranges are not known, undefined until set */
-  get pieces() {
-    return this.#pieces;
-  }
+/**
+ * Gives a rule the summaries of its whole list, folded from its ids.
+ *
+ * @param {RuleRecord} list
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} browsers
+ * @return {void}
+ */
+function fillRule(list, tokenLists, browsers) {
+  const own = writableIds(list);
+  own.compatible = true;
+  own.vendor = new VendorPrefixSummary(null, false);
+  own.elementKeys = { list: [], seen: new Set() };
+  extendSummaries(list, 0, tokenLists, browsers);
+}
 
-  /**
-   * @param {SelectorLookup} lookup
-   * @return {VendorPrefixSummary}
-   */
-  vendorProfile(lookup) {
-    if (this.#vendor === undefined) {
-      // A loop, since `map` would pass each index to a lookup that takes a list.
-      const infos = [];
-      for (const [index, selector] of this.#selectors.entries()) {
-        infos.push(lookup(selector, this, index));
+/**
+ * Folds the facts of the selectors from index `from` on into a rule's
+ * summaries, which must already cover the selectors before them.
+ *
+ * @param {RuleRecord} list
+ * @param {number} from
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} browsers
+ * @return {void}
+ */
+export function extendSummaries(list, from, tokenLists, browsers) {
+  const own = writableIds(list);
+  const ids = list.selectorIds;
+  for (let at = from; at < ids.length; at++) {
+    const tokens = tokenLists.get(ids[at]);
+    const info = selectorInfoOf(tokens, browsers);
+    if (!info.compatible) own.compatible = false;
+    own.vendor.add(info);
+    const keys = own.elementKeys;
+    if (keys !== null) {
+      const key = elementKeyOf(tokens);
+      if (key === null) {
+        own.elementKeys = null;
+      } else if (!keys.seen.has(key)) {
+        keys.seen.add(key);
+        keys.list.push(key);
       }
-      this.#vendor = VendorPrefixSummary.of(infos);
-    }
-    return this.#vendor;
-  }
-
-  /**
-   * Whether every selector is compatible with the target browsers. It is read
-   * once and then kept: a grown list ANDs in the answer for its new selectors.
-   *
-   * @param {SelectorLookup} lookup
-   * @return {boolean}
-   */
-  compatible(lookup) {
-    this.#compatible ??= selectorsCompatible(this.#selectors, lookup, this);
-    return this.#compatible;
-  }
-
-  /**
-   * The elements the selector list can match, as `elementKeyOf` in
-   * `elementKeys.js` describes them, or null when any selector has no key or
-   * there are none, which must not read as a rule that writes to no element.
-   * A caller must not hold the list across a change to the list.
-   *
-   * @param {ElementKeyOf} [keyOf] the key of one selector
-   * @return {string[] | null}
-   */
-  elementKeys(keyOf = elementKeyOf) {
-    if (this.#elementKeys === undefined) {
-      this.#elementKeys = { list: [], seen: new Set() };
-      this.#addElementKeys(0, keyOf);
-    }
-    return this.#elementKeys?.list.length ? this.#elementKeys.list : null;
-  }
-
-  /** @return {string} */
-  selectorText() {
-    this.#selectorText ??= this.#selectors.join(',');
-    return this.#selectorText;
-  }
-
-  /**
-   * The interned id of each selector, in order. They are read on the first
-   * comparison, and an edit of the selectors drops them.
-   *
-   * @param {SelectorIds} selectorIds
-   * @return {readonly number[]}
-   */
-  idsOf(selectorIds) {
-    this.#ids ??= this.#selectors.map((selector) => selectorIds.idOf(selector));
-    return this.#ids;
-  }
-
-  /**
-   * Two lists are the same when they have the same selectors in the same
-   * order. A selector holds no top-level comma, so the joined texts of two
-   * lists are equal exactly when their selectors are, and the ids compare the
-   * selectors without joining them.
-   *
-   * @param {SelectorList} other
-   * @param {SelectorIds} selectorIds
-   * @return {boolean}
-   */
-  hasSameSelectors(other, selectorIds) {
-    if (this.#selectors.length !== other.#selectors.length) return false;
-    const ids = this.idsOf(selectorIds);
-    const otherIds = other.idsOf(selectorIds);
-    for (let at = 0; at < ids.length; at++) {
-      if (ids[at] !== otherIds[at]) return false;
-    }
-    return true;
-  }
-
-  /**
-   * @param {string[]} selectors appended to the list
-   * @param {SelectorLookup} lookup
-   * @param {ElementKeyOf} [keyOf]
-   * @param {RangePiece[] | null} [pieces] the token range of each selector of
-   * the list after the call, or null when they are not known
-   * @return {readonly string[] | null} the element keys the selectors add to
-   * those listed, or null when the elements are not listed
-   */
-  addSelectors(selectors, lookup, keyOf = elementKeyOf, pieces = null) {
-    this.#selectorText = undefined;
-    this.#ids = undefined;
-    this.#ranges = undefined;
-    const from = this.#selectors.length;
-    for (const selector of selectors) {
-      this.#selectors.push(selector);
-      this.#vendor?.add(lookup(selector));
-    }
-    this.#pieces = pieces;
-    if (this.#compatible) {
-      this.#compatible = selectorsCompatible(selectors, lookup, this);
-    }
-    return this.#gainElementKeys(from, keyOf);
-  }
-
-  /**
-   * Takes the place of a list that stood before this one, so its selectors
-   * come first. The earlier list grows in place and passes to this one, and
-   * the joined text is concatenated from the two texts: copying or re-joining
-   * a long list on every merge would take quadratic time.
-   *
-   * @param {SelectorList} earlier left unusable
-   * @param {SelectorLookup} lookup
-   * @param {ElementKeyOf} [keyOf]
-   */
-  absorbEarlier(earlier, lookup, keyOf = elementKeyOf) {
-    // Both answers are read before the lists join, while each list is its own.
-    const compatible = earlier.compatible(lookup) && this.compatible(lookup);
-    const text = `${earlier.selectorText()},${this.selectorText()}`;
-    const vendor = earlier
-      .vendorProfile(lookup)
-      .concat(this.vendorProfile(lookup));
-    const selectors = earlier.#selectors;
-    const from = selectors.length;
-    for (const selector of this.#selectors) selectors.push(selector);
-    this.#selectors = selectors;
-    this.#selectorText = text;
-    this.#ids = undefined;
-    this.#vendor = vendor;
-    this.#ranges = undefined;
-    // Grows the earlier list's pieces in place, as its selectors grow.
-    const earlierPieces = earlier.#pieces;
-    const ownPieces = this.#pieces;
-    if (earlierPieces && ownPieces) {
-      for (const piece of ownPieces) earlierPieces.push(piece);
-      this.#pieces = earlierPieces;
-    } else {
-      this.#pieces = null;
-    }
-    // Extends the earlier list's keys only if they are known: deriving them
-    // from a long list would repeat on every merge.
-    this.#elementKeys = earlier.#elementKeys;
-    this.#addElementKeys(from, keyOf);
-    this.#compatible = compatible;
-  }
-
-  /**
-   * Adds the keys of the selectors from index `from` on, each with its token
-   * range when the list holds one.
-   *
-   * @param {number} from
-   * @param {ElementKeyOf} keyOf
-   */
-  #addElementKeys(from, keyOf) {
-    if (
-      this.#elementKeys &&
-      !addElementKeys(
-        this.#elementKeys,
-        this.#selectors,
-        from,
-        this.#pieces,
-        keyOf
-      )
-    ) {
-      this.#elementKeys = null;
     }
   }
+}
 
-  /**
-   * @param {number} from
-   * @param {ElementKeyOf} keyOf
-   * @return {readonly string[] | null}
-   */
-  #gainElementKeys(from, keyOf) {
-    const listed = this.#elementKeys?.list.length;
-    this.#addElementKeys(from, keyOf);
-    const list = this.#elementKeys?.list;
-    if (listed === undefined || list === undefined) return null;
-    return list.length === listed ? noElementKeys : list.slice(listed);
+/**
+ * Appends selectors to a placed rule, with their ids and facts.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index the rule's index
+ * @param {readonly TokenListId[]} ids the id of each selector appended
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} browsers
+ * @return {readonly string[] | null} the element keys the selectors add to
+ * those listed, or null when the elements are not listed
+ */
+export function addSelectors(records, index, ids, tokenLists, browsers) {
+  const list = /** @type {RuleRecord} */ (records.rule(index));
+  const from = list.selectorIds.length;
+  const listed = list.elementKeys?.list.length;
+  const own = writableIds(list);
+  for (const id of ids) own.selectorIds.push(id);
+  own.marked = true;
+  extendSummaries(list, from, tokenLists, browsers);
+  return gainedKeys(list, listed);
+}
+
+/**
+ * The element keys a rule gained since it listed `listed` of them.
+ *
+ * @param {RuleRecord} list
+ * @param {number | undefined} listed the length of its list before the change, or undefined when unlisted
+ * @return {readonly string[] | null}
+ */
+function gainedKeys(list, listed) {
+  const keys = list.elementKeys;
+  if (listed === undefined || keys === null) return null;
+  return keys.list.length === listed ? noElementKeys : keys.list.slice(listed);
+}
+
+/**
+ * Gives `later` the selectors of `earlier`, which stands before it and is
+ * dropped by the caller. Its summaries combine without a fact read: the
+ * element keys of the earlier selectors come first.
+ *
+ * @param {BlockRecords} records
+ * @param {number} laterIndex
+ * @param {number} earlierIndex
+ * @return {void}
+ */
+export function absorbEarlier(records, laterIndex, earlierIndex) {
+  const later = /** @type {RuleRecord} */ (records.rule(laterIndex));
+  const earlier = /** @type {RuleRecord} */ (records.rule(earlierIndex));
+  const compatible = earlier.compatible && later.compatible;
+  const vendor = earlier.vendor.concat(later.vendor);
+  const keys = joinKeys(earlier.elementKeys, later.elementKeys);
+  // The earlier list's id array moves here, so the earlier rule keeps no array.
+  const ids = /** @type {TokenListId[]} */ (writableIds(earlier).selectorIds);
+  for (const id of later.selectorIds) ids.push(id);
+  const own = writableIds(later);
+  own.selectorIds = ids;
+  own.compatible = compatible;
+  own.vendor = vendor;
+  own.elementKeys = keys;
+  own.marked = true;
+  writableIds(earlier).selectorIds = NO_SELECTORS;
+}
+
+/**
+ * The summaries of a rule made from two rules' selectors, in order: the first
+ * rule's ids, then the second's. `target` holds no id of the two yet, and it
+ * must be given its ids, then `extendSummaries` for any ids after them.
+ *
+ * @param {RuleRecord} target a new rule, unplaced, whose ids are the two rules' ids
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
+ * @return {void}
+ */
+export function combineSummaries(target, first, second) {
+  const own = writableIds(target);
+  own.compatible = first.compatible && second.compatible;
+  own.marked = true;
+  own.vendor = first.vendor.concat(second.vendor);
+  // A copy, since both inputs stay alive as they are.
+  const keys = first.elementKeys;
+  own.elementKeys = joinKeys(
+    keys === null ? null : { list: [...keys.list], seen: new Set(keys.list) },
+    second.elementKeys
+  );
+}
+
+/**
+ * The keys of `earlier` followed by those of `later`, in first-seen order,
+ * added to `earlier`'s set, which the caller owns. Null when either list
+ * holds a null.
+ *
+ * @param {RuleElementKeys | null} earlier
+ * @param {RuleElementKeys | null} later
+ * @return {RuleElementKeys | null}
+ */
+function joinKeys(earlier, later) {
+  if (earlier === null || later === null) return null;
+  for (const key of later.list) {
+    if (!earlier.seen.has(key)) {
+      earlier.seen.add(key);
+      earlier.list.push(key);
+    }
   }
+  return earlier;
 }

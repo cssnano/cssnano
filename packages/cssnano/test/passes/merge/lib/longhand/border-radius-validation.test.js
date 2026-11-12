@@ -11,7 +11,7 @@ import {
 import { transformPlugin } from '#passes/merge';
 
 const { tokens } = cssnanoUtils;
-const { passthroughCSS } = processCSSFactory(plugin);
+const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 test(
   'should reject negative radius values and preserve original declarations',
@@ -82,8 +82,11 @@ test(
 );
 
 test(
-  'should fail closed on comments inside shorthand values',
-  passthroughCSS('a{border-radius:10px /* comment */ 20px}')
+  'a plain comment inside a shorthand value goes when the value folds to its shorter form',
+  processCSS(
+    'a{border-radius:10px /* comment */ 20px}',
+    'a{border-radius:10px 20px}'
+  )
 );
 
 test(

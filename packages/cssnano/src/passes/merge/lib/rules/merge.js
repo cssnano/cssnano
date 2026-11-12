@@ -1,4 +1,4 @@
-import { holdsOnlyDeclarationsOf } from './blockChildren.js';
+import { declarationsOf, holdsOnlyDeclarationsOf } from './blockChildren.js';
 import {
   filterRuleIntersections,
   intersect,
@@ -7,6 +7,7 @@ import {
 import { buildMergedRule } from './ruleRewrite.js';
 import { appendToDeclarations } from './treeEdits.js';
 import { declarationKeys } from './declarationCache.js';
+import { hasSameSelectors } from './selectorReads.js';
 
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
@@ -38,11 +39,10 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
     return null;
   // Repeating the same declarations under the same selector changes nothing,
   // and a selector list that repeats the selector is longer than one rule.
-  if (first.hasSameSelectors(second, mergeState.selectorIds)) {
+  if (hasSameSelectors(mergeState.records, first.index, second.index)) {
     return { first: [first.index], second: [] };
   }
   mergeState.absorbEarlier(second, first);
-  mergeState.spellSelectors(second);
   return { first: [], second: [second.index] };
 }
 
@@ -55,7 +55,9 @@ export function mergeMatchingDeclarations(first, second, mergeState) {
  * @return {Placement | null}
  */
 export function mergeMatchingSelectors(first, second, mergeState) {
-  if (!first.hasSameSelectors(second, mergeState.selectorIds)) return null;
+  if (!hasSameSelectors(mergeState.records, first.index, second.index)) {
+    return null;
+  }
   appendToDeclarations(mergeState, first.index, second.index);
   return { first: [first.index], second: [] };
 }
@@ -81,7 +83,7 @@ export function mergeSharedDeclarations(
   scan
 ) {
   const { records } = mergeState;
-  const firstDeclarations = first.declarationsOf(records);
+  const firstDeclarations = declarationsOf(records, first.index);
   let intersection = intersect(
     firstDeclarations,
     declarationKeys(records, second.index).keySet
@@ -90,13 +92,13 @@ export function mergeSharedDeclarations(
   const filtered = filterRuleIntersections(
     intersection,
     firstDeclarations,
-    second.declarationsOf(records)
+    declarationsOf(records, second.index)
   );
   intersection = filtered.intersection;
   if (intersection.length === 0) return null;
   return buildMergedRule(
-    first,
-    second,
+    first.index,
+    second.index,
     intersection,
     filtered.claimedIndices,
     mergeState,

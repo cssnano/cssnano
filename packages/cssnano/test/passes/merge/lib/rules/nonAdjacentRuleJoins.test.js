@@ -162,3 +162,18 @@ test(
     '.a,.some-long-selector{color:red}.x{height:1px}'
   )
 );
+
+// `a\ ,b` selects the element `a ` and `b`, and `a\,b` selects `a,b`. Their
+// selector texts join to the same text, so the join must key on the ids.
+test(
+  'should not join rules whose selectors differ by an escaped space and a comma',
+  passthroughCSS('a\\ ,b{color:red}c{top:0}a\\,b{color:blue}')
+);
+
+test(
+  'should not join the media rules whose selectors differ by an escaped space and a comma',
+  processCSS(
+    '@media print{a\\ ,b{color:red}}c{top:0}@media print{a\\,b{color:blue}}',
+    '@media print{a\\ ,b{color:red}a\\,b{color:blue}}c{top:0}'
+  )
+);

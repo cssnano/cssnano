@@ -1,11 +1,7 @@
-import type { RangePiece } from '../../../../values/joinRanges.js';
-import type { PropertyTable } from '../../../ir/propertyTable.js';
+import type { TokenListId } from '../../../ir/tokenLists.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {RangePiece} from '../../../../values/joinRanges.js' */
-/** @import {PropertyTable} from '../../../ir/propertyTable.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
@@ -15,12 +11,6 @@ import type { BlockRecord } from './blockRecord.js';
 export default class MergeState {
     #private;
     /**
-     * The keys of the property names this stylesheet's merges compare.
-     *
-     * @type {PropertyTable}
-     */
-    properties: PropertyTable;
-    /**
      * The block and rule records of the stylesheet. The driver builds them, and
      * `runMerge` sets them before any edit reads them.
      *
@@ -28,18 +18,35 @@ export default class MergeState {
      */
     records: BlockRecords;
     /**
+     * The most rounds the joins of the run may take before it throws. `runMerge`
+     * sets it from the live entries when it starts.
+     *
+     * @type {number}
+     */
+    maxRounds: number;
+    /**
      * @param {readonly string[]} browsers
      * @param {import('../../../ir/runContext.js').RunContext} [context] the run's state, shared with dedupe
      */
     constructor(browsers: readonly string[], context?: import('../../../ir/runContext.js').RunContext);
     /**
-     * The elements the rule can match. An arrow function, so it passes as a
-     * callback without a closure per call.
+     * The state of the run, which the records of its declarations are built from.
      *
-     * @param {RuleRecord} record
-     * @return {string[] | null}
+     * @return {import('../../../ir/runContext.js').RunContext}
      */
-    elementKeysOf: (record: RuleRecord) => string[] | null;
+    get runContext(): import('../../../ir/runContext.js').RunContext;
+    /**
+     * The token lists of the run, which the ids of the records name.
+     *
+     * @return {import('../../../ir/tokenLists.js').TokenLists}
+     */
+    get tokenLists(): import('../../../ir/tokenLists.js').TokenLists;
+    /**
+     * The target browsers, which the selector facts of the run depend on.
+     *
+     * @return {readonly string[]}
+     */
+    get browsers(): readonly string[];
     /**
      * The ids of the run's declarations: equal declarations, with the same
      * property, value, importance and hack prefix, share an id.
@@ -48,47 +55,16 @@ export default class MergeState {
      */
     get declarationIds(): import('../../../ir/declarationKey.js').DeclarationKeys;
     /**
-     * The ids of the run's selectors, which list comparisons read.
-     *
-     * @return {import('../../../ir/selectorIds.js').SelectorIds}
-     */
-    get selectorIds(): import('../../../ir/selectorIds.js').SelectorIds;
-    /**
      * Appends selectors of `source` to the rule's selector list, keeping its
-     * vendor prefix profile and its token ranges in step.
+     * vendor prefix profile in step.
      *
      * @param {RuleRecord} record
-     * @param {string[]} selectors some of the selectors of `source`, in the
-     * order of their first occurrence there
-     * @param {RuleRecord} source
+     * @param {readonly TokenListId[]} ids the id of each selector the rule gains,
+     * in order
      * @return {readonly string[] | null} the element keys the selectors add, or
      * null when the rule's elements are not listed
      */
-    addSelectors(record: RuleRecord, selectors: string[], source: RuleRecord): readonly string[] | null;
-    /**
-     * The token range of each selector of the rule, read from the tokens the
-     * record holds without tokenizing, or null when it holds none.
-     *
-     * @param {RuleRecord} record
-     * @return {RangePiece[] | null}
-     */
-    piecesOf(record: RuleRecord): RangePiece[] | null;
-    /**
-     * Sets the selector of a rule from its list and marks it, so write-back
-     * assigns the text. The tokens of the old text are dropped.
-     *
-     * @param {RuleRecord} record
-     */
-    spellSelectors(record: RuleRecord): void;
-    /**
-     * Gives the record the tokens of a rule joined from the selectors of `first`
-     * and `second`, in that order, with a comma between each, as `join()` writes it.
-     *
-     * @param {RuleRecord} record the merged rule, whose selector is the join
-     * @param {RuleRecord} first
-     * @param {RuleRecord} second
-     */
-    storeJoined(record: RuleRecord, first: RuleRecord, second: RuleRecord): void;
+    addSelectors(record: RuleRecord, ids: readonly TokenListId[]): readonly string[] | null;
     /**
      * Gives `later` the selectors of `earlier`, which stands before it and is
      * dropped by the caller.

@@ -1,18 +1,31 @@
-import { RuleRecord } from './ruleRecord.js';
 import { TextTable } from '../../../../values/textTable.js';
 import type { ChildNode, Container } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
+import type { NodeTable } from './nodeTable.js';
 import type { BlockRecord as Block } from './blockRecord.js';
-export type ContainerRecord = Block | RuleRecord;
+import type { RuleRecord } from './ruleRecord.js';
+import type { TokenLists } from '../../../ir/tokenLists.js';
 /**
- * Under consistency checks, throws when the records and the tree disagree:
- * each container must hold the nodes it holds, in order, and each rule must
- * stand in the slot its record names. Writes nothing.
+ * The nodes of the children the block at `index` holds now, in order.
  *
  * @param {BlockRecords} records
- * @return {void}
+ * @param {NodeTable} nodes
+ * @param {number} index
+ * @return {ChildNode[]}
  */
-export declare function assertRecordsMatchTree(records: BlockRecords): void;
+export declare function childNodesOf(records: BlockRecords, nodes: NodeTable, index: number): ChildNode[];
+export type ContainerRecord = Block | RuleRecord;
+/** @typedef {Block | RuleRecord} ContainerRecord a block, or a rule, whose children form its chain */
+/**
+ * Whether the live children of a container differ from its nodes. Compares in
+ * order and stops at the first difference, without a list of live children.
+ *
+ * @param {BlockRecords} records
+ * @param {NodeTable} nodes
+ * @param {ContainerRecord} block
+ * @return {boolean}
+ */
+export declare function differs(records: BlockRecords, nodes: NodeTable, block: ContainerRecord): boolean;
 export type Rebuilt = {
     container: Container;
     /**
@@ -50,9 +63,10 @@ export declare function replaceChildren(rebuilt: Rebuilt[]): void;
  * does not reach gets none.
  *
  * @param {BlockRecords} records
+ * @param {NodeTable} nodes the node of each entry, from the build; write-back adds the merged rules' nodes
+ * @param {TokenLists} tokenLists the run's token lists, which the ids of the rules name
  * @param {TextTable} [textTable] the table the selectors are written through
- * @param {Set<Container> | null} [reported] receives the node of each rule a merge created that the tree reaches
  * @return {void}
  */
-export declare function writeBack(records: BlockRecords, textTable?: TextTable, reported?: Set<Container> | null): void;
+export declare function writeBack(records: BlockRecords, nodes: NodeTable, tokenLists: TokenLists, textTable?: TextTable): void;
 //# sourceMappingURL=writeBack.d.ts.map

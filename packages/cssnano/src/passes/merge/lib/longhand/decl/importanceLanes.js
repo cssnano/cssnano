@@ -1,7 +1,7 @@
 import cssnanoUtils from '#utils';
 import { decodeEscapes, isAllName } from '../../../../ir/propertyName.js';
 
-/** @import {Declaration} from 'postcss'; */
+/** @import {BlockDeclarations} from '../blockDeclarations.js'; */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -18,7 +18,7 @@ export function decodedPropertyName(prop) {
 }
 
 /**
- * @param {Declaration} declaration
+ * @param {{ prop: string }} declaration a declaration item
  * @return {boolean}
  */
 export function isAll(declaration) {
@@ -28,12 +28,14 @@ export function isAll(declaration) {
 /**
  * Whether a property occurs twice without an `all` reset in between.
  *
- * @param {Declaration[]} laneDecls
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} laneDecls positions in `list`
  * @return {boolean}
  */
-export function repeatsProperty(laneDecls) {
+export function repeatsProperty(list, laneDecls) {
   const seen = new Set();
-  for (const decl of laneDecls) {
+  for (const position of laneDecls) {
+    const decl = list.at(position);
     if (isAll(decl)) {
       seen.clear();
       continue;
@@ -46,13 +48,14 @@ export function repeatsProperty(laneDecls) {
 }
 
 /**
- * @param {Declaration[]} declarations
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} declarations positions in `list`
  * @return {boolean} whether a declaration other than `all` is present, so that
  * a lane of only `all` declarations can be skipped
  */
-export function hasNonAll(declarations) {
-  for (const declaration of declarations) {
-    if (!isAll(declaration)) return true;
+export function hasNonAll(list, declarations) {
+  for (const position of declarations) {
+    if (!isAll(list.at(position))) return true;
   }
   return false;
 }

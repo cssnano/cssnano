@@ -6,8 +6,10 @@
 
 import { relative, sep } from 'node:path';
 import noPostcssInWindow from './noPostcssInWindow.js';
+import portRules from './portRules.js';
+import scopeRules from './scopeRules.js';
 
-const LINK_METHODS = new Set(['linkAfter', 'linkLast', 'unlink', 'takeLinkOf']);
+const LINK_METHODS = new Set(['linkBefore', 'linkLast', 'unlink']);
 const CACHE_READS = new Set(['keysOf', 'receivingOf']);
 
 const LIST_OPTIONS = [
@@ -194,6 +196,39 @@ const linkEdits = {
   },
 };
 
+const ARENA_EDITS = new Set([
+  'appendEntry',
+  'insertEntryBefore',
+  'moveLast',
+  'moveBefore',
+  'detach',
+]);
+
+const arenaEditsOnly = {
+  meta: { type: 'problem', schema: LIST_OPTIONS },
+  create(context) {
+    const { allowed = [] } = context.options[0] ?? {};
+    const file = repoPath(context);
+    return {
+      CallExpression(node) {
+        const callee = node.callee;
+        if (
+          callee.type !== 'MemberExpression' ||
+          callee.computed ||
+          !ARENA_EDITS.has(callee.property.name) ||
+          allowed.some((entry) => entryHits(entry, file, null))
+        ) {
+          return;
+        }
+        context.report({
+          node,
+          message: 'an arena edit outside the edit modules',
+        });
+      },
+    };
+  },
+};
+
 const cacheReads = {
   meta: { type: 'problem', schema: LIST_OPTIONS },
   create(context) {
@@ -284,5 +319,9 @@ export default {
     'cache-reads': cacheReads,
     'no-cache-local': noCacheLocal,
     'no-postcss-in-window': noPostcssInWindow,
+    'arena-edits-only': arenaEditsOnly,
+    ...portRules,
+    'no-module-state': scopeRules.noModuleState,
+    'no-captured-loop-state': scopeRules.noCapturedLoopState,
   },
 };

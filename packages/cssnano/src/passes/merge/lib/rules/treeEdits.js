@@ -1,8 +1,9 @@
-import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { DECLARATION } from './blockRecord.js';
 import { declarationIsEqual } from './declarations.js';
 import { appendChild } from './arenaEdits.js';
 import { receivingDeclarations } from './declarationCache.js';
 
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -22,11 +23,11 @@ import { receivingDeclarations } from './declarationCache.js';
  * catches up at write-back.
  *
  * @param {BlockRecords} records
- * @param {RuleRecord | BlockRecord | DeclarationRecord | NodeEntry} entry the record of the rule, the block of the at-rule, or another entry
+ * @param {ArenaIndex} index the index of the rule, the block of the at-rule, or another entry
  * @return {void}
  */
-export function remove(records, entry) {
-  records.unlink(entry.index);
+export function remove(records, index) {
+  records.detach(index);
 }
 
 /**
@@ -44,9 +45,10 @@ export function takePlaceOf(records, earlier, later) {
   // held passes to the child after it, which `later` gave to `earlier`.
   const { root } = records;
   if (records.links.firstChild(root.index) === earlier) {
-    root.leadingWhitespace = records.entry(later).before;
+    records.leadingWhitespace = records.entry(later).before;
   }
-  records.takeLinkOf(later, earlier);
+  records.moveBefore(later, earlier);
+  records.detach(later);
   records.entry(earlier).before = records.entry(later).before;
 }
 
@@ -80,8 +82,8 @@ export function appendToDeclarations(mergeState, receiving, incoming) {
     const child = /** @type {DeclarationRecord | NodeEntry} */ (
       records.entry(first)
     );
-    records.unlink(first);
-    if (child instanceof DeclarationRecord) {
+    records.detach(first);
+    if (child.kind === DECLARATION) {
       const { kept, writes } = receivingDeclarations(records, receiving);
       const last = writes.lastConflict(child.keys);
       if (
@@ -93,11 +95,8 @@ export function appendToDeclarations(mergeState, receiving, incoming) {
       )
         continue;
     }
-    appendChild(
-      records,
-      /** @type {RuleRecord} */ (records.rule(receiving)),
-      child
-    );
+    records.rule(receiving);
+    appendChild(records, receiving, first);
   }
 }
 
@@ -106,7 +105,7 @@ export function appendToDeclarations(mergeState, receiving, incoming) {
  * catches up at write-back.
  *
  * @param {MergeState} mergeState
- * @param {Set<number>} indices the indices of the rules to remove
+ * @param {Set<ArenaIndex>} indices the indices of the rules to remove
  * @return {void}
  */
 export function removeRules(mergeState, indices) {
@@ -118,12 +117,12 @@ export function removeRules(mergeState, indices) {
     // Under checks, `rule` throws when the root does not reach the rule.
     arena.rule(index);
     leadsRoot ||= index === first;
-    arena.unlink(index);
+    arena.detach(index);
   }
   // Unlike `remove`, the rest keep their own whitespace, so the first of them
   // takes its own as the leading whitespace of the stylesheet.
   if (leadsRoot) {
     const head = arena.links.firstChild(root.index);
-    root.leadingWhitespace = head === -1 ? null : arena.entry(head).before;
+    arena.leadingWhitespace = head === -1 ? null : arena.entry(head).before;
   }
 }

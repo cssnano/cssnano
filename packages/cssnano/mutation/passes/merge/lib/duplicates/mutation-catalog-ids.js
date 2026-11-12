@@ -14,8 +14,8 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'ignore the selector in the structural id of a rule',
-    find: "      step(keys.root, 'rule'),\n      /** @type {RuleRecord} */ (container).selector\n    )",
-    replace: "      step(keys.root, 'rule'),\n      ''\n    )",
+    find: '    for (const id of /** @type {RuleRecord} */ (container).selectorIds)\n      path = step(path, id);',
+    replace: '',
   },
   {
     name: 'let a layer declaration not mark the block that holds it',
@@ -24,12 +24,12 @@ export const mutations = [
   },
   {
     name: 'treat a layer at-rule as not declaring a layer',
-    find: '    declaresLayer = container.kind === LAYER;',
+    find: '    declaresLayer = container.atRuleKind === LAYER;',
     replace: '    declaresLayer = false;',
   },
   {
     name: 'treat a layer statement as not declaring a layer',
-    find: '  return markLayered(layered, entry.preludeId, entry.kind === LAYER);',
+    find: '  return markLayered(layered, entry.preludeId, entry.atRuleKind === LAYER);',
     replace: '  return markLayered(layered, entry.preludeId, false);',
   },
   {
@@ -39,8 +39,8 @@ export const mutations = [
   },
   {
     name: 'ignore the children in the structural id of a container',
-    find: '    path = step(path, id);',
-    replace: '',
+    find: '    declaresLayer ||= layered.has(id);\n    path = step(path, id);',
+    replace: '    declaresLayer ||= layered.has(id);',
   },
   {
     name: 'ignore the at-rule params in its prelude id',

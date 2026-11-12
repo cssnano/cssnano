@@ -1,6 +1,5 @@
 import { isAsciiDigit } from './asciiCharacters.js';
 import { withoutVendorPrefix } from './vendorPrefix.js';
-import { declaredValueTokens } from '../../../../values/declaredValueTokens.js';
 /**
  * The syntax a declaration value needs a browser to parse: functions, units,
  * keywords and notations that some browser lacks, spelled as features such
@@ -53,8 +52,6 @@ const supportDependentFunctions = new Set([
 ]);
 
 const EMPTY_SET = new Set();
-/** @type {Map<string, Set<string>>} */
-const supportDepsCache = new Map();
 
 /* Units that every browser back to `longstandingFloor` in targetSupport.js
  * parses: the browser-compat-data browsers, and Opera Mini per caniuse, which
@@ -257,20 +254,14 @@ function featureOf(token, inMath) {
 }
 
 /**
- * @param {import('postcss').Declaration} decl
- * @param {import('../../../../values/textTable.js').TextTable} textTable
+ * @param {import('./blockDeclarations.js').DeclarationItem} decl
  * @return {Set<string>} the features a browser must support to parse the
  * declaration's value
  */
-export function supportDependenciesOf(decl, textTable) {
+export function supportDependenciesOf(decl) {
   const value = decl.value;
   if (!mayNeedSupport(value)) {
     return EMPTY_SET;
-  }
-
-  const cached = supportDepsCache.get(value);
-  if (cached !== undefined) {
-    return cached;
   }
 
   /** @type {Set<string>} */
@@ -280,7 +271,7 @@ export function supportDependenciesOf(decl, textTable) {
   const enclosing = [];
   let dividing = false;
 
-  for (const token of declaredValueTokens(textTable, decl)) {
+  for (const token of decl.tokens) {
     const type = token[0];
     if (type === TokenType.Whitespace || type === TokenType.Comment) continue;
     const inMath = enclosing.at(-1) === true;
@@ -302,16 +293,5 @@ export function supportDependenciesOf(decl, textTable) {
     if (feature !== undefined) features.add(feature);
   }
 
-  supportDepsCache.set(value, features);
   return features;
-}
-
-/**
- * Values repeat within a file, not across files: drop the memo so a
- * long-running process does not keep every value it has seen.
- *
- * @return {void}
- */
-export function clearSupportCache() {
-  supportDepsCache.clear();
 }

@@ -1,4 +1,9 @@
-import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import {
+  declarationsOf,
+  childEntriesOf,
+} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { elementKeysOf } from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
+import { tokensText } from '../../../../../src/values/tokensText.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -23,7 +28,7 @@ import {
   receivingDeclarations,
 } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
-import { recordDeclaration } from '../../../../../src/passes/ir/declarationRecord.js';
+import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 
@@ -55,7 +60,7 @@ test('appendToDeclarations should empty the incoming rule, which stays reached u
     ruleRecordOf(state.records, receiving).index,
     ruleRecordOf(state.records, incoming).index
   );
-  assert.deepEqual(record.declarationsOf(state.records), []);
+  assert.deepEqual(declarationsOf(state.records, record.index), []);
 });
 
 // The entry of a rule names its declarations by position, so an append that
@@ -70,8 +75,7 @@ test('DeclarationCache#appended should make the checked read throw out of step w
     records.root.index,
     recordDeclaration(
       postcss.decl({ prop: 'width', value: '0' }),
-      state.properties,
-      state.declarationIds
+      state.runContext
     )
   );
   const stamp = records.declarationStamps.stampOf(rule.index);
@@ -93,7 +97,12 @@ test('appendToDeclarations should leave the record of the receiving rule readabl
     ruleRecordOf(state.records, receiving).index,
     ruleRecordOf(state.records, incoming).index
   );
-  assert.deepEqual(ruleRecordOf(state.records, receiving).selectors, ['a']);
+  assert.deepEqual(
+    ruleRecordOf(state.records, receiving).selectorIds.map((id) =>
+      tokensText(state.tokenLists.get(id))
+    ),
+    ['a']
+  );
 });
 
 test('appendToDeclarations should keep the record of the receiving rule', () => {
@@ -123,9 +132,10 @@ test('appendToDeclarations should give the receiving rule the declarations of th
     ruleRecordOf(state.records, incoming).index
   );
   assert.deepEqual(
-    ruleRecordOf(state.records, receiving)
-      .declarationsOf(state.records)
-      .map((d) => d.prop),
+    declarationsOf(
+      state.records,
+      ruleRecordOf(state.records, receiving).index
+    ).map((d) => d.prop),
     ['color', 'width']
   );
 });
@@ -144,9 +154,10 @@ test('appendToDeclarations should give the record of the receiving rule keys for
   );
   assert.deepEqual(
     declarationIds(state.records, ruleRecordOf(state.records, receiving).index),
-    ruleRecordOf(state.records, receiving)
-      .declarationsOf(state.records)
-      .map((d) => d.id)
+    declarationsOf(
+      state.records,
+      ruleRecordOf(state.records, receiving).index
+    ).map((d) => d.id)
   );
 });
 
@@ -173,9 +184,9 @@ test('removeDeclarations should leave the record with the declarations that rema
     claimAt(state.records, record, [0])
   );
   assert.deepEqual(
-    ruleRecordOf(state.records, rule)
-      .declarationsOf(state.records)
-      .map((d) => d.prop),
+    declarationsOf(state.records, ruleRecordOf(state.records, rule).index).map(
+      (d) => d.prop
+    ),
     ['width']
   );
 });
@@ -192,24 +203,25 @@ test('removeDeclarations should give the record keys for the declarations that r
   );
   assert.deepEqual(
     declarationIds(state.records, ruleRecordOf(state.records, rule).index),
-    [state.declarationIds.keyOf(/** @type {Declaration} */ (rule.last))]
+    [
+      recordDeclaration(
+        /** @type {Declaration} */ (rule.last),
+        state.runContext
+      ).id,
+    ]
   );
 });
 
 test('removeDeclarations should keep the element keys of the record', () => {
   const { root, state } = setup('a,b{color:red;width:1px}');
   const rule = /** @type {Rule} */ (root.first);
-  state.elementKeysOf(ruleRecordOf(state.records, rule));
   const record = ruleRecordOf(state.records, rule);
   removeDeclarations(
     state.records,
     record.index,
     claimAt(state.records, record, [0])
   );
-  assert.deepEqual(state.elementKeysOf(ruleRecordOf(state.records, rule)), [
-    'a',
-    'b',
-  ]);
+  assert.deepEqual(elementKeysOf(state.records, record.index), ['a', 'b']);
 });
 
 test('removeRules should unlink each rule it removes, so the root no longer reaches it', () => {
@@ -225,7 +237,12 @@ test('removeRules should leave the record of a rule it keeps readable', () => {
   const [kept, removed] = /** @type {Rule[]} */ (root.nodes);
   ruleRecordOf(state.records, kept);
   removeRules(state, new Set([ruleRecordOf(state.records, removed).index]));
-  assert.deepEqual(ruleRecordOf(state.records, kept).selectors, ['a']);
+  assert.deepEqual(
+    ruleRecordOf(state.records, kept).selectorIds.map((id) =>
+      tokensText(state.tokenLists.get(id))
+    ),
+    ['a']
+  );
 });
 
 test('takePlaceOf should link the earlier rule where the later one stood', () => {

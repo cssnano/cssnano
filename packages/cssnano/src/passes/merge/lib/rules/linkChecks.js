@@ -1,5 +1,4 @@
-import { isContainerKind } from './blockRecord.js';
-import { RuleRecord } from './ruleRecord.js';
+import { isRuleOrAtRuleKind, RULE } from './blockRecord.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
@@ -8,6 +7,7 @@ const DETACHED_BLOCK = 'an entry is linked into a block outside the tree';
 const PLAIN_RULE =
   'a rule or an at-rule is linked into a rule that holds no rules';
 const NOT_REACHED = 'a rule is read that the root does not reach';
+const LINKED_TWICE = 'an entry is linked while it stands in a chain';
 
 /**
  * The checks of the arena's links. Each one only reads and throws, so the
@@ -35,17 +35,19 @@ export function assertReached(records, index) {
 }
 
 /**
- * Under checks, the container that receives `index` must reach the root, and
- * a rule or an at-rule may join only a rule that nests.
+ * Under checks, the entry at `index` must stand in no chain, since a second
+ * link would leave it in two; the container that receives it must reach the
+ * root, and a rule or an at-rule may join only a rule that nests.
  *
  * @param {BlockRecords} records
  * @param {number} block the container that receives the entry
  * @param {number} index the entry that is linked into it
  * @return {void}
- * @throws {Error} under checks, when the link would lose the entry
+ * @throws {Error} under checks, when the link would lose the entry or leave it in two chains
  */
 export function assertCanLink(records, block, index) {
   if (!records.consistencyChecks) return;
+  if (records.links.parentOf(index) !== -1) throw new Error(LINKED_TWICE);
   assertReachesRoot(records, block);
   assertCanHold(records, block, index);
 }
@@ -57,13 +59,13 @@ export function assertCanLink(records, block, index) {
  * @return {void}
  * @throws {Error} when a rule or an at-rule is linked into a rule that holds no rules
  */
-export function assertCanHold(records, block, index) {
+function assertCanHold(records, block, index) {
   const holder = records.container(block);
-  if (holder instanceof RuleRecord && holder.context === -1) {
+  if (holder?.kind === RULE && holder.context === -1) {
     const entry = records.entry(
       /** @type {import('./blockRecord.js').ArenaIndex} */ (index)
     );
-    if (isContainerKind(entry.kind)) throw new Error(PLAIN_RULE);
+    if (isRuleOrAtRuleKind(entry.kind)) throw new Error(PLAIN_RULE);
   }
 }
 
@@ -73,7 +75,7 @@ export function assertCanHold(records, block, index) {
  * @return {void}
  * @throws {Error} when a walk up `parentOf` from `block` does not reach the root
  */
-export function assertReachesRoot(records, block) {
+function assertReachesRoot(records, block) {
   let at = block;
   while (at !== records.root.index) {
     at = records.links.parentOf(at);

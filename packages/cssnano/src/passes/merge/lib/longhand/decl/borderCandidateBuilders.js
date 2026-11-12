@@ -14,8 +14,7 @@ import { declCost } from './slotVector.js';
 import { minifyCells } from './borderCells.js';
 
 const { asciiLowerCase } = cssnanoUtils;
-/** @import {Declaration} from 'postcss'; */
-/** @import {TextTable} from '../../../../../values/textTable.js' */
+/** @import {BlockDeclarations} from '../blockDeclarations.js'; */
 /** @import {ValueComponent} from '../componentRanges.js' */
 
 /* Builds the reset shorthands, component shorthands, side shorthands and
@@ -118,12 +117,12 @@ function addResetCandidates(cells, cellComponents, lane, rawCandidates) {
  * A shorthand fills several cells, so a declaration appears once per cell it
  * set; collecting into a Set makes each one count once.
  *
- * @param {Set<Declaration>[]} cellHistory
+ * @param {Set<number>[]} cellHistory
  * @param {Iterable<number>} cellIndexes
- * @return {Set<Declaration>}
+ * @return {Set<number>}
  */
 function declarationsOfCells(cellHistory, cellIndexes) {
-  /** @type {Set<Declaration>} */
+  /** @type {Set<number>} */
   const decls = new Set();
   for (const index of cellIndexes) {
     for (const d of cellHistory[index]) decls.add(d);
@@ -131,16 +130,17 @@ function declarationsOfCells(cellHistory, cellIndexes) {
   return decls;
 }
 /**
- * @param {Set<Declaration>[]} cellHistory
- * @param {Set<Declaration>} fallbacks
+ * @param {BlockDeclarations} list
+ * @param {Set<number>[]} cellHistory
+ * @param {Set<number>} fallbacks
  * @param {number} s
  * @return {boolean}
  */
-function isSynthesizableSide(cellHistory, fallbacks, s) {
+function isSynthesizableSide(list, cellHistory, fallbacks, s) {
   const decls = declarationsOfCells(cellHistory, sideCells[s]);
   if (decls.size === 1) {
     const [only] = decls;
-    const p = asciiLowerCase(only.prop);
+    const p = asciiLowerCase(list.at(only).prop);
     if (p === `border-${sides[s]}` || p === 'border') return true;
   }
   for (const d of decls) {
@@ -149,14 +149,15 @@ function isSynthesizableSide(cellHistory, fallbacks, s) {
   return true;
 }
 /**
- * @param {Set<Declaration>} decls
- * @param {TextTable} textTable
+ * @param {Set<number>} decls
+ * @param {BlockDeclarations} list
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {boolean}
  */
-function hasConsistentSupport(decls, textTable) {
+function hasConsistentSupport(decls, list, features) {
   let s0;
   for (const d of decls) {
-    const support = mergeBlockingSupport(d, textTable);
+    const support = mergeBlockingSupport(list.at(d), features);
     s0 ??= support;
     if (support !== s0 && s0.symmetricDifference(support).size !== 0) {
       return false;
@@ -166,11 +167,12 @@ function hasConsistentSupport(decls, textTable) {
 }
 
 /**
- * @param {Set<Declaration>[]} cellHistory
+ * @param {Set<number>[]} cellHistory
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
- * @param {Set<Declaration>} fallbacks
- * @param {TextTable} textTable
+ * @param {Set<number>} fallbacks
+ * @param {BlockDeclarations} list
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {number[]}
  */
 function getAvailableSides(
@@ -178,29 +180,38 @@ function getAvailableSides(
   touched,
   barrierCells,
   fallbacks,
-  textTable
+  list,
+  features
 ) {
   return [0, 1, 2, 3]
     .filter(
       (s) =>
         sideCells[s].every((i) => touched.has(i) && !barrierCells.has(i)) &&
-        isSynthesizableSide(cellHistory, fallbacks, s)
+        isSynthesizableSide(list, cellHistory, fallbacks, s)
     )
     .filter((s) =>
       hasConsistentSupport(
         declarationsOfCells(cellHistory, sideCells[s]),
-        textTable
+        list,
+        features
       )
     );
 }
 /**
- * @param {Set<Declaration>[]} cellHistory
+ * @param {Set<number>[]} cellHistory
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
- * @param {TextTable} textTable
+ * @param {BlockDeclarations} list
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {number[]}
  */
-function getAvailableComponents(cellHistory, touched, barrierCells, textTable) {
+function getAvailableComponents(
+  cellHistory,
+  touched,
+  barrierCells,
+  list,
+  features
+) {
   return [2, 1, 0]
     .filter((c) =>
       componentCells[c].every((i) => touched.has(i) && !barrierCells.has(i))
@@ -208,7 +219,8 @@ function getAvailableComponents(cellHistory, touched, barrierCells, textTable) {
     .filter((c) =>
       hasConsistentSupport(
         declarationsOfCells(cellHistory, componentCells[c]),
-        textTable
+        list,
+        features
       )
     );
 }
@@ -317,12 +329,13 @@ function createLeafCandidate(cells, touched, blockedCells) {
  * @param {boolean} hasReset
  * @param {Set<number>} touched
  * @param {Set<number>} barrierCells
- * @param {Set<Declaration>[]} cellHistory
+ * @param {Set<number>[]} cellHistory
  * @param {string[]} cells
  * @param {(ValueComponent | undefined)[]} cellComponents
  * @param {boolean} lane
- * @param {Set<Declaration>} fallbacks
- * @param {TextTable} textTable
+ * @param {Set<number>} fallbacks
+ * @param {BlockDeclarations} list
+ * @param {ReadonlySet<string>} features the features every target supports
  * @return {{ decls: { prop: string, value: string }[], rank: number, mask: number, resetIndex: number, coveredCells: Set<number> }[]}
  */
 function createResetCandidates(
@@ -334,23 +347,24 @@ function createResetCandidates(
   cellComponents,
   lane,
   fallbacks,
-  textTable
+  list,
+  features
 ) {
   if (!hasReset || touched.size !== 12 || barrierCells.size !== 0) return [];
   const allDecls = declarationsOfCells(cellHistory, touched);
   for (const d of allDecls) {
     if (
-      !allBorderShorthands.has(asciiLowerCase(d.prop)) &&
-      needsUnmetSupport(d, textTable)
+      !allBorderShorthands.has(asciiLowerCase(list.at(d).prop)) &&
+      needsUnmetSupport(list.at(d), features)
     ) {
       return [];
     }
   }
   for (const d of fallbacks) {
-    if (asciiLowerCase(d.prop) !== 'border') return [];
+    if (asciiLowerCase(list.at(d).prop) !== 'border') return [];
   }
 
-  if (!hasConsistentSupport(allDecls, textTable)) return [];
+  if (!hasConsistentSupport(allDecls, list, features)) return [];
   /** @type {{decls: {prop: string, value: string}[], rank: number}[]} */
   const rawReset = [];
   addResetCandidates(cells, cellComponents, lane, rawReset);

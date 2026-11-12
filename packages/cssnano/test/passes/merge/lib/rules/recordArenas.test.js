@@ -1,21 +1,33 @@
+import { selectorIdsOf } from './selectorIdsOf.js';
+import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { containers } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { BlockRecord } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import {
+  AT_RULE_BLOCK,
+  RULE,
+  STYLESHEET,
+} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   ruleRecordOf,
   buildTestRecords,
   withCorruptedLinks,
   placeUnlinked,
+  nodeOfEntry,
 } from './liveRecords.js';
 import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
 import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
+import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
+
+const selectorIds = new SelectorIds();
+const tokenLists = new TokenLists();
 
 /** @import {Root, Rule} from 'postcss' */
+/** @import {BlockLinks} from '../../../../../src/passes/merge/lib/rules/blockLinks.js' */
 /** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
 /** @typedef {BlockRecord | RuleRecord} Container */
 
@@ -48,8 +60,9 @@ function reachedBlocks(records, block, found = [block]) {
   ) {
     const item = records.entry(entry);
     if (
-      item instanceof BlockRecord ||
-      (item instanceof RuleRecord && item.context !== -1)
+      item.kind === STYLESHEET ||
+      item.kind === AT_RULE_BLOCK ||
+      (item.kind === RULE && item.context !== -1)
     ) {
       found.push(item);
       reachedBlocks(records, item, found);
@@ -63,8 +76,8 @@ test('buildRecords should index the stylesheet as entry 0, then each rule and ea
   const { records } = state;
   assert.equal(records.root.index, 0);
   assert.equal(records.entryCount(), 5);
-  assert.equal(records.rule(1).node.selector, 'a');
-  assert.equal(records.rule(3).node.selector, 'b');
+  assert.equal(nodeOfEntry(state.records, records.rule(1)).selector, 'a');
+  assert.equal(nodeOfEntry(state.records, records.rule(3)).selector, 'b');
   assert.equal(records.rule(5), undefined);
 });
 
@@ -72,7 +85,7 @@ test('a rule should keep its index and stay in the arena after it is unlinked', 
   const { root, state } = setup('a{color:red}b{width:1px}');
   const record = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
   const { index } = record;
-  state.records.unlink(index);
+  state.records.detach(index);
   assert.equal(record.index, index);
   assert.equal(state.records.entry(index), record);
 });
@@ -84,10 +97,10 @@ test('a rule recorded mid-run should take the next index of the arena', () => {
   const added = placeUnlinked(
     records,
     records.root.index,
-    new RuleRecord(postcss.rule({ selector: 'c' }), ['c'], 'c')
+    new RuleRecord('', selectorIdsOf(selectorIds, tokenLists, ['c']))
   );
   assert.equal(added.index, count);
-  records.linkLast(records.root.index, added.index);
+  records.moveLast(records.root.index, added.index);
   assert.equal(records.rule(added.index), added);
 });
 
@@ -147,7 +160,7 @@ test('a rule should name the block whose chain holds it by index', () => {
       entry !== -1;
       entry = records.links.nextSibling(entry)
     ) {
-      if (records.entry(entry) instanceof RuleRecord) {
+      if (records.entry(entry).kind === RULE) {
         assert.equal(records.links.parentOf(entry), block.index);
       }
     }
@@ -172,10 +185,13 @@ test('assertOwnershipIsTree should accept the records of a stylesheet', () => {
 test('assertOwnershipIsTree should throw when a rule is linked twice in one chain', () => {
   const { state } = setup('a{color:red}b{width:1px}');
   const { records } = state;
-  const first = records.links.firstChild(records.root.index);
-  const second = records.links.nextSibling(first);
-  // Linking `first` after `second` makes the chain loop from `second` to itself.
-  records.linkAfter(records.root.index, first, second);
+  const second = records.links.lastChild(records.root.index);
+  // The arena's edits never link a linked entry, so the raw links table makes
+  // the chain loop from `second` to itself, as a bug inside it would.
+  /** @type {BlockLinks} */ (records.links).linkLast(
+    records.root.index,
+    second
+  );
   assert.throws(() => assertOwnershipIsTree(records), /reached twice/v);
 });
 
