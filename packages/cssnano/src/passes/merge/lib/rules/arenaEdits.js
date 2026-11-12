@@ -1,15 +1,21 @@
 import {
+  declarationsOf,
   firstDeclaration,
   inheritWhitespace,
   nextDeclaration,
 } from './blockChildren.js';
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
+import { keysOfName } from '../../../ir/propertyTable.js';
+import { tokenizeMode } from '../../../../values/tokenizeMode.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockDeclarations, DeclarationItem} from '../longhand/blockDeclarations.js' */
+/** @import {RunContext} from '../../../ir/runContext.js' */
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 
 /*
  * The edits that compose the arena's link wrappers. Each takes the arena
@@ -142,6 +148,135 @@ export function moveDeclarations(records, source, target, claimed) {
   if (records.consistencyChecks) assertMovesInOrder(records, source, claimed);
   records.rule(target);
   for (const index of claimed) appendChild(records, target, index);
+}
+
+/**
+ * The value list of a working item, interned in the run's table. The item
+ * always holds its tokens, so no text is tokenized here.
+ *
+ * @param {RunContext} context
+ * @param {DeclarationItem} item
+ * @return {TokenListId}
+ */
+function valueListOfItem(context, item) {
+  return context.valueIds.idOf(
+    context.tokenLists,
+    tokenizeMode(item.prop),
+    item.value,
+    item.tokens
+  );
+}
+
+/**
+ * Gives an authored declaration the fields of its rewritten item. The raw value
+ * is dropped at write-back, which `marked` tells it to do.
+ *
+ * @param {RunContext} context
+ * @param {DeclarationRecord} record
+ * @param {DeclarationItem} item
+ * @return {void}
+ */
+function rewriteRecord(context, record, item) {
+  if (item.prop !== record.prop) {
+    record.prop = item.prop;
+    record.keys = keysOfName(item.prop);
+  }
+  record.valueList = valueListOfItem(context, item);
+  record.id = context.declarations.keyOf(
+    record.prop,
+    record.valueList,
+    record.important,
+    record.before
+  );
+  record.marked = true;
+}
+
+/**
+ * The record of a clone: the item's fields, with the support its source
+ * required and a template that has a node.
+ *
+ * @param {RunContext} context
+ * @param {DeclarationItem} item
+ * @param {DeclarationRecord} anchor the record of the clone's source
+ * @param {ArenaIndex} anchorIndex the index of `anchor`
+ * @return {DeclarationRecord}
+ */
+function cloneRecordOf(context, item, anchor, anchorIndex) {
+  const valueList = valueListOfItem(context, item);
+  const before = item.before ?? null;
+  const record = new DeclarationRecord(
+    before,
+    item.prop,
+    valueList,
+    item.important,
+    keysOfName(item.prop),
+    context.declarations.keyOf(item.prop, valueList, item.important, before),
+    item.between ?? null,
+    item.importantSpelling ?? null
+  );
+  record.inheritedSupport = item.inheritedSupport;
+  record.marked = true;
+  record.template = anchor.template !== -1 ? anchor.template : anchorIndex;
+  return record;
+}
+
+/**
+ * Commits the working list of one block to the arena: the one edit the longhand
+ * rounds make. The clones are placed first, each right after its source, so a
+ * removed source still fixes where they land. Then the removals, then the
+ * rewrites. The block's declaration stamp moves once when anything was
+ * rewritten or cloned.
+ *
+ * @param {BlockRecords} records
+ * @param {RunContext} context
+ * @param {ArenaIndex} container the index of the block or rule the list was read from
+ * @param {BlockDeclarations} list the list, as the reducers left it
+ * @return {void}
+ */
+export function commitDeclarations(records, context, container, list) {
+  // The authored items are the declarations of the chain, in chain order, as
+  // the list was read from it; the clones follow them.
+  const authored = declarationsOf(records, container);
+  /** @type {ArenaIndex[]} the arena index of each item, by position */
+  const placed = authored.map(
+    (record) => /** @type {ArenaIndex} */ (record.index)
+  );
+  let edited = false;
+  for (let position = authored.length; position < list.length; position++) {
+    const item = list.at(position);
+    const anchor = placed[item.source];
+    const record = cloneRecordOf(
+      context,
+      item,
+      /** @type {DeclarationRecord} */ (records.entry(anchor)),
+      anchor
+    );
+    const next = records.links.nextSibling(anchor);
+    if (next === -1) records.appendEntry(container, record);
+    else placeBefore(records, next, record);
+    placed.push(/** @type {ArenaIndex} */ (record.index));
+    edited = true;
+  }
+
+  /** @type {Set<ArenaIndex>} */
+  const removed = new Set();
+  for (let position = 0; position < list.length; position++) {
+    if (list.at(position).removed) removed.add(placed[position]);
+  }
+  if (removed.size > 0) removeDeclarations(records, container, removed);
+
+  for (let position = 0; position < authored.length; position++) {
+    const item = list.at(position);
+    if (item.rewritten && !item.removed) {
+      rewriteRecord(
+        context,
+        /** @type {DeclarationRecord} */ (records.entry(placed[position])),
+        item
+      );
+      edited = true;
+    }
+  }
+  if (edited) records.touchDeclarations(container);
 }
 
 const NOT_A_CHILD =

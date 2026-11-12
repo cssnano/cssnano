@@ -1,15 +1,19 @@
+import { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
 import type { ArenaIndex } from './blockRecord.js';
-import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type { NodeEntry } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
+import type { BlockDeclarations } from '../longhand/blockDeclarations.js';
+import type { RunContext } from '../../../ir/runContext.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
-/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockDeclarations, DeclarationItem} from '../longhand/blockDeclarations.js' */
+/** @import {RunContext} from '../../../ir/runContext.js' */
+/** @import {TokenListId} from '../../../ir/tokenLists.js' */
 /**
  * Replaces the rule `record` with the rules `replacements`, which take its
  * place in the chain, in order. A replacement that already stands right before
@@ -85,4 +89,18 @@ export declare function removeDeclarations(records: BlockRecords, rule: ArenaInd
  * @return {void}
  */
 export declare function moveDeclarations(records: BlockRecords, source: ArenaIndex, target: ArenaIndex, claimed: ArenaIndex[]): void;
+/**
+ * Commits the working list of one block to the arena: the one edit the longhand
+ * rounds make. The clones are placed first, each right after its source, so a
+ * removed source still fixes where they land. Then the removals, then the
+ * rewrites. The block's declaration stamp moves once when anything was
+ * rewritten or cloned.
+ *
+ * @param {BlockRecords} records
+ * @param {RunContext} context
+ * @param {ArenaIndex} container the index of the block or rule the list was read from
+ * @param {BlockDeclarations} list the list, as the reducers left it
+ * @return {void}
+ */
+export declare function commitDeclarations(records: BlockRecords, context: RunContext, container: ArenaIndex, list: BlockDeclarations): void;
 //# sourceMappingURL=arenaEdits.d.ts.map
