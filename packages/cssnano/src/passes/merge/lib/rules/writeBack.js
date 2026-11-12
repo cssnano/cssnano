@@ -1,5 +1,6 @@
-import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
+import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
 import { TextTable } from '../../../../values/textTable.js';
+import { tokensText } from '../../../../values/tokensText.js';
 import { createChildNodes, nodeOf } from './nodeTable.js';
 import { writeSelector } from './writeSelector.js';
 import { assertTemplatesHaveNodes } from './recordsCheck.js';
@@ -10,6 +11,7 @@ import { assertTemplatesHaveNodes } from './recordsCheck.js';
 /** @import {BlockRecord as Block} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {TokenLists} from '../../../ir/tokenLists.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 const TABLE_LENGTH =
   'the node table does not have one slot per entry the build made';
@@ -115,6 +117,46 @@ function writeBefore(records, nodes, container) {
 }
 
 /**
+ * Writes a marked declaration in place: its property and the text of its value
+ * list, and no raw value, since the raw spelled the text before the rewrite.
+ *
+ * @param {DeclarationRecord} record
+ * @param {NodeTable} nodes
+ * @param {TokenLists} tokenLists
+ * @return {void}
+ */
+function writeDeclaration(record, nodes, tokenLists) {
+  if (!record.marked) return;
+  const node = /** @type {import('postcss').Declaration} */ (
+    nodeOf(nodes, record.index)
+  );
+  node.prop = record.prop;
+  node.value = tokensText(tokenLists.get(record.valueList));
+  delete node.raws.value;
+}
+
+/**
+ * Writes the marked declarations of the chain of the rule at `index`, in place.
+ *
+ * @param {BlockRecords} records
+ * @param {NodeTable} nodes
+ * @param {TokenLists} tokenLists
+ * @param {number} index the rule's index
+ * @return {void}
+ */
+function writeDeclarationsOf(records, nodes, tokenLists, index) {
+  for (
+    let entry = records.links.firstChild(index);
+    entry !== -1;
+    entry = records.links.nextSibling(entry)
+  ) {
+    const record = records.entry(entry);
+    if (record.kind === DECLARATION)
+      writeDeclaration(record, nodes, tokenLists);
+  }
+}
+
+/**
  * Walks the live tree from the root. Each rule it reaches gets its selector
  * written, and each container whose children differ from its node gets the
  * children the records hold, as does each plain rule that an edit changed the
@@ -144,7 +186,7 @@ export function writeBack(
   /** @param {ContainerRecord} container */
   const visit = (container) => {
     if (differs(records, nodes, container)) {
-      createChildNodes(records, nodes, container.index);
+      createChildNodes(records, nodes, container.index, tokenLists);
       rebuilt.push({
         container: /** @type {Container} */ (nodeOf(nodes, container.index)),
         index: container.index,
@@ -162,16 +204,24 @@ export function writeBack(
         writeSelector(record, nodes, textTable, tokenLists);
         if (record.context !== -1) {
           visit(record);
-        } else if (records.links.isEdited(record.index)) {
-          rebuilt.push({
-            container: /** @type {Container} */ (nodeOf(nodes, record.index)),
-            index: record.index,
-            children: childNodesOf(records, nodes, record.index),
-            leading: null,
-          });
+        } else {
+          if (records.links.isEdited(record.index)) {
+            createChildNodes(records, nodes, record.index, tokenLists);
+            rebuilt.push({
+              container: /** @type {Container} */ (nodeOf(nodes, record.index)),
+              index: record.index,
+              children: childNodesOf(records, nodes, record.index),
+              leading: null,
+            });
+          }
+          if (records.declarationStamps.isTouched(record.index)) {
+            writeDeclarationsOf(records, nodes, tokenLists, record.index);
+          }
         }
       } else if (record.kind === STYLESHEET || record.kind === AT_RULE_BLOCK) {
         visit(record);
+      } else if (record.kind === DECLARATION) {
+        writeDeclaration(record, nodes, tokenLists);
       }
     }
   };

@@ -188,6 +188,18 @@ export class BlockRecords {
   }
 
   /**
+   * Moves the declaration stamp of `container` without a link change, after a
+   * declaration of its chain was rewritten in place. Its edit stamp stays, so
+   * write-back writes the rewrite without rebuilding the container.
+   *
+   * @param {number} container an index that the arena gave
+   * @return {void}
+   */
+  touchDeclarations(container) {
+    this.#declarationStamps.touch(container);
+  }
+
+  /**
    * Extends the declaration cache of `block` with the entry at `index`, when
    * that entry is a declaration that the link left at the end of the chain.
    *
@@ -352,6 +364,7 @@ export class BlockRecords {
    */
   settle() {
     this.#links.settle();
+    this.#declarationStamps.settle();
     this.#built = this.#entries.length;
   }
 

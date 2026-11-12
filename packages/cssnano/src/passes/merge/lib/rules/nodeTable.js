@@ -1,8 +1,11 @@
 import postcss from 'postcss';
-import { RULE } from './blockRecord.js';
+import { DECLARATION, RULE } from './blockRecord.js';
+import { tokensText } from '../../../../values/tokensText.js';
 
 /** @import {ChildNode, Root} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 /**
  * The PostCSS node of each entry, by the entry's arena index. The build fills
@@ -25,32 +28,64 @@ export function nodeOf(nodes, index) {
 }
 
 /**
- * Gives each merged rule among the children of a rebuilt container its node,
- * with the template's source. Write-back fills the rest.
+ * The node of a declaration that an edit appended, with the template's source
+ * and the record's property, value, importance and raws. Write-back gives it
+ * its whitespace before.
+ *
+ * @param {DeclarationRecord} record
+ * @param {import('postcss').Declaration} template the node whose source the new node takes
+ * @param {TokenLists} tokenLists
+ * @return {import('postcss').Declaration}
+ */
+function declarationNode(record, template, tokenLists) {
+  const node = postcss.decl({
+    prop: record.prop,
+    value: tokensText(tokenLists.get(record.valueList)),
+    important: record.important,
+    source: template.source,
+  });
+  if (record.between !== null) node.raws.between = record.between;
+  if (record.important && record.importantSpelling !== null) {
+    node.raws.important = record.importantSpelling;
+  }
+  return node;
+}
+
+/**
+ * Gives each child of a rebuilt container that has no node its node: a merged
+ * rule gets one with the template's source, and an appended declaration gets
+ * one from its record. Write-back fills the rest.
  *
  * @param {BlockRecords} records
  * @param {NodeTable} nodes
  * @param {number} container the index of the rebuilt container
+ * @param {TokenLists} tokenLists the run's token lists, which the declarations' values name
  * @return {void}
  */
-export function createChildNodes(records, nodes, container) {
+export function createChildNodes(records, nodes, container, tokenLists) {
   for (
     let entry = records.links.firstChild(container);
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
     const record = records.entry(entry);
-    if (record.kind === RULE && nodeOf(nodes, entry) === undefined) {
+    if (nodeOf(nodes, entry) !== undefined) continue;
+    while (nodes.length <= entry) nodes.push(undefined);
+    if (record.kind === RULE) {
       const template = /** @type {import('postcss').Rule} */ (
         nodeOf(nodes, record.template)
       );
-      while (nodes.length <= entry) nodes.push(undefined);
       // The node has no selector yet, which PostCSS's props type does not allow.
       nodes[entry] = postcss.rule(
         /** @type {import('postcss').RuleProps} */ ({
           source: template.source,
         })
       );
+    } else if (record.kind === DECLARATION) {
+      const template = /** @type {import('postcss').Declaration} */ (
+        nodeOf(nodes, record.template)
+      );
+      nodes[entry] = declarationNode(record, template, tokenLists);
     }
   }
 }

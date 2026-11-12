@@ -10,6 +10,9 @@ export class DeclarationStamps {
   /** @type {number} the last stamp given, which only grows */
   #clock = 0;
 
+  /** @type {number} the clock when the build settled the stamps; touches after it are unsettled */
+  #settledAt = 0;
+
   /** Gives the next entry of the arena a stamp of 0. */
   grow() {
     this.#stamps.push(0);
@@ -32,6 +35,19 @@ export class DeclarationStamps {
   stampOf(index) {
     return this.#stamps[index];
   }
+
+  /**
+   * @param {number} index an index that the arena gave
+   * @return {boolean} whether the declarations of the container changed after the build settled them
+   */
+  isTouched(index) {
+    return this.#stamps[index] > this.#settledAt;
+  }
+
+  /** Marks every touch so far as the build's, so that only later touches count. */
+  settle() {
+    this.#settledAt = this.#clock;
+  }
 }
 
-/** @typedef {Pick<DeclarationStamps, 'stampOf'>} DeclarationStampReader */
+/** @typedef {Pick<DeclarationStamps, 'stampOf' | 'isTouched'>} DeclarationStampReader */

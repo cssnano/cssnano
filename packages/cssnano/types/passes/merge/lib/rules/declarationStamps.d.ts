@@ -19,7 +19,14 @@ export declare class DeclarationStamps {
      * @return {number} the stamp of the entry at `index`
      */
     stampOf(index: number): number;
+    /**
+     * @param {number} index an index that the arena gave
+     * @return {boolean} whether the declarations of the container changed after the build settled them
+     */
+    isTouched(index: number): boolean;
+    /** Marks every touch so far as the build's, so that only later touches count. */
+    settle(): void;
 }
-export type DeclarationStampReader = Pick<DeclarationStamps, 'stampOf'>;
-/** @typedef {Pick<DeclarationStamps, 'stampOf'>} DeclarationStampReader */
+export type DeclarationStampReader = Pick<DeclarationStamps, 'stampOf' | 'isTouched'>;
+/** @typedef {Pick<DeclarationStamps, 'stampOf' | 'isTouched'>} DeclarationStampReader */
 //# sourceMappingURL=declarationStamps.d.ts.map

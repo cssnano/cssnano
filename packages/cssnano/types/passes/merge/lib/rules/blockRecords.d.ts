@@ -84,6 +84,15 @@ export declare class BlockRecords {
      */
     detach(index: ArenaIndex): void;
     /**
+     * Moves the declaration stamp of `container` without a link change, after a
+     * declaration of its chain was rewritten in place. Its edit stamp stays, so
+     * write-back writes the rewrite without rebuilding the container.
+     *
+     * @param {number} container an index that the arena gave
+     * @return {void}
+     */
+    touchDeclarations(container: number): void;
+    /**
      * @param {ArenaIndex} index an index that the arena gave
      * @return {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry}
      */
