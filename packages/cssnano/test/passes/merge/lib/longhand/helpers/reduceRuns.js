@@ -195,8 +195,7 @@ export function secondRoundOfText(css, browsers) {
     support.placeShorthands,
     support.boxSupport,
     support.pairShorthands,
-    run,
-    records
+    run
   );
   canonicalizeRecords(records, context);
   writeBack(records, nodes, run.tokenLists, run.textTable);

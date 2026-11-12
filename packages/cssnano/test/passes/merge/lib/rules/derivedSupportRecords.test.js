@@ -41,25 +41,17 @@ function mergedRecords(css) {
   const context = createRunContext(undefined, true, support.features);
   const { records } = buildRecords(postcss.parse(css), context);
   fillSummaries(records, context.tokenLists, browsers);
-  const first = longhandContext(
+  const longhand = longhandContext(
     support.placeShorthands,
     support.boxSupport,
     support.pairShorthands,
-    context,
-    records
+    context
   );
-  canonicalizeRecords(records, first);
+  canonicalizeRecords(records, longhand);
   discardDuplicates(records, browsers, context);
   runMerge(records, browsers, context);
-  const second = longhandContext(
-    support.placeShorthands,
-    support.boxSupport,
-    support.pairShorthands,
-    context,
-    records
-  );
-  second.setsOtherColumn = first.setsOtherColumn;
-  canonicalizeRecords(records, second);
+  longhand.columnRules = [];
+  canonicalizeRecords(records, longhand);
   return records;
 }
 

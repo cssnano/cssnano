@@ -21,7 +21,6 @@ export type MergeContext = {
     pairShorthands: ReadonlySet<string>;
     features: ReadonlySet<string>;
     run: RunContext;
-    records: BlockRecords;
 };
 export type FamilyDeclarations = {
     family: PairFamily | AlignmentFamilyConfig;
@@ -33,10 +32,9 @@ export type FamilyDeclarations = {
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
  * @param {RunContext} run the run whose tables and features the rounds read
- * @param {BlockRecords} records the records the round reads and edits
  * @return {MergeContext} the state that the rounds of one run share
  */
-export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, run: RunContext, records: BlockRecords): MergeContext;
+export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, run: RunContext): MergeContext;
 /**
  * The longhand round on the records: the root's own declarations are folded,
  * then every block that holds a declaration, then the columns are finished.

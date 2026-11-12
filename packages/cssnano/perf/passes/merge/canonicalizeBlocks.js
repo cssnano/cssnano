@@ -30,7 +30,7 @@ function roundOf(css) {
   const { records, nodes } = buildRecords(root, run);
   canonicalizeRecords(
     records,
-    longhandContext(placeShorthands, boxSupport, pairShorthands, run, records)
+    longhandContext(placeShorthands, boxSupport, pairShorthands, run)
   );
   writeBack(records, nodes, run.tokenLists, run.textTable);
   return root.toString();

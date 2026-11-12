@@ -72,8 +72,7 @@ function alignmentFamilyOf(prop) {
  *   boxSupport: BoxSupport,
  *   pairShorthands: ReadonlySet<string>,
  *   features: ReadonlySet<string>,
- *   run: RunContext,
- *   records: BlockRecords
+ *   run: RunContext
  * }} MergeContext
  */
 
@@ -179,22 +178,24 @@ function createContainerState() {
 /**
  * Writes a block's list back to its records.
  *
+ * @param {BlockRecords} records
  * @param {Block} block
  * @param {MergeContext} context
  * @return {void}
  */
-function commitBlock(block, context) {
-  commitDeclarations(context.records, context.run, block.container, block.list);
+function commitBlock(records, block, context) {
+  commitDeclarations(records, context.run, block.container, block.list);
 }
 
 /**
  * Classifies declarations within a block, runs reducers, and tracks column candidates.
+ * @param {BlockRecords} records
  * @param {Block} block
  * @param {boolean} styleRule whether the block is a style rule
  * @param {MergeContext} context
  * @return {void}
  */
-function processContainer(block, styleRule, context) {
+function processContainer(records, block, styleRule, context) {
   const { list } = block;
   // Before classification, so the family reducers never see removed items.
   // Style rules only: at-rule descriptors follow their own validity rules.
@@ -245,7 +246,7 @@ function processContainer(block, styleRule, context) {
   for (const run of runs) reduceClassifiedContainer(block, run, context);
   // A column rule waits for `finishColumns`, which commits its block once.
   if (!runs.some((run) => run.columnDecls.length > 0)) {
-    commitBlock(block, context);
+    commitBlock(records, block, context);
   }
 }
 
@@ -254,15 +255,13 @@ function processContainer(block, styleRule, context) {
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
  * @param {RunContext} run the run whose tables and features the rounds read
- * @param {BlockRecords} records the records the round reads and edits
  * @return {MergeContext} the state that the rounds of one run share
  */
 export function longhandContext(
   placeShorthands,
   boxSupport,
   pairShorthands,
-  run,
-  records
+  run
 ) {
   return {
     columnRules: [],
@@ -272,7 +271,6 @@ export function longhandContext(
     pairShorthands,
     features: run.features,
     run,
-    records,
   };
 }
 
@@ -281,17 +279,18 @@ export function longhandContext(
  * since whether a column property is set elsewhere is a whole-stylesheet fact.
  * Each column block is committed once, after its column reducers.
  *
+ * @param {BlockRecords} records
  * @param {MergeContext} context
  * @return {void}
  */
-function finishColumns(context) {
+function finishColumns(records, context) {
   if (!context.setsOtherColumn) {
     for (const { block, positions, lanes } of context.columnRules) {
       reduceColumns(block.list, positions, lanes, context.features);
     }
   }
   const blocks = new Set(context.columnRules.map((rule) => rule.block));
-  for (const block of blocks) commitBlock(block, context);
+  for (const block of blocks) commitBlock(records, block, context);
 }
 
 /**
@@ -313,6 +312,7 @@ function canonicalizeChildren(records, index, context) {
     if (record.kind !== RULE && record.kind !== AT_RULE_BLOCK) continue;
     if (firstDeclaration(records, entry) !== undefined) {
       processContainer(
+        records,
         {
           container: entry,
           list: declarationsFromRecords(records, context.run, entry),
@@ -337,7 +337,7 @@ export function canonicalizeRecords(records, context) {
   const root = /** @type {ArenaIndex} */ (records.root.index);
   const list = declarationsFromRecords(records, context.run, root);
   foldContainerDeclarations(list, list.chain);
-  commitBlock({ container: root, list }, context);
+  commitBlock(records, { container: root, list }, context);
   canonicalizeChildren(records, root, context);
-  finishColumns(context);
+  finishColumns(records, context);
 }
