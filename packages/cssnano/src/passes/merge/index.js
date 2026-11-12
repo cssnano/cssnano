@@ -109,13 +109,7 @@ function runTransforms(css, browsers, support, rules, context) {
   runRecords(css, browsers, context, [
     (records) => canonicalizeRecords(records, longhand),
     ...(rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY),
-    (records) => {
-      // The flag that the first round set carries over: a stale `true` only
-      // keeps columns unreduced, and any column-setting declaration a merge
-      // moved sits in a block rescanned here.
-      longhand.columnRules = [];
-      canonicalizeRecords(records, longhand);
-    },
+    (records) => canonicalizeRecords(records, longhand),
   ]);
 }
 

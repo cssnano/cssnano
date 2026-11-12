@@ -50,7 +50,6 @@ function mergedRecords(css) {
   canonicalizeRecords(records, longhand);
   discardDuplicates(records, browsers, context);
   runMerge(records, browsers, context);
-  longhand.columnRules = [];
   canonicalizeRecords(records, longhand);
   return records;
 }

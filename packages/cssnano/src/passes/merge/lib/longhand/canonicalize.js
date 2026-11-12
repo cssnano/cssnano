@@ -291,6 +291,10 @@ function finishColumns(records, context) {
   }
   const blocks = new Set(context.columnRules.map((rule) => rule.block));
   for (const block of blocks) commitBlock(records, block, context);
+  // Each round rescans every block, so the next one gathers its column facts
+  // afresh.
+  context.columnRules = [];
+  context.setsOtherColumn = false;
 }
 
 /**
