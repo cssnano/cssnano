@@ -226,9 +226,9 @@ function recordEditedAlone(consistencyChecks = false) {
 
 // Every change of whitespace comes with a change of children; a record edited
 // alone is a broken invariant.
-test('write-back leaves the whitespace of a rule in a container it does not rebuild as it is', () => {
+test('write-back writes the whitespace of a rule in a container it does not rebuild', () => {
   const { root } = recordEditedAlone();
-  assert.equal(root.last.raws.before, '\n');
+  assert.equal(root.last.raws.before, '\n\n');
 });
 
 test('the consistency check reports a record whose whitespace write-back did not write', () => {

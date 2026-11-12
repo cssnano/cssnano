@@ -85,6 +85,33 @@ export declare class BlockRecord {
     /** @type {boolean} whether the block applies nothing once it is empty */
     droppable: boolean;
     /**
+     * The whitespace between the at-rule's prelude and its block, or null when
+     * the node has none. The stylesheet has none.
+     *
+     * @type {string | null}
+     */
+    between: string | null;
+    /**
+     * The whitespace after the last child of the block, or null, see `between`.
+     * For the stylesheet it is the root's `after`.
+     *
+     * @type {string | null}
+     */
+    after: string | null;
+    /**
+     * Whether the block's last declaration is followed by a semicolon, or null
+     * when PostCSS left it undefined, so the printer infers it.
+     *
+     * @type {boolean | null}
+     */
+    semicolon: boolean | null;
+    /**
+     * The whitespace between the at-rule's name and its prelude, or null.
+     *
+     * @type {string | null}
+     */
+    afterName: string | null;
+    /**
      * The id of the circumstances under which the block applies its content, as
      * `containerContext` gives it. A block moves only between equal containers,
      * so the id holds for the whole run.
@@ -136,6 +163,19 @@ export declare class NodeEntry {
     text: string;
     /** @type {boolean} whether a comment is important, which the merge keeps */
     important: boolean;
+    /**
+     * The whitespace between an at-rule's prelude and its semicolon, or null.
+     * A comment has none.
+     *
+     * @type {string | null}
+     */
+    between: string | null;
+    /**
+     * The whitespace between an at-rule's name and its prelude, or null.
+     *
+     * @type {string | null}
+     */
+    afterName: string | null;
     /**
      * @param {typeof COMMENT | typeof AT_RULE_STATEMENT} kind
      * @param {string | null} before

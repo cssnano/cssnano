@@ -92,6 +92,45 @@ function checkAtRuleFacts(nodes, entry) {
 }
 
 /**
+ * Throws when a record holds a raw of its node's container or at-rule that the
+ * node does not print. A field that is null has nothing to check.
+ *
+ * @param {RuleRecord | Block | NodeEntry} record
+ * @param {ChildNode} node
+ * @return {void}
+ */
+function checkRawsOf(record, node) {
+  const raws =
+    /** @type {{between?: string, after?: string, semicolon?: boolean, afterName?: string}} */ (
+      node.raws
+    );
+  if (record.between !== null && raws.between !== record.between) {
+    throw new Error(STALE);
+  }
+  if (
+    'after' in record &&
+    record.after !== null &&
+    raws.after !== record.after
+  ) {
+    throw new Error(STALE);
+  }
+  if (
+    'semicolon' in record &&
+    record.semicolon !== null &&
+    raws.semicolon !== record.semicolon
+  ) {
+    throw new Error(STALE);
+  }
+  if (
+    'afterName' in record &&
+    record.afterName !== null &&
+    raws.afterName !== record.afterName
+  ) {
+    throw new Error(STALE);
+  }
+}
+
+/**
  * Throws when a rule's ids do not spell the items of its node's selector list:
  * the list of each id spells the item at its place.
  *
@@ -150,6 +189,7 @@ function checkRuleRecord(records, nodes, tokenLists, block, record) {
  */
 function checkBlockRecord(records, nodes, tokenLists, block) {
   if (differs(records, nodes, block)) throw new Error(OUT_OF_STEP);
+  checkRawsOf(block, /** @type {ChildNode} */ (nodeOf(nodes, block.index)));
   const plain = block.kind === RULE && block.context === -1;
   for (
     let entry = records.links.firstChild(block.index);
@@ -168,6 +208,9 @@ function checkBlockRecord(records, nodes, tokenLists, block) {
       /** @type {ChildNode} */ (nodeOf(nodes, entry)).raws.before !== expected
     ) {
       throw new Error(STALE);
+    }
+    if (item.kind !== DECLARATION) {
+      checkRawsOf(item, /** @type {ChildNode} */ (nodeOf(nodes, entry)));
     }
     if (item.kind === RULE) {
       checkRuleRecord(records, nodes, tokenLists, block, item);

@@ -132,6 +132,11 @@ export function buildMergedRule(
     browsers
   );
   receivingRecord.template = template;
+  // The merged rule prints the space and the semicolon of its template.
+  const printed = /** @type {RuleRecord} */ (records.rule(template));
+  receivingRecord.between = printed.between;
+  receivingRecord.after = printed.after;
+  receivingRecord.semicolon = printed.semicolon;
   const sharedIndices = shared.map((declaration) => declaration.index);
   // The merged rule takes the place before the later rule, so no rule holds
   // children while it is unlinked. The sweep's replacement keeps that place.

@@ -58,6 +58,20 @@ function idsOfItems(selectorIds, tokenLists, items) {
 }
 
 /**
+ * Gives a container record the raws its node holds between its prelude or
+ * selector and its children, and after them.
+ *
+ * @param {RuleRecord | BlockRecord} record
+ * @param {Rule | AtRule} node
+ * @return {void}
+ */
+function holdContainerRaws(record, node) {
+  record.between = node.raws.between ?? null;
+  record.after = node.raws.after ?? null;
+  record.semicolon = node.raws.semicolon ?? null;
+}
+
+/**
  * The record of a declaration of the run's stylesheet.
  *
  * @param {Declaration} node
@@ -101,6 +115,7 @@ export function buildRecords(root, context) {
   /** @type {NodeTable} the node of each entry, by index; the root is entry 0 */
   const nodes = [root];
   records.leadingWhitespace = root.first?.raws.before ?? null;
+  records.root.after = root.raws.after ?? null;
   /**
    * Places a child's entry at the end of its container's chain, with its node.
    * An entry takes the next index, which is the next slot of the table.
@@ -128,6 +143,7 @@ export function buildRecords(root, context) {
           child.raws.before ?? null,
           idsOfItems(selectorIds, tokenLists, child.selectors)
         );
+        holdContainerRaws(record, child);
         place(container.index, record, child);
         // A rule that holds a rule or an at-rule nests, and gets its context.
         if (child.nodes.some(isRuleOrAtRule)) {
@@ -150,6 +166,8 @@ export function buildRecords(root, context) {
           category === LAYER && isAnonymousLayer(child, textTable),
           context.declarations.preludeId(child)
         );
+        holdContainerRaws(nested, child);
+        nested.afterName = child.raws.afterName ?? null;
         place(container.index, nested, child);
         nested.context = containerContext(
           context.declarations,
@@ -171,6 +189,8 @@ export function buildRecords(root, context) {
           category === LAYER && isAnonymousLayer(child, textTable),
           context.declarations.preludeId(child)
         );
+        entry.between = child.raws.between ?? null;
+        entry.afterName = child.raws.afterName ?? null;
         place(container.index, entry, child);
       } else {
         const text = /** @type {Comment} */ (child).text;

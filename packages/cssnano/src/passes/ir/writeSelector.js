@@ -31,20 +31,16 @@ function joinedList(record, tokenLists) {
 }
 
 /**
- * Gives a merged rule the raws that print its template: the space between the
- * selector and the block, the space after the block, and the semicolons.
+ * Gives a merged rule the own semicolon of its template. The records hold the
+ * other raws the merged rule prints, so this is the one raw left to copy from a
+ * node.
  *
  * @param {import('postcss').Rule} node the merged rule
- * @param {import('postcss').Rule} template the rule whose raws it prints
+ * @param {import('postcss').Rule} template the rule whose raw it prints
  * @return {void}
  */
 function writeTemplateRaws(node, template) {
-  const { raws } = node;
-  const source = template.raws;
-  raws.between = source.between;
-  raws.after = source.after;
-  raws.semicolon = source.semicolon;
-  raws.ownSemicolon = source.ownSemicolon;
+  node.raws.ownSemicolon = template.raws.ownSemicolon;
 }
 
 /**

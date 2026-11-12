@@ -1,14 +1,20 @@
-import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
+import {
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
+  DECLARATION,
+  RULE,
+  STYLESHEET,
+} from './blockRecord.js';
 import { TextTable } from '../../values/textTable.js';
 import { tokensText } from '../../values/tokensText.js';
 import { createChildNodes, nodeOf } from './nodeTable.js';
 import { writeSelector } from './writeSelector.js';
 import { assertTemplatesHaveNodes } from './recordsCheck.js';
 
-/** @import {ChildNode, Container} from 'postcss' */
+/** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {NodeTable} from './nodeTable.js' */
-/** @import {BlockRecord as Block} from './blockRecord.js' */
+/** @import {BlockRecord as Block, NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {TokenLists} from './tokenLists.js' */
 /** @import {DeclarationRecord} from './declarationRecord.js' */
@@ -93,27 +99,59 @@ export function replaceChildren(rebuilt) {
 }
 
 /**
- * Assigns the whitespace before each child of a rebuilt container from the
- * records, where a merge may have changed it. Runs after the append, which
- * rewrites the whitespace of the nodes it places. A record whose value is null
- * leaves its node's whitespace as it is.
+ * Assigns the raws the records hold to the nodes of the children of a
+ * container, then to those of the children of each container below it. A field
+ * that is null leaves its node raw as it is.
  *
  * @param {BlockRecords} records
  * @param {NodeTable} nodes
- * @param {number} container the index of the rebuilt container's record
+ * @param {number} container the index of a container record the root reaches
  * @return {void}
  */
-function writeBefore(records, nodes, container) {
+function writeRawsOf(records, nodes, container) {
   for (
     let entry = records.links.firstChild(container);
     entry !== -1;
     entry = records.links.nextSibling(entry)
   ) {
-    const { before } = records.entry(entry);
-    if (before !== null) {
-      /** @type {ChildNode} */ (nodeOf(nodes, entry)).raws.before = before;
+    const record = records.entry(entry);
+    const node = /** @type {ChildNode} */ (nodeOf(nodes, entry));
+    if (record.before !== null) node.raws.before = record.before;
+    if (record.kind === RULE || record.kind === AT_RULE_BLOCK) {
+      writeContainerRaws(record, /** @type {Rule | AtRule} */ (node));
+      if (record.kind === AT_RULE_BLOCK && record.afterName !== null) {
+        /** @type {AtRule} */ (node).raws.afterName = record.afterName;
+      }
+      writeRawsOf(records, nodes, entry);
+    } else if (record.kind === AT_RULE_STATEMENT) {
+      writeStatementRaws(record, /** @type {AtRule} */ (node));
     }
   }
+}
+
+/**
+ * Assigns the raws of a rule or an at-rule block that its record holds.
+ *
+ * @param {RuleRecord | Block} record
+ * @param {Rule | AtRule} node
+ * @return {void}
+ */
+function writeContainerRaws(record, node) {
+  if (record.between !== null) node.raws.between = record.between;
+  if (record.after !== null) node.raws.after = record.after;
+  if (record.semicolon !== null) node.raws.semicolon = record.semicolon;
+}
+
+/**
+ * Assigns the raws of an at-rule statement that its record holds.
+ *
+ * @param {NodeEntry} record
+ * @param {AtRule} node
+ * @return {void}
+ */
+function writeStatementRaws(record, node) {
+  if (record.between !== null) node.raws.between = record.between;
+  if (record.afterName !== null) node.raws.afterName = record.afterName;
 }
 
 /**
@@ -181,7 +219,7 @@ export function writeBack(
     throw new Error(TABLE_LENGTH);
   }
   assertTemplatesHaveNodes(records, nodes);
-  /** @type {(Rebuilt & {index: number})[]} */
+  /** @type {Rebuilt[]} */
   const rebuilt = [];
   /** @param {ContainerRecord} container */
   const visit = (container) => {
@@ -189,7 +227,6 @@ export function writeBack(
       createChildNodes(records, nodes, container.index, tokenLists);
       rebuilt.push({
         container: /** @type {Container} */ (nodeOf(nodes, container.index)),
-        index: container.index,
         children: childNodesOf(records, nodes, container.index),
         leading: container === records.root ? records.leadingWhitespace : null,
       });
@@ -209,7 +246,6 @@ export function writeBack(
             createChildNodes(records, nodes, record.index, tokenLists);
             rebuilt.push({
               container: /** @type {Container} */ (nodeOf(nodes, record.index)),
-              index: record.index,
               children: childNodesOf(records, nodes, record.index),
               leading: null,
             });
@@ -227,7 +263,9 @@ export function writeBack(
   };
   visit(records.root);
   replaceChildren(rebuilt);
-  for (const { index } of rebuilt) writeBefore(records, nodes, index);
+  const rootNode = /** @type {Root} */ (nodeOf(nodes, records.root.index));
+  if (records.root.after !== null) rootNode.raws.after = records.root.after;
+  writeRawsOf(records, nodes, records.root.index);
   // The first child of the stylesheet takes the leading whitespace last.
   const root = /** @type {Container} */ (nodeOf(nodes, records.root.index));
   const first = root.first;

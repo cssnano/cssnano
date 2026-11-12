@@ -77,6 +77,26 @@ export declare class RuleRecord {
     /** @type {string | null} the whitespace before the rule, as its node gives it at the build */
     before: string | null;
     /**
+     * The whitespace between the selector and the block, or null when the node
+     * has none.
+     *
+     * @type {string | null}
+     */
+    between: string | null;
+    /**
+     * The whitespace after the last child of the block, or null.
+     *
+     * @type {string | null}
+     */
+    after: string | null;
+    /**
+     * Whether the last declaration is followed by a semicolon, or null when
+     * PostCSS left it undefined.
+     *
+     * @type {boolean | null}
+     */
+    semicolon: boolean | null;
+    /**
      * @param {string | null} before the whitespace before the rule
      * @param {readonly TokenListId[]} selectorIds the interned id of each selector
      */

@@ -40,21 +40,21 @@ export const mutations = [
   {
     name: 'write-back leaves the ownSemicolon of a merged rule unwritten',
     target: irSource('writeSelector.js'),
-    find: '  raws.ownSemicolon = source.ownSemicolon;',
+    find: '  node.raws.ownSemicolon = template.raws.ownSemicolon;',
     replace: '',
   },
   {
     name: 'write-back skips the whitespace the records hold',
     target: irSource('writeBack.js'),
-    find: '  for (const { index } of rebuilt) writeBefore(records, nodes, index);',
+    find: '  writeRawsOf(records, nodes, records.root.index);',
     replace: '',
   },
   {
     name: 'write-back assigns the whitespace of root children only',
     target: irSource('writeBack.js'),
-    find: '      /** @type {ChildNode} */ (nodeOf(nodes, entry)).raws.before = before;',
+    find: '    if (record.before !== null) node.raws.before = record.before;',
     replace:
-      '      if (container === records.root.index) /** @type {ChildNode} */ (nodeOf(nodes, entry)).raws.before = before;',
+      '    if (record.before !== null && container === records.root.index) node.raws.before = record.before;',
   },
   {
     name: 'takePlaceOf keeps the whitespace of the earlier entry',
