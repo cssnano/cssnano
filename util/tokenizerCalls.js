@@ -13,6 +13,7 @@ import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
 import { counter } from './countTokenize.js';
 import { repositoryFile } from './testHelpers.js';
+import { labelPlugins } from './labelPlugins.js';
 
 /** @typedef {(this: unknown, ...args: unknown[]) => unknown} Listener */
 /** @typedef {Record<string, unknown>} Plugin */
@@ -41,27 +42,6 @@ const presetOptions =
   options.preset === 'lite'
     ? undefined
     : { options: { calc: { mediaQueries: true, selectors: true } } };
-
-/**
- * Labels each plugin by its PostCSS name, and numbers repeats, so the two
- * `mergeLonghand` entries stay apart.
- *
- * @param {Plugin[]} plugins
- * @return {{ label: string, plugin: Plugin }[]}
- */
-function labelled(plugins) {
-  /** @type {Map<string, number>} */
-  const seen = new Map();
-  return plugins.map((plugin) => {
-    const name = String(plugin.postcssPlugin);
-    const occurrence = (seen.get(name) ?? 0) + 1;
-    seen.set(name, occurrence);
-    return {
-      label: occurrence === 1 ? name : `${name}#${occurrence}`,
-      plugin,
-    };
-  });
-}
 
 /**
  * Runs `listener` with `label` as the entry, so each tokenize call it makes
@@ -142,7 +122,9 @@ const fixtures = readdirSync(frameworksDir);
 for (const file of fixtures) {
   const css = readFileSync(join(frameworksDir, file), 'utf8');
   counter.beginStylesheet();
-  const entries = labelled(/** @type {Plugin[]} */ (loadPreset(presetOptions)));
+  const entries = labelPlugins(
+    /** @type {Plugin[]} */ (loadPreset(presetOptions))
+  );
   for (const { label } of entries) {
     if (!labels.includes(label)) labels.push(label);
   }

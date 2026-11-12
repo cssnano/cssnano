@@ -14,6 +14,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { repositoryFile } from './testHelpers.js';
+import { labelPlugins } from './labelPlugins.js';
 
 /** @typedef {(this: unknown, ...args: unknown[]) => unknown} Listener */
 /** @typedef {Record<string, unknown>} Plugin */
@@ -47,27 +48,6 @@ const { configurePlugins } = await import(
 const { presetEntriesKey } = await import(
   pathToFileURL(join(cssnanoDir, 'src', 'presets', 'presetEntries.js')).href
 );
-
-/**
- * Labels each plugin by its PostCSS name, and numbers repeats, so two entries
- * with the same name stay apart.
- *
- * @param {Plugin[]} plugins
- * @return {{ label: string, plugin: Plugin }[]}
- */
-function labelled(plugins) {
-  /** @type {Map<string, number>} */
-  const seen = new Map();
-  return plugins.map((plugin) => {
-    const name = String(plugin.postcssPlugin);
-    const occurrence = (seen.get(name) ?? 0) + 1;
-    seen.set(name, occurrence);
-    return {
-      label: occurrence === 1 ? name : `${name}#${occurrence}`,
-      plugin,
-    };
-  });
-}
 
 /**
  * Accumulated nanoseconds per entry for the round in progress.
@@ -251,7 +231,7 @@ let wholeRunBest = Infinity;
 for (let round = 0; round < rounds; round++) {
   roundTotals = new Map();
   stageTotals = new Map();
-  const entries = labelled(pluginsWithTimedStages());
+  const entries = labelPlugins(pluginsWithTimedStages());
   for (const { label } of entries) {
     if (!labels.includes(label)) labels.push(label);
   }

@@ -3,27 +3,12 @@ import { minifyFamilyTokens } from './lib/minify-family.js';
 import { minifyFontTokens } from './lib/minify-font.js';
 import cssnanoUtils from '#utils';
 import { parsedValueTokens } from '../../utils/parsedValueText.js';
+import { sameTokenText } from '../../values/sameTokenText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
-
-/**
- * Whether two token lists spell the same text, compared token by token so
- * that no string is built.
- *
- * @param {readonly CSSToken[]} a
- * @param {readonly CSSToken[]} b
- * @return {boolean}
- */
-function sameText(a, b) {
-  if (a.length !== b.length) return false;
-  for (let index = 0; index < a.length; index++) {
-    if (a[index][1] !== b[index][1]) return false;
-  }
-  return true;
-}
 
 /**
  * @param {readonly CSSToken[]} tokens
@@ -90,7 +75,7 @@ function reducerOf(opts, prop) {
     if (tokens.length === 0) return;
     const parsed = parsedValueTokens(tokens);
     const out = minifier(parsed, opts, removeQuotes);
-    if (!sameText(out, parsed)) {
+    if (!sameTokenText(out, parsed)) {
       buffer.replace(0, tokens.length, out);
     }
   };
