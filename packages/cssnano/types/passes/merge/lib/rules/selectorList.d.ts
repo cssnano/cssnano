@@ -1,6 +1,6 @@
 import type { TokenListId, TokenLists } from '../../../ir/tokenLists.js';
-import type { BlockRecords } from './blockRecords.js';
-import type { RuleRecord } from './ruleRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import type { RuleElementKeys } from './elementKeys.js';
 /**

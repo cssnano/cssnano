@@ -1,6 +1,6 @@
 import { BlockDeclarations } from './blockDeclarations.js';
-import type { ArenaIndex } from '../rules/blockRecord.js';
-import type { BlockRecords } from '../rules/blockRecords.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
 import type { RunContext } from '../../../ir/runContext.js';
 /**
  * Reads the declarations of a block's chain into a list, with the run ends

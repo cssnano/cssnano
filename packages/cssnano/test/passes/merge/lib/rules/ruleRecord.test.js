@@ -4,11 +4,11 @@ import { selectorIdsOf } from './selectorIdsOf.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
 
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { nodeOf } from '../../../../../src/passes/merge/lib/rules/nodeTable.js';
+import { nodeOf } from '../../../../../src/passes/ir/nodeTable.js';
 import {
   buildTestRecords,
   declarationIds,
@@ -16,10 +16,10 @@ import {
   placeUnlinked,
   nodesOf,
 } from './liveRecords.js';
-import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
-import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { appendChild } from '../../../../../src/passes/ir/arenaEdits.js';
+import { declarationKeys } from '../../../../../src/passes/ir/declarationCache.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
-import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/buildRecords.js';
 import {
   absorbEarlier,
   addSelectors,
@@ -31,7 +31,7 @@ import {
 import { foldedRules } from './summaryFixtures.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 
 const selectorIds = new SelectorIds();
 const tokenLists = new TokenLists();

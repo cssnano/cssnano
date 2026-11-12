@@ -7,13 +7,13 @@ import {
 } from './blockChildren.js';
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
 import { PropertyWrites } from './propertyWrites.js';
-import { declarationKeys } from './declarationCache.js';
+import { declarationKeys } from '../../../ir/declarationCache.js';
 import { listTextLength, selectorTextLength } from './selectorReads.js';
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {ArenaIndex, BlockRecord} from '../../../ir/blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
 

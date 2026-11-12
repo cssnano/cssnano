@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { minifiedLength } from '../../../src/passes/ir/minifiedLength.js';
-import { recordDeclaration } from '../../../src/passes/merge/lib/rules/buildRecords.js';
+import { recordDeclaration } from '../../../src/passes/ir/buildRecords.js';
 
 // A declaration takes its name, its value, the colon and the separator after it;
 // the `!important` flag adds ten bytes. The lengths are read from the records of

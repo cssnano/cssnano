@@ -9,17 +9,21 @@ import {
   DECLARATION,
   RULE,
   STYLESHEET,
-} from './blockRecord.js';
+} from '../../../ir/blockRecord.js';
 import { isKeyframes } from './sameContainer.js';
-import { appendToDeclarations, remove, takePlaceOf } from './treeEdits.js';
-import { adopt } from './arenaEdits.js';
+import {
+  appendToDeclarations,
+  remove,
+  takePlaceOf,
+} from '../../../ir/treeEdits.js';
+import { adopt } from '../../../ir/arenaEdits.js';
 import { listKey } from './selectorReads.js';
 
 /** @import MergeState from './mergeState.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 
 /**
  * @param {DeclarationRecord | RuleRecord | BlockRecord | NodeEntry} entry

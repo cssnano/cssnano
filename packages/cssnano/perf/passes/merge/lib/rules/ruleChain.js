@@ -1,15 +1,15 @@
 import { test } from 'node:test';
 import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { appendToDeclarations } from '../../../../../src/passes/ir/treeEdits.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { assertLinearTime } from '../linearTiming.js';
-import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
-import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { appendChild } from '../../../../../src/passes/ir/arenaEdits.js';
+import { declarationKeys } from '../../../../../src/passes/ir/declarationCache.js';
 import {
   buildRecords,
   recordDeclaration,
-} from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+} from '../../../../../src/passes/ir/buildRecords.js';
 import { placeUnlinked } from '../../../../../test/passes/merge/lib/rules/liveRecords.js';
 
 /**
@@ -18,7 +18,7 @@ import { placeUnlinked } from '../../../../../test/passes/merge/lib/rules/liveRe
  * its root, so it has index 1.
  *
  * @param {string} css
- * @return {{state: MergeState, context: import('../../../../../src/passes/ir/runContext.js').RunContext, rule: import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord}}
+ * @return {{state: MergeState, context: import('../../../../../src/passes/ir/runContext.js').RunContext, rule: import('../../../../../src/passes/ir/ruleRecord.js').RuleRecord}}
  */
 function recordsOf(css) {
   const context = createRunContext();

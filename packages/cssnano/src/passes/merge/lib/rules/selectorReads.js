@@ -1,9 +1,9 @@
 /** @import {TokenListId, TokenLists} from '../../../ir/tokenLists.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 /** @import {RuleElementKeys} from './elementKeys.js' */
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
 import { extendSummaries, reachedRules } from './selectorList.js';
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 
 /**
  * The reads of a rule's selector list. Each reads the summaries that

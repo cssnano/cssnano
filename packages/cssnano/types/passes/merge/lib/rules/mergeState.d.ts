@@ -1,10 +1,10 @@
 import type { TokenListId } from '../../../ir/tokenLists.js';
-import type { RuleRecord } from './ruleRecord.js';
-import type { BlockRecords } from './blockRecords.js';
-import type { BlockRecord } from './blockRecord.js';
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { BlockRecord } from '../../../ir/blockRecord.js';
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {BlockRecord} from '../../../ir/blockRecord.js' */
 /**
  * The state shared by every merge of one stylesheet.
  */

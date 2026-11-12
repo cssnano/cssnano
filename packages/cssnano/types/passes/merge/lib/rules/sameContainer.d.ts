@@ -1,9 +1,9 @@
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
-import type { BlockRecord } from './blockRecord.js';
-import type { RuleRecord } from './ruleRecord.js';
+import type { BlockRecord } from '../../../ir/blockRecord.js';
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecord} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /**
  * True for `@keyframes` and its vendor-prefixed forms, whose selectors are
  * cascaded by position.

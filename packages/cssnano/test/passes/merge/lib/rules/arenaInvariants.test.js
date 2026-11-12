@@ -6,7 +6,7 @@ import {
   childCountOf,
   holdsOnlyDeclarationsOf,
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
-import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { declarationKeys } from '../../../../../src/passes/ir/declarationCache.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 

@@ -1,13 +1,13 @@
 import type { TokenListId } from '../../../ir/tokenLists.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import type { RuleRecord } from './ruleRecord.js';
-import type { ArenaIndex } from './blockRecord.js';
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
 import type RuleSequence from './ruleSequence.js';
 import type DeclarationScan from './declarationScan.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {ArenaIndex, BlockRecord} from '../../../ir/blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
 export declare const SHARING_WINDOW = 10;

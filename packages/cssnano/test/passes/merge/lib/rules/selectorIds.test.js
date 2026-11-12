@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
-import { RULE } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
+import { RULE } from '../../../../../src/passes/ir/blockRecord.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
 import { selectorInfoOf } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';

@@ -1,7 +1,12 @@
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex, BlockRecord, NodeEntry} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
-import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {ArenaIndex, BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+import {
+  AT_RULE_BLOCK,
+  DECLARATION,
+  RULE,
+  STYLESHEET,
+} from '../../../ir/blockRecord.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 /**

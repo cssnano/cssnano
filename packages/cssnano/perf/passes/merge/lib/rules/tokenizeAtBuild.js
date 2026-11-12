@@ -9,7 +9,7 @@ import { basename } from 'node:path';
 import { Session } from 'node:inspector/promises';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 import { tokenizeMode } from '../../../../../src/values/tokenizeMode.js';

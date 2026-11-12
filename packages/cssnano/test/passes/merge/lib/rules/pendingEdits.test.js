@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { readBlock, writeBlock } from '../longhand/helpers/declarationItems.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
 
 test('buildRecords builds a stylesheet whose removed declaration a committed block dropped', () => {
   const root = postcss.parse('a{color:red;margin:0}b{color:red}');

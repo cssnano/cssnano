@@ -5,12 +5,12 @@ import {
   sameDeclarationsAndOrder,
 } from './declarations.js';
 import { buildMergedRule } from './ruleRewrite.js';
-import { appendToDeclarations } from './treeEdits.js';
-import { declarationKeys } from './declarationCache.js';
+import { appendToDeclarations } from '../../../ir/treeEdits.js';
+import { declarationKeys } from '../../../ir/declarationCache.js';
 import { hasSameSelectors } from './selectorReads.js';
 
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from '../../../ir/blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
 /** @import MergeState from './mergeState.js' */

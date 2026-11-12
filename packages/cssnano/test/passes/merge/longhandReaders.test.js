@@ -12,8 +12,7 @@ const { foldShorthandDeclaration } =
   await import('../../../src/passes/merge/lib/longhand/minifyShorthand.js');
 const { readBlock } =
   await import('./lib/longhand/helpers/declarationItems.js');
-const { buildRecords } =
-  await import('../../../src/passes/merge/lib/rules/buildRecords.js');
+const { buildRecords } = await import('../../../src/passes/ir/buildRecords.js');
 const { declarationsFromRecords } =
   await import('../../../src/passes/merge/lib/longhand/recordDeclarations.js');
 const { longstandingFeatures } =

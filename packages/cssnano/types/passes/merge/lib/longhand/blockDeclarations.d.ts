@@ -1,5 +1,5 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
-import type { ArenaIndex } from '../rules/blockRecord.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
 export type DeclarationItem = {
     prop: string;
     /**
@@ -41,7 +41,7 @@ export type DeclarationItem = {
     source: number;
 };
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ArenaIndex} from '../rules/blockRecord.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
 /**
  * A declaration of one block, as the longhand reducers edit it: its text and
  * tokens, the raws a style hack or a clone reads, and what an edit did to it.

@@ -1,6 +1,6 @@
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
-import type { BlockRecord, NodeEntry } from '../rules/blockRecord.js';
-import type { RuleRecord } from '../rules/ruleRecord.js';
+import type { BlockRecord, NodeEntry } from '../../../ir/blockRecord.js';
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
 /**
  * The id of a comment: ordinary comments share one, and an important comment
  * steps its text.

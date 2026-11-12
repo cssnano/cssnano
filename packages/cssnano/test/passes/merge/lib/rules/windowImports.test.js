@@ -12,12 +12,12 @@ const SRC = join(dirname(fileURLToPath(import.meta.url)), '../../../../../src');
  * edits nodes.
  */
 const UNWALKED = new Set([
-  'passes/merge/lib/rules/writeBack.js',
-  'passes/merge/lib/rules/nodeTable.js',
-  'passes/merge/lib/rules/writeSelector.js',
-  'passes/merge/lib/rules/treeMatch.js',
-  'passes/merge/lib/rules/buildRecords.js',
-  'passes/merge/lib/rules/windowGuard.js',
+  'passes/ir/writeBack.js',
+  'passes/ir/nodeTable.js',
+  'passes/ir/writeSelector.js',
+  'passes/ir/treeMatch.js',
+  'passes/ir/buildRecords.js',
+  'passes/ir/windowGuard.js',
 ]);
 
 /**

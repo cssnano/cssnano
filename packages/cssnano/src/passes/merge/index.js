@@ -6,15 +6,15 @@ import {
 } from './lib/longhand/canonicalize.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import runMerge from './lib/rules/selectorMerger.js';
-import { buildRecords } from './lib/rules/buildRecords.js';
-import { guardWindow } from './lib/rules/windowGuard.js';
-import { assertRecordsMatchTree } from './lib/rules/treeMatch.js';
+import { buildRecords } from '../ir/buildRecords.js';
+import { guardWindow } from '../ir/windowGuard.js';
+import { assertRecordsMatchTree } from '../ir/treeMatch.js';
 import { fillSummaries } from './lib/rules/selectorList.js';
-import { writeBack } from './lib/rules/writeBack.js';
+import { writeBack } from '../ir/writeBack.js';
 import { createRunContext } from '../ir/runContext.js';
 import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
-/** @import {BlockRecords} from './lib/rules/blockRecords.js' */
+/** @import {BlockRecords} from '../ir/blockRecords.js' */
 /** @import {Root} from 'postcss' */
 
 /**

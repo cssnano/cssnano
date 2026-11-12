@@ -9,14 +9,14 @@ import {
   LAYER,
   RULE,
   STYLESHEET,
-} from '../rules/blockRecord.js';
-import { remove } from '../rules/treeEdits.js';
+} from '../../../ir/blockRecord.js';
+import { remove } from '../../../ir/treeEdits.js';
 import { commentId, containerId, statementId } from './structuralIds.js';
 
-/** @import {BlockRecord, NodeEntry} from '../rules/blockRecord.js' */
+/** @import {BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {RuleRecord} from '../rules/ruleRecord.js' */
-/** @import {BlockRecords} from '../rules/blockRecords.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 

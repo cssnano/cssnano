@@ -21,18 +21,18 @@ import {
   appendChild,
   moveDeclarations,
   removeDeclarations,
-} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+} from '../../../../../src/passes/ir/arenaEdits.js';
 import {
   COMMENT,
   NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
-import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
-import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
+import { declarationKeys } from '../../../../../src/passes/ir/declarationCache.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/buildRecords.js';
 
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
+import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();

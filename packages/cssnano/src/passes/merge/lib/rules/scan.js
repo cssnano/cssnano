@@ -8,10 +8,10 @@ import { earliestPairReaching } from './sharedRuleGroup.js';
 import RuleSequence from './ruleSequence.js';
 import DeclarationScan from './declarationScan.js';
 import { sameContainer } from './sameContainer.js';
-import { declarationKeys } from './declarationCache.js';
+import { declarationKeys } from '../../../ir/declarationCache.js';
 import { hasSameSelectors } from './selectorReads.js';
 
-/** @import {ArenaIndex} from './blockRecord.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
 
 const NO_BENEFIT = -1;
 
@@ -73,8 +73,8 @@ function checkPlacedRules(sequence, rules, replacement, previous) {
   return last;
 }
 
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {BlockRecord} from '../../../ir/blockRecord.js' */
 /** @import MergeState from './mergeState.js' */
 /** @import {Placement} from './ruleSequence.js' */
 

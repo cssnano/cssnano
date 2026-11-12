@@ -1,10 +1,10 @@
 import cssnanoUtils from '#utils';
 import { step } from '../../../ir/declarationKey.js';
-import { LAYER, RULE } from '../rules/blockRecord.js';
+import { LAYER, RULE } from '../../../ir/blockRecord.js';
 
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {BlockRecord, NodeEntry} from '../rules/blockRecord.js' */
-/** @import {RuleRecord} from '../rules/ruleRecord.js' */
+/** @import {BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 
 const { isImportantComment } = cssnanoUtils;
 

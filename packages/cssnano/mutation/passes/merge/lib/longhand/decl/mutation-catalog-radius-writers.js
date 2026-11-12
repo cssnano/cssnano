@@ -1,6 +1,6 @@
 export const name = 'merge-longhand: declaration commit writes';
 export const target = new URL(
-  '../../../../../../src/passes/merge/lib/rules/arenaEdits.js',
+  '../../../../../../src/passes/ir/arenaEdits.js',
   import.meta.url
 ).href;
 // node --test expands this glob; a directory path would resolve to a single

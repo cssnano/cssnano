@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { COMMENT } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import { COMMENT } from '../../../../../src/passes/ir/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   ruleRecordOf,

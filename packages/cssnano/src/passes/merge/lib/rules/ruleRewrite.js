@@ -1,4 +1,4 @@
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 import { childCountOf } from './blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { findGroup } from './sharedRuleGroup.js';
@@ -8,11 +8,11 @@ import {
   moveDeclarations,
   placeBefore,
   removeDeclarations,
-} from './arenaEdits.js';
-import { RuleRecord } from './ruleRecord.js';
+} from '../../../ir/arenaEdits.js';
+import { RuleRecord } from '../../../ir/ruleRecord.js';
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from '../../../ir/blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
 /** @import MergeState from './mergeState.js' */

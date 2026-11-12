@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { liveEntryCount } from '../../../../../src/passes/merge/lib/rules/liveEntryCount.js';
+import { liveEntryCount } from '../../../../../src/passes/ir/liveEntryCount.js';
 import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import { buildTestRecords, ruleRecordOf } from './liveRecords.js';
 

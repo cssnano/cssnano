@@ -6,14 +6,14 @@ import {
   DECLARATION,
   RULE,
   STYLESHEET,
-} from './blockRecord.js';
+} from '../../../ir/blockRecord.js';
 import { PropertyWrites } from './propertyWrites.js';
 import { elementKeysOf } from './selectorReads.js';
 
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 // Conditional group rules hold ordinary rules whose declarations cascade as

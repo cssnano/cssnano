@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
-import { recordDeclaration } from '../../../src/passes/merge/lib/rules/buildRecords.js';
+import { recordDeclaration } from '../../../src/passes/ir/buildRecords.js';
 
 /**
  * @param {string} css one declaration

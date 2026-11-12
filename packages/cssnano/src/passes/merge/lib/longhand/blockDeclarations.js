@@ -2,7 +2,7 @@ import cssnanoUtils from '#utils';
 import { requiredSupport } from './isFallback.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ArenaIndex} from '../rules/blockRecord.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
 
 /**
  * A declaration of one block, as the longhand reducers edit it: its text and

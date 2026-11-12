@@ -10,16 +10,16 @@ import {
 } from '../../../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { discardDuplicates } from '../../../../../src/passes/merge/lib/duplicates/discardDuplicates.js';
 import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
 import { fillSummaries } from '../../../../../src/passes/merge/lib/rules/selectorList.js';
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
 import {
   AT_RULE_BLOCK,
   DECLARATION,
   RULE,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
 
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 /** @import {DeclarationRecord} from '../../../../../src/passes/ir/declarationRecord.js' */
 
 const browsers = resolveTargets({}, undefined);

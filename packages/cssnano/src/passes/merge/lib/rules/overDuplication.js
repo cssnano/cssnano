@@ -1,9 +1,14 @@
 import { firstDeclaration, nextDeclaration } from './blockChildren.js';
-import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
+import {
+  AT_RULE_BLOCK,
+  DECLARATION,
+  RULE,
+  STYLESHEET,
+} from '../../../ir/blockRecord.js';
 
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {BlockRecord} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 const TWICE = 'the records reach a node twice';

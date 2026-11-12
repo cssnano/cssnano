@@ -3,15 +3,12 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { subtreeEntries } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
-/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
+/** @import {BlockRecord} from '../../../../../src/passes/ir/blockRecord.js' */
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { entryOf, buildTestRecords } from './liveRecords.js';
-import { adopt } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
-import {
-  DECLARATION,
-  RULE,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import { adopt } from '../../../../../src/passes/ir/arenaEdits.js';
+import { DECLARATION, RULE } from '../../../../../src/passes/ir/blockRecord.js';
 
 /**
  * The entries under the first at-rule of `css`, read from its record.
@@ -35,7 +32,7 @@ function entriesOf(css) {
 /**
  * The property names of the declarations a block chain links, in order.
  *
- * @param {import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecords} records
+ * @param {import('../../../../../src/passes/ir/blockRecords.js').BlockRecords} records
  * @param {number} block the index of the block
  * @return {string[]}
  */
@@ -57,7 +54,7 @@ function chainProps(records, block) {
  * The property names of the declarations of `entries`, in order: a rule
  * record stands for its own declarations.
  *
- * @param {import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord[] | import('postcss').Declaration[] | null} entries
+ * @param {import('../../../../../src/passes/ir/ruleRecord.js').RuleRecord[] | import('postcss').Declaration[] | null} entries
  */
 function propsOf({ records, entries }) {
   return entries?.flatMap((entry) => {

@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { transformPlugin } from '#passes/merge';
-import { DeclarationCache } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { DeclarationCache } from '../../../../../src/passes/ir/declarationCache.js';
 
 const plugin = transformPlugin('mergeRules');
 

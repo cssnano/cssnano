@@ -5,20 +5,20 @@ import postcss from 'postcss';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { PropertyWrites } from '../../../../../src/passes/merge/lib/rules/propertyWrites.js';
-import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { appendChild } from '../../../../../src/passes/ir/arenaEdits.js';
 import {
   declarationKeys,
   receivingDeclarations,
-} from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+} from '../../../../../src/passes/ir/declarationCache.js';
 import {
   buildTestRecords,
   ruleRecordOf,
   placeUnlinked,
 } from './liveRecords.js';
-import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/buildRecords.js';
 
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
-/** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
+/** @import {RuleRecord} from '../../../../../src/passes/ir/ruleRecord.js' */
 
 /**
  * The records of `css`, built as the run builds them, with the record of its

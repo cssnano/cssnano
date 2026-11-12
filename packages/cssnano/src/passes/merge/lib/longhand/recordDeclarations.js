@@ -5,12 +5,12 @@ import {
   AT_RULE_STATEMENT,
   DECLARATION,
   RULE,
-} from '../rules/blockRecord.js';
+} from '../../../ir/blockRecord.js';
 import { tokensText } from '../../../../values/tokensText.js';
 
-/** @import {ArenaIndex, BlockRecord, NodeEntry} from '../rules/blockRecord.js' */
-/** @import {BlockRecords} from '../rules/blockRecords.js' */
-/** @import {RuleRecord} from '../rules/ruleRecord.js' */
+/** @import {ArenaIndex, BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {DeclarationItem} from './blockDeclarations.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */

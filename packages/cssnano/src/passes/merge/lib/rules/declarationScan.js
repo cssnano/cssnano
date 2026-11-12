@@ -1,9 +1,9 @@
-import { DECLARATION, RULE } from './blockRecord.js';
+import { DECLARATION, RULE } from '../../../ir/blockRecord.js';
 
-/** @import {BlockRecord} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecord} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /** @typedef {BlockRecord | RuleRecord} Container */
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 
 /**
  * True if a declaration of `block` or of an at-rule inside it, rather than of

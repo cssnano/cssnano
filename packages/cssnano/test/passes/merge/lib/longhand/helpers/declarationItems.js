@@ -1,9 +1,9 @@
 import { createRunContext } from '../../../../../../src/passes/ir/runContext.js';
 import postcss from 'postcss';
-import { buildRecords } from '../../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { buildRecords } from '../../../../../../src/passes/ir/buildRecords.js';
 import { declarationsFromRecords } from '../../../../../../src/passes/merge/lib/longhand/recordDeclarations.js';
-import { commitDeclarations } from '../../../../../../src/passes/merge/lib/rules/arenaEdits.js';
-import { writeBack } from '../../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { commitDeclarations } from '../../../../../../src/passes/ir/arenaEdits.js';
+import { writeBack } from '../../../../../../src/passes/ir/writeBack.js';
 import { TextTable } from '../../../../../../src/values/textTable.js';
 import cssnanoUtils from '../../../../../../src/utils/index.js';
 
@@ -12,8 +12,8 @@ const { tokens } = cssnanoUtils;
 /** @import {Container} from 'postcss' */
 /** @import {DeclarationItem} from '../../../../../../src/passes/merge/lib/longhand/blockDeclarations.js' */
 /** @import {BlockDeclarations} from '../../../../../../src/passes/merge/lib/longhand/blockDeclarations.js' */
-/** @import {BlockRecords} from '../../../../../../src/passes/merge/lib/rules/blockRecords.js' */
-/** @import {ArenaIndex} from '../../../../../../src/passes/merge/lib/rules/blockRecord.js' */
+/** @import {BlockRecords} from '../../../../../../src/passes/ir/blockRecords.js' */
+/** @import {ArenaIndex} from '../../../../../../src/passes/ir/blockRecord.js' */
 /** @import {RunContext} from '../../../../../../src/passes/ir/runContext.js' */
 
 /**

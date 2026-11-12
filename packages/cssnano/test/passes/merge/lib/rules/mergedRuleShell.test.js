@@ -5,13 +5,13 @@ import { transformPlugin } from '#passes/merge';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.js';
 import { fillSummaries } from '../../../../../src/passes/merge/lib/rules/selectorList.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
-import { nodeOf } from '../../../../../src/passes/merge/lib/rules/nodeTable.js';
+import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
+import { nodeOf } from '../../../../../src/passes/ir/nodeTable.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
-import { RULE } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import { RULE } from '../../../../../src/passes/ir/blockRecord.js';
 
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 
 const plugin = transformPlugin('mergeRules');
 

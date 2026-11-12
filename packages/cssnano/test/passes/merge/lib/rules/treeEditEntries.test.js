@@ -1,7 +1,7 @@
 import { selectorIdsOf } from './selectorIdsOf.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
-import { childNodesOf } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { childNodesOf } from '../../../../../src/passes/ir/writeBack.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -10,15 +10,15 @@ import {
   AT_RULE_BLOCK,
   RULE,
   STYLESHEET,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
 import {
   appendToDeclarations,
   remove,
   removeRules,
   takePlaceOf,
-} from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+} from '../../../../../src/passes/ir/treeEdits.js';
 import {
   blockRecordOf,
   ruleRecordOf,
@@ -31,7 +31,7 @@ import {
   adopt,
   moveRule,
   substitute,
-} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+} from '../../../../../src/passes/ir/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
 

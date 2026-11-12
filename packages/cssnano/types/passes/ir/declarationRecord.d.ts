@@ -1,10 +1,10 @@
 import type { PropertyKeys } from './propertyTable.js';
 import type { TokenListId } from './tokenLists.js';
-import type { ArenaIndex } from '../merge/lib/rules/blockRecord.js';
+import type { ArenaIndex } from './blockRecord.js';
 /** @import {PropertyKeys} from './propertyTable.js' */
 /** @import {TokenListId} from './tokenLists.js' */
-/** @import {ArenaIndex} from '../merge/lib/rules/blockRecord.js' */
-import { DECLARATION } from '../merge/lib/rules/blockRecord.js';
+/** @import {ArenaIndex} from './blockRecord.js' */
+import { DECLARATION } from './blockRecord.js';
 /**
  * One declaration of a merge run, with the facts its records keep. Rule
  * merging moves and removes declarations but never changes their property,

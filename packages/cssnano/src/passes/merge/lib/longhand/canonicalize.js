@@ -26,14 +26,14 @@ import {
 import { RUN_END } from './blockDeclarations.js';
 import { declarationsFromRecords } from './recordDeclarations.js';
 import { firstDeclaration } from '../rules/blockChildren.js';
-import { commitDeclarations } from '../rules/arenaEdits.js';
-import { AT_RULE_BLOCK, RULE } from '../rules/blockRecord.js';
+import { commitDeclarations } from '../../../ir/arenaEdits.js';
+import { AT_RULE_BLOCK, RULE } from '../../../ir/blockRecord.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
 /** @import {BlockDeclarations} from './blockDeclarations.js'; */
-/** @import {BlockRecords} from '../rules/blockRecords.js'; */
-/** @import {ArenaIndex} from '../rules/blockRecord.js'; */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js'; */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js'; */
 
 /**
  * A block of a round: its list, and the arena index of the block or rule the

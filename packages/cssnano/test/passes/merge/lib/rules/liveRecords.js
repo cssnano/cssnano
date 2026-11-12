@@ -9,16 +9,16 @@ import {
   COMMENT,
   RULE,
   STYLESHEET,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
-import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
+import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
+import { declarationKeys } from '../../../../../src/passes/ir/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
-/** @import {ArenaIndex} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
+/** @import {ArenaIndex} from '../../../../../src/passes/ir/blockRecord.js' */
 /** @import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js' */
-/** @import {NodeTable} from '../../../../../src/passes/merge/lib/rules/nodeTable.js' */
+/** @import {NodeTable} from '../../../../../src/passes/ir/nodeTable.js' */
 /** @import {TokenLists} from '../../../../../src/passes/ir/tokenLists.js' */
 
 /**
@@ -108,7 +108,7 @@ export function blockRecordOf(records, node) {
  * @param {BlockRecords} records
  * @param {RuleRecord} rule
  * @param {number[]} positions
- * @return {Set<import('../../../../../src/passes/merge/lib/rules/blockRecord.js').ArenaIndex>}
+ * @return {Set<import('../../../../../src/passes/ir/blockRecord.js').ArenaIndex>}
  */
 export function claimAt(records, rule, positions) {
   const declarations = declarationsOf(records, rule.index);

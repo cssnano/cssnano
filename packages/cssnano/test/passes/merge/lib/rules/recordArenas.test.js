@@ -9,7 +9,7 @@ import {
   AT_RULE_BLOCK,
   RULE,
   STYLESHEET,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   ruleRecordOf,
@@ -18,8 +18,8 @@ import {
   placeUnlinked,
   nodeOfEntry,
 } from './liveRecords.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
-import { assertOwnershipIsTree } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
+import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
+import { assertOwnershipIsTree } from '../../../../../src/passes/ir/recordsCheck.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
@@ -27,8 +27,8 @@ const selectorIds = new SelectorIds();
 const tokenLists = new TokenLists();
 
 /** @import {Root, Rule} from 'postcss' */
-/** @import {BlockLinks} from '../../../../../src/passes/merge/lib/rules/blockLinks.js' */
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockLinks} from '../../../../../src/passes/ir/blockLinks.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 /** @typedef {BlockRecord | RuleRecord} Container */
 
 /**

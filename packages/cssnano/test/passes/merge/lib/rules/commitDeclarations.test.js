@@ -8,15 +8,14 @@ const { createRunContext } =
 const { keysOfName } =
   await import('../../../../../src/passes/ir/propertyTable.js');
 const { declarationKeys } =
-  await import('../../../../../src/passes/merge/lib/rules/declarationCache.js');
+  await import('../../../../../src/passes/ir/declarationCache.js');
 const { declarationsOf } =
   await import('../../../../../src/passes/merge/lib/rules/blockChildren.js');
 const { commitDeclarations } =
-  await import('../../../../../src/passes/merge/lib/rules/arenaEdits.js');
+  await import('../../../../../src/passes/ir/arenaEdits.js');
 const { declarationsFromRecords } =
   await import('../../../../../src/passes/merge/lib/longhand/recordDeclarations.js');
-const { writeBack } =
-  await import('../../../../../src/passes/merge/lib/rules/writeBack.js');
+const { writeBack } = await import('../../../../../src/passes/ir/writeBack.js');
 const { default: MergeState } =
   await import('../../../../../src/passes/merge/lib/rules/mergeState.js');
 const { TextTable } = await import('../../../../../src/values/textTable.js');
@@ -24,8 +23,8 @@ const { buildTestRecords, nodesOf, ruleRecordOf, tokenListsOf } =
   await import('./liveRecords.js');
 
 /** @import {Container, Root} from 'postcss' */
-/** @import {ArenaIndex} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {ArenaIndex} from '../../../../../src/passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 
 /**
  * The records of `css`, built with the checks on, and the run's state.

@@ -11,9 +11,9 @@ import {
   buildTestRecords,
 } from './liveRecords.js';
 
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
-/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
-/** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
+/** @import {BlockRecord} from '../../../../../src/passes/ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../../../src/passes/ir/ruleRecord.js' */
 /** @import {Rule} from 'postcss' */
 
 /**

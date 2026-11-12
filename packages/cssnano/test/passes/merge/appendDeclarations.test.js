@@ -6,8 +6,8 @@ import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   appendToDeclarations,
   removeRules,
-} from '../../../src/passes/merge/lib/rules/treeEdits.js';
-import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
+} from '../../../src/passes/ir/treeEdits.js';
+import { writeBack } from '../../../src/passes/ir/writeBack.js';
 import {
   ruleRecordOf,
   buildTestRecords,

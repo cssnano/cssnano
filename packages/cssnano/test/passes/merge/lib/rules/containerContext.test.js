@@ -9,15 +9,15 @@ import postcss from 'postcss';
 import cssnanoUtils from '../../../../../src/utils/index.js';
 import { sameContainer } from '../../../../../src/passes/merge/lib/rules/sameContainer.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { assertContextsCurrent } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
+import { assertContextsCurrent } from '../../../../../src/passes/ir/recordsCheck.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { random } from '../../../../../../../util/fuzzRng.js';
 
 /** @import {AnyNode, AtRule, Rule} from 'postcss' */
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
-/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
-/** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
+/** @import {BlockRecord} from '../../../../../src/passes/ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../../../src/passes/ir/ruleRecord.js' */
 /** @import {TextTable} from '../../../../../src/values/textTable.js' */
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;

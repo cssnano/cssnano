@@ -13,9 +13,9 @@ import {
   OTHER_AT_RULE,
   RULE,
   STYLESHEET,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/ir/treeMatch.js';
 import {
   blockRecordOf,
   buildTestRecords,
@@ -30,7 +30,7 @@ import { TextTable } from '../../../../../src/values/textTable.js';
  * The records of `css`, with the first child of the stylesheet and the root.
  *
  * @param {string} css
- * @return {{root: import('postcss').Root, records: import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecords}}
+ * @return {{root: import('postcss').Root, records: import('../../../../../src/passes/ir/blockRecords.js').BlockRecords}}
  */
 function recordsOf(css) {
   const root = postcss.parse(css);
@@ -148,7 +148,7 @@ test('the tree check throws when an at-rule record names another at-rule than it
  * A stylesheet built through the PostCSS API, whose nodes have no
  * `raws.before`, so the printer infers their whitespace.
  *
- * @return {{root: import('postcss').Root, records: import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecords}}
+ * @return {{root: import('postcss').Root, records: import('../../../../../src/passes/ir/blockRecords.js').BlockRecords}}
  */
 function recordsOfBuiltTree() {
   const root = postcss.root();

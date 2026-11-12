@@ -1,9 +1,9 @@
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import type { BlockRecords } from './blockRecords.js';
-import type { ArenaIndex } from './blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex, ChainPosition} from './blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {ArenaIndex, ChainPosition} from '../../../ir/blockRecord.js' */
 /**
  * Two declarations are equal when they print the same, which their ids tell:
  * the same property name, value, importance and hack prefix.

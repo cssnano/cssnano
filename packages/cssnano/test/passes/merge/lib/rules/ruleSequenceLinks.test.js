@@ -14,7 +14,7 @@ import {
   placeUnlinked,
   nodeOfEntry,
 } from './liveRecords.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();

@@ -18,8 +18,8 @@ import {
   placeUnlinked,
   ruleRecordOf,
 } from './liveRecords.js';
-import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
-import { appendChild } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/buildRecords.js';
+import { appendChild } from '../../../../../src/passes/ir/arenaEdits.js';
 
 /** @import {Root, Rule} from 'postcss' */
 

@@ -4,8 +4,8 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
-import { RULE } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
+import { RULE } from '../../../../../src/passes/ir/blockRecord.js';
 import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.js';
 import {
   absorbEarlier,
@@ -21,7 +21,7 @@ import { TextTable } from '../../../../../src/values/textTable.js';
 import { foldedRules } from './summaryFixtures.js';
 import { selectorIdsOf } from './selectorIdsOf.js';
 
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 /** @import {TokenLists} from '../../../../../src/passes/ir/tokenLists.js' */
 
 const browsers = ['chrome 120', 'ie 11'];

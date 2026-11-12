@@ -4,7 +4,7 @@ import {
   NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';

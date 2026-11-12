@@ -6,10 +6,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import {
-  remove,
-  takePlaceOf,
-} from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { remove, takePlaceOf } from '../../../../../src/passes/ir/treeEdits.js';
 import {
   blockRecordOf,
   ruleRecordOf,
@@ -20,9 +17,9 @@ import {
   adopt,
   moveRule,
   substitute,
-} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+} from '../../../../../src/passes/ir/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();

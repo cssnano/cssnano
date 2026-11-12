@@ -106,18 +106,19 @@
       "globals": { "CSS": "readonly" }
     },
     {
-      "files": ["packages/cssnano/src/passes/merge/**"],
+      "files": [
+        "packages/cssnano/src/passes/merge/**",
+        "packages/cssnano/src/passes/ir/**"
+      ],
       "rules": {
         "merge-ir/link-edits-through-arena": [
           "error",
           {
-            "allowed": [
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js"
-            ],
+            "allowed": ["packages/cssnano/src/passes/ir/blockRecords.js"],
             "required": [
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#linkBefore",
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#linkLast",
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js#detach"
+              "packages/cssnano/src/passes/ir/blockRecords.js#linkBefore",
+              "packages/cssnano/src/passes/ir/blockRecords.js#linkLast",
+              "packages/cssnano/src/passes/ir/blockRecords.js#detach"
             ]
           }
         ],
@@ -125,12 +126,12 @@
           "error",
           {
             "allowed": [
-              "packages/cssnano/src/passes/merge/lib/rules/declarationCache.js#declarationKeys",
-              "packages/cssnano/src/passes/merge/lib/rules/declarationCache.js#receivingDeclarations",
+              "packages/cssnano/src/passes/ir/declarationCache.js#declarationKeys",
+              "packages/cssnano/src/passes/ir/declarationCache.js#receivingDeclarations",
               "packages/cssnano/src/passes/merge/lib/rules/blockChildren.js#holdsOnlyDeclarationsOf"
             ],
             "required": [
-              "packages/cssnano/src/passes/merge/lib/rules/declarationCache.js#declarationKeys",
+              "packages/cssnano/src/passes/ir/declarationCache.js#declarationKeys",
               "packages/cssnano/src/passes/merge/lib/rules/blockChildren.js#holdsOnlyDeclarationsOf"
             ]
           }
@@ -167,8 +168,8 @@
     },
     {
       "files": [
-        "packages/cssnano/src/passes/merge/lib/rules/blockLinks.js",
-        "packages/cssnano/src/passes/merge/lib/rules/declarationStamps.js"
+        "packages/cssnano/src/passes/ir/blockLinks.js",
+        "packages/cssnano/src/passes/ir/declarationStamps.js"
       ],
       "rules": {
         "no-restricted-imports": [
@@ -195,11 +196,11 @@
           "error",
           {
             "allowed": [
-              "packages/cssnano/src/passes/merge/lib/rules/writeBack.js",
-              "packages/cssnano/src/passes/merge/lib/rules/nodeTable.js",
-              "packages/cssnano/src/passes/merge/lib/rules/writeSelector.js",
-              "packages/cssnano/src/passes/merge/lib/rules/treeMatch.js",
-              "packages/cssnano/src/passes/merge/lib/rules/buildRecords.js",
+              "packages/cssnano/src/passes/ir/writeBack.js",
+              "packages/cssnano/src/passes/ir/nodeTable.js",
+              "packages/cssnano/src/passes/ir/writeSelector.js",
+              "packages/cssnano/src/passes/ir/treeMatch.js",
+              "packages/cssnano/src/passes/ir/buildRecords.js",
               "packages/cssnano/src/passes/ir/runContext.js"
             ]
           }
@@ -208,10 +209,10 @@
           "error",
           {
             "allowed": [
-              "packages/cssnano/src/passes/merge/lib/rules/blockRecords.js",
-              "packages/cssnano/src/passes/merge/lib/rules/arenaEdits.js",
-              "packages/cssnano/src/passes/merge/lib/rules/treeEdits.js",
-              "packages/cssnano/src/passes/merge/lib/rules/buildRecords.js"
+              "packages/cssnano/src/passes/ir/blockRecords.js",
+              "packages/cssnano/src/passes/ir/arenaEdits.js",
+              "packages/cssnano/src/passes/ir/treeEdits.js",
+              "packages/cssnano/src/passes/ir/buildRecords.js"
             ]
           }
         ],
@@ -221,8 +222,8 @@
           {
             "modules": [
               "packages/cssnano/src/passes/ir/consistencyChecks.js",
-              "packages/cssnano/src/passes/merge/lib/rules/recordsCheck.js",
-              "packages/cssnano/src/passes/merge/lib/rules/linkChecks.js"
+              "packages/cssnano/src/passes/ir/recordsCheck.js",
+              "packages/cssnano/src/passes/ir/linkChecks.js"
             ],
             "allowed": []
           }

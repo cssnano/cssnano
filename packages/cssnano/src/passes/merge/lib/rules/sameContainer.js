@@ -5,7 +5,7 @@ import {
   LAYER,
   RULE,
   STYLESHEET,
-} from './blockRecord.js';
+} from '../../../ir/blockRecord.js';
 
 // The first steps of a context's path, apart from those of declarations and
 // of the structural ids that duplicate removal takes from the same interner.
@@ -13,8 +13,8 @@ const CONTEXT = Symbol('container context');
 const ANONYMOUS = Symbol('anonymous layer');
 
 /** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecord} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 
 /**
  * True for `@keyframes` and its vendor-prefixed forms, whose selectors are

@@ -1,10 +1,10 @@
-import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
-import { moveRule, substitute } from './arenaEdits.js';
-import { remove } from './treeEdits.js';
+import { AT_RULE_BLOCK, RULE, STYLESHEET } from '../../../ir/blockRecord.js';
+import { moveRule, substitute } from '../../../ir/arenaEdits.js';
+import { remove } from '../../../ir/treeEdits.js';
 
-/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {ArenaIndex, BlockRecord} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 
 /**
  * The rules that stand in the slots of a pair after it is merged.

@@ -28,8 +28,8 @@ import {
   canonicalizeRecords,
   longhandContext,
 } from '../../../../../../src/passes/merge/lib/longhand/canonicalize.js';
-import { buildRecords } from '../../../../../../src/passes/merge/lib/rules/buildRecords.js';
-import { writeBack } from '../../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { buildRecords } from '../../../../../../src/passes/ir/buildRecords.js';
+import { writeBack } from '../../../../../../src/passes/ir/writeBack.js';
 import postcss from 'postcss';
 
 /** @import {Container} from 'postcss'; */

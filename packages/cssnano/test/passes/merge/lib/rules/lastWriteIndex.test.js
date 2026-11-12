@@ -7,13 +7,13 @@ import LastWriteIndex from '../../../../../src/passes/merge/lib/rules/lastWriteI
 import { PropertyWrites } from '../../../../../src/passes/merge/lib/rules/propertyWrites.js';
 import { isConflictingProp } from '../../../../../script/passes/ir/lib/propertyRelations.js';
 import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
-import { BlockRecords } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecords } from '../../../../../src/passes/ir/blockRecords.js';
 import {
   BlockRecord,
   NO_AT_RULE,
   NO_PRELUDE,
   STYLESHEET,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { ruleRecordOf, entryOf, buildTestRecords } from './liveRecords.js';

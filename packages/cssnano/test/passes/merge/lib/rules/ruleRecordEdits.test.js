@@ -6,12 +6,12 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import {
   appendToDeclarations,
   removeRules,
-} from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
+} from '../../../../../src/passes/ir/treeEdits.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/ir/treeMatch.js';
 import {
   replaceChildren,
   writeBack,
-} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+} from '../../../../../src/passes/ir/writeBack.js';
 import {
   ruleRecordOf,
   buildTestRecords,
@@ -22,7 +22,7 @@ import {
 import {
   moveDeclarations,
   removeDeclarations,
-} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+} from '../../../../../src/passes/ir/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {ChildNode, Declaration, Rule} from 'postcss' */

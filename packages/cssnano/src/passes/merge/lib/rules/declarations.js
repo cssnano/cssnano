@@ -1,8 +1,8 @@
 import { PropertyWrites } from './propertyWrites.js';
 import { Claims, WritePositions } from './writePositions.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {ArenaIndex, ChainPosition} from './blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {ArenaIndex, ChainPosition} from '../../../ir/blockRecord.js' */
 
 /**
  * Two declarations are equal when they print the same, which their ids tell:

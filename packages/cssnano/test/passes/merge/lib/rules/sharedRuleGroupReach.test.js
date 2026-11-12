@@ -16,7 +16,7 @@ import {
   SHARING_WINDOW,
 } from '../../../../../src/passes/merge/lib/rules/sharedRuleGroup.js';
 import { longSelector, sharedBackground } from './sharedRuleGroupFixtures.js';
-import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+import { declarationKeys } from '../../../../../src/passes/ir/declarationCache.js';
 
 // Park-Miller generator: products stay below 2 ** 53, and the repository
 // forbids bitwise operators.

@@ -2,18 +2,18 @@ import {
   declarationsOf,
   childEntriesOf,
 } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
-import { assertRecordsMatchTree } from '../../../../../src/passes/merge/lib/rules/treeMatch.js';
+import { assertRecordsMatchTree } from '../../../../../src/passes/ir/treeMatch.js';
 import {
   childNodesOf,
   writeBack,
-} from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+} from '../../../../../src/passes/ir/writeBack.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/buildRecords.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { appendToDeclarations } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+import { appendToDeclarations } from '../../../../../src/passes/ir/treeEdits.js';
 import {
   buildTestRecords,
   declarationIds,
@@ -23,7 +23,7 @@ import {
   tokenListsOf,
 } from './liveRecords.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
-import { DECLARATION } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import { DECLARATION } from '../../../../../src/passes/ir/blockRecord.js';
 
 /**
  * @param {string} css

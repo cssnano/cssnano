@@ -1,10 +1,10 @@
 /** @import {TokenListId, TokenLists} from '../../../ir/tokenLists.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 import { elementKeyOf } from './elementKeys.js';
 import { selectorInfoOf } from './ensureCompatibility.js';
 import { VendorPrefixSummary } from './vendorPrefixSummary.js';
-import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
+import { AT_RULE_BLOCK, RULE, STYLESHEET } from '../../../ir/blockRecord.js';
 
 /** @import {RuleElementKeys} from './elementKeys.js' */
 

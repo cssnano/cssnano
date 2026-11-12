@@ -1,6 +1,6 @@
-import type { BlockRecords } from './blockRecords.js';
-import type { ArenaIndex, BlockRecord, NodeEntry } from './blockRecord.js';
-import type { RuleRecord } from './ruleRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { ArenaIndex, BlockRecord, NodeEntry } from '../../../ir/blockRecord.js';
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /**
  * The first declaration the container at `index` holds now.

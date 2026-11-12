@@ -6,9 +6,9 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import {
   assertRecordsWellFormed,
   assertTemplatesHaveNodes,
-} from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
+} from '../../../../../src/passes/ir/recordsCheck.js';
 import { DeclarationRecord } from '../../../../../src/passes/ir/declarationRecord.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
 import {
   BlockRecord,
   COMMENT,
@@ -16,8 +16,8 @@ import {
   NO_PRELUDE,
   NodeEntry,
   STYLESHEET,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
-import { remove } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
+import { remove } from '../../../../../src/passes/ir/treeEdits.js';
 import {
   blockRecordOf,
   ruleRecordOf,
@@ -27,11 +27,11 @@ import {
   nodeOfEntry,
   nodesOf,
 } from './liveRecords.js';
-import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { moveRule } from '../../../../../src/passes/ir/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 
-/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
-/** @import {BlockLinks} from '../../../../../src/passes/merge/lib/rules/blockLinks.js' */
+/** @import {BlockRecord} from '../../../../../src/passes/ir/blockRecord.js' */
+/** @import {BlockLinks} from '../../../../../src/passes/ir/blockLinks.js' */
 /** @import {Root, Rule} from 'postcss' */
 
 /**

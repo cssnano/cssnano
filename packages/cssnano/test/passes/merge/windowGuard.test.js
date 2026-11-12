@@ -3,10 +3,10 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { fillSummaries } from '../../../src/passes/merge/lib/rules/selectorList.js';
-import { buildRecords } from '../../../src/passes/merge/lib/rules/buildRecords.js';
-import { guardWindow } from '../../../src/passes/merge/lib/rules/windowGuard.js';
+import { buildRecords } from '../../../src/passes/ir/buildRecords.js';
+import { guardWindow } from '../../../src/passes/ir/windowGuard.js';
 import runMerge from '../../../src/passes/merge/lib/rules/selectorMerger.js';
-import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
+import { writeBack } from '../../../src/passes/ir/writeBack.js';
 import { TextTable } from '../../../src/values/textTable.js';
 
 /**

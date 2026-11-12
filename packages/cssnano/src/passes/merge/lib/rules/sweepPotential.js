@@ -1,7 +1,7 @@
-import { AT_RULE_BLOCK, RULE, STYLESHEET } from './blockRecord.js';
-import { declarationKeys } from './declarationCache.js';
+import { AT_RULE_BLOCK, RULE, STYLESHEET } from '../../../ir/blockRecord.js';
+import { declarationKeys } from '../../../ir/declarationCache.js';
 
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 
 const POTENTIAL =
   'a sweep raised its potential, or moved a rule without lowering it';
