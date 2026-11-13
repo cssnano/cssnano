@@ -69,11 +69,25 @@ import { runDriver } from '../passes/ir/runDriver.js';
  */
 
 /**
- * An advanced transform, which edits the symbol lists that the walk after
- * merge collected, with the options its entry's `create` returned. `remove`
- * removes a node and, with discardEmpty on, each ancestor it empties. `table`
- * gives the selector tokens the walk stored.
- * @typedef {(lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void, table: TextTable) => void} SymbolTransform
+ * An advanced transform over the records, which edits the lists of arena
+ * indices that the walk after merge collected, with the options its entry's
+ * `create` returned. `remove` removes an entry and, with discardEmpty on, each
+ * ancestor it empties. It runs before the end of the run.
+ * @typedef {(lists: import('./symbolLists.js').RecordSymbolLists, options: Record<PropertyKey, unknown>, remove: (index: import('../passes/ir/blockRecord.js').ArenaIndex) => void, records: import('../passes/ir/blockRecords.js').BlockRecords, context: import('../passes/ir/runContext.js').RunContext) => void} SymbolTransform
+ */
+
+/**
+ * An advanced transform over the nodes that the end of the run returned. It
+ * runs after the end, over the symbol lists as nodes. `remove` removes a node
+ * and, with discardEmpty on, each ancestor it empties. `table` gives the
+ * selector tokens the walk stored.
+ * @typedef {(lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void, table: TextTable) => void} NodeSymbolTransform
+ */
+
+/**
+ * A symbol transform with its options, and whether it runs over the records
+ * before the end (`onRecords`) or over the nodes after it.
+ * @typedef {{transform: SymbolTransform | NodeSymbolTransform, options: Record<PropertyKey, unknown>, onRecords: boolean}} SymbolEntry
  */
 
 /**
@@ -120,7 +134,7 @@ const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
  * @param {Merge | undefined} merge the merge, absent when the merge is off
  * @param {readonly string[]} browsers the resolved browser targets of the merge; none when it is off
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} after
- * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} symbols
+ * @param {ReadonlyMap<string, SymbolEntry>} symbols
  */
 function runRecords(root, result, table, merge, browsers, after, symbols) {
   const support = merge ? merge.runner.support(browsers) : undefined;
@@ -147,7 +161,7 @@ function runRecords(root, result, table, merge, browsers, after, symbols) {
  *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
  *   the walk after the merge runs, by entry name; a missing name is disabled
- * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} [symbols]
+ * @param {ReadonlyMap<string, SymbolEntry>} [symbols]
  *   the advanced transforms that run over the lists of the walk after the merge, in order
  * @param {Merge} [merge] the merge options with the browser targets, and the merge run; absent when the merge is off
  * @returns {Plugin}

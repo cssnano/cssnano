@@ -12,7 +12,7 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {StageEntry, HostMember, Merge, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
+/** @import {StageEntry, HostMember, Merge, NodeSymbolTransform, SymbolEntry, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
 /** @import {MergeRunner} from '../passes/merge/index.js' */
 
 /**
@@ -52,7 +52,8 @@ import {
  *   transform?: true,
  *   merge?: MergeRunner,
  *   after?: true,
- *   symbols?: SymbolTransform,
+ *   symbols?: SymbolTransform | NodeSymbolTransform,
+ *   onRecords?: true,
  * }} PluginEntrySettings
  */
 
@@ -84,7 +85,7 @@ import {
  * The stage members of a host, the options of the walk transforms that the
  * host's walk runs, the options of the merge run when it is on, the options of
  * the transforms of the walk after the merge, and the advanced transforms over its lists.
- * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, merge: Merge | undefined, after: Map<string, Record<PropertyKey, unknown>>, symbols: Map<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>}} Run
+ * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, merge: Merge | undefined, after: Map<string, Record<PropertyKey, unknown>>, symbols: Map<string, SymbolEntry>}} Run
  */
 
 /** @returns {Run} */
@@ -130,7 +131,11 @@ function addTransform(run, name, entry, options, settings) {
   if (settings.merge) {
     run.merge = { options: transform, runner: settings.merge };
   } else if (settings.symbols) {
-    run.symbols.set(name, { transform: settings.symbols, options: transform });
+    run.symbols.set(name, {
+      transform: settings.symbols,
+      options: transform,
+      onRecords: settings.onRecords === true,
+    });
   } else if (settings.after) {
     run.after.set(name, transform);
   } else {

@@ -2,7 +2,7 @@ import type { AcceptedPlugin } from 'postcss';
 import type { NamedPreset } from './presetEntries.js';
 import type { SharedTargets } from '#utils/browser-targets';
 import type { Guard } from '../optionGuards.js';
-import type { StageEntry, HostMember, Merge, SymbolTransform, TransformEntry } from '../pipeline/host.js';
+import type { StageEntry, HostMember, Merge, NodeSymbolTransform, SymbolEntry, SymbolTransform, TransformEntry } from '../pipeline/host.js';
 import type { MergeRunner } from '../passes/merge/index.js';
 export type PresetOptions<Plugins extends object> = {
     browserslist?: SharedTargets;
@@ -25,7 +25,8 @@ export type PluginEntrySettings = {
     transform?: true;
     merge?: MergeRunner;
     after?: true;
-    symbols?: SymbolTransform;
+    symbols?: SymbolTransform | NodeSymbolTransform;
+    onRecords?: true;
 };
 export type PluginEntry = readonly [StageEntry | TransformEntry, string, PluginEntrySettings];
 export type NamedKeys<Options> = string extends keyof Options ? never : keyof Options & string;
@@ -37,10 +38,7 @@ export type Run = {
     transforms: Map<string, Record<PropertyKey, unknown>>;
     merge: Merge | undefined;
     after: Map<string, Record<PropertyKey, unknown>>;
-    symbols: Map<string, {
-        transform: SymbolTransform;
-        options: Record<PropertyKey, unknown>;
-    }>;
+    symbols: Map<string, SymbolEntry>;
 };
 /**
  * Turns the options of a built preset into the plugins it runs. A disabled

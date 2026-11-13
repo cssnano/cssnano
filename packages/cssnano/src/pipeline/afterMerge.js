@@ -1,12 +1,20 @@
 import { removeAndDiscardEmptied } from '#postcss-discard-empty';
 import { decideCharset, rescanNonAscii } from '#postcss-normalize-charset';
 import rawCache from '../utils/rawCache.js';
-import { createRecordSymbolLists, recordSymbolVisit } from './symbolLists.js';
+import {
+  createRecordSymbolLists,
+  isRecordAttached,
+  recordSymbolVisit,
+} from './symbolLists.js';
 import { visitEntriesInOrder } from '../passes/ir/visitEntries.js';
 import { uniqueRuleSelectors } from '../passes/ir/uniqueSelectors.js';
 import { fillRule } from '../passes/ir/selectorList.js';
 import { createCharsetScan, charsetVisit } from '../passes/ir/charset.js';
-import { discardEmptyRecords } from '../passes/ir/discardRecords.js';
+import {
+  discardEmptyRecords,
+  removeAndDiscardEmptiedRecords,
+} from '../passes/ir/discardRecords.js';
+import { remove as detachRecord } from '../passes/ir/treeEdits.js';
 import { normalizeEntry } from '../passes/ir/normalizeRaws.js';
 import { writeRootAfter } from '../passes/ir/rawEdits.js';
 import { nodeOf } from '../passes/ir/nodeTable.js';
@@ -18,21 +26,43 @@ import { nodeOf } from '../passes/ir/nodeTable.js';
 /** @import {NodeTable} from '../passes/ir/nodeTable.js' */
 /** @import {RunContext} from '../passes/ir/runContext.js' */
 /** @import {RunState} from '../passes/ir/runDriver.js' */
-/** @import {SymbolTransform} from './host.js' */
+/** @import {NodeSymbolTransform, SymbolEntry, SymbolTransform} from './host.js' */
 /** @import {SymbolLists, RecordSymbolLists} from './symbolLists.js' */
 /** @import {TextTable} from '../values/textTable.js' */
 
 /**
- * What the walk over the records leaves for the stage after the run: the
- * symbol lists and the charset scan, as arena indices, and the charset options
- * when the charset decision is on.
+ * What the walk over the records leaves for the stage after the run: whether
+ * any symbol transform is on, the symbol lists still to run over the nodes, as
+ * arena indices, and the charset scan with the charset options when the
+ * charset decision is on.
  *
  * @typedef {{
+ *   symbolsOn: boolean,
  *   lists: RecordSymbolLists | undefined,
  *   scan: import('../passes/ir/charset.js').CharsetScan,
  *   charsetOptions: Record<PropertyKey, unknown> | undefined,
  * }} AfterWalk
  */
+
+/**
+ * The symbol lists that still hang from the stylesheet, as the records stand
+ * after the record transforms. A node a removal detached keeps its parent, so
+ * the node transforms could not tell it from one in the tree.
+ *
+ * @param {BlockRecords} records
+ * @param {RecordSymbolLists} lists
+ * @returns {RecordSymbolLists}
+ */
+function attachedLists(records, lists) {
+  return /** @type {RecordSymbolLists} */ (
+    Object.fromEntries(
+      Object.entries(lists).map(([key, indices]) => [
+        key,
+        indices.filter((index) => isRecordAttached(records, index)),
+      ])
+    )
+  );
+}
 
 /**
  * Whether an entry is the stylesheet's first child.
@@ -54,11 +84,12 @@ function isFirstChild(records, index) {
  * transforms share one walk: normalizeWhitespace visits each entry, the symbol
  * lists and the charset scan collect what the later stage reads. With discardEmpty
  * on, the walk is post-order and discards empty entries; otherwise it is pre-order.
+ * The advanced transforms over the records run after the walk, in order, and
+ * the rest run over the nodes after the end.
  *
  * @param {RunState} state the build of the stylesheet, after the merge transforms
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the options of each transform on, by entry name
- * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} symbols
- *   the advanced transforms on, in order
+ * @param {ReadonlyMap<string, SymbolEntry>} symbols the advanced transforms on, in order
  * @param {readonly string[]} [browsers] the targets the merge folded the summaries for; absent when it did not
  * @return {AfterWalk}
  */
@@ -112,7 +143,34 @@ export function walkAfterMerge(state, transforms, symbols, browsers) {
   } else if (visit) {
     visitEntriesInOrder(records, records.root.index, visit);
   }
-  return { lists, scan, charsetOptions };
+  let attached;
+  if (lists) {
+    /** @type {(index: ArenaIndex) => void} */
+    const remove = transforms.has('discardEmpty')
+      ? (index) => removeAndDiscardEmptiedRecords(records, context, index)
+      : (index) => detachRecord(records, index);
+    let nodeSymbols = false;
+    for (const { transform, options, onRecords } of symbols.values()) {
+      if (onRecords) {
+        /** @type {SymbolTransform} */ (transform)(
+          lists,
+          options,
+          remove,
+          records,
+          context
+        );
+      } else {
+        nodeSymbols = true;
+      }
+    }
+    if (nodeSymbols) attached = attachedLists(records, lists);
+  }
+  return {
+    symbolsOn: lists !== undefined,
+    lists: attached,
+    scan,
+    charsetOptions,
+  };
 }
 
 /**
@@ -127,7 +185,8 @@ function nodesOf(nodes, indices) {
 }
 
 /**
- * The symbol lists of the run as nodes, for the advanced transforms.
+ * The symbol lists of the run as nodes, for the advanced transforms that run
+ * over the nodes.
  *
  * @param {RecordSymbolLists} lists
  * @param {NodeTable} nodes
@@ -169,14 +228,15 @@ function nodeScan(scan, nodes) {
 }
 
 /**
- * The stage after the end of the run, on the nodes the end wrote: the advanced transforms over the symbol lists, the charset decision, then the raw
- * cache, which records last so that no later transform changes what it describes.
+ * The stage after the end of the run, on the nodes the end wrote: the advanced
+ * transforms over the nodes, the charset decision, then the raw cache, which
+ * records last so that no later transform changes what it describes.
  *
  * @param {Root} root
  * @param {Result} result
  * @param {NodeTable} nodes the node of each entry, from the end of the run
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms
- * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} symbols
+ * @param {ReadonlyMap<string, SymbolEntry>} symbols
  * @param {TextTable} table the selectors and declarations the walk before merge stored
  * @param {AfterWalk} walked what the walk over the records left
  * @returns {void}
@@ -190,7 +250,7 @@ export function finishAfterMerge(
   table,
   walked
 ) {
-  const { lists, scan, charsetOptions } = walked;
+  const { lists, symbolsOn, scan, charsetOptions } = walked;
   if (lists) {
     runSymbolTransforms(
       nodeLists(lists, nodes),
@@ -202,7 +262,7 @@ export function finishAfterMerge(
   }
   if (charsetOptions) {
     const charset = nodeScan(scan, nodes);
-    if (lists) rescanNonAscii(charset);
+    if (symbolsOn) rescanNonAscii(charset);
     decideCharset(
       root,
       charset,
@@ -215,11 +275,12 @@ export function finishAfterMerge(
 }
 
 /**
- * Runs the advanced transforms in preset order over the lists of the walk.
- * With discardEmpty on, a removal also removes the ancestors it empties.
+ * Runs the advanced transforms over the nodes, in preset order, over the
+ * lists of the walk. With discardEmpty on, a removal also removes the ancestors
+ * it empties.
  *
  * @param {SymbolLists} lists
- * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} symbols
+ * @param {ReadonlyMap<string, SymbolEntry>} symbols
  * @param {Result} result
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms
  * @param {TextTable} table
@@ -230,7 +291,14 @@ function runSymbolTransforms(lists, symbols, result, transforms, table) {
   const remove = transforms.has('discardEmpty')
     ? (node) => removeAndDiscardEmptied(node, result)
     : (node) => node.remove();
-  for (const { transform, options } of symbols.values()) {
-    transform(lists, options, remove, table);
+  for (const { transform, options, onRecords } of symbols.values()) {
+    if (!onRecords) {
+      /** @type {NodeSymbolTransform} */ (transform)(
+        lists,
+        options,
+        remove,
+        table
+      );
+    }
   }
 }

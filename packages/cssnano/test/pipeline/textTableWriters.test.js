@@ -212,7 +212,7 @@ suite('the at-rule reducers write tokens that spell their text', () => {
  * @param {import('postcss').Root} root
  * @param {TextTable} table
  * @param {Map<string, Record<PropertyKey, unknown>>} transforms
- * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols
+ * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>, onRecords: boolean}>} symbols
  * @return {number} the tokenize calls of the walk and its finish, which read the stored text
  */
 function afterWalk(root, table, transforms, symbols) {
@@ -256,7 +256,10 @@ suite('the text table reads the text the afterMerge walk wrote', () => {
     const rule = root.first;
     table.write(rule, tokens('ns|a, b, ns|a'));
     const symbols = new Map([
-      ['discardUnused', { transform: discardUnusedSymbols, options: {} }],
+      [
+        'discardUnused',
+        { transform: discardUnusedSymbols, options: {}, onRecords: true },
+      ],
     ]);
     assert.equal(
       afterWalk(root, table, new Map([['uniqueSelectors', {}]]), symbols),

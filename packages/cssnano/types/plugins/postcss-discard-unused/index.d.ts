@@ -1,6 +1,7 @@
-import { TextTable } from '../../values/textTable.js';
-import type { AtRule } from 'postcss';
-import type { SymbolLists } from '../../pipeline/symbolLists.js';
+import type { ArenaIndex } from '../../passes/ir/blockRecord.js';
+import type { BlockRecords } from '../../passes/ir/blockRecords.js';
+import type { RunContext } from '../../passes/ir/runContext.js';
+import type { RecordSymbolLists } from '../../pipeline/symbolLists.js';
 export type Options = {
     /**
      * Discards unused font face rules. (default: true)
@@ -31,13 +32,14 @@ export type Options = {
  * is read before the first removal, so a reference inside a removed at-rule
  * still keeps its definition.
  *
- * @param {SymbolLists} lists
+ * @param {RecordSymbolLists} lists
  * @param {Options} options
- * @param {(node: AtRule) => void} remove
- * @param {TextTable} table the selector tokens the walk stored
+ * @param {(index: ArenaIndex) => void} remove
+ * @param {BlockRecords} records
+ * @param {RunContext} context
  * @return {void}
  */
-export declare function discardUnusedSymbols(lists: SymbolLists, options: Options, remove: (node: AtRule) => void, table: TextTable): void;
+export declare function discardUnusedSymbols(lists: RecordSymbolLists, options: Options, remove: (index: ArenaIndex) => void, records: BlockRecords, context: RunContext): void;
 /**
  * @param {Options} opts
  * @return {import('postcss').Plugin}

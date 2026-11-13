@@ -5,7 +5,7 @@ import { zindexSymbols } from '#postcss-zindex';
 import { defaultPluginEntries } from './defaultPlugins.js';
 
 /** @import {EntryFor} from './configurePlugins.js' */
-/** @import {SymbolTransform} from '../pipeline/host.js' */
+/** @import {NodeSymbolTransform, SymbolTransform} from '../pipeline/host.js' */
 
 /**
  * The options of the plugins that only the advanced preset adds.
@@ -40,6 +40,7 @@ export const advancedPluginEntries = /** @type {const} */ ([
       optionKeys: ['fontFace', 'counterStyle', 'keyframes', 'namespace'],
       transform: true,
       symbols: /** @type {SymbolTransform} */ (discardUnusedSymbols),
+      onRecords: true,
     },
   ]),
   /** @satisfies {EntryFor<AdvancedPluginOptions, 'mergeIdents'>} */ ([
@@ -50,7 +51,7 @@ export const advancedPluginEntries = /** @type {const} */ ([
     {
       optionKeys: [],
       transform: true,
-      symbols: /** @type {SymbolTransform} */ (mergeIdentsSymbols),
+      symbols: /** @type {NodeSymbolTransform} */ (mergeIdentsSymbols),
     },
   ]),
   /** @satisfies {EntryFor<AdvancedPluginOptions, 'reduceIdents'>} */ ([
@@ -70,7 +71,7 @@ export const advancedPluginEntries = /** @type {const} */ ([
       ],
       transform: true,
       // Its options are the reducers that create built.
-      symbols: /** @type {SymbolTransform} */ (
+      symbols: /** @type {NodeSymbolTransform} */ (
         /** @type {unknown} */ (reduceIdentsSymbols)
       ),
     },
@@ -84,7 +85,7 @@ export const advancedPluginEntries = /** @type {const} */ ([
     {
       optionKeys: ['startIndex'],
       transform: true,
-      symbols: /** @type {SymbolTransform} */ (zindexSymbols),
+      symbols: /** @type {NodeSymbolTransform} */ (zindexSymbols),
     },
   ]),
 ]);

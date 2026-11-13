@@ -32,7 +32,7 @@ const helpers = { result: { warn() {}, messages: [] } };
  * @param {import('postcss').Root} root
  * @param {TextTable} table
  * @param {Map<string, Record<PropertyKey, unknown>>} transforms
- * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols
+ * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>, onRecords: boolean}>} symbols
  * @return {number} the tokenize calls of the walk and its finish, which read the stored text
  */
 function afterWalk(root, table, transforms, symbols) {
@@ -86,7 +86,10 @@ suite('the at-rule readers read the lists stored for their at-rules', () => {
     table.write(root.first, tokens('svg url(x)'));
     table.write(root.last, tokens('svg|a'));
     const symbols = new Map([
-      ['discardUnused', { transform: discardUnusedSymbols, options: {} }],
+      [
+        'discardUnused',
+        { transform: discardUnusedSymbols, options: {}, onRecords: true },
+      ],
     ]);
     assert.equal(afterWalk(root, table, new Map(), symbols), 0);
   });
