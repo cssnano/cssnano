@@ -1,6 +1,7 @@
 import { atRuleEntry } from './prelude.js';
 import { foldNode, planEntry } from './plan.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
+import { keepSelectorComments } from '../passes/ir/keepSelectorComments.js';
 import {
   sourceParams,
   sourceSelector,
@@ -194,27 +195,6 @@ function walkRule(state, rule) {
     state.helpers,
     state.table
   );
-}
-
-/**
- * Moves the comments PostCSS kept only in the raw selector into the selector,
- * as PostCSS itself does for a comment with no whitespace beside it. Later
- * transforms rebuild selectors from `rule.selectors`, which would otherwise
- * lose them.
- *
- * @param {import('postcss').Rule} rule
- */
-function keepSelectorComments(rule) {
-  const raw = rule.raws.selector;
-  if (
-    raw === undefined ||
-    raw.value !== rule.selector ||
-    raw.raw === raw.value
-  ) {
-    return;
-  }
-  rule.selector = raw.raw;
-  delete rule.raws.selector;
 }
 
 /**
