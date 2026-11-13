@@ -2,7 +2,8 @@ import type { AcceptedPlugin } from 'postcss';
 import type { NamedPreset } from './presetEntries.js';
 import type { SharedTargets } from '#utils/browser-targets';
 import type { Guard } from '../optionGuards.js';
-import type { StageEntry, HostMember, PassRun, SymbolTransform, TransformEntry } from '../pipeline/host.js';
+import type { StageEntry, HostMember, Merge, SymbolTransform, TransformEntry } from '../pipeline/host.js';
+import type { MergeRunner } from '../passes/merge/index.js';
 export type PresetOptions<Plugins extends object> = {
     browserslist?: SharedTargets;
     /**
@@ -22,7 +23,7 @@ export type PluginEntrySettings = {
     guards?: Readonly<Record<string, Guard>>;
     walk?: true;
     transform?: true;
-    pass?: PassRun['pass'];
+    merge?: MergeRunner;
     after?: true;
     symbols?: SymbolTransform;
 };
@@ -34,7 +35,7 @@ export type EntryFor<Options extends object, Name extends keyof Options & string
 export type Run = {
     members: HostMember[];
     transforms: Map<string, Record<PropertyKey, unknown>>;
-    passes: Map<string, PassRun>;
+    merge: Merge | undefined;
     after: Map<string, Record<PropertyKey, unknown>>;
     symbols: Map<string, {
         transform: SymbolTransform;

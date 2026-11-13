@@ -1,13 +1,55 @@
+import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import { TextTable } from '../../values/textTable.js';
 import { isBoolean } from '../../optionGuards.js';
-import type { Root } from 'postcss';
+import type { BlockRecords } from '../ir/blockRecords.js';
+import type { Result, Root } from 'postcss';
+import type { RunContext } from '../ir/runContext.js';
+export type RecordTransform = (records: BlockRecords, browsers: readonly string[], context: RunContext) => void;
 /**
- * The merge transforms over one stylesheet, in the order the default preset
- * runs them: canonicalize every declaration block, remove duplicates, merge
- * rules, then canonicalize again every block still in the stylesheet.
+ * The merge transforms over the records, in the order the default preset runs
+ * them: canonicalize every declaration block, remove duplicates, merge rules,
+ * then canonicalize again every block still in the stylesheet.
  *
- * Removing duplicates keeps the last copy, so running it first can delete the
- * declaration that let an earlier one be dropped as overridden.
+ * Canonicalizing is not idempotent: a block the first round reduced can reduce
+ * again, so every block still in the stylesheet gets the second round.
+ *
+ * @param {BlockRecords} records the records of a built stylesheet
+ * @param {readonly string[]} browsers the resolved browser targets
+ * @param {RunContext} context the run's context
+ * @param {{rules?: boolean, support?: ReturnType<typeof targetSupportOf>}} [options]
+ *   whether rules are merged, and the targets' support when the caller has it
+ * @return {void}
+ */
+export declare function mergeRecords(records: BlockRecords, browsers: readonly string[], context: RunContext, { rules, support }?: {
+    rules?: boolean;
+    support?: ReturnType<typeof targetSupportOf>;
+}): void;
+export { targetSupportOf };
+export type MergeRunner = {
+    run: (root: Root, browsers: readonly string[], options: {
+        rules?: boolean;
+    }, result: Result, table: TextTable) => void;
+};
+/**
+ * The merge run of a preset. The host calls `run` after its walk and before
+ * the walk after merge, so it imports nothing of the merge or the records.
+ *
+ * @typedef {{run: (root: Root, browsers: readonly string[], options: {rules?: boolean}, result: Result, table: TextTable) => void}} MergeRunner
+ */
+/** @type {MergeRunner} */
+export declare const mergeRunner: MergeRunner;
+/**
+ * A merge run of the named transforms alone, in order, for a test that pins
+ * one transform without the preset's order. Longhand canonicalizing takes the
+ * support of its run.
+ *
+ * @param {...('mergeLonghand' | 'discardDuplicates' | 'mergeRules')} names
+ * @return {MergeRunner}
+ */
+export declare function transformRunner(...names: ('mergeLonghand' | 'discardDuplicates' | 'mergeRules')[]): MergeRunner;
+/**
+ * The merge transforms over one stylesheet, as one run of the driver: build,
+ * the merge transforms, then the end of the run.
  *
  * Longhand merging and duplicate removal always run. Rule merging runs unless
  * `rules` is false.
@@ -15,14 +57,14 @@ import type { Root } from 'postcss';
  * @param {Root} css
  * @param {readonly string[]} browsers the resolved browser targets
  * @param {{ rules?: boolean }} [options]
- * @param {unknown} [_result] the PostCSS result, which the merge does not use
+ * @param {Result} [result] the PostCSS result, whose messages the run pushes to
  * @param {TextTable} [textTable] the selector tokens the host walk left
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {void}
  */
 export declare function mergePass(css: Root, browsers: readonly string[], { rules }?: {
     rules?: boolean;
-}, _result?: unknown, textTable?: TextTable, consistencyChecks?: boolean): void;
+}, result?: Result, textTable?: TextTable, consistencyChecks?: boolean): void;
 /** The guard for the `rules` option, shared with the preset that validates it. */
 export declare const rulesGuard: Readonly<{
     isValid: typeof isBoolean;

@@ -12,7 +12,8 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {StageEntry, HostMember, PassRun, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
+/** @import {StageEntry, HostMember, Merge, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
+/** @import {MergeRunner} from '../passes/merge/index.js' */
 
 /**
  * The options of a built preset: the same as cssnano, without the preset and
@@ -37,9 +38,9 @@ import {
  * puts its options in that walk.
  *
  * `transform` is set when the entry is a whole-stylesheet transform, so its entry
- * is a TransformEntry rather than a creator or a stage. A transform with `pass`
- * runs as a pass after the walk of its run, instead of inside the walk. A
- * transform with `after` runs in the walk after the passes of its run. A
+ * is a TransformEntry rather than a creator or a stage. A transform with `merge`
+ * is the merge run, which runs after the walk of its host and before the walk
+ * after merge. A transform with `after` runs in the walk after the merge. A
  * transform with `symbols` runs over the lists that walk collects.
  *
  * @typedef {{
@@ -49,7 +50,7 @@ import {
  *   guards?: Readonly<Record<string, Guard>>,
  *   walk?: true,
  *   transform?: true,
- *   pass?: PassRun['pass'],
+ *   merge?: MergeRunner,
  *   after?: true,
  *   symbols?: SymbolTransform,
  * }} PluginEntrySettings
@@ -58,7 +59,7 @@ import {
 /**
  * A plugin in a preset, the preset option that enables it, and its settings.
  * The first element is a stage entry, which the walk of the host runs, or a
- * transform entry, which the walk or the passes of the host run.
+ * transform entry, which the walk or the merge of the host run.
  * @typedef {readonly [StageEntry | TransformEntry, string, PluginEntrySettings]} PluginEntry
  */
 
@@ -81,9 +82,9 @@ import {
 
 /**
  * The stage members of a host, the options of the walk transforms that the
- * host's walk runs, the passes that run after it, and the options of the
- * transforms of the walk after the passes, and the advanced transforms over its lists.
- * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, passes: Map<string, PassRun>, after: Map<string, Record<PropertyKey, unknown>>, symbols: Map<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>}} Run
+ * host's walk runs, the options of the merge run when it is on, the options of
+ * the transforms of the walk after the merge, and the advanced transforms over its lists.
+ * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, merge: Merge | undefined, after: Map<string, Record<PropertyKey, unknown>>, symbols: Map<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>}} Run
  */
 
 /** @returns {Run} */
@@ -91,7 +92,7 @@ function newRun() {
   return {
     members: [],
     transforms: new Map(),
-    passes: new Map(),
+    merge: undefined,
     after: new Map(),
     symbols: new Map(),
   };
@@ -126,12 +127,8 @@ export function configurePlugins(entries, options) {
 function addTransform(run, name, entry, options, settings) {
   const transform = entry.create(options);
   if (transform === null) return;
-  if (settings.pass) {
-    run.passes.set(name, {
-      pass: settings.pass,
-      options: transform,
-      targets: Boolean(settings.targets),
-    });
+  if (settings.merge) {
+    run.merge = { options: transform, runner: settings.merge };
   } else if (settings.symbols) {
     run.symbols.set(name, { transform: settings.symbols, options: transform });
   } else if (settings.after) {
@@ -149,7 +146,7 @@ function isEmptyRun(run) {
   return (
     run.members.length === 0 &&
     run.transforms.size === 0 &&
-    run.passes.size === 0 &&
+    run.merge === undefined &&
     run.after.size === 0 &&
     run.symbols.size === 0
   );
@@ -204,7 +201,7 @@ export function configureValidated(entries, known) {
   }
   if (isEmptyRun(run)) return [];
   return [
-    hostPlugin(run.members, run.transforms, run.passes, run.after, run.symbols),
+    hostPlugin(run.members, run.transforms, run.after, run.symbols, run.merge),
   ];
 }
 

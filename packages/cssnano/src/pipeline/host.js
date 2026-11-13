@@ -8,7 +8,7 @@ import { walkAfterMerge } from './afterMerge.js';
  * plugins before it have finished. The stylesheet is walked once.
  */
 
-/** @import {Plugin} from 'postcss' */
+/** @import {Plugin, Root} from 'postcss' */
 /** @import {ValueBuffer} from '../values/valueBuffer.js' */
 
 /**
@@ -58,14 +58,6 @@ import { walkAfterMerge } from './afterMerge.js';
  */
 
 /**
- * A pass that runs over the stylesheet after the walk, with the browsers of the
- * run, the options of its entry, the result for its messages and the text table
- * the walk filled. `targets` is set when the pass reads
- * the browser targets; otherwise it gets none.
- * @typedef {{pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result, table: TextTable) => void, options: Record<PropertyKey, unknown>, targets: boolean}} PassRun
- */
-
-/**
  * A whole-stylesheet transform that the walk runs. `create` gets the options of
  * the entry and returns the options the walk runs the transform with, or null
  * when the transform is off. `create` is a method for the same reason as in
@@ -83,13 +75,19 @@ import { walkAfterMerge } from './afterMerge.js';
  */
 
 /**
+ * The merge of a run: its options, with the browser targets, and its runner,
+ * which the preset gives so the host does not import the merge pass.
+ * @typedef {{options: Record<PropertyKey, unknown>, runner: import('../passes/merge/index.js').MergeRunner}} Merge
+ */
+
+/**
  * One stage entry of a host, with the options it is built with. `targets` is
  * set when the entry reads the browser targets.
  * @typedef {{entry: StageEntry, options: Record<PropertyKey, unknown>, targets: boolean}} HostMember
  */
 
 /**
- * The browser targets of a member or pass, resolved once for each browserTargets
+ * The browser targets of a member or the merge, resolved once for each browserTargets
  * object that a file's members share.
  * @param {Map<unknown, readonly string[]>} resolutions the targets resolved so far for one file
  * @param {Record<PropertyKey, unknown>} options
@@ -113,19 +111,19 @@ const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
  * @param {readonly HostMember[]} members the stages of one run, in order
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
  *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
- * @param {ReadonlyMap<string, PassRun>} [passes] the passes that run after the walk, by entry name
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
- *   the walk after the passes runs, by entry name; a missing name is disabled
+ *   the walk after the merge runs, by entry name; a missing name is disabled
  * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} [symbols]
- *   the advanced transforms that run over the lists of the walk after the passes, in order
+ *   the advanced transforms that run over the lists of the walk after the merge, in order
+ * @param {Merge} [merge] the merge options with the browser targets, and the merge run; absent when the merge is off
  * @returns {Plugin}
  */
 export function hostPlugin(
   members,
   transforms = new Map(),
-  passes = new Map(),
   after = new Map(),
-  symbols = new Map()
+  symbols = new Map(),
+  merge = undefined
 ) {
   // Each member keeps its stage per targets array. The frozen targets of equal
   // browserslist results are one array, so the memo serves every stylesheet.
@@ -160,19 +158,23 @@ export function hostPlugin(
         const stage = memo.get(resolved);
         if (stage) stages.push(stage);
       }
-      const runs = [...passes.values()].map(({ pass, options, targets }) => ({
-        pass,
-        options,
-        browsers: targets ? targetsOf(resolutions, options, result) : noTargets,
-      }));
+      const mergeBrowsers = merge
+        ? targetsOf(resolutions, merge.options, result)
+        : undefined;
       return {
         OnceExit(root, helpers) {
           const table = new TextTable();
           if (members.length > 0 || transforms.size > 0) {
             walkStylesheet(stages, root, helpers, transforms, table);
           }
-          for (const { pass, options, browsers } of runs) {
-            pass(root, browsers, options, helpers.result, table);
+          if (merge && mergeBrowsers) {
+            merge.runner.run(
+              root,
+              mergeBrowsers,
+              merge.options,
+              helpers.result,
+              table
+            );
           }
           if (after.size > 0 || symbols.size > 0) {
             walkAfterMerge(root, helpers.result, after, symbols, table);

@@ -250,10 +250,19 @@ function checkBlockRecord(records, nodes, tokenLists, block) {
  * @param {NodeTable} nodes
  * @param {TokenLists} tokenLists the run's token lists, which the ids name
  * @param {readonly string[]} browsers the target browsers, which the summaries fold
+ * @param {boolean} [folded] whether the run folded the summaries of the rules; the check reads them only then
  * @return {void}
  */
-export function assertRecordsMatchTree(records, nodes, tokenLists, browsers) {
+export function assertRecordsMatchTree(
+  records,
+  nodes,
+  tokenLists,
+  browsers,
+  folded = true
+) {
   if (!records.consistencyChecks) return;
   checkBlockRecord(records, nodes, tokenLists, records.root);
-  if (!summariesHold(records, tokenLists, browsers)) throw new Error(SUMMARIES);
+  if (folded && !summariesHold(records, tokenLists, browsers)) {
+    throw new Error(SUMMARIES);
+  }
 }

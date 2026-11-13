@@ -201,7 +201,8 @@
               "packages/cssnano/src/passes/ir/writeSelector.js",
               "packages/cssnano/src/passes/ir/treeMatch.js",
               "packages/cssnano/src/passes/ir/buildRecords.js",
-              "packages/cssnano/src/passes/ir/runContext.js"
+              "packages/cssnano/src/passes/ir/runContext.js",
+              "packages/cssnano/src/passes/ir/runDriver.js"
             ]
           }
         ],

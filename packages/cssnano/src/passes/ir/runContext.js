@@ -16,7 +16,15 @@ import { longstandingFeatures } from '../merge/lib/longhand/syntaxFeatures.js';
  *   valueIds: ValueIds,
  *   consistencyChecks: boolean,
  *   features: ReadonlySet<string>,
+ *   messages: RunMessage[],
  * }} RunContext
+ */
+
+/**
+ * A message a transform made about one entry, appended in run order. The end
+ * of the run turns it into a `result.messages` item, with the node of the entry.
+ *
+ * @typedef {{index: number, type: string, plugin: string}} RunMessage
  */
 
 /**
@@ -40,5 +48,6 @@ export function createRunContext(
     valueIds: new ValueIds(),
     consistencyChecks,
     features,
+    messages: [],
   };
 }
