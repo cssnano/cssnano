@@ -1,5 +1,14 @@
 import { BlockRecords } from './blockRecords.js';
 import { DeclarationRecord } from './declarationRecord.js';
+/**
+ * The name a record holds: the ASCII-folded name, except that `@CHARSET` keeps
+ * its spelling. Browsers read an encoding only from the exact lowercase bytes,
+ * so any other case is an ordinary unknown at-rule.
+ *
+ * @param {string} written
+ * @return {string}
+ */
+export declare function recordNameOf(written: string): string;
 import type { ChildNode, Declaration, Root } from 'postcss';
 import type { NodeTable } from './nodeTable.js';
 import type { RunContext } from './runContext.js';

@@ -21,4 +21,14 @@ export declare function trimCustomPropertySeparator(between: string): string;
  * @return {string}
  */
 export declare function normalizeAfterName(afterName: string): string;
+/**
+ * Whether the text ends in a backslash that escapes the next character, so a
+ * whitespace character that follows is part of the identifier. PostCSS moves
+ * such whitespace into the raws, where trimming it would escape the delimiter
+ * that comes next.
+ *
+ * @param {string} text
+ * @return {boolean}
+ */
+export declare function endsWithOpenEscape(text: string): boolean;
 //# sourceMappingURL=rawSeparators.d.ts.map
