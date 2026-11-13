@@ -83,7 +83,8 @@ describe('normalizeWhitespace visits one entry by index', () => {
     const root = postcss.parse(css);
     const context = createRunContext(undefined, true);
     const state = runDriver.build(root, context);
-    const { records, tokenLists } = state;
+    const { records } = state;
+    const { tokenLists } = context;
     /** @param {number} container @param {boolean} isRoot */
     const visit = (container, isRoot) => {
       let first = true;

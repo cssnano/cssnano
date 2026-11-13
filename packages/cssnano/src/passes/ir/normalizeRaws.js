@@ -14,16 +14,54 @@ import {
   writeStatementRaws,
 } from './rawEdits.js';
 import {
+  endsWithOpenEscape,
   normalizeAfterName,
   trimCustomPropertySeparator,
   trimSeparator,
   whitespaceRegex,
 } from '../../values/rawSeparators.js';
-import { isBlankTokens } from '../../values/tokensText.js';
+import { isBlankTokens, tokensText } from '../../values/tokensText.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, BlockRecord, NodeEntry} from './blockRecord.js' */
-/** @import {TokenLists} from './tokenLists.js' */
+/** @import {TokenListId, TokenLists} from './tokenLists.js' */
+
+/**
+ * The trimmed spelling of the important flag. A value that ends in an open
+ * escape keeps one space before it, or the escape would take the `!`.
+ *
+ * @param {TokenLists} tokenLists
+ * @param {import('./declarationRecord.js').DeclarationRecord} record
+ * @return {string | undefined} undefined when the declaration is not important
+ */
+function importantSpelling(tokenLists, record) {
+  if (!record.important) return undefined;
+  return endsWithOpenEscape(tokensText(tokenLists.get(record.valueList)))
+    ? ' !important'
+    : '!important';
+}
+
+/**
+ * The text a rule's or at-rule's raw separator follows: the last selector, or
+ * the prelude.
+ *
+
+ * @param {TokenLists} tokenLists
+ * @param {BlockRecord | NodeEntry | import('./ruleRecord.js').RuleRecord} record
+ * @return {string}
+ */
+function headText(tokenLists, record) {
+  if (record.kind === RULE) {
+    const { selectorIds } =
+      /** @type {import('./ruleRecord.js').RuleRecord} */ (record);
+    const last = selectorIds[selectorIds.length - 1];
+    return last === undefined ? '' : tokensText(tokenLists.get(last));
+  }
+  const { preludeId } = /** @type {BlockRecord | NodeEntry} */ (record);
+  return preludeId === -1
+    ? ''
+    : tokensText(tokenLists.get(/** @type {TokenListId} */ (preludeId)));
+}
 
 /**
  * Trims the whitespace of one declaration's spellings. A custom property keeps
@@ -44,7 +82,7 @@ function normalizeDeclaration(records, tokenLists, index) {
     writeDeclarationRaws(
       record,
       trimSeparator(between),
-      record.important ? '!important' : undefined
+      importantSpelling(tokenLists, record)
     );
   } else if (!isBlankTokens(tokenLists.get(record.valueList))) {
     writeDeclarationRaws(
@@ -59,10 +97,11 @@ function normalizeDeclaration(records, tokenLists, index) {
  * Trims the separators of one entry that is a rule, a block or a statement.
  *
  * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
  * @param {ArenaIndex} index
  * @return {void}
  */
-function normalizeAtRuleOrRule(records, index) {
+function normalizeAtRuleOrRule(records, tokenLists, index) {
   const record = records.entry(index);
   // Only an at-rule has an afterName; a rule's is undefined, as the node form leaves it.
   const named = /** @type {BlockRecord | NodeEntry} */ (record);
@@ -70,14 +109,25 @@ function normalizeAtRuleOrRule(records, index) {
     record.kind !== RULE && named.afterName !== null
       ? normalizeAfterName(named.afterName)
       : undefined;
+  // A prelude that ends in an open escape keeps one space before the delimiter.
+  const between = endsWithOpenEscape(
+    headText(
+      tokenLists,
+      /** @type {BlockRecord | NodeEntry | import('./ruleRecord.js').RuleRecord} */ (
+        record
+      )
+    )
+  )
+    ? ' '
+    : '';
   if (record.kind === AT_RULE_STATEMENT) {
-    writeStatementRaws(record, '', afterName);
+    writeStatementRaws(record, between, afterName);
   } else {
     writeBlockRaws(
       /** @type {import('./ruleRecord.js').RuleRecord | import('./blockRecord.js').BlockRecord} */ (
         record
       ),
-      '',
+      between,
       '',
       false,
       afterName
@@ -112,7 +162,7 @@ export function normalizeEntry(records, tokenLists, index, first) {
   if (record.kind === DECLARATION) {
     normalizeDeclaration(records, tokenLists, index);
   } else {
-    normalizeAtRuleOrRule(records, index);
+    normalizeAtRuleOrRule(records, tokenLists, index);
   }
 }
 
