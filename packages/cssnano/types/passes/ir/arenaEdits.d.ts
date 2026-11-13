@@ -7,6 +7,7 @@ import type { NodeEntry } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockDeclarations } from '../merge/lib/longhand/blockDeclarations.js';
 import type { RunContext } from './runContext.js';
+import type { TokenListId } from './tokenLists.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -91,6 +92,15 @@ export declare function removeDeclarations(records: BlockRecords, rule: ArenaInd
  * @return {void}
  */
 export declare function moveDeclarations(records: BlockRecords, source: ArenaIndex, target: ArenaIndex, claimed: ArenaIndex[]): void;
+/**
+ * Gives a rule the ids of its selector items and marks it, so write-back
+ * writes its selector from them.
+ *
+ * @param {RuleRecord} record
+ * @param {readonly TokenListId[]} ids
+ * @return {void}
+ */
+export declare function writeSelectorIds(record: RuleRecord, ids: readonly TokenListId[]): void;
 /**
  * Writes the prelude of an at-rule: its list is interned in the run, and the
  * record marks the prelude so write-back assigns its text. The walk of the

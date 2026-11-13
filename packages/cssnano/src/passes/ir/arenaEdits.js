@@ -193,6 +193,23 @@ function rewriteRecord(context, record, item) {
 }
 
 /**
+ * Gives a rule the ids of its selector items and marks it, so write-back
+ * writes its selector from them.
+ *
+ * @param {RuleRecord} record
+ * @param {readonly TokenListId[]} ids
+ * @return {void}
+ */
+export function writeSelectorIds(record, ids) {
+  const writable =
+    /** @type {{selectorIds: readonly TokenListId[], marked: boolean}} */ (
+      /** @type {unknown} */ (record)
+    );
+  writable.selectorIds = ids;
+  writable.marked = true;
+}
+
+/**
  * Writes the prelude of an at-rule: its list is interned in the run, and the
  * record marks the prelude so write-back assigns its text. The walk of the
  * write reaches every entry, so the edit stamps nothing.

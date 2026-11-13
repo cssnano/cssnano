@@ -1,5 +1,6 @@
 import { tokens as tokenize } from '../../utils/value.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenLists, TokenListId} from './tokenLists.js' */
 
 /**
@@ -15,12 +16,13 @@ export class SelectorIds {
   /**
    * @param {TokenLists} tokenLists the run's lists, which take the tokens of a selector new to the build
    * @param {string} selector
+   * @param {readonly CSSToken[]} [tokens] the tokens of `selector`, when the caller holds them
    * @return {TokenListId} the id of the selector, given at its first use
    */
-  idOf(tokenLists, selector) {
+  idOf(tokenLists, selector, tokens) {
     let id = this.#ids.get(selector);
     if (id === undefined) {
-      id = tokenLists.push(tokenize(selector));
+      id = tokenLists.push(tokens ?? tokenize(selector));
       this.#ids.set(selector, id);
     }
     return id;
