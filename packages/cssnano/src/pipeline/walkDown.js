@@ -19,7 +19,6 @@ import { visitAtRule } from './atRuleWalk.js';
 import { visitDeclaration } from './declarationWalk.js';
 import { isOutermostOverridable } from './overridable.js';
 import { visitRule } from './ruleWalk.js';
-import { reattachBlockEscape } from './whitespaceRaws.js';
 
 /** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
@@ -108,9 +107,6 @@ class RecordWalk {
    */
   #walkContainer(index, context, parentContext) {
     const { kind } = this.#records.entry(index);
-    if (this.#plans?.normalizeWhitespace) {
-      reattachBlockEscape(this.#records, this.#context, index);
-    }
     const bits = recordContextOf(
       this.#records,
       this.#context.tokenLists,

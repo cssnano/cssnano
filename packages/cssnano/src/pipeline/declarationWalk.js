@@ -4,7 +4,7 @@ import { sourceListOf } from '../passes/ir/writtenList.js';
 import { writeValueList } from '../passes/ir/valueEdits.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
 import { replaceComments } from './comments/replaceComments.js';
-import { stripStrayRawSemicolon } from './whitespaceRaws.js';
+import { stripStrayRawSemicolon, withBlockEscape } from './whitespaceRaws.js';
 import { foldList, planEntry } from './plan.js';
 
 /** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
@@ -146,9 +146,10 @@ function commentFreeIdOf(run, source, prop, comments) {
 
 /**
  * Runs the declaration part of the walk over one declaration record, in
- * document order: its stray semicolon, its comments, then its value's fold.
- * A value is written only when its id changes, so a declaration no stage or
- * comment removal changed stays unmarked.
+ * document order: its stray semicolon, its comments, the character an escape
+ * at the end of its block takes, then its value's fold. A value is written
+ * only when its id changes, so a declaration no stage or comment removal
+ * changed stays unmarked.
  *
  * @param {DeclarationPlans} plans
  * @param {BlockRecords} records
@@ -167,7 +168,6 @@ export function visitDeclaration(plans, records, run, context, index) {
     plans.properties.set(prop, entry);
   }
   const { comments } = plans;
-  if (comments === null && entry.plan === null) return;
   const source = /** @type {TokenListId} */ (
     sourceListOf(declarationAt(records, index))
   );
@@ -177,6 +177,7 @@ export function visitDeclaration(plans, records, run, context, index) {
     id = commentFreeIdOf(run, source, prop, comments);
     removeImportantComments(records, index, comments);
   }
+  if (plans.normalizeWhitespace) id = withBlockEscape(records, run, index, id);
   const result =
     entry.plan === null ? id : foldList(entry, id, context, run, index);
   if (result !== source) writeValueList(records, run, index, result);

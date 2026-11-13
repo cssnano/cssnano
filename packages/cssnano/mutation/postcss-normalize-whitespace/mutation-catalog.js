@@ -55,7 +55,7 @@ export const mutations = [
     name: 'drop trailing escape repair',
     target: new URL('../../src/pipeline/whitespaceRaws.js', import.meta.url)
       .href,
-    find: 'value + after[0]',
-    replace: 'value',
+    find: 'text + after[0]',
+    replace: 'text',
   },
 ];

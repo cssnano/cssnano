@@ -59,9 +59,10 @@ export type DeclarationPlans = {
 export declare function declarationPlansOf(stages: readonly Stage[], normalizeWhitespace: boolean, comments: CommentState | null): DeclarationPlans;
 /**
  * Runs the declaration part of the walk over one declaration record, in
- * document order: its stray semicolon, its comments, then its value's fold.
- * A value is written only when its id changes, so a declaration no stage or
- * comment removal changed stays unmarked.
+ * document order: its stray semicolon, its comments, the character an escape
+ * at the end of its block takes, then its value's fold. A value is written
+ * only when its id changes, so a declaration no stage or comment removal
+ * changed stays unmarked.
  *
  * @param {DeclarationPlans} plans
  * @param {BlockRecords} records

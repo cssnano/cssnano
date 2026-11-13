@@ -85,3 +85,12 @@ svg|a { color: blue; }
 @font-face { font-family: g; unicode-range: U+0000-00FF; }
 /* 16. custom properties with comments and blank values */
 .cp { --a: ; --b: /* plain */ ; --c:/*! kept */1px; --d: red /* plain */ ; }
+/* 17. an escape that ends a last declaration, beside comments, a semicolon and an important flag */
+.e1 { color: red/*! kept */\ }
+.e2 { margin: 10px/* plain */20px\ }
+.e3 { width: calc(1px/* plain */+/* plain */2px)\	}
+.e4 { color: red/*! kept */\
+}
+.e5 { content: a\ ;	}
+.e6 { content: a\ !important	}
+.e7 { content: a\ ;;	}
