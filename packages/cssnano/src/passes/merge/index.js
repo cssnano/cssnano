@@ -90,17 +90,13 @@ export { targetSupportOf };
  * after merge. `support` gives the targets' support, whose features the host
  * gives the run's context. `round` makes the longhand round of the run, or
  * undefined when the runner has none. `merge` runs the dedupe and the rule
- * merge over the records, without the summaries. `secondRound` runs the
- * round over the blocks still in the stylesheet after the merge. `transforms`
- * runs the merge transforms over the build. The host builds and ends the run,
- * so it imports nothing of the merge.
+ * merge over the records, without the summaries. The host builds and ends the
+ * run, so it imports nothing of the merge.
  *
  * @typedef {{
  *   support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>,
  *   round: (support: ReturnType<typeof targetSupportOf>, context: RunContext) => LonghandRound | undefined,
  *   merge: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean}) => void,
- *   secondRound: (records: BlockRecords, round: LonghandRound) => void,
- *   transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean, support: ReturnType<typeof targetSupportOf>}) => void,
  * }} MergeRunner
  */
 
@@ -141,14 +137,13 @@ export const mergeRunner = Object.freeze({
   support: targetSupportOf,
   round: roundOf,
   merge: mergeOf,
-  secondRound: canonicalizeRecords,
-  transforms: mergeRecords,
 });
 
 /**
- * A merge run of the named transforms alone, in order, for a test that pins
- * one transform without the preset's order. Longhand canonicalizing takes the
- * support of its run.
+ * A merge run of the named transforms alone, for a test that pins some of
+ * the merge transforms without the preset's order. The names choose which of
+ * the three transforms run; the merge runs them in the preset's order.
+ * Longhand canonicalizing takes the support of its run.
  *
  * @param {...('mergeLonghand' | 'discardDuplicates' | 'mergeRules')} names
  * @return {MergeRunner}
@@ -159,32 +154,9 @@ export function transformRunner(...names) {
     round: (support, context) =>
       names.includes('mergeLonghand') ? roundOf(support, context) : undefined,
     merge: (records, browsers, context) => {
-      for (const name of names) {
-        for (const transform of transformsOf(name)) {
-          transform(records, browsers, context);
-        }
+      for (const [name, transform] of NAMED_MERGE_STEPS) {
+        if (names.includes(name)) transform(records, browsers, context);
       }
-    },
-    secondRound: canonicalizeRecords,
-    transforms: (records, browsers, context, { support }) => {
-      /** @type {RecordTransform[]} */
-      const transforms = [];
-      for (const name of names) {
-        if (name === 'mergeLonghand') {
-          const longhand = longhandContext(
-            support.placeShorthands,
-            support.boxSupport,
-            support.pairShorthands,
-            context
-          );
-          transforms.push((block) => canonicalizeRecords(block, longhand));
-        } else {
-          transforms.push(
-            ...(name === 'mergeRules' ? MERGE_ONLY : DEDUPE_ONLY)
-          );
-        }
-      }
-      runTransforms(records, browsers, context, transforms);
     },
   });
 }
@@ -193,17 +165,11 @@ export function transformRunner(...names) {
 const DEDUPE_THEN_MERGE = Object.freeze([discardDuplicates, runMerge]);
 const DEDUPE_ONLY = Object.freeze([discardDuplicates]);
 const MERGE_ONLY = Object.freeze([runMerge]);
-
-/**
- * The merge transforms that a name of `transformRunner` runs.
- *
- * @param {string} name
- * @return {readonly RecordTransform[]}
- */
-function transformsOf(name) {
-  if (name === 'mergeRules') return MERGE_ONLY;
-  return name === 'discardDuplicates' ? DEDUPE_ONLY : [];
-}
+/** The merge steps that a name of `transformRunner` runs, in the preset's order. @type {readonly (readonly ['discardDuplicates' | 'mergeRules', RecordTransform])[]} */
+const NAMED_MERGE_STEPS = Object.freeze([
+  ['discardDuplicates', discardDuplicates],
+  ['mergeRules', runMerge],
+]);
 
 /**
  * The merge transforms over one stylesheet, as one run of the driver: build,

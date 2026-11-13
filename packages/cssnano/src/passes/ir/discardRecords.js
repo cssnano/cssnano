@@ -171,6 +171,19 @@ class DiscardWalk {
   }
 
   /**
+   * Enters a rule or an at-rule block, then visits its children.
+   *
+   * @param {ArenaIndex} index
+   * @param {boolean} isLayer
+   * @param {string} layerKey
+   * @return {void}
+   */
+  walkBlock(index, isLayer, layerKey) {
+    if (this.visitor) this.visitor.enter(index);
+    this.walkChildren(index, isLayer, layerKey);
+  }
+
+  /**
    * @param {ArenaIndex} index
    * @param {string} parentKey key of the enclosing layer, '' outside layers
    * @return {void}
@@ -204,7 +217,7 @@ class DiscardWalk {
       for (const listed of names) this.declare(parentKey, listed);
     }
 
-    if (hasChildren) this.walkChildren(index, isLayer, layerKey);
+    if (hasChildren) this.walkBlock(index, isLayer, layerKey);
 
     const childCount = hasChildren ? records.links.childCount(index) : 0;
     const isRedundantLayer =

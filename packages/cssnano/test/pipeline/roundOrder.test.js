@@ -12,6 +12,7 @@ import { AT_RULE_BLOCK, RULE } from '../../src/passes/ir/blockRecord.js';
 import { createRunContext } from '../../src/passes/ir/runContext.js';
 import { runDriver } from '../../src/passes/ir/runDriver.js';
 import { walkDown } from '../../src/pipeline/walkDown.js';
+import { walkUp } from '../../src/pipeline/walkUp.js';
 
 const BROWSERS = ['chrome 120', 'firefox 120', 'safari 17'];
 
@@ -220,4 +221,22 @@ test('a rule has its selector summaries folded when the walk down runs with brow
   walkDown(records, context, undefined, undefined, BROWSERS);
   const rule = records.entry(records.links.firstChild(records.root.index));
   assert.notEqual(rule.elementKeys, null);
+});
+
+test('the walk up gives each block still in the stylesheet one second round, and the root one', () => {
+  const context = createRunContext();
+  const state = runDriver.build(
+    postcss.parse(
+      '@media x{a{color:red}}b{color:red}@keyframes k{from{color:red}}'
+    ),
+    context
+  );
+  const containers = containersOf(state.records);
+  const round = spyRound();
+  walkUp(state, new Map(), new Map(), undefined, round);
+  assert.equal(round.roots, 1);
+  assert.deepEqual(
+    round.reached.toSorted((a, b) => a - b),
+    containers
+  );
 });

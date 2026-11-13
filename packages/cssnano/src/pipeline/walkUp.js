@@ -1,4 +1,5 @@
 import { createRecordSymbolLists, recordSymbolVisit } from './symbolLists.js';
+import { AT_RULE_BLOCK, RULE } from '../passes/ir/blockRecord.js';
 import { visitEntriesInOrder } from '../passes/ir/visitEntries.js';
 import { uniqueRuleSelectors } from '../passes/ir/uniqueSelectors.js';
 import { fillRule } from '../passes/ir/selectorList.js';
@@ -22,6 +23,7 @@ import { writeRootAfter } from '../passes/ir/rawEdits.js';
 /** @import {SymbolEntry} from './host.js' */
 /** @import {CharsetScan} from '../passes/ir/charset.js' */
 /** @import {RunContext} from '../passes/ir/runContext.js' */
+/** @import {LonghandRound} from '../passes/merge/lib/longhand/canonicalize.js' */
 /** @import {RecordSymbolLists} from './symbolLists.js' */
 
 /**
@@ -63,14 +65,18 @@ class WalkUp {
   #scan;
   /** @type {boolean} */
   #charset;
+  /** @type {LonghandRound | undefined} */
+  #round;
 
   /**
    * @param {RunState} state the build of the stylesheet, after the merge transforms
    * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the options of each transform on
    * @param {ReadonlyMap<string, SymbolEntry>} symbols the advanced transforms on
    * @param {readonly string[] | undefined} browsers the targets the merge folded the summaries for
+   * @param {LonghandRound | undefined} round the second longhand round, which the walk gives each block it enters
    */
-  constructor(state, transforms, symbols, browsers) {
+  constructor(state, transforms, symbols, browsers, round) {
+    this.#round = round;
     this.#records = state.records;
     this.#context = state.context;
     this.#normalize = transforms.has('normalizeWhitespace');
@@ -91,7 +97,8 @@ class WalkUp {
       this.#normalize ||
       this.#unique ||
       this.#lists !== undefined ||
-      this.#charset
+      this.#charset ||
+      this.#round !== undefined
     );
   }
 
@@ -114,12 +121,19 @@ class WalkUp {
   }
 
   /**
-   * Runs before an entry's visit. Nothing needs to run before a visit yet.
+   * Runs the second round on a block the walk enters, before the block's
+   * children and before its visit.
    *
-   * @param {ArenaIndex} _index
+   * @param {ArenaIndex} index
    * @return {void}
    */
-  enter(_index) {}
+  enter(index) {
+    const records = this.#records;
+    const { kind } = records.entry(index);
+    if (this.#round && (kind === RULE || kind === AT_RULE_BLOCK)) {
+      this.#round.block(records, index);
+    }
+  }
 
   /**
    * @param {ArenaIndex} index
@@ -162,13 +176,15 @@ class WalkUp {
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the options of each transform on, by entry name
  * @param {ReadonlyMap<string, SymbolEntry>} symbols the advanced transforms on, in order
  * @param {readonly string[]} [browsers] the targets the merge folded the summaries for; absent when it did not
+ * @param {LonghandRound} [round] the second longhand round of the run, which runs on each block the walk reaches
  * @return {void}
  */
-export function walkUp(state, transforms, symbols, browsers) {
+export function walkUp(state, transforms, symbols, browsers, round) {
   const { records, context } = state;
+  round?.root(records);
   // The stylesheet's trailing whitespace is removed with the rest of the raws.
   if (transforms.has('normalizeWhitespace')) writeRootAfter(records, '');
-  const walk = new WalkUp(state, transforms, symbols, browsers);
+  const walk = new WalkUp(state, transforms, symbols, browsers, round);
   if (transforms.has('discardEmpty')) {
     discardEmptyRecords(records, context, walk);
   } else if (walk.active) {

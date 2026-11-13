@@ -12,7 +12,11 @@ import {
 } from './decl/borderData.js';
 import { alignmentFamilyOf } from './decl/alignmentForms.js';
 import { pairFamilyOf } from './decl/pairForms.js';
-import { reduceClassifiedContainer } from './classifiedReducers.js';
+import {
+  addFamilyDeclaration,
+  createContainerState,
+  reduceClassifiedContainer,
+} from './classifiedReducers.js';
 /** @import {BoxSupport} from './targetSupport.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
@@ -41,37 +45,6 @@ const { asciiLowerCase } = cssnanoUtils;
  *
  * @typedef {{container: ArenaIndex, list: BlockDeclarations}} Block
  */
-
-/** @import {PairFamily} from './decl/pairForms.js'; */
-/** @import {AlignmentFamilyConfig} from './decl/alignmentForms.js'; */
-
-/**
- * @typedef {{
- *   family: PairFamily | AlignmentFamilyConfig,
- *   decls: number[],
- *   lanes: [number[], number[]]
- * }} FamilyDeclarations
- */
-
-/**
- * Adds a declaration to its shorthand family, creating the family on first use.
- *
- * @param {Parameters<typeof reduceClassifiedContainer>[1]} state
- * @param {FamilyDeclarations['family']} family
- * @param {number} child
- * @param {number} laneIndex
- * @return {void}
- */
-function addFamilyDeclaration(state, family, child, laneIndex) {
-  state.families ??= new Map();
-  let entry = state.families.get(family);
-  if (!entry) {
-    entry = { family, decls: [], lanes: [[], []] };
-    state.families.set(family, entry);
-  }
-  entry.decls.push(child);
-  entry.lanes[laneIndex].push(child);
-}
 
 /**
  * Classifies a single declaration into the container accumulation state.
@@ -115,6 +88,7 @@ function classifyDeclaration(
   if (prop.startsWith('column')) {
     // A block is recorded once, so the check is skipped after its first hit.
     if (
+      !context.secondRound &&
       context.otherColumnBlocks.at(-1) !== container &&
       setsOtherColumnProperty(list.at(child))
     ) {
@@ -141,22 +115,6 @@ function classifyDeclaration(
   if (alignmentFamily) {
     addFamilyDeclaration(state, alignmentFamily, child, laneIndex);
   }
-}
-
-/**
- * @return {Parameters<typeof reduceClassifiedContainer>[1]}
- */
-function createContainerState() {
-  return {
-    boxes: null,
-    borderRadiusDecls: [],
-    borderRadiusLanes: [[], []],
-    columnDecls: [],
-    columnLanes: [[], []],
-    borderDeclarations: [],
-    hasForeignBorder: false,
-    families: null,
-  };
 }
 
 /**
@@ -229,8 +187,8 @@ function processContainer(records, block, styleRule, context) {
 
   runs.push(state);
   for (const run of runs) reduceClassifiedContainer(block, run, context);
-  // A column rule waits for `finishColumns`, which commits its block once.
-  if (!runs.some((run) => run.columnDecls.length > 0)) {
+  // A first-round column rule waits for `finishColumns`, which commits its block once.
+  if (context.secondRound || !runs.some((run) => run.columnDecls.length > 0)) {
     commitBlock(records, block, context);
   }
 }
@@ -253,6 +211,14 @@ export class LonghandRound {
 
   /** Whether the last `finishColumns` found such a block. */
   setsOtherColumn = false;
+
+  /**
+   * Whether this is the second round of its run. It gathers no column rule
+   * and no fact; it reduces a block's columns as it reaches them, using the
+   * first round's `setsOtherColumn`.
+   * @type {boolean}
+   */
+  secondRound = false;
 
   /**
    * @param {boolean} placeShorthands
@@ -299,6 +265,24 @@ export class LonghandRound {
       record.kind === RULE,
       this
     );
+  }
+
+  /**
+   * The second round of this run. It shares these tables, and the first
+   * round's column fact, which `finishColumns` has set. Call it after
+   * `finishColumns`.
+   * @return {LonghandRound}
+   */
+  second() {
+    const round = new LonghandRound(
+      this.placeShorthands,
+      this.boxSupport,
+      this.pairShorthands,
+      this.run
+    );
+    round.secondRound = true;
+    round.setsOtherColumn = this.setsOtherColumn;
+    return round;
   }
 
   /**

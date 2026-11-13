@@ -31,18 +31,14 @@ export type MergeRunner = {
     merge: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {
         rules?: boolean;
     }) => void;
-    secondRound: (records: BlockRecords, round: LonghandRound) => void;
-    transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {
-        rules?: boolean;
-        support: ReturnType<typeof targetSupportOf>;
-    }) => void;
 };
 /** @type {MergeRunner} */
 export declare const mergeRunner: MergeRunner;
 /**
- * A merge run of the named transforms alone, in order, for a test that pins
- * one transform without the preset's order. Longhand canonicalizing takes the
- * support of its run.
+ * A merge run of the named transforms alone, for a test that pins some of
+ * the merge transforms without the preset's order. The names choose which of
+ * the three transforms run; the merge runs them in the preset's order.
+ * Longhand canonicalizing takes the support of its run.
  *
  * @param {...('mergeLonghand' | 'discardDuplicates' | 'mergeRules')} names
  * @return {MergeRunner}

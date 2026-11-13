@@ -164,9 +164,8 @@ function runRecords(
     merge.runner.merge(state.records, browsers, context, {
       rules: /** @type {boolean | undefined} */ (merge.options.rules),
     });
-    if (round) merge.runner.secondRound(state.records, round);
   }
-  walkUp(state, after, symbols, merge && browsers);
+  walkUp(state, after, symbols, merge && browsers, round?.second());
   runDriver.end(state, {
     browsers,
     folded: merge !== undefined,

@@ -7,13 +7,6 @@ export type Block = {
     container: ArenaIndex;
     list: BlockDeclarations;
 };
-import type { PairFamily } from './decl/pairForms.js';
-import type { AlignmentFamilyConfig } from './decl/alignmentForms.js';
-export type FamilyDeclarations = {
-    family: PairFamily | AlignmentFamilyConfig;
-    decls: number[];
-    lanes: [number[], number[]];
-};
 /**
  * The longhand round of one run: the column rules and column blocks the
  * rounds gather, and the targets' tables. `finishColumns` clears the gathered
@@ -40,6 +33,13 @@ export declare class LonghandRound {
     /** Whether the last `finishColumns` found such a block. */
     setsOtherColumn: boolean;
     /**
+     * Whether this is the second round of its run. It gathers no column rule
+     * and no fact; it reduces a block's columns as it reaches them, using the
+     * first round's `setsOtherColumn`.
+     * @type {boolean}
+     */
+    secondRound: boolean;
+    /**
      * @param {boolean} placeShorthands
      * @param {BoxSupport} boxSupport
      * @param {ReadonlySet<string>} pairShorthands
@@ -59,6 +59,13 @@ export declare class LonghandRound {
      * @return {void}
      */
     block(records: BlockRecords, index: ArenaIndex): void;
+    /**
+     * The second round of this run. It shares these tables, and the first
+     * round's column fact, which `finishColumns` has set. Call it after
+     * `finishColumns`.
+     * @return {LonghandRound}
+     */
+    second(): LonghandRound;
     /**
      * Reduces the column rules once every block is canonicalized, since a column
      * property set elsewhere is a whole-stylesheet fact; commits each column block once.
