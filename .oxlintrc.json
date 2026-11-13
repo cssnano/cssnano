@@ -188,7 +188,9 @@
     {
       "files": [
         "packages/cssnano/src/pipeline/afterMerge.js",
+        "packages/cssnano/src/pipeline/overridable.js",
         "packages/cssnano/src/pipeline/symbolLists.js",
+        "packages/cssnano/src/pipeline/walkDown.js",
         "packages/cssnano/src/plugins/postcss-merge-idents/lib/**",
         "packages/cssnano/src/plugins/postcss-reduce-idents/lib/**",
         "packages/cssnano/src/plugins/postcss-zindex/lib/**"

@@ -35,7 +35,8 @@ function build(css, context) {
 
 /**
  * Ends a run: releases the window guard, writes the records back, checks them
- * against the tree, and pushes the messages in the order they were appended.
+ * against the tree, and gives the result its messages in the order they were
+ * appended: warnings through `warn`, the rest pushed to `messages`.
  *
  * @param {RunState} state
  * @param {{browsers: readonly string[], folded: boolean, result?: Result}} end
@@ -61,9 +62,9 @@ function end(state, { browsers, folded, result }) {
   assertRecordsMatchTree(records, nodes, context.tokenLists, browsers, folded);
   // A removed container's node still holds the children it held, which the
   // records dropped; its children follow the records.
-  for (const { index } of context.messages) {
+  for (const { index, type } of context.messages) {
     const { kind } = records.entry(index);
-    if (kind === RULE || kind === AT_RULE_BLOCK) {
+    if (type === 'removal' && (kind === RULE || kind === AT_RULE_BLOCK)) {
       replaceChildren([
         {
           container: /** @type {import('postcss').Container} */ (
@@ -75,8 +76,13 @@ function end(state, { browsers, folded, result }) {
       ]);
     }
   }
-  for (const { index, type, plugin } of context.messages) {
-    result?.messages.push({ type, plugin, node: nodeOf(nodes, index) });
+  for (const { index, type, plugin, text } of context.messages) {
+    const node = nodeOf(nodes, index);
+    if (text === undefined) {
+      result?.messages.push({ type, plugin, node });
+    } else {
+      result?.warn(text, { node, plugin });
+    }
   }
 }
 

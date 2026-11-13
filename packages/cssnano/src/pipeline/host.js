@@ -2,6 +2,8 @@ import { browserTargets, resolveTargets } from '#utils/browser-targets';
 import { walkStylesheet } from './traversal.js';
 import { TextTable } from '../values/textTable.js';
 import { walkAfterMerge } from './afterMerge.js';
+import { discardOverriddenAtRules } from './overridable.js';
+import { walkDown } from './walkDown.js';
 import rawCache from '../utils/rawCache.js';
 import { createRunContext } from '../passes/ir/runContext.js';
 import { runDriver } from '../passes/ir/runDriver.js';
@@ -116,23 +118,40 @@ function targetsOf(resolutions, options, result) {
 const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
 
 /**
- * One stylesheet's run over the records: the build, the merge transforms when
- * the merge is on, the walk after merge over the records, then the end, which
- * writes. The raw cache records last, on the written tree, so that no later
- * transform changes what it describes.
+ * One stylesheet's run over the records: the build, the discard of overridden
+ * at-rules, the merge transforms when the merge is on, the walk after merge over
+ * the records, then the end, which writes. The raw cache records last, on the
+ * written tree, so that no later transform changes what it describes.
  *
  * @param {import('postcss').Root} root
  * @param {import('postcss').Result} result
  * @param {TextTable} table the selector tokens the walk left
  * @param {Merge | undefined} merge the merge, absent when the merge is off
  * @param {readonly string[]} browsers the resolved browser targets of the merge; none when it is off
+ * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the whole-stylesheet transforms of the run, by entry name
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} after
  * @param {ReadonlyMap<string, SymbolEntry>} symbols
  */
-function runRecords(root, result, table, merge, browsers, after, symbols) {
+function runRecords(
+  root,
+  result,
+  table,
+  merge,
+  browsers,
+  transforms,
+  after,
+  symbols
+) {
   const support = merge ? merge.runner.support(browsers) : undefined;
   const context = createRunContext(table, undefined, support?.features);
   const state = runDriver.build(root, context);
+  if (transforms.has('discardOverridden')) {
+    discardOverriddenAtRules(
+      state.records,
+      context.declarations,
+      walkDown(state.records)
+    );
+  }
   if (merge && support) {
     merge.runner.transforms(state.records, browsers, context, {
       rules: /** @type {boolean | undefined} */ (merge.options.rules),
@@ -166,6 +185,7 @@ export function hostPlugin(
   symbols = new Map(),
   merge = undefined
 ) {
+  const hasStages = members.length > 0 || transforms.size > 0;
   // Each member keeps its stage per targets array. The frozen targets of equal
   // browserslist results are one array, so the memo serves every stylesheet.
   // A member that reads no targets is created now, under noTargets.
@@ -205,16 +225,19 @@ export function hostPlugin(
       return {
         OnceExit(root, helpers) {
           const table = new TextTable();
-          if (members.length > 0 || transforms.size > 0) {
+          if (hasStages) {
             walkStylesheet(stages, root, helpers, transforms, table);
           }
-          if (merge || after.size > 0 || symbols.size > 0) {
+          // Accepted cost C10: a run with stages builds the records, even when
+          // no merge, walk after merge or symbol transform reads them.
+          if (hasStages || merge || after.size > 0 || symbols.size > 0) {
             runRecords(
               root,
               helpers.result,
               table,
               merge,
               mergeBrowsers ?? noTargets,
+              transforms,
               after,
               symbols
             );

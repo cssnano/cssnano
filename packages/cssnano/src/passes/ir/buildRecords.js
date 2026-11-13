@@ -210,7 +210,8 @@ export function buildRecords(root, context) {
    * @return {void}
    */
   const fillChildren = (container, node) => {
-    for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
+    // A node a plugin emptied may have no child list, which holds no children.
+    for (const child of /** @type {ChildNode[]} */ (node.nodes ?? [])) {
       if (child.type === 'rule') {
         const writtenList = context.valueIds.idOf(
           tokenLists,

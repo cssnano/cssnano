@@ -17,6 +17,7 @@ export type RunMessage = {
     index: import('./blockRecord.js').ArenaIndex;
     type: string;
     plugin: string;
+    text?: string;
 };
 /**
  * The state one run of the merge pass shares across its transforms. Nothing in
@@ -35,9 +36,11 @@ export type RunMessage = {
  */
 /**
  * A message a transform made about one entry, appended in run order. The end
- * of the run turns it into a `result.messages` item, with the node of the entry.
+ * of the run turns it into a result message with the node of the entry: a
+ * warning, which has `text`, goes through `result.warn`; a removal is pushed as
+ * it is.
  *
- * @typedef {{index: import('./blockRecord.js').ArenaIndex, type: string, plugin: string}} RunMessage
+ * @typedef {{index: import('./blockRecord.js').ArenaIndex, type: string, plugin: string, text?: string}} RunMessage
  */
 /**
  * A fresh context for one run. `textTable` holds the selector tokens the host

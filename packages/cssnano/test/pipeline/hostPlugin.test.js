@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { hostPlugin } from '../../src/pipeline/host.js';
+import { runDriver } from '../../src/passes/ir/runDriver.js';
 
 /**
  * A host plugin's stage member that builds the given stage, with no options.
@@ -35,5 +36,24 @@ describe('a host plugin', () => {
       from: undefined,
     });
     assert.deepStrictEqual(seen, ['a', '.added']);
+  });
+
+  // Accepted cost C10 of step 13: a run with stages and no merge builds the
+  // records, so the build is counted here and not only when a merge runs.
+  test('a host with stages and no merge builds the records of each stylesheet once', async () => {
+    const build = runDriver.build;
+    let builds = 0;
+    runDriver.build = (...args) => {
+      builds++;
+      return build(...args);
+    };
+    try {
+      await postcss([hostOf({ selector() {} })]).process('a{}', {
+        from: undefined,
+      });
+    } finally {
+      runDriver.build = build;
+    }
+    assert.equal(builds, 1);
   });
 });

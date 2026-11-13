@@ -47,6 +47,36 @@ describe('the run driver', () => {
     );
   });
 
+  test('the end of a run gives a warning message to the result as a warning, with its text and node', () => {
+    const { context, state } = buildOf('a{color:red}');
+    const rule = state.records.links.firstChild(state.records.root.index);
+    /** @type {{text: string, options: {node: unknown, plugin: string}}[]} */
+    const warnings = [];
+    const result = /** @type {import('postcss').Result} */ (
+      /** @type {unknown} */ ({
+        messages: [],
+        warn(text, options) {
+          warnings.push({ text, options });
+        },
+      })
+    );
+    context.messages.push({
+      index: rule,
+      type: 'warning',
+      plugin: 'warning-plugin',
+      text: 'careful',
+    });
+    runDriver.end(state, { browsers: BROWSERS, folded: false, result });
+    assert.equal(warnings.length, 1);
+    assert.equal(warnings[0].text, 'careful');
+    assert.equal(warnings[0].options.plugin, 'warning-plugin');
+    assert.equal(
+      /** @type {{type: string}} */ (warnings[0].options.node).type,
+      'rule'
+    );
+    assert.deepStrictEqual(result.messages, []);
+  });
+
   test('the end of a run gives a message whose entry has no node a node made from its record', () => {
     const { context, state } = buildOf('a{color:red}', false);
     const { links, root } = state.records;

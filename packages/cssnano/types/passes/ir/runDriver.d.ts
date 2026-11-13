@@ -29,7 +29,8 @@ export type RunState = {
 declare function build(css: Root, context: RunContext): RunState;
 /**
  * Ends a run: releases the window guard, writes the records back, checks them
- * against the tree, and pushes the messages in the order they were appended.
+ * against the tree, and gives the result its messages in the order they were
+ * appended: warnings through `warn`, the rest pushed to `messages`.
  *
  * @param {RunState} state
  * @param {{browsers: readonly string[], folded: boolean, result?: Result}} end

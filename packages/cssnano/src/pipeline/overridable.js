@@ -1,105 +1,118 @@
 import cssnanoUtils from '#utils';
+import { AT_RULE_BLOCK, AT_RULE_STATEMENT } from '../passes/ir/blockRecord.js';
+import { step } from '../passes/ir/declarationKey.js';
+import { removeEntry } from '../passes/ir/treeEdits.js';
 
-/** @import {AtRule, Container, Document} from 'postcss' */
+/** @import {ArenaIndex, BlockRecord} from '../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
+/** @import {DeclarationKeys} from '../passes/ir/declarationKey.js' */
 
 const OVERRIDABLE_RULES = new Set(['keyframes', 'counter-style']);
 const SCOPE_RULES = new Set(['media', 'supports', 'container', 'layer']);
 
+// The first step of a scope's path, so no scope id is one of another kind.
+const SCOPE = Symbol('overridable scope');
+
 /**
- * @param {string} name
+ * @param {string} name a folded at-rule name
  * @return {boolean}
  */
 function isOverridable(name) {
-  return OVERRIDABLE_RULES.has(
-    cssnanoUtils.vendorUnprefixed(cssnanoUtils.asciiLowerCase(name))
-  );
+  return OVERRIDABLE_RULES.has(cssnanoUtils.vendorUnprefixed(name));
 }
 
 /**
- * @param {string} name
+ * @param {string} name a folded at-rule name
  * @return {boolean}
  */
 function isScope(name) {
-  return SCOPE_RULES.has(
-    cssnanoUtils.vendorUnprefixed(cssnanoUtils.asciiLowerCase(name))
-  );
+  return SCOPE_RULES.has(cssnanoUtils.vendorUnprefixed(name));
 }
 
 /**
- * Whether an at-rule is overridable and no at-rule around it is. The walk
- * collects only these, as the old plugin never visited an overridable at-rule
- * inside another.
+ * The at-rule of an entry, which is a block or a statement.
  *
- * @param {AtRule} atRule
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @return {BlockRecord | null} null for an entry of another kind
+ */
+function atRuleOf(records, index) {
+  const entry = records.entry(index);
+  return entry.kind === AT_RULE_BLOCK || entry.kind === AT_RULE_STATEMENT
+    ? /** @type {BlockRecord} */ (entry)
+    : null;
+}
+
+/**
+ * Whether an entry is an overridable at-rule and no at-rule around it is. The
+ * walk collects only these, since an overridable at-rule inside another is not
+ * compared with the scope of the outer one.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
  * @return {boolean}
  */
-export function isOutermostOverridable(atRule) {
-  if (!isOverridable(atRule.name)) return false;
-  let current = /** @type {Container | Document | undefined} */ (atRule.parent);
-  while (current) {
-    if (
-      current.type === 'atrule' &&
-      isOverridable(/** @type {AtRule} */ (current).name)
-    ) {
-      return false;
-    }
-    current = current.parent;
+export function isOutermostOverridable(records, index) {
+  const atRule = atRuleOf(records, index);
+  if (atRule === null || !isOverridable(atRule.name)) return false;
+  for (
+    let current = records.links.parentOf(index);
+    current !== -1;
+    current = records.links.parentOf(current)
+  ) {
+    const ancestor = atRuleOf(records, current);
+    if (ancestor !== null && isOverridable(ancestor.name)) return false;
   }
   return true;
 }
 
 /**
- * The scope of an at-rule: its name and prelude, chained with those of the
- * scope at-rules around it, as the prelude reads after the stylesheet is folded.
+ * The scope key of an overridable at-rule: its name and prelude, chained with
+ * the name and prelude of the scope at-rules around it, so equal scopes give
+ * equal keys. The names are folded and the preludes are interned, so the keys
+ * compare as integers.
  *
- * @param {AtRule} node
- * @return {string}
+ * @param {BlockRecords} records
+ * @param {DeclarationKeys} keys the run's interner
+ * @param {ArenaIndex} index an overridable at-rule
+ * @return {number}
  */
-function getScope(node) {
-  /** @type {Container | Document | undefined} */
-  let current = node.parent;
-
-  const chain = [cssnanoUtils.asciiLowerCase(node.name), node.params];
-
-  while (current) {
-    if (
-      current.type === 'atrule' &&
-      isScope(/** @type {AtRule} */ (current).name)
-    ) {
-      const atRule = /** @type {AtRule} */ (current);
-      chain.unshift(
-        atRule.params
-          ? cssnanoUtils.asciiLowerCase(atRule.name) + ' ' + atRule.params
-          : cssnanoUtils.asciiLowerCase(atRule.name)
-      );
+export function scopeKeyOf(records, keys, index) {
+  const own = /** @type {BlockRecord} */ (atRuleOf(records, index));
+  let trie = step(step(step(keys.root, SCOPE), own.name), own.preludeId);
+  for (
+    let current = records.links.parentOf(index);
+    current !== -1;
+    current = records.links.parentOf(current)
+  ) {
+    const scope = atRuleOf(records, current);
+    if (scope !== null && isScope(scope.name)) {
+      trie = step(step(trie, scope.name), scope.preludeId);
     }
-    current = current.parent;
   }
-
-  return chain.join('|');
+  return keys.leafOf(trie);
 }
 
 /**
  * Removes each overridable at-rule that a later one in its scope overrides. The
  * list is in document order, and it is read backwards, so the winning rule of
- * each scope is seen first.
+ * each scope is seen first. A removal makes no message: the node walk never
+ * reported one.
  *
- * @param {readonly AtRule[]} overridable the outermost overridable at-rules, in document order
- * @return {Set<AtRule> | null} the at-rules removed, or null when none was
+ * @param {BlockRecords} records
+ * @param {DeclarationKeys} keys the run's interner
+ * @param {readonly ArenaIndex[]} overridable the outermost overridable at-rules, in document order
+ * @return {void}
  */
-export function discardOverriddenAtRules(overridable) {
+export function discardOverriddenAtRules(records, keys, overridable) {
   const seen = new Set();
-  /** @type {Set<AtRule> | null} */
-  let removed = null;
-  for (let index = overridable.length - 1; index >= 0; index--) {
-    const node = overridable[index];
-    const scope = getScope(node);
-    if (seen.has(scope)) {
-      node.remove();
-      (removed ??= new Set()).add(node);
+  for (let position = overridable.length - 1; position >= 0; position--) {
+    const index = overridable[position];
+    const key = scopeKeyOf(records, keys, index);
+    if (seen.has(key)) {
+      removeEntry(records, index);
     } else {
-      seen.add(scope);
+      seen.add(key);
     }
   }
-  return removed;
 }

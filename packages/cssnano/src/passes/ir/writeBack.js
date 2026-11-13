@@ -53,7 +53,7 @@ export function childNodesOf(records, nodes, index) {
  */
 export function differs(records, nodes, block) {
   const children = /** @type {ChildNode[]} */ (
-    /** @type {Container} */ (nodeOf(nodes, block.index)).nodes
+    /** @type {Container} */ (nodeOf(nodes, block.index)).nodes ?? []
   );
   if (records.links.childCount(block.index) !== children.length) return true;
   let at = 0;
