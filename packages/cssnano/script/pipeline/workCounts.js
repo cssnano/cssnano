@@ -1,16 +1,16 @@
 /**
  * Counts the work of the host walk's folds, contexts and comment tokenizations
  * on the framework stylesheets under the default preset, from V8's precise
- * block coverage, so the script patches nothing in `src/`. The tokenizer's
- * calls are not counted: V8 can inline `tokens` and skip its call count, so
- * the count of a call changed between runs of one tree.
+ * block coverage, so the script patches nothing in `src/`. Run it with
+ * `--no-opt`: an optimizing compiler can inline a small function and skip its
+ * call count, so the count of one tree changed between runs without the flag.
  *
  * A call count cannot tell a memo's miss from its hit, since both call the
  * function. A miss is read as the count of the innermost block that holds the
  * statement after the memo's lookup. A marker that matches no block is an
  * error, not a zero.
  *
- * Usage (from packages/cssnano): node script/pipeline/workCounts.js --json
+ * Usage (from packages/cssnano): node --no-opt script/pipeline/workCounts.js --json
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -30,6 +30,11 @@ const frameworksDir = fileURLToPath(
  * @type {Record<string, {module: string, fn: string, miss?: string}>}
  */
 const COUNTED = {
+  // Every tokenization of a text, the cost C9 and C11 add to.
+  tokenizerCalls: {
+    module: '@csstools/css-tokenizer/dist/index.mjs',
+    fn: 'tokenize',
+  },
   // The text joined from a token list, the cost C11 adds to.
   tokensTextCalls: { module: 'values/tokensText.js', fn: 'tokensText' },
   // Every fold, whether its memo hit or missed.
@@ -90,7 +95,7 @@ function countsOf(coverage) {
   for (const [name, { module, fn, miss }] of Object.entries(COUNTED)) {
     let total = 0;
     for (const script of coverage) {
-      if (!script.url.endsWith(`/src/${module}`)) continue;
+      if (!script.url.endsWith(`/${module}`)) continue;
       const source = miss
         ? readFileSync(join(srcDir, module), 'utf8')
         : undefined;
