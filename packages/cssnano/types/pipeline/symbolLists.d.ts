@@ -1,4 +1,7 @@
 import type { AnyNode, AtRule, Declaration, Rule } from 'postcss';
+import type { ArenaIndex } from '../passes/ir/blockRecord.js';
+import type { BlockRecords } from '../passes/ir/blockRecords.js';
+import type { TokenLists } from '../passes/ir/tokenLists.js';
 export type SymbolLists = {
     /**
      * `@font-face` blocks
@@ -97,4 +100,38 @@ export declare function isAttached(node: AnyNode): boolean;
  * @returns {(node: AnyNode) => void}
  */
 export declare function symbolVisit(lists: SymbolLists): (node: AnyNode) => void;
+export type RecordSymbolLists = {
+    [K in keyof SymbolLists]: ArenaIndex[];
+};
+/**
+ * The records that the advanced transforms read, by kind: the same lists as
+ * `SymbolLists`, holding the arena indices of the records.
+ *
+ * @typedef {{[K in keyof SymbolLists]: ArenaIndex[]}} RecordSymbolLists
+ */
+/**
+ * @returns {RecordSymbolLists}
+ */
+export declare function createRecordSymbolLists(): RecordSymbolLists;
+/**
+ * Whether an entry still hangs from the stylesheet. A removed container's
+ * children still name it as their parent, so the walk must reach the root.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @returns {boolean}
+ */
+export declare function isRecordAttached(records: BlockRecords, index: ArenaIndex): boolean;
+/**
+ * Sorts one kept record into the lists it belongs to, as `symbolVisit` does for
+ * a node. A rule's selector has a namespace bar when one of its selector lists
+ * holds a `|` token.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {RecordSymbolLists} lists
+ * @param {ArenaIndex} index
+ * @returns {void}
+ */
+export declare function recordSymbolVisit(records: BlockRecords, tokenLists: TokenLists, lists: RecordSymbolLists, index: ArenaIndex): void;
 //# sourceMappingURL=symbolLists.d.ts.map
