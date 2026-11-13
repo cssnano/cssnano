@@ -10,7 +10,7 @@ const { walkDown } = await import('../../src/pipeline/walkDown.js');
 const { declarationPlansOf } =
   await import('../../src/pipeline/declarationWalk.js');
 const { commentStateOf } =
-  await import('../../src/pipeline/comments/nodeComments.js');
+  await import('../../src/pipeline/comments/commentState.js');
 const { ident } = await import('../../src/values/tokenConstructors.js');
 const { tokensText } = await import('../../src/values/tokensText.js');
 

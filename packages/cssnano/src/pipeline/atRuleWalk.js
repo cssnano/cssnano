@@ -15,7 +15,7 @@ import { replaceComments } from './comments/replaceComments.js';
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
 /** @import {RunContext} from '../passes/ir/runContext.js' */
 /** @import {TokenListId} from '../passes/ir/tokenLists.js' */
-/** @import {CommentState} from './comments/nodeComments.js' */
+/** @import {CommentState} from './comments/commentState.js' */
 /** @import {DeclarationPlans} from './declarationWalk.js' */
 
 /**

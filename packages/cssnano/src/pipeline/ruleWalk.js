@@ -13,7 +13,7 @@ import { foldList } from './plan.js';
 /** @import {RunContext} from '../passes/ir/runContext.js' */
 /** @import {RuleRecord} from '../passes/ir/ruleRecord.js' */
 /** @import {TokenListId} from '../passes/ir/tokenLists.js' */
-/** @import {CommentState} from './comments/nodeComments.js' */
+/** @import {CommentState} from './comments/commentState.js' */
 /** @import {DeclarationPlans} from './declarationWalk.js' */
 
 /**

@@ -36,19 +36,19 @@ export function planEntry(plan, mode, tightens) {
 }
 
 /**
- * Folds the value of a declaration through its plan, from the id of its
- * comment-free source list, and returns the id of the result. A value no step
- * edited is its own result. The table of the entry, per context, serves a
- * source it has folded already, and a fold that warned is not stored, so each
- * declaration reports it. A warning is a message of the run that names the
- * declaration.
+ * Folds a text of one entry (a value, a selector or a prelude) through its
+ * plan, from the id of its comment-free source list, and returns the id of the
+ * result. A text no step edited is its own result. The table of the entry, per
+ * context, serves a source it has folded already, and a fold that warned is not
+ * stored, so each entry reports it. A warning is a message of the run that
+ * names the entry.
  *
  * @param {PlanEntry} entry
- * @param {TokenListId} source the id of the comment-free value, interned in the entry's mode
+ * @param {TokenListId} source the id of the comment-free text, interned in the entry's mode
  * @param {number} context
  * @param {RunContext} run
- * @param {ArenaIndex} index the declaration's index
- * @returns {TokenListId} the id of the folded value
+ * @param {ArenaIndex} index the index of the declaration, rule or at-rule
+ * @returns {TokenListId} the id of the folded text
  */
 export function foldList(entry, source, context, run, index) {
   const folds = foldsOf(entry.folds, context);

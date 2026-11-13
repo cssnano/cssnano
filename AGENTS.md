@@ -17,7 +17,7 @@ cssnano is a modular CSS minifier built on PostCSS, in a pnpm workspace:
     `docs/<postcss-plugin-name>/README.md`.
   - `src/pipeline/` holds the host plugin (`host.js`) that runs a preset's
     plugins as stages in one walk of the stylesheet, and the walkers it drives
-    (`traversal.js`, `afterMerge.js`). Tests mirror it under `test/pipeline/`.
+    (`walkDown.js`, `afterMerge.js`). Tests mirror it under `test/pipeline/`.
   - `src/values/` holds `ValueBuffer`, the token list that stages read and
     edit, and the token constructors and microsyntax helpers beside it.
     Tests mirror it under `test/values/`.

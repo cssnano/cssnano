@@ -10,7 +10,7 @@ const { walkDown } = await import('../../src/pipeline/walkDown.js');
 const { declarationPlansOf } =
   await import('../../src/pipeline/declarationWalk.js');
 const { commentStateOf } =
-  await import('../../src/pipeline/comments/nodeComments.js');
+  await import('../../src/pipeline/comments/commentState.js');
 const { AT_RULE_BLOCK, DECLARATION, RULE } =
   await import('../../src/passes/ir/blockRecord.js');
 const { mergePass } = await import('../../src/passes/merge/index.js');

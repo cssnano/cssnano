@@ -12,7 +12,7 @@ import { foldList, planEntry } from './plan.js';
 /** @import {TokenListId} from '../passes/ir/tokenLists.js' */
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
 /** @import {RunContext} from '../passes/ir/runContext.js' */
-/** @import {CommentState} from './comments/nodeComments.js' */
+/** @import {CommentState} from './comments/commentState.js' */
 /** @import {PlanEntry} from './plan.js' */
 /** @import {Stage} from './host.js' */
 

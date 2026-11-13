@@ -3,7 +3,7 @@ import { walkAfterMerge } from './afterMerge.js';
 import { discardOverriddenAtRules } from './overridable.js';
 import { walkDown } from './walkDown.js';
 import { declarationPlansOf } from './declarationWalk.js';
-import { commentStateOf } from './comments/nodeComments.js';
+import { commentStateOf } from './comments/commentState.js';
 import rawCache from '../utils/rawCache.js';
 import { createRunContext } from '../passes/ir/runContext.js';
 import { runDriver } from '../passes/ir/runDriver.js';
@@ -21,12 +21,6 @@ import { runDriver } from '../passes/ir/runDriver.js';
  * Changes the buffer of one declaration. A reducer never sees a node; the
  * context is the bits of `context.js` for where the declaration sits.
  * @typedef {(buffer: ValueBuffer, context: number) => void} Reducer
- */
-
-/**
- * Reports a problem with the text being reduced. The walk turns each report
- * into a warning on the node, tagged with the plugin name when given.
- * @typedef {(message: string, plugin?: string) => void} Warn
  */
 
 /**

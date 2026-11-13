@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import { tokenize } from '@csstools/css-tokenizer';
 import { buildRecords } from '../../src/passes/ir/buildRecords.js';
 import { createRunContext } from '../../src/passes/ir/runContext.js';
-import { commentStateOf } from '../../src/pipeline/comments/nodeComments.js';
+import { commentStateOf } from '../../src/pipeline/comments/commentState.js';
 import { declarationPlansOf } from '../../src/pipeline/declarationWalk.js';
 import { walkDown } from '../../src/pipeline/walkDown.js';
 import { hostPlugin } from '../../src/pipeline/host.js';

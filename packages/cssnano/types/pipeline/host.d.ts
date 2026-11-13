@@ -1,7 +1,6 @@
 import type { Plugin } from 'postcss';
 import type { ValueBuffer } from '../values/valueBuffer.js';
 export type Reducer = (buffer: ValueBuffer, context: number) => void;
-export type Warn = (message: string, plugin?: string) => void;
 export type AtRulePart = {
     buffer: Reducer;
     tightensAfterName?: true;

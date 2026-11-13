@@ -96,8 +96,7 @@ export function scopeKeyOf(records, keys, index) {
 /**
  * Removes each overridable at-rule that a later one in its scope overrides. The
  * list is in document order, and it is read backwards, so the winning rule of
- * each scope is seen first. A removal makes no message: the node walk never
- * reported one.
+ * each scope is seen first. A removal makes no message.
  *
  * @param {BlockRecords} records
  * @param {DeclarationKeys} keys the run's interner

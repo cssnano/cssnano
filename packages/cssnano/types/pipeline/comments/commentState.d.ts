@@ -17,4 +17,4 @@ export type CommentState = {
  * @returns {CommentState | null} null when no stage removes comments
  */
 export declare function commentStateOf(stages: readonly Stage[]): CommentState | null;
-//# sourceMappingURL=nodeComments.d.ts.map
+//# sourceMappingURL=commentState.d.ts.map

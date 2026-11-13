@@ -103,7 +103,7 @@ function normalizeDeclaration(records, tokenLists, index) {
  */
 function normalizeAtRuleOrRule(records, tokenLists, index) {
   const record = records.entry(index);
-  // Only an at-rule has an afterName; a rule's is undefined, as the node form leaves it.
+  // Only an at-rule has an afterName; a rule's stays undefined.
   const named = /** @type {BlockRecord | NodeEntry} */ (record);
   const afterName =
     record.kind !== RULE && named.afterName !== null
