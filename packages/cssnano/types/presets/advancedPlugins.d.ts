@@ -1,4 +1,4 @@
-import type { NodeSymbolTransform, SymbolTransform } from '../pipeline/host.js';
+import type { SymbolTransform } from '../pipeline/host.js';
 export type AdvancedOnlyPluginOptions = {
     /**
      * Discards unused font faces, counter styles, keyframes and namespaces.
@@ -69,7 +69,8 @@ export declare const advancedPluginEntries: readonly [[{
 }, "zindex", {
     optionKeys: "startIndex"[];
     transform: true;
-    symbols: NodeSymbolTransform;
+    symbols: SymbolTransform;
+    onRecords: true;
 }]];
 /**
  * Every plugin the advanced preset runs: the default ones, then the advanced ones.

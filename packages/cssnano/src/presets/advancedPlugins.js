@@ -87,7 +87,8 @@ export const advancedPluginEntries = /** @type {const} */ ([
     {
       optionKeys: ['startIndex'],
       transform: true,
-      symbols: /** @type {NodeSymbolTransform} */ (zindexSymbols),
+      symbols: /** @type {SymbolTransform} */ (zindexSymbols),
+      onRecords: true,
     },
   ]),
 ]);
