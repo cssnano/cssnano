@@ -85,9 +85,8 @@ export function isRecordAttached(records, index) {
 }
 
 /**
- * Sorts one kept record into the lists it belongs to, as `symbolVisit` does for
- * a node. A rule's selector has a namespace bar when one of its selector lists
- * holds a `|` token.
+ * Sorts one kept record into the lists it belongs to. A rule's selector has a
+ * namespace bar when one of its selector lists holds a `|` token.
  *
  * @param {BlockRecords} records
  * @param {TokenLists} tokenLists
