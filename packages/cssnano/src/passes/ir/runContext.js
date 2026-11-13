@@ -2,6 +2,7 @@ import { DeclarationKeys } from './declarationKey.js';
 import { TextTable } from '../../values/textTable.js';
 import { TokenLists } from './tokenLists.js';
 import { ValueIds } from './valueIds.js';
+import { SelectorIds } from './selectorIds.js';
 import { consistencyChecksEnabled } from './consistencyChecks.js';
 import { longstandingFeatures } from '../merge/lib/longhand/syntaxFeatures.js';
 
@@ -17,6 +18,7 @@ import { longstandingFeatures } from '../merge/lib/longhand/syntaxFeatures.js';
  *   consistencyChecks: boolean,
  *   features: ReadonlySet<string>,
  *   messages: RunMessage[],
+ *   selectorIds: SelectorIds,
  * }} RunContext
  */
 
@@ -49,5 +51,6 @@ export function createRunContext(
     consistencyChecks,
     features,
     messages: [],
+    selectorIds: new SelectorIds(),
   };
 }

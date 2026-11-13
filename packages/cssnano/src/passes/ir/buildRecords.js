@@ -3,7 +3,6 @@ import cssnanoUtils from '#utils';
 import { sourceParams } from '../../utils/sourceText.js';
 import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
-import { SelectorIds } from './selectorIds.js';
 import { DeclarationRecord } from './declarationRecord.js';
 import { keysOfName } from './propertyTable.js';
 import {
@@ -21,6 +20,7 @@ import {
 import { containerContext } from '../merge/lib/rules/sameContainer.js';
 import { valueListOf } from '../merge/lib/valueList.js';
 
+/** @import {SelectorIds} from './selectorIds.js' */
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
 /** @import {AtRule, ChildNode, Comment, Container, Declaration, Root, Rule} from 'postcss' */
@@ -125,7 +125,7 @@ function preludeIdOf(node, context) {
 export function buildRecords(root, context) {
   const { textTable, tokenLists, consistencyChecks } = context;
   // The ids of this build's selectors. Each rule keeps the ids of its items.
-  const selectorIds = new SelectorIds();
+  const { selectorIds } = context;
   const records = new BlockRecords(
     new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', false, NO_PRELUDE),
     consistencyChecks

@@ -2,6 +2,7 @@ import { DeclarationKeys } from './declarationKey.js';
 import { TextTable } from '../../values/textTable.js';
 import { TokenLists } from './tokenLists.js';
 import { ValueIds } from './valueIds.js';
+import { SelectorIds } from './selectorIds.js';
 export type RunContext = {
     declarations: DeclarationKeys;
     textTable: TextTable;
@@ -10,6 +11,7 @@ export type RunContext = {
     consistencyChecks: boolean;
     features: ReadonlySet<string>;
     messages: RunMessage[];
+    selectorIds: SelectorIds;
 };
 export type RunMessage = {
     index: import('./blockRecord.js').ArenaIndex;
@@ -28,6 +30,7 @@ export type RunMessage = {
  *   consistencyChecks: boolean,
  *   features: ReadonlySet<string>,
  *   messages: RunMessage[],
+ *   selectorIds: SelectorIds,
  * }} RunContext
  */
 /**
