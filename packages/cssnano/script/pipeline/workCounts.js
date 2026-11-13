@@ -1,14 +1,14 @@
 /**
- * Counts the work that the costs of the host walk's records are measured by,
- * on the framework stylesheets under the default preset: the tokenizer's calls
- * and its misses, each fold's work, and each container's context. Counts come
- * from V8's precise coverage, so they repeat from run to run and the script
- * patches nothing in `src/`.
+ * Counts the work of the host walk's folds, contexts and comment tokenizations
+ * on the framework stylesheets under the default preset, from V8's precise
+ * block coverage, so the script patches nothing in `src/`. The tokenizer's
+ * calls are not counted: V8 can inline `tokens` and skip its call count, so
+ * the count of a call changed between runs of one tree.
  *
  * A call count cannot tell a memo's miss from its hit, since both call the
- * function. A miss is read as the count of the block that starts at the
- * statement after the memo's lookup, so each count names the source text it
- * reads. A marker that matches no block is an error, not a zero.
+ * function. A miss is read as the count of the innermost block that holds the
+ * statement after the memo's lookup. A marker that matches no block is an
+ * error, not a zero.
  *
  * Usage (from packages/cssnano): node script/pipeline/workCounts.js --json
  */
@@ -30,8 +30,6 @@ const frameworksDir = fileURLToPath(
  * @type {Record<string, {module: string, fn: string, miss?: string}>}
  */
 const COUNTED = {
-  // Every tokenizer call of a value, the cost C9 adds to.
-  tokenizerCalls: { module: 'utils/value.js', fn: 'tokens' },
   // The text joined from a token list, the cost C11 adds to.
   tokensTextCalls: { module: 'values/tokensText.js', fn: 'tokensText' },
   // Every fold, whether its memo hit or missed.
