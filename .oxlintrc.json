@@ -212,6 +212,7 @@
             "allowed": [
               "packages/cssnano/src/passes/ir/blockRecords.js",
               "packages/cssnano/src/passes/ir/arenaEdits.js",
+              "packages/cssnano/src/passes/ir/rawEdits.js",
               "packages/cssnano/src/passes/ir/treeEdits.js",
               "packages/cssnano/src/passes/ir/buildRecords.js"
             ]

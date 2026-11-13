@@ -11,7 +11,7 @@ import { createChildNodes, nodeOf } from './nodeTable.js';
 import { writeSelector } from './writeSelector.js';
 import { assertTemplatesHaveNodes } from './recordsCheck.js';
 
-/** @import {AtRule, ChildNode, Container, Root, Rule} from 'postcss' */
+/** @import {AtRule, ChildNode, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {NodeTable} from './nodeTable.js' */
 /** @import {BlockRecord as Block, NodeEntry} from './blockRecord.js' */
@@ -118,7 +118,9 @@ function writeRawsOf(records, nodes, tokenLists, container) {
     const record = records.entry(entry);
     const node = /** @type {ChildNode} */ (nodeOf(nodes, entry));
     if (record.before !== null) node.raws.before = record.before;
-    if (record.kind === RULE || record.kind === AT_RULE_BLOCK) {
+    if (record.kind === DECLARATION) {
+      writeDeclarationRaws(record, /** @type {Declaration} */ (node));
+    } else if (record.kind === RULE || record.kind === AT_RULE_BLOCK) {
       writeContainerRaws(record, /** @type {Rule | AtRule} */ (node));
       if (record.kind === AT_RULE_BLOCK) {
         writeParams(record, /** @type {AtRule} */ (node), tokenLists);
@@ -131,6 +133,22 @@ function writeRawsOf(records, nodes, tokenLists, container) {
       writeStatementRaws(record, /** @type {AtRule} */ (node));
       writeParams(record, /** @type {AtRule} */ (node), tokenLists);
     }
+  }
+}
+
+/**
+ * Assigns the separator and the important spelling that a declaration's record
+ * holds. An unmarked declaration keeps its value, so its spellings are written
+ * here, not by writeDeclaration.
+ *
+ * @param {DeclarationRecord} record
+ * @param {Declaration} node
+ * @return {void}
+ */
+function writeDeclarationRaws(record, node) {
+  if (record.between !== null) node.raws.between = record.between;
+  if (record.importantSpelling !== null) {
+    node.raws.important = record.importantSpelling;
   }
 }
 

@@ -9,29 +9,27 @@ import {
   unhack,
 } from './lib/ieHack.js';
 import { stringToken } from '../../values/tokenConstructors.js';
+import {
+  normalizeAfterName,
+  trimCustomPropertySeparator,
+  trimSeparator,
+  whitespaceRegex,
+} from '../../values/rawSeparators.js';
 import { whitespace } from '../../values/punctuationTokens.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenEdit} from '../../values/valueBuffer.js' */
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
-const {
-  asciiLowerCase,
-  decoded,
-  endsWithEscapingBackslash,
-  mathFunctions,
-  tokens: tokenizeValue,
-} = cssnanoUtils;
+const { asciiLowerCase, decoded, endsWithEscapingBackslash, mathFunctions } =
+  cssnanoUtils;
 
 const atrule = 'atrule';
 const decl = 'decl';
 const rule = 'rule';
 const gridRowsPropertyRegex = /^(?:grid|grid-template|grid-template-areas)$/iv;
 const variableFunctions = new Set(['var', 'env', 'constant']);
-const whitespaceRegex = /[ \t\n\r\f]/gv;
 const hasWhitespaceRegex = /[ \t\n\r\f]/v;
-
-const plainSeparatorRegex = /^[ \t\n\r\f]*:[ \t\n\r\f]*$/v;
 
 /** @param {import('@csstools/css-tokenizer').TokenType} type */
 function isOpeningToken(type) {
@@ -237,67 +235,6 @@ const valueStage = {
 
 /** @satisfies {StageEntry} */
 export const valueEntry = { create: () => valueStage };
-
-/**
- * Drop whole whitespace tokens; character-level replacement would reach
- * preserved comments.
- * @param {string} between
- * @return {string}
- */
-function trimSeparator(between) {
-  if (plainSeparatorRegex.test(between)) return ':';
-  return tokenizeValue(between)
-    .filter(([type]) => type !== TokenType.Whitespace)
-    .map(([, raw]) => raw)
-    .join('');
-}
-
-/**
- * Trim only the parser-consumed whitespace run around the colon (CSS
- * Variables 1).
- * @param {string} between
- * @return {string}
- */
-function trimCustomPropertySeparator(between) {
-  if (plainSeparatorRegex.test(between)) return ':';
-  const tokens = tokenizeValue(between).filter(
-    ([type]) => type !== TokenType.EOF
-  );
-  let start = 0;
-  while (tokens[start]?.[0] === TokenType.Whitespace) start++;
-  if (tokens[start]?.[0] === TokenType.Colon) {
-    // The colon stays; only its surrounding parser-consumed whitespace runs
-    // may go.
-    start++;
-    while (tokens[start]?.[0] === TokenType.Whitespace) start++;
-    return (
-      ':' +
-      tokens
-        .slice(start)
-        .map(([, raw]) => raw)
-        .join('')
-    );
-  }
-  // A kept comment before the colon interrupts the parser-consumed run;
-  // leave the authored separator untouched.
-  return between;
-}
-
-/**
- * Collapses multi-character whitespace runs in at-rule afterName to a single
- * space while preserving comments.
- * @param {string} afterName
- * @return {string}
- */
-function normalizeAfterName(afterName) {
-  if (!afterName || afterName === ' ') return afterName;
-  if (!afterName.includes('/*')) return ' ';
-  let result = '';
-  for (const [type, raw] of tokenizeValue(afterName)) {
-    result += type === TokenType.Whitespace ? ' ' : raw;
-  }
-  return result;
-}
 
 /**
  * Trims the raws of a declaration that are not its value: the important flag
