@@ -92,4 +92,14 @@ test(
   )
 );
 
+test(
+  'should keep a comma inside a comment in its selector when sorting',
+  processCSS('z/*!,*/b,a{color:red}', 'a,z/*!,*/b{color:red}')
+);
+
+test(
+  'should keep an empty selector item when a selector ends with a comma',
+  processCSS('a,{color:red}', ',a{color:red}')
+);
+
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

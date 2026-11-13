@@ -10,11 +10,8 @@ import {
 } from './blockRecord.js';
 import { tokensText } from '../../values/tokensText.js';
 import { nodeOf } from './nodeTable.js';
-import {
-  isRuleOrAtRule,
-  recordNameOf,
-  selectorItemsOf,
-} from './buildRecords.js';
+import { isRuleOrAtRule, recordNameOf } from './buildRecords.js';
+import { selectorItemsOf } from './selectorItems.js';
 import { differs } from './writeBack.js';
 import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
 import { summariesHold } from './selectorReads.js';
@@ -166,7 +163,7 @@ function checkRawsOf(record, node) {
  * @return {void}
  */
 function checkRuleSelectors(tokenLists, record, rule) {
-  const items = selectorItemsOf(sourceSelector(rule));
+  const items = selectorItemsOf(cssnanoUtils.tokens(sourceSelector(rule)));
   const { selectorIds } = record;
   if (selectorIds.length !== items.length) throw new Error(OUT_OF_STEP);
   if (

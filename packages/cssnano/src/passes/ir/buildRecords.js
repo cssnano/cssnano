@@ -1,5 +1,4 @@
 /** @import {TokenLists, TokenListId} from './tokenLists.js' */
-import { list } from 'postcss';
 import cssnanoUtils from '#utils';
 import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
 import { BlockRecords } from './blockRecords.js';
@@ -20,6 +19,7 @@ import {
 } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
 import { valueListOf, writtenValueListOf } from './valueList.js';
+import { selectorItemsOf } from './selectorItems.js';
 import { holdsNonAscii } from '../../values/nonAscii.js';
 
 /** @import {SelectorIds} from './selectorIds.js' */
@@ -56,17 +56,6 @@ export function recordNameOf(written) {
  */
 export function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
-}
-
-/**
- * The items of a selector as written: PostCSS's split at its commas, trimmed,
- * with its empty items kept. A rule's ids are the items of its written selector.
- *
- * @param {string} selector the selector as written
- * @return {readonly string[]}
- */
-export function selectorItemsOf(selector) {
-  return list.comma(selector);
 }
 
 /**
@@ -223,17 +212,21 @@ export function buildRecords(root, context) {
   const fillChildren = (container, node) => {
     for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
       if (child.type === 'rule') {
-        const written = sourceSelector(child);
-        const record = new RuleRecord(
-          child.raws.before ?? null,
-          idsOfItems(selectorIds, tokenLists, selectorItemsOf(written))
-        );
-        record.writtenList = context.valueIds.idOf(
+        const writtenList = context.valueIds.idOf(
           tokenLists,
           undefined,
-          written,
+          sourceSelector(child),
           context.textTable.stored(child)
         );
+        const record = new RuleRecord(
+          child.raws.before ?? null,
+          idsOfItems(
+            selectorIds,
+            tokenLists,
+            selectorItemsOf(tokenLists.get(writtenList))
+          )
+        );
+        record.writtenList = writtenList;
         holdContainerRaws(record, child);
         place(container.index, record, child);
         // A rule that holds a rule or an at-rule nests, and gets its context.

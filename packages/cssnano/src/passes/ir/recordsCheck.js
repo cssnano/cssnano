@@ -8,7 +8,7 @@ import {
   STYLESHEET,
 } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
-import { selectorItemsOf } from './buildRecords.js';
+import { selectorItemsOf } from './selectorItems.js';
 import { tokensText } from '../../values/tokensText.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
@@ -80,7 +80,7 @@ function checkWrittenList(tokenLists, record) {
   const { writtenList } = record;
   if (writtenList === -1) return;
   if (record.kind === RULE) {
-    const items = selectorItemsOf(tokensText(tokenLists.get(writtenList)));
+    const items = selectorItemsOf(tokenLists.get(writtenList));
     const { selectorIds } = record;
     if (items.length !== selectorIds.length) throw new Error(WRITTEN_RULE);
     for (let at = 0; at < items.length; at++) {
