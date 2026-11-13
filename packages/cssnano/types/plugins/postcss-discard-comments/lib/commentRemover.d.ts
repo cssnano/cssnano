@@ -1,5 +1,4 @@
 declare class CommentRemover {
-    #private;
     options: import("../index.js").Options;
     /** @param {import('../index.js').Options} options */
     constructor(options: import('../index.js').Options);
