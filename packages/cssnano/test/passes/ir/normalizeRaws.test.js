@@ -2,9 +2,15 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import normalizeWhitespace from '../../../src/plugins/postcss-normalize-whitespace/index.js';
+import defaultPreset from '#presets/default';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { runDriver } from '../../../src/passes/ir/runDriver.js';
-import { normalizeRecordRaws } from '../../../src/passes/ir/normalizeRaws.js';
+import {
+  normalizeEntry,
+  normalizeRecordRaws,
+} from '../../../src/passes/ir/normalizeRaws.js';
+import { AT_RULE_BLOCK, RULE } from '../../../src/passes/ir/blockRecord.js';
+import { writeRootAfter } from '../../../src/passes/ir/rawEdits.js';
 
 /**
  * The text of `css` after the node form of normalizeWhitespace, which is the
@@ -59,4 +65,48 @@ describe('normalizeWhitespace over the records', () => {
       assert.equal(recordFormOf(css), await nodeFormOf(css));
     });
   }
+});
+
+describe('the leading whitespace of a stylesheet whose first rule is removed', () => {
+  test('the default preset prints the next rule with no leading whitespace', async () => {
+    const result = await postcss(defaultPreset()).process(
+      '\n  a{}\n  b{color:red}\n',
+      { from: undefined }
+    );
+    assert.equal(result.css, 'b{color:red}');
+  });
+});
+
+describe('normalizeWhitespace visits one entry by index', () => {
+  test('visiting every entry in pre-order prints the whole-tree text', () => {
+    const css = '\n  a{ color : red }\n  @media print{ b{top:0} }\n';
+    const root = postcss.parse(css);
+    const context = createRunContext(undefined, true);
+    const state = runDriver.build(root, context);
+    const { records, tokenLists } = state;
+    /** @param {number} container @param {boolean} isRoot */
+    const visit = (container, isRoot) => {
+      let first = true;
+      for (
+        let entry = records.links.firstChild(container);
+        entry !== -1;
+        entry = records.links.nextSibling(entry)
+      ) {
+        normalizeEntry(records, tokenLists, entry, isRoot && first);
+        first = false;
+        const { kind } = records.entry(entry);
+        if (kind === RULE || kind === AT_RULE_BLOCK) visit(entry, false);
+      }
+    };
+    visit(records.root.index, true);
+    writeRootAfter(records, '');
+    runDriver.end(state, {
+      browsers: [],
+      folded: false,
+      result: /** @type {import('postcss').Result} */ (
+        /** @type {unknown} */ ({ messages: [] })
+      ),
+    });
+    assert.equal(root.toString(), recordFormOf(css));
+  });
 });

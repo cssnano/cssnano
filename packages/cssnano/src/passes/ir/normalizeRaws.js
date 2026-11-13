@@ -87,7 +87,8 @@ function normalizeAtRuleOrRule(records, index) {
 
 /**
  * Visits one entry: the whitespace before it, then its spellings. A comment
- * keeps its whitespace.
+ * keeps its whitespace. `first` says the entry is the stylesheet's first child,
+ * whose `leadingWhitespace` it trims too.
  *
  * @param {BlockRecords} records
  * @param {TokenLists} tokenLists
@@ -95,7 +96,7 @@ function normalizeAtRuleOrRule(records, index) {
  * @param {boolean} first whether the entry is the first child of the stylesheet
  * @return {void}
  */
-function normalizeEntry(records, tokenLists, index, first) {
+export function normalizeEntry(records, tokenLists, index, first) {
   const record = records.entry(index);
   if (record.kind === COMMENT) return;
   if (record.before) {
