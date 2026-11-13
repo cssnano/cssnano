@@ -1,7 +1,7 @@
 import { browserTargets, resolveTargets } from '#utils/browser-targets';
 import { walkStylesheet } from './traversal.js';
 import { TextTable } from '../values/textTable.js';
-import { walkAfterMerge } from './afterMerge.js';
+import { finishAfterMerge, walkAfterMerge } from './afterMerge.js';
 import { createRunContext } from '../passes/ir/runContext.js';
 import { runDriver } from '../passes/ir/runDriver.js';
 
@@ -110,25 +110,35 @@ function targetsOf(resolutions, options, result) {
 const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
 
 /**
- * The merge of one stylesheet: the build, the merge transforms over the
- * records, then the end of the run. The run context takes the features of the
- * targets' support.
+ * One stylesheet's run over the records: the build, the merge transforms when
+ * the merge is on, the walk after merge over the records, then the end, which
+ * writes. The stage after the write runs on the nodes the end returns.
  *
  * @param {import('postcss').Root} root
- * @param {readonly string[]} browsers
- * @param {Merge} merge
  * @param {import('postcss').Result} result
  * @param {TextTable} table the selector tokens the walk left
+ * @param {Merge | undefined} merge the merge, absent when the merge is off
+ * @param {readonly string[]} browsers the resolved browser targets of the merge; none when it is off
+ * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} after
+ * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} symbols
  */
-function runMerge(root, browsers, merge, result, table) {
-  const support = merge.runner.support(browsers);
-  const context = createRunContext(table, undefined, support.features);
+function runRecords(root, result, table, merge, browsers, after, symbols) {
+  const support = merge ? merge.runner.support(browsers) : undefined;
+  const context = createRunContext(table, undefined, support?.features);
   const state = runDriver.build(root, context);
-  merge.runner.transforms(state.records, browsers, context, {
-    rules: /** @type {boolean | undefined} */ (merge.options.rules),
-    support,
+  if (merge && support) {
+    merge.runner.transforms(state.records, browsers, context, {
+      rules: /** @type {boolean | undefined} */ (merge.options.rules),
+      support,
+    });
+  }
+  const walked = walkAfterMerge(state, after, symbols);
+  const nodes = runDriver.end(state, {
+    browsers,
+    folded: merge !== undefined,
+    result,
   });
-  runDriver.end(state, { browsers, folded: true, result });
+  finishAfterMerge(root, result, nodes, after, symbols, table, walked);
 }
 
 /**
@@ -191,11 +201,16 @@ export function hostPlugin(
           if (members.length > 0 || transforms.size > 0) {
             walkStylesheet(stages, root, helpers, transforms, table);
           }
-          if (merge && mergeBrowsers) {
-            runMerge(root, mergeBrowsers, merge, helpers.result, table);
-          }
-          if (after.size > 0 || symbols.size > 0) {
-            walkAfterMerge(root, helpers.result, after, symbols, table);
+          if (merge || after.size > 0 || symbols.size > 0) {
+            runRecords(
+              root,
+              helpers.result,
+              table,
+              merge,
+              mergeBrowsers ?? noTargets,
+              after,
+              symbols
+            );
           }
         },
       };

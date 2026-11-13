@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { discardAndReport } from '#postcss-discard-empty';
-import { TextTable } from '../../src/values/textTable.js';
+import discardEmpty from '#postcss-discard-empty';
 import {
   createRecordSymbolLists,
   createSymbolLists,
@@ -35,18 +34,28 @@ function textsOf(lists) {
 }
 
 /**
- * Walks the stylesheet the way the walk after merge does, over the nodes.
+ * Visits each node after its children, as the walk after merge visits a kept
+ * node after the entries it holds.
+ * @param {import('postcss').Container} container
+ * @param {(node: import('postcss').AnyNode) => void} visit
+ */
+function visitPostOrder(container, visit) {
+  for (const child of container.nodes) {
+    if ('nodes' in child && child.nodes) visitPostOrder(child, visit);
+    visit(child);
+  }
+}
+
+/**
+ * Walks the stylesheet the way the walk after merge does, over the nodes: the
+ * discardEmpty plugin removes the empty nodes, then each kept node is visited
+ * after its children.
  * @param {string} css
  */
 function collectNodes(css) {
-  const root = postcss.parse(css);
+  const root = postcss([discardEmpty()]).process(css, { from: undefined }).root;
   const lists = createSymbolLists();
-  discardAndReport(
-    root,
-    /** @type {import('postcss').Result} */ ({ messages: [] }),
-    symbolVisit(lists),
-    new TextTable()
-  );
+  visitPostOrder(root, symbolVisit(lists));
   return { root, lists: textsOf(lists) };
 }
 

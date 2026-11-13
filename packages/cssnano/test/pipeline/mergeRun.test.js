@@ -43,11 +43,11 @@ describe('the host run of the merge transforms', () => {
     assert.equal(ends, 1);
   });
 
-  test('a run with merge off builds no records', async () => {
+  test('a run with a transform after merge builds the records once', async () => {
     const { builds, ends } = await runCounted('a{color:red}', {
       disable: ['merge'],
     });
-    assert.equal(builds, 0);
-    assert.equal(ends, 0);
+    assert.equal(builds, 1);
+    assert.equal(ends, 1);
   });
 });

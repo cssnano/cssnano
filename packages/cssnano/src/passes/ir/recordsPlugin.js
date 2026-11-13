@@ -39,5 +39,5 @@ export function runRecordsPlugin(
   for (const transform of transforms) {
     transform(state.records, browsers, context);
   }
-  runDriver.end(state, { browsers, folded: true, result });
+  runDriver.end(state, { browsers, folded: false, result });
 }

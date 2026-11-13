@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { discardAndReport } from '#postcss-discard-empty';
-import { TextTable } from '../../src/values/textTable.js';
+import { createRunContext } from '../../src/passes/ir/runContext.js';
+import { runDriver } from '../../src/passes/ir/runDriver.js';
+import { discardEmptyRecords } from '../../src/passes/ir/discardRecords.js';
+import { nodeOf } from '../../src/passes/ir/nodeTable.js';
 
 /** @param {import('postcss').AnyNode} node */
 function label(node) {
@@ -19,22 +21,25 @@ function label(node) {
  */
 function discardWithVisit(css, visit) {
   const root = postcss.parse(css);
+  const context = createRunContext(undefined, true);
+  const state = runDriver.build(root, context);
   /** @type {string[]} */
   const visited = [];
-  discardAndReport(
-    root,
-    /** @type {import('postcss').Result} */ ({ messages: [] }),
+  discardEmptyRecords(
+    state.records,
+    context,
     visit &&
-      ((node) => {
+      ((index) => {
+        const node = nodeOf(state.nodes, index);
         visited.push(label(node));
         visit(node);
-      }),
-    new TextTable()
+      })
   );
+  runDriver.end(state, { browsers: [], folded: false });
   return { output: root.toString(), visited };
 }
 
-describe('discardAndReport visit', () => {
+describe('discardEmptyRecords visit', () => {
   test('calls visit on each kept node and not on a removed node', () => {
     const { visited } = discardWithVisit('a{color:red}b{}', () => {});
     assert.deepEqual(visited, ['color', 'a']);

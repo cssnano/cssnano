@@ -9,6 +9,7 @@ import postcss from 'postcss';
 const require = createRequire(import.meta.url);
 // The module exports its preset as module.exports, which require returns.
 const defaultPreset = require('../../../packages/cssnano/src/presets/default.js');
+const litePreset = require('../../../packages/cssnano/src/presets/lite.js');
 
 const colourRules = Array.from(
   { length: 2000 },
@@ -53,6 +54,11 @@ const urlRules = Array.from(
 ).join('');
 
 export const presetCases = {
+  'preset-lite-colour-values': {
+    plugin: 'cssnano',
+    createProcessor: () => postcss(litePreset()),
+    css: colourRules,
+  },
   'preset-default-colour-values': {
     plugin: 'cssnano',
     createProcessor: () => postcss(defaultPreset()),

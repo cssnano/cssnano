@@ -19,7 +19,9 @@ const { default: normalizeString } =
   await import('../../src/plugins/postcss-normalize-string/index.js');
 const { default: normalizeUrl } =
   await import('../../src/plugins/postcss-normalize-url/index.js');
-const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
+const { walkAfterMerge, finishAfterMerge } =
+  await import('../../src/pipeline/afterMerge.js');
+const { runDriver } = await import('../../src/passes/ir/runDriver.js');
 const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
 const { foldShorthandDeclaration } =
@@ -38,7 +40,7 @@ function tokenizeTotal() {
   return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
 }
 
-const helpers = { result: { warn() {} } };
+const helpers = { result: { warn() {}, messages: [] } };
 
 suite('the text table reads the text the host walk wrote', () => {
   test('the table reads the selector the host walk wrote, without tokenizing', () => {
@@ -205,21 +207,46 @@ suite('the at-rule reducers write tokens that spell their text', () => {
   });
 });
 
+/**
+ * The walk after merge of `root` through a run over `table`, as the host runs it.
+ * @param {import('postcss').Root} root
+ * @param {TextTable} table
+ * @param {Map<string, Record<PropertyKey, unknown>>} transforms
+ * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols
+ * @return {number} the tokenize calls of the walk and its finish, which read the stored text
+ */
+function afterWalk(root, table, transforms, symbols) {
+  const context = createRunContext(table, undefined);
+  const state = runDriver.build(root, context);
+  const before = tokenizeTotal();
+  const walked = walkAfterMerge(state, transforms, symbols);
+  const nodes = runDriver.end(state, {
+    browsers: [],
+    folded: false,
+    result: helpers.result,
+  });
+  finishAfterMerge(
+    root,
+    helpers.result,
+    nodes,
+    transforms,
+    symbols,
+    table,
+    walked
+  );
+  return tokenizeTotal() - before;
+}
+
 suite('the text table reads the text the afterMerge walk wrote', () => {
   test('uniqueSelectors reads the selector tokens merge wrote, without tokenizing', () => {
     const root = postcss.parse('a, b {}');
     const table = new TextTable();
     const rule = root.first;
     table.write(rule, tokens('b, a, b'));
-    const before = tokenizeTotal();
-    walkAfterMerge(
-      root,
-      helpers.result,
-      new Map([['uniqueSelectors', {}]]),
-      new Map(),
-      table
+    assert.equal(
+      afterWalk(root, table, new Map([['uniqueSelectors', {}]]), new Map()),
+      0
     );
-    assert.equal(tokenizeTotal() - before, 0);
     assert.equal(rule.selector, ' a,b');
   });
 
@@ -231,15 +258,10 @@ suite('the text table reads the text the afterMerge walk wrote', () => {
     const symbols = new Map([
       ['discardUnused', { transform: discardUnusedSymbols, options: {} }],
     ]);
-    const before = tokenizeTotal();
-    walkAfterMerge(
-      root,
-      helpers.result,
-      new Map([['uniqueSelectors', {}]]),
-      symbols,
-      table
+    assert.equal(
+      afterWalk(root, table, new Map([['uniqueSelectors', {}]]), symbols),
+      0
     );
-    assert.equal(tokenizeTotal() - before, 0);
     assert.equal(rule.selector, ' b,ns|a');
   });
 });

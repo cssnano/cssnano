@@ -35,13 +35,13 @@ declare function build(css: Root, context: RunContext): RunState;
  * @param {{browsers: readonly string[], folded: boolean, result?: Result}} end
  *   the browser targets, whether the run folded the summaries, and the result
  *   whose messages the run pushes to; a run whose transforms append none has no result to give
- * @return {void}
+ * @return {NodeTable} the node of each entry, which the run keeps after its end
  */
 declare function end(state: RunState, { browsers, folded, result }: {
     browsers: readonly string[];
     folded: boolean;
     result?: Result;
-}): void;
+}): NodeTable;
 /**
  * The build and the end of a run, as the host calls them around the transforms.
  * An object, so a test can count the calls.

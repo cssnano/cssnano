@@ -7,14 +7,16 @@ const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../src/values/textTable.js');
 const { tokens } = await import('../../src/utils/value.js');
-const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
+const { walkAfterMerge, finishAfterMerge } =
+  await import('../../src/pipeline/afterMerge.js');
+const { createRunContext } = await import('../../src/passes/ir/runContext.js');
+const { runDriver } = await import('../../src/passes/ir/runDriver.js');
 const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
 const { default: minifyParams } =
   await import('../../src/plugins/postcss-minify-params/index.js');
 const { default: normalizeUrl } =
   await import('../../src/plugins/postcss-normalize-url/index.js');
-const { discardAndReport } = await import('#postcss-discard-empty');
 const { default: isAnonymousLayer } =
   await import('../../src/utils/isAnonymousLayer.js');
 
@@ -23,7 +25,37 @@ function tokenizeTotal() {
   return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
 }
 
-const helpers = { result: { warn() {} } };
+const helpers = { result: { warn() {}, messages: [] } };
+
+/**
+ * The walk after merge of `root` through a run over `table`, as the host runs it.
+ * @param {import('postcss').Root} root
+ * @param {TextTable} table
+ * @param {Map<string, Record<PropertyKey, unknown>>} transforms
+ * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols
+ * @return {number} the tokenize calls of the walk and its finish, which read the stored text
+ */
+function afterWalk(root, table, transforms, symbols) {
+  const context = createRunContext(table, undefined);
+  const state = runDriver.build(root, context);
+  const before = tokenizeTotal();
+  const walked = walkAfterMerge(state, transforms, symbols);
+  const nodes = runDriver.end(state, {
+    browsers: [],
+    folded: false,
+    result: helpers.result,
+  });
+  finishAfterMerge(
+    root,
+    helpers.result,
+    nodes,
+    transforms,
+    symbols,
+    table,
+    walked
+  );
+  return tokenizeTotal() - before;
+}
 
 suite('the walk reads the at-rule flags that the plan stored', () => {
   test('tightenAfterName reads the flag stored for a repeated @media prelude, without tokenizing', () => {
@@ -56,9 +88,7 @@ suite('the at-rule readers read the lists stored for their at-rules', () => {
     const symbols = new Map([
       ['discardUnused', { transform: discardUnusedSymbols, options: {} }],
     ]);
-    const before = tokenizeTotal();
-    walkAfterMerge(root, helpers.result, new Map(), symbols, table);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(afterWalk(root, table, new Map(), symbols), 0);
   });
 
   test("the walk's default-namespace check reads the @namespace list stored for the at-rule, without tokenizing", () => {
@@ -75,9 +105,10 @@ suite('the at-rule readers read the lists stored for their at-rules', () => {
     const root = postcss.parse('@layer a{}');
     const table = new TextTable();
     table.write(root.first, tokens('a'));
-    const before = tokenizeTotal();
-    discardAndReport(root, helpers.result, undefined, table);
-    assert.equal(tokenizeTotal() - before, 0);
+    assert.equal(
+      afterWalk(root, table, new Map([['discardEmpty', {}]]), new Map()),
+      0
+    );
   });
 
   test('isAnonymousLayer reads the @layer list stored for the at-rule, without tokenizing', () => {
