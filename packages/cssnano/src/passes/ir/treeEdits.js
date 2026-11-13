@@ -138,7 +138,10 @@ export function removeRules(mergeState, indices) {
  */
 export function removeEntry(records, index) {
   if (records.links.firstChild(records.root.index) === index) {
-    records.leadingWhitespace = records.entry(index).before;
+    const { before } = records.entry(index);
+    records.leadingWhitespace = before;
+    const next = records.links.nextSibling(index);
+    if (next !== -1) records.entry(next).before = before;
   }
   records.detach(index);
 }

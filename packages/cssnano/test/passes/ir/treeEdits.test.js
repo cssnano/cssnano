@@ -12,6 +12,7 @@ import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   appendToDeclarations,
   remove,
+  removeEntry,
   removeRules,
   takePlaceOf,
 } from '../../../src/passes/ir/treeEdits.js';
@@ -348,4 +349,12 @@ test('appendToDeclarations should see each declaration it appended, so a repeat 
     ).map((declaration) => declaration.prop),
     ['color', 'width']
   );
+});
+
+test("removeEntry should give the entry after a removed first root child the removed child's whitespace before", () => {
+  const { root, state } = setup('\n\na{color:red}\n  b{color:red}');
+  const [, second] = /** @type {Rule[]} */ (root.nodes);
+  const secondIndex = ruleRecordOf(state.records, second).index;
+  removeEntry(state.records, ruleRecordOf(state.records, root.first).index);
+  assert.equal(state.records.entry(secondIndex).before, '\n\n');
 });
