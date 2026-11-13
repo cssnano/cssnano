@@ -1,15 +1,14 @@
-import { removeAndDiscardEmptied } from '#postcss-discard-empty';
-import { decideCharset, rescanNonAscii } from '#postcss-normalize-charset';
 import rawCache from '../utils/rawCache.js';
-import {
-  createRecordSymbolLists,
-  isRecordAttached,
-  recordSymbolVisit,
-} from './symbolLists.js';
+import { createRecordSymbolLists, recordSymbolVisit } from './symbolLists.js';
 import { visitEntriesInOrder } from '../passes/ir/visitEntries.js';
 import { uniqueRuleSelectors } from '../passes/ir/uniqueSelectors.js';
 import { fillRule } from '../passes/ir/selectorList.js';
-import { createCharsetScan, charsetVisit } from '../passes/ir/charset.js';
+import {
+  createCharsetScan,
+  charsetVisit,
+  decideCharset,
+  rescanNonAscii,
+} from '../passes/ir/charset.js';
 import {
   discardEmptyRecords,
   removeAndDiscardEmptiedRecords,
@@ -17,52 +16,13 @@ import {
 import { remove as detachRecord } from '../passes/ir/treeEdits.js';
 import { normalizeEntry } from '../passes/ir/normalizeRaws.js';
 import { writeRootAfter } from '../passes/ir/rawEdits.js';
-import { nodeOf } from '../passes/ir/nodeTable.js';
 
-/** @import {AnyNode, ChildNode, Result, Root} from 'postcss' */
-/** @import {CharsetScan} from '#postcss-normalize-charset' */
+/** @import {Result, Root} from 'postcss' */
 /** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
-/** @import {NodeTable} from '../passes/ir/nodeTable.js' */
-/** @import {RunContext} from '../passes/ir/runContext.js' */
 /** @import {RunState} from '../passes/ir/runDriver.js' */
-/** @import {NodeSymbolTransform, SymbolEntry, SymbolTransform} from './host.js' */
-/** @import {SymbolLists, RecordSymbolLists} from './symbolLists.js' */
-/** @import {TextTable} from '../values/textTable.js' */
-
-/**
- * What the walk over the records leaves for the stage after the run: whether
- * any symbol transform is on, the symbol lists still to run over the nodes, as
- * arena indices, and the charset scan with the charset options when the
- * charset decision is on.
- *
- * @typedef {{
- *   symbolsOn: boolean,
- *   lists: RecordSymbolLists | undefined,
- *   scan: import('../passes/ir/charset.js').CharsetScan,
- *   charsetOptions: Record<PropertyKey, unknown> | undefined,
- * }} AfterWalk
- */
-
-/**
- * The symbol lists that still hang from the stylesheet, as the records stand
- * after the record transforms. A node a removal detached keeps its parent, so
- * the node transforms could not tell it from one in the tree.
- *
- * @param {BlockRecords} records
- * @param {RecordSymbolLists} lists
- * @returns {RecordSymbolLists}
- */
-function attachedLists(records, lists) {
-  return /** @type {RecordSymbolLists} */ (
-    Object.fromEntries(
-      Object.entries(lists).map(([key, indices]) => [
-        key,
-        indices.filter((index) => isRecordAttached(records, index)),
-      ])
-    )
-  );
-}
+/** @import {SymbolEntry} from './host.js' */
+/** @import {RecordSymbolLists} from './symbolLists.js' */
 
 /**
  * Whether an entry is the stylesheet's first child.
@@ -84,14 +44,14 @@ function isFirstChild(records, index) {
  * transforms share one walk: normalizeWhitespace visits each entry, the symbol
  * lists and the charset scan collect what the later stage reads. With discardEmpty
  * on, the walk is post-order and discards empty entries; otherwise it is pre-order.
- * The advanced transforms over the records run after the walk, in order, and
- * the rest run over the nodes after the end.
+ * After the walk, the symbol transforms run in order over the lists, and then the
+ * charset decision, all before the end writes the records.
  *
  * @param {RunState} state the build of the stylesheet, after the merge transforms
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the options of each transform on, by entry name
  * @param {ReadonlyMap<string, SymbolEntry>} symbols the advanced transforms on, in order
  * @param {readonly string[]} [browsers] the targets the merge folded the summaries for; absent when it did not
- * @return {AfterWalk}
+ * @return {void}
  */
 export function walkAfterMerge(state, transforms, symbols, browsers) {
   const { records, context } = state;
@@ -143,162 +103,35 @@ export function walkAfterMerge(state, transforms, symbols, browsers) {
   } else if (visit) {
     visitEntriesInOrder(records, records.root.index, visit);
   }
-  let attached;
   if (lists) {
     /** @type {(index: ArenaIndex) => void} */
     const remove = transforms.has('discardEmpty')
       ? (index) => removeAndDiscardEmptiedRecords(records, context, index)
       : (index) => detachRecord(records, index);
-    let nodeSymbols = false;
-    for (const { transform, options, onRecords } of symbols.values()) {
-      if (onRecords) {
-        /** @type {SymbolTransform} */ (transform)(
-          lists,
-          options,
-          remove,
-          records,
-          context
-        );
-      } else {
-        nodeSymbols = true;
-      }
+    for (const { transform, options } of symbols.values()) {
+      transform(lists, options, remove, records, context);
     }
-    if (nodeSymbols) attached = attachedLists(records, lists);
   }
-  return {
-    symbolsOn: lists !== undefined,
-    lists: attached,
-    scan,
-    charsetOptions,
-  };
+  if (charsetOptions) {
+    if (lists) rescanNonAscii(records, context, scan);
+    decideCharset(
+      records,
+      context,
+      scan,
+      /** @type {{add?: boolean}} */ (charsetOptions)
+    );
+  }
 }
 
 /**
- * The node of each index of a list, through the table the end of the run returns.
- *
- * @param {NodeTable} nodes
- * @param {ArenaIndex[]} indices
- * @return {AnyNode[]}
- */
-function nodesOf(nodes, indices) {
-  return indices.map((index) => /** @type {AnyNode} */ (nodeOf(nodes, index)));
-}
-
-/**
- * The symbol lists of the run as nodes, for the advanced transforms that run
- * over the nodes.
- *
- * @param {RecordSymbolLists} lists
- * @param {NodeTable} nodes
- * @return {SymbolLists}
- */
-function nodeLists(lists, nodes) {
-  return /** @type {SymbolLists} */ (
-    Object.fromEntries(
-      Object.entries(lists).map(([key, indices]) => [
-        key,
-        nodesOf(nodes, indices),
-      ])
-    )
-  );
-}
-
-/**
- * The charset scan of the run as nodes. A removed charset keeps its node, so
- * the decision reads it as the walk left it.
- *
- * @param {import('../passes/ir/charset.js').CharsetScan} scan
- * @param {NodeTable} nodes
- * @return {CharsetScan}
- */
-function nodeScan(scan, nodes) {
-  const at = (/** @type {ArenaIndex} */ index) =>
-    index === -1 ? undefined : /** @type {AnyNode} */ (nodeOf(nodes, index));
-  return {
-    first: /** @type {import('postcss').AtRule | undefined} */ (at(scan.first)),
-    charsets: /** @type {import('postcss').AtRule[]} */ (
-      nodesOf(nodes, scan.charsets)
-    ),
-    nonAscii: at(scan.nonAscii),
-    candidates:
-      scan.candidates === undefined
-        ? undefined
-        : nodesOf(nodes, scan.candidates),
-  };
-}
-
-/**
- * The stage after the end of the run, on the nodes the end wrote: the advanced
- * transforms over the nodes, the charset decision, then the raw cache, which
- * records last so that no later transform changes what it describes.
+ * The stage after the end of the run: the raw cache, which records last so
+ * that no later transform changes what it describes.
  *
  * @param {Root} root
  * @param {Result} result
- * @param {NodeTable} nodes the node of each entry, from the end of the run
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms
- * @param {ReadonlyMap<string, SymbolEntry>} symbols
- * @param {TextTable} table the selectors and declarations the walk before merge stored
- * @param {AfterWalk} walked what the walk over the records left
  * @returns {void}
  */
-export function finishAfterMerge(
-  root,
-  result,
-  nodes,
-  transforms,
-  symbols,
-  table,
-  walked
-) {
-  const { lists, symbolsOn, scan, charsetOptions } = walked;
-  if (lists) {
-    runSymbolTransforms(
-      nodeLists(lists, nodes),
-      symbols,
-      result,
-      transforms,
-      table
-    );
-  }
-  if (charsetOptions) {
-    const charset = nodeScan(scan, nodes);
-    if (symbolsOn) rescanNonAscii(charset);
-    decideCharset(
-      root,
-      charset,
-      /** @type {import('#postcss-normalize-charset').Options} */ (
-        charsetOptions
-      )
-    );
-  }
+export function finishAfterMerge(root, result, transforms) {
   if (transforms.has('rawCache')) rawCache(result);
-}
-
-/**
- * Runs the advanced transforms over the nodes, in preset order, over the
- * lists of the walk. With discardEmpty on, a removal also removes the ancestors
- * it empties.
- *
- * @param {SymbolLists} lists
- * @param {ReadonlyMap<string, SymbolEntry>} symbols
- * @param {Result} result
- * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms
- * @param {TextTable} table
- * @returns {void}
- */
-function runSymbolTransforms(lists, symbols, result, transforms, table) {
-  /** @type {(node: ChildNode) => void} */
-  const remove = transforms.has('discardEmpty')
-    ? (node) => removeAndDiscardEmptied(node, result)
-    : (node) => node.remove();
-  for (const { transform, options, onRecords } of symbols.values()) {
-    if (!onRecords) {
-      /** @type {NodeSymbolTransform} */ (transform)(
-        lists,
-        options,
-        remove,
-        table
-      );
-    }
-  }
 }

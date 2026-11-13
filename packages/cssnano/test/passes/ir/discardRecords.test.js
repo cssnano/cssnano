@@ -49,6 +49,21 @@ describe('the discard over the records', () => {
 });
 
 describe('removing an entry on the records', () => {
+  test('a removal stops at the first ancestor that keeps a child', () => {
+    const built = buildOf('@media print{@supports (top:0){@keyframes a{}}b{}}');
+    const keyframes = /** @type {import('postcss').AtRule} */ (
+      /** @type {import('postcss').AtRule} */ (
+        /** @type {import('postcss').AtRule} */ (built.root.first).first
+      ).first
+    );
+    removeAndDiscardEmptiedRecords(
+      built.state.records,
+      built.context,
+      built.state.nodes.indexOf(keyframes)
+    );
+    assert.equal(endOf(built).css, '@media print{b{}}');
+  });
+
   test('a removal that empties a rule removes the rule too, and reports the rule', () => {
     const built = buildOf('a{b:c}d{e:f}');
     const decl = /** @type {import('postcss').Declaration} */ (

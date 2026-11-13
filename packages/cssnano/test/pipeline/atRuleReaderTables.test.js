@@ -32,28 +32,20 @@ const helpers = { result: { warn() {}, messages: [] } };
  * @param {import('postcss').Root} root
  * @param {TextTable} table
  * @param {Map<string, Record<PropertyKey, unknown>>} transforms
- * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>, onRecords: boolean}>} symbols
+ * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols
  * @return {number} the tokenize calls of the walk and its finish, which read the stored text
  */
 function afterWalk(root, table, transforms, symbols) {
   const context = createRunContext(table, undefined);
   const state = runDriver.build(root, context);
   const before = tokenizeTotal();
-  const walked = walkAfterMerge(state, transforms, symbols);
-  const nodes = runDriver.end(state, {
+  walkAfterMerge(state, transforms, symbols);
+  runDriver.end(state, {
     browsers: [],
     folded: false,
     result: helpers.result,
   });
-  finishAfterMerge(
-    root,
-    helpers.result,
-    nodes,
-    transforms,
-    symbols,
-    table,
-    walked
-  );
+  finishAfterMerge(root, helpers.result, transforms);
   return tokenizeTotal() - before;
 }
 
@@ -86,10 +78,7 @@ suite('the at-rule readers read the lists stored for their at-rules', () => {
     table.write(root.first, tokens('svg url(x)'));
     table.write(root.last, tokens('svg|a'));
     const symbols = new Map([
-      [
-        'discardUnused',
-        { transform: discardUnusedSymbols, options: {}, onRecords: true },
-      ],
+      ['discardUnused', { transform: discardUnusedSymbols, options: {} }],
     ]);
     assert.equal(afterWalk(root, table, new Map(), symbols), 0);
   });

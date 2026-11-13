@@ -2,7 +2,7 @@ import type { AcceptedPlugin } from 'postcss';
 import type { NamedPreset } from './presetEntries.js';
 import type { SharedTargets } from '#utils/browser-targets';
 import type { Guard } from '../optionGuards.js';
-import type { StageEntry, HostMember, Merge, NodeSymbolTransform, SymbolEntry, SymbolTransform, TransformEntry } from '../pipeline/host.js';
+import type { StageEntry, HostMember, Merge, SymbolEntry, SymbolTransform, TransformEntry } from '../pipeline/host.js';
 import type { MergeRunner } from '../passes/merge/index.js';
 export type PresetOptions<Plugins extends object> = {
     browserslist?: SharedTargets;
@@ -25,8 +25,7 @@ export type PluginEntrySettings = {
     transform?: true;
     merge?: MergeRunner;
     after?: true;
-    symbols?: SymbolTransform | NodeSymbolTransform;
-    onRecords?: true;
+    symbols?: SymbolTransform;
 };
 export type PluginEntry = readonly [StageEntry | TransformEntry, string, PluginEntrySettings];
 export type NamedKeys<Options> = string extends keyof Options ? never : keyof Options & string;

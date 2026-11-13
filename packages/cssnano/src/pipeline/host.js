@@ -77,17 +77,8 @@ import { runDriver } from '../passes/ir/runDriver.js';
  */
 
 /**
- * An advanced transform over the nodes that the end of the run returned. It
- * runs after the end, over the symbol lists as nodes. `remove` removes a node
- * and, with discardEmpty on, each ancestor it empties. `table` gives the
- * selector tokens the walk stored.
- * @typedef {(lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void, table: TextTable) => void} NodeSymbolTransform
- */
-
-/**
- * A symbol transform with its options, and whether it runs over the records
- * before the end (`onRecords`) or over the nodes after it.
- * @typedef {{transform: SymbolTransform | NodeSymbolTransform, options: Record<PropertyKey, unknown>, onRecords: boolean}} SymbolEntry
+ * A symbol transform with the options its entry's `create` returned.
+ * @typedef {{transform: SymbolTransform, options: Record<PropertyKey, unknown>}} SymbolEntry
  */
 
 /**
@@ -146,13 +137,13 @@ function runRecords(root, result, table, merge, browsers, after, symbols) {
       support,
     });
   }
-  const walked = walkAfterMerge(state, after, symbols, merge && browsers);
-  const nodes = runDriver.end(state, {
+  walkAfterMerge(state, after, symbols, merge && browsers);
+  runDriver.end(state, {
     browsers,
     folded: merge !== undefined,
     result,
   });
-  finishAfterMerge(root, result, nodes, after, symbols, table, walked);
+  finishAfterMerge(root, result, after);
 }
 
 /**

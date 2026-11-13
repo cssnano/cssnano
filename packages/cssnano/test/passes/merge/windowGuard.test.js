@@ -5,6 +5,7 @@ import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { fillSummaries } from '../../../src/passes/ir/selectorList.js';
 import { buildRecords } from '../../../src/passes/ir/buildRecords.js';
 import { guardWindow } from '../../../src/passes/ir/windowGuard.js';
+import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import runMerge from '../../../src/passes/merge/lib/rules/selectorMerger.js';
 import { writeBack } from '../../../src/passes/ir/writeBack.js';
 import { TextTable } from '../../../src/values/textTable.js';
@@ -62,4 +63,37 @@ test('guardWindow lets a merge of two rules through the window, where the merged
   }
   writeBack(records, nodes, context.tokenLists, textTable);
   assert.ok(root.nodes.some((node) => node.selector === 'h1,h2'));
+});
+
+test('a transform after merge that reads the table throws under checks', async () => {
+  const { walkAfterMerge } =
+    await import('../../../src/pipeline/afterMerge.js');
+  const root = postcss.parse('a{top:0}@keyframes k{from{top:0}}');
+  const context = createRunContext(undefined, true);
+  const state = runDriver.build(root, context);
+  const reads = new Map([
+    [
+      'reader',
+      {
+        transform: () => {
+          context.textTable.tokens(root.first);
+        },
+        options: {},
+      },
+    ],
+  ]);
+  try {
+    assert.throws(
+      () => walkAfterMerge(state, new Map(), reads),
+      /a table entry is read between build and write-back/v
+    );
+  } finally {
+    runDriver.end(state, {
+      browsers: [],
+      folded: false,
+      result: /** @type {import('postcss').Result} */ (
+        /** @type {unknown} */ ({ messages: [] })
+      ),
+    });
+  }
 });

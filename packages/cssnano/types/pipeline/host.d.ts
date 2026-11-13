@@ -1,4 +1,3 @@
-import { TextTable } from '../values/textTable.js';
 import type { Plugin } from 'postcss';
 import type { ValueBuffer } from '../values/valueBuffer.js';
 export type Reducer = (buffer: ValueBuffer, context: number) => void;
@@ -20,11 +19,9 @@ export type TransformEntry<Options = Record<PropertyKey, unknown>> = {
     create(options: Options): Record<PropertyKey, unknown> | null;
 };
 export type SymbolTransform = (lists: import('./symbolLists.js').RecordSymbolLists, options: Record<PropertyKey, unknown>, remove: (index: import('../passes/ir/blockRecord.js').ArenaIndex) => void, records: import('../passes/ir/blockRecords.js').BlockRecords, context: import('../passes/ir/runContext.js').RunContext) => void;
-export type NodeSymbolTransform = (lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void, table: TextTable) => void;
 export type SymbolEntry = {
-    transform: SymbolTransform | NodeSymbolTransform;
+    transform: SymbolTransform;
     options: Record<PropertyKey, unknown>;
-    onRecords: boolean;
 };
 export type Merge = {
     options: Record<PropertyKey, unknown>;

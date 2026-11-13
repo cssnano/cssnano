@@ -3,8 +3,9 @@ export const target = new URL(
   '../../src/plugins/postcss-discard-empty/index.js',
   import.meta.url
 ).href;
+// node --test expands this glob, so both the plugin's and the removal's tests run.
 export const test = new URL(
-  '../../test/postcss-discard-empty/index.test.js',
+  '../../test/{postcss-discard-empty/index,passes/ir/discardRecords}.test.js',
   import.meta.url
 ).href;
 
@@ -55,8 +56,10 @@ export const mutations = [
   },
   {
     name: 'invert empty container detection',
-    find: '(sub && !sub.length && !isLayer)',
-    replace: '(sub && sub.length && !isLayer)',
+    target: new URL('../../src/passes/ir/discardRecords.js', import.meta.url)
+      .href,
+    find: '      (childCount === 0 && !isLayer) ||',
+    replace: '      (childCount !== 0 && !isLayer) ||',
   },
   {
     name: 'invert empty at-rule detection',
@@ -110,8 +113,10 @@ export const mutations = [
   },
   {
     name: 'record removals at the front',
-    find: 'result.messages.push({',
-    replace: 'result.messages.unshift({',
+    target: new URL('../../src/passes/ir/discardRecords.js', import.meta.url)
+      .href,
+    find: '    context.messages.push({\n      index: parent,',
+    replace: '    context.messages.unshift({\n      index: parent,',
   },
   {
     name: 'report the root instead of the removed node',
@@ -123,17 +128,24 @@ export const mutations = [
   },
   {
     name: 'leave the ancestors a later removal empties',
-    find: '    parent.remove();',
+    target: new URL('../../src/passes/ir/discardRecords.js', import.meta.url)
+      .href,
+    find: '    removeEntry(records, parent);',
     replace: '    break;',
   },
   {
     name: 'stop after the first emptied ancestor',
+    target: new URL('../../src/passes/ir/discardRecords.js', import.meta.url)
+      .href,
     find: '    parent = next;',
     replace: '    parent = undefined;',
   },
   {
     name: 'treat an emptied named layer as removable',
-    find: "      parent.type === 'atrule' && asciiLowerCase(parent.name) === 'layer',",
-    replace: '      false,',
+    target: new URL('../../src/passes/ir/discardRecords.js', import.meta.url)
+      .href,
+    find: '    const isLayer = isLayerRecord(record);\n    if (\n      !shouldDiscard(context, record, links.childCount(parent), isLayer, false)',
+    replace:
+      '    const isLayer = false;\n    if (\n      !shouldDiscard(context, record, links.childCount(parent), isLayer, false)',
   },
 ];

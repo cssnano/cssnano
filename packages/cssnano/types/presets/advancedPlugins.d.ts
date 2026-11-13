@@ -19,7 +19,7 @@ export type AdvancedOnlyPluginOptions = {
 };
 export type AdvancedPluginOptions = import('./defaultPlugins.js').DefaultPluginOptions & AdvancedOnlyPluginOptions;
 /** @import {EntryFor} from './configurePlugins.js' */
-/** @import {NodeSymbolTransform, SymbolTransform} from '../pipeline/host.js' */
+/** @import {SymbolTransform} from '../pipeline/host.js' */
 /**
  * The options of the plugins that only the advanced preset adds.
  * @typedef {object} AdvancedOnlyPluginOptions
@@ -46,14 +46,12 @@ export declare const advancedPluginEntries: readonly [[{
     optionKeys: ("counterStyle" | "fontFace" | "keyframes" | "namespace")[];
     transform: true;
     symbols: SymbolTransform;
-    onRecords: true;
 }], [{
     create: (/** @type {Record<string, never>} */ options: Record<string, never>) => Record<string, never>;
 }, "mergeIdents", {
     optionKeys: never[];
     transform: true;
     symbols: SymbolTransform;
-    onRecords: true;
 }], [{
     create: (
     /** @type {import('#postcss-reduce-idents').Options} */ options: import('#postcss-reduce-idents').Options) => {
@@ -63,14 +61,12 @@ export declare const advancedPluginEntries: readonly [[{
     optionKeys: ("counter" | "counterStyle" | "encoder" | "gridTemplate" | "keyframes")[];
     transform: true;
     symbols: SymbolTransform;
-    onRecords: true;
 }], [{
     create: (/** @type {import('#postcss-zindex').Options} */ options: import('#postcss-zindex').Options) => import("#postcss-zindex").Options;
 }, "zindex", {
     optionKeys: "startIndex"[];
     transform: true;
     symbols: SymbolTransform;
-    onRecords: true;
 }]];
 /**
  * Every plugin the advanced preset runs: the default ones, then the advanced ones.

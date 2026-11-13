@@ -187,6 +187,23 @@
     },
     {
       "files": [
+        "packages/cssnano/src/pipeline/afterMerge.js",
+        "packages/cssnano/src/pipeline/symbolLists.js",
+        "packages/cssnano/src/plugins/postcss-merge-idents/lib/**",
+        "packages/cssnano/src/plugins/postcss-reduce-idents/lib/**",
+        "packages/cssnano/src/plugins/postcss-zindex/lib/**"
+      ],
+      "rules": {
+        "merge-ir/no-postcss-in-window": [
+          "error",
+          {
+            "allowed": ["packages/cssnano/src/pipeline/afterMerge.js"]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
         "packages/cssnano/src/passes/merge/lib/rules/**",
         "packages/cssnano/src/passes/merge/lib/duplicates/**",
         "packages/cssnano/src/passes/ir/**"

@@ -1,14 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import discardEmpty from '#postcss-discard-empty';
 import {
   createRecordSymbolLists,
-  createSymbolLists,
-  isAttached,
   isRecordAttached,
   recordSymbolVisit,
-  symbolVisit,
 } from '../../src/pipeline/symbolLists.js';
 import { createRunContext } from '../../src/passes/ir/runContext.js';
 import { runDriver } from '../../src/passes/ir/runDriver.js';
@@ -34,32 +30,6 @@ function textsOf(lists) {
 }
 
 /**
- * Visits each node after its children, as the walk after merge visits a kept
- * node after the entries it holds.
- * @param {import('postcss').Container} container
- * @param {(node: import('postcss').AnyNode) => void} visit
- */
-function visitPostOrder(container, visit) {
-  for (const child of container.nodes) {
-    if ('nodes' in child && child.nodes) visitPostOrder(child, visit);
-    visit(child);
-  }
-}
-
-/**
- * Walks the stylesheet the way the walk after merge does, over the nodes: the
- * discardEmpty plugin removes the empty nodes, then each kept node is visited
- * after its children.
- * @param {string} css
- */
-function collectNodes(css) {
-  const root = postcss([discardEmpty()]).process(css, { from: undefined }).root;
-  const lists = createSymbolLists();
-  visitPostOrder(root, symbolVisit(lists));
-  return { root, lists: textsOf(lists) };
-}
-
-/**
  * The same walk over the records. The texts are read from the build's nodes,
  * which the walk left as it found them.
  * @param {string} css
@@ -81,10 +51,7 @@ function collectRecords(css) {
   return { root, lists: textsOf(nodes) };
 }
 
-const forms = [
-  ['node', collectNodes],
-  ['records', collectRecords],
-];
+const forms = [['records', collectRecords]];
 
 for (const [form, collect] of forms) {
   describe(`${form} symbol lists`, () => {
@@ -174,24 +141,6 @@ for (const [form, collect] of forms) {
     });
   });
 }
-
-describe('isAttached', () => {
-  test('reports a node that hangs from the root', () => {
-    const root = postcss.parse('@media print{@keyframes a{0%{top:0}}}');
-    const keyframes = /** @type {import('postcss').AtRule} */ (
-      /** @type {import('postcss').AtRule} */ (root.first).first
-    );
-    assert.equal(isAttached(keyframes), true);
-  });
-
-  test('reports a node whose removed ancestor no longer reaches the root', () => {
-    const root = postcss.parse('@media print{@keyframes a{0%{top:0}}}');
-    const media = /** @type {import('postcss').AtRule} */ (root.first);
-    const keyframes = /** @type {import('postcss').AtRule} */ (media.first);
-    media.remove();
-    assert.equal(isAttached(keyframes), false);
-  });
-});
 
 /**
  * Builds `@media print{@keyframes a{0%{top:0}}}` and returns its indices.

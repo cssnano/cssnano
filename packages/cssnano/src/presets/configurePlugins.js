@@ -12,7 +12,7 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {StageEntry, HostMember, Merge, NodeSymbolTransform, SymbolEntry, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
+/** @import {StageEntry, HostMember, Merge, SymbolEntry, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
 /** @import {MergeRunner} from '../passes/merge/index.js' */
 
 /**
@@ -52,8 +52,7 @@ import {
  *   transform?: true,
  *   merge?: MergeRunner,
  *   after?: true,
- *   symbols?: SymbolTransform | NodeSymbolTransform,
- *   onRecords?: true,
+ *   symbols?: SymbolTransform,
  * }} PluginEntrySettings
  */
 
@@ -131,11 +130,7 @@ function addTransform(run, name, entry, options, settings) {
   if (settings.merge) {
     run.merge = { options: transform, runner: settings.merge };
   } else if (settings.symbols) {
-    run.symbols.set(name, {
-      transform: settings.symbols,
-      options: transform,
-      onRecords: settings.onRecords === true,
-    });
+    run.symbols.set(name, { transform: settings.symbols, options: transform });
   } else if (settings.after) {
     run.after.set(name, transform);
   } else {

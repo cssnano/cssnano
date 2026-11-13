@@ -1,113 +1,45 @@
-import type { AnyNode, AtRule, Declaration, Rule } from 'postcss';
 import type { ArenaIndex } from '../passes/ir/blockRecord.js';
 import type { BlockRecords } from '../passes/ir/blockRecords.js';
 import type { TokenLists } from '../passes/ir/tokenLists.js';
-export type SymbolLists = {
-    /**
-     * `@font-face` blocks
-     */
-    fontFaces: AtRule[];
-    /**
-     * `@counter-style` at-rules
-     */
-    counterStyles: AtRule[];
-    /**
-     * `@keyframes` at-rules
-     */
-    keyframes: AtRule[];
-    /**
-     * `@namespace` at-rules
-     */
-    namespaces: AtRule[];
-    /**
-     * rules whose selector has a namespace bar
-     */
-    namespaceRules: Rule[];
-    /**
-     * `font` and `font-family` declarations in a rule
-     */
-    fontDecls: Declaration[];
-    /**
-     * `list-style` and `system` declarations
-     */
-    listStyleDecls: Declaration[];
-    /**
-     * `animation` declarations
-     */
-    animationDecls: Declaration[];
-    /**
-     * `z-index` declarations
-     */
-    zIndexDecls: Declaration[];
-    /**
-     * `@layer` at-rules, with or without a block
-     */
-    layers: AtRule[];
-    /**
-     * `@function` rules
-     */
-    functions: AtRule[];
-    /**
-     * `@mixin` and `@apply` rules
-     */
-    parameterRules: AtRule[];
-    /**
-     * `@container`, `@when` and `@else` rules
-     */
-    conditionRules: AtRule[];
-    /**
-     * every declaration
-     */
-    decls: Declaration[];
-};
-/**
- * The nodes that the advanced transforms read, by kind. The walk after merge
- * fills them, so each transform edits lists rather than walking the tree.
- *
- * @typedef {object} SymbolLists
- * @property {AtRule[]} fontFaces `@font-face` blocks
- * @property {AtRule[]} counterStyles `@counter-style` at-rules
- * @property {AtRule[]} keyframes `@keyframes` at-rules
- * @property {AtRule[]} namespaces `@namespace` at-rules
- * @property {Rule[]} namespaceRules rules whose selector has a namespace bar
- * @property {Declaration[]} fontDecls `font` and `font-family` declarations in a rule
- * @property {Declaration[]} listStyleDecls `list-style` and `system` declarations
- * @property {Declaration[]} animationDecls `animation` declarations
- * @property {Declaration[]} zIndexDecls `z-index` declarations
- * @property {AtRule[]} layers `@layer` at-rules, with or without a block
- * @property {AtRule[]} functions `@function` rules
- * @property {AtRule[]} parameterRules `@mixin` and `@apply` rules
- * @property {AtRule[]} conditionRules `@container`, `@when` and `@else` rules
- * @property {Declaration[]} decls every declaration
- */
-/**
- * @returns {SymbolLists}
- */
-export declare function createSymbolLists(): SymbolLists;
-/**
- * Whether a node still hangs from the root. A transform that ran before a
- * removal may have detached a node that the lists hold.
- *
- * @param {AnyNode} node
- * @returns {boolean}
- */
-export declare function isAttached(node: AnyNode): boolean;
-/**
- * Sorts one kept node into the lists it belongs to. Names are matched the way
- * the transforms match them, so a list holds exactly what they would find.
- *
- * @param {SymbolLists} lists
- * @returns {(node: AnyNode) => void}
- */
-export declare function symbolVisit(lists: SymbolLists): (node: AnyNode) => void;
 export type RecordSymbolLists = {
-    [K in keyof SymbolLists]: ArenaIndex[];
+    fontFaces: ArenaIndex[];
+    counterStyles: ArenaIndex[];
+    keyframes: ArenaIndex[];
+    namespaces: ArenaIndex[];
+    namespaceRules: ArenaIndex[];
+    fontDecls: ArenaIndex[];
+    listStyleDecls: ArenaIndex[];
+    animationDecls: ArenaIndex[];
+    zIndexDecls: ArenaIndex[];
+    layers: ArenaIndex[];
+    functions: ArenaIndex[];
+    parameterRules: ArenaIndex[];
+    conditionRules: ArenaIndex[];
+    decls: ArenaIndex[];
 };
 /**
- * The records that the advanced transforms read, by kind: the same lists as
- * `SymbolLists`, holding the arena indices of the records.
+ * The records that the advanced transforms read, by kind, as the arena indices
+ * of the records: `@font-face` blocks, counter styles, keyframes, namespaces,
+ * rules with a namespace bar, font and list-style and animation declarations,
+ * z-index declarations, layers, functions, parameter rules, condition rules,
+ * and every declaration.
  *
- * @typedef {{[K in keyof SymbolLists]: ArenaIndex[]}} RecordSymbolLists
+ * @typedef {{
+ *   fontFaces: ArenaIndex[],
+ *   counterStyles: ArenaIndex[],
+ *   keyframes: ArenaIndex[],
+ *   namespaces: ArenaIndex[],
+ *   namespaceRules: ArenaIndex[],
+ *   fontDecls: ArenaIndex[],
+ *   listStyleDecls: ArenaIndex[],
+ *   animationDecls: ArenaIndex[],
+ *   zIndexDecls: ArenaIndex[],
+ *   layers: ArenaIndex[],
+ *   functions: ArenaIndex[],
+ *   parameterRules: ArenaIndex[],
+ *   conditionRules: ArenaIndex[],
+ *   decls: ArenaIndex[],
+ * }} RecordSymbolLists
  */
 /**
  * @returns {RecordSymbolLists}
