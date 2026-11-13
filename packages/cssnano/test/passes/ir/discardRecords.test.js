@@ -40,7 +40,10 @@ describe('the discard over the records', () => {
     const { state, context } = built;
     /** @type {number[]} */
     const seen = [];
-    discardEmptyRecords(state.records, context, (index) => seen.push(index));
+    discardEmptyRecords(state.records, context, {
+      enter() {},
+      visit: (index) => seen.push(index),
+    });
     assert.deepEqual(
       seen.map((index) => state.records.entry(index).kind),
       [DECLARATION, RULE]

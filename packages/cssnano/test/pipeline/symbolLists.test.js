@@ -39,9 +39,11 @@ function collectRecords(css) {
   const context = createRunContext(true);
   const state = runDriver.build(root, context);
   const lists = createRecordSymbolLists();
-  discardEmptyRecords(state.records, context, (index) =>
-    recordSymbolVisit(state.records, context.tokenLists, lists, index)
-  );
+  discardEmptyRecords(state.records, context, {
+    enter() {},
+    visit: (index) =>
+      recordSymbolVisit(state.records, context.tokenLists, lists, index),
+  });
   /** @type {Record<string, import('postcss').AnyNode[]>} */
   const nodes = {};
   for (const [name, indices] of Object.entries(lists)) {

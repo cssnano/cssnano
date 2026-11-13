@@ -5,6 +5,7 @@ import { createRunContext } from '../../src/passes/ir/runContext.js';
 import { runDriver } from '../../src/passes/ir/runDriver.js';
 import { discardEmptyRecords } from '../../src/passes/ir/discardRecords.js';
 import { nodeOf } from '../../src/passes/ir/nodeTable.js';
+import { walkUp } from '../../src/pipeline/walkUp.js';
 
 /** @param {import('postcss').AnyNode} node */
 function label(node) {
@@ -28,18 +29,36 @@ function discardWithVisit(css, visit) {
   discardEmptyRecords(
     state.records,
     context,
-    visit &&
-      ((index) => {
+    visit && {
+      enter() {},
+      visit(index) {
         const node = nodeOf(state.nodes, index);
         visited.push(label(node));
         visit(node);
-      })
+      },
+    }
   );
   runDriver.end(state, { browsers: [], folded: false });
   return { output: root.toString(), visited };
 }
 
-describe('discardEmptyRecords visit', () => {
+/**
+ * The output of the walk up over `css` with the named transforms on.
+ *
+ * @param {string} css
+ * @param {string[]} names the transforms on, by entry name
+ * @returns {string}
+ */
+function walkUpOutput(css, names) {
+  const root = postcss.parse(css);
+  const context = createRunContext(undefined);
+  const state = runDriver.build(root, context);
+  walkUp(state, new Map(names.map((name) => [name, {}])), new Map());
+  runDriver.end(state, { browsers: [], folded: false });
+  return root.toString();
+}
+
+describe('discardEmptyRecords visitor', () => {
   test('calls visit on each kept node and not on a removed node', () => {
     const { visited } = discardWithVisit('a{color:red}b{}', () => {});
     assert.deepEqual(visited, ['color', 'a']);
@@ -53,8 +72,28 @@ describe('discardEmptyRecords visit', () => {
     assert.deepEqual(visited, ['color', 'a', '@media']);
   });
 
-  test('leaves the output unchanged when no visit is given', () => {
+  test('leaves the output unchanged when no visitor is given', () => {
     const { output } = discardWithVisit('a{color:red}b{}');
     assert.equal(output, 'a{color:red}');
+  });
+});
+
+describe('walkUp', () => {
+  test('with discardEmpty on, removes an empty rule and keeps the rest', () => {
+    assert.equal(
+      walkUpOutput('a{color:red}b{}', ['discardEmpty']),
+      'a{color:red}'
+    );
+  });
+
+  test('with normalizeWhitespace on and no discardEmpty, visits every entry in pre-order', () => {
+    assert.equal(
+      walkUpOutput('a { color : red }', ['normalizeWhitespace']),
+      'a{color:red}'
+    );
+  });
+
+  test('with no transform on, leaves the output unchanged', () => {
+    assert.equal(walkUpOutput('a { color : red }', []), 'a { color : red }');
   });
 });

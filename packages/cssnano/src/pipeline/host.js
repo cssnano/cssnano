@@ -1,5 +1,5 @@
 import { browserTargets, resolveTargets } from '#utils/browser-targets';
-import { walkAfterMerge } from './afterMerge.js';
+import { walkUp } from './walkUp.js';
 import { discardOverriddenAtRules } from './overridable.js';
 import { walkDown } from './walkDown.js';
 import { declarationPlansOf } from './declarationWalk.js';
@@ -166,7 +166,7 @@ function runRecords(
     });
     if (round) merge.runner.secondRound(state.records, round);
   }
-  walkAfterMerge(state, after, symbols, merge && browsers);
+  walkUp(state, after, symbols, merge && browsers);
   runDriver.end(state, {
     browsers,
     folded: merge !== undefined,

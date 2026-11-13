@@ -24,6 +24,14 @@ import { isBlankTokens } from '../../values/tokensText.js';
 export const DISCARD_PLUGIN = 'postcss-discard-empty';
 
 /**
+ * A per-entry transform that shares the discard walk. `enter` runs before the
+ * children of a rule or an at-rule block, and `visit` on each kept entry after
+ * its children.
+ *
+ * @typedef {{enter(index: ArenaIndex): void, visit(index: ArenaIndex): void}} EntryVisitor
+ */
+
+/**
  * Whether an entry is empty, as its PostCSS node is: a declaration with no value,
  * a rule with no selector, a block or rule with no children, an at-rule with no
  * prelude and no children, or a redundant named layer.
@@ -94,8 +102,8 @@ class DiscardWalk {
   /** @type {RunContext} */
   context;
 
-  /** @type {((index: ArenaIndex) => void) | undefined} */
-  visit;
+  /** @type {EntryVisitor | undefined} */
+  visitor;
 
   /**
    * Layer keys declared in each open condition, outermost (top level) first.
@@ -110,12 +118,12 @@ class DiscardWalk {
   /**
    * @param {BlockRecords} records
    * @param {RunContext} context
-   * @param {((index: ArenaIndex) => void) | undefined} visit
+   * @param {EntryVisitor | undefined} visitor
    */
-  constructor(records, context, visit) {
+  constructor(records, context, visitor) {
     this.records = records;
     this.context = context;
-    this.visit = visit;
+    this.visitor = visitor;
   }
 
   /**
@@ -207,23 +215,23 @@ class DiscardWalk {
       context.messages.push({ index, type: 'removal', plugin: DISCARD_PLUGIN });
     } else {
       if (name !== undefined) this.declare(parentKey, name);
-      if (this.visit) this.visit(index);
+      if (this.visitor) this.visitor.visit(index);
     }
   }
 }
 
 /**
  * Discards the empty entries of the stylesheet, and records each removal as a
- * message. `visit` runs on each kept entry, after its children, so another
+ * message. `visitor` runs on each kept entry, after its children, so another
  * per-entry transform can share this walk.
  *
  * @param {BlockRecords} records
  * @param {RunContext} context
- * @param {((index: ArenaIndex) => void) | undefined} [visit]
+ * @param {EntryVisitor} [visitor]
  * @return {void}
  */
-export function discardEmptyRecords(records, context, visit) {
-  const walk = new DiscardWalk(records, context, visit);
+export function discardEmptyRecords(records, context, visitor) {
+  const walk = new DiscardWalk(records, context, visitor);
   const { links, root } = records;
   for (let entry = links.firstChild(root.index); entry !== -1;) {
     const next = links.nextSibling(entry);

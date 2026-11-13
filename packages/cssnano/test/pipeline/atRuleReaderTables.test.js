@@ -9,7 +9,7 @@ const { walkDown } = await import('../../src/pipeline/walkDown.js');
 const { declarationPlansOf } =
   await import('../../src/pipeline/declarationWalk.js');
 const { tokens } = await import('../../src/utils/value.js');
-const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
+const { walkUp } = await import('../../src/pipeline/walkUp.js');
 const { createRunContext } = await import('../../src/passes/ir/runContext.js');
 const { runDriver } = await import('../../src/passes/ir/runDriver.js');
 const { discardUnusedSymbols } =
@@ -39,7 +39,7 @@ function afterWalk(root, transforms, symbols) {
   const context = createRunContext(undefined);
   const state = runDriver.build(root, context);
   const before = tokenizeTotal();
-  walkAfterMerge(state, transforms, symbols);
+  walkUp(state, transforms, symbols);
   runDriver.end(state, {
     browsers: [],
     folded: false,

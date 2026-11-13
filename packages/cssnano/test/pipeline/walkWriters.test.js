@@ -26,7 +26,7 @@ const { default: normalizeString } =
   await import('../../src/plugins/postcss-normalize-string/index.js');
 const { default: normalizeUrl } =
   await import('../../src/plugins/postcss-normalize-url/index.js');
-const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
+const { walkUp } = await import('../../src/pipeline/walkUp.js');
 const { runDriver } = await import('../../src/passes/ir/runDriver.js');
 const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
@@ -266,7 +266,7 @@ function afterWalk(root, transforms, symbols) {
   const context = createRunContext(undefined);
   const state = runDriver.build(root, context);
   const before = tokenizeTotal();
-  walkAfterMerge(state, transforms, symbols);
+  walkUp(state, transforms, symbols);
   runDriver.end(state, {
     browsers: [],
     folded: false,
