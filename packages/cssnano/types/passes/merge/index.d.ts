@@ -3,6 +3,7 @@ import { isBoolean } from '../../optionGuards.js';
 import type { BlockRecords } from '../ir/blockRecords.js';
 import type { Result, Root } from 'postcss';
 import type { RunContext } from '../ir/runContext.js';
+import type { LonghandRound } from './lib/longhand/canonicalize.js';
 export type RecordTransform = (records: BlockRecords, browsers: readonly string[], context: RunContext) => void;
 /**
  * The merge transforms over the records, in the order the default preset runs
@@ -26,22 +27,15 @@ export declare function mergeRecords(records: BlockRecords, browsers: readonly s
 export { targetSupportOf };
 export type MergeRunner = {
     support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>;
+    round: (support: ReturnType<typeof targetSupportOf>, context: RunContext) => LonghandRound | undefined;
+    merge: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {
+        rules?: boolean;
+    }) => void;
     transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {
         rules?: boolean;
         support: ReturnType<typeof targetSupportOf>;
     }) => void;
 };
-/**
- * The merge run of a preset, which the host runs between its walk and the walk
- * after merge. `support` gives the targets' support, whose features the host
- * gives the run's context; `transforms` runs the merge transforms over the
- * build. The host builds and ends the run, so it imports nothing of the merge.
- *
- * @typedef {{
- *   support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>,
- *   transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean, support: ReturnType<typeof targetSupportOf>}) => void,
- * }} MergeRunner
- */
 /** @type {MergeRunner} */
 export declare const mergeRunner: MergeRunner;
 /**

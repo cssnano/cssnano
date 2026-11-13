@@ -66,18 +66,6 @@ function alignmentFamilyOf(prop) {
 
 /**
  * @typedef {{
- *   columnRules: {block: Block, positions: number[], lanes: [number[], number[]]}[],
- *   setsOtherColumn: boolean,
- *   placeShorthands: boolean,
- *   boxSupport: BoxSupport,
- *   pairShorthands: ReadonlySet<string>,
- *   features: ReadonlySet<string>,
- *   run: RunContext
- * }} MergeContext
- */
-
-/**
- * @typedef {{
  *   family: PairFamily | AlignmentFamilyConfig,
  *   decls: number[],
  *   lanes: [number[], number[]]
@@ -112,10 +100,19 @@ function addFamilyDeclaration(state, family, child, laneIndex) {
  * @param {string} prop
  * @param {number} laneIndex
  * @param {Parameters<typeof reduceClassifiedContainer>[1]} state
- * @param {Omit<MergeContext, 'columnRules'>} context
+ * @param {LonghandRound} context
+ * @param {ArenaIndex} container the block that holds the declaration
  * @return {void}
  */
-function classifyDeclaration(list, child, prop, laneIndex, state, context) {
+function classifyDeclaration(
+  list,
+  child,
+  prop,
+  laneIndex,
+  state,
+  context,
+  container
+) {
   // Families the targets cannot parse are not collected, so they stay as written.
   const pair = pairFamilyOf(prop);
   if (pair && context.pairShorthands.has(pair.shorthand)) {
@@ -135,7 +132,13 @@ function classifyDeclaration(list, child, prop, laneIndex, state, context) {
     return;
   }
   if (prop.startsWith('column')) {
-    context.setsOtherColumn ||= setsOtherColumnProperty(list.at(child));
+    // A block is recorded once, so the check is skipped after its first hit.
+    if (
+      context.otherColumnBlocks.at(-1) !== container &&
+      setsOtherColumnProperty(list.at(child))
+    ) {
+      context.otherColumnBlocks.push(container);
+    }
     if (allColumnProps.has(prop)) {
       state.columnDecls.push(child);
       state.columnLanes[laneIndex].push(child);
@@ -180,7 +183,7 @@ function createContainerState() {
  *
  * @param {BlockRecords} records
  * @param {Block} block
- * @param {MergeContext} context
+ * @param {LonghandRound} context
  * @return {void}
  */
 function commitBlock(records, block, context) {
@@ -192,7 +195,7 @@ function commitBlock(records, block, context) {
  * @param {BlockRecords} records
  * @param {Block} block
  * @param {boolean} styleRule whether the block is a style rule
- * @param {MergeContext} context
+ * @param {LonghandRound} context
  * @return {void}
  */
 function processContainer(records, block, styleRule, context) {
@@ -238,7 +241,8 @@ function processContainer(records, block, styleRule, context) {
       asciiLowerCase(child.prop),
       laneIndex,
       state,
-      context
+      context,
+      block.container
     );
   }
 
@@ -251,11 +255,98 @@ function processContainer(records, block, styleRule, context) {
 }
 
 /**
+ * The longhand round of one run: the column rules and column blocks the
+ * rounds gather, and the targets' tables. `finishColumns` clears the gathered
+ * state, so one round can serve each pass over the blocks.
+ */
+export class LonghandRound {
+  /** @type {{block: Block, positions: number[], lanes: [number[], number[]]}[]} */
+  columnRules = [];
+
+  /**
+   * The blocks that set a column property other than column-width and
+   * column-count, each once, in the order the round reached them.
+   * @type {ArenaIndex[]}
+   */
+  otherColumnBlocks = [];
+
+  /** Whether the last `finishColumns` found such a block. */
+  setsOtherColumn = false;
+
+  /**
+   * @param {boolean} placeShorthands
+   * @param {BoxSupport} boxSupport
+   * @param {ReadonlySet<string>} pairShorthands
+   * @param {RunContext} run the run whose tables and features the rounds read
+   */
+  constructor(placeShorthands, boxSupport, pairShorthands, run) {
+    this.placeShorthands = placeShorthands;
+    this.boxSupport = boxSupport;
+    this.pairShorthands = pairShorthands;
+    this.features = run.features;
+    this.run = run;
+  }
+
+  /**
+   * Folds and commits the root's own declarations.
+   * @param {BlockRecords} records
+   * @return {void}
+   */
+  root(records) {
+    const root = /** @type {ArenaIndex} */ (records.root.index);
+    const list = declarationsFromRecords(records, this.run, root);
+    foldContainerDeclarations(list, list.chain);
+    commitBlock(records, { container: root, list }, this);
+  }
+
+  /**
+   * Reduces a rule or at-rule block that holds a declaration; other entries are left alone.
+   * @param {BlockRecords} records
+   * @param {ArenaIndex} index the entry the round reaches
+   * @return {void}
+   */
+  block(records, index) {
+    const record = records.entry(index);
+    if (record.kind !== RULE && record.kind !== AT_RULE_BLOCK) return;
+    if (firstDeclaration(records, index) === undefined) return;
+    processContainer(
+      records,
+      {
+        container: index,
+        list: declarationsFromRecords(records, this.run, index),
+      },
+      record.kind === RULE,
+      this
+    );
+  }
+
+  /**
+   * Reduces the column rules once every block is canonicalized, since a column
+   * property set elsewhere is a whole-stylesheet fact; commits each column block once.
+   * @param {BlockRecords} records
+   * @return {void}
+   */
+  finishColumns(records) {
+    this.setsOtherColumn = this.otherColumnBlocks.length > 0;
+    if (!this.setsOtherColumn) {
+      for (const { block, positions, lanes } of this.columnRules) {
+        reduceColumns(block.list, positions, lanes, this.features);
+      }
+    }
+    const blocks = new Set(this.columnRules.map((rule) => rule.block));
+    for (const block of blocks) commitBlock(records, block, this);
+    // The next round gathers its column facts afresh.
+    this.columnRules = [];
+    this.otherColumnBlocks = [];
+  }
+}
+
+/**
  * @param {boolean} placeShorthands
  * @param {BoxSupport} boxSupport
  * @param {ReadonlySet<string>} pairShorthands
  * @param {RunContext} run the run whose tables and features the rounds read
- * @return {MergeContext} the state that the rounds of one run share
+ * @return {LonghandRound} the round that the rounds of one run share
  */
 export function longhandContext(
   placeShorthands,
@@ -263,38 +354,7 @@ export function longhandContext(
   pairShorthands,
   run
 ) {
-  return {
-    columnRules: [],
-    setsOtherColumn: false,
-    placeShorthands,
-    boxSupport,
-    pairShorthands,
-    features: run.features,
-    run,
-  };
-}
-
-/**
- * Reduces the column rules once every block of the stylesheet is canonicalized,
- * since whether a column property is set elsewhere is a whole-stylesheet fact.
- * Each column block is committed once, after its column reducers.
- *
- * @param {BlockRecords} records
- * @param {MergeContext} context
- * @return {void}
- */
-function finishColumns(records, context) {
-  if (!context.setsOtherColumn) {
-    for (const { block, positions, lanes } of context.columnRules) {
-      reduceColumns(block.list, positions, lanes, context.features);
-    }
-  }
-  const blocks = new Set(context.columnRules.map((rule) => rule.block));
-  for (const block of blocks) commitBlock(records, block, context);
-  // Each round rescans every block, so the next one gathers its column facts
-  // afresh.
-  context.columnRules = [];
-  context.setsOtherColumn = false;
+  return new LonghandRound(placeShorthands, boxSupport, pairShorthands, run);
 }
 
 /**
@@ -303,10 +363,10 @@ function finishColumns(records, context) {
  *
  * @param {BlockRecords} records
  * @param {ArenaIndex} index the block whose chain is walked
- * @param {MergeContext} context
+ * @param {LonghandRound} round
  * @return {void}
  */
-function canonicalizeChildren(records, index, context) {
+function canonicalizeChildren(records, index, round) {
   for (
     let entry = records.links.firstChild(index);
     entry !== -1;
@@ -314,18 +374,8 @@ function canonicalizeChildren(records, index, context) {
   ) {
     const record = records.entry(entry);
     if (record.kind !== RULE && record.kind !== AT_RULE_BLOCK) continue;
-    if (firstDeclaration(records, entry) !== undefined) {
-      processContainer(
-        records,
-        {
-          container: entry,
-          list: declarationsFromRecords(records, context.run, entry),
-        },
-        record.kind === RULE,
-        context
-      );
-    }
-    canonicalizeChildren(records, entry, context);
+    round.block(records, entry);
+    canonicalizeChildren(records, entry, round);
   }
 }
 
@@ -334,14 +384,15 @@ function canonicalizeChildren(records, index, context) {
  * then every block that holds a declaration, then the columns are finished.
  *
  * @param {BlockRecords} records
- * @param {MergeContext} context a context made with the records
+ * @param {LonghandRound} round a round made with the records' run
  * @return {void}
  */
-export function canonicalizeRecords(records, context) {
-  const root = /** @type {ArenaIndex} */ (records.root.index);
-  const list = declarationsFromRecords(records, context.run, root);
-  foldContainerDeclarations(list, list.chain);
-  commitBlock(records, { container: root, list }, context);
-  canonicalizeChildren(records, root, context);
-  finishColumns(records, context);
+export function canonicalizeRecords(records, round) {
+  round.root(records);
+  canonicalizeChildren(
+    records,
+    /** @type {ArenaIndex} */ (records.root.index),
+    round
+  );
+  round.finishColumns(records);
 }

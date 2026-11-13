@@ -6,7 +6,7 @@ import { reducePairFamily } from './decl/pairReducer.js';
 
 /** @import {BoxDeclarations} from './decl/boxReducer.js'; */
 /** @import {BoxGroup} from './decl/boxGroups.js'; */
-/** @import {FamilyDeclarations, MergeContext} from './canonicalize.js'; */
+/** @import {FamilyDeclarations, LonghandRound} from './canonicalize.js'; */
 /** @import {Block} from './canonicalize.js'; */
 
 /**
@@ -23,7 +23,7 @@ import { reducePairFamily } from './decl/pairReducer.js';
  *   hasForeignBorder: boolean,
  *   families: Map<FamilyDeclarations['family'], FamilyDeclarations> | null,
  * }} state
- * @param {MergeContext} context
+ * @param {LonghandRound} context
  * @return {void}
  */
 export function reduceClassifiedContainer(block, state, context) {

@@ -2,6 +2,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { mergePass, transformPlugin } from '../../../src/passes/merge/index.js';
+import {
+  canonicalizeRecords,
+  longhandContext,
+} from '../../../src/passes/merge/lib/longhand/canonicalize.js';
+import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
+import { createRunContext } from '../../../src/passes/ir/runContext.js';
+import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 
 /**
@@ -347,4 +354,35 @@ test('the merge pass gives a block that no duplicate removal or rule merge chang
     ),
     'a{border-color:rgba(0,0,0,.5) rgba(0,0,0,.5) blue currentcolor;border-style:solid;border-width:2px}'
   );
+});
+
+test('a round reduces one block through `block` as `canonicalizeRecords` does', () => {
+  const css =
+    'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}';
+  const browsers = resolveTargets({}, undefined);
+  const support = targetSupportOf(browsers);
+  /** @param {(records: import('../../../src/passes/ir/blockRecords.js').BlockRecords, round: ReturnType<typeof longhandContext>) => void} reduce */
+  const runWith = (reduce) => {
+    const root = postcss.parse(css);
+    const context = createRunContext(undefined, support.features);
+    const state = runDriver.build(root, context);
+    const round = longhandContext(
+      support.placeShorthands,
+      support.boxSupport,
+      support.pairShorthands,
+      context
+    );
+    reduce(state.records, round);
+    runDriver.end(state, { browsers, folded: true });
+    return root.toString();
+  };
+  const viaBlock = runWith((records, round) => {
+    const rule = records.links.firstChild(records.root.index);
+    round.block(records, rule);
+  });
+  const viaRecords = runWith((records, round) =>
+    canonicalizeRecords(records, round)
+  );
+  assert.equal(viaBlock, viaRecords);
+  assert.equal(viaBlock, 'a{margin:1px}');
 });

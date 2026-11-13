@@ -13,6 +13,7 @@ import { assertValid, isBoolean } from '../../optionGuards.js';
 /** @import {BlockRecords} from '../ir/blockRecords.js' */
 /** @import {Result, Root} from 'postcss' */
 /** @import {RunContext} from '../ir/runContext.js' */
+/** @import {LonghandRound} from './lib/longhand/canonicalize.js' */
 
 /** The merge transforms take the records, the browser targets and the run context. */
 /** @typedef {(records: BlockRecords, browsers: readonly string[], context: RunContext) => void} RecordTransform */
@@ -87,18 +88,57 @@ export { targetSupportOf };
 /**
  * The merge run of a preset, which the host runs between its walk and the walk
  * after merge. `support` gives the targets' support, whose features the host
- * gives the run's context; `transforms` runs the merge transforms over the
- * build. The host builds and ends the run, so it imports nothing of the merge.
+ * gives the run's context. `round` makes the longhand round of the run, or
+ * undefined when the runner has none. `merge` runs the dedupe and the rule
+ * merge over the records, without the summaries. `transforms` runs the merge
+ * transforms over the build. The host builds and ends the run, so it imports
+ * nothing of the merge.
  *
  * @typedef {{
  *   support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>,
+ *   round: (support: ReturnType<typeof targetSupportOf>, context: RunContext) => LonghandRound | undefined,
+ *   merge: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean}) => void,
  *   transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean, support: ReturnType<typeof targetSupportOf>}) => void,
  * }} MergeRunner
  */
 
+/**
+ * The longhand round of a run, with the targets' support.
+ *
+ * @param {ReturnType<typeof targetSupportOf>} support
+ * @param {RunContext} context
+ * @return {LonghandRound}
+ */
+function roundOf(support, context) {
+  return longhandContext(
+    support.placeShorthands,
+    support.boxSupport,
+    support.pairShorthands,
+    context
+  );
+}
+
+/**
+ * The dedupe, and the rule merge unless `rules` is false, over the records,
+ * without the summaries that the rule merge reads.
+ *
+ * @param {BlockRecords} records
+ * @param {readonly string[]} browsers
+ * @param {RunContext} context
+ * @param {{rules?: boolean}} options
+ * @return {void}
+ */
+function mergeOf(records, browsers, context, { rules = true }) {
+  for (const transform of rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY) {
+    transform(records, browsers, context);
+  }
+}
+
 /** @type {MergeRunner} */
 export const mergeRunner = Object.freeze({
   support: targetSupportOf,
+  round: roundOf,
+  merge: mergeOf,
   transforms: mergeRecords,
 });
 
@@ -113,6 +153,15 @@ export const mergeRunner = Object.freeze({
 export function transformRunner(...names) {
   return Object.freeze({
     support: targetSupportOf,
+    round: (support, context) =>
+      names.includes('mergeLonghand') ? roundOf(support, context) : undefined,
+    merge: (records, browsers, context) => {
+      for (const name of names) {
+        for (const transform of transformsOf(name)) {
+          transform(records, browsers, context);
+        }
+      }
+    },
     transforms: (records, browsers, context, { support }) => {
       /** @type {RecordTransform[]} */
       const transforms = [];
@@ -140,6 +189,17 @@ export function transformRunner(...names) {
 const DEDUPE_THEN_MERGE = Object.freeze([discardDuplicates, runMerge]);
 const DEDUPE_ONLY = Object.freeze([discardDuplicates]);
 const MERGE_ONLY = Object.freeze([runMerge]);
+
+/**
+ * The merge transforms that a name of `transformRunner` runs.
+ *
+ * @param {string} name
+ * @return {readonly RecordTransform[]}
+ */
+function transformsOf(name) {
+  if (name === 'mergeRules') return MERGE_ONLY;
+  return name === 'discardDuplicates' ? DEDUPE_ONLY : [];
+}
 
 /**
  * The merge transforms over one stylesheet, as one run of the driver: build,

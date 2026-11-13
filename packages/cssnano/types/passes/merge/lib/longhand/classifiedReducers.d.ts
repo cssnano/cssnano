@@ -1,10 +1,10 @@
 import type { BoxDeclarations } from './decl/boxReducer.js';
 import type { BoxGroup } from './decl/boxGroups.js';
-import type { FamilyDeclarations, MergeContext } from './canonicalize.js';
+import type { FamilyDeclarations, LonghandRound } from './canonicalize.js';
 import type { Block } from './canonicalize.js';
 /** @import {BoxDeclarations} from './decl/boxReducer.js'; */
 /** @import {BoxGroup} from './decl/boxGroups.js'; */
-/** @import {FamilyDeclarations, MergeContext} from './canonicalize.js'; */
+/** @import {FamilyDeclarations, LonghandRound} from './canonicalize.js'; */
 /** @import {Block} from './canonicalize.js'; */
 /**
  * Runs property-family reducers on classified declarations for a block. The
@@ -20,7 +20,7 @@ import type { Block } from './canonicalize.js';
  *   hasForeignBorder: boolean,
  *   families: Map<FamilyDeclarations['family'], FamilyDeclarations> | null,
  * }} state
- * @param {MergeContext} context
+ * @param {LonghandRound} context
  * @return {void}
  */
 export declare function reduceClassifiedContainer(block: Block, state: {
@@ -32,5 +32,5 @@ export declare function reduceClassifiedContainer(block: Block, state: {
     borderDeclarations: number[];
     hasForeignBorder: boolean;
     families: Map<FamilyDeclarations['family'], FamilyDeclarations> | null;
-}, context: MergeContext): void;
+}, context: LonghandRound): void;
 //# sourceMappingURL=classifiedReducers.d.ts.map
