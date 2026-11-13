@@ -1,5 +1,5 @@
 import { expandFourSides, fourSideCount } from './parseTrbl.js';
-import { cssWideKeywords } from './spec.js';
+import { cssWideKeywords } from '../../../ir/spec.js';
 import cssnanoUtils from '#utils';
 import shorthandData from './data/shorthandIdentities.json' with { type: 'json' };
 import { shorthandForms } from './decl/alignmentForms.js';

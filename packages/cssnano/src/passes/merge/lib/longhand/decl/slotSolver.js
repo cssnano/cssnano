@@ -3,7 +3,7 @@ import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { hasHack } from '#stylehacks';
 import canExplode from '../canExplode.js';
 import hasSubstitution from '../hasSubstitution.js';
-import { declarationTokens } from '../componentRanges.js';
+import { componentTexts, declarationTokens } from '../componentRanges.js';
 import { mergeBlockingSupport, needsUnmetSupport } from '../isFallback.js';
 import minifyTrbl from '../minifyTrbl.js';
 import { minifyPair, parsePair } from '../pairs.js';
@@ -37,7 +37,7 @@ const pairForms = { parse: parsePair, minify: minifyPair };
 
 /**
  * @param {BoxFamily} family
- * @return {{ parse: (value: string) => string[], minify: (value: string | string[]) => string }}
+ * @return {{ parse: (value: string | string[]) => string[], minify: (value: string | string[]) => string }}
  * how the family spreads and condenses its slots: four sides, or a start and
  * an end
  */
@@ -182,7 +182,7 @@ function freeOverriddenSlots(family, list, laneDecls, inserted, features) {
     lastOverrider ??= lastPlainSetters(family, list, laneDecls, features);
     if (lastOverrider.every((setter) => setter <= index)) continue;
 
-    const values = parse(item.value);
+    const values = parse(componentTexts(item));
     const result = shortestWithFreeSlots(
       values,
       lastOverrider.map((setter) => setter > index),
@@ -313,7 +313,7 @@ export function reduceFamilyLane(
       decl
     );
 
-    const vals = isShort ? parse(item.value) : null;
+    const vals = isShort ? parse(componentTexts(item)) : null;
     for (let i = 0; i < count; i++) {
       if (isShort || i === property.slot) {
         lane.assign(i, vals ? vals[i] : item.value, decl, wasFull);

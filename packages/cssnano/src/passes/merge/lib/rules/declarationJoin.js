@@ -4,24 +4,24 @@ import {
   holdsOnlyDeclarationsOf,
   childEntriesOf,
   declarationsOf,
-} from './blockChildren.js';
+} from '../../../ir/blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import RepeatScan from './repeatScan.js';
-import { filterRuleIntersections } from './declarations.js';
-import { isKeyframes } from './sameContainer.js';
-import { removeRules } from './treeEdits.js';
-import { RULE } from './blockRecord.js';
-import { removeDeclarations } from './arenaEdits.js';
-import { declarationKeys } from './declarationCache.js';
-import { elementKeysOf, listTextLength } from './selectorReads.js';
+import { filterRuleIntersections } from '../../../ir/declarations.js';
+import { isKeyframes } from '../../../ir/sameContainer.js';
+import { removeRules } from '../../../ir/treeEdits.js';
+import { RULE } from '../../../ir/blockRecord.js';
+import { removeDeclarations } from '../../../ir/arenaEdits.js';
+import { declarationKeys } from '../../../ir/declarationCache.js';
+import { elementKeysOf, listTextLength } from '../../../ir/selectorReads.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 /** @import MergeState from './mergeState.js' */
-/** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {ArenaIndex, BlockRecord, ChainPosition} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 
 /**
  * A rule made only of declarations. Comments and nested rules would be

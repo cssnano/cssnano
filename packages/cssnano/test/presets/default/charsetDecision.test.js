@@ -48,3 +48,20 @@ test('moves a nested charset to the top and discards the at-rule it leaves empty
     '@charset "x";b{content:"é"}'
   );
 });
+
+test('keeps an upper-case charset byte-identical, since browsers ignore it and it must not become an encoding declaration', async () => {
+  const css = '@CHARSET "iso";a{color:red}';
+
+  assert.equal(await minify(css), css);
+});
+
+test('keeps an upper-case charset in the advanced preset', async () => {
+  const { default: advanced } =
+    await import('../../../src/presets/advanced.js');
+  const css = '@CHARSET "iso";a{color:red}';
+  const result = await postcss(advanced()).process(css, {
+    from: repositoryFile,
+  });
+
+  assert.equal(result.css, css);
+});

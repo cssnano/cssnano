@@ -1,4 +1,4 @@
-import type { BlockRecords } from '../rules/blockRecords.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
 import type { RunContext } from '../../../ir/runContext.js';
 import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 export type Scope = {

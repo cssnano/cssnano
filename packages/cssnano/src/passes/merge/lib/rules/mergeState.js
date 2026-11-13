@@ -2,14 +2,14 @@
 import {
   absorbEarlier as absorbSummaries,
   addSelectors as addSummarySelectors,
-} from './selectorList.js';
-import { compatibleOf, vendorSummaryOf } from './selectorReads.js';
+} from '../../../ir/selectorList.js';
+import { compatibleOf, vendorSummaryOf } from '../../../ir/selectorReads.js';
 import { createRunContext } from '../../../ir/runContext.js';
-import { isKeyframes, sameContainer } from './sameContainer.js';
+import { isKeyframes, sameContainer } from '../../../ir/sameContainer.js';
 
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {BlockRecord} from '../../../ir/blockRecord.js' */
 
 /**
  * The state shared by every merge of one stylesheet.

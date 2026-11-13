@@ -28,7 +28,7 @@ const ANALYSES = /** @type {const} */ ([
 const SELECTOR_READS_MODULE = '/passes/merge/lib/rules/selectorReads.js';
 
 const SELECTOR_READS = new URL(
-  '../../../../../src/passes/merge/lib/rules/selectorReads.js',
+  '../../../../../src/passes/ir/selectorReads.js',
   import.meta.url
 );
 

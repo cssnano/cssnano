@@ -1,0 +1,87 @@
+/* lead */
+.x{}
+  .y{}
+.m{color:red}
+.n{background:blue}
+.m{color:green}
+/* 1. a plain and an important comment in a value, beside whitespace and beside none */
+.v1 { color: red /* plain */; }
+.v2 { color: red/* plain */; }
+.v3 { color: red /*! kept */; }
+.v4 { color: red/*! kept */; }
+/* 2. in a selector */
+.s1 /* plain */ , .s2 { color: red; }
+.s3/* plain */,.s4 { color: red; }
+.s5 /*! kept */ , .s6 { color: red; }
+.s7/*! kept */,.s8 { color: red; }
+/* 3. in a prelude, and after the at-rule name */
+@media /* plain */ print { .p1 { color: red; } }
+@media/* plain */print { .p2 { color: red; } }
+@media /*! kept */ print { .p3 { color: red; } }
+@media/*! kept */print { .p4 { color: red; } }
+/* 4. between the property and the colon */
+.b1 { color /* plain */ : red; }
+.b2 { color/* plain */:red; }
+.b3 { color /*! kept */ : red; }
+.b4 { color/*! kept */:red; }
+/* 5. around !important */
+.i1 { color: red !/* plain */important; }
+.i2 { color: red /* plain */ !important; }
+.i3 { color: red !/*! kept */important; }
+.i4 { color: red /*! kept */ !important; }
+/* 6. /* inside a string and a URL, with runs of spaces */
+.u1 { content: "a /*   b   */ c"; }
+.u2 { background: url("/a/*   b   c"); }
+.u3 { background: url("  x/*    y  ") ; }
+/* 7. a value with a comment and its comment-free twin in an equal rule */
+.t1 { color: red /* plain */; }
+.t1 { color: red; }
+.t2 { color: red /*! kept */; }
+.t2 { color: red; }
+/* 8. whitespace and newlines around selector commas, with and without a comment */
+.w1 ,
+.w2 ,
+.w3 { color: red; }
+.w4,
+  .w5 /* plain */,
+  .w6 { color: red; }
+.w7 , .w8 { color: blue; }
+/* 9. a trailing comma, an empty selector, a comma inside :is() */
+.c1, { color: red; }
+{ color: red; }
+:is(.x,.y),.z { color: red; }
+.c2,,.c3 { color: red; }
+/* 10. stray semicolons after a comment and after a rule */
+/* before */ ;.sc1{color:red}
+.sc2{color:red};
+.sc3{color:red} /* after */ ;
+/* 11. a block whose last value ends in a backslash, with and without a comment */
+.bs1 { color: red\ }
+.bs2 { color: red\ /* plain */ }
+.bs3 { content: "a"\ ; }
+/* 12. @namespace, default and prefixed, before universal selectors */
+@namespace url(http://www.w3.org/1999/xhtml);
+@namespace svg url(http://www.w3.org/2000/svg);
+*|* { color: red; }
+svg|a { color: blue; }
+* { color: green; }
+/* 13. @property with two syntax declarations and a percentage initial-value */
+@property --p1 { syntax: "*"; syntax: "<length> | <percentage>"; inherits: false; initial-value: 50%; }
+@property --p2 { syntax: "<length>"; inherits: false; initial-value: 1px; }
+/* 14. nested and vendor-prefixed keyframes and counter styles, overridden in and out of @media */
+@keyframes k1 { from { color: red } to { color: blue } }
+@keyframes k1 { from { color: green } to { color: black } }
+@-webkit-keyframes k1 { 0% { color: red } 100% { color: blue } }
+@media print { @keyframes k2 { 50% { color: red } } }
+@media print { @keyframes k2 { 50% { color: green } } }
+@media print { @-moz-keyframes k3 { 50% { color: red } } }
+@media screen { @keyframes k3 { 50% { color: red } } }
+@counter-style c1 { system: cyclic; symbols: "*"; }
+@counter-style c1 { system: cyclic; symbols: "+"; }
+@media print { @counter-style c2 { system: cyclic; symbols: "x"; } }
+@media print { @counter-style c2 { system: cyclic; symbols: "y"; } }
+/* 15. unicode-range values */
+@font-face { font-family: f; unicode-range: U+0025-00FF, u+4??; }
+@font-face { font-family: g; unicode-range: U+0000-00FF; }
+/* 16. custom properties with comments and blank values */
+.cp { --a: ; --b: /* plain */ ; --c:/*! kept */1px; --d: red /* plain */ ; }

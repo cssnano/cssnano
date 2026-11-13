@@ -11,6 +11,15 @@ function source(module) {
   ).href;
 }
 
+/**
+ * @param {string} module
+ * @return {string}
+ */
+function irSource(module) {
+  return new URL(`../../../../../src/passes/ir/${module}`, import.meta.url)
+    .href;
+}
+
 export const target = source('mergeState.js');
 // node --test expands this glob; a directory path would resolve to a single
 // entry module instead of running every split test file.
@@ -30,35 +39,35 @@ export const mutations = [
   },
   {
     name: 'write-back leaves the ownSemicolon of a merged rule unwritten',
-    target: source('writeSelector.js'),
-    find: '  raws.ownSemicolon = source.ownSemicolon;',
+    target: irSource('writeSelector.js'),
+    find: '  node.raws.ownSemicolon = template.raws.ownSemicolon;',
     replace: '',
   },
   {
     name: 'write-back skips the whitespace the records hold',
-    target: source('writeBack.js'),
-    find: '  for (const { index } of rebuilt) writeBefore(records, nodes, index);',
+    target: irSource('writeBack.js'),
+    find: '  writeRawsOf(records, nodes, tokenLists, records.root.index);',
     replace: '',
   },
   {
     name: 'write-back assigns the whitespace of root children only',
-    target: source('writeBack.js'),
-    find: '      /** @type {ChildNode} */ (nodeOf(nodes, entry)).raws.before = before;',
+    target: irSource('writeBack.js'),
+    find: '    if (record.before !== null) node.raws.before = record.before;',
     replace:
-      '      if (container === records.root.index) /** @type {ChildNode} */ (nodeOf(nodes, entry)).raws.before = before;',
+      '    if (record.before !== null && container === records.root.index) node.raws.before = record.before;',
   },
   {
     name: 'takePlaceOf keeps the whitespace of the earlier entry',
-    target: source('treeEdits.js'),
+    target: irSource('treeEdits.js'),
     find: '  records.entry(earlier).before = records.entry(later).before;',
     replace: '',
   },
   {
     name: 'store the joined selector list as text, dropping its tokens',
-    target: source('writeSelector.js'),
-    find: '  textTable.write(node, joinedList(record, tokenLists));',
+    target: irSource('writeSelector.js'),
+    find: '  textTable.write(node, list);',
     replace:
-      "  textTable.setText(node, joinedList(record, tokenLists).map((token) => token[1]).join(''));",
+      "  textTable.setText(node, list.map((token) => token[1]).join(''));",
   },
   {
     name: 'a merged rule takes no combined summaries of the two lists it is built from',
@@ -74,19 +83,19 @@ export const mutations = [
   },
   {
     name: 'an edit that adds selectors to a rule does not mark it, so write-back keeps its node text',
-    target: source('selectorList.js'),
+    target: irSource('selectorList.js'),
     find: '  own.marked = true;\n  extendSummaries(list, from, tokenLists, browsers);',
     replace: '  extendSummaries(list, from, tokenLists, browsers);',
   },
   {
     name: 'a rule that absorbs an earlier one is not marked, so write-back keeps its node text',
-    target: source('selectorList.js'),
-    find: '  own.marked = true;\n  writableIds(earlier).selectorIds = NO_SELECTORS;',
-    replace: '  writableIds(earlier).selectorIds = NO_SELECTORS;',
+    target: irSource('selectorList.js'),
+    find: '  own.marked = true;\n  const moved = writableIds(earlier);',
+    replace: '  const moved = writableIds(earlier);',
   },
   {
     name: 'a merged rule is not marked when its summaries are combined, so write-back keeps its node text',
-    target: source('selectorList.js'),
+    target: irSource('selectorList.js'),
     find: '  own.compatible = first.compatible && second.compatible;\n  own.marked = true;',
     replace: '  own.compatible = first.compatible && second.compatible;',
   },

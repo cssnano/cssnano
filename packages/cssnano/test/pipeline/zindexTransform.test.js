@@ -32,3 +32,30 @@ test('zindex keeps every z-index when one of them is negative, since rebasing wo
     'div{z-index:-1}p{z-index:100}'
   );
 });
+
+test('zindex keeps an important comment in a value it rewrites', async () => {
+  assert.equal(
+    await minify('div{z-index:/*!keep*/ 100}p{z-index:200}'),
+    'div{z-index:/*!keep*/1}p{z-index:2}'
+  );
+});
+
+test('zindex drops a plain comment in a value it rewrites', async () => {
+  assert.equal(
+    await minify('div{z-index:/*drop*/ 100}p{z-index:200}'),
+    'div{z-index:1}p{z-index:2}'
+  );
+});
+
+for (const [name, value] of [
+  ['two integers', '100 200'],
+  ['an integer and an identifier', '5 a'],
+  ['two integers split by an important comment', '1/*!keep*/2'],
+]) {
+  test(`zindex leaves ${name} as written, since the declaration is invalid and rewriting would make it valid`, async () => {
+    assert.equal(
+      await minify(`div{z-index:${value}}p{z-index:200}`),
+      `div{z-index:${value}}p{z-index:1}`
+    );
+  });
+}

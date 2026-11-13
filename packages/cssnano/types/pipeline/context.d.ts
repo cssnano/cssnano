@@ -1,4 +1,11 @@
+import type { ArenaIndex } from '../passes/ir/blockRecord.js';
+import type { BlockRecords } from '../passes/ir/blockRecords.js';
+import type { TokenLists } from '../passes/ir/tokenLists.js';
 import type { Container, Document } from 'postcss';
+/** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
+/** @import {DeclarationRecord} from '../passes/ir/declarationRecord.js' */
+/** @import {TokenLists} from '../passes/ir/tokenLists.js' */
 /** @import {AtRule, Container, Document} from 'postcss' */
 /**
  * The context of a declaration is an integer whose bits say where it sits. The
@@ -39,4 +46,16 @@ export declare function withBit(context: number, bit: number): number;
  * @returns {number}
  */
 export declare function contextOf(node: Container | Document, contexts: WeakMap<Container | Document, number>): number;
+/**
+ * The context of a container record, from its parent's context, as the node
+ * form `contextOf` gives it for a container node. The stylesheet is the only
+ * container without a parent, and its context is 0.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex} index a rule or an at-rule with a block
+ * @param {number} parentContext the context of the container that holds it
+ * @returns {number}
+ */
+export declare function recordContextOf(records: BlockRecords, tokenLists: TokenLists, index: ArenaIndex, parentContext: number): number;
 //# sourceMappingURL=context.d.ts.map

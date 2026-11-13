@@ -1,6 +1,6 @@
 import { selectorIdsOf } from './selectorIdsOf.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
-import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childEntriesOf } from '../../../../../src/passes/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -14,7 +14,7 @@ import {
   placeUnlinked,
   nodeOfEntry,
 } from './liveRecords.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();

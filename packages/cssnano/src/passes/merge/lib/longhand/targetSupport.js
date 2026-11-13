@@ -3,7 +3,7 @@ import pairMinimums from './data/pairSupport.json' with { type: 'json' };
 import boxSupport from './data/boxPropertySupport.json' with { type: 'json' };
 import featureMinimums from './data/featureSupport.json' with { type: 'json' };
 import { pairFamilies } from './decl/pairForms.js';
-import { longstandingFeatures } from './syntaxFeatures.js';
+import { longstandingFeatures } from '../../../ir/syntaxFeatures.js';
 import {
   browserName,
   compareVersions,

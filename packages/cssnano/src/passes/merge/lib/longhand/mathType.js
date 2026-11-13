@@ -1,6 +1,6 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
-import { withoutVendorPrefix } from './vendorPrefix.js';
+import { withoutVendorPrefix } from '../../../ir/vendorPrefix.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 

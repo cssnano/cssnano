@@ -3,7 +3,7 @@ import postcss from 'postcss';
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import browserslist from 'browserslist';
 const plugin = transformPlugin('mergeRules');
-import { selectorInfoOf } from '../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
+import { selectorInfoOf } from '../../../../src/passes/ir/ensureCompatibility.js';
 import { tokens as tokenize } from '../../../../src/utils/value.js';
 import {
   ensureCompatibility as legacyCompatibility,

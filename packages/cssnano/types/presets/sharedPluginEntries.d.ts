@@ -30,7 +30,7 @@ export declare const discardEmptyEntry: readonly [{
     readonly after: true;
 }];
 /**
- * rawCache runs last in the walk after merge of its host.
+ * rawCache runs last in its host, on the tree the run wrote.
  */
 export declare const rawCacheEntry: readonly [{
     readonly create: (/** @type {Record<string, never>} */ options: Record<string, never>) => Record<string, never>;

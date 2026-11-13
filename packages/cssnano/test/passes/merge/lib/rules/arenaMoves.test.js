@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { assertCanLink } from '../../../../../src/passes/merge/lib/rules/linkChecks.js';
+import { assertCanLink } from '../../../../../src/passes/ir/linkChecks.js';
 import {
   blockRecordOf,
   buildTestRecords,
@@ -12,7 +12,7 @@ import {
   ruleRecordOf,
 } from './liveRecords.js';
 
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 /** @import {Container, Root, Rule} from 'postcss' */
 
 /**

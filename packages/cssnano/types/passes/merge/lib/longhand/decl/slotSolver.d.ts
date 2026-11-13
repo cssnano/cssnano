@@ -13,12 +13,12 @@ import type { BoxFamily } from './boxGroups.js';
 export declare function isExplodable(declaration: DeclarationItem): boolean;
 /**
  * @param {BoxFamily} family
- * @return {{ parse: (value: string) => string[], minify: (value: string | string[]) => string }}
+ * @return {{ parse: (value: string | string[]) => string[], minify: (value: string | string[]) => string }}
  * how the family spreads and condenses its slots: four sides, or a start and
  * an end
  */
 export declare function formsOf(family: BoxFamily): {
-    parse: (value: string) => string[];
+    parse: (value: string | string[]) => string[];
     minify: (value: string | string[]) => string;
 };
 /**

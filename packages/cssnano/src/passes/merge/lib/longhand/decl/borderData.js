@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import spec from '../spec.js';
+import spec from '../../../../ir/spec.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 

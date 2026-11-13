@@ -1,7 +1,7 @@
-import type { BlockRecord } from './blockRecord.js';
-import type { RuleRecord } from './ruleRecord.js';
+import type { BlockRecord } from '../../../ir/blockRecord.js';
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
 export type Container = BlockRecord | RuleRecord;
-import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
 /**
  * Walks the stylesheet in the order it will be written to find declarations
  * between two rules.

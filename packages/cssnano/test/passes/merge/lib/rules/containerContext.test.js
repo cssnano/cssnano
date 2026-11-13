@@ -1,24 +1,24 @@
 import {
   blocks,
   containers,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+} from '../../../../../src/passes/ir/blockChildren.js';
 import { test } from 'node:test';
 import { buildTestRecords, nodeOfEntry } from './liveRecords.js';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import cssnanoUtils from '../../../../../src/utils/index.js';
-import { sameContainer } from '../../../../../src/passes/merge/lib/rules/sameContainer.js';
+import { sameContainer } from '../../../../../src/passes/ir/sameContainer.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { assertContextsCurrent } from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
+import { assertContextsCurrent } from '../../../../../src/passes/ir/recordsCheck.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { tokens as tokenize } from '../../../../../src/utils/value.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { random } from '../../../../../../../util/fuzzRng.js';
 
 /** @import {AnyNode, AtRule, Rule} from 'postcss' */
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
-/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
-/** @import {RuleRecord} from '../../../../../src/passes/merge/lib/rules/ruleRecord.js' */
-/** @import {TextTable} from '../../../../../src/values/textTable.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
+/** @import {BlockRecord} from '../../../../../src/passes/ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../../../src/passes/ir/ruleRecord.js' */
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
@@ -29,16 +29,15 @@ const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
  *
  * @param {AnyNode} a
  * @param {AnyNode} b
- * @param {TextTable} textTable
  * @return {boolean}
  */
-function sameBlock(a, b, textTable) {
+function sameBlock(a, b) {
   if (a.type === 'atrule' && b.type === 'atrule') {
     const name = asciiLowerCase(a.name);
     if (name !== asciiLowerCase(b.name)) return false;
     if (name === 'layer') {
-      const anonA = isAnonymousLayer(/** @type {AtRule} */ (a), textTable);
-      const anonB = isAnonymousLayer(/** @type {AtRule} */ (b), textTable);
+      const anonA = isAnonymousLayer(tokenize(a.params ?? ''));
+      const anonB = isAnonymousLayer(tokenize(b.params ?? ''));
       if (anonA || anonB) return a === b;
     }
     return a.params === b.params;
@@ -58,18 +57,16 @@ function sameBlock(a, b, textTable) {
  * @param {BlockRecords} records
  * @param {BlockRecord | RuleRecord | undefined} a
  * @param {BlockRecord | RuleRecord | undefined} b
- * @param {TextTable} textTable
  * @return {boolean}
  */
-function sameChain(records, a, b, textTable) {
+function sameChain(records, a, b) {
   if (!a || !b) return !a && !b;
   return (
-    sameBlock(nodeOfEntry(records, a), nodeOfEntry(records, b), textTable) &&
+    sameBlock(nodeOfEntry(records, a), nodeOfEntry(records, b)) &&
     sameChain(
       records,
       records.enclosingContainer(a.index),
-      records.enclosingContainer(b.index),
-      textTable
+      records.enclosingContainer(b.index)
     )
   );
 }
@@ -138,7 +135,7 @@ test('sameContainer agrees with the definition of one container on every pair of
       for (const b of holders) {
         assert.strictEqual(
           sameContainer(a, b),
-          sameChain(state.records, a, b, state.textTable),
+          sameChain(state.records, a, b),
           `${css}: ${a.index} and ${b.index}`
         );
       }

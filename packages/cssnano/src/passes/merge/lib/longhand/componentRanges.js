@@ -1,4 +1,4 @@
-import { list } from 'postcss';
+import { splitSpace } from '../../../../values/splitTopLevel.js';
 import cssnanoUtils from '#utils';
 
 const { TokenType, tokenEnd, tokenStart } = cssnanoUtils;
@@ -20,9 +20,8 @@ const { TokenType, tokenEnd, tokenStart } = cssnanoUtils;
  */
 
 /**
- * The token ranges that `list.space` splits a value into: whitespace outside
- * parentheses separates components, and a `)` never opens a negative depth.
- * Tokens split where the string does except on a comment or a bad token.
+ * The token ranges of a value's top-level components: whitespace outside
+ * parentheses separates them, and a `)` never opens a negative depth.
  *
  * @param {readonly CSSToken[]} tokens
  * @return {number[]} the start and end token index of each component,
@@ -48,23 +47,6 @@ export function componentRanges(tokens) {
 }
 
 /**
- * @param {readonly CSSToken[]} tokens
- * @return {boolean} whether the tokens split where `list.space` splits the
- * string; a comment or a bad token makes it split inside a word
- */
-function splitsAsTokens(tokens) {
-  for (const part of tokens) {
-    switch (part[0]) {
-      case TokenType.Comment:
-      case TokenType.BadString:
-      case TokenType.BadURL:
-        return false;
-    }
-  }
-  return true;
-}
-
-/**
  * The tokens a value spells: the list the caller has, or one tokenization of a
  * value with a `(`. A value without one has no function, so it needs none.
  *
@@ -79,18 +61,16 @@ export function valueTokens(value, tokens) {
 }
 
 /**
- * The component ranges of a token list that splits where `list.space` splits
- * the string, shared by every reader that walks components by range.
+ * The component ranges of a token list, shared by every reader that walks
+ * components by range.
  *
  * @param {readonly CSSToken[] | undefined} spelled the value's tokens, from
  * `valueTokens`
  * @return {number[] | undefined} the flattened ranges, or undefined when the
- * value has no list or must be split as a string
+ * value has no list
  */
 export function tokenComponentRanges(spelled) {
-  return spelled !== undefined && splitsAsTokens(spelled)
-    ? componentRanges(spelled)
-    : undefined;
+  return spelled === undefined ? undefined : componentRanges(spelled);
 }
 
 /**
@@ -107,7 +87,7 @@ export function rangeText(value, spelled, start, end) {
 }
 
 /**
- * The top-level components of a value, split where `list.space` splits it.
+ * The top-level components of a value, split at whitespace outside parentheses.
  * A value with a `(` is tokenized once when the caller has no list for it; a
  * value without one has no function to type and needs none.
  *
@@ -133,7 +113,7 @@ export function splitComponents(value, tokens) {
     }
     return components;
   }
-  return list.space(value).map(wholeText);
+  return splitSpace(value).map(wholeText);
 }
 
 /**
@@ -145,6 +125,19 @@ export function splitComponents(value, tokens) {
  */
 export function declarationTokens(decl) {
   return decl.value.includes('(') ? decl.tokens : undefined;
+}
+
+/**
+ * The texts of a declaration's top-level components, from its stored tokens
+ * when the value has a function, so nothing is tokenized again.
+ *
+ * @param {import('./blockDeclarations.js').DeclarationItem} decl
+ * @return {string[]}
+ */
+export function componentTexts(decl) {
+  return splitComponents(decl.value, declarationTokens(decl)).map(
+    (part) => part.raw
+  );
 }
 
 /**

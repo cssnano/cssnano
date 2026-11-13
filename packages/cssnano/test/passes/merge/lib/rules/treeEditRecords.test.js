@@ -1,8 +1,8 @@
 import {
   declarationsOf,
   childEntriesOf,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
-import { elementKeysOf } from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
+} from '../../../../../src/passes/ir/blockChildren.js';
+import { elementKeysOf } from '../../../../../src/passes/ir/selectorReads.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -13,7 +13,7 @@ import {
   appendToDeclarations,
   removeRules,
   takePlaceOf,
-} from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+} from '../../../../../src/passes/ir/treeEdits.js';
 import {
   blockRecordOf,
   ruleRecordOf,
@@ -22,13 +22,13 @@ import {
   declarationIds,
   placeUnlinked,
 } from './liveRecords.js';
-import { removeDeclarations } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { removeDeclarations } from '../../../../../src/passes/ir/arenaEdits.js';
 import {
   declarationKeys,
   receivingDeclarations,
-} from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
+} from '../../../../../src/passes/ir/declarationCache.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
-import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/buildRecords.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
 

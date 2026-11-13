@@ -22,7 +22,7 @@ import { compareVersions } from '../../../../../src/utils/versions.js';
 import {
   longstandingFunctions,
   longstandingUnits,
-} from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
+} from '../../../../../src/passes/ir/syntaxFeatures.js';
 
 /* caniuse-lite is the browserslist dependency, so it is the data the
  * targets themselves come from. */

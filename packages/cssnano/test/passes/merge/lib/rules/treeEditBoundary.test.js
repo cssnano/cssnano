@@ -18,16 +18,22 @@ const treeEditors = new Set([
   'writeSelector.js',
   'treeMatch.js',
 ]);
+const recordsDirectory = new URL(
+  '../../../../../src/passes/ir/',
+  import.meta.url
+);
 const rulesDirectory = new URL(
   '../../../../../src/passes/merge/lib/rules/',
   import.meta.url
 );
-const sources = readdirSync(rulesDirectory)
-  .filter((name) => name.endsWith('.js') && !treeEditors.has(name))
-  .map((name) => ({
-    name,
-    text: readFileSync(new URL(name, rulesDirectory), 'utf8'),
-  }));
+const sources = [rulesDirectory, recordsDirectory].flatMap((directory) =>
+  readdirSync(directory)
+    .filter((name) => name.endsWith('.js') && !treeEditors.has(name))
+    .map((name) => ({
+      name,
+      text: readFileSync(new URL(name, directory), 'utf8'),
+    }))
+);
 
 // `ruleRewrite.js` appends to the record of the merged rule it creates, a call
 // the pattern cannot tell from a node edit. `blockRecords.js` holds the methods
@@ -109,9 +115,10 @@ function isBlock(node) {
  */
 function guardNodes(node, readers) {
   const report = () => {
-    const match = /src\/passes\/merge\/lib\/rules\/([^\/:]+\.js):\d+/v.exec(
-      new Error().stack ?? ''
-    );
+    const match =
+      /src\/passes\/(?:merge\/lib\/rules|ir)\/([^\/:]+\.js):\d+/v.exec(
+        new Error().stack ?? ''
+      );
     if (match) readers.add(match[1]);
   };
   const guard = (target, property) => {

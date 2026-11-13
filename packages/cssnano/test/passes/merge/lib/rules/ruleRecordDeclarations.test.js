@@ -1,7 +1,7 @@
 import {
   declarationsOf,
   childCountOf,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+} from '../../../../../src/passes/ir/blockChildren.js';
 import { selectorIdsOf } from './selectorIdsOf.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import assert from 'node:assert/strict';
@@ -21,18 +21,18 @@ import {
   appendChild,
   moveDeclarations,
   removeDeclarations,
-} from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+} from '../../../../../src/passes/ir/arenaEdits.js';
 import {
   COMMENT,
   NO_AT_RULE,
   NO_PRELUDE,
   NodeEntry,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
-import { declarationKeys } from '../../../../../src/passes/merge/lib/rules/declarationCache.js';
-import { recordDeclaration } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
+import { declarationKeys } from '../../../../../src/passes/ir/declarationCache.js';
+import { recordDeclaration } from '../../../../../src/passes/ir/buildRecords.js';
 
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
+import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();
@@ -337,7 +337,7 @@ test('appendChild of a comment should make the next read return the same entry',
   const note = placeUnlinked(
     records,
     records.root.index,
-    new NodeEntry(COMMENT, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
+    new NodeEntry(COMMENT, '', NO_AT_RULE, '', false, NO_PRELUDE)
   );
   appendChild(records, record.index, note.index);
   assert.equal(declarationKeys(records, record.index), keys);

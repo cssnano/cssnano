@@ -134,7 +134,10 @@ test(
 
 test(
   'should merge selectors with a comment next to a combinator',
-  processCSS('a/* c */ > b{color:red}.x{color:red}', 'a > b,.x{color:red}')
+  processCSS(
+    'a/* c */ > b{color:red}.x{color:red}',
+    'a/* c */ > b,.x{color:red}'
+  )
 );
 
 test(

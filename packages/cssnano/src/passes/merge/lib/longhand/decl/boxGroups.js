@@ -1,5 +1,9 @@
-import { withoutVendorPrefix } from '../vendorPrefix.js';
-import { boxGroups as generatedGroups, shorthand, sides } from '../spec.js';
+import { withoutVendorPrefix } from '../../../../ir/vendorPrefix.js';
+import {
+  boxGroups as generatedGroups,
+  shorthand,
+  sides,
+} from '../../../../ir/spec.js';
 import flowRelativeSides from '../data/flowRelativeSides.json' with { type: 'json' };
 
 /**
