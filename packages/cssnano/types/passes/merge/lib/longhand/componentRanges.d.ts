@@ -20,9 +20,8 @@ export type ValueComponent = {
  * }} ValueComponent
  */
 /**
- * The token ranges that `list.space` splits a value into: whitespace outside
- * parentheses separates components, and a `)` never opens a negative depth.
- * Tokens split where the string does except on a comment or a bad token.
+ * The token ranges of a value's top-level components: whitespace outside
+ * parentheses separates them, and a `)` never opens a negative depth.
  *
  * @param {readonly CSSToken[]} tokens
  * @return {number[]} the start and end token index of each component,
@@ -39,13 +38,13 @@ export declare function componentRanges(tokens: readonly CSSToken[]): number[];
  */
 export declare function valueTokens(value: string, tokens?: readonly CSSToken[]): readonly CSSToken[] | undefined;
 /**
- * The component ranges of a token list that splits where `list.space` splits
- * the string, shared by every reader that walks components by range.
+ * The component ranges of a token list, shared by every reader that walks
+ * components by range.
  *
  * @param {readonly CSSToken[] | undefined} spelled the value's tokens, from
  * `valueTokens`
  * @return {number[] | undefined} the flattened ranges, or undefined when the
- * value has no list or must be split as a string
+ * value has no list
  */
 export declare function tokenComponentRanges(spelled: readonly CSSToken[] | undefined): number[] | undefined;
 /**
@@ -59,7 +58,7 @@ export declare function tokenComponentRanges(spelled: readonly CSSToken[] | unde
  */
 export declare function rangeText(value: string, spelled: readonly CSSToken[], start: number, end: number): string;
 /**
- * The top-level components of a value, split where `list.space` splits it.
+ * The top-level components of a value, split at whitespace outside parentheses.
  * A value with a `(` is tokenized once when the caller has no list for it; a
  * value without one has no function to type and needs none.
  *
@@ -76,6 +75,14 @@ export declare function splitComponents(value: string, tokens?: readonly CSSToke
  * @return {readonly CSSToken[] | undefined}
  */
 export declare function declarationTokens(decl: import('./blockDeclarations.js').DeclarationItem): readonly CSSToken[] | undefined;
+/**
+ * The texts of a declaration's top-level components, from its stored tokens
+ * when the value has a function, so nothing is tokenized again.
+ *
+ * @param {import('./blockDeclarations.js').DeclarationItem} decl
+ * @return {string[]}
+ */
+export declare function componentTexts(decl: import('./blockDeclarations.js').DeclarationItem): string[];
 /**
  * A text as one component over its own tokens, which are read only when the
  * text has a `(`.

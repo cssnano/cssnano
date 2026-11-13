@@ -5,7 +5,7 @@ import {
   isTokenIdent,
   isTokenWhitespace,
 } from '@csstools/css-tokenizer';
-import { list } from 'postcss';
+import { splitComma, splitSpace } from '../../values/splitTopLevel.js';
 import cssnanoUtils from '#utils';
 import { DECLARATION } from '../../passes/ir/blockRecord.js';
 import { preludeListOf } from '../../passes/ir/declaredText.js';
@@ -67,8 +67,8 @@ function referencedNames(records, tokenLists, indices) {
   /** @type {Set<string>} */
   const names = new Set();
   for (const index of indices) {
-    for (const item of list.comma(valueText(records, tokenLists, index))) {
-      for (const name of list.space(item)) names.add(name);
+    for (const item of splitComma(valueText(records, tokenLists, index))) {
+      for (const name of splitSpace(item)) names.add(name);
     }
   }
   return names;
@@ -198,9 +198,9 @@ function filterNamespace(records, tokenLists, indices, prefixes, remove) {
  * @return {boolean}
  */
 function hasFont(fontFamily, fonts) {
-  return list
-    .comma(fontFamily)
-    .some((font) => fonts.some((used) => used.includes(font)));
+  return splitComma(fontFamily).some((font) =>
+    fonts.some((used) => used.includes(font))
+  );
 }
 
 /**
@@ -218,7 +218,7 @@ function filterFont(records, tokenLists, indices, decls, remove) {
   /** @type {Set<string>} */
   const used = new Set();
   for (const index of decls) {
-    for (const font of list.comma(
+    for (const font of splitComma(
       asciiLowerCase(valueText(records, tokenLists, index))
     )) {
       used.add(font);

@@ -1,4 +1,4 @@
-import { list } from 'postcss';
+import { splitSpace } from '../../../../values/splitTopLevel.js';
 
 /**
  * Spreads the one to four values of a top/right/bottom/left shorthand over the
@@ -31,4 +31,4 @@ export function fourSideCount(sides) {
 
 /** @param {string | string[]} v */
 export default (v) =>
-  expandFourSides(typeof v === 'string' ? list.space(v) : v);
+  expandFourSides(typeof v === 'string' ? splitSpace(v) : v);

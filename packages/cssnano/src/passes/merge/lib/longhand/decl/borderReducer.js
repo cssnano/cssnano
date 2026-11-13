@@ -5,7 +5,11 @@ import minifyTrbl from '../minifyTrbl.js';
 import minifyWidthStyleColor from '../minifyWsc.js';
 import { expandFourSides } from '../parseTrbl.js';
 import parseWidthStyleColor from '../parseWsc.js';
-import { declarationTokens, splitComponents } from '../componentRanges.js';
+import {
+  componentTexts,
+  declarationTokens,
+  splitComponents,
+} from '../componentRanges.js';
 import { setsLonghands } from '../../../../ir/spec.js';
 import { hasHack } from '#stylehacks';
 import hasSubstitution from '../hasSubstitution.js';
@@ -78,7 +82,7 @@ function normalizeBorderSingleton(list, position) {
       minifyWidthStyleColor(d.value, declarationTokens(d))
     );
   } else if (allSidesBorderShorthands.includes(p)) {
-    list.rewrite(position, p, minifyTrbl(d.value));
+    list.rewrite(position, p, minifyTrbl(componentTexts(d)));
   }
 }
 
@@ -248,7 +252,7 @@ function reduceSegment(list, segment, lane, features) {
     const position = segment[0];
     const d = list.at(position);
     if (allSidesBorderShorthands.includes(asciiLowerCase(d.prop))) {
-      list.rewrite(position, d.prop, minifyTrbl(d.value));
+      list.rewrite(position, d.prop, minifyTrbl(componentTexts(d)));
     }
     return;
   }

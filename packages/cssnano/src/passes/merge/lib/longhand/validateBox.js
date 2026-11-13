@@ -1,6 +1,6 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
-import { list } from 'postcss';
+import { splitSpace } from '../../../../values/splitTopLevel.js';
 import { boxProperties, shorthandSlot } from './decl/boxGroups.js';
 import {
   rangeText,
@@ -114,7 +114,7 @@ function rangeKeeps(value, tokens, start, end, grammar) {
 }
 
 /**
- * The string path: `list.space` splits the value, and each component is
+ * The string path: `splitSpace` splits the value, and each component is
  * tokenized on its own.
  *
  * @param {string} value
@@ -123,7 +123,7 @@ function rangeKeeps(value, tokens, start, end, grammar) {
  * @return {boolean}
  */
 function stringComponentsKeep(value, most, grammar) {
-  const components = list.space(value);
+  const components = splitSpace(value);
   if (components.length === 0 || components.length > most) return false;
   return components.every((component) => {
     if (!component.includes('(')) return plainSideKeeps(component, grammar);
