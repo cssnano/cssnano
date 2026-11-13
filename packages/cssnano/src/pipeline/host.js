@@ -2,6 +2,8 @@ import { browserTargets, resolveTargets } from '#utils/browser-targets';
 import { walkStylesheet } from './traversal.js';
 import { TextTable } from '../values/textTable.js';
 import { walkAfterMerge } from './afterMerge.js';
+import { createRunContext } from '../passes/ir/runContext.js';
+import { runDriver } from '../passes/ir/runDriver.js';
 
 /**
  * A host plugin runs the stages of one run in order, at OnceExit, so the
@@ -108,6 +110,28 @@ function targetsOf(resolutions, options, result) {
 const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
 
 /**
+ * The merge of one stylesheet: the build, the merge transforms over the
+ * records, then the end of the run. The run context takes the features of the
+ * targets' support.
+ *
+ * @param {import('postcss').Root} root
+ * @param {readonly string[]} browsers
+ * @param {Merge} merge
+ * @param {import('postcss').Result} result
+ * @param {TextTable} table the selector tokens the walk left
+ */
+function runMerge(root, browsers, merge, result, table) {
+  const support = merge.runner.support(browsers);
+  const context = createRunContext(table, undefined, support.features);
+  const state = runDriver.build(root, context);
+  merge.runner.transforms(state.records, browsers, context, {
+    rules: /** @type {boolean | undefined} */ (merge.options.rules),
+    support,
+  });
+  runDriver.end(state, { browsers, folded: true, result });
+}
+
+/**
  * @param {readonly HostMember[]} members the stages of one run, in order
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
  *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
@@ -168,13 +192,7 @@ export function hostPlugin(
             walkStylesheet(stages, root, helpers, transforms, table);
           }
           if (merge && mergeBrowsers) {
-            merge.runner.run(
-              root,
-              mergeBrowsers,
-              merge.options,
-              helpers.result,
-              table
-            );
+            runMerge(root, mergeBrowsers, merge, helpers.result, table);
           }
           if (after.size > 0 || symbols.size > 0) {
             walkAfterMerge(root, helpers.result, after, symbols, table);

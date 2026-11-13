@@ -26,15 +26,22 @@ export declare function mergeRecords(records: BlockRecords, browsers: readonly s
 }): void;
 export { targetSupportOf };
 export type MergeRunner = {
-    run: (root: Root, browsers: readonly string[], options: {
+    support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>;
+    transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {
         rules?: boolean;
-    }, result: Result, table: TextTable) => void;
+        support: ReturnType<typeof targetSupportOf>;
+    }) => void;
 };
 /**
- * The merge run of a preset. The host calls `run` after its walk and before
- * the walk after merge, so it imports nothing of the merge or the records.
+ * The merge run of a preset, which the host runs between its walk and the walk
+ * after merge. `support` gives the targets' support, whose features the host
+ * gives the run's context; `transforms` runs the merge transforms over the
+ * build. The host builds and ends the run, so it imports nothing of the merge.
  *
- * @typedef {{run: (root: Root, browsers: readonly string[], options: {rules?: boolean}, result: Result, table: TextTable) => void}} MergeRunner
+ * @typedef {{
+ *   support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>,
+ *   transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean, support: ReturnType<typeof targetSupportOf>}) => void,
+ * }} MergeRunner
  */
 /** @type {MergeRunner} */
 export declare const mergeRunner: MergeRunner;

@@ -86,34 +86,22 @@ export function mergeRecords(
 export { targetSupportOf };
 
 /**
- * A merge run: the records transforms it runs over the build of a stylesheet.
+ * The merge run of a preset, which the host runs between its walk and the walk
+ * after merge. `support` gives the targets' support, whose features the host
+ * gives the run's context; `transforms` runs the merge transforms over the
+ * build. The host builds and ends the run, so it imports nothing of the merge.
  *
- * @param {(records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean, support: ReturnType<typeof targetSupportOf>}) => void} recordsRun
- * @return {(root: Root, browsers: readonly string[], options: {rules?: boolean}, result: Result, table: TextTable) => void}
- *   the run of one stylesheet: its context from the walk's table, the build, the transforms, and the end
- */
-function runOf(recordsRun) {
-  return (root, browsers, options, result, table) => {
-    const support = targetSupportOf(browsers);
-    const context = createRunContext(table, undefined, support.features);
-    const state = runDriver.build(root, context);
-    recordsRun(state.records, browsers, context, {
-      rules: options.rules,
-      support,
-    });
-    runDriver.end(state, { browsers, folded: true, result });
-  };
-}
-
-/**
- * The merge run of a preset. The host calls `run` after its walk and before
- * the walk after merge, so it imports nothing of the merge or the records.
- *
- * @typedef {{run: (root: Root, browsers: readonly string[], options: {rules?: boolean}, result: Result, table: TextTable) => void}} MergeRunner
+ * @typedef {{
+ *   support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>,
+ *   transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean, support: ReturnType<typeof targetSupportOf>}) => void,
+ * }} MergeRunner
  */
 
 /** @type {MergeRunner} */
-export const mergeRunner = Object.freeze({ run: runOf(mergeRecords) });
+export const mergeRunner = Object.freeze({
+  support: targetSupportOf,
+  transforms: mergeRecords,
+});
 
 /**
  * A merge run of the named transforms alone, in order, for a test that pins
@@ -125,7 +113,8 @@ export const mergeRunner = Object.freeze({ run: runOf(mergeRecords) });
  */
 export function transformRunner(...names) {
   return Object.freeze({
-    run: runOf((records, browsers, context, { support }) => {
+    support: targetSupportOf,
+    transforms: (records, browsers, context, { support }) => {
       /** @type {RecordTransform[]} */
       const transforms = [];
       for (const name of names) {
@@ -144,7 +133,7 @@ export function transformRunner(...names) {
         }
       }
       runTransforms(records, browsers, context, transforms);
-    }),
+    },
   });
 }
 
