@@ -73,3 +73,91 @@ test('mergeIdents keeps a name that a custom property spells, so the definition 
     '@keyframes a{0%{top:0}}:root{--n:a}div{animation:a 1s}'
   );
 });
+
+// Both names are referenced, so the unused-name pass does not decide the outcome.
+const bothReferenced = 'x{animation:a}y{animation:b}';
+
+test('mergeIdents merges two keyframes whose bodies hold the same important comment', async () => {
+  assert.equal(
+    await minify(
+      `@keyframes a{from{top:0/*!c*/}}@keyframes b{from{top:0/*!c*/}}${bothReferenced}`
+    ),
+    '@keyframes a{0%{top:0/*!c*/}}x{animation:a}y{animation:a}'
+  );
+});
+
+test('mergeIdents keeps two keyframes apart when their important comments differ in text', async () => {
+  assert.equal(
+    await minify(
+      `@keyframes a{from{top:0/*!x*/}}@keyframes b{from{top:0/*!y*/}}${bothReferenced}`
+    ),
+    '@keyframes a{0%{top:0/*!x*/}}@keyframes b{0%{top:0/*!y*/}}x{animation:a}y{animation:b}'
+  );
+});
+
+test('mergeIdents keeps two keyframes apart when only one body holds an important comment', async () => {
+  assert.equal(
+    await minify(
+      `@keyframes a{from{top:0/*!c*/}}@keyframes b{from{top:0}}${bothReferenced}`
+    ),
+    '@keyframes a{0%{top:0/*!c*/}}@keyframes b{0%{top:0}}x{animation:a}y{animation:b}'
+  );
+});
+
+test('mergeIdents merges two keyframes whose important spellings differ in case', async () => {
+  assert.equal(
+    await minify(
+      `@keyframes a{from{top:0!important}}@keyframes b{from{top:0!IMPORTANT}}${bothReferenced}`
+    ),
+    '@keyframes a{0%{top:0!important}}x{animation:a}y{animation:a}'
+  );
+});
+
+test('mergeIdents merges two keyframes whose bodies differ only in whitespace', async () => {
+  assert.equal(
+    await minify(
+      `@keyframes a{from{top:0}}@keyframes b{from {top:0}}${bothReferenced}`
+    ),
+    '@keyframes a{0%{top:0}}x{animation:a}y{animation:a}'
+  );
+});
+
+test('mergeIdents keeps the important comment of a reference that renaming respells', async () => {
+  assert.equal(
+    await minify(
+      '@keyframes a{from{top:0}}@keyframes b{from{top:0}}x{animation:a}y{animation-name:/*!x*/b}'
+    ),
+    '@keyframes a{0%{top:0}}x{animation:a}y{animation-name:/*!x*/a}'
+  );
+});
+
+// With normalizeWhitespace off, the bodies keep their raws, so the text differs.
+test('mergeIdents keeps two keyframes apart when normalizeWhitespace is disabled and the value spacing differs', async () => {
+  assert.equal(
+    await minify(
+      `@keyframes a{from{top:0}}@keyframes b{from{top: 0}}${bothReferenced}`,
+      { disable: ['normalizeWhitespace'] }
+    ),
+    '@keyframes a{0%{top:0}}@keyframes b{0%{top: 0}}x{animation:a}y{animation:b}'
+  );
+});
+
+test('mergeIdents keeps two keyframes apart when normalizeWhitespace is disabled and the important spellings differ in case', async () => {
+  assert.equal(
+    await minify(
+      `@keyframes a{from{top:0!important}}@keyframes b{from{top:0!IMPORTANT}}${bothReferenced}`,
+      { disable: ['normalizeWhitespace'] }
+    ),
+    '@keyframes a{0%{top:0!important}}@keyframes b{0%{top:0!IMPORTANT}}x{animation:a}y{animation:b}'
+  );
+});
+
+test('mergeIdents keeps two keyframes apart when discardComments is disabled and the plain comments differ', async () => {
+  assert.equal(
+    await minify(
+      `@keyframes a{from{top:0/*a*/}}@keyframes b{from{top:0/*b*/}}${bothReferenced}`,
+      { disable: ['discardComments'] }
+    ),
+    '@keyframes a{0%{top:0/*a*/}}@keyframes b{0%{top:0/*b*/}}x{animation:a}y{animation:b}'
+  );
+});
