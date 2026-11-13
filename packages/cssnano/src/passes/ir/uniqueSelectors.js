@@ -1,6 +1,6 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import { RULE } from './blockRecord.js';
-import { writeSelectorIds } from './arenaEdits.js';
+import { writeSelectorIds } from './selectorEdits.js';
 import { commentProvidesWhitespace } from '../../values/selectorComments.js';
 import { tokensText } from '../../values/tokensText.js';
 

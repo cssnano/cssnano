@@ -219,21 +219,16 @@ function rewriteRecord(context, record, item) {
 }
 
 /**
- * Gives a rule the ids of its selector items and marks it, so write-back
- * writes its selector from them.
+ * Writes the context of a container, which the walk computes again after it
+ * edits the selector or prelude that the context reads.
  *
- * @param {RuleRecord} record
- * @param {readonly TokenListId[]} ids
+ * @param {BlockRecord | RuleRecord} record
+ * @param {number} context
  * @return {void}
  */
-export function writeSelectorIds(record, ids) {
-  const writable =
-    /** @type {{selectorIds: readonly TokenListId[], writtenList: number, marked: boolean}} */ (
-      /** @type {unknown} */ (record)
-    );
-  writable.selectorIds = ids;
-  writable.writtenList = -1;
-  writable.marked = true;
+export function writeContainerContext(record, context) {
+  /** @type {{context: number}} */ (/** @type {unknown} */ (record)).context =
+    context;
 }
 
 /**

@@ -4,10 +4,8 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import { sourceListOf } from '../../../src/passes/ir/writtenList.js';
-import {
-  writePrelude,
-  writeSelectorIds,
-} from '../../../src/passes/ir/arenaEdits.js';
+import { writePrelude } from '../../../src/passes/ir/arenaEdits.js';
+import { writeSelectorIds } from '../../../src/passes/ir/selectorEdits.js';
 import { addSelectors } from '../../../src/passes/ir/selectorList.js';
 import { writeValue } from '../../../src/passes/ir/valueEdits.js';
 import { assertRecordsWellFormed } from '../../../src/passes/ir/recordsCheck.js';

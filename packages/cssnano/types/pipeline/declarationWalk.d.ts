@@ -14,6 +14,10 @@ export type DeclarationPlans = {
      */
     properties: Map<string, PlanEntry>;
     /**
+     * the plan of the selectors of the rules
+     */
+    selectors: PlanEntry;
+    /**
      * the comment removal, or null when no stage removes comments
      */
     comments: CommentState | null;
@@ -31,12 +35,13 @@ export type DeclarationPlans = {
 /** @import {PlanEntry} from './plan.js' */
 /** @import {Stage} from './host.js' */
 /**
- * What the record walk applies to the declarations of one stylesheet: the
- * stages, the plan of each property seen so far, the comment removal, and
- * whether whitespace is normalized.
+ * What the record walk applies to the declarations and rules of one stylesheet:
+ * the stages, the plan of each property seen so far, the plan of the selectors,
+ * the comment removal, and whether whitespace is normalized.
  * @typedef {object} DeclarationPlans
  * @property {readonly Stage[]} stages in pipeline order
  * @property {Map<string, PlanEntry>} properties the plan of each property name as written
+ * @property {PlanEntry} selectors the plan of the selectors of the rules
  * @property {CommentState | null} comments the comment removal, or null when no stage removes comments
  * @property {boolean} normalizeWhitespace whether normalizeWhitespace is on, which strips the stray semicolons
  */

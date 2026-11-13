@@ -51,45 +51,20 @@ function tokenizeTotal() {
 const helpers = { result: { warn() {}, messages: [] } };
 
 suite('the text table reads the text the host walk wrote', () => {
-  test('the table reads the selector the host walk wrote, without tokenizing', () => {
-    const root = postcss.parse('a, b {}');
+  test('the table reads the prelude the host walk left unchanged, without tokenizing', () => {
+    const root = postcss.parse('@media screen and (x) {}');
     const table = new TextTable();
     const stage = {
-      selector: (buffer) => buffer.replace(0, 1, [ident('z')]),
+      forAtRule: () => ({ buffer: (buffer) => buffer.tokens() }),
     };
     walkStylesheet([stage], root, helpers, new Map(), table, null);
-    const rule = root.first;
-    assert.equal(rule.selector, 'z, b');
+    const atRule = root.first;
+    assert.equal(atRule.params, 'screen and (x)');
     const before = tokenizeTotal();
-    const list = table.tokens(rule);
-    assert.equal(tokenizeTotal() - before, 0);
-    assert.equal(list.map((token) => token[1]).join(''), 'z, b');
-  });
-  test('the table reads the selector the host walk left unchanged, without tokenizing', () => {
-    const root = postcss.parse('a, b {}');
-    const table = new TextTable();
-    const stage = { selector: (buffer) => buffer.tokens() };
-    walkStylesheet([stage], root, helpers, new Map(), table, null);
-    const rule = root.first;
-    assert.equal(rule.selector, 'a, b');
-    const before = tokenizeTotal();
-    assert.equal(table.tokens(rule).length, 4);
+    assert.equal(table.tokens(atRule).length, 7);
     assert.equal(tokenizeTotal() - before, 0);
   });
 
-  test('the table reads the selector the memo served to the host walk, without tokenizing', () => {
-    const root = postcss.parse('a, b {} a, b {}');
-    const table = new TextTable();
-    const stage = {
-      selector: (buffer) => buffer.replace(0, 1, [ident('z')]),
-    };
-    walkStylesheet([stage], root, helpers, new Map(), table, null);
-    const second = root.nodes[1];
-    assert.equal(second.selector, 'z, b');
-    const before = tokenizeTotal();
-    assert.equal(table.tokens(second).length, 4);
-    assert.equal(tokenizeTotal() - before, 0);
-  });
   test("the table reads the prelude the host walk's stages read, without tokenizing", () => {
     const root = postcss.parse('@media screen and (x) {}');
     const table = new TextTable();

@@ -15,6 +15,9 @@ const replaceComments = new URL(
 
 const walk = new URL('../../src/pipeline/traversal.js', import.meta.url).href;
 
+const ruleWalk = new URL('../../src/pipeline/ruleWalk.js', import.meta.url)
+  .href;
+
 const declarationWalk = new URL(
   '../../src/pipeline/declarationWalk.js',
   import.meta.url
@@ -79,9 +82,9 @@ export const mutations = [
   },
   {
     name: 'skip selector comment processing',
-    target: walk,
-    find: 'commentFreeSelector(read, comments) : read;',
-    replace: 'read : read;',
+    target: ruleWalk,
+    find: 'if (comments !== null) id = commentFreeSelectorIdOf(run, source, comments);',
+    replace: 'if (comments !== null) id = source;',
   },
   {
     name: 'skip at-rule comment processing',

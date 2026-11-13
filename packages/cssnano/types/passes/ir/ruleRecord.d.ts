@@ -63,8 +63,9 @@ export declare class RuleRecord {
     readonly marked: boolean;
     /**
      * The id of the circumstances under which the rule applies its children, as
-     * `containerContext` gives it. It is set once, at the build, for a rule that
-     * holds a rule or an at-rule; -1 for any other rule.
+     * `containerContext` gives it. The build sets it for a rule that holds a rule
+     * or an at-rule, and the record walk refreshes it after the rule's selector
+     * is folded; -1 for any other rule.
      *
      * @type {number}
      */

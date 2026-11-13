@@ -21,12 +21,13 @@ import { foldList, planEntry } from './plan.js';
 /** @import {Stage} from './host.js' */
 
 /**
- * What the record walk applies to the declarations of one stylesheet: the
- * stages, the plan of each property seen so far, the comment removal, and
- * whether whitespace is normalized.
+ * What the record walk applies to the declarations and rules of one stylesheet:
+ * the stages, the plan of each property seen so far, the plan of the selectors,
+ * the comment removal, and whether whitespace is normalized.
  * @typedef {object} DeclarationPlans
  * @property {readonly Stage[]} stages in pipeline order
  * @property {Map<string, PlanEntry>} properties the plan of each property name as written
+ * @property {PlanEntry} selectors the plan of the selectors of the rules
  * @property {CommentState | null} comments the comment removal, or null when no stage removes comments
  * @property {boolean} normalizeWhitespace whether normalizeWhitespace is on, which strips the stray semicolons
  */
@@ -38,7 +39,19 @@ import { foldList, planEntry } from './plan.js';
  * @returns {DeclarationPlans}
  */
 export function declarationPlansOf(stages, normalizeWhitespace, comments) {
-  return { stages, properties: new Map(), comments, normalizeWhitespace };
+  return {
+    stages,
+    properties: new Map(),
+    selectors: planEntry(
+      stages.flatMap((stage) =>
+        stage.selector !== undefined ? [stage.selector] : []
+      ),
+      undefined,
+      false
+    ),
+    comments,
+    normalizeWhitespace,
+  };
 }
 
 /**

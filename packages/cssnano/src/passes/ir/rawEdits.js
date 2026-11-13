@@ -45,7 +45,8 @@ export function writeRootAfter(records, after) {
 }
 
 /**
- * Writes the separator before a declaration's value, which the printer reads.
+ * Writes the separator between a declaration's or a rule's name and its value
+ * or block, which the printer reads.
  *
  * @param {BlockRecords} records
  * @param {ArenaIndex} index
@@ -53,7 +54,8 @@ export function writeRootAfter(records, after) {
  * @return {void}
  */
 export function writeBetween(records, index, between) {
-  /** @type {DeclarationRecord} */ (records.entry(index)).between = between;
+  /** @type {DeclarationRecord | RuleRecord} */ (records.entry(index)).between =
+    between;
 }
 
 /**

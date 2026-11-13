@@ -109,14 +109,14 @@ export declare function removeDeclarations(records: BlockRecords, rule: ArenaInd
  */
 export declare function moveDeclarations(records: BlockRecords, source: ArenaIndex, target: ArenaIndex, claimed: ArenaIndex[]): void;
 /**
- * Gives a rule the ids of its selector items and marks it, so write-back
- * writes its selector from them.
+ * Writes the context of a container, which the walk computes again after it
+ * edits the selector or prelude that the context reads.
  *
- * @param {RuleRecord} record
- * @param {readonly TokenListId[]} ids
+ * @param {BlockRecord | RuleRecord} record
+ * @param {number} context
  * @return {void}
  */
-export declare function writeSelectorIds(record: RuleRecord, ids: readonly TokenListId[]): void;
+export declare function writeContainerContext(record: BlockRecord | RuleRecord, context: number): void;
 /**
  * Writes the prelude of an at-rule: its list is interned in the run, and the
  * record marks the prelude so write-back assigns its text. The walk of the

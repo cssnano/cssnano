@@ -31,6 +31,18 @@ function distinctValuesOf(root) {
   return values.size;
 }
 
+/**
+ * @param {import('postcss').Root} root
+ * @return {number} the distinct written selectors of the stylesheet, which the
+ * build tokenizes once each as whole selectors, since the walk leaves a rule's
+ * selector to the records
+ */
+function distinctSelectorsOf(root) {
+  const selectors = new Set();
+  root.walkRules((rule) => selectors.add(rule.selector));
+  return selectors.size;
+}
+
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {
   return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
@@ -114,10 +126,14 @@ suite('the merge pass leaves the selectors it writes in the text table', () => {
       'a, c {color:red;margin:0} b {color:red;padding:0}'
     );
     const items = distinctItemsOf(root);
+    const selectors = distinctSelectorsOf(root);
     const before = tokenizeTotal();
     mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
     ruleWith(root, 'a, c');
-    assert.equal(tokenizeTotal() - before, items + distinctValuesOf(root));
+    assert.equal(
+      tokenizeTotal() - before,
+      items + distinctValuesOf(root) + selectors
+    );
   });
 
   test('a rule that a later rule joins by repeating its declarations reads its grown selector list without tokenizing', () => {
@@ -136,9 +152,13 @@ suite('the merge pass leaves the selectors it writes in the text table', () => {
       'div > a {color:red} div > b {color:red} p {margin:0} div > c {color:red}'
     );
     const items = distinctItemsOf(root);
+    const selectors = distinctSelectorsOf(root);
     const before = tokenizeTotal();
     mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    assert.equal(tokenizeTotal() - before, items + distinctValuesOf(root));
+    assert.equal(
+      tokenizeTotal() - before,
+      items + distinctValuesOf(root) + selectors
+    );
   });
 
   test('elementKeys reads the selector declarationJoin.js wrote, without tokenizing', () => {
@@ -146,9 +166,13 @@ suite('the merge pass leaves the selectors it writes in the text table', () => {
       'div > a {color:red} p {margin:0} div > b {color:red}'
     );
     const items = distinctItemsOf(root);
+    const selectors = distinctSelectorsOf(root);
     const before = tokenizeTotal();
     mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    assert.equal(tokenizeTotal() - before, items + distinctValuesOf(root));
+    assert.equal(
+      tokenizeTotal() - before,
+      items + distinctValuesOf(root) + selectors
+    );
   });
 
   test('elementKeys reads the selector ruleRewrite.js wrote, without tokenizing', () => {
@@ -156,9 +180,13 @@ suite('the merge pass leaves the selectors it writes in the text table', () => {
       'div > a, div > c {color:red;margin:0} div > b {color:red;padding:0} div > d {color:red}'
     );
     const items = distinctItemsOf(root);
+    const selectors = distinctSelectorsOf(root);
     const before = tokenizeTotal();
     mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    assert.equal(tokenizeTotal() - before, items + distinctValuesOf(root));
+    assert.equal(
+      tokenizeTotal() - before,
+      items + distinctValuesOf(root) + selectors
+    );
   });
 });
 
