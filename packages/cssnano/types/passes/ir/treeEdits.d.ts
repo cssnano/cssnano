@@ -61,4 +61,14 @@ export declare function appendToDeclarations(mergeState: MergeState, receiving: 
  * @return {void}
  */
 export declare function removeRules(mergeState: MergeState, indices: Set<ArenaIndex>): void;
+/**
+ * Removes an entry that a discard empties. When the entry leads the stylesheet,
+ * the whitespace it held passes to the entry after it, as the PostCSS node
+ * removal leaves it.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @return {void}
+ */
+export declare function removeEntry(records: BlockRecords, index: ArenaIndex): void;
 //# sourceMappingURL=treeEdits.d.ts.map

@@ -1,8 +1,9 @@
 import { buildRecords } from './buildRecords.js';
 import { guardWindow } from './windowGuard.js';
-import { writeBack } from './writeBack.js';
+import { childNodesOf, replaceChildren, writeBack } from './writeBack.js';
 import { assertRecordsMatchTree } from './treeMatch.js';
 import { createChildNodes, nodeOf } from './nodeTable.js';
+import { AT_RULE_BLOCK, RULE } from './blockRecord.js';
 
 /** @import {Result, Root} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -58,6 +59,22 @@ function end(state, { browsers, folded, result }) {
   }
   writeBack(records, nodes, context.tokenLists, context.textTable);
   assertRecordsMatchTree(records, nodes, context.tokenLists, browsers, folded);
+  // A removed container's node still holds the children it held, which the
+  // records dropped; its children follow the records.
+  for (const { index } of context.messages) {
+    const { kind } = records.entry(index);
+    if (kind === RULE || kind === AT_RULE_BLOCK) {
+      replaceChildren([
+        {
+          container: /** @type {import('postcss').Container} */ (
+            nodeOf(nodes, index)
+          ),
+          children: childNodesOf(records, nodes, index),
+          leading: null,
+        },
+      ]);
+    }
+  }
   for (const { index, type, plugin } of context.messages) {
     result?.messages.push({ type, plugin, node: nodeOf(nodes, index) });
   }

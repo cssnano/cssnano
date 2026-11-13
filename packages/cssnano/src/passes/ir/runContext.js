@@ -24,7 +24,7 @@ import { longstandingFeatures } from '../merge/lib/longhand/syntaxFeatures.js';
  * A message a transform made about one entry, appended in run order. The end
  * of the run turns it into a `result.messages` item, with the node of the entry.
  *
- * @typedef {{index: number, type: string, plugin: string}} RunMessage
+ * @typedef {{index: import('./blockRecord.js').ArenaIndex, type: string, plugin: string}} RunMessage
  */
 
 /**

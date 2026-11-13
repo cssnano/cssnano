@@ -110,8 +110,8 @@ export const mutations = [
   {
     name: 'a removal of a rule that leaves it in its chain',
     target: irSource('treeEdits.js'),
-    find: '  records.detach(index);\n',
-    replace: '',
+    find: 'export function remove(records, index) {\n  records.detach(index);\n',
+    replace: 'export function remove(records, index) {\n',
   },
   {
     name: 'a removal of a rule set that leaves its rules in their chains',

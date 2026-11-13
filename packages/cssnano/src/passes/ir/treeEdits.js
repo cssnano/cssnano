@@ -126,3 +126,19 @@ export function removeRules(mergeState, indices) {
     arena.leadingWhitespace = head === -1 ? null : arena.entry(head).before;
   }
 }
+
+/**
+ * Removes an entry that a discard empties. When the entry leads the stylesheet,
+ * the whitespace it held passes to the entry after it, as the PostCSS node
+ * removal leaves it.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @return {void}
+ */
+export function removeEntry(records, index) {
+  if (records.links.firstChild(records.root.index) === index) {
+    records.leadingWhitespace = records.entry(index).before;
+  }
+  records.detach(index);
+}
