@@ -5,7 +5,6 @@ import uniqueSelectors from '../../../src/plugins/postcss-unique-selectors/index
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import { uniqueRuleSelectors } from '../../../src/passes/ir/uniqueSelectors.js';
-import { keepSelectorComments } from '../../../src/passes/ir/keepSelectorComments.js';
 
 /** @import {BlockRecords} from '../../../src/passes/ir/blockRecords.js' */
 /** @import {RunContext} from '../../../src/passes/ir/runContext.js' */
@@ -50,8 +49,6 @@ function visitRules(records, context, parent) {
  */
 function recordFormOf(css) {
   const root = postcss.parse(css);
-  // The plugin moves the comments PostCSS keeps in a raw selector first.
-  root.walkRules(keepSelectorComments);
   const context = createRunContext(undefined, true);
   const state = runDriver.build(root, context);
   visitRules(state.records, context, state.records.root.index);

@@ -1,7 +1,6 @@
 import { atRuleEntry } from './prelude.js';
 import { foldNode, planEntry } from './plan.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
-import { keepSelectorComments } from '../passes/ir/keepSelectorComments.js';
 import {
   sourceParams,
   sourceSelector,
@@ -260,7 +259,6 @@ export function walkStylesheet(stages, root, helpers, transforms, table) {
     } else if (node.type === 'rule') {
       if (state.normalizeWhitespace) reattachBlockEscape(node);
       walkRule(state, node);
-      keepSelectorComments(node);
     }
   });
   // The overridable at-rules are compared after the walk has folded their

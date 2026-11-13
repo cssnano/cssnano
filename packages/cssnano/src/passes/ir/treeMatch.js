@@ -10,8 +10,13 @@ import {
 } from './blockRecord.js';
 import { tokensText } from '../../values/tokensText.js';
 import { nodeOf } from './nodeTable.js';
-import { isRuleOrAtRule, recordNameOf } from './buildRecords.js';
+import {
+  isRuleOrAtRule,
+  recordNameOf,
+  selectorItemsOf,
+} from './buildRecords.js';
 import { differs } from './writeBack.js';
+import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
 import { summariesHold } from './selectorReads.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -85,9 +90,30 @@ function checkAtRuleFacts(nodes, tokenLists, entry) {
     entry.atRuleKind !== atRuleKindOf(name) ||
     entry.name !== name ||
     tokensText(tokenLists.get(/** @type {TokenListId} */ (entry.preludeId))) !==
-      (node.params ?? '')
+      (node.params ?? '') ||
+    (entry.writtenList !== -1 &&
+      tokensText(tokenLists.get(entry.writtenList)) !== sourceParams(node))
   ) {
     throw new Error(OUT_OF_STEP);
+  }
+}
+
+/**
+ * Throws when a declaration's written list does not spell the value its node
+ * holds as written. A declaration with no written list has nothing to check.
+ *
+ * @param {TokenLists} tokenLists
+ * @param {DeclarationRecord} record
+ * @param {ChildNode | Root | undefined} node
+ * @return {void}
+ */
+function checkWrittenValue(tokenLists, record, node) {
+  if (
+    record.writtenList !== -1 &&
+    tokensText(tokenLists.get(record.writtenList)) !==
+      sourceValue(/** @type {Declaration} */ (node))
+  ) {
+    throw new Error(STALE);
   }
 }
 
@@ -140,9 +166,15 @@ function checkRawsOf(record, node) {
  * @return {void}
  */
 function checkRuleSelectors(tokenLists, record, rule) {
-  const items = rule.selectors;
+  const items = selectorItemsOf(sourceSelector(rule));
   const { selectorIds } = record;
   if (selectorIds.length !== items.length) throw new Error(OUT_OF_STEP);
+  if (
+    record.writtenList !== -1 &&
+    tokensText(tokenLists.get(record.writtenList)) !== sourceSelector(rule)
+  ) {
+    throw new Error(OUT_OF_STEP);
+  }
   for (let at = 0; at < items.length; at++) {
     if (tokensText(tokenLists.get(selectorIds[at])) !== items[at]) {
       throw new Error(OUT_OF_STEP);
@@ -211,6 +243,8 @@ function checkBlockRecord(records, nodes, tokenLists, block) {
     }
     if (item.kind !== DECLARATION) {
       checkRawsOf(item, /** @type {ChildNode} */ (nodeOf(nodes, entry)));
+    } else {
+      checkWrittenValue(tokenLists, item, nodeOf(nodes, entry));
     }
     if (item.kind === RULE) {
       checkRuleRecord(records, nodes, tokenLists, block, item);

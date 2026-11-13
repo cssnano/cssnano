@@ -170,14 +170,14 @@ suite('the merge pass writes selectors through its records', () => {
     assert.equal(tokensText(table.tokens(ruleWith(root, 'a,b'))), 'a,b');
   });
 
-  test("a marked record whose selector equals its node's comment-free text prints without the comment", () => {
+  test('a marked record prints the comment that its selector items keep', () => {
     const root = postcss.parse('a /*x*/, c {color:red}');
     const context = createRunContext();
     const { records, nodes } = buildRecords(root, context);
     const rule = records.rule(records.links.firstChild(records.root.index));
     addSelectors(records, rule.index, [], context.tokenLists, []);
     writeBack(records, nodes, context.tokenLists, new TextTable());
-    assert.equal(root.toString(), 'a,c {color:red}');
+    assert.equal(root.toString(), 'a /*x*/,c {color:red}');
   });
 });
 

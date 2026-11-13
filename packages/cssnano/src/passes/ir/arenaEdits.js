@@ -207,6 +207,7 @@ function rewriteRecord(context, record, item) {
     record.keys = keysOfName(item.prop);
   }
   record.valueList = valueListOfItem(context, item);
+  record.writtenList = -1;
   record.rawAfterValue = null;
   record.id = context.declarations.keyOf(
     record.prop,
@@ -227,10 +228,11 @@ function rewriteRecord(context, record, item) {
  */
 export function writeSelectorIds(record, ids) {
   const writable =
-    /** @type {{selectorIds: readonly TokenListId[], marked: boolean}} */ (
+    /** @type {{selectorIds: readonly TokenListId[], writtenList: number, marked: boolean}} */ (
       /** @type {unknown} */ (record)
     );
   writable.selectorIds = ids;
+  writable.writtenList = -1;
   writable.marked = true;
 }
 
@@ -251,6 +253,7 @@ export function writePrelude(context, record, list) {
     tokensText(list),
     list
   );
+  record.writtenList = -1;
   record.marked = true;
 }
 

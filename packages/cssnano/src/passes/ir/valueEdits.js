@@ -31,6 +31,7 @@ export function writeValue(records, context, index, list) {
     list
   );
   record.valueList = valueList;
+  record.writtenList = -1;
   record.rawAfterValue = null;
   record.id = context.declarations.keyOf(
     record.prop,

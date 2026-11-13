@@ -1,4 +1,5 @@
 /** @import {DeclarationRecord} from './declarationRecord.js' */
+/** @import {TokenListId} from './tokenLists.js' */
 
 /*
  * What an entry is, as a small integer. The window between build and
@@ -143,6 +144,13 @@ export class BlockRecord {
   afterName = null;
 
   /**
+   * The list of the text as written, when the identity fields do not spell it;
+   * -1 when they do. Set at the build, and reset by every edit of the identity.
+   *
+   * @type {TokenListId | -1}
+   */
+  writtenList = -1;
+  /**
    * Whether an edit wrote the prelude, so write-back assigns its text to the
    * node. The list of the prelude is `preludeId`.
    *
@@ -236,6 +244,13 @@ export class NodeEntry {
    */
   afterName = null;
 
+  /**
+   * The list of the text as written, when the identity fields do not spell it;
+   * -1 when they do. Set at the build, and reset by every edit of the identity.
+   *
+   * @type {TokenListId | -1}
+   */
+  writtenList = -1;
   /**
    * Whether an edit wrote the prelude, so write-back assigns its text to the
    * node. The list of the prelude is `preludeId`.

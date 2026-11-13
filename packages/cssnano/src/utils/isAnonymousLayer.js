@@ -1,25 +1,25 @@
 import { TokenType } from './value.js';
 
-/** @import {TextTable} from '../values/textTable.js' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 /**
- * Whether a layer block is anonymous: its prelude is empty, or holds only
- * comments. A prelude with a comment is read from the table, which keeps the
- * tokens the walk stored for it.
+ * Whether a layer block is anonymous: its prelude is blank, or holds only
+ * comments. The prelude is the tokens of its params as PostCSS keeps them.
  *
- * @param {import('postcss').AtRule} node
- * @param {TextTable} table
+ * @param {readonly CSSToken[]} prelude
  * @return {boolean}
  */
-function isAnonymousLayer(node, table) {
-  const params = node.params?.trim();
-  if (!params) {
+function isAnonymousLayer(prelude) {
+  // The text is joined here, since values/tokensText.js reads this module's index.
+  let text = '';
+  for (const token of prelude) text += token[1];
+  if (text.trim() === '') {
     return true;
   }
-  if (!params.includes('/*')) {
+  if (!text.includes('/*')) {
     return false;
   }
-  return !table.tokens(node).some((token) => token[0] === TokenType.Ident);
+  return !prelude.some((token) => token[0] === TokenType.Ident);
 }
 
 export default isAnonymousLayer;

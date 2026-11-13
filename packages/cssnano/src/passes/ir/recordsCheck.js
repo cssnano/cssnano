@@ -1,7 +1,15 @@
 import { containers } from './blockChildren.js';
 import { nodeOf } from './nodeTable.js';
-import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
+import {
+  AT_RULE_BLOCK,
+  COMMENT,
+  DECLARATION,
+  RULE,
+  STYLESHEET,
+} from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
+import { selectorItemsOf } from './buildRecords.js';
+import { tokensText } from '../../values/tokensText.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
@@ -9,10 +17,17 @@ import { containerContext } from './sameContainer.js';
 /** @import {NodeTable} from './nodeTable.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import MergeState from '../merge/lib/rules/mergeState.js' */
+/** @import {TokenLists} from './tokenLists.js' */
+/** @import {NodeEntry} from './blockRecord.js' */
 /** @typedef {BlockRecord | RuleRecord} Container */
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 const REACHED_TWICE = 'a record is reached twice from the root';
+const WRITTEN_RULE =
+  'a rule whose ids differ from the items of its written list';
+const WRITTEN_IDENTITY =
+  'a written list is the identity list it is kept beside';
+const WRITTEN_NONE = 'a record with no text of its own holds a written list';
 
 /**
  * Throws when the chain of a container does not hold its entries in order: each
@@ -51,15 +66,50 @@ function checkChain(records, block) {
 }
 
 /**
+ * Throws when a record's written list does not hold to its identity. A rule's
+ * ids are the items of its written selector. A declaration's or an at-rule's
+ * written list is never its identity list, and the stylesheet and a comment
+ * hold none. A written list is -1 when the identity spells the text, so an edit
+ * that resets the identity leaves no stale list.
+ *
+ * @param {TokenLists} tokenLists
+ * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} record
+ * @return {void}
+ */
+function checkWrittenList(tokenLists, record) {
+  const { writtenList } = record;
+  if (writtenList === -1) return;
+  if (record.kind === RULE) {
+    const items = selectorItemsOf(tokensText(tokenLists.get(writtenList)));
+    const { selectorIds } = record;
+    if (items.length !== selectorIds.length) throw new Error(WRITTEN_RULE);
+    for (let at = 0; at < items.length; at++) {
+      if (tokensText(tokenLists.get(selectorIds[at])) !== items[at]) {
+        throw new Error(WRITTEN_RULE);
+      }
+    }
+  } else if (record.kind === DECLARATION) {
+    if (writtenList === record.valueList) throw new Error(WRITTEN_IDENTITY);
+  } else if (record.kind === COMMENT || record.kind === STYLESHEET) {
+    throw new Error(WRITTEN_NONE);
+  } else if (writtenList === record.preludeId) {
+    throw new Error(WRITTEN_IDENTITY);
+  }
+}
+
+/**
  * Throws when the chain of a container is out of step, for it and for each
- * nested container its chain links.
+ * nested container its chain links. Each record's written list holds to its
+ * identity.
  *
  * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
  * @param {Container} block
  * @return {void}
  */
-function checkBlockStructure(records, block) {
+function checkBlockStructure(records, tokenLists, block) {
   checkChain(records, block);
+  checkWrittenList(tokenLists, block);
   const { links } = records;
   for (
     let entry = links.firstChild(block.index);
@@ -67,31 +117,33 @@ function checkBlockStructure(records, block) {
     entry = links.nextSibling(entry)
   ) {
     const item = records.entry(entry);
+    checkWrittenList(tokenLists, item);
     if (
       item.kind === STYLESHEET ||
       item.kind === AT_RULE_BLOCK ||
       item.kind === RULE
     ) {
-      checkBlockStructure(records, item);
+      checkBlockStructure(records, tokenLists, item);
     }
   }
 }
 
 /**
  * Under consistency checks, throws when a chain is out of step with its
- * entries or a record is reached twice. Only what the root reaches is checked:
- * a removed block may keep its entries, and write-back never reads them.
- * Reads only the records, so it needs no PostCSS node.
+ * entries, a record is reached twice, or a written list is out of step with its
+ * identity. Only what the root reaches is checked: a removed block may keep its
+ * entries, and write-back never reads them. Reads only the records and the token
+ * lists, so it needs no PostCSS node.
  *
- * @param {{records: BlockRecords}} mergeState
+ * @param {{records: BlockRecords, tokenLists: TokenLists}} mergeState
  * @return {void}
  */
 export function assertRecordsWellFormed(mergeState) {
   if (!mergeState.records.consistencyChecks) return;
-  const { records } = mergeState;
+  const { records, tokenLists } = mergeState;
   // Runs first: a cycle in the chains would loop the structure walk below.
   assertOwnershipIsTree(records);
-  checkBlockStructure(records, records.root);
+  checkBlockStructure(records, tokenLists, records.root);
 }
 
 /**

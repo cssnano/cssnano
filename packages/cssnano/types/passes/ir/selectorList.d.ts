@@ -10,6 +10,7 @@ import type { RuleElementKeys } from './elementKeys.js';
 export declare const UNFOLDED_VENDOR: VendorPrefixSummary;
 export type WritableSummaries = {
     selectorIds: TokenListId[];
+    writtenList: number;
     compatible: boolean;
     vendor: VendorPrefixSummary;
     elementKeys: RuleElementKeys | null;

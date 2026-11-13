@@ -101,12 +101,7 @@ suite('the at-rule readers read the lists stored for their at-rules', () => {
     );
   });
 
-  test('isAnonymousLayer reads the @layer list stored for the at-rule, without tokenizing', () => {
-    const root = postcss.parse('@layer a/* c */{}');
-    const table = new TextTable();
-    table.write(root.first, tokens('a/* c */'));
-    const before = tokenizeTotal();
-    assert.equal(isAnonymousLayer(root.first, table), false);
-    assert.equal(tokenizeTotal() - before, 0);
+  test('isAnonymousLayer reads a @layer prelude with a name and a comment as named', () => {
+    assert.equal(isAnonymousLayer(tokens('a/* c */')), false);
   });
 });

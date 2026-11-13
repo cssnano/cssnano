@@ -54,3 +54,26 @@ export function valueListOf(node, tables) {
     sourceValue(node) === node.value ? textTable.stored(node) : undefined;
   return valueIds.idOf(tokenLists, mode, node.value, stored);
 }
+
+/**
+ * The list of a declaration's value as written, when the value list does not
+ * spell it: a cleaned value that dropped a plain comment. A value kept as
+ * written, and a value PostCSS cleaned of nothing, have none, so -1.
+ *
+ * @param {Declaration} node
+ * @param {ValueTables} tables
+ * @return {TokenListId | -1}
+ */
+export function writtenValueListOf(node, tables) {
+  const written = sourceValue(node);
+  if (written === node.value || keepsValueAsWritten(node, tables.textTable)) {
+    return -1;
+  }
+  const { textTable, tokenLists, valueIds } = tables;
+  return valueIds.idOf(
+    tokenLists,
+    tokenizeMode(node.prop),
+    written,
+    textTable.tokens(node)
+  );
+}

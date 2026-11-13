@@ -51,6 +51,13 @@ export class RuleRecord {
   elementKeys = null;
 
   /**
+   * The list of the text as written, when the identity fields do not spell it;
+   * -1 when they do. Set at the build, and reset by every edit of the identity.
+   *
+   * @type {TokenListId | -1}
+   */
+  writtenList = -1;
+  /**
    * Whether an edit changed the rule's list, so write-back must write its
    * selector. Every edit that changes the ids sets it.
    *

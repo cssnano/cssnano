@@ -14,8 +14,7 @@ export type RecordsTransform = (records: BlockRecords, browsers: readonly string
 /**
  * The body of a standalone PostCSS plugin over the records: builds the
  * stylesheet, runs the transforms in order, and ends the run with the result.
- * There is no host walk, so each rule's comments that PostCSS keeps only in its
- * raw selector move into the selector first, where the build reads them.
+ * There is no host walk; the build reads each selector as written.
  *
  * @param {Root} css
  * @param {Result} result the result whose messages the run pushes to

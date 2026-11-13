@@ -57,7 +57,7 @@ test(
   'should not crash on comment',
   processCSS(
     '.a,/*! x, y */.b{color:red}\n.c{color:red}',
-    '.a,.b,.c{color:red}'
+    '.a,/*! x, y */.b,.c{color:red}'
   )
 );
 

@@ -3,18 +3,21 @@ import type { BlockRecord } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { NodeTable } from './nodeTable.js';
 import type MergeState from '../merge/lib/rules/mergeState.js';
+import type { TokenLists } from './tokenLists.js';
 export type Container = BlockRecord | RuleRecord;
 /**
  * Under consistency checks, throws when a chain is out of step with its
- * entries or a record is reached twice. Only what the root reaches is checked:
- * a removed block may keep its entries, and write-back never reads them.
- * Reads only the records, so it needs no PostCSS node.
+ * entries, a record is reached twice, or a written list is out of step with its
+ * identity. Only what the root reaches is checked: a removed block may keep its
+ * entries, and write-back never reads them. Reads only the records and the token
+ * lists, so it needs no PostCSS node.
  *
- * @param {{records: BlockRecords}} mergeState
+ * @param {{records: BlockRecords, tokenLists: TokenLists}} mergeState
  * @return {void}
  */
 export declare function assertRecordsWellFormed(mergeState: {
     records: BlockRecords;
+    tokenLists: TokenLists;
 }): void;
 /**
  * Walks the ownership of the records from the root along the chains: the

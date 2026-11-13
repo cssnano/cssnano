@@ -65,9 +65,9 @@ export const mutations = [
   {
     name: 'store the joined selector list as text, dropping its tokens',
     target: irSource('writeSelector.js'),
-    find: '  textTable.write(node, joinedList(record, tokenLists));',
+    find: '  textTable.write(node, list);',
     replace:
-      "  textTable.setText(node, joinedList(record, tokenLists).map((token) => token[1]).join(''));",
+      "  textTable.setText(node, list.map((token) => token[1]).join(''));",
   },
   {
     name: 'a merged rule takes no combined summaries of the two lists it is built from',
@@ -90,8 +90,8 @@ export const mutations = [
   {
     name: 'a rule that absorbs an earlier one is not marked, so write-back keeps its node text',
     target: irSource('selectorList.js'),
-    find: '  own.marked = true;\n  writableIds(earlier).selectorIds = NO_SELECTORS;',
-    replace: '  writableIds(earlier).selectorIds = NO_SELECTORS;',
+    find: '  own.marked = true;\n  const moved = writableIds(earlier);',
+    replace: '  const moved = writableIds(earlier);',
   },
   {
     name: 'a merged rule is not marked when its summaries are combined, so write-back keeps its node text',

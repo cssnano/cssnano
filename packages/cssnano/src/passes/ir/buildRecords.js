@@ -1,6 +1,7 @@
 /** @import {TokenLists, TokenListId} from './tokenLists.js' */
+import { list } from 'postcss';
 import cssnanoUtils from '#utils';
-import { sourceParams } from '../../utils/sourceText.js';
+import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
 import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from './declarationRecord.js';
@@ -18,7 +19,7 @@ import {
   STYLESHEET,
 } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
-import { valueListOf } from './valueList.js';
+import { valueListOf, writtenValueListOf } from './valueList.js';
 import { holdsNonAscii } from '../../values/nonAscii.js';
 
 /** @import {SelectorIds} from './selectorIds.js' */
@@ -55,6 +56,17 @@ export function recordNameOf(written) {
  */
 export function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
+}
+
+/**
+ * The items of a selector as written: PostCSS's split at its commas, trimmed,
+ * with its empty items kept. A rule's ids are the items of its written selector.
+ *
+ * @param {string} selector the selector as written
+ * @return {readonly string[]}
+ */
+export function selectorItemsOf(selector) {
+  return list.comma(selector);
 }
 
 /**
@@ -126,6 +138,7 @@ export function recordDeclaration(node, context) {
   const written = sourceValue(node);
   record.writtenNonAscii = written !== node.value && holdsNonAscii(written);
   record.rawAfterValue = rawAfterValueOf(node);
+  record.writtenList = writtenValueListOf(node, context);
   return record;
 }
 
@@ -147,6 +160,26 @@ function preludeIdOf(node, context) {
 }
 
 /**
+ * The list of an at-rule's params as written, when its prelude does not spell
+ * them: params that dropped a comment. -1 otherwise.
+ *
+ * @param {import('postcss').AtRule} node
+ * @param {RunContext} context
+ * @return {TokenListId | -1}
+ */
+function writtenPreludeOf(node, context) {
+  const params = node.params ?? '';
+  const written = sourceParams(node) ?? '';
+  if (written === params) return -1;
+  return context.valueIds.idOf(
+    context.tokenLists,
+    undefined,
+    written,
+    context.textTable.tokens(node)
+  );
+}
+
+/**
  * Builds the records of a stylesheet from its tree, once per run, and the node
  * of each of their entries. Each child is linked into the chain of its parent,
  * and every rule is a container whose children form its own chain.
@@ -156,7 +189,7 @@ function preludeIdOf(node, context) {
  * @return {{records: BlockRecords, nodes: NodeTable}}
  */
 export function buildRecords(root, context) {
-  const { textTable, tokenLists, consistencyChecks } = context;
+  const { tokenLists, consistencyChecks } = context;
   // The ids of this build's selectors. Each rule keeps the ids of its items.
   const { selectorIds } = context;
   const records = new BlockRecords(
@@ -190,9 +223,16 @@ export function buildRecords(root, context) {
   const fillChildren = (container, node) => {
     for (const child of /** @type {ChildNode[]} */ (node.nodes)) {
       if (child.type === 'rule') {
+        const written = sourceSelector(child);
         const record = new RuleRecord(
           child.raws.before ?? null,
-          idsOfItems(selectorIds, tokenLists, child.selectors)
+          idsOfItems(selectorIds, tokenLists, selectorItemsOf(written))
+        );
+        record.writtenList = context.valueIds.idOf(
+          tokenLists,
+          undefined,
+          written,
+          context.textTable.stored(child)
         );
         holdContainerRaws(record, child);
         place(container.index, record, child);
@@ -208,14 +248,16 @@ export function buildRecords(root, context) {
       } else if (child.type === 'atrule' && child.nodes) {
         const name = recordNameOf(child.name);
         const category = atRuleKindOf(name);
+        const preludeId = preludeIdOf(child, context);
         const nested = new BlockRecord(
           AT_RULE_BLOCK,
           child.raws.before ?? null,
           category,
           name,
-          category === LAYER && isAnonymousLayer(child, textTable),
-          preludeIdOf(child, context)
+          category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
+          preludeId
         );
+        nested.writtenList = writtenPreludeOf(child, context);
         holdContainerRaws(nested, child);
         nested.afterName = child.raws.afterName ?? null;
         place(container.index, nested, child);
@@ -230,14 +272,16 @@ export function buildRecords(root, context) {
       } else if (child.type === 'atrule') {
         const name = recordNameOf(child.name);
         const category = atRuleKindOf(name);
+        const preludeId = preludeIdOf(child, context);
         const entry = new NodeEntry(
           AT_RULE_STATEMENT,
           child.raws.before ?? null,
           category,
           name,
-          category === LAYER && isAnonymousLayer(child, textTable),
-          preludeIdOf(child, context)
+          category === LAYER && isAnonymousLayer(tokenLists.get(preludeId)),
+          preludeId
         );
+        entry.writtenList = writtenPreludeOf(child, context);
         entry.between = child.raws.between ?? null;
         entry.afterName = child.raws.afterName ?? null;
         place(container.index, entry, child);

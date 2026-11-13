@@ -28,6 +28,14 @@ import type { RunContext } from './runContext.js';
  */
 export declare function isRuleOrAtRule(node: ChildNode): boolean;
 /**
+ * The items of a selector as written: PostCSS's split at its commas, trimmed,
+ * with its empty items kept. A rule's ids are the items of its written selector.
+ *
+ * @param {string} selector the selector as written
+ * @return {readonly string[]}
+ */
+export declare function selectorItemsOf(selector: string): readonly string[];
+/**
  * The record of a declaration of the run's stylesheet.
  *
  * @param {Declaration} node

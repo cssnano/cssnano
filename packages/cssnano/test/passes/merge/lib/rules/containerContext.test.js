@@ -11,6 +11,7 @@ import { sameContainer } from '../../../../../src/passes/ir/sameContainer.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { assertContextsCurrent } from '../../../../../src/passes/ir/recordsCheck.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
+import { tokens as tokenize } from '../../../../../src/utils/value.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { random } from '../../../../../../../util/fuzzRng.js';
 
@@ -18,7 +19,6 @@ import { random } from '../../../../../../../util/fuzzRng.js';
 /** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 /** @import {BlockRecord} from '../../../../../src/passes/ir/blockRecord.js' */
 /** @import {RuleRecord} from '../../../../../src/passes/ir/ruleRecord.js' */
-/** @import {TextTable} from '../../../../../src/values/textTable.js' */
 
 const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
 
@@ -29,16 +29,15 @@ const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
  *
  * @param {AnyNode} a
  * @param {AnyNode} b
- * @param {TextTable} textTable
  * @return {boolean}
  */
-function sameBlock(a, b, textTable) {
+function sameBlock(a, b) {
   if (a.type === 'atrule' && b.type === 'atrule') {
     const name = asciiLowerCase(a.name);
     if (name !== asciiLowerCase(b.name)) return false;
     if (name === 'layer') {
-      const anonA = isAnonymousLayer(/** @type {AtRule} */ (a), textTable);
-      const anonB = isAnonymousLayer(/** @type {AtRule} */ (b), textTable);
+      const anonA = isAnonymousLayer(tokenize(a.params ?? ''));
+      const anonB = isAnonymousLayer(tokenize(b.params ?? ''));
       if (anonA || anonB) return a === b;
     }
     return a.params === b.params;
@@ -58,18 +57,16 @@ function sameBlock(a, b, textTable) {
  * @param {BlockRecords} records
  * @param {BlockRecord | RuleRecord | undefined} a
  * @param {BlockRecord | RuleRecord | undefined} b
- * @param {TextTable} textTable
  * @return {boolean}
  */
-function sameChain(records, a, b, textTable) {
+function sameChain(records, a, b) {
   if (!a || !b) return !a && !b;
   return (
-    sameBlock(nodeOfEntry(records, a), nodeOfEntry(records, b), textTable) &&
+    sameBlock(nodeOfEntry(records, a), nodeOfEntry(records, b)) &&
     sameChain(
       records,
       records.enclosingContainer(a.index),
-      records.enclosingContainer(b.index),
-      textTable
+      records.enclosingContainer(b.index)
     )
   );
 }
@@ -138,7 +135,7 @@ test('sameContainer agrees with the definition of one container on every pair of
       for (const b of holders) {
         assert.strictEqual(
           sameContainer(a, b),
-          sameChain(state.records, a, b, state.textTable),
+          sameChain(state.records, a, b),
           `${css}: ${a.index} and ${b.index}`
         );
       }

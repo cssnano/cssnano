@@ -32,6 +32,7 @@ export const UNFOLDED_VENDOR = new VendorPrefixSummary(null, false);
  *
  * @typedef {object} WritableSummaries
  * @property {TokenListId[]} selectorIds
+ * @property {number} writtenList
  * @property {boolean} compatible
  * @property {VendorPrefixSummary} vendor
  * @property {RuleElementKeys | null} elementKeys
@@ -161,6 +162,7 @@ export function addSelectors(records, index, ids, tokenLists, browsers) {
   const listed = list.elementKeys?.list.length;
   const own = writableIds(list);
   for (const id of ids) own.selectorIds.push(id);
+  own.writtenList = -1;
   own.marked = true;
   extendSummaries(list, from, tokenLists, browsers);
   return gainedKeys(list, listed);
@@ -200,11 +202,14 @@ export function absorbEarlier(records, laterIndex, earlierIndex) {
   for (const id of later.selectorIds) ids.push(id);
   const own = writableIds(later);
   own.selectorIds = ids;
+  own.writtenList = -1;
   own.compatible = compatible;
   own.vendor = vendor;
   own.elementKeys = keys;
   own.marked = true;
-  writableIds(earlier).selectorIds = NO_SELECTORS;
+  const moved = writableIds(earlier);
+  moved.selectorIds = NO_SELECTORS;
+  moved.writtenList = -1;
 }
 
 /**

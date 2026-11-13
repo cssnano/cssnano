@@ -44,32 +44,59 @@ const frameworksDir = new URL(
 );
 
 /**
+ * The selector of a rule as written: PostCSS's raw, when it still spells the
+ * cleaned selector, and the cleaned selector otherwise.
+ *
+ * @param {postcss.Rule} rule
+ * @return {string}
+ */
+function writtenSelectorOf(rule) {
+  const raw = rule.raws.selector;
+  return raw !== undefined && raw.value === rule.selector
+    ? raw.raw
+    : rule.selector;
+}
+
+/**
  * @param {postcss.Root} root
- * @return {number} the distinct selector items of every rule under the root, at any depth
+ * @return {number} the distinct selector items of every rule under the root, at any depth,
+ * as written
  */
 function distinctItemsOf(root) {
   const items = new Set();
   root.walkRules((rule) => {
-    for (const item of rule.selectors) items.add(item);
+    for (const item of postcss.list.comma(writtenSelectorOf(rule))) {
+      items.add(item);
+    }
   });
   return items.size;
 }
 
 /**
  * @param {postcss.Root} root
- * @return {number} the distinct (tokenizer mode, text) pairs of the declarations and
- * of the at-rule preludes, which the build tokenizes once each, since a value
- * and a prelude are interned by their text and mode
+ * @return {number} the distinct (tokenizer mode, text) pairs that the build
+ * tokenizes once each, as written and cleaned: the values of the declarations,
+ * the preludes of the at-rules and the selectors of the rules. The selectors
+ * and preludes are in the default mode, which a value of that mode shares.
  */
 function distinctValuesOf(root) {
   const values = new Set();
   root.walkDecls((decl) => {
+    const mode = tokenizeMode(decl.prop) ? 'range' : 'default';
+    values.add(`${mode}\0${decl.value}`);
     values.add(
-      `${tokenizeMode(decl.prop) ? 'range' : 'default'}\0${decl.value}`
+      `${mode}\0${decl.raws.value?.value === decl.value ? (decl.raws.value.raw ?? decl.value) : decl.value}`
     );
   });
   root.walkAtRules((atRule) => {
-    values.add(`default\0${atRule.params}`);
+    const params = atRule.params ?? '';
+    values.add(`default\0${params}`);
+    values.add(
+      `default\0${atRule.raws.params?.value === params ? atRule.raws.params.raw : params}`
+    );
+  });
+  root.walkRules((rule) => {
+    values.add(`default\0${writtenSelectorOf(rule)}`);
   });
   return values.size;
 }

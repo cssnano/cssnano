@@ -20,11 +20,12 @@ suite('the whitespace of a declaration value', () => {
     assert.ok((await tokenizeCalls('a{color:red blue}')) > 0);
   });
 
-  // The records are built for any run with a transform after merge, and the
-  // build tokenizes each value (two calls). The whitespace stage adds none for
-  // a value with no whitespace, so the count is the build's alone.
+  // The records are built for any run with a transform after merge. The build
+  // tokenizes each value (two calls) and the rule's selector as written, beside
+  // its items (one call). The whitespace stage adds none for a value with no
+  // whitespace, so the count is the build's alone.
   test('a value without whitespace is tokenized only by the build', async () => {
-    assert.equal(await tokenizeCalls('a{color:red}'), 2);
+    assert.equal(await tokenizeCalls('a{color:red}'), 3);
   });
 });
 

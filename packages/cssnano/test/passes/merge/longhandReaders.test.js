@@ -171,8 +171,9 @@ suite('the longhand readers take a declaration from the text table', () => {
     );
     const before = tokenizeTotal();
     blockOf(root, table);
-    // One tokenization for the selector `a`, one for the value PostCSS cleaned.
-    assert.equal(tokenizeTotal() - before, 2);
+    // One tokenization for the selector `a` beside its items, one for the
+    // selector as written, and one for the value PostCSS cleaned.
+    assert.equal(tokenizeTotal() - before, 3);
   });
 
   test('one build of the records tokenizes a value repeated on another rule once, since the run interns the text', () => {
@@ -182,8 +183,8 @@ suite('the longhand readers take a declaration from the text table', () => {
     const { records, nodes } = buildRecords(root, run);
     declarationsFromRecords(records, run, nodes.indexOf(root.first));
     declarationsFromRecords(records, run, nodes.indexOf(root.last));
-    // Two selectors, one value.
-    assert.equal(tokenizeTotal() - before, 3);
+    // Two selectors, each tokenized as written beside its items, and one value.
+    assert.equal(tokenizeTotal() - before, 5);
   });
 
   test('parseRadiusShorthand reads the list stored for the node, without tokenizing', () => {

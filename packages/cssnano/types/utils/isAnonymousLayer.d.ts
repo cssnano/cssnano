@@ -1,14 +1,12 @@
-import type { TextTable } from '../values/textTable.js';
-/** @import {TextTable} from '../values/textTable.js' */
+import type { CSSToken } from '@csstools/css-tokenizer';
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /**
- * Whether a layer block is anonymous: its prelude is empty, or holds only
- * comments. A prelude with a comment is read from the table, which keeps the
- * tokens the walk stored for it.
+ * Whether a layer block is anonymous: its prelude is blank, or holds only
+ * comments. The prelude is the tokens of its params as PostCSS keeps them.
  *
- * @param {import('postcss').AtRule} node
- * @param {TextTable} table
+ * @param {readonly CSSToken[]} prelude
  * @return {boolean}
  */
-declare function isAnonymousLayer(node: import('postcss').AtRule, table: TextTable): boolean;
+declare function isAnonymousLayer(prelude: readonly CSSToken[]): boolean;
 export default isAnonymousLayer;
 //# sourceMappingURL=isAnonymousLayer.d.ts.map

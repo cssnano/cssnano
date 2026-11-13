@@ -44,9 +44,10 @@ function writeTemplateRaws(node, template) {
 }
 
 /**
- * Writes the selector of a marked rule the root reaches, through the table: the
- * tokens of its ids joined as the rule is written. A rule that no merge marked
- * keeps its node's text, so it is not written.
+ * Writes the selector of a marked rule the root reaches, through the table: its
+ * written list when it has one, otherwise the tokens of its ids joined as the
+ * rule is written. A rule that no merge marked keeps its node's text, so it is
+ * not written.
  *
  * @param {RuleRecord} record
  * @param {NodeTable} nodes
@@ -57,7 +58,11 @@ function writeTemplateRaws(node, template) {
 export function writeSelector(record, nodes, textTable, tokenLists) {
   if (!record.marked) return;
   const node = /** @type {Rule} */ (nodeOf(nodes, record.index));
-  textTable.write(node, joinedList(record, tokenLists));
+  const list =
+    record.writtenList === -1
+      ? joinedList(record, tokenLists)
+      : tokenLists.get(record.writtenList);
+  textTable.write(node, list);
   if (record.template !== -1) {
     writeTemplateRaws(
       node,

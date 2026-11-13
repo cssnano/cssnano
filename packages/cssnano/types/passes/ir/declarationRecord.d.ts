@@ -67,6 +67,13 @@ export declare class DeclarationRecord {
      */
     writtenNonAscii: boolean;
     /**
+     * The list of the text as written, when the identity fields do not spell it;
+     * -1 when they do. Set at the build, and reset by every edit of the identity.
+     *
+     * @type {TokenListId | -1}
+     */
+    writtenList: TokenListId | -1;
+    /**
      * Whether an edit changed the declaration, so write-back must write it. The
      * build sets nothing.
      *

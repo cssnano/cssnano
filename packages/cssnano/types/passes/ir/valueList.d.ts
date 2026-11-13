@@ -18,4 +18,14 @@ export type ValueTables = {
  * @return {TokenListId}
  */
 export declare function valueListOf(node: Declaration, tables: ValueTables): TokenListId;
+/**
+ * The list of a declaration's value as written, when the value list does not
+ * spell it: a cleaned value that dropped a plain comment. A value kept as
+ * written, and a value PostCSS cleaned of nothing, have none, so -1.
+ *
+ * @param {Declaration} node
+ * @param {ValueTables} tables
+ * @return {TokenListId | -1}
+ */
+export declare function writtenValueListOf(node: Declaration, tables: ValueTables): TokenListId | -1;
 //# sourceMappingURL=valueList.d.ts.map
