@@ -38,8 +38,8 @@ describe('a host plugin', () => {
     assert.deepStrictEqual(seen, ['a', '.added']);
   });
 
-  // Accepted cost C10 of step 13: a run with stages and no merge builds the
-  // records, so the build is counted here and not only when a merge runs.
+  // A run with stages and no merge builds the records, so the build is counted
+  // here and not only when a merge runs.
   test('a host with stages and no merge builds the records of each stylesheet once', async () => {
     const build = runDriver.build;
     let builds = 0;

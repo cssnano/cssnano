@@ -16,7 +16,7 @@ import { walkDown } from '../../src/pipeline/walkDown.js';
 function scopeKeysOf(css) {
   const context = createRunContext();
   const { records } = runDriver.build(postcss.parse(css), context);
-  return walkDown(records).map((index) =>
+  return walkDown(records, context).map((index) =>
     scopeKeyOf(records, context.declarations, index)
   );
 }
@@ -30,7 +30,7 @@ function scopeKeysOf(css) {
 function countOf(css) {
   const context = createRunContext();
   const { records } = runDriver.build(postcss.parse(css), context);
-  return walkDown(records).length;
+  return walkDown(records, context).length;
 }
 
 describe('the scope key of an overridable at-rule', () => {

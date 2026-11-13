@@ -149,7 +149,7 @@ function runRecords(
     discardOverriddenAtRules(
       state.records,
       context.declarations,
-      walkDown(state.records)
+      walkDown(state.records, context)
     );
   }
   if (merge && support) {
@@ -228,8 +228,8 @@ export function hostPlugin(
           if (hasStages) {
             walkStylesheet(stages, root, helpers, transforms, table);
           }
-          // Accepted cost C10: a run with stages builds the records, even when
-          // no merge, walk after merge or symbol transform reads them.
+          // A run with stages builds the records, even when no merge, walk
+          // after merge or symbol transform reads them.
           if (hasStages || merge || after.size > 0 || symbols.size > 0) {
             runRecords(
               root,

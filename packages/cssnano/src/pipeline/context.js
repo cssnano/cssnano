@@ -1,5 +1,12 @@
 import { syntaxAllowsPercentage } from '../utils/syntaxPercentage.js';
 import cssnanoUtils from '#utils';
+import { AT_RULE_BLOCK, DECLARATION } from '../passes/ir/blockRecord.js';
+import { declaredValue } from '../passes/ir/declaredText.js';
+
+/** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
+/** @import {DeclarationRecord} from '../passes/ir/declarationRecord.js' */
+/** @import {TokenLists} from '../passes/ir/tokenLists.js' */
 
 /** @import {AtRule, Container, Document} from 'postcss' */
 
@@ -106,5 +113,67 @@ export function contextOf(node, contexts) {
       context = withBit(context, KEYFRAME_RULE);
   }
   contexts.set(node, context);
+  return context;
+}
+
+/**
+ * Whether the syntax of an `@property` record allows percentages. The last
+ * direct syntax declaration decides, and a rule without one allows them.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex} index an `@property` record
+ * @returns {boolean}
+ */
+function recordAllowsPercentage(records, tokenLists, index) {
+  /** @type {DeclarationRecord | undefined} */
+  let syntax;
+  for (
+    let child = records.links.firstChild(index);
+    child !== -1;
+    child = records.links.nextSibling(child)
+  ) {
+    const entry = records.entry(/** @type {ArenaIndex} */ (child));
+    if (entry.kind === DECLARATION && entry.prop.toLowerCase() === 'syntax') {
+      syntax = /** @type {DeclarationRecord} */ (entry);
+    }
+  }
+  if (syntax === undefined) return true;
+  return syntaxAllowsPercentage(declaredValue(tokenLists, syntax));
+}
+
+/**
+ * The context of a container record, from its parent's context, as the node
+ * form `contextOf` gives it for a container node. The stylesheet is the only
+ * container without a parent, and its context is 0.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex} index a rule or an at-rule with a block
+ * @param {number} parentContext the context of the container that holds it
+ * @returns {number}
+ */
+export function recordContextOf(records, tokenLists, index, parentContext) {
+  const entry = records.entry(index);
+  let context = 0;
+  if (hasContextBit(parentContext, IN_KEYFRAMES)) context = IN_KEYFRAMES;
+  if (entry.kind === AT_RULE_BLOCK) {
+    if (entry.name.endsWith('keyframes')) {
+      context = withBit(context, IN_KEYFRAMES);
+    }
+    if (entry.name === 'property') {
+      context = withBit(context, IN_PROPERTY);
+      if (recordAllowsPercentage(records, tokenLists, index)) {
+        context = withBit(context, PERCENTAGE_SYNTAX);
+      }
+    }
+  }
+  const parent = records.links.parentOf(index);
+  if (parent !== -1) {
+    const holder = records.entry(/** @type {ArenaIndex} */ (parent));
+    if (holder.kind === AT_RULE_BLOCK && keyframeAtRuleNames.has(holder.name)) {
+      context = withBit(context, KEYFRAME_RULE);
+    }
+  }
   return context;
 }

@@ -30,12 +30,12 @@ const frameworksDir = fileURLToPath(
  * @type {Record<string, {module: string, fn: string, miss?: string}>}
  */
 const COUNTED = {
-  // Every tokenization of a text, the cost C9 and C11 add to.
+  // Every tokenization of a text, including those of the build's interning.
   tokenizerCalls: {
     module: '@csstools/css-tokenizer/dist/index.mjs',
     fn: 'tokenize',
   },
-  // The text joined from a token list, the cost C11 adds to.
+  // The text joined from a token list.
   tokensTextCalls: { module: 'values/tokensText.js', fn: 'tokensText' },
   // Every fold, whether its memo hit or missed.
   foldCalls: { module: 'pipeline/plan.js', fn: 'foldPlan' },
@@ -45,13 +45,18 @@ const COUNTED = {
     fn: 'foldPlan',
     miss: 'const lists = entry.lists;',
   },
-  // A container whose context was computed, the cost C13 adds to.
+  // A container whose context the record walk computes, once per container.
+  recordContexts: {
+    module: 'pipeline/context.js',
+    fn: 'recordContextOf',
+  },
+  // A container whose context was computed by the node walk.
   contextMisses: {
     module: 'pipeline/context.js',
     fn: 'contextOf',
     miss: 'let context = 0;',
   },
-  // A comment's text tokenized, the memo C12 removes.
+  // A comment's text tokenized by the comment memo.
   commentTokenizations: {
     module: 'pipeline/comments/tokenUtils.js',
     fn: 'getTokens',
