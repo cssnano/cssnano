@@ -9,7 +9,7 @@ import type { RunContext } from './runContext.js';
  * @param {BlockRecords} records
  * @param {RunContext} context
  * @param {ArenaIndex} index
- * @return {void}
+ * @return {boolean} whether the rule's ids changed, which leaves its summaries stale
  */
-export declare function uniqueRuleSelectors(records: BlockRecords, context: RunContext, index: ArenaIndex): void;
+export declare function uniqueRuleSelectors(records: BlockRecords, context: RunContext, index: ArenaIndex): boolean;
 //# sourceMappingURL=uniqueSelectors.d.ts.map

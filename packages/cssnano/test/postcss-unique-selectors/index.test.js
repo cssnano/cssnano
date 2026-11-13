@@ -40,10 +40,10 @@ test(
   )
 );
 test(
-  'should keep comments in the selector (4)',
+  'should keep the empty selector of a list with comments, so the rule stays invalid',
   processCSS(
     ':is(/*a*/.x/*b*/,/*c*/.y/*d*/), :is(.x,.y),{padding:5px;}',
-    ':is(/*a*/.x/*b*/,/*c*/.y/*d*/){padding:5px;}'
+    ',:is(/*a*/.x/*b*/,/*c*/.y/*d*/){padding:5px;}'
   )
 );
 
@@ -61,7 +61,7 @@ test(
   'should split only on top-level commas',
   processCSS(
     '.a\\,b, [data-value="a,b"], :is(.c, .d), .a\\,b{color:red}',
-    '.a\\,b, :is(.c, .d), [data-value="a,b"]{color:red}'
+    '.a\\,b,:is(.c, .d),[data-value="a,b"]{color:red}'
   )
 );
 
@@ -74,7 +74,7 @@ test(
   'should preserve malformed selector fragments',
   processCSS(
     'a,,a, :is(.b, .c), :is(.b, .c){color:red}',
-    ', :is(.b, .c),a{color:red}'
+    ',:is(.b, .c),a{color:red}'
   )
 );
 

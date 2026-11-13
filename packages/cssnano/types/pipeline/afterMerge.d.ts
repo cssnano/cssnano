@@ -19,15 +19,15 @@ export type AfterWalk = {
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the options of each transform on, by entry name
  * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} symbols
  *   the advanced transforms on, in order
+ * @param {readonly string[]} [browsers] the targets the merge folded the summaries for; absent when it did not
  * @return {AfterWalk}
  */
 export declare function walkAfterMerge(state: RunState, transforms: ReadonlyMap<string, Record<PropertyKey, unknown>>, symbols: ReadonlyMap<string, {
     transform: SymbolTransform;
     options: Record<PropertyKey, unknown>;
-}>): AfterWalk;
+}>, browsers?: readonly string[]): AfterWalk;
 /**
- * The stage after the end of the run, on the nodes the end wrote: uniqueSelectors,
- * the advanced transforms over the symbol lists, the charset decision, then the raw
+ * The stage after the end of the run, on the nodes the end wrote: the advanced transforms over the symbol lists, the charset decision, then the raw
  * cache, which records last so that no later transform changes what it describes.
  *
  * @param {Root} root

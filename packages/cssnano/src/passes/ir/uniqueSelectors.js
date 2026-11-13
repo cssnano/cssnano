@@ -35,14 +35,14 @@ function selectorKey(tokens) {
  * @param {BlockRecords} records
  * @param {RunContext} context
  * @param {ArenaIndex} index
- * @return {void}
+ * @return {boolean} whether the rule's ids changed, which leaves its summaries stale
  */
 export function uniqueRuleSelectors(records, context, index) {
   const record = records.entry(index);
-  if (record.kind !== RULE) return;
+  if (record.kind !== RULE) return false;
   const { selectorIds: ids } = record;
   // One selector has nothing to dedupe or sort.
-  if (ids.length < 2) return;
+  if (ids.length < 2) return false;
 
   const { tokenLists } = context;
   /** @type {Map<string, {id: TokenListId, comments: CSSToken[]}>} */
@@ -78,10 +78,11 @@ export function uniqueRuleSelectors(records, context, index) {
   }
 
   if (unique.length === ids.length && unique.every((id, i) => id === ids[i])) {
-    return;
+    return false;
   }
   writeSelectorIds(
     /** @type {import('./ruleRecord.js').RuleRecord} */ (record),
     unique
   );
+  return true;
 }

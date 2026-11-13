@@ -1,9 +1,10 @@
 import { removeAndDiscardEmptied } from '#postcss-discard-empty';
-import { uniqueSelectorsVisit } from '#postcss-unique-selectors';
 import { decideCharset, rescanNonAscii } from '#postcss-normalize-charset';
 import rawCache from '../utils/rawCache.js';
 import { createRecordSymbolLists, recordSymbolVisit } from './symbolLists.js';
-import { AT_RULE_BLOCK, RULE } from '../passes/ir/blockRecord.js';
+import { visitEntriesInOrder } from '../passes/ir/visitEntries.js';
+import { uniqueRuleSelectors } from '../passes/ir/uniqueSelectors.js';
+import { fillRule } from '../passes/ir/selectorList.js';
 import { createCharsetScan, charsetVisit } from '../passes/ir/charset.js';
 import { discardEmptyRecords } from '../passes/ir/discardRecords.js';
 import { normalizeEntry } from '../passes/ir/normalizeRaws.js';
@@ -49,28 +50,6 @@ function isFirstChild(records, index) {
 }
 
 /**
- * Visits every entry in pre-order: each entry, then the entries of its children.
- * The next sibling is read before an entry is visited, so a visit may remove it.
- *
- * @param {BlockRecords} records
- * @param {ArenaIndex} container
- * @param {(index: ArenaIndex) => void} visit
- * @return {void}
- */
-function visitInOrder(records, container, visit) {
-  const { links } = records;
-  for (let entry = links.firstChild(container); entry !== -1;) {
-    const next = links.nextSibling(entry);
-    visit(entry);
-    const { kind } = records.entry(entry);
-    if (kind === RULE || kind === AT_RULE_BLOCK) {
-      visitInOrder(records, entry, visit);
-    }
-    entry = next;
-  }
-}
-
-/**
  * The walk after merge over the records, before the end of the run. The per-entry
  * transforms share one walk: normalizeWhitespace visits each entry, the symbol
  * lists and the charset scan collect what the later stage reads. With discardEmpty
@@ -80,9 +59,10 @@ function visitInOrder(records, container, visit) {
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the options of each transform on, by entry name
  * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} symbols
  *   the advanced transforms on, in order
+ * @param {readonly string[]} [browsers] the targets the merge folded the summaries for; absent when it did not
  * @return {AfterWalk}
  */
-export function walkAfterMerge(state, transforms, symbols) {
+export function walkAfterMerge(state, transforms, symbols, browsers) {
   const { records, context } = state;
   const { tokenLists } = context;
   // The stylesheet's trailing whitespace is removed with the rest of the raws.
@@ -93,6 +73,21 @@ export function walkAfterMerge(state, transforms, symbols) {
     visits.push((index) =>
       normalizeEntry(records, tokenLists, index, isFirstChild(records, index))
     );
+  }
+  if (transforms.has('uniqueSelectors')) {
+    visits.push((index) => {
+      const changed = uniqueRuleSelectors(records, context, index);
+      // Folded summaries follow the ids the dedupe wrote, when the merge folded them.
+      if (changed && browsers) {
+        fillRule(
+          /** @type {import('../passes/ir/ruleRecord.js').RuleRecord} */ (
+            records.entry(index)
+          ),
+          tokenLists,
+          browsers
+        );
+      }
+    });
   }
   const charsetOptions = transforms.get('normalizeCharset');
   const lists = symbols.size > 0 ? createRecordSymbolLists() : undefined;
@@ -115,7 +110,7 @@ export function walkAfterMerge(state, transforms, symbols) {
   if (transforms.has('discardEmpty')) {
     discardEmptyRecords(records, context, visit);
   } else if (visit) {
-    visitInOrder(records, records.root.index, visit);
+    visitEntriesInOrder(records, records.root.index, visit);
   }
   return { lists, scan, charsetOptions };
 }
@@ -174,8 +169,7 @@ function nodeScan(scan, nodes) {
 }
 
 /**
- * The stage after the end of the run, on the nodes the end wrote: uniqueSelectors,
- * the advanced transforms over the symbol lists, the charset decision, then the raw
+ * The stage after the end of the run, on the nodes the end wrote: the advanced transforms over the symbol lists, the charset decision, then the raw
  * cache, which records last so that no later transform changes what it describes.
  *
  * @param {Root} root
@@ -196,9 +190,6 @@ export function finishAfterMerge(
   table,
   walked
 ) {
-  if (transforms.has('uniqueSelectors')) {
-    root.walk((node) => uniqueSelectorsVisit(node, table));
-  }
   const { lists, scan, charsetOptions } = walked;
   if (lists) {
     runSymbolTransforms(

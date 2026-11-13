@@ -247,7 +247,7 @@ suite('the text table reads the text the afterMerge walk wrote', () => {
       afterWalk(root, table, new Map([['uniqueSelectors', {}]]), new Map()),
       0
     );
-    assert.equal(rule.selector, ' a,b');
+    assert.equal(rule.selector, 'a,b');
   });
 
   test("discard-unused's namespace prefixes read the selector uniqueSelectors wrote, without tokenizing", () => {
@@ -262,7 +262,7 @@ suite('the text table reads the text the afterMerge walk wrote', () => {
       afterWalk(root, table, new Map([['uniqueSelectors', {}]]), symbols),
       0
     );
-    assert.equal(rule.selector, ' b,ns|a');
+    assert.equal(rule.selector, 'b,ns|a');
   });
 });
 

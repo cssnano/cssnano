@@ -5,18 +5,20 @@ import uniqueSelectors from '../../../src/plugins/postcss-unique-selectors/index
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import { uniqueRuleSelectors } from '../../../src/passes/ir/uniqueSelectors.js';
+import { keepSelectorComments } from '../../../src/passes/ir/keepSelectorComments.js';
 
 /** @import {BlockRecords} from '../../../src/passes/ir/blockRecords.js' */
 /** @import {RunContext} from '../../../src/passes/ir/runContext.js' */
 /** @import {ArenaIndex} from '../../../src/passes/ir/blockRecord.js' */
 
 /**
- * The text of `css` after the node form of uniqueSelectors, the oracle.
+ * The text of `css` after the uniqueSelectors plugin, which runs the record form
+ * over each rule; the walk over the arena is checked against it.
  *
  * @param {string} css
  * @return {Promise<string>}
  */
-async function nodeFormOf(css) {
+async function pluginFormOf(css) {
   const result = await postcss([uniqueSelectors()]).process(css, {
     from: undefined,
   });
@@ -48,6 +50,8 @@ function visitRules(records, context, parent) {
  */
 function recordFormOf(css) {
   const root = postcss.parse(css);
+  // The plugin moves the comments PostCSS keeps in a raw selector first.
+  root.walkRules(keepSelectorComments);
   const context = createRunContext(undefined, true);
   const state = runDriver.build(root, context);
   visitRules(state.records, context, state.records.root.index);
@@ -73,8 +77,8 @@ describe('uniqueSelectors over the records', () => {
   ];
 
   for (const css of agreeing) {
-    test(`prints the same text as the node form for ${JSON.stringify(css)}`, async () => {
-      assert.equal(recordFormOf(css), await nodeFormOf(css));
+    test(`prints the same text as the plugin for ${JSON.stringify(css)}`, async () => {
+      assert.equal(recordFormOf(css), await pluginFormOf(css));
     });
   }
 
@@ -96,24 +100,24 @@ describe('uniqueSelectors over the records', () => {
     );
   });
 
-  // PostCSS holds a comment that is not inside a selector item in `raws.selector`,
-  // so the record form does not see it (U7).
-  test('drops a comment that PostCSS holds in the selector raws', () => {
+  // PostCSS holds a comment that is not inside a selector item in `raws.selector`;
+  // the plugin moves it into the selector before the build, so the list keeps it.
+  test('keeps a comment that PostCSS holds in the selector raws', () => {
     assert.equal(
       recordFormOf('.newbackbtn,/*.searchall,*/.calNav{padding:5px;}'),
-      '.calNav,.newbackbtn{padding:5px;}'
+      '/*.searchall,*/.calNav,.newbackbtn{padding:5px;}'
     );
   });
 
   test('keeps the comments of the items that the record form sees', () => {
     assert.equal(
       recordFormOf('.x/*a*/,/*b*/.y/*c*/,.x,.y{padding:5px;}'),
-      '.x/*a*/,.y/*c*/{padding:5px;}'
+      '.x/*a*/,/*b*/.y/*c*/{padding:5px;}'
     );
   });
 
-  test('drops a comment that PostCSS holds in the raws of a repeated selector', () => {
-    assert.equal(recordFormOf('a/**/ b,a b{color:red}'), 'a b{color:red}');
+  test('keeps a comment that PostCSS holds in the raws of a repeated selector', () => {
+    assert.equal(recordFormOf('a/**/ b,a b{color:red}'), 'a/**/ b{color:red}');
   });
 
   test('does not write a rule whose selectors are already unique and sorted', () => {
@@ -124,6 +128,17 @@ describe('uniqueSelectors over the records', () => {
     const rule = records.links.firstChild(records.root.index);
     uniqueRuleSelectors(records, context, rule);
     assert.equal(records.entry(rule).marked, false);
+  });
+
+  test('keeps the comment of a duplicate selector in a selector the list does not spell', () => {
+    assert.equal(recordFormOf('.b,/*c*/.b{color:red}'), '.b/*c*/{color:red}');
+  });
+
+  test('keeps the empty selector of a list with comments, so the rule stays invalid', () => {
+    assert.equal(
+      recordFormOf(':is(/*a*/.x/*b*/,/*c*/.y/*d*/), :is(.x,.y),{padding:5px;}'),
+      ',:is(/*a*/.x/*b*/,/*c*/.y/*d*/){padding:5px;}'
+    );
   });
 
   test('does not write a rule with one selector', () => {

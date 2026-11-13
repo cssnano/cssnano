@@ -132,7 +132,7 @@ function runRecords(root, result, table, merge, browsers, after, symbols) {
       support,
     });
   }
-  const walked = walkAfterMerge(state, after, symbols);
+  const walked = walkAfterMerge(state, after, symbols, merge && browsers);
   const nodes = runDriver.end(state, {
     browsers,
     folded: merge !== undefined,

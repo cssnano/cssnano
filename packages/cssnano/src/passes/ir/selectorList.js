@@ -105,7 +105,7 @@ export function reachedRules(records) {
  * @param {readonly string[]} browsers
  * @return {void}
  */
-function fillRule(list, tokenLists, browsers) {
+export function fillRule(list, tokenLists, browsers) {
   const own = writableIds(list);
   own.compatible = true;
   own.vendor = new VendorPrefixSummary(null, false);

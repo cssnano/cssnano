@@ -6,14 +6,16 @@ export const target = new URL(
 // node --test expands this glob; a directory path would resolve to a single
 // entry module instead of running every split test file.
 export const test = new URL(
-  '../../test/pipeline/textTableWriters.test.js',
+  '../../test/passes/ir/uniqueSelectors.test.js',
   import.meta.url
 ).href;
 
 export const mutations = [
   {
     name: 'assign a deduplicated selector list as text, dropping its tokens',
-    find: '  table.write(rule, uniqueSelectorsTokens(list, unique));',
-    replace: '  table.setText(rule, uniqueSelectorsText(selectors, unique));',
+    target: new URL('../../src/passes/ir/uniqueSelectors.js', import.meta.url)
+      .href,
+    find: 'context.selectorIds.idOf(tokenLists, tokensText(tokens), tokens)',
+    replace: 'context.selectorIds.idOf(tokenLists, tokensText(tokens), [])',
   },
 ];

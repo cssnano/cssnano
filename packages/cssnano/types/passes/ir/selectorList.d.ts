@@ -33,6 +33,15 @@ export declare function fillSummaries(records: BlockRecords, tokenLists: TokenLi
  */
 export declare function reachedRules(records: BlockRecords): Generator<RuleRecord>;
 /**
+ * Gives a rule the summaries of its whole list, folded from its ids.
+ *
+ * @param {RuleRecord} list
+ * @param {TokenLists} tokenLists
+ * @param {readonly string[]} browsers
+ * @return {void}
+ */
+export declare function fillRule(list: RuleRecord, tokenLists: TokenLists, browsers: readonly string[]): void;
+/**
  * Folds the facts of the selectors from index `from` on into a rule's
  * summaries, which must already cover the selectors before them.
  *
