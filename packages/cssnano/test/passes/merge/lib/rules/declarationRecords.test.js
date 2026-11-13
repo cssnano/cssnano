@@ -1,7 +1,7 @@
 import {
   declarationsOf,
   childEntriesOf,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+} from '../../../../../src/passes/ir/blockChildren.js';
 import { assertRecordsMatchTree } from '../../../../../src/passes/ir/treeMatch.js';
 import {
   childNodesOf,

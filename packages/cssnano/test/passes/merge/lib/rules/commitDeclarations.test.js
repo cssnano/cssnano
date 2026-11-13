@@ -10,7 +10,7 @@ const { keysOfName } =
 const { declarationKeys } =
   await import('../../../../../src/passes/ir/declarationCache.js');
 const { declarationsOf } =
-  await import('../../../../../src/passes/merge/lib/rules/blockChildren.js');
+  await import('../../../../../src/passes/ir/blockChildren.js');
 const { commitDeclarations } =
   await import('../../../../../src/passes/ir/arenaEdits.js');
 const { declarationsFromRecords } =

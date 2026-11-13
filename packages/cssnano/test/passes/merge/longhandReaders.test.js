@@ -16,13 +16,12 @@ const { buildRecords } = await import('../../../src/passes/ir/buildRecords.js');
 const { declarationsFromRecords } =
   await import('../../../src/passes/merge/lib/longhand/recordDeclarations.js');
 const { longstandingFeatures } =
-  await import('../../../src/passes/merge/lib/longhand/syntaxFeatures.js');
+  await import('../../../src/passes/ir/syntaxFeatures.js');
 const { boxBrowserKeeps } =
   await import('../../../src/passes/merge/lib/longhand/validateBox.js');
 const { isColor, isValidWidthStyleColor } =
   await import('../../../src/passes/merge/lib/longhand/validateWsc.js');
-const { isUnresolved } =
-  await import('../../../src/passes/merge/lib/longhand/unresolved.js');
+const { isUnresolved } = await import('../../../src/passes/ir/unresolved.js');
 const { default: isCustomProp } =
   await import('../../../src/passes/merge/lib/longhand/isCustomProp.js');
 const { componentRanges } =

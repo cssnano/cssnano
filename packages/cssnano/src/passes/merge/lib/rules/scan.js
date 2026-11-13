@@ -7,9 +7,9 @@ import { assertSweepLowers, sweepPotential } from './sweepPotential.js';
 import { earliestPairReaching } from './sharedRuleGroup.js';
 import RuleSequence from './ruleSequence.js';
 import DeclarationScan from './declarationScan.js';
-import { sameContainer } from './sameContainer.js';
+import { sameContainer } from '../../../ir/sameContainer.js';
 import { declarationKeys } from '../../../ir/declarationCache.js';
-import { hasSameSelectors } from './selectorReads.js';
+import { hasSameSelectors } from '../../../ir/selectorReads.js';
 
 /** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
 

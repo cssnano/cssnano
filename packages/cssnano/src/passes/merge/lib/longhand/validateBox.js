@@ -9,8 +9,11 @@ import {
 } from './componentRanges.js';
 import { isLengthValue, parseDimension } from './lengthGrammar.js';
 import { mathType } from './mathType.js';
-import { isTrustedFunction, substitutionFunctions } from './unresolved.js';
-import { withoutVendorPrefix } from './vendorPrefix.js';
+import {
+  isTrustedFunction,
+  substitutionFunctions,
+} from '../../../ir/unresolved.js';
+import { withoutVendorPrefix } from '../../../ir/vendorPrefix.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 

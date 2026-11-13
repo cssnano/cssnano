@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 const plugin = transformPlugin('mergeLonghand');
-import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
+import { longstandingFeatures } from '../../../../../src/passes/ir/syntaxFeatures.js';
 import { featuresSupportedByAll } from '../../../../../src/passes/merge/lib/longhand/targetSupport.js';
 import {
   repositoryFile,

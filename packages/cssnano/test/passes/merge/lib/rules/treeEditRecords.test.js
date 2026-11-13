@@ -1,8 +1,8 @@
 import {
   declarationsOf,
   childEntriesOf,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
-import { elementKeysOf } from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
+} from '../../../../../src/passes/ir/blockChildren.js';
+import { elementKeysOf } from '../../../../../src/passes/ir/selectorReads.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';

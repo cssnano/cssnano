@@ -1,4 +1,4 @@
-import { childEntriesOf } from './blockChildren.js';
+import { childEntriesOf } from '../../../ir/blockChildren.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import joinByDeclarations from './declarationJoin.js';
 import RepeatScan from './repeatScan.js';
@@ -10,14 +10,14 @@ import {
   RULE,
   STYLESHEET,
 } from '../../../ir/blockRecord.js';
-import { isKeyframes } from './sameContainer.js';
+import { isKeyframes } from '../../../ir/sameContainer.js';
 import {
   appendToDeclarations,
   remove,
   takePlaceOf,
 } from '../../../ir/treeEdits.js';
 import { adopt } from '../../../ir/arenaEdits.js';
-import { listKey } from './selectorReads.js';
+import { listKey } from '../../../ir/selectorReads.js';
 
 /** @import MergeState from './mergeState.js' */
 /** @import {BlockRecords} from '../../../ir/blockRecords.js' */

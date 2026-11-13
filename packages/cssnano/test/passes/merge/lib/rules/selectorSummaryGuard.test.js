@@ -11,12 +11,12 @@ import {
   absorbEarlier,
   addSelectors,
   fillSummaries,
-} from '../../../../../src/passes/merge/lib/rules/selectorList.js';
+} from '../../../../../src/passes/ir/selectorList.js';
 import {
   compatibleOf,
   elementKeysOf,
   vendorSummaryOf,
-} from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
+} from '../../../../../src/passes/ir/selectorReads.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { foldedRules } from './summaryFixtures.js';
 import { selectorIdsOf } from './selectorIdsOf.js';

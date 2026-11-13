@@ -1,4 +1,4 @@
-import { declarationsOf } from '../../../src/passes/merge/lib/rules/blockChildren.js';
+import { declarationsOf } from '../../../src/passes/ir/blockChildren.js';
 import { selectorIdsOf } from '../merge/lib/rules/selectorIdsOf.js';
 import { SelectorIds } from '../../../src/passes/ir/selectorIds.js';
 import { assertRecordsMatchTree } from '../../../src/passes/ir/treeMatch.js';

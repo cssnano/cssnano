@@ -8,8 +8,8 @@
 import { writeFileSync } from 'node:fs';
 import css from '@webref/css';
 
-import longhands from '../../../src/passes/merge/lib/longhand/data/longhands.json' with { type: 'json' };
-import { setsLonghands } from '../../../src/passes/merge/lib/longhand/spec.js';
+import longhands from '../../../src/passes/ir/data/longhands.json' with { type: 'json' };
+import { setsLonghands } from '../../../src/passes/ir/spec.js';
 import {
   buildProperties,
   serializeProperties,

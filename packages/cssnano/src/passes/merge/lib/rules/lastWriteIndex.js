@@ -1,4 +1,7 @@
-import { firstDeclaration, nextDeclaration } from './blockChildren.js';
+import {
+  firstDeclaration,
+  nextDeclaration,
+} from '../../../ir/blockChildren.js';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
@@ -7,8 +10,8 @@ import {
   RULE,
   STYLESHEET,
 } from '../../../ir/blockRecord.js';
-import { PropertyWrites } from './propertyWrites.js';
-import { elementKeysOf } from './selectorReads.js';
+import { PropertyWrites } from '../../../ir/propertyWrites.js';
+import { elementKeysOf } from '../../../ir/selectorReads.js';
 
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
 /** @import {BlockRecords} from '../../../ir/blockRecords.js' */

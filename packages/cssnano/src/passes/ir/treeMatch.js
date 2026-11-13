@@ -12,7 +12,7 @@ import { tokensText } from '../../values/tokensText.js';
 import { nodeOf } from './nodeTable.js';
 import { isRuleOrAtRule } from './buildRecords.js';
 import { differs } from './writeBack.js';
-import { summariesHold } from '../merge/lib/rules/selectorReads.js';
+import { summariesHold } from './selectorReads.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {AtRule, ChildNode, Declaration, Root, Rule} from 'postcss' */

@@ -11,8 +11,8 @@ import {
 import { discardDuplicates } from '../../../../../src/passes/merge/lib/duplicates/discardDuplicates.js';
 import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.js';
 import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
-import { fillSummaries } from '../../../../../src/passes/merge/lib/rules/selectorList.js';
-import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { fillSummaries } from '../../../../../src/passes/ir/selectorList.js';
+import { childEntriesOf } from '../../../../../src/passes/ir/blockChildren.js';
 import {
   AT_RULE_BLOCK,
   DECLARATION,

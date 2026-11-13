@@ -1,5 +1,5 @@
 import { DECLARATION } from './blockRecord.js';
-import { declarationIsEqual } from '../merge/lib/rules/declarations.js';
+import { declarationIsEqual } from './declarations.js';
 import { appendChild } from './arenaEdits.js';
 import { receivingDeclarations } from './declarationCache.js';
 

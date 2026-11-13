@@ -1,4 +1,4 @@
-import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childEntriesOf } from '../../../../../src/passes/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';

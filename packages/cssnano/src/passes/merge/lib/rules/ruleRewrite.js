@@ -1,9 +1,9 @@
 /** @import {BlockRecords} from '../../../ir/blockRecords.js' */
-import { childCountOf } from './blockChildren.js';
+import { childCountOf } from '../../../ir/blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { findGroup } from './sharedRuleGroup.js';
-import { combineSummaries, extendSummaries } from './selectorList.js';
-import { listTextLength } from './selectorReads.js';
+import { combineSummaries, extendSummaries } from '../../../ir/selectorList.js';
+import { listTextLength } from '../../../ir/selectorReads.js';
 import {
   moveDeclarations,
   placeBefore,

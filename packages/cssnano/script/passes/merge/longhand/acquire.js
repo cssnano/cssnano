@@ -62,7 +62,7 @@ const identities = buildShorthandIdentities(webref);
 validateShorthandIdentities(identities);
 
 const target = new URL(
-  '../../../../src/passes/merge/lib/longhand/data/longhands.json',
+  '../../../../src/passes/ir/data/longhands.json',
   import.meta.url
 );
 writeFileSync(target, serialize(data));

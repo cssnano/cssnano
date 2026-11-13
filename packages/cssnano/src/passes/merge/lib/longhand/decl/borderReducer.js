@@ -6,7 +6,7 @@ import minifyWidthStyleColor from '../minifyWsc.js';
 import { expandFourSides } from '../parseTrbl.js';
 import parseWidthStyleColor from '../parseWsc.js';
 import { declarationTokens, splitComponents } from '../componentRanges.js';
-import { setsLonghands } from '../spec.js';
+import { setsLonghands } from '../../../../ir/spec.js';
 import { hasHack } from '#stylehacks';
 import hasSubstitution from '../hasSubstitution.js';
 import canExplode from '../canExplode.js';

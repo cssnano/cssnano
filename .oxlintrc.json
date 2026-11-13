@@ -128,11 +128,11 @@
             "allowed": [
               "packages/cssnano/src/passes/ir/declarationCache.js#declarationKeys",
               "packages/cssnano/src/passes/ir/declarationCache.js#receivingDeclarations",
-              "packages/cssnano/src/passes/merge/lib/rules/blockChildren.js#holdsOnlyDeclarationsOf"
+              "packages/cssnano/src/passes/ir/blockChildren.js#holdsOnlyDeclarationsOf"
             ],
             "required": [
               "packages/cssnano/src/passes/ir/declarationCache.js#declarationKeys",
-              "packages/cssnano/src/passes/merge/lib/rules/blockChildren.js#holdsOnlyDeclarationsOf"
+              "packages/cssnano/src/passes/ir/blockChildren.js#holdsOnlyDeclarationsOf"
             ]
           }
         ],
@@ -201,6 +201,7 @@
               "packages/cssnano/src/passes/ir/writeSelector.js",
               "packages/cssnano/src/passes/ir/treeMatch.js",
               "packages/cssnano/src/passes/ir/buildRecords.js",
+              "packages/cssnano/src/passes/ir/valueList.js",
               "packages/cssnano/src/passes/ir/runContext.js",
               "packages/cssnano/src/passes/ir/runDriver.js"
             ]

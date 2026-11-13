@@ -1,7 +1,7 @@
 import cssnanoUtils from '#utils';
 import { isLengthValue, parseDimension } from './lengthGrammar.js';
 import { splitComponents } from './componentRanges.js';
-import { isHexColorDigits } from './asciiCharacters.js';
+import { isHexColorDigits } from '../../../ir/asciiCharacters.js';
 import { systemColors } from './systemColors.js';
 
 import {
@@ -9,8 +9,8 @@ import {
   lineWidthKeywords,
   colorFunctions,
   namedColors,
-} from './spec.js';
-import { isSubstitution, isUnresolved } from './unresolved.js';
+} from '../../../ir/spec.js';
+import { isSubstitution, isUnresolved } from '../../../ir/unresolved.js';
 
 const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
 

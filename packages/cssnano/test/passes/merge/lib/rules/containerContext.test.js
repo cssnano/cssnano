@@ -1,13 +1,13 @@
 import {
   blocks,
   containers,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+} from '../../../../../src/passes/ir/blockChildren.js';
 import { test } from 'node:test';
 import { buildTestRecords, nodeOfEntry } from './liveRecords.js';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import cssnanoUtils from '../../../../../src/utils/index.js';
-import { sameContainer } from '../../../../../src/passes/merge/lib/rules/sameContainer.js';
+import { sameContainer } from '../../../../../src/passes/ir/sameContainer.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { assertContextsCurrent } from '../../../../../src/passes/ir/recordsCheck.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';

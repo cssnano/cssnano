@@ -1,7 +1,7 @@
 import {
   declarationsOf,
   childCountOf,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+} from '../../../../../src/passes/ir/blockChildren.js';
 import { selectorIdsOf } from './selectorIdsOf.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import assert from 'node:assert/strict';

@@ -7,7 +7,7 @@ import { BoxSupport } from '../../../../../src/passes/merge/lib/longhand/targetS
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
 import { declarationsFromRecords } from '../../../../../src/passes/merge/lib/longhand/recordDeclarations.js';
-import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
+import { longstandingFeatures } from '../../../../../src/passes/ir/syntaxFeatures.js';
 import { assertLinearTime } from '../linearTiming.js';
 
 const units = [

@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import browserslist from 'browserslist';
 import bcdData from '@mdn/browser-compat-data' with { type: 'json' };
 import committed from '../../../../../src/passes/merge/lib/longhand/data/boxPropertySupport.json' with { type: 'json' };
-import longhandData from '../../../../../src/passes/merge/lib/longhand/data/longhands.json' with { type: 'json' };
+import longhandData from '../../../../../src/passes/ir/data/longhands.json' with { type: 'json' };
 import {
   alwaysSupported,
   buildBoxPropertySupport,

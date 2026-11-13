@@ -1,6 +1,6 @@
 import { selectorIdsOf } from './selectorIdsOf.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
-import { containers } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { containers } from '../../../../../src/passes/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';

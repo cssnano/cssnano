@@ -1,4 +1,4 @@
-import { blocks } from '../../../src/passes/merge/lib/rules/blockChildren.js';
+import { blocks } from '../../../src/passes/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';

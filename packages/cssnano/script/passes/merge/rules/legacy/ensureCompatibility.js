@@ -1,6 +1,6 @@
 import caniuseApi from 'caniuse-api';
 import selectorParser from 'postcss-selector-parser';
-import { pseudoElements } from '../../../../../src/passes/merge/lib/rules/pseudoSupport.js';
+import { pseudoElements } from '../../../../../src/passes/ir/pseudoSupport.js';
 
 const { isSupported } = caniuseApi;
 const simpleSelectorRe = /^#?[\-._a-z0-9 ]+$/iv;

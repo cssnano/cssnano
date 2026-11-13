@@ -1,4 +1,4 @@
-import { PropertyWrites } from '../merge/lib/rules/propertyWrites.js';
+import { PropertyWrites } from './propertyWrites.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type { DeclarationRecord } from './declarationRecord.js';

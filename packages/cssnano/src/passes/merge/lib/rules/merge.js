@@ -1,13 +1,16 @@
-import { declarationsOf, holdsOnlyDeclarationsOf } from './blockChildren.js';
+import {
+  declarationsOf,
+  holdsOnlyDeclarationsOf,
+} from '../../../ir/blockChildren.js';
 import {
   filterRuleIntersections,
   intersect,
   sameDeclarationsAndOrder,
-} from './declarations.js';
+} from '../../../ir/declarations.js';
 import { buildMergedRule } from './ruleRewrite.js';
 import { appendToDeclarations } from '../../../ir/treeEdits.js';
 import { declarationKeys } from '../../../ir/declarationCache.js';
-import { hasSameSelectors } from './selectorReads.js';
+import { hasSameSelectors } from '../../../ir/selectorReads.js';
 
 /** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /** @import {ArenaIndex, BlockRecord} from '../../../ir/blockRecord.js' */

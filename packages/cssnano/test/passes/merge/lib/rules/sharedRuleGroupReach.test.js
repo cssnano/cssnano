@@ -1,4 +1,4 @@
-import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { declarationsOf } from '../../../../../src/passes/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { buildTestRecords, nodeOfEntry } from './liveRecords.js';
 import { test } from 'node:test';
@@ -6,7 +6,7 @@ import postcss from 'postcss';
 import {
   filterRuleIntersections,
   intersect,
-} from '../../../../../src/passes/merge/lib/rules/declarations.js';
+} from '../../../../../src/passes/ir/declarations.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import DeclarationScan from '../../../../../src/passes/merge/lib/rules/declarationScan.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';

@@ -1,8 +1,8 @@
 import {
   declarationsOf,
   childEntriesOf,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
-import { fillSummaries } from '../../../../../src/passes/merge/lib/rules/selectorList.js';
+} from '../../../../../src/passes/ir/blockChildren.js';
+import { fillSummaries } from '../../../../../src/passes/ir/selectorList.js';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,

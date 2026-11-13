@@ -14,8 +14,7 @@ const { buildRecords } = await import('../../../src/passes/ir/buildRecords.js');
 const { assertRecordsMatchTree } =
   await import('../../../src/passes/ir/treeMatch.js');
 const { writeBack } = await import('../../../src/passes/ir/writeBack.js');
-const { addSelectors } =
-  await import('../../../src/passes/merge/lib/rules/selectorList.js');
+const { addSelectors } = await import('../../../src/passes/ir/selectorList.js');
 const { createRunContext } =
   await import('../../../src/passes/ir/runContext.js');
 const { resolveTargets } = await import('../../../src/utils/browserTargets.js');

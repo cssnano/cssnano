@@ -2,7 +2,7 @@ import {
   firstDeclaration,
   inheritWhitespace,
   nextDeclaration,
-} from '../merge/lib/rules/blockChildren.js';
+} from './blockChildren.js';
 import { AT_RULE_STATEMENT, NodeEntry, atRuleKindOf } from './blockRecord.js';
 import { DeclarationRecord } from './declarationRecord.js';
 import { keysOfName } from './propertyTable.js';

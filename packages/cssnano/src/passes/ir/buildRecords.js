@@ -17,8 +17,8 @@ import {
   NodeEntry,
   STYLESHEET,
 } from './blockRecord.js';
-import { containerContext } from '../merge/lib/rules/sameContainer.js';
-import { valueListOf } from '../merge/lib/valueList.js';
+import { containerContext } from './sameContainer.js';
+import { valueListOf } from './valueList.js';
 import { holdsNonAscii } from '../../values/nonAscii.js';
 
 /** @import {SelectorIds} from './selectorIds.js' */

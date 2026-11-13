@@ -16,7 +16,7 @@ import {
 } from './helpers/reduceRuns.js';
 import { importanceLanes } from './helpers/importanceLanes.js';
 import { blockOf } from './helpers/declarationItems.js';
-import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
+import { longstandingFeatures } from '../../../../../src/passes/ir/syntaxFeatures.js';
 
 describe('mixed-family internal reducers and helpers', () => {
   test('reduces each family from a whole rule', () => {

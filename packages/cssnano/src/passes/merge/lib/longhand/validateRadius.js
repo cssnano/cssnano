@@ -2,7 +2,7 @@ import { expandFourSides } from './parseTrbl.js';
 import { isCssWideKeyword } from './isCssWideKeyword.js';
 import cssnanoUtils from '#utils';
 import { isLengthValue } from './lengthGrammar.js';
-import { isUnresolved } from './unresolved.js';
+import { isUnresolved } from '../../../ir/unresolved.js';
 import { closingTokens, splitValue } from './valueComponents.js';
 
 const { TokenType, closeForOpening, numeric, tokens } = cssnanoUtils;

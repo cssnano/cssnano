@@ -1,4 +1,7 @@
-import { firstDeclaration, nextDeclaration } from './blockChildren.js';
+import {
+  firstDeclaration,
+  nextDeclaration,
+} from '../../../ir/blockChildren.js';
 import {
   AT_RULE_BLOCK,
   DECLARATION,

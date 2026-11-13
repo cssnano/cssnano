@@ -1,4 +1,4 @@
-import { declarationsOf } from '../../../src/passes/merge/lib/rules/blockChildren.js';
+import { declarationsOf } from '../../../src/passes/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { buildTestRecords } from './lib/rules/liveRecords.js';
 import { test } from 'node:test';

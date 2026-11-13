@@ -4,7 +4,7 @@ import { suite, test } from 'node:test';
 // The counter must hook the tokenizer before any module below loads it.
 const { counter } = await import('../../../../../../../util/countTokenize.js');
 const { longstandingFeatures } =
-  await import('../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js');
+  await import('../../../../../src/passes/ir/syntaxFeatures.js');
 const { createRunContext } =
   await import('../../../../../src/passes/ir/runContext.js');
 const { default: postcss } = await import('postcss');

@@ -1,4 +1,4 @@
-import {} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import {} from '../../../../../src/passes/ir/blockChildren.js';
 import {
   COMMENT,
   NO_AT_RULE,

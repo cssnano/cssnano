@@ -2,7 +2,7 @@ import {
   declarationsOf,
   firstDeclaration,
   nextDeclaration,
-} from '../../../src/passes/merge/lib/rules/blockChildren.js';
+} from '../../../src/passes/ir/blockChildren.js';
 import { childNodesOf } from '../../../src/passes/ir/writeBack.js';
 import {
   COMMENT,

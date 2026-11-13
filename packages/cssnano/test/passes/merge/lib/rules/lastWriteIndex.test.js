@@ -1,10 +1,10 @@
-import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childEntriesOf } from '../../../../../src/passes/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import data from '../../../../../script/passes/ir/lib/propertyGroups.json' with { type: 'json' };
 import LastWriteIndex from '../../../../../src/passes/merge/lib/rules/lastWriteIndex.js';
-import { PropertyWrites } from '../../../../../src/passes/merge/lib/rules/propertyWrites.js';
+import { PropertyWrites } from '../../../../../src/passes/ir/propertyWrites.js';
 import { isConflictingProp } from '../../../../../script/passes/ir/lib/propertyRelations.js';
 import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
 import { BlockRecords } from '../../../../../src/passes/ir/blockRecords.js';

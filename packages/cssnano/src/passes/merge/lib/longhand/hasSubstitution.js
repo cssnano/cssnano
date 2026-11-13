@@ -1,6 +1,6 @@
 import { splitComponents, valueTokens } from './componentRanges.js';
 import { opensCustomPropertyVar } from './isCustomProp.js';
-import { isSubstitution } from './unresolved.js';
+import { isSubstitution } from '../../../ir/unresolved.js';
 
 /**
  * A substitution function such as `var()` or `env()` may stand for any number

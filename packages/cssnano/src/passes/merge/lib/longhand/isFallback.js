@@ -1,4 +1,7 @@
-import { blocksMerge, supportDependenciesOf } from './syntaxFeatures.js';
+import {
+  blocksMerge,
+  supportDependenciesOf,
+} from '../../../ir/syntaxFeatures.js';
 
 /** @import {DeclarationItem} from './blockDeclarations.js' */
 

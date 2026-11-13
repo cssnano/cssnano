@@ -83,19 +83,19 @@ export const mutations = [
   },
   {
     name: 'an edit that adds selectors to a rule does not mark it, so write-back keeps its node text',
-    target: source('selectorList.js'),
+    target: irSource('selectorList.js'),
     find: '  own.marked = true;\n  extendSummaries(list, from, tokenLists, browsers);',
     replace: '  extendSummaries(list, from, tokenLists, browsers);',
   },
   {
     name: 'a rule that absorbs an earlier one is not marked, so write-back keeps its node text',
-    target: source('selectorList.js'),
+    target: irSource('selectorList.js'),
     find: '  own.marked = true;\n  writableIds(earlier).selectorIds = NO_SELECTORS;',
     replace: '  writableIds(earlier).selectorIds = NO_SELECTORS;',
   },
   {
     name: 'a merged rule is not marked when its summaries are combined, so write-back keeps its node text',
-    target: source('selectorList.js'),
+    target: irSource('selectorList.js'),
     find: '  own.compatible = first.compatible && second.compatible;\n  own.marked = true;',
     replace: '  own.compatible = first.compatible && second.compatible;',
   },

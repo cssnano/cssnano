@@ -6,7 +6,7 @@ import {
 } from './lib/longhand/canonicalize.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import runMerge from './lib/rules/selectorMerger.js';
-import { fillSummaries } from './lib/rules/selectorList.js';
+import { fillSummaries } from '../ir/selectorList.js';
 import { runDriver } from '../ir/runDriver.js';
 import { createRunContext } from '../ir/runContext.js';
 import { TextTable } from '../../values/textTable.js';

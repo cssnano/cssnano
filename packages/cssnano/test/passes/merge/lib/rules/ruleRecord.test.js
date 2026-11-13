@@ -1,4 +1,4 @@
-import { declarationsOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { declarationsOf } from '../../../../../src/passes/ir/blockChildren.js';
 import { selectorIdsOf } from './selectorIdsOf.js';
 
 import assert from 'node:assert/strict';
@@ -23,11 +23,11 @@ import { recordDeclaration } from '../../../../../src/passes/ir/buildRecords.js'
 import {
   absorbEarlier,
   addSelectors,
-} from '../../../../../src/passes/merge/lib/rules/selectorList.js';
+} from '../../../../../src/passes/ir/selectorList.js';
 import {
   compatibleOf,
   hasSameSelectors,
-} from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
+} from '../../../../../src/passes/ir/selectorReads.js';
 import { foldedRules } from './summaryFixtures.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 

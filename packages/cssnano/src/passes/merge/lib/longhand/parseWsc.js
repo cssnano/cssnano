@@ -1,7 +1,7 @@
 import cssnanoUtils from '#utils';
 import { splitComponents } from './componentRanges.js';
 import { isBorderWidth, isBorderStyle, isColor } from './validateWsc.js';
-import { isSubstitution } from './unresolved.js';
+import { isSubstitution } from '../../../ir/unresolved.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 /** @import {ValueComponent} from './componentRanges.js' */

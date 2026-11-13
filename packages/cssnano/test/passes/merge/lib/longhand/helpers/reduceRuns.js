@@ -23,7 +23,7 @@ import {
   allColumnProps,
   reduceColumns,
 } from '../../../../../../src/passes/merge/lib/longhand/decl/columns.js';
-import { longstandingFeatures } from '../../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
+import { longstandingFeatures } from '../../../../../../src/passes/ir/syntaxFeatures.js';
 import {
   canonicalizeRecords,
   longhandContext,

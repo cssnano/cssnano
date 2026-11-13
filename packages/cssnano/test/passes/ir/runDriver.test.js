@@ -5,7 +5,7 @@ import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import { assertRecordsMatchTree } from '../../../src/passes/ir/treeMatch.js';
 import { buildRecords } from '../../../src/passes/ir/buildRecords.js';
-import { fillSummaries } from '../../../src/passes/merge/lib/rules/selectorList.js';
+import { fillSummaries } from '../../../src/passes/ir/selectorList.js';
 
 const BROWSERS = ['defaults'];
 

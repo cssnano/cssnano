@@ -4,17 +4,17 @@ import {
   holdsOnlyDeclarationsOf,
   childEntriesOf,
   declarationsOf,
-} from './blockChildren.js';
+} from '../../../ir/blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import LastWriteIndex from './lastWriteIndex.js';
 import RepeatScan from './repeatScan.js';
-import { filterRuleIntersections } from './declarations.js';
-import { isKeyframes } from './sameContainer.js';
+import { filterRuleIntersections } from '../../../ir/declarations.js';
+import { isKeyframes } from '../../../ir/sameContainer.js';
 import { removeRules } from '../../../ir/treeEdits.js';
 import { RULE } from '../../../ir/blockRecord.js';
 import { removeDeclarations } from '../../../ir/arenaEdits.js';
 import { declarationKeys } from '../../../ir/declarationCache.js';
-import { elementKeysOf, listTextLength } from './selectorReads.js';
+import { elementKeysOf, listTextLength } from '../../../ir/selectorReads.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {TokenLists} from '../../../ir/tokenLists.js' */
 

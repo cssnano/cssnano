@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import { withoutVendorPrefix } from './vendorPrefix.js';
+import { withoutVendorPrefix } from '../../../ir/vendorPrefix.js';
 import {
   allColumnProps,
   reduceColumns,
@@ -25,7 +25,7 @@ import {
 } from './minifyShorthand.js';
 import { RUN_END } from './blockDeclarations.js';
 import { declarationsFromRecords } from './recordDeclarations.js';
-import { firstDeclaration } from '../rules/blockChildren.js';
+import { firstDeclaration } from '../../../ir/blockChildren.js';
 import { commitDeclarations } from '../../../ir/arenaEdits.js';
 import { AT_RULE_BLOCK, RULE } from '../../../ir/blockRecord.js';
 

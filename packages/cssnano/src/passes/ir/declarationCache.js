@@ -1,5 +1,5 @@
 import { DECLARATION } from './blockRecord.js';
-import { PropertyWrites } from '../merge/lib/rules/propertyWrites.js';
+import { PropertyWrites } from './propertyWrites.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex} from './blockRecord.js' */

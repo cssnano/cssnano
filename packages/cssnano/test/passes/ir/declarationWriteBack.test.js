@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { keysOfName } from '../../../src/passes/ir/propertyTable.js';
 import { DeclarationRecord } from '../../../src/passes/ir/declarationRecord.js';
-import { declarationsOf } from '../../../src/passes/merge/lib/rules/blockChildren.js';
+import { declarationsOf } from '../../../src/passes/ir/blockChildren.js';
 import { writeBack } from '../../../src/passes/ir/writeBack.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { TextTable } from '../../../src/values/textTable.js';

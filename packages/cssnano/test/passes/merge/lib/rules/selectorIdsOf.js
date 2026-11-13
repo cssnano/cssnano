@@ -1,7 +1,7 @@
 /** @import {SelectorIds} from '../../../../../src/passes/ir/selectorIds.js' */
 /** @import {TokenLists, TokenListId} from '../../../../../src/passes/ir/tokenLists.js' */
 
-/** @import {SelectorInfo} from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js' */
+/** @import {SelectorInfo} from '../../../../../src/passes/ir/ensureCompatibility.js' */
 
 /**
  * The ids of a rule's selectors, interned by `selectorIds` in the order given,

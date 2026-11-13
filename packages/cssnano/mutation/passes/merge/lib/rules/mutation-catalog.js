@@ -31,7 +31,7 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'treat logical and physical longhands as unrelated',
-    target: source('propertyWrites.js'),
+    target: irSource('propertyWrites.js'),
     find: '      if (opposite)',
     replace: '      if (false)',
   },
@@ -49,25 +49,25 @@ export const mutations = [
   },
   {
     name: 'join at-rules of one name whatever their conditions',
-    target: source('sameContainer.js'),
+    target: irSource('sameContainer.js'),
     find: '        : step(trie, block.preludeId);',
     replace: '        : trie;',
   },
   {
     name: 'join distinct anonymous layers',
-    target: source('sameContainer.js'),
+    target: irSource('sameContainer.js'),
     find: '? step(step(trie, ANONYMOUS), block.index)',
     replace: '? step(trie, ANONYMOUS)',
   },
   {
     name: 'a block takes its context without the enclosing blocks',
-    target: source('sameContainer.js'),
+    target: irSource('sameContainer.js'),
     find: 'let trie = step(step(keys.root, CONTEXT), parentContext);',
     replace: 'let trie = step(keys.root, CONTEXT);',
   },
   {
     name: 'rules nested in rules of different selectors share a context',
-    target: source('sameContainer.js'),
+    target: irSource('sameContainer.js'),
     find: '    for (const id of /** @type {RuleRecord} */ (block).selectorIds)\n      trie = step(trie, id);',
     replace: '',
   },
@@ -97,7 +97,7 @@ export const mutations = [
   },
   {
     name: 'key vendor-prefixed pseudo-elements like standard ones',
-    target: source('elementKeys.js'),
+    target: irSource('elementKeys.js'),
     find: '    if (isVendorExtension(pseudoName)) return null;\n',
     replace: '',
   },

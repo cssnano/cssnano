@@ -29,7 +29,7 @@ const { readBlock } =
 const { reduceBlock, itemTokensSpellText } =
   await import('../passes/merge/lib/longhand/helpers/declarationItems.js');
 const { longstandingFeatures } =
-  await import('../../src/passes/merge/lib/longhand/syntaxFeatures.js');
+  await import('../../src/passes/ir/syntaxFeatures.js');
 const { discardOverriddenInList } =
   await import('../../src/passes/merge/lib/longhand/decl/overriddenDeclarations.js');
 

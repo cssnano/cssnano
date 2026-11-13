@@ -1,9 +1,9 @@
 /** @import {TokenListId} from './tokenLists.js' */
-import { UNFOLDED_VENDOR } from '../merge/lib/rules/selectorList.js';
+import { UNFOLDED_VENDOR } from './selectorList.js';
 import { RULE } from './blockRecord.js';
 
-/** @import {RuleElementKeys} from '../merge/lib/rules/elementKeys.js' */
-/** @import {VendorPrefixSummary} from '../merge/lib/rules/vendorPrefixSummary.js' */
+/** @import {RuleElementKeys} from './elementKeys.js' */
+/** @import {VendorPrefixSummary} from './vendorPrefixSummary.js' */
 /** @import {ArenaIndex, NodeEntry} from './blockRecord.js' */
 /** @import {RangePiece} from '../../values/joinRanges.js' */
 /** @import {BlockRecords} from './blockRecords.js' */

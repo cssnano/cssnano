@@ -3,16 +3,16 @@ import { foldedRules } from './summaryFixtures.js';
 import {
   absorbEarlier,
   addSelectors,
-} from '../../../../../src/passes/merge/lib/rules/selectorList.js';
+} from '../../../../../src/passes/ir/selectorList.js';
 import {
   hasSameSelectors,
   vendorSummaryOf,
-} from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
+} from '../../../../../src/passes/ir/selectorReads.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import selectorParser from 'postcss-selector-parser';
-import { VendorPrefixSummary } from '../../../../../src/passes/merge/lib/rules/vendorPrefixSummary.js';
-import { selectorInfoOf } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
+import { VendorPrefixSummary } from '../../../../../src/passes/ir/vendorPrefixSummary.js';
+import { selectorInfoOf } from '../../../../../src/passes/ir/ensureCompatibility.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import { tokens as tokenize } from '../../../../../src/utils/value.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
+import { longstandingFeatures } from '../../../../../src/passes/ir/syntaxFeatures.js';
 import {
   isFallback,
   mergeBlockingSupport,

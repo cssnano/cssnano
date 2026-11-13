@@ -1,7 +1,7 @@
-import { containers } from '../merge/lib/rules/blockChildren.js';
+import { containers } from './blockChildren.js';
 import { nodeOf } from './nodeTable.js';
 import { AT_RULE_BLOCK, DECLARATION, RULE, STYLESHEET } from './blockRecord.js';
-import { containerContext } from '../merge/lib/rules/sameContainer.js';
+import { containerContext } from './sameContainer.js';
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */

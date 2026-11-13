@@ -1,5 +1,5 @@
 import { BlockDeclarations, RUN_END } from './blockDeclarations.js';
-import { holdsImportantComment } from './holdsImportantComment.js';
+import { holdsImportantComment } from '../../../ir/holdsImportantComment.js';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,

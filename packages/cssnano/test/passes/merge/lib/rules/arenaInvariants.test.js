@@ -5,7 +5,7 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import {
   childCountOf,
   holdsOnlyDeclarationsOf,
-} from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+} from '../../../../../src/passes/ir/blockChildren.js';
 import { declarationKeys } from '../../../../../src/passes/ir/declarationCache.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { ruleRecordOf, buildTestRecords } from './liveRecords.js';

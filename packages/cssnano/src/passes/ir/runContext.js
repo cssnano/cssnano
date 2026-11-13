@@ -4,7 +4,7 @@ import { TokenLists } from './tokenLists.js';
 import { ValueIds } from './valueIds.js';
 import { SelectorIds } from './selectorIds.js';
 import { consistencyChecksEnabled } from './consistencyChecks.js';
-import { longstandingFeatures } from '../merge/lib/longhand/syntaxFeatures.js';
+import { longstandingFeatures } from './syntaxFeatures.js';
 
 /**
  * The state one run of the merge pass shares across its transforms. Nothing in

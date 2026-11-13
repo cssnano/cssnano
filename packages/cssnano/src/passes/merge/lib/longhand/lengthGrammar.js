@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import { isAsciiDigit } from './asciiCharacters.js';
+import { isAsciiDigit } from '../../../ir/asciiCharacters.js';
 
 const { asciiLowerCase, lengthUnits } = cssnanoUtils;
 

@@ -4,11 +4,14 @@ import {
   firstDeclaration,
   nextDeclaration,
   declarationsOf,
-} from './blockChildren.js';
+} from '../../../ir/blockChildren.js';
 import { claimRepeats, isDeclarationRule } from './declarationJoin.js';
-import { PropertyWrites } from './propertyWrites.js';
+import { PropertyWrites } from '../../../ir/propertyWrites.js';
 import { declarationKeys } from '../../../ir/declarationCache.js';
-import { listTextLength, selectorTextLength } from './selectorReads.js';
+import {
+  listTextLength,
+  selectorTextLength,
+} from '../../../ir/selectorReads.js';
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
