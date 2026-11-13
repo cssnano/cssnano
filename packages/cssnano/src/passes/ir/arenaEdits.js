@@ -7,7 +7,6 @@ import { AT_RULE_STATEMENT, NodeEntry, atRuleKindOf } from './blockRecord.js';
 import { DeclarationRecord } from './declarationRecord.js';
 import { keysOfName } from './propertyTable.js';
 import { tokenizeMode } from '../../values/tokenizeMode.js';
-import { tokensText } from '../../values/tokensText.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
@@ -229,27 +228,6 @@ function rewriteRecord(context, record, item) {
 export function writeContainerContext(record, context) {
   /** @type {{context: number}} */ (/** @type {unknown} */ (record)).context =
     context;
-}
-
-/**
- * Writes the prelude of an at-rule: its list is interned in the run, and the
- * record marks the prelude so write-back assigns its text. The walk of the
- * write reaches every entry, so the edit stamps nothing.
- *
- * @param {RunContext} context
- * @param {BlockRecord | NodeEntry} record the at-rule's block or statement record
- * @param {readonly CSSToken[]} list the prelude's tokens
- * @return {void}
- */
-export function writePrelude(context, record, list) {
-  record.preludeId = context.valueIds.idOf(
-    context.tokenLists,
-    undefined,
-    tokensText(list),
-    list
-  );
-  record.writtenList = -1;
-  record.marked = true;
 }
 
 /**

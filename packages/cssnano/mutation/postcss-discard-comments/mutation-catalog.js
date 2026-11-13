@@ -23,6 +23,9 @@ const declarationWalk = new URL(
   import.meta.url
 ).href;
 
+const atRuleWalk = new URL('../../src/pipeline/atRuleWalk.js', import.meta.url)
+  .href;
+
 export const mutations = [
   {
     name: 'preserve removable comments in values',
@@ -70,9 +73,8 @@ export const mutations = [
   {
     name: 'preserve removable comment nodes',
     target: walk,
-    find: 'if (state.comments?.canRemove(node.text)) node.remove();',
-    replace:
-      'if (state.comments?.canRemove(node.text) && false) node.remove();',
+    find: 'if (comments?.canRemove(node.text)) node.remove();',
+    replace: 'if (comments?.canRemove(node.text) && false) node.remove();',
   },
   {
     name: 'skip declaration comment processing',
@@ -88,9 +90,9 @@ export const mutations = [
   },
   {
     name: 'skip at-rule comment processing',
-    target: walk,
-    find: 'comments !== null && read ? commentFreeText(read, comments) : read;',
-    replace: 'read;',
+    target: atRuleWalk,
+    find: 'id = commentFreeIdOf(run, source, comments);',
+    replace: 'id = source;',
   },
   {
     name: 'skip important comment processing',

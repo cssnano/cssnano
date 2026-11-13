@@ -46,8 +46,6 @@ function tokenizedByReduce(reduce) {
   return texts.toSorted();
 }
 
-const helpers = { result: { warn() {} } };
-
 /**
  * Parses the stylesheet and gives each declaration value its token list
  * through the host walk's value stage, as the default preset does.
@@ -58,8 +56,7 @@ const helpers = { result: { warn() {} } };
 function walkedStylesheet(css) {
   const root = postcss.parse(css);
   const table = new TextTable();
-  const stage = { forProperty: () => (buffer) => buffer.tokens() };
-  walkStylesheet([stage], root, helpers, new Map(), table);
+  walkStylesheet(root, new Map(), null);
   return { root, table };
 }
 

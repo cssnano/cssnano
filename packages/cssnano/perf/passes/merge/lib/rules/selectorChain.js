@@ -6,7 +6,6 @@ import { walkStylesheet } from '../../../../../src/pipeline/traversal.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import { resolveTargets } from '#utils/browser-targets';
 
-const helpers = { result: { warn() {} } };
 const targets = resolveTargets({}, undefined);
 
 /** A text table that counts the tokens of every list stored in it. */
@@ -40,14 +39,7 @@ function storedTokens(unit, count) {
   for (let i = 0; i < count; i++) css += unit(i);
   const root = postcss.parse(css);
   const table = new CountingTable();
-  walkStylesheet(
-    [{ selector: (buffer) => buffer.tokens() }],
-    root,
-    helpers,
-    new Map(),
-    table,
-    null
-  );
+  walkStylesheet(root, new Map(), null);
   table.counted = 0;
   mergePass(root, targets, {}, undefined, table);
   return table.counted;

@@ -5,7 +5,6 @@ import assert from 'node:assert/strict';
 const { counter } = await import('../../../../util/countTokenize.js');
 const { createRunContext } = await import('../../src/passes/ir/runContext.js');
 const { default: postcss } = await import('postcss');
-const { walkStylesheet } = await import('../../src/pipeline/traversal.js');
 const { buildRecords } = await import('../../src/passes/ir/buildRecords.js');
 const { walkDown } = await import('../../src/pipeline/walkDown.js');
 const { declarationPlansOf } =
@@ -50,38 +49,59 @@ function tokenizeTotal() {
 
 const helpers = { result: { warn() {}, messages: [] } };
 
-suite('the text table reads the text the host walk wrote', () => {
-  test('the table reads the prelude the host walk left unchanged, without tokenizing', () => {
-    const root = postcss.parse('@media screen and (x) {}');
-    const table = new TextTable();
-    const stage = {
-      forAtRule: () => ({ buffer: (buffer) => buffer.tokens() }),
-    };
-    walkStylesheet([stage], root, helpers, new Map(), table, null);
-    const atRule = root.first;
-    assert.equal(atRule.params, 'screen and (x)');
-    const before = tokenizeTotal();
-    assert.equal(table.tokens(atRule).length, 7);
-    assert.equal(tokenizeTotal() - before, 0);
-  });
+/**
+ * The records of a stylesheet after the build and the record walk with
+ * `stages`, as the host runs them.
+ *
+ * @param {import('postcss').Root} root
+ * @param {import('../../src/pipeline/host.js').Stage[]} stages
+ * @returns {{records: import('../../src/passes/ir/blockRecords.js').BlockRecords, context: import('../../src/passes/ir/runContext.js').RunContext}}
+ */
+function recordsAfterWalk(root, stages) {
+  const context = createRunContext(new TextTable(), undefined);
+  const { records } = buildRecords(root, context);
+  walkDown(
+    records,
+    context,
+    declarationPlansOf(stages, false, commentStateOf(stages))
+  );
+  return { records, context };
+}
 
-  test("the table reads the prelude the host walk's stages read, without tokenizing", () => {
-    const root = postcss.parse('@media screen and (x) {}');
-    const table = new TextTable();
-    const stage = {
-      forAtRule: () => ({
-        buffer: (buffer) => buffer.replace(0, 1, [ident('z')]),
-      }),
-    };
-    walkStylesheet([stage], root, helpers, new Map(), table, null);
-    const atRule = root.first;
-    assert.equal(atRule.params, 'z and (x)');
-    const before = tokenizeTotal();
-    const list = table.tokens(atRule);
-    assert.equal(tokenizeTotal() - before, 0);
-    assert.equal(list.map((token) => token[1]).join(''), 'z and (x)');
-  });
-});
+suite(
+  'the record walk writes the prelude of an at-rule that a stage edits',
+  () => {
+    test('a prelude that no stage edits is not written, and its tokens spell its text without tokenizing', () => {
+      const root = postcss.parse('@media screen and (x) {}');
+      const stage = {
+        forAtRule: () => ({ buffer: (buffer) => buffer.tokens() }),
+      };
+      const { records, context } = recordsAfterWalk(root, [stage]);
+      const atRule = records.links.firstChild(records.root.index);
+      assert.equal(records.entry(atRule).marked, false);
+      const before = tokenizeTotal();
+      const list = context.tokenLists.get(records.entry(atRule).preludeId);
+      assert.equal(list.length, 7);
+      assert.equal(tokenizeTotal() - before, 0);
+    });
+
+    test('a prelude that a stage edits is written as tokens that spell its text', () => {
+      const root = postcss.parse('@media screen and (x) {}');
+      const stage = {
+        forAtRule: () => ({
+          buffer: (buffer) => buffer.replace(0, 1, [ident('z')]),
+        }),
+      };
+      const { records, context } = recordsAfterWalk(root, [stage]);
+      const atRule = records.links.firstChild(records.root.index);
+      assert.equal(records.entry(atRule).marked, true);
+      const before = tokenizeTotal();
+      const list = context.tokenLists.get(records.entry(atRule).preludeId);
+      assert.equal(tokenizeTotal() - before, 0);
+      assert.equal(list.map((token) => token[1]).join(''), 'z and (x)');
+    });
+  }
+);
 
 /**
  * The declaration records of a stylesheet after the build and the record walk
@@ -199,16 +219,15 @@ suite('the record walk shares one token list per value text', () => {
     );
   });
 
-  test('the walk stores no unicode-range list for the declaration', () => {
+  test('the record walk does not mark a declaration whose stage reads its tokens and edits nothing', () => {
     const root = postcss.parse('a { unicode-range: u+0-7f }');
-    const table = new TextTable();
     const stage = {
       forProperty: () => (buffer) => {
         buffer.tokens();
       },
     };
-    walkStylesheet([stage], root, helpers, new Map(), table, null);
-    assert.equal(table.stored(root.first.first), undefined);
+    const [declaration] = declarationsAfterWalk(root, [stage]).declarations;
+    assert.equal(declaration.marked, false);
   });
 });
 

@@ -236,7 +236,7 @@ export function hostPlugin(
           // The comment removal is read once per stylesheet, by both walks.
           const comments = hasStages ? commentStateOf(stages) : null;
           if (hasStages) {
-            walkStylesheet(stages, root, helpers, transforms, table, comments);
+            walkStylesheet(root, transforms, comments);
           }
           // A run with stages builds the records, even when no merge, walk
           // after merge or symbol transform reads them.

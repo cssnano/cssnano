@@ -1,13 +1,15 @@
 import cssnanoUtils from '#utils';
+import { writeAfterName } from '../passes/ir/rawEdits.js';
 
 /** @import {CSSToken, TokenType} from '@csstools/css-tokenizer' */
-/** @import {AtRule} from 'postcss' */
+/** @import {ArenaIndex, BlockRecord, NodeEntry} from '../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
 
 /**
  * Strips the whitespace from the space after an at-rule name. Its comments stay,
  * since they are content that a browser may need to see.
  *
- * @param {string | undefined} raw
+ * @param {string | null} raw
  * @returns {string}
  */
 function stripWhitespacePreservingComments(raw) {
@@ -45,37 +47,46 @@ function bracketsBalance(list) {
 }
 
 /**
- * Whether the space after an at-rule name can go for a prelude: it starts with
- * a parenthesis, and its brackets balance. The tokens spell the prelude.
+ * Whether the space after an at-rule name can go for a prelude: its first token
+ * is a parenthesis, and its brackets balance. A prelude's text starts with `(`
+ * exactly when its first token is an open parenthesis.
  *
- * @param {string} prelude the prelude after the walk
- * @param {readonly CSSToken[] | undefined} list the tokens that spell it
+ * @param {readonly CSSToken[]} list the tokens that spell the prelude after the walk
  * @return {boolean}
  */
-export function startsWithBalancedParen(prelude, list) {
-  return prelude.startsWith('(') && list !== undefined && bracketsBalance(list);
+export function startsWithBalancedParen(list) {
+  return (
+    list.length > 0 &&
+    list[0][0] === cssnanoUtils.TokenType.OpenParen &&
+    bracketsBalance(list)
+  );
 }
 
 /**
  * Sets the space after an at-rule name for the prelude that the walk wrote. An
  * empty prelude takes no space. A prelude that starts with a parenthesis takes
- * none either, unless its brackets do not balance, when the prelude is left as
- * written.
+ * none either, unless its brackets do not balance, when the name's space is
+ * left as written.
  *
- * @param {import('postcss').AtRule} atRule
- * @param {string} prelude the prelude after the walk
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index the at-rule's record
+ * @param {boolean} empty whether the prelude after the walk is empty
  * @param {boolean} startsBalanced whether the prelude starts with a balanced
  *   parenthesis, as startsWithBalancedParen tells
+ * @return {void}
  */
-export function tightenAfterName(atRule, prelude, startsBalanced) {
-  if (prelude.length === 0) {
-    atRule.raws.afterName = '';
+export function tightenAfterName(records, index, empty, startsBalanced) {
+  const record = /** @type {BlockRecord | NodeEntry} */ (records.entry(index));
+  if (empty) {
+    writeAfterName(records, index, '');
   } else if (
     startsBalanced &&
-    !cssnanoUtils.endsWithEscapingBackslash(atRule.name)
+    !cssnanoUtils.endsWithEscapingBackslash(record.name)
   ) {
-    atRule.raws.afterName = stripWhitespacePreservingComments(
-      atRule.raws.afterName
+    writeAfterName(
+      records,
+      index,
+      stripWhitespacePreservingComments(record.afterName)
     );
   }
 }

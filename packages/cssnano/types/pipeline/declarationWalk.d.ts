@@ -18,6 +18,10 @@ export type DeclarationPlans = {
      */
     selectors: PlanEntry;
     /**
+     * the plan of each at-rule name, as folded
+     */
+    atRules: Map<string, PlanEntry>;
+    /**
      * the comment removal, or null when no stage removes comments
      */
     comments: CommentState | null;
@@ -42,6 +46,7 @@ export type DeclarationPlans = {
  * @property {readonly Stage[]} stages in pipeline order
  * @property {Map<string, PlanEntry>} properties the plan of each property name as written
  * @property {PlanEntry} selectors the plan of the selectors of the rules
+ * @property {Map<string, PlanEntry>} atRules the plan of each at-rule name, as folded
  * @property {CommentState | null} comments the comment removal, or null when no stage removes comments
  * @property {boolean} normalizeWhitespace whether normalizeWhitespace is on, which strips the stray semicolons
  */

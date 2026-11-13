@@ -1,7 +1,14 @@
+import cssnanoUtils from '#utils';
+import { AT_RULE_BLOCK, CONDITIONAL_GROUP, LAYER } from './blockRecord.js';
+import { tokensText } from '../../values/tokensText.js';
+
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {ArenaIndex, BlockRecord, NodeEntry} from './blockRecord.js' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {DeclarationRecord} from './declarationRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {RunContext} from './runContext.js' */
+/** @import {TokenListId} from './tokenLists.js' */
 
 /*
  * The edits of the spellings the printer reads: the whitespace before each entry,
@@ -108,6 +115,19 @@ export function writeBlockRaws(record, between, after, semicolon, afterName) {
 }
 
 /**
+ * Writes the whitespace between an at-rule's name and its prelude.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @param {string} afterName
+ * @return {void}
+ */
+export function writeAfterName(records, index, afterName) {
+  /** @type {BlockRecord | NodeEntry} */ (records.entry(index)).afterName =
+    afterName;
+}
+
+/**
  * Writes the spellings of an at-rule statement that the printer reads.
  *
  * @param {BlockRecord | NodeEntry} record
@@ -118,4 +138,48 @@ export function writeBlockRaws(record, between, after, semicolon, afterName) {
 export function writeStatementRaws(record, between, afterName) {
   record.between = between;
   if (afterName !== undefined) record.afterName = afterName;
+}
+
+/**
+ * Writes the prelude of an at-rule as the list `list`, which the run already
+ * holds. The record marks the prelude so write-back assigns its text, and it
+ * recomputes what the prelude decides: whether a layer is anonymous, and whether
+ * a block is droppable. The walk of the write reaches every entry, so the edit
+ * stamps nothing.
+ *
+ * @param {RunContext} context
+ * @param {BlockRecord | NodeEntry} record the at-rule's block or statement record
+ * @param {TokenListId} list the id of the prelude, interned in the run
+ * @return {void}
+ */
+export function writePreludeList(context, record, list) {
+  const anonymous =
+    record.atRuleKind === LAYER &&
+    cssnanoUtils.isAnonymousLayer(context.tokenLists.get(list));
+  record.preludeId = list;
+  record.anonymous = anonymous;
+  if (record.kind === AT_RULE_BLOCK) {
+    record.droppable =
+      record.atRuleKind === CONDITIONAL_GROUP ||
+      (record.atRuleKind === LAYER && !anonymous);
+  }
+  record.writtenList = -1;
+  record.marked = true;
+}
+
+/**
+ * Writes the prelude of an at-rule: its list is interned in the run, and the
+ * prelude is written as `writePreludeList` writes it.
+ *
+ * @param {RunContext} context
+ * @param {BlockRecord | NodeEntry} record the at-rule's block or statement record
+ * @param {readonly CSSToken[]} list the prelude's tokens
+ * @return {void}
+ */
+export function writePrelude(context, record, list) {
+  writePreludeList(
+    context,
+    record,
+    context.valueIds.idOf(context.tokenLists, undefined, tokensText(list), list)
+  );
 }

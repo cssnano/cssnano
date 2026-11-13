@@ -6,9 +6,14 @@ import {
 } from '../passes/ir/blockRecord.js';
 import { writeContainerContext } from '../passes/ir/arenaEdits.js';
 import { containerContext } from '../passes/ir/sameContainer.js';
-import { sourceListOf } from '../passes/ir/writtenList.js';
 import { isDefaultNamespace } from '../plugins/postcss-minify-selectors/lib/isDefaultNamespace.js';
-import { DEFAULT_NAMESPACE, recordContextOf, withBit } from './context.js';
+import {
+  DEFAULT_NAMESPACE,
+  recordContextOf,
+  statementContextOf,
+  withBit,
+} from './context.js';
+import { visitAtRule } from './atRuleWalk.js';
 import { visitDeclaration } from './declarationWalk.js';
 import { isOutermostOverridable } from './overridable.js';
 import { visitRule } from './ruleWalk.js';
@@ -50,19 +55,19 @@ class RecordWalk {
   }
 
   /**
-   * Notes a default `@namespace`, from its prelude as the walk leaves it. Rules
+   * Notes a default `@namespace`, from its prelude as the walk folded it. Rules
    * after it have the default namespace in their fold's context.
    *
    * @param {ArenaIndex} index an at-rule record
+   * @param {TokenListId} prelude the id of the prelude after the walk
    */
-  #noteNamespace(index) {
+  #noteNamespace(index, prelude) {
     if (this.#defaultNamespace) return;
     const record = /** @type {BlockRecord | NodeEntry} */ (
       this.#records.entry(index)
     );
     if (record.name !== 'namespace') return;
-    const list = /** @type {TokenListId} */ (sourceListOf(record));
-    if (isDefaultNamespace(this.#context.tokenLists.get(list))) {
+    if (isDefaultNamespace(this.#context.tokenLists.get(prelude))) {
       this.#defaultNamespace = true;
     }
   }
@@ -116,7 +121,14 @@ class RecordWalk {
           : bits;
         visitRule(this.#plans, this.#records, this.#context, foldBits, index);
       } else {
-        this.#noteNamespace(index);
+        const prelude = visitAtRule(
+          this.#plans,
+          this.#records,
+          this.#context,
+          bits,
+          index
+        );
+        this.#noteNamespace(index, prelude);
       }
       own = this.#refreshContext(index, parentContext);
     }
@@ -146,7 +158,14 @@ class RecordWalk {
       } else if (kind === DECLARATION && this.#plans !== undefined) {
         visitDeclaration(this.#plans, records, this.#context, context, entry);
       } else if (kind === AT_RULE_STATEMENT && this.#plans !== undefined) {
-        this.#noteNamespace(entry);
+        const prelude = visitAtRule(
+          this.#plans,
+          records,
+          this.#context,
+          statementContextOf(records, this.#context.tokenLists, entry, context),
+          entry
+        );
+        this.#noteNamespace(entry, prelude);
       }
       entry = next;
     }

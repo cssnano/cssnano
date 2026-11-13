@@ -1,12 +1,10 @@
 import type { ArenaIndex } from '../passes/ir/blockRecord.js';
 import type { BlockRecords } from '../passes/ir/blockRecords.js';
 import type { TokenLists } from '../passes/ir/tokenLists.js';
-import type { Container, Document } from 'postcss';
-/** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord, NodeEntry} from '../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
 /** @import {DeclarationRecord} from '../passes/ir/declarationRecord.js' */
 /** @import {TokenLists} from '../passes/ir/tokenLists.js' */
-/** @import {AtRule, Container, Document} from 'postcss' */
 /**
  * The context of a declaration is an integer whose bits say where it sits. The
  * bits are added rather than or-ed, since the repository forbids bitwise
@@ -38,18 +36,9 @@ export declare function hasContextBit(context: number, bit: number): boolean;
  */
 export declare function withBit(context: number, bit: number): number;
 /**
- * The context of the declarations that a container holds directly. Each
- * container is computed once from its parent, through the cache of the run.
- *
- * @param {Container | Document} node a rule, at-rule or the root
- * @param {WeakMap<Container | Document, number>} contexts the context of each container of the run
- * @returns {number}
- */
-export declare function contextOf(node: Container | Document, contexts: WeakMap<Container | Document, number>): number;
-/**
- * The context of a container record, from its parent's context, as the node
- * form `contextOf` gives it for a container node. The stylesheet is the only
- * container without a parent, and its context is 0.
+ * The context of a rule or an at-rule with a block, from the context its parent
+ * passes down. The stylesheet is the only container without a parent, and its
+ * context is 0.
  *
  * @param {BlockRecords} records
  * @param {TokenLists} tokenLists
@@ -58,4 +47,15 @@ export declare function contextOf(node: Container | Document, contexts: WeakMap<
  * @returns {number}
  */
 export declare function recordContextOf(records: BlockRecords, tokenLists: TokenLists, index: ArenaIndex, parentContext: number): number;
+/**
+ * The context of an at-rule statement, which holds no container. The record
+ * walk gives its prelude the bits the statement would have as a container.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex} index an at-rule statement record
+ * @param {number} parentContext the context of the container that holds it
+ * @returns {number}
+ */
+export declare function statementContextOf(records: BlockRecords, tokenLists: TokenLists, index: ArenaIndex, parentContext: number): number;
 //# sourceMappingURL=context.d.ts.map

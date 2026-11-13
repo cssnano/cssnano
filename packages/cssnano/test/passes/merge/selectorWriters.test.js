@@ -48,8 +48,6 @@ function tokenizeTotal() {
   return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
 }
 
-const helpers = { result: { warn() {} } };
-
 /**
  * Parses the stylesheet and gives each selector a token list through the
  * host walk, as the default preset does before the merge pass runs.
@@ -60,13 +58,7 @@ const helpers = { result: { warn() {} } };
 function walkedStylesheet(css) {
   const root = postcss.parse(css);
   const table = new TextTable();
-  walkStylesheet(
-    [{ selector: (buffer) => buffer.tokens() }],
-    root,
-    helpers,
-    new Map(),
-    table
-  );
+  walkStylesheet(root, new Map(), null);
   return { root, table };
 }
 

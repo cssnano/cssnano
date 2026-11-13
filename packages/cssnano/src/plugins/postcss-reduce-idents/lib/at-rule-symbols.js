@@ -19,7 +19,7 @@ import {
   AT_RULE_STATEMENT,
   DECLARATION,
 } from '../../../passes/ir/blockRecord.js';
-import { writePrelude } from '../../../passes/ir/arenaEdits.js';
+import { writePrelude } from '../../../passes/ir/rawEdits.js';
 import { writeValue } from '../../../passes/ir/valueEdits.js';
 import { ValueBuffer } from '../../../values/valueBuffer.js';
 

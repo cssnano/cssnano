@@ -28,6 +28,7 @@ import { foldList, planEntry } from './plan.js';
  * @property {readonly Stage[]} stages in pipeline order
  * @property {Map<string, PlanEntry>} properties the plan of each property name as written
  * @property {PlanEntry} selectors the plan of the selectors of the rules
+ * @property {Map<string, PlanEntry>} atRules the plan of each at-rule name, as folded
  * @property {CommentState | null} comments the comment removal, or null when no stage removes comments
  * @property {boolean} normalizeWhitespace whether normalizeWhitespace is on, which strips the stray semicolons
  */
@@ -49,6 +50,7 @@ export function declarationPlansOf(stages, normalizeWhitespace, comments) {
       undefined,
       false
     ),
+    atRules: new Map(),
     comments,
     normalizeWhitespace,
   };

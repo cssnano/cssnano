@@ -40,19 +40,10 @@ const COUNTED = {
   ],
   // The text joined from a token list.
   tokensTextCalls: [{ module: 'values/tokensText.js', fn: 'tokensText' }],
-  // Every fold, whether its memo hit or missed: the text fold of the node walk
-  // and the list fold of the record walk.
-  foldCalls: [
-    { module: 'pipeline/plan.js', fn: 'foldPlan' },
-    { module: 'pipeline/plan.js', fn: 'foldList' },
-  ],
-  // A fold that ran: the memo or table of the plan missed.
+  // Every fold, whether its table hit or missed.
+  foldCalls: [{ module: 'pipeline/plan.js', fn: 'foldList' }],
+  // A fold that ran: the table of the plan missed.
   foldMisses: [
-    {
-      module: 'pipeline/plan.js',
-      fn: 'foldPlan',
-      miss: 'const buffer = new ValueBuffer(text, entry.mode);',
-    },
     {
       module: 'pipeline/plan.js',
       fn: 'foldList',
@@ -61,14 +52,6 @@ const COUNTED = {
   ],
   // A container whose context the record walk computes, once per container.
   recordContexts: [{ module: 'pipeline/context.js', fn: 'recordContextOf' }],
-  // A container whose context was computed by the node walk.
-  contextMisses: [
-    {
-      module: 'pipeline/context.js',
-      fn: 'contextOf',
-      miss: 'let context = 0;',
-    },
-  ],
 };
 
 const session = new Session();

@@ -4,7 +4,10 @@ import assert from 'node:assert/strict';
 // The counter must hook the tokenizer before the walk loads it.
 const { counter } = await import('../../../../util/countTokenize.js');
 const { default: postcss } = await import('postcss');
-const { walkStylesheet } = await import('../../src/pipeline/traversal.js');
+const { buildRecords } = await import('../../src/passes/ir/buildRecords.js');
+const { walkDown } = await import('../../src/pipeline/walkDown.js');
+const { declarationPlansOf } =
+  await import('../../src/pipeline/declarationWalk.js');
 const { TextTable } = await import('../../src/values/textTable.js');
 const { tokens } = await import('../../src/utils/value.js');
 const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
@@ -47,19 +50,15 @@ function afterWalk(root, table, transforms, symbols) {
   return tokenizeTotal() - before;
 }
 
-suite('the walk reads the at-rule flags that the plan stored', () => {
-  test('tightenAfterName reads the flag stored for a repeated @media prelude, without tokenizing', () => {
+suite('the record walk folds the at-rule preludes it reads', () => {
+  test('a repeated @media prelude is tightened without tokenizing it again', () => {
     const stage = minifyParams.create({}, ['defaults']);
-    /** @param {string} css @returns {number} tokenize calls the walk made */
+    /** @param {string} css @returns {number} tokenize calls the record walk made */
     const walkCalls = (css) => {
+      const context = createRunContext(new TextTable(), undefined);
+      const { records } = buildRecords(postcss.parse(css), context);
       const before = tokenizeTotal();
-      walkStylesheet(
-        [stage],
-        postcss.parse(css),
-        helpers,
-        new Map(),
-        new TextTable()
-      );
+      walkDown(records, context, declarationPlansOf([stage], false, null));
       return tokenizeTotal() - before;
     };
     assert.equal(
@@ -81,14 +80,16 @@ suite('the at-rule readers read the lists stored for their at-rules', () => {
     assert.equal(afterWalk(root, table, new Map(), symbols), 0);
   });
 
-  test("the walk's default-namespace check reads the @namespace list stored for the at-rule, without tokenizing", () => {
-    const root = postcss.parse('@namespace url(x);');
-    const table = new TextTable();
+  test("the record walk's default-namespace check reads the @namespace list the build tokenized, without tokenizing", () => {
+    const context = createRunContext(new TextTable(), undefined);
+    const { records } = buildRecords(
+      postcss.parse('@namespace url(x);'),
+      context
+    );
     const stage = normalizeUrl.create({});
     const before = tokenizeTotal();
-    walkStylesheet([stage], root, helpers, new Map(), table);
-    // The prelude is tokenized once, by the stage that rewrites it.
-    assert.equal(tokenizeTotal() - before, 1);
+    walkDown(records, context, declarationPlansOf([stage], false, null));
+    assert.equal(tokenizeTotal() - before, 0);
   });
 
   test('discard-empty reads the @layer list stored for the at-rule, without tokenizing', () => {
