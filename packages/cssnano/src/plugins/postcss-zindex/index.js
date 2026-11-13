@@ -1,3 +1,4 @@
+import { TokenType } from '@csstools/css-tokenizer';
 import LayerCache from './lib/layerCache.js';
 import {
   createRecordSymbolLists,
@@ -36,8 +37,10 @@ import { identifierWithText, numeric } from '../../values/tokenConstructors.js';
 export function zindexSymbols(lists, options, _remove, records, context) {
   const { tokenLists } = context;
   /** @type {ArenaIndex[]} */
-  const nodes = lists.zIndexDecls.filter((index) =>
-    isRecordAttached(records, index)
+  const nodes = lists.zIndexDecls.filter(
+    (index) =>
+      isRecordAttached(records, index) &&
+      hasOneComponent(records, context, index)
   );
   /** @param {ArenaIndex} index */
   const valueOf = (index) =>
@@ -60,6 +63,24 @@ export function zindexSymbols(lists, options, _remove, records, context) {
       tokenOf(cache.getValue(valueOf(index)).toString()),
     ]);
   }
+}
+
+/**
+ * Whether the value is a single component. A value of several components is
+ * invalid, and rewriting it to one number would make the declaration valid.
+ *
+ * @param {BlockRecords} records
+ * @param {RunContext} context
+ * @param {ArenaIndex} index
+ * @return {boolean}
+ */
+function hasOneComponent(records, context, index) {
+  const { valueList } = /** @type {DeclarationRecord} */ (records.entry(index));
+  let count = 0;
+  for (const [type] of context.tokenLists.get(valueList)) {
+    if (type !== TokenType.Whitespace && type !== TokenType.Comment) count++;
+  }
+  return count === 1;
 }
 
 /**
