@@ -2,7 +2,7 @@
  * @param {(value: string, index: number) => string} encoder
  */
 export default function counterStyleReducer(encoder: (value: string, index: number) => string): {
-    collect(node: import("postcss/lib/node").AnyNode, table: import("../../../values/textTable.js").TextTable): void;
-    transform(table: import("../../../values/textTable.js").TextTable): void;
+    collect(index: import("../../../passes/ir/blockRecord.js").ArenaIndex, records: import("../../../passes/ir/blockRecords.js").BlockRecords, context: import("../../../passes/ir/runContext.js").RunContext): void;
+    transform(records: import("../../../passes/ir/blockRecords.js").BlockRecords, context: import("../../../passes/ir/runContext.js").RunContext): void;
 };
 //# sourceMappingURL=counter-style.d.ts.map

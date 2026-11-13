@@ -1,5 +1,7 @@
-import type { SymbolLists } from '../../pipeline/symbolLists.js';
-import type { TextTable as TextTableType } from '../../values/textTable.js';
+import type { ArenaIndex } from '../../passes/ir/blockRecord.js';
+import type { BlockRecords } from '../../passes/ir/blockRecords.js';
+import type { RecordSymbolLists } from '../../pipeline/symbolLists.js';
+import type { RunContext } from '../../passes/ir/runContext.js';
 export type Options = {
     /**
      * Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)
@@ -23,11 +25,13 @@ export type Options = {
     encoder?: (value: string, index: number) => string;
 };
 export type Reducer = {
-    collect: (node: import('postcss').AnyNode, table: TextTableType) => void;
-    transform: (table: TextTableType) => void;
+    collect: (index: ArenaIndex, records: BlockRecords, context: RunContext) => void;
+    transform: (records: BlockRecords, context: RunContext) => void;
 };
-/** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
-/** @import {TextTable as TextTableType} from '../../values/textTable.js' */
+/** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
+/** @import {RecordSymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {RunContext} from '../../passes/ir/runContext.js' */
 /**
  * @typedef {object} Options
  * @property {boolean} [counter] Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)
@@ -37,8 +41,8 @@ export type Reducer = {
  * @property {(value: string, index: number) => string} [encoder] Replaces a name. Receives the name and how many names came before it.
  */
 /** @typedef {{
- *    collect: (node: import('postcss').AnyNode, table: TextTableType) => void,
- *    transform: (table: TextTableType) => void
+ *    collect: (index: ArenaIndex, records: BlockRecords, context: RunContext) => void,
+ *    transform: (records: BlockRecords, context: RunContext) => void
  *  }} Reducer
  */
 /**
@@ -54,19 +58,19 @@ export declare function createReducers({ counter, counterStyle, keyframes, gridT
 };
 /**
  * Renames the names that the walk after merge collected. Each reducer reads
- * only at-rules or declarations, so the lists hold every node it needs, and a
- * node that an earlier transform detached is skipped.
+ * only at-rules or declarations, so the lists hold every entry it needs, and an
+ * entry that an earlier transform removed is skipped.
  *
- * @param {SymbolLists} lists
+ * @param {RecordSymbolLists} lists
  * @param {{reducers: Reducer[]}} state
- * @param {unknown} [_remove]
- * @param {TextTableType} [table] the text the walk stored; a standalone run
- *   has none
+ * @param {unknown} _remove
+ * @param {BlockRecords} records
+ * @param {RunContext} context
  * @return {void}
  */
-export declare function reduceIdentsSymbols(lists: SymbolLists, { reducers }: {
+export declare function reduceIdentsSymbols(lists: RecordSymbolLists, { reducers }: {
     reducers: Reducer[];
-}, _remove?: unknown, table?: TextTableType): void;
+}, _remove: unknown, records: BlockRecords, context: RunContext): void;
 /**
  * @param {Options} opts
  * @return {import('postcss').Plugin}

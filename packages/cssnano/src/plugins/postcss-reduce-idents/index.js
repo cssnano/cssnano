@@ -4,15 +4,17 @@ import counterStyleReducer from './lib/counter-style.js';
 import keyframesReducer from './lib/keyframes.js';
 import gridTemplateReducer from './lib/grid-template.js';
 import {
-  createSymbolLists,
-  isAttached,
-  symbolVisit,
+  createRecordSymbolLists,
+  isRecordAttached,
+  recordSymbolVisit,
 } from '../../pipeline/symbolLists.js';
+import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
+import { visitEntriesInOrder } from '../../passes/ir/visitEntries.js';
 
-import { TextTable } from '../../values/textTable.js';
-
-/** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
-/** @import {TextTable as TextTableType} from '../../values/textTable.js' */
+/** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
+/** @import {RecordSymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {RunContext} from '../../passes/ir/runContext.js' */
 
 /**
  * @typedef {object} Options
@@ -23,8 +25,8 @@ import { TextTable } from '../../values/textTable.js';
  * @property {(value: string, index: number) => string} [encoder] Replaces a name. Receives the name and how many names came before it.
  */
 /** @typedef {{
- *    collect: (node: import('postcss').AnyNode, table: TextTableType) => void,
- *    transform: (table: TextTableType) => void
+ *    collect: (index: ArenaIndex, records: BlockRecords, context: RunContext) => void,
+ *    transform: (records: BlockRecords, context: RunContext) => void
  *  }} Reducer
  */
 /**
@@ -62,31 +64,32 @@ export function createReducers({
 
 /**
  * Renames the names that the walk after merge collected. Each reducer reads
- * only at-rules or declarations, so the lists hold every node it needs, and a
- * node that an earlier transform detached is skipped.
+ * only at-rules or declarations, so the lists hold every entry it needs, and an
+ * entry that an earlier transform removed is skipped.
  *
- * @param {SymbolLists} lists
+ * @param {RecordSymbolLists} lists
  * @param {{reducers: Reducer[]}} state
- * @param {unknown} [_remove]
- * @param {TextTableType} [table] the text the walk stored; a standalone run
- *   has none
+ * @param {unknown} _remove
+ * @param {BlockRecords} records
+ * @param {RunContext} context
  * @return {void}
  */
 export function reduceIdentsSymbols(
   lists,
   { reducers },
   _remove,
-  table = new TextTable()
+  records,
+  context
 ) {
-  const nodes = [...lists.keyframes, ...lists.counterStyles, ...lists.decls];
-  for (const node of nodes) {
-    if (!isAttached(node)) continue;
+  const indices = [...lists.keyframes, ...lists.counterStyles, ...lists.decls];
+  for (const index of indices) {
+    if (!isRecordAttached(records, index)) continue;
     for (const reducer of reducers) {
-      reducer.collect(node, table);
+      reducer.collect(index, records, context);
     }
   }
   for (const reducer of reducers) {
-    reducer.transform(table);
+    reducer.transform(records, context);
   }
 }
 
@@ -100,11 +103,18 @@ function pluginCreator(opts = {}) {
     postcssPlugin: 'postcss-reduce-idents',
     /**
      * @param {import('postcss').Root} css
+     * @param {import('postcss').Helpers} helpers
      */
-    OnceExit(css) {
-      const lists = createSymbolLists();
-      css.walk(symbolVisit(lists));
-      reduceIdentsSymbols(lists, state);
+    OnceExit(css, { result }) {
+      runRecordsPlugin(css, result, [
+        (records, browsers, context) => {
+          const lists = createRecordSymbolLists();
+          visitEntriesInOrder(records, records.root.index, (index) =>
+            recordSymbolVisit(records, context.tokenLists, lists, index)
+          );
+          reduceIdentsSymbols(lists, state, undefined, records, context);
+        },
+      ]);
     },
   };
 }

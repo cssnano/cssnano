@@ -13,7 +13,7 @@ import {
   declaredValueTokens,
   atRuleAt,
   preludeTextOf,
-} from './declaredText.js';
+} from '../../../passes/ir/declaredText.js';
 import { walkValue } from './valueWalk.js';
 
 const { asciiLowerCase, decoded, tokens } = cssnanoUtils;

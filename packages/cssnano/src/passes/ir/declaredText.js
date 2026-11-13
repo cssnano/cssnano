@@ -1,15 +1,15 @@
 import cssnanoUtils from '#utils';
-import { NO_PRELUDE } from '../../../passes/ir/blockRecord.js';
-import { commentFreeText, tokensText } from '../../../values/tokensText.js';
+import { NO_PRELUDE } from './blockRecord.js';
+import { commentFreeText, tokensText } from '../../values/tokensText.js';
 
 const { tokens } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {DeclarationRecord} from '../../../passes/ir/declarationRecord.js' */
-/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecord, NodeEntry} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
-/** @import {TokenLists} from '../../../passes/ir/tokenLists.js' */
+/** @import {DeclarationRecord} from './declarationRecord.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
+/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {TokenLists, TokenListId} from './tokenLists.js' */
 
 /**
  * The value a declaration holds, as PostCSS's `decl.value` spells it. A list
@@ -62,11 +62,7 @@ export function atRuleAt(records, index) {
 export function preludeListOf(tokenLists, entry) {
   return entry.preludeId === NO_PRELUDE
     ? []
-    : tokenLists.get(
-        /** @type {import('../../../passes/ir/tokenLists.js').TokenListId} */ (
-          entry.preludeId
-        )
-      );
+    : tokenLists.get(/** @type {TokenListId} */ (entry.preludeId));
 }
 
 /**

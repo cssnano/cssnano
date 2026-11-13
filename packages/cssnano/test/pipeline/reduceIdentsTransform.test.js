@@ -59,3 +59,13 @@ test('one advanced processor gives the keyframes of each stylesheet it processes
     '@keyframes a{0%{top:0}}div{animation:a 1s}|@keyframes b{0%{top:0}}p{animation:b 1s}'
   );
 });
+
+// The value keeps its important comment as written when a name in it is renamed.
+test('reduceIdents keeps the important comment of a value whose keyframes name it renames', async () => {
+  assert.equal(
+    await minify(
+      '@keyframes fade{from{opacity:0}to{opacity:1}}a{animation-name:/*!x*/fade}'
+    ),
+    '@keyframes a{0%{opacity:0}to{opacity:1}}a{animation-name:/*!x*/a}'
+  );
+});

@@ -7,7 +7,7 @@ import {
 } from '../../../passes/ir/blockRecord.js';
 import { isLayerEntry } from './grammar.js';
 import { preludeTokens } from './trailingEscape.js';
-import { atRuleAt, preludeTextOf } from './declaredText.js';
+import { atRuleAt, preludeTextOf } from '../../../passes/ir/declaredText.js';
 
 const { decoded } = cssnanoUtils;
 

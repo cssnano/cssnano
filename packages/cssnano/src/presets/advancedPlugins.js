@@ -72,9 +72,10 @@ export const advancedPluginEntries = /** @type {const} */ ([
       ],
       transform: true,
       // Its options are the reducers that create built.
-      symbols: /** @type {NodeSymbolTransform} */ (
+      symbols: /** @type {SymbolTransform} */ (
         /** @type {unknown} */ (reduceIdentsSymbols)
       ),
+      onRecords: true,
     },
   ]),
   /** @satisfies {EntryFor<AdvancedPluginOptions, 'zindex'>} */ ([

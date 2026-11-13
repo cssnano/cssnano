@@ -62,7 +62,8 @@ export declare const advancedPluginEntries: readonly [[{
 }, "reduceIdents", {
     optionKeys: ("counter" | "counterStyle" | "encoder" | "gridTemplate" | "keyframes")[];
     transform: true;
-    symbols: NodeSymbolTransform;
+    symbols: SymbolTransform;
+    onRecords: true;
 }], [{
     create: (/** @type {import('#postcss-zindex').Options} */ options: import('#postcss-zindex').Options) => import("#postcss-zindex").Options;
 }, "zindex", {

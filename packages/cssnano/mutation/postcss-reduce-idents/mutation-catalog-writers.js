@@ -12,14 +12,13 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'write the renamed declaration as text, without its list',
-    find: '        if (buffer.text() !== node.value) table.write(node, buffer.tokens());',
-    replace:
-      '        if (buffer.text() !== node.value) table.setText(node, buffer.text());',
+    name: 'write the renamed declaration without its list',
+    find: '          writeValue(records, context, index, buffer.tokens());',
+    replace: '          writeValue(records, context, index, []);',
   },
   {
-    name: 'write the renamed at-rule prelude as text, without its list',
-    find: '          table.write(rule, [encodedIdent(encoded)]);',
-    replace: '          table.setText(rule, encoded);',
+    name: 'write the renamed at-rule prelude without its list',
+    find: '          writePrelude(context, entry, [encodedIdent(encoded)]);',
+    replace: '          writePrelude(context, entry, []);',
   },
 ];

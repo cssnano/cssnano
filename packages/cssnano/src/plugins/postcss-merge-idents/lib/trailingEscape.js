@@ -5,7 +5,7 @@ import {
   declaredValue,
   preludeListOf,
   preludeTextOf,
-} from './declaredText.js';
+} from '../../../passes/ir/declaredText.js';
 
 const { isCSSWhitespace, tokens } = cssnanoUtils;
 

@@ -1,4 +1,6 @@
-import type { TextTable } from '../../../values/textTable.js';
+import type { ArenaIndex } from '../../../passes/ir/blockRecord.js';
+import type { BlockRecords } from '../../../passes/ir/blockRecords.js';
+import type { RunContext } from '../../../passes/ir/runContext.js';
 export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
 export type AtRuleSymbols = {
     atRule: string;
@@ -8,7 +10,9 @@ export type AtRuleSymbols = {
     functions?: Map<string, number[]>;
     descriptors?: Set<string>;
 };
-/** @import {TextTable} from '../../../values/textTable.js' */
+/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
+/** @import {RunContext} from '../../../passes/ir/runContext.js' */
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 /**
  * Name the slots of an at-rule-defined name: where it is defined, what
@@ -33,11 +37,15 @@ export type AtRuleSymbols = {
  */
 export default function atRuleReducer({ atRule, reserved, properties, functionProperties, functions, descriptors }: AtRuleSymbols, encoder: (value: string, index: number) => string): {
     /**
-     * @param {import('postcss').AnyNode} node
-     * @param {TextTable} table
+     * @param {ArenaIndex} index
+     * @param {BlockRecords} records
+     * @param {RunContext} context
      */
-    collect(node: import('postcss').AnyNode, table: TextTable): void;
-    /** @param {TextTable} table */
-    transform(table: TextTable): void;
+    collect(index: ArenaIndex, records: BlockRecords, context: RunContext): void;
+    /**
+     * @param {BlockRecords} records
+     * @param {RunContext} context
+     */
+    transform(records: BlockRecords, context: RunContext): void;
 };
 //# sourceMappingURL=at-rule-symbols.d.ts.map

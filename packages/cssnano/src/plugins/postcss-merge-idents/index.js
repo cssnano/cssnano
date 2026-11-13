@@ -7,7 +7,7 @@ import { AT_RULE_BLOCK } from '../../passes/ir/blockRecord.js';
 import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
 import { remove as removeRecord } from '../../passes/ir/treeEdits.js';
 import { visitEntriesInOrder } from '../../passes/ir/visitEntries.js';
-import { atRuleAt } from './lib/declaredText.js';
+import { atRuleAt } from '../../passes/ir/declaredText.js';
 import { LayerRegistry, hasImport } from './lib/layerRegistry.js';
 import {
   findInterchangeableGroups,
