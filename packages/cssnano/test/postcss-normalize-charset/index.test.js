@@ -128,3 +128,8 @@ describe('Whitespace around the moved charset', () => {
     )
   );
 });
+
+test(
+  'should leave an upper-case charset alone, since browsers ignore it',
+  passthroughCSS('@CHARSET "iso";a{color:red}')
+);

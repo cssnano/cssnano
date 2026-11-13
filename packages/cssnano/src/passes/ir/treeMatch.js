@@ -10,7 +10,7 @@ import {
 } from './blockRecord.js';
 import { tokensText } from '../../values/tokensText.js';
 import { nodeOf } from './nodeTable.js';
-import { isRuleOrAtRule } from './buildRecords.js';
+import { isRuleOrAtRule, recordNameOf } from './buildRecords.js';
 import { differs } from './writeBack.js';
 import { summariesHold } from './selectorReads.js';
 
@@ -24,8 +24,7 @@ import { summariesHold } from './selectorReads.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {TokenListId, TokenLists} from './tokenLists.js' */
 
-const { asciiLowerCase, isImportantComment, sourceValue, TokenType } =
-  cssnanoUtils;
+const { isImportantComment, sourceValue, TokenType } = cssnanoUtils;
 
 /**
  * @param {CSSToken} token
@@ -81,7 +80,7 @@ function describesNode(tokenLists, record, node) {
 function checkAtRuleFacts(nodes, tokenLists, entry) {
   const node = /** @type {AtRule} */ (nodeOf(nodes, entry.index));
   if (node.type !== 'atrule') return;
-  const name = asciiLowerCase(node.name);
+  const name = recordNameOf(node.name);
   if (
     entry.atRuleKind !== atRuleKindOf(name) ||
     entry.name !== name ||

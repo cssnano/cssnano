@@ -121,10 +121,17 @@ describe('the charset on the records', () => {
     assert.equal(recordsForm(copyright).source, copyright);
   });
 
-  test('a charset in upper case is a charset', () => {
+  test('a charset in upper case is left as it is, since browsers ignore it', () => {
     assert.equal(
-      recordsForm(`@CHARSET "utf-8";\n${copyright}`).css,
-      `@charset "utf-8";\n${copyright}`
+      recordsForm(`@CHARSET "iso";\n${copyright}`, { add: false }).css,
+      `@CHARSET "iso";\n${copyright}`
+    );
+  });
+
+  test('a charset in upper case does not stop a real charset being added', () => {
+    assert.equal(
+      recordsForm(`@CHARSET "iso";\n${copyright}`).css,
+      `@charset "utf-8";\n@CHARSET "iso";\n${copyright}`
     );
   });
 

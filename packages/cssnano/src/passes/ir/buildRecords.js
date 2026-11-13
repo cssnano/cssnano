@@ -24,6 +24,19 @@ import { holdsNonAscii } from '../../values/nonAscii.js';
 /** @import {SelectorIds} from './selectorIds.js' */
 const { asciiLowerCase, isAnonymousLayer, sourceValue } = cssnanoUtils;
 
+/**
+ * The name a record holds: the ASCII-folded name, except that `@CHARSET` keeps
+ * its spelling. Browsers read an encoding only from the exact lowercase bytes,
+ * so any other case is an ordinary unknown at-rule.
+ *
+ * @param {string} written
+ * @return {string}
+ */
+export function recordNameOf(written) {
+  const folded = asciiLowerCase(written);
+  return folded === 'charset' ? written : folded;
+}
+
 /** @import {AtRule, ChildNode, Comment, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {NodeTable} from './nodeTable.js' */
 /** @import {DeclarationKeys} from './declarationKey.js' */
@@ -193,7 +206,7 @@ export function buildRecords(root, context) {
         }
         fillChildren(record, child);
       } else if (child.type === 'atrule' && child.nodes) {
-        const name = asciiLowerCase(child.name);
+        const name = recordNameOf(child.name);
         const category = atRuleKindOf(name);
         const nested = new BlockRecord(
           AT_RULE_BLOCK,
@@ -215,7 +228,7 @@ export function buildRecords(root, context) {
       } else if (child.type === 'decl') {
         place(container.index, recordDeclaration(child, context), child);
       } else if (child.type === 'atrule') {
-        const name = asciiLowerCase(child.name);
+        const name = recordNameOf(child.name);
         const category = atRuleKindOf(name);
         const entry = new NodeEntry(
           AT_RULE_STATEMENT,
