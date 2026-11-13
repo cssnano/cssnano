@@ -1,9 +1,9 @@
+import { NodeEntry } from './blockRecord.js';
 import { DeclarationRecord } from './declarationRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
 import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ArenaIndex } from './blockRecord.js';
-import type { NodeEntry } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockDeclarations } from '../merge/lib/longhand/blockDeclarations.js';
 import type { RunContext } from './runContext.js';
@@ -12,7 +12,6 @@ import type { TokenListId } from './tokenLists.js';
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ArenaIndex} from './blockRecord.js' */
-/** @import {NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockDeclarations, DeclarationItem} from '../merge/lib/longhand/blockDeclarations.js' */
 /** @import {RunContext} from './runContext.js' */
@@ -39,6 +38,23 @@ export declare function substitute(records: BlockRecords, record: ArenaIndex, re
  * @return {ArenaIndex} the index the arena gave the entry
  */
 export declare function placeBefore(records: BlockRecords, sibling: ArenaIndex, entry: BlockRecord | RuleRecord | DeclarationRecord | NodeEntry): ArenaIndex;
+/**
+ * Places a new at-rule statement right before `sibling`. Write-back creates its
+ * node with the source of `template`'s node and the prelude the list spells.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} sibling a linked entry that the statement stands before
+ * @param {{name: string, preludeId: TokenListId, before: string | null, between: string | null, afterName: string | null, template: ArenaIndex}} statement
+ * @return {ArenaIndex} the index the arena gave the statement
+ */
+export declare function placeStatementBefore(records: BlockRecords, sibling: ArenaIndex, statement: {
+    name: string;
+    preludeId: TokenListId;
+    before: string | null;
+    between: string | null;
+    afterName: string | null;
+    template: ArenaIndex;
+}): ArenaIndex;
 /**
  * Moves the rule `record` to the end of the chain of the block at `target`.
  *

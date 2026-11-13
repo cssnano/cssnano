@@ -117,7 +117,9 @@ function writeRawsOf(records, nodes, tokenLists, container) {
   ) {
     const record = records.entry(entry);
     const node = /** @type {ChildNode} */ (nodeOf(nodes, entry));
+    // A null whitespace is the node having none, so the printer infers it.
     if (record.before !== null) node.raws.before = record.before;
+    else delete node.raws.before;
     if (record.kind === DECLARATION) {
       writeDeclarationRaws(record, /** @type {Declaration} */ (node));
     } else if (record.kind === RULE || record.kind === AT_RULE_BLOCK) {

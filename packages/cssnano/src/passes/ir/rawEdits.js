@@ -9,11 +9,12 @@
  */
 
 /**
- * Writes the whitespace an entry prints before itself. Write-back assigns it.
+ * Writes the whitespace an entry prints before itself, or null for none, which
+ * the printer infers. Write-back assigns it.
  *
  * @param {BlockRecords} records
  * @param {ArenaIndex} index
- * @param {string} before
+ * @param {string | null} before
  * @return {void}
  */
 export function writeBefore(records, index, before) {
@@ -21,10 +22,11 @@ export function writeBefore(records, index, before) {
 }
 
 /**
- * Writes the whitespace the stylesheet prints before its first child.
+ * Writes the whitespace the stylesheet prints before its first child, or null
+ * when its node has none and the printer infers it.
  *
  * @param {BlockRecords} records
- * @param {string} leading
+ * @param {string | null} leading
  * @return {void}
  */
 export function writeLeadingWhitespace(records, leading) {

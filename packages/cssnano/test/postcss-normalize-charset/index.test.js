@@ -97,3 +97,34 @@ describe('Add', () => {
 });
 
 test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+
+describe('Whitespace around the moved charset', () => {
+  test(
+    'a leading charset keeps the leading whitespace of the stylesheet',
+    processCSS(
+      '  \n@charset "a";\n\n\n' + copyright,
+      '  \n@charset "a";\n\n\n' + copyright
+    )
+  );
+
+  test(
+    'a charset from the middle brings its own whitespace, and the first node takes the separator of the next',
+    processCSS(
+      '\n\nb{x:y}\n@charset "a";\n\n\n' + copyright,
+      '\n@charset "a";\n\n\nb{x:y}\n\n\n' + copyright
+    )
+  );
+
+  test(
+    'an added charset leaves the leading whitespace behind, and the only other node takes an inferred separator',
+    processCSS('\n\n  ' + copyright, '@charset "utf-8";\n' + copyright)
+  );
+
+  test(
+    'an added charset gives the first node the whitespace of the node after it',
+    processCSS(
+      '\n\n  ' + copyright + '\n\n\nb{x:y}',
+      '@charset "utf-8";\n\n\n' + copyright + '\n\n\nb{x:y}'
+    )
+  );
+});

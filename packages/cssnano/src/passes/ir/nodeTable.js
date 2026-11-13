@@ -1,11 +1,11 @@
 import postcss from 'postcss';
-import { DECLARATION, RULE } from './blockRecord.js';
+import { AT_RULE_STATEMENT, DECLARATION, RULE } from './blockRecord.js';
 import { tokensText } from '../../values/tokensText.js';
 
 /** @import {ChildNode, Root} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {DeclarationRecord} from './declarationRecord.js' */
-/** @import {TokenLists} from './tokenLists.js' */
+/** @import {TokenListId, TokenLists} from './tokenLists.js' */
 
 /**
  * The PostCSS node of each entry, by the entry's arena index. The build fills
@@ -86,6 +86,14 @@ export function createChildNodes(records, nodes, container, tokenLists) {
         nodeOf(nodes, record.template)
       );
       nodes[entry] = declarationNode(record, template, tokenLists);
+    } else if (record.kind === AT_RULE_STATEMENT) {
+      nodes[entry] = postcss.atRule({
+        name: record.name,
+        params: tokensText(
+          tokenLists.get(/** @type {TokenListId} */ (record.preludeId))
+        ),
+        source: nodeOf(nodes, record.template)?.source,
+      });
     }
   }
 }

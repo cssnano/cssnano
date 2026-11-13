@@ -7,22 +7,24 @@ import type { ArenaIndex, BlockRecord, NodeEntry } from './blockRecord.js';
 import type { DeclarationRecord } from './declarationRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 /**
- * Writes the whitespace an entry prints before itself. Write-back assigns it.
+ * Writes the whitespace an entry prints before itself, or null for none, which
+ * the printer infers. Write-back assigns it.
  *
  * @param {BlockRecords} records
  * @param {ArenaIndex} index
- * @param {string} before
+ * @param {string | null} before
  * @return {void}
  */
-export declare function writeBefore(records: BlockRecords, index: ArenaIndex, before: string): void;
+export declare function writeBefore(records: BlockRecords, index: ArenaIndex, before: string | null): void;
 /**
- * Writes the whitespace the stylesheet prints before its first child.
+ * Writes the whitespace the stylesheet prints before its first child, or null
+ * when its node has none and the printer infers it.
  *
  * @param {BlockRecords} records
- * @param {string} leading
+ * @param {string | null} leading
  * @return {void}
  */
-export declare function writeLeadingWhitespace(records: BlockRecords, leading: string): void;
+export declare function writeLeadingWhitespace(records: BlockRecords, leading: string | null): void;
 /**
  * Writes the whitespace the stylesheet prints after its last child.
  *

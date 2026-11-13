@@ -5,7 +5,7 @@ export type NodeTable = (Root | ChildNode | undefined)[];
 /** @import {ChildNode, Root} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {DeclarationRecord} from './declarationRecord.js' */
-/** @import {TokenLists} from './tokenLists.js' */
+/** @import {TokenListId, TokenLists} from './tokenLists.js' */
 /**
  * The PostCSS node of each entry, by the entry's arena index. The build fills
  * a slot for each entry it makes; write-back pushes a slot for each merged rule

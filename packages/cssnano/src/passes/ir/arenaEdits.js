@@ -3,6 +3,7 @@ import {
   inheritWhitespace,
   nextDeclaration,
 } from '../merge/lib/rules/blockChildren.js';
+import { AT_RULE_STATEMENT, NodeEntry, atRuleKindOf } from './blockRecord.js';
 import { DeclarationRecord } from './declarationRecord.js';
 import { keysOfName } from './propertyTable.js';
 import { tokenizeMode } from '../../values/tokenizeMode.js';
@@ -12,7 +13,6 @@ import { tokensText } from '../../values/tokensText.js';
 /** @import {BlockRecord} from './blockRecord.js' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ArenaIndex} from './blockRecord.js' */
-/** @import {NodeEntry} from './blockRecord.js' */
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {BlockDeclarations, DeclarationItem} from '../merge/lib/longhand/blockDeclarations.js' */
 /** @import {RunContext} from './runContext.js' */
@@ -71,6 +71,30 @@ export function substitute(records, record, replacements) {
 export function placeBefore(records, sibling, entry) {
   records.insertEntryBefore(sibling, entry);
   return /** @type {ArenaIndex} */ (entry.index);
+}
+
+/**
+ * Places a new at-rule statement right before `sibling`. Write-back creates its
+ * node with the source of `template`'s node and the prelude the list spells.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} sibling a linked entry that the statement stands before
+ * @param {{name: string, preludeId: TokenListId, before: string | null, between: string | null, afterName: string | null, template: ArenaIndex}} statement
+ * @return {ArenaIndex} the index the arena gave the statement
+ */
+export function placeStatementBefore(records, sibling, statement) {
+  const entry = new NodeEntry(
+    AT_RULE_STATEMENT,
+    statement.before,
+    atRuleKindOf(statement.name),
+    statement.name,
+    false,
+    statement.preludeId
+  );
+  entry.between = statement.between;
+  entry.afterName = statement.afterName;
+  entry.template = statement.template;
+  return placeBefore(records, sibling, entry);
 }
 
 /**
