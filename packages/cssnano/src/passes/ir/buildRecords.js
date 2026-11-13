@@ -19,9 +19,10 @@ import {
 } from './blockRecord.js';
 import { containerContext } from '../merge/lib/rules/sameContainer.js';
 import { valueListOf } from '../merge/lib/valueList.js';
+import { holdsNonAscii } from '../../values/nonAscii.js';
 
 /** @import {SelectorIds} from './selectorIds.js' */
-const { asciiLowerCase, isAnonymousLayer } = cssnanoUtils;
+const { asciiLowerCase, isAnonymousLayer, sourceValue } = cssnanoUtils;
 
 /** @import {AtRule, ChildNode, Comment, Container, Declaration, Root, Rule} from 'postcss' */
 /** @import {NodeTable} from './nodeTable.js' */
@@ -93,6 +94,9 @@ export function recordDeclaration(node, context) {
     node.raws.between ?? null,
     important ? (node.raws.important ?? null) : null
   );
+  // The list drops a plain comment, which only the written value still holds.
+  const written = sourceValue(node);
+  record.writtenNonAscii = written !== node.value && holdsNonAscii(written);
   return record;
 }
 

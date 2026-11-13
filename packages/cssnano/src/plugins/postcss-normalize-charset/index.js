@@ -1,8 +1,7 @@
 import { AtRule } from 'postcss';
+import { holdsNonAscii } from '../../values/nonAscii.js';
 
 const charset = 'charset';
-// eslint-disable-next-line no-control-regex
-const nonAscii = /[^\x00-\x7F]/v;
 
 /**
  * @typedef {object} Options
@@ -41,7 +40,7 @@ export function charsetVisit(node, scan) {
   } else if (
     (!scan.nonAscii || scan.candidates) &&
     node.parent?.type === 'root' &&
-    nonAscii.test(node.toString())
+    holdsNonAscii(node.toString())
   ) {
     scan.nonAscii ??= node;
     scan.candidates?.push(node);
@@ -57,7 +56,7 @@ export function charsetVisit(node, scan) {
  */
 export function rescanNonAscii(scan) {
   scan.nonAscii = scan.candidates?.find(
-    (node) => node.parent?.type === 'root' && nonAscii.test(node.toString())
+    (node) => node.parent?.type === 'root' && holdsNonAscii(node.toString())
   );
 }
 

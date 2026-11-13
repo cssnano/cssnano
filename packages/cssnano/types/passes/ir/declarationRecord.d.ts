@@ -51,6 +51,14 @@ export declare class DeclarationRecord {
      */
     inheritedSupport: ReadonlySet<string> | null;
     /**
+     * Whether the value as written holds non-ASCII text when the value list is
+     * the cleaned value, so a comment the list drops may hold that text alone.
+     * The charset decision reads it; a declaration an edit made holds false.
+     *
+     * @type {boolean}
+     */
+    writtenNonAscii: boolean;
+    /**
      * Whether an edit changed the declaration, so write-back must write it. The
      * build sets nothing.
      *
