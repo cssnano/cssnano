@@ -94,3 +94,14 @@ svg|a { color: blue; }
 .e5 { content: a\ ;	}
 .e6 { content: a\ !important	}
 .e7 { content: a\ ;;	}
+/* 18. overridden at-rules whose declarations a round reduces, and the column cases of the guards */
+@keyframes k4 { from { margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px } to { color: red } }
+@keyframes k4 { to { color: blue } }
+@counter-style c3 { system: cyclic; symbols: "*"; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px }
+@counter-style c3 { system: cyclic; symbols: "+" }
+@keyframes k5 { from { column-height: 1px } }
+@keyframes k5 { to { color: red } }
+.col1 { column-width: 1px; column-count: 2 }
+.col2 { column-width: 1px; column-count: 2 }
+.col3 { column-width: 1px; column-count: 2 }
+.col3b { column-height: 1px }

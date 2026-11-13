@@ -50,6 +50,13 @@ const COUNTED = {
       miss: 'const buffer = new ValueBuffer(undefined, entry.mode, shared);',
     },
   ],
+  // A block that holds a declaration, once per longhand round that reads it.
+  longhandBlocks: [
+    {
+      module: 'passes/merge/lib/longhand/canonicalize.js',
+      fn: 'processContainer',
+    },
+  ],
   // A container whose context the record walk computes, once per container.
   recordContexts: [{ module: 'pipeline/context.js', fn: 'recordContextOf' }],
 };
