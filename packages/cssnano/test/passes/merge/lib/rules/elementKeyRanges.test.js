@@ -5,7 +5,7 @@ import { suite, test } from 'node:test';
 const { counter } = await import('../../../../../../../util/countTokenize.js');
 const { tokens: tokenize } = await import('../../../../../src/utils/value.js');
 const { elementKeyOf } =
-  await import('../../../../../src/passes/merge/lib/rules/elementKeys.js');
+  await import('../../../../../src/passes/ir/elementKeys.js');
 
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {

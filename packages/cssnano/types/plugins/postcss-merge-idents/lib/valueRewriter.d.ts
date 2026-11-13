@@ -7,13 +7,16 @@ export type Replacement = {
 export type TokenEdit = import('../../../values/valueBuffer.js').TokenEdit;
 export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
 export type Visitor = (token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => TokenEdit | undefined;
-import type { TextTable } from '../../../values/textTable.js';
+import type { BlockRecords } from '../../../passes/ir/blockRecords.js';
+import type { RunContext } from '../../../passes/ir/runContext.js';
 /**
  * @typedef {{ text: string, value: string, isString: boolean, absorbsWhitespace: boolean }} Replacement
  * @typedef {import('../../../values/valueBuffer.js').TokenEdit} TokenEdit
  * @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken
  * @typedef {(token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => TokenEdit | undefined} Visitor
- * @import {TextTable} from '../../../values/textTable.js'
+ * @import {ArenaIndex} from '../../../passes/ir/blockRecord.js'
+ * @import {BlockRecords} from '../../../passes/ir/blockRecords.js'
+ * @import {RunContext} from '../../../passes/ir/runContext.js'
  */
 /**
  * Prepares the spelling that references to a renamed name receive. A name
@@ -35,11 +38,12 @@ declare function createReplacement({ isString, tokenText, key }: {
  * Rewrites the references whose namespace has renames. A reference shares
  * the tokens its scan read, so the rewrite does not tokenize it again.
  *
+ * @param {BlockRecords} records
+ * @param {RunContext} context
  * @param {import('./protectedNames.js').Reference[]} references
  * @param {Map<string, Map<string, Replacement>>} renames
- * @param {TextTable} table
  * @return {void}
  */
-declare function rewriteReferences(references: import('./protectedNames.js').Reference[], renames: Map<string, Map<string, Replacement>>, table: TextTable): void;
+declare function rewriteReferences(records: BlockRecords, context: RunContext, references: import('./protectedNames.js').Reference[], renames: Map<string, Map<string, Replacement>>): void;
 export { createReplacement, rewriteReferences };
 //# sourceMappingURL=valueRewriter.d.ts.map

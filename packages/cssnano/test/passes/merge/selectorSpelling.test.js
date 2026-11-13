@@ -17,7 +17,7 @@ function mergedCss(css) {
 }
 
 test('a merged rule writes its selectors joined by bare commas, whatever the spacing of the source', () => {
-  for (const selector of ['a, b', 'a,b', 'a /* x */, b']) {
+  for (const selector of ['a, b', 'a,b', 'a ,  b']) {
     assert.equal(
       mergedCss(`${selector}{color:red}c{color:red}`),
       'a,b,c{color:red}',
@@ -26,10 +26,17 @@ test('a merged rule writes its selectors joined by bare commas, whatever the spa
   }
 });
 
-test('a merged rule writes a selector whose comment PostCSS dropped as its item', () => {
+test('a merged rule keeps a plain comment in the selector item it holds', () => {
+  assert.equal(
+    mergedCss('a /* x */, b{color:red}c{color:red}'),
+    'a /* x */,b,c{color:red}'
+  );
+});
+
+test('a merged rule keeps the comment that PostCSS keeps in its selector item', () => {
   assert.equal(
     mergedCss('a /**/ .b{color:red}c{color:red}'),
-    'a  .b,c{color:red}'
+    'a /**/ .b,c{color:red}'
   );
 });
 

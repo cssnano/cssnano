@@ -7,11 +7,18 @@ import {
   TokenType,
 } from './value.js';
 import { counter, cssWideKeywords, resolveProperty } from './slots.js';
-import { declaredValueTokens } from '../../../values/declaredValueTokens.js';
+import {
+  declaredValue,
+  declaredValueTokens,
+} from '../../../passes/ir/declaredText.js';
+import { DECLARATION } from '../../../passes/ir/blockRecord.js';
+import { writeValue } from '../../../passes/ir/valueEdits.js';
 import { whitespace } from '../../../values/punctuationTokens.js';
 import { ValueBuffer } from '../../../values/valueBuffer.js';
 
-/** @import {TextTable} from '../../../values/textTable.js' */
+/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
+/** @import {RunContext} from '../../../passes/ir/runContext.js' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 /*
@@ -34,23 +41,52 @@ const REVERSED_FUNCTIONS = new Map([['reversed', [0]]]);
 export default function counterReducer(encoder) {
   /** @type {Map<string, string>} */
   const symbolTable = new Map();
-  /** @type {import('postcss').Declaration[]} */
+  /** @type {ArenaIndex[]} */
   let definitionSites = [];
-  /** @type {import('postcss').Declaration[]} */
+  /** @type {ArenaIndex[]} */
   let useSites = [];
 
   return {
-    /** @param {import('postcss').AnyNode} node */ collect(node) {
-      if (node.type !== 'decl') return;
-      const property = resolveProperty(node.prop);
+    /**
+     * @param {ArenaIndex} index
+     * @param {BlockRecords} records
+     */
+    collect(index, records) {
+      const entry = records.entry(index);
+      if (entry.kind !== DECLARATION) return;
+      const property = resolveProperty(entry.prop);
       if (counter.properties.has(property)) {
-        definitionSites.push(node);
+        definitionSites.push(index);
       } else if (counter.functionProperties.has(property)) {
-        useSites.push(node);
+        useSites.push(index);
       }
     },
-    /** @param {TextTable} table */
-    transform(table) {
+    /**
+     * @param {BlockRecords} records
+     * @param {RunContext} context
+     */
+    transform(records, context) {
+      const { tokenLists } = context;
+      /** @param {ArenaIndex} index */
+      const valueOf = (index) =>
+        declaredValue(
+          tokenLists,
+          /** @type {import('../../../passes/ir/declarationRecord.js').DeclarationRecord} */ (
+            records.entry(index)
+          )
+        );
+      /**
+       * @param {ArenaIndex} index
+       * @param {string} value
+       */
+      const tokensOf = (index, value) =>
+        declaredValueTokens(
+          tokenLists,
+          /** @type {import('../../../passes/ir/declarationRecord.js').DeclarationRecord} */ (
+            records.entry(index)
+          ),
+          value
+        );
       if (definitionSites.length === 0 || useSites.length === 0) {
         definitionSites = [];
         useSites = [];
@@ -60,15 +96,18 @@ export default function counterReducer(encoder) {
       // Symbol binding pass: only names defined in the document being
       // transformed rename, since counter names are case-sensitive custom
       // identifiers and the symbol table is reused across documents.
-      const tokenCache = new Map();
       const defined = new Set();
-      /** @type {Map<import('postcss').Declaration, readonly CSSToken[]>} */
+      /** @type {Map<ArenaIndex, string>} */
+      const defValues = new Map();
+      /** @type {Map<ArenaIndex, readonly CSSToken[]>} */
       const defTokens = new Map();
-      for (const decl of definitionSites) {
-        const parsedTokens = declaredValueTokens(table, decl, tokenCache);
-        defTokens.set(decl, parsedTokens);
+      for (const index of definitionSites) {
+        const value = valueOf(index);
+        const parsedTokens = tokensOf(index, value);
+        defValues.set(index, value);
+        defTokens.set(index, parsedTokens);
         rewrite(
-          decl.value,
+          value,
           (token, position) => {
             if (token[0] !== TokenType.Ident) return;
             if (position === 'nested') return;
@@ -84,25 +123,34 @@ export default function counterReducer(encoder) {
 
       // Leave names such as var() fallbacks unrenamed
       const opaque = new Set();
-      for (const decl of definitionSites) {
-        collectOpaqueIdents(decl.value, opaque, defTokens.get(decl));
+      for (const index of definitionSites) {
+        collectOpaqueIdents(
+          /** @type {string} */ (defValues.get(index)),
+          opaque,
+          defTokens.get(index)
+        );
       }
-      /** @type {Map<import('postcss').Declaration, readonly CSSToken[]>} */
+      /** @type {Map<ArenaIndex, string>} */
+      const useValues = new Map();
+      /** @type {Map<ArenaIndex, readonly CSSToken[]>} */
       const useTokens = new Map();
-      for (const decl of useSites) {
-        const parsedTokens = declaredValueTokens(table, decl, tokenCache);
-        useTokens.set(decl, parsedTokens);
-        collectOpaqueIdents(decl.value, opaque, parsedTokens);
+      for (const index of useSites) {
+        const value = valueOf(index);
+        const parsedTokens = tokensOf(index, value);
+        useValues.set(index, value);
+        useTokens.set(index, parsedTokens);
+        collectOpaqueIdents(value, opaque, parsedTokens);
       }
 
       // Rewrite references and collect live symbols. A name is spelled as the
       // encoder wrote it, so its token keeps that text.
       const liveSymbols = new Set();
-      for (const decl of useSites) {
+      for (const index of useSites) {
+        const value = /** @type {string} */ (useValues.get(index));
         const parsedTokens = /** @type {readonly CSSToken[]} */ (
-          useTokens.get(decl)
+          useTokens.get(index)
         );
-        const buffer = new ValueBuffer(decl.value, undefined, parsedTokens);
+        const buffer = new ValueBuffer(value, undefined, parsedTokens);
         buffer.replaceRanges(
           tokenEdits(
             parsedTokens,
@@ -120,21 +168,22 @@ export default function counterReducer(encoder) {
         );
         // Normalize whitespace between counter-function arguments only when
         // the value is rewritten; leave untouched declarations as they are.
-        if (buffer.text() === decl.value) continue;
+        if (buffer.text() === value) continue;
         buffer.replaceRanges(
           tokenEdits(buffer.tokens(), (token) =>
             token[0] === TokenType.Whitespace ? whitespace() : undefined
           )
         );
-        table.write(decl, buffer.tokens());
+        writeValue(records, context, index, buffer.tokens());
       }
 
       if (liveSymbols.size > 0) {
-        for (const decl of definitionSites) {
+        for (const index of definitionSites) {
+          const value = /** @type {string} */ (defValues.get(index));
           const parsedTokens = /** @type {readonly CSSToken[]} */ (
-            defTokens.get(decl)
+            defTokens.get(index)
           );
-          const buffer = new ValueBuffer(decl.value, undefined, parsedTokens);
+          const buffer = new ValueBuffer(value, undefined, parsedTokens);
           buffer.replaceRanges(
             tokenEdits(
               parsedTokens,
@@ -149,7 +198,9 @@ export default function counterReducer(encoder) {
               REVERSED_FUNCTIONS
             )
           );
-          if (buffer.text() !== decl.value) table.write(decl, buffer.tokens());
+          if (buffer.text() !== value) {
+            writeValue(records, context, index, buffer.tokens());
+          }
         }
       }
 

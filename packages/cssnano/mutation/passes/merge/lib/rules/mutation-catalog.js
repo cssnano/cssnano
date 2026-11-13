@@ -24,14 +24,14 @@ export const target = source('lastWriteIndex.js');
 // node --test expands this glob; a directory path would resolve to a single
 // entry module instead of running every split test file.
 export const test = new URL(
-  '../../../../../test/passes/merge/lib/rules/*.js',
+  '../../../../../test/passes/{merge/lib/rules,ir}/*.js',
   import.meta.url
 ).href;
 
 export const mutations = [
   {
     name: 'treat logical and physical longhands as unrelated',
-    target: source('propertyWrites.js'),
+    target: irSource('propertyWrites.js'),
     find: '      if (opposite)',
     replace: '      if (false)',
   },
@@ -49,25 +49,25 @@ export const mutations = [
   },
   {
     name: 'join at-rules of one name whatever their conditions',
-    target: source('sameContainer.js'),
-    find: '        : step(trie, block.params);',
+    target: irSource('sameContainer.js'),
+    find: '        : step(trie, block.preludeId);',
     replace: '        : trie;',
   },
   {
     name: 'join distinct anonymous layers',
-    target: source('sameContainer.js'),
+    target: irSource('sameContainer.js'),
     find: '? step(step(trie, ANONYMOUS), block.index)',
     replace: '? step(trie, ANONYMOUS)',
   },
   {
     name: 'a block takes its context without the enclosing blocks',
-    target: source('sameContainer.js'),
+    target: irSource('sameContainer.js'),
     find: 'let trie = step(step(keys.root, CONTEXT), parentContext);',
     replace: 'let trie = step(keys.root, CONTEXT);',
   },
   {
     name: 'rules nested in rules of different selectors share a context',
-    target: source('sameContainer.js'),
+    target: irSource('sameContainer.js'),
     find: '    for (const id of /** @type {RuleRecord} */ (block).selectorIds)\n      trie = step(trie, id);',
     replace: '',
   },
@@ -97,25 +97,25 @@ export const mutations = [
   },
   {
     name: 'key vendor-prefixed pseudo-elements like standard ones',
-    target: source('elementKeys.js'),
+    target: irSource('elementKeys.js'),
     find: '    if (isVendorExtension(pseudoName)) return null;\n',
     replace: '',
   },
   {
     name: 'a rule record skips the check of its declarations against the tree',
-    target: source('treeMatch.js'),
+    target: irSource('treeMatch.js'),
     find: '!describesNode(tokenLists, item, nodeOf(nodes, item.index))',
     replace: 'false',
   },
   {
     name: 'a removal of a rule that leaves it in its chain',
-    target: source('treeEdits.js'),
-    find: '  records.detach(index);\n',
-    replace: '',
+    target: irSource('treeEdits.js'),
+    find: 'export function remove(records, index) {\n  records.detach(index);\n',
+    replace: 'export function remove(records, index) {\n',
   },
   {
     name: 'a removal of a rule set that leaves its rules in their chains',
-    target: source('treeEdits.js'),
+    target: irSource('treeEdits.js'),
     find: '    arena.detach(index);\n',
     replace: '',
   },
@@ -127,19 +127,19 @@ export const mutations = [
   },
   {
     name: 'a move before a sibling that leaves the moved entry in its old chain',
-    target: source('blockRecords.js'),
+    target: irSource('blockRecords.js'),
     find: '    this.detach(index);\n    this.#linkBefore(sibling, index);\n',
     replace: '    this.#linkBefore(sibling, index);\n',
   },
   {
     name: 'a clone that drops the support its source required',
-    target: source('arenaEdits.js'),
+    target: irSource('arenaEdits.js'),
     find: '  record.inheritedSupport = item.inheritedSupport;\n',
     replace: '',
   },
   {
     name: 'a move of children that unlinks the moved entries without linking them',
-    target: source('arenaEdits.js'),
+    target: irSource('arenaEdits.js'),
     find: '    records.moveLast(target, entry);\n',
     replace: '    records.detach(entry);\n',
   },
@@ -152,39 +152,39 @@ export const mutations = [
   },
   {
     name: 'the ownership check accepts a block whose count differs from its chain',
-    target: source('recordsCheck.js'),
+    target: irSource('recordsCheck.js'),
     find: '    if (count !== links.childCount(block.index)) throw new Error(OUT_OF_STEP);\n  };\n  reach(records.root);\n  visitChildren(records.root);',
     replace: '  };\n  reach(records.root);\n  visitChildren(records.root);',
   },
   {
     name: 'a removal of declarations stamps no container',
-    target: source('blockLinks.js'),
+    target: irSource('blockLinks.js'),
     find: '    this.#stamp(block);\n    this.#parent[index] = -1;\n',
     replace: '    this.#parent[index] = -1;\n',
   },
   {
     name: 'write-back keeps the parent of a child that moves between rules',
-    target: source('writeBack.js'),
+    target: irSource('writeBack.js'),
     find: '    for (const node of children) node.parent = undefined;\n',
     replace: '',
   },
   {
     name: 'write-back appends to a rule that keeps its old children',
-    target: source('writeBack.js'),
+    target: irSource('writeBack.js'),
     find: '    container.removeAll();\n  }\n  for (const { container, children, leading } of rebuilt) {',
     replace:
       "    if (container.type !== 'rule') container.removeAll();\n  }\n  for (const { container, children, leading } of rebuilt) {",
   },
   {
     name: 'write-back leaves a departed rule in its block',
-    target: source('writeBack.js'),
+    target: irSource('writeBack.js'),
     find: '  if (records.links.childCount(block.index) !== children.length) return true;\n',
     replace: '',
   },
 
   {
     name: 'an arena entry reuses the index of the entry placed before it',
-    target: source('blockRecords.js'),
+    target: irSource('blockRecords.js'),
     find: '    entry.index = /** @type {ArenaIndex} */ (this.#entries.length);',
     replace:
       '    entry.index = /** @type {ArenaIndex} */ (Math.max(0, this.#entries.length - 1));',

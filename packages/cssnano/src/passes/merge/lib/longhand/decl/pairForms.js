@@ -1,9 +1,9 @@
 import cssnanoUtils from '#utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { decodedPropertyName } from './importanceLanes.js';
-import { withoutVendorPrefix } from '../vendorPrefix.js';
+import { withoutVendorPrefix } from '../../../../ir/vendorPrefix.js';
 import { isBorderStyle, isBorderWidth, isColor } from '../validateWsc.js';
-import { isUnresolved } from '../unresolved.js';
+import { isUnresolved } from '../../../../ir/unresolved.js';
 import { isLengthValue, parseDimension } from '../lengthGrammar.js';
 import { splitValue } from '../valueComponents.js';
 

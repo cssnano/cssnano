@@ -2,13 +2,18 @@ import { browserTargets, resolveTargets } from '#utils/browser-targets';
 import { walkStylesheet } from './traversal.js';
 import { TextTable } from '../values/textTable.js';
 import { walkAfterMerge } from './afterMerge.js';
+import { discardOverriddenAtRules } from './overridable.js';
+import { walkDown } from './walkDown.js';
+import rawCache from '../utils/rawCache.js';
+import { createRunContext } from '../passes/ir/runContext.js';
+import { runDriver } from '../passes/ir/runDriver.js';
 
 /**
  * A host plugin runs the stages of one run in order, at OnceExit, so the
  * plugins before it have finished. The stylesheet is walked once.
  */
 
-/** @import {Plugin} from 'postcss' */
+/** @import {Plugin, Root} from 'postcss' */
 /** @import {ValueBuffer} from '../values/valueBuffer.js' */
 
 /**
@@ -58,14 +63,6 @@ import { walkAfterMerge } from './afterMerge.js';
  */
 
 /**
- * A pass that runs over the stylesheet after the walk, with the browsers of the
- * run, the options of its entry, the result for its messages and the text table
- * the walk filled. `targets` is set when the pass reads
- * the browser targets; otherwise it gets none.
- * @typedef {{pass: (css: import('postcss').Root, browsers: readonly string[], options: Record<PropertyKey, unknown>, result: import('postcss').Result, table: TextTable) => void, options: Record<PropertyKey, unknown>, targets: boolean}} PassRun
- */
-
-/**
  * A whole-stylesheet transform that the walk runs. `create` gets the options of
  * the entry and returns the options the walk runs the transform with, or null
  * when the transform is off. `create` is a method for the same reason as in
@@ -75,11 +72,22 @@ import { walkAfterMerge } from './afterMerge.js';
  */
 
 /**
- * An advanced transform, which edits the symbol lists that the walk after
- * merge collected, with the options its entry's `create` returned. `remove`
- * removes a node and, with discardEmpty on, each ancestor it empties. `table`
- * gives the selector tokens the walk stored.
- * @typedef {(lists: import('./symbolLists.js').SymbolLists, options: Record<PropertyKey, unknown>, remove: (node: import('postcss').ChildNode) => void, table: TextTable) => void} SymbolTransform
+ * An advanced transform over the records, which edits the lists of arena
+ * indices that the walk after merge collected, with the options its entry's
+ * `create` returned. `remove` removes an entry and, with discardEmpty on, each
+ * ancestor it empties. It runs before the end of the run.
+ * @typedef {(lists: import('./symbolLists.js').RecordSymbolLists, options: Record<PropertyKey, unknown>, remove: (index: import('../passes/ir/blockRecord.js').ArenaIndex) => void, records: import('../passes/ir/blockRecords.js').BlockRecords, context: import('../passes/ir/runContext.js').RunContext) => void} SymbolTransform
+ */
+
+/**
+ * A symbol transform with the options its entry's `create` returned.
+ * @typedef {{transform: SymbolTransform, options: Record<PropertyKey, unknown>}} SymbolEntry
+ */
+
+/**
+ * The merge of a run: its options, with the browser targets, and its runner,
+ * which the preset gives so the host does not import the merge pass.
+ * @typedef {{options: Record<PropertyKey, unknown>, runner: import('../passes/merge/index.js').MergeRunner}} Merge
  */
 
 /**
@@ -89,7 +97,7 @@ import { walkAfterMerge } from './afterMerge.js';
  */
 
 /**
- * The browser targets of a member or pass, resolved once for each browserTargets
+ * The browser targets of a member or the merge, resolved once for each browserTargets
  * object that a file's members share.
  * @param {Map<unknown, readonly string[]>} resolutions the targets resolved so far for one file
  * @param {Record<PropertyKey, unknown>} options
@@ -110,23 +118,74 @@ function targetsOf(resolutions, options, result) {
 const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
 
 /**
+ * One stylesheet's run over the records: the build, the discard of overridden
+ * at-rules, the merge transforms when the merge is on, the walk after merge over
+ * the records, then the end, which writes. The raw cache records last, on the
+ * written tree, so that no later transform changes what it describes.
+ *
+ * @param {import('postcss').Root} root
+ * @param {import('postcss').Result} result
+ * @param {TextTable} table the selector tokens the walk left
+ * @param {Merge | undefined} merge the merge, absent when the merge is off
+ * @param {readonly string[]} browsers the resolved browser targets of the merge; none when it is off
+ * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the whole-stylesheet transforms of the run, by entry name
+ * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} after
+ * @param {ReadonlyMap<string, SymbolEntry>} symbols
+ */
+function runRecords(
+  root,
+  result,
+  table,
+  merge,
+  browsers,
+  transforms,
+  after,
+  symbols
+) {
+  const support = merge ? merge.runner.support(browsers) : undefined;
+  const context = createRunContext(table, undefined, support?.features);
+  const state = runDriver.build(root, context);
+  if (transforms.has('discardOverridden')) {
+    discardOverriddenAtRules(
+      state.records,
+      context.declarations,
+      walkDown(state.records, context)
+    );
+  }
+  if (merge && support) {
+    merge.runner.transforms(state.records, browsers, context, {
+      rules: /** @type {boolean | undefined} */ (merge.options.rules),
+      support,
+    });
+  }
+  walkAfterMerge(state, after, symbols, merge && browsers);
+  runDriver.end(state, {
+    browsers,
+    folded: merge !== undefined,
+    result,
+  });
+  if (after.has('rawCache')) rawCache(result);
+}
+
+/**
  * @param {readonly HostMember[]} members the stages of one run, in order
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
  *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
- * @param {ReadonlyMap<string, PassRun>} [passes] the passes that run after the walk, by entry name
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
- *   the walk after the passes runs, by entry name; a missing name is disabled
- * @param {ReadonlyMap<string, {transform: SymbolTransform, options: Record<PropertyKey, unknown>}>} [symbols]
- *   the advanced transforms that run over the lists of the walk after the passes, in order
+ *   the walk after the merge runs, by entry name; a missing name is disabled
+ * @param {ReadonlyMap<string, SymbolEntry>} [symbols]
+ *   the advanced transforms that run over the lists of the walk after the merge, in order
+ * @param {Merge} [merge] the merge options with the browser targets, and the merge run; absent when the merge is off
  * @returns {Plugin}
  */
 export function hostPlugin(
   members,
   transforms = new Map(),
-  passes = new Map(),
   after = new Map(),
-  symbols = new Map()
+  symbols = new Map(),
+  merge = undefined
 ) {
+  const hasStages = members.length > 0 || transforms.size > 0;
   // Each member keeps its stage per targets array. The frozen targets of equal
   // browserslist results are one array, so the memo serves every stylesheet.
   // A member that reads no targets is created now, under noTargets.
@@ -160,22 +219,28 @@ export function hostPlugin(
         const stage = memo.get(resolved);
         if (stage) stages.push(stage);
       }
-      const runs = [...passes.values()].map(({ pass, options, targets }) => ({
-        pass,
-        options,
-        browsers: targets ? targetsOf(resolutions, options, result) : noTargets,
-      }));
+      const mergeBrowsers = merge
+        ? targetsOf(resolutions, merge.options, result)
+        : undefined;
       return {
         OnceExit(root, helpers) {
           const table = new TextTable();
-          if (members.length > 0 || transforms.size > 0) {
+          if (hasStages) {
             walkStylesheet(stages, root, helpers, transforms, table);
           }
-          for (const { pass, options, browsers } of runs) {
-            pass(root, browsers, options, helpers.result, table);
-          }
-          if (after.size > 0 || symbols.size > 0) {
-            walkAfterMerge(root, helpers.result, after, symbols, table);
+          // A run with stages builds the records, even when no merge, walk
+          // after merge or symbol transform reads them.
+          if (hasStages || merge || after.size > 0 || symbols.size > 0) {
+            runRecords(
+              root,
+              helpers.result,
+              table,
+              merge,
+              mergeBrowsers ?? noTargets,
+              transforms,
+              after,
+              symbols
+            );
           }
         },
       };

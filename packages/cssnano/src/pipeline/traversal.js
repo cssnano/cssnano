@@ -13,10 +13,6 @@ import {
   stripStrayRawSemicolon,
 } from './whitespaceRaws.js';
 import { isDefaultNamespace } from '../plugins/postcss-minify-selectors/lib/isDefaultNamespace.js';
-import {
-  discardOverriddenAtRules,
-  isOutermostOverridable,
-} from './overridable.js';
 import { contextOf, DEFAULT_NAMESPACE, withBit } from './context.js';
 import {
   commentFreeSelector,
@@ -48,7 +44,6 @@ import {
  * @property {CommentState | null} comments the comment removal of this run, or null when no stage removes comments
  * @property {boolean} defaultNamespace whether a default `@namespace` has been reached, so later rules have it in their context
  * @property {boolean} normalizeWhitespace whether normalizeWhitespace is on, which removes the stray semicolons and reattaches the escapes of blocks
- * @property {AtRule[] | null} overridable the outermost overridable at-rules in document order, or null when discardOverridden is off
  */
 
 /**
@@ -197,27 +192,6 @@ function walkRule(state, rule) {
 }
 
 /**
- * Moves the comments PostCSS kept only in the raw selector into the selector,
- * as PostCSS itself does for a comment with no whitespace beside it. Later
- * transforms rebuild selectors from `rule.selectors`, which would otherwise
- * lose them.
- *
- * @param {import('postcss').Rule} rule
- */
-function keepSelectorComments(rule) {
-  const raw = rule.raws.selector;
-  if (
-    raw === undefined ||
-    raw.value !== rule.selector ||
-    raw.raw === raw.value
-  ) {
-    return;
-  }
-  rule.selector = raw.raw;
-  delete rule.raws.selector;
-}
-
-/**
  * The comment removal of a stylesheet, from the first stage that has one.
  *
  * @param {readonly Stage[]} stages
@@ -265,7 +239,6 @@ export function walkStylesheet(stages, root, helpers, transforms, table) {
     comments: commentStateOf(stages),
     defaultNamespace: false,
     normalizeWhitespace: transforms.has('normalizeWhitespace'),
-    overridable: transforms.has('discardOverridden') ? [] : null,
   };
   root.walk((node) => {
     if (node.type === 'comment') {
@@ -273,17 +246,10 @@ export function walkStylesheet(stages, root, helpers, transforms, table) {
     } else if (node.type === 'decl') walkDeclaration(state, node);
     else if (node.type === 'atrule') {
       if (state.normalizeWhitespace) reattachBlockEscape(node);
-      if (state.overridable && isOutermostOverridable(node)) {
-        state.overridable.push(node);
-      }
       walkAtRule(state, node);
     } else if (node.type === 'rule') {
       if (state.normalizeWhitespace) reattachBlockEscape(node);
       walkRule(state, node);
-      keepSelectorComments(node);
     }
   });
-  // The overridable at-rules are compared after the walk has folded their
-  // preludes, so the scopes are the ones the output will have.
-  if (state.overridable) discardOverriddenAtRules(state.overridable);
 }

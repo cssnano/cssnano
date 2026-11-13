@@ -1,4 +1,7 @@
-import { firstDeclaration, nextDeclaration } from './blockChildren.js';
+import {
+  firstDeclaration,
+  nextDeclaration,
+} from '../../../ir/blockChildren.js';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
@@ -6,14 +9,14 @@ import {
   DECLARATION,
   RULE,
   STYLESHEET,
-} from './blockRecord.js';
-import { PropertyWrites } from './propertyWrites.js';
-import { elementKeysOf } from './selectorReads.js';
+} from '../../../ir/blockRecord.js';
+import { PropertyWrites } from '../../../ir/propertyWrites.js';
+import { elementKeysOf } from '../../../ir/selectorReads.js';
 
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 
 // Conditional group rules hold ordinary rules whose declarations cascade as

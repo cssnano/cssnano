@@ -4,14 +4,14 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { declarationsFromRecords } from '../../../../../src/passes/merge/lib/longhand/recordDeclarations.js';
 import { RUN_END } from '../../../../../src/passes/merge/lib/longhand/blockDeclarations.js';
-import { commitDeclarations } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { commitDeclarations } from '../../../../../src/passes/ir/arenaEdits.js';
 import { buildTestRecords, ruleRecordOf } from '../rules/liveRecords.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 
 /** @import {Rule} from 'postcss' */
-/** @import {ArenaIndex} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {ArenaIndex} from '../../../../../src/passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 
 /**
  * Builds the records of `css` with the checks on, and the run's state.

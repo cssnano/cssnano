@@ -1,18 +1,18 @@
-/** @import {BlockRecords} from './blockRecords.js' */
-import { childCountOf } from './blockChildren.js';
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+import { childCountOf } from '../../../ir/blockChildren.js';
 import { minifiedLength } from '../../../ir/minifiedLength.js';
 import { findGroup } from './sharedRuleGroup.js';
-import { combineSummaries, extendSummaries } from './selectorList.js';
-import { listTextLength } from './selectorReads.js';
+import { combineSummaries, extendSummaries } from '../../../ir/selectorList.js';
+import { listTextLength } from '../../../ir/selectorReads.js';
 import {
   moveDeclarations,
   placeBefore,
   removeDeclarations,
-} from './arenaEdits.js';
-import { RuleRecord } from './ruleRecord.js';
+} from '../../../ir/arenaEdits.js';
+import { RuleRecord } from '../../../ir/ruleRecord.js';
 
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
-/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from '../../../ir/blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
 /** @import MergeState from './mergeState.js' */
@@ -132,6 +132,11 @@ export function buildMergedRule(
     browsers
   );
   receivingRecord.template = template;
+  // The merged rule prints the space and the semicolon of its template.
+  const printed = /** @type {RuleRecord} */ (records.rule(template));
+  receivingRecord.between = printed.between;
+  receivingRecord.after = printed.after;
+  receivingRecord.semicolon = printed.semicolon;
   const sharedIndices = shared.map((declaration) => declaration.index);
   // The merged rule takes the place before the later rule, so no rule holds
   // children while it is unlinked. The sweep's replacement keeps that place.

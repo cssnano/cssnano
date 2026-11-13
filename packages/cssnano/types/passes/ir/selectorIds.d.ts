@@ -1,4 +1,6 @@
+import type { CSSToken } from '@csstools/css-tokenizer';
 import type { TokenLists, TokenListId } from './tokenLists.js';
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenLists, TokenListId} from './tokenLists.js' */
 /**
  * The selectors of one build, each with the id that its text gives on first
@@ -11,8 +13,9 @@ export declare class SelectorIds {
     /**
      * @param {TokenLists} tokenLists the run's lists, which take the tokens of a selector new to the build
      * @param {string} selector
+     * @param {readonly CSSToken[]} [tokens] the tokens of `selector`, when the caller holds them
      * @return {TokenListId} the id of the selector, given at its first use
      */
-    idOf(tokenLists: TokenLists, selector: string): TokenListId;
+    idOf(tokenLists: TokenLists, selector: string, tokens?: readonly CSSToken[]): TokenListId;
 }
 //# sourceMappingURL=selectorIds.d.ts.map

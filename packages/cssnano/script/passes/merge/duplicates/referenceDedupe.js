@@ -14,6 +14,8 @@ import {
   step,
 } from './referenceHelpers.js';
 
+import { list } from 'postcss';
+
 /** @import {AnyNode, Container, Declaration} from 'postcss' */
 
 // Identical preludes apply their contents under the same condition; other
@@ -86,7 +88,7 @@ function computeNodeId(interner, node) {
     // An important comment is kept by minifiers, so its text tells blocks apart.
     if (isImportantComment(node.text)) trie = step(trie, node.text);
   } else if (node.type === 'rule') {
-    trie = step(trie, node.selectors.join(','));
+    trie = step(trie, writtenSelectorKey(node));
   } else if (node.type === 'atrule') {
     trie = step(trie, node.name);
     trie = step(trie, node.params);
@@ -131,6 +133,20 @@ function childScope(scope, key) {
 }
 
 /**
+ * The key of a rule's selector items as written, so a comment that PostCSS
+ * keeps in the selector tells rules apart, as the merge pass's ids do.
+ *
+ * @param {import('postcss').Rule} rule
+ * @return {string}
+ */
+function writtenSelectorKey(rule) {
+  const raw = rule.raws.selector;
+  const written =
+    raw !== undefined && raw.value === rule.selector ? raw.raw : rule.selector;
+  return list.comma(written).join(',');
+}
+
+/**
  * @param {import('postcss').Rule} rule
  * @param {Map<string, Map<number, import('postcss').AnyNode>>} seenRuleDecls
  * @param {Interner} interner
@@ -138,11 +154,11 @@ function childScope(scope, key) {
  */
 function dedupeRule(rule, seenRuleDecls, interner) {
   let isSubsequent = true;
-  let declMap = seenRuleDecls.get(rule.selectors.join(','));
+  let declMap = seenRuleDecls.get(writtenSelectorKey(rule));
   if (!declMap) {
     isSubsequent = false;
     declMap = new Map();
-    seenRuleDecls.set(rule.selectors.join(','), declMap);
+    seenRuleDecls.set(writtenSelectorKey(rule), declMap);
   }
 
   let hasContainers = false;

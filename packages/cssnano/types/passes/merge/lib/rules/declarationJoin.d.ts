@@ -1,14 +1,14 @@
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 import type MergeState from './mergeState.js';
-import type { ArenaIndex, BlockRecord, ChainPosition } from './blockRecord.js';
-import type { BlockRecords } from './blockRecords.js';
-import type { RuleRecord } from './ruleRecord.js';
+import type { ArenaIndex, BlockRecord, ChainPosition } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {TokenLists} from '../../../ir/tokenLists.js' */
 /** @import MergeState from './mergeState.js' */
-/** @import {ArenaIndex, BlockRecord, ChainPosition} from './blockRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {ArenaIndex, BlockRecord, ChainPosition} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /**
  * A rule made only of declarations. Comments and nested rules would be
  * stranded or reordered by moving declarations out of the rule.

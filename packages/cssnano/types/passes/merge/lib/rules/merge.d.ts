@@ -1,10 +1,10 @@
-import type { RuleRecord } from './ruleRecord.js';
-import type { ArenaIndex } from './blockRecord.js';
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
 import type RuleSequence, { Placement } from './ruleSequence.js';
 import type DeclarationScan from './declarationScan.js';
 import type MergeState from './mergeState.js';
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {ArenaIndex, BlockRecord} from '../../../ir/blockRecord.js' */
 /** @import RuleSequence, {Placement} from './ruleSequence.js' */
 /** @import DeclarationScan from './declarationScan.js' */
 /** @import MergeState from './mergeState.js' */

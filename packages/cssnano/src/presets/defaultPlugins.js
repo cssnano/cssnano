@@ -17,7 +17,7 @@ import postcssNormalizeUnicode from '#postcss-normalize-unicode';
 import normalizeDisplayValues from '#postcss-normalize-display-values';
 import normalizeTimingFunctions from '#postcss-normalize-timing-functions';
 /** @import {EntryFor} from './configurePlugins.js' */
-import { mergePass, rulesGuard } from '../passes/merge/index.js';
+import { mergeRunner, rulesGuard } from '../passes/merge/index.js';
 import {
   discardCommentsEntry,
   discardEmptyEntry,
@@ -71,7 +71,7 @@ const mergeEntry = /** @satisfies {EntryFor<DefaultPluginOptions, 'merge'>} */ (
     {
       targets: true,
       transform: true,
-      pass: mergePass,
+      merge: mergeRunner,
       optionKeys: ['rules'],
       guards: { rules: rulesGuard },
     },

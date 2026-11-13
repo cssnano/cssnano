@@ -1,5 +1,5 @@
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import type { ArenaIndex } from './blockRecord.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
 import type RuleSequence, { Placement } from './ruleSequence.js';
 import type DeclarationScan from './declarationScan.js';
 /**

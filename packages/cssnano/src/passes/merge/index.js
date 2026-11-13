@@ -6,42 +6,135 @@ import {
 } from './lib/longhand/canonicalize.js';
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
 import runMerge from './lib/rules/selectorMerger.js';
-import { buildRecords } from './lib/rules/buildRecords.js';
-import { guardWindow } from './lib/rules/windowGuard.js';
-import { assertRecordsMatchTree } from './lib/rules/treeMatch.js';
-import { fillSummaries } from './lib/rules/selectorList.js';
-import { writeBack } from './lib/rules/writeBack.js';
+import { fillSummaries } from '../ir/selectorList.js';
+import { runDriver } from '../ir/runDriver.js';
 import { createRunContext } from '../ir/runContext.js';
 import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
-/** @import {BlockRecords} from './lib/rules/blockRecords.js' */
-/** @import {Root} from 'postcss' */
+/** @import {BlockRecords} from '../ir/blockRecords.js' */
+/** @import {Result, Root} from 'postcss' */
+/** @import {RunContext} from '../ir/runContext.js' */
+
+/** The merge transforms take the records, the browser targets and the run context. */
+/** @typedef {(records: BlockRecords, browsers: readonly string[], context: RunContext) => void} RecordTransform */
 
 /**
- * Builds the records of the stylesheet, runs each transform on them in order,
- * and writes them back once.
+ * Folds the selector summaries, which only rule merging reads, then runs the
+ * transforms over the records in order.
+ *
+ * @param {BlockRecords} records
+ * @param {readonly string[]} browsers
+ * @param {RunContext} context
+ * @param {readonly RecordTransform[]} transforms
+ * @return {void}
+ */
+function runTransforms(records, browsers, context, transforms) {
+  fillSummaries(records, context.tokenLists, browsers);
+  for (const transform of transforms) transform(records, browsers, context);
+}
+
+/**
+ * Runs the transforms over one stylesheet as one run of the driver.
  *
  * @param {Root} css
  * @param {readonly string[]} browsers
- * @param {ReturnType<typeof createRunContext>} context
- * @param {readonly ((records: BlockRecords, browsers: readonly string[], context: ReturnType<typeof createRunContext>) => void)[]} transforms
+ * @param {RunContext} context
+ * @param {readonly RecordTransform[]} transforms
+ * @param {Result} [result] the result whose messages the run pushes to
  * @return {void}
  */
-function runRecords(css, browsers, context, transforms) {
-  const { records, nodes } = buildRecords(css, context);
-  // Every rule's selector summaries are folded before any transform, so no
-  // read fills one, and the tree check finds them even when rules are not merged.
-  fillSummaries(records, context.tokenLists, browsers);
-  const release = context.consistencyChecks
-    ? guardWindow(context.textTable)
-    : undefined;
-  try {
-    for (const transform of transforms) transform(records, browsers, context);
-  } finally {
-    release?.();
-  }
-  writeBack(records, nodes, context.tokenLists, context.textTable);
-  assertRecordsMatchTree(records, nodes, context.tokenLists, browsers);
+function runOver(css, browsers, context, transforms, result) {
+  const state = runDriver.build(css, context);
+  runTransforms(state.records, browsers, context, transforms);
+  runDriver.end(state, { browsers, folded: true, result });
+}
+
+/**
+ * The merge transforms over the records, in the order the default preset runs
+ * them: canonicalize every declaration block, remove duplicates, merge rules,
+ * then canonicalize again every block still in the stylesheet.
+ *
+ * Canonicalizing is not idempotent: a block the first round reduced can reduce
+ * again, so every block still in the stylesheet gets the second round.
+ *
+ * @param {BlockRecords} records the records of a built stylesheet
+ * @param {readonly string[]} browsers the resolved browser targets
+ * @param {RunContext} context the run's context
+ * @param {{rules?: boolean, support?: ReturnType<typeof targetSupportOf>}} [options]
+ *   whether rules are merged, and the targets' support when the caller has it
+ * @return {void}
+ */
+export function mergeRecords(
+  records,
+  browsers,
+  context,
+  { rules = true, support = targetSupportOf(browsers) } = {}
+) {
+  const longhand = longhandContext(
+    support.placeShorthands,
+    support.boxSupport,
+    support.pairShorthands,
+    context
+  );
+  runTransforms(records, browsers, context, [
+    (block) => canonicalizeRecords(block, longhand),
+    ...(rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY),
+    (block) => canonicalizeRecords(block, longhand),
+  ]);
+}
+
+export { targetSupportOf };
+
+/**
+ * The merge run of a preset, which the host runs between its walk and the walk
+ * after merge. `support` gives the targets' support, whose features the host
+ * gives the run's context; `transforms` runs the merge transforms over the
+ * build. The host builds and ends the run, so it imports nothing of the merge.
+ *
+ * @typedef {{
+ *   support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>,
+ *   transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean, support: ReturnType<typeof targetSupportOf>}) => void,
+ * }} MergeRunner
+ */
+
+/** @type {MergeRunner} */
+export const mergeRunner = Object.freeze({
+  support: targetSupportOf,
+  transforms: mergeRecords,
+});
+
+/**
+ * A merge run of the named transforms alone, in order, for a test that pins
+ * one transform without the preset's order. Longhand canonicalizing takes the
+ * support of its run.
+ *
+ * @param {...('mergeLonghand' | 'discardDuplicates' | 'mergeRules')} names
+ * @return {MergeRunner}
+ */
+export function transformRunner(...names) {
+  return Object.freeze({
+    support: targetSupportOf,
+    transforms: (records, browsers, context, { support }) => {
+      /** @type {RecordTransform[]} */
+      const transforms = [];
+      for (const name of names) {
+        if (name === 'mergeLonghand') {
+          const longhand = longhandContext(
+            support.placeShorthands,
+            support.boxSupport,
+            support.pairShorthands,
+            context
+          );
+          transforms.push((block) => canonicalizeRecords(block, longhand));
+        } else {
+          transforms.push(
+            ...(name === 'mergeRules' ? MERGE_ONLY : DEDUPE_ONLY)
+          );
+        }
+      }
+      runTransforms(records, browsers, context, transforms);
+    },
+  });
 }
 
 /** The transforms that run over the records, in order, for each path of the pass. */
@@ -50,12 +143,8 @@ const DEDUPE_ONLY = Object.freeze([discardDuplicates]);
 const MERGE_ONLY = Object.freeze([runMerge]);
 
 /**
- * The merge transforms over one stylesheet, in the order the default preset
- * runs them: canonicalize every declaration block, remove duplicates, merge
- * rules, then canonicalize again every block still in the stylesheet.
- *
- * Removing duplicates keeps the last copy, so running it first can delete the
- * declaration that let an earlier one be dropped as overridden.
+ * The merge transforms over one stylesheet, as one run of the driver: build,
+ * the merge transforms, then the end of the run.
  *
  * Longhand merging and duplicate removal always run. Rule merging runs unless
  * `rules` is false.
@@ -63,7 +152,7 @@ const MERGE_ONLY = Object.freeze([runMerge]);
  * @param {Root} css
  * @param {readonly string[]} browsers the resolved browser targets
  * @param {{ rules?: boolean }} [options]
- * @param {unknown} [_result] the PostCSS result, which the merge does not use
+ * @param {Result} [result] the PostCSS result, whose messages the run pushes to
  * @param {TextTable} [textTable] the selector tokens the host walk left
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {void}
@@ -72,45 +161,19 @@ export function mergePass(
   css,
   browsers,
   { rules = true } = {},
-  _result,
+  result,
   textTable,
   consistencyChecks
 ) {
   const support = targetSupportOf(browsers);
-  runTransforms(
-    css,
-    browsers,
-    support,
-    rules,
-    createRunContext(textTable, consistencyChecks, support.features)
+  const context = createRunContext(
+    textTable,
+    consistencyChecks,
+    support.features
   );
-}
-
-/**
- * Runs the merge transforms of `mergePass` over one stylesheet with its run context.
- * Canonicalizing is not idempotent: a block the first round reduced can reduce
- * again, so every block still in the stylesheet gets the second round, as the
- * second merge-longhand run of the default preset gave it.
- *
- * @param {Root} css
- * @param {readonly string[]} browsers
- * @param {ReturnType<typeof targetSupportOf>} support what the targets support, from `browsers`
- * @param {boolean} rules whether rules are merged
- * @param {ReturnType<typeof createRunContext>} context
- * @return {void}
- */
-function runTransforms(css, browsers, support, rules, context) {
-  const longhand = longhandContext(
-    support.placeShorthands,
-    support.boxSupport,
-    support.pairShorthands,
-    context
-  );
-  runRecords(css, browsers, context, [
-    (records) => canonicalizeRecords(records, longhand),
-    ...(rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY),
-    (records) => canonicalizeRecords(records, longhand),
-  ]);
+  const state = runDriver.build(css, context);
+  mergeRecords(state.records, browsers, context, { rules, support });
+  runDriver.end(state, { browsers, folded: true, result });
 }
 
 /** The guard for the `rules` option, shared with the preset that validates it. */
@@ -169,12 +232,12 @@ const transformHooks = Object.freeze({
       support.pairShorthands,
       context
     );
-    runRecords(css, browsers, context, [
+    runOver(css, browsers, context, [
       (records) => canonicalizeRecords(records, longhand),
     ]);
   },
-  discardDuplicates(css, _browsers, consistencyChecks) {
-    runRecords(
+  discardDuplicates(css, browsers, consistencyChecks) {
+    runOver(
       css,
       [],
       createRunContext(undefined, consistencyChecks),
@@ -182,7 +245,7 @@ const transformHooks = Object.freeze({
     );
   },
   mergeRules(css, browsers, consistencyChecks) {
-    runRecords(
+    runOver(
       css,
       browsers,
       createRunContext(undefined, consistencyChecks),
@@ -190,7 +253,7 @@ const transformHooks = Object.freeze({
     );
   },
   dedupeThenMerge(css, browsers, consistencyChecks) {
-    runRecords(
+    runOver(
       css,
       browsers,
       createRunContext(undefined, consistencyChecks),

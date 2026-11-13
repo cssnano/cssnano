@@ -1,8 +1,8 @@
 import type { BoxSupport } from './targetSupport.js';
 import type { RunContext } from '../../../ir/runContext.js';
 import type { BlockDeclarations } from './blockDeclarations.js';
-import type { BlockRecords } from '../rules/blockRecords.js';
-import type { ArenaIndex } from '../rules/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
 export type Block = {
     container: ArenaIndex;
     list: BlockDeclarations;

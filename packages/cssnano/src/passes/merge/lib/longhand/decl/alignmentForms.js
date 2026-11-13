@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
 import { isCssWideKeyword } from '../isCssWideKeyword.js';
-import { cssWideKeywords } from '../spec.js';
+import { cssWideKeywords } from '../../../../ir/spec.js';
 import isCustomProp from '../isCustomProp.js';
 import { splitValue } from '../valueComponents.js';
 import shorthandData from '../data/shorthandIdentities.json' with { type: 'json' };

@@ -1,13 +1,17 @@
-import type { SymbolLists } from '../../pipeline/symbolLists.js';
-import type { TextTable as TextTableType } from '../../values/textTable.js';
+import type { BlockRecords } from '../../passes/ir/blockRecords.js';
+import type { RecordSymbolLists } from '../../pipeline/symbolLists.js';
+import type { RunContext } from '../../passes/ir/runContext.js';
 export type Options = {
     /**
      * The first positive integer z-index to assign, so z-indices from other sources can be overridden. (default: 1)
      */
     startIndex?: number;
 };
-/** @import {SymbolLists} from '../../pipeline/symbolLists.js' */
-/** @import {TextTable as TextTableType} from '../../values/textTable.js' */
+/** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
+/** @import {DeclarationRecord} from '../../passes/ir/declarationRecord.js' */
+/** @import {RecordSymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {RunContext} from '../../passes/ir/runContext.js' */
 /**
  * @typedef {object} Options
  * @property {number} [startIndex] The first positive integer z-index to assign, so z-indices from other sources can be overridden. (default: 1)
@@ -17,14 +21,14 @@ export type Options = {
  * integers that keep their order. Rebasing is only safe when every index is
  * a positive number, so one negative value leaves them all alone.
  *
- * @param {SymbolLists} lists
+ * @param {RecordSymbolLists} lists
  * @param {Options} options
- * @param {unknown} [_remove]
- * @param {TextTableType} [table] the text the walk stored; a standalone run
- *   has none
+ * @param {unknown} _remove
+ * @param {BlockRecords} records
+ * @param {RunContext} context
  * @return {void}
  */
-export declare function zindexSymbols(lists: SymbolLists, options: Options, _remove?: unknown, table?: TextTableType): void;
+export declare function zindexSymbols(lists: RecordSymbolLists, options: Options, _remove: unknown, records: BlockRecords, context: RunContext): void;
 /**
  * @param {Options} opts
  * @return {import('postcss').Plugin}

@@ -1,5 +1,3 @@
-/** @import {EntryFor} from './configurePlugins.js' */
-import { mergePass } from '../passes/merge/index.js';
 export type DefaultPluginOptions = {
     /**
      * Removes comments. Comments marked as important (`/*!`) stay unless `removeAll` is set.
@@ -226,7 +224,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }, "merge", {
     readonly targets: true;
     readonly transform: true;
-    readonly pass: typeof mergePass;
+    readonly merge: import("../passes/merge/index.js").MergeRunner;
     readonly optionKeys: readonly ["rules"];
     readonly guards: {
         readonly rules: Readonly<{

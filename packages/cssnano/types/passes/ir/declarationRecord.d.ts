@@ -1,10 +1,10 @@
 import type { PropertyKeys } from './propertyTable.js';
 import type { TokenListId } from './tokenLists.js';
-import type { ArenaIndex } from '../merge/lib/rules/blockRecord.js';
+import type { ArenaIndex } from './blockRecord.js';
 /** @import {PropertyKeys} from './propertyTable.js' */
 /** @import {TokenListId} from './tokenLists.js' */
-/** @import {ArenaIndex} from '../merge/lib/rules/blockRecord.js' */
-import { DECLARATION } from '../merge/lib/rules/blockRecord.js';
+/** @import {ArenaIndex} from './blockRecord.js' */
+import { DECLARATION } from './blockRecord.js';
 /**
  * One declaration of a merge run, with the facts its records keep. Rule
  * merging moves and removes declarations but never changes their property,
@@ -50,6 +50,29 @@ export declare class DeclarationRecord {
      * @type {ReadonlySet<string> | null}
      */
     inheritedSupport: ReadonlySet<string> | null;
+    /**
+     * The character that PostCSS's raw value keeps after the value, which a
+     * trailing backslash can escape: null when the node keeps no raw past the
+     * value, and '' when the raw does not start with the value.
+     *
+     * @type {string | null}
+     */
+    rawAfterValue: string | null;
+    /**
+     * Whether the value as written holds non-ASCII text when the value list is
+     * the cleaned value, so a comment the list drops may hold that text alone.
+     * The charset decision reads it; a declaration an edit made holds false.
+     *
+     * @type {boolean}
+     */
+    writtenNonAscii: boolean;
+    /**
+     * The list of the text as written, when the identity fields do not spell it;
+     * -1 when they do. Set at the build, and reset by every edit of the identity.
+     *
+     * @type {TokenListId | -1}
+     */
+    writtenList: TokenListId | -1;
     /**
      * Whether an edit changed the declaration, so write-back must write it. The
      * build sets nothing.

@@ -6,10 +6,10 @@ import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../../../src/passes/merge/lib/rules/scan.js';
-import { writeBack } from '../../../../../src/passes/merge/lib/rules/writeBack.js';
+import { writeBack } from '../../../../../src/passes/ir/writeBack.js';
 
 /** @import {Container, Root} from 'postcss' */
-/** @import {BlockRecords} from '../../../../../src/passes/merge/lib/rules/blockRecords.js' */
+/** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 
 /**
  * Makes each rule's `parent` and each block's `nodes` throw when read or

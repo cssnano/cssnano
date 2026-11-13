@@ -1,12 +1,12 @@
 import type { PropertyKeys } from '../../../ir/propertyTable.js';
-import type { BlockRecords } from './blockRecords.js';
-import type { BlockRecord, NodeEntry } from './blockRecord.js';
-import type { RuleRecord } from './ruleRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { BlockRecord, NodeEntry } from '../../../ir/blockRecord.js';
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
 /** @import {PropertyKeys} from '../../../ir/propertyTable.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
-/** @import {BlockRecord, NodeEntry} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /**
  * A table of the latest position at which each property was declared among

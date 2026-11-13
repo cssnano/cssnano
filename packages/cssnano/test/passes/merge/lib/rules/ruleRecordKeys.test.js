@@ -4,8 +4,8 @@ import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
 import {
   absorbEarlier,
   addSelectors,
-} from '../../../../../src/passes/merge/lib/rules/selectorList.js';
-import { elementKeysOf } from '../../../../../src/passes/merge/lib/rules/selectorReads.js';
+} from '../../../../../src/passes/ir/selectorList.js';
+import { elementKeysOf } from '../../../../../src/passes/ir/selectorReads.js';
 import { foldedRules } from './summaryFixtures.js';
 import { selectorIdsOf } from './selectorIdsOf.js';
 

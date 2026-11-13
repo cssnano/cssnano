@@ -1,19 +1,25 @@
-import type { TextTable } from '../../../values/textTable.js';
+import type { ArenaIndex } from '../../../passes/ir/blockRecord.js';
+import type { BlockRecords } from '../../../passes/ir/blockRecords.js';
+import type { TokenLists } from '../../../passes/ir/tokenLists.js';
 declare class LayerRegistry {
-    table: TextTable;
+    records: BlockRecords;
+    tokenLists: TokenLists;
     nextIndex: number;
     /** @type {Map<string, { index: number, children: LayerRegistry }>} */
     layers: Map<string, {
         index: number;
         children: LayerRegistry;
     }>;
-    /** @type {Map<import('postcss').AtRule, { index: number, children: LayerRegistry }>} */
-    entries: Map<import('postcss').AtRule, {
+    /** @type {Map<ArenaIndex, { index: number, children: LayerRegistry }>} */
+    entries: Map<ArenaIndex, {
         index: number;
         children: LayerRegistry;
     }>;
-    /** @param {TextTable} table the text the walk stored */
-    constructor(table: TextTable);
+    /**
+     * @param {BlockRecords} records the stylesheet the layers are in
+     * @param {TokenLists} tokenLists the run's token lists, which the preludes name
+     */
+    constructor(records: BlockRecords, tokenLists: TokenLists);
     /**
      * @param {string} name
      * @return {{ index: number, children: LayerRegistry }}
@@ -39,10 +45,10 @@ declare class LayerRegistry {
      * inside still order beneath it through the child registry. A rule keeps one
      * entry, so its name is read once however many definitions it holds.
      *
-     * @param {import('postcss').AtRule} layerRule
+     * @param {ArenaIndex} layerRule
      * @return {{ index: number, children: LayerRegistry }}
      */
-    entryFor(layerRule: import('postcss').AtRule): {
+    entryFor(layerRule: ArenaIndex): {
         index: number;
         children: LayerRegistry;
     };
@@ -51,15 +57,15 @@ declare class LayerRegistry {
      * nested beneath any enclosing layers, so later lookups observe the real
      * layer tree.
      *
-     * @param {import('postcss').AtRule} layerRule
+     * @param {ArenaIndex} layerRule
      * @return {void}
      */
-    declareLayerAtRule(layerRule: import('postcss').AtRule): void;
+    declareLayerAtRule(layerRule: ArenaIndex): void;
     /**
-     * @param {import('postcss').Node} node
+     * @param {ArenaIndex} index
      * @return {number[]}
      */
-    getPriority(node: import('postcss').Node): number[];
+    getPriority(index: ArenaIndex): number[];
 }
 /**
  * @param {{ layerPriority: number[], documentIndex: number }} a
@@ -79,9 +85,9 @@ declare function compareAtRulePriority(a: {
  * stylesheet alone. An import rule is valid only before every rule except
  * `@charset` and layer statements.
  *
- * @param {import('postcss').Root} root
+ * @param {BlockRecords} records
  * @return {boolean}
  */
-declare function hasImport(root: import('postcss').Root): boolean;
+declare function hasImport(records: BlockRecords): boolean;
 export { LayerRegistry, compareAtRulePriority, hasImport };
 //# sourceMappingURL=layerRegistry.d.ts.map

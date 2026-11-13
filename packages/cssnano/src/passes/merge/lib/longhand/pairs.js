@@ -1,4 +1,4 @@
-import { list } from 'postcss';
+import { splitSpace } from '../../../../values/splitTopLevel.js';
 
 /**
  * An axis shorthand takes a start and an end; a lone value sets both.
@@ -7,7 +7,7 @@ import { list } from 'postcss';
  * @return {string[]}
  */
 export function parsePair(v) {
-  const s = typeof v === 'string' ? list.space(v) : v;
+  const s = typeof v === 'string' ? splitSpace(v) : v;
   return [s[0], s[1] || s[0]];
 }
 

@@ -4,7 +4,7 @@ import {
   allPhysicalBorderProperties,
   getLevel,
 } from '../../../../../src/passes/merge/lib/longhand/decl/borderData.js';
-import { setsLonghands } from '../../../../../src/passes/merge/lib/longhand/spec.js';
+import { setsLonghands } from '../../../../../src/passes/ir/spec.js';
 
 test('a border property of a lower level that overlaps a higher-level one sets every longhand the higher-level one sets', () => {
   const violations = [];

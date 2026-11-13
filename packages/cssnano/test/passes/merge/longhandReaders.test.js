@@ -12,18 +12,16 @@ const { foldShorthandDeclaration } =
   await import('../../../src/passes/merge/lib/longhand/minifyShorthand.js');
 const { readBlock } =
   await import('./lib/longhand/helpers/declarationItems.js');
-const { buildRecords } =
-  await import('../../../src/passes/merge/lib/rules/buildRecords.js');
+const { buildRecords } = await import('../../../src/passes/ir/buildRecords.js');
 const { declarationsFromRecords } =
   await import('../../../src/passes/merge/lib/longhand/recordDeclarations.js');
 const { longstandingFeatures } =
-  await import('../../../src/passes/merge/lib/longhand/syntaxFeatures.js');
+  await import('../../../src/passes/ir/syntaxFeatures.js');
 const { boxBrowserKeeps } =
   await import('../../../src/passes/merge/lib/longhand/validateBox.js');
 const { isColor, isValidWidthStyleColor } =
   await import('../../../src/passes/merge/lib/longhand/validateWsc.js');
-const { isUnresolved } =
-  await import('../../../src/passes/merge/lib/longhand/unresolved.js');
+const { isUnresolved } = await import('../../../src/passes/ir/unresolved.js');
 const { default: isCustomProp } =
   await import('../../../src/passes/merge/lib/longhand/isCustomProp.js');
 const { componentRanges } =
@@ -173,8 +171,9 @@ suite('the longhand readers take a declaration from the text table', () => {
     );
     const before = tokenizeTotal();
     blockOf(root, table);
-    // One tokenization for the selector `a`, one for the value PostCSS cleaned.
-    assert.equal(tokenizeTotal() - before, 2);
+    // One tokenization for the selector `a` beside its items, one for the
+    // selector as written, and one for the value PostCSS cleaned.
+    assert.equal(tokenizeTotal() - before, 3);
   });
 
   test('one build of the records tokenizes a value repeated on another rule once, since the run interns the text', () => {
@@ -184,8 +183,8 @@ suite('the longhand readers take a declaration from the text table', () => {
     const { records, nodes } = buildRecords(root, run);
     declarationsFromRecords(records, run, nodes.indexOf(root.first));
     declarationsFromRecords(records, run, nodes.indexOf(root.last));
-    // Two selectors, one value.
-    assert.equal(tokenizeTotal() - before, 3);
+    // Two selectors, each tokenized as written beside its items, and one value.
+    assert.equal(tokenizeTotal() - before, 5);
   });
 
   test('parseRadiusShorthand reads the list stored for the node, without tokenizing', () => {

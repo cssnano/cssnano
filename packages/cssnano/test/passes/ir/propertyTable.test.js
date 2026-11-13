@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import data from '../../../script/passes/ir/lib/propertyGroups.json' with { type: 'json' };
 import { isConflictingProp } from '../../../script/passes/ir/lib/propertyRelations.js';
 import { conflicts } from '../../../script/passes/ir/lib/tableConflicts.js';
-import { setsLonghands } from '../../../src/passes/merge/lib/longhand/spec.js';
+import { setsLonghands } from '../../../src/passes/ir/spec.js';
 import { keysOfName } from '../../../src/passes/ir/propertyTable.js';
 
 // Every property the webref data names, plus its aliases.

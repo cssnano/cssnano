@@ -6,9 +6,9 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import {
   assertRecordsWellFormed,
   assertTemplatesHaveNodes,
-} from '../../../../../src/passes/merge/lib/rules/recordsCheck.js';
+} from '../../../../../src/passes/ir/recordsCheck.js';
 import { DeclarationRecord } from '../../../../../src/passes/ir/declarationRecord.js';
-import { RuleRecord } from '../../../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
 import {
   BlockRecord,
   COMMENT,
@@ -16,8 +16,8 @@ import {
   NO_PRELUDE,
   NodeEntry,
   STYLESHEET,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
-import { remove } from '../../../../../src/passes/merge/lib/rules/treeEdits.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
+import { remove } from '../../../../../src/passes/ir/treeEdits.js';
 import {
   blockRecordOf,
   ruleRecordOf,
@@ -27,11 +27,11 @@ import {
   nodeOfEntry,
   nodesOf,
 } from './liveRecords.js';
-import { moveRule } from '../../../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { moveRule } from '../../../../../src/passes/ir/arenaEdits.js';
 import { TextTable } from '../../../../../src/values/textTable.js';
 
-/** @import {BlockRecord} from '../../../../../src/passes/merge/lib/rules/blockRecord.js' */
-/** @import {BlockLinks} from '../../../../../src/passes/merge/lib/rules/blockLinks.js' */
+/** @import {BlockRecord} from '../../../../../src/passes/ir/blockRecord.js' */
+/** @import {BlockLinks} from '../../../../../src/passes/ir/blockLinks.js' */
 /** @import {Root, Rule} from 'postcss' */
 
 /**
@@ -138,7 +138,6 @@ test('moveLast should throw under checks when the block is outside the tree', ()
     '',
     NO_AT_RULE,
     '',
-    '',
     false,
     NO_PRELUDE
   );
@@ -146,7 +145,7 @@ test('moveLast should throw under checks when the block is outside the tree', ()
   const comment = placeUnlinked(
     state.records,
     state.records.root.index,
-    new NodeEntry(COMMENT, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
+    new NodeEntry(COMMENT, '', NO_AT_RULE, '', false, NO_PRELUDE)
   );
   assert.throws(
     () => state.records.moveLast(detached.index, comment.index),
@@ -167,12 +166,11 @@ test('assertRecordsWellFormed should accept a declaration that moveLast moves in
 test('every record header holds a template, -1 for a record that prints its own raws', () => {
   const keys = /** @type {any} */ (null);
   assert.equal(
-    new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE)
-      .template,
+    new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', false, NO_PRELUDE).template,
     -1
   );
   assert.equal(
-    new NodeEntry(COMMENT, null, NO_AT_RULE, '', '', false, NO_PRELUDE, 'x')
+    new NodeEntry(COMMENT, null, NO_AT_RULE, '', false, NO_PRELUDE, 'x')
       .template,
     -1
   );

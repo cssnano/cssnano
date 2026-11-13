@@ -183,3 +183,40 @@ describe('the context a value reducer receives', () => {
     );
   });
 });
+
+/**
+ * A reducer that replaces the value with a "*" syntax, as a stage would.
+ */
+const rewriteToAny = (
+  /** @type {import('../../src/values/valueBuffer.js').ValueBuffer} */ buffer
+) => {
+  buffer.replace(
+    0,
+    buffer.tokens().length,
+    tokenize({ css: '"*"' }).slice(0, -1)
+  );
+};
+
+describe('the syntax of @property is read as written', () => {
+  test('a stage that rewrites syntax does not change the percentage bit of initial-value', async () => {
+    // The syntax is read before any child is folded, so the rewrite comes too late to count.
+    const stage = {
+      forProperty: (property) => {
+        if (property === 'syntax') return rewriteToAny;
+        if (property === 'initial-value') return reportContext;
+        return null;
+      },
+    };
+    const host = hostPlugin([
+      { entry: { create: () => stage }, options: {}, targets: false },
+    ]);
+    const result = await postcss([host]).process(
+      '@property --x{syntax:"<color>";initial-value:red}',
+      { from: undefined }
+    );
+    assert.equal(
+      result.css,
+      '@property --x{syntax:"*";initial-value:property}'
+    );
+  });
+});

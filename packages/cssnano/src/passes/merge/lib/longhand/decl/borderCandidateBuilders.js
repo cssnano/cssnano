@@ -105,9 +105,11 @@ function addResetCandidates(cells, cellComponents, lane, rawCandidates) {
     if (sideTriples.every((t) => t[o1] === t0[o1] && t[o2] === t0[o2])) {
       const bIndexes = [0, 1, 2].map((k) => (k === c ? -1 : k));
       const bVal = minifyCells(cells, cellComponents, bIndexes);
-      const rawComp = `${cells[c]} ${cells[3 + c]} ${cells[6 + c]} ${cells[9 + c]}`;
+      const rawComp = [cells[c], cells[3 + c], cells[6 + c], cells[9 + c]]
+        .filter((cell) => cell !== '')
+        .map(toLower);
       rawCandidates.push({
-        decls: [decl('border', bVal), comp(c, minifyTrbl(toLower(rawComp)))],
+        decls: [decl('border', bVal), comp(c, minifyTrbl(rawComp))],
         rank: RESET_CANDIDATE,
       });
     }

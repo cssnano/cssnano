@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { buildRecords } from '../../../src/passes/merge/lib/rules/buildRecords.js';
-import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
+import { buildRecords } from '../../../src/passes/ir/buildRecords.js';
+import { writeBack } from '../../../src/passes/ir/writeBack.js';
 import {
   canonicalizeRecords,
   longhandContext,

@@ -3,7 +3,7 @@ import {
   processCSSFactory,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-import { pseudoElements } from '../../../../../src/passes/merge/lib/rules/pseudoSupport.js';
+import { pseudoElements } from '../../../../../src/passes/ir/pseudoSupport.js';
 import { transformPlugin } from '#passes/merge';
 const plugin = transformPlugin('mergeRules');
 
