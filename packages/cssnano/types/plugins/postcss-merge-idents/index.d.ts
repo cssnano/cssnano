@@ -1,36 +1,19 @@
-import type { ChildNode } from 'postcss';
-import type { SymbolLists } from '../../pipeline/symbolLists.js';
-import type { TextTable as TextTableType } from '../../values/textTable.js';
-export type Group = Array<{
-    name: string;
-    copies: AtRuleEntry[];
-}>;
-export type AtRuleEntry = {
-    rule: import('postcss').AtRule;
-    body?: string;
-    layerPriority: number[];
-    documentIndex: number;
-    family: string;
-    containerId: number;
-    layerKey?: string;
-    parsed: {
-        isString: boolean;
-        isReservedName: boolean;
-        key: string;
-        tokenText: string;
-    };
-};
+import type { ArenaIndex } from '../../passes/ir/blockRecord.js';
+import type { BlockRecords } from '../../passes/ir/blockRecords.js';
+import type { RecordSymbolLists } from '../../pipeline/symbolLists.js';
+import type { RunContext } from '../../passes/ir/runContext.js';
 /**
  * Merges the names of the advanced transform's lists. The walk after merge
  * collects the lists, so the transform needs no walk of its own.
  *
- * @param {SymbolLists} lists
+ * @param {RecordSymbolLists} lists
  * @param {Record<PropertyKey, unknown>} _options takes no options
- * @param {(node: ChildNode) => void} remove
- * @param {TextTableType} table the text the walk stored
+ * @param {(index: ArenaIndex) => void} remove
+ * @param {BlockRecords} records
+ * @param {RunContext} context
  * @return {void}
  */
-export declare function mergeIdentsSymbols(lists: SymbolLists, _options: Record<PropertyKey, unknown>, remove: (node: ChildNode) => void, table: TextTableType): void;
+export declare function mergeIdentsSymbols(lists: RecordSymbolLists, _options: Record<PropertyKey, unknown>, remove: (index: ArenaIndex) => void, records: BlockRecords, context: RunContext): void;
 /**
  * @return {import('postcss').Plugin}
  */

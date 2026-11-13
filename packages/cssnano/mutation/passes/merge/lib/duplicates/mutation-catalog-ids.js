@@ -1,7 +1,7 @@
 export const name = 'merge-duplicate-ids';
 
 export const target = new URL(
-  '../../../../../src/passes/merge/lib/duplicates/structuralIds.js',
+  '../../../../../src/passes/ir/structuralIds.js',
   import.meta.url
 ).href;
 // node --test expands this glob; a directory path would resolve to a single
@@ -45,7 +45,7 @@ export const mutations = [
   {
     name: 'ignore the at-rule params in its prelude id',
     target: new URL(
-      '../../../../../src/passes/merge/lib/duplicates/structuralIds.js',
+      '../../../../../src/passes/ir/structuralIds.js',
       import.meta.url
     ).href,
     find: '  path = step(path, entry.preludeId);',
@@ -54,7 +54,7 @@ export const mutations = [
   {
     name: 'ignore raws.before in the prelude id of an at-rule',
     target: new URL(
-      '../../../../../src/passes/merge/lib/duplicates/structuralIds.js',
+      '../../../../../src/passes/ir/structuralIds.js',
       import.meta.url
     ).href,
     find: '  path = step(path, trimmed(entry.before));',
@@ -63,7 +63,7 @@ export const mutations = [
   {
     name: 'ignore raws.afterName in the prelude id of an at-rule',
     target: new URL(
-      '../../../../../src/passes/merge/lib/duplicates/structuralIds.js',
+      '../../../../../src/passes/ir/structuralIds.js',
       import.meta.url
     ).href,
     find: '  return step(path, trimmed(entry.afterName));',
@@ -72,7 +72,7 @@ export const mutations = [
   {
     name: 'compare the at-rule raws untrimmed',
     target: new URL(
-      '../../../../../src/passes/merge/lib/duplicates/structuralIds.js',
+      '../../../../../src/passes/ir/structuralIds.js',
       import.meta.url
     ).href,
     find: '  return text ? text.trim() : text;',

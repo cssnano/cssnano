@@ -1,10 +1,17 @@
 import cssnanoUtils from '#utils';
-import { step } from '../../../ir/declarationKey.js';
-import { LAYER, RULE } from '../../../ir/blockRecord.js';
+import { step } from './declarationKey.js';
+import {
+  AT_RULE_STATEMENT,
+  COMMENT,
+  DECLARATION,
+  LAYER,
+  RULE,
+} from './blockRecord.js';
 
-/** @import {DeclarationKeys, Trie} from '../../../ir/declarationKey.js' */
-/** @import {BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
-/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {ArenaIndex, BlockRecord, NodeEntry} from './blockRecord.js' */
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {DeclarationKeys, Trie} from './declarationKey.js' */
+/** @import {RuleRecord} from './ruleRecord.js' */
 
 const { isImportantComment } = cssnanoUtils;
 
@@ -115,4 +122,61 @@ export function containerId(keys, layered, container, childIds) {
     path = step(path, id);
   }
   return markLayered(layered, keys.leafOf(path), declaresLayer);
+}
+
+/**
+ * The id of an entry of a body, as the duplicate pass gives an entry of its
+ * container: a declaration by its record id, a comment by its text, and a
+ * statement or a container by its structure.
+ *
+ * @param {DeclarationKeys} keys
+ * @param {Set<number>} layered
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @return {number}
+ */
+function entryIdOf(keys, layered, records, index) {
+  const entry = records.entry(index);
+  if (entry.kind === DECLARATION) return entry.id;
+  if (entry.kind === COMMENT) return commentId(keys, entry.text);
+  if (entry.kind === AT_RULE_STATEMENT) {
+    return statementId(keys, layered, /** @type {NodeEntry} */ (entry));
+  }
+  const childIds = [];
+  for (
+    let child = records.links.firstChild(index);
+    child !== -1;
+    child = records.links.nextSibling(child)
+  ) {
+    childIds.push(entryIdOf(keys, layered, records, child));
+  }
+  return containerId(
+    keys,
+    layered,
+    /** @type {BlockRecord | RuleRecord} */ (entry),
+    childIds
+  );
+}
+
+/**
+ * The structural id of the body of a rule or of a block at-rule: the ids of its
+ * entries in document order. Two bodies with equal ids hold the same entries
+ * in the same order, whatever whitespace their raws spell.
+ *
+ * @param {DeclarationKeys} keys
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} container the rule or the block at-rule
+ * @return {number}
+ */
+export function bodyId(keys, records, container) {
+  const layered = new Set();
+  let path = step(keys.root, 'body');
+  for (
+    let child = records.links.firstChild(container);
+    child !== -1;
+    child = records.links.nextSibling(child)
+  ) {
+    path = step(path, entryIdOf(keys, layered, records, child));
+  }
+  return keys.leafOf(path);
 }

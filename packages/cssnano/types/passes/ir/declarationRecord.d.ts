@@ -51,6 +51,14 @@ export declare class DeclarationRecord {
      */
     inheritedSupport: ReadonlySet<string> | null;
     /**
+     * The character that PostCSS's raw value keeps after the value, which a
+     * trailing backslash can escape: null when the node keeps no raw past the
+     * value, and '' when the raw does not start with the value.
+     *
+     * @type {string | null}
+     */
+    rawAfterValue: string | null;
+    /**
      * Whether the value as written holds non-ASCII text when the value list is
      * the cleaned value, so a comment the list drops may hold that text alone.
      * The charset decision reads it; a declaration an edit made holds false.

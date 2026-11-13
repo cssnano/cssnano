@@ -207,6 +207,7 @@ function rewriteRecord(context, record, item) {
     record.keys = keysOfName(item.prop);
   }
   record.valueList = valueListOfItem(context, item);
+  record.rawAfterValue = null;
   record.id = context.declarations.keyOf(
     record.prop,
     record.valueList,

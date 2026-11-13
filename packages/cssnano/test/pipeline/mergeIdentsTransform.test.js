@@ -131,33 +131,34 @@ test('mergeIdents keeps the important comment of a reference that renaming respe
   );
 });
 
-// With normalizeWhitespace off, the bodies keep their raws, so the text differs.
-test('mergeIdents keeps two keyframes apart when normalizeWhitespace is disabled and the value spacing differs', async () => {
+// With normalizeWhitespace off, the bodies keep their raws; their structure is
+// the same, so the names merge.
+test('mergeIdents merges two keyframes whose value spacing differs when normalizeWhitespace is disabled', async () => {
   assert.equal(
     await minify(
       `@keyframes a{from{top:0}}@keyframes b{from{top: 0}}${bothReferenced}`,
       { disable: ['normalizeWhitespace'] }
     ),
-    '@keyframes a{0%{top:0}}@keyframes b{0%{top: 0}}x{animation:a}y{animation:b}'
+    '@keyframes a{0%{top: 0}}x{animation:a}y{animation:a}'
   );
 });
 
-test('mergeIdents keeps two keyframes apart when normalizeWhitespace is disabled and the important spellings differ in case', async () => {
+test('mergeIdents merges two keyframes whose important spellings differ in case when normalizeWhitespace is disabled', async () => {
   assert.equal(
     await minify(
       `@keyframes a{from{top:0!important}}@keyframes b{from{top:0!IMPORTANT}}${bothReferenced}`,
       { disable: ['normalizeWhitespace'] }
     ),
-    '@keyframes a{0%{top:0!important}}@keyframes b{0%{top:0!IMPORTANT}}x{animation:a}y{animation:b}'
+    '@keyframes a{0%{top:0!IMPORTANT}}x{animation:a}y{animation:a}'
   );
 });
 
-test('mergeIdents keeps two keyframes apart when discardComments is disabled and the plain comments differ', async () => {
+test('mergeIdents merges two keyframes whose plain comments differ when discardComments is disabled', async () => {
   assert.equal(
     await minify(
       `@keyframes a{from{top:0/*a*/}}@keyframes b{from{top:0/*b*/}}${bothReferenced}`,
       { disable: ['discardComments'] }
     ),
-    '@keyframes a{0%{top:0/*a*/}}@keyframes b{0%{top:0/*b*/}}x{animation:a}y{animation:b}'
+    '@keyframes a{0%{top:0/*b*/}}x{animation:a}y{animation:a}'
   );
 });

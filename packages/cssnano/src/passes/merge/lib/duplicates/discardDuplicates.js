@@ -11,7 +11,11 @@ import {
   STYLESHEET,
 } from '../../../ir/blockRecord.js';
 import { remove } from '../../../ir/treeEdits.js';
-import { commentId, containerId, statementId } from './structuralIds.js';
+import {
+  commentId,
+  containerId,
+  statementId,
+} from '../../../ir/structuralIds.js';
 
 /** @import {BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */

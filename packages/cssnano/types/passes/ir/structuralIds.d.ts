@@ -1,6 +1,7 @@
-import type { DeclarationKeys } from '../../../ir/declarationKey.js';
-import type { BlockRecord, NodeEntry } from '../../../ir/blockRecord.js';
-import type { RuleRecord } from '../../../ir/ruleRecord.js';
+import type { ArenaIndex, BlockRecord, NodeEntry } from './blockRecord.js';
+import type { BlockRecords } from './blockRecords.js';
+import type { DeclarationKeys } from './declarationKey.js';
+import type { RuleRecord } from './ruleRecord.js';
 /**
  * The id of a comment: ordinary comments share one, and an important comment
  * steps its text.
@@ -31,4 +32,15 @@ export declare function statementId(keys: DeclarationKeys, layered: Set<number>,
  * @return {number}
  */
 export declare function containerId(keys: DeclarationKeys, layered: Set<number>, container: BlockRecord | RuleRecord, childIds: number[]): number;
+/**
+ * The structural id of the body of a rule or of a block at-rule: the ids of its
+ * entries in document order. Two bodies with equal ids hold the same entries
+ * in the same order, whatever whitespace their raws spell.
+ *
+ * @param {DeclarationKeys} keys
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} container the rule or the block at-rule
+ * @return {number}
+ */
+export declare function bodyId(keys: DeclarationKeys, records: BlockRecords, container: ArenaIndex): number;
 //# sourceMappingURL=structuralIds.d.ts.map

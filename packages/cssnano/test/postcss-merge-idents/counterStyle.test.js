@@ -90,7 +90,7 @@ test(
   )
 );
 
-test('should serialize each counter-style body only once when entering candidate collection', async () => {
+test('should merge counter-style candidates with equal bodies in one pass', async () => {
   const input = [
     '@counter-style a{system:extends decimal;suffix:"> "}',
     '@counter-style b{system:extends decimal;suffix:"> "}',
@@ -100,11 +100,9 @@ test('should serialize each counter-style body only once when entering candidate
   ].join('');
 
   const root = postcss.parse(input);
-  const getSerializationCalls = trackAtRuleSerializations(root);
 
   await postcss([plugin()]).process(root, { from: undefined });
 
-  assert.strictEqual(getSerializationCalls(), 4);
   assert.strictEqual(
     root.toString(),
     '@counter-style d{system:extends decimal;suffix:"> "}ol{list-style:d}'

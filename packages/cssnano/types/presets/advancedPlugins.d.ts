@@ -52,7 +52,8 @@ export declare const advancedPluginEntries: readonly [[{
 }, "mergeIdents", {
     optionKeys: never[];
     transform: true;
-    symbols: NodeSymbolTransform;
+    symbols: SymbolTransform;
+    onRecords: true;
 }], [{
     create: (
     /** @type {import('#postcss-reduce-idents').Options} */ options: import('#postcss-reduce-idents').Options) => {

@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { DeclarationKeys } from '../../../../../src/passes/ir/declarationKey.js';
-import { containerId } from '../../../../../src/passes/merge/lib/duplicates/structuralIds.js';
+import { containerId } from '../../../../../src/passes/ir/structuralIds.js';
 import {
   COMMENT,
   CONDITIONAL_GROUP,

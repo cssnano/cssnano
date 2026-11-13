@@ -51,7 +51,8 @@ export const advancedPluginEntries = /** @type {const} */ ([
     {
       optionKeys: [],
       transform: true,
-      symbols: /** @type {NodeSymbolTransform} */ (mergeIdentsSymbols),
+      symbols: /** @type {SymbolTransform} */ (mergeIdentsSymbols),
+      onRecords: true,
     },
   ]),
   /** @satisfies {EntryFor<AdvancedPluginOptions, 'reduceIdents'>} */ ([

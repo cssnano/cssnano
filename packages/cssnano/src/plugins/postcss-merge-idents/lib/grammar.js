@@ -1,6 +1,13 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import specData from '../data/mergeIdents.json' with { type: 'json' };
+import {
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
+} from '../../../passes/ir/blockRecord.js';
+
+/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
 
 const { asciiLowerCase, decoded } = cssnanoUtils;
 
@@ -167,11 +174,11 @@ function parseAtRuleName(parsedTokens, atRuleName) {
 }
 
 /**
- * @param {import('postcss').Declaration} decl
- * @param {string} [prop] the lowercase property name, when already known
+ * @param {string} prop the lowercase property name
+ * @param {boolean} inCounterStyle whether the declaration is a child of a `@counter-style` rule
  * @return {{ namespace: 'keyframes' | 'counter-style', kind: 'animation-shorthand' | 'animation-name' | 'counter-style' | 'counter-style-func' } | null}
  */
-function classifyDeclaration(decl, prop = asciiLowerCase(decl.prop)) {
+function classifyDeclaration(prop, inCounterStyle) {
   if (prop.startsWith('--')) {
     return null;
   }
@@ -188,10 +195,7 @@ function classifyDeclaration(decl, prop = asciiLowerCase(decl.prop)) {
     return { namespace: 'counter-style', kind: 'counter-style' };
   }
 
-  if (
-    decl.parent?.type === 'atrule' &&
-    asciiLowerCase(decl.parent.name).endsWith('counter-style')
-  ) {
+  if (inCounterStyle) {
     if (prop === 'system' || prop === 'fallback' || prop === 'speak-as') {
       return { namespace: 'counter-style', kind: 'counter-style' };
     }
@@ -210,36 +214,33 @@ function classifyDeclaration(decl, prop = asciiLowerCase(decl.prop)) {
 }
 
 /**
- * The nearest ancestor that decides whether a definition applies at all.
- * Cascade layers only order definitions, so they are looked through.
+ * Whether a record is a `@layer` at-rule, with a block or as a statement.
  *
- * @param {import('postcss').Node} node
- * @return {import('postcss').Container}
+ * @param {{kind: number, name?: string}} entry
+ * @return {boolean}
  */
-function getConditionContainer(node) {
-  let curr = node.parent;
-  while (
-    curr?.type === 'atrule' &&
-    asciiLowerCase(/** @type {import('postcss').AtRule} */ (curr).name) ===
-      'layer'
-  ) {
-    curr = curr.parent;
-  }
-  return /** @type {import('postcss').Container} */ (curr);
+function isLayerEntry(entry) {
+  return (
+    (entry.kind === AT_RULE_BLOCK || entry.kind === AT_RULE_STATEMENT) &&
+    entry.name === 'layer'
+  );
 }
 
 /**
- * @param {{ rule: import('postcss').AtRule, body?: string }} entry an at-rule
- *   with a block
- * @return {string}
+ * The nearest ancestor that decides whether a definition applies at all.
+ * Cascade layers only order definitions, so they are looked through.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @return {ArenaIndex} the rule, block or stylesheet that holds the definition
  */
-function getBody(entry) {
-  if (entry.body === undefined) {
-    entry.body = /** @type {import('postcss').ChildNode[]} */ (
-      entry.rule.nodes
-    ).toString();
+function getConditionContainer(records, index) {
+  const { links } = records;
+  let curr = links.parentOf(index);
+  while (curr !== -1 && isLayerEntry(records.entry(curr))) {
+    curr = links.parentOf(curr);
   }
-  return entry.body;
+  return /** @type {ArenaIndex} */ (curr);
 }
 
 export {
@@ -251,5 +252,5 @@ export {
   parseAtRuleName,
   classifyDeclaration,
   getConditionContainer,
-  getBody,
+  isLayerEntry,
 };

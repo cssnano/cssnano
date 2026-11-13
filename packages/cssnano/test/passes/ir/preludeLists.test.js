@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
-import { containerId } from '../../../src/passes/merge/lib/duplicates/structuralIds.js';
+import { containerId } from '../../../src/passes/ir/structuralIds.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { transformPlugin } from '../../../src/passes/merge/index.js';
 import { TextTable } from '../../../src/values/textTable.js';

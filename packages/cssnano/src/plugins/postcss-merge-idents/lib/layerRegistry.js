@@ -1,10 +1,19 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import {
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
+  COMMENT,
+} from '../../../passes/ir/blockRecord.js';
+import { isLayerEntry } from './grammar.js';
 import { preludeTokens } from './trailingEscape.js';
+import { atRuleAt, preludeTextOf } from './declaredText.js';
 
-const { asciiLowerCase, decoded } = cssnanoUtils;
+const { decoded } = cssnanoUtils;
 
-/** @import {TextTable} from '../../../values/textTable.js' */
+/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
+/** @import {TokenLists} from '../../../passes/ir/tokenLists.js' */
 
 /**
  * Parses the tokens of a @layer parameter list into decoded layer-name paths.
@@ -58,34 +67,36 @@ function parseLayerNameList(parsedTokens) {
 }
 
 /**
- * @param {import('postcss').Node} node
- * @return {import('postcss').AtRule[]} enclosing @layer at-rules, outermost first
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @return {ArenaIndex[]} enclosing @layer at-rules, outermost first
  */
-function enclosingLayerRules(node) {
-  /** @type {import('postcss').AtRule[]} */
+function enclosingLayerRules(records, index) {
+  const { links, root } = records;
+  /** @type {ArenaIndex[]} */
   const chain = [];
-  let curr = node.parent;
-  while (curr && curr.type !== 'root') {
-    if (
-      curr.type === 'atrule' &&
-      asciiLowerCase(/** @type {import('postcss').AtRule} */ (curr).name) ===
-        'layer'
-    ) {
-      chain.unshift(/** @type {import('postcss').AtRule} */ (curr));
-    }
-    curr = curr.parent;
+  for (
+    let curr = links.parentOf(index);
+    curr !== -1 && curr !== root.index;
+    curr = links.parentOf(curr)
+  ) {
+    if (isLayerEntry(records.entry(curr))) chain.unshift(curr);
   }
   return chain;
 }
 
 class LayerRegistry {
-  /** @param {TextTable} table the text the walk stored */
-  constructor(table) {
-    this.table = table;
+  /**
+   * @param {BlockRecords} records the stylesheet the layers are in
+   * @param {TokenLists} tokenLists the run's token lists, which the preludes name
+   */
+  constructor(records, tokenLists) {
+    this.records = records;
+    this.tokenLists = tokenLists;
     this.nextIndex = 0;
     /** @type {Map<string, { index: number, children: LayerRegistry }>} */
     this.layers = new Map();
-    /** @type {Map<import('postcss').AtRule, { index: number, children: LayerRegistry }>} */
+    /** @type {Map<ArenaIndex, { index: number, children: LayerRegistry }>} */
     this.entries = new Map();
   }
 
@@ -98,7 +109,7 @@ class LayerRegistry {
     if (!entry) {
       entry = {
         index: this.nextIndex++,
-        children: new LayerRegistry(this.table),
+        children: new LayerRegistry(this.records, this.tokenLists),
       };
       this.layers.set(name, entry);
     }
@@ -126,21 +137,26 @@ class LayerRegistry {
    * inside still order beneath it through the child registry. A rule keeps one
    * entry, so its name is read once however many definitions it holds.
    *
-   * @param {import('postcss').AtRule} layerRule
+   * @param {ArenaIndex} layerRule
    * @return {{ index: number, children: LayerRegistry }}
    */
   entryFor(layerRule) {
     let entry = this.entries.get(layerRule);
     if (entry === undefined) {
-      const names = layerRule.params.trim()
-        ? parseLayerNameList(preludeTokens(layerRule, this.table))
+      const names = preludeTextOf(
+        this.tokenLists,
+        atRuleAt(this.records, layerRule)
+      ).trim()
+        ? parseLayerNameList(
+            preludeTokens(this.records, this.tokenLists, layerRule)
+          )
         : null;
       entry =
         names !== null && names.length === 1
           ? this.entryAt(names[0])
           : {
               index: this.nextIndex++,
-              children: new LayerRegistry(this.table),
+              children: new LayerRegistry(this.records, this.tokenLists),
             };
       this.entries.set(layerRule, entry);
     }
@@ -152,25 +168,29 @@ class LayerRegistry {
    * nested beneath any enclosing layers, so later lookups observe the real
    * layer tree.
    *
-   * @param {import('postcss').AtRule} layerRule
+   * @param {ArenaIndex} layerRule
    * @return {void}
    */
   declareLayerAtRule(layerRule) {
     /** @type {LayerRegistry} */
     let current = this;
-    for (const parent of enclosingLayerRules(layerRule)) {
+    for (const parent of enclosingLayerRules(this.records, layerRule)) {
       current = current.entryFor(parent).children;
     }
     // A block takes at most one name. Browsers drop a block with a name list,
     // so it declares none; like an unnamed block, it is a unique entry.
-    if (layerRule.nodes) {
+    if (atRuleAt(this.records, layerRule).kind === AT_RULE_BLOCK) {
       current.entryFor(layerRule);
       return;
     }
-    if (!layerRule.params.trim()) {
+    if (
+      !preludeTextOf(this.tokenLists, atRuleAt(this.records, layerRule)).trim()
+    ) {
       return;
     }
-    const names = parseLayerNameList(preludeTokens(layerRule, this.table));
+    const names = parseLayerNameList(
+      preludeTokens(this.records, this.tokenLists, layerRule)
+    );
     if (names === null) {
       return;
     }
@@ -180,11 +200,11 @@ class LayerRegistry {
   }
 
   /**
-   * @param {import('postcss').Node} node
+   * @param {ArenaIndex} index
    * @return {number[]}
    */
-  getPriority(node) {
-    const chain = enclosingLayerRules(node);
+  getPriority(index) {
+    const chain = enclosingLayerRules(this.records, index);
     if (chain.length === 0) {
       return [Infinity];
     }
@@ -237,16 +257,28 @@ function compareAtRulePriority(a, b) {
  * stylesheet alone. An import rule is valid only before every rule except
  * `@charset` and layer statements.
  *
- * @param {import('postcss').Root} root
+ * @param {BlockRecords} records
  * @return {boolean}
  */
-function hasImport(root) {
-  for (const node of root.nodes) {
-    if (node.type === 'comment') continue;
-    if (node.type !== 'atrule') return false;
-    const name = asciiLowerCase(node.name);
-    if (name === 'import') return true;
-    if (name !== 'charset' && !(name === 'layer' && !node.nodes)) return false;
+function hasImport(records) {
+  const { links, root } = records;
+  for (
+    let index = links.firstChild(root.index);
+    index !== -1;
+    index = links.nextSibling(index)
+  ) {
+    const node = records.entry(index);
+    if (node.kind === COMMENT) continue;
+    if (node.kind !== AT_RULE_BLOCK && node.kind !== AT_RULE_STATEMENT) {
+      return false;
+    }
+    if (node.name === 'import') return true;
+    if (
+      node.name !== 'charset' &&
+      !(node.name === 'layer' && node.kind === AT_RULE_STATEMENT)
+    ) {
+      return false;
+    }
   }
   return false;
 }
