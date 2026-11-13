@@ -1,6 +1,7 @@
 import type { BlockRecords } from './blockRecords.js';
 import type { ArenaIndex } from './blockRecord.js';
 import type { RunContext } from './runContext.js';
+import type { DeclarationRecord } from './declarationRecord.js';
 export type CharsetScan = {
     first: ArenaIndex;
     charsets: ArenaIndex[];
@@ -25,6 +26,17 @@ export type CharsetScan = {
  * @return {CharsetScan}
  */
 export declare function createCharsetScan(keepCandidates?: boolean): CharsetScan;
+/**
+ * Whether a declaration's value as written holds non-ASCII text. The written
+ * list is set only when the value list drops text the author wrote, such as a
+ * plain comment, so the check reads a value kept as written through its value
+ * list instead.
+ *
+ * @param {RunContext} context
+ * @param {DeclarationRecord} record
+ * @return {boolean}
+ */
+export declare function writtenTextHoldsNonAscii(context: RunContext, record: DeclarationRecord): boolean;
 /**
  * Whether an entry or any entry below it holds non-ASCII text. Stops at the
  * first hit.

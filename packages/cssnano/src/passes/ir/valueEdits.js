@@ -53,7 +53,6 @@ export function writeValueList(records, context, index, valueList) {
   const record = /** @type {DeclarationRecord} */ (records.entry(index));
   record.valueList = valueList;
   record.writtenList = -1;
-  record.rawAfterValue = null;
   record.id = context.declarations.keyOf(
     record.prop,
     valueList,

@@ -24,7 +24,6 @@ import {
   writtenValueListOf,
 } from './valueList.js';
 import { selectorItemsOf } from './selectorItems.js';
-import { holdsNonAscii } from '../../values/nonAscii.js';
 
 /** @import {SelectorIds} from './selectorIds.js' */
 const { asciiLowerCase, isAnonymousLayer, sourceValue } = cssnanoUtils;
@@ -92,21 +91,6 @@ function holdContainerRaws(record, node) {
 }
 
 /**
- * The character that PostCSS's raw value keeps after the value, or null when the
- * raw ends at the value; '' when the raw does not start with the value.
- *
- * @param {Declaration} node
- * @return {string | null}
- */
-function rawAfterValueOf(node) {
-  const raw = node.raws.value;
-  if (raw?.value !== node.value) return null;
-  const text = raw.raw ?? node.value;
-  if (!text.startsWith(node.value)) return '';
-  return text.length > node.value.length ? text[node.value.length] : null;
-}
-
-/**
  * The record of a declaration of the run's stylesheet.
  *
  * @param {Declaration} node
@@ -129,9 +113,6 @@ export function recordDeclaration(node, context) {
     node.raws.between ?? null,
     important ? (node.raws.important ?? null) : null
   );
-  // The list drops a plain comment, which only the written value still holds.
-  record.writtenNonAscii = written !== node.value && holdsNonAscii(written);
-  record.rawAfterValue = rawAfterValueOf(node);
   record.writtenList = writtenValueListOf(node, context, written, kept);
   return record;
 }
