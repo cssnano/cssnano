@@ -13,7 +13,7 @@ export declare const litePluginEntries: readonly [readonly [{
         comments(): (text: string) => boolean;
     };
 }, "discardComments", {
-    readonly optionKeys: readonly ["removeAll", "removeAllButFirst", "remove"];
+    readonly optionKeys: readonly ["removeAll", "remove"];
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, "normalizeWhitespace", {

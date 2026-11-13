@@ -76,20 +76,6 @@ console.log(postcss(comments({removeAll: true})).process(css).css);
 //=> h1{margin:0 auto}h2{color:red}
 ```
 
-##### removeAllButFirst
-
-Type: `boolean`
-Default: `false`
-
-Remove all comments marked as important, but the first one.
-
-```js
-var css = '/*! heading */h1{margin:0 auto}/*! heading 2 */h2{color:red}';
-console.log(postcss(comments({removeAllButFirst: true})).process(css).css);
-//=> /*! heading */h1{margin:0 auto}h2{color:red}
-```
-
-
 ## Usage
 
 See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for

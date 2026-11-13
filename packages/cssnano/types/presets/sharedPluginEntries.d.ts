@@ -9,7 +9,7 @@ export declare const discardCommentsEntry: readonly [{
         comments(): (text: string) => boolean;
     };
 }, "discardComments", {
-    readonly optionKeys: readonly ["removeAll", "removeAllButFirst", "remove"];
+    readonly optionKeys: readonly ["removeAll", "remove"];
 }];
 export declare const normalizeWhitespaceEntry: readonly [{
     create: () => import("../pipeline/host.js").Stage;

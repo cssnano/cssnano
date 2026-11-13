@@ -111,7 +111,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
         comments(): (text: string) => boolean;
     };
 }, "discardComments", {
-    readonly optionKeys: readonly ["removeAll", "removeAllButFirst", "remove"];
+    readonly optionKeys: readonly ["removeAll", "remove"];
 }], [{
     create: () => {
         forProperty: () => (buffer: import("../values/valueBuffer.js").ValueBuffer) => void;

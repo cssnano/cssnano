@@ -3,9 +3,6 @@ import cssnanoUtils from '#utils';
 const { isImportantComment } = cssnanoUtils;
 
 class CommentRemover {
-  /** @type {boolean} */
-  #hasFirst;
-
   /** @param {import('../index.js').Options} options */
   constructor(options) {
     if (options.remove !== undefined && typeof options.remove !== 'function') {
@@ -13,7 +10,6 @@ class CommentRemover {
     }
 
     this.options = options;
-    this.#hasFirst = false;
   }
   /**
    * @param {string} comment
@@ -25,20 +21,8 @@ class CommentRemover {
     if (remove) {
       return remove(comment);
     } else {
-      const isImportant = isImportantComment(comment);
-
-      if (!isImportant) {
-        return true;
-      }
-
-      if (this.options.removeAll || this.#hasFirst) {
-        return true;
-      } else if (this.options.removeAllButFirst && !this.#hasFirst) {
-        this.#hasFirst = true;
-        return false;
-      }
+      return !isImportantComment(comment) || Boolean(this.options.removeAll);
     }
-    return false;
   }
 }
 export default CommentRemover;

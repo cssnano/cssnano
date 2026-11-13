@@ -15,35 +15,16 @@ const plugin = oneStagePlugin(discardComments);
 
 const { processCSS } = processCSSFactory(plugin);
 
-describe('Removal state and caching', () => {
+describe('Removal callback and removed options', () => {
   test(
-    'should remove only the second identical preserved comment in custom properties',
-    processCSS(':root{--a:/*!x*/;--b:/*!x*/}', ':root{--a:/*!x*/;--b: }', {
-      removeAllButFirst: true,
-    })
-  );
-
-  test(
-    'should remove only the second identical preserved comment in declarations of different rules',
+    'should keep every important comment when a config still passes the removed removeAllButFirst option',
     processCSS(
-      'a{color:/*!x*/red}b{color:/*!x*/red}',
-      'a{color:/*!x*/red}b{color:red}',
-      { removeAllButFirst: true }
+      '/*!a*/a{color:/*!x*/red}/*!b*/.b/*!y*/{}',
+      '/*!a*/a{color:/*!x*/red}/*!b*/.b/*!y*/{}',
+      /** @type {import('../../src/plugins/postcss-discard-comments/index.js').Options} */ (
+        /** @type {unknown} */ ({ removeAllButFirst: true })
+      )
     )
-  );
-
-  test(
-    'should remove only the second identical preserved comment within one selector',
-    processCSS('.a/*!x*/ .b/*!x*/ .c{}', '.a/*!x*/ .b .c{}', {
-      removeAllButFirst: true,
-    })
-  );
-
-  test(
-    'should treat raws.between as preceding the selector for first-comment state',
-    processCSS('.a/*!x*/,.b/*!x*/{}', '.a,.b/*!x*/{}', {
-      removeAllButFirst: true,
-    })
   );
 
   test('should invoke the remove callback once per comment, not once per distinct comment source', async () => {
@@ -61,19 +42,6 @@ describe('Removal state and caching', () => {
       ':root{--a: ;--b: }'
     );
     strictEqual(JSON.stringify(seen), JSON.stringify(['!c', '!c']));
-  });
-
-  test('should reset removal state between runs of a shared PostCSS processor', async () => {
-    const processor = postcss([plugin({ removeAllButFirst: true })]);
-
-    strictEqual(
-      (await processor.process('/*!a*/a{}', { from: undefined })).css,
-      '/*!a*/a{}'
-    );
-    strictEqual(
-      (await processor.process('/*!b*/b{}', { from: undefined })).css,
-      '/*!b*/b{}'
-    );
   });
 
   test('should reject a non-function remove option with a TypeError', async () => {
@@ -103,15 +71,6 @@ describe('Option flags', () => {
       '/*!license*/h1{font-weight:700}/*!license 2*/h2{color:#000}',
       'h1{font-weight:700}h2{color:#000}',
       { removeAll: true }
-    )
-  );
-
-  test(
-    'should remove all important comments but the first, with a flag',
-    processCSS(
-      '/*!license*/h1{font-weight:700}/*!license 2*/h2{color:#000}',
-      '/*!license*/h1{font-weight:700}h2{color:#000}',
-      { removeAllButFirst: true }
     )
   );
 });

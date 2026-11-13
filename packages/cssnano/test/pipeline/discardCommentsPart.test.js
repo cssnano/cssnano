@@ -69,15 +69,6 @@ describe('the comment removal of the walk', () => {
     assert.equal(await discardOnly("[a='b'] /*!x*/ c{}"), "[a='b'] /*!x*/ c{}");
   });
 
-  test('keeps the first important comment in a value and removes a later one in a comment node', async () => {
-    assert.equal(
-      await discardOnly('a{color:/*!x*/red}/*!y*/b{}', {
-        removeAllButFirst: true,
-      }),
-      'a{color:/*!x*/red}b{}'
-    );
-  });
-
   test('calls remove once per comment, in document order, for two declarations with the same value', async () => {
     /** @type {string[]} */
     const seen = [];
