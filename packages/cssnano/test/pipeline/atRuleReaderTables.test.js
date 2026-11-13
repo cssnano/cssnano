@@ -7,8 +7,7 @@ const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../src/pipeline/traversal.js');
 const { TextTable } = await import('../../src/values/textTable.js');
 const { tokens } = await import('../../src/utils/value.js');
-const { walkAfterMerge, finishAfterMerge } =
-  await import('../../src/pipeline/afterMerge.js');
+const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
 const { createRunContext } = await import('../../src/passes/ir/runContext.js');
 const { runDriver } = await import('../../src/passes/ir/runDriver.js');
 const { discardUnusedSymbols } =
@@ -33,7 +32,7 @@ const helpers = { result: { warn() {}, messages: [] } };
  * @param {TextTable} table
  * @param {Map<string, Record<PropertyKey, unknown>>} transforms
  * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols
- * @return {number} the tokenize calls of the walk and its finish, which read the stored text
+ * @return {number} the tokenize calls of the walk and the end, which read the stored text
  */
 function afterWalk(root, table, transforms, symbols) {
   const context = createRunContext(table, undefined);
@@ -45,7 +44,6 @@ function afterWalk(root, table, transforms, symbols) {
     folded: false,
     result: helpers.result,
   });
-  finishAfterMerge(root, helpers.result, transforms);
   return tokenizeTotal() - before;
 }
 

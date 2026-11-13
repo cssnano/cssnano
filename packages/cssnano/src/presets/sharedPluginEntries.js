@@ -50,7 +50,7 @@ export const discardEmptyEntry =
   );
 
 /**
- * rawCache runs last in the walk after merge of its host.
+ * rawCache runs last in its host, on the tree the run wrote.
  */
 export const rawCacheEntry =
   /** @satisfies {EntryFor<DefaultPluginOptions, 'rawCache'>} */ (

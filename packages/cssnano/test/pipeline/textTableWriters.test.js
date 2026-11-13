@@ -19,8 +19,7 @@ const { default: normalizeString } =
   await import('../../src/plugins/postcss-normalize-string/index.js');
 const { default: normalizeUrl } =
   await import('../../src/plugins/postcss-normalize-url/index.js');
-const { walkAfterMerge, finishAfterMerge } =
-  await import('../../src/pipeline/afterMerge.js');
+const { walkAfterMerge } = await import('../../src/pipeline/afterMerge.js');
 const { runDriver } = await import('../../src/passes/ir/runDriver.js');
 const { discardUnusedSymbols } =
   await import('../../src/plugins/postcss-discard-unused/index.js');
@@ -213,7 +212,7 @@ suite('the at-rule reducers write tokens that spell their text', () => {
  * @param {TextTable} table
  * @param {Map<string, Record<PropertyKey, unknown>>} transforms
  * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols
- * @return {number} the tokenize calls of the walk and its finish, which read the stored text
+ * @return {number} the tokenize calls of the walk and the end, which read the stored text
  */
 function afterWalk(root, table, transforms, symbols) {
   const context = createRunContext(table, undefined);
@@ -225,7 +224,6 @@ function afterWalk(root, table, transforms, symbols) {
     folded: false,
     result: helpers.result,
   });
-  finishAfterMerge(root, helpers.result, transforms);
   return tokenizeTotal() - before;
 }
 

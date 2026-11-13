@@ -194,12 +194,7 @@
         "packages/cssnano/src/plugins/postcss-zindex/lib/**"
       ],
       "rules": {
-        "merge-ir/no-postcss-in-window": [
-          "error",
-          {
-            "allowed": ["packages/cssnano/src/pipeline/afterMerge.js"]
-          }
-        ]
+        "merge-ir/no-postcss-in-window": "error"
       }
     },
     {

@@ -41,7 +41,7 @@ function build(css, context) {
  * @param {{browsers: readonly string[], folded: boolean, result?: Result}} end
  *   the browser targets, whether the run folded the summaries, and the result
  *   whose messages the run pushes to; a run whose transforms append none has no result to give
- * @return {NodeTable} the node of each entry, which the run keeps after its end
+ * @return {void}
  */
 function end(state, { browsers, folded, result }) {
   const { records, nodes, context } = state;
@@ -78,7 +78,6 @@ function end(state, { browsers, folded, result }) {
   for (const { index, type, plugin } of context.messages) {
     result?.messages.push({ type, plugin, node: nodeOf(nodes, index) });
   }
-  return nodes;
 }
 
 /**

@@ -1,4 +1,3 @@
-import rawCache from '../utils/rawCache.js';
 import { createRecordSymbolLists, recordSymbolVisit } from './symbolLists.js';
 import { visitEntriesInOrder } from '../passes/ir/visitEntries.js';
 import { uniqueRuleSelectors } from '../passes/ir/uniqueSelectors.js';
@@ -17,7 +16,6 @@ import { remove as detachRecord } from '../passes/ir/treeEdits.js';
 import { normalizeEntry } from '../passes/ir/normalizeRaws.js';
 import { writeRootAfter } from '../passes/ir/rawEdits.js';
 
-/** @import {Result, Root} from 'postcss' */
 /** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
 /** @import {RunState} from '../passes/ir/runDriver.js' */
@@ -121,17 +119,4 @@ export function walkAfterMerge(state, transforms, symbols, browsers) {
       /** @type {{add?: boolean}} */ (charsetOptions)
     );
   }
-}
-
-/**
- * The stage after the end of the run: the raw cache, which records last so
- * that no later transform changes what it describes.
- *
- * @param {Root} root
- * @param {Result} result
- * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms
- * @returns {void}
- */
-export function finishAfterMerge(root, result, transforms) {
-  if (transforms.has('rawCache')) rawCache(result);
 }

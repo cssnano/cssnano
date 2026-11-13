@@ -7,7 +7,8 @@ import {
 } from '@csstools/css-tokenizer';
 import { list } from 'postcss';
 import cssnanoUtils from '#utils';
-import { DECLARATION, NO_PRELUDE } from '../../passes/ir/blockRecord.js';
+import { DECLARATION } from '../../passes/ir/blockRecord.js';
+import { preludeListOf } from '../../passes/ir/declaredText.js';
 import {
   createRecordSymbolLists,
   recordSymbolVisit,
@@ -21,7 +22,7 @@ import { commentFreeText } from '../../values/tokensText.js';
 /** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
 /** @import {RunContext} from '../../passes/ir/runContext.js' */
-/** @import {TokenLists, TokenListId} from '../../passes/ir/tokenLists.js' */
+/** @import {TokenLists} from '../../passes/ir/tokenLists.js' */
 /** @import {RecordSymbolLists} from '../../pipeline/symbolLists.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
@@ -36,19 +37,6 @@ const wildcard = true;
  */
 function cleanText(tokens) {
   return commentFreeText(tokens).trim();
-}
-
-/**
- * The tokens of an at-rule's prelude, empty when the at-rule has none.
- *
- * @param {TokenLists} tokenLists
- * @param {{preludeId: number}} entry
- * @return {readonly CSSToken[]}
- */
-function preludeTokens(tokenLists, entry) {
-  return entry.preludeId === NO_PRELUDE
-    ? []
-    : tokenLists.get(/** @type {TokenListId} */ (entry.preludeId));
 }
 
 /**
@@ -100,7 +88,7 @@ function filterAtRule(records, tokenLists, indices, names, remove) {
       /** @type {import('../../passes/ir/blockRecord.js').BlockRecord} */ (
         records.entry(index)
       );
-    const prelude = cleanText(preludeTokens(tokenLists, entry));
+    const prelude = cleanText(preludeListOf(tokenLists, entry));
     if (!names.has(prelude)) remove(index);
   }
 }
@@ -191,7 +179,7 @@ function filterNamespace(records, tokenLists, indices, prefixes, remove) {
       /** @type {import('../../passes/ir/blockRecord.js').BlockRecord} */ (
         records.entry(index)
       );
-    const tokens = preludeTokens(tokenLists, entry);
+    const tokens = preludeListOf(tokenLists, entry);
     const prefix = namespacePrefix(tokens);
 
     if (prefix === undefined) {

@@ -1,4 +1,3 @@
-import type { Result, Root } from 'postcss';
 import type { RunState } from '../passes/ir/runDriver.js';
 import type { SymbolEntry } from './host.js';
 /**
@@ -16,14 +15,4 @@ import type { SymbolEntry } from './host.js';
  * @return {void}
  */
 export declare function walkAfterMerge(state: RunState, transforms: ReadonlyMap<string, Record<PropertyKey, unknown>>, symbols: ReadonlyMap<string, SymbolEntry>, browsers?: readonly string[]): void;
-/**
- * The stage after the end of the run: the raw cache, which records last so
- * that no later transform changes what it describes.
- *
- * @param {Root} root
- * @param {Result} result
- * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms
- * @returns {void}
- */
-export declare function finishAfterMerge(root: Root, result: Result, transforms: ReadonlyMap<string, Record<PropertyKey, unknown>>): void;
 //# sourceMappingURL=afterMerge.d.ts.map

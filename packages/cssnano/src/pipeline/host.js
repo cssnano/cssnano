@@ -1,7 +1,8 @@
 import { browserTargets, resolveTargets } from '#utils/browser-targets';
 import { walkStylesheet } from './traversal.js';
 import { TextTable } from '../values/textTable.js';
-import { finishAfterMerge, walkAfterMerge } from './afterMerge.js';
+import { walkAfterMerge } from './afterMerge.js';
+import rawCache from '../utils/rawCache.js';
 import { createRunContext } from '../passes/ir/runContext.js';
 import { runDriver } from '../passes/ir/runDriver.js';
 
@@ -117,7 +118,8 @@ const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
 /**
  * One stylesheet's run over the records: the build, the merge transforms when
  * the merge is on, the walk after merge over the records, then the end, which
- * writes. The stage after the write runs on the nodes the end returns.
+ * writes. The raw cache records last, on the written tree, so that no later
+ * transform changes what it describes.
  *
  * @param {import('postcss').Root} root
  * @param {import('postcss').Result} result
@@ -143,7 +145,7 @@ function runRecords(root, result, table, merge, browsers, after, symbols) {
     folded: merge !== undefined,
     result,
   });
-  finishAfterMerge(root, result, after);
+  if (after.has('rawCache')) rawCache(result);
 }
 
 /**
