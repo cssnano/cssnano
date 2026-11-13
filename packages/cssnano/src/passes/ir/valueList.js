@@ -46,12 +46,15 @@ export function valueListOf(node, tables) {
   const mode = tokenizeMode(node.prop);
   if (keepsValueAsWritten(node, textTable)) {
     const written = sourceValue(node);
-    return valueIds.idOf(tokenLists, mode, written, textTable.tokens(node));
+    return valueIds.idOf(tokenLists, mode, written);
   }
   // The stored tokens spell the written text, which is the cleaned value only
   // when no comment was stripped from it.
+  // The table's tokens are the default tokenizer's, so a mode reads its own.
   const stored =
-    sourceValue(node) === node.value ? textTable.stored(node) : undefined;
+    mode === undefined && sourceValue(node) === node.value
+      ? textTable.stored(node)
+      : undefined;
   return valueIds.idOf(tokenLists, mode, node.value, stored);
 }
 
@@ -69,11 +72,6 @@ export function writtenValueListOf(node, tables) {
   if (written === node.value || keepsValueAsWritten(node, tables.textTable)) {
     return -1;
   }
-  const { textTable, tokenLists, valueIds } = tables;
-  return valueIds.idOf(
-    tokenLists,
-    tokenizeMode(node.prop),
-    written,
-    textTable.tokens(node)
-  );
+  const { tokenLists, valueIds } = tables;
+  return valueIds.idOf(tokenLists, tokenizeMode(node.prop), written);
 }

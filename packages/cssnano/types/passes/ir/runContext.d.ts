@@ -16,7 +16,7 @@ export type RunContext = {
 export type RunMessage = {
     index: import('./blockRecord.js').ArenaIndex;
     type: string;
-    plugin: string;
+    plugin?: string;
     text?: string;
 };
 /**
@@ -40,7 +40,7 @@ export type RunMessage = {
  * warning, which has `text`, goes through `result.warn`; a removal is pushed as
  * it is.
  *
- * @typedef {{index: import('./blockRecord.js').ArenaIndex, type: string, plugin: string, text?: string}} RunMessage
+ * @typedef {{index: import('./blockRecord.js').ArenaIndex, type: string, plugin?: string, text?: string}} RunMessage
  */
 /**
  * A fresh context for one run. `textTable` holds the selector tokens the host

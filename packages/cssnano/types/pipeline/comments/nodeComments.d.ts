@@ -1,18 +1,24 @@
 import type { AtRule, Declaration, Rule } from 'postcss';
 import type { CanRemove } from './replaceComments.js';
-import type { CSSToken } from '@csstools/css-tokenizer';
+import type { Stage } from '../host.js';
 export type CommentState = {
     canRemove: CanRemove;
-    parserCache: Map<string, CSSToken[]>;
 };
 /** @import {AtRule, Declaration, Rule} from 'postcss' */
 /** @import {CanRemove} from './replaceComments.js' */
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {Stage} from '../host.js' */
 /**
  * The comment removal of one stylesheet: the predicate that decides which
- * comments go, and the tokens parsed so far, shared by every node.
- * @typedef {{canRemove: CanRemove, parserCache: Map<string, CSSToken[]>}} CommentState
+ * comments go.
+ * @typedef {{canRemove: CanRemove}} CommentState
  */
+/**
+ * The comment removal of a stylesheet, from the first stage that has one.
+ *
+ * @param {readonly Stage[]} stages
+ * @returns {CommentState | null} null when no stage removes comments
+ */
+export declare function commentStateOf(stages: readonly Stage[]): CommentState | null;
 /**
  * Removes the comments in the gap that a node keeps between its name and its
  * value or block. A custom property keeps its whitespace, and `: ` stands in
@@ -32,14 +38,6 @@ export declare function removeBetweenComments(node: Declaration | Rule | AtRule,
  * @returns {string}
  */
 export declare function commentFreeText(text: string, comments: CommentState, preserveWhitespace?: boolean): string;
-/**
- * Removes the comments from the `!important` flag, which keeps its own
- * spelling when it has none left.
- *
- * @param {Declaration} decl
- * @param {CommentState} comments
- */
-export declare function removeImportantComments(decl: Declaration, comments: CommentState): void;
 /**
  * The selector without the comments that go. Kept comments pass through, and
  * the selector parser sees the rest as PostCSS writes it.

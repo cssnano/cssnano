@@ -34,6 +34,25 @@ export declare function writeLeadingWhitespace(records: BlockRecords, leading: s
  */
 export declare function writeRootAfter(records: BlockRecords, after: string): void;
 /**
+ * Writes the separator before a declaration's value, which the printer reads.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @param {string} between
+ * @return {void}
+ */
+export declare function writeBetween(records: BlockRecords, index: ArenaIndex, between: string): void;
+/**
+ * Writes the spelling of a declaration's important flag, which the printer
+ * reads when the declaration is important.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @param {string} spelling
+ * @return {void}
+ */
+export declare function writeImportantSpelling(records: BlockRecords, index: ArenaIndex, spelling: string): void;
+/**
  * Writes the spellings of a declaration that the printer reads: the separator
  * before its value, and the important flag's spelling when it is important.
  *

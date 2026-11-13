@@ -1,6 +1,6 @@
 export const name = 'pipeline-writers: host walk values';
 export const target = new URL(
-  '../../src/pipeline/traversal.js',
+  '../../src/pipeline/declarationWalk.js',
   import.meta.url
 ).href;
 // node --test expands this glob; a directory path would resolve to a single
@@ -12,8 +12,8 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'key one list map for both tokenizer modes',
-    find: '  const lists = mode === undefined ? valueLists.plain : valueLists.unicodeRange;',
-    replace: '  const lists = valueLists.plain;',
+    name: 'tokenize a declaration comment-free value in the default mode',
+    find: 'run.valueIds.idOf(run.tokenLists, tokenizeMode(prop), cleaned)',
+    replace: 'run.valueIds.idOf(run.tokenLists, undefined, cleaned)',
   },
 ];

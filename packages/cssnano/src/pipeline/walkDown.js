@@ -1,10 +1,12 @@
-import { AT_RULE_BLOCK, RULE } from '../passes/ir/blockRecord.js';
+import { AT_RULE_BLOCK, DECLARATION, RULE } from '../passes/ir/blockRecord.js';
 import { recordContextOf } from './context.js';
+import { visitDeclaration } from './declarationWalk.js';
 import { isOutermostOverridable } from './overridable.js';
 
 /** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
 /** @import {RunContext} from '../passes/ir/runContext.js' */
+/** @import {DeclarationPlans} from './declarationWalk.js' */
 
 /**
  * The state of the record walk over one stylesheet: the outermost overridable
@@ -17,14 +19,18 @@ class RecordWalk {
   #records;
   /** @type {RunContext} */
   #context;
+  /** @type {DeclarationPlans | undefined} */
+  #plans;
 
   /**
    * @param {BlockRecords} records
    * @param {RunContext} context
+   * @param {DeclarationPlans | undefined} plans what the walk applies to the declarations, when the run has stages
    */
-  constructor(records, context) {
+  constructor(records, context, plans) {
     this.#records = records;
     this.#context = context;
+    this.#plans = plans;
   }
 
   /**
@@ -49,6 +55,8 @@ class RecordWalk {
           entry,
           recordContextOf(records, this.#context.tokenLists, entry, context)
         );
+      } else if (kind === DECLARATION && this.#plans !== undefined) {
+        visitDeclaration(this.#plans, records, this.#context, context, entry);
       }
       entry = next;
     }
@@ -57,16 +65,17 @@ class RecordWalk {
 
 /**
  * The record walk of a stylesheet, in document order: a container before its
- * children. It collects the outermost overridable at-rules, which the discard
- * of discardOverridden compares, and computes the context of each container
- * it enters.
+ * children. It applies the declaration plans to each declaration, collects the
+ * outermost overridable at-rules, which the discard of discardOverridden
+ * compares, and computes the context of each container it enters.
  *
  * @param {BlockRecords} records the build of the stylesheet
  * @param {RunContext} context the run that built the records; its token lists read the values
+ * @param {DeclarationPlans} [plans] what the walk applies to the declarations; none leaves them as built
  * @return {ArenaIndex[]} the outermost overridable at-rules, in document order
  */
-export function walkDown(records, context) {
-  const walk = new RecordWalk(records, context);
+export function walkDown(records, context, plans) {
+  const walk = new RecordWalk(records, context, plans);
   // The stylesheet has no parent, so its context is the empty one.
   walk.walkChildren(records.root.index, 0);
   return walk.found;

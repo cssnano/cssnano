@@ -40,10 +40,11 @@ class ValueBuffer {
   #edited = false;
 
   /**
-   * @param {string} source the value as the stylesheet reads it
+   * @param {string | undefined} source the value as the stylesheet reads it,
+   *   or undefined when `shared` gives the value and its text is read from it
    * @param {TokenizeMode} [mode] how the tokenizer reads the value, such as
    *   with `U+` ranges for `unicode-range`
-   * @param {readonly CSSToken[]} [shared] tokens that already spell `source`,
+   * @param {readonly CSSToken[]} [shared] tokens that already spell the value,
    *   so tokens() returns them without tokenizing until the first edit
    */
   constructor(source, mode, shared) {

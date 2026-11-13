@@ -6,11 +6,20 @@ const { counter } = await import('../../../../util/countTokenize.js');
 const { createRunContext } = await import('../../src/passes/ir/runContext.js');
 const { default: postcss } = await import('postcss');
 const { walkStylesheet } = await import('../../src/pipeline/traversal.js');
+const { buildRecords } = await import('../../src/passes/ir/buildRecords.js');
+const { walkDown } = await import('../../src/pipeline/walkDown.js');
+const { declarationPlansOf } =
+  await import('../../src/pipeline/declarationWalk.js');
+const { commentStateOf } =
+  await import('../../src/pipeline/comments/nodeComments.js');
+const { AT_RULE_BLOCK, DECLARATION, RULE } =
+  await import('../../src/passes/ir/blockRecord.js');
 const { mergePass } = await import('../../src/passes/merge/index.js');
 const { TextTable } = await import('../../src/values/textTable.js');
 const { ident, integer } =
   await import('../../src/values/tokenConstructors.js');
 const { tokens } = await import('../../src/utils/value.js');
+const { tokenizeMode } = await import('../../src/values/tokenizeMode.js');
 const { ValueBuffer } = await import('../../src/values/valueBuffer.js');
 const { tokensText } = await import('../../src/values/tokensText.js');
 const { default: minifyParams } =
@@ -48,7 +57,7 @@ suite('the text table reads the text the host walk wrote', () => {
     const stage = {
       selector: (buffer) => buffer.replace(0, 1, [ident('z')]),
     };
-    walkStylesheet([stage], root, helpers, new Map(), table);
+    walkStylesheet([stage], root, helpers, new Map(), table, null);
     const rule = root.first;
     assert.equal(rule.selector, 'z, b');
     const before = tokenizeTotal();
@@ -60,7 +69,7 @@ suite('the text table reads the text the host walk wrote', () => {
     const root = postcss.parse('a, b {}');
     const table = new TextTable();
     const stage = { selector: (buffer) => buffer.tokens() };
-    walkStylesheet([stage], root, helpers, new Map(), table);
+    walkStylesheet([stage], root, helpers, new Map(), table, null);
     const rule = root.first;
     assert.equal(rule.selector, 'a, b');
     const before = tokenizeTotal();
@@ -74,7 +83,7 @@ suite('the text table reads the text the host walk wrote', () => {
     const stage = {
       selector: (buffer) => buffer.replace(0, 1, [ident('z')]),
     };
-    walkStylesheet([stage], root, helpers, new Map(), table);
+    walkStylesheet([stage], root, helpers, new Map(), table, null);
     const second = root.nodes[1];
     assert.equal(second.selector, 'z, b');
     const before = tokenizeTotal();
@@ -89,7 +98,7 @@ suite('the text table reads the text the host walk wrote', () => {
         buffer: (buffer) => buffer.replace(0, 1, [ident('z')]),
       }),
     };
-    walkStylesheet([stage], root, helpers, new Map(), table);
+    walkStylesheet([stage], root, helpers, new Map(), table, null);
     const atRule = root.first;
     assert.equal(atRule.params, 'z and (x)');
     const before = tokenizeTotal();
@@ -99,73 +108,120 @@ suite('the text table reads the text the host walk wrote', () => {
   });
 });
 
-suite('the text table reads the value the host walk stored', () => {
-  test("a reader takes the value list the host walk's stages read, without tokenizing", () => {
+/**
+ * The declaration records of a stylesheet after the build and the record walk
+ * with `stages`, as the host runs them, in document order.
+ *
+ * @param {import('postcss').Root} root
+ * @param {import('../../src/pipeline/host.js').Stage[]} stages
+ * @returns {{declarations: import('../../src/passes/ir/declarationRecord.js').DeclarationRecord[], context: import('../../src/passes/ir/runContext.js').RunContext}}
+ */
+function declarationsAfterWalk(root, stages) {
+  const context = createRunContext(new TextTable(), undefined);
+  const { records } = buildRecords(root, context);
+  walkDown(
+    records,
+    context,
+    declarationPlansOf(stages, false, commentStateOf(stages))
+  );
+  /** @type {import('../../src/passes/ir/declarationRecord.js').DeclarationRecord[]} */
+  const declarations = [];
+  /** @param {number} container */
+  const visit = (container) => {
+    for (
+      let entry = records.links.firstChild(container);
+      entry !== -1;
+      entry = records.links.nextSibling(entry)
+    ) {
+      const record = records.entry(entry);
+      if (record.kind === DECLARATION) declarations.push(record);
+      else if (record.kind === RULE || record.kind === AT_RULE_BLOCK) {
+        visit(entry);
+      }
+    }
+  };
+  visit(records.root.index);
+  return { declarations, context };
+}
+
+suite('the record walk reads the value lists the build interned', () => {
+  test("a reader takes the value list the walk's stages left, without tokenizing", () => {
     const root = postcss.parse('a { margin: 0 1px }');
-    const table = new TextTable();
     const stage = {
       forProperty: () => (buffer) => buffer.replace(0, 1, [integer(1)]),
     };
-    walkStylesheet([stage], root, helpers, new Map(), table);
-    const decl = root.first.first;
-    assert.equal(decl.value, '1 1px');
+    const { declarations, context } = declarationsAfterWalk(root, [stage]);
+    const [decl] = declarations;
+    assert.equal(tokensText(context.tokenLists.get(decl.valueList)), '1 1px');
     const before = tokenizeTotal();
-    assert.equal(table.tokens(decl).length, 3);
+    assert.equal(context.tokenLists.get(decl.valueList).length, 3);
     assert.equal(tokenizeTotal() - before, 0);
   });
 
-  test('two declarations of one property in one context that spell one value share one table entry', () => {
+  test('two declarations of one property in one context that spell one value share one list', () => {
     const root = postcss.parse('a { margin: 0 1px } b { margin: 0 1px }');
-    const table = new TextTable();
     const stage = {
       forProperty: () => (buffer) => buffer.replace(0, 1, [integer(1)]),
     };
-    walkStylesheet([stage], root, helpers, new Map(), table);
-    const [first, second] = [root.first.first, root.last.first];
-    const list = table.stored(first);
-    assert.notEqual(list, undefined);
-    assert.equal(table.stored(second), list);
+    const [first, second] = declarationsAfterWalk(root, [stage]).declarations;
+    assert.equal(first.valueList, second.valueList);
   });
 });
 
-suite('the host walk shares one token list per text', () => {
+suite('the record walk shares one token list per value text', () => {
   test('two properties that spell one value share one token list', () => {
     const root = postcss.parse('a { margin: 0 1px } b { padding: 0 1px }');
-    const table = new TextTable();
     const stage = {
       forProperty: () => (buffer) => buffer.replace(0, 1, [integer(1)]),
     };
-    walkStylesheet([stage], root, helpers, new Map(), table);
-    const [first, second] = [root.first.first, root.last.first];
-    const list = table.stored(first);
-    assert.notEqual(list, undefined);
-    assert.equal(table.stored(second), list);
+    const [first, second] = declarationsAfterWalk(root, [stage]).declarations;
+    assert.equal(first.valueList, second.valueList);
   });
 
   test("a value's stages read the list another property's value left, without tokenizing", () => {
     const root = postcss.parse('a { margin: 0 1px } b { padding: 0 1px }');
-    const table = new TextTable();
+    const context = createRunContext(new TextTable(), undefined);
+    const { records } = buildRecords(root, context);
     const stage = {
       forProperty: () => (buffer) => buffer.tokens(),
     };
     const before = tokenizeTotal();
-    walkStylesheet([stage], root, helpers, new Map(), table);
-    assert.equal(tokenizeTotal() - before, 1);
+    walkDown(
+      records,
+      context,
+      declarationPlansOf([stage], false, commentStateOf([stage]))
+    );
+    assert.equal(tokenizeTotal() - before, 0);
   });
 
   test('a unicode-range value does not take a list read in the default mode', () => {
     const root = postcss.parse(
       'a { color: u+0-7f } b { unicode-range: u+0-7f }'
     );
-    const table = new TextTable();
     const seen = [];
     const stage = {
       forProperty: () => (buffer) => {
         seen.push(buffer.tokens().length);
       },
     };
-    walkStylesheet([stage], root, helpers, new Map(), table);
+    declarationsAfterWalk(root, [stage]);
     assert.equal(seen[1], 1);
+  });
+
+  test('a unicode-range value that loses a comment is read in its tokenizer mode', () => {
+    const root = postcss.parse('a { unicode-range: U+0025/* drop */-00FF }');
+    const seen = [];
+    const stage = {
+      comments: () => () => true,
+      forProperty: () => (buffer) => {
+        seen.push(buffer.tokens().length);
+      },
+    };
+    declarationsAfterWalk(root, [stage]);
+    assert.equal(
+      seen[0],
+      tokens('U+0025 -00FF', tokenizeMode('unicode-range')).length
+    );
   });
 
   test('the walk stores no unicode-range list for the declaration', () => {
@@ -176,7 +232,7 @@ suite('the host walk shares one token list per text', () => {
         buffer.tokens();
       },
     };
-    walkStylesheet([stage], root, helpers, new Map(), table);
+    walkStylesheet([stage], root, helpers, new Map(), table, null);
     assert.equal(table.stored(root.first.first), undefined);
   });
 });

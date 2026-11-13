@@ -45,7 +45,8 @@ function storedTokens(unit, count) {
     root,
     helpers,
     new Map(),
-    table
+    table,
+    null
   );
   table.counted = 0;
   mergePass(root, targets, {}, undefined, table);

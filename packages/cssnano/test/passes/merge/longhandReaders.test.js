@@ -61,7 +61,7 @@ function walkedStylesheet(css) {
   const root = postcss.parse(css);
   const table = new TextTable();
   const stage = { forProperty: () => (buffer) => buffer.tokens() };
-  walkStylesheet([stage], root, helpers, new Map(), table);
+  walkStylesheet([stage], root, helpers, new Map(), table, null);
   return { root, table };
 }
 
@@ -171,9 +171,10 @@ suite('the longhand readers take a declaration from the text table', () => {
     );
     const before = tokenizeTotal();
     blockOf(root, table);
-    // One tokenization for the selector `a` beside its items, one for the
-    // selector as written, and one for the value PostCSS cleaned.
-    assert.equal(tokenizeTotal() - before, 3);
+    // Two selectors, one for `a` beside its items and one as written; the
+    // value PostCSS cleaned; the value as written, which the build interns in
+    // the property's mode; and the check for an important comment in it.
+    assert.equal(tokenizeTotal() - before, 5);
   });
 
   test('one build of the records tokenizes a value repeated on another rule once, since the run interns the text', () => {
@@ -190,8 +191,9 @@ suite('the longhand readers take a declaration from the text table', () => {
   test('parseRadiusShorthand reads the list stored for the node, without tokenizing', () => {
     const { root, table } = walkedStylesheet('a{border-radius:1px 2px}');
     const decl = root.first.first;
+    const list = table.tokens(decl);
     const before = tokenizeTotal();
-    assert.notEqual(parseRadiusShorthand(decl.value, table.tokens(decl)), null);
+    assert.notEqual(parseRadiusShorthand(decl.value, list), null);
     assert.equal(tokenizeTotal() - before, 0);
   });
 

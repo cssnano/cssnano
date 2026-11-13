@@ -3,13 +3,11 @@ import type { Stage } from './host.js';
 import type { PlanEntry } from './plan.js';
 import type { TextTable } from '../values/textTable.js';
 import type { CommentState } from './comments/nodeComments.js';
-import type { CSSToken } from '@csstools/css-tokenizer';
 export type RunState = {
     /**
      * in pipeline order
      */
     stages: readonly Stage[];
-    properties: Map<string, PlanEntry>;
     /**
      * by at-rule name
      */
@@ -22,13 +20,6 @@ export type RunState = {
      */
     table: TextTable;
     /**
-     * the token lists of the values, by tokenizer mode
-     */
-    valueLists: {
-        plain: Map<string, readonly CSSToken[]>;
-        unicodeRange: Map<string, readonly CSSToken[]>;
-    };
-    /**
      * the comment removal of this run, or null when no stage removes comments
      */
     comments: CommentState | null;
@@ -37,21 +28,23 @@ export type RunState = {
      */
     defaultNamespace: boolean;
     /**
-     * whether normalizeWhitespace is on, which removes the stray semicolons and reattaches the escapes of blocks
+     * whether normalizeWhitespace is on, which reattaches the escapes of blocks
      */
     normalizeWhitespace: boolean;
 };
 /**
- * Runs the comment, value, prelude and selector parts of the stages over a
- * stylesheet in a single walk, in document order. Each node loses its comments
- * first, then each text is read from its source, folded through its plan with
- * its context, and written back only when it changed.
+ * Runs the comment, prelude and selector parts of the stages over a stylesheet
+ * in a single walk, in document order. Each node loses its comments first, then
+ * each text is read from its source, folded through its plan with its context,
+ * and written back only when it changed. Declarations are left to the record
+ * walk.
  *
  * @param {readonly Stage[]} stages in pipeline order
  * @param {Root} root
  * @param {Helpers} helpers
  * @param {ReadonlyMap<string, unknown>} transforms the whole-stylesheet transforms of the run, by entry name
- * @param {TextTable} table the selector and value tokens the walk leaves for later readers
+ * @param {TextTable} table the selector and at-rule tokens the walk leaves for later readers
+ * @param {CommentState | null} comments the comment removal of the stylesheet, or null when no stage removes comments
  */
-export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers, transforms: ReadonlyMap<string, unknown>, table: TextTable): void;
+export declare function walkStylesheet(stages: readonly Stage[], root: Root, helpers: Helpers, transforms: ReadonlyMap<string, unknown>, table: TextTable, comments: CommentState | null): void;
 //# sourceMappingURL=traversal.d.ts.map

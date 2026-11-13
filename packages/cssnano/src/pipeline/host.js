@@ -4,6 +4,8 @@ import { TextTable } from '../values/textTable.js';
 import { walkAfterMerge } from './afterMerge.js';
 import { discardOverriddenAtRules } from './overridable.js';
 import { walkDown } from './walkDown.js';
+import { declarationPlansOf } from './declarationWalk.js';
+import { commentStateOf } from './comments/nodeComments.js';
 import rawCache from '../utils/rawCache.js';
 import { createRunContext } from '../passes/ir/runContext.js';
 import { runDriver } from '../passes/ir/runDriver.js';
@@ -14,6 +16,7 @@ import { runDriver } from '../passes/ir/runDriver.js';
  */
 
 /** @import {Plugin, Root} from 'postcss' */
+/** @import {DeclarationPlans} from './declarationWalk.js' */
 /** @import {ValueBuffer} from '../values/valueBuffer.js' */
 
 /**
@@ -131,6 +134,7 @@ const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the whole-stylesheet transforms of the run, by entry name
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} after
  * @param {ReadonlyMap<string, SymbolEntry>} symbols
+ * @param {DeclarationPlans | undefined} plans what the record walk applies to the declarations, absent when the run has no stages
  */
 function runRecords(
   root,
@@ -140,17 +144,21 @@ function runRecords(
   browsers,
   transforms,
   after,
-  symbols
+  symbols,
+  plans
 ) {
   const support = merge ? merge.runner.support(browsers) : undefined;
   const context = createRunContext(table, undefined, support?.features);
   const state = runDriver.build(root, context);
-  if (transforms.has('discardOverridden')) {
-    discardOverriddenAtRules(
-      state.records,
-      context.declarations,
-      walkDown(state.records, context)
-    );
+  if (plans !== undefined) {
+    const overridable = walkDown(state.records, context, plans);
+    if (transforms.has('discardOverridden')) {
+      discardOverriddenAtRules(
+        state.records,
+        context.declarations,
+        overridable
+      );
+    }
   }
   if (merge && support) {
     merge.runner.transforms(state.records, browsers, context, {
@@ -225,8 +233,10 @@ export function hostPlugin(
       return {
         OnceExit(root, helpers) {
           const table = new TextTable();
+          // The comment removal is read once per stylesheet, by both walks.
+          const comments = hasStages ? commentStateOf(stages) : null;
           if (hasStages) {
-            walkStylesheet(stages, root, helpers, transforms, table);
+            walkStylesheet(stages, root, helpers, transforms, table, comments);
           }
           // A run with stages builds the records, even when no merge, walk
           // after merge or symbol transform reads them.
@@ -239,7 +249,14 @@ export function hostPlugin(
               mergeBrowsers ?? noTargets,
               transforms,
               after,
-              symbols
+              symbols,
+              hasStages
+                ? declarationPlansOf(
+                    stages,
+                    transforms.has('normalizeWhitespace'),
+                    comments
+                  )
+                : undefined
             );
           }
         },

@@ -28,7 +28,7 @@ import { longstandingFeatures } from './syntaxFeatures.js';
  * warning, which has `text`, goes through `result.warn`; a removal is pushed as
  * it is.
  *
- * @typedef {{index: import('./blockRecord.js').ArenaIndex, type: string, plugin: string, text?: string}} RunMessage
+ * @typedef {{index: import('./blockRecord.js').ArenaIndex, type: string, plugin?: string, text?: string}} RunMessage
  */
 
 /**

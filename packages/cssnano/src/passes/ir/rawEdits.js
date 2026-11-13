@@ -45,6 +45,32 @@ export function writeRootAfter(records, after) {
 }
 
 /**
+ * Writes the separator before a declaration's value, which the printer reads.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @param {string} between
+ * @return {void}
+ */
+export function writeBetween(records, index, between) {
+  /** @type {DeclarationRecord} */ (records.entry(index)).between = between;
+}
+
+/**
+ * Writes the spelling of a declaration's important flag, which the printer
+ * reads when the declaration is important.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @param {string} spelling
+ * @return {void}
+ */
+export function writeImportantSpelling(records, index, spelling) {
+  /** @type {DeclarationRecord} */ (records.entry(index)).importantSpelling =
+    spelling;
+}
+
+/**
  * Writes the spellings of a declaration that the printer reads: the separator
  * before its value, and the important flag's spelling when it is important.
  *

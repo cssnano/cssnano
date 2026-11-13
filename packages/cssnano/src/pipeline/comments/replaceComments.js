@@ -1,15 +1,12 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
-import {
-  commentContents,
-  getTokens,
-  joinsIntoDifferentTokens,
-} from './tokenUtils.js';
+import { commentContents, joinsIntoDifferentTokens } from './tokenUtils.js';
 
 const { asciiLowerCase, calcSumFunctions, decoded, mathFunctions } =
   cssnanoUtils;
 
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
+/** @typedef {readonly CSSToken[]} Tokens */
 /** @typedef {(comment: string) => boolean | undefined} CanRemove */
 
 // Functions whose argument grammar is <calc-sum>, requiring whitespace
@@ -57,13 +54,11 @@ function mathDepthChange(parens, token) {
  * Reconstruct an ordinary value with comments removed or preserved,
  * normalizing whitespace and math operator spacing.
  *
- * @param {string} source
+ * @param {Tokens} tokens the tokens of the value, as written
  * @param {CanRemove} canRemove
- * @param {Map<string, CSSToken[]>} parserCache
  * @return {string}
  */
-function normalizeValue(source, canRemove, parserCache) {
-  const tokens = getTokens(source, parserCache);
+function normalizeValue(tokens, canRemove) {
   let result = '';
   let pendingSpace = false;
   let started = false;
@@ -136,31 +131,26 @@ function normalizeValue(source, canRemove, parserCache) {
  * pass through byte-exact; removal decisions consult the per-document
  * canRemove.
  *
- * @param {string | undefined} rawSource
+ * The caller gives the tokens of a text with a comment in it, and the text is
+ * returned as it is when it has none.
+ *
+ * @param {Tokens} tokens the tokens of the text, as written
  * @param {CanRemove} canRemove
- * @param {Map<string, CSSToken[]>} parserCache
  * @param {string=} separator
  * @param {boolean=} preserveWhitespace
  * @return {string}
  */
 export function replaceComments(
-  rawSource,
+  tokens,
   canRemove,
-  parserCache,
   separator = ' ',
   preserveWhitespace = false
 ) {
-  const source = rawSource || '';
-
-  if (!source.includes('/*')) {
-    return source;
-  }
-
   if (preserveWhitespace) {
     // Custom property values keep their whitespace byte-for-byte.
     let preserved = '';
 
-    for (const [type, raw] of getTokens(source, parserCache)) {
+    for (const [type, raw] of tokens) {
       if (type === TokenType.EOF) {
         continue;
       }
@@ -176,7 +166,7 @@ export function replaceComments(
     return preserved;
   }
 
-  return normalizeValue(source, canRemove, parserCache);
+  return normalizeValue(tokens, canRemove);
 }
 
 /**
@@ -184,25 +174,18 @@ export function replaceComments(
  * runs collapse to a single space and trim at the edges; kept comments
  * pass through byte-exact.
  *
- * @param {string | undefined} rawSource
+ * @param {Tokens} tokens the tokens of the selector, as written
  * @param {CanRemove} canRemove
- * @param {Map<string, CSSToken[]>} parserCache
  * @return {string}
  */
-export function replaceCommentsInSelector(rawSource, canRemove, parserCache) {
-  const source = rawSource || '';
-
-  if (!source.includes('/*')) {
-    return source;
-  }
-
+export function replaceCommentsInSelector(tokens, canRemove) {
   let result = '';
   let pendingSpace = false;
   let started = false;
   let removedCommentBefore = false;
   let lastRaw = '';
 
-  for (const [type, raw] of getTokens(source, parserCache)) {
+  for (const [type, raw] of tokens) {
     if (type === TokenType.EOF) {
       continue;
     }
@@ -245,7 +228,7 @@ export function replaceCommentsInSelector(rawSource, canRemove, parserCache) {
         separator = ' ';
       } else if (
         removedCommentBefore &&
-        joinsIntoDifferentTokens(lastRaw, raw, parserCache)
+        joinsIntoDifferentTokens(lastRaw, raw)
       ) {
         separator = '/**/';
       }

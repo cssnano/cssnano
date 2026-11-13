@@ -15,8 +15,8 @@ const replaceComments = new URL(
 
 const walk = new URL('../../src/pipeline/traversal.js', import.meta.url).href;
 
-const nodeComments = new URL(
-  '../../src/pipeline/comments/nodeComments.js',
+const declarationWalk = new URL(
+  '../../src/pipeline/declarationWalk.js',
   import.meta.url
 ).href;
 
@@ -42,7 +42,7 @@ export const mutations = [
   {
     name: 'fuse selector tokens across a removed comment',
     target: replaceComments,
-    find: 'joinsIntoDifferentTokens(lastRaw, raw, parserCache)',
+    find: 'joinsIntoDifferentTokens(lastRaw, raw)',
     replace: 'false',
   },
   {
@@ -73,9 +73,9 @@ export const mutations = [
   },
   {
     name: 'skip declaration comment processing',
-    target: walk,
-    find: "text = commentFreeText(read, comments, decl.prop.startsWith('--'));",
-    replace: 'text = read;',
+    target: declarationWalk,
+    find: 'id = commentFreeIdOf(run, source, prop, comments);',
+    replace: 'id = source;',
   },
   {
     name: 'skip selector comment processing',
@@ -91,8 +91,8 @@ export const mutations = [
   },
   {
     name: 'skip important comment processing',
-    target: nodeComments,
-    find: "if (!important || !important.includes('/*')) return;",
+    target: declarationWalk,
+    find: "if (spelling === null || !spelling.includes('/*')) return;",
     replace: 'return;',
   },
 ];

@@ -1,19 +1,33 @@
-import { TokenType } from '@csstools/css-tokenizer';
+import { tokenize } from '@csstools/css-tokenizer';
 import {
   replaceComments,
   replaceCommentsInSelector,
 } from './replaceComments.js';
-import { getTokens } from './tokenUtils.js';
 
 /** @import {AtRule, Declaration, Rule} from 'postcss' */
 /** @import {CanRemove} from './replaceComments.js' */
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {Stage} from '../host.js' */
 
 /**
  * The comment removal of one stylesheet: the predicate that decides which
- * comments go, and the tokens parsed so far, shared by every node.
- * @typedef {{canRemove: CanRemove, parserCache: Map<string, CSSToken[]>}} CommentState
+ * comments go.
+ * @typedef {{canRemove: CanRemove}} CommentState
  */
+
+/**
+ * The comment removal of a stylesheet, from the first stage that has one.
+ *
+ * @param {readonly Stage[]} stages
+ * @returns {CommentState | null} null when no stage removes comments
+ */
+export function commentStateOf(stages) {
+  for (const stage of stages) {
+    if (stage.comments !== undefined) {
+      return { canRemove: stage.comments() };
+    }
+  }
+  return null;
+}
 
 /**
  * Removes the comments in the gap that a node keeps between its name and its
@@ -28,9 +42,8 @@ export function removeBetweenComments(node, comments) {
   if (typeof between !== 'string' || !between.includes('/*')) return;
   const preserveWhitespace = node.type === 'decl' && node.prop.startsWith('--');
   node.raws.between = replaceComments(
-    between,
+    tokenize({ css: between }),
     comments.canRemove,
-    comments.parserCache,
     ' ',
     preserveWhitespace
   );
@@ -51,33 +64,11 @@ export function removeBetweenComments(node, comments) {
 export function commentFreeText(text, comments, preserveWhitespace = false) {
   if (!text.includes('/*')) return text;
   return replaceComments(
-    text,
+    tokenize({ css: text }),
     comments.canRemove,
-    comments.parserCache,
     ' ',
     preserveWhitespace
   );
-}
-
-/**
- * Removes the comments from the `!important` flag, which keeps its own
- * spelling when it has none left.
- *
- * @param {Declaration} decl
- * @param {CommentState} comments
- */
-export function removeImportantComments(decl, comments) {
-  const important = decl.raws.important;
-  if (!important || !important.includes('/*')) return;
-  const cleaned = replaceComments(
-    important,
-    comments.canRemove,
-    comments.parserCache
-  );
-  const hasComment = getTokens(cleaned, comments.parserCache).some(
-    ([type]) => type === TokenType.Comment
-  );
-  decl.raws.important = hasComment ? cleaned : '!important';
 }
 
 /**
@@ -90,11 +81,7 @@ export function removeImportantComments(decl, comments) {
  */
 export function commentFreeSelector(text, comments) {
   if (!text.includes('/*')) return text;
-  return replaceCommentsInSelector(
-    text,
-    comments.canRemove,
-    comments.parserCache
-  );
+  return replaceCommentsInSelector(tokenize({ css: text }), comments.canRemove);
 }
 
 /**
@@ -108,9 +95,8 @@ export function removeAfterNameComments(atRule, comments) {
   const afterName = atRule.raws.afterName;
   if (!afterName || !afterName.includes('/*')) return;
   const replaced = replaceComments(
-    afterName,
-    comments.canRemove,
-    comments.parserCache
+    tokenize({ css: afterName }),
+    comments.canRemove
   );
   atRule.raws.afterName = replaced === '' ? ' ' : ` ${replaced} `;
 }
