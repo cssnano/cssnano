@@ -89,7 +89,7 @@ export function contextOf(node, contexts) {
   }
   if (node.type === 'atrule') {
     const atRule = /** @type {AtRule} */ (node);
-    const name = atRule.name.toLowerCase();
+    const name = cssnanoUtils.asciiLowerCase(atRule.name);
     if (name.endsWith('keyframes')) context = withBit(context, IN_KEYFRAMES);
     if (name === 'property') {
       context = withBit(context, IN_PROPERTY);

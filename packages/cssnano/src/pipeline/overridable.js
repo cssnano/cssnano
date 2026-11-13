@@ -11,7 +11,7 @@ const SCOPE_RULES = new Set(['media', 'supports', 'container', 'layer']);
  */
 function isOverridable(name) {
   return OVERRIDABLE_RULES.has(
-    cssnanoUtils.vendorUnprefixed(name.toLowerCase())
+    cssnanoUtils.vendorUnprefixed(cssnanoUtils.asciiLowerCase(name))
   );
 }
 
@@ -20,7 +20,9 @@ function isOverridable(name) {
  * @return {boolean}
  */
 function isScope(name) {
-  return SCOPE_RULES.has(cssnanoUtils.vendorUnprefixed(name.toLowerCase()));
+  return SCOPE_RULES.has(
+    cssnanoUtils.vendorUnprefixed(cssnanoUtils.asciiLowerCase(name))
+  );
 }
 
 /**
@@ -57,7 +59,7 @@ function getScope(node) {
   /** @type {Container | Document | undefined} */
   let current = node.parent;
 
-  const chain = [node.name.toLowerCase(), node.params];
+  const chain = [cssnanoUtils.asciiLowerCase(node.name), node.params];
 
   while (current) {
     if (
@@ -67,8 +69,8 @@ function getScope(node) {
       const atRule = /** @type {AtRule} */ (current);
       chain.unshift(
         atRule.params
-          ? atRule.name.toLowerCase() + ' ' + atRule.params
-          : atRule.name.toLowerCase()
+          ? cssnanoUtils.asciiLowerCase(atRule.name) + ' ' + atRule.params
+          : cssnanoUtils.asciiLowerCase(atRule.name)
       );
     }
     current = current.parent;
