@@ -65,3 +65,14 @@ test('the @charset stays when non-ASCII text remains after discardUnused', async
     '@charset "utf-8";a{content:"é"}'
   );
 });
+
+// The value spells the important comment, which the name the keyframes list
+// matches leaves out, so the keyframes stays and is renamed with the value.
+test('discardUnused keeps a @keyframes that a value references beside an important comment', async () => {
+  assert.equal(
+    await minify(
+      '@keyframes fade{from{opacity:0}to{opacity:1}}a{animation-name:/*!x*/fade}'
+    ),
+    '@keyframes a{0%{opacity:0}to{opacity:1}}a{animation-name:/*!x*/a}'
+  );
+});
