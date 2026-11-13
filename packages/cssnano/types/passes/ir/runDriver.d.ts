@@ -6,21 +6,19 @@ export type RunState = {
     records: BlockRecords;
     nodes: NodeTable;
     context: RunContext;
-    release: (() => void) | undefined;
 };
 /** @import {Result, Root} from 'postcss' */
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {NodeTable} from './nodeTable.js' */
 /** @import {RunContext} from './runContext.js' */
 /**
- * A run between its build and its end: the records and nodes of the build, and
- * the release of the window guard that the build set under checks.
+ * A run between its build and its end: the records, their nodes, and the run's
+ * context.
  *
- * @typedef {{records: BlockRecords, nodes: NodeTable, context: RunContext, release: (() => void) | undefined}} RunState
+ * @typedef {{records: BlockRecords, nodes: NodeTable, context: RunContext}} RunState
  */
 /**
- * Builds the records of a stylesheet, and guards the text table for the window
- * that the transforms run in, under consistency checks.
+ * Builds the records of a stylesheet from its tree.
  *
  * @param {Root} css
  * @param {RunContext} context
@@ -28,9 +26,9 @@ export type RunState = {
  */
 declare function build(css: Root, context: RunContext): RunState;
 /**
- * Ends a run: releases the window guard, writes the records back, checks them
- * against the tree, and gives the result its messages in the order they were
- * appended: warnings through `warn`, the rest pushed to `messages`.
+ * Ends a run: writes the records back, checks them against the tree, and gives
+ * the result its messages in the order they were appended: warnings through
+ * `warn`, the rest pushed to `messages`.
  *
  * @param {RunState} state
  * @param {{browsers: readonly string[], folded: boolean, result?: Result}} end

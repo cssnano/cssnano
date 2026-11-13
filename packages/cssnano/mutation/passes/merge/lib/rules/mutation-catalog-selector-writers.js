@@ -63,11 +63,10 @@ export const mutations = [
     replace: '',
   },
   {
-    name: 'store the joined selector list as text, dropping its tokens',
+    name: 'keep the raw of a rewritten selector, which restores the comments the text dropped',
     target: irSource('writeSelector.js'),
-    find: '  textTable.write(node, list);',
-    replace:
-      "  textTable.setText(node, list.map((token) => token[1]).join(''));",
+    find: '    delete node.raws.selector;',
+    replace: '',
   },
   {
     name: 'a merged rule takes no combined summaries of the two lists it is built from',

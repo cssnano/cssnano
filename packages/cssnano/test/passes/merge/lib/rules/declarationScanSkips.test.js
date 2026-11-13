@@ -17,7 +17,6 @@ import {
   buildTestRecords,
   placeUnlinked,
 } from './liveRecords.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {Root} from 'postcss' */
 
@@ -27,11 +26,8 @@ import { TextTable } from '../../../../../src/values/textTable.js';
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(undefined, true)
-  );
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  const state = new MergeState(['chrome 120'], createRunContext(true));
+  state.records = buildTestRecords(root, state, true);
   return { root, state };
 }
 

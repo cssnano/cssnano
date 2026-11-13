@@ -4,8 +4,6 @@ import { suite, test } from 'node:test';
 // The counter must hook the tokenizer before the walk loads it.
 const { counter } = await import('../../../../../util/countTokenize.js');
 const { default: postcss } = await import('postcss');
-const { walkStylesheet } = await import('../../../src/pipeline/traversal.js');
-const { TextTable } = await import('../../../src/values/textTable.js');
 const { mergePass, transformPass } =
   await import('../../../src/passes/merge/index.js');
 const { removeRules, takePlaceOf } =
@@ -18,7 +16,6 @@ const { addSelectors } = await import('../../../src/passes/ir/selectorList.js');
 const { createRunContext } =
   await import('../../../src/passes/ir/runContext.js');
 const { resolveTargets } = await import('../../../src/utils/browserTargets.js');
-const { tokensText } = await import('../../../src/values/tokensText.js');
 
 /**
  * @param {import('postcss').Root} root
@@ -49,17 +46,13 @@ function tokenizeTotal() {
 }
 
 /**
- * Parses the stylesheet and gives each selector a token list through the
- * host walk, as the default preset does before the merge pass runs.
+ * Parses the stylesheet, the input of the merge pass.
  *
  * @param {string} css
- * @return {{root: import('postcss').Root, table: InstanceType<typeof TextTable>}}
+ * @return {{root: import('postcss').Root}}
  */
 function walkedStylesheet(css) {
-  const root = postcss.parse(css);
-  const table = new TextTable();
-  walkStylesheet(root, new Map(), null);
-  return { root, table };
+  return { root: postcss.parse(css) };
 }
 
 /**
@@ -92,102 +85,104 @@ function ruleWith(root, selector) {
   return found;
 }
 
-suite('the merge pass leaves the selectors it writes in the text table', () => {
-  test('a rule that merge joins with another reads its selector list without tokenizing', () => {
-    const { root, table } = walkedStylesheet('a {color:red} b {color:red}');
-    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    const joined = ruleWith(root, 'a,b');
-    const before = tokenizeTotal();
-    assert.equal(tokensText(table.tokens(joined)), 'a,b');
-    assert.equal(tokenizeTotal() - before, 0);
-  });
+suite(
+  'the merge pass leaves the selectors it writes as the rules read them',
+  () => {
+    test('a rule that merge joins with another reads its selector list without tokenizing', () => {
+      const { root } = walkedStylesheet('a {color:red} b {color:red}');
+      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      const joined = ruleWith(root, 'a,b');
+      const before = tokenizeTotal();
+      assert.equal(joined.selector, 'a,b');
+      assert.equal(tokenizeTotal() - before, 0);
+    });
 
-  test('a shared rule that merge builds from two selector lists reads its list without tokenizing', () => {
-    const { root, table } = walkedStylesheet(
-      'a, c {color:red;margin:0} b {color:red;padding:0}'
-    );
-    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    const shared = ruleWith(root, 'a,c,b');
-    const before = tokenizeTotal();
-    assert.equal(tokensText(table.tokens(shared)), 'a,c,b');
-    assert.equal(tokenizeTotal() - before, 0);
-  });
+    test('a shared rule that merge builds from two selector lists reads its list without tokenizing', () => {
+      const { root } = walkedStylesheet(
+        'a, c {color:red;margin:0} b {color:red;padding:0}'
+      );
+      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      const shared = ruleWith(root, 'a,c,b');
+      const before = tokenizeTotal();
+      assert.equal(shared.selector, 'a,c,b');
+      assert.equal(tokenizeTotal() - before, 0);
+    });
 
-  test('a rule that merge clones with its selector list keeps the separator of the source, and merge reads its list without tokenizing', () => {
-    const { root, table } = walkedStylesheet(
-      'a, c {color:red;margin:0} b {color:red;padding:0}'
-    );
-    const items = distinctItemsOf(root);
-    const selectors = distinctSelectorsOf(root);
-    const before = tokenizeTotal();
-    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    ruleWith(root, 'a, c');
-    assert.equal(
-      tokenizeTotal() - before,
-      items + distinctValuesOf(root) + selectors
-    );
-  });
+    test('a rule that merge clones with its selector list keeps the separator of the source, and merge reads its list without tokenizing', () => {
+      const { root } = walkedStylesheet(
+        'a, c {color:red;margin:0} b {color:red;padding:0}'
+      );
+      const items = distinctItemsOf(root);
+      const selectors = distinctSelectorsOf(root);
+      const before = tokenizeTotal();
+      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      ruleWith(root, 'a, c');
+      assert.equal(
+        tokenizeTotal() - before,
+        items + distinctValuesOf(root) + selectors
+      );
+    });
 
-  test('a rule that a later rule joins by repeating its declarations reads its grown selector list without tokenizing', () => {
-    const { root, table } = walkedStylesheet(
-      'a {color:red} p {margin:0} b {color:red}'
-    );
-    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    const group = ruleWith(root, 'a,b');
-    const before = tokenizeTotal();
-    assert.equal(tokensText(table.tokens(group)), 'a,b');
-    assert.equal(tokenizeTotal() - before, 0);
-  });
+    test('a rule that a later rule joins by repeating its declarations reads its grown selector list without tokenizing', () => {
+      const { root } = walkedStylesheet(
+        'a {color:red} p {margin:0} b {color:red}'
+      );
+      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      const group = ruleWith(root, 'a,b');
+      const before = tokenizeTotal();
+      assert.equal(group.selector, 'a,b');
+      assert.equal(tokenizeTotal() - before, 0);
+    });
 
-  test('elementKeys reads the selector merge.js wrote, without tokenizing', () => {
-    const { root, table } = walkedStylesheet(
-      'div > a {color:red} div > b {color:red} p {margin:0} div > c {color:red}'
-    );
-    const items = distinctItemsOf(root);
-    const selectors = distinctSelectorsOf(root);
-    const before = tokenizeTotal();
-    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    assert.equal(
-      tokenizeTotal() - before,
-      items + distinctValuesOf(root) + selectors
-    );
-  });
+    test('elementKeys reads the selector merge.js wrote, without tokenizing', () => {
+      const { root } = walkedStylesheet(
+        'div > a {color:red} div > b {color:red} p {margin:0} div > c {color:red}'
+      );
+      const items = distinctItemsOf(root);
+      const selectors = distinctSelectorsOf(root);
+      const before = tokenizeTotal();
+      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      assert.equal(
+        tokenizeTotal() - before,
+        items + distinctValuesOf(root) + selectors
+      );
+    });
 
-  test('elementKeys reads the selector declarationJoin.js wrote, without tokenizing', () => {
-    const { root, table } = walkedStylesheet(
-      'div > a {color:red} p {margin:0} div > b {color:red}'
-    );
-    const items = distinctItemsOf(root);
-    const selectors = distinctSelectorsOf(root);
-    const before = tokenizeTotal();
-    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    assert.equal(
-      tokenizeTotal() - before,
-      items + distinctValuesOf(root) + selectors
-    );
-  });
+    test('elementKeys reads the selector declarationJoin.js wrote, without tokenizing', () => {
+      const { root } = walkedStylesheet(
+        'div > a {color:red} p {margin:0} div > b {color:red}'
+      );
+      const items = distinctItemsOf(root);
+      const selectors = distinctSelectorsOf(root);
+      const before = tokenizeTotal();
+      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      assert.equal(
+        tokenizeTotal() - before,
+        items + distinctValuesOf(root) + selectors
+      );
+    });
 
-  test('elementKeys reads the selector ruleRewrite.js wrote, without tokenizing', () => {
-    const { root, table } = walkedStylesheet(
-      'div > a, div > c {color:red;margin:0} div > b {color:red;padding:0} div > d {color:red}'
-    );
-    const items = distinctItemsOf(root);
-    const selectors = distinctSelectorsOf(root);
-    const before = tokenizeTotal();
-    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    assert.equal(
-      tokenizeTotal() - before,
-      items + distinctValuesOf(root) + selectors
-    );
-  });
-});
+    test('elementKeys reads the selector ruleRewrite.js wrote, without tokenizing', () => {
+      const { root } = walkedStylesheet(
+        'div > a, div > c {color:red;margin:0} div > b {color:red;padding:0} div > d {color:red}'
+      );
+      const items = distinctItemsOf(root);
+      const selectors = distinctSelectorsOf(root);
+      const before = tokenizeTotal();
+      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      assert.equal(
+        tokenizeTotal() - before,
+        items + distinctValuesOf(root) + selectors
+      );
+    });
+  }
+);
 
 suite('the merge pass writes selectors through its records', () => {
-  test('a merged rule whose selector changed without a stored list spells its new selector in the table', () => {
+  test('a merged rule whose selector changed spells its new selector', () => {
     const root = postcss.parse('a {color:red} b {color:red}');
-    const table = new TextTable();
-    mergePass(root, resolveTargets({}, undefined), {}, undefined, table);
-    assert.equal(tokensText(table.tokens(ruleWith(root, 'a,b'))), 'a,b');
+    mergePass(root, resolveTargets({}, undefined), {}, undefined);
+    assert.equal(ruleWith(root, 'a,b').selector, 'a,b');
   });
 
   test('a marked record prints the comment that its selector items keep', () => {
@@ -196,8 +191,23 @@ suite('the merge pass writes selectors through its records', () => {
     const { records, nodes } = buildRecords(root, context);
     const rule = records.rule(records.links.firstChild(records.root.index));
     addSelectors(records, rule.index, [], context.tokenLists, []);
-    writeBack(records, nodes, context.tokenLists, new TextTable());
+    writeBack(records, nodes, context.tokenLists);
     assert.equal(root.toString(), 'a /*x*/,c {color:red}');
+  });
+
+  test('a rewritten selector prints its new text, not the raw that kept the comment', () => {
+    const root = postcss.parse('a /*x*/ ,b{color:red}');
+    const context = createRunContext();
+    const { records, nodes } = buildRecords(root, context);
+    const rule = records.rule(records.links.firstChild(records.root.index));
+    addSelectors(records, rule.index, [], context.tokenLists, []);
+    records.entry(rule.index).writtenList = context.valueIds.idOf(
+      context.tokenLists,
+      undefined,
+      'a  ,b'
+    );
+    writeBack(records, nodes, context.tokenLists);
+    assert.equal(root.toString(), 'a  ,b{color:red}');
   });
 });
 
@@ -209,7 +219,7 @@ suite('the merge pass writes selectors through its records', () => {
  */
 function whitespaceRecordsOf(css, consistencyChecks = false) {
   const root = postcss.parse(css);
-  const context = createRunContext(new TextTable(), consistencyChecks);
+  const context = createRunContext(consistencyChecks);
   const { records, nodes } = buildRecords(root, context);
   return { root, records, nodes, tokenLists: context.tokenLists };
 }
@@ -307,14 +317,13 @@ test('a rule merged again prints the raws of the rule its first merge took them 
   );
 });
 
-test('write-back stores no selector of a marked rule the root does not reach', () => {
+test('write-back leaves the selector of a marked rule the root does not reach as it was', () => {
   const { records, nodes, tokenLists } = whitespaceRecordsOf(
     'a{color:red}b{color:red}'
   );
   const first = records.rule(records.links.firstChild(records.root.index));
   addSelectors(records, first.index, [], tokenLists, []);
   records.detach(first.index);
-  const table = new TextTable();
-  writeBack(records, nodes, tokenLists, table);
-  assert.equal(table.stored(nodes[first.index]), undefined);
+  writeBack(records, nodes, tokenLists);
+  assert.equal(nodes[first.index].selector, 'a');
 });

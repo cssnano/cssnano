@@ -1,6 +1,13 @@
 import cssnanoUtils from '#utils';
+import { DECLARATION, RULE } from '../passes/ir/blockRecord.js';
+import { writeBefore } from '../passes/ir/rawEdits.js';
+import { declaredValue } from '../passes/ir/declaredText.js';
+import { writeValueList } from '../passes/ir/valueEdits.js';
+import { tokenizeMode } from '../values/tokenizeMode.js';
 
-/** @import {AtRule, ChildNode, Container, Declaration, Rule} from 'postcss' */
+/** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
+/** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
+/** @import {RunContext} from '../passes/ir/runContext.js' */
 
 /**
  * Removes the stray semicolons that the raw whitespace before a declaration
@@ -8,15 +15,15 @@ import cssnanoUtils from '#utils';
  * container, or follows a rule, keeps its raw, since the parser gives no
  * semicolon there that the output needs to drop.
  *
- * @param {Declaration} decl
- * @returns {void}
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index a declaration
  */
-export function stripStrayRawSemicolon(decl) {
-  const { before } = decl.raws;
-  if (!before?.includes(';')) return;
-  const prev = decl.prev();
-  if (prev && prev.type !== 'rule') {
-    decl.raws.before = before.replaceAll(';', '');
+export function stripStrayRawSemicolon(records, index) {
+  const { before } = records.entry(index);
+  if (before === null || !before.includes(';')) return;
+  const prev = records.links.prevSibling(index);
+  if (prev !== -1 && records.entry(prev).kind !== RULE) {
+    writeBefore(records, index, before.replaceAll(';', ''));
   }
 }
 
@@ -24,19 +31,35 @@ export function stripStrayRawSemicolon(decl) {
  * Gives the escaped character of a block back to its last declaration. The
  * parser puts that character in the raw after the block when the last
  * declaration has no semicolon, so the escape would otherwise be left dangling.
+ * The declaration's value becomes its cleaned value with the character, which
+ * is what the node form did, so the comments the value held are dropped too.
  *
- * @param {Rule | AtRule} node
- * @returns {void}
+ * @param {BlockRecords} records
+ * @param {RunContext} run
+ * @param {ArenaIndex} index a rule or an at-rule with a block, before its children are visited
  */
-export function reattachBlockEscape(node) {
-  const last = /** @type {ChildNode | undefined} */ (
-    /** @type {Container} */ (node).last
+export function reattachBlockEscape(records, run, index) {
+  const { after } =
+    /** @type {import('../passes/ir/ruleRecord.js').RuleRecord} */ (
+      records.entry(index)
+    );
+  if (!after) return;
+  const last = records.links.lastChild(index);
+  if (last === -1 || records.entry(last).kind !== DECLARATION) return;
+  const declaration =
+    /** @type {import('../passes/ir/declarationRecord.js').DeclarationRecord} */ (
+      records.entry(last)
+    );
+  const value = declaredValue(run.tokenLists, declaration);
+  if (!cssnanoUtils.endsWithEscapingBackslash(value)) return;
+  writeValueList(
+    records,
+    run,
+    last,
+    run.valueIds.idOf(
+      run.tokenLists,
+      tokenizeMode(declaration.prop),
+      value + after[0]
+    )
   );
-  if (
-    last?.type === 'decl' &&
-    cssnanoUtils.endsWithEscapingBackslash(last.value) &&
-    node.raws.after
-  ) {
-    last.value += node.raws.after[0];
-  }
 }

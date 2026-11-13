@@ -15,7 +15,7 @@ import { runDriver } from '../../../src/passes/ir/runDriver.js';
 function declarationsOf(css) {
   const { records } = runDriver.build(
     postcss.parse(css),
-    createRunContext(undefined, true)
+    createRunContext(true)
   );
   const { links } = records;
   const declarations = [];

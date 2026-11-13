@@ -5,8 +5,8 @@ import { test } from 'node:test';
 // parser loads after it.
 const { counter } = await import('../../../../util/countTokenize.js');
 const { default: postcss } = await import('postcss');
-const { TextTable } = await import('../../src/values/textTable.js');
 const { selectorRanges } = await import('../../../../util/selectorRanges.js');
+const { tokens } = await import('../../src/utils/value.js');
 const { isInvalidSelector } =
   await import('../../src/plugins/postcss-minify-selectors/lib/isInvalidSelector.js');
 
@@ -18,7 +18,7 @@ function tokenizeTotal() {
 test("isInvalidSelector reads a rule's selector tokens, without tokenizing", () => {
   const root = postcss.parse('.a, [x=] {}');
   const rule = root.first;
-  const list = new TextTable().tokens(rule);
+  const list = tokens(rule.selector);
   const [, second] = selectorRanges(list);
   const before = tokenizeTotal();
   isInvalidSelector(rule.selector, list, second.start, second.end);
@@ -28,7 +28,7 @@ test("isInvalidSelector reads a rule's selector tokens, without tokenizing", () 
 test("isInvalidSelector judges a rule's selector range by the selector it spells", () => {
   const root = postcss.parse('.a, [x=] {}');
   const rule = root.first;
-  const list = new TextTable().tokens(rule);
+  const list = tokens(rule.selector);
   const [first, second] = selectorRanges(list);
   assert.equal(
     isInvalidSelector(rule.selector, list, first.start, first.end),

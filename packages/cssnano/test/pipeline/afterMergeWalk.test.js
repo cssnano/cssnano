@@ -21,7 +21,7 @@ function label(node) {
  */
 function discardWithVisit(css, visit) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = runDriver.build(root, context);
   /** @type {string[]} */
   const visited = [];

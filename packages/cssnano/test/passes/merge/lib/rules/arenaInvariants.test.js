@@ -11,10 +11,7 @@ import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { ruleRecordOf, buildTestRecords } from './liveRecords.js';
 
 const createState = (consistencyChecks = false) =>
-  new MergeState(
-    ['chrome 120'],
-    createRunContext(undefined, consistencyChecks)
-  );
+  new MergeState(['chrome 120'], createRunContext(consistencyChecks));
 
 /**
  * Builds the records of `css` and absorbs the first rule into the last, then
@@ -26,7 +23,7 @@ const createState = (consistencyChecks = false) =>
  */
 function unreachedRecord(state, css, consistencyChecks) {
   const root = postcss.parse(css);
-  state.records = buildTestRecords(root, state, undefined, consistencyChecks);
+  state.records = buildTestRecords(root, state, consistencyChecks);
   const record = ruleRecordOf(state.records, root.first);
   state.absorbEarlier(
     ruleRecordOf(state.records, root.last),
@@ -39,7 +36,7 @@ function unreachedRecord(state, css, consistencyChecks) {
 test('holdsOnlyDeclarationsOf should be true for a rule of two identical declarations that share one id', () => {
   const state = createState(false);
   const root = postcss.parse('a{color:red;color:red}');
-  state.records = buildTestRecords(root, state, undefined, false);
+  state.records = buildTestRecords(root, state, false);
   const record = ruleRecordOf(state.records, root.first);
   assert.equal(holdsOnlyDeclarationsOf(state.records, record.index), true);
 });

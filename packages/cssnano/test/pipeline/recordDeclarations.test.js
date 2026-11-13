@@ -53,7 +53,7 @@ function removeComments(canRemove) {
  * @returns {{record: import('../../src/passes/ir/declarationRecord.js').DeclarationRecord, context: import('../../src/passes/ir/runContext.js').RunContext, before: number}}
  */
 function declarationAfterWalk(css, stages) {
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const { records } = buildRecords(postcss.parse(css), context);
   const rule = records.links.firstChild(records.root.index);
   const index = records.links.firstChild(rule);

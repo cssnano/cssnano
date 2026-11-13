@@ -1,4 +1,3 @@
-import { TextTable } from '../../values/textTable.js';
 import type { ChildNode, Container } from 'postcss';
 import type { BlockRecords } from './blockRecords.js';
 import type { NodeTable } from './nodeTable.js';
@@ -65,8 +64,7 @@ export declare function replaceChildren(rebuilt: Rebuilt[]): void;
  * @param {BlockRecords} records
  * @param {NodeTable} nodes the node of each entry, from the build; write-back adds the merged rules' nodes
  * @param {TokenLists} tokenLists the run's token lists, which the ids of the rules name
- * @param {TextTable} [textTable] the table the selectors are written through
  * @return {void}
  */
-export declare function writeBack(records: BlockRecords, nodes: NodeTable, tokenLists: TokenLists, textTable?: TextTable): void;
+export declare function writeBack(records: BlockRecords, nodes: NodeTable, tokenLists: TokenLists): void;
 //# sourceMappingURL=writeBack.d.ts.map

@@ -26,7 +26,7 @@ const NO_BROWSERS = [];
  * @return {{records: BlockRecords, context: RunContext}}
  */
 function buildOf(css) {
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const { records } = runDriver.build(postcss.parse(css), context);
   return { records, context };
 }

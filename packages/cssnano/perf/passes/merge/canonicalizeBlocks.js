@@ -11,7 +11,6 @@ import {
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
-import { TextTable } from '../../../src/values/textTable.js';
 
 const fixtures = new URL('../../../../../frameworks/', import.meta.url);
 const browsers = resolveTargets({}, undefined);
@@ -26,13 +25,13 @@ function roundOf(css) {
   const root = postcss.parse(css);
   const { placeShorthands, boxSupport, pairShorthands, features } =
     targetSupportOf(browsers);
-  const run = createRunContext(new TextTable(), undefined, features);
+  const run = createRunContext(undefined, features);
   const { records, nodes } = buildRecords(root, run);
   canonicalizeRecords(
     records,
     longhandContext(placeShorthands, boxSupport, pairShorthands, run)
   );
-  writeBack(records, nodes, run.tokenLists, run.textTable);
+  writeBack(records, nodes, run.tokenLists);
   return root.toString();
 }
 

@@ -8,7 +8,6 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 import { assertRecordsMatchTree } from '../../../../../src/passes/ir/treeMatch.js';
 import { writeBack } from '../../../../../src/passes/ir/writeBack.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {Container, Root} from 'postcss' */
 
@@ -18,9 +17,9 @@ import { TextTable } from '../../../../../src/values/textTable.js';
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  state.records = buildTestRecords(root, state, true);
   return { root, state };
 }
 

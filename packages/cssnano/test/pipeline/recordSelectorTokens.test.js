@@ -11,7 +11,6 @@ const { declarationPlansOf } =
   await import('../../src/pipeline/declarationWalk.js');
 const { commentStateOf } =
   await import('../../src/pipeline/comments/nodeComments.js');
-const { TextTable } = await import('../../src/values/textTable.js');
 const { ident } = await import('../../src/values/tokenConstructors.js');
 const { tokensText } = await import('../../src/values/tokensText.js');
 
@@ -29,7 +28,7 @@ function tokenizeTotal() {
  * @returns {{records: import('../../src/passes/ir/blockRecords.js').BlockRecords, context: import('../../src/passes/ir/runContext.js').RunContext}}
  */
 function recordsAfterWalk(css, stages) {
-  const context = createRunContext(new TextTable(), undefined);
+  const context = createRunContext(undefined);
   const { records } = buildRecords(postcss.parse(css), context);
   walkDown(
     records,

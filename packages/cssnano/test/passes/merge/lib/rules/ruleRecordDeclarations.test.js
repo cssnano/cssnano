@@ -49,9 +49,9 @@ const arenaOf = (css, consistencyChecks = false) => {
   const root = postcss.parse(css);
   const state = new MergeState(
     ['chrome 120'],
-    createRunContext(undefined, consistencyChecks)
+    createRunContext(consistencyChecks)
   );
-  state.records = buildTestRecords(root, state, undefined, consistencyChecks);
+  state.records = buildTestRecords(root, state, consistencyChecks);
   const { records } = state;
   return {
     state,

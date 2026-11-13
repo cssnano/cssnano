@@ -1,34 +1,27 @@
-import cssnanoUtils from '#utils';
 import { holdsImportantComment } from './holdsImportantComment.js';
 import { tokenizeMode } from '../../values/tokenizeMode.js';
+import { tokens } from '../../utils/value.js';
 
 /** @import {TokenLists, TokenListId} from './tokenLists.js' */
 /** @import {ValueIds} from './valueIds.js' */
-/** @import {TextTable} from '../../values/textTable.js' */
 /** @import {Declaration} from 'postcss' */
 
-const { sourceValue } = cssnanoUtils;
-
 /**
- * The tables a declaration's value is interned in: the run's text table and
- * its token lists and value ids.
+ * The tables a declaration's value is interned in: its token lists and value
+ * ids.
  *
- * @typedef {{ textTable: TextTable, tokenLists: TokenLists, valueIds: ValueIds }} ValueTables
+ * @typedef {{ tokenLists: TokenLists, valueIds: ValueIds }} ValueTables
  */
 
 /**
- * Whether a declaration's value as written holds an important comment, which
- * the cleaned value would drop.
+ * Whether a value as written holds an important comment, which the cleaned
+ * value would drop. Only a value with a comment start is tokenized.
  *
- * @param {Declaration} node
- * @param {TextTable} textTable
+ * @param {string} written the value as written
  * @return {boolean}
  */
-function keepsValueAsWritten(node, textTable) {
-  return (
-    sourceValue(node).includes('/*') &&
-    holdsImportantComment(textTable.tokens(node))
-  );
+export function keepsValueAsWritten(written) {
+  return written.includes('/*') && holdsImportantComment(tokens(written));
 }
 
 /**
@@ -39,23 +32,14 @@ function keepsValueAsWritten(node, textTable) {
  *
  * @param {Declaration} node
  * @param {ValueTables} tables
+ * @param {string} written the value as written, which the caller reads once
+ * @param {boolean} kept whether the value keeps an important comment
  * @return {TokenListId}
  */
-export function valueListOf(node, tables) {
-  const { textTable, tokenLists, valueIds } = tables;
+export function valueListOf(node, tables, written, kept) {
+  const { tokenLists, valueIds } = tables;
   const mode = tokenizeMode(node.prop);
-  if (keepsValueAsWritten(node, textTable)) {
-    const written = sourceValue(node);
-    return valueIds.idOf(tokenLists, mode, written);
-  }
-  // The stored tokens spell the written text, which is the cleaned value only
-  // when no comment was stripped from it.
-  // The table's tokens are the default tokenizer's, so a mode reads its own.
-  const stored =
-    mode === undefined && sourceValue(node) === node.value
-      ? textTable.stored(node)
-      : undefined;
-  return valueIds.idOf(tokenLists, mode, node.value, stored);
+  return valueIds.idOf(tokenLists, mode, kept ? written : node.value);
 }
 
 /**
@@ -65,13 +49,12 @@ export function valueListOf(node, tables) {
  *
  * @param {Declaration} node
  * @param {ValueTables} tables
+ * @param {string} written the value as written, which the caller reads once
+ * @param {boolean} kept whether the value keeps an important comment
  * @return {TokenListId | -1}
  */
-export function writtenValueListOf(node, tables) {
-  const written = sourceValue(node);
-  if (written === node.value || keepsValueAsWritten(node, tables.textTable)) {
-    return -1;
-  }
+export function writtenValueListOf(node, tables, written, kept) {
+  if (written === node.value || kept) return -1;
   const { tokenLists, valueIds } = tables;
   return valueIds.idOf(tokenLists, tokenizeMode(node.prop), written);
 }

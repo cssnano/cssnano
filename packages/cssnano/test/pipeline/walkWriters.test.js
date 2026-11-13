@@ -14,7 +14,6 @@ const { commentStateOf } =
 const { AT_RULE_BLOCK, DECLARATION, RULE } =
   await import('../../src/passes/ir/blockRecord.js');
 const { mergePass } = await import('../../src/passes/merge/index.js');
-const { TextTable } = await import('../../src/values/textTable.js');
 const { ident, integer } =
   await import('../../src/values/tokenConstructors.js');
 const { tokens } = await import('../../src/utils/value.js');
@@ -58,7 +57,7 @@ const helpers = { result: { warn() {}, messages: [] } };
  * @returns {{records: import('../../src/passes/ir/blockRecords.js').BlockRecords, context: import('../../src/passes/ir/runContext.js').RunContext}}
  */
 function recordsAfterWalk(root, stages) {
-  const context = createRunContext(new TextTable(), undefined);
+  const context = createRunContext(undefined);
   const { records } = buildRecords(root, context);
   walkDown(
     records,
@@ -112,7 +111,7 @@ suite(
  * @returns {{declarations: import('../../src/passes/ir/declarationRecord.js').DeclarationRecord[], context: import('../../src/passes/ir/runContext.js').RunContext}}
  */
 function declarationsAfterWalk(root, stages) {
-  const context = createRunContext(new TextTable(), undefined);
+  const context = createRunContext(undefined);
   const { records } = buildRecords(root, context);
   walkDown(
     records,
@@ -175,7 +174,7 @@ suite('the record walk shares one token list per value text', () => {
 
   test("a value's stages read the list another property's value left, without tokenizing", () => {
     const root = postcss.parse('a { margin: 0 1px } b { padding: 0 1px }');
-    const context = createRunContext(new TextTable(), undefined);
+    const context = createRunContext(undefined);
     const { records } = buildRecords(root, context);
     const stage = {
       forProperty: () => (buffer) => buffer.tokens(),
@@ -257,15 +256,14 @@ suite('the at-rule reducers write tokens that spell their text', () => {
 });
 
 /**
- * The walk after merge of `root` through a run over `table`, as the host runs it.
+ * The walk after merge of `root`, as the host runs it.
  * @param {import('postcss').Root} root
- * @param {TextTable} table
  * @param {Map<string, Record<PropertyKey, unknown>>} transforms
  * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols
- * @return {number} the tokenize calls of the walk and the end, which read the stored text
+ * @return {number} the tokenize calls of the walk and the end, which read the lists the build made
  */
-function afterWalk(root, table, transforms, symbols) {
-  const context = createRunContext(table, undefined);
+function afterWalk(root, transforms, symbols) {
+  const context = createRunContext(undefined);
   const state = runDriver.build(root, context);
   const before = tokenizeTotal();
   walkAfterMerge(state, transforms, symbols);
@@ -277,14 +275,12 @@ function afterWalk(root, table, transforms, symbols) {
   return tokenizeTotal() - before;
 }
 
-suite('the text table reads the text the afterMerge walk wrote', () => {
-  test('uniqueSelectors reads the selector tokens merge wrote, without tokenizing', () => {
-    const root = postcss.parse('a, b {}');
-    const table = new TextTable();
+suite('the after-merge walk reads the selector lists the build made', () => {
+  test('uniqueSelectors reads the selector tokens the build made, without tokenizing', () => {
+    const root = postcss.parse('b, a, b {}');
     const rule = root.first;
-    table.write(rule, tokens('b, a, b'));
     assert.equal(
-      afterWalk(root, table, new Map([['uniqueSelectors', {}]]), new Map()),
+      afterWalk(root, new Map([['uniqueSelectors', {}]]), new Map()),
       0
     );
     assert.equal(rule.selector, 'a,b');
@@ -292,25 +288,22 @@ suite('the text table reads the text the afterMerge walk wrote', () => {
 
   test("discard-unused's namespace prefixes read the selector uniqueSelectors wrote, without tokenizing", () => {
     const root = postcss.parse('ns|a, b, ns|a {}');
-    const table = new TextTable();
     const rule = root.first;
-    table.write(rule, tokens('ns|a, b, ns|a'));
     const symbols = new Map([
       ['discardUnused', { transform: discardUnusedSymbols, options: {} }],
     ]);
     assert.equal(
-      afterWalk(root, table, new Map([['uniqueSelectors', {}]]), symbols),
+      afterWalk(root, new Map([['uniqueSelectors', {}]]), symbols),
       0
     );
     assert.equal(rule.selector, 'b,ns|a');
   });
 });
 
-suite('the text table reads the text the merge longhand writers wrote', () => {
+suite('the merge longhand readers read the text their writers wrote', () => {
   test('overriddenDeclarations reads the text minifyShorthand wrote, without tokenizing', () => {
     const root = postcss.parse('a { gap: 1px 1px; gap: 2px }');
-    const table = new TextTable();
-    const block = readBlock(root.first, createRunContext(table));
+    const block = readBlock(root.first, createRunContext());
     foldShorthandDeclaration(block.list, 0, 'gap');
     const before = tokenizeTotal();
     discardOverriddenInList(block.list, block.list.chain, longstandingFeatures);
@@ -319,8 +312,7 @@ suite('the text table reads the text the merge longhand writers wrote', () => {
 
   test("minifyShorthand's edited tokens spell text()", () => {
     const root = postcss.parse('a { gap: 1px 1px }');
-    const table = new TextTable();
-    const reduced = reduceBlock(root.first, table, (list) =>
+    const reduced = reduceBlock(root.first, (list) =>
       foldShorthandDeclaration(list, 0, 'gap')
     );
     assert.ok(itemTokensSpellText(reduced));
@@ -328,8 +320,7 @@ suite('the text table reads the text the merge longhand writers wrote', () => {
 
   test('foldShorthandDeclaration reads the text it wrote, without tokenizing', () => {
     const root = postcss.parse('a { gap: 1px 1px }');
-    const table = new TextTable();
-    const block = readBlock(root.first, createRunContext(table));
+    const block = readBlock(root.first, createRunContext());
     foldShorthandDeclaration(block.list, 0, 'gap');
     const before = tokenizeTotal();
     foldShorthandDeclaration(block.list, 0, 'gap');

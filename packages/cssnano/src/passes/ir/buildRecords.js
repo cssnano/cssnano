@@ -18,7 +18,11 @@ import {
   STYLESHEET,
 } from './blockRecord.js';
 import { containerContext } from './sameContainer.js';
-import { valueListOf, writtenValueListOf } from './valueList.js';
+import {
+  keepsValueAsWritten,
+  valueListOf,
+  writtenValueListOf,
+} from './valueList.js';
 import { selectorItemsOf } from './selectorItems.js';
 import { holdsNonAscii } from '../../values/nonAscii.js';
 
@@ -112,7 +116,9 @@ function rawAfterValueOf(node) {
 export function recordDeclaration(node, context) {
   const before = node.raws.before ?? null;
   const important = node.important === true;
-  const valueList = valueListOf(node, context);
+  const written = sourceValue(node);
+  const kept = keepsValueAsWritten(written);
+  const valueList = valueListOf(node, context, written, kept);
   const record = new DeclarationRecord(
     before,
     node.prop,
@@ -124,17 +130,15 @@ export function recordDeclaration(node, context) {
     important ? (node.raws.important ?? null) : null
   );
   // The list drops a plain comment, which only the written value still holds.
-  const written = sourceValue(node);
   record.writtenNonAscii = written !== node.value && holdsNonAscii(written);
   record.rawAfterValue = rawAfterValueOf(node);
-  record.writtenList = writtenValueListOf(node, context);
+  record.writtenList = writtenValueListOf(node, context, written, kept);
   return record;
 }
 
 /**
  * The id of an at-rule's prelude: the list of its params, interned in the run,
- * so equal preludes share an id. The stored tokens serve when they spell the
- * params as written.
+ * so equal preludes share an id.
  *
  * @param {import('postcss').AtRule} node
  * @param {RunContext} context
@@ -143,9 +147,7 @@ export function recordDeclaration(node, context) {
 function preludeIdOf(node, context) {
   // A node a plugin created may have no params, which its prelude spells as none.
   const params = node.params ?? '';
-  const stored =
-    sourceParams(node) === params ? context.textTable.stored(node) : undefined;
-  return context.valueIds.idOf(context.tokenLists, undefined, params, stored);
+  return context.valueIds.idOf(context.tokenLists, undefined, params);
 }
 
 /**
@@ -160,12 +162,7 @@ function writtenPreludeOf(node, context) {
   const params = node.params ?? '';
   const written = sourceParams(node) ?? '';
   if (written === params) return -1;
-  return context.valueIds.idOf(
-    context.tokenLists,
-    undefined,
-    written,
-    context.textTable.tokens(node)
-  );
+  return context.valueIds.idOf(context.tokenLists, undefined, written);
 }
 
 /**
@@ -216,8 +213,7 @@ export function buildRecords(root, context) {
         const writtenList = context.valueIds.idOf(
           tokenLists,
           undefined,
-          sourceSelector(child),
-          context.textTable.stored(child)
+          sourceSelector(child)
         );
         const record = new RuleRecord(
           child.raws.before ?? null,

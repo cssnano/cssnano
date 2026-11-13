@@ -83,12 +83,7 @@ test('a leftover that a join gave longhands is canonicalized in the second round
 function mergedAway(consistencyChecks) {
   const root = postcss.parse('a{color:red}b{color:red;padding:0}');
   const mergeState = new MergeState(['Chrome 120']);
-  mergeState.records = buildTestRecords(
-    root,
-    mergeState,
-    undefined,
-    consistencyChecks
-  );
+  mergeState.records = buildTestRecords(root, mergeState, consistencyChecks);
   const sequence = new RuleSequence(mergeState.records);
   const first = sequence.head;
   const second = sequence.nextOf(first);

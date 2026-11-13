@@ -1,5 +1,4 @@
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
-import { TextTable } from '../../values/textTable.js';
 import { isBoolean } from '../../optionGuards.js';
 import type { BlockRecords } from '../ir/blockRecords.js';
 import type { Result, Root } from 'postcss';
@@ -65,13 +64,12 @@ export declare function transformRunner(...names: ('mergeLonghand' | 'discardDup
  * @param {readonly string[]} browsers the resolved browser targets
  * @param {{ rules?: boolean }} [options]
  * @param {Result} [result] the PostCSS result, whose messages the run pushes to
- * @param {TextTable} [textTable] the selector tokens the host walk left
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {void}
  */
 export declare function mergePass(css: Root, browsers: readonly string[], { rules }?: {
     rules?: boolean;
-}, result?: Result, textTable?: TextTable, consistencyChecks?: boolean): void;
+}, result?: Result, consistencyChecks?: boolean): void;
 /** The guard for the `rules` option, shared with the preset that validates it. */
 export declare const rulesGuard: Readonly<{
     isValid: typeof isBoolean;

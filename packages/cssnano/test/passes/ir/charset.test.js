@@ -34,7 +34,7 @@ function nodeForm(css, opts) {
  */
 function recordsForm(css, opts = {}) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = runDriver.build(root, context);
   const { records } = state;
   const scan = createCharsetScan(true);

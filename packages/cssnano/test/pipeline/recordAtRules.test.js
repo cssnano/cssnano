@@ -38,7 +38,7 @@ function emptiesPrelude(name) {
  * @returns {{records: import('../../src/passes/ir/blockRecords.js').BlockRecords, context: import('../../src/passes/ir/runContext.js').RunContext}}
  */
 function walkedRecords(css, stages) {
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const { records } = buildRecords(postcss.parse(css), context);
   walkDown(
     records,

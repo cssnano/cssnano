@@ -32,7 +32,6 @@ import {
   moveRule,
   substitute,
 } from '../../../../../src/passes/ir/arenaEdits.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
 
 /** @import {ChildNode, Container, Root, Rule} from 'postcss' */
@@ -43,11 +42,8 @@ import { tokensText } from '../../../../../src/values/tokensText.js';
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(undefined, true)
-  );
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  const state = new MergeState(['chrome 120'], createRunContext(true));
+  state.records = buildTestRecords(root, state, true);
   return { root, state };
 }
 

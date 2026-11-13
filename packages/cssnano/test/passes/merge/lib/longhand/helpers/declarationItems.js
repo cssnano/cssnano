@@ -4,7 +4,6 @@ import { buildRecords } from '../../../../../../src/passes/ir/buildRecords.js';
 import { declarationsFromRecords } from '../../../../../../src/passes/merge/lib/longhand/recordDeclarations.js';
 import { commitDeclarations } from '../../../../../../src/passes/ir/arenaEdits.js';
 import { writeBack } from '../../../../../../src/passes/ir/writeBack.js';
-import { TextTable } from '../../../../../../src/values/textTable.js';
 import cssnanoUtils from '../../../../../../src/utils/index.js';
 
 const { tokens } = cssnanoUtils;
@@ -54,7 +53,7 @@ export function readBlock(rule, run) {
  */
 export function writeBlock(block, run) {
   commitDeclarations(block.records, run, block.index, block.list);
-  writeBack(block.records, block.nodes, run.tokenLists, run.textTable);
+  writeBack(block.records, block.nodes, run.tokenLists);
 }
 
 /**
@@ -66,7 +65,7 @@ export function writeBlock(block, run) {
 function itemsOf(css) {
   const { list } = readBlock(
     /** @type {Container} */ (postcss.parse(`a{${css}}`).first),
-    createRunContext(new TextTable())
+    createRunContext()
   );
   /** @type {DeclarationItem[]} */
   const items = [];
@@ -85,7 +84,7 @@ function itemsOf(css) {
 export function blockOf(css) {
   return readBlock(
     /** @type {Container} */ (postcss.parse(css).first),
-    createRunContext(new TextTable())
+    createRunContext()
   ).list;
 }
 
@@ -104,12 +103,11 @@ export function itemOf(css) {
  * back to the rule.
  *
  * @param {Container} rule
- * @param {TextTable} textTable
  * @param {(list: BlockDeclarations, positions: number[]) => void} reduce
  * @return {BlockDeclarations} the list as the reduction left it
  */
-export function reduceBlock(rule, textTable, reduce) {
-  const run = createRunContext(textTable);
+export function reduceBlock(rule, reduce) {
+  const run = createRunContext();
   const block = readBlock(rule, run);
   const positions = [];
   for (let position = 0; position < block.list.length; position++) {

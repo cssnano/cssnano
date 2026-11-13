@@ -9,7 +9,6 @@ import {
 import { reduceBorder } from '../../../../../../src/passes/merge/lib/longhand/decl/borderReducer.js';
 import { reduceBorderRadius } from '../../../../../../src/passes/merge/lib/longhand/decl/borderRadiusReducer.js';
 import { reduceBox } from '../../../../../../src/passes/merge/lib/longhand/decl/boxReducer.js';
-import { TextTable } from '../../../../../../src/values/textTable.js';
 import {
   aliasedGroup,
   boxGroups,
@@ -48,7 +47,7 @@ const defaultSupport = new BoxSupport(['ie 11']);
  * @return {void}
  */
 export function reduceBlockOf(rule, reduce) {
-  const run = createRunContext(new TextTable());
+  const run = createRunContext();
   const block = readBlock(rule, run);
   reduce(block.list);
   writeBlock(block, run);
@@ -189,7 +188,7 @@ export function reduceBorderRuns(rule) {
 export function secondRoundOfText(css, browsers) {
   const root = postcss.parse(css);
   const support = targetSupportOf(browsers);
-  const run = createRunContext(new TextTable(), undefined, support.features);
+  const run = createRunContext(undefined, support.features);
   const { records, nodes } = buildRecords(root, run);
   const context = longhandContext(
     support.placeShorthands,
@@ -198,6 +197,6 @@ export function secondRoundOfText(css, browsers) {
     run
   );
   canonicalizeRecords(records, context);
-  writeBack(records, nodes, run.tokenLists, run.textTable);
+  writeBack(records, nodes, run.tokenLists);
   return root.toString();
 }

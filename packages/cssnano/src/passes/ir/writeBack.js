@@ -5,7 +5,6 @@ import {
   RULE,
   STYLESHEET,
 } from './blockRecord.js';
-import { TextTable } from '../../values/textTable.js';
 import { tokensText } from '../../values/tokensText.js';
 import { createChildNodes, nodeOf } from './nodeTable.js';
 import { writeSelector } from './writeSelector.js';
@@ -249,15 +248,9 @@ function writeDeclarationsOf(records, nodes, tokenLists, index) {
  * @param {BlockRecords} records
  * @param {NodeTable} nodes the node of each entry, from the build; write-back adds the merged rules' nodes
  * @param {TokenLists} tokenLists the run's token lists, which the ids of the rules name
- * @param {TextTable} [textTable] the table the selectors are written through
  * @return {void}
  */
-export function writeBack(
-  records,
-  nodes,
-  tokenLists,
-  textTable = new TextTable()
-) {
+export function writeBack(records, nodes, tokenLists) {
   if (records.consistencyChecks && nodes.length !== records.builtCount) {
     throw new Error(TABLE_LENGTH);
   }
@@ -281,7 +274,7 @@ export function writeBack(
     ) {
       const record = records.entry(entry);
       if (record.kind === RULE) {
-        writeSelector(record, nodes, textTable, tokenLists);
+        writeSelector(record, nodes, tokenLists);
         if (record.context !== -1) {
           visit(record);
         } else {

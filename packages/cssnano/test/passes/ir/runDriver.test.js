@@ -17,7 +17,7 @@ const BROWSERS = ['defaults'];
  */
 function buildOf(css, checks = true) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, checks);
+  const context = createRunContext(checks);
   const state = runDriver.build(root, context);
   return { context, state };
 }
@@ -97,7 +97,7 @@ describe('the run driver', () => {
 
   test('the tree check reads the summaries of the rules only when the run folded them', () => {
     const root = postcss.parse('a{color:red}');
-    const context = createRunContext(undefined, true);
+    const context = createRunContext(true);
     const { records, nodes } = buildRecords(root, context);
     assert.doesNotThrow(() =>
       assertRecordsMatchTree(

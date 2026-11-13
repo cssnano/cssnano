@@ -8,9 +8,6 @@ const { longstandingFeatures } =
 const { createRunContext } =
   await import('../../../../../src/passes/ir/runContext.js');
 const { default: postcss } = await import('postcss');
-const { walkStylesheet } =
-  await import('../../../../../src/pipeline/traversal.js');
-const { TextTable } = await import('../../../../../src/values/textTable.js');
 const { reduceBorder } =
   await import('../../../../../src/passes/merge/lib/longhand/decl/borderReducer.js');
 const { minifyCells } =
@@ -47,45 +44,44 @@ function tokenizedByReduce(reduce) {
 }
 
 /**
- * Parses the stylesheet and gives each declaration value its token list
- * through the host walk's value stage, as the default preset does.
+ * Parses the stylesheet, the input of the build.
  *
  * @param {string} css
- * @return {{root: import('postcss').Root, table: InstanceType<typeof TextTable>}}
+ * @return {{root: import('postcss').Root}}
  */
 function walkedStylesheet(css) {
-  const root = postcss.parse(css);
-  const table = new TextTable();
-  walkStylesheet(root, new Map(), null);
-  return { root, table };
+  return { root: postcss.parse(css) };
 }
 
-suite('border candidates format the cells from the stored tokens', () => {
-  test('border candidates tokenize only the new side components, each once', () => {
-    const { root, table } = walkedStylesheet(
-      'a{border-top:calc(1px) solid red;border-right:calc(1px) solid red;border-bottom:calc(1px) solid red;border-left:calc(1px) solid red}'
-    );
-    const list = readBlock(root.first, createRunContext(table)).list;
-    const positions = [...list.chain].filter((p) => p !== RUN_END);
-    const added = tokenizedByReduce(() =>
-      reduceBorder(list, positions, false, longstandingFeatures)
-    );
-    // Each side component is tokenized once; the whole input values are not.
-    assert.deepEqual(added, ['calc(1px)', 'red', 'solid']);
-  });
+suite(
+  'border candidates format the cells from the tokens the build made',
+  () => {
+    test('border candidates tokenize only the new side components, each once', () => {
+      const { root } = walkedStylesheet(
+        'a{border-top:calc(1px) solid red;border-right:calc(1px) solid red;border-bottom:calc(1px) solid red;border-left:calc(1px) solid red}'
+      );
+      const list = readBlock(root.first, createRunContext()).list;
+      const positions = [...list.chain].filter((p) => p !== RUN_END);
+      const added = tokenizedByReduce(() =>
+        reduceBorder(list, positions, false, longstandingFeatures)
+      );
+      // Each side component is tokenized once; the whole input values are not.
+      assert.deepEqual(added, ['calc(1px)', 'red', 'solid']);
+    });
 
-  test('reset candidates tokenize no text when they format a side', () => {
-    const { root, table } = walkedStylesheet(
-      'a{border:calc(1px) solid red;border-top-width:2px}'
-    );
-    const list = readBlock(root.first, createRunContext(table)).list;
-    const positions = [...list.chain].filter((p) => p !== RUN_END);
-    const added = tokenizedByReduce(() =>
-      reduceBorder(list, positions, false, longstandingFeatures)
-    );
-    assert.deepEqual(added, []);
-  });
-});
+    test('reset candidates tokenize no text when they format a side', () => {
+      const { root } = walkedStylesheet(
+        'a{border:calc(1px) solid red;border-top-width:2px}'
+      );
+      const list = readBlock(root.first, createRunContext()).list;
+      const positions = [...list.chain].filter((p) => p !== RUN_END);
+      const added = tokenizedByReduce(() =>
+        reduceBorder(list, positions, false, longstandingFeatures)
+      );
+      assert.deepEqual(added, []);
+    });
+  }
+);
 
 /**
  * The cells and components of one side, each cell a whole component.

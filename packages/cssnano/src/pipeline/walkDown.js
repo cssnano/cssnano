@@ -1,10 +1,12 @@
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
+  COMMENT,
   DECLARATION,
   RULE,
 } from '../passes/ir/blockRecord.js';
 import { writeContainerContext } from '../passes/ir/arenaEdits.js';
+import { removeEntry } from '../passes/ir/treeEdits.js';
 import { containerContext } from '../passes/ir/sameContainer.js';
 import { isDefaultNamespace } from '../plugins/postcss-minify-selectors/lib/isDefaultNamespace.js';
 import {
@@ -17,6 +19,7 @@ import { visitAtRule } from './atRuleWalk.js';
 import { visitDeclaration } from './declarationWalk.js';
 import { isOutermostOverridable } from './overridable.js';
 import { visitRule } from './ruleWalk.js';
+import { reattachBlockEscape } from './whitespaceRaws.js';
 
 /** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
@@ -105,6 +108,9 @@ class RecordWalk {
    */
   #walkContainer(index, context, parentContext) {
     const { kind } = this.#records.entry(index);
+    if (this.#plans?.normalizeWhitespace) {
+      reattachBlockEscape(this.#records, this.#context, index);
+    }
     const bits = recordContextOf(
       this.#records,
       this.#context.tokenLists,
@@ -136,6 +142,20 @@ class RecordWalk {
   }
 
   /**
+   * Removes a comment node when the comment removal accepts its text. The
+   * whitespace it held passes to the next entry, as the removal of a first
+   * child of the stylesheet does.
+   *
+   * @param {ArenaIndex} index a comment entry
+   */
+  #removeComment(index) {
+    const comments = this.#plans?.comments;
+    if (comments === null || comments === undefined) return;
+    const { text } = /** @type {NodeEntry} */ (this.#records.entry(index));
+    if (comments.canRemove(text)) removeEntry(this.#records, index);
+  }
+
+  /**
    * Visits the children of a container in document order, each before its own
    * children. A rule or an at-rule with a block passes its context down, which
    * is computed when the walk enters it.
@@ -155,6 +175,8 @@ class RecordWalk {
       const { kind } = records.entry(entry);
       if (kind === RULE || kind === AT_RULE_BLOCK) {
         this.#walkContainer(entry, context, ownContext);
+      } else if (kind === COMMENT) {
+        this.#removeComment(entry);
       } else if (kind === DECLARATION && this.#plans !== undefined) {
         visitDeclaration(this.#plans, records, this.#context, context, entry);
       } else if (kind === AT_RULE_STATEMENT && this.#plans !== undefined) {

@@ -23,7 +23,6 @@ import { reduceAspectRatio } from './aspectRatioValue.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Component} from './valueComponents.js' */
-/** @import {FoldedText} from '../../../../values/textTable.js' */
 /** @import {Spelled} from './spelledText.js' */
 
 const { TokenType, asciiLowerCase } = cssnanoUtils;
@@ -348,7 +347,7 @@ function reduceValue(property, value, list) {
  * @param {string} property
  * @param {string} value
  * @param {readonly CSSToken[]} list the tokens of `value`
- * @return {FoldedText | null}
+ * @return {{text: string, tokens: CSSToken[] | undefined} | null}
  */
 export function normalizeValue(property, value, list) {
   const spelled = reduceValue(property, value, list);

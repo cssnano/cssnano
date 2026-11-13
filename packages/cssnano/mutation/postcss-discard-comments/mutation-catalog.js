@@ -13,7 +13,7 @@ const replaceComments = new URL(
   import.meta.url
 ).href;
 
-const walk = new URL('../../src/pipeline/traversal.js', import.meta.url).href;
+const walk = new URL('../../src/pipeline/walkDown.js', import.meta.url).href;
 
 const ruleWalk = new URL('../../src/pipeline/ruleWalk.js', import.meta.url)
   .href;
@@ -73,8 +73,9 @@ export const mutations = [
   {
     name: 'preserve removable comment nodes',
     target: walk,
-    find: 'if (comments?.canRemove(node.text)) node.remove();',
-    replace: 'if (comments?.canRemove(node.text) && false) node.remove();',
+    find: 'if (comments.canRemove(text)) removeEntry(this.#records, index);',
+    replace:
+      'if (comments.canRemove(text) && false) removeEntry(this.#records, index);',
   },
   {
     name: 'skip declaration comment processing',

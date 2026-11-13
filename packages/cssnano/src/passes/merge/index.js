@@ -9,7 +9,6 @@ import runMerge from './lib/rules/selectorMerger.js';
 import { fillSummaries } from '../ir/selectorList.js';
 import { runDriver } from '../ir/runDriver.js';
 import { createRunContext } from '../ir/runContext.js';
-import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
 /** @import {BlockRecords} from '../ir/blockRecords.js' */
 /** @import {Result, Root} from 'postcss' */
@@ -153,7 +152,6 @@ const MERGE_ONLY = Object.freeze([runMerge]);
  * @param {readonly string[]} browsers the resolved browser targets
  * @param {{ rules?: boolean }} [options]
  * @param {Result} [result] the PostCSS result, whose messages the run pushes to
- * @param {TextTable} [textTable] the selector tokens the host walk left
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {void}
  */
@@ -162,15 +160,10 @@ export function mergePass(
   browsers,
   { rules = true } = {},
   result,
-  textTable,
   consistencyChecks
 ) {
   const support = targetSupportOf(browsers);
-  const context = createRunContext(
-    textTable,
-    consistencyChecks,
-    support.features
-  );
+  const context = createRunContext(consistencyChecks, support.features);
   const state = runDriver.build(css, context);
   mergeRecords(state.records, browsers, context, { rules, support });
   runDriver.end(state, { browsers, folded: true, result });
@@ -221,11 +214,7 @@ export default pluginCreator;
 const transformHooks = Object.freeze({
   mergeLonghand(css, browsers) {
     const support = targetSupportOf(browsers);
-    const context = createRunContext(
-      new TextTable(),
-      undefined,
-      support.features
-    );
+    const context = createRunContext(undefined, support.features);
     const longhand = longhandContext(
       support.placeShorthands,
       support.boxSupport,
@@ -237,26 +226,16 @@ const transformHooks = Object.freeze({
     ]);
   },
   discardDuplicates(css, browsers, consistencyChecks) {
-    runOver(
-      css,
-      [],
-      createRunContext(undefined, consistencyChecks),
-      DEDUPE_ONLY
-    );
+    runOver(css, [], createRunContext(consistencyChecks), DEDUPE_ONLY);
   },
   mergeRules(css, browsers, consistencyChecks) {
-    runOver(
-      css,
-      browsers,
-      createRunContext(undefined, consistencyChecks),
-      MERGE_ONLY
-    );
+    runOver(css, browsers, createRunContext(consistencyChecks), MERGE_ONLY);
   },
   dedupeThenMerge(css, browsers, consistencyChecks) {
     runOver(
       css,
       browsers,
-      createRunContext(undefined, consistencyChecks),
+      createRunContext(consistencyChecks),
       DEDUPE_THEN_MERGE
     );
   },

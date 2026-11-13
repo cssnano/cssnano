@@ -27,7 +27,6 @@ import {
   declarationKeys,
   receivingDeclarations,
 } from '../../../../../src/passes/ir/declarationCache.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { recordDeclaration } from '../../../../../src/passes/ir/buildRecords.js';
 
 /** @import {Container, Declaration, Rule} from 'postcss' */
@@ -42,9 +41,9 @@ import { recordDeclaration } from '../../../../../src/passes/ir/buildRecords.js'
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  state.records = buildTestRecords(root, state, true);
   return { root, state };
 }
 

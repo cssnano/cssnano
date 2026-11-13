@@ -1,14 +1,10 @@
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
-import { RULE } from '../passes/ir/blockRecord.js';
-import {
-  writeBefore,
-  writeBetween,
-  writeImportantSpelling,
-} from '../passes/ir/rawEdits.js';
+import { writeBetween, writeImportantSpelling } from '../passes/ir/rawEdits.js';
 import { sourceListOf } from '../passes/ir/writtenList.js';
 import { writeValueList } from '../passes/ir/valueEdits.js';
 import { tokenizeMode } from '../values/tokenizeMode.js';
 import { replaceComments } from './comments/replaceComments.js';
+import { stripStrayRawSemicolon } from './whitespaceRaws.js';
 import { foldList, planEntry } from './plan.js';
 
 /** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
@@ -80,24 +76,6 @@ function propertyEntry(stages, property) {
  */
 function declarationAt(records, index) {
   return /** @type {DeclarationRecord} */ (records.entry(index));
-}
-
-/**
- * Removes the stray semicolons from the whitespace before a declaration, which
- * the previous sibling does not need. A declaration that follows a rule keeps
- * its raw, since the parser gives no semicolon there that the output needs to
- * drop.
- *
- * @param {BlockRecords} records
- * @param {ArenaIndex} index
- */
-function stripStrayRawSemicolon(records, index) {
-  const { before } = records.entry(index);
-  if (before === null || !before.includes(';')) return;
-  const prev = records.links.prevSibling(index);
-  if (prev !== -1 && records.entry(prev).kind !== RULE) {
-    writeBefore(records, index, before.replaceAll(';', ''));
-  }
 }
 
 /**

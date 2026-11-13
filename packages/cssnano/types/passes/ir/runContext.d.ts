@@ -1,11 +1,9 @@
 import { DeclarationKeys } from './declarationKey.js';
-import { TextTable } from '../../values/textTable.js';
 import { TokenLists } from './tokenLists.js';
 import { ValueIds } from './valueIds.js';
 import { SelectorIds } from './selectorIds.js';
 export type RunContext = {
     declarations: DeclarationKeys;
-    textTable: TextTable;
     tokenLists: TokenLists;
     valueIds: ValueIds;
     consistencyChecks: boolean;
@@ -25,7 +23,6 @@ export type RunMessage = {
  *
  * @typedef {{
  *   declarations: DeclarationKeys,
- *   textTable: TextTable,
  *   tokenLists: TokenLists,
  *   valueIds: ValueIds,
  *   consistencyChecks: boolean,
@@ -43,13 +40,11 @@ export type RunMessage = {
  * @typedef {{index: import('./blockRecord.js').ArenaIndex, type: string, plugin?: string, text?: string}} RunMessage
  */
 /**
- * A fresh context for one run. `textTable` holds the selector tokens the host
- * walk left, which the run reads.
+ * A fresh context for one run.
  *
- * @param {TextTable} [textTable]
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @param {ReadonlySet<string>} [features] the features every browser target supports; the strict floor otherwise
  * @return {RunContext}
  */
-export declare function createRunContext(textTable?: TextTable, consistencyChecks?: boolean, features?: ReadonlySet<string>): RunContext;
+export declare function createRunContext(consistencyChecks?: boolean, features?: ReadonlySet<string>): RunContext;
 //# sourceMappingURL=runContext.d.ts.map

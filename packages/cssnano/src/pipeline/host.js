@@ -1,6 +1,4 @@
 import { browserTargets, resolveTargets } from '#utils/browser-targets';
-import { walkStylesheet } from './traversal.js';
-import { TextTable } from '../values/textTable.js';
 import { walkAfterMerge } from './afterMerge.js';
 import { discardOverriddenAtRules } from './overridable.js';
 import { walkDown } from './walkDown.js';
@@ -128,7 +126,6 @@ const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
  *
  * @param {import('postcss').Root} root
  * @param {import('postcss').Result} result
- * @param {TextTable} table the selector tokens the walk left
  * @param {Merge | undefined} merge the merge, absent when the merge is off
  * @param {readonly string[]} browsers the resolved browser targets of the merge; none when it is off
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the whole-stylesheet transforms of the run, by entry name
@@ -139,7 +136,6 @@ const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
 function runRecords(
   root,
   result,
-  table,
   merge,
   browsers,
   transforms,
@@ -148,7 +144,7 @@ function runRecords(
   plans
 ) {
   const support = merge ? merge.runner.support(browsers) : undefined;
-  const context = createRunContext(table, undefined, support?.features);
+  const context = createRunContext(undefined, support?.features);
   const state = runDriver.build(root, context);
   if (plans !== undefined) {
     const overridable = walkDown(state.records, context, plans);
@@ -232,19 +228,14 @@ export function hostPlugin(
         : undefined;
       return {
         OnceExit(root, helpers) {
-          const table = new TextTable();
-          // The comment removal is read once per stylesheet, by both walks.
+          // The comment removal is read once per stylesheet, by the record walk.
           const comments = hasStages ? commentStateOf(stages) : null;
-          if (hasStages) {
-            walkStylesheet(root, transforms, comments);
-          }
           // A run with stages builds the records, even when no merge, walk
           // after merge or symbol transform reads them.
           if (hasStages || merge || after.size > 0 || symbols.size > 0) {
             runRecords(
               root,
               helpers.result,
-              table,
               merge,
               mergeBrowsers ?? noTargets,
               transforms,

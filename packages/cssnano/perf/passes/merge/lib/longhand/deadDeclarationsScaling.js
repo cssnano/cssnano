@@ -4,7 +4,6 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { discardDeadDeclarations } from '../../../../../src/passes/merge/lib/longhand/decl/crossKindCoverage.js';
 import { BoxSupport } from '../../../../../src/passes/merge/lib/longhand/targetSupport.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
 import { declarationsFromRecords } from '../../../../../src/passes/merge/lib/longhand/recordDeclarations.js';
 import { longstandingFeatures } from '../../../../../src/passes/ir/syntaxFeatures.js';
@@ -76,9 +75,8 @@ function createCSS(size) {
 function timeRun(size) {
   const css = createCSS(size);
   const support = new BoxSupport(['chrome 120']);
-  const textTable = new TextTable();
   const root = postcss.parse(css);
-  const run = createRunContext(textTable);
+  const run = createRunContext();
   const { records, nodes } = buildRecords(root, run);
   const list = declarationsFromRecords(
     records,

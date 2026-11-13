@@ -6,7 +6,6 @@ import { declarationsFromRecords } from '../../../../../src/passes/merge/lib/lon
 import { RUN_END } from '../../../../../src/passes/merge/lib/longhand/blockDeclarations.js';
 import { commitDeclarations } from '../../../../../src/passes/ir/arenaEdits.js';
 import { buildTestRecords, ruleRecordOf } from '../rules/liveRecords.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 
 /** @import {Rule} from 'postcss' */
@@ -22,9 +21,9 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
  */
 function recordsOf(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  state.records = buildTestRecords(root, state, true);
   const rule = ruleRecordOf(state.records, /** @type {Rule} */ (root.first));
   return { records: state.records, state, container: rule.index };
 }

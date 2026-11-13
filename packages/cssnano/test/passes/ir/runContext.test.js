@@ -9,7 +9,6 @@ import {
   buildRecords,
   recordDeclaration,
 } from '../../../src/passes/ir/buildRecords.js';
-import { TextTable } from '../../../src/values/textTable.js';
 import { RuleRecord } from '../../../src/passes/ir/ruleRecord.js';
 import { placeUnlinked } from '../merge/lib/rules/liveRecords.js';
 import { TokenLists } from '../../../src/passes/ir/tokenLists.js';
@@ -50,7 +49,7 @@ test('a second run gets a fresh value table, so a value of the first run is push
 });
 
 test('a run context created with consistency checks makes a link into a removed rule throw', () => {
-  const context = createRunContext(new TextTable(), true);
+  const context = createRunContext(true);
   const { records } = buildRecords(postcss.parse('a{color:red}'), context);
   const rule = records.rule(records.links.firstChild(records.root.index));
   remove(records, rule.index);

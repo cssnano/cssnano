@@ -16,7 +16,7 @@ import { DECLARATION, RULE } from '../../../src/passes/ir/blockRecord.js';
  */
 function buildOf(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = runDriver.build(root, context);
   return { root, context, state };
 }

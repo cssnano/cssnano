@@ -24,6 +24,25 @@ const warnWith = (text) => (buffer) => {
 };
 
 describe('warnings of a stage reach the messages in document order', () => {
+  test('warnings on a rule, its declaration, a nested at-rule and a later rule keep document order', async () => {
+    const stage = {
+      forProperty: (property) =>
+        property === 'color' ? warnWith('color warned') : null,
+      forAtRule: (name) =>
+        name === 'media' ? { buffer: warnWith('media warned') } : null,
+      selector: warnWith('selector warned'),
+    };
+    assert.deepEqual(
+      await warningsOf('a{color:red;@media print{}}\nb{}', stage),
+      [
+        ['selector warned', 1],
+        ['color warned', 1],
+        ['media warned', 1],
+        ['selector warned', 2],
+      ]
+    );
+  });
+
   test('a warning on each declaration reports its node, also for a repeated value', async () => {
     const stage = {
       forProperty: (property) =>

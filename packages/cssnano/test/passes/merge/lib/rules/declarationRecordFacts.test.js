@@ -5,7 +5,6 @@ import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { declarationsOf } from '../../../../../src/passes/ir/blockChildren.js';
 import { buildTestRecords, ruleRecordOf } from './liveRecords.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 
 /**
  * The declaration records of the first rule of `css`, built as a merge run builds them.
@@ -14,11 +13,8 @@ import { TextTable } from '../../../../../src/values/textTable.js';
  */
 function declarationsOfFirstRule(css) {
   const root = postcss.parse(css);
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(undefined, true)
-  );
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  const state = new MergeState(['chrome 120'], createRunContext(true));
+  state.records = buildTestRecords(root, state, true);
   const rule = ruleRecordOf(state.records, /** @type {any} */ (root.first));
   return declarationsOf(state.records, rule.index);
 }

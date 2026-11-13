@@ -181,10 +181,6 @@ export const catalogs = [
     test: true,
   },
   {
-    url: new URL('./values/mutation-catalog.js', import.meta.url),
-    test: true,
-  },
-  {
     url: new URL('./values/mutation-catalog-buffer.js', import.meta.url),
     test: true,
   },

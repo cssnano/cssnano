@@ -34,7 +34,7 @@ async function nodeFormOf(css) {
  */
 function recordFormOf(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = runDriver.build(root, context);
   normalizeRecordRaws(state.records, context.tokenLists);
   runDriver.end(state, {
@@ -81,7 +81,7 @@ describe('normalizeWhitespace visits one entry by index', () => {
   test('visiting every entry in pre-order prints the whole-tree text', () => {
     const css = '\n  a{ color : red }\n  @media print{ b{top:0} }\n';
     const root = postcss.parse(css);
-    const context = createRunContext(undefined, true);
+    const context = createRunContext(true);
     const state = runDriver.build(root, context);
     const { records } = state;
     const { tokenLists } = context;
