@@ -10,28 +10,19 @@ import {
 } from './lib/ieHack.js';
 import { stringToken } from '../../values/tokenConstructors.js';
 import { whitespace } from '../../values/punctuationTokens.js';
+import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
+import { normalizeRecordRaws } from '../../passes/ir/normalizeRaws.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenEdit} from '../../values/valueBuffer.js' */
 /** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
 
-const {
-  asciiLowerCase,
-  decoded,
-  endsWithEscapingBackslash,
-  mathFunctions,
-  tokens: tokenizeValue,
-} = cssnanoUtils;
+const { asciiLowerCase, decoded, endsWithEscapingBackslash, mathFunctions } =
+  cssnanoUtils;
 
-const atrule = 'atrule';
-const decl = 'decl';
-const rule = 'rule';
 const gridRowsPropertyRegex = /^(?:grid|grid-template|grid-template-areas)$/iv;
 const variableFunctions = new Set(['var', 'env', 'constant']);
-const whitespaceRegex = /[ \t\n\r\f]/gv;
 const hasWhitespaceRegex = /[ \t\n\r\f]/v;
-
-const plainSeparatorRegex = /^[ \t\n\r\f]*:[ \t\n\r\f]*$/v;
 
 /** @param {import('@csstools/css-tokenizer').TokenType} type */
 function isOpeningToken(type) {
@@ -239,116 +230,6 @@ const valueStage = {
 export const valueEntry = { create: () => valueStage };
 
 /**
- * Drop whole whitespace tokens; character-level replacement would reach
- * preserved comments.
- * @param {string} between
- * @return {string}
- */
-function trimSeparator(between) {
-  if (plainSeparatorRegex.test(between)) return ':';
-  return tokenizeValue(between)
-    .filter(([type]) => type !== TokenType.Whitespace)
-    .map(([, raw]) => raw)
-    .join('');
-}
-
-/**
- * Trim only the parser-consumed whitespace run around the colon (CSS
- * Variables 1).
- * @param {string} between
- * @return {string}
- */
-function trimCustomPropertySeparator(between) {
-  if (plainSeparatorRegex.test(between)) return ':';
-  const tokens = tokenizeValue(between).filter(
-    ([type]) => type !== TokenType.EOF
-  );
-  let start = 0;
-  while (tokens[start]?.[0] === TokenType.Whitespace) start++;
-  if (tokens[start]?.[0] === TokenType.Colon) {
-    // The colon stays; only its surrounding parser-consumed whitespace runs
-    // may go.
-    start++;
-    while (tokens[start]?.[0] === TokenType.Whitespace) start++;
-    return (
-      ':' +
-      tokens
-        .slice(start)
-        .map(([, raw]) => raw)
-        .join('')
-    );
-  }
-  // A kept comment before the colon interrupts the parser-consumed run;
-  // leave the authored separator untouched.
-  return between;
-}
-
-/**
- * Collapses multi-character whitespace runs in at-rule afterName to a single
- * space while preserving comments.
- * @param {string} afterName
- * @return {string}
- */
-function normalizeAfterName(afterName) {
-  if (!afterName || afterName === ' ') return afterName;
-  if (!afterName.includes('/*')) return ' ';
-  let result = '';
-  for (const [type, raw] of tokenizeValue(afterName)) {
-    result += type === TokenType.Whitespace ? ' ' : raw;
-  }
-  return result;
-}
-
-/**
- * Trims the raws of a declaration that are not its value: the important flag
- * and the separator, whose comment must survive.
- * @param {import('postcss').Declaration} node
- * @return {void}
- */
-function trimDeclaration(node) {
-  // Ensure that !important values do not have any excess whitespace
-  if (node.important) {
-    node.raws.important = '!important';
-  }
-  // The separator raw can also carry a preserved comment, which must survive.
-  node.raws.between = trimSeparator(node.raws.between || ':');
-  node.raws.semicolon = false;
-}
-
-/**
- * Trims the raws of one node that are not its value, so the walk after merge
- * can run it on each node it keeps.
- *
- * @param {import('postcss').AnyNode} node
- * @return {void}
- */
-export function normalizeNodeRaws(node) {
-  const { type } = node;
-
-  if ([decl, rule, atrule].includes(type) && node.raws.before) {
-    node.raws.before = node.raws.before.replaceAll(whitespaceRegex, '');
-  }
-
-  if (type === decl) {
-    if (!node.prop.startsWith('--')) {
-      trimDeclaration(node);
-    } else if (node.value.trim() !== '') {
-      // Custom properties skip value normalization, so only the
-      // parser-consumed separator run is trimmed.
-      node.raws.between = trimCustomPropertySeparator(node.raws.between || ':');
-      node.raws.semicolon = false;
-    }
-  } else if (type === rule || type === atrule) {
-    node.raws.between = node.raws.after = '';
-    node.raws.semicolon = false;
-
-    if (type === atrule && node.raws.afterName !== undefined) {
-      node.raws.afterName = normalizeAfterName(node.raws.afterName);
-    }
-  }
-}
-
-/**
  * @return {import('postcss').Plugin}
  */
 function pluginCreator() {
@@ -358,11 +239,12 @@ function pluginCreator() {
     /**
      * @param {import('postcss').Root} css
      */
-    OnceExit(css) {
-      css.walk(normalizeNodeRaws);
-
-      // Remove final newline
-      css.raws.after = '';
+    OnceExit(css, { result }) {
+      runRecordsPlugin(css, result, [
+        (records, browsers, context) => {
+          normalizeRecordRaws(records, context.tokenLists);
+        },
+      ]);
     },
   };
 }

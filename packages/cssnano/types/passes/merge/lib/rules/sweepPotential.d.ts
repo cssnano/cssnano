@@ -1,4 +1,4 @@
-import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
 /**
  * The potential that a sweep never raises: the declarations of the live rules
  * that hold no block, then those rules, then the sum over them of the number

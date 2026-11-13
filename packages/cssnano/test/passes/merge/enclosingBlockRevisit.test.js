@@ -4,18 +4,18 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { joinNonAdjacent } from '../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
-import { writeBack } from '../../../src/passes/merge/lib/rules/writeBack.js';
+import { writeBack } from '../../../src/passes/ir/writeBack.js';
 import {
   appendToDeclarations,
   removeRules,
-} from '../../../src/passes/merge/lib/rules/treeEdits.js';
+} from '../../../src/passes/ir/treeEdits.js';
 import {
   ruleRecordOf,
   buildTestRecords,
   claimAt,
   nodesOf,
 } from './lib/rules/liveRecords.js';
-import { removeDeclarations } from '../../../src/passes/merge/lib/rules/arenaEdits.js';
+import { removeDeclarations } from '../../../src/passes/ir/arenaEdits.js';
 
 /** @import {AtRule, Root, Rule} from 'postcss' */
 

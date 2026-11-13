@@ -1,6 +1,7 @@
 import cssnanoUtils from '#utils';
 import parseWidthStyleColor from './parseWsc.js';
 import minifyTopBottomRightLeft from './minifyTrbl.js';
+import { splitComponents } from './componentRanges.js';
 import { isValidWidthStyleColor } from './validateWsc.js';
 
 const { asciiLowerCase } = cssnanoUtils;
@@ -19,7 +20,8 @@ const defaultBorderValue = ['medium', 'none', 'currentcolor'];
  */
 export function minifyComponents(width, style, color) {
   const valuesWithSentinel = [width, style, color, ''];
-  let value = '';
+  /** @type {string[]} */
+  const kept = [];
   for (let i = valuesWithSentinel.length - 1; i >= 0; i--) {
     const cur = valuesWithSentinel[i];
     if (
@@ -32,11 +34,10 @@ export function minifyComponents(width, style, color) {
       continue;
     }
 
-    value = cur + ' ' + value;
+    if (cur !== '') kept.unshift(cur);
   }
-  value = value.trim();
 
-  return minifyTopBottomRightLeft(value || 'none');
+  return minifyTopBottomRightLeft(kept.length > 0 ? kept : ['none']);
 }
 
 /**
@@ -58,7 +59,9 @@ export default (cssPropertyValue, tokens) => {
    * top/right/bottom/left instead; for the single tokens that reach here
    * (`border: 1px`) that pass-through is a no-op. */
   if (!isValidWidthStyleColor(values)) {
-    return minifyTopBottomRightLeft(cssPropertyValue);
+    return minifyTopBottomRightLeft(
+      splitComponents(cssPropertyValue, tokens).map((part) => part.raw)
+    );
   }
 
   return minifyComponents(values.width, values.style, values.color);

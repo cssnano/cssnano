@@ -12,14 +12,15 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'write the renamed use as text, without its list',
-    find: '        table.write(decl, buffer.tokens());',
-    replace: '        table.setText(decl, buffer.text());',
+    name: 'write the renamed use without its list',
+    find: '        );\n        writeValue(records, context, index, buffer.tokens());\n      }\n',
+    replace:
+      '        );\n        writeValue(records, context, index, []);\n      }\n',
   },
   {
-    name: 'write the renamed definition as text, without its list',
-    find: '          if (buffer.text() !== decl.value) table.write(decl, buffer.tokens());',
+    name: 'write the renamed definition without its list',
+    find: '          if (buffer.text() !== value) {\n            writeValue(records, context, index, buffer.tokens());',
     replace:
-      '          if (buffer.text() !== decl.value) table.setText(decl, buffer.text());',
+      '          if (buffer.text() !== value) {\n            writeValue(records, context, index, []);',
   },
 ];

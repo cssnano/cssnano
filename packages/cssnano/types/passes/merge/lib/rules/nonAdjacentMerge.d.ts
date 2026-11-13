@@ -1,8 +1,8 @@
 import type MergeState from './mergeState.js';
-import type { BlockRecords } from './blockRecords.js';
-import type { BlockRecord } from './blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { BlockRecord } from '../../../ir/blockRecord.js';
 import type { DeclarationRecord } from '../../../ir/declarationRecord.js';
-import type { RuleRecord } from './ruleRecord.js';
+import type { RuleRecord } from '../../../ir/ruleRecord.js';
 /**
  * The rule records and bare declarations of a block at any depth, in
  * document order, or null when the block holds an at-rule whose place in the

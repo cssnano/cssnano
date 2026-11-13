@@ -1,5 +1,5 @@
 import cssnanoUtils from '#utils';
-import { cssWideKeywords } from './spec.js';
+import { cssWideKeywords } from '../../../ir/spec.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 

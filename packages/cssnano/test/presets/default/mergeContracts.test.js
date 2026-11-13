@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import preset from '../../../src/presets/default.js';
-import { transformPass } from '../../../src/passes/merge/index.js';
+import { transformRunner } from '../../../src/passes/merge/index.js';
 import { configureValidated } from '../../../src/presets/configurePlugins.js';
 import { defaultPluginEntries } from '../../../src/presets/defaultPlugins.js';
 import { processCSSFactory } from '../../../../../util/testHelpers.js';
@@ -19,23 +19,25 @@ const withoutRules = processCSSFactory(
  * @return {import('postcss').AcceptedPlugin[]}
  */
 function presetWithMergeTransforms(transforms) {
-  // The default entries, with the merge entry replaced by the transforms, each
-  // a pass of its own in the place the merge pass has.
+  // The default entries, with the merge entry replaced by the transforms, run
+  // in order in the one merge run the merge entry has.
   const entries = defaultPluginEntries.flatMap(([entry, name, settings]) =>
     name === 'merge'
-      ? transforms.map((transform) => [
-          {
-            create: (/** @type {Record<PropertyKey, unknown>} */ options) =>
-              options,
-          },
-          transform,
-          {
-            targets: true,
-            transform: true,
-            pass: transformPass(transform),
-            optionKeys: [],
-          },
-        ])
+      ? [
+          [
+            {
+              create: (/** @type {Record<PropertyKey, unknown>} */ options) =>
+                options,
+            },
+            'merge',
+            {
+              targets: true,
+              transform: true,
+              merge: transformRunner(...transforms),
+              optionKeys: [],
+            },
+          ],
+        ]
       : [[entry, name, settings]]
   );
   return configureValidated(entries, {});

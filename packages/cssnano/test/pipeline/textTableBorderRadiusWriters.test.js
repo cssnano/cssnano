@@ -11,7 +11,7 @@ const { reduceBorderRadius } =
 const { partitionLanes } =
   await import('../../src/passes/merge/lib/longhand/decl/radiusDescriptors.js');
 const { longstandingFeatures } =
-  await import('../../src/passes/merge/lib/longhand/syntaxFeatures.js');
+  await import('../../src/passes/ir/syntaxFeatures.js');
 const { readBlock } =
   await import('../passes/merge/lib/longhand/helpers/declarationItems.js');
 const { reduceBlock, itemTokensSpellText } =

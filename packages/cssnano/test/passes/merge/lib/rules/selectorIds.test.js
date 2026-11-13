@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { buildRecords } from '../../../../../src/passes/merge/lib/rules/buildRecords.js';
-import { RULE } from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
+import { RULE } from '../../../../../src/passes/ir/blockRecord.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
-import { selectorInfoOf } from '../../../../../src/passes/merge/lib/rules/ensureCompatibility.js';
+import { selectorInfoOf } from '../../../../../src/passes/ir/ensureCompatibility.js';
 
 /** The rule records of a stylesheet, in document order. */
 function rulesOf(css) {
@@ -20,10 +20,16 @@ function rulesOf(css) {
 
 test('equal selector items share one id, whatever the spacing around their commas', () => {
   const [first, second, third] = rulesOf(
-    'a, b{color:red}a,b{color:red}a /* x */, b{color:red}'
+    'a, b{color:red}a,b{color:red}a ,  b{color:red}'
   );
   assert.deepEqual(second.selectorIds, first.selectorIds);
   assert.deepEqual(third.selectorIds, first.selectorIds);
+});
+
+test('a comment in a selector item gives the item its own id, and the items beside it keep theirs', () => {
+  const [first, commented] = rulesOf('a, b{color:red}a /* x */, b{color:red}');
+  assert.notEqual(commented.selectorIds[0], first.selectorIds[0]);
+  assert.equal(commented.selectorIds[1], first.selectorIds[1]);
 });
 
 test('different selector items have different ids', () => {
@@ -31,7 +37,20 @@ test('different selector items have different ids', () => {
   assert.notEqual(rule.selectorIds[0], rule.selectorIds[1]);
 });
 
-test("each id's token list spells its selector item", () => {
+/**
+ * The items of a rule's selector as written, which its ids spell.
+ *
+ * @param {import('postcss').Rule} rule
+ * @return {string[]}
+ */
+function writtenItemsOf(rule) {
+  const raw = rule.raws.selector;
+  return postcss.list.comma(
+    raw !== undefined && raw.value === rule.selector ? raw.raw : rule.selector
+  );
+}
+
+test("each id's token list spells its selector item as written", () => {
   const context = createRunContext();
   const { records, nodes } = buildRecords(
     postcss.parse('a /* x */, b{color:red}c,a{color:red}b{color:red}'),
@@ -44,7 +63,7 @@ test("each id's token list spells its selector item", () => {
     for (const [at, id] of entry.selectorIds.entries()) {
       assert.equal(
         tokensText(context.tokenLists.get(id)),
-        nodes[index].selectors[at]
+        writtenItemsOf(nodes[index])[at]
       );
       checked++;
     }

@@ -1,4 +1,4 @@
-import { childEntriesOf } from '../../../../../src/passes/merge/lib/rules/blockChildren.js';
+import { childEntriesOf } from '../../../../../src/passes/ir/blockChildren.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
@@ -6,13 +6,13 @@ import LastWriteIndex from '../../../../../src/passes/merge/lib/rules/lastWriteI
 import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { BlockRecords } from '../../../../../src/passes/merge/lib/rules/blockRecords.js';
+import { BlockRecords } from '../../../../../src/passes/ir/blockRecords.js';
 import {
   BlockRecord,
   NO_AT_RULE,
   NO_PRELUDE,
   STYLESHEET,
-} from '../../../../../src/passes/merge/lib/rules/blockRecord.js';
+} from '../../../../../src/passes/ir/blockRecord.js';
 import { entryOf, buildTestRecords } from './liveRecords.js';
 
 /** @param {string} prop */
@@ -25,7 +25,7 @@ const decl = (prop) => ({ keys: keys(prop) });
 const unknownElements = () => null;
 /** An arena for the index calls that read no nested block. */
 const noBlocks = new BlockRecords(
-  new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', '', false, NO_PRELUDE),
+  new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', false, NO_PRELUDE),
   false
 );
 
@@ -33,7 +33,7 @@ const noBlocks = new BlockRecords(
  * The first node of `css`, with the records of its stylesheet.
  *
  * @param {string} css
- * @return {{node: any, records: import('../../../../../src/passes/merge/lib/rules/blockRecords.js').BlockRecords}}
+ * @return {{node: any, records: import('../../../../../src/passes/ir/blockRecords.js').BlockRecords}}
  */
 function firstNodeWithRecords(css) {
   const root = postcss.parse(css);
@@ -110,7 +110,7 @@ test('last-write index recordNode records each rule declaration under its elemen
  * The element keys of a rule record: its selectors, or null for `*`, whose
  * element is unknown.
  *
- * @param {import('../../../../../src/passes/merge/lib/rules/ruleRecord.js').RuleRecord} record
+ * @param {import('../../../../../src/passes/ir/ruleRecord.js').RuleRecord} record
  * @return {string[] | null}
  */
 const keysOfRule = (record) =>

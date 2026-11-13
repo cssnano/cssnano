@@ -13,15 +13,15 @@ export const test = new URL(
 // Each write line repeats, so each find takes the line before it too.
 export const mutations = [
   {
-    name: 'write the renamed reference as text, without its list',
-    find: '            return undefined;\n          })\n        );\n        if (buffer.text() !== decl.value) table.write(decl, buffer.tokens());',
+    name: 'write the renamed reference without its list',
+    find: '          writeValue(records, context, index, buffer.tokens());\n        }\n      }\n\n      // Rename only live names; normalize dots and whitespace.',
     replace:
-      '            return undefined;\n          })\n        );\n        if (buffer.text() !== decl.value) table.setText(decl, buffer.text());',
+      '          writeValue(records, context, index, []);\n        }\n      }\n\n      // Rename only live names; normalize dots and whitespace.',
   },
   {
-    name: 'write the normalized template as text, without its list',
-    find: '              : undefined;\n          })\n        );\n        if (buffer.text() !== decl.value) table.write(decl, buffer.tokens());',
+    name: 'write the normalized template without its list',
+    find: '          writeValue(records, context, index, buffer.tokens());\n        }\n      }\n\n      defSites = [];',
     replace:
-      '              : undefined;\n          })\n        );\n        if (buffer.text() !== decl.value) table.setText(decl, buffer.text());',
+      '          writeValue(records, context, index, []);\n        }\n      }\n\n      defSites = [];',
   },
 ];

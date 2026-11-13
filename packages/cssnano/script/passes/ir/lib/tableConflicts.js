@@ -2,7 +2,7 @@ import data from '../../../../src/passes/ir/data/properties.json' with { type: '
 import { extraAliases } from '../../../../src/passes/ir/extraConflicts.js';
 import { propertyNameKey } from '../../../../src/passes/ir/propertyName.js';
 import { resolveProperty } from '../../../../src/passes/ir/propertyTable.js';
-import { setsLonghands } from '../../../../src/passes/merge/lib/longhand/spec.js';
+import { setsLonghands } from '../../../../src/passes/ir/spec.js';
 import vendorUnprefixed from '../../../../src/utils/vendorUnprefixed.js';
 
 const ALL = 'all';

@@ -1,5 +1,8 @@
-import { isAsciiDigit, isHexColorDigits } from '../asciiCharacters.js';
-import { withoutVendorPrefix } from '../vendorPrefix.js';
+import {
+  isAsciiDigit,
+  isHexColorDigits,
+} from '../../../../ir/asciiCharacters.js';
+import { withoutVendorPrefix } from '../../../../ir/vendorPrefix.js';
 import cssnanoUtils from '#utils';
 import knownPropertyNames from '../data/knownProperties.json' with { type: 'json' };
 import generatedNumericRanges from '../data/numericRanges.json' with { type: 'json' };

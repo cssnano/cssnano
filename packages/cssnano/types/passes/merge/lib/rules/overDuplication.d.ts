@@ -1,4 +1,4 @@
-import type { BlockRecords } from './blockRecords.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
 /**
  * Counts the declarations that the records hold by key: those of each rule that
  * holds no block, and each declaration that is a child of a block. Under

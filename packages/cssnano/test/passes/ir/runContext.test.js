@@ -4,13 +4,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
-import { remove } from '../../../src/passes/merge/lib/rules/treeEdits.js';
+import { remove } from '../../../src/passes/ir/treeEdits.js';
 import {
   buildRecords,
   recordDeclaration,
-} from '../../../src/passes/merge/lib/rules/buildRecords.js';
+} from '../../../src/passes/ir/buildRecords.js';
 import { TextTable } from '../../../src/values/textTable.js';
-import { RuleRecord } from '../../../src/passes/merge/lib/rules/ruleRecord.js';
+import { RuleRecord } from '../../../src/passes/ir/ruleRecord.js';
 import { placeUnlinked } from '../merge/lib/rules/liveRecords.js';
 import { TokenLists } from '../../../src/passes/ir/tokenLists.js';
 

@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { transformPass } from '../../../../../src/passes/merge/index.js';
 import { isFallback } from '../../../../../src/passes/merge/lib/longhand/isFallback.js';
-import { longstandingFeatures } from '../../../../../src/passes/merge/lib/longhand/syntaxFeatures.js';
+import { longstandingFeatures } from '../../../../../src/passes/ir/syntaxFeatures.js';
 import { itemOf } from './helpers/declarationItems.js';
 
 // `margin:5dvh` needs a feature only modern browsers parse, so whether the

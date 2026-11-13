@@ -4,14 +4,12 @@ export const name = 'merge-moves';
  * @param {string} module
  * @return {string}
  */
-function source(module) {
-  return new URL(
-    `../../../../../src/passes/merge/lib/rules/${module}`,
-    import.meta.url
-  ).href;
+function irSource(module) {
+  return new URL(`../../../../../src/passes/ir/${module}`, import.meta.url)
+    .href;
 }
 
-export const target = source('blockRecords.js');
+export const target = irSource('blockRecords.js');
 // Only the move tests judge these: they run under checks, where a move that
 // leaves its entry linked throws. Unchecked, the moves of a block's children
 // would loop forever on the chain the fault leaves, and time the run out.
@@ -23,7 +21,7 @@ export const test = new URL(
 export const mutations = [
   {
     name: 'a move to the end that leaves the moved entry in its old chain',
-    target: source('blockRecords.js'),
+    target: irSource('blockRecords.js'),
     find: '    this.detach(index);\n    this.#linkLast(container, index);\n',
     replace: '    this.#linkLast(container, index);\n',
   },

@@ -1,0 +1,21 @@
+import type { BlockRecords } from './blockRecords.js';
+import type { ArenaIndex } from './blockRecord.js';
+import type { CSSToken } from '@csstools/css-tokenizer';
+import type { RunContext } from './runContext.js';
+/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {ArenaIndex} from './blockRecord.js' */
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {DeclarationRecord} from './declarationRecord.js' */
+/** @import {RunContext} from './runContext.js' */
+/**
+ * Writes the value of a declaration in place: its list is interned in the run,
+ * and its container's stamp moves so write-back writes it.
+ *
+ * @param {BlockRecords} records
+ * @param {RunContext} context
+ * @param {ArenaIndex} index the declaration's index
+ * @param {readonly CSSToken[]} list the value's tokens
+ * @return {void}
+ */
+export declare function writeValue(records: BlockRecords, context: RunContext, index: ArenaIndex, list: readonly CSSToken[]): void;
+//# sourceMappingURL=valueEdits.d.ts.map

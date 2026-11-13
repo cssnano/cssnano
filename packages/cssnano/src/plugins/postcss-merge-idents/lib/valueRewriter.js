@@ -12,6 +12,7 @@ import {
   stringToken,
 } from '../../../values/tokenConstructors.js';
 import { ValueBuffer } from '../../../values/valueBuffer.js';
+import { writeValue } from '../../../passes/ir/valueEdits.js';
 
 const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
 
@@ -20,7 +21,9 @@ const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
  * @typedef {import('../../../values/valueBuffer.js').TokenEdit} TokenEdit
  * @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken
  * @typedef {(token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => TokenEdit | undefined} Visitor
- * @import {TextTable} from '../../../values/textTable.js'
+ * @import {ArenaIndex} from '../../../passes/ir/blockRecord.js'
+ * @import {BlockRecords} from '../../../passes/ir/blockRecords.js'
+ * @import {RunContext} from '../../../passes/ir/runContext.js'
  */
 
 /**
@@ -220,16 +223,25 @@ function createCounterFuncVisitor(tokenList, renames) {
  * same value are one name, and a renamed name is rewritten wherever it is
  * referenced because only interchangeable names are ever renamed.
  *
- * @param {import('postcss').Declaration} decl
+ * @param {BlockRecords} records
+ * @param {RunContext} context
+ * @param {ArenaIndex} index
  * @param {NonNullable<ReturnType<typeof import('./grammar.js').classifyDeclaration>>['kind']} kind
  * @param {Map<string, Replacement>} renames old name → replacement
  * @param {string} value the declaration value, with the whitespace that a
  *   trailing escape consumed restored
  * @param {readonly CSSToken[]} tokenList the tokens that spell `value`
- * @param {TextTable} table
  * @return {void}
  */
-function rewriteDeclaration(decl, kind, renames, value, tokenList, table) {
+function rewriteDeclaration(
+  records,
+  context,
+  index,
+  kind,
+  renames,
+  value,
+  tokenList
+) {
   /** @type {Visitor} */
   let visit;
   if (kind === 'animation-shorthand' || kind === 'animation-name') {
@@ -246,7 +258,7 @@ function rewriteDeclaration(decl, kind, renames, value, tokenList, table) {
     const buffer = new ValueBuffer(value, undefined, tokenList);
     buffer.replaceRanges(edits);
     if (buffer.text() !== value) {
-      table.write(decl, buffer.tokens());
+      writeValue(records, context, index, buffer.tokens());
     }
   }
 }
@@ -255,22 +267,24 @@ function rewriteDeclaration(decl, kind, renames, value, tokenList, table) {
  * Rewrites the references whose namespace has renames. A reference shares
  * the tokens its scan read, so the rewrite does not tokenize it again.
  *
+ * @param {BlockRecords} records
+ * @param {RunContext} context
  * @param {import('./protectedNames.js').Reference[]} references
  * @param {Map<string, Map<string, Replacement>>} renames
- * @param {TextTable} table
  * @return {void}
  */
-function rewriteReferences(references, renames, table) {
-  for (const { decl, classification, value, tokens: list } of references) {
+function rewriteReferences(records, context, references, renames) {
+  for (const { index, classification, value, tokens: list } of references) {
     const namespaceRenames = renames.get(classification.namespace);
     if (namespaceRenames?.size) {
       rewriteDeclaration(
-        decl,
+        records,
+        context,
+        index,
         classification.kind,
         namespaceRenames,
         value,
-        list,
-        table
+        list
       );
     }
   }

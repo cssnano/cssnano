@@ -1,5 +1,5 @@
 import { test } from 'node:test';
-import { sides as topRightBottomLeft } from '../../../../../src/passes/merge/lib/longhand/spec.js';
+import { sides as topRightBottomLeft } from '../../../../../src/passes/ir/spec.js';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
 import { transformPlugin } from '#passes/merge';
 const plugin = transformPlugin('mergeLonghand');

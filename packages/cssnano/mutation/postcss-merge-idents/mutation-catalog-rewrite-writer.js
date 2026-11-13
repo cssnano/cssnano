@@ -1,6 +1,6 @@
 export const name = 'postcss-merge-idents: reference rewrite writer';
 export const target = new URL(
-  '../../src/plugins/postcss-merge-idents/lib/valueRewriter.js',
+  '../../src/passes/ir/valueEdits.js',
   import.meta.url
 ).href;
 // node --test expands this glob; a directory path would resolve to a single
@@ -12,9 +12,8 @@ export const test = new URL(
 
 export const mutations = [
   {
-    name: 'write the rewritten reference as text, without its list',
-    find: '    if (buffer.text() !== value) {\n      table.write(decl, buffer.tokens());',
-    replace:
-      '    if (buffer.text() !== value) {\n      table.setText(decl, buffer.text());',
+    name: 'write the rewritten value as text, without its list',
+    find: '    tokensText(list),\n    list\n  );\n  record.valueList',
+    replace: '    tokensText(list),\n    undefined\n  );\n  record.valueList',
   },
 ];

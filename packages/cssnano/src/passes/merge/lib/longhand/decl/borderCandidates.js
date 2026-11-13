@@ -1,7 +1,7 @@
 import cssnanoUtils from '#utils';
 /** @import {BlockDeclarations} from '../blockDeclarations.js' */
 /** @import {ValueComponent} from '../componentRanges.js' */
-import { setsLonghands } from '../spec.js';
+import { setsLonghands } from '../../../../ir/spec.js';
 import {
   allBorderShorthands,
   borderPropertyToCellIndex,

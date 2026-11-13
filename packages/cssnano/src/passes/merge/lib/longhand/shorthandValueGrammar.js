@@ -1,4 +1,4 @@
-import { cssWideKeywords } from './spec.js';
+import { cssWideKeywords } from '../../../ir/spec.js';
 import cssnanoUtils from '#utils';
 import { isLengthValue } from './lengthGrammar.js';
 import { closingTokens } from './valueComponents.js';

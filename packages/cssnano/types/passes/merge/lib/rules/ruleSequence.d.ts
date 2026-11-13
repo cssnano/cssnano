@@ -1,5 +1,5 @@
-import type { ArenaIndex } from './blockRecord.js';
-import type { BlockRecords } from './blockRecords.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
 export type Placement = {
     /**
      * the indices of the rules that replace the earlier
@@ -17,9 +17,9 @@ export type Placement = {
      */
     following?: ArenaIndex[][];
 };
-/** @import {ArenaIndex, BlockRecord} from './blockRecord.js' */
-/** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {BlockRecords} from './blockRecords.js' */
+/** @import {ArenaIndex, BlockRecord} from '../../../ir/blockRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 /**
  * The rules that stand in the slots of a pair after it is merged.
  *

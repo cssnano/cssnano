@@ -9,15 +9,12 @@ const { TextTable } = await import('../../../src/values/textTable.js');
 const { mergePass, transformPass } =
   await import('../../../src/passes/merge/index.js');
 const { removeRules, takePlaceOf } =
-  await import('../../../src/passes/merge/lib/rules/treeEdits.js');
-const { buildRecords } =
-  await import('../../../src/passes/merge/lib/rules/buildRecords.js');
+  await import('../../../src/passes/ir/treeEdits.js');
+const { buildRecords } = await import('../../../src/passes/ir/buildRecords.js');
 const { assertRecordsMatchTree } =
-  await import('../../../src/passes/merge/lib/rules/treeMatch.js');
-const { writeBack } =
-  await import('../../../src/passes/merge/lib/rules/writeBack.js');
-const { addSelectors } =
-  await import('../../../src/passes/merge/lib/rules/selectorList.js');
+  await import('../../../src/passes/ir/treeMatch.js');
+const { writeBack } = await import('../../../src/passes/ir/writeBack.js');
+const { addSelectors } = await import('../../../src/passes/ir/selectorList.js');
 const { createRunContext } =
   await import('../../../src/passes/ir/runContext.js');
 const { resolveTargets } = await import('../../../src/utils/browserTargets.js');
@@ -173,14 +170,14 @@ suite('the merge pass writes selectors through its records', () => {
     assert.equal(tokensText(table.tokens(ruleWith(root, 'a,b'))), 'a,b');
   });
 
-  test("a marked record whose selector equals its node's comment-free text prints without the comment", () => {
+  test('a marked record prints the comment that its selector items keep', () => {
     const root = postcss.parse('a /*x*/, c {color:red}');
     const context = createRunContext();
     const { records, nodes } = buildRecords(root, context);
     const rule = records.rule(records.links.firstChild(records.root.index));
     addSelectors(records, rule.index, [], context.tokenLists, []);
     writeBack(records, nodes, context.tokenLists, new TextTable());
-    assert.equal(root.toString(), 'a,c {color:red}');
+    assert.equal(root.toString(), 'a /*x*/,c {color:red}');
   });
 });
 
@@ -228,9 +225,9 @@ function recordEditedAlone(consistencyChecks = false) {
 
 // Every change of whitespace comes with a change of children; a record edited
 // alone is a broken invariant.
-test('write-back leaves the whitespace of a rule in a container it does not rebuild as it is', () => {
+test('write-back writes the whitespace of a rule in a container it does not rebuild', () => {
   const { root } = recordEditedAlone();
-  assert.equal(root.last.raws.before, '\n');
+  assert.equal(root.last.raws.before, '\n\n');
 });
 
 test('the consistency check reports a record whose whitespace write-back did not write', () => {
