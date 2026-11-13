@@ -35,6 +35,22 @@ export function assertReached(records, index) {
 }
 
 /**
+ * Whether the root reaches an entry: a walk up `parentOf` from it ends at the
+ * root, not at -1. A removed entry keeps its subtree, but its parent link is -1.
+ *
+ * @param {BlockRecords} records
+ * @param {number} index an index that the arena gave
+ * @return {boolean}
+ */
+export function isReached(records, index) {
+  const { links, root } = records;
+  for (let at = index; at !== -1; at = links.parentOf(at)) {
+    if (at === root.index) return true;
+  }
+  return false;
+}
+
+/**
  * Under checks, the entry at `index` must stand in no chain, since a second
  * link would leave it in two; the container that receives it must reach the
  * root, and a rule or an at-rule may join only a rule that nests.

@@ -19,6 +19,7 @@ import { visitAtRule } from './atRuleWalk.js';
 import { visitDeclaration } from './declarationWalk.js';
 import { isOutermostOverridable } from './overridable.js';
 import { visitRule } from './ruleWalk.js';
+import { fillRule } from '../passes/ir/selectorList.js';
 
 /** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
@@ -27,6 +28,7 @@ import { visitRule } from './ruleWalk.js';
 /** @import {TokenListId} from '../passes/ir/tokenLists.js' */
 /** @import {BlockRecord, NodeEntry} from '../passes/ir/blockRecord.js' */
 /** @import {RuleRecord} from '../passes/ir/ruleRecord.js' */
+/** @import {LonghandRound} from '../passes/merge/lib/longhand/canonicalize.js' */
 
 /**
  * The state of the record walk over one stylesheet: the outermost overridable
@@ -44,16 +46,24 @@ class RecordWalk {
   #plans;
   /** @type {boolean} */
   #defaultNamespace = false;
+  /** @type {LonghandRound | undefined} */
+  #round;
+  /** @type {readonly string[] | undefined} */
+  #browsers;
 
   /**
    * @param {BlockRecords} records
    * @param {RunContext} context
    * @param {DeclarationPlans | undefined} plans what the walk applies to the declarations and rules, when the run has stages
+   * @param {LonghandRound | undefined} round the first longhand round, which the walk gives each block it leaves
+   * @param {readonly string[] | undefined} browsers the targets of the merge, which the walk folds each rule's summaries for
    */
-  constructor(records, context, plans) {
+  constructor(records, context, plans, round, browsers) {
     this.#records = records;
     this.#context = context;
     this.#plans = plans;
+    this.#round = round;
+    this.#browsers = browsers;
   }
 
   /**
@@ -134,7 +144,16 @@ class RecordWalk {
       }
       own = this.#refreshContext(index, parentContext);
     }
+    // After the selector is folded, so the summaries read the final selector.
+    if (kind === RULE && this.#browsers !== undefined) {
+      fillRule(
+        /** @type {RuleRecord} */ (this.#records.entry(index)),
+        this.#context.tokenLists,
+        this.#browsers
+      );
+    }
     this.walkChildren(index, bits, own);
+    if (this.#round !== undefined) this.#round.block(this.#records, index);
   }
 
   /**
@@ -195,16 +214,21 @@ class RecordWalk {
  * children. It applies the declaration and selector plans to each declaration
  * and rule, collects the outermost overridable at-rules, which the discard of
  * discardOverridden compares, and computes the context of each container it
- * enters, after the edits to that container.
+ * enters, after the edits to that container. With the merge's targets, it
+ * folds each rule's summaries; with a round, it runs the round on each block
+ * after the block's children, then on the root's own declarations.
  *
  * @param {BlockRecords} records the build of the stylesheet
  * @param {RunContext} context the run that built the records; its token lists read the values
  * @param {DeclarationPlans} [plans] what the walk applies to the declarations and rules; none leaves them as built
+ * @param {LonghandRound} [round] the first longhand round of the run
+ * @param {readonly string[]} [browsers] the targets the merge folds the summaries for; none when the merge is off
  * @return {ArenaIndex[]} the outermost overridable at-rules, in document order
  */
-export function walkDown(records, context, plans) {
-  const walk = new RecordWalk(records, context, plans);
+export function walkDown(records, context, plans, round, browsers) {
+  const walk = new RecordWalk(records, context, plans, round, browsers);
   // The stylesheet has no parent, so its context is the empty one.
   walk.walkChildren(records.root.index, 0, records.root.context);
+  round?.root(records);
   return walk.found;
 }

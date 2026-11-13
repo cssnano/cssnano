@@ -8,6 +8,12 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import defaultPreset from '#presets/default';
 import advancedPreset from '#presets/advanced';
+import { AT_RULE_BLOCK, RULE } from '../../src/passes/ir/blockRecord.js';
+import { createRunContext } from '../../src/passes/ir/runContext.js';
+import { runDriver } from '../../src/passes/ir/runDriver.js';
+import { walkDown } from '../../src/pipeline/walkDown.js';
+
+const BROWSERS = ['chrome 120', 'firefox 120', 'safari 17'];
 
 const edgeCasesFile = new URL(
   '../../script/pipeline/edgeCases.css',
@@ -145,4 +151,73 @@ test('the overridden at-rules and column blocks of edgeCases.css keep a declarat
   const section = css.slice(css.indexOf('/* 18.'));
   const output = await run(section, { disable: ['discardEmpty'] });
   assert.doesNotMatch(output, /\{\s*\}/v);
+});
+
+/**
+ * A longhand round that only records the calls the walk makes on it.
+ *
+ * @return {{roots: number, reached: number[], root(): void, block(records: unknown, index: number): void}}
+ */
+function spyRound() {
+  return {
+    roots: 0,
+    reached: [],
+    root() {
+      this.roots += 1;
+    },
+    block(records, index) {
+      this.reached.push(index);
+    },
+  };
+}
+
+/**
+ * Each rule and at-rule block of the records that the root reaches, in pre-order.
+ *
+ * @param {import('../../src/passes/ir/blockRecords.js').BlockRecords} records
+ * @return {number[]}
+ */
+function containersOf(records) {
+  const found = [];
+  const visit = (container) => {
+    for (
+      let entry = records.links.firstChild(container);
+      entry !== -1;
+      entry = records.links.nextSibling(entry)
+    ) {
+      const { kind } = records.entry(entry);
+      if (kind === RULE || kind === AT_RULE_BLOCK) {
+        found.push(entry);
+        visit(entry);
+      }
+    }
+  };
+  visit(records.root.index);
+  return found;
+}
+
+test('the walk down gives each block one first round, and the root one', () => {
+  const context = createRunContext();
+  const { records } = runDriver.build(
+    postcss.parse(
+      '@media x{a{color:red}}b{color:red}@keyframes k{from{color:red}}'
+    ),
+    context
+  );
+  const containers = containersOf(records);
+  const round = spyRound();
+  walkDown(records, context, undefined, round, undefined);
+  assert.equal(round.roots, 1);
+  assert.deepEqual(
+    round.reached.toSorted((a, b) => a - b),
+    containers
+  );
+});
+
+test('a rule has its selector summaries folded when the walk down runs with browser targets', () => {
+  const context = createRunContext();
+  const { records } = runDriver.build(postcss.parse('a{color:red}'), context);
+  walkDown(records, context, undefined, undefined, BROWSERS);
+  const rule = records.entry(records.links.firstChild(records.root.index));
+  assert.notEqual(rule.elementKeys, null);
 });

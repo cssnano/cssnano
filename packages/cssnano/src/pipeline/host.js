@@ -140,21 +140,31 @@ function runRecords(
   const support = merge ? merge.runner.support(browsers) : undefined;
   const context = createRunContext(undefined, support?.features);
   const state = runDriver.build(root, context);
-  if (plans !== undefined) {
-    const overridable = walkDown(state.records, context, plans);
-    if (transforms.has('discardOverridden')) {
+  const round =
+    merge && support ? merge.runner.round(support, context) : undefined;
+  // The walk folds the rules' summaries when the merge is on, even with no stage.
+  if (plans !== undefined || merge) {
+    const overridable = walkDown(
+      state.records,
+      context,
+      plans,
+      round,
+      merge && browsers
+    );
+    if (plans !== undefined && transforms.has('discardOverridden')) {
       discardOverriddenAtRules(
         state.records,
         context.declarations,
         overridable
       );
     }
+    round?.finishColumns(state.records);
   }
-  if (merge && support) {
-    merge.runner.transforms(state.records, browsers, context, {
+  if (merge) {
+    merge.runner.merge(state.records, browsers, context, {
       rules: /** @type {boolean | undefined} */ (merge.options.rules),
-      support,
     });
+    if (round) merge.runner.secondRound(state.records, round);
   }
   walkAfterMerge(state, after, symbols, merge && browsers);
   runDriver.end(state, {

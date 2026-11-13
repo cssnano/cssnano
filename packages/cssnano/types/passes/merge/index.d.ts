@@ -31,6 +31,7 @@ export type MergeRunner = {
     merge: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {
         rules?: boolean;
     }) => void;
+    secondRound: (records: BlockRecords, round: LonghandRound) => void;
     transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {
         rules?: boolean;
         support: ReturnType<typeof targetSupportOf>;

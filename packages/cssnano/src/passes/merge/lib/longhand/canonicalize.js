@@ -1,5 +1,4 @@
 import cssnanoUtils from '#utils';
-import { withoutVendorPrefix } from '../../../ir/vendorPrefix.js';
 import {
   allColumnProps,
   reduceColumns,
@@ -11,13 +10,13 @@ import {
   allPhysicalBorderProperties,
   allRadiusProperties,
 } from './decl/borderData.js';
-import { alignmentProperties } from './decl/alignmentForms.js';
+import { alignmentFamilyOf } from './decl/alignmentForms.js';
 import { pairFamilyOf } from './decl/pairForms.js';
 import { reduceClassifiedContainer } from './classifiedReducers.js';
 /** @import {BoxSupport} from './targetSupport.js' */
 /** @import {RunContext} from '../../../ir/runContext.js' */
 import { discardOverriddenDeclarations } from './decl/overriddenDeclarations.js';
-import { decodedPropertyName, isAll } from './decl/importanceLanes.js';
+import { isAll } from './decl/importanceLanes.js';
 import {
   foldableShorthands,
   foldContainerDeclarations,
@@ -28,6 +27,7 @@ import { declarationsFromRecords } from './recordDeclarations.js';
 import { firstDeclaration } from '../../../ir/blockChildren.js';
 import { commitDeclarations } from '../../../ir/arenaEdits.js';
 import { AT_RULE_BLOCK, RULE } from '../../../ir/blockRecord.js';
+import { isReached } from '../../../ir/linkChecks.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -41,25 +41,6 @@ const { asciiLowerCase } = cssnanoUtils;
  *
  * @typedef {{container: ArenaIndex, list: BlockDeclarations}} Block
  */
-
-/**
- * Prefixed aliases such as -webkit-justify-content and escaped spellings
- * share the cascade with the property they name, so the alignment reducer
- * must see them. It cannot parse an alias, so any alias leaves the whole
- * family unmerged in that run, which keeps the cascade intact.
- *
- * @param {string} prop - lowercased property name
- * @return {import('./decl/alignmentForms.js').AlignmentFamilyConfig | undefined}
- */
-function alignmentFamilyOf(prop) {
-  const escaped = prop.includes('\\');
-  if (!escaped && !prop.startsWith('-')) return alignmentProperties.get(prop);
-  if (prop.startsWith('--')) return undefined;
-  const name = escaped ? decodedPropertyName(prop) : prop;
-  return name === undefined
-    ? undefined
-    : alignmentProperties.get(withoutVendorPrefix(name));
-}
 
 /** @import {PairFamily} from './decl/pairForms.js'; */
 /** @import {AlignmentFamilyConfig} from './decl/alignmentForms.js'; */
@@ -327,6 +308,13 @@ export class LonghandRound {
    * @return {void}
    */
   finishColumns(records) {
+    // A block that the root no longer reaches, such as one an overridden at-rule removed, sets no fact.
+    this.otherColumnBlocks = this.otherColumnBlocks.filter((index) =>
+      isReached(records, index)
+    );
+    this.columnRules = this.columnRules.filter(({ block }) =>
+      isReached(records, block.container)
+    );
     this.setsOtherColumn = this.otherColumnBlocks.length > 0;
     if (!this.setsOtherColumn) {
       for (const { block, positions, lanes } of this.columnRules) {

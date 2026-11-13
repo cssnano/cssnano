@@ -90,14 +90,16 @@ export { targetSupportOf };
  * after merge. `support` gives the targets' support, whose features the host
  * gives the run's context. `round` makes the longhand round of the run, or
  * undefined when the runner has none. `merge` runs the dedupe and the rule
- * merge over the records, without the summaries. `transforms` runs the merge
- * transforms over the build. The host builds and ends the run, so it imports
- * nothing of the merge.
+ * merge over the records, without the summaries. `secondRound` runs the
+ * round over the blocks still in the stylesheet after the merge. `transforms`
+ * runs the merge transforms over the build. The host builds and ends the run,
+ * so it imports nothing of the merge.
  *
  * @typedef {{
  *   support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>,
  *   round: (support: ReturnType<typeof targetSupportOf>, context: RunContext) => LonghandRound | undefined,
  *   merge: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean}) => void,
+ *   secondRound: (records: BlockRecords, round: LonghandRound) => void,
  *   transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean, support: ReturnType<typeof targetSupportOf>}) => void,
  * }} MergeRunner
  */
@@ -139,6 +141,7 @@ export const mergeRunner = Object.freeze({
   support: targetSupportOf,
   round: roundOf,
   merge: mergeOf,
+  secondRound: canonicalizeRecords,
   transforms: mergeRecords,
 });
 
@@ -162,6 +165,7 @@ export function transformRunner(...names) {
         }
       }
     },
+    secondRound: canonicalizeRecords,
     transforms: (records, browsers, context, { support }) => {
       /** @type {RecordTransform[]} */
       const transforms = [];

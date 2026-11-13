@@ -43,4 +43,14 @@ export declare function sharesKeywordSupport(values: string[]): boolean;
  * @return {string}
  */
 export declare function normalizeAlignment(family: AlignmentFamilyConfig, [val0, val1]: [string, string]): string;
+/**
+ * Prefixed aliases such as -webkit-justify-content and escaped spellings
+ * share the cascade with the property they name, so the alignment reducer
+ * must see them. It cannot parse an alias, so any alias leaves the whole
+ * family unmerged in that run, which keeps the cascade intact.
+ *
+ * @param {string} prop - lowercased property name
+ * @return {AlignmentFamilyConfig | undefined}
+ */
+export declare function alignmentFamilyOf(prop: string): AlignmentFamilyConfig | undefined;
 //# sourceMappingURL=alignmentForms.d.ts.map
