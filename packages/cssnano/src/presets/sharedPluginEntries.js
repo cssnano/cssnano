@@ -14,7 +14,7 @@ export const discardCommentsEntry =
       discardComments,
       'discardComments',
       {
-        optionKeys: ['removeAll', 'removeAllButFirst', 'remove'],
+        optionKeys: ['removeAll', 'remove'],
       },
     ])
   );
