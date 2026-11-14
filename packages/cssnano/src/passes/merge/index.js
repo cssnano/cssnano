@@ -70,17 +70,11 @@ export function mergeRecords(
   context,
   { rules = true, support = targetSupportOf(browsers) } = {}
 ) {
-  const longhand = longhandContext(
-    support.placeShorthands,
-    support.boxSupport,
-    support.pairShorthands,
-    context
-  );
-  runTransforms(records, browsers, context, [
-    (block) => canonicalizeRecords(block, longhand),
-    ...(rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY),
-    (block) => canonicalizeRecords(block, longhand),
-  ]);
+  const round = roundOf(support, context);
+  fillSummaries(records, context.tokenLists, browsers);
+  canonicalizeRecords(records, round);
+  mergeOf(records, browsers, context, { rules });
+  canonicalizeRecords(records, round);
 }
 
 export { targetSupportOf };

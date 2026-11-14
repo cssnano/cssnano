@@ -113,10 +113,11 @@ function targetsOf(resolutions, options, result) {
 const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
 
 /**
- * One stylesheet's run over the records: the build, the discard of overridden
- * at-rules, the merge transforms when the merge is on, the walk after merge over
- * the records, then the end, which writes. The raw cache records last, on the
- * written tree, so that no later transform changes what it describes.
+ * One stylesheet's run over the records, between the build and the end, which
+ * writes. Three phases run in order: the walk down (the discard of overridden
+ * at-rules after it), the merge when it is on, and the walk up. The raw cache
+ * records last, on the written tree, so that no later transform changes what it
+ * describes.
  *
  * @param {import('postcss').Root} root
  * @param {import('postcss').Result} result
