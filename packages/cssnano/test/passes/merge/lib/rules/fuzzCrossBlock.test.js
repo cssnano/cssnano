@@ -5,6 +5,7 @@ import {
   checkCrossBlock,
   generateCrossBlockCases,
   processAllWithLimits,
+  processBatched,
 } from '../../../../../script/passes/merge/rules/lib/fuzzCrossBlock.js';
 
 test('cross-block fuzzer generates deterministic cases', () => {
@@ -174,4 +175,31 @@ test('child-process runner returns minified output for terminating input', () =>
   assert.deepEqual(processAllWithLimits(['.a{color:red}.b{color:red}']).css, [
     '.a,.b{color:red}',
   ]);
+});
+
+// A batch that ran out of time stops before its next input, which is
+// innocent when that input finishes alone.
+function slowBatch(inputs) {
+  return { css: [inputs[0]], terminated: inputs.length > 1 };
+}
+
+function hangsOnB(inputs) {
+  const hang = inputs.indexOf('b');
+  return hang === -1
+    ? { css: inputs, terminated: false }
+    : { css: inputs.slice(0, hang), terminated: true };
+}
+
+test('batched processing retries the blamed input alone because a batch shares one time limit', () => {
+  const results = processBatched(['a', 'b', 'c'], undefined, slowBatch);
+  assert.deepEqual(
+    [...results.values()].map(({ terminated }) => terminated),
+    [false, false, false]
+  );
+});
+
+test('batched processing marks an input that hangs alone as terminated', () => {
+  const results = processBatched(['a', 'b', 'c'], undefined, hangsOnB);
+  assert.deepEqual(results.get('b'), { css: undefined, terminated: true });
+  assert.equal(results.get('c').terminated, false);
 });

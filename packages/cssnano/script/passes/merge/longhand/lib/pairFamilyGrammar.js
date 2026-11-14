@@ -8,7 +8,7 @@
  * @param {string[]} keywords
  * @return {Grammar}
  */
-function keywordsOf(keywords) {
+export function keywordsOf(keywords) {
   const accepted = new Set(keywords);
   return (token) => {
     const lower = token.toLowerCase();
@@ -175,6 +175,15 @@ export const lineWidth = keywordsOf([
   'thick',
 ]);
 export const lineStyle = keywordsOf([
+  'none',
+  'solid',
+  'dashed',
+  'dotted',
+  'double',
+]);
+// outline-style takes `auto` and no `hidden`; `hidden` is outside the alphabet.
+export const outlineStyle = keywordsOf([
+  'auto',
   'none',
   'solid',
   'dashed',

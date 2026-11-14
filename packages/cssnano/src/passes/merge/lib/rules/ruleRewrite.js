@@ -133,7 +133,11 @@ export function buildMergedRule(
   );
   receivingRecord.template = template;
   // The merged rule prints the space and the semicolon of its template.
-  const printed = /** @type {RuleRecord} */ (records.rule(template));
+  // The template can be a rule an earlier merge detached, so the read does not
+  // require the root to reach it.
+  const printed = /** @type {RuleRecord} */ (
+    records.entry(/** @type {ArenaIndex} */ (template))
+  );
   receivingRecord.between = printed.between;
   receivingRecord.after = printed.after;
   receivingRecord.semicolon = printed.semicolon;
