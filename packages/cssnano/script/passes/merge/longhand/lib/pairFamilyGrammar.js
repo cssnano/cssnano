@@ -181,6 +181,15 @@ export const lineStyle = keywordsOf([
   'dotted',
   'double',
 ]);
+// outline-style takes `auto` and no `hidden`; `hidden` is outside the alphabet.
+export const outlineStyle = keywordsOf([
+  'auto',
+  'none',
+  'solid',
+  'dashed',
+  'dotted',
+  'double',
+]);
 export const lineColor = keywordsOf(['red', 'blue', 'currentcolor']);
 
 /**

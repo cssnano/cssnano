@@ -77,6 +77,20 @@
     "safari": "16",
     "samsung": "18.0"
   },
+  "keyword:outline-style-auto": {
+    "and_chr": "18",
+    "and_ff": "4",
+    "android": "4.4",
+    "chrome": "1",
+    "edge": "12",
+    "firefox": "1.5",
+    "ie": "11",
+    "ios_saf": "1",
+    "op_mob": "14",
+    "opera": "15",
+    "safari": "1.2",
+    "samsung": "1.0"
+  },
   "keyword:pi": {
     "and_chr": "109",
     "and_ff": "108",

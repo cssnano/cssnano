@@ -6,6 +6,7 @@ import { isBorderStyle, isBorderWidth, isColor } from '../validateWsc.js';
 import { isUnresolved } from '../../../../ir/unresolved.js';
 import { isLengthValue, parseDimension } from '../lengthGrammar.js';
 import { splitValue } from '../valueComponents.js';
+import { allPhysicalBorderProperties } from './borderData.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -22,6 +23,7 @@ const { asciiLowerCase } = cssnanoUtils;
  *   aliases: ReadonlySet<string>,
  *   parseValue: Parser[],
  *   emit: (values: string[]) => string | null,
+ *   requires?: (values: string[]) => string[],
  *   supportKey: string | null,
  * }} PairFamily
  */
@@ -116,6 +118,22 @@ function emitRule(values) {
 }
 
 /**
+ * Like `emitRule`, but the color stays: the initial `outline-color` is
+ * `invert`, `currentcolor` or `auto` by specification and engine, so
+ * omitting it could change the outline.
+ *
+ * @param {string[]} values
+ * @return {string}
+ */
+function emitOutline([width, style, color]) {
+  const components = [];
+  if (asciiLowerCase(width) !== 'medium') components.push(width);
+  if (asciiLowerCase(style) !== 'none') components.push(style);
+  components.push(color);
+  return components.join(' ');
+}
+
+/**
  * Two keywords of one overflow axis make a two-value shorthand only newer
  * engines read, so only equal ones merge.
  *
@@ -169,6 +187,24 @@ function ruleComponent(is) {
   };
 }
 
+// outline-style takes `auto` and no `hidden`.
+const outlineStyle = ruleComponent(
+  (text) =>
+    (isBorderStyle(text) && asciiLowerCase(text) !== 'hidden') ||
+    asciiLowerCase(text) === 'auto'
+);
+
+/**
+ * An engine without `outline-style: auto` drops the whole shorthand that
+ * carries it, so the merge needs every target to parse it.
+ *
+ * @param {string[]} values
+ * @return {string[]}
+ */
+function outlineFeatures([, style]) {
+  return asciiLowerCase(style) === 'auto' ? ['keyword:outline-style-auto'] : [];
+}
+
 const overscrollKeywords = keywordParser(new Set(['auto', 'contain', 'none']));
 const overflowKeywords = keywordParser(
   new Set(['visible', 'hidden', 'clip', 'scroll', 'auto'])
@@ -177,6 +213,73 @@ const flexDirection = keywordParser(
   new Set(['row', 'row-reverse', 'column', 'column-reverse'])
 );
 const flexWrap = keywordParser(new Set(['nowrap', 'wrap', 'wrap-reverse']));
+
+/**
+ * `border-block-start` and its three siblings. Which physical side a logical
+ * one is depends on the writing mode, so every physical border property
+ * shares the cascade with it, and so do the axis shorthands. A block with
+ * such a property is left as written. The legacy `-webkit-` and `-moz-`
+ * spellings (`border-before`, `border-start`, ...) name the same sides.
+ */
+const legacySideNames = {
+  'block-start': 'before',
+  'block-end': 'after',
+  'inline-start': 'start',
+  'inline-end': 'end',
+};
+/**
+ * `column-rule` or `row-rule`. `rule` and its per-component forms set the
+ * longhands of both. The -break, -inset and -visibility-items longhands are
+ * not reset.
+ *
+ * @param {string} shorthand
+ * @return {PairFamily}
+ */
+function ruleFamily(shorthand) {
+  return family(
+    shorthand,
+    ['width', 'style', 'color'].map((part) => `${shorthand}-${part}`),
+    {
+      aliases: ['rule', 'rule-width', 'rule-style', 'rule-color'],
+      parseValue: [
+        ruleComponent(isBorderWidth),
+        ruleComponent(isBorderStyle),
+        ruleComponent(isColor),
+      ],
+      emit: emitRule,
+      supportKey: null,
+    }
+  );
+}
+
+/** @type {PairFamily[]} */
+const logicalBorderSides = Object.entries(legacySideNames).map(
+  ([side, legacy]) => {
+    const shorthand = `border-${side}`;
+    const axis = `border-${side.split('-')[0]}`;
+    return family(
+      shorthand,
+      ['width', 'style', 'color'].map((part) => `${shorthand}-${part}`),
+      {
+        aliases: [
+          axis,
+          ...['width', 'style', 'color'].map((part) => `${axis}-${part}`),
+          `border-${legacy}`,
+          ...['width', 'style', 'color'].map(
+            (part) => `border-${legacy}-${part}`
+          ),
+          ...allPhysicalBorderProperties,
+        ],
+        parseValue: [
+          ruleComponent(isBorderWidth),
+          ruleComponent(isBorderStyle),
+          ruleComponent(isColor),
+        ],
+        emit: emitRule,
+      }
+    );
+  }
+);
 
 /** @type {PairFamily[]} */
 export const pairFamilies = [
@@ -200,22 +303,18 @@ export const pairFamilies = [
     parseValue: [flexDirection, flexWrap],
     emit: emitFlexFlow,
   }),
-  // rule and its per-component forms set the column-rule longhands too. The
-  // column-rule-break, -inset and -visibility-items longhands are not reset.
-  family(
-    'column-rule',
-    ['column-rule-width', 'column-rule-style', 'column-rule-color'],
-    {
-      aliases: ['rule', 'rule-width', 'rule-style', 'rule-color'],
-      parseValue: [
-        ruleComponent(isBorderWidth),
-        ruleComponent(isBorderStyle),
-        ruleComponent(isColor),
-      ],
-      emit: emitRule,
-      supportKey: null,
-    }
-  ),
+  ...['column-rule', 'row-rule'].map(ruleFamily),
+  family('outline', ['outline-width', 'outline-style', 'outline-color'], {
+    parseValue: [
+      ruleComponent(isBorderWidth),
+      outlineStyle,
+      ruleComponent(isColor),
+    ],
+    emit: emitOutline,
+    requires: outlineFeatures,
+    supportKey: null,
+  }),
+  ...logicalBorderSides,
   family('overflow', ['overflow-x', 'overflow-y'], {
     aliases: ['overflow-block', 'overflow-inline'],
     parseValue: [overflowKeywords, overflowKeywords],
@@ -224,27 +323,34 @@ export const pairFamilies = [
   }),
 ];
 
-/** @type {Map<string, PairFamily>} */
-const familyOfName = new Map();
+/** @type {Map<string, PairFamily[]>} */
+const familiesOfName = new Map();
 for (const pair of pairFamilies) {
   for (const name of [pair.shorthand, ...pair.longhands, ...pair.aliases]) {
-    familyOfName.set(name, pair);
+    const families = familiesOfName.get(name);
+    if (families) families.push(pair);
+    else familiesOfName.set(name, [pair]);
   }
 }
+/** @type {PairFamily[]} */
+const noFamilies = [];
 
 /**
  * Like the alignment families, prefixed and escaped spellings share the
  * cascade with the property they name, so they are seen and block a merge.
  *
  * @param {string} prop - lowercased property name
- * @return {PairFamily | undefined}
+ * @return {readonly PairFamily[]} every family the property shares the
+ *   cascade with: a physical border property is in all four logical sides
  */
-export function pairFamilyOf(prop) {
+export function pairFamiliesOf(prop) {
   const escaped = prop.includes('\\');
-  if (!escaped && !prop.startsWith('-')) return familyOfName.get(prop);
-  if (prop.startsWith('--')) return undefined;
+  if (!escaped && !prop.startsWith('-')) {
+    return familiesOfName.get(prop) ?? noFamilies;
+  }
+  if (prop.startsWith('--')) return noFamilies;
   const name = escaped ? decodedPropertyName(prop) : prop;
   return name === undefined
-    ? undefined
-    : familyOfName.get(withoutVendorPrefix(name));
+    ? noFamilies
+    : (familiesOfName.get(withoutVendorPrefix(name)) ?? noFamilies);
 }

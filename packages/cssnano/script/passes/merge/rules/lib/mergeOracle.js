@@ -7,6 +7,7 @@ import {
   styleOf,
 } from './cascadeOracle.js';
 import { generateCascadeCases } from './fuzzCascade.js';
+import { withPhysicalBorders } from './logicalBorderResolution.js';
 import { evaluate as evaluateLonghands } from '../../longhand/lib/fuzzEvaluate.js';
 import { computedValues } from '../../longhand/lib/fuzzBoxOracle.js';
 import {
@@ -115,6 +116,34 @@ const familyProperties = [
   ['column-rule-width', ['thin', '0', 'medium']],
   ['column-rule-style', ['dotted', 'solid']],
   ['column-rule-color', ['red', 'currentcolor']],
+  ['border-block-start', ['1px solid red', 'dashed', 'none blue 0']],
+  ['border-block-start-width', ['thin', '0']],
+  ['border-block-start-style', ['dotted', 'solid']],
+  ['border-block-start-color', ['red', 'currentcolor']],
+  ['border-block-end', ['1px solid red', 'dashed', 'none blue 0']],
+  ['border-block-end-width', ['thin', '0']],
+  ['border-block-end-style', ['dotted', 'solid']],
+  ['border-block-end-color', ['red', 'currentcolor']],
+  ['border-inline-start', ['1px solid red', 'dashed', 'none blue 0']],
+  ['border-inline-start-width', ['thin', '0']],
+  ['border-inline-start-style', ['dotted', 'solid']],
+  ['border-inline-start-color', ['red', 'currentcolor']],
+  ['border-inline-end', ['1px solid red', 'dashed', 'none blue 0']],
+  ['border-inline-end-width', ['thin', '0']],
+  ['border-inline-end-style', ['dotted', 'solid']],
+  ['border-inline-end-color', ['red', 'currentcolor']],
+  ['border-block', ['2px dashed blue', 'solid']],
+  ['border-block-width', ['thin', '1px 2px']],
+  ['border-block-style', ['dotted', 'solid none']],
+  ['border-block-color', ['red', 'blue red']],
+  ['border-inline', ['2px dashed blue', 'solid']],
+  ['border-inline-width', ['thin', '1px 2px']],
+  ['border-inline-style', ['dotted', 'solid none']],
+  ['border-inline-color', ['red', 'blue red']],
+  ['outline', ['1px solid red', 'dashed', 'auto', 'none blue 0']],
+  ['outline-width', ['thin', '0', 'medium']],
+  ['outline-style', ['dotted', 'auto', 'solid']],
+  ['outline-color', ['red', 'currentcolor']],
   ['row-rule', ['thick dashed', 'solid', 'red 2px']],
   ['row-rule-width', ['2px', 'thick']],
   ['row-rule-style', ['none', 'double']],
@@ -202,7 +231,13 @@ function composedStates(css, environment) {
       }
       // Only the border and radius slots: the box sides come from
       // `computedValues`, which resolves logical sides in every mode.
-      for (const [slot, value] of evaluateLonghands(block)[0]) {
+      const physicalBlock = `a{${withPhysicalBorders(applied, direction)
+        .map(
+          ({ prop, value, important }) =>
+            `${prop}:${value}${important ? '!important' : ''}`
+        )
+        .join(';')}}`;
+      for (const [slot, value] of evaluateLonghands(physicalBlock)[0]) {
         if (slot.startsWith('border')) state[`longhand ${slot}`] = value;
       }
       for (const [key, value] of Object.entries(computedValues(block))) {

@@ -38,5 +38,57 @@
     "opera": "16",
     "safari": "9",
     "samsung": "2.0"
+  },
+  "border-block-start": {
+    "and_chr": "69",
+    "and_ff": "41",
+    "android": "69",
+    "chrome": "69",
+    "edge": "79",
+    "firefox": "41",
+    "ios_saf": "12.2",
+    "op_mob": "48",
+    "opera": "56",
+    "safari": "12.1",
+    "samsung": "10.0"
+  },
+  "border-block-end": {
+    "and_chr": "69",
+    "and_ff": "41",
+    "android": "69",
+    "chrome": "69",
+    "edge": "79",
+    "firefox": "41",
+    "ios_saf": "12.2",
+    "op_mob": "48",
+    "opera": "56",
+    "safari": "12.1",
+    "samsung": "10.0"
+  },
+  "border-inline-start": {
+    "and_chr": "69",
+    "and_ff": "41",
+    "android": "69",
+    "chrome": "69",
+    "edge": "79",
+    "firefox": "41",
+    "ios_saf": "12.2",
+    "op_mob": "48",
+    "opera": "56",
+    "safari": "12.1",
+    "samsung": "10.0"
+  },
+  "border-inline-end": {
+    "and_chr": "69",
+    "and_ff": "41",
+    "android": "69",
+    "chrome": "69",
+    "edge": "79",
+    "firefox": "41",
+    "ios_saf": "12.2",
+    "op_mob": "48",
+    "opera": "56",
+    "safari": "12.1",
+    "samsung": "10.0"
   }
 }

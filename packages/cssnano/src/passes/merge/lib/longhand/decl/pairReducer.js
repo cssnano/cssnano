@@ -6,7 +6,7 @@ import {
 } from '../isCssWideKeyword.js';
 import { mergeBlockingSupport } from '../isFallback.js';
 import { commitShorthand } from './slotVector.js';
-import { hasNonAll, repeatsProperty } from './importanceLanes.js';
+import { hasNonAll } from './importanceLanes.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -14,9 +14,9 @@ const { asciiLowerCase } = cssnanoUtils;
 /** @import {BlockDeclarations} from '../blockDeclarations.js'; */
 
 /**
- * Replaces the longhands of one lane with the shorthand. A repeated
- * longhand has been rejected by the caller, so no declaration is a fallback
- * for another, and each longhand occurs at most once per segment.
+ * Replaces the longhands of one lane with the shorthand. A segment merges
+ * only when it holds exactly one declaration for each longhand, so a repeated
+ * longhand, which may be a fallback, keeps its segment as written.
  *
  * @param {BlockDeclarations} list
  * @param {PairFamily} family
@@ -44,6 +44,9 @@ function mergeSegment(list, family, segment, important, parsed, features) {
   if (rest.some((support) => support.symmetricDifference(first).size)) return;
 
   if (!sharesShorthandKeyword(values)) return;
+  if (family.requires?.(values).some((feature) => !features.has(feature))) {
+    return;
+  }
 
   const value = isCssWideKeyword(values[0]) ? values[0] : family.emit(values);
   if (value === null) return;
@@ -77,7 +80,6 @@ export function reducePairFamily(list, family, declarations, lanes, features) {
   ) {
     return;
   }
-  if (lanes.some((lane) => repeatsProperty(list, lane))) return;
 
   /** @type {Map<number, string>} */
   const parsed = new Map();

@@ -99,6 +99,9 @@ export const featureBcdPaths = new Map([
   ),
   ['keyword:nan', 'css.types.calc-keyword.NaN'],
   ['calc', 'css.types.calc'],
+  // A pair family reads this one: an engine without `outline-style: auto`
+  // drops the whole outline shorthand that carries it.
+  ['keyword:outline-style-auto', 'css.properties.outline-style.auto'],
   [
     'hex-alpha',
     'css.types.color.rgb_hexadecimal_notation.alpha_hexadecimal_notation',

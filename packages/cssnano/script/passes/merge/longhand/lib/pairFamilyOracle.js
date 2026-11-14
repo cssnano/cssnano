@@ -12,6 +12,7 @@ import {
   flexWrap,
   lineWidth,
   lineStyle,
+  outlineStyle,
   lineColor,
   unordered,
   copyFirst,
@@ -19,6 +20,7 @@ import {
   sameValue,
   twoValues,
 } from './pairFamilyGrammar.js';
+import { logicalBorderRow } from './pairFamilyBorderRow.js';
 
 /**
  * An independent evaluator for the pair families: shorthands and aliases that
@@ -50,6 +52,7 @@ const cssWideKeywords = new Set(['initial', 'unset', 'inherit']);
 
 /** @type {PairRow[]} */
 const pairRows = [
+  logicalBorderRow(),
   // CSS Box Alignment 3. `grid-gap` and its legacy longhand names are aliases
   // of `gap`, `row-gap` and `column-gap` and share their cascade.
   {
@@ -192,6 +195,29 @@ const pairRows = [
       'column-rule-width': sameValue(['column-rule-width'], lineWidth),
       'column-rule-style': sameValue(['column-rule-style'], lineStyle),
       'column-rule-color': sameValue(['column-rule-color'], lineColor),
+    },
+  },
+  // CSS Basic User Interface 4. The initial outline-color is `invert` in the
+  // older specification and `auto` in the newer one, never `currentcolor`, so
+  // `invert` stands for it: a merge that omits a `currentcolor` is caught.
+  {
+    family: 'outline',
+    longhands: {
+      'outline-width': 'medium',
+      'outline-style': 'none',
+      'outline-color': 'invert',
+    },
+    setters: {
+      outline: {
+        names: ['outline-width', 'outline-style', 'outline-color'],
+        parse: unordered(
+          [lineWidth, outlineStyle, lineColor],
+          ['medium', 'none', 'invert']
+        ),
+      },
+      'outline-width': sameValue(['outline-width'], lineWidth),
+      'outline-style': sameValue(['outline-style'], outlineStyle),
+      'outline-color': sameValue(['outline-color'], lineColor),
     },
   },
   {

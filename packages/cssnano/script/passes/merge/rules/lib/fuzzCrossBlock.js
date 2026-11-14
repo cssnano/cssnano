@@ -220,23 +220,41 @@ export function checkCrossBlock(css, run) {
 
 /**
  * Like `processAllWithLimits`, but a hang or crash marks only the input that
- * caused it and processing resumes with the remaining inputs.
+ * caused it and processing resumes with the remaining inputs. A batch shares
+ * one time limit, so the input it stopped at is run alone before it is
+ * blamed: a slow machine would otherwise fail an innocent input.
  *
  * @param {string[]} inputs
  * @param {Parameters<typeof processAllWithLimits>[1]} [options]
+ * @param {typeof processAllWithLimits} [processAll]
  * @return {Map<string, {css: string | undefined, terminated: boolean}>}
  */
-export function processBatched(inputs, options) {
+export function processBatched(
+  inputs,
+  options,
+  processAll = processAllWithLimits
+) {
   const results = new Map();
   let remaining = [...new Set(inputs)];
   while (remaining.length > 0) {
-    const { css, terminated } = processAllWithLimits(remaining, options);
+    const { css, terminated } = processAll(remaining, options);
     for (const [index, output] of css.entries())
       results.set(remaining[index], { css: output, terminated: false });
+    let consumed = css.length;
     if (terminated) {
-      results.set(remaining[css.length], { css: undefined, terminated: true });
+      const blamed = remaining[consumed];
+      const alone =
+        remaining.length > 1 ? processAll([blamed], options) : undefined;
+      const output = alone?.terminated === false ? alone.css[0] : undefined;
+      results.set(
+        blamed,
+        output === undefined
+          ? { css: undefined, terminated: true }
+          : { css: output, terminated: false }
+      );
+      consumed += 1;
     }
-    remaining = remaining.slice(css.length + (terminated ? 1 : 0));
+    remaining = remaining.slice(consumed);
   }
   return results;
 }

@@ -102,3 +102,81 @@ describe('merge oracle: rule family', () => {
     assert.deepEqual(familiesOf('p{rule-color:red}'), ['rule']);
   });
 });
+
+describe('merge oracle: outline family', () => {
+  test('accepts an outline shorthand split into its longhands', () => {
+    assert.equal(
+      mergeOracleDifference(
+        'p{outline:1px solid red}',
+        'p{outline-width:1px;outline-style:solid;outline-color:red}'
+      ),
+      undefined
+    );
+  });
+
+  test('rejects dropping a currentcolor from an outline because the initial outline-color is not currentcolor', () => {
+    assert.match(
+      mergeOracleDifference(
+        'p{outline-width:1px;outline-style:solid;outline-color:currentcolor}',
+        'p{outline:1px solid}'
+      ) ?? '',
+      /outline-color/v
+    );
+  });
+
+  test('accepts the auto outline style', () => {
+    assert.equal(
+      mergeOracleDifference(
+        'p{outline:auto red}',
+        'p{outline-width:medium;outline-style:auto;outline-color:red}'
+      ),
+      undefined
+    );
+  });
+
+  test('families of a stylesheet name outline for its shorthand and longhands', () => {
+    assert.deepEqual(familiesOf('p{outline-style:none}'), ['outline']);
+  });
+});
+
+describe('merge oracle: logical and physical borders in one cascade', () => {
+  test('rejects merging logical longhands past a physical border declaration that they override', () => {
+    assert.match(
+      mergeOracleDifference(
+        'p{border-top-width:2px;border-block-start-width:1px;border-block-start-style:solid;border-block-start-color:red}',
+        'p{border-block-start:1px solid red;border-top-width:2px}'
+      ) ?? '',
+      /border-top-width/v
+    );
+  });
+
+  test('accepts the merge when the physical declaration comes first in both', () => {
+    assert.equal(
+      mergeOracleDifference(
+        'p{border-top-width:2px;border-block-start-width:1px;border-block-start-style:solid;border-block-start-color:red}',
+        'p{border-top-width:2px;border-block-start:1px solid red}'
+      ),
+      undefined
+    );
+  });
+
+  test('rejects reordering a physical side shorthand and an inline-start longhand in a right-to-left cascade', () => {
+    assert.match(
+      mergeOracleDifference(
+        'p{direction:rtl;border-inline-start-width:1px;border-right-width:thin}',
+        'p{direction:rtl;border-right-width:thin;border-inline-start-width:1px}'
+      ) ?? '',
+      /border-right-width/v
+    );
+  });
+
+  test('rejects a border-block-width pair split across a physical bottom border', () => {
+    assert.match(
+      mergeOracleDifference(
+        'p{border-block-width:thin 1px;border-bottom-width:2px}',
+        'p{border-bottom-width:2px;border-block-width:thin 1px}'
+      ) ?? '',
+      /border-bottom-width/v
+    );
+  });
+});
