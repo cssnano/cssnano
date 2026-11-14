@@ -1,31 +1,27 @@
 import { browserTargets, resolveTargets } from '#utils/browser-targets';
-import { walkStylesheet } from './traversal.js';
-import { TextTable } from '../values/textTable.js';
-import { walkAfterMerge } from './afterMerge.js';
+import { walkUp } from './walkUp.js';
 import { discardOverriddenAtRules } from './overridable.js';
 import { walkDown } from './walkDown.js';
+import { declarationPlansOf } from './declarationWalk.js';
+import { commentStateOf } from './comments/commentState.js';
 import rawCache from '../utils/rawCache.js';
 import { createRunContext } from '../passes/ir/runContext.js';
 import { runDriver } from '../passes/ir/runDriver.js';
 
 /**
  * A host plugin runs the stages of one run in order, at OnceExit, so the
- * plugins before it have finished. The stylesheet is walked once.
+ * plugins before it have finished. The records are walked twice: down before
+ * the merge, and up after it.
  */
 
 /** @import {Plugin, Root} from 'postcss' */
+/** @import {DeclarationPlans} from './declarationWalk.js' */
 /** @import {ValueBuffer} from '../values/valueBuffer.js' */
 
 /**
  * Changes the buffer of one declaration. A reducer never sees a node; the
  * context is the bits of `context.js` for where the declaration sits.
  * @typedef {(buffer: ValueBuffer, context: number) => void} Reducer
- */
-
-/**
- * Reports a problem with the text being reduced. The walk turns each report
- * into a warning on the node, tagged with the plugin name when given.
- * @typedef {(message: string, plugin?: string) => void} Warn
  */
 
 /**
@@ -73,7 +69,7 @@ import { runDriver } from '../passes/ir/runDriver.js';
 
 /**
  * An advanced transform over the records, which edits the lists of arena
- * indices that the walk after merge collected, with the options its entry's
+ * indices that the walk up collected, with the options its entry's
  * `create` returned. `remove` removes an entry and, with discardEmpty on, each
  * ancestor it empties. It runs before the end of the run.
  * @typedef {(lists: import('./symbolLists.js').RecordSymbolLists, options: Record<PropertyKey, unknown>, remove: (index: import('../passes/ir/blockRecord.js').ArenaIndex) => void, records: import('../passes/ir/blockRecords.js').BlockRecords, context: import('../passes/ir/runContext.js').RunContext) => void} SymbolTransform
@@ -118,47 +114,60 @@ function targetsOf(resolutions, options, result) {
 const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
 
 /**
- * One stylesheet's run over the records: the build, the discard of overridden
- * at-rules, the merge transforms when the merge is on, the walk after merge over
- * the records, then the end, which writes. The raw cache records last, on the
- * written tree, so that no later transform changes what it describes.
+ * One stylesheet's run over the records, between the build and the end, which
+ * writes. Three phases run in order: the walk down (the discard of overridden
+ * at-rules after it), the merge when it is on, and the walk up. The raw cache
+ * records last, on the written tree, so that no later transform changes what it
+ * describes.
  *
  * @param {import('postcss').Root} root
  * @param {import('postcss').Result} result
- * @param {TextTable} table the selector tokens the walk left
  * @param {Merge | undefined} merge the merge, absent when the merge is off
  * @param {readonly string[]} browsers the resolved browser targets of the merge; none when it is off
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the whole-stylesheet transforms of the run, by entry name
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} after
  * @param {ReadonlyMap<string, SymbolEntry>} symbols
+ * @param {DeclarationPlans | undefined} plans what the record walk applies to the declarations, absent when the run has no stages
  */
 function runRecords(
   root,
   result,
-  table,
   merge,
   browsers,
   transforms,
   after,
-  symbols
+  symbols,
+  plans
 ) {
   const support = merge ? merge.runner.support(browsers) : undefined;
-  const context = createRunContext(table, undefined, support?.features);
+  const context = createRunContext(undefined, support?.features);
   const state = runDriver.build(root, context);
-  if (transforms.has('discardOverridden')) {
-    discardOverriddenAtRules(
+  const round =
+    merge && support ? merge.runner.round(support, context) : undefined;
+  // The walk folds the rules' summaries when the merge is on, even with no stage.
+  if (plans !== undefined || merge) {
+    const overridable = walkDown(
       state.records,
-      context.declarations,
-      walkDown(state.records, context)
+      context,
+      plans,
+      round,
+      merge && browsers
     );
+    if (plans !== undefined && transforms.has('discardOverridden')) {
+      discardOverriddenAtRules(
+        state.records,
+        context.declarations,
+        overridable
+      );
+    }
+    round?.finishColumns(state.records);
   }
-  if (merge && support) {
-    merge.runner.transforms(state.records, browsers, context, {
+  if (merge) {
+    merge.runner.merge(state.records, browsers, context, {
       rules: /** @type {boolean | undefined} */ (merge.options.rules),
-      support,
     });
   }
-  walkAfterMerge(state, after, symbols, merge && browsers);
+  walkUp(state, after, symbols, merge && browsers, round?.second());
   runDriver.end(state, {
     browsers,
     folded: merge !== undefined,
@@ -170,11 +179,11 @@ function runRecords(
 /**
  * @param {readonly HostMember[]} members the stages of one run, in order
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
- *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
+ *   whole-stylesheet transforms that the walk down runs, by entry name; a missing name is disabled
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
- *   the walk after the merge runs, by entry name; a missing name is disabled
+ *   the walk up runs, by entry name; a missing name is disabled
  * @param {ReadonlyMap<string, SymbolEntry>} [symbols]
- *   the advanced transforms that run over the lists of the walk after the merge, in order
+ *   the advanced transforms that run over the lists of the walk up, in order
  * @param {Merge} [merge] the merge options with the browser targets, and the merge run; absent when the merge is off
  * @returns {Plugin}
  */
@@ -224,22 +233,26 @@ export function hostPlugin(
         : undefined;
       return {
         OnceExit(root, helpers) {
-          const table = new TextTable();
-          if (hasStages) {
-            walkStylesheet(stages, root, helpers, transforms, table);
-          }
-          // A run with stages builds the records, even when no merge, walk
-          // after merge or symbol transform reads them.
+          // The comment removal is read once per stylesheet, by the record walk.
+          const comments = hasStages ? commentStateOf(stages) : null;
+          // A run with stages builds the records, even when no merge, walk up
+          // or symbol transform reads them.
           if (hasStages || merge || after.size > 0 || symbols.size > 0) {
             runRecords(
               root,
               helpers.result,
-              table,
               merge,
               mergeBrowsers ?? noTargets,
               transforms,
               after,
-              symbols
+              symbols,
+              hasStages
+                ? declarationPlansOf(
+                    stages,
+                    transforms.has('normalizeWhitespace'),
+                    comments
+                  )
+                : undefined
             );
           }
         },

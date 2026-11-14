@@ -7,7 +7,6 @@ import { DeclarationRecord } from '../../../src/passes/ir/declarationRecord.js';
 import { declarationsOf } from '../../../src/passes/ir/blockChildren.js';
 import { writeBack } from '../../../src/passes/ir/writeBack.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
-import { TextTable } from '../../../src/values/textTable.js';
 import {
   blockRecordOf,
   buildTestRecords,
@@ -26,9 +25,9 @@ import {
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  state.records = buildTestRecords(root, state, true);
   return { root, state, records: state.records };
 }
 

@@ -1,6 +1,5 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
 import type { Component } from './valueComponents.js';
-import type { FoldedText } from '../../../../values/textTable.js';
 export type TransitionSlots = {
     property: Component | null;
     duration: Component | null;
@@ -16,7 +15,10 @@ export type TransitionSlots = {
  * @param {string} property
  * @param {string} value
  * @param {readonly CSSToken[]} list the tokens of `value`
- * @return {FoldedText | null}
+ * @return {{text: string, tokens: CSSToken[] | undefined} | null}
  */
-export declare function normalizeValue(property: string, value: string, list: readonly CSSToken[]): FoldedText | null;
+export declare function normalizeValue(property: string, value: string, list: readonly CSSToken[]): {
+    text: string;
+    tokens: CSSToken[] | undefined;
+} | null;
 //# sourceMappingURL=minifyShorthandValues.d.ts.map

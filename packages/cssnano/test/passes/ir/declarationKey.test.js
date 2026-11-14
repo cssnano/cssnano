@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { recordDeclaration } from '../../../src/passes/ir/buildRecords.js';
+import { tokensText } from '../../../src/values/tokensText.js';
 
 /**
  * @param {string} css one declaration
@@ -107,10 +108,12 @@ test('should give values that differ only in spelling different keys', () => {
   assert.notEqual(keyIn(context, 'width:1.0px'), keyIn(context, 'width:1px'));
 });
 
-test('a declaration record points at the list a text table stores for its value', () => {
+test('a declaration record points at a list that spells the value of its declaration', () => {
   const context = createRunContext();
   const node = declarationOf('width:10px');
-  const stored = context.textTable.tokens(node);
   const record = recordDeclaration(node, context);
-  assert.equal(context.tokenLists.get(record.valueList), stored);
+  assert.equal(
+    tokensText(context.tokenLists.get(record.valueList)),
+    node.value
+  );
 });

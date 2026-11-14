@@ -26,7 +26,6 @@ import {
   nodesOf,
   tokenListsOf,
 } from './liveRecords.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 
 /**
  * The records of `css`, with the first child of the stylesheet and the root.
@@ -36,11 +35,8 @@ import { TextTable } from '../../../../../src/values/textTable.js';
  */
 function recordsOf(css) {
   const root = postcss.parse(css);
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(undefined, true)
-  );
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  const state = new MergeState(['chrome 120'], createRunContext(true));
+  state.records = buildTestRecords(root, state, true);
   return { root, records: state.records };
 }
 
@@ -164,11 +160,8 @@ function recordsOfBuiltTree() {
     postcss.atRule({ name: 'import', params: '"x.css"' }),
     postcss.comment({ text: 'c' })
   );
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(undefined, true)
-  );
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  const state = new MergeState(['chrome 120'], createRunContext(true));
+  state.records = buildTestRecords(root, state, true);
   return { root, records: state.records };
 }
 

@@ -1,5 +1,4 @@
 import { buildRecords } from './buildRecords.js';
-import { guardWindow } from './windowGuard.js';
 import { childNodesOf, replaceChildren, writeBack } from './writeBack.js';
 import { assertRecordsMatchTree } from './treeMatch.js';
 import { createChildNodes, nodeOf } from './nodeTable.js';
@@ -11,15 +10,14 @@ import { AT_RULE_BLOCK, RULE } from './blockRecord.js';
 /** @import {RunContext} from './runContext.js' */
 
 /**
- * A run between its build and its end: the records and nodes of the build, and
- * the release of the window guard that the build set under checks.
+ * A run between its build and its end: the records, their nodes, and the run's
+ * context.
  *
- * @typedef {{records: BlockRecords, nodes: NodeTable, context: RunContext, release: (() => void) | undefined}} RunState
+ * @typedef {{records: BlockRecords, nodes: NodeTable, context: RunContext}} RunState
  */
 
 /**
- * Builds the records of a stylesheet, and guards the text table for the window
- * that the transforms run in, under consistency checks.
+ * Builds the records of a stylesheet from its tree.
  *
  * @param {Root} css
  * @param {RunContext} context
@@ -27,16 +25,13 @@ import { AT_RULE_BLOCK, RULE } from './blockRecord.js';
  */
 function build(css, context) {
   const { records, nodes } = buildRecords(css, context);
-  const release = context.consistencyChecks
-    ? guardWindow(context.textTable)
-    : undefined;
-  return { records, nodes, context, release };
+  return { records, nodes, context };
 }
 
 /**
- * Ends a run: releases the window guard, writes the records back, checks them
- * against the tree, and gives the result its messages in the order they were
- * appended: warnings through `warn`, the rest pushed to `messages`.
+ * Ends a run: writes the records back, checks them against the tree, and gives
+ * the result its messages in the order they were appended: warnings through
+ * `warn`, the rest pushed to `messages`.
  *
  * @param {RunState} state
  * @param {{browsers: readonly string[], folded: boolean, result?: Result}} end
@@ -46,7 +41,6 @@ function build(css, context) {
  */
 function end(state, { browsers, folded, result }) {
   const { records, nodes, context } = state;
-  state.release?.();
   // A message's entry may be one the transforms made, which has no node yet.
   for (const { index } of context.messages) {
     if (nodeOf(nodes, index) === undefined) {
@@ -58,7 +52,7 @@ function end(state, { browsers, folded, result }) {
       );
     }
   }
-  writeBack(records, nodes, context.tokenLists, context.textTable);
+  writeBack(records, nodes, context.tokenLists);
   assertRecordsMatchTree(records, nodes, context.tokenLists, browsers, folded);
   // A removed container's node still holds the children it held, which the
   // records dropped; its children follow the records.

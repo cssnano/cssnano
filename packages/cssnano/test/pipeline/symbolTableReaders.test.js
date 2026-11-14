@@ -13,6 +13,8 @@ const { mergeIdentsSymbols } =
   await import('../../src/plugins/postcss-merge-idents/index.js');
 const { preludeTokens } =
   await import('../../src/plugins/postcss-merge-idents/lib/trailingEscape.js');
+const { declaredValue, rawAfterValue } =
+  await import('../../src/passes/ir/declaredText.js');
 const { createRunContext } = await import('../../src/passes/ir/runContext.js');
 const { runDriver } = await import('../../src/passes/ir/runDriver.js');
 const { visitEntriesInOrder } =
@@ -46,7 +48,7 @@ function buildRecords(css) {
 }
 
 /**
- * The symbol lists of a built stylesheet, as the walk after merge collects them.
+ * The symbol lists of a built stylesheet, as the walk up collects them.
  *
  * @param {import('../../src/passes/ir/blockRecords.js').BlockRecords} records
  * @param {import('../../src/passes/ir/runContext.js').RunContext} context
@@ -265,8 +267,16 @@ suite('the symbol transforms read the text the host walk stored', () => {
     );
     const rule = records.links.firstChild(records.root.index);
     const decl = records.links.firstChild(rule);
-    assert.equal(records.entry(decl).rawAfterValue, null);
-    assert.equal(records.entry(decl).marked, true);
+    const entry = records.entry(decl);
+    assert.equal(entry.marked, true);
+    assert.equal(
+      rawAfterValue(
+        context.tokenLists,
+        entry,
+        declaredValue(context.tokenLists, entry)
+      ),
+      null
+    );
   });
 
   test("merge-idents' at-rule symbols read the list stored for the at-rule, without tokenizing", () => {

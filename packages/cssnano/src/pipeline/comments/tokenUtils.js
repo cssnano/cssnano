@@ -3,25 +3,6 @@ import { tokenize, TokenType } from '@csstools/css-tokenizer';
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 
 /**
- * @param {string} source
- * @param {Map<string, CSSToken[]>} parserCache
- * @return {CSSToken[]}
- */
-export function getTokens(source, parserCache) {
-  let tokens = parserCache.get(source);
-
-  if (tokens) {
-    return tokens;
-  }
-
-  tokens = tokenize({ css: source });
-
-  parserCache.set(source, tokens);
-
-  return tokens;
-}
-
-/**
  * The comment text without its delimiters. An unclosed comment has no
  * trailing delimiter, so only the leading one is stripped.
  *
@@ -38,16 +19,15 @@ export function commentContents(raw) {
  *
  * @param {string} previousRaw
  * @param {string} nextRaw
- * @param {Map<string, CSSToken[]>} parserCache
  * @return {boolean}
  */
-export function joinsIntoDifferentTokens(previousRaw, nextRaw, parserCache) {
-  const joined = getTokens(previousRaw + nextRaw, parserCache).filter(
+export function joinsIntoDifferentTokens(previousRaw, nextRaw) {
+  const joined = tokenize({ css: previousRaw + nextRaw }).filter(
     ([type]) => type !== TokenType.EOF
   );
   const separate = [
-    ...getTokens(previousRaw, parserCache),
-    ...getTokens(nextRaw, parserCache),
+    ...tokenize({ css: previousRaw }),
+    ...tokenize({ css: nextRaw }),
   ].filter(([type]) => type !== TokenType.EOF);
 
   return (

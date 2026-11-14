@@ -7,7 +7,6 @@ import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.j
 import { fillSummaries } from '../../../../../src/passes/ir/selectorList.js';
 import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
 import { nodeOf } from '../../../../../src/passes/ir/nodeTable.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { tokensText } from '../../../../../src/values/tokensText.js';
 import { RULE } from '../../../../../src/passes/ir/blockRecord.js';
 
@@ -116,8 +115,7 @@ test('a merged rule should have no node until write-back', () => {
   const root = postcss.parse(
     'h1{color:red}h2{color:red;text-decoration:underline}'
   );
-  const textTable = new TextTable();
-  const context = createRunContext(textTable);
+  const context = createRunContext();
   const { records, nodes } = buildRecords(root, context);
   fillSummaries(records, context.tokenLists, ['chrome 120']);
   runMerge(records, ['chrome 120'], context);

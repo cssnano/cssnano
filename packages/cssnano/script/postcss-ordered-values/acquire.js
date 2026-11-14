@@ -12,7 +12,7 @@ import {
   buildCssWideKeywords,
   serialize as serializeCssWideKeywords,
   validate as validateCssWideKeywords,
-} from './lib/webrefCssWideKeywords.js';
+} from '../../../../util/webref/cssWideKeywords.js';
 import {
   buildEasingFunctions,
   serialize as serializeEasingFunctions,

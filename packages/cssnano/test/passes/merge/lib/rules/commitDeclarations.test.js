@@ -18,7 +18,6 @@ const { declarationsFromRecords } =
 const { writeBack } = await import('../../../../../src/passes/ir/writeBack.js');
 const { default: MergeState } =
   await import('../../../../../src/passes/merge/lib/rules/mergeState.js');
-const { TextTable } = await import('../../../../../src/values/textTable.js');
 const { buildTestRecords, nodesOf, ruleRecordOf, tokenListsOf } =
   await import('./liveRecords.js');
 
@@ -35,9 +34,9 @@ const { buildTestRecords, nodesOf, ruleRecordOf, tokenListsOf } =
  */
 function setup(css, checks = true) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, checks);
+  const context = createRunContext(checks);
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, new TextTable(), checks);
+  state.records = buildTestRecords(root, state, checks);
   return { root, state, records: state.records };
 }
 

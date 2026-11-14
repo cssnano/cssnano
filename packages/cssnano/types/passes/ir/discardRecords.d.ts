@@ -10,17 +10,21 @@ import type { ArenaIndex } from './blockRecord.js';
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** The name that the discardEmpty messages carry. */
 export declare const DISCARD_PLUGIN = "postcss-discard-empty";
+export type EntryVisitor = {
+    enter(index: ArenaIndex): void;
+    visit(index: ArenaIndex): void;
+};
 /**
  * Discards the empty entries of the stylesheet, and records each removal as a
- * message. `visit` runs on each kept entry, after its children, so another
+ * message. `visitor` runs on each kept entry, after its children, so another
  * per-entry transform can share this walk.
  *
  * @param {BlockRecords} records
  * @param {RunContext} context
- * @param {((index: ArenaIndex) => void) | undefined} [visit]
+ * @param {EntryVisitor} [visitor]
  * @return {void}
  */
-export declare function discardEmptyRecords(records: BlockRecords, context: RunContext, visit?: ((index: ArenaIndex) => void) | undefined): void;
+export declare function discardEmptyRecords(records: BlockRecords, context: RunContext, visitor?: EntryVisitor): void;
 /**
  * Removes an entry that a transform no longer needs, then each ancestor the
  * removal empties, reporting each ancestor. An emptied named layer stays: it may

@@ -7,7 +7,6 @@ import { AT_RULE_STATEMENT, NodeEntry, atRuleKindOf } from './blockRecord.js';
 import { DeclarationRecord } from './declarationRecord.js';
 import { keysOfName } from './propertyTable.js';
 import { tokenizeMode } from '../../values/tokenizeMode.js';
-import { tokensText } from '../../values/tokensText.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
 /** @import {BlockRecord} from './blockRecord.js' */
@@ -208,7 +207,6 @@ function rewriteRecord(context, record, item) {
   }
   record.valueList = valueListOfItem(context, item);
   record.writtenList = -1;
-  record.rawAfterValue = null;
   record.id = context.declarations.keyOf(
     record.prop,
     record.valueList,
@@ -219,42 +217,16 @@ function rewriteRecord(context, record, item) {
 }
 
 /**
- * Gives a rule the ids of its selector items and marks it, so write-back
- * writes its selector from them.
+ * Writes the context of a container, which the walk computes again after it
+ * edits the selector or prelude that the context reads.
  *
- * @param {RuleRecord} record
- * @param {readonly TokenListId[]} ids
+ * @param {BlockRecord | RuleRecord} record
+ * @param {number} context
  * @return {void}
  */
-export function writeSelectorIds(record, ids) {
-  const writable =
-    /** @type {{selectorIds: readonly TokenListId[], writtenList: number, marked: boolean}} */ (
-      /** @type {unknown} */ (record)
-    );
-  writable.selectorIds = ids;
-  writable.writtenList = -1;
-  writable.marked = true;
-}
-
-/**
- * Writes the prelude of an at-rule: its list is interned in the run, and the
- * record marks the prelude so write-back assigns its text. The walk of the
- * write reaches every entry, so the edit stamps nothing.
- *
- * @param {RunContext} context
- * @param {BlockRecord | NodeEntry} record the at-rule's block or statement record
- * @param {readonly CSSToken[]} list the prelude's tokens
- * @return {void}
- */
-export function writePrelude(context, record, list) {
-  record.preludeId = context.valueIds.idOf(
-    context.tokenLists,
-    undefined,
-    tokensText(list),
-    list
-  );
-  record.writtenList = -1;
-  record.marked = true;
+export function writeContainerContext(record, context) {
+  /** @type {{context: number}} */ (/** @type {unknown} */ (record)).context =
+    context;
 }
 
 /**

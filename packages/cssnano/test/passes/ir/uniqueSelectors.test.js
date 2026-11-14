@@ -49,7 +49,7 @@ function visitRules(records, context, parent) {
  */
 function recordFormOf(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = runDriver.build(root, context);
   visitRules(state.records, context, state.records.root.index);
   runDriver.end(state, {
@@ -119,7 +119,7 @@ describe('uniqueSelectors over the records', () => {
 
   test('does not write a rule whose selectors are already unique and sorted', () => {
     const root = postcss.parse('a,b{color:red}');
-    const context = createRunContext(undefined, true);
+    const context = createRunContext(true);
     const state = runDriver.build(root, context);
     const { records } = state;
     const rule = records.links.firstChild(records.root.index);
@@ -140,7 +140,7 @@ describe('uniqueSelectors over the records', () => {
 
   test('does not write a rule with one selector', () => {
     const root = postcss.parse('.a{color:red}');
-    const context = createRunContext(undefined, true);
+    const context = createRunContext(true);
     const state = runDriver.build(root, context);
     const { records } = state;
     const rule = records.links.firstChild(records.root.index);

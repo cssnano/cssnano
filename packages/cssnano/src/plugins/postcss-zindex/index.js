@@ -1,12 +1,10 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import LayerCache from './lib/layerCache.js';
 import {
-  createRecordSymbolLists,
+  collectRecordSymbols,
   isRecordAttached,
-  recordSymbolVisit,
 } from '../../pipeline/symbolLists.js';
 import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
-import { visitEntriesInOrder } from '../../passes/ir/visitEntries.js';
 import { declaredValue } from '../../passes/ir/declaredText.js';
 import { writeValue } from '../../passes/ir/valueEdits.js';
 import { identifierWithText, numeric } from '../../values/tokenConstructors.js';
@@ -23,7 +21,7 @@ import { identifierWithText, numeric } from '../../values/tokenConstructors.js';
  */
 
 /**
- * Rebases the z-index values of the walk after merge's lists to small
+ * Rebases the z-index values of the walk up's lists to small
  * integers that keep their order. Rebasing is only safe when every index is
  * a positive number, so one negative value leaves them all alone.
  *
@@ -108,10 +106,7 @@ function pluginCreator(opts = {}) {
     OnceExit(css, { result }) {
       runRecordsPlugin(css, result, [
         (records, browsers, context) => {
-          const lists = createRecordSymbolLists();
-          visitEntriesInOrder(records, records.root.index, (index) =>
-            recordSymbolVisit(records, context.tokenLists, lists, index)
-          );
+          const lists = collectRecordSymbols(records, context.tokenLists);
           zindexSymbols(lists, opts, undefined, records, context);
         },
       ]);

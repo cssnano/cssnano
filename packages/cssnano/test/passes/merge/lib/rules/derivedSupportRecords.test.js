@@ -38,7 +38,7 @@ const SIDES =
  */
 function mergedRecords(css) {
   const support = targetSupportOf(browsers);
-  const context = createRunContext(undefined, true, support.features);
+  const context = createRunContext(true, support.features);
   const { records } = buildRecords(postcss.parse(css), context);
   fillSummaries(records, context.tokenLists, browsers);
   const longhand = longhandContext(

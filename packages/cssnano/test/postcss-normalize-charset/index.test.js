@@ -45,6 +45,14 @@ test(
 );
 
 test(
+  'should add a charset for non-ascii text in a plain comment that a kept value holds',
+  processCSS(
+    'a{x:a /*!c*/ b /*é*/}',
+    '@charset "utf-8";\na{x:a /*!c*/ b /*é*/}'
+  )
+);
+
+test(
   'should move up first existing charset',
   processCssWithSource(
     'b{жизнь:калька}@charset "windows-1251";' + copyright,

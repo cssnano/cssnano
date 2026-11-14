@@ -1,12 +1,10 @@
 import {
-  createRecordSymbolLists,
+  collectRecordSymbols,
   isRecordAttached,
-  recordSymbolVisit,
 } from '../../pipeline/symbolLists.js';
 import { AT_RULE_BLOCK } from '../../passes/ir/blockRecord.js';
 import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
 import { remove as removeRecord } from '../../passes/ir/treeEdits.js';
-import { visitEntriesInOrder } from '../../passes/ir/visitEntries.js';
 import { atRuleAt } from '../../passes/ir/declaredText.js';
 import { LayerRegistry, hasImport } from './lib/layerRegistry.js';
 import {
@@ -71,7 +69,7 @@ function namespaceOf(family) {
 }
 
 /**
- * Merges the names of the lists the walk after merge collected. An entry that
+ * Merges the names of the lists the walk up collected. An entry that
  * an earlier transform detached is skipped, as the lists still hold it.
  *
  * @param {RecordSymbolLists} lists
@@ -196,7 +194,7 @@ function mergeAtRules(lists, remove, records, context) {
 }
 
 /**
- * Merges the names of the advanced transform's lists. The walk after merge
+ * Merges the names of the advanced transform's lists. The walk up
  * collects the lists, so the transform needs no walk of its own.
  *
  * @param {RecordSymbolLists} lists
@@ -223,10 +221,7 @@ function pluginCreator() {
     OnceExit(css, { result }) {
       runRecordsPlugin(css, result, [
         (records, browsers, context) => {
-          const lists = createRecordSymbolLists();
-          visitEntriesInOrder(records, records.root.index, (index) =>
-            recordSymbolVisit(records, context.tokenLists, lists, index)
-          );
+          const lists = collectRecordSymbols(records, context.tokenLists);
           mergeIdentsSymbols(
             lists,
             {},
