@@ -1,12 +1,10 @@
 import {
-  createRecordSymbolLists,
+  collectRecordSymbols,
   isRecordAttached,
-  recordSymbolVisit,
 } from '../../pipeline/symbolLists.js';
 import { AT_RULE_BLOCK } from '../../passes/ir/blockRecord.js';
 import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
 import { remove as removeRecord } from '../../passes/ir/treeEdits.js';
-import { visitEntriesInOrder } from '../../passes/ir/visitEntries.js';
 import { atRuleAt } from '../../passes/ir/declaredText.js';
 import { LayerRegistry, hasImport } from './lib/layerRegistry.js';
 import {
@@ -223,10 +221,7 @@ function pluginCreator() {
     OnceExit(css, { result }) {
       runRecordsPlugin(css, result, [
         (records, browsers, context) => {
-          const lists = createRecordSymbolLists();
-          visitEntriesInOrder(records, records.root.index, (index) =>
-            recordSymbolVisit(records, context.tokenLists, lists, index)
-          );
+          const lists = collectRecordSymbols(records, context.tokenLists);
           mergeIdentsSymbols(
             lists,
             {},

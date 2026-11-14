@@ -1,14 +1,11 @@
 import { tokenize } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
-import {
-  writeAfterName,
-  writeBetween,
-  writePreludeList,
-} from '../passes/ir/rawEdits.js';
+import { writeAfterName, writePreludeList } from '../passes/ir/rawEdits.js';
 import { sourceListOf } from '../passes/ir/writtenList.js';
 import { startsWithBalancedParen, tightenAfterName } from './afterName.js';
 import { foldList } from './plan.js';
 import { atRuleEntry } from './prelude.js';
+import { removeBetween } from './comments/removeBetween.js';
 import { replaceComments } from './comments/replaceComments.js';
 
 /** @import {ArenaIndex, BlockRecord, NodeEntry} from '../passes/ir/blockRecord.js' */
@@ -17,25 +14,6 @@ import { replaceComments } from './comments/replaceComments.js';
 /** @import {TokenListId} from '../passes/ir/tokenLists.js' */
 /** @import {CommentState} from './comments/commentState.js' */
 /** @import {DeclarationPlans} from './declarationWalk.js' */
-
-/**
- * Removes the comments in the gap between an at-rule's prelude and its block.
- *
- * @param {BlockRecords} records
- * @param {ArenaIndex} index
- * @param {CommentState} comments
- */
-function removeBetween(records, index, comments) {
-  const { between } = /** @type {BlockRecord | NodeEntry} */ (
-    records.entry(index)
-  );
-  if (between === null || !between.includes('/*')) return;
-  writeBetween(
-    records,
-    index,
-    replaceComments(tokenize({ css: between }), comments.canRemove, ' ', false)
-  );
-}
 
 /**
  * Removes the comments between an at-rule's name and its prelude. A name that

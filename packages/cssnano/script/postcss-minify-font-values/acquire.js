@@ -12,7 +12,7 @@ import {
   buildCssWideKeywords,
   serialize,
   validate,
-} from './lib/webrefCssWideKeywords.js';
+} from '../../../../util/webref/cssWideKeywords.js';
 
 const data = buildCssWideKeywords(await css.listAll());
 validate(data);

@@ -1,11 +1,7 @@
-import { tokenize } from '@csstools/css-tokenizer';
-import { writeBetween } from '../passes/ir/rawEdits.js';
 import { writeSelectorList } from '../passes/ir/selectorEdits.js';
 import { sourceListOf } from '../passes/ir/writtenList.js';
-import {
-  replaceComments,
-  replaceCommentsInSelector,
-} from './comments/replaceComments.js';
+import { replaceCommentsInSelector } from './comments/replaceComments.js';
+import { removeBetween } from './comments/removeBetween.js';
 import { foldList } from './plan.js';
 
 /** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
@@ -15,23 +11,6 @@ import { foldList } from './plan.js';
 /** @import {TokenListId} from '../passes/ir/tokenLists.js' */
 /** @import {CommentState} from './comments/commentState.js' */
 /** @import {DeclarationPlans} from './declarationWalk.js' */
-
-/**
- * Removes the comments in the gap between a rule's selector and its block.
- *
- * @param {BlockRecords} records
- * @param {ArenaIndex} index
- * @param {CommentState} comments
- */
-function removeRuleBetween(records, index, comments) {
-  const { between } = /** @type {RuleRecord} */ (records.entry(index));
-  if (between === null || !between.includes('/*')) return;
-  writeBetween(
-    records,
-    index,
-    replaceComments(tokenize({ css: between }), comments.canRemove, ' ', false)
-  );
-}
 
 /**
  * The id of a selector without its comments. A selector without a comment
@@ -66,7 +45,7 @@ function commentFreeSelectorIdOf(run, source, comments) {
  */
 export function visitRule(plans, records, run, context, index) {
   const { comments, selectors } = plans;
-  if (comments !== null) removeRuleBetween(records, index, comments);
+  if (comments !== null) removeBetween(records, index, comments);
   if (comments === null && selectors.plan === null) return;
   const source = /** @type {TokenListId} */ (
     sourceListOf(records.entry(index))

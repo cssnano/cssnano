@@ -4,12 +4,10 @@ import counterStyleReducer from './lib/counter-style.js';
 import keyframesReducer from './lib/keyframes.js';
 import gridTemplateReducer from './lib/grid-template.js';
 import {
-  createRecordSymbolLists,
+  collectRecordSymbols,
   isRecordAttached,
-  recordSymbolVisit,
 } from '../../pipeline/symbolLists.js';
 import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
-import { visitEntriesInOrder } from '../../passes/ir/visitEntries.js';
 
 /** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
@@ -108,10 +106,7 @@ function pluginCreator(opts = {}) {
     OnceExit(css, { result }) {
       runRecordsPlugin(css, result, [
         (records, browsers, context) => {
-          const lists = createRecordSymbolLists();
-          visitEntriesInOrder(records, records.root.index, (index) =>
-            recordSymbolVisit(records, context.tokenLists, lists, index)
-          );
+          const lists = collectRecordSymbols(records, context.tokenLists);
           reduceIdentsSymbols(lists, state, undefined, records, context);
         },
       ]);

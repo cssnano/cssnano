@@ -1,13 +1,9 @@
-import {
-  cssWideKeywords,
-  expectAll,
-  serializeJson,
-} from '../../../../../util/webref/webref.js';
+import { cssWideKeywords, expectAll, serializeJson } from './webref.js';
 
 /**
  * The CSS-wide keywords from `@webref/css`. They stay reserved here even when
- * only a draft specification defines them: a word that no custom identifier
- * can be must not be read as a color, a name or a type.
+ * only a draft specification defines them: such a word is never a custom
+ * identifier, so it must not be read as a font family name, color, name or type.
  *
  * @typedef {{ keywords: string[] }} CssWideKeywords
  * @typedef {Parameters<typeof cssWideKeywords>[0]} WebrefData

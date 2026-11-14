@@ -4,7 +4,7 @@ import {
   buildCssWideKeywords,
   serialize,
   validate,
-} from '../lib/webrefCssWideKeywords.js';
+} from './cssWideKeywords.js';
 
 const properties = [
   { name: 'all', syntax: 'initial | inherit | unset | revert | revert-rule' },
