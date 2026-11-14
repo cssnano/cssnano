@@ -63,6 +63,14 @@ test('runScan should keep the declaration and rule counts and lower the parent c
   assert.deepEqual(end.potential, [2, 2, 2]);
 });
 
+test('runScan should merge under checks a rule whose template an earlier merge detached', () => {
+  // The second merge takes the template of the first merged rule, which the tree no longer holds.
+  const { state } = setup(
+    '.c{color:red}.a{color:red}.a{width:1px}.d{width:1px;color:red}'
+  );
+  assert.doesNotThrow(() => runScan(state));
+});
+
 test('sweepPotential should number nested blocks in document order, each before the blocks it holds', () => {
   // Numbers: the stylesheet 0, @media m 1, @supports s 2, @media n 3, so the
   // rules stand in blocks 0, 2 and 3.

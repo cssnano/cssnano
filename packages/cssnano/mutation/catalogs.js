@@ -116,6 +116,41 @@ export const catalogs = [
   },
   {
     url: new URL(
+      './passes/merge/lib/longhand/mutation-catalog-pair-families.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
+      './passes/merge/lib/longhand/mutation-catalog-pair-reducer.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
+      './passes/merge/lib/longhand/mutation-catalog-grid-placement.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
+      './passes/merge/lib/longhand/mutation-catalog-list-style.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
+      './passes/merge/lib/longhand/mutation-catalog-text-forms.js',
+      import.meta.url
+    ),
+    test: true,
+  },
+  {
+    url: new URL(
       './passes/merge/lib/duplicates/mutation-catalog.js',
       import.meta.url
     ),

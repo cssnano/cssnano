@@ -5,6 +5,7 @@ export type PairFamily = {
     aliases: ReadonlySet<string>;
     parseValue: Parser[];
     emit: (values: string[]) => string | null;
+    requires?: (values: string[]) => string[];
     supportKey: string | null;
 };
 /** @type {PairFamily[]} */
@@ -14,7 +15,8 @@ export declare const pairFamilies: PairFamily[];
  * cascade with the property they name, so they are seen and block a merge.
  *
  * @param {string} prop - lowercased property name
- * @return {PairFamily | undefined}
+ * @return {readonly PairFamily[]} every family the property shares the
+ *   cascade with: a physical border property is in all four logical sides
  */
-export declare function pairFamilyOf(prop: string): PairFamily | undefined;
+export declare function pairFamiliesOf(prop: string): readonly PairFamily[];
 //# sourceMappingURL=pairForms.d.ts.map
