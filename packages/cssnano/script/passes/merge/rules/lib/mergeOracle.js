@@ -152,6 +152,44 @@ const familyProperties = [
   ['rule-width', ['thin', '0']],
   ['rule-style', ['solid', 'none']],
   ['rule-color', ['red', 'currentcolor']],
+  ['grid-row', ['1', 'a', '2 / auto', 'a / auto', 'auto']],
+  ['grid-row-start', ['1', 'a', 'auto', 'span 2', '1 a']],
+  ['grid-row-end', ['auto', 'a', '2']],
+  ['grid-column', ['a / b', 'b', '1 / auto']],
+  ['grid-column-start', ['b', 'auto', '2']],
+  ['grid-column-end', ['auto', 'b', '-1']],
+  [
+    'grid-area',
+    ['a', 'a / b', 'a / b / a', '1 / 2 / auto', 'a / b / a / auto'],
+  ],
+  [
+    'list-style',
+    ['square inside', 'none', 'url(a.png) none', 'inside', 'disc'],
+  ],
+  ['list-style-type', ['square', 'none', 'disc', 'lower-roman', '"-"']],
+  ['list-style-position', ['inside', 'outside']],
+  ['list-style-image', ['none', 'url(a.png)']],
+  [
+    'text-emphasis',
+    ['filled dot red', 'none', 'dot', 'red', 'open circle', '"x" red'],
+  ],
+  ['text-emphasis-style', ['none', 'dot', 'filled dot', '"x"']],
+  ['text-emphasis-color', ['red', 'currentcolor']],
+  [
+    'text-decoration',
+    [
+      'underline wavy red 2px',
+      'none',
+      'overline',
+      'dotted',
+      'red 2px',
+      'underline from-font',
+    ],
+  ],
+  ['text-decoration-line', ['none', 'underline', 'overline']],
+  ['text-decoration-style', ['solid', 'dotted', 'wavy']],
+  ['text-decoration-color', ['red', 'currentcolor']],
+  ['text-decoration-thickness', ['auto', '2px', 'from-font']],
 ];
 
 // `all` resets every family, so no family declaration may move across it.

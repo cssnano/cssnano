@@ -21,6 +21,9 @@ import {
   twoValues,
 } from './pairFamilyGrammar.js';
 import { logicalBorderRow } from './pairFamilyBorderRow.js';
+import { gridPlacementRow } from './pairFamilyGridRow.js';
+import { listStyleRow } from './pairFamilyListRow.js';
+import { textDecorationRow, textEmphasisRow } from './pairFamilyTextRows.js';
 
 /**
  * An independent evaluator for the pair families: shorthands and aliases that
@@ -53,6 +56,10 @@ const cssWideKeywords = new Set(['initial', 'unset', 'inherit']);
 /** @type {PairRow[]} */
 const pairRows = [
   logicalBorderRow(),
+  gridPlacementRow(),
+  listStyleRow(),
+  textEmphasisRow(),
+  textDecorationRow(),
   // CSS Box Alignment 3. `grid-gap` and its legacy longhand names are aliases
   // of `gap`, `row-gap` and `column-gap` and share their cascade.
   {

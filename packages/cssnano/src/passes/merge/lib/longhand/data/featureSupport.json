@@ -130,6 +130,32 @@
     "safari": "15.4",
     "samsung": "18.0"
   },
+  "keyword:text-decoration-color-and-style": {
+    "and_chr": "57",
+    "and_ff": "6",
+    "android": "57",
+    "chrome": "57",
+    "edge": "79",
+    "firefox": "6",
+    "ios_saf": "26.2",
+    "op_mob": "43",
+    "opera": "44",
+    "safari": "26.2",
+    "samsung": "7.0"
+  },
+  "keyword:text-decoration-thickness": {
+    "and_chr": "87",
+    "and_ff": "79",
+    "android": "87",
+    "chrome": "87",
+    "edge": "87",
+    "firefox": "70",
+    "ios_saf": "26.2",
+    "op_mob": "62",
+    "opera": "73",
+    "safari": "26.2",
+    "samsung": "14.0"
+  },
   "keyword:unset": {
     "and_chr": "41",
     "and_ff": "27",

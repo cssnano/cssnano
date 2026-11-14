@@ -98,6 +98,7 @@ export function reducePairFamily(list, family, declarations, lanes, features) {
     /** @type {number[]} */
     let segment = [];
     for (const position of laneDecls) {
+      if (list.at(position).removed) continue;
       if (parsed.has(position)) {
         segment.push(position);
         continue;

@@ -8,7 +8,7 @@
  * @param {string[]} keywords
  * @return {Grammar}
  */
-function keywordsOf(keywords) {
+export function keywordsOf(keywords) {
   const accepted = new Set(keywords);
   return (token) => {
     const lower = token.toLowerCase();

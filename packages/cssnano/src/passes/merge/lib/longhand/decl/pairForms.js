@@ -3,10 +3,17 @@ import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { decodedPropertyName } from './importanceLanes.js';
 import { withoutVendorPrefix } from '../../../../ir/vendorPrefix.js';
 import { isBorderStyle, isBorderWidth, isColor } from '../validateWsc.js';
-import { isUnresolved } from '../../../../ir/unresolved.js';
 import { isLengthValue, parseDimension } from '../lengthGrammar.js';
-import { splitValue } from '../valueComponents.js';
 import { allPhysicalBorderProperties } from './borderData.js';
+import { gridPlacementFamilies } from './gridPlacementForms.js';
+import { listStyleFamily } from './listStyleForms.js';
+import { textDecorationFamily, textEmphasisFamily } from './textForms.js';
+import {
+  family,
+  keywordParser,
+  ruleComponent,
+  singleComponent,
+} from './pairFamilyBuilders.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -27,32 +34,6 @@ const { asciiLowerCase } = cssnanoUtils;
  *   supportKey: string | null,
  * }} PairFamily
  */
-
-/**
- * @param {ReadonlySet<string>} keywords - lowercase
- * @return {Parser}
- */
-function keywordParser(keywords) {
-  return (decl) => {
-    const trimmed = decl.value.trim();
-    const lower = asciiLowerCase(trimmed);
-    return keywords.has(lower) || isCssWideKeyword(trimmed) ? trimmed : null;
-  };
-}
-
-/**
- * The one component of a value, or undefined when a top-level comma, slash or
- * whitespace divides it. Brackets keep their contents together.
- *
- * @param {import('../blockDeclarations.js').DeclarationItem} decl
- * @return {import('../valueComponents.js').Component | undefined}
- */
-function singleComponent(decl) {
-  const parts = splitValue(decl.value, '/', decl.tokens);
-  if (parts?.length !== 1) return undefined;
-  const [{ components }] = parts;
-  return components.length === 1 ? components[0] : undefined;
-}
 
 /**
  * Parses `normal | <length-percentage [0,∞]>` for a value that is a single
@@ -144,48 +125,7 @@ function emitEqualOnly([first, second]) {
   return asciiLowerCase(first) === asciiLowerCase(second) ? first : null;
 }
 
-/**
- * @param {string} shorthand
- * @param {string[]} longhands
- * @param {Omit<PairFamily, 'shorthand' | 'longhands' | 'aliases' | 'supportKey'> & { aliases?: string[], supportKey?: string | null }} rest
- * @return {PairFamily}
- */
-function family(shorthand, longhands, rest) {
-  const { aliases = [], supportKey = shorthand, ...behavior } = rest;
-  return {
-    shorthand,
-    longhands,
-    aliases: new Set(aliases),
-    supportKey,
-    ...behavior,
-  };
-}
-
 const ruleInitials = ['medium', 'none', 'currentcolor'];
-
-/**
- * A single component of the component's own type. A colour function such as
- * `rgb(0,0,0)` is one component. A substitution has no known type and a math
- * function is not compared, so both are left alone.
- *
- * @param {(text: string, tokens: import('@csstools/css-tokenizer').CSSToken[] | undefined, start: number, end: number) => boolean} is
- * @return {Parser}
- */
-function ruleComponent(is) {
-  return (decl) => {
-    const trimmed = decl.value.trim();
-    if (isCssWideKeyword(trimmed)) return trimmed;
-    const component = singleComponent(decl);
-    if (
-      !component ||
-      isUnresolved(component.tokens, 0, component.tokens.length)
-    )
-      return null;
-    return is(trimmed, component.tokens, 0, component.tokens.length)
-      ? trimmed
-      : null;
-  };
-}
 
 // outline-style takes `auto` and no `hidden`.
 const outlineStyle = ruleComponent(
@@ -220,6 +160,8 @@ const flexWrap = keywordParser(new Set(['nowrap', 'wrap', 'wrap-reverse']));
  * shares the cascade with it, and so do the axis shorthands. A block with
  * such a property is left as written. The legacy `-webkit-` and `-moz-`
  * spellings (`border-before`, `border-start`, ...) name the same sides.
+ *
+ * @type {Record<string, string>}
  */
 const legacySideNames = {
   'block-start': 'before',
@@ -227,6 +169,23 @@ const legacySideNames = {
   'inline-start': 'start',
   'inline-end': 'end',
 };
+const componentNames = ['width', 'style', 'color'];
+
+/**
+ * The legacy spellings of some sides: the side shorthand and its components.
+ *
+ * @param {string[]} sides - keys of `legacySideNames`
+ * @return {string[]}
+ */
+function legacySpellings(sides) {
+  return sides.flatMap((side) => {
+    const legacy = legacySideNames[side];
+    return [
+      `border-${legacy}`,
+      ...componentNames.map((part) => `border-${legacy}-${part}`),
+    ];
+  });
+}
 /**
  * `column-rule` or `row-rule`. `rule` and its per-component forms set the
  * longhands of both. The -break, -inset and -visibility-items longhands are
@@ -253,36 +212,82 @@ function ruleFamily(shorthand) {
 }
 
 /** @type {PairFamily[]} */
-const logicalBorderSides = Object.entries(legacySideNames).map(
-  ([side, legacy]) => {
-    const shorthand = `border-${side}`;
-    const axis = `border-${side.split('-')[0]}`;
-    return family(
-      shorthand,
-      ['width', 'style', 'color'].map((part) => `${shorthand}-${part}`),
-      {
-        aliases: [
-          axis,
-          ...['width', 'style', 'color'].map((part) => `${axis}-${part}`),
-          `border-${legacy}`,
-          ...['width', 'style', 'color'].map(
-            (part) => `border-${legacy}-${part}`
-          ),
-          ...allPhysicalBorderProperties,
-        ],
-        parseValue: [
-          ruleComponent(isBorderWidth),
-          ruleComponent(isBorderStyle),
-          ruleComponent(isColor),
-        ],
-        emit: emitRule,
-      }
-    );
-  }
-);
+const logicalBorderSides = Object.entries(legacySideNames).map(([side]) => {
+  const shorthand = `border-${side}`;
+  const axis = `border-${side.split('-')[0]}`;
+  return family(
+    shorthand,
+    ['width', 'style', 'color'].map((part) => `${shorthand}-${part}`),
+    {
+      aliases: [
+        axis,
+        ...componentNames.map((part) => `${axis}-${part}`),
+        ...legacySpellings([side]),
+        ...allPhysicalBorderProperties,
+      ],
+      parseValue: [
+        ruleComponent(isBorderWidth),
+        ruleComponent(isBorderStyle),
+        ruleComponent(isColor),
+      ],
+      emit: emitRule,
+    }
+  );
+});
+
+/**
+ * `border-block` or `border-inline`: both sides of an axis. It merges only
+ * when the two sides are equal, since the shorthand gives both one value.
+ *
+ * @param {string} axis
+ * @return {PairFamily}
+ */
+function axisFamily(axis) {
+  const sides = [`${axis}-start`, `${axis}-end`];
+  const sideParsers = [
+    ruleComponent(isBorderWidth),
+    ruleComponent(isBorderStyle),
+    ruleComponent(isColor),
+  ];
+  return family(
+    `border-${axis}`,
+    sides.flatMap((side) =>
+      componentNames.map((part) => `border-${side}-${part}`)
+    ),
+    {
+      aliases: [
+        ...sides.map((side) => `border-${side}`),
+        ...componentNames.map((part) => `border-${axis}-${part}`),
+        ...legacySpellings(sides),
+        ...allPhysicalBorderProperties,
+      ],
+      parseValue: [...sideParsers, ...sideParsers],
+      emit: emitSides,
+    }
+  );
+}
+
+/**
+ * The start and end sides, one value each: the shorthand gives both sides one
+ * value, so a difference keeps the sides as written.
+ *
+ * @param {string[]} values - the start components, then the end components
+ * @return {string | null}
+ */
+function emitSides(values) {
+  const start = values.slice(0, 3);
+  const differs = start.some(
+    (value, slot) => asciiLowerCase(value) !== asciiLowerCase(values[slot + 3])
+  );
+  return differs ? null : emitRule(start);
+}
 
 /** @type {PairFamily[]} */
 export const pairFamilies = [
+  ...gridPlacementFamilies,
+  listStyleFamily,
+  textEmphasisFamily,
+  textDecorationFamily,
   // grid-gap and its siblings are aliases that share the cascade.
   family('gap', ['row-gap', 'column-gap'], {
     aliases: ['grid-gap', 'grid-row-gap', 'grid-column-gap'],
@@ -314,6 +319,9 @@ export const pairFamilies = [
     requires: outlineFeatures,
     supportKey: null,
   }),
+  // Before the sides, so that the axis family is first in the reducer's
+  // insertion-ordered families and sees both sides before either is merged.
+  ...['block', 'inline'].map(axisFamily),
   ...logicalBorderSides,
   family('overflow', ['overflow-x', 'overflow-y'], {
     aliases: ['overflow-block', 'overflow-inline'],

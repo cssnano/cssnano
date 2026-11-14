@@ -102,6 +102,16 @@ export const featureBcdPaths = new Map([
   // A pair family reads this one: an engine without `outline-style: auto`
   // drops the whole outline shorthand that carries it.
   ['keyword:outline-style-auto', 'css.properties.outline-style.auto'],
+  // A pair family reads these two: an engine without the component drops the
+  // whole text-decoration shorthand that carries it.
+  [
+    'keyword:text-decoration-thickness',
+    'css.properties.text-decoration.includes_thickness',
+  ],
+  [
+    'keyword:text-decoration-color-and-style',
+    'css.properties.text-decoration.includes_color-and-style',
+  ],
   [
     'hex-alpha',
     'css.types.color.rgb_hexadecimal_notation.alpha_hexadecimal_notation',
