@@ -31,6 +31,11 @@ export declare class TokenLists {
     textLength(index: TokenListId): number;
     /**
      * @param {TokenListId} index an index that `push` returned
+     * @return {boolean} whether the text the list spells holds `/*`
+     */
+    holdsCommentStart(index: TokenListId): boolean;
+    /**
+     * @param {TokenListId} index an index that `push` returned
      * @return {readonly CSSToken[]}
      */
     get(index: TokenListId): readonly CSSToken[];

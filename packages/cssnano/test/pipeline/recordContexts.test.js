@@ -5,7 +5,17 @@ import postcss from 'postcss';
 import { buildRecords } from '../../src/passes/ir/buildRecords.js';
 import { AT_RULE_BLOCK, RULE } from '../../src/passes/ir/blockRecord.js';
 import { createRunContext } from '../../src/passes/ir/runContext.js';
-import { contextOf, recordContextOf } from '../../src/pipeline/context.js';
+import {
+  IN_KEYFRAMES,
+  IN_PROPERTY,
+  KEYFRAME_RULE,
+  PERCENTAGE_SYNTAX,
+  hasContextBit,
+  recordContextOf,
+  withBit,
+} from '../../src/pipeline/context.js';
+import { syntaxAllowsPercentage } from '../../src/utils/syntaxPercentage.js';
+import cssnanoUtils from '#utils';
 
 /** @import {BlockRecords} from '../../src/passes/ir/blockRecords.js' */
 /** @import {TokenLists} from '../../src/passes/ir/tokenLists.js' */
@@ -14,6 +24,66 @@ const edgeCasesFile = new URL(
   '../../script/pipeline/edgeCases.css',
   import.meta.url
 );
+
+/** The at-rule names whose blocks give their rules keyframe-selector semantics. */
+const keyframeAtRuleNames = new Set([
+  'keyframes',
+  '-webkit-keyframes',
+  '-moz-keyframes',
+  '-o-keyframes',
+]);
+
+/**
+ * Whether the syntax of an `@property` rule allows percentages, by the node
+ * form: the last syntax declaration decides, and no declaration allows them.
+ *
+ * @param {postcss.AtRule} atRule
+ * @returns {boolean}
+ */
+function nodePropertyAllowsPercentage(atRule) {
+  const syntax = atRule.nodes?.findLast(
+    (node) => node.type === 'decl' && node.prop.toLowerCase() === 'syntax'
+  );
+  return syntax?.type !== 'decl' || syntaxAllowsPercentage(syntax.value);
+}
+
+/**
+ * The context of a container by the node form, which the record form must
+ * equal. It is the reference the record walk is checked against.
+ *
+ * @param {postcss.Container | postcss.Document} node
+ * @param {WeakMap<object, number>} contexts
+ * @returns {number}
+ */
+function nodeContextOf(node, contexts) {
+  const known = contexts.get(node);
+  if (known !== undefined) return known;
+  let context = 0;
+  if (
+    node.parent &&
+    hasContextBit(nodeContextOf(node.parent, contexts), IN_KEYFRAMES)
+  ) {
+    context = IN_KEYFRAMES;
+  }
+  if (node.type === 'atrule') {
+    const name = cssnanoUtils.asciiLowerCase(node.name);
+    if (name.endsWith('keyframes')) context = withBit(context, IN_KEYFRAMES);
+    if (name === 'property') {
+      context = withBit(context, IN_PROPERTY);
+      if (nodePropertyAllowsPercentage(node)) {
+        context = withBit(context, PERCENTAGE_SYNTAX);
+      }
+    }
+  }
+  if (
+    node.parent?.type === 'atrule' &&
+    keyframeAtRuleNames.has(cssnanoUtils.asciiLowerCase(node.parent.name))
+  ) {
+    context = withBit(context, KEYFRAME_RULE);
+  }
+  contexts.set(node, context);
+  return context;
+}
 
 /**
  * The context of each container of a tree, in document order, by the node
@@ -28,7 +98,7 @@ function nodeContextsOf(root) {
   const found = [];
   /** @param {postcss.Container} container */
   const visit = (container) => {
-    found.push(contextOf(container, contexts));
+    found.push(nodeContextOf(container, contexts));
     for (const child of container.nodes ?? []) {
       if (child.type === 'rule' || (child.type === 'atrule' && child.nodes)) {
         visit(child);

@@ -13,12 +13,18 @@ const replaceComments = new URL(
   import.meta.url
 ).href;
 
-const walk = new URL('../../src/pipeline/traversal.js', import.meta.url).href;
+const walk = new URL('../../src/pipeline/walkDown.js', import.meta.url).href;
 
-const nodeComments = new URL(
-  '../../src/pipeline/comments/nodeComments.js',
+const ruleWalk = new URL('../../src/pipeline/ruleWalk.js', import.meta.url)
+  .href;
+
+const declarationWalk = new URL(
+  '../../src/pipeline/declarationWalk.js',
   import.meta.url
 ).href;
+
+const atRuleWalk = new URL('../../src/pipeline/atRuleWalk.js', import.meta.url)
+  .href;
 
 export const mutations = [
   {
@@ -42,7 +48,7 @@ export const mutations = [
   {
     name: 'fuse selector tokens across a removed comment',
     target: replaceComments,
-    find: 'joinsIntoDifferentTokens(lastRaw, raw, parserCache)',
+    find: 'joinsIntoDifferentTokens(lastRaw, raw)',
     replace: 'false',
   },
   {
@@ -67,32 +73,32 @@ export const mutations = [
   {
     name: 'preserve removable comment nodes',
     target: walk,
-    find: 'if (state.comments?.canRemove(node.text)) node.remove();',
+    find: 'if (comments.canRemove(text)) removeEntry(this.#records, index);',
     replace:
-      'if (state.comments?.canRemove(node.text) && false) node.remove();',
+      'if (comments.canRemove(text) && false) removeEntry(this.#records, index);',
   },
   {
     name: 'skip declaration comment processing',
-    target: walk,
-    find: "text = commentFreeText(read, comments, decl.prop.startsWith('--'));",
-    replace: 'text = read;',
+    target: declarationWalk,
+    find: 'id = commentFreeIdOf(run, source, prop, comments);',
+    replace: 'id = source;',
   },
   {
     name: 'skip selector comment processing',
-    target: walk,
-    find: 'commentFreeSelector(read, comments) : read;',
-    replace: 'read : read;',
+    target: ruleWalk,
+    find: 'if (comments !== null) id = commentFreeSelectorIdOf(run, source, comments);',
+    replace: 'if (comments !== null) id = source;',
   },
   {
     name: 'skip at-rule comment processing',
-    target: walk,
-    find: 'comments !== null && read ? commentFreeText(read, comments) : read;',
-    replace: 'read;',
+    target: atRuleWalk,
+    find: 'id = commentFreeIdOf(run, source, comments);',
+    replace: 'id = source;',
   },
   {
     name: 'skip important comment processing',
-    target: nodeComments,
-    find: "if (!important || !important.includes('/*')) return;",
+    target: declarationWalk,
+    find: "if (spelling === null || !spelling.includes('/*')) return;",
     replace: 'return;',
   },
 ];

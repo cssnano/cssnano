@@ -21,5 +21,5 @@ export function atRuleEntry(stages, name) {
     plan.push(part.buffer);
     tightens ||= part.tightensAfterName === true;
   }
-  return planEntry(plan, undefined, null, tightens);
+  return planEntry(plan, undefined, tightens);
 }

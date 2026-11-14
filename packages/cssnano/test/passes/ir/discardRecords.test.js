@@ -16,7 +16,7 @@ import { DECLARATION, RULE } from '../../../src/passes/ir/blockRecord.js';
  */
 function buildOf(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = runDriver.build(root, context);
   return { root, context, state };
 }
@@ -40,7 +40,10 @@ describe('the discard over the records', () => {
     const { state, context } = built;
     /** @type {number[]} */
     const seen = [];
-    discardEmptyRecords(state.records, context, (index) => seen.push(index));
+    discardEmptyRecords(state.records, context, {
+      enter() {},
+      visit: (index) => seen.push(index),
+    });
     assert.deepEqual(
       seen.map((index) => state.records.entry(index).kind),
       [DECLARATION, RULE]

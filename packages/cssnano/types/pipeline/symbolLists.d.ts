@@ -46,6 +46,14 @@ export type RecordSymbolLists = {
  */
 export declare function createRecordSymbolLists(): RecordSymbolLists;
 /**
+ * Sorts every kept record of the stylesheet, in document order, into lists.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @returns {RecordSymbolLists}
+ */
+export declare function collectRecordSymbols(records: BlockRecords, tokenLists: TokenLists): RecordSymbolLists;
+/**
  * Whether an entry still hangs from the stylesheet. A removed container's
  * children still name it as their parent, so the walk must reach the root.
  *

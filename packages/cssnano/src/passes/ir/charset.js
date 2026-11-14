@@ -15,6 +15,7 @@ import { holdsNonAscii } from '../../values/nonAscii.js';
 /** @import {ArenaIndex} from './blockRecord.js' */
 /** @import {RunContext} from './runContext.js' */
 /** @import {TokenListId} from './tokenLists.js' */
+/** @import {DeclarationRecord} from './declarationRecord.js' */
 
 const CHARSET = 'charset';
 /** The scan's index for no entry. */
@@ -57,6 +58,22 @@ function listHoldsNonAscii(context, id) {
 }
 
 /**
+ * Whether a declaration's value as written holds non-ASCII text. The written
+ * list is set only when the value list drops text the author wrote, such as a
+ * plain comment, so the check reads a value kept as written through its value
+ * list instead.
+ *
+ * @param {RunContext} context
+ * @param {DeclarationRecord} record
+ * @return {boolean}
+ */
+export function writtenTextHoldsNonAscii(context, record) {
+  return (
+    record.writtenList !== -1 && listHoldsNonAscii(context, record.writtenList)
+  );
+}
+
+/**
  * Whether the text of one entry, apart from its children, is non-ASCII: names,
  * value and prelude lists, comment text and the spellings the record holds.
  *
@@ -71,7 +88,7 @@ function ownTextHoldsNonAscii(records, context, index) {
   let spellings;
   switch (record.kind) {
     case DECLARATION:
-      if (!record.marked && record.writtenNonAscii) return true;
+      if (writtenTextHoldsNonAscii(context, record)) return true;
       if (listHoldsNonAscii(context, record.valueList)) return true;
       spellings = [record.prop, record.between, record.importantSpelling];
       break;

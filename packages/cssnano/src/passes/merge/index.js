@@ -9,11 +9,11 @@ import runMerge from './lib/rules/selectorMerger.js';
 import { fillSummaries } from '../ir/selectorList.js';
 import { runDriver } from '../ir/runDriver.js';
 import { createRunContext } from '../ir/runContext.js';
-import { TextTable } from '../../values/textTable.js';
 import { assertValid, isBoolean } from '../../optionGuards.js';
 /** @import {BlockRecords} from '../ir/blockRecords.js' */
 /** @import {Result, Root} from 'postcss' */
 /** @import {RunContext} from '../ir/runContext.js' */
+/** @import {LonghandRound} from './lib/longhand/canonicalize.js' */
 
 /** The merge transforms take the records, the browser targets and the run context. */
 /** @typedef {(records: BlockRecords, browsers: readonly string[], context: RunContext) => void} RecordTransform */
@@ -70,43 +70,74 @@ export function mergeRecords(
   context,
   { rules = true, support = targetSupportOf(browsers) } = {}
 ) {
-  const longhand = longhandContext(
-    support.placeShorthands,
-    support.boxSupport,
-    support.pairShorthands,
-    context
-  );
-  runTransforms(records, browsers, context, [
-    (block) => canonicalizeRecords(block, longhand),
-    ...(rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY),
-    (block) => canonicalizeRecords(block, longhand),
-  ]);
+  const round = roundOf(support, context);
+  fillSummaries(records, context.tokenLists, browsers);
+  canonicalizeRecords(records, round);
+  mergeOf(records, browsers, context, { rules });
+  canonicalizeRecords(records, round);
 }
 
 export { targetSupportOf };
 
 /**
- * The merge run of a preset, which the host runs between its walk and the walk
- * after merge. `support` gives the targets' support, whose features the host
- * gives the run's context; `transforms` runs the merge transforms over the
- * build. The host builds and ends the run, so it imports nothing of the merge.
+ * The merge run of a preset. `support` gives the targets' support, whose
+ * features the host gives the run's context. `round` makes the longhand round
+ * of the run, or undefined when the runner has none: the walk down runs it, and
+ * the walk up runs its second round. `merge` runs the dedupe and the rule merge
+ * over the records between the walks, without the summaries. The host builds and ends the
+ * run, so it imports nothing of the merge.
  *
  * @typedef {{
  *   support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>,
- *   transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean, support: ReturnType<typeof targetSupportOf>}) => void,
+ *   round: (support: ReturnType<typeof targetSupportOf>, context: RunContext) => LonghandRound | undefined,
+ *   merge: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean}) => void,
  * }} MergeRunner
  */
+
+/**
+ * The longhand round of a run, with the targets' support.
+ *
+ * @param {ReturnType<typeof targetSupportOf>} support
+ * @param {RunContext} context
+ * @return {LonghandRound}
+ */
+function roundOf(support, context) {
+  return longhandContext(
+    support.placeShorthands,
+    support.boxSupport,
+    support.pairShorthands,
+    context
+  );
+}
+
+/**
+ * The dedupe, and the rule merge unless `rules` is false, over the records,
+ * without the summaries that the rule merge reads.
+ *
+ * @param {BlockRecords} records
+ * @param {readonly string[]} browsers
+ * @param {RunContext} context
+ * @param {{rules?: boolean}} options
+ * @return {void}
+ */
+function mergeOf(records, browsers, context, { rules = true }) {
+  for (const transform of rules ? DEDUPE_THEN_MERGE : DEDUPE_ONLY) {
+    transform(records, browsers, context);
+  }
+}
 
 /** @type {MergeRunner} */
 export const mergeRunner = Object.freeze({
   support: targetSupportOf,
-  transforms: mergeRecords,
+  round: roundOf,
+  merge: mergeOf,
 });
 
 /**
- * A merge run of the named transforms alone, in order, for a test that pins
- * one transform without the preset's order. Longhand canonicalizing takes the
- * support of its run.
+ * A merge run of the named transforms alone, for a test that pins some of
+ * the merge transforms without the preset's order. The names choose which of
+ * the three transforms run; the merge runs them in the preset's order.
+ * Longhand canonicalizing takes the support of its run.
  *
  * @param {...('mergeLonghand' | 'discardDuplicates' | 'mergeRules')} names
  * @return {MergeRunner}
@@ -114,25 +145,12 @@ export const mergeRunner = Object.freeze({
 export function transformRunner(...names) {
   return Object.freeze({
     support: targetSupportOf,
-    transforms: (records, browsers, context, { support }) => {
-      /** @type {RecordTransform[]} */
-      const transforms = [];
-      for (const name of names) {
-        if (name === 'mergeLonghand') {
-          const longhand = longhandContext(
-            support.placeShorthands,
-            support.boxSupport,
-            support.pairShorthands,
-            context
-          );
-          transforms.push((block) => canonicalizeRecords(block, longhand));
-        } else {
-          transforms.push(
-            ...(name === 'mergeRules' ? MERGE_ONLY : DEDUPE_ONLY)
-          );
-        }
+    round: (support, context) =>
+      names.includes('mergeLonghand') ? roundOf(support, context) : undefined,
+    merge: (records, browsers, context) => {
+      for (const [name, transform] of NAMED_MERGE_STEPS) {
+        if (names.includes(name)) transform(records, browsers, context);
       }
-      runTransforms(records, browsers, context, transforms);
     },
   });
 }
@@ -141,6 +159,11 @@ export function transformRunner(...names) {
 const DEDUPE_THEN_MERGE = Object.freeze([discardDuplicates, runMerge]);
 const DEDUPE_ONLY = Object.freeze([discardDuplicates]);
 const MERGE_ONLY = Object.freeze([runMerge]);
+/** The merge steps that a name of `transformRunner` runs, in the preset's order. @type {readonly (readonly ['discardDuplicates' | 'mergeRules', RecordTransform])[]} */
+const NAMED_MERGE_STEPS = Object.freeze([
+  ['discardDuplicates', discardDuplicates],
+  ['mergeRules', runMerge],
+]);
 
 /**
  * The merge transforms over one stylesheet, as one run of the driver: build,
@@ -153,7 +176,6 @@ const MERGE_ONLY = Object.freeze([runMerge]);
  * @param {readonly string[]} browsers the resolved browser targets
  * @param {{ rules?: boolean }} [options]
  * @param {Result} [result] the PostCSS result, whose messages the run pushes to
- * @param {TextTable} [textTable] the selector tokens the host walk left
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {void}
  */
@@ -162,15 +184,10 @@ export function mergePass(
   browsers,
   { rules = true } = {},
   result,
-  textTable,
   consistencyChecks
 ) {
   const support = targetSupportOf(browsers);
-  const context = createRunContext(
-    textTable,
-    consistencyChecks,
-    support.features
-  );
+  const context = createRunContext(consistencyChecks, support.features);
   const state = runDriver.build(css, context);
   mergeRecords(state.records, browsers, context, { rules, support });
   runDriver.end(state, { browsers, folded: true, result });
@@ -221,42 +238,23 @@ export default pluginCreator;
 const transformHooks = Object.freeze({
   mergeLonghand(css, browsers) {
     const support = targetSupportOf(browsers);
-    const context = createRunContext(
-      new TextTable(),
-      undefined,
-      support.features
-    );
-    const longhand = longhandContext(
-      support.placeShorthands,
-      support.boxSupport,
-      support.pairShorthands,
-      context
-    );
+    const context = createRunContext(undefined, support.features);
+    const round = roundOf(support, context);
     runOver(css, browsers, context, [
-      (records) => canonicalizeRecords(records, longhand),
+      (records) => canonicalizeRecords(records, round),
     ]);
   },
   discardDuplicates(css, browsers, consistencyChecks) {
-    runOver(
-      css,
-      [],
-      createRunContext(undefined, consistencyChecks),
-      DEDUPE_ONLY
-    );
+    runOver(css, [], createRunContext(consistencyChecks), DEDUPE_ONLY);
   },
   mergeRules(css, browsers, consistencyChecks) {
-    runOver(
-      css,
-      browsers,
-      createRunContext(undefined, consistencyChecks),
-      MERGE_ONLY
-    );
+    runOver(css, browsers, createRunContext(consistencyChecks), MERGE_ONLY);
   },
   dedupeThenMerge(css, browsers, consistencyChecks) {
     runOver(
       css,
       browsers,
-      createRunContext(undefined, consistencyChecks),
+      createRunContext(consistencyChecks),
       DEDUPE_THEN_MERGE
     );
   },

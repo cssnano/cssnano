@@ -20,7 +20,6 @@ import {
 } from './liveRecords.js';
 import { RuleRecord } from '../../../../../src/passes/ir/ruleRecord.js';
 import { assertOwnershipIsTree } from '../../../../../src/passes/ir/recordsCheck.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { TokenLists } from '../../../../../src/passes/ir/tokenLists.js';
 
 const selectorIds = new SelectorIds();
@@ -37,9 +36,9 @@ const tokenLists = new TokenLists();
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  state.records = buildTestRecords(root, state, true);
   return { root, state };
 }
 

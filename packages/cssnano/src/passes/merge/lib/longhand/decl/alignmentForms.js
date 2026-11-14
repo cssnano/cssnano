@@ -3,6 +3,8 @@ import { isCssWideKeyword } from '../isCssWideKeyword.js';
 import { cssWideKeywords } from '../../../../ir/spec.js';
 import isCustomProp from '../isCustomProp.js';
 import { splitValue } from '../valueComponents.js';
+import { withoutVendorPrefix } from '../../../../ir/vendorPrefix.js';
+import { decodedPropertyName } from './importanceLanes.js';
 import shorthandData from '../data/shorthandIdentities.json' with { type: 'json' };
 
 const { asciiLowerCase } = cssnanoUtils;
@@ -229,4 +231,23 @@ export function normalizeAlignment(family, [val0, val1]) {
     return val0;
   }
   return `${val0} ${val1}`;
+}
+
+/**
+ * Prefixed aliases such as -webkit-justify-content and escaped spellings
+ * share the cascade with the property they name, so the alignment reducer
+ * must see them. It cannot parse an alias, so any alias leaves the whole
+ * family unmerged in that run, which keeps the cascade intact.
+ *
+ * @param {string} prop - lowercased property name
+ * @return {AlignmentFamilyConfig | undefined}
+ */
+export function alignmentFamilyOf(prop) {
+  const escaped = prop.includes('\\');
+  if (!escaped && !prop.startsWith('-')) return alignmentProperties.get(prop);
+  if (prop.startsWith('--')) return undefined;
+  const name = escaped ? decodedPropertyName(prop) : prop;
+  return name === undefined
+    ? undefined
+    : alignmentProperties.get(withoutVendorPrefix(name));
 }

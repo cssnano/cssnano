@@ -28,10 +28,7 @@ const selectorTexts = (state, record) =>
   record.selectorIds.map((id) => tokensText(state.tokenLists.get(id)));
 
 const createState = (consistencyChecks = false) =>
-  new MergeState(
-    ['chrome 120'],
-    createRunContext(undefined, consistencyChecks)
-  );
+  new MergeState(['chrome 120'], createRunContext(consistencyChecks));
 
 /**
  * Gives the rules of `root` their slots, as the merge does before it joins any.
@@ -41,7 +38,7 @@ const createState = (consistencyChecks = false) =>
  * @return {import('postcss').Root}
  */
 const withRecords = (state, root, consistencyChecks = false) => {
-  state.records = buildTestRecords(root, state, undefined, consistencyChecks);
+  state.records = buildTestRecords(root, state, consistencyChecks);
   return root;
 };
 

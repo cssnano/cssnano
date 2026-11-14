@@ -26,7 +26,6 @@ import {
   tokenListsOf,
 } from '../merge/lib/rules/liveRecords.js';
 import { adopt, moveRule } from '../../../src/passes/ir/arenaEdits.js';
-import { TextTable } from '../../../src/values/textTable.js';
 import { RuleRecord } from '../../../src/passes/ir/ruleRecord.js';
 import { nodeOf } from '../../../src/passes/ir/nodeTable.js';
 import { TokenLists } from '../../../src/passes/ir/tokenLists.js';
@@ -42,9 +41,9 @@ const tokenLists = new TokenLists();
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  state.records = buildTestRecords(root, state, true);
   return { root, state };
 }
 

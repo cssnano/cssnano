@@ -22,7 +22,6 @@ import {
   nodeOfEntry,
   tokenListsOf,
 } from './liveRecords.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { DECLARATION } from '../../../../../src/passes/ir/blockRecord.js';
 
 /**
@@ -32,7 +31,7 @@ import { DECLARATION } from '../../../../../src/passes/ir/blockRecord.js';
 function setup(css) {
   const root = postcss.parse(css);
   const state = new MergeState(['chrome 120']);
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  state.records = buildTestRecords(root, state, true);
   return { root, state };
 }
 

@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { describe, test } from 'node:test';
 import { decl } from 'postcss';
 import {
@@ -248,8 +247,7 @@ describe('box alignment merging fail-closed contracts', () => {
       assert.equal(
         parseAlignmentDeclaration(
           alignmentFamilies['place-items'],
-          decl({ prop: 'align-content', value: 'center' }),
-          new TextTable()
+          decl({ prop: 'align-content', value: 'center' })
         ),
         null
       );

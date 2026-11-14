@@ -7,9 +7,8 @@ import { test } from 'node:test';
 const SRC = join(dirname(fileURLToPath(import.meta.url)), '../../../../../src');
 
 /**
- * Files the window reaches that hold no postcss at runtime: the write-back and
- * the guard, which are allowed for good, and the longhand merge, which still
- * edits nodes.
+ * Files the window reaches that may import postcss at runtime: the build, the
+ * write-back and the checks, which are the only code that sees a node.
  */
 const UNWALKED = new Set([
   'passes/ir/writeBack.js',
@@ -17,7 +16,6 @@ const UNWALKED = new Set([
   'passes/ir/writeSelector.js',
   'passes/ir/treeMatch.js',
   'passes/ir/buildRecords.js',
-  'passes/ir/windowGuard.js',
 ]);
 
 /**
@@ -63,12 +61,7 @@ function reachFrom(entries) {
         postcss.push(`${file}: ${specifier}`);
       } else if (specifier.startsWith('.')) {
         const next = normalize(join(dirname(file), specifier));
-        if (
-          !UNWALKED.has(next) &&
-          !next.startsWith('passes/merge/lib/longhand/')
-        ) {
-          stack.push(next);
-        }
+        if (!UNWALKED.has(next)) stack.push(next);
       }
     }
   }
