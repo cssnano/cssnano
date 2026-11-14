@@ -34,14 +34,14 @@ import {
  * be reported; `guards` checks the value of an option by its key. `walk` is
  * set when a stylesheet walk implements part of the plugin, so the walk of the
  * run receives its options under the entry name. `after` is set when the walk
- * after merge of the run implements it too; a stage entry with `after` also
- * puts its options in that walk.
+ * up of the run implements it too; a stage entry with `after` also puts its
+ * options in that walk.
  *
  * `transform` is set when the entry is a whole-stylesheet transform, so its entry
  * is a TransformEntry rather than a creator or a stage. A transform with `merge`
- * is the merge run, which runs after the walk of its host and before the walk
- * after merge. A transform with `after` runs in the walk after the merge. A
- * transform with `symbols` runs over the lists that walk collects.
+ * is the merge run, which runs between the walk down of its host and the walk
+ * up. A transform with `after` runs in the walk up. A transform with
+ * `symbols` runs over the lists that walk collects.
  *
  * @typedef {{
  *   targets?: true,
@@ -82,8 +82,8 @@ import {
 
 /**
  * The stage members of a host, the options of the walk transforms that the
- * host's walk runs, the options of the merge run when it is on, the options of
- * the transforms of the walk after the merge, and the advanced transforms over its lists.
+ * host's walk down runs, the options of the merge run when it is on, the options
+ * of the transforms of the walk up, and the advanced transforms over its lists.
  * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, merge: Merge | undefined, after: Map<string, Record<PropertyKey, unknown>>, symbols: Map<string, SymbolEntry>}} Run
  */
 
@@ -115,7 +115,7 @@ export function configurePlugins(entries, options) {
 
 /**
  * Files an enabled transform under the list that its settings name: a pass, a
- * symbol transform, the walk after merge or the walk. A transform that creates
+ * symbol transform, the walk up or the walk down. A transform that creates
  * null is off, so it is not filed.
  *
  * @param {Run} run

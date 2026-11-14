@@ -29,7 +29,7 @@ function tokenizeTotal() {
 const helpers = { result: { warn() {}, messages: [] } };
 
 /**
- * The walk after merge of `root`, as the host runs it.
+ * The walk up of `root`, as the host runs it.
  * @param {import('postcss').Root} root
  * @param {Map<string, Record<PropertyKey, unknown>>} transforms
  * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols

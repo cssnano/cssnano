@@ -71,7 +71,7 @@ function namespaceOf(family) {
 }
 
 /**
- * Merges the names of the lists the walk after merge collected. An entry that
+ * Merges the names of the lists the walk up collected. An entry that
  * an earlier transform detached is skipped, as the lists still hold it.
  *
  * @param {RecordSymbolLists} lists
@@ -196,7 +196,7 @@ function mergeAtRules(lists, remove, records, context) {
 }
 
 /**
- * Merges the names of the advanced transform's lists. The walk after merge
+ * Merges the names of the advanced transform's lists. The walk up
  * collects the lists, so the transform needs no walk of its own.
  *
  * @param {RecordSymbolLists} lists

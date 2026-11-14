@@ -120,7 +120,7 @@ describe('stage entries in a preset', () => {
     assert.equal(ignores?.options[browserTargets], undefined);
   });
 
-  test('the default preset runs its comment stage, its stage entries, merge and the walk after merge in one host plugin', () => {
+  test('the default preset runs its comment stage, its stage entries, merge and the walk up in one host plugin', () => {
     const names = defaultPreset().map((plugin) => plugin.postcssPlugin);
     assert.deepStrictEqual(names, ['cssnano-host']);
   });

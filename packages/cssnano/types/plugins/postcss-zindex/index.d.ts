@@ -17,7 +17,7 @@ export type Options = {
  * @property {number} [startIndex] The first positive integer z-index to assign, so z-indices from other sources can be overridden. (default: 1)
  */
 /**
- * Rebases the z-index values of the walk after merge's lists to small
+ * Rebases the z-index values of the walk up's lists to small
  * integers that keep their order. Rebasing is only safe when every index is
  * a positive number, so one negative value leaves them all alone.
  *

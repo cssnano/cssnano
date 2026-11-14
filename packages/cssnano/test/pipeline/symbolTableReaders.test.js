@@ -48,7 +48,7 @@ function buildRecords(css) {
 }
 
 /**
- * The symbol lists of a built stylesheet, as the walk after merge collects them.
+ * The symbol lists of a built stylesheet, as the walk up collects them.
  *
  * @param {import('../../src/passes/ir/blockRecords.js').BlockRecords} records
  * @param {import('../../src/passes/ir/runContext.js').RunContext} context

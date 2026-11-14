@@ -3,7 +3,7 @@ import type { BlockRecords } from '../../passes/ir/blockRecords.js';
 import type { RecordSymbolLists } from '../../pipeline/symbolLists.js';
 import type { RunContext } from '../../passes/ir/runContext.js';
 /**
- * Merges the names of the advanced transform's lists. The walk after merge
+ * Merges the names of the advanced transform's lists. The walk up
  * collects the lists, so the transform needs no walk of its own.
  *
  * @param {RecordSymbolLists} lists

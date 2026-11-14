@@ -256,7 +256,7 @@ suite('the at-rule reducers write tokens that spell their text', () => {
 });
 
 /**
- * The walk after merge of `root`, as the host runs it.
+ * The walk up of `root`, as the host runs it.
  * @param {import('postcss').Root} root
  * @param {Map<string, Record<PropertyKey, unknown>>} transforms
  * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols

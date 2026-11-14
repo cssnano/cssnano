@@ -80,11 +80,11 @@ export function mergeRecords(
 export { targetSupportOf };
 
 /**
- * The merge run of a preset, which the host runs between its walk and the walk
- * after merge. `support` gives the targets' support, whose features the host
- * gives the run's context. `round` makes the longhand round of the run, or
- * undefined when the runner has none. `merge` runs the dedupe and the rule
- * merge over the records, without the summaries. The host builds and ends the
+ * The merge run of a preset. `support` gives the targets' support, whose
+ * features the host gives the run's context. `round` makes the longhand round
+ * of the run, or undefined when the runner has none: the walk down runs it, and
+ * the walk up runs its second round. `merge` runs the dedupe and the rule merge
+ * over the records between the walks, without the summaries. The host builds and ends the
  * run, so it imports nothing of the merge.
  *
  * @typedef {{
@@ -239,14 +239,9 @@ const transformHooks = Object.freeze({
   mergeLonghand(css, browsers) {
     const support = targetSupportOf(browsers);
     const context = createRunContext(undefined, support.features);
-    const longhand = longhandContext(
-      support.placeShorthands,
-      support.boxSupport,
-      support.pairShorthands,
-      context
-    );
+    const round = roundOf(support, context);
     runOver(css, browsers, context, [
-      (records) => canonicalizeRecords(records, longhand),
+      (records) => canonicalizeRecords(records, round),
     ]);
   },
   discardDuplicates(css, browsers, consistencyChecks) {

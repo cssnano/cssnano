@@ -10,7 +10,8 @@ import { runDriver } from '../passes/ir/runDriver.js';
 
 /**
  * A host plugin runs the stages of one run in order, at OnceExit, so the
- * plugins before it have finished. The stylesheet is walked once.
+ * plugins before it have finished. The records are walked twice: down before
+ * the merge, and up after it.
  */
 
 /** @import {Plugin, Root} from 'postcss' */
@@ -68,7 +69,7 @@ import { runDriver } from '../passes/ir/runDriver.js';
 
 /**
  * An advanced transform over the records, which edits the lists of arena
- * indices that the walk after merge collected, with the options its entry's
+ * indices that the walk up collected, with the options its entry's
  * `create` returned. `remove` removes an entry and, with discardEmpty on, each
  * ancestor it empties. It runs before the end of the run.
  * @typedef {(lists: import('./symbolLists.js').RecordSymbolLists, options: Record<PropertyKey, unknown>, remove: (index: import('../passes/ir/blockRecord.js').ArenaIndex) => void, records: import('../passes/ir/blockRecords.js').BlockRecords, context: import('../passes/ir/runContext.js').RunContext) => void} SymbolTransform
@@ -178,11 +179,11 @@ function runRecords(
 /**
  * @param {readonly HostMember[]} members the stages of one run, in order
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
- *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
+ *   whole-stylesheet transforms that the walk down runs, by entry name; a missing name is disabled
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
- *   the walk after the merge runs, by entry name; a missing name is disabled
+ *   the walk up runs, by entry name; a missing name is disabled
  * @param {ReadonlyMap<string, SymbolEntry>} [symbols]
- *   the advanced transforms that run over the lists of the walk after the merge, in order
+ *   the advanced transforms that run over the lists of the walk up, in order
  * @param {Merge} [merge] the merge options with the browser targets, and the merge run; absent when the merge is off
  * @returns {Plugin}
  */
@@ -234,8 +235,8 @@ export function hostPlugin(
         OnceExit(root, helpers) {
           // The comment removal is read once per stylesheet, by the record walk.
           const comments = hasStages ? commentStateOf(stages) : null;
-          // A run with stages builds the records, even when no merge, walk
-          // after merge or symbol transform reads them.
+          // A run with stages builds the records, even when no merge, walk up
+          // or symbol transform reads them.
           if (hasStages || merge || after.size > 0 || symbols.size > 0) {
             runRecords(
               root,

@@ -80,7 +80,7 @@ describe('the host run of the merge transforms', () => {
     assert.equal(ends, 1);
   });
 
-  test('the host run walks the records twice between the build and the write', async () => {
+  test('the host run gives the first longhand round to the walk down and the second to the walk up, between the build and the write', async () => {
     assert.deepEqual(await orderOfRun('a{color:red}b{color:red}'), [
       'build',
       'walk down',

@@ -23,7 +23,7 @@ import { identifierWithText, numeric } from '../../values/tokenConstructors.js';
  */
 
 /**
- * Rebases the z-index values of the walk after merge's lists to small
+ * Rebases the z-index values of the walk up's lists to small
  * integers that keep their order. Rebasing is only safe when every index is
  * a positive number, so one negative value leaves them all alone.
  *

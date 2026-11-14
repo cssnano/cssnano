@@ -33,7 +33,7 @@ export const normalizeWhitespaceEntry =
   );
 
 /**
- * discardEmpty runs in the walk after merge of its host, so the host walks the
+ * discardEmpty runs in the walk up of its host, so the host walks the
  * stylesheet without a plugin of its own.
  */
 export const discardEmptyEntry =

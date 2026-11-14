@@ -63,7 +63,7 @@ export function createReducers({
 }
 
 /**
- * Renames the names that the walk after merge collected. Each reducer reads
+ * Renames the names that the walk up collected. Each reducer reads
  * only at-rules or declarations, so the lists hold every entry it needs, and an
  * entry that an earlier transform removed is skipped.
  *

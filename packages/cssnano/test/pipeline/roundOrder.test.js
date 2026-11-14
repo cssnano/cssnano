@@ -62,7 +62,7 @@ const EVERY_STAGE = [
   'rawCache',
 ];
 
-// The walk after the merge, which holds the transforms that run after it.
+// The walk up, which holds the transforms that run after the merge.
 const AFTER_MERGE = [
   'normalizeWhitespace',
   'uniqueSelectors',

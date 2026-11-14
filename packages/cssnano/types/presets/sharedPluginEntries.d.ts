@@ -19,7 +19,7 @@ export declare const normalizeWhitespaceEntry: readonly [{
     readonly after: true;
 }];
 /**
- * discardEmpty runs in the walk after merge of its host, so the host walks the
+ * discardEmpty runs in the walk up of its host, so the host walks the
  * stylesheet without a plugin of its own.
  */
 export declare const discardEmptyEntry: readonly [{

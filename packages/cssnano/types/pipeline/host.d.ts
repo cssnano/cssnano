@@ -34,11 +34,11 @@ export type HostMember = {
 /**
  * @param {readonly HostMember[]} members the stages of one run, in order
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
- *   whole-stylesheet transforms that the walk runs, by entry name; a missing name is disabled
+ *   whole-stylesheet transforms that the walk down runs, by entry name; a missing name is disabled
  * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
- *   the walk after the merge runs, by entry name; a missing name is disabled
+ *   the walk up runs, by entry name; a missing name is disabled
  * @param {ReadonlyMap<string, SymbolEntry>} [symbols]
- *   the advanced transforms that run over the lists of the walk after the merge, in order
+ *   the advanced transforms that run over the lists of the walk up, in order
  * @param {Merge} [merge] the merge options with the browser targets, and the merge run; absent when the merge is off
  * @returns {Plugin}
  */
