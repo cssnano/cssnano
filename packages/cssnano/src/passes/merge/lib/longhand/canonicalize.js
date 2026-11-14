@@ -11,7 +11,7 @@ import {
   allRadiusProperties,
 } from './decl/borderData.js';
 import { alignmentFamilyOf } from './decl/alignmentForms.js';
-import { pairFamilyOf } from './decl/pairForms.js';
+import { pairFamiliesOf } from './decl/pairForms.js';
 import {
   addFamilyDeclaration,
   createContainerState,
@@ -68,9 +68,10 @@ function classifyDeclaration(
   container
 ) {
   // Families the targets cannot parse are not collected, so they stay as written.
-  const pair = pairFamilyOf(prop);
-  if (pair && context.pairShorthands.has(pair.shorthand)) {
-    addFamilyDeclaration(state, pair, child, laneIndex);
+  for (const pair of pairFamiliesOf(prop)) {
+    if (context.pairShorthands.has(pair.shorthand)) {
+      addFamilyDeclaration(state, pair, child, laneIndex);
+    }
   }
   if (prop.startsWith('border')) {
     if (allRadiusProperties.has(prop)) {
