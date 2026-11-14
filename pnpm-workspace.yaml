@@ -8,13 +8,13 @@ hoistWorkspacePackages: false
 catalog:
   autoprefixer: ^10.6.2
   browserslist: ^4.29.5
-  caniuse-lite: ^1.0.30001816
+  caniuse-lite: ^1.0.30001826
   '@csstools/css-tokenizer': ^4.0.2
   postcss: ^8.5.32
   '@webref/css': 8.7.8
   mdn-data: 2.37.2
   '@colordx/core': ^7.3.0
-  '@mdn/browser-compat-data': ^8.1.8
+  '@mdn/browser-compat-data': ^8.1.9
 
 minimumReleaseAgeExclude:
   - postcss-calc
