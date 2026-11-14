@@ -1,11 +1,12 @@
 import { comma } from '../../values/punctuationTokens.js';
 import { renumber } from '../../values/renumber.js';
 import { nodeOf } from './nodeTable.js';
+import { sourceSelector } from '../../utils/sourceText.js';
+import { tokensText } from '../../values/tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Rule} from 'postcss' */
 /** @import {RuleRecord} from './ruleRecord.js' */
-/** @import {TextTable} from '../../values/textTable.js' */
 /** @import {NodeTable} from './nodeTable.js' */
 /** @import {TokenLists} from './tokenLists.js' */
 
@@ -44,25 +45,30 @@ function writeTemplateRaws(node, template) {
 }
 
 /**
- * Writes the selector of a marked rule the root reaches, through the table: its
- * written list when it has one, otherwise the tokens of its ids joined as the
- * rule is written. A rule that no merge marked keeps its node's text, so it is
+ * Writes the selector of a marked rule the root reaches: its written list when
+ * it has one, otherwise the tokens of its ids joined as the rule is written. The
+ * selector is assigned only when its text differs from the node's selector as
+ * written, and then the raw is dropped, since it would restore comments the text
+ * no longer has. A rule that no merge marked keeps its node's text, so it is
  * not written.
  *
  * @param {RuleRecord} record
  * @param {NodeTable} nodes
- * @param {TextTable} textTable
  * @param {TokenLists} tokenLists
  * @return {void}
  */
-export function writeSelector(record, nodes, textTable, tokenLists) {
+export function writeSelector(record, nodes, tokenLists) {
   if (!record.marked) return;
   const node = /** @type {Rule} */ (nodeOf(nodes, record.index));
   const list =
     record.writtenList === -1
       ? joinedList(record, tokenLists)
       : tokenLists.get(record.writtenList);
-  textTable.write(node, list);
+  const text = tokensText(list);
+  if (sourceSelector(node) !== text) {
+    node.selector = text;
+    delete node.raws.selector;
+  }
   if (record.template !== -1) {
     writeTemplateRaws(
       node,

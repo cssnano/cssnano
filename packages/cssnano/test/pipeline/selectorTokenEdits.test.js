@@ -4,6 +4,7 @@ import { suite, test } from 'node:test';
 // The counter must hook the tokenizer before the stages load it, so both load
 // after it.
 const { counter } = await import('../../../../util/countTokenize.js');
+const { tokenize } = await import('@csstools/css-tokenizer');
 const { default: postcss } = await import('postcss');
 const { hostPlugin } = await import('../../src/pipeline/host.js');
 const { default: minifySelectors } =
@@ -61,7 +62,7 @@ suite('selector tokens handed between stages of the host walk', () => {
   test('a stage that tokenizes a selector is counted, as a control for the probe', async () => {
     const calls = [];
     await processWith('a , b{}', [
-      probed(minifySelectors.create({}, []), calls),
+      probed({ selector: () => tokenize({ css: 'x' }) }, calls),
     ]);
     assert.equal(calls.length, 1);
     assert.ok(calls[0] > 0);
@@ -95,14 +96,12 @@ suite('selector tokens handed between stages of the host walk', () => {
     assert.deepEqual(calls, [0]);
   });
 
-  test('minify-selectors tokenizes a selector it leaves unchanged only once, for its own read', async () => {
-    // The already-minified combinator carries no tokens, so the output's text is tokenized
-    // only when the text changes.
+  test('minify-selectors reads the selector tokens the build gave it, without tokenizing, where it leaves the selector unchanged', async () => {
     const calls = [];
     await processWith('legend+*{}', [
       probed(minifySelectors.create({}, []), calls),
     ]);
-    assert.deepEqual(calls, [1]);
+    assert.deepEqual(calls, [0]);
   });
 
   test("postcss-calc's selector reducer reads the shared selector tokens, without tokenizing", async () => {

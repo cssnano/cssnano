@@ -36,12 +36,14 @@ function textsOf(lists) {
  */
 function collectRecords(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = runDriver.build(root, context);
   const lists = createRecordSymbolLists();
-  discardEmptyRecords(state.records, context, (index) =>
-    recordSymbolVisit(state.records, context.tokenLists, lists, index)
-  );
+  discardEmptyRecords(state.records, context, {
+    enter() {},
+    visit: (index) =>
+      recordSymbolVisit(state.records, context.tokenLists, lists, index),
+  });
   /** @type {Record<string, import('postcss').AnyNode[]>} */
   const nodes = {};
   for (const [name, indices] of Object.entries(lists)) {
@@ -147,7 +149,7 @@ for (const [form, collect] of forms) {
  */
 function mediaRecords() {
   const root = postcss.parse('@media print{@keyframes a{0%{top:0}}}');
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = runDriver.build(root, context);
   const { links, root: stylesheet } = state.records;
   const media = links.firstChild(stylesheet.index);

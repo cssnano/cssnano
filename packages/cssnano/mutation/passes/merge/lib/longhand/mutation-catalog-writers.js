@@ -6,7 +6,7 @@ export const target = new URL(
 // node --test expands this glob; a directory path would resolve to a single
 // entry module instead of running every split test file.
 export const test = new URL(
-  '../../../../../test/pipeline/textTableWriters.test.js',
+  '../../../../../test/pipeline/walkWriters.test.js',
   import.meta.url
 ).href;
 

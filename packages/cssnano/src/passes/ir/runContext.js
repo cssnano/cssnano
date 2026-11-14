@@ -1,5 +1,4 @@
 import { DeclarationKeys } from './declarationKey.js';
-import { TextTable } from '../../values/textTable.js';
 import { TokenLists } from './tokenLists.js';
 import { ValueIds } from './valueIds.js';
 import { SelectorIds } from './selectorIds.js';
@@ -12,7 +11,6 @@ import { longstandingFeatures } from './syntaxFeatures.js';
  *
  * @typedef {{
  *   declarations: DeclarationKeys,
- *   textTable: TextTable,
  *   tokenLists: TokenLists,
  *   valueIds: ValueIds,
  *   consistencyChecks: boolean,
@@ -28,26 +26,22 @@ import { longstandingFeatures } from './syntaxFeatures.js';
  * warning, which has `text`, goes through `result.warn`; a removal is pushed as
  * it is.
  *
- * @typedef {{index: import('./blockRecord.js').ArenaIndex, type: string, plugin: string, text?: string}} RunMessage
+ * @typedef {{index: import('./blockRecord.js').ArenaIndex, type: string, plugin?: string, text?: string}} RunMessage
  */
 
 /**
- * A fresh context for one run. `textTable` holds the selector tokens the host
- * walk left, which the run reads.
+ * A fresh context for one run.
  *
- * @param {TextTable} [textTable]
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @param {ReadonlySet<string>} [features] the features every browser target supports; the strict floor otherwise
  * @return {RunContext}
  */
 export function createRunContext(
-  textTable = new TextTable(),
   consistencyChecks = consistencyChecksEnabled(),
   features = longstandingFeatures
 ) {
   return {
     declarations: new DeclarationKeys(),
-    textTable,
     tokenLists: new TokenLists(),
     valueIds: new ValueIds(),
     consistencyChecks,

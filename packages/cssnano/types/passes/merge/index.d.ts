@@ -1,9 +1,9 @@
 import { targetSupportOf } from './lib/longhand/targetSupport.js';
-import { TextTable } from '../../values/textTable.js';
 import { isBoolean } from '../../optionGuards.js';
 import type { BlockRecords } from '../ir/blockRecords.js';
 import type { Result, Root } from 'postcss';
 import type { RunContext } from '../ir/runContext.js';
+import type { LonghandRound } from './lib/longhand/canonicalize.js';
 export type RecordTransform = (records: BlockRecords, browsers: readonly string[], context: RunContext) => void;
 /**
  * The merge transforms over the records, in the order the default preset runs
@@ -27,28 +27,18 @@ export declare function mergeRecords(records: BlockRecords, browsers: readonly s
 export { targetSupportOf };
 export type MergeRunner = {
     support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>;
-    transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {
+    round: (support: ReturnType<typeof targetSupportOf>, context: RunContext) => LonghandRound | undefined;
+    merge: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {
         rules?: boolean;
-        support: ReturnType<typeof targetSupportOf>;
     }) => void;
 };
-/**
- * The merge run of a preset, which the host runs between its walk and the walk
- * after merge. `support` gives the targets' support, whose features the host
- * gives the run's context; `transforms` runs the merge transforms over the
- * build. The host builds and ends the run, so it imports nothing of the merge.
- *
- * @typedef {{
- *   support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>,
- *   transforms: (records: BlockRecords, browsers: readonly string[], context: RunContext, options: {rules?: boolean, support: ReturnType<typeof targetSupportOf>}) => void,
- * }} MergeRunner
- */
 /** @type {MergeRunner} */
 export declare const mergeRunner: MergeRunner;
 /**
- * A merge run of the named transforms alone, in order, for a test that pins
- * one transform without the preset's order. Longhand canonicalizing takes the
- * support of its run.
+ * A merge run of the named transforms alone, for a test that pins some of
+ * the merge transforms without the preset's order. The names choose which of
+ * the three transforms run; the merge runs them in the preset's order.
+ * Longhand canonicalizing takes the support of its run.
  *
  * @param {...('mergeLonghand' | 'discardDuplicates' | 'mergeRules')} names
  * @return {MergeRunner}
@@ -65,13 +55,12 @@ export declare function transformRunner(...names: ('mergeLonghand' | 'discardDup
  * @param {readonly string[]} browsers the resolved browser targets
  * @param {{ rules?: boolean }} [options]
  * @param {Result} [result] the PostCSS result, whose messages the run pushes to
- * @param {TextTable} [textTable] the selector tokens the host walk left
  * @param {boolean} [consistencyChecks] whether the run checks its caches; the process default otherwise
  * @return {void}
  */
 export declare function mergePass(css: Root, browsers: readonly string[], { rules }?: {
     rules?: boolean;
-}, result?: Result, textTable?: TextTable, consistencyChecks?: boolean): void;
+}, result?: Result, consistencyChecks?: boolean): void;
 /** The guard for the `rules` option, shared with the preset that validates it. */
 export declare const rulesGuard: Readonly<{
     isValid: typeof isBoolean;

@@ -17,7 +17,6 @@ import {
   elementKeysOf,
   vendorSummaryOf,
 } from '../../../../../src/passes/ir/selectorReads.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { foldedRules } from './summaryFixtures.js';
 import { selectorIdsOf } from './selectorIdsOf.js';
 
@@ -117,7 +116,7 @@ test('a list that absorbs an earlier list has the summaries of the whole list', 
  * @return {ReturnType<typeof summariesOf>}
  */
 function mergedSummaries(css, selectors) {
-  const context = createRunContext(new TextTable());
+  const context = createRunContext();
   const { records } = buildRecords(postcss.parse(css), context);
   fillSummaries(records, context.tokenLists, browsers);
   runMerge(records, browsers, context);

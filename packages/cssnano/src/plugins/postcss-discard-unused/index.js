@@ -9,13 +9,9 @@ import { splitComma, splitSpace } from '../../values/splitTopLevel.js';
 import cssnanoUtils from '#utils';
 import { DECLARATION } from '../../passes/ir/blockRecord.js';
 import { preludeListOf } from '../../passes/ir/declaredText.js';
-import {
-  createRecordSymbolLists,
-  recordSymbolVisit,
-} from '../../pipeline/symbolLists.js';
+import { collectRecordSymbols } from '../../pipeline/symbolLists.js';
 import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
 import { remove as removeRecord } from '../../passes/ir/treeEdits.js';
-import { visitEntriesInOrder } from '../../passes/ir/visitEntries.js';
 import { commentFreeText } from '../../values/tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -335,10 +331,7 @@ function pluginCreator(opts) {
     OnceExit(css, { result }) {
       runRecordsPlugin(css, result, [
         (records, browsers, context) => {
-          const lists = createRecordSymbolLists();
-          visitEntriesInOrder(records, records.root.index, (index) =>
-            recordSymbolVisit(records, context.tokenLists, lists, index)
-          );
+          const lists = collectRecordSymbols(records, context.tokenLists);
           discardUnusedSymbols(
             lists,
             opts,

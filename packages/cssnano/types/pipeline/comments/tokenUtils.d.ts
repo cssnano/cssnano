@@ -1,12 +1,6 @@
 export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 /**
- * @param {string} source
- * @param {Map<string, CSSToken[]>} parserCache
- * @return {CSSToken[]}
- */
-export declare function getTokens(source: string, parserCache: Map<string, CSSToken[]>): CSSToken[];
-/**
  * The comment text without its delimiters. An unclosed comment has no
  * trailing delimiter, so only the leading one is stripped.
  *
@@ -20,8 +14,7 @@ export declare function commentContents(raw: string): string;
  *
  * @param {string} previousRaw
  * @param {string} nextRaw
- * @param {Map<string, CSSToken[]>} parserCache
  * @return {boolean}
  */
-export declare function joinsIntoDifferentTokens(previousRaw: string, nextRaw: string, parserCache: Map<string, CSSToken[]>): boolean;
+export declare function joinsIntoDifferentTokens(previousRaw: string, nextRaw: string): boolean;
 //# sourceMappingURL=tokenUtils.d.ts.map

@@ -12,7 +12,6 @@ import {
 } from '../../../../../src/passes/ir/blockRecord.js';
 import { buildRecords } from '../../../../../src/passes/ir/buildRecords.js';
 import { declarationKeys } from '../../../../../src/passes/ir/declarationCache.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {ChildNode, Container, Rule} from 'postcss' */
 /** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
@@ -117,25 +116,17 @@ export function claimAt(records, rule, positions) {
 
 /**
  * The records of `root` built the way the driver builds them, from the run
- * state of a test's merge state. The text table holds the tokens a test stored,
- * and is empty by default. The checks are off unless a test turns them on.
+ * state of a test's merge state. The checks are off unless a test turns them on.
  *
  * @param {import('postcss').Root} root
  * @param {MergeState} state
- * @param {TextTable} [textTable]
  * @param {boolean} [consistencyChecks]
  * @return {BlockRecords}
  */
-export function buildTestRecords(
-  root,
-  state,
-  textTable = new TextTable(),
-  consistencyChecks = false
-) {
+export function buildTestRecords(root, state, consistencyChecks = false) {
   const tokenLists = state.tokenLists;
   const { records, nodes } = buildRecords(root, {
     ...state.runContext,
-    textTable,
     consistencyChecks,
   });
   // The driver folds the summaries before any transform, and so does a test.

@@ -12,7 +12,6 @@ import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js'
 import { assertContextsCurrent } from '../../../../../src/passes/ir/recordsCheck.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { tokens as tokenize } from '../../../../../src/utils/value.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import { random } from '../../../../../../../util/fuzzRng.js';
 
 /** @import {AnyNode, AtRule, Rule} from 'postcss' */
@@ -76,16 +75,8 @@ function sameChain(records, a, b) {
  * @return {MergeState}
  */
 function stateOf(css) {
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(undefined, true)
-  );
-  state.records = buildTestRecords(
-    postcss.parse(css),
-    state,
-    new TextTable(),
-    true
-  );
+  const state = new MergeState(['chrome 120'], createRunContext(true));
+  state.records = buildTestRecords(postcss.parse(css), state, true);
   return state;
 }
 

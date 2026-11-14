@@ -128,7 +128,8 @@ export declare class BlockRecord {
     /**
      * The id of the circumstances under which the block applies its content, as
      * `containerContext` gives it. A block moves only between equal containers,
-     * so the id holds for the whole run.
+     * so the id holds for the whole run. The record walk refreshes it after the
+     * block's prelude or its enclosing context is folded.
      *
      * @type {number}
      */

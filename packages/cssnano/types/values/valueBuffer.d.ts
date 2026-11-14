@@ -24,13 +24,14 @@ export type TokenEdit = {
 declare class ValueBuffer {
     #private;
     /**
-     * @param {string} source the value as the stylesheet reads it
+     * @param {string | undefined} source the value as the stylesheet reads it,
+     *   or undefined when `shared` gives the value and its text is read from it
      * @param {TokenizeMode} [mode] how the tokenizer reads the value, such as
      *   with `U+` ranges for `unicode-range`
-     * @param {readonly CSSToken[]} [shared] tokens that already spell `source`,
+     * @param {readonly CSSToken[]} [shared] tokens that already spell the value,
      *   so tokens() returns them without tokenizing until the first edit
      */
-    constructor(source: string, mode?: TokenizeMode, shared?: readonly CSSToken[]);
+    constructor(source: string | undefined, mode?: TokenizeMode, shared?: readonly CSSToken[]);
     /**
      * The current text. Before any edit this is the source text.
      *

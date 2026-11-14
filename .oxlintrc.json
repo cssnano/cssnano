@@ -187,16 +187,23 @@
     },
     {
       "files": [
-        "packages/cssnano/src/pipeline/afterMerge.js",
-        "packages/cssnano/src/pipeline/overridable.js",
-        "packages/cssnano/src/pipeline/symbolLists.js",
-        "packages/cssnano/src/pipeline/walkDown.js",
+        "packages/cssnano/src/pipeline/**",
         "packages/cssnano/src/plugins/postcss-merge-idents/lib/**",
         "packages/cssnano/src/plugins/postcss-reduce-idents/lib/**",
         "packages/cssnano/src/plugins/postcss-zindex/lib/**"
       ],
+      "excludeFiles": ["packages/cssnano/src/pipeline/host.js"],
       "rules": {
         "merge-ir/no-postcss-in-window": "error"
+      }
+    },
+    {
+      "files": ["packages/cssnano/src/pipeline/**"],
+      "excludeFiles": ["packages/cssnano/src/pipeline/host.js"],
+      "rules": {
+        "merge-ir/arena-edits-only": ["error", { "allowed": [] }],
+        "merge-ir/no-captured-loop-state": ["error", { "allowed": [] }],
+        "merge-ir/no-module-state": ["error", { "allowed": [] }]
       }
     },
     {

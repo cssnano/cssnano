@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { assertCanLink } from '../../../../../src/passes/ir/linkChecks.js';
 import {
@@ -21,11 +20,8 @@ import {
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(undefined, true)
-  );
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  const state = new MergeState(['chrome 120'], createRunContext(true));
+  state.records = buildTestRecords(root, state, true);
   return { root, records: state.records };
 }
 

@@ -23,6 +23,13 @@ export class TokenLists {
    * @type {number[]}
    */
   #textLengths = [];
+  /**
+   * Whether the text each list spells holds `/*`, summed once when it is
+   * pushed, so a reader asks the text's question without joining the text.
+   *
+   * @type {boolean[]}
+   */
+  #commentStarts = [];
 
   /** @return {number} the number of lists pushed so far */
   get length() {
@@ -35,8 +42,20 @@ export class TokenLists {
    */
   push(tokens) {
     let length = 0;
-    for (const token of tokens) length += token[1].length;
+    let commentStart = false;
+    // The last character of the text so far, since `/*` can span two tokens.
+    let last = '';
+    for (const token of tokens) {
+      const text = token[1];
+      length += text.length;
+      if (text.length === 0) continue;
+      if (text.includes('/*') || (last === '/' && text[0] === '*')) {
+        commentStart = true;
+      }
+      last = text[text.length - 1];
+    }
     this.#textLengths.push(length);
+    this.#commentStarts.push(commentStart);
     return /** @type {TokenListId} */ (this.#lists.push(tokens) - 1);
   }
 
@@ -46,6 +65,14 @@ export class TokenLists {
    */
   textLength(index) {
     return this.#textLengths[index];
+  }
+
+  /**
+   * @param {TokenListId} index an index that `push` returned
+   * @return {boolean} whether the text the list spells holds `/*`
+   */
+  holdsCommentStart(index) {
+    return this.#commentStarts[index];
   }
 
   /**

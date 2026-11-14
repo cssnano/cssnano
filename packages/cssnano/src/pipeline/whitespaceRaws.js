@@ -1,6 +1,15 @@
 import cssnanoUtils from '#utils';
+import { AT_RULE_BLOCK, RULE } from '../passes/ir/blockRecord.js';
+import { writeBefore } from '../passes/ir/rawEdits.js';
+import { tokenizeMode } from '../values/tokenizeMode.js';
+import { tokensText } from '../values/tokensText.js';
 
-/** @import {AtRule, ChildNode, Container, Declaration, Rule} from 'postcss' */
+/** @import {ArenaIndex, BlockRecord} from '../passes/ir/blockRecord.js' */
+/** @import {DeclarationRecord} from '../passes/ir/declarationRecord.js' */
+/** @import {RuleRecord} from '../passes/ir/ruleRecord.js' */
+/** @import {TokenListId} from '../passes/ir/tokenLists.js' */
+/** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
+/** @import {RunContext} from '../passes/ir/runContext.js' */
 
 /**
  * Removes the stray semicolons that the raw whitespace before a declaration
@@ -8,35 +17,46 @@ import cssnanoUtils from '#utils';
  * container, or follows a rule, keeps its raw, since the parser gives no
  * semicolon there that the output needs to drop.
  *
- * @param {Declaration} decl
- * @returns {void}
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index a declaration
  */
-export function stripStrayRawSemicolon(decl) {
-  const { before } = decl.raws;
-  if (!before?.includes(';')) return;
-  const prev = decl.prev();
-  if (prev && prev.type !== 'rule') {
-    decl.raws.before = before.replaceAll(';', '');
+export function stripStrayRawSemicolon(records, index) {
+  const { before } = records.entry(index);
+  if (before === null || !before.includes(';')) return;
+  const prev = records.links.prevSibling(index);
+  if (prev !== -1 && records.entry(prev).kind !== RULE) {
+    writeBefore(records, index, before.replaceAll(';', ''));
   }
 }
 
 /**
- * Gives the escaped character of a block back to its last declaration. The
- * parser puts that character in the raw after the block when the last
- * declaration has no semicolon, so the escape would otherwise be left dangling.
+ * The value of a declaration with the character its last backslash escapes.
+ * The parser puts that character in the raw after the block when the value
+ * ends the block's text, so the escape would otherwise take the closing brace.
+ * An important flag follows its value, so the escape there takes the flag's
+ * own whitespace. The value is the one the comment removal left, so the
+ * character joins what the declaration keeps.
  *
- * @param {Rule | AtRule} node
- * @returns {void}
+ * @param {BlockRecords} records
+ * @param {RunContext} run
+ * @param {ArenaIndex} index a declaration
+ * @param {TokenListId} value the id of the declaration's value, without the comments that go
+ * @returns {TokenListId} the id of the value with the character, or `value` when no escape is open
  */
-export function reattachBlockEscape(node) {
-  const last = /** @type {ChildNode | undefined} */ (
-    /** @type {Container} */ (node).last
+export function withBlockEscape(records, run, index, value) {
+  const { links } = records;
+  if (links.nextSibling(index) !== -1) return value;
+  const block = records.entry(
+    /** @type {ArenaIndex} */ (links.parentOf(index))
   );
-  if (
-    last?.type === 'decl' &&
-    cssnanoUtils.endsWithEscapingBackslash(last.value) &&
-    node.raws.after
-  ) {
-    last.value += node.raws.after[0];
-  }
+  if (block.kind !== RULE && block.kind !== AT_RULE_BLOCK) return value;
+  const { after } = /** @type {RuleRecord | BlockRecord} */ (block);
+  if (!after) return value;
+  const { prop, important } = /** @type {DeclarationRecord} */ (
+    records.entry(index)
+  );
+  if (important) return value;
+  const text = tokensText(run.tokenLists.get(value));
+  if (!cssnanoUtils.endsWithEscapingBackslash(text)) return value;
+  return run.valueIds.idOf(run.tokenLists, tokenizeMode(prop), text + after[0]);
 }

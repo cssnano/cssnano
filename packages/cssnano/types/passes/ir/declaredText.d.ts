@@ -21,6 +21,18 @@ import type { TokenLists } from './tokenLists.js';
  */
 export declare function declaredValue(tokenLists: TokenLists, record: DeclarationRecord): string;
 /**
+ * The character that PostCSS's raw value keeps after the value, which a trailing
+ * backslash can escape. Null when the raw ends at the value or the record was
+ * edited, and '' when the raw does not start with the value. The written text
+ * is the written list, or the value list when no written list is kept.
+ *
+ * @param {TokenLists} tokenLists
+ * @param {DeclarationRecord} record
+ * @param {string} value the result of `declaredValue`
+ * @return {string | null}
+ */
+export declare function rawAfterValue(tokenLists: TokenLists, record: DeclarationRecord, value: string): string | null;
+/**
  * The tokens that spell a declared value. A value list that spells the value
  * as written is the list itself; otherwise the value is tokenized once.
  *

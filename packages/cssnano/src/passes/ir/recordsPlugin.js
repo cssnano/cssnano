@@ -31,7 +31,7 @@ export function runRecordsPlugin(
   browsers = [],
   consistencyChecks = undefined
 ) {
-  const context = createRunContext(undefined, consistencyChecks);
+  const context = createRunContext(consistencyChecks);
   const state = runDriver.build(css, context);
   for (const transform of transforms) {
     transform(state.records, browsers, context);

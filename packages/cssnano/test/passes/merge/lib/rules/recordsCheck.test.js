@@ -28,7 +28,6 @@ import {
   nodesOf,
 } from './liveRecords.js';
 import { moveRule } from '../../../../../src/passes/ir/arenaEdits.js';
-import { TextTable } from '../../../../../src/values/textTable.js';
 
 /** @import {BlockRecord} from '../../../../../src/passes/ir/blockRecord.js' */
 /** @import {BlockLinks} from '../../../../../src/passes/ir/blockLinks.js' */
@@ -40,9 +39,9 @@ import { TextTable } from '../../../../../src/values/textTable.js';
  */
 function setup(css) {
   const root = postcss.parse(css);
-  const context = createRunContext(undefined, true);
+  const context = createRunContext(true);
   const state = new MergeState(['chrome 120'], context);
-  state.records = buildTestRecords(root, state, new TextTable(), true);
+  state.records = buildTestRecords(root, state, true);
   return { root, state };
 }
 

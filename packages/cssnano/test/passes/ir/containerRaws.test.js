@@ -4,7 +4,6 @@ import postcss from 'postcss';
 import { AT_RULE_STATEMENT } from '../../../src/passes/ir/blockRecord.js';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
-import { TextTable } from '../../../src/values/textTable.js';
 import {
   blockRecordOf,
   buildTestRecords,
@@ -18,11 +17,8 @@ import { transformPlugin } from '../../../src/passes/merge/index.js';
  */
 function build(css) {
   const root = postcss.parse(css);
-  const state = new MergeState(
-    ['chrome 120'],
-    createRunContext(undefined, true)
-  );
-  const records = buildTestRecords(root, state, new TextTable(), true);
+  const state = new MergeState(['chrome 120'], createRunContext(true));
+  const records = buildTestRecords(root, state, true);
   return { root, records };
 }
 

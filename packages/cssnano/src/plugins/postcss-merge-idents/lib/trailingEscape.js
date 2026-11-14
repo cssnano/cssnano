@@ -5,6 +5,7 @@ import {
   declaredValue,
   preludeListOf,
   preludeTextOf,
+  rawAfterValue,
 } from '../../../passes/ir/declaredText.js';
 
 const { isCSSWhitespace, tokens } = cssnanoUtils;
@@ -71,13 +72,15 @@ export function preludeTokens(records, tokenLists, index) {
  * @param {BlockRecords} records
  * @param {TokenLists} tokenLists
  * @param {ArenaIndex} index
+ * @param {string} value the declared value, which ends in a dangling escape
  * @return {string | undefined} `undefined` when it cannot be determined
  */
-function codePointAfterValue(records, tokenLists, index) {
+function codePointAfterValue(records, tokenLists, index, value) {
   const { links } = records;
   const entry = /** @type {DeclarationRecord} */ (records.entry(index));
-  if (entry.rawAfterValue !== null) {
-    return entry.rawAfterValue === '' ? undefined : entry.rawAfterValue;
+  const raw = rawAfterValue(tokenLists, entry, value);
+  if (raw !== null) {
+    return raw === '' ? undefined : raw;
   }
   if (entry.important) {
     return (entry.importantSpelling || ' !important')[0];
@@ -119,7 +122,7 @@ export function trailingEscape(records, tokenLists, index) {
   if (!endsWithDanglingEscape(value)) {
     return value;
   }
-  const codePoint = codePointAfterValue(records, tokenLists, index);
+  const codePoint = codePointAfterValue(records, tokenLists, index, value);
   return codePoint !== undefined && isCSSWhitespace(codePoint.charCodeAt(0))
     ? value + codePoint
     : undefined;

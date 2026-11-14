@@ -2,7 +2,6 @@ import { NodeEntry } from './blockRecord.js';
 import { DeclarationRecord } from './declarationRecord.js';
 import type { BlockRecords } from './blockRecords.js';
 import type { BlockRecord } from './blockRecord.js';
-import type { CSSToken } from '@csstools/css-tokenizer';
 import type { ArenaIndex } from './blockRecord.js';
 import type { RuleRecord } from './ruleRecord.js';
 import type { BlockDeclarations } from '../merge/lib/longhand/blockDeclarations.js';
@@ -109,25 +108,14 @@ export declare function removeDeclarations(records: BlockRecords, rule: ArenaInd
  */
 export declare function moveDeclarations(records: BlockRecords, source: ArenaIndex, target: ArenaIndex, claimed: ArenaIndex[]): void;
 /**
- * Gives a rule the ids of its selector items and marks it, so write-back
- * writes its selector from them.
+ * Writes the context of a container, which the walk computes again after it
+ * edits the selector or prelude that the context reads.
  *
- * @param {RuleRecord} record
- * @param {readonly TokenListId[]} ids
+ * @param {BlockRecord | RuleRecord} record
+ * @param {number} context
  * @return {void}
  */
-export declare function writeSelectorIds(record: RuleRecord, ids: readonly TokenListId[]): void;
-/**
- * Writes the prelude of an at-rule: its list is interned in the run, and the
- * record marks the prelude so write-back assigns its text. The walk of the
- * write reaches every entry, so the edit stamps nothing.
- *
- * @param {RunContext} context
- * @param {BlockRecord | NodeEntry} record the at-rule's block or statement record
- * @param {readonly CSSToken[]} list the prelude's tokens
- * @return {void}
- */
-export declare function writePrelude(context: RunContext, record: BlockRecord | NodeEntry, list: readonly CSSToken[]): void;
+export declare function writeContainerContext(record: BlockRecord | RuleRecord, context: number): void;
 /**
  * Commits the working list of one block to the arena: the one edit the longhand
  * rounds make. The clones are placed first, each right after its source, so a
