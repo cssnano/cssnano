@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import cssnanoUtils from '#utils';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import {
   parseCornerRadius,
   parseRadiusShorthand,
   isValidLengthPercentage,
 } from '../../../../../src/passes/merge/lib/longhand/validateRadius.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const { tokens } = cssnanoUtils;
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);

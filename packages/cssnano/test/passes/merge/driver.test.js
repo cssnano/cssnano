@@ -1,39 +1,44 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { mergePass, transformPlugin } from '../../../src/passes/merge/index.js';
+import { browserTargets } from '#utils/browser-targets';
+import { MERGE_TRANSFORMS, onlyTransform } from '../onlyTransform.js';
 import {
   canonicalizeRecords,
-  longhandContext,
+  LonghandRound,
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 
+const targets = resolveTargets({}, undefined);
+
 /**
- * Runs the merge pass, with rule merging on unless `rules` is false.
+ * The merge run through the host, with rule merging on unless `rules` is false.
  *
- * @param {string} css
+ * @param {string | import('postcss').Root} css
  * @param {{ rules?: boolean }} [options]
  * @return {string}
  */
-function runMergePass(css, options) {
-  const root = postcss.parse(css);
-  mergePass(root, resolveTargets({}, undefined), options);
-  return root.toString();
+function runMergePass(css, options = {}) {
+  const names =
+    options.rules === false
+      ? MERGE_TRANSFORMS.filter((name) => name !== 'mergeRules')
+      : MERGE_TRANSFORMS;
+  const plugin = onlyTransform(names)({ [browserTargets]: { query: targets } });
+  return postcss([plugin]).process(css, { from: undefined }).css;
 }
 
 /**
- * Runs the named transforms in order, each as its own plugin, as the hooks of
- * the merge plugin are tested.
+ * Runs the named transforms as one host run, in the preset's order.
  *
  * @param {string} css
  * @param {('mergeLonghand' | 'discardDuplicates' | 'mergeRules')[]} names
  * @return {string}
  */
 function runTransforms(css, names) {
-  return postcss(names.map((name) => transformPlugin(name)({}))).process(css, {
+  return postcss([onlyTransform(names)({})]).process(css, {
     from: undefined,
   }).css;
 }
@@ -91,7 +96,7 @@ test('without mergeLonghand, discardDuplicates and mergeRules keep four longhand
 // Removing duplicates keeps the last copy. Run first, it would delete the
 // margin:0 before the nested @media, and the later one cannot reach back
 // past that block to override margin-inline-start.
-test('mergePass canonicalizes before removing duplicates, so the earlier margin:0 still overrides margin-inline-start across a nested @media', () => {
+test('the merge run canonicalizes before removing duplicates, so the earlier margin:0 still overrides margin-inline-start across a nested @media', () => {
   assert.equal(
     runMergePass(
       '.c{margin-inline-start:inherit;margin:0;@media (w0){color:red}margin:0}'
@@ -102,7 +107,7 @@ test('mergePass canonicalizes before removing duplicates, so the earlier margin:
 
 // Sharing justify-items with a places the b declarations in a new rule, which
 // did not exist during the first round and must still get the second one.
-test('mergePass drops the overridden border-radius:1px from the rule that a partial merge creates', () => {
+test('the merge run drops the overridden border-radius:1px from the rule that a partial merge creates', () => {
   assert.equal(
     runMergePass(
       'b{border-radius:1px}b{border-radius:0;justify-items:1px}a{justify-items:1px}'
@@ -114,7 +119,7 @@ test('mergePass drops the overridden border-radius:1px from the rule that a part
 // The nested @media splits the margins into two runs, which the first round
 // cannot fold together. Removing its earlier copy joins the runs, and only
 // the second round sees all four margins in one run.
-test('mergePass with mergeLonghand and discardDuplicates folds the margins that a removed duplicate @media had separated', () => {
+test('the merge run with mergeLonghand and discardDuplicates folds the margins that a removed duplicate @media had separated', () => {
   assert.equal(
     runMergePass(
       '.a{margin-top:0;margin-right:0;@media (x){color:red}margin-bottom:0;margin-left:0;@media (x){color:red}}',
@@ -127,7 +132,7 @@ test('mergePass with mergeLonghand and discardDuplicates folds the margins that 
 // border-image blocks the border reduction in the first round. The later a
 // rule repeats it, so removing duplicates drops it from the first a rule,
 // and only the second round can reduce that rule's borders.
-test('mergePass with mergeLonghand and discardDuplicates reduces the borders once the duplicate border-image is removed', () => {
+test('the merge run with mergeLonghand and discardDuplicates reduces the borders once the duplicate border-image is removed', () => {
   assert.equal(
     runMergePass(
       'a{border-top:1px solid red;border-right:1px solid red;border-bottom:1px solid red;border-left:1px solid red;border-image:none}b{color:blue}a{border-image:none}',
@@ -152,7 +157,7 @@ test('the mergeLonghand transform keeps the overridden border-radius:1px, since 
 // The merged rule keeps the margin-inline-start:0 from the first rule, which the
 // later margin:0 overrides. Only the second round, which canonicalizes the
 // receiving rule, drops it.
-test('mergePass drops the margin-inline-start that the receiving rule of a merge overrides with margin', () => {
+test('the merge run drops the margin-inline-start that the receiving rule of a merge overrides with margin', () => {
   assert.equal(
     runMergePass(
       'c{margin-inline-start:0}c{margin:0}.x{margin-inline-start:0}.x{margin:0;border-right:1px solid red}'
@@ -164,7 +169,7 @@ test('mergePass drops the margin-inline-start that the receiving rule of a merge
 // The rest of the second rule, after the merge claims its shared declarations,
 // keeps the overridden border-radius:1px from the first rule. Only the second
 // round, which canonicalizes that remainder, drops it.
-test('mergePass drops the border-radius:1px that a remainder of a merged rule overrides', () => {
+test('the merge run drops the border-radius:1px that a remainder of a merged rule overrides', () => {
   assert.equal(
     runMergePass(
       '.y{border-radius:0;margin-bottom:1px;border-color:red}a:hover{border-radius:1px}a:hover{border-radius:0;padding-left:0;margin-bottom:1px}'
@@ -176,7 +181,7 @@ test('mergePass drops the border-radius:1px that a remainder of a merged rule ov
 // The merge replaces each follower rule with a clone that keeps the declarations
 // it did not claim. Only the second round, which canonicalizes that clone, drops
 // the border-radius:0 that the later border-radius:1px overrides.
-test('mergePass drops the border-radius:0 that a rule left behind by a merge overrides', () => {
+test('the merge run drops the border-radius:0 that a rule left behind by a merge overrides', () => {
   assert.equal(
     runMergePass(
       'a:hover{margin:0;color:blue}.y{margin:0;color:red}.x{margin:0;border-radius:0}.x{border-radius:1px}'
@@ -204,25 +209,24 @@ function rootWalkCount(css, run) {
   return count;
 }
 
-const targets = resolveTargets({}, undefined);
-
 /**
- * Runs one transform hook over a stylesheet that is already parsed.
+ * Runs the named transforms over a stylesheet that is already parsed, through
+ * the host.
  *
- * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} name
+ * @param {('mergeLonghand' | 'discardDuplicates' | 'mergeRules')[]} names
  * @param {import('postcss').Root} root
  */
-function runHook(name, root) {
-  return postcss([transformPlugin(name)({})]).process(root, { from: undefined })
+function runHook(names, root) {
+  return postcss([onlyTransform(names)({})]).process(root, { from: undefined })
     .css;
 }
 
 // Both longhand rounds find their blocks in the records, so no pass walks the tree.
-test('mergePass with rules off does not walk the root, since its longhand rounds read the records', () => {
+test('the merge run with rules off does not walk the root, since its longhand rounds read the records', () => {
   assert.equal(
     rootWalkCount(
       'a{border-top:1px solid red;border-right:1px solid red;border-bottom:1px solid red;border-left:1px solid red;border-image:none}b{color:blue}a{border-image:none}',
-      (root) => mergePass(root, targets, { rules: false })
+      (root) => runMergePass(root, { rules: false })
     ),
     0
   );
@@ -230,7 +234,7 @@ test('mergePass with rules off does not walk the root, since its longhand rounds
 
 test('the mergeLonghand transform does not walk the root, for its one round', () => {
   assert.equal(
-    rootWalkCount('a{color:red}', (root) => runHook('mergeLonghand', root)),
+    rootWalkCount('a{color:red}', (root) => runHook(['mergeLonghand'], root)),
     0
   );
 });
@@ -238,14 +242,16 @@ test('the mergeLonghand transform does not walk the root, for its one round', ()
 // Dedupe recurses through the tree itself and reads no block table, so it walks nothing.
 test('the discardDuplicates transform does not walk the root', () => {
   assert.equal(
-    rootWalkCount('a{color:red}', (root) => runHook('discardDuplicates', root)),
+    rootWalkCount('a{color:red}', (root) =>
+      runHook(['discardDuplicates'], root)
+    ),
     0
   );
 });
 
 test('the full merge pass does not walk the root, since its longhand rounds read the records', () => {
   assert.equal(
-    rootWalkCount('a{color:red}', (root) => mergePass(root, targets)),
+    rootWalkCount('a{color:red}', (root) => runMergePass(root)),
     0
   );
 });
@@ -253,7 +259,7 @@ test('the full merge pass does not walk the root, since its longhand rounds read
 // The joins read each at-rule's declarations from the tree, so a nested join
 // that gave a rule new declarations must be visible before the at-rule is joined
 // again.
-test('mergePass joins an at-rule by the declarations a nested join gave its rule', () => {
+test('the merge run joins an at-rule by the declarations a nested join gave its rule', () => {
   assert.equal(
     runMergePass(
       '@media print{a{width:1px}}@media print{b{color:red}a{margin-top:1px}}@media screen{b{margin:0}}@media print{.x{margin-top:1px}}'
@@ -263,7 +269,7 @@ test('mergePass joins an at-rule by the declarations a nested join gave its rule
 });
 
 // The empty `c{}` is needed to reach the second join this test pins.
-test('mergePass joins an at-rule into an earlier one, then reads the earlier one with the joined declarations', () => {
+test('the merge run joins an at-rule into an earlier one, then reads the earlier one with the joined declarations', () => {
   assert.equal(
     runTransforms(
       '@media print{.x{color:blue}}.x{color:red}@media print{a{color:red}b{width:1px}}b{margin-top:1px}@media print{a{margin:0}}c{}@media print{b{margin-top:1px}}',
@@ -330,7 +336,7 @@ function block(next, depth) {
 
 // Every test in this file reads summaries with the consistency checks on, so a
 // stale summary throws.
-test('mergePass finds no stale block summary on nested generated sheets, with rules on or off', () => {
+test('the merge run finds no stale block summary on nested generated sheets, with rules on or off', () => {
   for (let seed = 1; seed <= 300; seed++) {
     const css = block(random(seed), 0);
     runMergePass(css, { rules: true });
@@ -356,17 +362,17 @@ test('the merge pass gives a block that no duplicate removal or rule merge chang
   );
 });
 
-test('a round reduces one block through `block` as `canonicalizeRecords` does', () => {
+test('a round reduces one block through `first` as `canonicalizeRecords` does', () => {
   const css =
     'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}';
   const browsers = resolveTargets({}, undefined);
   const support = targetSupportOf(browsers);
-  /** @param {(records: import('../../../src/passes/ir/blockRecords.js').BlockRecords, round: ReturnType<typeof longhandContext>) => void} reduce */
+  /** @param {(records: import('../../../src/passes/ir/blockRecords.js').BlockRecords, round: LonghandRound) => void} reduce */
   const runWith = (reduce) => {
     const root = postcss.parse(css);
     const context = createRunContext(undefined, support.features);
     const state = runDriver.build(root, context);
-    const round = longhandContext(
+    const round = new LonghandRound(
       support.placeShorthands,
       support.boxSupport,
       support.pairShorthands,
@@ -378,7 +384,7 @@ test('a round reduces one block through `block` as `canonicalizeRecords` does', 
   };
   const viaBlock = runWith((records, round) => {
     const rule = records.links.firstChild(records.root.index);
-    round.block(records, rule);
+    round.first(records, rule);
   });
   const viaRecords = runWith((records, round) =>
     canonicalizeRecords(records, round)

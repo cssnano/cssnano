@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-merge-idents/index.js';
+import {
+  processCSSFactory,
+  presetEntryPlugin,
+} from '../../../../util/testHelpers.js';
+const plugin = presetEntryPlugin('mergeIdents');
 
 const { processCSS } = processCSSFactory(plugin);
 
@@ -149,7 +152,7 @@ test('should skip the declaration protection scan when no definitions can merge'
     declWalks++;
     return origWalkDecls.apply(this, args);
   };
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss(plugin()).process(root, { from: undefined });
   assert.equal(declWalks, 0);
 });
 
@@ -163,7 +166,7 @@ test('should not walk the stylesheet with postcss when renaming a reference, whi
     rootWalks++;
     return origWalk.apply(this, args);
   };
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss(plugin()).process(root, { from: undefined });
   assert.equal(rootWalks, 0);
 });
 

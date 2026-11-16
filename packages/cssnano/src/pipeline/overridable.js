@@ -1,7 +1,7 @@
 import cssnanoUtils from '#utils';
 import { AT_RULE_BLOCK, AT_RULE_STATEMENT } from '../passes/ir/blockRecord.js';
 import { step } from '../passes/ir/declarationKey.js';
-import { removeEntry } from '../passes/ir/treeEdits.js';
+import { remove } from '../passes/ir/treeEdits.js';
 
 /** @import {ArenaIndex, BlockRecord} from '../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
@@ -109,7 +109,7 @@ export function discardOverriddenAtRules(records, keys, overridable) {
     const index = overridable[position];
     const key = scopeKeyOf(records, keys, index);
     if (seen.has(key)) {
-      removeEntry(records, index);
+      remove(records, index);
     } else {
       seen.add(key);
     }

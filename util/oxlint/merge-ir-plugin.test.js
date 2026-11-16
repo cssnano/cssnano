@@ -202,7 +202,7 @@ test('no-module-state accepts a mutated table named in the allow list', () => {
   assert.deepEqual(lintFixture('no-module-state', 'allowed.js'), []);
 });
 
-test('no-captured-loop-state reports a closure that assigns to an enclosing binding and one that reads a reassigned-in-loop let', () => {
+test('no-captured-loop-state reports a closure that assigns to an enclosing binding, one that reads a reassigned-in-loop let and a named function that captures a local', () => {
   assert.deepEqual(lintFixture('no-captured-loop-state', 'reports.js'), [
     {
       line: 4,
@@ -213,10 +213,22 @@ test('no-captured-loop-state reports a closure that assigns to an enclosing bind
       message:
         'a closure reads a let that its function reassigns inside a loop',
     },
+    {
+      line: 18,
+      message: 'a named function captures a local of its enclosing function',
+    },
+    {
+      line: 23,
+      message: 'a named function captures a local of its enclosing function',
+    },
+    {
+      line: 28,
+      message: 'a named function captures a local of its enclosing function',
+    },
   ]);
 });
 
-test('no-captured-loop-state accepts closures that read const or unlooped let bindings', () => {
+test('no-captured-loop-state accepts inline callbacks and named functions that capture only module bindings', () => {
   assert.deepEqual(lintFixture('no-captured-loop-state', 'clean.js'), []);
 });
 

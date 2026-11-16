@@ -3,11 +3,11 @@
 // `runMerge`, so rounds equal `joinNonAdjacent` calls. A *sweep* is one pass
 // of the `do … while (moved)` loop in `runScan`.
 //
-// The counters wrap `RuleSequence.prototype.moveIntoParent` and `.write`:
-// `scan.js` calls `write` once per sweep, and a sweep ends a round when no
-// `moveIntoParent` call since the previous `write` returned true. They patch a
-// shared prototype, so they live in this file only; `node --test` runs each
-// file in its own process.
+// The counters wrap `RuleSequence.prototype.moveIntoParent` and `.nextOf`:
+// `scan.js` builds one `RuleSequence` per sweep and always calls `nextOf` on
+// it, so the first call on each instance starts a sweep. A sweep that moved
+// no rule ends its round. They patch a shared prototype, so they live in this
+// file only; `node --test` runs each file in its own process.
 //
 // Join chain: a declaration join creates the selector list that the next
 // pass's selector join needs, and that join creates the declaration list that
@@ -23,31 +23,51 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../../test/passes/onlyTransform.js';
 import RuleSequence from '../../../../../src/passes/merge/lib/rules/ruleSequence.js';
 
-const plugin = transformPlugin('mergeRules');
+const plugin = onlyTransform(['mergeRules']);
 
 const stats = { rounds: 0, sweeps: 0, maxSweepsPerRound: 0 };
+let sweepOpen = false;
 let sweepMoved = false;
 let roundSweeps = 0;
-const moveIntoParent = RuleSequence.prototype.moveIntoParent;
-RuleSequence.prototype.moveIntoParent = function (...args) {
-  const moved = moveIntoParent.apply(this, args);
-  sweepMoved ||= moved;
-  return moved;
-};
-const write = RuleSequence.prototype.write;
-RuleSequence.prototype.write = function () {
-  stats.sweeps++;
+/** @type {WeakSet<RuleSequence>} */
+const sequencesSeen = new WeakSet();
+
+/** Ends the open sweep, if any, and the round it closes when it moved nothing. */
+function closeSweep() {
+  if (!sweepOpen) return;
+  sweepOpen = false;
   roundSweeps++;
   if (!sweepMoved) {
     stats.rounds++;
     stats.maxSweepsPerRound = Math.max(stats.maxSweepsPerRound, roundSweeps);
     roundSweeps = 0;
   }
+}
+
+/** Ends the previous sweep and starts a new one. */
+function openSweep() {
+  closeSweep();
+  sweepOpen = true;
   sweepMoved = false;
-  return write.call(this);
+  stats.sweeps++;
+}
+
+const moveIntoParent = RuleSequence.prototype.moveIntoParent;
+RuleSequence.prototype.moveIntoParent = function (...args) {
+  const moved = moveIntoParent.apply(this, args);
+  sweepMoved ||= moved;
+  return moved;
+};
+const nextOf = RuleSequence.prototype.nextOf;
+RuleSequence.prototype.nextOf = function (index) {
+  if (!sequencesSeen.has(this)) {
+    sequencesSeen.add(this);
+    openSweep();
+  }
+  return nextOf.call(this, index);
 };
 
 /**
@@ -56,9 +76,11 @@ RuleSequence.prototype.write = function () {
  */
 function run(css) {
   Object.assign(stats, { rounds: 0, sweeps: 0, maxSweepsPerRound: 0 });
+  sweepOpen = false;
   sweepMoved = false;
   roundSweeps = 0;
   const output = postcss([plugin()]).process(css, { from: undefined }).css;
+  closeSweep();
   return { output, ...stats };
 }
 
@@ -158,6 +180,8 @@ for (const { name, build, perUnit, offset } of families) {
           `maxSweepsPerRound=${result.maxSweepsPerRound} ` +
           `totalSweeps=${result.sweeps} extraSweeps=${result.sweeps - result.rounds}`
       );
+      // Every family merges, so a count of zero means the counters are broken.
+      assert.ok(result.sweeps > 0, `${name} N=${nodes} counted no sweep`);
       // Proved in `selectorMerger.js`; the sweeps have no proved bound.
       assert.ok(result.rounds <= nodes + declarations + 1);
       if (name === 'media-runs') {

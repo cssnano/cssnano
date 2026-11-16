@@ -5,15 +5,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { mergePass, transformPlugin } from '../../../src/passes/merge/index.js';
-import { resolveTargets } from '../../../src/utils/browserTargets.js';
+import { onlyTransform, MERGE_TRANSFORMS } from '../onlyTransform.js';
 
 /**
  * @param {string} css
  * @return {Promise<string>} the output of the first longhand round alone
  */
 async function firstRoundOf(css) {
-  const result = await postcss([transformPlugin('mergeLonghand')({})]).process(
+  const result = await postcss([onlyTransform(['mergeLonghand'])({})]).process(
     css,
     { from: undefined }
   );
@@ -58,13 +57,8 @@ test('the merge pass under consistency checks accepts a first-round rewrite and 
   const root = postcss.parse(
     'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}b{margin:1px 1px 1px 1px}'
   );
-  mergePass(
-    root,
-    resolveTargets({}, undefined),
-    {},
-    undefined,
-    undefined,
-    true
-  );
+  postcss([onlyTransform(MERGE_TRANSFORMS, { consistencyChecks: true })({})])
+    .process(root, { from: undefined })
+    .sync();
   assert.equal(root.toString(), 'a,b{margin:1px}');
 });

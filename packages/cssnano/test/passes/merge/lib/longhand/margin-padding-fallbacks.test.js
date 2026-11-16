@@ -3,9 +3,9 @@ import {
   processCSSFactory,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { addTests } from './helpers/boxTests.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

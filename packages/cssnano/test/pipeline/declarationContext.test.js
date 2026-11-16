@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { tokenize } from '@csstools/css-tokenizer';
 import { hostPlugin } from '../../src/pipeline/host.js';
+import { hostPlan } from '../../src/pipeline/hostPlan.js';
 import {
   IN_KEYFRAMES,
   IN_PROPERTY,
@@ -45,13 +46,17 @@ const reportingStage = (property) => ({
  * @returns {Promise<string>}
  */
 async function reportedCss(css, property) {
-  const host = hostPlugin([
-    {
-      entry: { create: () => reportingStage(property) },
-      options: {},
-      targets: false,
-    },
-  ]);
+  const host = hostPlugin(
+    hostPlan({
+      members: [
+        {
+          entry: { create: () => reportingStage(property) },
+          options: {},
+          targets: false,
+        },
+      ],
+    })
+  );
   const result = await postcss([host]).process(css, { from: undefined });
   return result.css;
 }
@@ -207,9 +212,13 @@ describe('the syntax of @property is read as written', () => {
         return null;
       },
     };
-    const host = hostPlugin([
-      { entry: { create: () => stage }, options: {}, targets: false },
-    ]);
+    const host = hostPlugin(
+      hostPlan({
+        members: [
+          { entry: { create: () => stage }, options: {}, targets: false },
+        ],
+      })
+    );
     const result = await postcss([host]).process(
       '@property --x{syntax:"<color>";initial-value:red}',
       { from: undefined }

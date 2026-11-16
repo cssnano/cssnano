@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { transformPass } from '../../../../../src/passes/merge/index.js';
+import { onlyTransform } from '../../../onlyTransform.js';
+import { browserTargets } from '#utils/browser-targets';
 import { isFallback } from '../../../../../src/passes/merge/lib/longhand/isFallback.js';
 import { longstandingFeatures } from '../../../../../src/passes/ir/syntaxFeatures.js';
 import { itemOf } from './helpers/declarationItems.js';
@@ -13,13 +14,25 @@ const modern = ['chrome 120', 'firefox 120', 'safari 17'];
 const defaults = ['defaults'];
 
 /**
+ * Runs the longhand merge over the stylesheet with the targets, in one run.
+ *
+ * @param {import('postcss').Root} root
+ * @param {readonly string[]} browsers
+ * @return {import('postcss').Root}
+ */
+function runLonghand(root, browsers) {
+  const plugin = onlyTransform(['mergeLonghand'])({
+    [browserTargets]: { query: browsers },
+  });
+  return postcss([plugin]).process(root, { from: undefined }).root;
+}
+
+/**
  * @param {readonly string[]} browsers
  * @return {string}
  */
 function mergeLonghand(browsers) {
-  const root = postcss.parse(css);
-  transformPass('mergeLonghand')(root, browsers);
-  return root.toString();
+  return runLonghand(postcss.parse(css), browsers).toString();
 }
 
 describe('the target support of one run', () => {
@@ -36,10 +49,7 @@ describe('the target support of one run', () => {
         throw new Error('unreadable stylesheet');
       },
     });
-    assert.throws(
-      () => transformPass('mergeLonghand')(root, modern),
-      /unreadable stylesheet/v
-    );
+    assert.throws(() => runLonghand(root, modern), /unreadable stylesheet/v);
     assert.equal(mergeLonghand(defaults), css);
     assert.equal(mergeLonghand(modern), 'a{margin:5dvh}');
   });

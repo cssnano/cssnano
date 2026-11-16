@@ -6,7 +6,7 @@ import { targetSupportOf } from '../../../../../src/passes/merge/lib/longhand/ta
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import {
   canonicalizeRecords,
-  longhandContext,
+  LonghandRound,
 } from '../../../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { discardDuplicates } from '../../../../../src/passes/merge/lib/duplicates/discardDuplicates.js';
 import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.js';
@@ -41,7 +41,7 @@ function mergedRecords(css) {
   const context = createRunContext(true, support.features);
   const { records } = buildRecords(postcss.parse(css), context);
   fillSummaries(records, context.tokenLists, browsers);
-  const longhand = longhandContext(
+  const longhand = new LonghandRound(
     support.placeShorthands,
     support.boxSupport,
     support.pairShorthands,

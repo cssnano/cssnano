@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeLonghand');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeLonghand']);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -61,8 +61,8 @@ test(
 );
 
 test(
-  'should minify column values 1 (uppercase)',
-  processCSS('h1{column-width:AUTO;column-count:AUTO}', 'h1{columns:AUTO}')
+  'should lowercase the merged columns keyword',
+  processCSS('h1{column-width:AUTO;column-count:AUTO}', 'h1{columns:auto}')
 );
 
 test(

@@ -26,8 +26,7 @@ export const normalizeWhitespaceEntry =
       'normalizeWhitespace',
       {
         optionKeys: [],
-        walk: true,
-        after: true,
+        field: 'normalizeWhitespace',
       },
     ])
   );
@@ -44,7 +43,7 @@ export const discardEmptyEntry =
       {
         optionKeys: [],
         transform: true,
-        after: true,
+        field: 'discardEmpty',
       },
     ])
   );
@@ -60,7 +59,7 @@ export const rawCacheEntry =
       {
         optionKeys: [],
         transform: true,
-        after: true,
+        field: 'rawCache',
       },
     ])
   );

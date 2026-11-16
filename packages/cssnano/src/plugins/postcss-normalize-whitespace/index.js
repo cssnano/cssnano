@@ -10,8 +10,6 @@ import {
 } from './lib/ieHack.js';
 import { stringToken } from '../../values/tokenConstructors.js';
 import { whitespace } from '../../values/punctuationTokens.js';
-import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
-import { normalizeRecordRaws } from '../../passes/ir/normalizeRaws.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenEdit} from '../../values/valueBuffer.js' */
@@ -228,28 +226,3 @@ const valueStage = {
 
 /** @satisfies {StageEntry} */
 export const valueEntry = { create: () => valueStage };
-
-/**
- * @return {import('postcss').Plugin}
- */
-function pluginCreator() {
-  return {
-    postcssPlugin: 'postcss-normalize-whitespace',
-
-    /**
-     * @param {import('postcss').Root} css
-     */
-    OnceExit(css, { result }) {
-      runRecordsPlugin(css, result, [
-        (records, browsers, context) => {
-          normalizeRecordRaws(records, context.tokenLists);
-        },
-      ]);
-    },
-  };
-}
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-
-export { moduleExports as default, moduleExports as 'module.exports' };

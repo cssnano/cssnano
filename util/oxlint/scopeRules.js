@@ -191,7 +191,13 @@ const noCapturedLoopState = {
           if (writer === owner || isAllowed(allowed, file, variable.name)) {
             continue;
           }
-          if (ref.isWrite() && !ref.init) {
+          if (namedBetween(context.sourceCode, writer, owner)) {
+            context.report({
+              node: ref.identifier,
+              message:
+                'a named function captures a local of its enclosing function',
+            });
+          } else if (ref.isWrite() && !ref.init) {
             context.report({
               node: ref.identifier,
               message:
@@ -213,6 +219,28 @@ const noCapturedLoopState = {
     };
   },
 };
+
+/**
+ * Whether a function between a reference and the owner of its binding is
+ * named: declared, or the value of a variable. Only an inline callback may
+ * close over a local.
+ *
+ * @param {any} sourceCode
+ * @param {any} from the function scope that holds the reference
+ * @param {any} owner the function scope that holds the binding
+ */
+function namedBetween(sourceCode, from, owner) {
+  for (let scope = from; scope && scope !== owner;) {
+    const node = scope.block;
+    if (node.type === 'FunctionDeclaration') return true;
+    const parent = sourceCode.getAncestors(node).at(-1);
+    if (parent?.type === 'VariableDeclarator' && parent.init === node) {
+      return true;
+    }
+    scope = ownerFunction(scope.upper);
+  }
+  return false;
+}
 
 /** @param {any} variable */
 function isLet(variable) {

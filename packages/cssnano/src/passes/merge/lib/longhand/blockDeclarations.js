@@ -21,7 +21,7 @@ import { requiredSupport } from './isFallback.js';
  * @property {boolean} kept the value as written holds an important comment, so
  * no reducer edits the declaration
  * @property {boolean} removed
- * @property {boolean} rewritten
+ * @property {boolean} rewritten an edit changed the property or the value
  * @property {number} source for a clone, the position of its source; `-1` otherwise
  */
 
@@ -91,7 +91,9 @@ export class BlockDeclarations {
 
   /**
    * Sets the property and the value of a declaration. Omitting the tokens
-   * tokenizes the new value, unless it is the value the item already has.
+   * tokenizes the new value, unless it is the value the item already has. An
+   * equal property and value is not an edit: the item and the list stay as
+   * they were.
    *
    * @param {number} position
    * @param {string} prop
@@ -100,8 +102,9 @@ export class BlockDeclarations {
    * @return {void}
    */
   rewrite(position, prop, value, tokens) {
-    this.#edited = true;
     const item = this.#items[position];
+    if (prop === item.prop && value === item.value) return;
+    this.#edited = true;
     item.prop = prop;
     if (tokens !== undefined) {
       item.tokens = tokens;

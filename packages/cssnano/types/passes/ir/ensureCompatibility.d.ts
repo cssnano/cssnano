@@ -6,9 +6,9 @@ export type SelectorInfo = {
 };
 /**
  * The facts of the selector that a token list spells, for the browsers given.
- * The scan runs first, since it is far cheaper than a parse, and it stops at
- * the first unsupported token, so it never learns the prefix of an
- * incompatible selector.
+ * It stops at the first unsupported token, so it never learns the prefix of an
+ * incompatible selector. A selector the scan accepts can still be one the
+ * parser rejects; the merge asks the parser separately.
  *
  * @param {readonly CSSToken[]} tokens the tokens of one selector item
  * @param {readonly string[]} browsers

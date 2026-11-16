@@ -25,14 +25,17 @@ export declare class RuleRecord {
      */
     readonly selectorIds: readonly TokenListId[];
     /**
-     * Whether every selector suits the target browsers.
+     * Whether the scan accepts every selector for the target browsers. The
+     * parser's verdict on each selector is asked per id when a merge needs it.
      *
      * @readonly
      * @type {boolean}
      */
     readonly compatible: boolean;
     /**
-     * The vendor prefix summary of the selectors.
+     * The vendor prefix summary of the selectors. It may hold the prefix of a
+     * selector the parser rejects, so a merge reads it only after every selector
+     * passes the parser.
      *
      * @readonly
      * @type {VendorPrefixSummary}

@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { hostPlugin } from '../../src/pipeline/host.js';
+import { hostPlan } from '../../src/pipeline/hostPlan.js';
 
 /**
  * The host of one stage that counts the runs of its reducer for `color`, and
@@ -25,9 +26,13 @@ function countingHost() {
           }
         : null,
   };
-  const plugin = hostPlugin([
-    { entry: { create: () => stage }, options: {}, targets: false },
-  ]);
+  const plugin = hostPlugin(
+    hostPlan({
+      members: [
+        { entry: { create: () => stage }, options: {}, targets: false },
+      ],
+    })
+  );
   return { plugin, runs: () => runs };
 }
 

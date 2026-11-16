@@ -11,7 +11,8 @@ const cases = [
   ['color', 'color', true],
   ['COLOR', 'color', true],
   ['CoLoR', 'color', true],
-  ['coloſ', 'color', false],
+  // Not a known spelling, so the data cannot rule out a conflict
+  ['coloſ', 'color', true],
   ['-webkit-transform', 'transform', true],
   ['-webkit-background-clip', 'background', true],
   // Prefixed spellings webref lists as known in their own right, with no
@@ -78,8 +79,8 @@ const cases = [
   ['--Foo', '--foo', false],
   ['--color', 'color', false],
   ['all', '--a', false],
-  // Vendor extensions we have no data for stay conservative
-  ['-moz-osx-font-smoothing', 'font-family', false],
+  // A vendor extension we have no data for conflicts with every other write
+  ['-moz-osx-font-smoothing', 'font-family', true],
   ['-ms-flex', 'flex-grow', true],
   ['-o-tab-size', 'tab-size', true],
 ];
@@ -96,21 +97,22 @@ for (const [propA, propB, expected] of cases) {
 }
 
 test('property names are not looked up on Object.prototype', () => {
+  // Not a known property, so it conflicts with every other write.
   for (const prop of ['constructor', 'toString', 'hasOwnProperty']) {
-    assert.strictEqual(isConflictingProp(prop, 'color'), false);
+    assert.strictEqual(isConflictingProp(prop, 'color'), true);
     assert.strictEqual(isConflictingProp(prop, prop), true);
   }
 });
 
-// Vendor extensions no spec describes fall back to comparing names, which is
-// what the plugin did for every property before it had spec data.
+// A vendor extension no spec describes conflicts with every other property,
+// since the data cannot show that a move past it is safe.
 for (const [propA, propB, expected] of [
-  ['-webkit-box-orient', '-webkit-box-direction', false],
-  ['-webkit-box-direction', '-webkit-box-orient', false],
-  ['-ms-flex-pack', '-ms-flex-align', false],
+  ['-webkit-box-orient', '-webkit-box-direction', true],
+  ['-webkit-box-direction', '-webkit-box-orient', true],
+  ['-ms-flex-pack', '-ms-flex-align', true],
   ['-webkit-box-direction', '-webkit-box', true],
-  ['-webkit-box-direction', 'color', false],
-  // `place` is a wildcard leading segment, matching non-`place` bases too
+  ['-webkit-box-direction', 'color', true],
+  ['color', '-webkit-box-direction', true],
   ['-moz-place-content', 'align-content', true],
 ]) {
   test(`isConflictingProp(${propA}, ${propB}) is ${expected} without data`, () => {

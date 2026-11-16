@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
 import numericRangeProperties from '../../../../../src/passes/merge/lib/longhand/data/numericRanges.json' with { type: 'json' };
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { isShapeEquivalent } from '../../../../../src/passes/merge/lib/longhand/decl/shapeEquivalence.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

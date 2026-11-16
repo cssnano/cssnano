@@ -12,3 +12,19 @@ export function scan(items) {
   }
   return () => index;
 }
+export function declared(items) {
+  const limit = items.length;
+  function within(item) {
+    return item < limit;
+  }
+  return items.filter(within);
+}
+export function bound(items, extra) {
+  const add = (item) => item + extra;
+  return items.map((item) => add(item));
+}
+export function nested(items) {
+  const limit = items.length;
+  const check = (item) => [item].some((other) => other < limit);
+  return items.filter(check);
+}

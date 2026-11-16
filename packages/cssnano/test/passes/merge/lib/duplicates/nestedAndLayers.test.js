@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
-const plugin = transformPlugin('discardDuplicates');
+const plugin = onlyTransform(['discardDuplicates']);
 
 const { processCSS } = processCSSFactory(plugin);
 

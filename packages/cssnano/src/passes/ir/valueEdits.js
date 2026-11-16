@@ -54,7 +54,7 @@ export function writeValueList(records, context, index, valueList) {
   record.valueList = valueList;
   record.writtenList = -1;
   record.id = context.declarations.keyOf(
-    record.prop,
+    record.keys.id,
     valueList,
     record.important,
     record.before

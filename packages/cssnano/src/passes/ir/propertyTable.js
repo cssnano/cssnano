@@ -78,14 +78,17 @@ function logicalSideOf(longhand) {
 }
 
 /**
- * What a conflict query reads for one property name. Custom properties carry
- * only their key. `all` carries nothing else. A known name carries its base
- * name and each longhand with the group side it sits on and the opposite side.
- * An unknown name carries the segments a vendor extension is compared by.
+ * What a conflict query reads for one property name, with the id that numbers
+ * the name in its run. Custom properties carry only their key. `all` carries
+ * nothing else. A known name carries its base name and each longhand with the
+ * group side it sits on and the opposite side. An unknown name carries no
+ * longhands: it conflicts with every write but a custom one. One object serves
+ * every declaration of the name, so nothing may write it.
  *
- * @typedef {{custom: true, key: string}
- *   | {custom: false, all: true}
- *   | {custom: false, all: false, name: string, known: boolean, subjectToAll: boolean, longhands: {name: string, side: string | undefined, opposite: string | undefined}[], lead: string, length: number, bare: string}} PropertyKeys
+ * @typedef {Readonly<
+ *   {id: number, custom: true, key: string}
+ *   | {id: number, custom: false, all: true}
+ *   | {id: number, custom: false, all: false, name: string, known: boolean, subjectToAll: boolean, longhands: {name: string, side: string | undefined, opposite: string | undefined}[]}>} PropertyKeys
  */
 
 /**
@@ -96,19 +99,18 @@ function logicalSideOf(longhand) {
 const sideKey = (group, flowRelative) => `${group}:${flowRelative}`;
 
 /**
- * The keys of one property name: what a conflict query reads for it.
+ * The keys of one folded property name, numbered `id`.
  *
- * @param {string} prop
+ * @param {string} lowercased the name after propertyNameKey
+ * @param {number} id
  * @return {PropertyKeys}
  */
-export function keysOfName(prop) {
-  const lowercased = propertyNameKey(prop);
-  if (lowercased.startsWith('--')) return { custom: true, key: lowercased };
-  if (lowercased === ALL) return { custom: false, all: true };
+function buildKeys(lowercased, id) {
+  if (lowercased.startsWith('--')) return { id, custom: true, key: lowercased };
+  if (lowercased === ALL) return { id, custom: false, all: true };
   const { name, known } = resolveProperty(lowercased);
-  const bare = vendorUnprefixed(name);
-  const segments = bare.split('-');
   return {
+    id,
     custom: false,
     all: false,
     name,
@@ -124,8 +126,31 @@ export function keysOfName(prop) {
           };
         })
       : [],
-    lead: segments[0],
-    length: segments.length,
-    bare,
   };
+}
+
+/**
+ * The property names of one run, each numbered by first use. Two spellings
+ * that fold to one name share its keys and id. Nothing may keep an id across
+ * runs.
+ */
+export class PropertyNames {
+  /** @type {Map<string, PropertyKeys>} the keys of each folded name */
+  #keys = new Map();
+
+  /**
+   * The keys of a property name, built on its first use in the run.
+   *
+   * @param {string} prop
+   * @return {PropertyKeys}
+   */
+  keysOf(prop) {
+    const lowercased = propertyNameKey(prop);
+    let keys = this.#keys.get(lowercased);
+    if (keys === undefined) {
+      keys = buildKeys(lowercased, this.#keys.size);
+      this.#keys.set(lowercased, keys);
+    }
+    return keys;
+  }
 }

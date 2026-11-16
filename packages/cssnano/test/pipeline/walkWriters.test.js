@@ -13,7 +13,10 @@ const { commentStateOf } =
   await import('../../src/pipeline/comments/commentState.js');
 const { AT_RULE_BLOCK, DECLARATION, RULE } =
   await import('../../src/passes/ir/blockRecord.js');
-const { mergePass } = await import('../../src/passes/merge/index.js');
+const { onlyTransform, MERGE_TRANSFORMS } =
+  await import('../passes/onlyTransform.js');
+const { browserTargets } = await import('#utils/browser-targets');
+const { hostPlan } = await import('../../src/pipeline/hostPlan.js');
 const { ident, integer } =
   await import('../../src/values/tokenConstructors.js');
 const { tokens } = await import('../../src/utils/value.js');
@@ -258,15 +261,14 @@ suite('the at-rule reducers write tokens that spell their text', () => {
 /**
  * The walk up of `root`, as the host runs it.
  * @param {import('postcss').Root} root
- * @param {Map<string, Record<PropertyKey, unknown>>} transforms
- * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols
+ * @param {import('../../src/pipeline/hostPlan.js').RunPlan} plan
  * @return {number} the tokenize calls of the walk and the end, which read the lists the build made
  */
-function afterWalk(root, transforms, symbols) {
+function afterWalk(root, plan) {
   const context = createRunContext(undefined);
   const state = runDriver.build(root, context);
   const before = tokenizeTotal();
-  walkUp(state, transforms, symbols);
+  walkUp(state, plan);
   runDriver.end(state, {
     browsers: [],
     folded: false,
@@ -279,23 +281,18 @@ suite('the after-merge walk reads the selector lists the build made', () => {
   test('uniqueSelectors reads the selector tokens the build made, without tokenizing', () => {
     const root = postcss.parse('b, a, b {}');
     const rule = root.first;
-    assert.equal(
-      afterWalk(root, new Map([['uniqueSelectors', {}]]), new Map()),
-      0
-    );
+    assert.equal(afterWalk(root, hostPlan({ uniqueSelectors: {} })), 0);
     assert.equal(rule.selector, 'a,b');
   });
 
   test("discard-unused's namespace prefixes read the selector uniqueSelectors wrote, without tokenizing", () => {
     const root = postcss.parse('ns|a, b, ns|a {}');
     const rule = root.first;
-    const symbols = new Map([
-      ['discardUnused', { transform: discardUnusedSymbols, options: {} }],
-    ]);
-    assert.equal(
-      afterWalk(root, new Map([['uniqueSelectors', {}]]), symbols),
-      0
-    );
+    const plan = hostPlan({
+      uniqueSelectors: {},
+      symbols: [{ transform: discardUnusedSymbols, options: {} }],
+    });
+    assert.equal(afterWalk(root, plan), 0);
     assert.equal(rule.selector, 'b,ns|a');
   });
 });
@@ -333,13 +330,25 @@ suite('the merge longhand writers no traced reader reads', () => {
     const root = postcss.parse(
       'a{border-color:red /*x*/ red;border-top-style:solid!important}'
     );
-    mergePass(root, ['defaults']);
+    postcss([
+      onlyTransform(MERGE_TRANSFORMS)({
+        [browserTargets]: { query: ['defaults'] },
+      }),
+    ])
+      .process(root, { from: undefined })
+      .sync();
     assert.equal(root.first.first.raws.value, undefined);
   });
 
   test("boxReducer's singleton write drops raws.value", () => {
     const root = postcss.parse('a{margin:1px /*x*/ 2px}');
-    mergePass(root, ['defaults']);
+    postcss([
+      onlyTransform(MERGE_TRANSFORMS)({
+        [browserTargets]: { query: ['defaults'] },
+      }),
+    ])
+      .process(root, { from: undefined })
+      .sync();
     assert.equal(root.first.first.raws.value, undefined);
   });
 
@@ -347,13 +356,25 @@ suite('the merge longhand writers no traced reader reads', () => {
     const root = postcss.parse(
       'a{margin:1px 2px 1px 2px /*x*/;margin-left:5px}'
     );
-    mergePass(root, ['defaults']);
+    postcss([
+      onlyTransform(MERGE_TRANSFORMS)({
+        [browserTargets]: { query: ['defaults'] },
+      }),
+    ])
+      .process(root, { from: undefined })
+      .sync();
     assert.equal(root.first.first.raws.value, undefined);
   });
 
   test("columns' singleton write drops raws.value", () => {
     const root = postcss.parse('a{columns:2 /*x*/ auto}');
-    mergePass(root, ['defaults']);
+    postcss([
+      onlyTransform(MERGE_TRANSFORMS)({
+        [browserTargets]: { query: ['defaults'] },
+      }),
+    ])
+      .process(root, { from: undefined })
+      .sync();
     assert.equal(root.first.first.raws.value, undefined);
   });
 });

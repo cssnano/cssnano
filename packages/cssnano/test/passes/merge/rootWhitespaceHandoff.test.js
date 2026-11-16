@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { mergePass, transformPass } from '../../../src/passes/merge/index.js';
-import { resolveTargets } from '../../../src/utils/browserTargets.js';
+import { onlyTransform, MERGE_TRANSFORMS } from '../onlyTransform.js';
 
 /** @import {Root} from 'postcss' */
 
@@ -17,18 +16,22 @@ import { resolveTargets } from '../../../src/utils/browserTargets.js';
 function merge(css) {
   /** @type {Root} */
   const root = postcss.parse(css);
-  mergePass(root, resolveTargets({}, undefined));
+  postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+    .process(root, {
+      from: undefined,
+    })
+    .sync();
   return root.toString();
 }
 
-test('mergePass should hand the leading whitespace of the stylesheet to the next rule when a duplicate removes the first rule', () => {
+test('the merge run should hand the leading whitespace of the stylesheet to the next rule when a duplicate removes the first rule', () => {
   assert.equal(
     merge('\n\na{color:red}\n  b{width:1px}\n  a{color:red}'),
     '\n\nb{width:1px}\n  a{color:red}'
   );
 });
 
-test('mergePass should hand the leading whitespace of the stylesheet to the next at-rule when a duplicate removes the first at-rule', () => {
+test('the merge run should hand the leading whitespace of the stylesheet to the next at-rule when a duplicate removes the first at-rule', () => {
   assert.equal(
     merge(
       '\n\n@media print{a{color:red}}\n  b{width:1px}\n  @media print{a{color:red}}'
@@ -37,12 +40,16 @@ test('mergePass should hand the leading whitespace of the stylesheet to the next
   );
 });
 
-test('mergePass should hand the leading whitespace of the stylesheet to the next rule when rule merging is off and a duplicate removes the first rule', () => {
+test('the merge run should hand the leading whitespace of the stylesheet to the next rule when rule merging is off and a duplicate removes the first rule', () => {
   /** @type {Root} */
   const root = postcss.parse(
     '\n\na{color:red}\n  b{width:1px}\n  a{color:red}'
   );
-  mergePass(root, resolveTargets({}, undefined), { rules: false });
+  postcss([
+    onlyTransform(MERGE_TRANSFORMS.filter((name) => name !== 'mergeRules'))({}),
+  ])
+    .process(root, { from: undefined })
+    .sync();
   assert.equal(root.toString(), '\n\nb{width:1px}\n  a{color:red}');
 });
 
@@ -51,25 +58,29 @@ test('discardDuplicates should hand the leading whitespace of the stylesheet to 
   const root = postcss.parse(
     '\n\na{color:red}\n  b{width:1px}\n  a{color:red}'
   );
-  transformPass('discardDuplicates')(root, []);
+  postcss([onlyTransform(['discardDuplicates'])({})])
+    .process(root, {
+      from: undefined,
+    })
+    .sync();
   assert.equal(root.toString(), '\n\nb{width:1px}\n  a{color:red}');
 });
 
-test('mergePass should hand the leading whitespace of the stylesheet to the rule that rule merging joins when a duplicate removes the first rule', () => {
+test('the merge run should hand the leading whitespace of the stylesheet to the rule that rule merging joins when a duplicate removes the first rule', () => {
   assert.equal(
     merge('\n\na{color:red}\n  b{width:1px}\n  b{margin:0}\n  a{color:red}'),
     '\n\nb{width:1px;margin:0}\n  a{color:red}'
   );
 });
 
-test('mergePass should keep the leading whitespace of the stylesheet on the first rule when a join rewrites it in place', () => {
+test('the merge run should keep the leading whitespace of the stylesheet on the first rule when a join rewrites it in place', () => {
   assert.equal(
     merge('\n\na{color:red}\n  b{width:1px}\n  a{margin:0}'),
     '\n\na{color:red;margin:0}\n  b{width:1px}'
   );
 });
 
-test('mergePass should hand the whitespace the joined at-rule took to the next at-rule when a join moves the first at-rule down', () => {
+test('the merge run should hand the whitespace the joined at-rule took to the next at-rule when a join moves the first at-rule down', () => {
   assert.equal(
     merge(
       '\n\n@media print{a{color:red}}\n  @media screen{a{margin:0}}\n  @media print{a{margin:1px}}'
@@ -78,14 +89,14 @@ test('mergePass should hand the whitespace the joined at-rule took to the next a
   );
 });
 
-test('mergePass should keep the leading whitespace of the stylesheet when a sweep rewrites the first rule in its slot', () => {
+test('the merge run should keep the leading whitespace of the stylesheet when a sweep rewrites the first rule in its slot', () => {
   assert.equal(
     merge('\n\na{color:red}\n  a{color:red}\n  a{margin:0}'),
     '\n\na{color:red;margin:0}'
   );
 });
 
-test('mergePass should keep the leading whitespace of the stylesheet on the first at-rule when a sweep drops an emptied later at-rule', () => {
+test('the merge run should keep the leading whitespace of the stylesheet on the first at-rule when a sweep drops an emptied later at-rule', () => {
   assert.equal(
     merge(
       '\n\n@media print{a{color:red}}\n  @media print{a{color:red}}\n  @media print{b{margin:0}}'
@@ -94,6 +105,6 @@ test('mergePass should keep the leading whitespace of the stylesheet on the firs
   );
 });
 
-test('mergePass should hand the leading whitespace of the stylesheet to the rule a sweep puts first when it joins the first two rules by declarations', () => {
+test('the merge run should hand the leading whitespace of the stylesheet to the rule a sweep puts first when it joins the first two rules by declarations', () => {
   assert.equal(merge('\n\na{color:red}\n  b{color:red}'), '\n\na,b{color:red}');
 });

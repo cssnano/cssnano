@@ -192,7 +192,10 @@
         "packages/cssnano/src/plugins/postcss-reduce-idents/lib/**",
         "packages/cssnano/src/plugins/postcss-zindex/lib/**"
       ],
-      "excludeFiles": ["packages/cssnano/src/pipeline/host.js"],
+      "excludeFiles": [
+        "packages/cssnano/src/pipeline/host.js",
+        "packages/cssnano/src/pipeline/runStylesheet.js"
+      ],
       "rules": {
         "merge-ir/no-postcss-in-window": "error"
       }
@@ -223,7 +226,6 @@
               "packages/cssnano/src/passes/ir/treeMatch.js",
               "packages/cssnano/src/passes/ir/buildRecords.js",
               "packages/cssnano/src/passes/ir/valueList.js",
-              "packages/cssnano/src/passes/ir/recordsPlugin.js",
               "packages/cssnano/src/passes/ir/runContext.js",
               "packages/cssnano/src/passes/ir/runDriver.js"
             ]
@@ -254,6 +256,13 @@
             "allowed": []
           }
         ],
+        "merge-ir/no-captured-loop-state": ["error", { "allowed": [] }]
+      }
+    },
+    {
+      "files": ["packages/cssnano/src/passes/merge/lib/longhand/**"],
+      "rules": {
+        "merge-ir/no-postcss-in-window": "error",
         "merge-ir/no-captured-loop-state": ["error", { "allowed": [] }]
       }
     },

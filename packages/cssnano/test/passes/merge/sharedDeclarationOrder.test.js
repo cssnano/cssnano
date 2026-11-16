@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../onlyTransform.js';
 
-const plugin = transformPlugin('mergeRules');
+const plugin = onlyTransform(['mergeRules']);
 
 test('a merged rule keeps the order of shared declarations that are not adjacent in the earlier rule', async () => {
   // `margin` stands between the shared `color` and `width` in `a`, so the

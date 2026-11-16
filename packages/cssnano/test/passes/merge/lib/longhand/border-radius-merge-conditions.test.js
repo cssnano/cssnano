@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeLonghand');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeLonghand']);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -205,10 +205,10 @@ describe('full vector reset', () => {
   );
 
   test(
-    'should not merge a full vector across a shorthand CSS-wide keyword',
+    'should drop the overridden merged radius before a shorthand CSS-wide keyword',
     processCSS(
       'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px;border-radius:inherit}',
-      'a{border-radius:1px;border-radius:inherit}'
+      'a{border-radius:inherit}'
     )
   );
 

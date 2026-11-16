@@ -35,6 +35,27 @@ describe('built presets return plugins', () => {
     assert.match(result.css, /ease-in-out/v);
   });
 
+  test('keeps a comment inside a value that the longhand merge leaves as it is, because comment removal is disabled', async () => {
+    const result = await postcss(
+      defaultPreset({ disable: ['discardComments'] })
+    ).process('a{margin:1px/*c*/ 2px}', { from: repositoryFile });
+    assert.equal(result.css, 'a{margin:1px/*c*/ 2px}');
+  });
+
+  test('keeps a comment inside a value that a reducer other than the longhand merge leaves as it is, because comment removal is disabled', async () => {
+    const result = await postcss(
+      defaultPreset({ disable: ['discardComments'] })
+    ).process('a{border:1px/*c*/ solid red}', { from: repositoryFile });
+    assert.equal(result.css, 'a{border:1px/*c*/ solid red}');
+  });
+
+  test('keeps the space before the semicolon of a value the longhand merge leaves as it is, because whitespace normalization is disabled', async () => {
+    const result = await postcss(
+      defaultPreset({ disable: ['normalizeWhitespace'] })
+    ).process('a{border-radius:.5em ;}', { from: repositoryFile });
+    assert.equal(result.css, 'a{border-radius:.5em ;}');
+  });
+
   test('disabling uniqueSelectors keeps the duplicate selector that the preset removes', async () => {
     const css = 'a,a{color:red}';
     const kept = await postcss(

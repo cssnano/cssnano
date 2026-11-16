@@ -1,8 +1,8 @@
 import postcss from 'postcss';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { computedValues } from './fuzzBoxOracle.js';
 import { withTargets } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../../test/passes/onlyTransform.js';
 
 /** @import {Engine} from './fuzzBoxOracle.js' */
 

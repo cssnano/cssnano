@@ -1,6 +1,6 @@
 export const name = 'postcss-discard-empty';
 export const target = new URL(
-  '../../src/plugins/postcss-discard-empty/index.js',
+  '../../src/passes/ir/discardRecords.js',
   import.meta.url
 ).href;
 // node --test expands this glob, so both the plugin's and the removal's tests run.
@@ -29,7 +29,7 @@ export const mutations = [
     name: 'stop removing discarded nodes',
     target: new URL('../../src/passes/ir/discardRecords.js', import.meta.url)
       .href,
-    find: '      removeEntry(records, index);',
+    find: '      remove(records, index);',
     replace: '      void index;',
   },
   {
@@ -130,7 +130,7 @@ export const mutations = [
     name: 'leave the ancestors a later removal empties',
     target: new URL('../../src/passes/ir/discardRecords.js', import.meta.url)
       .href,
-    find: '    removeEntry(records, parent);',
+    find: '    remove(records, parent);',
     replace: '    break;',
   },
   {

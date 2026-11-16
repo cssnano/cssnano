@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
-import { keysOfName } from '../../../src/passes/ir/propertyTable.js';
 import { DeclarationRecord } from '../../../src/passes/ir/declarationRecord.js';
 import { declarationsOf } from '../../../src/passes/ir/blockChildren.js';
 import { writeBack } from '../../../src/passes/ir/writeBack.js';
@@ -112,13 +111,13 @@ test('write-back should keep the raw value of an unmarked declaration, also in a
   assert.equal(String(root), 'a{color:red/*x*/}');
 });
 
-test('write-back should not write a marked declaration of a plain rule whose declaration stamp was not touched', () => {
+test('write-back should write a marked declaration of a plain rule whose declaration stamp was not touched', () => {
   const { root, state, records } = setup('a{color:red/*x*/;}');
   const rule = ruleRecordOf(records, /** @type {Container} */ (root.first));
   const [color] = declarationsOf(records, rule.index);
   rewriteValue(state, color, 'blue');
   writeBack(records, nodesOf(records), state.tokenLists);
-  assert.equal(String(root), 'a{color:red/*x*/;}');
+  assert.equal(String(root), 'a{color:blue;}');
 });
 
 test('touchDeclarations should move the declaration stamp of a container and not its edit stamp', () => {
@@ -139,7 +138,7 @@ test('write-back should create a node for an appended declaration with the templ
     'color',
     state.runContext.valueIds.idOf(tokenListsOf(records), undefined, 'blue'),
     true,
-    keysOfName('color'),
+    state.runContext.names.keysOf('color'),
     0,
     ': ',
     ' '

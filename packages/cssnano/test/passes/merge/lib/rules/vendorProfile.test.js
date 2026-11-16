@@ -10,7 +10,9 @@ import {
 } from '../../../../../src/passes/ir/selectorReads.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import postcss from 'postcss';
 import selectorParser from 'postcss-selector-parser';
+import { onlyTransform } from '../../../onlyTransform.js';
 import { VendorPrefixSummary } from '../../../../../src/passes/ir/vendorPrefixSummary.js';
 import { selectorInfoOf } from '../../../../../src/passes/ir/ensureCompatibility.js';
 import { SelectorIds } from '../../../../../src/passes/ir/selectorIds.js';
@@ -204,6 +206,14 @@ test('selectorInfoOf should mark an incompatible selector as such, with no prefi
     prefix: undefined,
     msPlaceholder: false,
   });
+});
+
+test('mergeRules should keep two rules apart when the parser rejects a selector the scan accepts', () => {
+  const css = '.a>{color:red}.b{color:red}';
+  const output = postcss([onlyTransform(['mergeRules'])()]).process(css, {
+    from: undefined,
+  }).css;
+  assert.equal(output, css);
 });
 
 test('selectorInfoOf should flag :-ms-input-placeholder in any letter case', () => {

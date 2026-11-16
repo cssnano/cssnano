@@ -11,10 +11,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../../test/passes/onlyTransform.js';
 import { DeclarationCache } from '../../../../../src/passes/ir/declarationCache.js';
 
-const plugin = transformPlugin('mergeRules');
+const plugin = onlyTransform(['mergeRules']);
 
 /** @type {Set<DeclarationCache>} the caches that the readers of the current run used */
 let caches = new Set();

@@ -5,14 +5,14 @@ import {
   processCSSFactory,
   repositoryFile,
 } from '../../../../../../../util/testHelpers.js';
-const plugin = transformPlugin('mergeRules');
+const plugin = onlyTransform(['mergeRules']);
 import {
   longSelector,
   sharedBackground,
   withHeights,
   sharedPair,
 } from './sharedRuleGroupFixtures.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

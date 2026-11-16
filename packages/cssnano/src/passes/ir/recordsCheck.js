@@ -156,39 +156,51 @@ export function assertRecordsWellFormed(mergeState) {
  * @return {void}
  */
 export function assertOwnershipIsTree(records) {
-  /** @type {Set<object>} */
-  const reached = new Set();
+  const walk = new OwnershipWalk(records);
+  walk.reach(records.root);
+  walk.visitChildren(records.root);
+}
+
+/** The records one walk from the root has reached. */
+class OwnershipWalk {
+  /** @param {BlockRecords} records */
+  constructor(records) {
+    this.records = records;
+    /** @type {Set<object>} */
+    this.reached = new Set();
+  }
+
   /** @param {object} record */
-  const reach = (record) => {
-    if (reached.has(record)) throw new Error(REACHED_TWICE);
-    reached.add(record);
-  };
+  reach(record) {
+    if (this.reached.has(record)) throw new Error(REACHED_TWICE);
+    this.reached.add(record);
+  }
+
   /** @param {RuleRecord} record */
-  const visitRule = (record) => {
-    reach(record);
-    visitChildren(record);
-  };
+  visitRule(record) {
+    this.reach(record);
+    this.visitChildren(record);
+  }
+
   /** @param {Container} block the block or the rule that nests, already reached */
-  const visitChildren = (block) => {
-    const { links } = records;
+  visitChildren(block) {
+    const { links } = this.records;
     let count = 0;
     for (
       let entry = links.firstChild(block.index);
       entry !== -1;
       entry = links.nextSibling(entry)
     ) {
-      const item = records.entry(entry);
-      if (item.kind === RULE) visitRule(item);
+      const item = this.records.entry(entry);
+      if (item.kind === RULE) this.visitRule(item);
       else if (item.kind === STYLESHEET || item.kind === AT_RULE_BLOCK) {
-        reach(item);
-        visitChildren(item);
-      } else if (item.kind === DECLARATION) reach(item);
+        this.reach(item);
+        this.visitChildren(item);
+      } else if (item.kind === DECLARATION) this.reach(item);
       count++;
     }
     if (count !== links.childCount(block.index)) throw new Error(OUT_OF_STEP);
-  };
-  reach(records.root);
-  visitChildren(records.root);
+  }
 }
 
 /**

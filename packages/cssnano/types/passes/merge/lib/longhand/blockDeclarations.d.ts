@@ -34,6 +34,9 @@ export type DeclarationItem = {
      */
     kept: boolean;
     removed: boolean;
+    /**
+     * an edit changed the property or the value
+     */
     rewritten: boolean;
     /**
      * for a clone, the position of its source; `-1` otherwise
@@ -59,7 +62,7 @@ export type DeclarationItem = {
  * @property {boolean} kept the value as written holds an important comment, so
  * no reducer edits the declaration
  * @property {boolean} removed
- * @property {boolean} rewritten
+ * @property {boolean} rewritten an edit changed the property or the value
  * @property {number} source for a clone, the position of its source; `-1` otherwise
  */
 /** The chain entry of a point where a run of declarations ends. */
@@ -99,7 +102,9 @@ export declare class BlockDeclarations {
     at(position: number): DeclarationItem;
     /**
      * Sets the property and the value of a declaration. Omitting the tokens
-     * tokenizes the new value, unless it is the value the item already has.
+     * tokenizes the new value, unless it is the value the item already has. An
+     * equal property and value is not an edit: the item and the list stay as
+     * they were.
      *
      * @param {number} position
      * @param {string} prop

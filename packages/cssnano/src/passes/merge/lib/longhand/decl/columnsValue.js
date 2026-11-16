@@ -25,58 +25,72 @@ const otherColumnProperties = new Set(
 );
 const auto = /** @type {string} */ (initialValues.get(columnProperties[0]));
 
+/** The term being read, and the terms read before it. */
+class TermScan {
+  constructor() {
+    /** @type {{ start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown }[]} */
+    this.terms = [];
+    this.start = -1;
+    this.end = -1;
+    this.tokenCount = 0;
+    this.type = TokenType.EOF;
+    /** @type {unknown} */
+    this.decoded = undefined;
+  }
+
+  /** Ends the term, if any token has started one. */
+  close() {
+    if (!this.tokenCount) return;
+    this.terms.push({
+      start: this.start,
+      end: this.end,
+      tokenCount: this.tokenCount,
+      type: this.type,
+      decoded: this.decoded,
+    });
+    this.start = -1;
+    this.tokenCount = 0;
+    this.decoded = undefined;
+  }
+}
+
 /**
  * @param {string} value
  * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
  * @return {{ value: string, hasTopLevelSlash: boolean, terms: { start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown }[] }}
  */
 function tokenizeColumns(value, list) {
-  /** @type {{ start: number, end: number, tokenCount: number, type: import('@csstools/css-tokenizer').TokenType, decoded: unknown }[]} */
-  const terms = [];
-  let start = -1,
-    end = -1,
-    tokenCount = 0,
-    depth = 0;
-  let type = TokenType.EOF;
-  /** @type {unknown} */
-  let decoded;
+  const scan = new TermScan();
+  let depth = 0;
   let hasTopLevelSlash = false;
-
-  const push = () => {
-    if (tokenCount) {
-      terms.push({ start, end, tokenCount, type, decoded });
-      start = -1;
-      tokenCount = 0;
-      decoded = undefined;
-    }
-  };
 
   for (const token of list) {
     const tokenType = token[0];
     if (tokenType === TokenType.EOF) continue;
     if (depth === 0 && tokenType === TokenType.Whitespace) {
-      push();
+      scan.close();
       continue;
     }
-    if (tokenCount === 0) {
-      start = token[2];
-      type = /** @type {import('@csstools/css-tokenizer').TokenType} */ (
+    if (scan.tokenCount === 0) {
+      scan.start = token[2];
+      scan.type = /** @type {import('@csstools/css-tokenizer').TokenType} */ (
         tokenType
       );
-      decoded = token[4];
+      scan.decoded = token[4];
     }
     if (depth === 0 && tokenType === TokenType.Delim && token[1] === '/') {
       hasTopLevelSlash = true;
     }
-    tokenCount++;
-    end = token[3] + 1;
+    scan.tokenCount++;
+    scan.end = token[3] + 1;
     if (closeForOpening(tokenType) !== undefined) {
       depth++;
     } else if (depth > 0 && closingTokens.has(tokenType)) {
       depth--;
     }
   }
-  push();
+  scan.close();
+  const { terms } = scan;
 
   return { value, hasTopLevelSlash, terms };
 }
@@ -102,6 +116,7 @@ export function parsedValue(d) {
 export function normalize([w, c]) {
   const lw = asciiLowerCase(w);
   const lc = asciiLowerCase(c);
+  if (lw === auto && lc === auto) return auto;
   if (lw === auto) return c;
   if (lc === auto) return w;
   return lw === lc && cssWideKeywords.has(lw) ? lw : `${w} ${c}`;

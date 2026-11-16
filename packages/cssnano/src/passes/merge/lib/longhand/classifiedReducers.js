@@ -27,9 +27,15 @@ import { reduceColumns } from './decl/columns.js';
  *   families: Map<FamilyDeclarations['family'], FamilyDeclarations> | null,
  * }} state
  * @param {LonghandRound} context
+ * @param {boolean} columnsDeferred whether the round is the first, which defers its column rules
  * @return {void}
  */
-export function reduceClassifiedContainer(block, state, context) {
+export function reduceClassifiedContainer(
+  block,
+  state,
+  context,
+  columnsDeferred
+) {
   const { list } = block;
   if (state.boxes) {
     for (const box of state.boxes.values()) {
@@ -62,7 +68,7 @@ export function reduceClassifiedContainer(block, state, context) {
     }
   }
   if (state.columnDecls.length) {
-    if (!context.secondRound) {
+    if (columnsDeferred) {
       context.columnRules.push({
         block,
         positions: state.columnDecls,

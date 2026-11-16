@@ -1,10 +1,5 @@
-import {
-  collectRecordSymbols,
-  isRecordAttached,
-} from '../../pipeline/symbolLists.js';
+import { isRecordAttached } from '../../pipeline/symbolLists.js';
 import { AT_RULE_BLOCK } from '../../passes/ir/blockRecord.js';
-import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
-import { remove as removeRecord } from '../../passes/ir/treeEdits.js';
 import { atRuleAt } from '../../passes/ir/declaredText.js';
 import { LayerRegistry, hasImport } from './lib/layerRegistry.js';
 import {
@@ -207,35 +202,3 @@ function mergeAtRules(lists, remove, records, context) {
 export function mergeIdentsSymbols(lists, _options, remove, records, context) {
   mergeAtRules(lists, remove, records, context);
 }
-
-/**
- * @return {import('postcss').Plugin}
- */
-function pluginCreator() {
-  return {
-    postcssPlugin: 'postcss-merge-idents',
-    /**
-     * @param {import('postcss').Root} css
-     * @param {import('postcss').Helpers} helpers
-     */
-    OnceExit(css, { result }) {
-      runRecordsPlugin(css, result, [
-        (records, browsers, context) => {
-          const lists = collectRecordSymbols(records, context.tokenLists);
-          mergeIdentsSymbols(
-            lists,
-            {},
-            (index) => removeRecord(records, index),
-            records,
-            context
-          );
-        },
-      ]);
-    },
-  };
-}
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-
-export { moduleExports as default, moduleExports as 'module.exports' };

@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../test/passes/onlyTransform.js';
 import { configureValidated } from '../../src/presets/configurePlugins.js';
+import { advancedPresetEntries } from '../../src/presets/advancedPlugins.js';
 import { defaultPluginEntries } from '../../src/presets/defaultPlugins.js';
 
 // Plugins that do not read browser targets. Their output must not need newer
@@ -39,21 +40,20 @@ const plugins = [
  * result is always a list of plugins.
  *
  * @param {string} name
- * @return {Promise<(options: object) => import('postcss').AcceptedPlugin[]>}
+ * @return {(options: object) => import('postcss').AcceptedPlugin[]}
  */
-async function loadPlugin(name) {
+function loadPlugin(name) {
   // The merge pass replaced this plugin; the audit runs it as a transform.
   if (name === 'discard-duplicates') {
-    const creator = transformPlugin('discardDuplicates');
+    const creator = onlyTransform(['discardDuplicates']);
     return (options) => [creator(options)];
   }
-  const exported = (await import(`../../src/plugins/postcss-${name}/index.js`))
-    .default;
-  if (typeof exported === 'function') return (options) => [exported(options)];
   const option = name.replaceAll(/-(\w)/gv, (_, letter) =>
     letter.toUpperCase()
   );
-  const entries = defaultPluginEntries.filter(([, key]) => key === option);
+  const entries = [...defaultPluginEntries, ...advancedPresetEntries].filter(
+    ([, key]) => key === option
+  );
   return (options) =>
     configureValidated(entries, { options: { [option]: options } });
 }
@@ -104,7 +104,7 @@ describe('target-blind plugins add no newer syntax to the integration fixtures',
   test('a function, at-rule, unit or keyword appears in output only when the input has it, except @charset', async () => {
     const added = [];
     for (const name of plugins) {
-      const plugin = await loadPlugin(name);
+      const plugin = loadPlugin(name);
       for (const file of fixtures) {
         const input = readFileSync(new URL(file, fixtureDir), 'utf8');
         const output = (
@@ -140,7 +140,7 @@ describe('target-blind plugins drop no fallback declaration', () => {
       'reduce-transforms',
       'reduce-idents',
     ]) {
-      const plugin = await loadPlugin(name);
+      const plugin = loadPlugin(name);
       for (const file of fixtures) {
         if (
           await replacesValue(

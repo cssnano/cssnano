@@ -1,10 +1,6 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import LayerCache from './lib/layerCache.js';
-import {
-  collectRecordSymbols,
-  isRecordAttached,
-} from '../../pipeline/symbolLists.js';
-import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
+import { isRecordAttached } from '../../pipeline/symbolLists.js';
 import { declaredValue } from '../../passes/ir/declaredText.js';
 import { writeValue } from '../../passes/ir/valueEdits.js';
 import { identifierWithText, numeric } from '../../values/tokenConstructors.js';
@@ -91,30 +87,3 @@ function hasOneComponent(records, context, index) {
 function tokenOf(text) {
   return /^\d+$/v.test(text) ? numeric(text) : identifierWithText(text, text);
 }
-
-/**
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
-function pluginCreator(opts = {}) {
-  return {
-    postcssPlugin: 'postcss-zindex',
-    /**
-     * @param {import('postcss').Root} css
-     * @param {import('postcss').Helpers} helpers
-     */
-    OnceExit(css, { result }) {
-      runRecordsPlugin(css, result, [
-        (records, browsers, context) => {
-          const lists = collectRecordSymbols(records, context.tokenLists);
-          zindexSymbols(lists, opts, undefined, records, context);
-        },
-      ]);
-    },
-  };
-}
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-
-export { moduleExports as default, moduleExports as 'module.exports' };

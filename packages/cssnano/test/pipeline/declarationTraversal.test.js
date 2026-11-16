@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { tokenize } from '@csstools/css-tokenizer';
 import { hostPlugin } from '../../src/pipeline/host.js';
+import { hostPlan } from '../../src/pipeline/hostPlan.js';
 
 /** The tokens of `text`, as the tokenizer reads them. */
 const tokenized = (text) => tokenize({ css: text }).slice(0, -1);
@@ -43,11 +44,13 @@ function valueStage(select) {
  */
 function hostOf(stages) {
   return hostPlugin(
-    stages.map((stage) => ({
-      entry: { create: () => stage },
-      options: {},
-      targets: false,
-    }))
+    hostPlan({
+      members: stages.map((stage) => ({
+        entry: { create: () => stage },
+        options: {},
+        targets: false,
+      })),
+    })
   );
 }
 

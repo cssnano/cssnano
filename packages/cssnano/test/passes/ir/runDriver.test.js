@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
+import { DeclarationRecord } from '../../../src/passes/ir/declarationRecord.js';
 import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import { assertRecordsMatchTree } from '../../../src/passes/ir/treeMatch.js';
 import { buildRecords } from '../../../src/passes/ir/buildRecords.js';
@@ -79,13 +80,26 @@ describe('the run driver', () => {
 
   test('the end of a run gives a message whose entry has no node a node made from its record', () => {
     const { context, state } = buildOf('a{color:red}', false);
-    const { links, root } = state.records;
-    const rule = links.firstChild(root.index);
-    const declaration = links.firstChild(rule);
-    // The template of a declaration the transforms made is a node of the tree;
-    // the entry itself has none yet.
-    state.records.entry(declaration).template = rule;
-    state.nodes[declaration] = undefined;
+    const { records } = state;
+    const rule = records.links.firstChild(records.root.index);
+    const color = records.links.firstChild(rule);
+    // A declaration a transform appends has no node until write-back makes one
+    // from its template, which is the existing declaration here.
+    const clone = new DeclarationRecord(
+      '\n  ',
+      'color',
+      records.entry(color).valueList,
+      false,
+      context.names.keysOf('color'),
+      0,
+      ': ',
+      null
+    );
+    clone.marked = true;
+    clone.template = color;
+    records.appendEntry(rule, clone);
+    records.touchDeclarations(rule);
+    const declaration = clone.index;
     context.messages.push({ index: declaration, type: 'removal', plugin: 'p' });
     const result = resultOf();
     runDriver.end(state, { browsers: BROWSERS, folded: false, result });

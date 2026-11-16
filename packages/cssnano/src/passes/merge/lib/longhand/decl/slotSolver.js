@@ -70,12 +70,10 @@ export function shortestWithFreeSlots(values, free, minify) {
   // A shorthand with every slot overridden is dead and goes in full.
   if (freeSlots.length === 0 || fixed.length === 0) return undefined;
 
-  let best = minify(values);
+  const best = minify(values);
   // One token is the shortest a shorthand gets, and then every slot, the
   // fixed ones included, already holds the same value.
   if (!best.includes(' ')) return undefined;
-  let improved = false;
-  const trial = [...values];
   // Equal values give equal results, so each distinct value is tried once, the
   // opposite slot's first.
   const candidates = freeSlots.map((slot) => {
@@ -88,28 +86,63 @@ export function shortestWithFreeSlots(values, free, minify) {
     return distinct;
   });
 
+  const search = new FreeSlotSearch(
+    values,
+    freeSlots,
+    candidates,
+    minify,
+    best
+  );
+  search.assign(0);
+  return search.improved ? search.best : undefined;
+}
+
+/** The depth-first search over the values the free slots may take. */
+class FreeSlotSearch {
+  /**
+   * @param {readonly string[]} values
+   * @param {readonly number[]} freeSlots
+   * @param {readonly string[][]} candidates the values to try, by free slot
+   * @param {(values: string[]) => string} minify
+   * @param {string} best the form to beat
+   */
+  constructor(values, freeSlots, candidates, minify, best) {
+    this.trial = [...values];
+    this.freeSlots = freeSlots;
+    this.candidates = candidates;
+    this.minify = minify;
+    this.best = best;
+    this.improved = false;
+  }
+
   /**
    * @param {number} position
    * @return {void}
    */
-  function assign(position) {
-    if (position === freeSlots.length) {
-      const candidate = minify(trial);
-      if (candidate.length < best.length) {
-        best = candidate;
-        improved = true;
+  assign(position) {
+    if (position === this.freeSlots.length) {
+      const candidate = this.minify(this.trial);
+      if (candidate.length < this.best.length) {
+        this.best = candidate;
+        this.improved = true;
       }
       return;
     }
-    const slot = freeSlots[position];
-    for (const value of candidates[position]) {
-      trial[slot] = value;
-      assign(position + 1);
+    const slot = this.freeSlots[position];
+    for (const value of this.candidates[position]) {
+      this.trial[slot] = value;
+      this.assign(position + 1);
     }
   }
+}
 
-  assign(0);
-  return improved ? best : undefined;
+/**
+ * @param {readonly number[]} setters the last plain setter of each slot
+ * @param {number} index the position of the declaration being rewritten
+ * @return {boolean[]} for each slot, whether a later declaration sets it
+ */
+function overriddenSlots(setters, index) {
+  return setters.map((setter) => setter > index);
 }
 
 /**
@@ -180,14 +213,11 @@ function freeOverriddenSlots(family, list, laneDecls, inserted, features) {
     }
 
     lastOverrider ??= lastPlainSetters(family, list, laneDecls, features);
-    if (lastOverrider.every((setter) => setter <= index)) continue;
+    const free = overriddenSlots(lastOverrider, index);
+    if (!free.includes(true)) continue;
 
     const values = parse(componentTexts(item));
-    const result = shortestWithFreeSlots(
-      values,
-      lastOverrider.map((setter) => setter > index),
-      minify
-    );
+    const result = shortestWithFreeSlots(values, free, minify);
     if (result !== undefined && result.length < item.value.length) {
       list.rewrite(target, item.prop, result);
     }
@@ -260,33 +290,30 @@ export function reduceFamilyLane(
   features
 ) {
   const count = family.longhands.length;
-  /** @type {Map<number, number> | undefined} */
-  let inserted;
-  let position = 0;
   const { parse } = formsOf(family);
+  const commits = new LaneCommits(
+    list,
+    family,
+    laneDecls.length,
+    important,
+    mayInsert,
+    features
+  );
   const lane = new SlotLane(
     count,
     (slots, contributing, fallbacks) => {
-      // Only a shorthand with a declaration after it can have a value overridden.
-      if (position < laneDecls.length - 1) inserted ??= new Map();
-      flush(
-        list,
-        family,
-        slots,
-        contributing,
-        fallbacks,
-        important,
-        mayInsert,
-        inserted,
-        features
-      );
+      commits.commit(slots, contributing, fallbacks);
     },
     list,
     features
   );
 
-  for (position = 0; position < laneDecls.length; position++) {
-    const decl = laneDecls[position];
+  for (
+    commits.position = 0;
+    commits.position < laneDecls.length;
+    commits.position++
+  ) {
+    const decl = laneDecls[commits.position];
     const item = list.at(decl);
     const property = isAll(item)
       ? undefined
@@ -320,9 +347,54 @@ export function reduceFamilyLane(
       }
     }
   }
-  position = laneDecls.length;
+  commits.position = laneDecls.length;
   lane.reset();
 
   if (laneDecls.length > 1)
-    freeOverriddenSlots(family, list, laneDecls, inserted, features);
+    freeOverriddenSlots(family, list, laneDecls, commits.inserted, features);
+}
+
+/** The state that each commit of a lane's run shares with the next. */
+class LaneCommits {
+  /**
+   * @param {BlockDeclarations} list
+   * @param {BoxFamily} family
+   * @param {number} length how many declarations the lane has
+   * @param {boolean} important
+   * @param {boolean} mayInsert whether every target supports the shorthand
+   * @param {ReadonlySet<string>} features the features every target supports
+   */
+  constructor(list, family, length, important, mayInsert, features) {
+    this.list = list;
+    this.family = family;
+    this.length = length;
+    this.important = important;
+    this.mayInsert = mayInsert;
+    this.features = features;
+    this.position = 0;
+    /** @type {Map<number, number> | undefined} */
+    this.inserted = undefined;
+  }
+
+  /**
+   * @param {import('./slotVector.js').SlotVector} slots
+   * @param {Set<number>} contributing
+   * @param {Set<number>} fallbacks
+   * @return {void}
+   */
+  commit(slots, contributing, fallbacks) {
+    // Only a shorthand with a declaration after it can have a value overridden.
+    if (this.position < this.length - 1) this.inserted ??= new Map();
+    flush(
+      this.list,
+      this.family,
+      slots,
+      contributing,
+      fallbacks,
+      this.important,
+      this.mayInsert,
+      this.inserted,
+      this.features
+    );
+  }
 }

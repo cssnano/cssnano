@@ -5,6 +5,7 @@ import defaultPreset from '#presets/default';
 import { configurePlugins } from '../../src/presets/configurePlugins.js';
 import { browserTargets } from '../../src/utils/browserTargets.js';
 import { hostPlugin } from '../../src/pipeline/host.js';
+import { hostPlan } from '../../src/pipeline/hostPlan.js';
 
 /** @typedef {import('../../src/presets/configurePlugins.js').PluginEntry} PluginEntry */
 
@@ -152,7 +153,9 @@ const member = (entry, { targets = false, options = {} } = {}) => ({
 describe('a host plugin creating its stages', () => {
   test('creates a stage that reads no targets once, when the plugin is configured', async () => {
     const calls = { count: 0, targets: [] };
-    const host = hostPlugin([member(countingEntry(calls))]);
+    const host = hostPlugin(
+      hostPlan({ members: [member(countingEntry(calls))] })
+    );
     assert.equal(calls.count, 1);
     const processor = postcss([host]);
     await processor.process('a{}', { from: undefined });
@@ -164,7 +167,9 @@ describe('a host plugin creating its stages', () => {
   test('creates a stage that reads targets once per targets array over several stylesheets', async () => {
     const calls = { count: 0, targets: [] };
     const processor = postcss([
-      hostPlugin([member(countingEntry(calls), { targets: true })]),
+      hostPlugin(
+        hostPlan({ members: [member(countingEntry(calls), { targets: true })] })
+      ),
     ]);
     await processor.process('a{}', { from: undefined });
     await processor.process('b{}', { from: undefined });
@@ -174,7 +179,9 @@ describe('a host plugin creating its stages', () => {
   test('gives a stage that reads targets the same frozen targets for every stylesheet', async () => {
     const calls = { count: 0, targets: [] };
     const processor = postcss([
-      hostPlugin([member(countingEntry(calls), { targets: true })]),
+      hostPlugin(
+        hostPlan({ members: [member(countingEntry(calls), { targets: true })] })
+      ),
     ]);
     await processor.process('a{}', { from: undefined });
     await processor.process('b{}', { from: undefined });
@@ -186,10 +193,14 @@ describe('a host plugin creating its stages', () => {
     const second = { count: 0, targets: [] };
     const options = {};
     postcss([
-      hostPlugin([
-        member(countingEntry(first), { options }),
-        member(countingEntry(second), { options }),
-      ]),
+      hostPlugin(
+        hostPlan({
+          members: [
+            member(countingEntry(first), { options }),
+            member(countingEntry(second), { options }),
+          ],
+        })
+      ),
     ]);
     assert.equal(first.count, 1);
     assert.equal(second.count, 1);
@@ -198,8 +209,8 @@ describe('a host plugin creating its stages', () => {
   test('creates a stage again for a host configured with other options', async () => {
     const calls = { count: 0, targets: [] };
     const entry = countingEntry(calls);
-    hostPlugin([member(entry)]);
-    hostPlugin([member(entry)]);
+    hostPlugin(hostPlan({ members: [member(entry)] }));
+    hostPlugin(hostPlan({ members: [member(entry)] }));
     assert.equal(calls.count, 2);
   });
 });

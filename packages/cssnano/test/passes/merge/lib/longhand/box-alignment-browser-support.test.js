@@ -4,9 +4,9 @@ import {
   processCSSFactory,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { supportsPlaceShorthands } from '../../../../../src/passes/merge/lib/longhand/targetSupport.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 /**
  * @param {string} overrideBrowserslist

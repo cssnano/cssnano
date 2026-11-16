@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import {
-  usePostCSSPlugin,
   processCSSFactory,
+  presetEntryPlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-unique-selectors/index.js';
+const plugin = presetEntryPlugin('uniqueSelectors');
 
 const { processCSS } = processCSSFactory(plugin);
 
@@ -101,5 +101,3 @@ test(
   'should keep an empty selector item when a selector ends with a comma',
   processCSS('a,{color:red}', ',a{color:red}')
 );
-
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

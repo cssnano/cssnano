@@ -6,7 +6,7 @@ import {
   RULE,
 } from '../passes/ir/blockRecord.js';
 import { writeContainerContext } from '../passes/ir/arenaEdits.js';
-import { removeEntry } from '../passes/ir/treeEdits.js';
+import { remove } from '../passes/ir/treeEdits.js';
 import { containerContext } from '../passes/ir/sameContainer.js';
 import { isDefaultNamespace } from '../plugins/postcss-minify-selectors/lib/isDefaultNamespace.js';
 import {
@@ -55,7 +55,7 @@ class RecordWalk {
    * @param {BlockRecords} records
    * @param {RunContext} context
    * @param {DeclarationPlans | undefined} plans what the walk applies to the declarations and rules, when the run has stages
-   * @param {LonghandRound | undefined} round the first longhand round, which the walk gives each block it leaves
+   * @param {LonghandRound | undefined} round the longhand round of the run, whose first pass the walk gives each block it leaves
    * @param {readonly string[] | undefined} browsers the targets of the merge, which the walk folds each rule's summaries for
    */
   constructor(records, context, plans, round, browsers) {
@@ -153,7 +153,7 @@ class RecordWalk {
       );
     }
     this.walkChildren(index, bits, own);
-    if (this.#round !== undefined) this.#round.block(this.#records, index);
+    if (this.#round !== undefined) this.#round.first(this.#records, index);
   }
 
   /**
@@ -167,7 +167,7 @@ class RecordWalk {
     const comments = this.#plans?.comments;
     if (comments === null || comments === undefined) return;
     const { text } = /** @type {NodeEntry} */ (this.#records.entry(index));
-    if (comments.canRemove(text)) removeEntry(this.#records, index);
+    if (comments.canRemove(text)) remove(this.#records, index);
   }
 
   /**
@@ -221,7 +221,7 @@ class RecordWalk {
  * @param {BlockRecords} records the build of the stylesheet
  * @param {RunContext} context the run that built the records; its token lists read the values
  * @param {DeclarationPlans} [plans] what the walk applies to the declarations and rules; none leaves them as built
- * @param {LonghandRound} [round] the first longhand round of the run
+ * @param {LonghandRound} [round] the longhand round of the run
  * @param {readonly string[]} [browsers] the targets the merge folds the summaries for; none when the merge is off
  * @return {ArenaIndex[]} the outermost overridable at-rules, in document order
  */

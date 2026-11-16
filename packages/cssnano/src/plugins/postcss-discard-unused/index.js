@@ -9,9 +9,6 @@ import { splitComma, splitSpace } from '../../values/splitTopLevel.js';
 import cssnanoUtils from '#utils';
 import { DECLARATION } from '../../passes/ir/blockRecord.js';
 import { preludeListOf } from '../../passes/ir/declaredText.js';
-import { collectRecordSymbols } from '../../pipeline/symbolLists.js';
-import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
-import { remove as removeRecord } from '../../passes/ir/treeEdits.js';
 import { commentFreeText } from '../../values/tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -316,36 +313,3 @@ export function discardUnusedSymbols(lists, options, remove, records, context) {
     filterNamespace(records, tokenLists, lists.namespaces, prefixes, remove);
   }
 }
-
-/**
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
-function pluginCreator(opts) {
-  return {
-    postcssPlugin: 'postcss-discard-unused',
-    /**
-     * @param {import('postcss').Root} css
-     * @param {import('postcss').Helpers} helpers
-     */
-    OnceExit(css, { result }) {
-      runRecordsPlugin(css, result, [
-        (records, browsers, context) => {
-          const lists = collectRecordSymbols(records, context.tokenLists);
-          discardUnusedSymbols(
-            lists,
-            opts,
-            (index) => removeRecord(records, index),
-            records,
-            context
-          );
-        },
-      ]);
-    },
-  };
-}
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-
-export { moduleExports as default, moduleExports as 'module.exports' };

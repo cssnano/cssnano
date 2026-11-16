@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { mergePass } from '../../../../../src/passes/merge/index.js';
-import { resolveTargets } from '../../../../../src/utils/browserTargets.js';
+import {
+  MERGE_TRANSFORMS,
+  onlyTransform,
+} from '../../../../../test/passes/onlyTransform.js';
 
 const fixtures = new URL('../../../../../../../frameworks/', import.meta.url);
 
@@ -13,7 +15,11 @@ const fixtures = new URL('../../../../../../../frameworks/', import.meta.url);
  */
 function mergeOnce(css) {
   const root = postcss.parse(css);
-  mergePass(root, resolveTargets({}, undefined));
+  postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+    .process(root, {
+      from: undefined,
+    })
+    .sync();
   return root.toString();
 }
 

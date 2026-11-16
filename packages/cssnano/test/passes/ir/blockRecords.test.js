@@ -13,7 +13,6 @@ import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { remove, takePlaceOf } from '../../../src/passes/ir/treeEdits.js';
 import { assertRecordsWellFormed } from '../../../src/passes/ir/recordsCheck.js';
-import { mergePass } from '../../../src/passes/merge/index.js';
 import { joinNonAdjacent } from '../../../src/passes/merge/lib/rules/nonAdjacentMerge.js';
 import runScan from '../../../src/passes/merge/lib/rules/scan.js';
 import {
@@ -29,6 +28,8 @@ import { adopt, moveRule } from '../../../src/passes/ir/arenaEdits.js';
 import { RuleRecord } from '../../../src/passes/ir/ruleRecord.js';
 import { nodeOf } from '../../../src/passes/ir/nodeTable.js';
 import { TokenLists } from '../../../src/passes/ir/tokenLists.js';
+import { onlyTransform, MERGE_TRANSFORMS } from '../onlyTransform.js';
+import { browserTargets } from '#utils/browser-targets';
 
 const selectorIds = new SelectorIds();
 const tokenLists = new TokenLists();
@@ -158,7 +159,14 @@ test('the merge pass should keep the records in step with the tree through its j
   const css =
     '@media (x){a{color:red}@media (y){b{width:1px}}c{color:blue}}@media (x){d{height:2px}@media (y){e{width:3px}}}';
   const root = postcss.parse(css);
-  assert.doesNotThrow(() => mergePass(root, ['chrome 120']));
+  assert.doesNotThrow(
+    () =>
+      postcss([
+        onlyTransform(MERGE_TRANSFORMS)({
+          [browserTargets]: { query: ['chrome 120'] },
+        }),
+      ]).process(root, { from: undefined }).root
+  );
 });
 
 test('childNodesOf should equal the children of the stylesheet after a sweep drops a block', () => {

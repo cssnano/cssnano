@@ -22,11 +22,6 @@ h1 {
 h1{width:calc(10px - (100px / var(--test)))}
 ```
 
-## Usage
-
-See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
-examples for your environment.
-
 ## Contributors
 
 See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/main/CONTRIBUTORS.md).

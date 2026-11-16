@@ -9,7 +9,6 @@ import {
   writeBefore,
   writeBlockRaws,
   writeDeclarationRaws,
-  writeLeadingWhitespace,
   writeRootAfter,
   writeStatementRaws,
 } from './rawEdits.js';
@@ -137,27 +136,19 @@ function normalizeAtRuleOrRule(records, tokenLists, index) {
 
 /**
  * Visits one entry: the whitespace before it, then its spellings. A comment
- * keeps its whitespace. `first` says the entry is the stylesheet's first child,
- * whose `leadingWhitespace` it trims too.
+ * keeps its whitespace.
  *
  * @param {BlockRecords} records
  * @param {TokenLists} tokenLists
  * @param {ArenaIndex} index
- * @param {boolean} first whether the entry is the first child of the stylesheet
  * @return {void}
  */
-export function normalizeEntry(records, tokenLists, index, first) {
+export function normalizeEntry(records, tokenLists, index) {
   const record = records.entry(index);
   if (record.kind === COMMENT) return;
   if (record.before) {
     const before = record.before.replaceAll(whitespaceRegex, '');
     writeBefore(records, index, before);
-    if (first && records.leadingWhitespace !== null) {
-      writeLeadingWhitespace(
-        records,
-        records.leadingWhitespace.replaceAll(whitespaceRegex, '')
-      );
-    }
   }
   if (record.kind === DECLARATION) {
     normalizeDeclaration(records, tokenLists, index);
@@ -173,22 +164,19 @@ export function normalizeEntry(records, tokenLists, index, first) {
  * @param {BlockRecords} records
  * @param {TokenLists} tokenLists
  * @param {ArenaIndex} container
- * @param {boolean} isRoot whether the container is the stylesheet
  * @return {void}
  */
-function normalizeChildren(records, tokenLists, container, isRoot) {
+function normalizeChildren(records, tokenLists, container) {
   const { links } = records;
-  let first = true;
   for (
     let entry = links.firstChild(container);
     entry !== -1;
     entry = links.nextSibling(entry)
   ) {
-    normalizeEntry(records, tokenLists, entry, isRoot && first);
-    first = false;
+    normalizeEntry(records, tokenLists, entry);
     const { kind } = records.entry(entry);
     if (kind === RULE || kind === AT_RULE_BLOCK) {
-      normalizeChildren(records, tokenLists, entry, false);
+      normalizeChildren(records, tokenLists, entry);
     }
   }
 }
@@ -202,6 +190,6 @@ function normalizeChildren(records, tokenLists, container, isRoot) {
  * @return {void}
  */
 export function normalizeRecordRaws(records, tokenLists) {
-  normalizeChildren(records, tokenLists, records.root.index, true);
+  normalizeChildren(records, tokenLists, records.root.index);
   writeRootAfter(records, '');
 }

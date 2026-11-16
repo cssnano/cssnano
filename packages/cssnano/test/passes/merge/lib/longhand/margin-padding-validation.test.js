@@ -1,9 +1,9 @@
 import { test, describe } from 'node:test';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
 import assert from 'node:assert/strict';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { boxBrowserKeeps } from '../../../../../src/passes/merge/lib/longhand/validateBox.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

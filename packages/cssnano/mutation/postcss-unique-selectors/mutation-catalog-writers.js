@@ -1,6 +1,6 @@
 export const name = 'postcss-unique-selectors: selector writer';
 export const target = new URL(
-  '../../src/plugins/postcss-unique-selectors/index.js',
+  '../../src/passes/ir/uniqueSelectors.js',
   import.meta.url
 ).href;
 // node --test expands this glob; a directory path would resolve to a single

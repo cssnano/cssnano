@@ -4,7 +4,7 @@ import data from '../../../script/passes/ir/lib/propertyGroups.json' with { type
 import { isConflictingProp } from '../../../script/passes/ir/lib/propertyRelations.js';
 import { conflicts } from '../../../script/passes/ir/lib/tableConflicts.js';
 import { setsLonghands } from '../../../src/passes/ir/spec.js';
-import { keysOfName } from '../../../src/passes/ir/propertyTable.js';
+import { PropertyNames } from '../../../src/passes/ir/propertyTable.js';
 
 // Every property the webref data names, plus its aliases.
 const known = [
@@ -88,13 +88,14 @@ test('the shipped relation matches the current relation for a name that is not a
 });
 
 test('a property table keys custom properties by their exact, case-sensitive name', () => {
-  assert.strictEqual(keysOfName('--Foo').key, '--Foo');
-  assert.strictEqual(keysOfName('--\\66 oo').key, '--foo');
-  assert.notStrictEqual(keysOfName('--Foo').key, keysOfName('--foo').key);
+  const names = new PropertyNames();
+  assert.strictEqual(names.keysOf('--Foo').key, '--Foo');
+  assert.strictEqual(names.keysOf('--\\66 oo').key, '--foo');
+  assert.notStrictEqual(names.keysOf('--Foo').key, names.keysOf('--foo').key);
 });
 
 test('a property table keys a known name to its longhands and their group sides', () => {
-  const keys = keysOfName('margin-inline-start');
+  const keys = new PropertyNames().keysOf('margin-inline-start');
   assert.strictEqual(keys.custom, false);
   assert.strictEqual(keys.known, true);
   assert.deepStrictEqual(keys.longhands, [
@@ -106,7 +107,34 @@ test('a property table keys a known name to its longhands and their group sides'
   ]);
 });
 
-test('a property table keys all as all, which no other key is compared against', () => {
-  assert.deepStrictEqual(keysOfName('all'), { custom: false, all: true });
-  assert.deepStrictEqual(keysOfName('\\61 ll'), { custom: false, all: true });
+test('a property table keys all as all, and the escaped spelling of all as the same keys', () => {
+  const names = new PropertyNames();
+  const all = names.keysOf('all');
+  assert.strictEqual(all.all, true);
+  assert.strictEqual(names.keysOf('\\61 ll'), all);
+});
+
+test('a property table gives a vendor-prefixed name the name and longhands of the property it aliases', () => {
+  const names = new PropertyNames();
+  const prefixed = names.keysOf('-webkit-transition');
+  const standard = names.keysOf('transition');
+  assert.strictEqual(prefixed.name, standard.name);
+  assert.deepStrictEqual(prefixed.longhands, standard.longhands);
+});
+
+test('a property table gives two spellings of one name the same keys object', () => {
+  const names = new PropertyNames();
+  assert.strictEqual(names.keysOf('COLOR'), names.keysOf('color'));
+});
+
+test('a property table gives a vendor-prefixed name and its standard name different ids', () => {
+  const names = new PropertyNames();
+  const prefixed = names.keysOf('-webkit-transition');
+  const standard = names.keysOf('transition');
+  assert.notStrictEqual(prefixed.id, standard.id);
+});
+
+test('a property table gives each distinct name a different id', () => {
+  const names = new PropertyNames();
+  assert.notStrictEqual(names.keysOf('color').id, names.keysOf('margin').id);
 });

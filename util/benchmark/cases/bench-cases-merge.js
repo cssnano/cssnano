@@ -2,7 +2,8 @@ import { existsSync } from 'node:fs';
 import postcss from 'postcss';
 import { browserTargets } from '../../../packages/cssnano/src/utils/browserTargets.js';
 
-const mergeDirectory = '../../../packages/cssnano/src/passes/merge/index.js';
+const onlyTransformPath =
+  '../../../packages/cssnano/test/passes/onlyTransform.js';
 const basePlugins = {
   mergeLonghand: 'postcss-merge-longhand',
   discardDuplicates: 'postcss-discard-duplicates',
@@ -11,16 +12,16 @@ const basePlugins = {
 
 /**
  * The creator of the plugin that runs one merge transform alone. A revision
- * with the merge pass exposes `transformPlugin`; an earlier one has a plugin
+ * with the test helper exposes `onlyTransform`; an earlier one has a plugin
  * per transform, so the same case runs on both sides of a comparison.
  *
  * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} transform
  * @returns {Promise<(options: object) => import('postcss').Plugin>}
  */
 async function loadTransform(transform) {
-  if (existsSync(new URL(mergeDirectory, import.meta.url))) {
-    const { transformPlugin } = await import(mergeDirectory);
-    return transformPlugin(transform);
+  if (existsSync(new URL(onlyTransformPath, import.meta.url))) {
+    const { onlyTransform } = await import(onlyTransformPath);
+    return onlyTransform([transform]);
   }
   const module = await import(
     `../../../packages/cssnano/src/plugins/${basePlugins[transform]}/index.js`
@@ -45,7 +46,7 @@ const creators = {
  */
 function mergeCase(transform, css, options = {}) {
   return {
-    plugin: 'cssnano-merge',
+    plugin: 'merge-transforms',
     createProcessor() {
       const targets = Object.freeze({ ...options.browserslist });
       return postcss([creators[transform]({ [browserTargets]: targets })]);
