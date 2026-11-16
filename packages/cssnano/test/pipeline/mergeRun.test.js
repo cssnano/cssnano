@@ -39,8 +39,9 @@ async function runCounted(css, options) {
 
 /**
  * Runs `css` through the default preset and returns the order of the build,
- * the two walks over the records and the end. Each walk is a round's root
- * call: the first round's is the walk down's, the second round's the walk up's.
+ * the two walks over the records and the end. The first pass runs in the walk
+ * down, the second in the walk up; each walk calls its pass once per block, so
+ * a phase is recorded once, when it starts.
  *
  * @param {string} css
  * @return {Promise<string[]>}
@@ -48,9 +49,14 @@ async function runCounted(css, options) {
 async function orderOfRun(css) {
   const build = runDriver.build;
   const end = runDriver.end;
-  const root = LonghandRound.prototype.root;
+  const first = LonghandRound.prototype.first;
+  const second = LonghandRound.prototype.second;
   /** @type {string[]} */
   const events = [];
+  /** @param {string} phase */
+  const record = (phase) => {
+    if (events.at(-1) !== phase) events.push(phase);
+  };
   runDriver.build = (...args) => {
     events.push('build');
     return build(...args);
@@ -59,9 +65,13 @@ async function orderOfRun(css) {
     events.push('end');
     return end(...args);
   };
-  LonghandRound.prototype.root = function (records) {
-    events.push(this.secondRound ? 'walk up' : 'walk down');
-    return root.call(this, records);
+  LonghandRound.prototype.first = function (records, index) {
+    record('walk down');
+    return first.call(this, records, index);
+  };
+  LonghandRound.prototype.second = function (records, index) {
+    record('walk up');
+    return second.call(this, records, index);
   };
   try {
     await postcss(defaultPreset({})).process(css, { from: undefined });
@@ -69,7 +79,8 @@ async function orderOfRun(css) {
   } finally {
     runDriver.build = build;
     runDriver.end = end;
-    LonghandRound.prototype.root = root;
+    LonghandRound.prototype.first = first;
+    LonghandRound.prototype.second = second;
   }
 }
 

@@ -143,19 +143,7 @@ export default function joinByDeclarations(block, mergeState) {
   }
   if (scan.start === Infinity) return false;
 
-  const index = new LastWriteIndex();
-  // Groups by their first declaration, in document order: a rule that
-  // repeats a group's declarations repeats that one too.
-  /** @type {Map<number, Group[]>} */
-  const groups = new Map();
-  // Rules whose selector lists grew; their text is written once at the end,
-  // since rewriting a long list on every join would cost quadratic time.
-  /** @type {Set<ArenaIndex>} the indices of the rules that grew */
-  const grown = new Set();
-  // Rules that gave up every declaration, detached together at the end:
-  // removing each one splices the parent's array, which takes quadratic time.
-  /** @type {Set<ArenaIndex>} the indices of the rules that gave up every declaration */
-  const emptied = new Set();
+  const join = new DeclarationJoin(mergeState);
   for (
     let position = /** @type {ChainPosition} */ (scan.start);
     position < entries.length;
@@ -164,20 +152,42 @@ export default function joinByDeclarations(block, mergeState) {
     const entry = entries[position];
     if (declarationRules[position]) {
       const record = /** @type {RuleRecord} */ (entry);
-      const outcome = joinIntoGroup(record);
+      const outcome = join.joinIntoGroup(record);
       if (outcome === 'emptied') continue;
-      register(record, position);
+      join.register(record, position);
     }
-    index.recordNode(mergeState.records, entry, position);
+    join.index.recordNode(mergeState.records, entry, position);
   }
-  removeRules(mergeState, emptied);
-  return grown.size > 0;
+  removeRules(mergeState, join.emptied);
+  return join.grown.size > 0;
+}
+
+/** The groups, the writes and the pending edits of one block's joins. */
+class DeclarationJoin {
+  /** @param {MergeState} mergeState */
+  constructor(mergeState) {
+    this.mergeState = mergeState;
+    this.index = new LastWriteIndex();
+    // Groups by their first declaration, in document order: a rule that
+    // repeats a group's declarations repeats that one too.
+    /** @type {Map<number, Group[]>} */
+    this.groups = new Map();
+    // Rules whose selector lists grew; their text is written once at the end,
+    // since rewriting a long list on every join would cost quadratic time.
+    /** @type {Set<ArenaIndex>} the indices of the rules that grew */
+    this.grown = new Set();
+    // Rules that gave up every declaration, detached together at the end:
+    // removing each one splices the parent's array, which takes quadratic time.
+    /** @type {Set<ArenaIndex>} the indices of the rules that gave up every declaration */
+    this.emptied = new Set();
+  }
 
   /**
    * @param {RuleRecord} rule
    * @param {ChainPosition} position
    */
-  function register(rule, position) {
+  register(rule, position) {
+    const { mergeState } = this;
     // A trimmed rule's record took its remaining declarations, so its keys are new.
     const { kept } = declarationKeys(mergeState.records, rule.index);
     // A declaration-only rule holds a declaration, so its first id exists.
@@ -192,9 +202,9 @@ export default function joinByDeclarations(block, mergeState) {
       selectors: null,
       bytes: -1,
     };
-    const same = groups.get(firstId);
+    const same = this.groups.get(firstId);
     if (same) same.push(group);
-    else groups.set(firstId, [group]);
+    else this.groups.set(firstId, [group]);
   }
 
   /**
@@ -202,7 +212,8 @@ export default function joinByDeclarations(block, mergeState) {
    * @return {'emptied' | 'trimmed' | null} whether the rule gave up all its
    * declarations, some of them, or joined no group
    */
-  function joinIntoGroup(laterRecord) {
+  joinIntoGroup(laterRecord) {
+    const { mergeState, index, groups } = this;
     const { records } = mergeState;
     const laterDeclarations = declarationsOf(records, laterRecord.index);
     const laterSet = declarationKeys(
@@ -275,10 +286,9 @@ export default function joinByDeclarations(block, mergeState) {
       elementKeysOf(mergeState.records, groupRecord.index) !== null;
     const gained = mergeState.addSelectors(groupRecord, addedIds);
     for (const id of addedIds) group.selectors?.add(id);
-    if (listed) recordGained(group, gained);
-    grown.add(group.rule.index);
-    const outcome = withdraw(laterRecord, claimed);
-    return outcome;
+    if (listed) this.recordGained(group, gained);
+    this.grown.add(group.rule.index);
+    return this.withdraw(laterRecord, claimed);
   }
 
   /**
@@ -290,10 +300,10 @@ export default function joinByDeclarations(block, mergeState) {
    * @param {readonly string[] | null} gained null when the group's elements
    * became unknown
    */
-  function recordGained(group, gained) {
+  recordGained(group, gained) {
     if (gained?.length === 0) return;
     for (const declaration of group.declarations)
-      index.record(declaration.keys, group.position, gained);
+      this.index.record(declaration.keys, group.position, gained);
   }
 
   /**
@@ -301,12 +311,12 @@ export default function joinByDeclarations(block, mergeState) {
    * @param {Set<ArenaIndex>} claimed the declarations that leave
    * @return {'emptied' | 'trimmed'}
    */
-  function withdraw(later, claimed) {
+  withdraw(later, claimed) {
     // The group's writes already stand at its position, so the declarations
     // that leave `later` record nothing.
-    const { records } = mergeState;
+    const { records } = this.mergeState;
     if (claimed.size === declarationKeys(records, later.index).kept.length) {
-      emptied.add(later.index);
+      this.emptied.add(later.index);
       return 'emptied';
     }
     removeDeclarations(records, later.index, claimed);

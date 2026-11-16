@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import charsetPlugin from '../../../src/plugins/postcss-normalize-charset/index.js';
+import { presetEntryPlugin } from '../../../../../util/testHelpers.js';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import {
@@ -21,7 +21,10 @@ import {
  * @return {string}
  */
 function nodeForm(css, opts) {
-  return postcss([charsetPlugin(opts)]).process(css, { from: undefined }).css;
+  const charsetPlugin = presetEntryPlugin('normalizeCharset');
+  return postcss(charsetPlugin({ add: true, ...opts })).process(css, {
+    from: undefined,
+  }).css;
 }
 
 /**

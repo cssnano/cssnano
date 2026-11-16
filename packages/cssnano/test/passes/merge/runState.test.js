@@ -1,7 +1,20 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { mergePass } from '../../../src/passes/merge/index.js';
+import { browserTargets } from '#utils/browser-targets';
+import { onlyTransform } from '../onlyTransform.js';
+
+/** The three merge transforms, in the order the preset runs them. */
+const MERGE_NAMES = ['mergeLonghand', 'discardDuplicates', 'mergeRules'];
+
+/**
+ * The merge plugin for one set of targets, run through the host.
+ *
+ * @param {readonly string[]} browsers
+ */
+function mergePlugin(browsers) {
+  return onlyTransform(MERGE_NAMES)({ [browserTargets]: { query: browsers } });
+}
 
 // `5dvh` needs support that the older target lacks, so whether `2em` is a
 // fallback depends on the targets.
@@ -15,9 +28,8 @@ const newTargets = ['chrome 120'];
  * @returns {string}
  */
 function mergeWith(source, browsers) {
-  const root = postcss.parse(source);
-  mergePass(root, browsers);
-  return root.toString();
+  return postcss([mergePlugin(browsers)]).process(source, { from: undefined })
+    .css;
 }
 
 test('merge over one stylesheet per target matches a fresh run for each target, in either order', () => {
@@ -41,9 +53,14 @@ test('merge over a stylesheet that throws leaves no run state behind, so the nex
       throw new Error('value read failed');
     },
   });
-  assert.throws(() => mergePass(root, newTargets), {
-    message: 'value read failed',
-  });
+  assert.throws(
+    () =>
+      postcss([mergePlugin(newTargets)]).process(root, { from: undefined })
+        .root,
+    {
+      message: 'value read failed',
+    }
+  );
 
   assert.equal(mergeWith(css, newTargets), expected);
 });

@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 
 const pluginUrl = new URL(
-  '../../../../../src/passes/merge/index.js',
+  '../../../../../test/passes/onlyTransform.js',
   import.meta.url
 ).href;
 
@@ -30,8 +30,8 @@ test('should merge many equivalent @media blocks nested in one style rule withou
   // The stylesheet is built in the child process: it is too large for argv.
   const script = `
     import postcss from 'postcss';
-    import { transformPlugin } from ${JSON.stringify(pluginUrl)};
-    const plugin = transformPlugin('mergeRules');
+    import { onlyTransform } from ${JSON.stringify(pluginUrl)};
+    const plugin = onlyTransform(['mergeRules']);
     const blocks = Array.from({ length: 16000 }, (_, index) =>
       '@media (a){.x' + index + '{color:red;margin:' + index + 'px}}'
     ).join('');
@@ -46,8 +46,8 @@ test('should merge many equivalent @media blocks nested in one style rule when t
   // The stylesheet is built in the child process: it is too large for argv.
   const script = `
     import postcss from 'postcss';
-    import { transformPlugin } from ${JSON.stringify(pluginUrl)};
-    const plugin = transformPlugin('mergeRules');
+    import { onlyTransform } from ${JSON.stringify(pluginUrl)};
+    const plugin = onlyTransform(['mergeRules']);
     const blocks = Array.from({ length: 16000 }, (_, index) =>
       '@media (a){.x' + index + '{color:red;margin:' + index + 'px}}'
     ).join('');
@@ -61,8 +61,8 @@ test('should merge many equal rules nested in a style rule that declares a prope
   // declaration, so slots emptied by earlier merges must be crossed once.
   const script = `
     import postcss from 'postcss';
-    import { transformPlugin } from ${JSON.stringify(pluginUrl)};
-    const plugin = transformPlugin('mergeRules');
+    import { onlyTransform } from ${JSON.stringify(pluginUrl)};
+    const plugin = onlyTransform(['mergeRules']);
     const rules = '.a{top:0}'.repeat(64000);
     postcss([plugin]).process('.r{color:red;' + rules + '}', { from: undefined }).css;
   `;
@@ -76,8 +76,8 @@ test('should remove many emptied @media blocks of one parent without quadratic s
   // failing the test.
   const script = `
     import postcss from 'postcss';
-    import { transformPlugin } from ${JSON.stringify(pluginUrl)};
-    const plugin = transformPlugin('mergeRules');
+    import { onlyTransform } from ${JSON.stringify(pluginUrl)};
+    const plugin = onlyTransform(['mergeRules']);
     const blocks = '@media print{.a{top:0}}'.repeat(160000);
     postcss([plugin]).process(blocks, { from: undefined }).css;
   `;
@@ -89,8 +89,8 @@ test('should merge many equal @media blocks each separated by a declaration of t
   // rule for the block's position.
   const script = `
     import postcss from 'postcss';
-    import { transformPlugin } from ${JSON.stringify(pluginUrl)};
-    const plugin = transformPlugin('mergeRules');
+    import { onlyTransform } from ${JSON.stringify(pluginUrl)};
+    const plugin = onlyTransform(['mergeRules']);
     const blocks = '@media print{.a{top:0}}color:red;'.repeat(256000);
     postcss([plugin]).process('.r{' + blocks + '}', { from: undefined }).css;
   `;
@@ -102,8 +102,8 @@ test('should try many pairs of rules with long selectors whose shared declaratio
   // that search must stay bounded.
   const script = `
     import postcss from 'postcss';
-    import { transformPlugin } from ${JSON.stringify(pluginUrl)};
-    const plugin = transformPlugin('mergeRules');
+    import { onlyTransform } from ${JSON.stringify(pluginUrl)};
+    const plugin = onlyTransform(['mergeRules']);
     const rules = Array.from({ length: 64000 }, (_, index) =>
       '.${'x'.repeat(40)}_' + index + '{top:0;height:' + index + 'px}'
     ).join('');
@@ -117,8 +117,8 @@ test('should resume a scan after many joins that each repeat a shared declaratio
   // rewrite can change must stop at the window rather than walk every rule.
   const script = `
     import postcss from 'postcss';
-    import { transformPlugin } from ${JSON.stringify(pluginUrl)};
-    const plugin = transformPlugin('mergeRules');
+    import { onlyTransform } from ${JSON.stringify(pluginUrl)};
+    const plugin = onlyTransform(['mergeRules']);
     const rules = Array.from({ length: 64000 }, (_, index) =>
       '.a' + index + '{color:red}.a' + index + '{top:' + index + 'px}'
     ).join('');

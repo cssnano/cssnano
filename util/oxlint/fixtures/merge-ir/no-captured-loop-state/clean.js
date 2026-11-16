@@ -21,3 +21,14 @@ export function reader(items) {
   const total = items.length;
   return () => total;
 }
+const LIMIT = 3;
+function belowLimit(item) {
+  return item < LIMIT;
+}
+export function inline(items, extra) {
+  return items.filter((item) => belowLimit(item) && item !== extra);
+}
+export function passed(items, limit) {
+  const within = (item, bound) => item < bound;
+  return items.filter((item) => within(item, limit));
+}

@@ -7,19 +7,6 @@ export type Component = {
     end: number;
 };
 /**
- * A top-level component: its text, its tokens, and the range of the caller's
- * token list that holds them, `end` exclusive. It is a `ValueComponent` that
- * has a list, so it is also a `RangePiece`.
- *
- * @typedef {{
- *   raw: string,
- *   tokens: import('@csstools/css-tokenizer').CSSToken[],
- *   list: readonly import('@csstools/css-tokenizer').CSSToken[],
- *   start: number,
- *   end: number,
- * }} Component
- */
-/**
  * Split raw CSS into top-level components and comma-separated parts. This is
  * deliberately lexical: property grammar is applied by the caller after
  * brackets and source ranges have been preserved.

@@ -38,25 +38,40 @@ function declarationKey(record) {
  * @return {Map<string, number>}
  */
 export function tallyDeclarations(records) {
-  /** @type {Set<number>} the arena indices of the entries the records reach */
-  const reached = new Set();
-  /** @type {Map<string, number>} */
-  const written = new Map();
+  const tally = new DeclarationTally(records);
+  tally.walk(records.root);
+  return tally.written;
+}
+
+/** The entries reached and the declarations counted by one walk. */
+class DeclarationTally {
+  /** @param {BlockRecords} records */
+  constructor(records) {
+    this.records = records;
+    /** @type {Set<number>} the arena indices of the entries the records reach */
+    this.reached = new Set();
+    /** @type {Map<string, number>} */
+    this.written = new Map();
+  }
+
   /** @param {number} index */
-  const reach = (index) => {
-    if (reached.has(index)) throw new Error(TWICE);
-    reached.add(index);
-  };
+  reach(index) {
+    if (this.reached.has(index)) throw new Error(TWICE);
+    this.reached.add(index);
+  }
+
   /** @param {DeclarationRecord} declaration */
-  const count = (declaration) => {
+  count(declaration) {
     const key = declarationKey(declaration);
-    written.set(key, (written.get(key) ?? 0) + 1);
-  };
+    this.written.set(key, (this.written.get(key) ?? 0) + 1);
+  }
+
   /** @param {RuleRecord} record */
-  const visitRule = (record) => {
-    reach(record.index);
+  visitRule(record) {
+    const { records } = this;
+    this.reach(record.index);
     if (record.context !== -1) {
-      walk(record);
+      this.walk(record);
       return;
     }
     for (
@@ -64,31 +79,30 @@ export function tallyDeclarations(records) {
       declaration !== undefined;
       declaration = nextDeclaration(records, declaration)
     ) {
-      count(declaration);
+      this.count(declaration);
     }
-  };
+  }
+
   /** @param {BlockRecord | RuleRecord} block the block, or the rule that nests */
-  const walk = (block) => {
-    const { links } = records;
+  walk(block) {
+    const { links } = this.records;
     for (
       let entry = links.firstChild(block.index);
       entry !== -1;
       entry = links.nextSibling(entry)
     ) {
-      const item = records.entry(entry);
+      const item = this.records.entry(entry);
       if (item.kind === RULE) {
-        visitRule(item);
+        this.visitRule(item);
       } else if (item.kind === STYLESHEET || item.kind === AT_RULE_BLOCK) {
-        reach(entry);
-        walk(item);
+        this.reach(entry);
+        this.walk(item);
       } else {
-        reach(entry);
-        if (item.kind === DECLARATION) count(item);
+        this.reach(entry);
+        if (item.kind === DECLARATION) this.count(item);
       }
     }
-  };
-  walk(records.root);
-  return written;
+  }
 }
 
 /**

@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { containerId } from '../../../src/passes/ir/structuralIds.js';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
-import { transformPlugin } from '../../../src/passes/merge/index.js';
+import { onlyTransform } from '../onlyTransform.js';
 import {
   blockRecordOf,
   buildTestRecords,
@@ -52,7 +52,7 @@ test('two at-rules that differ only in the comment after their name have differe
 
 test('discarding duplicates removes an at-rule whose name differs only in case', async () => {
   const result = await postcss([
-    transformPlugin('discardDuplicates', true)(),
+    onlyTransform(['discardDuplicates'], { consistencyChecks: true })(),
   ]).process('@MEDIA print{a{color:red}}@media print{a{color:red}}', {
     from: undefined,
   });

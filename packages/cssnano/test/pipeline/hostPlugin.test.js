@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { hostPlugin } from '../../src/pipeline/host.js';
+import { hostPlan } from '../../src/pipeline/hostPlan.js';
 import { runDriver } from '../../src/passes/ir/runDriver.js';
 
 /**
@@ -10,11 +11,13 @@ import { runDriver } from '../../src/passes/ir/runDriver.js';
  */
 const hostOf = (...stages) =>
   hostPlugin(
-    stages.map((stage) => ({
-      entry: { create: () => stage },
-      options: {},
-      targets: false,
-    }))
+    hostPlan({
+      members: stages.map((stage) => ({
+        entry: { create: () => stage },
+        options: {},
+        targets: false,
+      })),
+    })
   );
 
 describe('a host plugin', () => {

@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { tokenizer, TokenType } from '@csstools/css-tokenizer';
 import browserslist from 'browserslist';
-const plugin = transformPlugin('mergeRules');
+const plugin = onlyTransform(['mergeRules']);
 import { selectorInfoOf } from '../../../../src/passes/ir/ensureCompatibility.js';
+import { isInvalidSelector } from '../../../../src/plugins/postcss-minify-selectors/lib/isInvalidSelector.js';
 import { tokens as tokenize } from '../../../../src/utils/value.js';
 import {
   ensureCompatibility as legacyCompatibility,
@@ -25,7 +26,7 @@ import {
   runFuzz,
 } from '../../../../../../util/fuzzRunner.js';
 import { withTargets } from '../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../test/passes/onlyTransform.js';
 
 /**
  * Whether every selector is compatible with the browsers, each judged from the
@@ -36,9 +37,13 @@ import { transformPlugin } from '#passes/merge';
  * @return {boolean}
  */
 export function currentCompatibility(selectors, browsers) {
-  return selectors.every(
-    (selector) => selectorInfoOf(tokenize(selector), browsers).compatible
-  );
+  return selectors.every((selector) => {
+    const tokens = tokenize(selector);
+    return (
+      selectorInfoOf(tokens, browsers).compatible &&
+      !isInvalidSelector(selector, tokens, 0, tokens.length)
+    );
+  });
 }
 
 /** Return a canonical structural description, independent of generated names. */

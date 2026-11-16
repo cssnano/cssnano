@@ -3,8 +3,8 @@ import {
   processCSSFactory,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeLonghand');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeLonghand']);
 
 // Safari parses the shorthand's style, color and thickness components from 26.2.
 const { passthroughCSS, processCSS } = processCSSFactory([

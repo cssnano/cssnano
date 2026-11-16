@@ -5,8 +5,6 @@ import postcss from 'postcss';
 const { counter } = await import('../../../../../../../util/countTokenize.js');
 const { createRunContext } =
   await import('../../../../../src/passes/ir/runContext.js');
-const { keysOfName } =
-  await import('../../../../../src/passes/ir/propertyTable.js');
 const { declarationKeys } =
   await import('../../../../../src/passes/ir/declarationCache.js');
 const { declarationsOf } =
@@ -121,7 +119,7 @@ test('a rewrite of the property moves the keys to the new property', () => {
   editAndWrite(setupped, container, (list) =>
     list.rewrite(0, 'background-color', 'red')
   );
-  assert.deepEqual(records.entry(color).keys, keysOfName('background-color'));
+  assert.equal(records.entry(color).keys.name, 'background-color');
 });
 
 test('a rewritten declaration takes the id of an author-written declaration with the same text', () => {
@@ -274,7 +272,7 @@ test('a checked read throws when a rewrite changes an id without touching the de
   const [color] = declarationIndices(records, container);
   const record = records.entry(color);
   record.id = state.runContext.declarations.keyOf(
-    'color',
+    state.runContext.names.keysOf('color').id,
     state.runContext.valueIds.idOf(
       state.runContext.tokenLists,
       undefined,

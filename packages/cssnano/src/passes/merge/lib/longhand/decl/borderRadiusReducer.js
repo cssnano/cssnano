@@ -4,8 +4,11 @@ import { expandFourSides, fourSideCount } from '../parseTrbl.js';
 import { isGlobalKeyword } from '../validateRadius.js';
 import { allRadiusProperties } from './borderData.js';
 import { partitionLanes } from './radiusDescriptors.js';
+import cssnanoUtils from '#utils';
 
-/** @import {BlockDeclarations} from '../blockDeclarations.js'; */
+const { asciiLowerCase } = cssnanoUtils;
+
+/** @import {BlockDeclarations, DeclarationItem} from '../blockDeclarations.js'; */
 /** @import {SlotVector} from './slotVector.js'; */
 /** @import {RadiusDeclarationDescriptor} from './radiusDescriptors.js'; */
 /** @import {parseCornerRadius, parseRadiusShorthand} from '../validateRadius.js'; */
@@ -200,6 +203,35 @@ function canonicalizeSingleton(list, desc) {
 }
 
 /**
+ * Whether a declaration is the `border-radius` shorthand with a CSS-wide keyword,
+ * which sets every radius of its importance lane.
+ *
+ * @param {DeclarationItem} node
+ * @return {boolean}
+ */
+function isRadiusKeywordShorthand(node) {
+  return (
+    asciiLowerCase(node.prop) === 'border-radius' && isGlobalKeyword(node.value)
+  );
+}
+
+/**
+ * A `border-radius` CSS-wide keyword overrides every earlier radius declaration
+ * of its importance, whatever the features, so the earlier one is dead.
+ *
+ * @type {import('./overriddenDeclarations.js').CrossPropertyRule}
+ */
+const radiusKeywordPrecedence = {
+  overrides: (earlier, later) =>
+    isRadiusKeywordShorthand(later) &&
+    allRadiusProperties.has(asciiLowerCase(earlier.prop)),
+  footprint: (node) =>
+    isRadiusKeywordShorthand(node)
+      ? allRadiusProperties
+      : [asciiLowerCase(node.prop)],
+};
+
+/**
  * Intra-block dead-store elimination, bounded by `all` declarations.
  *
  * @param {BlockDeclarations} list
@@ -213,7 +245,8 @@ function eliminateRedundantDeclarations(list, lanes, features) {
       list,
       lane.map((descriptor) => descriptor.decl),
       features,
-      allRadiusProperties
+      allRadiusProperties,
+      radiusKeywordPrecedence
     );
   }
 }

@@ -13,6 +13,7 @@ export type Block = {
  * state, so one round can serve each pass over the blocks.
  */
 export declare class LonghandRound {
+    #private;
     placeShorthands: boolean;
     boxSupport: BoxSupport;
     pairShorthands: ReadonlySet<string>;
@@ -30,15 +31,11 @@ export declare class LonghandRound {
      * @type {ArenaIndex[]}
      */
     otherColumnBlocks: ArenaIndex[];
-    /** Whether the last `finishColumns` found such a block. */
-    setsOtherColumn: boolean;
     /**
-     * Whether this is the second round of its run. It gathers no column rule
-     * and no fact; it reduces a block's columns as it reaches them, using the
-     * first round's `setsOtherColumn`.
-     * @type {boolean}
+     * Whether the last `finishColumns` found such a block. The second pass reads
+     * it to reduce a block's columns as it reaches them.
      */
-    secondRound: boolean;
+    setsOtherColumn: boolean;
     /**
      * @param {boolean} placeShorthands
      * @param {BoxSupport} boxSupport
@@ -53,19 +50,23 @@ export declare class LonghandRound {
      */
     root(records: BlockRecords): void;
     /**
-     * Reduces a rule or at-rule block that holds a declaration; other entries are left alone.
+     * The first pass: reduces a rule or at-rule block that holds a declaration,
+     * and gathers its column rules for `finishColumns`. Other entries are left alone.
      * @param {BlockRecords} records
-     * @param {ArenaIndex} index the entry the round reaches
+     * @param {ArenaIndex} index the entry the pass reaches
      * @return {void}
      */
-    block(records: BlockRecords, index: ArenaIndex): void;
+    first(records: BlockRecords, index: ArenaIndex): void;
     /**
-     * The second round of this run. It shares these tables, and the first
-     * round's column fact, which `finishColumns` has set. Call it after
-     * `finishColumns`.
-     * @return {LonghandRound}
+     * The second pass, after `finishColumns`: reduces a block's columns with the
+     * first pass's `setsOtherColumn`, and commits each block at once. A block
+     * whose declarations and child links the build and merge left as they were
+     * is skipped, since the first pass already reduced it with the same facts.
+     * @param {BlockRecords} records
+     * @param {ArenaIndex} index the entry the pass reaches
+     * @return {void}
      */
-    second(): LonghandRound;
+    second(records: BlockRecords, index: ArenaIndex): void;
     /**
      * Reduces the column rules once every block is canonicalized, since a column
      * property set elsewhere is a whole-stylesheet fact; commits each column block once.
@@ -74,14 +75,6 @@ export declare class LonghandRound {
      */
     finishColumns(records: BlockRecords): void;
 }
-/**
- * @param {boolean} placeShorthands
- * @param {BoxSupport} boxSupport
- * @param {ReadonlySet<string>} pairShorthands
- * @param {RunContext} run the run whose tables and features the rounds read
- * @return {LonghandRound} the round that the rounds of one run share
- */
-export declare function longhandContext(placeShorthands: boolean, boxSupport: BoxSupport, pairShorthands: ReadonlySet<string>, run: RunContext): LonghandRound;
 /**
  * The longhand round on the records: the root's own declarations are folded,
  * then every block that holds a declaration, then the columns are finished.

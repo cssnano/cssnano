@@ -3,7 +3,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { mergePass } from '../../../src/passes/merge/index.js';
+import { onlyTransform, MERGE_TRANSFORMS } from '../onlyTransform.js';
+import { browserTargets } from '#utils/browser-targets';
 
 /**
  * @param {string} css
@@ -11,7 +12,13 @@ import { mergePass } from '../../../src/passes/merge/index.js';
  */
 function merge(css) {
   const root = postcss.parse(css, { from: 'in.css' });
-  mergePass(root, ['chrome 120'], { rules: true });
+  postcss([
+    onlyTransform(MERGE_TRANSFORMS)({
+      [browserTargets]: { query: ['chrome 120'] },
+    }),
+  ])
+    .process(root, { from: undefined })
+    .sync();
   return root;
 }
 

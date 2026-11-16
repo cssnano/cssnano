@@ -29,18 +29,6 @@ export function writeBefore(records, index, before) {
 }
 
 /**
- * Writes the whitespace the stylesheet prints before its first child, or null
- * when its node has none and the printer infers it.
- *
- * @param {BlockRecords} records
- * @param {string | null} leading
- * @return {void}
- */
-export function writeLeadingWhitespace(records, leading) {
-  records.leadingWhitespace = leading;
-}
-
-/**
  * Writes the whitespace the stylesheet prints after its last child.
  *
  * @param {BlockRecords} records

@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-merge-idents/index.js';
+import {
+  processCSSFactory,
+  presetEntryPlugin,
+} from '../../../../util/testHelpers.js';
 import { trackAtRuleSerializations } from './helpers/trackAtRuleSerializations.js';
+const plugin = presetEntryPlugin('mergeIdents');
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -15,7 +18,7 @@ const otherBody = '0%{opacity:1}to{opacity:0}';
  * @return {string}
  */
 function run(css) {
-  return postcss([plugin()]).process(css, { from: undefined }).css;
+  return postcss(plugin()).process(css, { from: undefined }).css;
 }
 
 test('should merge the string and identifier spellings of one name with a third name in a single pass', () => {
@@ -67,7 +70,7 @@ test('should not serialize bodies when names are defined in different condition 
   const root = postcss.parse(input);
   const getSerializationCalls = trackAtRuleSerializations(root);
 
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss(plugin()).process(root, { from: undefined });
 
   assert.strictEqual(getSerializationCalls(), 0);
   assert.strictEqual(root.toString(), input);

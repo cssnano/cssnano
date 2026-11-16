@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-const plugin = transformPlugin('mergeRules');
+const plugin = onlyTransform(['mergeRules']);
 import { repositoryFile } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 /** @param {string} css */
 function merge(css) {

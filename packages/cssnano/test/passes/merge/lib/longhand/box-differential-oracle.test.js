@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { boxTargets } from '../../../../../script/passes/merge/longhand/lib/fuzzBoxCheck.js';
 import { computedValues } from '../../../../../script/passes/merge/longhand/lib/fuzzBoxOracle.js';
 import { generateBoxRules } from '../../../../../script/passes/merge/longhand/lib/fuzzBoxGenerate.js';
@@ -9,7 +9,7 @@ import {
   repositoryFile,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 /**
  * The plugin may rewrite box declarations only if every physical side keeps

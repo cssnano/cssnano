@@ -20,13 +20,18 @@ import { receivingDeclarations } from './declarationCache.js';
 
 /**
  * Takes an entry out of its parent's records at once. The PostCSS child list
- * catches up at write-back.
+ * catches up at write-back. When the entry leads the stylesheet, the whitespace
+ * it held passes to the entry after it, as the PostCSS node removal leaves it.
  *
  * @param {BlockRecords} records
  * @param {ArenaIndex} index the index of the rule, the block of the at-rule, or another entry
  * @return {void}
  */
 export function remove(records, index) {
+  if (records.links.firstChild(records.root.index) === index) {
+    const next = records.links.nextSibling(index);
+    if (next !== -1) records.entry(next).before = records.entry(index).before;
+  }
   records.detach(index);
 }
 
@@ -41,15 +46,17 @@ export function remove(records, index) {
  * @return {void}
  */
 export function takePlaceOf(records, earlier, later) {
-  // The first child of the stylesheet leaves its place, so the whitespace it
-  // held passes to the child after it, which `later` gave to `earlier`.
-  const { root } = records;
-  if (records.links.firstChild(root.index) === earlier) {
-    records.leadingWhitespace = records.entry(later).before;
-  }
+  // The first child of the stylesheet leaves its place, so the child after it
+  // takes the whitespace of `later`, which `earlier` takes too.
+  const { before } = records.entry(later);
+  const next =
+    records.links.firstChild(records.root.index) === earlier
+      ? records.links.nextSibling(earlier)
+      : -1;
   records.moveBefore(later, earlier);
   records.detach(later);
-  records.entry(earlier).before = records.entry(later).before;
+  records.entry(earlier).before = before;
+  if (next !== -1 && next !== later) records.entry(next).before = before;
 }
 
 /**
@@ -110,38 +117,9 @@ export function appendToDeclarations(mergeState, receiving, incoming) {
  */
 export function removeRules(mergeState, indices) {
   const arena = mergeState.records;
-  const { root } = arena;
-  const first = arena.links.firstChild(root.index);
-  let leadsRoot = false;
   for (const index of indices) {
     // Under checks, `rule` throws when the root does not reach the rule.
     arena.rule(index);
-    leadsRoot ||= index === first;
-    arena.detach(index);
+    remove(arena, index);
   }
-  // Unlike `remove`, the rest keep their own whitespace, so the first of them
-  // takes its own as the leading whitespace of the stylesheet.
-  if (leadsRoot) {
-    const head = arena.links.firstChild(root.index);
-    arena.leadingWhitespace = head === -1 ? null : arena.entry(head).before;
-  }
-}
-
-/**
- * Removes an entry that a discard empties. When the entry leads the stylesheet,
- * the whitespace it held passes to the entry after it, as the PostCSS node
- * removal leaves it.
- *
- * @param {BlockRecords} records
- * @param {ArenaIndex} index
- * @return {void}
- */
-export function removeEntry(records, index) {
-  if (records.links.firstChild(records.root.index) === index) {
-    const { before } = records.entry(index);
-    records.leadingWhitespace = before;
-    const next = records.links.nextSibling(index);
-    if (next !== -1) records.entry(next).before = before;
-  }
-  records.detach(index);
 }

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import normalizeWhitespace from '../../../src/plugins/postcss-normalize-whitespace/index.js';
 import defaultPreset from '#presets/default';
+import { presetEntryPlugin } from '../../../../../util/testHelpers.js';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import {
@@ -12,15 +12,17 @@ import {
 import { AT_RULE_BLOCK, RULE } from '../../../src/passes/ir/blockRecord.js';
 import { writeRootAfter } from '../../../src/passes/ir/rawEdits.js';
 
+const normalizeWhitespace = presetEntryPlugin('normalizeWhitespace');
+
 /**
- * The text of `css` after the node form of normalizeWhitespace, which is the
+ * The text of `css` after the host runs only normalizeWhitespace, which is the
  * oracle the record form must match.
  *
  * @param {string} css
  * @return {Promise<string>}
  */
-async function nodeFormOf(css) {
-  const result = await postcss([normalizeWhitespace()]).process(css, {
+async function hostFormOf(css) {
+  const result = await postcss([normalizeWhitespace({})]).process(css, {
     from: undefined,
   });
   return result.css;
@@ -48,8 +50,11 @@ function recordFormOf(css) {
 }
 
 describe('normalizeWhitespace over the records', () => {
+  // The record form trims raws only, so no input has a value that the host's
+  // value stage also rewrites, such as the spaces in `red !  important` or
+  // the space before `;`.
   const corpus = [
-    '\n\n\ta {\n  color : red !  important ;\n}\n',
+    '\n\n\ta {\n  color : red;\n}\n',
     '@media  screen   and (min-width:1px)  {\n  a{ color:red }\n}\n',
     '@import url(x.css)  screen ;\n',
     '@layer  a , b ;\n',
@@ -61,8 +66,8 @@ describe('normalizeWhitespace over the records', () => {
   ];
 
   for (const css of corpus) {
-    test(`prints the same text as the node form for ${JSON.stringify(css)}`, async () => {
-      assert.equal(recordFormOf(css), await nodeFormOf(css));
+    test(`prints the same text as the host form for ${JSON.stringify(css)}`, async () => {
+      assert.equal(recordFormOf(css), await hostFormOf(css));
     });
   }
 });
@@ -85,21 +90,19 @@ describe('normalizeWhitespace visits one entry by index', () => {
     const state = runDriver.build(root, context);
     const { records } = state;
     const { tokenLists } = context;
-    /** @param {number} container @param {boolean} isRoot */
-    const visit = (container, isRoot) => {
-      let first = true;
+    /** @param {number} container */
+    const visit = (container) => {
       for (
         let entry = records.links.firstChild(container);
         entry !== -1;
         entry = records.links.nextSibling(entry)
       ) {
-        normalizeEntry(records, tokenLists, entry, isRoot && first);
-        first = false;
+        normalizeEntry(records, tokenLists, entry);
         const { kind } = records.entry(entry);
-        if (kind === RULE || kind === AT_RULE_BLOCK) visit(entry, false);
+        if (kind === RULE || kind === AT_RULE_BLOCK) visit(entry);
       }
     };
-    visit(records.root.index, true);
+    visit(records.root.index);
     writeRootAfter(records, '');
     runDriver.end(state, {
       browsers: [],

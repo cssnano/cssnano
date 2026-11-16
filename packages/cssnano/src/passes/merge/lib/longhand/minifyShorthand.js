@@ -3,7 +3,6 @@ import { hasHack } from '#stylehacks';
 import { normalizeValue } from './minifyShorthandValues.js';
 import { RUN_END } from './blockDeclarations.js';
 
-/** @import {AtRule, Root, Rule} from 'postcss' */
 /** @import {BlockDeclarations} from './blockDeclarations.js' */
 
 const { asciiLowerCase } = cssnanoUtils;

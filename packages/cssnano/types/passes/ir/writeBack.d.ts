@@ -31,18 +31,11 @@ export type Rebuilt = {
      * the children the container takes
      */
     children: ChildNode[];
-    /**
-     * the whitespace the first child of a
-     * root takes, or null for any other container
-     */
-    leading: string | null;
 };
 /**
  * @typedef {object} Rebuilt
  * @property {Container} container
  * @property {ChildNode[]} children the children the container takes
- * @property {string | null} leading the whitespace the first child of a
- * root takes, or null for any other container
  */
 /**
  * Gives each container its children, after every container has been emptied,
@@ -53,13 +46,11 @@ export type Rebuilt = {
  */
 export declare function replaceChildren(rebuilt: Rebuilt[]): void;
 /**
- * Walks the live tree from the root. Each rule it reaches gets its selector
- * written, and each container whose children differ from its node gets the
- * children the records hold, as does each plain rule that an edit changed the
- * children of. A container that already matches keeps its child list, and so
- * does a plain rule that no edit touched. A record the root does not reach,
- * dropped, keeps its node as it is, and a merged rule the root
- * does not reach gets none.
+ * Walks the live tree from the root and writes the records back to the nodes:
+ * the children of the containers an edit changed, the selectors and the marked
+ * fields of the rules, and the raws of every live child. A record the root does
+ * not reach, dropped, keeps its node as it is, and a merged rule the root does
+ * not reach gets none.
  *
  * @param {BlockRecords} records
  * @param {NodeTable} nodes the node of each entry, from the build; write-back adds the merged rules' nodes

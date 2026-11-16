@@ -6,6 +6,7 @@ import { runDriver } from '../../src/passes/ir/runDriver.js';
 import { discardEmptyRecords } from '../../src/passes/ir/discardRecords.js';
 import { nodeOf } from '../../src/passes/ir/nodeTable.js';
 import { walkUp } from '../../src/pipeline/walkUp.js';
+import { hostPlan } from '../../src/pipeline/hostPlan.js';
 
 /** @param {import('postcss').AnyNode} node */
 function label(node) {
@@ -43,6 +44,20 @@ function discardWithVisit(css, visit) {
 }
 
 /**
+ * The plan of a run with the named transforms on, each with empty options.
+ *
+ * @param {string[]} names the transforms on, by entry name
+ * @returns {import('../../src/pipeline/hostPlan.js').RunPlan}
+ */
+function planWith(names) {
+  return hostPlan(
+    /** @type {Partial<import('../../src/pipeline/hostPlan.js').RunPlan>} */ (
+      Object.fromEntries(names.map((name) => [name, {}]))
+    )
+  );
+}
+
+/**
  * The output of the walk up over `css` with the named transforms on.
  *
  * @param {string} css
@@ -53,7 +68,7 @@ function walkUpOutput(css, names) {
   const root = postcss.parse(css);
   const context = createRunContext(undefined);
   const state = runDriver.build(root, context);
-  walkUp(state, new Map(names.map((name) => [name, {}])), new Map());
+  walkUp(state, planWith(names));
   runDriver.end(state, { browsers: [], folded: false });
   return root.toString();
 }

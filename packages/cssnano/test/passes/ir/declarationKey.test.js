@@ -117,3 +117,58 @@ test('a declaration record points at a list that spells the value of its declara
     node.value
   );
 });
+
+test('should give an escaped name the key of the name it denotes', () => {
+  const context = createRunContext();
+  assert.equal(keyIn(context, '\\63 olor:red'), keyIn(context, 'color:red'));
+});
+
+test('should give an escaped custom property name the key of the custom property it denotes', () => {
+  const context = createRunContext();
+  assert.equal(keyIn(context, '--\\66 oo:1'), keyIn(context, '--foo:1'));
+});
+
+test('should give a vendor-prefixed name a different key from the standard name', () => {
+  const context = createRunContext();
+  assert.notEqual(
+    keyIn(context, '-webkit-transition:all 1s'),
+    keyIn(context, 'transition:all 1s')
+  );
+});
+
+test('should give a legacy alias a different key from its target', () => {
+  const context = createRunContext();
+  assert.notEqual(
+    keyIn(context, 'word-wrap:normal'),
+    keyIn(context, 'overflow-wrap:normal')
+  );
+});
+
+test('should give the name constructor a key of its own, equal to its repeat', () => {
+  const context = createRunContext();
+  const key = keyIn(context, 'constructor:1');
+  assert.equal(keyIn(context, 'constructor:1'), key);
+  assert.notEqual(key, keyIn(context, 'toString:1'));
+});
+
+test('should give the name toString a key of its own, equal to its repeat', () => {
+  const context = createRunContext();
+  const key = keyIn(context, 'toString:1');
+  assert.equal(keyIn(context, 'toString:1'), key);
+  assert.notEqual(key, keyIn(context, '__proto__:1'));
+});
+
+test('should give the name __proto__ a key of its own, equal to its repeat', () => {
+  const context = createRunContext();
+  const key = keyIn(context, '__proto__:1');
+  assert.equal(keyIn(context, '__proto__:1'), key);
+  assert.notEqual(key, keyIn(context, 'constructor:1'));
+});
+
+test('should give two declarations of one name in one run the same keys object', () => {
+  const context = createRunContext();
+  assert.equal(
+    recordDeclaration(declarationOf('COLOR:red'), context).keys,
+    recordDeclaration(declarationOf('color:blue'), context).keys
+  );
+});

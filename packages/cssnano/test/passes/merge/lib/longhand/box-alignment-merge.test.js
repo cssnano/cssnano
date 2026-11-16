@@ -3,8 +3,8 @@ import {
   processCSSFactory,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeLonghand');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeLonghand']);
 
 // Targets that all support place-*, so only the alignment grammar decides.
 const { passthroughCSS, processCSS } = processCSSFactory([

@@ -1,13 +1,13 @@
 import postcss from 'postcss';
 import preset from '../../../../src/presets/default.js';
-const mergeRules = transformPlugin('mergeRules');
+const mergeRules = onlyTransform(['mergeRules']);
 import {
   generateFamilyCases,
   generateResetCases,
   mergeOracleDifference,
 } from './lib/mergeOracle.js';
 import { checkCascade, generateCascadeCases } from './lib/fuzzCascade.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../test/passes/onlyTransform.js';
 // Turns the consistency checks on for the process, so a stale record or key
 // throws at the next read instead of quietly producing the same output.
 import '../enableChecks.js';

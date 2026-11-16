@@ -50,7 +50,9 @@ export type DefaultPluginOptions = {
     /**
      * Adds a `@charset` for files with non-ASCII characters. The preset sets `add: false`.
      */
-    normalizeCharset?: import('#postcss-normalize-charset').Options;
+    normalizeCharset?: {
+        add?: boolean;
+    };
     /**
      * Discards declarations that a later declaration overrides. Takes no options.
      */
@@ -170,15 +172,18 @@ export declare const defaultPluginEntries: readonly [readonly [{
     targets: true;
     optionKeys: never[];
 }], [{
-    create: (
-    /** @type {import('#postcss-normalize-charset').Options} */ options: import('#postcss-normalize-charset').Options) => import("#postcss-normalize-charset").Options;
+    create: (/** @type {{add?: boolean}} */ options: {
+        add?: boolean;
+    }) => {
+        add?: boolean;
+    };
 }, "normalizeCharset", {
     defaults: {
         add: boolean;
     };
     optionKeys: "add"[];
     transform: true;
-    after: true;
+    field: "normalizeCharset";
 }], [{
     create: (options: import("#postcss-normalize-string").Options) => import("../pipeline/host.js").Stage;
 }, "normalizeString", {
@@ -209,12 +214,12 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }, "discardOverridden", {
     optionKeys: never[];
     transform: true;
+    field: "discardOverridden";
 }], readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, "normalizeWhitespace", {
     readonly optionKeys: readonly [];
-    readonly walk: true;
-    readonly after: true;
+    readonly field: 'normalizeWhitespace';
 }], readonly [{
     readonly create: (/** @type {{rules?: boolean}} */ options: {
         rules?: boolean;
@@ -237,18 +242,18 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }, "discardEmpty", {
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly after: true;
+    readonly field: 'discardEmpty';
 }], [{
     create: (/** @type {Record<string, never>} */ options: Record<string, never>) => Record<string, never>;
 }, "uniqueSelectors", {
     optionKeys: never[];
     transform: true;
-    after: true;
+    field: "uniqueSelectors";
 }], readonly [{
     readonly create: (options: Record<string, never>) => Record<string, never>;
 }, "rawCache", {
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly after: true;
+    readonly field: 'rawCache';
 }]];
 //# sourceMappingURL=defaultPlugins.d.ts.map

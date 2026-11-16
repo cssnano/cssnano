@@ -20,26 +20,11 @@ import { writeRootAfter } from '../passes/ir/rawEdits.js';
 /** @import {ArenaIndex} from '../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../passes/ir/blockRecords.js' */
 /** @import {RunState} from '../passes/ir/runDriver.js' */
-/** @import {SymbolEntry} from './host.js' */
+/** @import {RunPlan} from './hostPlan.js' */
 /** @import {CharsetScan} from '../passes/ir/charset.js' */
 /** @import {RunContext} from '../passes/ir/runContext.js' */
 /** @import {LonghandRound} from '../passes/merge/lib/longhand/canonicalize.js' */
 /** @import {RecordSymbolLists} from './symbolLists.js' */
-
-/**
- * Whether an entry is the stylesheet's first child.
- *
- * @param {BlockRecords} records
- * @param {ArenaIndex} index
- * @return {boolean}
- */
-function isFirstChild(records, index) {
-  const { links, root } = records;
-  return (
-    links.parentOf(index) === root.index &&
-    links.firstChild(root.index) === index
-  );
-}
 
 /**
  * The walk up over the records, before the end of the run. It holds what the
@@ -70,21 +55,21 @@ class WalkUp {
 
   /**
    * @param {RunState} state the build of the stylesheet, after the merge transforms
-   * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the options of each transform on
-   * @param {ReadonlyMap<string, SymbolEntry>} symbols the advanced transforms on
+   * @param {RunPlan} plan the transforms of the run
    * @param {readonly string[] | undefined} browsers the targets the merge folded the summaries for
-   * @param {LonghandRound | undefined} round the second longhand round, which the walk gives each block it enters
+   * @param {LonghandRound | undefined} round the longhand round of the run, whose second pass the walk gives each block it enters
    */
-  constructor(state, transforms, symbols, browsers, round) {
+  constructor(state, plan, browsers, round) {
     this.#round = round;
     this.#records = state.records;
     this.#context = state.context;
-    this.#normalize = transforms.has('normalizeWhitespace');
-    this.#unique = transforms.has('uniqueSelectors');
+    this.#normalize = plan.normalizeWhitespace !== undefined;
+    this.#unique = plan.uniqueSelectors !== undefined;
     this.#browsers = browsers;
-    this.#lists = symbols.size > 0 ? createRecordSymbolLists() : undefined;
+    this.#lists =
+      plan.symbols.length > 0 ? createRecordSymbolLists() : undefined;
     this.#scan = createCharsetScan(this.#lists !== undefined);
-    this.#charset = transforms.has('normalizeCharset');
+    this.#charset = plan.normalizeCharset !== undefined;
   }
 
   /**
@@ -122,7 +107,8 @@ class WalkUp {
 
   /**
    * Runs the second round on a block the walk enters, before the block's
-   * children and before its visit.
+   * children and before its visit. The round skips a block the build and merge
+   * left unchanged.
    *
    * @param {ArenaIndex} index
    * @return {void}
@@ -131,7 +117,7 @@ class WalkUp {
     const records = this.#records;
     const { kind } = records.entry(index);
     if (this.#round && (kind === RULE || kind === AT_RULE_BLOCK)) {
-      this.#round.block(records, index);
+      this.#round.second(records, index);
     }
   }
 
@@ -144,7 +130,7 @@ class WalkUp {
     const context = this.#context;
     const { tokenLists } = context;
     if (this.#normalize) {
-      normalizeEntry(records, tokenLists, index, isFirstChild(records, index));
+      normalizeEntry(records, tokenLists, index);
     }
     if (this.#unique) {
       const changed = uniqueRuleSelectors(records, context, index);
@@ -173,19 +159,18 @@ class WalkUp {
  * charset decision, all before the end writes the records.
  *
  * @param {RunState} state the build of the stylesheet, after the merge transforms
- * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the options of each transform on, by entry name
- * @param {ReadonlyMap<string, SymbolEntry>} symbols the advanced transforms on, in order
+ * @param {RunPlan} plan the transforms of the run; its symbols run in entry order
  * @param {readonly string[]} [browsers] the targets the merge folded the summaries for; absent when it did not
- * @param {LonghandRound} [round] the second longhand round of the run, which runs on each block the walk reaches
+ * @param {LonghandRound} [round] the longhand round of the run, whose second pass runs on each block the walk reaches
  * @return {void}
  */
-export function walkUp(state, transforms, symbols, browsers, round) {
+export function walkUp(state, plan, browsers, round) {
   const { records, context } = state;
   round?.root(records);
   // The stylesheet's trailing whitespace is removed with the rest of the raws.
-  if (transforms.has('normalizeWhitespace')) writeRootAfter(records, '');
-  const walk = new WalkUp(state, transforms, symbols, browsers, round);
-  if (transforms.has('discardEmpty')) {
+  if (plan.normalizeWhitespace !== undefined) writeRootAfter(records, '');
+  const walk = new WalkUp(state, plan, browsers, round);
+  if (plan.discardEmpty !== undefined) {
     discardEmptyRecords(records, context, walk);
   } else if (walk.active) {
     visitEntriesInOrder(records, records.root.index, (index) => {
@@ -196,14 +181,15 @@ export function walkUp(state, transforms, symbols, browsers, round) {
   const { lists } = walk;
   if (lists) {
     /** @type {(index: ArenaIndex) => void} */
-    const remove = transforms.has('discardEmpty')
-      ? (index) => removeAndDiscardEmptiedRecords(records, context, index)
-      : (index) => detachRecord(records, index);
-    for (const { transform, options } of symbols.values()) {
+    const remove =
+      plan.discardEmpty !== undefined
+        ? (index) => removeAndDiscardEmptiedRecords(records, context, index)
+        : (index) => detachRecord(records, index);
+    for (const { transform, options } of plan.symbols) {
       transform(lists, options, remove, records, context);
     }
   }
-  const charsetOptions = transforms.get('normalizeCharset');
+  const charsetOptions = plan.normalizeCharset;
   if (charsetOptions) {
     if (lists) rescanNonAscii(records, context, walk.scan);
     decideCharset(

@@ -4,8 +4,8 @@ import {
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
 import { pseudoElements } from '../../../../../src/passes/ir/pseudoSupport.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeRules');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeRules']);
 
 const { processCSS } = processCSSFactory(plugin);
 

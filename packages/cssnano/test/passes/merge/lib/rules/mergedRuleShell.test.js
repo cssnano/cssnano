@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import runMerge from '../../../../../src/passes/merge/lib/rules/selectorMerger.js';
 import { fillSummaries } from '../../../../../src/passes/ir/selectorList.js';
@@ -12,7 +12,7 @@ import { RULE } from '../../../../../src/passes/ir/blockRecord.js';
 
 /** @import {BlockRecords} from '../../../../../src/passes/ir/blockRecords.js' */
 
-const plugin = transformPlugin('mergeRules');
+const plugin = onlyTransform(['mergeRules']);
 
 /**
  * The arena index of the live rule record with the selectors, or -1.

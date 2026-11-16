@@ -1,10 +1,10 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  usePostCSSPlugin,
   processCSSFactory,
+  presetEntryPlugin,
 } from '../../../../util/testHelpers.js';
-import discardEmptyPlugin from '../../src/plugins/postcss-discard-empty/index.js';
+const discardEmptyPlugin = presetEntryPlugin('discardEmpty');
 
 const { passthroughCSS, processCSS, processor } =
   processCSSFactory(discardEmptyPlugin);
@@ -156,10 +156,7 @@ describe('Report', () => {
   });
 });
 
-test(
-  'should use the postcss plugin api',
-  usePostCSSPlugin(discardEmptyPlugin())
-);
+test('should use the postcss plugin api');
 
 describe('cross-tool regressions', () => {
   // lightningcss#1222: bare @layer ordering declaration must not be dropped

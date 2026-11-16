@@ -54,6 +54,20 @@ test('a rewrite of the property alone keeps the tokens of the value', () => {
   assert.equal(list.at(0).tokens, before);
 });
 
+test('a rewrite to the property and the value the item has leaves the item unrewritten and the list unedited', () => {
+  const list = new BlockDeclarations([item('margin', '0')], [0], [0]);
+  list.rewrite(0, 'margin', '0');
+  assert.equal(list.at(0).rewritten, false);
+  assert.equal(list.edited, false);
+});
+
+test('a rewrite of the property alone, with the value the item has, still marks the item rewritten', () => {
+  const list = new BlockDeclarations([item('border-top', '1px')], [0], [0]);
+  list.rewrite(0, 'border', '1px');
+  assert.equal(list.at(0).rewritten, true);
+  assert.equal(list.edited, true);
+});
+
 test('a removal marks the item removed without moving it from its position', () => {
   const list = new BlockDeclarations(
     [item('color', 'red'), item('margin', '0')],

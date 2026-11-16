@@ -1,7 +1,10 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import discardEmptyPlugin from '../../src/plugins/postcss-discard-empty/index.js';
+import {
+  processCSSFactory,
+  presetEntryPlugin,
+} from '../../../../util/testHelpers.js';
+const discardEmptyPlugin = presetEntryPlugin('discardEmpty');
 
 const { passthroughCSS, processCSS, processor } =
   processCSSFactory(discardEmptyPlugin);

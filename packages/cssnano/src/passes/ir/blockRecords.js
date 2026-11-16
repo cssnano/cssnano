@@ -55,15 +55,6 @@ export class BlockRecords {
   declarations;
 
   /**
-   * The whitespace before the first child of the stylesheet, which PostCSS
-   * hands on when that child is removed, or null when the node has none and
-   * the printer infers it.
-   *
-   * @type {string | null}
-   */
-  leadingWhitespace = null;
-
-  /**
    * @param {BlockRecord} root the record of the stylesheet
    * @param {boolean} consistencyChecks whether the arena and its tables check their reads and edits
    */

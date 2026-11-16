@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
 /* A value that holds an important comment is kept as written: the longhand

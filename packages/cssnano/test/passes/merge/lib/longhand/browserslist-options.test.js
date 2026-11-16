@@ -5,12 +5,12 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { resolveTargets } from '../../../../../src/utils/browserTargets.js';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import {
   repositoryFile,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const longhands = 'a{align-items:center;justify-items:start}';
 

@@ -6,7 +6,7 @@ import data from '../../../../../script/passes/ir/lib/propertyGroups.json' with 
 import LastWriteIndex from '../../../../../src/passes/merge/lib/rules/lastWriteIndex.js';
 import { PropertyWrites } from '../../../../../src/passes/ir/propertyWrites.js';
 import { isConflictingProp } from '../../../../../script/passes/ir/lib/propertyRelations.js';
-import { keysOfName } from '../../../../../src/passes/ir/propertyTable.js';
+import { PropertyNames } from '../../../../../src/passes/ir/propertyTable.js';
 import { BlockRecords } from '../../../../../src/passes/ir/blockRecords.js';
 import {
   BlockRecord,
@@ -20,7 +20,8 @@ import { ruleRecordOf, entryOf, buildTestRecords } from './liveRecords.js';
 
 /** @param {string} prop */
 /** The keys of a property name, as a write index takes them. */
-const keys = (prop) => keysOfName(prop);
+const names = new PropertyNames();
+const keys = (prop) => names.keysOf(prop);
 /** A declaration record holding the keys of a property name. */
 const decl = (prop) => ({ keys: keys(prop) });
 
@@ -175,20 +176,23 @@ test('last-write index: a custom property conflicts only with its exact, case-se
   assert.equal(conflictsAfterWrite('--x', 'color'), false);
 });
 
-test('last-write index: unknown vendor properties conflict by leading segment', () => {
+test('last-write index: an unknown property conflicts with a later unknown write', () => {
   assert.equal(
     conflictsAfterWrite('-webkit-box-direction', '-moz-box-direction'),
     true
   );
   assert.equal(
     conflictsAfterWrite('-webkit-box-direction', '-webkit-foo'),
-    false
+    true
   );
 });
 
-test('last-write index: place-* acts as a wildcard for unknown vendor properties', () => {
-  assert.equal(conflictsAfterWrite('place-x-y', '-webkit-box-direction'), true);
-  assert.equal(conflictsAfterWrite('-webkit-box-direction', 'place-x-y'), true);
+test('last-write index: an unknown property conflicts with a known write', () => {
+  assert.equal(conflictsAfterWrite('color', '-webkit-foo'), true);
+});
+
+test('last-write index: a known property conflicts with a later unknown write', () => {
+  assert.equal(conflictsAfterWrite('-webkit-foo', 'color'), true);
 });
 
 /**

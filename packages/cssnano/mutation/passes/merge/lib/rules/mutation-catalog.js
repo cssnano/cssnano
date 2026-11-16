@@ -30,6 +30,31 @@ export const test = new URL(
 
 export const mutations = [
   {
+    name: 'an unknown property conflicts only with unknown writes',
+    target: irSource('propertyWrites.js'),
+    find: '    if (!keys.known) return this.#lastAny;',
+    replace: '    if (!keys.known) return this.#lastUnknown;',
+  },
+  {
+    name: 'a known property ignores the unknown writes',
+    target: irSource('propertyWrites.js'),
+    find: '    return Math.max(newest, this.#lastUnknown);',
+    replace: '    return newest;',
+  },
+  {
+    name: 'an unknown property takes only the unknown write positions',
+    target: irSource('writePositions.js'),
+    find: '    if (!keys.known) return firstUnclaimedIn(this.#any, claims);',
+    replace:
+      '    if (!keys.known) return firstUnclaimedIn(this.#unknown, claims);',
+  },
+  {
+    name: 'a known property skips the unknown write positions',
+    target: irSource('writePositions.js'),
+    find: '    return earliest(first, firstUnclaimedIn(this.#unknown, claims));',
+    replace: '    return first;',
+  },
+  {
     name: 'treat logical and physical longhands as unrelated',
     target: irSource('propertyWrites.js'),
     find: '      if (opposite)',
@@ -86,13 +111,26 @@ export const mutations = [
   {
     name: 'forget the writes of a block moved down in the backward pass',
     target: source('nonAdjacentMerge.js'),
-    find: '      index.moveWrites(records, earlierEntries, laterPosition);\n      adopt(mergeState.records, earlier.index, later.index);',
-    replace: '      adopt(mergeState.records, earlier.index, later.index);',
+    find: '    index.moveWrites(records, earlierEntries, laterPosition);\n    adopt(records, earlier.index, later.index);',
+    replace: '    adopt(records, earlier.index, later.index);',
   },
   {
     name: 'ignore !important in the declaration key',
     target: irSource('declarationKey.js'),
     find: '    trie = step(trie, important);\n',
+    replace: '',
+  },
+  {
+    name: 'number a property name by the property it resolves to',
+    target: irSource('propertyTable.js'),
+    find: '    const lowercased = propertyNameKey(prop);\n    let keys = this.#keys.get(lowercased);',
+    replace:
+      '    const lowercased = resolveProperty(propertyNameKey(prop)).name;\n    let keys = this.#keys.get(lowercased);',
+  },
+  {
+    name: 'build the keys of a property name again on every use',
+    target: irSource('propertyTable.js'),
+    find: '      this.#keys.set(lowercased, keys);\n',
     replace: '',
   },
   {
@@ -110,13 +148,14 @@ export const mutations = [
   {
     name: 'a removal of a rule that leaves it in its chain',
     target: irSource('treeEdits.js'),
-    find: 'export function remove(records, index) {\n  records.detach(index);\n',
-    replace: 'export function remove(records, index) {\n',
+    find: '    if (next !== -1) records.entry(next).before = records.entry(index).before;\n  }\n  records.detach(index);\n',
+    replace:
+      '    if (next !== -1) records.entry(next).before = records.entry(index).before;\n  }\n',
   },
   {
     name: 'a removal of a rule set that leaves its rules in their chains',
     target: irSource('treeEdits.js'),
-    find: '    arena.detach(index);\n',
+    find: '    remove(arena, index);\n',
     replace: '',
   },
   {
@@ -153,8 +192,8 @@ export const mutations = [
   {
     name: 'the ownership check accepts a block whose count differs from its chain',
     target: irSource('recordsCheck.js'),
-    find: '    if (count !== links.childCount(block.index)) throw new Error(OUT_OF_STEP);\n  };\n  reach(records.root);\n  visitChildren(records.root);',
-    replace: '  };\n  reach(records.root);\n  visitChildren(records.root);',
+    find: '    if (count !== links.childCount(block.index)) throw new Error(OUT_OF_STEP);\n',
+    replace: '',
   },
   {
     name: 'a removal of declarations stamps no container',
@@ -171,15 +210,15 @@ export const mutations = [
   {
     name: 'write-back appends to a rule that keeps its old children',
     target: irSource('writeBack.js'),
-    find: '    container.removeAll();\n  }\n  for (const { container, children, leading } of rebuilt) {',
+    find: '    container.removeAll();\n  }\n  for (const { container, children } of rebuilt) {',
     replace:
-      "    if (container.type !== 'rule') container.removeAll();\n  }\n  for (const { container, children, leading } of rebuilt) {",
+      "    if (container.type !== 'rule') container.removeAll();\n  }\n  for (const { container, children } of rebuilt) {",
   },
   {
-    name: 'write-back leaves a departed rule in its block',
+    name: 'write-back rebuilds no edited container',
     target: irSource('writeBack.js'),
-    find: '  if (records.links.childCount(block.index) !== children.length) return true;\n',
-    replace: '',
+    find: '    if (records.links.isEdited(container.index)) {\n',
+    replace: '    if (false) {\n',
   },
 
   {

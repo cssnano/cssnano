@@ -1,8 +1,8 @@
 import { test, describe } from 'node:test';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { addTests } from './helpers/boxTests.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const { processCSS } = processCSSFactory(plugin);
 

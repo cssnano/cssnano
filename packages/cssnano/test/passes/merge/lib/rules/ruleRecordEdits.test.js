@@ -134,8 +134,8 @@ function exchange(reversed) {
   const color = /** @type {ChildNode} */ (a.first);
   const width = /** @type {ChildNode} */ (b.first);
   const batch = [
-    { container: a, children: [width], leading: null },
-    { container: b, children: [color], leading: null },
+    { container: a, children: [width] },
+    { container: b, children: [color] },
   ];
   replaceChildren(reversed ? batch.toReversed() : batch);
   return { a, b, color, width };

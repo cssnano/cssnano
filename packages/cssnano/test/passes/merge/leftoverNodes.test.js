@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { buildTestRecords } from './lib/rules/liveRecords.js';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import merge, { transformPlugin } from '#passes/merge';
 import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import { mergeSharedDeclarations } from '../../../src/passes/merge/lib/rules/merge.js';
 import DeclarationScan from '../../../src/passes/merge/lib/rules/declarationScan.js';
 import RuleSequence from '../../../src/passes/merge/lib/rules/ruleSequence.js';
+import { MERGE_TRANSFORMS, onlyTransform } from '../onlyTransform.js';
 
-const plugin = transformPlugin('mergeRules');
+const plugin = onlyTransform(['mergeRules']);
 
 /**
  * Runs the rule merge over a parsed stylesheet, so the test keeps the nodes it
@@ -66,7 +66,7 @@ test('a follower that keeps a declaration keeps its node as its leftover', async
 });
 
 test('a leftover that a join gave longhands is canonicalized in the second round', async () => {
-  const result = await postcss([merge()]).process(
+  const result = await postcss([onlyTransform(MERGE_TRANSFORMS)({})]).process(
     'a{}a{margin-top:1px;margin-right:1px;color:red}a{margin-bottom:1px;margin-left:1px;padding:0}b{color:red;width:1px}',
     { from: undefined }
   );

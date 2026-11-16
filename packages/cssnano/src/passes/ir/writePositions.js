@@ -62,59 +62,6 @@ function earliest(a, b) {
 }
 
 /**
- * The positions of the writes that `SegmentIndex` groups, in the same groups,
- * so `firstUnclaimed` reads the lists `SegmentIndex.newest` reads.
- */
-class SegmentPositions {
-  /** @type {Map<string, {lengths: Map<number, number[]>, names: Map<string, number[]>}>} */
-  #byLead = new Map();
-  /** @type {{lengths: Map<number, number[]>, names: Map<string, number[]>}} */
-  #everything = { lengths: new Map(), names: new Map() };
-
-  /**
-   * @param {{lead: string, length: number, bare: string}} keys
-   * @param {number} position
-   */
-  record({ lead, length, bare }, position) {
-    let leading = this.#byLead.get(lead);
-    if (!leading) {
-      leading = { lengths: new Map(), names: new Map() };
-      this.#byLead.set(lead, leading);
-    }
-    for (const group of [leading, this.#everything]) {
-      appendPosition(group.lengths, length, position);
-      appendPosition(group.names, bare, position);
-    }
-  }
-
-  /**
-   * The earliest unclaimed position of a related property, or -1. Groups are
-   * chosen as `SegmentIndex.newest` chooses them.
-   *
-   * @param {{lead: string, length: number, bare: string}} keys
-   * @param {Claims} claims
-   * @return {number}
-   */
-  firstUnclaimed({ lead, length, bare }, claims) {
-    const groups =
-      lead === 'place'
-        ? [this.#everything]
-        : [this.#byLead.get(lead), this.#byLead.get('place')];
-    let first = -1;
-    for (const group of groups) {
-      if (!group) continue;
-      first = earliest(first, firstUnclaimedIn(group.names.get(bare), claims));
-      for (const [recordedLength, positions] of group.lengths) {
-        if (recordedLength !== length) {
-          first = earliest(first, firstUnclaimedIn(positions, claims));
-        }
-      }
-    }
-    return first;
-  }
-}
-
-/**
  * The position of every write, grouped by the keys `PropertyWrites` uses, so
  * the earliest unclaimed conflicting write is read from the lists those keys
  * name. Claims only grow between queries on one index, which lets each cursor
@@ -125,14 +72,14 @@ export class WritePositions {
   #customs = new Map();
   /** @type {number[]} */
   #all = [];
-  /** @type {Map<string | number, number[]>} */
-  #names = new Map();
+  /** @type {number[]} every write but a custom one, as `PropertyWrites` keeps them */
+  #any = [];
+  /** @type {number[]} the writes of unknown properties */
+  #unknown = [];
   /** @type {Map<string | number, number[]>} */
   #longhands = new Map();
   /** @type {Map<string | number, number[]>} */
   #sides = new Map();
-  #anySegments = new SegmentPositions();
-  #unknownSegments = new SegmentPositions();
 
   /**
    * @param {PropertyKeys} keys the keys of a declaration's property name
@@ -143,17 +90,16 @@ export class WritePositions {
       appendPosition(this.#customs, keys.key, position);
       return;
     }
+    appendToList(this.#any, position);
     if (keys.all) {
       appendToList(this.#all, position);
       return;
     }
-    appendPosition(this.#names, keys.name, position);
+    if (!keys.known) appendToList(this.#unknown, position);
     for (const { name, side } of keys.longhands) {
       appendPosition(this.#longhands, name, position);
       if (side) appendPosition(this.#sides, side, position);
     }
-    this.#anySegments.record(keys, position);
-    if (!keys.known) this.#unknownSegments.record(keys, position);
   }
 
   /**
@@ -172,13 +118,8 @@ export class WritePositions {
     if (keys.all) {
       throw new RangeError('firstUnclaimed takes no all declaration');
     }
-    let first = earliest(
-      firstUnclaimedIn(this.#names.get(keys.name), claims),
-      keys.subjectToAll ? firstUnclaimedIn(this.#all, claims) : -1
-    );
-    if (!keys.known) {
-      return earliest(first, this.#anySegments.firstUnclaimed(keys, claims));
-    }
+    if (!keys.known) return firstUnclaimedIn(this.#any, claims);
+    let first = keys.subjectToAll ? firstUnclaimedIn(this.#all, claims) : -1;
     for (const { name, opposite } of keys.longhands) {
       first = earliest(
         first,
@@ -191,6 +132,6 @@ export class WritePositions {
         );
       }
     }
-    return earliest(first, this.#unknownSegments.firstUnclaimed(keys, claims));
+    return earliest(first, firstUnclaimedIn(this.#unknown, claims));
   }
 }

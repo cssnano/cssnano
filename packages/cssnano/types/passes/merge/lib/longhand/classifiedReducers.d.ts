@@ -23,6 +23,7 @@ import type { Block } from './canonicalize.js';
  *   families: Map<FamilyDeclarations['family'], FamilyDeclarations> | null,
  * }} state
  * @param {LonghandRound} context
+ * @param {boolean} columnsDeferred whether the round is the first, which defers its column rules
  * @return {void}
  */
 export declare function reduceClassifiedContainer(block: Block, state: {
@@ -34,7 +35,7 @@ export declare function reduceClassifiedContainer(block: Block, state: {
     borderDeclarations: number[];
     hasForeignBorder: boolean;
     families: Map<FamilyDeclarations['family'], FamilyDeclarations> | null;
-}, context: LonghandRound): void;
+}, context: LonghandRound, columnsDeferred: boolean): void;
 export type FamilyDeclarations = {
     family: PairFamily | AlignmentFamilyConfig;
     decls: number[];

@@ -200,7 +200,9 @@ function joinBlocksBackward(block, mergeState) {
     const later = key === null ? undefined : next.get(key);
     let at = position;
     if (later) {
-      const moved = joinBlock(
+      const moved = joinBlockBackward(
+        mergeState,
+        index,
         /** @type {BlockRecord} */ (entry),
         /** @type {BlockRecord} */ (mergeState.records.block(later.block)),
         last - later.position
@@ -217,32 +219,35 @@ function joinBlocksBackward(block, mergeState) {
     if (at === position) index.recordNode(records, entry, last - position);
   }
   return joined;
+}
 
-  /**
-   * @param {BlockRecord} earlier
-   * @param {BlockRecord} later
-   * @param {number} laterPosition the mirrored position of `later`
-   * @return {'up' | 'down' | null} where the joined block stands
-   */
-  function joinBlock(earlier, later, laterPosition) {
-    const laterEntries = subtreeEntries(mergeState.records, later);
-    if (!laterEntries) return null;
-    if (!index.conflictsSinceIn(records, laterEntries, laterPosition)) {
-      adopt(mergeState.records, earlier.index, later.index);
-      remove(mergeState.records, later.index);
-      return 'up';
-    }
-    // The earlier block's content stays first, so source order is kept.
-    const earlierEntries = subtreeEntries(mergeState.records, earlier);
-    if (!earlierEntries) return null;
-    if (!index.conflictsSinceIn(records, earlierEntries, laterPosition)) {
-      index.moveWrites(records, earlierEntries, laterPosition);
-      adopt(mergeState.records, earlier.index, later.index);
-      takePlaceOf(mergeState.records, earlier.index, later.index);
-      return 'down';
-    }
-    return null;
+/**
+ * @param {MergeState} mergeState
+ * @param {LastWriteIndex} index
+ * @param {BlockRecord} earlier
+ * @param {BlockRecord} later
+ * @param {number} laterPosition the mirrored position of `later`
+ * @return {'up' | 'down' | null} where the joined block stands
+ */
+function joinBlockBackward(mergeState, index, earlier, later, laterPosition) {
+  const { records } = mergeState;
+  const laterEntries = subtreeEntries(records, later);
+  if (!laterEntries) return null;
+  if (!index.conflictsSinceIn(records, laterEntries, laterPosition)) {
+    adopt(records, earlier.index, later.index);
+    remove(records, later.index);
+    return 'up';
   }
+  // The earlier block's content stays first, so source order is kept.
+  const earlierEntries = subtreeEntries(records, earlier);
+  if (!earlierEntries) return null;
+  if (!index.conflictsSinceIn(records, earlierEntries, laterPosition)) {
+    index.moveWrites(records, earlierEntries, laterPosition);
+    adopt(records, earlier.index, later.index);
+    takePlaceOf(records, earlier.index, later.index);
+    return 'down';
+  }
+  return null;
 }
 
 /**
@@ -277,12 +282,16 @@ function joinInParent(block, mergeState, rules) {
       const direction =
         entry.kind === RULE
           ? joinRule(
+              mergeState,
+              index,
               /** @type {RuleRecord} */ (earlierEntry),
               entry,
               earlier.position,
               position
             )
           : joinBlock(
+              mergeState,
+              index,
               /** @type {BlockRecord} */ (earlierEntry),
               /** @type {BlockRecord} */ (entry),
               earlier.position,
@@ -305,73 +314,84 @@ function joinInParent(block, mergeState, rules) {
     index.recordNode(records, entry, position);
   }
   return joined;
+}
 
-  /**
-   * Appends the declarations of `later` to `earlier`. The cache keeps the
-   * writes of `earlier` from one join to the next, so each join does not
-   * rebuild them in the growing rule.
-   *
-   * @param {RuleRecord} earlier
-   * @param {RuleRecord} later
-   * @return {void}
-   */
-  function receive(earlier, later) {
+/**
+ * Appends the declarations of `later` to `earlier`, or moves the earlier rule
+ * down to the later one. The cache keeps the writes of `earlier` from one join
+ * to the next, so each join does not rebuild them in the growing rule.
+ *
+ * @param {MergeState} mergeState
+ * @param {LastWriteIndex} index
+ * @param {RuleRecord} earlier
+ * @param {RuleRecord} later
+ * @param {number} earlierPosition
+ * @param {number} laterPosition
+ * @return {'up' | 'down' | null} where the joined rule stands
+ */
+function joinRule(
+  mergeState,
+  index,
+  earlier,
+  later,
+  earlierPosition,
+  laterPosition
+) {
+  const { records } = mergeState;
+  if (!mergeState.canMerge(earlier, later)) return null;
+  // Writes are recorded before the rewrite, while both rules still hold their
+  // declarations and cached element keys. Equal selectors give equal keys.
+  if (!index.conflictsSinceIn(records, [later], earlierPosition)) {
+    index.moveWrites(records, [later], earlierPosition);
     appendToDeclarations(mergeState, earlier.index, later.index);
+    remove(records, later.index);
+    return 'up';
   }
+  if (!index.conflictsSinceIn(records, [earlier], earlierPosition)) {
+    index.moveWrites(records, [earlier, later], laterPosition);
+    appendToDeclarations(mergeState, earlier.index, later.index);
+    // A move edits the parent at once, after the pending removals.
+    takePlaceOf(records, earlier.index, later.index);
+    return 'down';
+  }
+  return null;
+}
 
-  /**
-   * @param {RuleRecord} earlier
-   * @param {RuleRecord} later
-   * @param {number} earlierPosition
-   * @param {number} laterPosition
-   * @return {'up' | 'down' | null} where the joined rule stands
-   */
-  function joinRule(earlier, later, earlierPosition, laterPosition) {
-    if (!mergeState.canMerge(earlier, later)) return null;
-    // Writes are recorded before the rewrite, while both rules still hold their
-    // declarations and cached element keys. Equal selectors give equal keys.
-    if (!index.conflictsSinceIn(records, [later], earlierPosition)) {
-      index.moveWrites(records, [later], earlierPosition);
-      receive(earlier, later);
-      remove(mergeState.records, later.index);
-      return 'up';
-    }
-    if (!index.conflictsSinceIn(records, [earlier], earlierPosition)) {
-      index.moveWrites(records, [earlier, later], laterPosition);
-      receive(earlier, later);
-      // A move edits the parent at once, after the pending removals.
-      takePlaceOf(mergeState.records, earlier.index, later.index);
-      return 'down';
-    }
-    return null;
+/**
+ * @param {MergeState} mergeState
+ * @param {LastWriteIndex} index
+ * @param {BlockRecord} earlier
+ * @param {BlockRecord} later
+ * @param {number} earlierPosition
+ * @param {number} laterPosition
+ * @return {'up' | 'down' | null} where the joined block stands
+ */
+function joinBlock(
+  mergeState,
+  index,
+  earlier,
+  later,
+  earlierPosition,
+  laterPosition
+) {
+  const { records } = mergeState;
+  const laterEntries = subtreeEntries(records, later);
+  if (!laterEntries) return null;
+  if (!index.conflictsSinceIn(records, laterEntries, earlierPosition)) {
+    index.moveWrites(records, laterEntries, earlierPosition);
+    adopt(records, earlier.index, later.index);
+    remove(records, later.index);
+    return 'up';
   }
-
-  /**
-   * @param {BlockRecord} earlier
-   * @param {BlockRecord} later
-   * @param {number} earlierPosition
-   * @param {number} laterPosition
-   * @return {'up' | 'down' | null} where the joined block stands
-   */
-  function joinBlock(earlier, later, earlierPosition, laterPosition) {
-    const laterEntries = subtreeEntries(mergeState.records, later);
-    if (!laterEntries) return null;
-    if (!index.conflictsSinceIn(records, laterEntries, earlierPosition)) {
-      index.moveWrites(records, laterEntries, earlierPosition);
-      adopt(mergeState.records, earlier.index, later.index);
-      remove(mergeState.records, later.index);
-      return 'up';
-    }
-    // The earlier block's content stays first, so source order is kept.
-    const earlierEntries = subtreeEntries(mergeState.records, earlier);
-    if (!earlierEntries) return null;
-    if (!index.conflictsSinceIn(records, earlierEntries, earlierPosition)) {
-      index.moveWrites(records, earlierEntries, laterPosition);
-      index.moveWrites(records, laterEntries, laterPosition);
-      adopt(mergeState.records, earlier.index, later.index);
-      takePlaceOf(mergeState.records, earlier.index, later.index);
-      return 'down';
-    }
-    return null;
+  // The earlier block's content stays first, so source order is kept.
+  const earlierEntries = subtreeEntries(records, earlier);
+  if (!earlierEntries) return null;
+  if (!index.conflictsSinceIn(records, earlierEntries, earlierPosition)) {
+    index.moveWrites(records, earlierEntries, laterPosition);
+    index.moveWrites(records, laterEntries, laterPosition);
+    adopt(records, earlier.index, later.index);
+    takePlaceOf(records, earlier.index, later.index);
+    return 'down';
   }
+  return null;
 }

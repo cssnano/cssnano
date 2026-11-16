@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import {
-  usePostCSSPlugin,
   processCSSFactory,
+  presetEntryPlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-discard-unused/index.js';
+const plugin = presetEntryPlugin('discardUnused');
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -169,5 +169,3 @@ test(
   'should not crash with empty layers',
   processCSS('@layer a;', '@layer a;')
 );
-
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

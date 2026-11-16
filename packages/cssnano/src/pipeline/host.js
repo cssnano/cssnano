@@ -1,12 +1,8 @@
 import { browserTargets, resolveTargets } from '#utils/browser-targets';
-import { walkUp } from './walkUp.js';
-import { discardOverriddenAtRules } from './overridable.js';
-import { walkDown } from './walkDown.js';
 import { declarationPlansOf } from './declarationWalk.js';
 import { commentStateOf } from './comments/commentState.js';
-import rawCache from '../utils/rawCache.js';
-import { createRunContext } from '../passes/ir/runContext.js';
-import { runDriver } from '../passes/ir/runDriver.js';
+import { noTargets, runStylesheet } from './runStylesheet.js';
+import { isEmptyPlan } from './hostPlan.js';
 
 /**
  * A host plugin runs the stages of one run in order, at OnceExit, so the
@@ -17,6 +13,7 @@ import { runDriver } from '../passes/ir/runDriver.js';
 /** @import {Plugin, Root} from 'postcss' */
 /** @import {DeclarationPlans} from './declarationWalk.js' */
 /** @import {ValueBuffer} from '../values/valueBuffer.js' */
+/** @import {RunPlan} from './hostPlan.js' */
 
 /**
  * Changes the buffer of one declaration. A reducer never sees a node; the
@@ -110,91 +107,17 @@ function targetsOf(resolutions, options, result) {
   return targets;
 }
 
-/** Stands for the targets of a stage that does not read them. */
-const noTargets = /** @type {readonly string[]} */ (Object.freeze([]));
-
 /**
- * One stylesheet's run over the records, between the build and the end, which
- * writes. Three phases run in order: the walk down (the discard of overridden
- * at-rules after it), the merge when it is on, and the walk up. The raw cache
- * records last, on the written tree, so that no later transform changes what it
- * describes.
- *
- * @param {import('postcss').Root} root
- * @param {import('postcss').Result} result
- * @param {Merge | undefined} merge the merge, absent when the merge is off
- * @param {readonly string[]} browsers the resolved browser targets of the merge; none when it is off
- * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} transforms the whole-stylesheet transforms of the run, by entry name
- * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} after
- * @param {ReadonlyMap<string, SymbolEntry>} symbols
- * @param {DeclarationPlans | undefined} plans what the record walk applies to the declarations, absent when the run has no stages
- */
-function runRecords(
-  root,
-  result,
-  merge,
-  browsers,
-  transforms,
-  after,
-  symbols,
-  plans
-) {
-  const support = merge ? merge.runner.support(browsers) : undefined;
-  const context = createRunContext(undefined, support?.features);
-  const state = runDriver.build(root, context);
-  const round =
-    merge && support ? merge.runner.round(support, context) : undefined;
-  // The walk folds the rules' summaries when the merge is on, even with no stage.
-  if (plans !== undefined || merge) {
-    const overridable = walkDown(
-      state.records,
-      context,
-      plans,
-      round,
-      merge && browsers
-    );
-    if (plans !== undefined && transforms.has('discardOverridden')) {
-      discardOverriddenAtRules(
-        state.records,
-        context.declarations,
-        overridable
-      );
-    }
-    round?.finishColumns(state.records);
-  }
-  if (merge) {
-    merge.runner.merge(state.records, browsers, context, {
-      rules: /** @type {boolean | undefined} */ (merge.options.rules),
-    });
-  }
-  walkUp(state, after, symbols, merge && browsers, round?.second());
-  runDriver.end(state, {
-    browsers,
-    folded: merge !== undefined,
-    result,
-  });
-  if (after.has('rawCache')) rawCache(result);
-}
-
-/**
- * @param {readonly HostMember[]} members the stages of one run, in order
- * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
- *   whole-stylesheet transforms that the walk down runs, by entry name; a missing name is disabled
- * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
- *   the walk up runs, by entry name; a missing name is disabled
- * @param {ReadonlyMap<string, SymbolEntry>} [symbols]
- *   the advanced transforms that run over the lists of the walk up, in order
- * @param {Merge} [merge] the merge options with the browser targets, and the merge run; absent when the merge is off
+ * @param {RunPlan} plan the stages, merge, transforms and advanced transforms of one run
  * @returns {Plugin}
  */
-export function hostPlugin(
-  members,
-  transforms = new Map(),
-  after = new Map(),
-  symbols = new Map(),
-  merge = undefined
-) {
-  const hasStages = members.length > 0 || transforms.size > 0;
+export function hostPlugin(plan) {
+  const { members, merge } = plan;
+  const hasStages =
+    members.length > 0 ||
+    plan.normalizeWhitespace !== undefined ||
+    plan.discardOverridden !== undefined;
+  const active = !isEmptyPlan(plan);
   // Each member keeps its stage per targets array. The frozen targets of equal
   // browserslist results are one array, so the memo serves every stylesheet.
   // A member that reads no targets is created now, under noTargets.
@@ -228,33 +151,25 @@ export function hostPlugin(
         const stage = memo.get(resolved);
         if (stage) stages.push(stage);
       }
-      const mergeBrowsers = merge
+      const browsers = merge
         ? targetsOf(resolutions, merge.options, result)
         : undefined;
       return {
         OnceExit(root, helpers) {
           // The comment removal is read once per stylesheet, by the record walk.
           const comments = hasStages ? commentStateOf(stages) : null;
-          // A run with stages builds the records, even when no merge, walk up
-          // or symbol transform reads them.
-          if (hasStages || merge || after.size > 0 || symbols.size > 0) {
-            runRecords(
-              root,
-              helpers.result,
-              merge,
-              mergeBrowsers ?? noTargets,
-              transforms,
-              after,
-              symbols,
-              hasStages
-                ? declarationPlansOf(
-                    stages,
-                    transforms.has('normalizeWhitespace'),
-                    comments
-                  )
-                : undefined
-            );
-          }
+          if (!active) return;
+          runStylesheet(root, helpers.result, {
+            plan,
+            browsers,
+            declarationPlans: hasStages
+              ? declarationPlansOf(
+                  stages,
+                  plan.normalizeWhitespace !== undefined,
+                  comments
+                )
+              : undefined,
+          });
         },
       };
     },

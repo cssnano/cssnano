@@ -5,10 +5,11 @@ import {
   Claims,
   WritePositions,
 } from '../../../src/passes/ir/writePositions.js';
-import { keysOfName } from '../../../src/passes/ir/propertyTable.js';
+import { PropertyNames } from '../../../src/passes/ir/propertyTable.js';
 
 /** The keys of a property name, as a write index takes them. */
-const keys = (prop) => keysOfName(prop);
+const names = new PropertyNames();
+const keys = (prop) => names.keysOf(prop);
 
 /**
  * An index holding one write per entry of `writes`, at that entry's position.
@@ -83,6 +84,20 @@ test('write positions refuse to answer for all, which the caller rejects first',
   assert.throws(
     () => new WritePositions().firstUnclaimed(keys('all'), claimsOf([])),
     RangeError
+  );
+});
+
+test('write positions: an unknown property conflicts with an earlier known write', () => {
+  assert.strictEqual(
+    indexOf(['color']).firstUnclaimed(keys('-webkit-foo'), claimsOf([])),
+    0
+  );
+});
+
+test('write positions: a known property conflicts with an earlier unknown write', () => {
+  assert.strictEqual(
+    indexOf(['-webkit-foo']).firstUnclaimed(keys('color'), claimsOf([])),
+    0
   );
 });
 

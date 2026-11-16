@@ -18,19 +18,18 @@ export declare const litePluginEntries: readonly [readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, "normalizeWhitespace", {
     readonly optionKeys: readonly [];
-    readonly walk: true;
-    readonly after: true;
+    readonly field: 'normalizeWhitespace';
 }], readonly [{
     readonly create: (options: Record<string, never>) => Record<string, never>;
 }, "discardEmpty", {
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly after: true;
+    readonly field: 'discardEmpty';
 }], readonly [{
     readonly create: (options: Record<string, never>) => Record<string, never>;
 }, "rawCache", {
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly after: true;
+    readonly field: 'rawCache';
 }]];
 //# sourceMappingURL=litePlugins.d.ts.map

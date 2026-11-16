@@ -12,6 +12,7 @@ import { AT_RULE_BLOCK, RULE } from '../../src/passes/ir/blockRecord.js';
 import { createRunContext } from '../../src/passes/ir/runContext.js';
 import { runDriver } from '../../src/passes/ir/runDriver.js';
 import { walkDown } from '../../src/pipeline/walkDown.js';
+import { hostPlan } from '../../src/pipeline/hostPlan.js';
 import { walkUp } from '../../src/pipeline/walkUp.js';
 
 const BROWSERS = ['chrome 120', 'firefox 120', 'safari 17'];
@@ -155,9 +156,10 @@ test('the overridden at-rules and column blocks of edgeCases.css keep a declarat
 });
 
 /**
- * A longhand round that only records the calls the walk makes on it.
+ * A longhand round that only records the calls the walks make on it: each
+ * pass records the block it reaches, so either walk's blocks show up in `reached`.
  *
- * @return {{roots: number, reached: number[], root(): void, block(records: unknown, index: number): void}}
+ * @return {{roots: number, reached: number[], root(): void, first(records: unknown, index: number): void, second(records: unknown, index: number): void}}
  */
 function spyRound() {
   return {
@@ -166,7 +168,10 @@ function spyRound() {
     root() {
       this.roots += 1;
     },
-    block(records, index) {
+    first(records, index) {
+      this.reached.push(index);
+    },
+    second(records, index) {
       this.reached.push(index);
     },
   };
@@ -233,7 +238,7 @@ test('the walk up gives each block still in the stylesheet one second round, and
   );
   const containers = containersOf(state.records);
   const round = spyRound();
-  walkUp(state, new Map(), new Map(), undefined, round);
+  walkUp(state, hostPlan(), undefined, round);
   assert.equal(round.roots, 1);
   assert.deepEqual(
     round.reached.toSorted((a, b) => a - b),

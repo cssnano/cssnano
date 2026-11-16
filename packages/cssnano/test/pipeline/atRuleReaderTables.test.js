@@ -10,6 +10,7 @@ const { declarationPlansOf } =
   await import('../../src/pipeline/declarationWalk.js');
 const { tokens } = await import('../../src/utils/value.js');
 const { walkUp } = await import('../../src/pipeline/walkUp.js');
+const { hostPlan } = await import('../../src/pipeline/hostPlan.js');
 const { createRunContext } = await import('../../src/passes/ir/runContext.js');
 const { runDriver } = await import('../../src/passes/ir/runDriver.js');
 const { discardUnusedSymbols } =
@@ -31,15 +32,14 @@ const helpers = { result: { warn() {}, messages: [] } };
 /**
  * The walk up of `root`, as the host runs it.
  * @param {import('postcss').Root} root
- * @param {Map<string, Record<PropertyKey, unknown>>} transforms
- * @param {Map<string, {transform: Function, options: Record<PropertyKey, unknown>}>} symbols
+ * @param {import('../../src/pipeline/hostPlan.js').RunPlan} plan
  * @return {number} the tokenize calls of the walk and the end, which read the lists the build made
  */
-function afterWalk(root, transforms, symbols) {
+function afterWalk(root, plan) {
   const context = createRunContext(undefined);
   const state = runDriver.build(root, context);
   const before = tokenizeTotal();
-  walkUp(state, transforms, symbols);
+  walkUp(state, plan);
   runDriver.end(state, {
     browsers: [],
     folded: false,
@@ -71,10 +71,10 @@ suite(
   () => {
     test('discard-unused reads the @namespace list the build made for the at-rule, without tokenizing', () => {
       const root = postcss.parse('@namespace svg url(x);svg|a{}');
-      const symbols = new Map([
-        ['discardUnused', { transform: discardUnusedSymbols, options: {} }],
-      ]);
-      assert.equal(afterWalk(root, new Map(), symbols), 0);
+      const plan = hostPlan({
+        symbols: [{ transform: discardUnusedSymbols, options: {} }],
+      });
+      assert.equal(afterWalk(root, plan), 0);
     });
 
     test("the record walk's default-namespace check reads the @namespace list the build tokenized, without tokenizing", () => {
@@ -91,10 +91,7 @@ suite(
 
     test('discard-empty reads the @layer list the build made for the at-rule, without tokenizing', () => {
       const root = postcss.parse('@layer a{}');
-      assert.equal(
-        afterWalk(root, new Map([['discardEmpty', {}]]), new Map()),
-        0
-      );
+      assert.equal(afterWalk(root, hostPlan({ discardEmpty: {} })), 0);
     });
 
     test('isAnonymousLayer reads a @layer prelude with a name and a comment as named', () => {

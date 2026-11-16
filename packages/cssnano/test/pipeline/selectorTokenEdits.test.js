@@ -7,6 +7,7 @@ const { counter } = await import('../../../../util/countTokenize.js');
 const { tokenize } = await import('@csstools/css-tokenizer');
 const { default: postcss } = await import('postcss');
 const { hostPlugin } = await import('../../src/pipeline/host.js');
+const { hostPlan } = await import('../../src/pipeline/hostPlan.js');
 const { default: minifySelectors } =
   await import('../../src/plugins/postcss-minify-selectors/index.js');
 const { default: normalizeString } =
@@ -46,11 +47,13 @@ function probed(stage, calls) {
  */
 const hostOf = (...stages) =>
   hostPlugin(
-    stages.map((stage) => ({
-      entry: { create: () => stage },
-      options: {},
-      targets: false,
-    }))
+    hostPlan({
+      members: stages.map((stage) => ({
+        entry: { create: () => stage },
+        options: {},
+        targets: false,
+      })),
+    })
   );
 
 /** @param {string} css @param {import('../../src/pipeline/host.js').Stage[]} stages */

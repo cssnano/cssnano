@@ -1,16 +1,31 @@
 import postcss from 'postcss';
-import { transformPass } from '#passes/merge';
+import { onlyTransform } from '../../../../test/passes/onlyTransform.js';
+import { browserTargets } from '../../../../src/utils/browserTargets.js';
 import { discardDuplicates as referenceDedupe } from './referenceDedupe.js';
 import { generateDuplicateCases, serializeNode } from './generate.js';
 
 /** @import {AtRule, Container, Root} from 'postcss' */
 
-// The hooks run on the same browsers in the mutant and the reference, so the
-// comparison does not depend on the targets.
-const browsers = [];
-const dedupeHook = transformPass('discardDuplicates');
-const mergeHook = transformPass('mergeRules');
-const dedupeThenMergeHook = transformPass('dedupeThenMerge');
+/**
+ * The merge transforms `names` run over a stylesheet, as the preset runs them,
+ * with no browser targets, so the hook of the mutant and the reference agree.
+ *
+ * @param {('discardDuplicates' | 'mergeRules')[]} names
+ * @return {(root: Root) => void}
+ */
+function hookOf(names) {
+  const creator = onlyTransform(names);
+  return (root) => {
+    postcss([creator({ [browserTargets]: { query: [] } })])
+      .process(root, {
+        from: undefined,
+      })
+      .sync();
+  };
+}
+const dedupeHook = hookOf(['discardDuplicates']);
+const mergeHook = hookOf(['mergeRules']);
+const dedupeThenMergeHook = hookOf(['discardDuplicates', 'mergeRules']);
 
 /**
  * @param {string} input
@@ -41,7 +56,7 @@ export function referenceDedupeOutput(input) {
 export function referenceDedupeThenMergeOutput(input) {
   const root = parse(input);
   referenceDedupe(root);
-  mergeHook(root, browsers);
+  mergeHook(root);
   return root.toString();
 }
 
@@ -113,7 +128,7 @@ export const suites = [
      */
     run: (input) => {
       const root = parse(input);
-      dedupeHook(root, browsers);
+      dedupeHook(root);
       return root.toString();
     },
     /**
@@ -142,7 +157,7 @@ export const suites = [
      */
     run: (input) => {
       const root = parse(input);
-      dedupeThenMergeHook(root, browsers);
+      dedupeThenMergeHook(root);
       return root.toString();
     },
     /**
@@ -171,7 +186,7 @@ export const suites = [
      */
     run: (input) => {
       const root = parse(input);
-      dedupeHook(root, browsers);
+      dedupeHook(root);
       return root.toString();
     },
     /**

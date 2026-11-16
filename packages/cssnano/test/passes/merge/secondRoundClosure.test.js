@@ -10,21 +10,21 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import { mergePass } from '../../../src/passes/merge/index.js';
-import { resolveTargets } from '../../../src/utils/browserTargets.js';
 import {
   generateFamilyCases,
   generateResetCases,
 } from '../../../script/passes/merge/rules/lib/mergeOracle.js';
 import { secondRoundOfText } from './lib/longhand/helpers/reduceRuns.js';
+import { onlyTransform, MERGE_TRANSFORMS } from '../onlyTransform.js';
+import { browserTargets, resolveTargets } from '#utils/browser-targets';
 
 const browsers = resolveTargets({}, undefined);
 
 // Each run of the merge pass: with rule merging, and with it off. Round one
 // alone is not closed, which is why the second round exists, so it has no row.
 const rows = [
-  ['rules', { rules: true }],
-  ['rules off', { rules: false }],
+  ['rules', MERGE_TRANSFORMS],
+  ['rules off', MERGE_TRANSFORMS.filter((name) => name !== 'mergeRules')],
 ];
 
 // Empty and comment-only rules, which the oracle families do not generate.
@@ -54,12 +54,14 @@ const inputs = [
   ...generateResetCases(0x5eed, 100).map(({ css }) => css),
 ];
 
-for (const [label, options] of rows) {
-  test(`after mergePass with ${label}, the second round changes no block of the output`, () => {
+for (const [label, names] of rows) {
+  test(`after the merge run with ${label}, the second round changes no block of the output`, () => {
     const failures = [];
     for (const css of inputs) {
       const root = postcss.parse(css);
-      mergePass(root, browsers, options);
+      postcss([onlyTransform(names)({ [browserTargets]: { query: browsers } })])
+        .process(root, { from: undefined })
+        .sync();
       const output = root.toString();
       const second = secondRoundOfText(output, browsers);
       if (second !== output) failures.push({ input: css, output, second });

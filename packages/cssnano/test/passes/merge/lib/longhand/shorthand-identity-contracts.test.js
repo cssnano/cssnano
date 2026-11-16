@@ -5,9 +5,9 @@ import {
   processCSSFactory,
   repositoryFile,
 } from '../../../../../../../util/testHelpers.js';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { foldShorthandDeclaration } from '../../../../../src/passes/merge/lib/longhand/minifyShorthand.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 import { blockOf } from './helpers/declarationItems.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);

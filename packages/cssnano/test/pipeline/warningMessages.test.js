@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { hostPlugin } from '../../src/pipeline/host.js';
+import { hostPlan } from '../../src/pipeline/hostPlan.js';
 
 /**
  * A stage whose reducers warn on each node of one kind, so the messages show
@@ -11,9 +12,13 @@ import { hostPlugin } from '../../src/pipeline/host.js';
  * @returns {Promise<[string, number][]>} the text and line of each message
  */
 async function warningsOf(css, stage) {
-  const host = hostPlugin([
-    { entry: { create: () => stage }, options: {}, targets: false },
-  ]);
+  const host = hostPlugin(
+    hostPlan({
+      members: [
+        { entry: { create: () => stage }, options: {}, targets: false },
+      ],
+    })
+  );
   const result = await postcss([host]).process(css, { from: undefined });
   return result.messages.map((message) => [message.text, message.line]);
 }

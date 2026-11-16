@@ -1,7 +1,7 @@
 import { test } from 'node:test';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../../test/passes/onlyTransform.js';
 import { assertLinearTime, timeOneRun } from '../linearTiming.js';
-const plugin = transformPlugin('mergeRules');
+const plugin = onlyTransform(['mergeRules']);
 
 /**
  * @param {number} count

@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import postcss from 'postcss';
 import { fuzzAgainstRevision } from '../../../../../../util/fuzzAgainstRevision.js';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { generateBorderSizeCases } from './lib/fuzzSizeGenerate.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../test/passes/onlyTransform.js';
 
 /**
  * Reports the rules the working tree minifies to more bytes than a base

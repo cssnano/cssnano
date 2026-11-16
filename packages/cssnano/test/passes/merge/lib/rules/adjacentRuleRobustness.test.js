@@ -8,8 +8,8 @@ import {
   processCSSFactory,
   usePostCSSPlugin,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeRules');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeRules']);
 const comments = oneStagePlugin(discardComments);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);

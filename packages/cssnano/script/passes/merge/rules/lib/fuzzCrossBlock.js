@@ -2,8 +2,8 @@ import { spawnSync } from 'node:child_process';
 import postcss from 'postcss';
 import { random } from '../../../../../../../util/fuzzRng.js';
 
-const mergePassUrl = new URL(
-  '../../../../../src/passes/merge/index.js',
+const onlyTransformUrl = new URL(
+  '../../../../../test/passes/onlyTransform.js',
   import.meta.url
 ).href;
 const enableChecksUrl = new URL('../../enableChecks.js', import.meta.url).href;
@@ -156,8 +156,8 @@ export function processAllWithLimits(
 ) {
   const loadPlugin = pluginUrl
     ? `import plugin from ${JSON.stringify(pluginUrl)};`
-    : `import { transformPlugin } from ${JSON.stringify(mergePassUrl)};
-    const plugin = transformPlugin('mergeRules');`;
+    : `import { onlyTransform } from ${JSON.stringify(onlyTransformUrl)};
+    const plugin = onlyTransform(['mergeRules']);`;
   // Checks every cached answer against the tree, so an edit that skipped its
   // bookkeeping fails the case instead of changing only the output.
   const script = `

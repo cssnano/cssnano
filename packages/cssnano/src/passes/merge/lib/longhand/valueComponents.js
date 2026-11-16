@@ -24,6 +24,34 @@ export const closingTokens = new Set([
  */
 
 /**
+ * Ends the component whose tokens are `current` and returns the list for the
+ * next one.
+ *
+ * @param {{components: Component[]}[]} parts
+ * @param {import('@csstools/css-tokenizer').CSSToken[]} current
+ * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list
+ * @param {number} end the index of the token that closes the component
+ * @return {import('@csstools/css-tokenizer').CSSToken[]}
+ */
+function closeComponent(parts, current, value, list, end) {
+  if (!current.length) return current;
+  const first = current[0];
+  const last = current.at(-1);
+  const part = parts.at(-1);
+  if (!first || !last || !part) return current;
+  // Every token since the last separator is in `current`, so it starts there.
+  part.components.push({
+    raw: value.slice(tokenStart(first), tokenEnd(last)),
+    tokens: current,
+    list,
+    start: end - current.length,
+    end,
+  });
+  return [];
+}
+
+/**
  * Split raw CSS into top-level components and comma-separated parts. This is
  * deliberately lexical: property grammar is applied by the caller after
  * brackets and source ranges have been preserved.
@@ -43,31 +71,13 @@ export function splitValue(value, separator, list = tokens(value)) {
   /** @type {import('@csstools/css-tokenizer').TokenType[]} */
   const stack = [];
 
-  /** @param {number} end the index of the token that closes the component */
-  const push = (end) => {
-    if (!current.length) return;
-    const first = current[0];
-    const last = current.at(-1);
-    const part = parts.at(-1);
-    if (!first || !last || !part) return;
-    // Every token since the last separator is in `current`, so it starts there.
-    part.components.push({
-      raw: value.slice(tokenStart(first), tokenEnd(last)),
-      tokens: current,
-      list,
-      start: end - current.length,
-      end,
-    });
-    current = [];
-  };
-
   for (let index = 0; index < list.length; index++) {
     const token = list[index];
     const type = token[0];
     if (type === TokenType.Comment) return null;
 
     if (!stack.length && type === TokenType.Whitespace) {
-      push(index);
+      current = closeComponent(parts, current, value, list, index);
       continue;
     }
     if (!stack.length && type === TokenType.Comma && separator !== ',') {
@@ -78,7 +88,7 @@ export function splitValue(value, separator, list = tokens(value)) {
       (type === TokenType.Comma ||
         (separator === '/' && type === TokenType.Delim && token[1] === '/'))
     ) {
-      push(index);
+      current = closeComponent(parts, current, value, list, index);
       const part = parts.at(-1);
       if (!part) return null;
       part.end = tokenStart(token);
@@ -96,7 +106,7 @@ export function splitValue(value, separator, list = tokens(value)) {
   }
 
   if (stack.length) return null;
-  push(list.length);
+  closeComponent(parts, current, value, list, list.length);
   if (parts.some((part) => !part.components.length)) return null;
 
   return parts.map((part) => ({

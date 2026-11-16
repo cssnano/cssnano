@@ -1,5 +1,6 @@
 import type { Plugin } from 'postcss';
 import type { ValueBuffer } from '../values/valueBuffer.js';
+import type { RunPlan } from './hostPlan.js';
 export type Reducer = (buffer: ValueBuffer, context: number) => void;
 export type AtRulePart = {
     buffer: Reducer;
@@ -32,15 +33,8 @@ export type HostMember = {
     targets: boolean;
 };
 /**
- * @param {readonly HostMember[]} members the stages of one run, in order
- * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [transforms] the options of the
- *   whole-stylesheet transforms that the walk down runs, by entry name; a missing name is disabled
- * @param {ReadonlyMap<string, Record<PropertyKey, unknown>>} [after] the options of the transforms that
- *   the walk up runs, by entry name; a missing name is disabled
- * @param {ReadonlyMap<string, SymbolEntry>} [symbols]
- *   the advanced transforms that run over the lists of the walk up, in order
- * @param {Merge} [merge] the merge options with the browser targets, and the merge run; absent when the merge is off
+ * @param {RunPlan} plan the stages, merge, transforms and advanced transforms of one run
  * @returns {Plugin}
  */
-export declare function hostPlugin(members: readonly HostMember[], transforms?: ReadonlyMap<string, Record<PropertyKey, unknown>>, after?: ReadonlyMap<string, Record<PropertyKey, unknown>>, symbols?: ReadonlyMap<string, SymbolEntry>, merge?: Merge): Plugin;
+export declare function hostPlugin(plan: RunPlan): Plugin;
 //# sourceMappingURL=host.d.ts.map

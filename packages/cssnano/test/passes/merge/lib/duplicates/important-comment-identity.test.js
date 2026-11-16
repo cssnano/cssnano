@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
-const mergeRules = processCSSFactory(transformPlugin('mergeRules'));
+const mergeRules = processCSSFactory(onlyTransform(['mergeRules']));
 const discardDuplicates = processCSSFactory(
-  transformPlugin('discardDuplicates')
+  onlyTransform(['discardDuplicates'])
 );
 
 // A declaration's identity is its value as written when that holds an important

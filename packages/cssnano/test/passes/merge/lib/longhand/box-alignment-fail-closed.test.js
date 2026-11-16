@@ -5,12 +5,12 @@ import {
   processCSSFactory,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import {
   alignmentFamilies,
   parseAlignmentDeclaration,
 } from '../../../../../src/passes/merge/lib/longhand/decl/alignmentForms.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 // Targets that all support place-*, so only the alignment grammar decides.
 const { passthroughCSS, processCSS } = processCSSFactory([

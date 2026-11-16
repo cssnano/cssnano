@@ -4,7 +4,6 @@ import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
 import { BlockRecords } from './blockRecords.js';
 import { RuleRecord } from './ruleRecord.js';
 import { DeclarationRecord } from './declarationRecord.js';
-import { keysOfName } from './propertyTable.js';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
@@ -103,13 +102,14 @@ export function recordDeclaration(node, context) {
   const written = sourceValue(node);
   const kept = keepsValueAsWritten(written);
   const valueList = valueListOf(node, context, written, kept);
+  const keys = context.names.keysOf(node.prop);
   const record = new DeclarationRecord(
     before,
     node.prop,
     valueList,
     important,
-    keysOfName(node.prop),
-    context.declarations.keyOf(node.prop, valueList, important, before),
+    keys,
+    context.declarations.keyOf(keys.id, valueList, important, before),
     node.raws.between ?? null,
     important ? (node.raws.important ?? null) : null
   );
@@ -156,17 +156,37 @@ function writtenPreludeOf(node, context) {
  * @return {{records: BlockRecords, nodes: NodeTable}}
  */
 export function buildRecords(root, context) {
-  const { tokenLists, consistencyChecks } = context;
-  // The ids of this build's selectors. Each rule keeps the ids of its items.
-  const { selectorIds } = context;
   const records = new BlockRecords(
     new BlockRecord(STYLESHEET, '', NO_AT_RULE, '', false, NO_PRELUDE),
-    consistencyChecks
+    context.consistencyChecks
   );
-  /** @type {NodeTable} the node of each entry, by index; the root is entry 0 */
-  const nodes = [root];
-  records.leadingWhitespace = root.first?.raws.before ?? null;
+  const build = new RecordBuild(records, root, context);
   records.root.after = root.raws.after ?? null;
+  // The stylesheet's context is the one for no enclosing container.
+  records.root.context = containerContext(
+    context.declarations,
+    -1,
+    records.root
+  );
+  build.fillChildren(records.root, root);
+  records.settle();
+  return { records, nodes: build.nodes };
+}
+
+/** The records and the node table that one build fills in document order. */
+class RecordBuild {
+  /**
+   * @param {BlockRecords} records
+   * @param {Root} root
+   * @param {RunContext} context the run's state, which gives the tokens and ids the records keep
+   */
+  constructor(records, root, context) {
+    this.records = records;
+    this.context = context;
+    /** @type {NodeTable} the node of each entry, by index; the root is entry 0 */
+    this.nodes = [root];
+  }
+
   /**
    * Places a child's entry at the end of its container's chain, with its node.
    * An entry takes the next index, which is the next slot of the table.
@@ -175,10 +195,11 @@ export function buildRecords(root, context) {
    * @param {BlockRecord | RuleRecord | DeclarationRecord | NodeEntry} entry
    * @param {ChildNode} node
    */
-  const place = (container, entry, node) => {
-    records.appendEntry(container, entry);
-    nodes.push(node);
-  };
+  place(container, entry, node) {
+    this.records.appendEntry(container, entry);
+    this.nodes.push(node);
+  }
+
   /**
    * Links each child of a container, which holds its context already, in
    * document order. A rule is linked into its parent, then its children.
@@ -187,7 +208,9 @@ export function buildRecords(root, context) {
    * @param {Container} node the container's node
    * @return {void}
    */
-  const fillChildren = (container, node) => {
+  fillChildren(container, node) {
+    const { context } = this;
+    const { tokenLists, selectorIds } = context;
     // A node a plugin emptied may have no child list, which holds no children.
     for (const child of /** @type {ChildNode[]} */ (node.nodes ?? [])) {
       if (child.type === 'rule') {
@@ -206,7 +229,7 @@ export function buildRecords(root, context) {
         );
         record.writtenList = writtenList;
         holdContainerRaws(record, child);
-        place(container.index, record, child);
+        this.place(container.index, record, child);
         // A rule that holds a rule or an at-rule nests, and gets its context.
         if (child.nodes.some(isRuleOrAtRule)) {
           record.context = containerContext(
@@ -215,7 +238,7 @@ export function buildRecords(root, context) {
             record
           );
         }
-        fillChildren(record, child);
+        this.fillChildren(record, child);
       } else if (child.type === 'atrule' && child.nodes) {
         const name = recordNameOf(child.name);
         const category = atRuleKindOf(name);
@@ -231,15 +254,15 @@ export function buildRecords(root, context) {
         nested.writtenList = writtenPreludeOf(child, context);
         holdContainerRaws(nested, child);
         nested.afterName = child.raws.afterName ?? null;
-        place(container.index, nested, child);
+        this.place(container.index, nested, child);
         nested.context = containerContext(
           context.declarations,
           container.context,
           nested
         );
-        fillChildren(nested, child);
+        this.fillChildren(nested, child);
       } else if (child.type === 'decl') {
-        place(container.index, recordDeclaration(child, context), child);
+        this.place(container.index, recordDeclaration(child, context), child);
       } else if (child.type === 'atrule') {
         const name = recordNameOf(child.name);
         const category = atRuleKindOf(name);
@@ -255,7 +278,7 @@ export function buildRecords(root, context) {
         entry.writtenList = writtenPreludeOf(child, context);
         entry.between = child.raws.between ?? null;
         entry.afterName = child.raws.afterName ?? null;
-        place(container.index, entry, child);
+        this.place(container.index, entry, child);
       } else {
         const text = /** @type {Comment} */ (child).text;
         const entry = new NodeEntry(
@@ -268,17 +291,8 @@ export function buildRecords(root, context) {
           text,
           cssnanoUtils.isImportantComment(text)
         );
-        place(container.index, entry, child);
+        this.place(container.index, entry, child);
       }
     }
-  };
-  // The stylesheet's context is the one for no enclosing container.
-  records.root.context = containerContext(
-    context.declarations,
-    -1,
-    records.root
-  );
-  fillChildren(records.root, root);
-  records.settle();
-  return { records, nodes };
+  }
 }

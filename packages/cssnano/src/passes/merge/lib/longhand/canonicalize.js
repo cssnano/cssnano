@@ -55,6 +55,7 @@ const { asciiLowerCase } = cssnanoUtils;
  * @param {number} laneIndex
  * @param {Parameters<typeof reduceClassifiedContainer>[1]} state
  * @param {LonghandRound} context
+ * @param {boolean} columnsDeferred whether the round is the first, which defers its column rules
  * @param {ArenaIndex} container the block that holds the declaration
  * @return {void}
  */
@@ -65,6 +66,7 @@ function classifyDeclaration(
   laneIndex,
   state,
   context,
+  columnsDeferred,
   container
 ) {
   // Families the targets cannot parse are not collected, so they stay as written.
@@ -89,7 +91,7 @@ function classifyDeclaration(
   if (prop.startsWith('column')) {
     // A block is recorded once, so the check is skipped after its first hit.
     if (
-      !context.secondRound &&
+      columnsDeferred &&
       context.otherColumnBlocks.at(-1) !== container &&
       setsOtherColumnProperty(list.at(child))
     ) {
@@ -136,9 +138,10 @@ function commitBlock(records, block, context) {
  * @param {Block} block
  * @param {boolean} styleRule whether the block is a style rule
  * @param {LonghandRound} context
+ * @param {boolean} columnsDeferred whether the round is the first, which defers its column rules
  * @return {void}
  */
-function processContainer(records, block, styleRule, context) {
+function processContainer(records, block, styleRule, context, columnsDeferred) {
   const { list } = block;
   // Before classification, so the family reducers never see removed items.
   // Style rules only: at-rule descriptors follow their own validity rules.
@@ -182,14 +185,16 @@ function processContainer(records, block, styleRule, context) {
       laneIndex,
       state,
       context,
+      columnsDeferred,
       block.container
     );
   }
 
   runs.push(state);
-  for (const run of runs) reduceClassifiedContainer(block, run, context);
-  // A first-round column rule waits for `finishColumns`, which commits its block once.
-  if (context.secondRound || !runs.some((run) => run.columnDecls.length > 0)) {
+  for (const run of runs)
+    reduceClassifiedContainer(block, run, context, columnsDeferred);
+  // A deferred column rule waits for `finishColumns`, which commits its block once.
+  if (!columnsDeferred || !runs.some((run) => run.columnDecls.length > 0)) {
     commitBlock(records, block, context);
   }
 }
@@ -210,16 +215,11 @@ export class LonghandRound {
    */
   otherColumnBlocks = [];
 
-  /** Whether the last `finishColumns` found such a block. */
-  setsOtherColumn = false;
-
   /**
-   * Whether this is the second round of its run. It gathers no column rule
-   * and no fact; it reduces a block's columns as it reaches them, using the
-   * first round's `setsOtherColumn`.
-   * @type {boolean}
+   * Whether the last `finishColumns` found such a block. The second pass reads
+   * it to reduce a block's columns as it reaches them.
    */
-  secondRound = false;
+  setsOtherColumn = false;
 
   /**
    * @param {boolean} placeShorthands
@@ -248,12 +248,42 @@ export class LonghandRound {
   }
 
   /**
-   * Reduces a rule or at-rule block that holds a declaration; other entries are left alone.
+   * The first pass: reduces a rule or at-rule block that holds a declaration,
+   * and gathers its column rules for `finishColumns`. Other entries are left alone.
    * @param {BlockRecords} records
-   * @param {ArenaIndex} index the entry the round reaches
+   * @param {ArenaIndex} index the entry the pass reaches
    * @return {void}
    */
-  block(records, index) {
+  first(records, index) {
+    this.#reduce(records, index, true);
+  }
+
+  /**
+   * The second pass, after `finishColumns`: reduces a block's columns with the
+   * first pass's `setsOtherColumn`, and commits each block at once. A block
+   * whose declarations and child links the build and merge left as they were
+   * is skipped, since the first pass already reduced it with the same facts.
+   * @param {BlockRecords} records
+   * @param {ArenaIndex} index the entry the pass reaches
+   * @return {void}
+   */
+  second(records, index) {
+    if (
+      !records.declarationStamps.isTouched(index) &&
+      !records.links.isEdited(index)
+    ) {
+      return;
+    }
+    this.#reduce(records, index, false);
+  }
+
+  /**
+   * @param {BlockRecords} records
+   * @param {ArenaIndex} index
+   * @param {boolean} columnsDeferred whether the pass is the first
+   * @return {void}
+   */
+  #reduce(records, index, columnsDeferred) {
     const record = records.entry(index);
     if (record.kind !== RULE && record.kind !== AT_RULE_BLOCK) return;
     if (firstDeclaration(records, index) === undefined) return;
@@ -264,26 +294,9 @@ export class LonghandRound {
         list: declarationsFromRecords(records, this.run, index),
       },
       record.kind === RULE,
-      this
+      this,
+      columnsDeferred
     );
-  }
-
-  /**
-   * The second round of this run. It shares these tables, and the first
-   * round's column fact, which `finishColumns` has set. Call it after
-   * `finishColumns`.
-   * @return {LonghandRound}
-   */
-  second() {
-    const round = new LonghandRound(
-      this.placeShorthands,
-      this.boxSupport,
-      this.pairShorthands,
-      this.run
-    );
-    round.secondRound = true;
-    round.setsOtherColumn = this.setsOtherColumn;
-    return round;
   }
 
   /**
@@ -315,22 +328,6 @@ export class LonghandRound {
 }
 
 /**
- * @param {boolean} placeShorthands
- * @param {BoxSupport} boxSupport
- * @param {ReadonlySet<string>} pairShorthands
- * @param {RunContext} run the run whose tables and features the rounds read
- * @return {LonghandRound} the round that the rounds of one run share
- */
-export function longhandContext(
-  placeShorthands,
-  boxSupport,
-  pairShorthands,
-  run
-) {
-  return new LonghandRound(placeShorthands, boxSupport, pairShorthands, run);
-}
-
-/**
  * Canonicalizes the blocks a record chain holds, in document order: each rule
  * and at-rule block that holds a declaration, then the blocks it nests.
  *
@@ -347,7 +344,7 @@ function canonicalizeChildren(records, index, round) {
   ) {
     const record = records.entry(entry);
     if (record.kind !== RULE && record.kind !== AT_RULE_BLOCK) continue;
-    round.block(records, entry);
+    round.first(records, entry);
     canonicalizeChildren(records, entry, round);
   }
 }

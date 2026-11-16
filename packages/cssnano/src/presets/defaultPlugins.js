@@ -43,7 +43,7 @@ import {
  * @property {Record<string, never>} [orderedValues] Orders the values of shorthand properties consistently. Takes no options.
  * @property {import('#postcss-minify-selectors').Options} [minifySelectors] Minifies selectors. The default options sort them and factor shared parts into `:is()`.
  * @property {import('#postcss-minify-params').Options} [minifyParams] Minifies at-rule parameters. Takes no options.
- * @property {import('#postcss-normalize-charset').Options} [normalizeCharset] Adds a `@charset` for files with non-ASCII characters. The preset sets `add: false`.
+ * @property {{add?: boolean}} [normalizeCharset] Adds a `@charset` for files with non-ASCII characters. The preset sets `add: false`.
  * @property {Record<string, never>} [discardOverridden] Discards declarations that a later declaration overrides. Takes no options.
  * @property {import('#postcss-normalize-string').Options} [normalizeString] Normalizes string quotes to the preferred quote, double by default.
  * @property {import('#postcss-normalize-unicode').Options} [normalizeUnicode] Normalizes `unicode-range` values. Takes no options.
@@ -186,16 +186,14 @@ export const defaultPluginEntries = /** @type {const} */ ([
   ]),
   /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizeCharset'>} */ ([
     {
-      create: (
-        /** @type {import('#postcss-normalize-charset').Options} */ options
-      ) => options,
+      create: (/** @type {{add?: boolean}} */ options) => options,
     },
     'normalizeCharset',
     {
       defaults: { add: false },
       optionKeys: ['add'],
       transform: true,
-      after: true,
+      field: 'normalizeCharset',
     },
   ]),
   /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizeString'>} */ ([
@@ -243,6 +241,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     {
       optionKeys: [],
       transform: true,
+      field: 'discardOverridden',
     },
   ]),
   normalizeWhitespaceEntry,
@@ -256,7 +255,7 @@ export const defaultPluginEntries = /** @type {const} */ ([
     {
       optionKeys: [],
       transform: true,
-      after: true,
+      field: 'uniqueSelectors',
     },
   ]),
   rawCacheEntry,

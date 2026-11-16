@@ -2,8 +2,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { mergePass } from '../../../../../src/passes/merge/index.js';
-import { resolveTargets } from '../../../../../src/utils/browserTargets.js';
+import { onlyTransform, MERGE_TRANSFORMS } from '../../../onlyTransform.js';
 
 // The modules that may edit the live tree directly. Every other module in
 // `lib/rules/` edits through `treeEdits.js`, which clears the caches an edit
@@ -184,7 +183,11 @@ function mergeReaders() {
       const root = postcss.parse(css);
       const restore = guardBoundary(root, readers);
       try {
-        mergePass(root, resolveTargets({}, undefined), {});
+        postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+          .process(root, {
+            from: undefined,
+          })
+          .sync();
       } finally {
         restore();
       }

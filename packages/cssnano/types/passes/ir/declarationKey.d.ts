@@ -1,3 +1,4 @@
+/** @import {TokenListId} from './tokenLists.js' */
 import type { TokenListId } from './tokenLists.js';
 export type Trie = Map<unknown, unknown>;
 /**
@@ -33,16 +34,15 @@ export declare class DeclarationKeys {
     root: Trie;
     /**
      * The key of a declaration: the same property, value list, importance and
-     * hack prefix. Names fold ASCII case, except custom properties, which are
-     * case-sensitive.
+     * hack prefix.
      *
-     * @param {string} prop
+     * @param {number} nameId the id of the property name, from the run's PropertyNames
      * @param {TokenListId} valueList the id of the value, which equal values share
      * @param {boolean} important
      * @param {string | null} before the declaration's `raws.before`
      * @return {number}
      */
-    keyOf(prop: string, valueList: TokenListId, important: boolean, before: string | null): number;
+    keyOf(nameId: number, valueList: TokenListId, important: boolean, before: string | null): number;
     /**
      * The id of the path that ends at `trie`, assigned on first use.
      *
