@@ -3,8 +3,8 @@ import {
   processCSSFactory,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeRules');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeRules']);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -55,8 +55,17 @@ test(
 test(
   'should merge properties with vendor prefixes',
   processCSS(
-    '.a{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);-webkit-overflow-scrolling: touch}.b{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);}',
-    '.a{-webkit-overflow-scrolling: touch}.a,.b{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);}'
+    '.a{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);-webkit-appearance: none}.b{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);}',
+    '.a{-webkit-appearance: none}.a,.b{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);}'
+  )
+);
+
+// -webkit-overflow-scrolling has no property data, so it conflicts with the
+// -webkit-transform before it, and the transform cannot move past it.
+test(
+  'should not merge a vendor-prefixed property past an unknown vendor property',
+  passthroughCSS(
+    '.a{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);-webkit-overflow-scrolling: touch}.b{-webkit-transform: translateX(-50%) translateY(-50%) rotate(-90deg);}'
   )
 );
 

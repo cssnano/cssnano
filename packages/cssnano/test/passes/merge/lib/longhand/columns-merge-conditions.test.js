@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
 import postcss from 'postcss';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { reduceColumnsRuns } from './helpers/reduceRuns.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 

@@ -3,7 +3,6 @@ import { extraAliases } from '../../../../src/passes/ir/extraConflicts.js';
 import { propertyNameKey } from '../../../../src/passes/ir/propertyName.js';
 import { resolveProperty } from '../../../../src/passes/ir/propertyTable.js';
 import { setsLonghands } from '../../../../src/passes/ir/spec.js';
-import vendorUnprefixed from '../../../../src/utils/vendorUnprefixed.js';
 
 const ALL = 'all';
 
@@ -29,28 +28,6 @@ for (const [name, target] of extraAliases) {
 
 /** @type {Map<string, WriteSet>} */
 const writeSets = new Map();
-
-/**
- * The name-based approximation for vendor extensions no spec describes: two
- * properties interact when they share their leading segment and their other
- * segments match in number and spelling. `place` is a wildcard leading
- * segment.
- *
- * @param {string} nameA
- * @param {string} nameB
- * @return {boolean}
- */
-function conflictingSegments(nameA, nameB) {
-  const a = vendorUnprefixed(nameA).split('-');
-  const b = vendorUnprefixed(nameB).split('-');
-  if (a[0] !== b[0] && a[0] !== 'place' && b[0] !== 'place') {
-    return false;
-  }
-  if (a.length !== b.length) {
-    return true;
-  }
-  return a.every((segment, index) => b[index] === segment);
-}
 
 /**
  * @param {string} name A base name the table knows, not an alias.
@@ -132,8 +109,10 @@ function tableConflicts(nameA, nameB) {
   if (a.name === b.name) {
     return true;
   }
+  // The data says nothing about a vendor extension, so no longhand relation can
+  // clear it: any write of it conflicts.
   if (!a.known || !b.known) {
-    return conflictingSegments(a.name, b.name);
+    return true;
   }
   return writesConflict(a.name, b.name);
 }

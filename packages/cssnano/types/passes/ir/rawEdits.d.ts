@@ -23,15 +23,6 @@ import type { TokenListId } from './tokenLists.js';
  */
 export declare function writeBefore(records: BlockRecords, index: ArenaIndex, before: string | null): void;
 /**
- * Writes the whitespace the stylesheet prints before its first child, or null
- * when its node has none and the printer infers it.
- *
- * @param {BlockRecords} records
- * @param {string | null} leading
- * @return {void}
- */
-export declare function writeLeadingWhitespace(records: BlockRecords, leading: string | null): void;
-/**
  * Writes the whitespace the stylesheet prints after its last child.
  *
  * @param {BlockRecords} records

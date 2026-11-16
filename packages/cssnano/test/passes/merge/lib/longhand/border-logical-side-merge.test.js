@@ -3,8 +3,8 @@ import {
   processCSSFactory,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeLonghand');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeLonghand']);
 
 const modern = processCSSFactory([
   plugin(withTargets('chrome 120, firefox 120, safari 17')),

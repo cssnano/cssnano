@@ -226,12 +226,7 @@ function checkBlockRecord(records, nodes, tokenLists, block) {
     entry = records.links.nextSibling(entry)
   ) {
     const item = records.entry(entry);
-    // The first child of the stylesheet prints the stylesheet's leading
-    // whitespace instead of its own.
-    const expected =
-      block === records.root && entry === records.links.firstChild(block.index)
-        ? records.leadingWhitespace
-        : item.before;
+    const expected = item.before;
     if (
       expected !== null &&
       /** @type {ChildNode} */ (nodeOf(nodes, entry)).raws.before !== expected

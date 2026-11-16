@@ -10,8 +10,10 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
-import { mergePass } from '../../../src/passes/merge/index.js';
-import { resolveTargets } from '../../../src/utils/browserTargets.js';
+import {
+  MERGE_TRANSFORMS,
+  onlyTransform,
+} from '../../../test/passes/onlyTransform.js';
 import { generateDuplicateCases } from './duplicates/generate.js';
 
 const SEEDS = Array.from({ length: 20 }, (_, i) => i + 1);
@@ -27,7 +29,11 @@ const frameworksDir = fileURLToPath(
  */
 function snapshotOf(label, css) {
   const root = postcss.parse(css);
-  mergePass(root, resolveTargets({}, undefined));
+  postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+    .process(root, {
+      from: undefined,
+    })
+    .sync();
   return `== ${label}\n${root.toString()}\n`;
 }
 

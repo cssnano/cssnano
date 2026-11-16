@@ -1,6 +1,6 @@
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { withTargets } from '../../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../../../test/passes/onlyTransform.js';
 import { timeOneRun } from '../../linearTiming.js';
 
 /**

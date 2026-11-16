@@ -1,15 +1,19 @@
 import { DeclarationKeys } from './declarationKey.js';
+import { PropertyNames } from './propertyTable.js';
 import { TokenLists } from './tokenLists.js';
 import { ValueIds } from './valueIds.js';
 import { SelectorIds } from './selectorIds.js';
+import { SelectorVerdicts } from './selectorVerdicts.js';
 export type RunContext = {
     declarations: DeclarationKeys;
+    names: PropertyNames;
     tokenLists: TokenLists;
     valueIds: ValueIds;
     consistencyChecks: boolean;
     features: ReadonlySet<string>;
     messages: RunMessage[];
     selectorIds: SelectorIds;
+    selectorVerdicts: SelectorVerdicts;
 };
 export type RunMessage = {
     index: import('./blockRecord.js').ArenaIndex;
@@ -23,12 +27,14 @@ export type RunMessage = {
  *
  * @typedef {{
  *   declarations: DeclarationKeys,
+ *   names: PropertyNames,
  *   tokenLists: TokenLists,
  *   valueIds: ValueIds,
  *   consistencyChecks: boolean,
  *   features: ReadonlySet<string>,
  *   messages: RunMessage[],
  *   selectorIds: SelectorIds,
+ *   selectorVerdicts: SelectorVerdicts,
  * }} RunContext
  */
 /**

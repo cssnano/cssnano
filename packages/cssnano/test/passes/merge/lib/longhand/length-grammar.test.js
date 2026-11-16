@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import cssnanoUtils from '#utils';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import {
   isLengthValue,
   parseDimension,
 } from '../../../../../src/passes/merge/lib/longhand/lengthGrammar.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const { numeric, tokens } = cssnanoUtils;
 const { passthroughCSS } = processCSSFactory(plugin);

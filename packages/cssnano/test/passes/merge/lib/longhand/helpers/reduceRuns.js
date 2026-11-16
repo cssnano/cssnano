@@ -25,7 +25,7 @@ import {
 import { longstandingFeatures } from '../../../../../../src/passes/ir/syntaxFeatures.js';
 import {
   canonicalizeRecords,
-  longhandContext,
+  LonghandRound,
 } from '../../../../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { buildRecords } from '../../../../../../src/passes/ir/buildRecords.js';
 import { writeBack } from '../../../../../../src/passes/ir/writeBack.js';
@@ -190,7 +190,7 @@ export function secondRoundOfText(css, browsers) {
   const support = targetSupportOf(browsers);
   const run = createRunContext(undefined, support.features);
   const { records, nodes } = buildRecords(root, run);
-  const context = longhandContext(
+  const context = new LonghandRound(
     support.placeShorthands,
     support.boxSupport,
     support.pairShorthands,

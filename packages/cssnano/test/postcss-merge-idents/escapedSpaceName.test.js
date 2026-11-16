@@ -1,7 +1,10 @@
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-merge-idents/index.js';
+import {
+  processCSSFactory,
+  presetEntryPlugin,
+} from '../../../../util/testHelpers.js';
+const plugin = presetEntryPlugin('mergeIdents');
 
 const { processCSS } = processCSSFactory(plugin);
 

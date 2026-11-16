@@ -1,5 +1,5 @@
 import postcss from 'postcss';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { differences, evaluate } from './fuzzEvaluate.js';
 import { shrink } from './fuzzGenerate.js';
 import {
@@ -8,7 +8,7 @@ import {
   runPlugin,
   threwMismatch,
 } from '../../../../../../../util/fuzzCheck.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../../test/passes/onlyTransform.js';
 
 /** @typedef {import('../../../../../../../util/fuzzCheck.js').Mismatch} Mismatch */
 

@@ -2,8 +2,8 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { repositoryFile } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeLonghand');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeLonghand']);
 
 /**
  * Parses the css, replaces the raw value of its first declaration with a raw

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { timePlugin } from './lib/timing.js';
 import { assertLinearTime } from '../linearTiming.js';
 import { withTargets } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../../test/passes/onlyTransform.js';
 
 /**
  * @param {number} groups

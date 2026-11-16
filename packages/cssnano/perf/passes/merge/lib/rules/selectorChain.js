@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { test } from 'node:test';
-import { mergePass } from '#passes/merge';
+import {
+  MERGE_TRANSFORMS,
+  onlyTransform,
+} from '../../../../../test/passes/onlyTransform.js';
 import { tokens } from '../../../../../src/utils/value.js';
-import { resolveTargets } from '#utils/browser-targets';
-
-const targets = resolveTargets({}, undefined);
 
 /**
  * The selector tokens the merge pass writes, over a stylesheet of `count`
@@ -20,7 +20,11 @@ function storedTokens(unit, count) {
   let css = '';
   for (let i = 0; i < count; i++) css += unit(i);
   const root = postcss.parse(css);
-  mergePass(root, targets, {}, undefined);
+  postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+    .process(root, {
+      from: undefined,
+    })
+    .sync();
   let stored = 0;
   root.walkRules((rule) => {
     stored += tokens(rule.selector).length;

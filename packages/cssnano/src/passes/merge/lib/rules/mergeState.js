@@ -164,14 +164,30 @@ export default class MergeState {
     if (recordA.context !== -1) return false;
     if (recordB.context !== -1) return false;
 
-    // The vendor check follows compatibility, because an incompatible selector
-    // has no known prefix.
-    return (
-      compatibleOf(this.records, recordA.index) &&
-      compatibleOf(this.records, recordB.index) &&
-      vendorSummaryOf(this.records, recordA.index).allowsMerge(
-        vendorSummaryOf(this.records, recordB.index)
-      )
+    // The vendor check follows the parser, because a selector it rejects has no
+    // prefix that a browser would honour.
+    if (!compatibleOf(this.records, recordA.index)) return false;
+    if (!compatibleOf(this.records, recordB.index)) return false;
+    if (!this.#parsesEvery(recordA) || !this.#parsesEvery(recordB))
+      return false;
+    return vendorSummaryOf(this.records, recordA.index).allowsMerge(
+      vendorSummaryOf(this.records, recordB.index)
     );
+  }
+
+  /**
+   * Whether the selector parser accepts every selector of a rule. A verdict is
+   * parsed once per selector id, so a rule costs one lookup per selector.
+   *
+   * @param {RuleRecord} rule
+   * @return {boolean}
+   */
+  #parsesEvery(rule) {
+    const verdicts = this.#context.selectorVerdicts;
+    const ids = rule.selectorIds;
+    for (let at = 0; at < ids.length; at++) {
+      if (!verdicts.isValid(this.#tokenLists, ids[at])) return false;
+    }
+    return true;
   }
 }

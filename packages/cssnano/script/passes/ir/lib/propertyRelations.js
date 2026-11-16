@@ -87,30 +87,6 @@ function isSameLonghand(a, b) {
 }
 
 /**
- * The name-based approximation the plugin relied on before it had property
- * data: two properties interact when they share their leading segment and
- * their remaining segments either match or differ in number. `place` is
- * treated as a wildcard leading segment, since `place-content` expands to
- * `align-content`/`justify-content` and the like. Reached only for vendor
- * extensions no spec describes, such as `-webkit-box-direction`.
- *
- * @param {string} nameA
- * @param {string} nameB
- * @return {boolean}
- */
-function conflictingSegments(nameA, nameB) {
-  const a = vendorUnprefixed(nameA).split('-');
-  const b = vendorUnprefixed(nameB).split('-');
-  if (a[0] !== b[0] && a[0] !== 'place' && b[0] !== 'place') {
-    return false;
-  }
-  if (a.length !== b.length) {
-    return true;
-  }
-  return a.every((segment, index) => b[index] === segment);
-}
-
-/**
  * True if declarations of `propA` and `propB` can set the same underlying
  * property, so that reordering them within a rule can change what the rule
  * computes to. The relation is symmetric: a shorthand setting a longhand and a
@@ -144,11 +120,10 @@ function isConflictingProp(propA, propB) {
   if (a.name === b.name) {
     return true;
   }
+  // The data says nothing about a vendor extension, so no longhand relation can
+  // clear it: any write of it conflicts.
   if (!a.known || !b.known) {
-    // A vendor extension the data says nothing about. The shorthand relations
-    // that would settle it are exactly what is missing, so fall back to
-    // comparing the names.
-    return conflictingSegments(a.name, b.name);
+    return true;
   }
   for (const longhandA of longhandsOf(a.name)) {
     for (const longhandB of longhandsOf(b.name)) {

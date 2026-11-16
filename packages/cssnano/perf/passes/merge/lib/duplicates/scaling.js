@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../../../test/passes/onlyTransform.js';
 import { assertLinearTime, timeOneRun } from '../linearTiming.js';
-const plugin = transformPlugin('discardDuplicates');
+const plugin = onlyTransform(['discardDuplicates']);
 
 /**
  * @param {string} css

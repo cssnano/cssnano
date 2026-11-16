@@ -13,11 +13,20 @@ export const target = irSource('declarationCache.js');
 // node --test expands this glob; a directory path would resolve to a single
 // entry module instead of running every split test file.
 export const test = new URL(
-  '../../../../../test/passes/{merge/lib/rules,ir}/*.js',
+  '../../../../../test/passes/{merge/*.js,merge/lib/rules/*.js,ir/*.js}',
   import.meta.url
 ).href;
 
 export const mutations = [
+  {
+    name: 'the second round skips a block only on isTouched',
+    target: new URL(
+      '../../../../../src/passes/merge/lib/longhand/canonicalize.js',
+      import.meta.url
+    ).href,
+    find: '      !records.declarationStamps.isTouched(index) &&\n      !records.links.isEdited(index)\n',
+    replace: '      !records.declarationStamps.isTouched(index)\n',
+  },
   {
     name: 'a link stamps no container',
     target: irSource('blockRecords.js'),

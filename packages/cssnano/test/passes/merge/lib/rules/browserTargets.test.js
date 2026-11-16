@@ -3,8 +3,8 @@ import {
   processCSSFactory,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeRules');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeRules']);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

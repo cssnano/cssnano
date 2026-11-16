@@ -15,8 +15,7 @@ export declare const normalizeWhitespaceEntry: readonly [{
     create: () => import("../pipeline/host.js").Stage;
 }, "normalizeWhitespace", {
     readonly optionKeys: readonly [];
-    readonly walk: true;
-    readonly after: true;
+    readonly field: 'normalizeWhitespace';
 }];
 /**
  * discardEmpty runs in the walk up of its host, so the host walks the
@@ -27,7 +26,7 @@ export declare const discardEmptyEntry: readonly [{
 }, "discardEmpty", {
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly after: true;
+    readonly field: 'discardEmpty';
 }];
 /**
  * rawCache runs last in its host, on the tree the run wrote.
@@ -37,6 +36,6 @@ export declare const rawCacheEntry: readonly [{
 }, "rawCache", {
     readonly optionKeys: readonly [];
     readonly transform: true;
-    readonly after: true;
+    readonly field: 'rawCache';
 }];
 //# sourceMappingURL=sharedPluginEntries.d.ts.map

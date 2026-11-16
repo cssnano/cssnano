@@ -4,8 +4,7 @@ import { suite, test } from 'node:test';
 // The counter must hook the tokenizer before the walk loads it.
 const { counter } = await import('../../../../../util/countTokenize.js');
 const { default: postcss } = await import('postcss');
-const { mergePass, transformPass } =
-  await import('../../../src/passes/merge/index.js');
+const { onlyTransform, MERGE_TRANSFORMS } = await import('../onlyTransform.js');
 const { removeRules, takePlaceOf } =
   await import('../../../src/passes/ir/treeEdits.js');
 const { buildRecords } = await import('../../../src/passes/ir/buildRecords.js');
@@ -15,7 +14,6 @@ const { writeBack } = await import('../../../src/passes/ir/writeBack.js');
 const { addSelectors } = await import('../../../src/passes/ir/selectorList.js');
 const { createRunContext } =
   await import('../../../src/passes/ir/runContext.js');
-const { resolveTargets } = await import('../../../src/utils/browserTargets.js');
 
 /**
  * @param {import('postcss').Root} root
@@ -90,7 +88,11 @@ suite(
   () => {
     test('a rule that merge joins with another reads its selector list without tokenizing', () => {
       const { root } = walkedStylesheet('a {color:red} b {color:red}');
-      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+        .process(root, {
+          from: undefined,
+        })
+        .sync();
       const joined = ruleWith(root, 'a,b');
       const before = tokenizeTotal();
       assert.equal(joined.selector, 'a,b');
@@ -101,7 +103,11 @@ suite(
       const { root } = walkedStylesheet(
         'a, c {color:red;margin:0} b {color:red;padding:0}'
       );
-      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+        .process(root, {
+          from: undefined,
+        })
+        .sync();
       const shared = ruleWith(root, 'a,c,b');
       const before = tokenizeTotal();
       assert.equal(shared.selector, 'a,c,b');
@@ -115,7 +121,11 @@ suite(
       const items = distinctItemsOf(root);
       const selectors = distinctSelectorsOf(root);
       const before = tokenizeTotal();
-      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+        .process(root, {
+          from: undefined,
+        })
+        .sync();
       ruleWith(root, 'a, c');
       assert.equal(
         tokenizeTotal() - before,
@@ -127,7 +137,11 @@ suite(
       const { root } = walkedStylesheet(
         'a {color:red} p {margin:0} b {color:red}'
       );
-      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+        .process(root, {
+          from: undefined,
+        })
+        .sync();
       const group = ruleWith(root, 'a,b');
       const before = tokenizeTotal();
       assert.equal(group.selector, 'a,b');
@@ -141,7 +155,11 @@ suite(
       const items = distinctItemsOf(root);
       const selectors = distinctSelectorsOf(root);
       const before = tokenizeTotal();
-      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+        .process(root, {
+          from: undefined,
+        })
+        .sync();
       assert.equal(
         tokenizeTotal() - before,
         items + distinctValuesOf(root) + selectors
@@ -155,7 +173,11 @@ suite(
       const items = distinctItemsOf(root);
       const selectors = distinctSelectorsOf(root);
       const before = tokenizeTotal();
-      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+        .process(root, {
+          from: undefined,
+        })
+        .sync();
       assert.equal(
         tokenizeTotal() - before,
         items + distinctValuesOf(root) + selectors
@@ -169,7 +191,11 @@ suite(
       const items = distinctItemsOf(root);
       const selectors = distinctSelectorsOf(root);
       const before = tokenizeTotal();
-      mergePass(root, resolveTargets({}, undefined), {}, undefined);
+      postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+        .process(root, {
+          from: undefined,
+        })
+        .sync();
       assert.equal(
         tokenizeTotal() - before,
         items + distinctValuesOf(root) + selectors
@@ -181,7 +207,11 @@ suite(
 suite('the merge pass writes selectors through its records', () => {
   test('a merged rule whose selector changed spells its new selector', () => {
     const root = postcss.parse('a {color:red} b {color:red}');
-    mergePass(root, resolveTargets({}, undefined), {}, undefined);
+    postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+      .process(root, {
+        from: undefined,
+      })
+      .sync();
     assert.equal(ruleWith(root, 'a,b').selector, 'a,b');
   });
 
@@ -299,7 +329,11 @@ test('a merged rule prints the four raws of the rule it was merged from, unminif
   const root = postcss.parse(
     'a{color:red;width:1px}\nb  /*x*/ {color:red;height:2px}  ;\n'
   );
-  transformPass('mergeRules')(root, resolveTargets({}, undefined));
+  postcss([onlyTransform(['mergeRules'])({})])
+    .process(root, {
+      from: undefined,
+    })
+    .sync();
   assert.equal(
     root.toString(),
     'a{width:1px}\na,b  /*x*/ {color:red}  ;\nb  /*x*/ {height:2px}  ;\n'
@@ -310,7 +344,11 @@ test('a rule merged again prints the raws of the rule its first merge took them 
   const root = postcss.parse(
     'c{width:1px;\nwidth:1px;\ncolor:red\n}\nb {color:red; top:0}\nc /*k*/ {top:0;\ntop:0;\ncolor:red}'
   );
-  transformPass('mergeRules')(root, resolveTargets({}, undefined));
+  postcss([onlyTransform(['mergeRules'])({})])
+    .process(root, {
+      from: undefined,
+    })
+    .sync();
   assert.equal(
     root.toString(),
     'c{width:1px;\nwidth:1px\n}\nc,b,c /*k*/ {\ncolor:red}\nb,c,c /*k*/ {\ntop:0}'

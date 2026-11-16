@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { mergePass } from '../../../src/passes/merge/index.js';
-import { resolveTargets } from '../../../src/utils/browserTargets.js';
+import { onlyTransform, MERGE_TRANSFORMS } from '../onlyTransform.js';
 
 /**
  * Runs the merge pass over one stylesheet with the default targets.
@@ -12,7 +11,11 @@ import { resolveTargets } from '../../../src/utils/browserTargets.js';
  */
 function mergedCss(css) {
   const root = postcss.parse(css);
-  mergePass(root, resolveTargets({}, undefined));
+  postcss([onlyTransform(MERGE_TRANSFORMS)({})])
+    .process(root, {
+      from: undefined,
+    })
+    .sync();
   return root.toString();
 }
 

@@ -46,7 +46,7 @@ export const mutations = [
   {
     name: 'write-back skips the whitespace the records hold',
     target: irSource('writeBack.js'),
-    find: '  writeRawsOf(records, nodes, tokenLists, records.root.index);',
+    find: '      if (record.before !== null) node.raws.before = record.before;\n      else delete node.raws.before;\n',
     replace: '',
   },
   {
@@ -54,12 +54,12 @@ export const mutations = [
     target: irSource('writeBack.js'),
     find: '    if (record.before !== null) node.raws.before = record.before;',
     replace:
-      '    if (record.before !== null && container === records.root.index) node.raws.before = record.before;',
+      '    if (record.before !== null && container === this.records.root) node.raws.before = record.before;',
   },
   {
     name: 'takePlaceOf keeps the whitespace of the earlier entry',
     target: irSource('treeEdits.js'),
-    find: '  records.entry(earlier).before = records.entry(later).before;',
+    find: '  records.entry(earlier).before = before;',
     replace: '',
   },
   {

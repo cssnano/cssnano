@@ -6,13 +6,15 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
-import { remove, takePlaceOf } from '../../../../../src/passes/ir/treeEdits.js';
+import { writeBack } from '../../../../../src/passes/ir/writeBack.js';
 import {
+  nodesOf,
   blockRecordOf,
   ruleRecordOf,
   buildTestRecords,
   placeUnlinked,
 } from './liveRecords.js';
+import { remove, takePlaceOf } from '../../../../../src/passes/ir/treeEdits.js';
 import {
   adopt,
   moveRule,
@@ -187,4 +189,48 @@ test('insertEntryBefore links the entry it places right before the sibling it is
   records.insertEntryBefore(second, entry);
   assert.equal(records.links.nextSibling(first.index), entry.index);
   assert.equal(records.links.prevSibling(second), entry.index);
+});
+
+/**
+ * @param {string} css
+ * @param {(state: MergeState, indices: number[]) => void} edit
+ * @return {string} the stylesheet printed after the edit and write-back
+ */
+function printedAfter(css, edit) {
+  const { root, state } = setup(css);
+  edit(
+    state,
+    /** @type {Rule[]} */ (root.nodes).map(
+      (rule) => ruleRecordOf(state.records, rule).index
+    )
+  );
+  writeBack(state.records, nodesOf(state.records), state.tokenLists);
+  return root.toString();
+}
+
+test("substitute should print the replaced first child's whitespace before the replacement that leads", () => {
+  const css = printedAfter(
+    '\n\na{color:red}\n b{width:1px}\n  c{top:0}',
+    (state, [a, , c]) => substitute(state.records, a, [c])
+  );
+  assert.equal(css, '\n\nc{top:0}\n b{width:1px}');
+});
+
+test('substitute should print the whitespace of a kept first child when replacements go before it', () => {
+  const css = printedAfter(
+    '\n\na{color:red}\n b{width:1px}\n  c{top:0}',
+    (state, [a, , c]) => substitute(state.records, a, [c, a])
+  );
+  assert.equal(css, '\n\nc{top:0}\n\na{color:red}\n b{width:1px}');
+});
+
+test("substitute should print a removed head's whitespace before a replacement that leads in place of the inherited head", () => {
+  const css = printedAfter(
+    '\n\na{color:red}\n b{width:1px}\n  c{top:0}',
+    (state, [a, b, c]) => {
+      remove(state.records, a);
+      substitute(state.records, b, [c, b]);
+    }
+  );
+  assert.equal(css, '\n\nc{top:0}\n\nb{width:1px}');
 });

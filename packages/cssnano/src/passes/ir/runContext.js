@@ -1,7 +1,9 @@
 import { DeclarationKeys } from './declarationKey.js';
+import { PropertyNames } from './propertyTable.js';
 import { TokenLists } from './tokenLists.js';
 import { ValueIds } from './valueIds.js';
 import { SelectorIds } from './selectorIds.js';
+import { SelectorVerdicts } from './selectorVerdicts.js';
 import { consistencyChecksEnabled } from './consistencyChecks.js';
 import { longstandingFeatures } from './syntaxFeatures.js';
 
@@ -11,12 +13,14 @@ import { longstandingFeatures } from './syntaxFeatures.js';
  *
  * @typedef {{
  *   declarations: DeclarationKeys,
+ *   names: PropertyNames,
  *   tokenLists: TokenLists,
  *   valueIds: ValueIds,
  *   consistencyChecks: boolean,
  *   features: ReadonlySet<string>,
  *   messages: RunMessage[],
  *   selectorIds: SelectorIds,
+ *   selectorVerdicts: SelectorVerdicts,
  * }} RunContext
  */
 
@@ -42,11 +46,13 @@ export function createRunContext(
 ) {
   return {
     declarations: new DeclarationKeys(),
+    names: new PropertyNames(),
     tokenLists: new TokenLists(),
     valueIds: new ValueIds(),
     consistencyChecks,
     features,
     messages: [],
     selectorIds: new SelectorIds(),
+    selectorVerdicts: new SelectorVerdicts(),
   };
 }

@@ -63,52 +63,6 @@ However, you can mitigate this by including [postcss-minify-font-values][mfv]
 deduplicating. For more examples, see the [tests](../../test/postcss-discard-unused/).
 
 
-## Usage
-
-See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
-examples for your environment.
-
-
-## API
-
-### discardUnused([options])
-
-#### options
-
-##### fontFace
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable discarding unused font face rules.
-
-##### counterStyle
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable discarding unused counter style rules.
-
-##### keyframes
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable discarding unused keyframe rules.
-
-##### namespace
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable discarding unused namespace rules.
-
-
-## Usage
-
-See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
-examples for your environment.
-
 ## Contributors
 
 See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/main/CONTRIBUTORS.md).

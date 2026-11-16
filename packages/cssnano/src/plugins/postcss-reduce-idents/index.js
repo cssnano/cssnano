@@ -3,11 +3,7 @@ import counterReducer from './lib/counter.js';
 import counterStyleReducer from './lib/counter-style.js';
 import keyframesReducer from './lib/keyframes.js';
 import gridTemplateReducer from './lib/grid-template.js';
-import {
-  collectRecordSymbols,
-  isRecordAttached,
-} from '../../pipeline/symbolLists.js';
-import { runRecordsPlugin } from '../../passes/ir/recordsPlugin.js';
+import { isRecordAttached } from '../../pipeline/symbolLists.js';
 
 /** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
 /** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
@@ -90,31 +86,3 @@ export function reduceIdentsSymbols(
     reducer.transform(records, context);
   }
 }
-
-/**
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
-function pluginCreator(opts = {}) {
-  const state = createReducers(opts);
-  return {
-    postcssPlugin: 'postcss-reduce-idents',
-    /**
-     * @param {import('postcss').Root} css
-     * @param {import('postcss').Helpers} helpers
-     */
-    OnceExit(css, { result }) {
-      runRecordsPlugin(css, result, [
-        (records, browsers, context) => {
-          const lists = collectRecordSymbols(records, context.tokenLists);
-          reduceIdentsSymbols(lists, state, undefined, records, context);
-        },
-      ]);
-    },
-  };
-}
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-
-export { moduleExports as default, moduleExports as 'module.exports' };

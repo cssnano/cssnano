@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import postcss from 'postcss';
-const plugin = transformPlugin('mergeRules');
 import { repositoryFile } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 import { mergeBenefit } from '../../../../../src/passes/merge/lib/rules/scan.js';
 import MergeState from '../../../../../src/passes/merge/lib/rules/mergeState.js';
 import { createRunContext } from '../../../../../src/passes/ir/runContext.js';
 import { buildTestRecords, ruleRecordOf } from './liveRecords.js';
+
+const plugin = onlyTransform(['mergeRules']);
 
 /** @param {string} css */
 function merge(css) {
@@ -120,10 +121,8 @@ test('should converge on a bounded deterministic rewrite corpus', () => {
   }
 });
 
-const pluginUrl = new URL(
-  '../../../../../src/passes/merge/index.js',
-  import.meta.url
-).href;
+const onlyTransformUrl = new URL('../../../onlyTransform.js', import.meta.url)
+  .href;
 
 /**
  * Runs the plugin on every input in one child process under a time and heap
@@ -138,8 +137,8 @@ const pluginUrl = new URL(
 function processAllWithLimits(inputs) {
   const script = `
     import postcss from 'postcss';
-    import { transformPlugin } from ${JSON.stringify(pluginUrl)};
-    const plugin = transformPlugin('mergeRules');
+    import { onlyTransform } from ${JSON.stringify(onlyTransformUrl)};
+    const plugin = onlyTransform(['mergeRules']);
     const inputs = ${JSON.stringify(inputs)};
     inputs.forEach((css, index) => {
       process.stdout.write(index + '\\n');

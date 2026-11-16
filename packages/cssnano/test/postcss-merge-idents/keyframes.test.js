@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-merge-idents/index.js';
+import {
+  processCSSFactory,
+  presetEntryPlugin,
+} from '../../../../util/testHelpers.js';
 import { trackAtRuleSerializations } from './helpers/trackAtRuleSerializations.js';
+const plugin = presetEntryPlugin('mergeIdents');
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -120,7 +123,7 @@ test('should merge keyframes candidates with equal bodies in one pass', async ()
 
   const root = postcss.parse(input);
 
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss(plugin()).process(root, { from: undefined });
 
   assert.strictEqual(
     root.toString(),
@@ -139,7 +142,7 @@ test('should merge interleaved matching and non-matching keyframes candidates ac
 
   const root = postcss.parse(input);
 
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss(plugin()).process(root, { from: undefined });
 
   assert.strictEqual(
     root.toString(),
@@ -316,7 +319,7 @@ test('should not serialize at-rule body when container only has a single at-rule
   const root = postcss.parse(input);
   const getSerializationCalls = trackAtRuleSerializations(root);
 
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss(plugin()).process(root, { from: undefined });
 
   assert.strictEqual(getSerializationCalls(), 0);
   assert.strictEqual(root.toString(), input);

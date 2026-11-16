@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import uniqueSelectors from '../../../src/plugins/postcss-unique-selectors/index.js';
+import { presetEntryPlugin } from '../../../../../util/testHelpers.js';
 import { createRunContext } from '../../../src/passes/ir/runContext.js';
 import { runDriver } from '../../../src/passes/ir/runDriver.js';
 import { uniqueRuleSelectors } from '../../../src/passes/ir/uniqueSelectors.js';
@@ -18,7 +18,8 @@ import { uniqueRuleSelectors } from '../../../src/passes/ir/uniqueSelectors.js';
  * @return {Promise<string>}
  */
 async function pluginFormOf(css) {
-  const result = await postcss([uniqueSelectors()]).process(css, {
+  const uniqueSelectors = presetEntryPlugin('uniqueSelectors');
+  const result = await postcss(uniqueSelectors()).process(css, {
     from: undefined,
   });
   return result.css;

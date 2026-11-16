@@ -4,14 +4,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import { longstandingFeatures } from '../../../../../src/passes/ir/syntaxFeatures.js';
 import { featuresSupportedByAll } from '../../../../../src/passes/merge/lib/longhand/targetSupport.js';
 import {
   repositoryFile,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const modern = 'chrome 120, firefox 120, safari 17';
 

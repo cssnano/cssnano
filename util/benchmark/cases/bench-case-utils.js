@@ -10,7 +10,10 @@ function stagePlugin(entry, options = {}) {
   const {
     hostPlugin,
   } = require('../../../packages/cssnano/src/pipeline/host.js');
-  return hostPlugin([{ entry, options, targets: true }]);
+  const {
+    hostPlan,
+  } = require('../../../packages/cssnano/src/pipeline/hostPlan.js');
+  return hostPlugin(hostPlan({ members: [{ entry, options, targets: true }] }));
 }
 
 function pluginProcessor(packageName, options) {

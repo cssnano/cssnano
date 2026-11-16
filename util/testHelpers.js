@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { browserTargets } from '../packages/cssnano/src/utils/browserTargets.js';
 import { hostPlugin } from '../packages/cssnano/src/pipeline/host.js';
+import { hostPlan } from '../packages/cssnano/src/pipeline/hostPlan.js';
 import { configureValidated } from '../packages/cssnano/src/presets/configurePlugins.js';
+import { advancedPresetEntries } from '../packages/cssnano/src/presets/advancedPlugins.js';
 import { normalizeWhitespaceEntry } from '../packages/cssnano/src/presets/sharedPluginEntries.js';
 import { defaultPluginEntries } from '../packages/cssnano/src/presets/defaultPlugins.js';
 
@@ -86,7 +88,8 @@ function processCSSFactory(plugin) {
  * @param {import('../packages/cssnano/src/pipeline/host.js').StageEntry} entry
  */
 function oneStagePlugin(entry) {
-  return (options = {}) => hostPlugin([{ entry, options, targets: true }]);
+  return (options = {}) =>
+    hostPlugin(hostPlan({ members: [{ entry, options, targets: true }] }));
 }
 
 /**
@@ -112,10 +115,37 @@ function discardOverriddenPlugins() {
   );
 }
 
+/**
+ * A PostCSS plugin creator that runs one plugin of the advanced preset, the
+ * way the preset does: its entry alone, in a host, with the options the caller
+ * passes under the plugin's preset option name. PostCSS calls the creator once,
+ * when it is added to a processor, as it does for a standalone plugin creator.
+ *
+ * @param {string} optionName the preset option of the plugin, such as `zindex`
+ * @returns {((options?: object) => import('postcss').Plugin) & {postcss: true}}
+ */
+function presetEntryPlugin(optionName) {
+  const entries = advancedPresetEntries.filter(
+    ([, name]) => name === optionName
+  );
+  assert.equal(entries.length, 1, `no preset entry named ${optionName}`);
+  /** @param {object} [options] */
+  const creator = (options = {}) => {
+    const plugins = configureValidated(entries, {
+      options: { [optionName]: options },
+    });
+    assert.equal(plugins.length, 1, `${optionName} is off`);
+    return /** @type {import('postcss').Plugin} */ (plugins[0]);
+  };
+  creator.postcss = /** @type {const} */ (true);
+  return creator;
+}
+
 export {
   oneStagePlugin,
   usePostCSSPlugin,
   processCSSFactory,
   normalizeWhitespacePlugins,
   discardOverriddenPlugins,
+  presetEntryPlugin,
 };

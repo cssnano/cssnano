@@ -11,13 +11,16 @@ export declare function resolveProperty(name: string): {
     name: string;
     known: boolean;
 };
-export type PropertyKeys = {
+export type PropertyKeys = Readonly<{
+    id: number;
     custom: true;
     key: string;
 } | {
+    id: number;
     custom: false;
     all: true;
 } | {
+    id: number;
     custom: false;
     all: false;
     name: string;
@@ -28,15 +31,20 @@ export type PropertyKeys = {
         side: string | undefined;
         opposite: string | undefined;
     }[];
-    lead: string;
-    length: number;
-    bare: string;
-};
+}>;
 /**
- * The keys of one property name: what a conflict query reads for it.
- *
- * @param {string} prop
- * @return {PropertyKeys}
+ * The property names of one run, each numbered by first use. Two spellings
+ * that fold to one name share its keys and id. Nothing may keep an id across
+ * runs.
  */
-export declare function keysOfName(prop: string): PropertyKeys;
+export declare class PropertyNames {
+    #private;
+    /**
+     * The keys of a property name, built on its first use in the run.
+     *
+     * @param {string} prop
+     * @return {PropertyKeys}
+     */
+    keysOf(prop: string): PropertyKeys;
+}
 //# sourceMappingURL=propertyTable.d.ts.map

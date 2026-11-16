@@ -1,11 +1,11 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  usePostCSSPlugin,
   processCSSFactory,
+  presetEntryPlugin,
 } from '../../../../util/testHelpers.js';
 import encode from '../../src/plugins/postcss-reduce-idents/lib/encode.js';
-import plugin from '../../src/plugins/postcss-reduce-idents/index.js';
+const plugin = presetEntryPlugin('reduceIdents');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -198,5 +198,3 @@ describe('Encoder', () => {
     }
   });
 });
-
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

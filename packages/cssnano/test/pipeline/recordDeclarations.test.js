@@ -8,6 +8,7 @@ import { commentStateOf } from '../../src/pipeline/comments/commentState.js';
 import { declarationPlansOf } from '../../src/pipeline/declarationWalk.js';
 import { walkDown } from '../../src/pipeline/walkDown.js';
 import { hostPlugin } from '../../src/pipeline/host.js';
+import { hostPlan } from '../../src/pipeline/hostPlan.js';
 
 /** @import {Stage} from '../../src/pipeline/host.js' */
 
@@ -112,17 +113,21 @@ describe('the record walk over a declaration', () => {
 
 describe('a comment in a unicode-range value', () => {
   test('is removed as it is in other values, with the space the removal leaves', async () => {
-    const host = hostPlugin([
-      {
-        entry: {
-          create: () => ({
-            comments: () => (comment) => comment.includes('drop'),
-          }),
-        },
-        options: {},
-        targets: false,
-      },
-    ]);
+    const host = hostPlugin(
+      hostPlan({
+        members: [
+          {
+            entry: {
+              create: () => ({
+                comments: () => (comment) => comment.includes('drop'),
+              }),
+            },
+            options: {},
+            targets: false,
+          },
+        ],
+      })
+    );
     const result = await postcss([host]).process(
       'a{unicode-range:U+0025/* drop */-00FF}',
       { from: undefined }

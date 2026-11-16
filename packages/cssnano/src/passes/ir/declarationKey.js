@@ -1,5 +1,3 @@
-import { propertyNameKey } from './propertyName.js';
-
 /** @import {TokenListId} from './tokenLists.js' */
 
 // Marks the end of a component path in a trie, so the id of a path cannot be
@@ -52,18 +50,17 @@ export class DeclarationKeys {
 
   /**
    * The key of a declaration: the same property, value list, importance and
-   * hack prefix. Names fold ASCII case, except custom properties, which are
-   * case-sensitive.
+   * hack prefix.
    *
-   * @param {string} prop
+   * @param {number} nameId the id of the property name, from the run's PropertyNames
    * @param {TokenListId} valueList the id of the value, which equal values share
    * @param {boolean} important
    * @param {string | null} before the declaration's `raws.before`
    * @return {number}
    */
-  keyOf(prop, valueList, important, before) {
+  keyOf(nameId, valueList, important, before) {
     let trie = step(this.root, 'decl');
-    trie = step(trie, propertyNameKey(prop));
+    trie = step(trie, nameId);
     trie = step(trie, valueList);
     trie = step(trie, important);
     return this.leafOf(step(trie, hackPrefixOf(before)));

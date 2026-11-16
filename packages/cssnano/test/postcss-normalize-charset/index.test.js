@@ -1,10 +1,13 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  usePostCSSPlugin,
   processCSSFactory,
+  presetEntryPlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-normalize-charset/index.js';
+// The plugin's own default is `add: true`; the preset sets it to false, so the
+// tests keep the plugin's default and pass an explicit `add` when they differ.
+const presetCharset = presetEntryPlugin('normalizeCharset');
+const plugin = (options = {}) => presetCharset({ add: true, ...options });
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -42,6 +45,11 @@ const copyright = 'a{content:"©"}';
 test(
   'should add a charset if a file contains non-ascii',
   processCssWithSource(copyright, '@charset "utf-8";\n' + copyright, copyright)
+);
+
+test(
+  'should add a charset for non-ascii text in a comment inside a rule selector',
+  processCSS('a,/*é*/b{top:0}', '@charset "utf-8";\na,/*é*/b{top:0}')
 );
 
 test(
@@ -103,8 +111,6 @@ describe('Add', () => {
     })
   );
 });
-
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
 
 describe('Whitespace around the moved charset', () => {
   test(

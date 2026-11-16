@@ -24,10 +24,6 @@
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
   "imports": {
-    "#passes/merge": {
-      "types": "./types/passes/merge/index.d.ts",
-      "default": "./src/passes/merge/index.js"
-    },
     "#postcss-colormin": {
       "types": "./types/plugins/postcss-colormin/index.d.ts",
       "default": "./src/plugins/postcss-colormin/index.js"
@@ -39,10 +35,6 @@
     "#postcss-discard-comments": {
       "types": "./types/plugins/postcss-discard-comments/index.d.ts",
       "default": "./src/plugins/postcss-discard-comments/index.js"
-    },
-    "#postcss-discard-empty": {
-      "types": "./types/plugins/postcss-discard-empty/index.d.ts",
-      "default": "./src/plugins/postcss-discard-empty/index.js"
     },
     "#postcss-discard-overridden": {
       "types": "./types/plugins/postcss-discard-overridden/index.d.ts",
@@ -71,10 +63,6 @@
     "#postcss-minify-selectors": {
       "types": "./types/plugins/postcss-minify-selectors/index.d.ts",
       "default": "./src/plugins/postcss-minify-selectors/index.js"
-    },
-    "#postcss-normalize-charset": {
-      "types": "./types/plugins/postcss-normalize-charset/index.d.ts",
-      "default": "./src/plugins/postcss-normalize-charset/index.js"
     },
     "#postcss-normalize-display-values": {
       "types": "./types/plugins/postcss-normalize-display-values/index.d.ts",
@@ -123,10 +111,6 @@
     "#postcss-reduce-transforms": {
       "types": "./types/plugins/postcss-reduce-transforms/index.d.ts",
       "default": "./src/plugins/postcss-reduce-transforms/index.js"
-    },
-    "#postcss-unique-selectors": {
-      "types": "./types/plugins/postcss-unique-selectors/index.d.ts",
-      "default": "./src/plugins/postcss-unique-selectors/index.js"
     },
     "#postcss-zindex": {
       "types": "./types/plugins/postcss-zindex/index.d.ts",

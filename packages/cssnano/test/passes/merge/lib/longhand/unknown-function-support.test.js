@@ -2,7 +2,7 @@ import { longstandingFeatures } from '../../../../../src/passes/ir/syntaxFeature
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-const plugin = transformPlugin('mergeLonghand');
+const plugin = onlyTransform(['mergeLonghand']);
 import {
   mergeBlockingSupport,
   requiredSupport,
@@ -11,7 +11,7 @@ import {
   repositoryFile,
   withTargets,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 import { itemOf } from './helpers/declarationItems.js';
 
 /**

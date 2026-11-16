@@ -2,7 +2,8 @@ import type { AcceptedPlugin } from 'postcss';
 import type { NamedPreset } from './presetEntries.js';
 import type { SharedTargets } from '#utils/browser-targets';
 import type { Guard } from '../optionGuards.js';
-import type { StageEntry, HostMember, Merge, SymbolEntry, SymbolTransform, TransformEntry } from '../pipeline/host.js';
+import type { StageEntry, HostMember, SymbolEntry, SymbolTransform, TransformEntry } from '../pipeline/host.js';
+import type { RunPlan, TransformField } from '../pipeline/hostPlan.js';
 import type { MergeRunner } from '../passes/merge/index.js';
 export type PresetOptions<Plugins extends object> = {
     browserslist?: SharedTargets;
@@ -21,10 +22,9 @@ export type PluginEntrySettings = {
     defaults?: object;
     optionKeys: readonly string[];
     guards?: Readonly<Record<string, Guard>>;
-    walk?: true;
+    field?: TransformField;
     transform?: true;
     merge?: MergeRunner;
-    after?: true;
     symbols?: SymbolTransform;
 };
 export type PluginEntry = readonly [StageEntry | TransformEntry, string, PluginEntrySettings];
@@ -32,13 +32,21 @@ export type NamedKeys<Options> = string extends keyof Options ? never : keyof Op
 export type EntryFor<Options extends object, Name extends keyof Options & string> = readonly [StageEntry<NonNullable<Options[Name]>> | TransformEntry<NonNullable<Options[Name]>>, Name, PluginEntrySettings & {
     readonly optionKeys: readonly NamedKeys<NonNullable<Options[Name]>>[];
 }];
-export type Run = {
+export type RunDraft = {
     members: HostMember[];
-    transforms: Map<string, Record<PropertyKey, unknown>>;
-    merge: Merge | undefined;
-    after: Map<string, Record<PropertyKey, unknown>>;
-    symbols: Map<string, SymbolEntry>;
-};
+    symbols: SymbolEntry[];
+} & Partial<Omit<RunPlan, 'members' | 'symbols'>>;
+/**
+ * The run plan of the entries, for options that validateOptions has already
+ * checked against them. A disabled plugin is left out. The entries of a preset
+ * run in one host plugin, which walks the stylesheet once for its stages and
+ * transforms.
+ *
+ * @param {readonly PluginEntry[]} entries
+ * @param {Record<string, unknown>} known the validated options, without preset
+ * @returns {RunPlan}
+ */
+export declare function planOf(entries: readonly PluginEntry[], known: Record<string, unknown>): RunPlan;
 /**
  * Turns the options of a built preset into the plugins it runs. A disabled
  * plugin is left out. Options that the preset does not take throw.
@@ -51,8 +59,6 @@ export declare function configurePlugins(entries: readonly PluginEntry[], option
 /**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
- * The entries of a preset run in one host plugin, which walks the stylesheet
- * once for its stages and transforms.
  *
  * @param {readonly PluginEntry[]} entries
  * @param {Record<string, unknown>} known the validated options, without preset

@@ -1,13 +1,12 @@
 /** @import {TokenListId} from './tokenLists.js' */
-import { isInvalidSelector } from '#postcss-minify-selectors';
 import { scanCompatibility } from './selectorScan.js';
-import { tokensText } from '../../values/tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ScanState} from './selectorScan.js' */
 
 /**
- * What the merge checks need to know about one selector. `prefix` is
+ * What the merge checks need to know about one selector. `compatible` is the
+ * scan's verdict; the parser's verdict is `SelectorVerdicts`'s. `prefix` is
  * `undefined` for an incompatible selector, which never merges, and for one
  * that mixes vendor prefixes.
  *
@@ -23,9 +22,9 @@ const incompatibleInfo = {
 
 /**
  * The facts of the selector that a token list spells, for the browsers given.
- * The scan runs first, since it is far cheaper than a parse, and it stops at
- * the first unsupported token, so it never learns the prefix of an
- * incompatible selector.
+ * It stops at the first unsupported token, so it never learns the prefix of an
+ * incompatible selector. A selector the scan accepts can still be one the
+ * parser rejects; the merge asks the parser separately.
  *
  * @param {readonly CSSToken[]} tokens the tokens of one selector item
  * @param {readonly string[]} browsers
@@ -42,9 +41,6 @@ export function selectorInfoOf(tokens, browsers) {
     msPlaceholder: false,
   };
   if (!scanCompatibility(tokens, browsers, state)) return incompatibleInfo;
-  if (isInvalidSelector(tokensText(tokens), tokens, 0, tokens.length)) {
-    return incompatibleInfo;
-  }
   return {
     compatible: true,
     prefix: state.vendorPrefix,

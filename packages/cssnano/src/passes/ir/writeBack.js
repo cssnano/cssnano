@@ -3,7 +3,6 @@ import {
   AT_RULE_STATEMENT,
   DECLARATION,
   RULE,
-  STYLESHEET,
 } from './blockRecord.js';
 import { tokensText } from '../../values/tokensText.js';
 import { createChildNodes, nodeOf } from './nodeTable.js';
@@ -70,8 +69,6 @@ export function differs(records, nodes, block) {
  * @typedef {object} Rebuilt
  * @property {Container} container
  * @property {ChildNode[]} children the children the container takes
- * @property {string | null} leading the whitespace the first child of a
- * root takes, or null for any other container
  */
 
 /**
@@ -85,55 +82,10 @@ export function replaceChildren(rebuilt) {
   for (const { container } of rebuilt) {
     container.removeAll();
   }
-  for (const { container, children, leading } of rebuilt) {
+  for (const { container, children } of rebuilt) {
     // A rule kept from the source still points at its former container.
     for (const node of children) node.parent = undefined;
     container.append(children);
-    // Appending rewrites the whitespace of the nodes it places, so the first
-    // child of a root takes the leading whitespace after the append.
-    if (leading !== null && children.length) {
-      children[0].raws.before = leading;
-    }
-  }
-}
-
-/**
- * Assigns the raws the records hold to the nodes of the children of a
- * container, then to those of the children of each container below it. A field
- * that is null leaves its node raw as it is.
- *
- * @param {BlockRecords} records
- * @param {NodeTable} nodes
- * @param {TokenLists} tokenLists
- * @param {number} container the index of a container record the root reaches
- * @return {void}
- */
-function writeRawsOf(records, nodes, tokenLists, container) {
-  for (
-    let entry = records.links.firstChild(container);
-    entry !== -1;
-    entry = records.links.nextSibling(entry)
-  ) {
-    const record = records.entry(entry);
-    const node = /** @type {ChildNode} */ (nodeOf(nodes, entry));
-    // A null whitespace is the node having none, so the printer infers it.
-    if (record.before !== null) node.raws.before = record.before;
-    else delete node.raws.before;
-    if (record.kind === DECLARATION) {
-      writeDeclarationRaws(record, /** @type {Declaration} */ (node));
-    } else if (record.kind === RULE || record.kind === AT_RULE_BLOCK) {
-      writeContainerRaws(record, /** @type {Rule | AtRule} */ (node));
-      if (record.kind === AT_RULE_BLOCK) {
-        writeParams(record, /** @type {AtRule} */ (node), tokenLists);
-        if (record.afterName !== null) {
-          /** @type {AtRule} */ (node).raws.afterName = record.afterName;
-        }
-      }
-      writeRawsOf(records, nodes, tokenLists, entry);
-    } else if (record.kind === AT_RULE_STATEMENT) {
-      writeStatementRaws(record, /** @type {AtRule} */ (node));
-      writeParams(record, /** @type {AtRule} */ (node), tokenLists);
-    }
   }
 }
 
@@ -216,34 +168,120 @@ function writeDeclaration(record, nodes, tokenLists) {
 }
 
 /**
- * Writes the marked declarations of the chain of the rule at `index`, in place.
- *
- * @param {BlockRecords} records
- * @param {NodeTable} nodes
- * @param {TokenLists} tokenLists
- * @param {number} index the rule's index
- * @return {void}
+ * The write-back of one run. Its walks keep their state in fields, not in
+ * closures: `rebuilt` is the containers that take new children, in walk order.
  */
-function writeDeclarationsOf(records, nodes, tokenLists, index) {
-  for (
-    let entry = records.links.firstChild(index);
-    entry !== -1;
-    entry = records.links.nextSibling(entry)
-  ) {
-    const record = records.entry(entry);
-    if (record.kind === DECLARATION)
-      writeDeclaration(record, nodes, tokenLists);
+class WriteBack {
+  /** @type {BlockRecords} */
+  records;
+
+  /** @type {NodeTable} */
+  nodes;
+
+  /** @type {TokenLists} */
+  tokenLists;
+
+  /** @type {Rebuilt[]} */
+  rebuilt = [];
+
+  /**
+   * @param {BlockRecords} records
+   * @param {NodeTable} nodes the node of each entry, from the build
+   * @param {TokenLists} tokenLists the run's token lists, which the ids of the rules name
+   */
+  constructor(records, nodes, tokenLists) {
+    this.records = records;
+    this.nodes = nodes;
+    this.tokenLists = tokenLists;
+  }
+
+  /**
+   * Gives the containers the edits changed their children, then writes the
+   * fields of every record the root reaches.
+   *
+   * @return {void}
+   */
+  run() {
+    this.#collect(this.records.root);
+    replaceChildren(this.rebuilt);
+    this.#writeFields(this.records.root);
+  }
+
+  /**
+   * Collects each container whose chain an edit changed, with the children the
+   * records hold, and recurses into the rules and at-rule blocks it reaches.
+   *
+   * @param {ContainerRecord} container
+   * @return {void}
+   */
+  #collect(container) {
+    const { records, nodes, tokenLists } = this;
+    if (records.links.isEdited(container.index)) {
+      createChildNodes(records, nodes, container.index, tokenLists);
+      this.rebuilt.push({
+        container: /** @type {Container} */ (nodeOf(nodes, container.index)),
+        children: childNodesOf(records, nodes, container.index),
+      });
+    }
+    for (
+      let entry = records.links.firstChild(container.index);
+      entry !== -1;
+      entry = records.links.nextSibling(entry)
+    ) {
+      const record = records.entry(entry);
+      if (record.kind === RULE || record.kind === AT_RULE_BLOCK) {
+        this.#collect(/** @type {ContainerRecord} */ (record));
+      }
+    }
+  }
+
+  /**
+   * Writes the whitespace, the raws and the marked fields of each live child of
+   * the container, then those of the children of each rule and block below it.
+   *
+   * @param {ContainerRecord} container
+   * @return {void}
+   */
+  #writeFields(container) {
+    const { records, nodes, tokenLists } = this;
+    for (
+      let entry = records.links.firstChild(container.index);
+      entry !== -1;
+      entry = records.links.nextSibling(entry)
+    ) {
+      const record = records.entry(entry);
+      const node = /** @type {ChildNode} */ (nodeOf(nodes, entry));
+      // A null whitespace is the node having none, so the printer infers it.
+      if (record.before !== null) node.raws.before = record.before;
+      else delete node.raws.before;
+      if (record.kind === DECLARATION) {
+        writeDeclaration(record, nodes, tokenLists);
+        writeDeclarationRaws(record, /** @type {Declaration} */ (node));
+      } else if (record.kind === RULE) {
+        writeSelector(record, nodes, tokenLists);
+        writeContainerRaws(record, /** @type {Rule} */ (node));
+        this.#writeFields(record);
+      } else if (record.kind === AT_RULE_BLOCK) {
+        writeContainerRaws(record, /** @type {AtRule} */ (node));
+        writeParams(record, /** @type {AtRule} */ (node), tokenLists);
+        if (record.afterName !== null) {
+          /** @type {AtRule} */ (node).raws.afterName = record.afterName;
+        }
+        this.#writeFields(record);
+      } else if (record.kind === AT_RULE_STATEMENT) {
+        writeStatementRaws(record, /** @type {AtRule} */ (node));
+        writeParams(record, /** @type {AtRule} */ (node), tokenLists);
+      }
+    }
   }
 }
 
 /**
- * Walks the live tree from the root. Each rule it reaches gets its selector
- * written, and each container whose children differ from its node gets the
- * children the records hold, as does each plain rule that an edit changed the
- * children of. A container that already matches keeps its child list, and so
- * does a plain rule that no edit touched. A record the root does not reach,
- * dropped, keeps its node as it is, and a merged rule the root
- * does not reach gets none.
+ * Walks the live tree from the root and writes the records back to the nodes:
+ * the children of the containers an edit changed, the selectors and the marked
+ * fields of the rules, and the raws of every live child. A record the root does
+ * not reach, dropped, keeps its node as it is, and a merged rule the root does
+ * not reach gets none.
  *
  * @param {BlockRecords} records
  * @param {NodeTable} nodes the node of each entry, from the build; write-back adds the merged rules' nodes
@@ -255,58 +293,7 @@ export function writeBack(records, nodes, tokenLists) {
     throw new Error(TABLE_LENGTH);
   }
   assertTemplatesHaveNodes(records, nodes);
-  /** @type {Rebuilt[]} */
-  const rebuilt = [];
-  /** @param {ContainerRecord} container */
-  const visit = (container) => {
-    if (differs(records, nodes, container)) {
-      createChildNodes(records, nodes, container.index, tokenLists);
-      rebuilt.push({
-        container: /** @type {Container} */ (nodeOf(nodes, container.index)),
-        children: childNodesOf(records, nodes, container.index),
-        leading: container === records.root ? records.leadingWhitespace : null,
-      });
-    }
-    for (
-      let entry = records.links.firstChild(container.index);
-      entry !== -1;
-      entry = records.links.nextSibling(entry)
-    ) {
-      const record = records.entry(entry);
-      if (record.kind === RULE) {
-        writeSelector(record, nodes, tokenLists);
-        if (record.context !== -1) {
-          visit(record);
-        } else {
-          if (records.links.isEdited(record.index)) {
-            createChildNodes(records, nodes, record.index, tokenLists);
-            rebuilt.push({
-              container: /** @type {Container} */ (nodeOf(nodes, record.index)),
-              children: childNodesOf(records, nodes, record.index),
-              leading: null,
-            });
-          }
-          if (records.declarationStamps.isTouched(record.index)) {
-            writeDeclarationsOf(records, nodes, tokenLists, record.index);
-          }
-        }
-      } else if (record.kind === STYLESHEET || record.kind === AT_RULE_BLOCK) {
-        visit(record);
-      } else if (record.kind === DECLARATION) {
-        writeDeclaration(record, nodes, tokenLists);
-      }
-    }
-  };
-  visit(records.root);
-  replaceChildren(rebuilt);
+  new WriteBack(records, nodes, tokenLists).run();
   const rootNode = /** @type {Root} */ (nodeOf(nodes, records.root.index));
   if (records.root.after !== null) rootNode.raws.after = records.root.after;
-  writeRawsOf(records, nodes, tokenLists, records.root.index);
-  // The first child of the stylesheet takes the leading whitespace last.
-  const root = /** @type {Container} */ (nodeOf(nodes, records.root.index));
-  const first = root.first;
-  const { leadingWhitespace } = records;
-  if (first && leadingWhitespace !== null) {
-    first.raws.before = leadingWhitespace;
-  }
 }

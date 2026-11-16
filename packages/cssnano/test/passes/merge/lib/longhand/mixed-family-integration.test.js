@@ -5,8 +5,8 @@ import {
   processCSSFactory,
   repositoryFile,
 } from '../../../../../../../util/testHelpers.js';
-import { transformPlugin } from '#passes/merge';
-const plugin = transformPlugin('mergeLonghand');
+import { onlyTransform } from '../../../onlyTransform.js';
+const plugin = onlyTransform(['mergeLonghand']);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 

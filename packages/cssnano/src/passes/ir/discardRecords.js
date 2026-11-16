@@ -4,7 +4,7 @@ import {
   DECLARATION,
   RULE,
 } from './blockRecord.js';
-import { removeEntry } from './treeEdits.js';
+import { remove } from './treeEdits.js';
 import {
   joinKey,
   parseLayerNames,
@@ -224,7 +224,7 @@ class DiscardWalk {
       name !== undefined && childCount === 0 && this.isDeclared(layerKey);
 
     if (shouldDiscard(context, record, childCount, isLayer, isRedundantLayer)) {
-      removeEntry(records, index);
+      remove(records, index);
       context.messages.push({ index, type: 'removal', plugin: DISCARD_PLUGIN });
     } else {
       if (name !== undefined) this.declare(parentKey, name);
@@ -266,7 +266,7 @@ export function discardEmptyRecords(records, context, visitor) {
 export function removeAndDiscardEmptiedRecords(records, context, index) {
   const { links } = records;
   let parent = links.parentOf(index);
-  removeEntry(records, index);
+  remove(records, index);
   while (parent !== -1) {
     const record = records.entry(parent);
     if (record.kind !== RULE && record.kind !== AT_RULE_BLOCK) break;
@@ -277,7 +277,7 @@ export function removeAndDiscardEmptiedRecords(records, context, index) {
       break;
     }
     const next = links.parentOf(parent);
-    removeEntry(records, parent);
+    remove(records, parent);
     context.messages.push({
       index: parent,
       type: 'removal',

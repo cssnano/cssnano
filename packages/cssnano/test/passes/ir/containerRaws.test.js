@@ -9,7 +9,7 @@ import {
   buildTestRecords,
   ruleRecordOf,
 } from '../merge/lib/rules/liveRecords.js';
-import { transformPlugin } from '../../../src/passes/merge/index.js';
+import { onlyTransform } from '../onlyTransform.js';
 
 /**
  * @param {string} css
@@ -62,16 +62,17 @@ test('a rule with no semicolon raw keeps none after the write', async () => {
   const added = postcss.rule({ selector: 'b' });
   added.append(postcss.decl({ prop: 'color', value: 'blue' }));
   root.append(added);
-  await postcss([transformPlugin('mergeRules', true)()]).process(root, {
+  await postcss([
+    onlyTransform(['mergeRules'], { consistencyChecks: true })(),
+  ]).process(root, {
     from: undefined,
   });
   assert.equal(added.raws.semicolon, undefined);
 });
 
 test('a merged rule prints its template between, after and semicolon', async () => {
-  const result = await postcss([transformPlugin('mergeRules', true)()]).process(
-    'a{color:red}b  {color:red;\n}',
-    { from: undefined }
-  );
+  const result = await postcss([
+    onlyTransform(['mergeRules'], { consistencyChecks: true })(),
+  ]).process('a{color:red}b  {color:red;\n}', { from: undefined });
   assert.equal(result.css, 'a,b  {color:red;\n}');
 });

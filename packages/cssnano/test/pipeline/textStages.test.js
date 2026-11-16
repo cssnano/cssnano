@@ -3,6 +3,7 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { IN_KEYFRAMES, hasContextBit } from '../../src/pipeline/context.js';
 import { hostPlugin } from '../../src/pipeline/host.js';
+import { hostPlan } from '../../src/pipeline/hostPlan.js';
 import { tokens } from '../../src/utils/value.js';
 
 /**
@@ -20,13 +21,17 @@ function setText(buffer, text) {
  */
 function hostWith(parts) {
   return postcss([
-    hostPlugin([
-      {
-        entry: { create: () => parts },
-        options: {},
-        targets: false,
-      },
-    ]),
+    hostPlugin(
+      hostPlan({
+        members: [
+          {
+            entry: { create: () => parts },
+            options: {},
+            targets: false,
+          },
+        ],
+      })
+    ),
   ]);
 }
 

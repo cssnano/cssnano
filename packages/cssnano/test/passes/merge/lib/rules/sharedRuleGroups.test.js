@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { processCSSFactory } from '../../../../../../../util/testHelpers.js';
-const plugin = transformPlugin('mergeRules');
+const plugin = onlyTransform(['mergeRules']);
 import {
   longSelector,
   sharedBackground,
@@ -9,7 +9,7 @@ import {
   longerSelector,
   longestSelector,
 } from './sharedRuleGroupFixtures.js';
-import { transformPlugin } from '#passes/merge';
+import { onlyTransform } from '../../../onlyTransform.js';
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 

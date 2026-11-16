@@ -135,22 +135,43 @@ export function mergeBenefit(mergeState, firstIndex, secondIndex) {
  * @return {void}
  */
 export default function runScan(mergeState) {
-  /** @param {number} index @return {RuleRecord} */
-  const rule = (index) =>
-    /** @type {RuleRecord} */ (mergeState.records.rule(index));
+  new RuleSweeps(mergeState).run();
+}
 
-  // Pairs that passed `canMerge` as the best candidate but rewrote nothing;
-  // they are skipped until another rewrite can change the outcome.
-  /** @type {Map<number, number>} */
-  const unmergeablePairs = new Map();
+/** The state that the sweeps of one `runScan` share. */
+class RuleSweeps {
+  /** @param {MergeState} mergeState its records are the stylesheet the sweep rewrites */
+  constructor(mergeState) {
+    this.mergeState = mergeState;
+    // Pairs that passed `canMerge` as the best candidate but rewrote nothing;
+    // they are skipped until another rewrite can change the outcome.
+    /** @type {Map<number, number>} */
+    this.unmergeablePairs = new Map();
+    this.scan = new DeclarationScan();
+    /** @type {number[]} */
+    this.scratch = [];
+    /** @type {{link: ArenaIndex | -1, distance: number}} */
+    this.earliest = { link: -1, distance: 0 };
+  }
 
-  /** @param {ArenaIndex} first @param {ArenaIndex} second */
-  const pairBenefit = (first, second) =>
-    unmergeablePairs.get(first) === second
+  /**
+   * @param {number} index
+   * @return {RuleRecord}
+   */
+  rule(index) {
+    return /** @type {RuleRecord} */ (this.mergeState.records.rule(index));
+  }
+
+  /**
+   * @param {ArenaIndex} first
+   * @param {ArenaIndex} second
+   * @return {number}
+   */
+  pairBenefit(first, second) {
+    return this.unmergeablePairs.get(first) === second
       ? NO_BENEFIT
-      : mergeBenefit(mergeState, first, second);
-
-  const scan = new DeclarationScan();
+      : mergeBenefit(this.mergeState, first, second);
+  }
 
   /**
    * @param {RuleSequence} sequence
@@ -159,9 +180,10 @@ export default function runScan(mergeState) {
    * @return {{placement: Placement, moved: boolean} | null} the rules that
    * now stand in place of the pair, or null when nothing changed
    */
-  const mergePair = (sequence, first, second) => {
-    const a = rule(first);
-    const b = rule(second);
+  mergePair(sequence, first, second) {
+    const { mergeState, scan } = this;
+    const a = this.rule(first);
+    const b = this.rule(second);
     if (
       !mergeState.canMerge(
         a,
@@ -182,12 +204,7 @@ export default function runScan(mergeState) {
     return moved
       ? { placement: { first: [a.index], second: [b.index] }, moved }
       : null;
-  };
-
-  /** @type {number[]} */
-  const scratch = [];
-  /** @type {{link: ArenaIndex | -1, distance: number}} */
-  const earliest = { link: -1, distance: 0 };
+  }
 
   /**
    * The rule where the sweep resumes after a rewrite. The normal resume point
@@ -202,7 +219,8 @@ export default function runScan(mergeState) {
    * since the lookahead moves past it
    * @return {ArenaIndex | -1}
    */
-  const resumeAfter = (sequence, replacement, placement, lookaheadStart) => {
+  resumeAfter(sequence, replacement, placement, lookaheadStart) {
+    const { mergeState, scratch, earliest } = this;
     const before = sequence.prevOf(replacement);
     let resume = replacement;
     if (lookaheadStart !== -1) {
@@ -249,73 +267,79 @@ export default function runScan(mergeState) {
       }
     }
     return earliest.link === -1 ? resume : earliest.link;
-  };
+  }
 
-  let moved;
-  do {
-    moved = false;
-    const before = mergeState.records.consistencyChecks
-      ? sweepPotential(mergeState.records, null)
-      : null;
-    const sequence = new RuleSequence(mergeState.records);
-    let current = sequence.head;
-    /** @type {ArenaIndex | -1} */
-    let lookaheadStart = -1;
-    for (
-      let second = sequence.nextOf(current);
-      current !== -1 && second !== -1;
-      second = sequence.nextOf(current)
-    ) {
-      let benefit = pairBenefit(current, second);
-      // Move on to the next pair while it shares strictly more declarations,
-      // then come back to `lookaheadStart` so the skipped pairs are tried.
+  /** Sweeps until one moves no rule. */
+  run() {
+    const { mergeState, unmergeablePairs } = this;
+    let moved;
+    do {
+      moved = false;
+      const before = mergeState.records.consistencyChecks
+        ? sweepPotential(mergeState.records, null)
+        : null;
+      const sequence = new RuleSequence(mergeState.records);
+      let current = sequence.head;
+      /** @type {ArenaIndex | -1} */
+      let lookaheadStart = -1;
       for (
-        let third = sequence.nextOf(second);
-        third !== -1;
-        third = sequence.nextOf(second)
+        let second = sequence.nextOf(current);
+        current !== -1 && second !== -1;
+        second = sequence.nextOf(current)
       ) {
-        const ahead = pairBenefit(second, third);
-        if (ahead <= benefit) break;
-        if (lookaheadStart === -1) lookaheadStart = current;
-        current = second;
-        second = third;
-        benefit = ahead;
-      }
-      const merged =
-        benefit === NO_BENEFIT ? null : mergePair(sequence, current, second);
-      if (!merged) {
-        if (lookaheadStart !== -1 && benefit !== NO_BENEFIT) {
-          unmergeablePairs.set(current, second);
-          current = lookaheadStart;
-        } else {
+        let benefit = this.pairBenefit(current, second);
+        // Move on to the next pair while it shares strictly more declarations,
+        // then come back to `lookaheadStart` so the skipped pairs are tried.
+        for (
+          let third = sequence.nextOf(second);
+          third !== -1;
+          third = sequence.nextOf(second)
+        ) {
+          const ahead = this.pairBenefit(second, third);
+          if (ahead <= benefit) break;
+          if (lookaheadStart === -1) lookaheadStart = current;
           current = second;
+          second = third;
+          benefit = ahead;
         }
+        const merged =
+          benefit === NO_BENEFIT
+            ? null
+            : this.mergePair(sequence, current, second);
+        if (!merged) {
+          if (lookaheadStart !== -1 && benefit !== NO_BENEFIT) {
+            unmergeablePairs.set(current, second);
+            current = lookaheadStart;
+          } else {
+            current = second;
+          }
+          lookaheadStart = -1;
+          continue;
+        }
+        moved ||= merged.moved;
+        unmergeablePairs.clear();
+        const replacement = sequence.replacePair(
+          mergeState.records,
+          current,
+          merged.placement
+        );
+        current = this.resumeAfter(
+          sequence,
+          replacement,
+          merged.placement,
+          lookaheadStart
+        );
         lookaheadStart = -1;
-        continue;
       }
-      moved ||= merged.moved;
-      unmergeablePairs.clear();
-      const replacement = sequence.replacePair(
-        mergeState.records,
-        current,
-        merged.placement
-      );
-      current = resumeAfter(
-        sequence,
-        replacement,
-        merged.placement,
-        lookaheadStart
-      );
-      lookaheadStart = -1;
-    }
-    if (before) {
-      assertSweepLowers(
-        before.potential,
-        sweepPotential(mergeState.records, before.numbers).potential,
-        moved
-      );
-    }
-    // A move changes which rules share a parent, so rules the sweep already
-    // passed may now merge.
-  } while (moved);
+      if (before) {
+        assertSweepLowers(
+          before.potential,
+          sweepPotential(mergeState.records, before.numbers).potential,
+          moved
+        );
+      }
+      // A move changes which rules share a parent, so rules the sweep already
+      // passed may now merge.
+    } while (moved);
+  }
 }

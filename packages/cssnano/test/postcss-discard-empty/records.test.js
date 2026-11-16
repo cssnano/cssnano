@@ -1,7 +1,8 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import discardEmptyPlugin from '../../src/plugins/postcss-discard-empty/index.js';
+import { presetEntryPlugin } from '../../../../util/testHelpers.js';
+const discardEmptyPlugin = presetEntryPlugin('discardEmpty');
 
 /**
  * Runs the discardEmpty plugin alone over `css`.
@@ -10,7 +11,7 @@ import discardEmptyPlugin from '../../src/plugins/postcss-discard-empty/index.js
  * @return {Promise<import('postcss').Result>}
  */
 function runPlugin(css) {
-  return postcss([discardEmptyPlugin()]).process(css, { from: undefined });
+  return postcss(discardEmptyPlugin()).process(css, { from: undefined });
 }
 
 describe('discardEmpty removals', () => {

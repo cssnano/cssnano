@@ -5,7 +5,6 @@ import {
 } from './blockChildren.js';
 import { AT_RULE_STATEMENT, NodeEntry, atRuleKindOf } from './blockRecord.js';
 import { DeclarationRecord } from './declarationRecord.js';
-import { keysOfName } from './propertyTable.js';
 import { tokenizeMode } from '../../values/tokenizeMode.js';
 
 /** @import {BlockRecords} from './blockRecords.js' */
@@ -40,6 +39,10 @@ export function substitute(records, record, replacements) {
   // A record that is substituted is linked, so its container is an index.
   const holder = /** @type {ArenaIndex} */ (records.links.parentOf(record));
   const standing = records.links.prevSibling(record);
+  // The first child of the stylesheet leaves its place, so the entry that
+  // leads after the edit takes the whitespace it held.
+  const leads = holder === records.root.index && standing === -1;
+  const { before } = records.entry(record);
   /** @type {ArenaIndex | -1 | undefined} the entry after the kept record, read when the record is passed */
   let following;
   let kept = false;
@@ -56,6 +59,10 @@ export function substitute(records, record, replacements) {
     }
   }
   if (!kept) records.detach(record);
+  if (leads) {
+    const head = records.links.firstChild(holder);
+    if (head !== -1 && head !== record) records.entry(head).before = before;
+  }
 }
 
 /**
@@ -203,12 +210,12 @@ function valueListOfItem(context, item) {
 function rewriteRecord(context, record, item) {
   if (item.prop !== record.prop) {
     record.prop = item.prop;
-    record.keys = keysOfName(item.prop);
+    record.keys = context.names.keysOf(item.prop);
   }
   record.valueList = valueListOfItem(context, item);
   record.writtenList = -1;
   record.id = context.declarations.keyOf(
-    record.prop,
+    record.keys.id,
     record.valueList,
     record.important,
     record.before
@@ -242,13 +249,14 @@ export function writeContainerContext(record, context) {
 function cloneRecordOf(context, item, anchor, anchorIndex) {
   const valueList = valueListOfItem(context, item);
   const before = item.before ?? null;
+  const keys = context.names.keysOf(item.prop);
   const record = new DeclarationRecord(
     before,
     item.prop,
     valueList,
     item.important,
-    keysOfName(item.prop),
-    context.declarations.keyOf(item.prop, valueList, item.important, before),
+    keys,
+    context.declarations.keyOf(keys.id, valueList, item.important, before),
     item.between ?? null,
     item.importantSpelling ?? null
   );

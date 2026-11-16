@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import cssnano from '../../../src/index.js';
-import { mergePass } from '../../../src/passes/merge/index.js';
+import { onlyTransform, MERGE_TRANSFORMS } from '../onlyTransform.js';
+import { browserTargets } from '#utils/browser-targets';
 
 const browsers = ['chrome 120', 'firefox 120', 'safari 17'];
 
@@ -63,8 +64,12 @@ test('the second round reduces a rule that rule merging created inside an at-rul
   );
 });
 
-test('mergePass alone reduces a block inside @media the same as the preset does', () => {
+test('the merge run alone reduces a block inside @media the same as the preset does', () => {
   const root = postcss.parse(`@media (x){a{${fourMargins}}}`);
-  mergePass(root, browsers);
+  postcss([
+    onlyTransform(MERGE_TRANSFORMS)({ [browserTargets]: { query: browsers } }),
+  ])
+    .process(root, { from: undefined })
+    .sync();
   assert.equal(root.toString(), '@media (x){a{margin:1px}}');
 });

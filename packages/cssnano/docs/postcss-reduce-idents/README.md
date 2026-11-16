@@ -75,57 +75,6 @@ It works for `@keyframes`, `@counter-style`, custom `counter` values and grid ar
 examples.
 
 
-## Usage
-
-See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
-examples for your environment.
-
-
-## API
-
-### reduceIdents([options])
-
-#### options
-
-##### counter
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable reducing `content`, `counter-reset` and `counter-increment` declarations.
-
-##### keyframes
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable reducing `keyframes` rules and `animation` declarations.
-
-##### counterStyle
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable reducing `counter-style` rules and `list-style` and `system` declarations.
-
-##### gridTemplate
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable reducing `grid-template`, `grid-area`, `grid-column`, `grid-row` and `grid-template-areas` declarations.
-
-##### encoder
-
-Type: `function`  
-Default: [`lib/encode.js`](https://github.com/cssnano/cssnano/blob/main/packages/cssnano/src/plugins/postcss-reduce-idents/lib/encode.js)
-
-Pass a custom function to encode the identifier with (e.g.: as a way of prefixing them automatically).
-
-It receives two parameters:
-  - A `String` with the node value.
-  - A `Number` identifying the index of the occurrence.
-
 ## Contributors
 
 See [CONTRIBUTORS.md](https://github.com/cssnano/cssnano/blob/main/CONTRIBUTORS.md).

@@ -6,7 +6,7 @@ import {
   RULE,
 } from './blockRecord.js';
 import { placeStatementBefore } from './arenaEdits.js';
-import { writeBefore, writeLeadingWhitespace } from './rawEdits.js';
+import { writeBefore } from './rawEdits.js';
 import { remove } from './treeEdits.js';
 import { tokensText } from '../../values/tokensText.js';
 import { holdsNonAscii } from '../../values/nonAscii.js';
@@ -212,10 +212,7 @@ export function decideCharset(records, context, scan, opts) {
   const firstIsHead = first !== -1 && first === links.firstChild(root.index);
   const next = firstIsHead ? links.nextSibling(first) : -1;
   const separator = next === -1 ? null : records.entry(next).before;
-  // The first charset prints the stylesheet's leading whitespace when it leads.
-  let firstBefore = null;
-  if (firstIsHead) firstBefore = records.leadingWhitespace;
-  else if (first !== -1) firstBefore = records.entry(first).before;
+  const firstBefore = first === -1 ? null : records.entry(first).before;
   for (const index of charsets) remove(records, index);
   if (nonAscii === -1) return;
   if (first === -1 && opts.add === false) return;
@@ -240,7 +237,6 @@ export function decideCharset(records, context, scan, opts) {
     afterName: kept?.afterName ?? null,
     template: /** @type {ArenaIndex} */ (template === -1 ? nonAscii : template),
   });
-  writeLeadingWhitespace(records, firstBefore);
   // The old head follows the charset: it takes the separator, else the
   // whitespace of the entry after it, which may be none.
   const following =

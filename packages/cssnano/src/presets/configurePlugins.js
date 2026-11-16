@@ -1,5 +1,6 @@
 import { validateOptions } from '../options.js';
 import { hostPlugin } from '../pipeline/host.js';
+import { hostPlan, isEmptyPlan } from '../pipeline/hostPlan.js';
 import isRecord from '../utils/isRecord.js';
 import { browserTargets } from '#utils/browser-targets';
 import {
@@ -12,7 +13,8 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {StageEntry, HostMember, Merge, SymbolEntry, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
+/** @import {StageEntry, HostMember, SymbolEntry, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
+/** @import {RunPlan, TransformField} from '../pipeline/hostPlan.js' */
 /** @import {MergeRunner} from '../passes/merge/index.js' */
 
 /**
@@ -31,27 +33,24 @@ import {
  * and its settings. `targets` is set when the plugin reads the browser targets
  * of its preset; `defaults` are the options it uses unless the preset sets them;
  * `optionKeys` lists the options it accepts, so a key it does not declare can
- * be reported; `guards` checks the value of an option by its key. `walk` is
- * set when a stylesheet walk implements part of the plugin, so the walk of the
- * run receives its options under the entry name. `after` is set when the walk
- * up of the run implements it too; a stage entry with `after` also puts its
- * options in that walk.
+ * be reported; `guards` checks the value of an option by its key.
  *
- * `transform` is set when the entry is a whole-stylesheet transform, so its entry
- * is a TransformEntry rather than a creator or a stage. A transform with `merge`
+ * `field` is the field of the run plan that the entry fills with its options: a
+ * stage that a walk reads, or a transform that the walk runs. `transform` is set
+ * when the entry is a whole-stylesheet transform, so its entry is a
+ * TransformEntry rather than a creator or a stage. A transform with `merge`
  * is the merge run, which runs between the walk down of its host and the walk
- * up. A transform with `after` runs in the walk up. A transform with
- * `symbols` runs over the lists that walk collects.
+ * up. A transform with `symbols` runs over the lists that walk collects; every
+ * other transform fills its `field`.
  *
  * @typedef {{
  *   targets?: true,
  *   defaults?: object,
  *   optionKeys: readonly string[],
  *   guards?: Readonly<Record<string, Guard>>,
- *   walk?: true,
+ *   field?: TransformField,
  *   transform?: true,
  *   merge?: MergeRunner,
- *   after?: true,
  *   symbols?: SymbolTransform,
  * }} PluginEntrySettings
  */
@@ -81,21 +80,81 @@ import {
  */
 
 /**
- * The stage members of a host, the options of the walk transforms that the
- * host's walk down runs, the options of the merge run when it is on, the options
- * of the transforms of the walk up, and the advanced transforms over its lists.
- * @typedef {{members: HostMember[], transforms: Map<string, Record<PropertyKey, unknown>>, merge: Merge | undefined, after: Map<string, Record<PropertyKey, unknown>>, symbols: Map<string, SymbolEntry>}} Run
+ * The run plan being filled. Its stage members and symbol transforms are arrays
+ * that the entries append to; the other fields are set once each.
+ *
+ * @typedef {{members: HostMember[], symbols: SymbolEntry[]} & Partial<Omit<RunPlan, 'members' | 'symbols'>>} RunDraft
  */
 
-/** @returns {Run} */
-function newRun() {
-  return {
-    members: [],
-    transforms: new Map(),
-    merge: undefined,
-    after: new Map(),
-    symbols: new Map(),
-  };
+/**
+ * Files an enabled transform under the plan field that its settings name, or
+ * under the merge or the symbol transforms. A transform that creates null is
+ * off, so it is not filed.
+ *
+ * @param {RunDraft} draft
+ * @param {TransformEntry} entry
+ * @param {Record<PropertyKey, unknown>} options
+ * @param {PluginEntrySettings} settings
+ */
+function addTransform(draft, entry, options, settings) {
+  const transform = entry.create(options);
+  if (transform === null) return;
+  if (settings.merge) {
+    draft.merge = { options: transform, runner: settings.merge };
+  } else if (settings.symbols) {
+    draft.symbols.push({ transform: settings.symbols, options: transform });
+  } else {
+    draft[/** @type {TransformField} */ (settings.field)] = transform;
+  }
+}
+
+/**
+ * The run plan of the entries, for options that validateOptions has already
+ * checked against them. A disabled plugin is left out. The entries of a preset
+ * run in one host plugin, which walks the stylesheet once for its stages and
+ * transforms.
+ *
+ * @param {readonly PluginEntry[]} entries
+ * @param {Record<string, unknown>} known the validated options, without preset
+ * @returns {RunPlan}
+ */
+export function planOf(entries, known) {
+  const {
+    browserslist = {},
+    disable = [],
+    options: pluginOptions = {},
+  } = /** @type {{browserslist?: object, disable?: string[], options?: Record<string, object>}} */ (
+    known
+  );
+  // Browser targets are cssnano-wide, so every target-reading plugin gets the same ones.
+  const targets = Object.freeze({ ...browserslist });
+  const disabled = new Set(/** @type {string[]} */ (disable));
+  /** @type {RunDraft} */
+  const draft = { members: [], symbols: [] };
+  for (const [entry, name, settings] of entries) {
+    if (disabled.has(name)) continue;
+    const options = {
+      ...settings.defaults,
+      ...pluginOptions[name],
+      ...(settings.targets ? { [browserTargets]: targets } : undefined),
+    };
+    if (settings.transform) {
+      addTransform(
+        draft,
+        /** @type {TransformEntry} */ (entry),
+        options,
+        settings
+      );
+      continue;
+    }
+    if (settings.field) draft[settings.field] = options;
+    draft.members.push({
+      entry: /** @type {StageEntry} */ (entry),
+      options,
+      targets: Boolean(settings.targets),
+    });
+  }
+  return hostPlan(draft);
 }
 
 /**
@@ -114,95 +173,16 @@ export function configurePlugins(entries, options) {
 }
 
 /**
- * Files an enabled transform under the list that its settings name: a pass, a
- * symbol transform, the walk up or the walk down. A transform that creates
- * null is off, so it is not filed.
- *
- * @param {Run} run
- * @param {string} name
- * @param {TransformEntry} entry
- * @param {Record<PropertyKey, unknown>} options
- * @param {PluginEntrySettings} settings
- */
-function addTransform(run, name, entry, options, settings) {
-  const transform = entry.create(options);
-  if (transform === null) return;
-  if (settings.merge) {
-    run.merge = { options: transform, runner: settings.merge };
-  } else if (settings.symbols) {
-    run.symbols.set(name, { transform: settings.symbols, options: transform });
-  } else if (settings.after) {
-    run.after.set(name, transform);
-  } else {
-    run.transforms.set(name, transform);
-  }
-}
-
-/**
- * @param {Run} run
- * @returns {boolean} whether the run has nothing to host
- */
-function isEmptyRun(run) {
-  return (
-    run.members.length === 0 &&
-    run.transforms.size === 0 &&
-    run.merge === undefined &&
-    run.after.size === 0 &&
-    run.symbols.size === 0
-  );
-}
-
-/**
  * The same as configurePlugins, for options that validateOptions has already
  * checked against these entries, so the caller does not validate them twice.
- * The entries of a preset run in one host plugin, which walks the stylesheet
- * once for its stages and transforms.
  *
  * @param {readonly PluginEntry[]} entries
  * @param {Record<string, unknown>} known the validated options, without preset
  * @returns {AcceptedPlugin[]}
  */
 export function configureValidated(entries, known) {
-  const {
-    browserslist = {},
-    disable = [],
-    options: pluginOptions = {},
-  } = /** @type {{browserslist?: object, disable?: string[], options?: Record<string, object>}} */ (
-    known
-  );
-  // Browser targets are cssnano-wide, so every target-reading plugin gets the same ones.
-  const targets = Object.freeze({ ...browserslist });
-  const disabled = new Set(/** @type {string[]} */ (disable));
-  const run = newRun();
-  for (const [entry, name, settings] of entries) {
-    if (disabled.has(name)) continue;
-    const options = {
-      ...settings.defaults,
-      ...pluginOptions[name],
-      ...(settings.targets ? { [browserTargets]: targets } : undefined),
-    };
-    if (settings.transform) {
-      addTransform(
-        run,
-        name,
-        /** @type {TransformEntry} */ (entry),
-        options,
-        settings
-      );
-      continue;
-    }
-    if (settings.walk) run.transforms.set(name, options);
-    if (settings.after) run.after.set(name, options);
-    run.members.push({
-      entry: /** @type {StageEntry} */ (entry),
-      options,
-      targets: Boolean(settings.targets),
-    });
-  }
-  if (isEmptyRun(run)) return [];
-  return [
-    hostPlugin(run.members, run.transforms, run.after, run.symbols, run.merge),
-  ];
+  const plan = planOf(entries, known);
+  return isEmptyPlan(plan) ? [] : [hostPlugin(plan)];
 }
 
 /**

@@ -65,7 +65,6 @@ function end(state, { browsers, folded, result }) {
             nodeOf(nodes, index)
           ),
           children: childNodesOf(records, nodes, index),
-          leading: null,
         },
       ]);
     }

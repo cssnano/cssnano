@@ -12,7 +12,6 @@ import MergeState from '../../../src/passes/merge/lib/rules/mergeState.js';
 import {
   appendToDeclarations,
   remove,
-  removeEntry,
   removeRules,
   takePlaceOf,
 } from '../../../src/passes/ir/treeEdits.js';
@@ -227,14 +226,12 @@ test('removeRules should keep the rules it does not remove', () => {
   assert.deepEqual(selectorsOf(root), ['a', 'c']);
 });
 
-// A root that loses its first rule keeps the whitespace of the rest, which
-// `removeRules` hands the rest as their own, unlike `remove`.
-test('removeRules should keep the leading whitespace of the rule after a removed first root child', () => {
+test('removeRules should give the rule after a removed first root child the leading whitespace', () => {
   const { root, state } = setup('a{color:red}\nb{color:red}');
   const [removed] = /** @type {Rule[]} */ (root.nodes);
   removeRules(state, new Set([ruleRecordOf(state.records, removed).index]));
   writeBack(state.records, nodesOf(state.records), state.tokenLists);
-  assert.equal(root.toString(), '\nb{color:red}');
+  assert.equal(root.toString(), 'b{color:red}');
 });
 
 test('replaceChildren should move a child to the container given for it', () => {
@@ -244,8 +241,8 @@ test('replaceChildren should move a child to the container given for it', () => 
   const [media1, media2] = /** @type {Container[]} */ (root.nodes);
   const moved = /** @type {ChildNode} */ (media2.first);
   replaceChildren([
-    { container: media2, children: [], leading: null },
-    { container: media1, children: [media1.first, moved], leading: null },
+    { container: media2, children: [] },
+    { container: media1, children: [media1.first, moved] },
   ]);
   assert.equal(moved.parent, media1);
 });
@@ -257,8 +254,8 @@ test('replaceChildren should leave the container that gave up a child empty', ()
   const [media1, media2] = /** @type {Container[]} */ (root.nodes);
   const moved = /** @type {ChildNode} */ (media2.first);
   replaceChildren([
-    { container: media2, children: [], leading: null },
-    { container: media1, children: [media1.first, moved], leading: null },
+    { container: media2, children: [] },
+    { container: media1, children: [media1.first, moved] },
   ]);
   assert.deepEqual(media2.nodes, []);
 });
@@ -270,8 +267,8 @@ test('replaceChildren should keep the whitespace before a rule moved into anothe
   const [media1, media2] = /** @type {Container[]} */ (root.nodes);
   const moved = /** @type {ChildNode} */ (media2.first);
   replaceChildren([
-    { container: media2, children: [], leading: null },
-    { container: media1, children: [media1.first, moved], leading: null },
+    { container: media2, children: [] },
+    { container: media1, children: [media1.first, moved] },
   ]);
   assert.equal(
     root.toString(),
@@ -287,8 +284,8 @@ test('replaceChildren should move the declarations of a rebuilt container into i
   const [media1, media2] = /** @type {Container[]} */ (supports.nodes);
   const moved = /** @type {ChildNode} */ (media2.first);
   replaceChildren([
-    { container: media2, children: [], leading: null },
-    { container: media1, children: [media1.first, moved], leading: null },
+    { container: media2, children: [] },
+    { container: media1, children: [media1.first, moved] },
   ]);
   assert.deepEqual(treeProps(supports), ['color', 'width']);
 });
@@ -345,12 +342,4 @@ test('appendToDeclarations should see each declaration it appended, so a repeat 
     ).map((declaration) => declaration.prop),
     ['color', 'width']
   );
-});
-
-test("removeEntry should give the entry after a removed first root child the removed child's whitespace before", () => {
-  const { root, state } = setup('\n\na{color:red}\n  b{color:red}');
-  const [, second] = /** @type {Rule[]} */ (root.nodes);
-  const secondIndex = ruleRecordOf(state.records, second).index;
-  removeEntry(state.records, ruleRecordOf(state.records, root.first).index);
-  assert.equal(state.records.entry(secondIndex).before, '\n\n');
 });

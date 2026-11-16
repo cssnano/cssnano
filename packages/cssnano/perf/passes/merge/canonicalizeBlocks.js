@@ -7,7 +7,7 @@ import { buildRecords } from '../../../src/passes/ir/buildRecords.js';
 import { writeBack } from '../../../src/passes/ir/writeBack.js';
 import {
   canonicalizeRecords,
-  longhandContext,
+  LonghandRound,
 } from '../../../src/passes/merge/lib/longhand/canonicalize.js';
 import { targetSupportOf } from '../../../src/passes/merge/lib/longhand/targetSupport.js';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
@@ -29,7 +29,7 @@ function roundOf(css) {
   const { records, nodes } = buildRecords(root, run);
   canonicalizeRecords(
     records,
-    longhandContext(placeShorthands, boxSupport, pairShorthands, run)
+    new LonghandRound(placeShorthands, boxSupport, pairShorthands, run)
   );
   writeBack(records, nodes, run.tokenLists);
   return root.toString();
