@@ -4,16 +4,16 @@ import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
   COMMENT,
-} from '../../../passes/ir/blockRecord.js';
+} from '../../../ir/blockRecord.js';
 import { isLayerEntry } from './grammar.js';
 import { preludeTokens } from './trailingEscape.js';
-import { atRuleAt, preludeTextOf } from '../../../passes/ir/declaredText.js';
+import { atRuleAt, preludeTextOf } from '../../../ir/declaredText.js';
 
 const { decoded } = cssnanoUtils;
 
-/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
-/** @import {TokenLists} from '../../../passes/ir/tokenLists.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 /**
  * Parses the tokens of a @layer parameter list into decoded layer-name paths.

@@ -107,18 +107,22 @@
     },
     {
       "files": [
-        "packages/cssnano/src/passes/merge/**",
-        "packages/cssnano/src/passes/ir/**"
+        "packages/cssnano/src/merge/**",
+        "packages/cssnano/src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js",
+        "packages/cssnano/src/plugins/postcss-normalize-charset/charset.js",
+        "packages/cssnano/src/plugins/postcss-discard-empty/discardRecords.js",
+        "packages/cssnano/src/plugins/postcss-unique-selectors/uniqueSelectors.js",
+        "packages/cssnano/src/ir/**"
       ],
       "rules": {
         "merge-ir/link-edits-through-arena": [
           "error",
           {
-            "allowed": ["packages/cssnano/src/passes/ir/blockRecords.js"],
+            "allowed": ["packages/cssnano/src/ir/blockRecords.js"],
             "required": [
-              "packages/cssnano/src/passes/ir/blockRecords.js#linkBefore",
-              "packages/cssnano/src/passes/ir/blockRecords.js#linkLast",
-              "packages/cssnano/src/passes/ir/blockRecords.js#detach"
+              "packages/cssnano/src/ir/blockRecords.js#linkBefore",
+              "packages/cssnano/src/ir/blockRecords.js#linkLast",
+              "packages/cssnano/src/ir/blockRecords.js#detach"
             ]
           }
         ],
@@ -126,13 +130,13 @@
           "error",
           {
             "allowed": [
-              "packages/cssnano/src/passes/ir/declarationCache.js#declarationKeys",
-              "packages/cssnano/src/passes/ir/declarationCache.js#receivingDeclarations",
-              "packages/cssnano/src/passes/ir/blockChildren.js#holdsOnlyDeclarationsOf"
+              "packages/cssnano/src/ir/declarationCache.js#declarationKeys",
+              "packages/cssnano/src/ir/declarationCache.js#receivingDeclarations",
+              "packages/cssnano/src/ir/blockChildren.js#holdsOnlyDeclarationsOf"
             ],
             "required": [
-              "packages/cssnano/src/passes/ir/declarationCache.js#declarationKeys",
-              "packages/cssnano/src/passes/ir/blockChildren.js#holdsOnlyDeclarationsOf"
+              "packages/cssnano/src/ir/declarationCache.js#declarationKeys",
+              "packages/cssnano/src/ir/blockChildren.js#holdsOnlyDeclarationsOf"
             ]
           }
         ],
@@ -150,8 +154,8 @@
     },
     {
       "files": [
-        "packages/cssnano/src/passes/ir/runContext.js",
-        "packages/cssnano/script/passes/merge/enableChecks.js"
+        "packages/cssnano/src/run/runContext.js",
+        "packages/cssnano/script/merge/enableChecks.js"
       ],
       "rules": {
         "no-restricted-imports": "off"
@@ -168,8 +172,8 @@
     },
     {
       "files": [
-        "packages/cssnano/src/passes/ir/blockLinks.js",
-        "packages/cssnano/src/passes/ir/declarationStamps.js"
+        "packages/cssnano/src/ir/blockLinks.js",
+        "packages/cssnano/src/ir/declarationStamps.js"
       ],
       "rules": {
         "no-restricted-imports": [
@@ -187,22 +191,22 @@
     },
     {
       "files": [
-        "packages/cssnano/src/pipeline/**",
+        "packages/cssnano/src/run/**",
         "packages/cssnano/src/plugins/postcss-merge-idents/lib/**",
         "packages/cssnano/src/plugins/postcss-reduce-idents/lib/**",
         "packages/cssnano/src/plugins/postcss-zindex/lib/**"
       ],
       "excludeFiles": [
-        "packages/cssnano/src/pipeline/host.js",
-        "packages/cssnano/src/pipeline/runStylesheet.js"
+        "packages/cssnano/src/run/host.js",
+        "packages/cssnano/src/run/runStylesheet.js"
       ],
       "rules": {
         "merge-ir/no-postcss-in-window": "error"
       }
     },
     {
-      "files": ["packages/cssnano/src/pipeline/**"],
-      "excludeFiles": ["packages/cssnano/src/pipeline/host.js"],
+      "files": ["packages/cssnano/src/run/**"],
+      "excludeFiles": ["packages/cssnano/src/run/host.js"],
       "rules": {
         "merge-ir/arena-edits-only": ["error", { "allowed": [] }],
         "merge-ir/no-captured-loop-state": ["error", { "allowed": [] }],
@@ -211,23 +215,32 @@
     },
     {
       "files": [
-        "packages/cssnano/src/passes/merge/lib/rules/**",
-        "packages/cssnano/src/passes/merge/lib/duplicates/**",
-        "packages/cssnano/src/passes/ir/**"
+        "packages/cssnano/src/merge/rules/**",
+        "packages/cssnano/src/merge/duplicates/**",
+        "packages/cssnano/src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js",
+        "packages/cssnano/src/plugins/postcss-normalize-charset/charset.js",
+        "packages/cssnano/src/plugins/postcss-discard-empty/discardRecords.js",
+        "packages/cssnano/src/plugins/postcss-unique-selectors/uniqueSelectors.js",
+        "packages/cssnano/src/ir/**",
+        "packages/cssnano/src/run/runContext.js",
+        "packages/cssnano/src/run/runDriver.js",
+        "packages/cssnano/src/run/selectorVerdicts.js",
+        "packages/cssnano/src/run/consistencyChecks.js",
+        "packages/cssnano/src/run/syntaxFeatures.js"
       ],
       "rules": {
         "merge-ir/no-postcss-in-window": [
           "error",
           {
             "allowed": [
-              "packages/cssnano/src/passes/ir/writeBack.js",
-              "packages/cssnano/src/passes/ir/nodeTable.js",
-              "packages/cssnano/src/passes/ir/writeSelector.js",
-              "packages/cssnano/src/passes/ir/treeMatch.js",
-              "packages/cssnano/src/passes/ir/buildRecords.js",
-              "packages/cssnano/src/passes/ir/valueList.js",
-              "packages/cssnano/src/passes/ir/runContext.js",
-              "packages/cssnano/src/passes/ir/runDriver.js"
+              "packages/cssnano/src/ir/tree/writeBack.js",
+              "packages/cssnano/src/ir/tree/nodeTable.js",
+              "packages/cssnano/src/ir/tree/writeSelector.js",
+              "packages/cssnano/src/ir/tree/treeMatch.js",
+              "packages/cssnano/src/ir/tree/buildRecords.js",
+              "packages/cssnano/src/ir/valueList.js",
+              "packages/cssnano/src/run/runContext.js",
+              "packages/cssnano/src/run/runDriver.js"
             ]
           }
         ],
@@ -235,12 +248,12 @@
           "error",
           {
             "allowed": [
-              "packages/cssnano/src/passes/ir/blockRecords.js",
-              "packages/cssnano/src/passes/ir/arenaEdits.js",
-              "packages/cssnano/src/passes/ir/valueEdits.js",
-              "packages/cssnano/src/passes/ir/rawEdits.js",
-              "packages/cssnano/src/passes/ir/treeEdits.js",
-              "packages/cssnano/src/passes/ir/buildRecords.js"
+              "packages/cssnano/src/ir/blockRecords.js",
+              "packages/cssnano/src/ir/arenaEdits.js",
+              "packages/cssnano/src/ir/valueEdits.js",
+              "packages/cssnano/src/ir/rawEdits.js",
+              "packages/cssnano/src/ir/treeEdits.js",
+              "packages/cssnano/src/ir/tree/buildRecords.js"
             ]
           }
         ],
@@ -249,9 +262,9 @@
           "error",
           {
             "modules": [
-              "packages/cssnano/src/passes/ir/consistencyChecks.js",
-              "packages/cssnano/src/passes/ir/recordsCheck.js",
-              "packages/cssnano/src/passes/ir/linkChecks.js"
+              "packages/cssnano/src/run/consistencyChecks.js",
+              "packages/cssnano/src/ir/tree/recordsCheck.js",
+              "packages/cssnano/src/ir/linkChecks.js"
             ],
             "allowed": []
           }
@@ -260,21 +273,31 @@
       }
     },
     {
-      "files": ["packages/cssnano/src/passes/merge/lib/longhand/**"],
+      "files": ["packages/cssnano/src/merge/longhand/**"],
       "rules": {
         "merge-ir/no-postcss-in-window": "error",
         "merge-ir/no-captured-loop-state": ["error", { "allowed": [] }]
       }
     },
     {
-      "files": ["packages/cssnano/src/passes/**"],
+      "files": [
+        "packages/cssnano/src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js",
+        "packages/cssnano/src/plugins/postcss-normalize-charset/charset.js",
+        "packages/cssnano/src/plugins/postcss-discard-empty/discardRecords.js",
+        "packages/cssnano/src/plugins/postcss-unique-selectors/uniqueSelectors.js",
+        "packages/cssnano/src/merge/**",
+        "packages/cssnano/src/ir/**",
+        "packages/cssnano/src/run/runContext.js",
+        "packages/cssnano/src/run/runDriver.js",
+        "packages/cssnano/src/run/selectorVerdicts.js",
+        "packages/cssnano/src/run/consistencyChecks.js",
+        "packages/cssnano/src/run/syntaxFeatures.js"
+      ],
       "rules": {
         "merge-ir/no-module-state": [
           "error",
           {
-            "allowed": [
-              "packages/cssnano/src/passes/ir/consistencyChecks.js#enabled"
-            ]
+            "allowed": ["packages/cssnano/src/run/consistencyChecks.js#enabled"]
           }
         ]
       }

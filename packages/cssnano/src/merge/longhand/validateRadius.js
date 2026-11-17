@@ -1,0 +1,161 @@
+import { expandFourSides } from './parseTrbl.js';
+import { isCssWideKeyword } from './isCssWideKeyword.js';
+import cssnanoUtils from '#utils';
+import { isLengthValue } from './lengthGrammar.js';
+import { isUnresolved } from '../../ir/unresolved.js';
+import { closingTokens, splitValue } from './valueComponents.js';
+
+const { TokenType, closeForOpening, numeric, tokens } = cssnanoUtils;
+
+/** @import {Component} from './valueComponents.js' */
+
+/**
+ * Whether the tokens of a balanced term are one function with its arguments.
+ *
+ * @param {import('@csstools/css-tokenizer').CSSToken[]} termTokens
+ * @return {boolean}
+ */
+function isCompleteFunction(termTokens) {
+  if (termTokens.length < 2 || termTokens[0][0] !== TokenType.Function) {
+    return false;
+  }
+  let depth = 0;
+  for (const [index, token] of termTokens.entries()) {
+    if (closeForOpening(token[0]) !== undefined) depth++;
+    else if (closingTokens.has(token[0]) && --depth === 0) {
+      return index === termTokens.length - 1;
+    }
+  }
+  return false;
+}
+
+/**
+ * Validates a single token / term as a non-negative <length-percentage> or unresolved function.
+ *
+ * @param {import('@csstools/css-tokenizer').CSSToken[]} termTokens
+ * @return {boolean}
+ */
+export function isValidLengthPercentage(termTokens) {
+  if (isCompleteFunction(termTokens)) {
+    return isUnresolved(termTokens, 0, termTokens.length);
+  }
+
+  if (termTokens.length !== 1) {
+    return false;
+  }
+
+  const value = numeric(termTokens[0]);
+  return value !== false && isLengthValue(value.number, value.unit, true, true);
+}
+
+/**
+ * Splits a value into terms at top-level whitespace and at most one top-level
+ * slash.
+ *
+ * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list the tokens of `value`
+ * @return {{horizontal: Component[], vertical: Component[] | null} | null}
+ */
+function splitRadiusTerms(value, list) {
+  const parts = splitValue(value, '/', list);
+  if (!parts || parts.length > 2) return null;
+  return {
+    horizontal: parts[0].components,
+    vertical: parts[1]?.components ?? null,
+  };
+}
+
+/**
+ * Parses and validates a corner longhand value (e.g. `border-top-left-radius`).
+ * Corner longhands accept 1 or 2 non-negative <length-percentage> values.
+ *
+ * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [list] the tokens of `value`
+ * @return {[Component, Component] | null} [horizontal, vertical] or null if invalid
+ */
+export function parseCornerRadius(value, list = tokens(value)) {
+  if (value.trim() === '') return null;
+
+  const split = splitRadiusTerms(value, list);
+  if (!split || split.vertical !== null) {
+    /* Slashes are not allowed in corner longhands */
+    return null;
+  }
+
+  const { horizontal } = split;
+  if (horizontal.length !== 1 && horizontal.length !== 2) {
+    return null;
+  }
+
+  for (const item of horizontal) {
+    if (!isValidLengthPercentage(item.tokens)) {
+      return null;
+    }
+  }
+
+  if (horizontal.length === 1) {
+    return [horizontal[0], horizontal[0]];
+  }
+  return [horizontal[0], horizontal[1]];
+}
+
+/**
+ * Parses and validates a `border-radius` shorthand value.
+ * Accepts 1 to 4 horizontal components, optional `/`, and 1 to 4 vertical components.
+ *
+ * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [list] the tokens of `value`
+ * @return {{horizontal: [Component, Component, Component, Component], vertical: [Component, Component, Component, Component]} | null}
+ */
+export function parseRadiusShorthand(value, list = tokens(value)) {
+  if (value.trim() === '') return null;
+
+  const split = splitRadiusTerms(value, list);
+  if (!split) return null;
+
+  const { horizontal, vertical } = split;
+  if (horizontal.length === 0 || horizontal.length > 4) {
+    return null;
+  }
+
+  for (const item of horizontal) {
+    if (!isValidLengthPercentage(item.tokens)) {
+      return null;
+    }
+  }
+
+  const h4 = expandFourSides(horizontal);
+
+  if (vertical === null) {
+    return {
+      horizontal: h4,
+      vertical: [...h4],
+    };
+  }
+
+  if (vertical.length === 0 || vertical.length > 4) {
+    return null;
+  }
+
+  for (const item of vertical) {
+    if (!isValidLengthPercentage(item.tokens)) {
+      return null;
+    }
+  }
+
+  const v4 = expandFourSides(vertical);
+  return {
+    horizontal: h4,
+    vertical: v4,
+  };
+}
+
+/**
+ * Checks whether a declaration value is a global CSS keyword.
+ *
+ * @param {string} value
+ * @return {boolean}
+ */
+export function isGlobalKeyword(value) {
+  return isCssWideKeyword(value.trim());
+}

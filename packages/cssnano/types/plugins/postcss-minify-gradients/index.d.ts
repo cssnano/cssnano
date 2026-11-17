@@ -25,7 +25,7 @@ declare function reduce(buffer: ValueBuffer): void;
  * The stage keeps no state between values. It reads every property, as
  * gradients can appear in any of them.
  *
- * @satisfies {import('../../pipeline/host.js').StageEntry}
+ * @satisfies {import('../../run/host.js').StageEntry}
  */
 declare const minifyGradients: {
     create: () => {

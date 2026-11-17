@@ -3,7 +3,7 @@ import postcss from 'postcss';
 import { browserTargets } from '../../../packages/cssnano/src/utils/browserTargets.js';
 
 const onlyTransformPath =
-  '../../../packages/cssnano/test/passes/onlyTransform.js';
+  '../../../packages/cssnano/test/merge/onlyTransform.js';
 const basePlugins = {
   mergeLonghand: 'postcss-merge-longhand',
   discardDuplicates: 'postcss-discard-duplicates',

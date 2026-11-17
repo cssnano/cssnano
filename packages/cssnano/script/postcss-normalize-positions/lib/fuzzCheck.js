@@ -1,7 +1,7 @@
 import postcss from 'postcss';
 import normalizePositions from '../../../src/plugins/postcss-normalize-positions/index.js';
-import { hostPlugin } from '../../../src/pipeline/host.js';
-import { hostPlan } from '../../../src/pipeline/hostPlan.js';
+import { hostPlugin } from '../../../src/run/host.js';
+import { hostPlan } from '../../../src/run/hostPlan.js';
 import {
   keywordOf,
   resolvePosition,

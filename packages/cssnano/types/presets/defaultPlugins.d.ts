@@ -121,33 +121,33 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }, "minifyGradients", {
     optionKeys: never[];
 }], [{
-    create: (options: import("#postcss-reduce-initial").Options, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage | null;
+    create: (options: import("#postcss-reduce-initial").Options, browsers: readonly string[] | undefined) => import("../run/host.js").Stage | null;
 }, "reduceInitial", {
     targets: true;
     optionKeys: "ignore"[];
 }], [{
-    create: () => import("../pipeline/host.js").Stage;
+    create: () => import("../run/host.js").Stage;
 }, "normalizeDisplayValues", {
     optionKeys: never[];
 }], [{
-    create: () => import("../pipeline/host.js").Stage;
+    create: () => import("../run/host.js").Stage;
 }, "reduceTransforms", {
     optionKeys: never[];
 }], [{
-    create: (config: import("#postcss-colormin").Options, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
+    create: (config: import("#postcss-colormin").Options, browsers: readonly string[] | undefined) => import("../run/host.js").Stage;
 }, "colormin", {
     targets: true;
     optionKeys: ("alphaHex" | "hex" | "hsl" | "name" | "rgb" | "transformCustomProperties" | "transparent")[];
 }], [{
-    create: () => import("../pipeline/host.js").Stage;
+    create: () => import("../run/host.js").Stage;
 }, "normalizeTimingFunctions", {
     optionKeys: never[];
 }], [{
-    create: (options: import("postcss-calc").PostCssCalcOptions) => import("../pipeline/host.js").Stage;
+    create: (options: import("postcss-calc").PostCssCalcOptions) => import("../run/host.js").Stage;
 }, "calc", {
     optionKeys: ("mediaQueries" | "onParseError" | "precision" | "selectors" | "unwrapSingleValue" | "warnWhenCannotResolve")[];
 }], [{
-    create: (options: import("#postcss-convert-values").Options, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
+    create: (options: import("#postcss-convert-values").Options, browsers: readonly string[] | undefined) => import("../run/host.js").Stage;
 }, "convertValues", {
     targets: true;
     defaults: {
@@ -155,11 +155,11 @@ export declare const defaultPluginEntries: readonly [readonly [{
     };
     optionKeys: ("angle" | "frequency" | "length" | "precision" | "time" | "transformCustomProperties")[];
 }], [{
-    create: () => import("../pipeline/host.js").Stage;
+    create: () => import("../run/host.js").Stage;
 }, "orderedValues", {
     optionKeys: never[];
 }], [{
-    create: (options: import("#postcss-minify-selectors").Options, targets: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
+    create: (options: import("#postcss-minify-selectors").Options, targets: readonly string[] | undefined) => import("../run/host.js").Stage;
 }, "minifySelectors", {
     targets: true;
     defaults: {
@@ -167,7 +167,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
     };
     optionKeys: ("convertToIs" | "sort")[];
 }], [{
-    create: (_options: import("#postcss-minify-params").Options, targets: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
+    create: (_options: import("#postcss-minify-params").Options, targets: readonly string[] | undefined) => import("../run/host.js").Stage;
 }, "minifyParams", {
     targets: true;
     optionKeys: never[];
@@ -185,28 +185,28 @@ export declare const defaultPluginEntries: readonly [readonly [{
     transform: true;
     field: "normalizeCharset";
 }], [{
-    create: (options: import("#postcss-normalize-string").Options) => import("../pipeline/host.js").Stage;
+    create: (options: import("#postcss-normalize-string").Options) => import("../run/host.js").Stage;
 }, "normalizeString", {
     optionKeys: "preferredQuote"[];
 }], [{
-    create: (options: import("#postcss-normalize-unicode").Options, browsers: readonly string[] | undefined) => import("../pipeline/host.js").Stage;
+    create: (options: import("#postcss-normalize-unicode").Options, browsers: readonly string[] | undefined) => import("../run/host.js").Stage;
 }, "normalizeUnicode", {
     targets: true;
     optionKeys: never[];
 }], [{
-    create: (options: import("#postcss-minify-font-values").Options) => import("../pipeline/host.js").Stage;
+    create: (options: import("#postcss-minify-font-values").Options) => import("../run/host.js").Stage;
 }, "minifyFontValues", {
     optionKeys: ("removeAfterKeyword" | "removeDuplicates" | "removeQuotes")[];
 }], [{
-    create: () => import("../pipeline/host.js").Stage;
+    create: () => import("../run/host.js").Stage;
 }, "normalizeUrl", {
     optionKeys: never[];
 }], [{
-    create: () => import("../pipeline/host.js").Stage;
+    create: () => import("../run/host.js").Stage;
 }, "normalizeRepeatStyle", {
     optionKeys: never[];
 }], [{
-    create: () => import("../pipeline/host.js").Stage;
+    create: () => import("../run/host.js").Stage;
 }, "normalizePositions", {
     optionKeys: never[];
 }], [{
@@ -216,7 +216,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
     transform: true;
     field: "discardOverridden";
 }], readonly [{
-    create: () => import("../pipeline/host.js").Stage;
+    create: () => import("../run/host.js").Stage;
 }, "normalizeWhitespace", {
     readonly optionKeys: readonly [];
     readonly field: 'normalizeWhitespace';
@@ -229,7 +229,7 @@ export declare const defaultPluginEntries: readonly [readonly [{
 }, "merge", {
     readonly targets: true;
     readonly transform: true;
-    readonly merge: import("../passes/merge/index.js").MergeRunner;
+    readonly merge: import("../merge/index.js").MergeRunner;
     readonly optionKeys: readonly ["rules"];
     readonly guards: {
         readonly rules: Readonly<{

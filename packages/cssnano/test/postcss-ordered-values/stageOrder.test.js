@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { hostPlugin } from '../../src/pipeline/host.js';
-import { hostPlan } from '../../src/pipeline/hostPlan.js';
+import { hostPlugin } from '../../src/run/host.js';
+import { hostPlan } from '../../src/run/hostPlan.js';
 import calc from '../../src/plugins/postcss-calc/index.js';
 import orderedValues from '../../src/plugins/postcss-ordered-values/index.js';
 

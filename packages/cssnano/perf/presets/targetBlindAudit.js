@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import { onlyTransform } from '../../test/passes/onlyTransform.js';
+import { onlyTransform } from '../../test/merge/onlyTransform.js';
 import { configureValidated } from '../../src/presets/configurePlugins.js';
 import { advancedPresetEntries } from '../../src/presets/advancedPlugins.js';
 import { defaultPluginEntries } from '../../src/presets/defaultPlugins.js';

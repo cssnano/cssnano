@@ -6,7 +6,7 @@ import { parsedValueTokens } from '../../utils/parsedValueText.js';
 import { sameTokenText } from '../../values/sameTokenText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {Reducer, Stage, StageEntry} from '../../run/host.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 

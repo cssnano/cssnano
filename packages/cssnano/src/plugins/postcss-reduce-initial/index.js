@@ -59,14 +59,14 @@ function spellsKeyword(list, keyword) {
 /**
  * One reducer per pair of replacements, so properties that are treated alike
  * share it and their plan.
- * @typedef {Map<string | null, Map<string | null, import('../../pipeline/host.js').Reducer>>} Reducers
+ * @typedef {Map<string | null, Map<string | null, import('../../run/host.js').Reducer>>} Reducers
  */
 
 /**
  * @param {Reducers} reducers
  * @param {string | null} toKeyword the initial value of the property, which becomes `initial`
  * @param {string | null} fromKeyword what `initial` becomes
- * @return {import('../../pipeline/host.js').Reducer}
+ * @return {import('../../run/host.js').Reducer}
  */
 function reducerFor(reducers, toKeyword, fromKeyword) {
   let byFrom = reducers.get(toKeyword);
@@ -95,7 +95,7 @@ function reducerFor(reducers, toKeyword, fromKeyword) {
  *
  * @param {Options} options
  * @param {readonly string[] | undefined} browsers
- * @return {import('../../pipeline/host.js').Stage | null}
+ * @return {import('../../run/host.js').Stage | null}
  */
 function compileReduceInitial(options, browsers) {
   if (
@@ -125,7 +125,7 @@ function compileReduceInitial(options, browsers) {
   };
 }
 
-/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+/** @satisfies {import('../../run/host.js').StageEntry} */
 const reduceInitial = { create: compileReduceInitial };
 
 export { reduceInitial as default };

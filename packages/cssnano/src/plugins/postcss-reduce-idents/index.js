@@ -3,12 +3,12 @@ import counterReducer from './lib/counter.js';
 import counterStyleReducer from './lib/counter-style.js';
 import keyframesReducer from './lib/keyframes.js';
 import gridTemplateReducer from './lib/grid-template.js';
-import { isRecordAttached } from '../../pipeline/symbolLists.js';
+import { isRecordAttached } from '../../run/symbolLists.js';
 
-/** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
-/** @import {RecordSymbolLists} from '../../pipeline/symbolLists.js' */
-/** @import {RunContext} from '../../passes/ir/runContext.js' */
+/** @import {ArenaIndex} from '../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../ir/blockRecords.js' */
+/** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
+/** @import {RunContext} from '../../run/runContext.js' */
 
 /**
  * @typedef {object} Options

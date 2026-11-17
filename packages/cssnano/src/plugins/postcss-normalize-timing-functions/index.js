@@ -4,7 +4,7 @@ import { closeParen } from '../../values/punctuationTokens.js';
 
 const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Reducer} from '../../pipeline/host.js' */
+/** @import {Reducer} from '../../run/host.js' */
 /** @import {ValueBuffer} from '../../values/valueBuffer.js' */
 /** @typedef {NonNullable<ReturnType<ValueBuffer['structure']>>} BalancedTokens */
 const animationTransitionRegex =
@@ -103,7 +103,7 @@ const reduce = (buffer) => {
  * The stage for one run. It reads the animation and transition properties,
  * including their vendor-prefixed forms.
  *
- * @return {import('../../pipeline/host.js').Stage}
+ * @return {import('../../run/host.js').Stage}
  */
 function timingStage() {
   return {
@@ -112,7 +112,7 @@ function timingStage() {
   };
 }
 
-/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+/** @satisfies {import('../../run/host.js').StageEntry} */
 const normalizeTimingFunctions = { create: () => timingStage() };
 
 export { normalizeTimingFunctions as default };

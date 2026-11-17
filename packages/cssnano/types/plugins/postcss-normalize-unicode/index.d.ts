@@ -1,4 +1,4 @@
-import type { Stage } from '../../pipeline/host.js';
+import type { Stage } from '../../run/host.js';
 export type Options = object;
 /**
  * @typedef {object} Options

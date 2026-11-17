@@ -1,5 +1,5 @@
 import type { CSSToken } from '@csstools/css-tokenizer';
-import type { Stage } from '../../pipeline/host.js';
+import type { Stage } from '../../run/host.js';
 import type { ValueBuffer } from '../../values/valueBuffer.js';
 export type Structure = NonNullable<ReturnType<ValueBuffer['structure']>>;
 export type Side = {

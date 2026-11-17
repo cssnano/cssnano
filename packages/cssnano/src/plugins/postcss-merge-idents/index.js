@@ -1,6 +1,6 @@
-import { isRecordAttached } from '../../pipeline/symbolLists.js';
-import { AT_RULE_BLOCK } from '../../passes/ir/blockRecord.js';
-import { atRuleAt } from '../../passes/ir/declaredText.js';
+import { isRecordAttached } from '../../run/symbolLists.js';
+import { AT_RULE_BLOCK } from '../../ir/blockRecord.js';
+import { atRuleAt } from '../../ir/declaredText.js';
 import { LayerRegistry, hasImport } from './lib/layerRegistry.js';
 import {
   findInterchangeableGroups,
@@ -15,12 +15,12 @@ import { scanDeclarations } from './lib/protectedNames.js';
 import { preludeTokens } from './lib/trailingEscape.js';
 import { rewriteReferences } from './lib/valueRewriter.js';
 
-/** @import {DeclarationKeys} from '../../passes/ir/declarationKey.js' */
-/** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
+/** @import {DeclarationKeys} from '../../ir/declarationKey.js' */
+/** @import {ArenaIndex} from '../../ir/blockRecord.js' */
 /** @import {AtRuleEntry, Group} from './lib/interchangeable.js' */
-/** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
-/** @import {RecordSymbolLists} from '../../pipeline/symbolLists.js' */
-/** @import {RunContext} from '../../passes/ir/runContext.js' */
+/** @import {BlockRecords} from '../../ir/blockRecords.js' */
+/** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
+/** @import {RunContext} from '../../run/runContext.js' */
 
 /**
  * @param {BlockRecords} records

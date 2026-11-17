@@ -1,0 +1,59 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import data from '../../../script/ir/lib/propertyGroups.json' with { type: 'json' };
+import LastWriteIndex from '../../../src/merge/rules/lastWriteIndex.js';
+import { isConflictingProp } from '../../../script/ir/lib/propertyRelations.js';
+import { PropertyNames } from '../../../src/ir/propertyTable.js';
+
+const names = new PropertyNames();
+
+/**
+ * A declaration record holding the keys of a property name.
+ *
+ * @param {string} prop
+ */
+const decl = (prop) => ({ keys: names.keysOf(prop) });
+
+// The index is an independent implementation of isConflictingProp, which stays
+// the definition of when two properties set the same underlying property.
+const catalogue = [
+  ...data.properties,
+  ...Object.keys(data.aliases),
+  ...Object.keys(data.shorthands),
+  'all',
+  '--x',
+  '--X',
+  'COLOR',
+  'Margin-Left',
+  '-webkit-box-direction',
+  '-moz-box-direction',
+  '-webkit-box-flex-extra',
+  '-webkit-foo',
+  '-moz-foo',
+  'foo-bar',
+  '-webkit-foo-bar',
+  '-webkit-place-x',
+  'place-x',
+  'place-x-y',
+  'unknown-property',
+];
+
+test('last-write index agrees with isConflictingProp when many properties were written', () => {
+  const sample = catalogue.filter((_, i) => i % 7 === 0);
+  const index = new LastWriteIndex();
+  for (const [i, prop] of sample.entries()) {
+    index.record(names.keysOf(prop), i + 1);
+  }
+  for (const queried of catalogue) {
+    for (let since = 0; since < sample.length; since++) {
+      const expected = sample
+        .slice(since)
+        .some((written) => isConflictingProp(written, queried));
+      assert.equal(
+        index.conflictsSince([decl(queried)], since),
+        expected,
+        `${queried} since ${since}`
+      );
+    }
+  }
+});

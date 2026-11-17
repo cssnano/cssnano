@@ -4,7 +4,7 @@ import { stringToken } from '../../values/tokenConstructors.js';
 import { escapeForString, normalizeUrlTokenValue } from './urls.js';
 
 /** @import {CSSToken, TokenString} from '@csstools/css-tokenizer' */
-/** @import {AtRulePart, Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {AtRulePart, Reducer, Stage, StageEntry} from '../../run/host.js' */
 /** @import {ValueBuffer} from '../../values/valueBuffer.js' */
 
 const { asciiLowerCase } = cssnanoUtils;

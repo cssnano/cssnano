@@ -253,14 +253,14 @@ function readsProperty(property, config) {
  *
  * @param {Options} config
  * @param {readonly string[] | undefined} browsers
- * @return {import('../../pipeline/host.js').Stage}
+ * @return {import('../../run/host.js').Stage}
  */
 function compileColormin(config, browsers) {
   const options = addPluginDefaults(
     config,
     /** @type {readonly string[]} */ (browsers)
   );
-  /** @type {import('../../pipeline/host.js').Reducer} */
+  /** @type {import('../../run/host.js').Reducer} */
   const reduce = (buffer) => {
     const edits = transform(buffer, options);
     if (edits) buffer.replaceRanges(edits);
@@ -271,7 +271,7 @@ function compileColormin(config, browsers) {
   };
 }
 
-/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+/** @satisfies {import('../../run/host.js').StageEntry} */
 const colormin = { create: compileColormin };
 
 export { colormin as default };

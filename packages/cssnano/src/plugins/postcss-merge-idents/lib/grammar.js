@@ -1,13 +1,10 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import specData from '../data/mergeIdents.json' with { type: 'json' };
-import {
-  AT_RULE_BLOCK,
-  AT_RULE_STATEMENT,
-} from '../../../passes/ir/blockRecord.js';
+import { AT_RULE_BLOCK, AT_RULE_STATEMENT } from '../../../ir/blockRecord.js';
 
-/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 
 const { asciiLowerCase, decoded } = cssnanoUtils;
 

@@ -2,7 +2,7 @@ import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import { stringToken } from '../../values/tokenConstructors.js';
 
-/** @import {AtRulePart, Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {AtRulePart, Reducer, Stage, StageEntry} from '../../run/host.js' */
 
 const { decoded, isCSSWhitespace, isHexDigitCode } = cssnanoUtils;
 

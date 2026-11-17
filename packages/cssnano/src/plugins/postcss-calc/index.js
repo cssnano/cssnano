@@ -11,7 +11,7 @@ const { asciiLowerCase } = cssnanoUtils;
 /** @import {ReduceCalcOptions} from 'postcss-calc/reduce-tokens' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenEdit} from '../../values/valueBuffer.js' */
-/** @import {Reducer, StageEntry, Stage} from '../../pipeline/host.js' */
+/** @import {Reducer, StageEntry, Stage} from '../../run/host.js' */
 
 /**
  * The reducer options for a stage. A selector cannot keep a calc() that does
