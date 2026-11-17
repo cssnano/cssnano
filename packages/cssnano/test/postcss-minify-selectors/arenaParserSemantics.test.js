@@ -6,9 +6,10 @@ import {
   semanticFacts,
 } from '../../src/plugins/postcss-minify-selectors/lib/arena.js';
 import { parseSelectorArena } from '../../src/plugins/postcss-minify-selectors/lib/parseArena.js';
+import { parseVerified } from './checkedArena.js';
 
 test('selector-list pseudos own nested arena children and specificity', () => {
-  const arena = parseSelectorArena(':is(.a,#b):where(div)');
+  const arena = parseVerified(':is(.a,#b):where(div)');
   const pseudos = arena.nodes.filter(({ kind }) => kind === 'pseudo');
   assert.equal(pseudos.length, 2);
   assert.equal(
@@ -21,7 +22,7 @@ test('selector-list pseudos own nested arena children and specificity', () => {
 });
 
 test('parser finalizes compound semantic facts conservatively', () => {
-  const arena = parseSelectorArena('svg|a#id.c[x=y i]:hover::before');
+  const arena = parseVerified('svg|a#id.c[x=y i]:hover::before');
   const compound = arena.nodes.find(({ kind }) => kind === 'compound');
   assert.deepEqual(compound.specificity, [1, 3, 2]);
   assert.equal(hasSemanticFact(compound.facts, semanticFacts.namespace), true);
@@ -35,13 +36,13 @@ test('parser finalizes compound semantic facts conservatively', () => {
   );
   assert.equal(isFoldEligible(compound), false);
 
-  const unknown = parseSelectorArena(':future(.x)');
+  const unknown = parseVerified(':future(.x)');
   assert.equal(unknown.nodes[0].status, 'opaque');
   assert.equal(unknown.nodes[0].specificity, undefined);
 });
 
 test('arena interns specificity tuples with stable numeric identities', () => {
-  const arena = parseSelectorArena('.a,.b,#id');
+  const arena = parseVerified('.a,.b,#id');
   const compounds = arena.nodes.filter(({ kind }) => kind === 'compound');
   assert.equal(compounds[0].specificityId, compounds[1].specificityId);
   assert.notEqual(compounds[0].specificityId, compounds[2].specificityId);
@@ -59,40 +60,37 @@ test('parser applies functional pseudo grammar specificity policies', () => {
     ['::view-transition-old(*)', [0, 0, 0]],
     ['::view-transition-old(foo.bar)', [0, 0, 1]],
   ]) {
-    const arena = parseSelectorArena(source);
+    const arena = parseVerified(source);
     assert.equal(arena.nodes[0].status, 'valid', source);
     assert.deepEqual(arena.nodes[0].specificity, expected, source);
   }
-  const nth = parseSelectorArena(':nth-child(odd of .a,#b)');
+  const nth = parseVerified(':nth-child(odd of .a,#b)');
   const pseudo = nth.nodes.find(({ kind }) => kind === 'pseudo');
   assert.equal(
     nth.nodes[nth.payloads.pseudos[pseudo.payload].argumentNode].kind,
     'list'
   );
-  assert.equal(
-    parseSelectorArena(':nth-child(+ n)').nodes[0].status,
-    'invalid'
-  );
+  assert.equal(parseVerified(':nth-child(+ n)').nodes[0].status, 'invalid');
 });
 
 test('parser distinguishes known-invalid compounds from opaque syntax', () => {
   for (const source of ['*div', '.a*#b', '.', 'div span|', ':', ':::']) {
-    assert.equal(parseSelectorArena(source).nodes[0].status, 'invalid', source);
+    assert.equal(parseVerified(source).nodes[0].status, 'invalid', source);
   }
-  assert.equal(parseSelectorArena(':future(.x)').nodes[0].status, 'opaque');
-  assert.equal(parseSelectorArena('& .a').nodes[0].status, 'opaque');
+  assert.equal(parseVerified(':future(.x)').nodes[0].status, 'opaque');
+  assert.equal(parseVerified('& .a').nodes[0].status, 'opaque');
 });
 
 test('parser applies contextual pseudo-element and nested-has recovery', () => {
   assert.equal(
     hasSemanticFact(
-      parseSelectorArena(':has(.a)').nodes[0].facts,
+      parseVerified(':has(.a)').nodes[0].facts,
       semanticFacts.nestedHas
     ),
     false
   );
   for (const source of [':has(:has(.a))', ':has(:is(:has(.a)))']) {
-    const arena = parseSelectorArena(source);
+    const arena = parseVerified(source);
     assert.equal(arena.nodes[0].status, 'invalid', source);
     assert.equal(
       hasSemanticFact(arena.nodes[0].facts, semanticFacts.nestedHas),
@@ -101,14 +99,14 @@ test('parser applies contextual pseudo-element and nested-has recovery', () => {
     );
   }
   assert.deepEqual(
-    parseSelectorArena(':is(.a,::before)').nodes[0].specificity,
+    parseVerified(':is(.a,::before)').nodes[0].specificity,
     [0, 1, 0]
   );
-  assert.equal(parseSelectorArena(':not(::before)').nodes[0].status, 'invalid');
+  assert.equal(parseVerified(':not(::before)').nodes[0].status, 'invalid');
 });
 
 test('production parsing retains full arena structure before normalization', () => {
-  const arena = parseSelectorArena('.card:is(.active,.pending)', {
+  const arena = parseVerified('.card:is(.active,.pending)', {
     hasDefaultNamespace: true,
   });
   assert.equal(arena.nodes[0].kind, 'list');
@@ -124,8 +122,8 @@ test('verified and trusted parsing have equivalent semantic arenas', () => {
     ':nth-child(odd of .a,#b)',
     ':is(.a',
   ]) {
-    const verified = parseSelectorArena(source);
-    const trusted = parseSelectorArena(source, { verifyArena: false });
+    const verified = parseVerified(source);
+    const trusted = parseSelectorArena(source, {});
 
     assert.deepEqual(trusted, verified, source);
     assert.equal(Object.isFrozen(verified.nodes), true);
@@ -135,5 +133,5 @@ test('verified and trusted parsing have equivalent semantic arenas', () => {
 
 test('compound-only pseudo arguments reject selector lists', () => {
   for (const source of [':host(.a,.b)', ':host-context(.a,.b)'])
-    assert.equal(parseSelectorArena(source).nodes[0].status, 'invalid', source);
+    assert.equal(parseVerified(source).nodes[0].status, 'invalid', source);
 });

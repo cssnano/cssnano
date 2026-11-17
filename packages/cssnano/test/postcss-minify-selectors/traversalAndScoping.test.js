@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import {
   processCSSFactory,
-  repositoryFile,
   oneStagePlugin,
 } from '../../../../util/testHelpers.js';
 import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
@@ -60,7 +59,7 @@ suite('AST traversal and namespace scoping', () => {
     const input =
       '/* leading */ @charset "utf-8"; @import "a.css"; h1,  h2 { color: red; } /* mid */ .a,  .b { color: blue; }';
     const result = await postcss([plugin()]).process(input, {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.equal(
       result.css,
@@ -74,7 +73,7 @@ suite('AST traversal and namespace scoping', () => {
     const result = await postcss([
       plugin({ convertToIs: false, sort: false }),
     ]).process(input, {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.equal(
       result.css,
@@ -86,7 +85,7 @@ suite('AST traversal and namespace scoping', () => {
     const input =
       'invalid: { color: red; } .fixed { color: blue; } h1,  h2 { color: green; } another: { color: yellow; }';
     const result = await postcss([plugin()]).process(input, {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.equal(
       result.css,
@@ -128,7 +127,7 @@ suite('AST traversal and namespace scoping', () => {
       const result = await postcss([
         plugin({ convertToIs: false, sort: false }),
       ]).process(`${declarations} *.card, .b, .b { color: red; }`, {
-        from: repositoryFile,
+        from: undefined,
       });
       assert.equal(
         result.css,
@@ -140,7 +139,7 @@ suite('AST traversal and namespace scoping', () => {
   test('processes stylesheet containing no rules without errors', async () => {
     const input = '/* comments only */ @charset "utf-8";';
     const result = await postcss([plugin()]).process(input, {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.equal(result.css, '/* comments only */ @charset "utf-8";');
   });
@@ -149,7 +148,7 @@ suite('AST traversal and namespace scoping', () => {
     const input =
       '@media (min-width: 600px) { h1,  h2 { color: red; } .a,  .b { color: blue; } }';
     const result = await postcss([plugin()]).process(input, {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.equal(
       result.css,
@@ -161,7 +160,7 @@ suite('AST traversal and namespace scoping', () => {
     const input =
       '.parent,  .parent-2 { color: red; .child,  .child-2 { color: blue; } & > .nested,  & + .nested { color: green; } }';
     const result = await postcss([plugin({ sort: false })]).process(input, {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.equal(
       result.css,

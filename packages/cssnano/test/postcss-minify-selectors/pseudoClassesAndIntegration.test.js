@@ -5,7 +5,6 @@ import magician from 'postcss-font-magician';
 import {
   usePostCSSPlugin,
   processCSSFactory,
-  repositoryFile,
   oneStagePlugin,
 } from '../../../../util/testHelpers.js';
 import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
@@ -191,8 +190,7 @@ suite('plugin integration', () => {
       'body{font:100%/1.25 "Open Sans", sans-serif;background:#F6F5F4;overflow-x:hidden}';
     assert.doesNotThrow(
       () =>
-        postcss([magician(), plugin()]).process(css, { from: repositoryFile })
-          .css
+        postcss([magician(), plugin()]).process(css, { from: undefined }).css
     );
   });
 
@@ -213,7 +211,7 @@ suite('plugin integration', () => {
   padding: 4px;
 }`;
     assert.strictEqual(
-      postcss([toModules, plugin()]).process(css, { from: repositoryFile }).css,
+      postcss([toModules, plugin()]).process(css, { from: undefined }).css,
       expected
     );
   });

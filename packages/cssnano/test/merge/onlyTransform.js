@@ -1,6 +1,7 @@
 import { hostPlugin } from '../../src/run/host.js';
 import { hostPlan } from '../../src/run/hostPlan.js';
 import { transformRunner } from '../../src/merge/index.js';
+import { withTestTargets } from '../../../../util/testHelpers.js';
 
 /** The three merge transforms, in the order the preset runs them. */
 export const MERGE_TRANSFORMS = Object.freeze([
@@ -23,7 +24,10 @@ export function onlyTransform(names, runOptions = {}) {
   const creator = (options = {}) =>
     hostPlugin(
       hostPlan({
-        merge: { options, runner: transformRunner(...names) },
+        merge: {
+          options: withTestTargets(options),
+          runner: transformRunner(...names),
+        },
         consistencyChecks: runOptions.consistencyChecks,
       })
     );

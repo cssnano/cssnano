@@ -13,7 +13,15 @@ import { visitEntriesInOrder } from '../ir/visitEntries.js';
 
 const { asciiLowerCase } = cssnanoUtils;
 const fontRegex = /font(|-family)/v;
-const listStyleRegex = /list-style|system/v;
+// The declarations whose values discardUnused reads counter style names from.
+const listStyleRegex = /list-style|^(?:system|fallback|speak-as)$/v;
+// The properties whose functions, such as `counter()`, can name a counter
+// style. Spelled here so the default preset need not load reduce-idents' data.
+export const counterStyleFunctionProperties = new Set([
+  'bookmark-label',
+  'content',
+  'copy-into',
+]);
 const animationRegex = /animation/v;
 const zIndexRegex = /^[zZ]-[iI][nN][dD][eE][xX]$/v;
 const counterStyleRegex = /counter-style/v;
@@ -23,6 +31,7 @@ const keyframesRegex = /keyframes/v;
  * The records that the advanced transforms read, by kind, as the arena indices
  * of the records: `@font-face` blocks, counter styles, keyframes, namespaces,
  * rules with a namespace bar, font and list-style and animation declarations,
+ * declarations whose functions can name a counter style,
  * z-index declarations, layers, functions, parameter rules, condition rules,
  * and every declaration.
  *
@@ -34,6 +43,7 @@ const keyframesRegex = /keyframes/v;
  *   namespaceRules: ArenaIndex[],
  *   fontDecls: ArenaIndex[],
  *   listStyleDecls: ArenaIndex[],
+ *   counterStyleFunctionDecls: ArenaIndex[],
  *   animationDecls: ArenaIndex[],
  *   zIndexDecls: ArenaIndex[],
  *   layers: ArenaIndex[],
@@ -56,6 +66,7 @@ export function createRecordSymbolLists() {
     namespaceRules: [],
     fontDecls: [],
     listStyleDecls: [],
+    counterStyleFunctionDecls: [],
     animationDecls: [],
     zIndexDecls: [],
     layers: [],
@@ -170,6 +181,9 @@ function visitRecordDecl(records, lists, index, entry) {
   lists.decls.push(index);
   if (zIndexRegex.test(entry.prop)) lists.zIndexDecls.push(index);
   if (listStyleRegex.test(prop)) lists.listStyleDecls.push(index);
+  if (counterStyleFunctionProperties.has(prop)) {
+    lists.counterStyleFunctionDecls.push(index);
+  }
   if (
     records.enclosingContainer(index)?.kind === RULE &&
     fontRegex.test(prop)

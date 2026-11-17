@@ -11,6 +11,7 @@ import { onlyTransform } from '../../../test/merge/onlyTransform.js';
 // Turns the consistency checks on for the process, so a stale record or key
 // throws at the next read instead of quietly producing the same output.
 import '../enableChecks.js';
+import { testTargets } from '../../../../util/testHelpers.js';
 
 /**
  * The merge fuzzers as suites for
@@ -32,7 +33,10 @@ export const suites = [
      * @param {string} input
      * @return {string}
      */
-    run: (input) => postcss(preset()).process(input, { from: undefined }).css,
+    run: (input) =>
+      postcss(preset({ browserslist: { query: testTargets } })).process(input, {
+        from: undefined,
+      }).css,
     /**
      * @param {string} input
      * @param {string} output
@@ -53,7 +57,10 @@ export const suites = [
      * @param {string} input
      * @return {string}
      */
-    run: (input) => postcss(preset()).process(input, { from: undefined }).css,
+    run: (input) =>
+      postcss(preset({ browserslist: { query: testTargets } })).process(input, {
+        from: undefined,
+      }).css,
     /**
      * @param {string} input
      * @param {string} output

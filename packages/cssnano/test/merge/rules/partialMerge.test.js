@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import {
-  processCSSFactory,
-  repositoryFile,
-} from '../../../../../util/testHelpers.js';
+import { processCSSFactory } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 const plugin = onlyTransform(['mergeRules']);
 
@@ -86,10 +83,10 @@ test('should converge after partial merging duplicate declarations', async () =>
   const input =
     '.a{color:red;color:red}.b{color:red;font-weight:bold}.c{color:red;font-weight:bold}';
   const first = await postcss([plugin]).process(input, {
-    from: repositoryFile,
+    from: undefined,
   });
   const second = await postcss([plugin]).process(first.css, {
-    from: repositoryFile,
+    from: undefined,
   });
 
   assert.equal(
@@ -141,10 +138,10 @@ test(
 test('should converge after a greedy merge pass', async () => {
   const first = await postcss([plugin]).process(
     'h1{color:black}h2{color:black;font-weight:bold}h3{color:black;font-weight:bold}',
-    { from: repositoryFile }
+    { from: undefined }
   );
   const second = await postcss([plugin]).process(first.css, {
-    from: repositoryFile,
+    from: undefined,
   });
 
   assert.equal(second.css, first.css);

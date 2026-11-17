@@ -4,7 +4,7 @@ import postcss from 'postcss';
 import advancedPreset from '#presets/advanced';
 import defaultPreset from '#presets/default';
 import litePreset from '#presets/lite';
-import { repositoryFile } from '../../../util/testHelpers.js';
+import { testTargets } from '../../../util/testHelpers.js';
 
 // discardComments runs in every preset, so each preset can disable it alike.
 const commentedCSS = `/* note */h1{color:red}`;
@@ -16,7 +16,7 @@ const commentedCSS = `/* note */h1{color:red}`;
  */
 async function minify(plugins, css) {
   const result = await postcss(plugins).process(css, {
-    from: repositoryFile,
+    from: undefined,
   });
   return result.css;
 }
@@ -33,25 +33,44 @@ describe('plugin enablement shared by every preset', () => {
     test(`${name}: an empty options object runs the plugin with its defaults`, async () => {
       assert.strictEqual(
         await minify(
-          preset({ options: { discardComments: {} } }),
+          preset({
+            browserslist: { query: testTargets },
+            options: { discardComments: {} },
+          }),
           commentedCSS
         ),
-        await minify(preset(), commentedCSS)
+        await minify(
+          preset({ browserslist: { query: testTargets } }),
+          commentedCSS
+        )
       );
     });
 
     test(`${name}: disable leaves the plugin out`, async () => {
       assert.strictEqual(
-        await minify(preset({ disable: ['discardComments'] }), commentedCSS),
+        await minify(
+          preset({
+            browserslist: { query: testTargets },
+            disable: ['discardComments'],
+          }),
+          commentedCSS
+        ),
         '/* note */h1{color:red}'
       );
     });
 
     test(`${name}: a plugin that the preset does not have throws, because a misspelled name would otherwise go unnoticed`, () => {
-      assert.throws(() => preset({ disable: ['notAPlugin'] }), {
-        message:
-          '"notAPlugin" in disable is not a transform that the preset runs.',
-      });
+      assert.throws(
+        () =>
+          preset({
+            browserslist: { query: testTargets },
+            disable: ['notAPlugin'],
+          }),
+        {
+          message:
+            '"notAPlugin" in disable is not a transform that the preset runs.',
+        }
+      );
     });
   }
 });
@@ -60,9 +79,21 @@ describe('plugins that a preset disables', () => {
   test('colormin, when disabled, leaves #ffffff unshortened, which the default preset shortens', async () => {
     const css = 'h1{color:#ffffff}';
     assert.strictEqual(
-      await minify(defaultPreset({ disable: ['colormin'] }), css),
+      await minify(
+        defaultPreset({
+          browserslist: { query: testTargets },
+          disable: ['colormin'],
+        }),
+        css
+      ),
       'h1{color:#ffffff}'
     );
-    assert.strictEqual(await minify(defaultPreset(), css), 'h1{color:#fff}');
+    assert.strictEqual(
+      await minify(
+        defaultPreset({ browserslist: { query: testTargets } }),
+        css
+      ),
+      'h1{color:#fff}'
+    );
   });
 });

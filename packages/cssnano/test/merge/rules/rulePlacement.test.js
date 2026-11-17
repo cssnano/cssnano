@@ -2,12 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 const plugin = onlyTransform(['mergeRules']);
-import { repositoryFile } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 
 /** @param {string} css */
 function merge(css) {
-  return postcss([plugin]).process(css, { from: repositoryFile }).css;
+  return postcss([plugin]).process(css, { from: undefined }).css;
 }
 
 /**
@@ -182,7 +181,7 @@ test('should print a partial merge of rules built without raws with the default 
     buildRule('.a', ['color', 'red'], ['margin', '0']),
     buildRule('.b', ['color', 'red'], ['padding', '0'])
   );
-  postcss([plugin]).process(root, { from: repositoryFile }).sync();
+  postcss([plugin]).process(root, { from: undefined }).sync();
   assert.equal(
     root.toString(),
     '.a {\n    margin: 0\n}\n.a,.b {\n    color: red\n}\n.b {\n    padding: 0\n}'
@@ -196,7 +195,7 @@ test('should print a rule built without raws that moves into an earlier block wi
   const second = postcss.atRule({ name: 'media', params: 'print' });
   second.append(buildRule('.b', ['color', 'red'], ['margin', '0']));
   root.append(first, second);
-  postcss([plugin]).process(root, { from: repositoryFile }).sync();
+  postcss([plugin]).process(root, { from: undefined }).sync();
   assert.equal(
     root.toString(),
     '@media print {\n    .a,.b {\n        color: red\n    }\n    .b {\n        margin: 0\n    }\n}'
@@ -221,7 +220,7 @@ test('should leave every node pointing at the container that holds it after rule
   const root = postcss.parse(
     '@media print{.a{margin:0}}@media print{.b{top:0}}@media print{.c{top:1}.d{top:2}}'
   );
-  postcss([plugin]).process(root, { from: repositoryFile }).sync();
+  postcss([plugin]).process(root, { from: undefined }).sync();
   assert.deepEqual(misparented(root), []);
 });
 
@@ -229,7 +228,7 @@ test('should leave every node pointing at the container that holds it after a pa
   const root = postcss.parse(
     '.r{@media print{.a{color:red;margin:0}.b{color:red;padding:0}}@media print{.c{top:0}}}'
   );
-  postcss([plugin]).process(root, { from: repositoryFile }).sync();
+  postcss([plugin]).process(root, { from: undefined }).sync();
   assert.deepEqual(misparented(root), []);
 });
 
@@ -258,6 +257,6 @@ test('should leave every node pointing at the container that holds it after rule
       .map((s, i) => `${longSelector(s)}{${shared};height:${i}vw}`)
       .join('')}}}`
   );
-  postcss([plugin]).process(root, { from: repositoryFile }).sync();
+  postcss([plugin]).process(root, { from: undefined }).sync();
   assert.deepEqual(misparented(root), []);
 });

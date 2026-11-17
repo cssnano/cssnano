@@ -48,11 +48,12 @@ describe('normalize-unicode browser targets', () => {
 });
 
 describe('browserslist config resolution', () => {
-  // With no from, file or path, the search starts at the plugin's own directory
-  // and reaches the repository root package.json, whose production env is legacy.
   test(
-    'uses the production env of the repository root config when no from, file or path is set',
-    processCSS(input, '@font-face{unicode-range:U+25-ff}', {})
+    'reads the production env from the config found next to from',
+    processCSS(input, '@font-face{unicode-range:U+25-ff}', {
+      ...withTargets(undefined, { env: 'production' }),
+      from: join(configDir, 'example.css'),
+    })
   );
 
   test(

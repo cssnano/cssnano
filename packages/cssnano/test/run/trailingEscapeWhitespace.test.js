@@ -2,15 +2,17 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import litePreset from '../../src/presets/lite.js';
-import { repositoryFile } from '../../../../util/testHelpers.js';
+import { testTargets } from '../../../../util/testHelpers.js';
 
 /**
  * @param {string} css
  * @return {Promise<string>}
  */
 async function minify(css) {
-  const result = await postcss(litePreset()).process(css, {
-    from: repositoryFile,
+  const result = await postcss(
+    litePreset({ browserslist: { query: testTargets } })
+  ).process(css, {
+    from: undefined,
   });
   return result.css;
 }

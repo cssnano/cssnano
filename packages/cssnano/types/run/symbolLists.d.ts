@@ -1,6 +1,7 @@
 import type { ArenaIndex } from '../ir/blockRecord.js';
 import type { BlockRecords } from '../ir/blockRecords.js';
 import type { TokenLists } from '../ir/tokenLists.js';
+export declare const counterStyleFunctionProperties: Set<string>;
 export type RecordSymbolLists = {
     fontFaces: ArenaIndex[];
     counterStyles: ArenaIndex[];
@@ -9,6 +10,7 @@ export type RecordSymbolLists = {
     namespaceRules: ArenaIndex[];
     fontDecls: ArenaIndex[];
     listStyleDecls: ArenaIndex[];
+    counterStyleFunctionDecls: ArenaIndex[];
     animationDecls: ArenaIndex[];
     zIndexDecls: ArenaIndex[];
     layers: ArenaIndex[];
@@ -21,6 +23,7 @@ export type RecordSymbolLists = {
  * The records that the advanced transforms read, by kind, as the arena indices
  * of the records: `@font-face` blocks, counter styles, keyframes, namespaces,
  * rules with a namespace bar, font and list-style and animation declarations,
+ * declarations whose functions can name a counter style,
  * z-index declarations, layers, functions, parameter rules, condition rules,
  * and every declaration.
  *
@@ -32,6 +35,7 @@ export type RecordSymbolLists = {
  *   namespaceRules: ArenaIndex[],
  *   fontDecls: ArenaIndex[],
  *   listStyleDecls: ArenaIndex[],
+ *   counterStyleFunctionDecls: ArenaIndex[],
  *   animationDecls: ArenaIndex[],
  *   zIndexDecls: ArenaIndex[],
  *   layers: ArenaIndex[],

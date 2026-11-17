@@ -17,6 +17,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Session } from 'node:inspector/promises';
 import postcss from 'postcss';
+import { testTargets } from '../../../../util/testHelpers.js';
 
 const srcDir = fileURLToPath(new URL('../../src/', import.meta.url));
 const frameworksDir = fileURLToPath(
@@ -137,7 +138,9 @@ const json = process.argv.includes('--json');
 const totals = {};
 for (const file of readdirSync(frameworksDir).toSorted()) {
   const css = readFileSync(join(frameworksDir, file), 'utf8');
-  await postcss(preset()).process(css, { from: undefined });
+  await postcss(preset({ browserslist: { query: testTargets } })).process(css, {
+    from: undefined,
+  });
   const { result } = await session.post('Profiler.takePreciseCoverage');
   for (const [name, count] of Object.entries(countsOf(result))) {
     totals[name] = (totals[name] ?? 0) + count;

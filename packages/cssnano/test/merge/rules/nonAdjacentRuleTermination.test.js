@@ -3,7 +3,6 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import { random } from '../../../../../util/fuzzRng.js';
 const plugin = onlyTransform(['mergeRules']);
-import { repositoryFile } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 
 const mergingFixtures = [
@@ -32,10 +31,10 @@ const mergingFixtures = [
 for (const fixture of mergingFixtures) {
   test(`should converge in one pass for ${fixture}`, async () => {
     const once = await postcss(plugin()).process(fixture, {
-      from: repositoryFile,
+      from: undefined,
     });
     const twice = await postcss(plugin()).process(once.css, {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.equal(twice.css, once.css);
   });
@@ -72,10 +71,10 @@ test(
     for (let seed = 1; seed <= 1500; seed++) {
       const input = generateStylesheet(seed);
       const once = await postcss(plugin()).process(input, {
-        from: repositoryFile,
+        from: undefined,
       });
       const twice = await postcss(plugin()).process(once.css, {
-        from: repositoryFile,
+        from: undefined,
       });
       assert.ok(once.css.length <= input.length, `longer output for ${input}`);
       assert.equal(twice.css, once.css, `not settled for ${input}`);

@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import cssnanoUtils from '#utils';
-import { buildSelectorArena } from '../../src/plugins/postcss-minify-selectors/lib/arena.js';
+import {} from '../../src/plugins/postcss-minify-selectors/lib/arena.js';
 import { normalizeArena } from '../../src/plugins/postcss-minify-selectors/lib/normalizeArena.js';
 import { OutputPool } from '../../src/plugins/postcss-minify-selectors/lib/normalizePool.js';
 import { parseSelectorArena } from '../../src/plugins/postcss-minify-selectors/lib/parseArena.js';
 import { serializeNormalized } from '../../src/plugins/postcss-minify-selectors/lib/serializeArena.js';
+import { buildVerified, parseVerified } from './checkedArena.js';
 
 const { tokens } = cssnanoUtils;
 
@@ -13,7 +14,7 @@ function nestedArena(source) {
   const tokenList = tokens(source);
   let compound = -1;
   let pseudo = -1;
-  const arena = buildSelectorArena(source, tokenList, (builder) => {
+  const arena = buildVerified(source, tokenList, (builder) => {
     const list = builder.open('list', 0, tokenList.length, {
       payload: builder.payload('lists', { mode: 'outer-unforgiving' }),
     });
@@ -72,7 +73,7 @@ test('serializeNormalized returns the source when there is no output tree', () =
 });
 
 test('serializeNormalized restores the hex escape terminator before a descendant combinator', () => {
-  const arena = parseSelectorArena('.a\\61  .b', {});
+  const arena = parseVerified('.a\\61  .b', {});
   assert.equal(
     serializeNormalized(arena, {
       kind: 'sequence',
@@ -89,7 +90,7 @@ test('serializeNormalized restores the hex escape terminator before a descendant
 test('serializeNormalized completes at depth 12,000 without recursion', () => {
   const depth = 12_000;
   // Only text emits are serialized, so any small arena works.
-  const arena = parseSelectorArena('.a', { verifyArena: false });
+  const arena = parseSelectorArena('.a', {});
   /** @type {import('../../src/plugins/postcss-minify-selectors/lib/outputOverlay.js').Emit} */
   let emit = { kind: 'text', value: '.b' };
   for (let index = 0; index < depth; index++)
@@ -125,7 +126,7 @@ test('direct normalized serialization yields the expected minified selectors', (
     // Unknown pseudo-class: left as written.
     [':future(.x)', {}, ':future(.x)'],
   ]) {
-    const arena = parseSelectorArena(source, { verifyArena: false });
+    const arena = parseSelectorArena(source, {});
     const emit = normalizeArena(arena, options);
     assert.equal(serializeNormalized(arena, emit), expected, source);
   }
@@ -137,7 +138,7 @@ test('unchanged simple and nested selectors stay source-backed', () => {
     ':is(.a)',
     `${':is('.repeat(12_000)}.a${')'.repeat(12_000)}`,
   ]) {
-    const arena = parseSelectorArena(source, { verifyArena: false });
+    const arena = parseSelectorArena(source, {});
     assert.equal(
       normalizeArena(arena, { sort: false, convertToIs: false }),
       undefined
@@ -146,14 +147,14 @@ test('unchanged simple and nested selectors stay source-backed', () => {
 });
 
 test('a changed container materializes an unchanged child reference', () => {
-  const arena = parseSelectorArena('*.a', { verifyArena: false });
+  const arena = parseSelectorArena('*.a', {});
   const emit = normalizeArena(arena, { sort: false, convertToIs: false });
   assert.notEqual(emit, undefined);
   assert.equal(serializeNormalized(arena, emit), '.a');
 });
 
 test('OutputPool sequence length counts the restored hex escape terminator', () => {
-  const arena = parseSelectorArena('.a\\61  .x', {});
+  const arena = parseVerified('.a\\61  .x', {});
   const pool = new OutputPool(arena);
   const output = pool.sequence([
     pool.text('.a\\61'),
@@ -175,7 +176,7 @@ test('trusted arena spans reproduce the source byte for byte', () => {
     ':nth-child(odd of .a,#b)',
   ])
     assert.equal(
-      serializeNormalized(parseSelectorArena(source, { verifyArena: false }), {
+      serializeNormalized(parseSelectorArena(source, {}), {
         kind: 'node',
         node: 0,
       }),

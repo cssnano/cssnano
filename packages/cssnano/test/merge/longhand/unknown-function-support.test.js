@@ -7,10 +7,7 @@ import {
   mergeBlockingSupport,
   requiredSupport,
 } from '../../../src/merge/longhand/isFallback.js';
-import {
-  repositoryFile,
-  withTargets,
-} from '../../../../../util/testHelpers.js';
+import { withTargets } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 import { itemOf } from './helpers/declarationItems.js';
 
@@ -26,7 +23,7 @@ import { itemOf } from './helpers/declarationItems.js';
  */
 async function run(css, browsers) {
   const result = await postcss([plugin(withTargets(browsers))]).process(css, {
-    from: repositoryFile,
+    from: undefined,
   });
   return result.css;
 }

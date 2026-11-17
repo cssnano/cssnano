@@ -2,53 +2,60 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import nano from '../src/index.js';
-import { repositoryFile } from '../../../util/testHelpers.js';
+import { testTargets } from '../../../util/testHelpers.js';
 
 describe('plugin invocation forms', () => {
   test('cssnano can be used as a configured plugin with postcss().use()', async () => {
     const { css } = await postcss()
-      .use(nano())
-      .process('h1 { color: #ffffff }', { from: repositoryFile });
+      .use(nano({ browserslist: { query: testTargets } }))
+      .process('h1 { color: #ffffff }', { from: undefined });
 
     assert.strictEqual(css, 'h1{color:#fff}');
   });
 
   test('cssnano can be used as a configured plugin in a PostCSS plugin array', async () => {
-    const { css } = await postcss([nano()]).process('h1 { color: #ffffff }', {
-      from: repositoryFile,
+    const { css } = await postcss([
+      nano({ browserslist: { query: testTargets } }),
+    ]).process('h1 { color: #ffffff }', {
+      from: undefined,
     });
 
     assert.strictEqual(css, 'h1{color:#fff}');
   });
 
+  // Bare nano: the output is the same for any targets, and the form is the point.
   test('cssnano can be used as a plugin creator in a PostCSS plugin array', async () => {
     const { css } = await postcss([nano]).process('h1 { color: #ffffff }', {
-      from: repositoryFile,
+      from: undefined,
     });
 
     assert.strictEqual(css, 'h1{color:#fff}');
   });
 
+  // Bare nano: the output is the same for any targets, and the form is the point.
   test('cssnano can be used as a plugin creator directly', async () => {
     const { css } = await postcss(nano).process('h1 { color: #ffffff }', {
-      from: repositoryFile,
+      from: undefined,
     });
 
     assert.strictEqual(css, 'h1{color:#fff}');
   });
 
+  // Bare nano: the output is the same for any targets, and the form is the point.
   test('cssnano can be used as a plugin creator with postcss().use()', async () => {
     const { css } = await postcss()
       .use(nano)
-      .process('h1 { color: #ffffff }', { from: repositoryFile });
+      .process('h1 { color: #ffffff }', { from: undefined });
 
     assert.strictEqual(css, 'h1{color:#fff}');
   });
 });
 
 test('should work with sourcemaps', async () => {
-  const { css } = await postcss([nano]).process('h1{z-index:1}', {
-    from: repositoryFile,
+  const { css } = await postcss([
+    nano({ browserslist: { query: testTargets } }),
+  ]).process('h1{z-index:1}', {
+    from: undefined,
     map: { inline: true },
   });
   assert.strictEqual(

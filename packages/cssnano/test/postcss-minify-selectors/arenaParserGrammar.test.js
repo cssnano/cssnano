@@ -5,7 +5,8 @@ import {
   isFoldEligible,
   semanticFacts,
 } from '../../src/plugins/postcss-minify-selectors/lib/arena.js';
-import { parseSelectorArena } from '../../src/plugins/postcss-minify-selectors/lib/parseArena.js';
+import {} from '../../src/plugins/postcss-minify-selectors/lib/parseArena.js';
+import { parseVerified } from './checkedArena.js';
 
 test('iterative parser records list modes and explicit selector constructs', () => {
   for (const mode of [
@@ -15,12 +16,12 @@ test('iterative parser records list modes and explicit selector constructs', () 
     'relative',
     'compound-only',
   ]) {
-    const arena = parseSelectorArena('svg|a > [x=y i]:future(.x),|*', {
+    const arena = parseVerified('svg|a > [x=y i]:future(.x),|*', {
       mode,
     });
     assert.equal(arena.payloads.lists[0].mode, mode);
   }
-  const arena = parseSelectorArena('svg|a > [x=y i]:future(.x),|*');
+  const arena = parseVerified('svg|a > [x=y i]:future(.x),|*');
   assert.deepEqual(
     arena.payloads.combinators.map(({ value }) => value),
     ['>']
@@ -45,7 +46,7 @@ test('iterative parser records list modes and explicit selector constructs', () 
 });
 
 test('iterative parser preserves malformed balancing as one opaque raw node', () => {
-  const arena = parseSelectorArena(':is(.a');
+  const arena = parseVerified(':is(.a');
   assert.equal(arena.nodes.length, 1);
   assert.equal(arena.nodes[0].kind, 'raw');
   assert.equal(arena.nodes[0].status, 'opaque');
@@ -53,9 +54,9 @@ test('iterative parser preserves malformed balancing as one opaque raw node', ()
 
 test('list modes finalize empty-member recovery at the list boundary', () => {
   for (const source of [',.a', '.a,', '.a,,.b']) {
-    assert.equal(parseSelectorArena(source).nodes[0].status, 'invalid', source);
+    assert.equal(parseVerified(source).nodes[0].status, 'invalid', source);
   }
-  const forgiving = parseSelectorArena(',.a,,#b,', { mode: 'forgiving' });
+  const forgiving = parseVerified(',.a,,#b,', { mode: 'forgiving' });
   assert.equal(forgiving.nodes[0].status, 'valid');
   assert.deepEqual(
     forgiving.nodes
@@ -64,25 +65,25 @@ test('list modes finalize empty-member recovery at the list boundary', () => {
     ['invalid', 'valid', 'invalid', 'valid', 'invalid']
   );
   assert.equal(
-    parseSelectorArena('> .a', { mode: 'relative' }).nodes[0].status,
+    parseVerified('> .a', { mode: 'relative' }).nodes[0].status,
     'valid'
   );
   assert.equal(
-    parseSelectorArena('> .a', { mode: 'outer-unforgiving' }).nodes[0].status,
+    parseVerified('> .a', { mode: 'outer-unforgiving' }).nodes[0].status,
     'invalid'
   );
   assert.equal(
-    parseSelectorArena('.a > .b', { mode: 'compound-only' }).nodes[0].status,
+    parseVerified('.a > .b', { mode: 'compound-only' }).nodes[0].status,
     'invalid'
   );
 });
 
 test('parser applies keyframe and default-namespace context', () => {
-  const keyframe = parseSelectorArena('from,50%,to', { keyframe: true });
+  const keyframe = parseVerified('from,50%,to', { keyframe: true });
   assert.equal(keyframe.nodes[0].status, 'valid');
   assert.equal(keyframe.payloads.lists[0].keyframe, true);
 
-  const namespaced = parseSelectorArena('*.item', {
+  const namespaced = parseVerified('*.item', {
     hasDefaultNamespace: true,
   });
   assert.equal(
@@ -95,7 +96,7 @@ test('parser applies keyframe and default-namespace context', () => {
 });
 
 test('parser records descendant and explicit combinators with exact spans', () => {
-  const arena = parseSelectorArena('a /**/ b || c > d');
+  const arena = parseVerified('a /**/ b || c > d');
   const combinators = arena.nodes.filter(({ kind }) => kind === 'combinator');
   assert.deepEqual(
     combinators.map(({ payload }) => arena.payloads.combinators[payload].value),
@@ -125,7 +126,7 @@ test('parser models every qualified-name namespace form', () => {
     ['*|*', 'wildcard', 'universal'],
     ['|*', 'empty', 'universal'],
   ]) {
-    const arena = parseSelectorArena(source);
+    const arena = parseVerified(source);
     assert.equal(arena.nodes[0].status, 'valid', source);
     assert.equal(
       arena.payloads.qualifiedNames[0].namespace.kind,
@@ -136,7 +137,7 @@ test('parser models every qualified-name namespace form', () => {
 });
 
 test('parser records exact attribute grammar and case behavior', () => {
-  const arena = parseSelectorArena('[ns|data-name ~= "Value" i]');
+  const arena = parseVerified('[ns|data-name ~= "Value" i]');
   assert.deepEqual(arena.payloads.attributes[0], {
     namespace: { kind: 'named', token: 1 },
     nameToken: 3,
@@ -150,8 +151,8 @@ test('parser records exact attribute grammar and case behavior', () => {
     hasSemanticFact(arena.nodes[0].facts, semanticFacts.attributeModifier),
     true
   );
-  assert.equal(parseSelectorArena('[x=]').nodes[0].status, 'invalid');
-  const escaped = parseSelectorArena('[x=y \\69]');
+  assert.equal(parseVerified('[x=]').nodes[0].status, 'invalid');
+  const escaped = parseVerified('[x=y \\69]');
   assert.equal(escaped.nodes[0].status, 'valid');
   assert.equal(
     escaped.payloads.attributes[0].caseBehavior,
@@ -161,7 +162,7 @@ test('parser records exact attribute grammar and case behavior', () => {
 
 test('literal non-ASCII identifier continuations remain one qualified name', () => {
   const source = 'a\uE0000\uE001';
-  const arena = parseSelectorArena(source);
+  const arena = parseVerified(source);
   assert.equal(arena.nodes[0].status, 'valid');
   const qualified = arena.nodes.find(({ kind }) => kind === 'qualified-name');
   assert.equal(
@@ -175,28 +176,25 @@ test('literal non-ASCII identifier continuations remain one qualified name', () 
 });
 
 test('parser rejects an ID selector whose hash is not an identifier', () => {
-  assert.equal(parseSelectorArena('#1a').nodes[0].status, 'invalid');
+  assert.equal(parseVerified('#1a').nodes[0].status, 'invalid');
 });
 
 test('parser accepts an ID selector whose hash is an identifier', () => {
-  assert.equal(parseSelectorArena('#a1').nodes[0].status, 'valid');
+  assert.equal(parseVerified('#a1').nodes[0].status, 'valid');
 });
 
 test('parser rejects a pseudo-element followed by a combinator', () => {
   for (const source of ['a::before b', 'a::before > b', ':before + b']) {
-    assert.equal(parseSelectorArena(source).nodes[0].status, 'invalid', source);
+    assert.equal(parseVerified(source).nodes[0].status, 'invalid', source);
   }
 });
 
 test('parser accepts a pseudo-element at the end of a complex selector', () => {
   for (const source of ['a b::before', 'a::before:hover', 'a > b::after']) {
-    assert.equal(parseSelectorArena(source).nodes[0].status, 'valid', source);
+    assert.equal(parseVerified(source).nodes[0].status, 'valid', source);
   }
 });
 
 test('parser accepts a pseudo-element inside a forgiving argument before a combinator', () => {
-  assert.equal(
-    parseSelectorArena(':is(a::before, b) c').nodes[0].status,
-    'valid'
-  );
+  assert.equal(parseVerified(':is(a::before, b) c').nodes[0].status, 'valid');
 });

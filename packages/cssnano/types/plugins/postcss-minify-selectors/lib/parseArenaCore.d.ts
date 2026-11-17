@@ -8,7 +8,6 @@ export type ParseContext = {
     mode?: ListMode;
     keyframe?: boolean;
     hasDefaultNamespace?: boolean;
-    verifyArena?: boolean;
 };
 export type ListWork = {
     kind: 'list';

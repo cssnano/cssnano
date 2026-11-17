@@ -3,7 +3,6 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import {
   processCSSFactory,
-  repositoryFile,
   oneStagePlugin,
 } from '../../../../util/testHelpers.js';
 import convertValues from '../../src/plugins/postcss-convert-values/index.js';
@@ -19,7 +18,7 @@ describe('Raw PostCSS metadata and preceding plugins', () => {
     const root = postcss.root({
       nodes: [postcss.rule({ selector: 'a', nodes: [decl] })],
     });
-    await postcss([plugin()]).process(root, { from: repositoryFile });
+    await postcss([plugin()]).process(root, { from: undefined });
     assert.equal(decl.value, '1in');
     assert.equal(decl.raws.value, undefined);
   });
@@ -43,7 +42,7 @@ describe('Raw PostCSS metadata and preceding plugins', () => {
       'a{width:192px, /*x*/ 192px} b{width:192px, /*x*/ 192px}'
     );
     const repeated = await postcss([plugin()]).process(root, {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.equal(
       repeated.css,
@@ -76,7 +75,7 @@ describe('Raw PostCSS metadata and preceding plugins', () => {
     };
     const result = await postcss([preceding, plugin()]).process(
       'a{width:192px}',
-      { from: repositoryFile }
+      { from: undefined }
     );
     assert.equal(result.css, 'a{width:1in}');
   });
@@ -91,7 +90,7 @@ describe('Raw PostCSS metadata and preceding plugins', () => {
     };
     const result = await postcss([preceding, plugin()]).process(
       'a{width:192px}',
-      { from: repositoryFile }
+      { from: undefined }
     );
     assert.equal(result.css, 'a{width:1in}');
   });

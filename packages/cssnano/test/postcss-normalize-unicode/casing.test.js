@@ -6,7 +6,6 @@ import postcss from 'postcss';
 import {
   oneStagePlugin,
   processCSSFactory,
-  repositoryFile,
   withTargets,
 } from '../../../../util/testHelpers.js';
 import normalizeUnicode from '../../src/plugins/postcss-normalize-unicode/index.js';
@@ -46,7 +45,7 @@ test('should drop the stale raw value of a recased range on cache hits', async (
   }
   await postcss(plugin(withTargets(['defaults', 'not ie <=11']))).process(
     root,
-    { from: repositoryFile }
+    { from: undefined }
   );
   for (const decl of declarations) {
     assert.equal(decl.value, 'u+2b??');

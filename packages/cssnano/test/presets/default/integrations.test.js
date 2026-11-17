@@ -7,13 +7,17 @@ import { integrationTests } from '../../../../../util/integrationTestHelpers.js'
 import preset from '../../../src/presets/default.js';
 import {
   processCSSFactory,
-  repositoryFile,
+  testTargets,
 } from '../../../../../util/testHelpers.js';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
-const withDefaults = processCSSFactory(preset());
+const withDefaults = processCSSFactory(
+  preset({ browserslist: { query: testTargets } })
+);
 const withBrowserslist = processCSSFactory(
-  preset({ browserslist: { env: 'modern' } })
+  preset({
+    browserslist: { env: 'modern' },
+  })
 );
 // The browserslist config is found next to the stylesheet given as from.
 const browserslistFrom = { from: join(testDir, 'browserslist/example.css') };
@@ -37,7 +41,9 @@ describe('CSS processing', () => {
 
   test(
     'should keep a declaration overridden in a later rule when merge is disabled',
-    processCSSFactory(preset({ disable: ['merge'] })).processCSS(
+    processCSSFactory(
+      preset({ browserslist: { query: testTargets }, disable: ['merge'] })
+    ).processCSS(
       'body{padding:50px}body{padding:0}',
       'body{padding:50px}body{padding:0}'
     )
@@ -64,7 +70,9 @@ describe('CSS processing', () => {
   test(
     'should merge alignment longhands into place-content when every target supports place-*',
     processCSSFactory(
-      preset({ browserslist: { query: 'chrome 120, firefox 120, safari 17' } })
+      preset({
+        browserslist: { query: 'chrome 120, firefox 120, safari 17' },
+      })
     ).processCSS(
       '.a{justify-content:center;align-items:center;align-content:center}',
       '.a{align-items:center;place-content:center}'
@@ -159,8 +167,8 @@ describe('CSS processing', () => {
 
   test('should preserve whitespace-only custom properties', async () => {
     const input = ':root{--x: ;--empty:}';
-    const processor = postcss(preset());
-    const firstPass = await processor.process(input, { from: repositoryFile });
+    const processor = postcss(preset({ browserslist: { query: testTargets } }));
+    const firstPass = await processor.process(input, { from: undefined });
     const declarations = new Map(
       postcss
         .parse(firstPass.css)
@@ -177,7 +185,7 @@ describe('CSS processing', () => {
     );
 
     const secondPass = await processor.process(firstPass.css, {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.strictEqual(secondPass.css, firstPass.css);
   });
@@ -273,22 +281,20 @@ describe('framework tests', () => {
 describe('colormin options', () => {
   test('preserves color values when colormin is disabled', async () => {
     const input = 'h1{color:black}';
-    const { css } = await postcss(preset({ disable: ['colormin'] })).process(
-      input,
-      {
-        from: repositoryFile,
-      }
-    );
+    const { css } = await postcss(
+      preset({ browserslist: { query: testTargets }, disable: ['colormin'] })
+    ).process(input, {
+      from: undefined,
+    });
 
     assert.strictEqual(css, input);
   });
 
   test('preserves color values with the exclude option', async () => {
     const input = 'h1{color:black}';
-    const { css } = await postcss(preset({ disable: ['colormin'] })).process(
-      input,
-      { from: repositoryFile }
-    );
+    const { css } = await postcss(
+      preset({ browserslist: { query: testTargets }, disable: ['colormin'] })
+    ).process(input, { from: undefined });
 
     assert.strictEqual(css, input);
   });
@@ -296,8 +302,10 @@ describe('colormin options', () => {
 
 test('should preserve important comments while merging equal declarations', async () => {
   const input = '.a{/*!keep*/color:red}.b{color:red}';
-  const { css } = await postcss(preset()).process(input, {
-    from: repositoryFile,
+  const { css } = await postcss(
+    preset({ browserslist: { query: testTargets } })
+  ).process(input, {
+    from: undefined,
   });
 
   assert.equal(css, '.a{/*!keep*/}.a,.b{color:red}');
@@ -306,8 +314,10 @@ test('should preserve important comments while merging equal declarations', asyn
 test('should drop a declaration repeated in a sibling @media block with identical conditions before the blocks merge', async () => {
   const input =
     '@media (max-width:767px){#header{position:fixed}.a{display:none}}@media (max-width:767px){#header{position:fixed}.b{color:red}}';
-  const { css } = await postcss(preset()).process(input, {
-    from: repositoryFile,
+  const { css } = await postcss(
+    preset({ browserslist: { query: testTargets } })
+  ).process(input, {
+    from: undefined,
   });
 
   assert.equal(

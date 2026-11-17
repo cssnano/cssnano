@@ -1,10 +1,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import {
-  processCSSFactory,
-  repositoryFile,
-} from '../../../../../util/testHelpers.js';
+import { processCSSFactory } from '../../../../../util/testHelpers.js';
 const plugin = onlyTransform(['mergeLonghand']);
 import { foldShorthandDeclaration } from '../../../src/merge/longhand/minifyShorthand.js';
 import { onlyTransform } from '../onlyTransform.js';
@@ -232,7 +229,7 @@ describe('shorthand identity rule integration contracts', () => {
     const processor = postcss([countingPlugin(), plugin()]);
     const result = await processor.process(
       '@media (min-width:600px){gap:1rem 1rem;a{inset:0 0 0 0}}b{overflow:hidden hidden}',
-      { from: repositoryFile }
+      { from: undefined }
     );
     assert.strictEqual(walkCalls, 0, 'should not walk the AST');
     assert.strictEqual(

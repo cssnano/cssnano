@@ -27,6 +27,15 @@ suite('fold that fires', () => {
   );
 
   test(
+    'fold: a middle with a leading important comment sorts by its spelled text',
+    processCSS(
+      'a+ /*! c */ .x b,a+ .y b,a+ .w b{color:red}',
+      'a+:is(.w,.y,/*! c */.x) b{color:red}',
+      modernBl
+    )
+  );
+
+  test(
     'fold: common suffix with multiple selectors',
     processCSS(
       'section h1,article h1,aside h1,nav h1{font-size:25px}',

@@ -2,15 +2,17 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import preset from '../../../src/presets/default.js';
-import { repositoryFile } from '../../../../../util/testHelpers.js';
+import { testTargets } from '../../../../../util/testHelpers.js';
 
 /**
  * @param {string} css
  * @return {Promise<string>}
  */
 async function minify(css) {
-  const result = await postcss(preset()).process(css, {
-    from: repositoryFile,
+  const result = await postcss(
+    preset({ browserslist: { query: testTargets } })
+  ).process(css, {
+    from: undefined,
   });
   return result.css;
 }
@@ -60,7 +62,7 @@ test('keeps an upper-case charset in the advanced preset', async () => {
     await import('../../../src/presets/advanced.js');
   const css = '@CHARSET "iso";a{color:red}';
   const result = await postcss(advanced()).process(css, {
-    from: repositoryFile,
+    from: undefined,
   });
 
   assert.equal(result.css, css);

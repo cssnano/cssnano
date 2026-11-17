@@ -9,8 +9,9 @@ import {
   isFoldEligible,
   semanticFacts,
 } from '../../src/plugins/postcss-minify-selectors/lib/arena.js';
-import { parseSelectorArena } from '../../src/plugins/postcss-minify-selectors/lib/parseArena.js';
+import { verifySelectorArena } from '../../src/plugins/postcss-minify-selectors/lib/arenaVerify.js';
 import { serializeNormalized } from '../../src/plugins/postcss-minify-selectors/lib/serializeArena.js';
+import { buildVerified, parseVerified } from './checkedArena.js';
 
 const { tokens } = cssnanoUtils;
 
@@ -18,7 +19,7 @@ function nestedArena(source) {
   const tokenList = tokens(source);
   let compound = -1;
   let pseudo = -1;
-  const arena = buildSelectorArena(source, tokenList, (builder) => {
+  const arena = buildVerified(source, tokenList, (builder) => {
     const list = builder.open('list', 0, tokenList.length, {
       payload: builder.payload('lists', { mode: 'outer-unforgiving' }),
     });
@@ -62,7 +63,7 @@ test('completed arenas use exclusive spans and immutable preorder nodes', () => 
 });
 
 test('an empty list over an empty token stream builds and spans no source text', () => {
-  const arena = buildSelectorArena('', [], (builder) => {
+  const arena = buildVerified('', [], (builder) => {
     const root = builder.open('list', 0, 0, {
       payload: builder.payload('lists', { mode: 'forgiving' }),
     });
@@ -71,15 +72,22 @@ test('an empty list over an empty token stream builds and spans no source text',
   assert.equal(serializeNormalized(arena, { kind: 'node', node: 0 }), '');
 });
 
-test('arena validates bounds and close order', () => {
+test('arena rejects a token span outside the token stream', () => {
   const tokenList = tokens('.a');
   assert.throws(
     () =>
-      buildSelectorArena('.a', tokenList, (builder) => {
-        builder.open('list', 0, tokenList.length + 1);
-      }),
+      verifySelectorArena(
+        buildSelectorArena('.a', tokenList, (builder) => {
+          const root = builder.open('list', 0, tokenList.length + 1);
+          builder.closeSummary(root);
+        })
+      ),
     /exclusive token span/v
   );
+});
+
+test('arena rejects closing a node out of stack order at build time', () => {
+  const tokenList = tokens('.a');
   assert.throws(
     () =>
       buildSelectorArena('.a', tokenList, (builder) => {
@@ -130,7 +138,7 @@ test('checked specificity addition reports overflow as opaque', () => {
 
 test('close-time specificity overflow makes the affected construct opaque', () => {
   const tokenList = tokens('.a');
-  const arena = buildSelectorArena('.a', tokenList, (builder) => {
+  const arena = buildVerified('.a', tokenList, (builder) => {
     const root = builder.open('list', 0, tokenList.length, {
       payload: builder.payload('lists', { mode: 'outer-unforgiving' }),
     });
@@ -151,89 +159,121 @@ test('close-time specificity overflow makes the affected construct opaque', () =
   assert.equal(arena.nodes[1].specificity, undefined);
 });
 
-test('arena rejects overlapping and out-of-order sibling spans', () => {
+test('arena rejects overlapping sibling spans', () => {
   const tokenList = tokens('.a.b');
   assert.throws(
     () =>
-      buildSelectorArena('.a.b', tokenList, (builder) => {
-        const root = builder.open('compound', 0, tokenList.length);
-        builder.leaf('class', 0, 3);
-        builder.leaf('class', 2, tokenList.length);
-        builder.closeSummary(root, {
-          status: 'valid',
-          specificity: [0, 2, 0],
-          facts: createSemanticFacts(),
-        });
-      }),
-    /ordered and non-overlapping/v
-  );
-  assert.throws(
-    () =>
-      buildSelectorArena('.a.b', tokenList, (builder) => {
-        const root = builder.open('compound', 0, tokenList.length);
-        builder.leaf('class', 2, tokenList.length);
-        builder.leaf('class', 0, 2);
-        builder.closeSummary(root, {
-          status: 'valid',
-          specificity: [0, 2, 0],
-          facts: createSemanticFacts(),
-        });
-      }),
+      verifySelectorArena(
+        buildSelectorArena('.a.b', tokenList, (builder) => {
+          const root = builder.open('compound', 0, tokenList.length);
+          builder.leaf('class', 0, 3);
+          builder.leaf('class', 2, tokenList.length);
+          builder.closeSummary(root, {
+            status: 'valid',
+            specificity: [0, 2, 0],
+            facts: createSemanticFacts(),
+          });
+        })
+      ),
     /ordered and non-overlapping/v
   );
 });
 
-test('arena rejects malformed root preorder shape at completion', () => {
+test('arena rejects sibling spans given out of order', () => {
+  const tokenList = tokens('.a.b');
+  assert.throws(
+    () =>
+      verifySelectorArena(
+        buildSelectorArena('.a.b', tokenList, (builder) => {
+          const root = builder.open('compound', 0, tokenList.length);
+          builder.leaf('class', 2, tokenList.length);
+          builder.leaf('class', 0, 2);
+          builder.closeSummary(root, {
+            status: 'valid',
+            specificity: [0, 2, 0],
+            facts: createSemanticFacts(),
+          });
+        })
+      ),
+    /ordered and non-overlapping/v
+  );
+});
+
+test('arena rejects a second preorder root at completion', () => {
   const tokenList = tokens('.a');
   assert.throws(
     () =>
-      buildSelectorArena('.a', tokenList, (builder) => {
-        builder.leaf('class', 0, tokenList.length);
-        builder.leaf('class', 0, tokenList.length);
-      }),
+      verifySelectorArena(
+        buildSelectorArena('.a', tokenList, (builder) => {
+          builder.leaf('class', 0, tokenList.length);
+          builder.leaf('class', 0, tokenList.length);
+        })
+      ),
     /single preorder root/v
   );
+});
+
+test('arena rejects a root that does not span all tokens', () => {
+  const tokenList = tokens('.a');
   assert.throws(
     () =>
-      buildSelectorArena('.a', tokenList, (builder) => {
-        builder.leaf('class', 0, 1);
-      }),
+      verifySelectorArena(
+        buildSelectorArena('.a', tokenList, (builder) => {
+          builder.leaf('class', 0, 1);
+        })
+      ),
     /root token span/v
   );
+});
+
+test('arena rejects a root that is not a selector list', () => {
+  const tokenList = tokens('.a');
   assert.throws(
     () =>
-      buildSelectorArena('.a', tokenList, (builder) => {
-        builder.leaf('class', 0, tokenList.length);
-      }),
+      verifySelectorArena(
+        buildSelectorArena('.a', tokenList, (builder) => {
+          builder.leaf('class', 0, tokenList.length);
+        })
+      ),
     /arena root must be a selector list/v
   );
 });
 
-test('arena rejects payload indexes that do not match the node table', () => {
+test('arena rejects a list payload index outside the node table', () => {
   const tokenList = tokens('.a');
   assert.throws(
     () =>
-      buildSelectorArena('.a', tokenList, (builder) => {
-        const root = builder.open('list', 0, tokenList.length, { payload: 4 });
-        builder.closeSummary(root, {
-          status: 'valid',
-          specificity: [0, 1, 0],
-          facts: createSemanticFacts(),
-        });
-      }),
+      verifySelectorArena(
+        buildSelectorArena('.a', tokenList, (builder) => {
+          const root = builder.open('list', 0, tokenList.length, {
+            payload: 4,
+          });
+          builder.closeSummary(root, {
+            status: 'valid',
+            specificity: [0, 1, 0],
+            facts: createSemanticFacts(),
+          });
+        })
+      ),
     /payload index/v
   );
+});
+
+test('arena rejects a payload on a node kind that has none', () => {
+  const tokenList = tokens('.a');
   assert.throws(
     () =>
-      buildSelectorArena('.a', tokenList, (builder) => {
-        builder.leaf('class', 0, tokenList.length, { payload: 0 });
-      }),
+      verifySelectorArena(
+        buildSelectorArena('.a', tokenList, (builder) => {
+          builder.leaf('class', 0, tokenList.length, { payload: 0 });
+        })
+      ),
     /must not have a payload index/v
   );
 });
 
 test('completed arenas deeply freeze nested payload records', () => {
-  const arena = parseSelectorArena('svg|a');
+  const arena = parseVerified('svg|a');
   const qualifiedName = arena.payloads.qualifiedNames[0];
   assert.throws(() => {
     qualifiedName.namespace.kind = 'empty';
@@ -243,45 +283,53 @@ test('completed arenas deeply freeze nested payload records', () => {
   }, TypeError);
 });
 
-test('arena validates embedded token and argument-node references', () => {
+test('arena rejects a pseudo token reference outside the token stream', () => {
   const tokenList = tokens(':is(.a)');
   assert.throws(
     () =>
-      buildSelectorArena(':is(.a)', tokenList, (builder) => {
-        const root = builder.open('list', 0, tokenList.length, {
-          payload: builder.payload('lists', { mode: 'outer-unforgiving' }),
-        });
-        builder.leaf('pseudo', 0, tokenList.length, {
-          payload: builder.payload('pseudos', {
-            name: 'is',
-            nameToken: tokenList.length,
-            colonCount: 1,
-            pseudoKind: 'class',
-            specificityPolicy: 'argument',
-          }),
-        });
-        builder.closeSummary(root);
-      }),
+      verifySelectorArena(
+        buildSelectorArena(':is(.a)', tokenList, (builder) => {
+          const root = builder.open('list', 0, tokenList.length, {
+            payload: builder.payload('lists', { mode: 'outer-unforgiving' }),
+          });
+          builder.leaf('pseudo', 0, tokenList.length, {
+            payload: builder.payload('pseudos', {
+              name: 'is',
+              nameToken: tokenList.length,
+              colonCount: 1,
+              pseudoKind: 'class',
+              specificityPolicy: 'argument',
+            }),
+          });
+          builder.closeSummary(root);
+        })
+      ),
     /invalid pseudo token reference/v
   );
+});
+
+test('arena rejects a pseudo argument node that is not a later list', () => {
+  const tokenList = tokens(':is(.a)');
   assert.throws(
     () =>
-      buildSelectorArena(':is(.a)', tokenList, (builder) => {
-        const root = builder.open('list', 0, tokenList.length, {
-          payload: builder.payload('lists', { mode: 'outer-unforgiving' }),
-        });
-        builder.leaf('pseudo', 0, tokenList.length, {
-          payload: builder.payload('pseudos', {
-            name: 'is',
-            nameToken: 1,
-            colonCount: 1,
-            pseudoKind: 'class',
-            specificityPolicy: 'argument',
-            argumentNode: 0,
-          }),
-        });
-        builder.closeSummary(root);
-      }),
+      verifySelectorArena(
+        buildSelectorArena(':is(.a)', tokenList, (builder) => {
+          const root = builder.open('list', 0, tokenList.length, {
+            payload: builder.payload('lists', { mode: 'outer-unforgiving' }),
+          });
+          builder.leaf('pseudo', 0, tokenList.length, {
+            payload: builder.payload('pseudos', {
+              name: 'is',
+              nameToken: 1,
+              colonCount: 1,
+              pseudoKind: 'class',
+              specificityPolicy: 'argument',
+              argumentNode: 0,
+            }),
+          });
+          builder.closeSummary(root);
+        })
+      ),
     /invalid pseudo argument node reference/v
   );
 });

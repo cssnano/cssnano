@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 const plugin = onlyTransform(['mergeLonghand']);
-import { repositoryFile } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 
 const sides = ['top', 'right', 'bottom', 'left'];
@@ -178,7 +177,7 @@ async function checkMask(mode, mask, important) {
     })
     .join(';');
   const result = await postcss([plugin()]).process(`a{${input}}`, {
-    from: repositoryFile,
+    from: undefined,
   });
   const actual = /** @type {import('postcss').Rule} */ (
     postcss.parse(result.css).first

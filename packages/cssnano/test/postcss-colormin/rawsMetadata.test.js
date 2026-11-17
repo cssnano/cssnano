@@ -3,10 +3,7 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import colormin from '../../src/plugins/postcss-colormin/index.js';
 
-import {
-  oneStagePlugin,
-  repositoryFile,
-} from '../../../../util/testHelpers.js';
+import { oneStagePlugin } from '../../../../util/testHelpers.js';
 
 const plugin = oneStagePlugin(colormin);
 
@@ -18,7 +15,7 @@ describe('Raw PostCSS metadata handling and synchronization', () => {
     );
     decl.raws.value = { raw: '\\77 hite', value: 'white' };
 
-    await postcss([plugin()]).process(root, { from: repositoryFile });
+    await postcss([plugin()]).process(root, { from: undefined });
 
     assert.strictEqual(decl.value, '#fff');
     assert.equal(decl.raws.value, undefined);
@@ -36,7 +33,7 @@ describe('Raw PostCSS metadata handling and synchronization', () => {
     decl1.raws.value = { raw: 'white', value: 'white' };
     decl2.raws.value = { raw: 'white', value: 'white' };
 
-    await postcss([plugin()]).process(root, { from: repositoryFile });
+    await postcss([plugin()]).process(root, { from: undefined });
 
     // A changed value drops its raw, so the output prints the new decl.value.
     assert.strictEqual(decl1.value, '#fff');
@@ -55,7 +52,7 @@ describe('Raw PostCSS metadata handling and synchronization', () => {
     decl.value = 'white';
     decl.raws.value = { raw: 'black', value: 'black' };
 
-    await postcss([plugin()]).process(root, { from: repositoryFile });
+    await postcss([plugin()]).process(root, { from: undefined });
 
     // Should transform 'white' to '#fff', ignoring stale 'black' raws
     assert.strictEqual(decl.value, '#fff');

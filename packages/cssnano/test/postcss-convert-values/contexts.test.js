@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import {
-  oneStagePlugin,
-  repositoryFile,
-} from '../../../../util/testHelpers.js';
+import { oneStagePlugin } from '../../../../util/testHelpers.js';
 import convertValues from '../../src/plugins/postcss-convert-values/index.js';
 
 const plugin = oneStagePlugin(convertValues);
@@ -15,7 +12,7 @@ const plugin = oneStagePlugin(convertValues);
  */
 async function convert(css) {
   const result = await postcss([plugin()]).process(css, {
-    from: repositoryFile,
+    from: undefined,
   });
   return result.css;
 }
@@ -111,8 +108,8 @@ describe('convertValues by declaration context', () => {
     const keyframes = '@keyframes k{from{opacity:1.2}}';
     const rule = 'a{opacity:1.2}';
     const processor = postcss([plugin()]);
-    await processor.process(keyframes, { from: repositoryFile });
-    const followed = await processor.process(rule, { from: repositoryFile });
+    await processor.process(keyframes, { from: undefined });
+    const followed = await processor.process(rule, { from: undefined });
     assert.equal(followed.css, await convert(rule));
   });
 });
