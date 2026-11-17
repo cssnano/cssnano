@@ -11,10 +11,10 @@ import {
 } from '../../src/merge/longhand/canonicalize.js';
 import { targetSupportOf } from '../../src/merge/longhand/targetSupport.js';
 import { resolveTargets } from '../../src/utils/browserTargets.js';
-import { testTargets, withTargets } from '../../../../util/testHelpers.js';
+import { testTargets } from '../../../../util/testHelpers.js';
 
 const fixtures = new URL('../../../../frameworks/', import.meta.url);
-const browsers = resolveTargets(withTargets(testTargets), undefined);
+const browsers = resolveTargets({ query: testTargets }, undefined);
 
 /**
  * One longhand round on the records of a stylesheet, written back to its text.

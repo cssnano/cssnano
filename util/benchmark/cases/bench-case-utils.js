@@ -9,7 +9,13 @@ const require = createRequire(import.meta.url);
 function stagePlugin(entry, options = {}) {
   const { hostPlugin } = require('../../../packages/cssnano/src/run/host.js');
   const { hostPlan } = require('../../../packages/cssnano/src/run/hostPlan.js');
-  return hostPlugin(hostPlan({ members: [{ entry, options, targets: true }] }));
+  const { browserslist, ...stageOptions } = options;
+  return hostPlugin(
+    hostPlan({
+      browserslist,
+      members: [{ entry, options: stageOptions, targets: true }],
+    })
+  );
 }
 
 function pluginProcessor(packageName, options) {

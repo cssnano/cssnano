@@ -16,10 +16,10 @@ import {
 } from '../../script/merge/rules/lib/mergeOracle.js';
 import { secondRoundOfText } from './longhand/helpers/reduceRuns.js';
 import { onlyTransform, MERGE_TRANSFORMS } from './onlyTransform.js';
-import { testTargets, withTargets } from '../../../../util/testHelpers.js';
-import { browserTargets, resolveTargets } from '#utils/browser-targets';
+import { testTargets } from '../../../../util/testHelpers.js';
+import { resolveTargets } from '#utils/browser-targets';
 
-const browsers = resolveTargets(withTargets(testTargets), undefined);
+const browsers = resolveTargets({ query: testTargets }, undefined);
 
 // Each run of the merge pass: with rule merging, and with it off. Round one
 // alone is not closed, which is why the second round exists, so it has no row.
@@ -60,7 +60,7 @@ for (const [label, names] of rows) {
     const failures = [];
     for (const css of inputs) {
       const root = postcss.parse(css);
-      postcss([onlyTransform(names)({ [browserTargets]: { query: browsers } })])
+      postcss([onlyTransform(names)({ browserslist: { query: browsers } })])
         .process(root, { from: undefined })
         .sync();
       const output = root.toString();

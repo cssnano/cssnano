@@ -39,8 +39,8 @@ describe('the plan of a host', () => {
 
   test('a plan with one field set is not empty, whichever field it is', () => {
     for (const key of Object.keys(hostPlan())) {
-      // consistencyChecks only tunes a run that has something to do.
-      if (key === 'consistencyChecks') continue;
+      // consistencyChecks and browserslist only tune a run that has something to do.
+      if (key === 'consistencyChecks' || key === 'browserslist') continue;
       const plan = hostPlan(
         /** @type {Parameters<typeof hostPlan>[0]} */ (
           /** @type {unknown} */ ({ [key]: sampleOf[key] ?? {} })

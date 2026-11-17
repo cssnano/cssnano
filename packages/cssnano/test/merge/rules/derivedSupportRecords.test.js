@@ -18,12 +18,12 @@ import {
   DECLARATION,
   RULE,
 } from '../../../src/ir/blockRecord.js';
-import { testTargets, withTargets } from '../../../../../util/testHelpers.js';
+import { testTargets } from '../../../../../util/testHelpers.js';
 
 /** @import {BlockRecords} from '../../../src/ir/blockRecords.js' */
 /** @import {DeclarationRecord} from '../../../src/ir/declarationRecord.js' */
 
-const browsers = resolveTargets(withTargets(testTargets), undefined);
+const browsers = resolveTargets({ query: testTargets }, undefined);
 
 // Four equal sides, which the first longhand round turns into derived
 // `border-color`, `border-style` and `border-width` declarations.

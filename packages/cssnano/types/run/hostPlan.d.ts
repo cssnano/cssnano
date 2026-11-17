@@ -1,5 +1,7 @@
 /** @import {HostMember, Merge, SymbolEntry} from './host.js' */
+/** @import {SharedTargets} from '../utils/browserTargets.js' */
 import type { HostMember, Merge, SymbolEntry } from './host.js';
+import type { SharedTargets } from '../utils/browserTargets.js';
 export type TransformField = 'normalizeWhitespace' | 'discardOverridden' | 'discardEmpty' | 'uniqueSelectors' | 'normalizeCharset' | 'rawCache';
 export type RunPlan = {
     /**
@@ -14,6 +16,10 @@ export type RunPlan = {
      * the advanced transforms, in entry order
      */
     symbols: readonly SymbolEntry[];
+    /**
+     * the browser targets of the run, which every target-reading stage and the merge resolve
+     */
+    browserslist: SharedTargets | undefined;
     normalizeWhitespace: Record<PropertyKey, unknown> | undefined;
     discardOverridden: Record<PropertyKey, unknown> | undefined;
     discardEmpty: Record<PropertyKey, unknown> | undefined;
@@ -39,6 +45,7 @@ export type RunPlan = {
  * @property {readonly HostMember[]} members the stages of the run, in order
  * @property {Merge | undefined} merge the merge, when it is on
  * @property {readonly SymbolEntry[]} symbols the advanced transforms, in entry order
+ * @property {SharedTargets | undefined} browserslist the browser targets of the run, which every target-reading stage and the merge resolve
  * @property {Record<PropertyKey, unknown> | undefined} normalizeWhitespace
  * @property {Record<PropertyKey, unknown> | undefined} discardOverridden
  * @property {Record<PropertyKey, unknown> | undefined} discardEmpty
