@@ -26,7 +26,7 @@ async function pluginsThatResolveTargets() {
 }
 
 test('the default preset marks exactly the plugins that resolve browser targets', async () => {
-  // The merge pass lives under passes/, so the scan above does not find it.
+  // The merge pass lives under src/merge/, so the scan above does not find it.
   const marked = defaultPluginEntries
     .filter(([, , settings]) => settings?.targets === true)
     .map(([, option]) => pluginNameByOption[option]);

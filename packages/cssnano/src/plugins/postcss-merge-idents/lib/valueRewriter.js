@@ -12,7 +12,7 @@ import {
   stringToken,
 } from '../../../values/tokenConstructors.js';
 import { ValueBuffer } from '../../../values/valueBuffer.js';
-import { writeValue } from '../../../passes/ir/valueEdits.js';
+import { writeValue } from '../../../ir/valueEdits.js';
 
 const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
 
@@ -21,9 +21,9 @@ const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
  * @typedef {import('../../../values/valueBuffer.js').TokenEdit} TokenEdit
  * @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken
  * @typedef {(token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => TokenEdit | undefined} Visitor
- * @import {ArenaIndex} from '../../../passes/ir/blockRecord.js'
- * @import {BlockRecords} from '../../../passes/ir/blockRecords.js'
- * @import {RunContext} from '../../../passes/ir/runContext.js'
+ * @import {ArenaIndex} from '../../../ir/blockRecord.js'
+ * @import {BlockRecords} from '../../../ir/blockRecords.js'
+ * @import {RunContext} from '../../../run/runContext.js'
  */
 
 /**

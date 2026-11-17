@@ -4,12 +4,12 @@ import {
   DEFAULT_NAMESPACE,
   hasContextBit,
   KEYFRAME_RULE,
-} from '../../pipeline/context.js';
+} from '../../run/context.js';
 import { isFixedPointSelector } from './lib/fixedPointSelector.js';
 import { isInvalidSelector } from './lib/isInvalidSelector.js';
 import { normalizeListTokens } from './lib/selectorScanner.js';
 
-/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {Reducer, Stage, StageEntry} from '../../run/host.js' */
 
 const { tokens: tokenize } = cssnanoUtils;
 

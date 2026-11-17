@@ -4,17 +4,17 @@ export type Options = {
      */
     ignore?: string[];
 };
-export type Reducers = Map<string | null, Map<string | null, import('../../pipeline/host.js').Reducer>>;
+export type Reducers = Map<string | null, Map<string | null, import('../../run/host.js').Reducer>>;
 /**
  * Compiles the properties to leave alone. The stage does nothing when a
  * browser target lacks the `initial` keyword.
  *
  * @param {Options} options
  * @param {readonly string[] | undefined} browsers
- * @return {import('../../pipeline/host.js').Stage | null}
+ * @return {import('../../run/host.js').Stage | null}
  */
-declare function compileReduceInitial(options: Options, browsers: readonly string[] | undefined): import('../../pipeline/host.js').Stage | null;
-/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+declare function compileReduceInitial(options: Options, browsers: readonly string[] | undefined): import('../../run/host.js').Stage | null;
+/** @satisfies {import('../../run/host.js').StageEntry} */
 declare const reduceInitial: {
     create: typeof compileReduceInitial;
 };

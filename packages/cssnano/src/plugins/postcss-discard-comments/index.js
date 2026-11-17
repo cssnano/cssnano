@@ -1,6 +1,6 @@
 import CommentRemover from './lib/commentRemover.js';
 
-/** @import {StageEntry} from '../../pipeline/host.js' */
+/** @import {StageEntry} from '../../run/host.js' */
 
 /** @typedef {object} Options
  *  @property {boolean=} removeAll Removes comments marked as important (`/*!`) too. (default: false)

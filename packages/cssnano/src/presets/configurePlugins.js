@@ -1,6 +1,6 @@
 import { validateOptions } from '../options.js';
-import { hostPlugin } from '../pipeline/host.js';
-import { hostPlan, isEmptyPlan } from '../pipeline/hostPlan.js';
+import { hostPlugin } from '../run/host.js';
+import { hostPlan, isEmptyPlan } from '../run/hostPlan.js';
 import isRecord from '../utils/isRecord.js';
 import { browserTargets } from '#utils/browser-targets';
 import {
@@ -13,9 +13,9 @@ import {
 /** @import {NamedPreset} from './presetEntries.js' */
 /** @import {SharedTargets} from '#utils/browser-targets' */
 /** @import {Guard} from '../optionGuards.js' */
-/** @import {StageEntry, HostMember, SymbolEntry, SymbolTransform, TransformEntry} from '../pipeline/host.js' */
-/** @import {RunPlan, TransformField} from '../pipeline/hostPlan.js' */
-/** @import {MergeRunner} from '../passes/merge/index.js' */
+/** @import {StageEntry, HostMember, SymbolEntry, SymbolTransform, TransformEntry} from '../run/host.js' */
+/** @import {RunPlan, TransformField} from '../run/hostPlan.js' */
+/** @import {MergeRunner} from '../merge/index.js' */
 
 /**
  * The options of a built preset: the same as cssnano, without the preset and

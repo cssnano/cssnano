@@ -1,21 +1,21 @@
 import cssnanoUtils from '#utils';
-import { COMMENT } from '../../../passes/ir/blockRecord.js';
+import { COMMENT } from '../../../ir/blockRecord.js';
 import {
   atRuleAt,
   declaredValue,
   preludeListOf,
   preludeTextOf,
   rawAfterValue,
-} from '../../../passes/ir/declaredText.js';
+} from '../../../ir/declaredText.js';
 
 const { isCSSWhitespace, tokens } = cssnanoUtils;
 
-/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
-/** @import {BlockRecord, NodeEntry} from '../../../passes/ir/blockRecord.js' */
-/** @import {DeclarationRecord} from '../../../passes/ir/declarationRecord.js' */
-/** @import {RuleRecord} from '../../../passes/ir/ruleRecord.js' */
-/** @import {TokenLists} from '../../../passes/ir/tokenLists.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 /**
  * @param {string} value

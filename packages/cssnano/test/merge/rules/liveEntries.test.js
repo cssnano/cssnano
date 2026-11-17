@@ -1,0 +1,34 @@
+import { childEntriesOf } from '../../../src/ir/blockChildren.js';
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import postcss from 'postcss';
+import { createRunContext } from '../../../src/run/runContext.js';
+import { COMMENT } from '../../../src/ir/blockRecord.js';
+import MergeState from '../../../src/merge/rules/mergeState.js';
+import {
+  ruleRecordOf,
+  blockRecordOf,
+  buildTestRecords,
+  nodeOfEntry,
+} from './liveRecords.js';
+
+/** @import {Container, Rule} from 'postcss' */
+
+test('childEntriesOf should yield the rule record, the at-rule block record and the comment, in order', () => {
+  const root = postcss.parse('a{color:red}@media print{b{width:1px}}/* c */');
+  const state = new MergeState(['chrome 120'], createRunContext());
+  state.records = buildTestRecords(root, state);
+  const [rule, media, comment] = root.nodes;
+  const entries = childEntriesOf(state.records, state.records.root.index);
+  assert.equal(entries.length, 3);
+  assert.equal(
+    entries[0],
+    ruleRecordOf(state.records, /** @type {Rule} */ (rule))
+  );
+  assert.equal(
+    entries[1],
+    blockRecordOf(state.records, /** @type {Container} */ (media))
+  );
+  assert.equal(nodeOfEntry(state.records, entries[2]), comment);
+  assert.equal(entries[2].kind, COMMENT);
+});

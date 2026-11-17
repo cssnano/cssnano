@@ -214,10 +214,10 @@
   },
   "scripts": {
     "acquire": "pnpm run \"/^acquire:/\"",
-    "acquire:passes-ir": "node ./script/passes/ir/acquire.js",
+    "acquire:ir": "node ./script/ir/acquire.js",
     "acquire:postcss-colormin": "node ./script/postcss-colormin/acquire.js",
     "acquire:postcss-merge-idents": "node ./script/postcss-merge-idents/acquire.js",
-    "acquire:postcss-merge-longhand": "node ./script/passes/merge/longhand/acquire.js",
+    "acquire:postcss-merge-longhand": "node ./script/merge/longhand/acquire.js",
     "acquire:postcss-minify-font-values": "node ./script/postcss-minify-font-values/acquire.js",
     "acquire:postcss-ordered-values": "node ./script/postcss-ordered-values/acquire.js",
     "acquire:postcss-reduce-idents": "node ./script/postcss-reduce-idents/acquire.js",

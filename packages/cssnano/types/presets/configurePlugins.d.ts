@@ -2,9 +2,9 @@ import type { AcceptedPlugin } from 'postcss';
 import type { NamedPreset } from './presetEntries.js';
 import type { SharedTargets } from '#utils/browser-targets';
 import type { Guard } from '../optionGuards.js';
-import type { StageEntry, HostMember, SymbolEntry, SymbolTransform, TransformEntry } from '../pipeline/host.js';
-import type { RunPlan, TransformField } from '../pipeline/hostPlan.js';
-import type { MergeRunner } from '../passes/merge/index.js';
+import type { StageEntry, HostMember, SymbolEntry, SymbolTransform, TransformEntry } from '../run/host.js';
+import type { RunPlan, TransformField } from '../run/hostPlan.js';
+import type { MergeRunner } from '../merge/index.js';
 export type PresetOptions<Plugins extends object> = {
     browserslist?: SharedTargets;
     /**

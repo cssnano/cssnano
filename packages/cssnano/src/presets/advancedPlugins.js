@@ -5,7 +5,7 @@ import { zindexSymbols } from '#postcss-zindex';
 import { defaultPluginEntries } from './defaultPlugins.js';
 
 /** @import {EntryFor} from './configurePlugins.js' */
-/** @import {SymbolTransform} from '../pipeline/host.js' */
+/** @import {SymbolTransform} from '../run/host.js' */
 
 /**
  * The options of the plugins that only the advanced preset adds.

@@ -15,7 +15,7 @@ export declare const litePluginEntries: readonly [readonly [{
 }, "discardComments", {
     readonly optionKeys: readonly ["removeAll", "remove"];
 }], readonly [{
-    create: () => import("../pipeline/host.js").Stage;
+    create: () => import("../run/host.js").Stage;
 }, "normalizeWhitespace", {
     readonly optionKeys: readonly [];
     readonly field: 'normalizeWhitespace';

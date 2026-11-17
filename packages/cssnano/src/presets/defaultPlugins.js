@@ -17,7 +17,7 @@ import postcssNormalizeUnicode from '#postcss-normalize-unicode';
 import normalizeDisplayValues from '#postcss-normalize-display-values';
 import normalizeTimingFunctions from '#postcss-normalize-timing-functions';
 /** @import {EntryFor} from './configurePlugins.js' */
-import { mergeRunner, rulesGuard } from '../passes/merge/index.js';
+import { mergeRunner, rulesGuard } from '../merge/index.js';
 import {
   discardCommentsEntry,
   discardEmptyEntry,

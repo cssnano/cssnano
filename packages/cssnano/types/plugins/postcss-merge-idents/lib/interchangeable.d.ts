@@ -1,6 +1,6 @@
-import type { ArenaIndex } from '../../../passes/ir/blockRecord.js';
-import type { BlockRecords } from '../../../passes/ir/blockRecords.js';
-import type { DeclarationKeys } from '../../../passes/ir/declarationKey.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { DeclarationKeys } from '../../../ir/declarationKey.js';
 export type Group = Array<{
     name: string;
     copies: AtRuleEntry[];

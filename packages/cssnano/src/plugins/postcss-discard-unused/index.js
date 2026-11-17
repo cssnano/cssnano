@@ -7,16 +7,16 @@ import {
 } from '@csstools/css-tokenizer';
 import { splitComma, splitSpace } from '../../values/splitTopLevel.js';
 import cssnanoUtils from '#utils';
-import { DECLARATION } from '../../passes/ir/blockRecord.js';
-import { preludeListOf } from '../../passes/ir/declaredText.js';
+import { DECLARATION } from '../../ir/blockRecord.js';
+import { preludeListOf } from '../../ir/declaredText.js';
 import { commentFreeText } from '../../values/tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
-/** @import {RunContext} from '../../passes/ir/runContext.js' */
-/** @import {TokenLists} from '../../passes/ir/tokenLists.js' */
-/** @import {RecordSymbolLists} from '../../pipeline/symbolLists.js' */
+/** @import {ArenaIndex} from '../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../ir/blockRecords.js' */
+/** @import {RunContext} from '../../run/runContext.js' */
+/** @import {TokenLists} from '../../ir/tokenLists.js' */
+/** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 const wildcard = true;
@@ -42,7 +42,7 @@ function cleanText(tokens) {
  */
 function valueText(records, tokenLists, index) {
   const entry =
-    /** @type {import('../../passes/ir/declarationRecord.js').DeclarationRecord} */ (
+    /** @type {import('../../ir/declarationRecord.js').DeclarationRecord} */ (
       records.entry(index)
     );
   return cleanText(tokenLists.get(entry.valueList));
@@ -77,10 +77,9 @@ function referencedNames(records, tokenLists, indices) {
  */
 function filterAtRule(records, tokenLists, indices, names, remove) {
   for (const index of indices) {
-    const entry =
-      /** @type {import('../../passes/ir/blockRecord.js').BlockRecord} */ (
-        records.entry(index)
-      );
+    const entry = /** @type {import('../../ir/blockRecord.js').BlockRecord} */ (
+      records.entry(index)
+    );
     const prelude = cleanText(preludeListOf(tokenLists, entry));
     if (!names.has(prelude)) remove(index);
   }
@@ -168,10 +167,9 @@ function namespacePrefixes(tokens) {
 function filterNamespace(records, tokenLists, indices, prefixes, remove) {
   const usesAny = prefixes.has(wildcard);
   for (const index of indices) {
-    const entry =
-      /** @type {import('../../passes/ir/blockRecord.js').BlockRecord} */ (
-        records.entry(index)
-      );
+    const entry = /** @type {import('../../ir/blockRecord.js').BlockRecord} */ (
+      records.entry(index)
+    );
     const tokens = preludeListOf(tokenLists, entry);
     const prefix = namespacePrefix(tokens);
 
@@ -282,10 +280,9 @@ export function discardUnusedSymbols(lists, options, remove, records, context) {
   const prefixes = new Set();
   if (namespace) {
     for (const index of lists.namespaceRules) {
-      const entry =
-        /** @type {import('../../passes/ir/ruleRecord.js').RuleRecord} */ (
-          records.entry(index)
-        );
+      const entry = /** @type {import('../../ir/ruleRecord.js').RuleRecord} */ (
+        records.entry(index)
+      );
       for (const id of entry.selectorIds) {
         for (const prefix of namespacePrefixes(tokenLists.get(id))) {
           prefixes.add(prefix);

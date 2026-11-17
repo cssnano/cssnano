@@ -1,5 +1,5 @@
 import type { PostCssCalcOptions } from 'postcss-calc';
-import type { Stage } from '../../pipeline/host.js';
+import type { Stage } from '../../run/host.js';
 /** @satisfies {StageEntry} */
 declare const calc: {
     create: (/** @type {PostCssCalcOptions} */ options: PostCssCalcOptions) => Stage;

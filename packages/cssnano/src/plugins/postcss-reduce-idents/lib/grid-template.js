@@ -10,17 +10,17 @@ import { cssWideKeywords, grid, resolveProperty } from './slots.js';
 import {
   declaredValue,
   declaredValueTokens,
-} from '../../../passes/ir/declaredText.js';
-import { DECLARATION } from '../../../passes/ir/blockRecord.js';
-import { writeValue } from '../../../passes/ir/valueEdits.js';
+} from '../../../ir/declaredText.js';
+import { DECLARATION } from '../../../ir/blockRecord.js';
+import { writeValue } from '../../../ir/valueEdits.js';
 import { whitespace } from '../../../values/punctuationTokens.js';
 import { stringToken } from '../../../values/tokenConstructors.js';
 import { ValueBuffer } from '../../../values/valueBuffer.js';
 
-/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
-/** @import {DeclarationRecord} from '../../../passes/ir/declarationRecord.js' */
-/** @import {RunContext} from '../../../passes/ir/runContext.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
+/** @import {RunContext} from '../../../run/runContext.js' */
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 
 const RESERVED = new Set([...cssWideKeywords, ...grid.reservedKeywords]);

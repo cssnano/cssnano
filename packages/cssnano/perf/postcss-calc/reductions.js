@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import calc from '../../src/plugins/postcss-calc/index.js';
 import { ValueBuffer } from '../../src/values/valueBuffer.js';
-import { assertLinearTime } from '../passes/merge/lib/linearTiming.js';
+import { assertLinearTime } from '../merge/linearTiming.js';
 
 /**
  * One run of the calc stage over a value with `count` reductions, in

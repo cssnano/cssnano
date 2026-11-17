@@ -6,8 +6,8 @@ const { counter } = await import('../../../../util/countTokenize.js');
 const { default: postcss } = await import('postcss');
 const { LayerRegistry } =
   await import('../../src/plugins/postcss-merge-idents/lib/layerRegistry.js');
-const { createRunContext } = await import('../../src/passes/ir/runContext.js');
-const { runDriver } = await import('../../src/passes/ir/runDriver.js');
+const { createRunContext } = await import('../../src/run/runContext.js');
+const { runDriver } = await import('../../src/run/runDriver.js');
 
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {

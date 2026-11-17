@@ -1,10 +1,7 @@
 import { test } from 'node:test';
 import { oneStagePlugin } from '../../../../util/testHelpers.js';
 import minifyParams from '../../src/plugins/postcss-minify-params/index.js';
-import {
-  assertLinearTime,
-  timeOneRun,
-} from '../passes/merge/lib/linearTiming.js';
+import { assertLinearTime, timeOneRun } from '../merge/linearTiming.js';
 
 const plugin = oneStagePlugin(minifyParams);
 

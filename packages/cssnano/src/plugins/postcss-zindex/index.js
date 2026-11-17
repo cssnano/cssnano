@@ -1,15 +1,15 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import LayerCache from './lib/layerCache.js';
-import { isRecordAttached } from '../../pipeline/symbolLists.js';
-import { declaredValue } from '../../passes/ir/declaredText.js';
-import { writeValue } from '../../passes/ir/valueEdits.js';
+import { isRecordAttached } from '../../run/symbolLists.js';
+import { declaredValue } from '../../ir/declaredText.js';
+import { writeValue } from '../../ir/valueEdits.js';
 import { identifierWithText, numeric } from '../../values/tokenConstructors.js';
 
-/** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
-/** @import {DeclarationRecord} from '../../passes/ir/declarationRecord.js' */
-/** @import {RecordSymbolLists} from '../../pipeline/symbolLists.js' */
-/** @import {RunContext} from '../../passes/ir/runContext.js' */
+/** @import {ArenaIndex} from '../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../ir/blockRecords.js' */
+/** @import {DeclarationRecord} from '../../ir/declarationRecord.js' */
+/** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
+/** @import {RunContext} from '../../run/runContext.js' */
 
 /**
  * @typedef {object} Options

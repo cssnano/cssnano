@@ -128,13 +128,7 @@ test('the repository config names only files that exist', () => {
 test('the merge pass sources pass every merge-ir rule under the repository config', () => {
   const run = spawnSync(
     oxlint,
-    [
-      '-c',
-      '.oxlintrc.json',
-      '--format',
-      'json',
-      'packages/cssnano/src/passes/merge',
-    ],
+    ['-c', '.oxlintrc.json', '--format', 'json', 'packages/cssnano/src/merge'],
     { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }
   );
   const { diagnostics } = JSON.parse(run.stdout);

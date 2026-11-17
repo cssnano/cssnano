@@ -5,7 +5,7 @@ import { ident } from '../../values/tokenConstructors.js';
 const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {Reducer, Stage, StageEntry} from '../../run/host.js' */
 /** @typedef {{start: number, end: number, keyword: string}} KeywordPair */
 
 const repeatPropertyRegex =

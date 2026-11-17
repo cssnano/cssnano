@@ -10,7 +10,7 @@ import column from './rules/columns.js';
 import cssnanoUtils from '#utils';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {Reducer, Stage, StageEntry} from '../../run/host.js' */
 /** @typedef {(parsed: ReturnType<typeof tokenizeValue>) => CSSToken[] | null} Processor */
 
 const { vendorUnprefixed } = cssnanoUtils;
