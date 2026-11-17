@@ -13,6 +13,7 @@ import { buildRecords } from '../../../src/ir/tree/buildRecords.js';
 import { createRunContext } from '../../../src/run/runContext.js';
 import { TokenLists } from '../../../src/ir/tokenLists.js';
 import { tokenizeMode } from '../../../src/values/tokenizeMode.js';
+import { testTargets } from '../../../../util/testHelpers.js';
 
 const session = new Session();
 session.connect();
@@ -129,7 +130,12 @@ for (const file of readdirSync(frameworksDir).toSorted()) {
 
   test(`the full run of ${basename(file, '.css')} reports its selector analyses`, async () => {
     await session.post('Profiler.takePreciseCoverage');
-    await postcss(preset()).process(css, { from: undefined });
+    await postcss(preset({ browserslist: { query: testTargets } })).process(
+      css,
+      {
+        from: undefined,
+      }
+    );
     const { result } = await session.post('Profiler.takePreciseCoverage');
     console.log(
       `${basename(file, '.css')}: ${analysisCalls(result)} selector analysis calls`

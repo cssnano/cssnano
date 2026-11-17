@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 const plugin = onlyTransform(['mergeRules']);
-import { repositoryFile } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 
 /**
@@ -12,7 +11,7 @@ import { onlyTransform } from '../onlyTransform.js';
  * @return {Promise<import('postcss').Root>}
  */
 async function mergeRules(root) {
-  await postcss([plugin()]).process(root, { from: repositoryFile });
+  await postcss([plugin()]).process(root, { from: undefined });
   return root;
 }
 

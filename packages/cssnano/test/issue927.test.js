@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import nano from '../src/index.js';
-import { repositoryFile } from '../../../util/testHelpers.js';
+import { testTargets } from '../../../util/testHelpers.js';
 
 const fixture = `
 div{
@@ -25,11 +25,11 @@ test('it should compress the columns (old plugin syntax)', () => {
         });
       };
     }),
-    nano(),
+    nano({ browserslist: { query: testTargets } }),
   ]);
 
   return processor
-    .process(fixture, { from: repositoryFile })
+    .process(fixture, { from: undefined })
     .then((r) => assert.strictEqual(r.css, expected));
 });
 
@@ -47,9 +47,12 @@ const clonerPlugin = () => {
 clonerPlugin.postcss = true;
 
 test('it should compress the columns (new plugin syntax)', () => {
-  const processor = postcss([clonerPlugin, nano()]);
+  const processor = postcss([
+    clonerPlugin,
+    nano({ browserslist: { query: testTargets } }),
+  ]);
 
   return processor
-    .process(fixture, { from: repositoryFile })
+    .process(fixture, { from: undefined })
     .then((r) => assert.strictEqual(r.css, expected));
 });

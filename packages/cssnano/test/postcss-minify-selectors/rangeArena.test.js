@@ -9,12 +9,13 @@ import {
   serializeNormalized,
   serializeNormalizedTokens,
 } from '../../src/plugins/postcss-minify-selectors/lib/serializeArena.js';
+import { parseVerified } from './checkedArena.js';
 
 const { tokens } = cssnanoUtils;
 
 /** The serialized normal form of a selector list, from its own text. */
 function serializedOwnText(text) {
-  const arena = parseSelectorArena(text, { verifyArena: false });
+  const arena = parseSelectorArena(text, {});
   return serializeNormalized(
     arena,
     normalizeArena(arena, { sort: true, convertToIs: true })
@@ -34,13 +35,7 @@ test("parseSelectorArena over a selector's range of its rule's tokens serializes
     for (const range of selectorRanges(list)) {
       const { start, end } = range;
       const own = tokensText(list.slice(start, end));
-      const arena = parseSelectorArena(
-        rule,
-        { verifyArena: true },
-        list,
-        start,
-        end
-      );
+      const arena = parseVerified(rule, {}, list, start, end);
       const root = normalizeArena(arena, { sort: true, convertToIs: true });
       const text = serializeNormalized(arena, root);
       assert.equal(text, serializedOwnText(own), rule);

@@ -14,6 +14,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { Session } from 'node:inspector/promises';
 import postcss from 'postcss';
+import { testTargets } from '../../../../../util/testHelpers.js';
 
 /** The function whose calls each count reads, by the module that defines it. */
 const COUNTED = /** @type {const} */ ({
@@ -59,7 +60,6 @@ await session.post('Profiler.startPreciseCoverage', {
 const { default: preset } = await import('../../../src/presets/default.js');
 const { benchmarkCases } =
   await import('../../../../../util/benchmark/cases/index.js');
-const { repositoryFile } = await import('../../../../../util/testHelpers.js');
 
 const frameworksDir = new URL('../../../../../frameworks/', import.meta.url);
 
@@ -70,7 +70,10 @@ for (const file of readdirSync(frameworksDir).toSorted()) {
   inputs.push({
     name: `framework:${basename(file, '.css')}`,
     rules: countRules(css),
-    run: () => postcss(preset()).process(css, { from: repositoryFile }),
+    run: () =>
+      postcss(preset({ browserslist: { query: testTargets } })).process(css, {
+        from: undefined,
+      }),
   });
 }
 for (const [name, benchCase] of Object.entries(benchmarkCases)) {

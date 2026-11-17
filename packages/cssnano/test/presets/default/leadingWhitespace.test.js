@@ -3,15 +3,17 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import preset from '../../../src/presets/default.js';
 import advancedPreset from '../../../src/presets/advanced.js';
-import { repositoryFile } from '../../../../../util/testHelpers.js';
+import { testTargets } from '../../../../../util/testHelpers.js';
 
 /**
  * @param {string} css
  * @return {Promise<string>}
  */
 async function minify(css) {
-  const result = await postcss(preset()).process(css, {
-    from: repositoryFile,
+  const result = await postcss(
+    preset({ browserslist: { query: testTargets } })
+  ).process(css, {
+    from: undefined,
   });
   return result.css;
 }
@@ -57,16 +59,18 @@ test('a comment that leads after removed first rules prints no whitespace of a l
 });
 
 test('the advanced preset prints no leading whitespace when a merge moves the first rule', async () => {
-  const result = await postcss(advancedPreset()).process(
-    '  a,b{ \n  /**/}b,a /*! k */ {color:red}',
-    { from: repositoryFile }
-  );
+  const result = await postcss(
+    advancedPreset({ browserslist: { query: testTargets } })
+  ).process('  a,b{ \n  /**/}b,a /*! k */ {color:red}', { from: undefined });
   assert.equal(result.css, 'a,b{color:red}');
 });
 
 test('with normalizeWhitespace disabled, the rule that leads prints no whitespace of a rule removed before it', async () => {
   const result = await postcss(
-    preset({ disable: ['normalizeWhitespace'] })
-  ).process('.x{}\n.y{}\n  .m{color:red}', { from: repositoryFile });
+    preset({
+      browserslist: { query: testTargets },
+      disable: ['normalizeWhitespace'],
+    })
+  ).process('.x{}\n.y{}\n  .m{color:red}', { from: undefined });
   assert.equal(result.css, '.m{color:red}');
 });

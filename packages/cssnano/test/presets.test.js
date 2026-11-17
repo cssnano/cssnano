@@ -5,7 +5,7 @@ import advancedPreset from '#presets/advanced';
 import defaultPreset from '#presets/default';
 import litePreset from '#presets/lite';
 import cssnano from '../src/index.js';
-import { repositoryFile } from '../../../util/testHelpers.js';
+import { testTargets } from '../../../util/testHelpers.js';
 
 const fixture = `h1{content:"©";color:#ff0000;z-index:10;display:grid}`;
 
@@ -18,26 +18,29 @@ async function minify(plugins, css = fixture) {
   const processor = Array.isArray(plugins)
     ? postcss(plugins)
     : postcss([cssnano(plugins)]);
-  const result = await processor.process(css, { from: repositoryFile });
+  const result = await processor.process(css, { from: undefined });
   return result.css;
 }
 
 describe('preset resolution', () => {
   test('uses the default preset when no preset is given', async () => {
-    assert.strictEqual(await minify({}), await minify(defaultPreset()));
+    assert.strictEqual(
+      await minify({}),
+      await minify(defaultPreset({ browserslist: { query: testTargets } }))
+    );
   });
 
   test('the imported lite preset given as preset runs the same plugins as the lite preset itself', async () => {
     assert.strictEqual(
       await minify({ preset: litePreset }),
-      await minify(litePreset())
+      await minify(litePreset({ browserslist: { query: testTargets } }))
     );
   });
 
   test('the imported default preset given as preset runs the same plugins as the default preset itself', async () => {
     assert.strictEqual(
       await minify({ preset: defaultPreset }),
-      await minify(defaultPreset())
+      await minify(defaultPreset({ browserslist: { query: testTargets } }))
     );
   });
 
@@ -52,27 +55,44 @@ describe('preset resolution', () => {
 
 describe('preset errors', () => {
   test('throws for a plugin list given as preset, since a preset is the function itself', () => {
-    assert.throws(() => cssnano({ preset: litePreset() }), {
-      message: /^Option "preset" must be a preset imported from cssnano/v,
-    });
+    assert.throws(
+      () =>
+        cssnano({
+          browserslist: { query: testTargets },
+          preset: litePreset({ browserslist: { query: testTargets } }),
+        }),
+      {
+        message: /^Option "preset" must be a preset imported from cssnano/v,
+      }
+    );
   });
 
   test('throws for a preset array, which is not a preset function', () => {
-    assert.throws(() => cssnano({ preset: ['lite', {}] }), {
-      message: /^Option "preset" must be a preset imported from cssnano/v,
-    });
+    assert.throws(
+      () =>
+        cssnano({ browserslist: { query: testTargets }, preset: ['lite', {}] }),
+      {
+        message: /^Option "preset" must be a preset imported from cssnano/v,
+      }
+    );
   });
 
   test('throws for a preset name string, because a preset is imported, not named', () => {
-    assert.throws(() => cssnano({ preset: 'lite' }), {
-      message: /^Option "preset" must be a preset imported from cssnano/v,
-    });
+    assert.throws(
+      () => cssnano({ browserslist: { query: testTargets }, preset: 'lite' }),
+      {
+        message: /^Option "preset" must be a preset imported from cssnano/v,
+      }
+    );
   });
 
   test('throws for a misspelled option, instead of running the default preset', () => {
-    assert.throws(() => cssnano({ presett: 'lite' }), {
-      message: '"presett" is not an option of cssnano options.',
-    });
+    assert.throws(
+      () => cssnano({ browserslist: { query: testTargets }, presett: 'lite' }),
+      {
+        message: '"presett" is not an option of cssnano options.',
+      }
+    );
   });
 
   test('a built preset called with null throws a cssnano message, as cssnano(null) does', () => {
@@ -113,10 +133,11 @@ describe('plugin selection', () => {
 
   test('a plugin option, such as the ignore list of reduceInitial, reaches the plugin', async () => {
     const result = await cssnano({
+      browserslist: { query: testTargets },
       preset: defaultPreset,
       options: { reduceInitial: { ignore: ['pointer-events'] } },
     }).process('.selector { pointer-events: initial; }', {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.strictEqual(result.css, '.selector{pointer-events:initial}');
   });
@@ -125,11 +146,14 @@ describe('plugin selection', () => {
     const input = '@media   (min-width: 1px) { h1 { color: red } }';
 
     assert.strictEqual(
-      await minify(defaultPreset(), input),
+      await minify(
+        defaultPreset({ browserslist: { query: testTargets } }),
+        input
+      ),
       '@media(min-width:1px){h1{color:red}}'
     );
     assert.strictEqual(
-      await minify(litePreset(), input),
+      await minify(litePreset({ browserslist: { query: testTargets } }), input),
       '@media (min-width: 1px){h1{color:red}}'
     );
   });

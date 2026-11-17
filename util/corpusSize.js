@@ -5,7 +5,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createRequire } from 'node:module';
 import { withRevisionPackage } from './fuzzAgainstRevision.js';
-import { repositoryFile } from './testHelpers.js';
+import { testTargets } from './testHelpers.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const frameworksDir = join(root, 'frameworks');
@@ -66,10 +66,10 @@ async function measure(src) {
   const sizes = {};
   for (const file of readdirSync(frameworksDir)) {
     const css = readFileSync(join(frameworksDir, file), 'utf8');
-    const result = await postcss(presetDefault()).process(css, {
-      // The fixtures follow the repository's browserslist config, as the
-      // integration tests do.
-      from: repositoryFile,
+    const result = await postcss(
+      presetDefault({ browserslist: { query: testTargets } })
+    ).process(css, {
+      from: undefined,
     });
     sizes[basename(file, '.css')] = Buffer.byteLength(result.css);
   }

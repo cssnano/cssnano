@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { repositoryFile } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 
 const plugin = onlyTransform(['mergeRules']);
 
 /** @param {string} css */
 function merge(css) {
-  return postcss([plugin]).process(css, { from: repositoryFile }).css;
+  return postcss([plugin]).process(css, { from: undefined }).css;
 }
 
 // The leading whitespace of the stylesheet is the whitespace of its first

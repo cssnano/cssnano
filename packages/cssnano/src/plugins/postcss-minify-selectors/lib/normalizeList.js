@@ -23,7 +23,7 @@ export function joinEntries(pool, entries) {
   return pool.sequence(output);
 }
 
-/** @param {OutputPool} pool @param {Normalized[]} entries @param {Set<string> | null} seenText @param {Normalized} entry @param {boolean} isOuter @param {boolean} vendor @returns {Set<string> | null} */
+/** @param {OutputPool} pool @param {Normalized[]} entries @param {Set<string | number> | null} seenText @param {Normalized} entry @param {boolean} isOuter @param {boolean} vendor @returns {Set<string | number> | null} */
 function addListEntry(pool, entries, seenText, entry, isOuter, vendor) {
   if (vendor) {
     entries.push(entry);
@@ -45,15 +45,15 @@ function addListEntry(pool, entries, seenText, entry, isOuter, vendor) {
     entries.push(entry);
     return activeSeenText;
   }
+  // Ids, not texts: a nested entry's text spells everything below it.
   if (!activeSeenText) {
     activeSeenText = new Set();
     for (let i = 0; i < entries.length; i++) {
-      activeSeenText.add(outputText(pool, entries[i]));
+      activeSeenText.add(entries[i].id);
     }
   }
-  const text = outputText(pool, entry);
-  if (!text || activeSeenText.has(text)) return activeSeenText;
-  activeSeenText.add(text);
+  if (entry.length === 0 || activeSeenText.has(entry.id)) return activeSeenText;
+  activeSeenText.add(entry.id);
   entries.push(entry);
   return activeSeenText;
 }
@@ -81,7 +81,7 @@ export function listOutput(arena, pool, nodeIndex, normalized, sort, children) {
   if (canForwardSingleList(arena, node, normalized, children))
     return normalizedAt(normalized, children[0]);
   /** @type {Normalized[]} */ const entries = [];
-  /** @type {Set<string> | null} */ let seenText = null;
+  /** @type {Set<string | number> | null} */ let seenText = null;
   const isOuter = nodeIndex === 0;
   let leading =
     children.length > 0

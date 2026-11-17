@@ -1,10 +1,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import {
-  processCSSFactory,
-  repositoryFile,
-} from '../../../../../util/testHelpers.js';
+import { processCSSFactory } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 const plugin = onlyTransform(['mergeLonghand']);
 
@@ -213,7 +210,7 @@ async function minifyWithStaleRaws(css, raws) {
   );
   decl.raws.value = raws;
 
-  await postcss([plugin()]).process(root, { from: repositoryFile });
+  await postcss([plugin()]).process(root, { from: undefined });
 
   return decl;
 }

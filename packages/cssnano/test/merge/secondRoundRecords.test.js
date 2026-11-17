@@ -5,8 +5,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveTargets } from '../../src/utils/browserTargets.js';
 import { secondRoundOfText } from './longhand/helpers/reduceRuns.js';
+import { testTargets, withTargets } from '../../../../util/testHelpers.js';
 
-const browsers = resolveTargets({}, undefined);
+const browsers = resolveTargets(withTargets(testTargets), undefined);
 
 test('the second round shortens a declaration no removal touched, and write-back writes it', () => {
   assert.strictEqual(

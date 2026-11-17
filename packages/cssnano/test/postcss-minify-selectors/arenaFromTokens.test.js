@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseSelectorArena } from '../../src/plugins/postcss-minify-selectors/lib/parseArena.js';
 import {
   TokenType,
   balancedStructure,
   tokens as tokenize,
 } from '../../src/utils/value.js';
+import { parseVerified } from './checkedArena.js';
 
 // Selectors that cover the grammar the parser reads, plus one unbalanced
 // input that takes the raw path.
@@ -37,8 +37,8 @@ const selectors = [
 test("parseSelectorArena builds the same arena from the selector's tokens as from its text", () => {
   for (const selector of selectors) {
     assert.deepEqual(
-      parseSelectorArena(selector, {}, tokenize(selector)),
-      parseSelectorArena(selector),
+      parseVerified(selector, {}, tokenize(selector)),
+      parseVerified(selector),
       selector
     );
   }
@@ -46,7 +46,7 @@ test("parseSelectorArena builds the same arena from the selector's tokens as fro
 
 test("parseSelectorArena keeps the given token list as the arena's tokens", () => {
   const list = tokenize('a, b');
-  assert.equal(parseSelectorArena('a, b', {}, list).tokens, list);
+  assert.equal(parseVerified('a, b', {}, list).tokens, list);
 });
 
 test("parseSelectorArena builds the same arena from a range as from the range's text", () => {
@@ -63,10 +63,8 @@ test("parseSelectorArena builds the same arena from a range as from the range's 
       .map((token) => token[1])
       .join('');
     assert.deepEqual(
-      relativeToText(
-        parseSelectorArena(source, {}, list, startIndex, endIndex)
-      ),
-      relativeToText(parseSelectorArena(text)),
+      relativeToText(parseVerified(source, {}, list, startIndex, endIndex)),
+      relativeToText(parseVerified(text)),
       text
     );
   }

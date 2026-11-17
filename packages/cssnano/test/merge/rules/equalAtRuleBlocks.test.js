@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import {
-  processCSSFactory,
-  repositoryFile,
-} from '../../../../../util/testHelpers.js';
+import { processCSSFactory } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 const plugin = onlyTransform(['mergeRules']);
 
@@ -318,7 +315,7 @@ test(
   async () => {
     const { css } = await postcss([plugin]).process(
       '@media print{.a{color:red}}\n.x{top:0}\n  /* later */\n  @media print{.b{top:2px}}',
-      { from: repositoryFile }
+      { from: undefined }
     );
     assert.ok(
       css.endsWith(
@@ -332,10 +329,10 @@ test(
 test('should produce the same output when equal @media blocks joined downward are processed again', async () => {
   const once = await postcss([plugin]).process(
     '@media print{.a{color:red}}.x{top:0}@media print{.b{top:2px}}',
-    { from: repositoryFile }
+    { from: undefined }
   );
   const twice = await postcss([plugin]).process(once.css, {
-    from: repositoryFile,
+    from: undefined,
   });
   assert.equal(twice.css, once.css);
 });

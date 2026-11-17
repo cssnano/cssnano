@@ -23,11 +23,6 @@
     "postcss": "catalog:",
     "typescript": "~7.0.2"
   },
-  "browserslist": {
-    "production": [
-      "IE 11 and last 2 versions"
-    ]
-  },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",

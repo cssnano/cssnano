@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import preset from '#presets/default';
-import { repositoryFile } from '../../../util/testHelpers.js';
+import { testTargets } from '../../../util/testHelpers.js';
 
 const fixture = `
 .b {
@@ -13,9 +13,11 @@ const fixture = `
 const expected = '.b{animation:opacity 0s calc(1s)}';
 
 test('it should keep quote', () => {
-  const processor = postcss(preset({ disable: ['calc'] }));
+  const processor = postcss(
+    preset({ browserslist: { query: testTargets }, disable: ['calc'] })
+  );
 
   return processor
-    .process(fixture, { from: repositoryFile })
+    .process(fixture, { from: undefined })
     .then((r) => assert.strictEqual(r.css, expected));
 });

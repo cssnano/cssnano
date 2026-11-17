@@ -1,5 +1,8 @@
 defaults
 
+[production]
+IE 11 and last 2 versions
+
 [legacy]
 IE <=11
 Edge <=15

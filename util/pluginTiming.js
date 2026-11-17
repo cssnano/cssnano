@@ -13,7 +13,6 @@ import { dirname, join, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { repositoryFile } from './testHelpers.js';
 import { labelPlugins } from './labelPlugins.js';
 
 /** @typedef {(this: unknown, ...args: unknown[]) => unknown} Listener */
@@ -239,7 +238,7 @@ for (let round = 0; round < rounds; round++) {
   const processor = postcss(plugins);
   const start = performance.now();
   for (const css of files) {
-    await processor.process(css, { from: repositoryFile });
+    await processor.process(css, { from: undefined });
   }
   wholeRunBest = Math.min(wholeRunBest, performance.now() - start);
   for (const label of labels) {

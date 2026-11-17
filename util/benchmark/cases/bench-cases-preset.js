@@ -5,6 +5,7 @@
 
 import { createRequire } from 'node:module';
 import postcss from 'postcss';
+import { testTargets } from '../../testHelpers.js';
 
 const require = createRequire(import.meta.url);
 // The module exports its preset as module.exports, which require returns.
@@ -56,42 +57,50 @@ const urlRules = Array.from(
 export const presetCases = {
   'preset-lite-colour-values': {
     plugin: 'cssnano',
-    createProcessor: () => postcss(litePreset()),
+    createProcessor: () =>
+      postcss(litePreset({ browserslist: { query: testTargets } })),
     css: colourRules,
   },
   'preset-default-colour-values': {
     plugin: 'cssnano',
-    createProcessor: () => postcss(defaultPreset()),
+    createProcessor: () =>
+      postcss(defaultPreset({ browserslist: { query: testTargets } })),
     css: colourRules,
   },
   'preset-default-timing-values': {
     plugin: 'cssnano',
-    createProcessor: () => postcss(defaultPreset()),
+    createProcessor: () =>
+      postcss(defaultPreset({ browserslist: { query: testTargets } })),
     css: timingRules,
   },
   'preset-default-calc-values': {
     plugin: 'cssnano',
-    createProcessor: () => postcss(defaultPreset()),
+    createProcessor: () =>
+      postcss(defaultPreset({ browserslist: { query: testTargets } })),
     css: calcRules,
   },
   'preset-default-length-values': {
     plugin: 'cssnano',
-    createProcessor: () => postcss(defaultPreset()),
+    createProcessor: () =>
+      postcss(defaultPreset({ browserslist: { query: testTargets } })),
     css: lengthRules,
   },
   'preset-default-repeat-style-values': {
     plugin: 'cssnano',
-    createProcessor: () => postcss(defaultPreset()),
+    createProcessor: () =>
+      postcss(defaultPreset({ browserslist: { query: testTargets } })),
     css: repeatRules,
   },
   'preset-default-position-values': {
     plugin: 'cssnano',
-    createProcessor: () => postcss(defaultPreset()),
+    createProcessor: () =>
+      postcss(defaultPreset({ browserslist: { query: testTargets } })),
     css: positionRules,
   },
   'preset-default-url-values': {
     plugin: 'cssnano',
-    createProcessor: () => postcss(defaultPreset()),
+    createProcessor: () =>
+      postcss(defaultPreset({ browserslist: { query: testTargets } })),
     css: urlRules,
   },
 };

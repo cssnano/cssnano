@@ -4,7 +4,6 @@ import postcss from 'postcss';
 import { sameContainer } from '../../../src/ir/tree/sameContainer.js';
 import MergeState from '../../../src/merge/rules/mergeState.js';
 import { createRunContext } from '../../../src/run/runContext.js';
-import { repositoryFile } from '../../../../../util/testHelpers.js';
 import {
   ruleRecordOf,
   blockRecordOf,
@@ -50,7 +49,7 @@ function recordsOf(root) {
  */
 async function blockPair(css, firstPath, secondPath) {
   const { root } = await postcss().process(css, {
-    from: repositoryFile,
+    from: undefined,
     hideNothingWarning: true,
   });
   const state = recordsOf(root);
@@ -255,7 +254,7 @@ test('sameContainer holds for named @layer blocks with identical comments and na
 test('sameContainer should hold for equal conditional blocks that are different nodes', async () => {
   const { root } = await postcss().process(
     '@media print{a{}}@media print{b{}}',
-    { from: repositoryFile }
+    { from: undefined }
   );
   const state = recordsOf(root);
   assert.strictEqual(
@@ -270,7 +269,7 @@ test('sameContainer should hold for equal conditional blocks that are different 
 test('sameContainer should not hold for blocks with different conditions', async () => {
   const { root } = await postcss().process(
     '@media print{a{}}@media screen{b{}}',
-    { from: repositoryFile }
+    { from: undefined }
   );
   const state = recordsOf(root);
   assert.strictEqual(
@@ -284,7 +283,7 @@ test('sameContainer should not hold for blocks with different conditions', async
 
 test('sameContainer should not hold when only one side is the stylesheet root', async () => {
   const { root } = await postcss().process('@media print{a{}}', {
-    from: repositoryFile,
+    from: undefined,
   });
   const state = recordsOf(root);
   assert.strictEqual(
@@ -303,7 +302,7 @@ test('sameContainer should hold for two undefined containers', () => {
 test('sameContainer should not hold when the outer blocks differ and the inner ones match', async () => {
   const { root } = await postcss().process(
     '@media print{@supports (x:y){a{}}}@media screen{@supports (x:y){b{}}}',
-    { from: repositoryFile }
+    { from: undefined }
   );
   const state = recordsOf(root);
   const first = blockRecordOf(state.records, root.nodes[0].nodes[0]);

@@ -7,10 +7,7 @@ import postcss from 'postcss';
 const plugin = onlyTransform(['mergeLonghand']);
 import { longstandingFeatures } from '../../../src/run/syntaxFeatures.js';
 import { featuresSupportedByAll } from '../../../src/merge/longhand/targetSupport.js';
-import {
-  repositoryFile,
-  withTargets,
-} from '../../../../../util/testHelpers.js';
+import { withTargets } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 
 const modern = 'chrome 120, firefox 120, safari 17';
@@ -23,7 +20,7 @@ const modern = 'chrome 120, firefox 120, safari 17';
  */
 async function run(css, options, processOptions = {}) {
   const result = await postcss([plugin(options)]).process(css, {
-    from: repositoryFile,
+    from: undefined,
     ...processOptions,
   });
   return result.css;
@@ -100,7 +97,9 @@ describe('fallbacks dropped when every browserslist target supports the syntax',
     const dir = mkdtempSync(join(tmpdir(), 'merge-longhand-'));
     writeFileSync(join(dir, '.browserslistrc'), 'chrome 120\n');
     assert.equal(
-      await run('a{margin:1px;margin:5dvh}', {}, { from: join(dir, 'in.css') }),
+      await run('a{margin:1px;margin:5dvh}', withTargets(undefined), {
+        from: join(dir, 'in.css'),
+      }),
       'a{margin:5dvh}'
     );
   });

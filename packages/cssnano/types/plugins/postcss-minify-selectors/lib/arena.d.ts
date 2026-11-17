@@ -102,12 +102,9 @@ declare class SelectorArenaBuilder {
     #private;
     source: string;
     tokens: readonly import("@csstools/css-tokenizer").CSSToken[];
-    verifyArena: boolean;
     base: number;
     /** @type {ArenaNode[]} */ nodes: ArenaNode[];
     /** @type {number[]} */ frames: number[];
-    /** @type {number[]} */ lastChildren: number[];
-    /** @type {number[]} */ roots: number[];
     specificityByKey: Map<string, {
         id: number;
         tuple: Specificity;
@@ -120,8 +117,8 @@ declare class SelectorArenaBuilder {
         pseudos: PseudoPayload[];
         attributes: AttributePayload[];
     };
-    /** @param {string} source @param {readonly CSSToken[]} tokens @param {boolean} verifyArena @param {number} base */
-    constructor(source: string, tokens: readonly CSSToken[], verifyArena: boolean, base: number);
+    /** @param {string} source @param {readonly CSSToken[]} tokens @param {number} base */
+    constructor(source: string, tokens: readonly CSSToken[], base: number);
     /** @param {NodeKind} kind @param {number} startToken @param {number} endToken @param {{status?:ParseStatus,payload?:number,specificity?:Specificity,facts?:SemanticFacts}} [options] */
     open(kind: NodeKind, startToken: number, endToken: number, options?: {
         status?: ParseStatus;
@@ -167,13 +164,12 @@ export declare class SelectorArena {
      * @param {readonly CSSToken[]} tokens
      * @param {readonly Readonly<ArenaNode>[]} nodes
      * @param {PayloadTables} payloads
-     * @param {boolean} freeze
      * @param {number} base where `source` starts in the text the token positions refer to
      */
-    constructor(source: string, tokens: readonly CSSToken[], nodes: readonly Readonly<ArenaNode>[], payloads: PayloadTables, freeze: boolean, base: number);
+    constructor(source: string, tokens: readonly CSSToken[], nodes: readonly Readonly<ArenaNode>[], payloads: PayloadTables, base: number);
     /** @param {number} nodeIndex @param {(childIndex:number)=>void} callback */
     forEachChild(nodeIndex: number, callback: (childIndex: number) => void): void;
 }
-/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @param {boolean} [verifyArena] @param {number} [base] @return {SelectorArena} */
-export declare function buildSelectorArena(source: string, tokens: readonly CSSToken[], build: (builder: SelectorArenaBuilder) => void, verifyArena?: boolean, base?: number): SelectorArena;
+/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @param {number} [base] @return {SelectorArena} */
+export declare function buildSelectorArena(source: string, tokens: readonly CSSToken[], build: (builder: SelectorArenaBuilder) => void, base?: number): SelectorArena;
 //# sourceMappingURL=arena.d.ts.map

@@ -12,8 +12,8 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
 import { counter } from './countTokenize.js';
-import { repositoryFile } from './testHelpers.js';
 import { labelPlugins } from './labelPlugins.js';
+import { testTargets } from './testHelpers.js';
 
 /** @typedef {(this: unknown, ...args: unknown[]) => unknown} Listener */
 /** @typedef {Record<string, unknown>} Plugin */
@@ -40,8 +40,11 @@ counter.checkRoundTrip = options['check-round-trip'];
 // Count calc's selector and media query reducers too. Lite has no calc.
 const presetOptions =
   options.preset === 'lite'
-    ? undefined
-    : { options: { calc: { mediaQueries: true, selectors: true } } };
+    ? { browserslist: { query: testTargets } }
+    : {
+        browserslist: { query: testTargets },
+        options: { calc: { mediaQueries: true, selectors: true } },
+      };
 
 /**
  * Runs `listener` with `label` as the entry, so each tokenize call it makes
@@ -129,7 +132,7 @@ for (const file of fixtures) {
     if (!labels.includes(label)) labels.push(label);
   }
   const plugins = entries.map(({ label, plugin }) => attributed(plugin, label));
-  await postcss(plugins).process(css, { from: repositoryFile });
+  await postcss(plugins).process(css, { from: undefined });
 }
 
 const rows = labels.map((label) => ({

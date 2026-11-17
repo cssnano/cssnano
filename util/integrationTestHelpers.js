@@ -2,8 +2,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import postcss from 'postcss';
 import assert from 'node:assert/strict';
-import { repositoryFile } from './testHelpers.js';
 import { presetEntriesKey } from '../packages/cssnano/src/presets/presetEntries.js';
+import { testTargets } from './testHelpers.js';
 
 function firstDifference(actual, expected) {
   let index = 0;
@@ -53,8 +53,10 @@ export function integrationTests(preset, integrations) {
     Promise.allSettled(
       Array.from(frameworks, ([framework, css]) =>
         t.test(`${presetName} - ${framework}`, async () => {
-          const result = await postcss(preset()).process(css, {
-            from: repositoryFile,
+          const result = await postcss(
+            preset({ browserslist: { query: testTargets } })
+          ).process(css, {
+            from: undefined,
           });
           const expected = fs.readFileSync(
             path.join(integrations, `${framework}.css`),
@@ -89,8 +91,10 @@ export function idempotencyTests(preset, integrations) {
     Promise.allSettled(
       Array.from(integrationsByFramework, ([framework, css]) =>
         t.test(`${presetName} - ${framework}`, async () => {
-          const result = await postcss(preset()).process(css, {
-            from: repositoryFile,
+          const result = await postcss(
+            preset({ browserslist: { query: testTargets } })
+          ).process(css, {
+            from: undefined,
           });
           if (result.css !== css) {
             assert.fail(mismatchMessage(framework, result.css, css));
@@ -145,14 +149,12 @@ export function pluginIdempotencyTests(
       };
       tests.push(
         t.test(`${presetName} - ${name}`, async () => {
-          const firstPass = await postcss(preset(options)).process(
-            aggregateRoot.clone(),
-            { from: repositoryFile }
-          );
-          const secondPass = await postcss(preset(options)).process(
-            firstPass.css,
-            { from: repositoryFile }
-          );
+          const firstPass = await postcss(
+            preset({ browserslist: { query: testTargets }, ...options })
+          ).process(aggregateRoot.clone(), { from: undefined });
+          const secondPass = await postcss(
+            preset({ browserslist: { query: testTargets }, ...options })
+          ).process(firstPass.css, { from: undefined });
           if (secondPass.css !== firstPass.css) {
             assert.fail(mismatchMessage(name, secondPass.css, firstPass.css));
           }

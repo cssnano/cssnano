@@ -12,7 +12,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { withRevisionPackage } from './fuzzAgainstRevision.js';
-import { repositoryFile } from './testHelpers.js';
+import { testTargets } from './testHelpers.js';
 
 /**
  * @typedef {{ name: string, css: string } | { name: string, error: string }} CaseOutput
@@ -247,10 +247,10 @@ async function runChild(src, inputFile, outputFile, optionsJson) {
   const outputs = [];
   for (const { name, css } of cases) {
     try {
-      const result = await postcss(presetDefault(options)).process(css, {
-        // The corpus follows the repository's browserslist config, as the
-        // integration tests do.
-        from: repositoryFile,
+      const result = await postcss(
+        presetDefault({ browserslist: { query: testTargets }, ...options })
+      ).process(css, {
+        from: undefined,
       });
       outputs.push({ name, css: result.css });
     } catch (error) {

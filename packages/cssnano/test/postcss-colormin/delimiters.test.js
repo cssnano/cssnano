@@ -4,7 +4,6 @@ import postcss from 'postcss';
 import {
   oneStagePlugin,
   processCSSFactory,
-  repositoryFile,
 } from '../../../../util/testHelpers.js';
 import colormin from '../../src/plugins/postcss-colormin/index.js';
 
@@ -25,7 +24,7 @@ describe('Delimiter tracking and math boundaries', () => {
     rule.append(decl);
     root.append(rule);
 
-    await postcss([plugin()]).process(root, { from: repositoryFile });
+    await postcss([plugin()]).process(root, { from: undefined });
     assert.strictEqual(decl.value, 'calc(100vw - 20px');
   });
 
@@ -36,7 +35,7 @@ describe('Delimiter tracking and math boundaries', () => {
     rule.append(decl);
     root.append(rule);
 
-    await postcss([plugin()]).process(root, { from: repositoryFile });
+    await postcss([plugin()]).process(root, { from: undefined });
     assert.strictEqual(decl.value, 'rgb(255, 0, 0');
   });
 });

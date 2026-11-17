@@ -5,14 +5,11 @@ import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js
 
 const plugin = oneStagePlugin(minifySelectors);
 import { normalizeList } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
-import {
-  repositoryFile,
-  oneStagePlugin,
-} from '../../../../util/testHelpers.js';
+import { oneStagePlugin } from '../../../../util/testHelpers.js';
 
 function minify(selector) {
   return postcss([plugin({ convertToIs: false })]).process(`${selector}{x:y}`, {
-    from: repositoryFile,
+    from: undefined,
   }).css;
 }
 

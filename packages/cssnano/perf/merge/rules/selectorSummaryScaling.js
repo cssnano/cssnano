@@ -10,6 +10,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import preset from '../../../src/presets/default.js';
 import { executionCount } from '../../../../../util/mutation-testing/fragmentReach.js';
+import { testTargets } from '../../../../../util/testHelpers.js';
 
 const session = new Session();
 session.connect();
@@ -101,7 +102,9 @@ function loopIterations(coverage) {
  */
 async function countsOf(css) {
   await session.post('Profiler.takePreciseCoverage');
-  await postcss(preset()).process(css, { from: undefined });
+  await postcss(preset({ browserslist: { query: testTargets } })).process(css, {
+    from: undefined,
+  });
   const { result } = await session.post('Profiler.takePreciseCoverage');
   return {
     analyses: analysisCalls(result),
