@@ -1,17 +1,17 @@
-import type { BlockRecords } from '../../passes/ir/blockRecords.js';
-import type { RecordSymbolLists } from '../../pipeline/symbolLists.js';
-import type { RunContext } from '../../passes/ir/runContext.js';
+import type { BlockRecords } from '../../ir/blockRecords.js';
+import type { RecordSymbolLists } from '../../run/symbolLists.js';
+import type { RunContext } from '../../run/runContext.js';
 export type Options = {
     /**
      * The first positive integer z-index to assign, so z-indices from other sources can be overridden. (default: 1)
      */
     startIndex?: number;
 };
-/** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
-/** @import {DeclarationRecord} from '../../passes/ir/declarationRecord.js' */
-/** @import {RecordSymbolLists} from '../../pipeline/symbolLists.js' */
-/** @import {RunContext} from '../../passes/ir/runContext.js' */
+/** @import {ArenaIndex} from '../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../ir/blockRecords.js' */
+/** @import {DeclarationRecord} from '../../ir/declarationRecord.js' */
+/** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
+/** @import {RunContext} from '../../run/runContext.js' */
 /**
  * @typedef {object} Options
  * @property {number} [startIndex] The first positive integer z-index to assign, so z-indices from other sources can be overridden. (default: 1)

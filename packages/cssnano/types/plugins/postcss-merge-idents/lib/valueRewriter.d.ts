@@ -7,16 +7,16 @@ export type Replacement = {
 export type TokenEdit = import('../../../values/valueBuffer.js').TokenEdit;
 export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
 export type Visitor = (token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => TokenEdit | undefined;
-import type { BlockRecords } from '../../../passes/ir/blockRecords.js';
-import type { RunContext } from '../../../passes/ir/runContext.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { RunContext } from '../../../run/runContext.js';
 /**
  * @typedef {{ text: string, value: string, isString: boolean, absorbsWhitespace: boolean }} Replacement
  * @typedef {import('../../../values/valueBuffer.js').TokenEdit} TokenEdit
  * @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken
  * @typedef {(token: CSSToken, frame: import('./valueWalk.js').NestingFrame | undefined, index: number) => TokenEdit | undefined} Visitor
- * @import {ArenaIndex} from '../../../passes/ir/blockRecord.js'
- * @import {BlockRecords} from '../../../passes/ir/blockRecords.js'
- * @import {RunContext} from '../../../passes/ir/runContext.js'
+ * @import {ArenaIndex} from '../../../ir/blockRecord.js'
+ * @import {BlockRecords} from '../../../ir/blockRecords.js'
+ * @import {RunContext} from '../../../run/runContext.js'
  */
 /**
  * Prepares the spelling that references to a renamed name receive. A name

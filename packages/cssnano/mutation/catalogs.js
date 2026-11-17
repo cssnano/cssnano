@@ -2,11 +2,11 @@
 // the catalog's test file against each mutant; `suites` names the module of
 // fuzz suites that judge it in the oracle check. Add a new catalog here only.
 const mergeRulesSuites = new URL(
-  '../script/passes/merge/rules/mutationSuites.js',
+  '../script/merge/rules/mutationSuites.js',
   import.meta.url
 );
 const duplicatesSuites = new URL(
-  '../script/passes/merge/duplicates/mutationSuites.js',
+  '../script/merge/duplicates/mutationSuites.js',
   import.meta.url
 );
 
@@ -40,19 +40,16 @@ export const catalogs = [
     test: true,
   },
   {
-    url: new URL(
-      './passes/merge/lib/longhand/mutation-catalog.js',
-      import.meta.url
-    ),
+    url: new URL('./merge/longhand/mutation-catalog.js', import.meta.url),
     test: true,
     suites: mergeRulesSuites,
   },
   {
-    url: new URL('./pipeline/mutation-catalog-walk-values.js', import.meta.url),
+    url: new URL('./run/mutation-catalog-walk-values.js', import.meta.url),
     test: true,
   },
   {
-    url: new URL('./pipeline/mutation-catalog-fold.js', import.meta.url),
+    url: new URL('./run/mutation-catalog-fold.js', import.meta.url),
     test: true,
   },
   {
@@ -92,7 +89,7 @@ export const catalogs = [
   },
   {
     url: new URL(
-      './passes/merge/lib/longhand/mutation-catalog-validity.js',
+      './merge/longhand/mutation-catalog-validity.js',
       import.meta.url
     ),
     test: true,
@@ -100,7 +97,7 @@ export const catalogs = [
   },
   {
     url: new URL(
-      './passes/merge/lib/longhand/mutation-catalog-candidates.js',
+      './merge/longhand/mutation-catalog-candidates.js',
       import.meta.url
     ),
     test: true,
@@ -108,7 +105,7 @@ export const catalogs = [
   },
   {
     url: new URL(
-      './passes/merge/lib/longhand/mutation-catalog-reset-gates.js',
+      './merge/longhand/mutation-catalog-reset-gates.js',
       import.meta.url
     ),
     test: true,
@@ -116,101 +113,83 @@ export const catalogs = [
   },
   {
     url: new URL(
-      './passes/merge/lib/longhand/mutation-catalog-pair-families.js',
+      './merge/longhand/mutation-catalog-pair-families.js',
       import.meta.url
     ),
     test: true,
   },
   {
     url: new URL(
-      './passes/merge/lib/longhand/mutation-catalog-pair-reducer.js',
+      './merge/longhand/mutation-catalog-pair-reducer.js',
       import.meta.url
     ),
     test: true,
   },
   {
     url: new URL(
-      './passes/merge/lib/longhand/mutation-catalog-grid-placement.js',
+      './merge/longhand/mutation-catalog-grid-placement.js',
       import.meta.url
     ),
     test: true,
   },
   {
     url: new URL(
-      './passes/merge/lib/longhand/mutation-catalog-list-style.js',
+      './merge/longhand/mutation-catalog-list-style.js',
       import.meta.url
     ),
     test: true,
   },
   {
     url: new URL(
-      './passes/merge/lib/longhand/mutation-catalog-text-forms.js',
+      './merge/longhand/mutation-catalog-text-forms.js',
       import.meta.url
     ),
     test: true,
   },
   {
-    url: new URL(
-      './passes/merge/lib/duplicates/mutation-catalog.js',
-      import.meta.url
-    ),
+    url: new URL('./merge/duplicates/mutation-catalog.js', import.meta.url),
     suites: duplicatesSuites,
     test: true,
   },
   {
-    url: new URL(
-      './passes/merge/lib/duplicates/mutation-catalog-ids.js',
-      import.meta.url
-    ),
+    url: new URL('./merge/duplicates/mutation-catalog-ids.js', import.meta.url),
     suites: duplicatesSuites,
     test: true,
   },
   {
-    url: new URL(
-      './passes/merge/lib/rules/mutation-catalog.js',
-      import.meta.url
-    ),
+    url: new URL('./merge/rules/mutation-catalog.js', import.meta.url),
     suites: mergeRulesSuites,
     test: true,
   },
   {
+    url: new URL('./merge/rules/mutation-catalog-cache.js', import.meta.url),
+    test: true,
+  },
+  {
+    url: new URL('./merge/rules/mutation-catalog-links.js', import.meta.url),
+    test: true,
+  },
+  {
+    url: new URL('./merge/rules/mutation-catalog-moves.js', import.meta.url),
+    test: true,
+  },
+  {
     url: new URL(
-      './passes/merge/lib/rules/mutation-catalog-cache.js',
+      './merge/rules/mutation-catalog-selector-writers.js',
       import.meta.url
     ),
     test: true,
   },
   {
     url: new URL(
-      './passes/merge/lib/rules/mutation-catalog-links.js',
+      './merge/longhand/mutation-catalog-writers.js',
       import.meta.url
     ),
     test: true,
   },
   {
     url: new URL(
-      './passes/merge/lib/rules/mutation-catalog-moves.js',
-      import.meta.url
-    ),
-    test: true,
-  },
-  {
-    url: new URL(
-      './passes/merge/lib/rules/mutation-catalog-selector-writers.js',
-      import.meta.url
-    ),
-    test: true,
-  },
-  {
-    url: new URL(
-      './passes/merge/lib/longhand/mutation-catalog-writers.js',
-      import.meta.url
-    ),
-    test: true,
-  },
-  {
-    url: new URL(
-      './passes/merge/lib/longhand/decl/mutation-catalog-radius-writers.js',
+      './merge/longhand/decl/mutation-catalog-radius-writers.js',
       import.meta.url
     ),
     test: true,
@@ -240,29 +219,27 @@ const catalogUrl = (path) => new URL(path, import.meta.url);
 const mergeRules = {
   check: 'oracle',
   allowUnkilled: true,
-  catalogs: [catalogUrl('./passes/merge/lib/rules/mutation-catalog.js')],
+  catalogs: [catalogUrl('./merge/rules/mutation-catalog.js')],
 };
 const mergeDuplicates = {
   check: 'oracle',
   allowUnkilled: true,
   catalogs: [
-    catalogUrl('./passes/merge/lib/duplicates/mutation-catalog.js'),
-    catalogUrl('./passes/merge/lib/duplicates/mutation-catalog-ids.js'),
+    catalogUrl('./merge/duplicates/mutation-catalog.js'),
+    catalogUrl('./merge/duplicates/mutation-catalog-ids.js'),
   ],
 };
 const mergeSelectorWriters = {
   check: 'test',
   allowUnkilled: false,
-  catalogs: [
-    catalogUrl('./passes/merge/lib/rules/mutation-catalog-selector-writers.js'),
-  ],
+  catalogs: [catalogUrl('./merge/rules/mutation-catalog-selector-writers.js')],
 };
 // The cache mutants must all die under the rules' own tests: a survivor is a
 // stale read the tests do not see.
 const mergeCache = {
   check: 'test',
   allowUnkilled: false,
-  catalogs: [catalogUrl('./passes/merge/lib/rules/mutation-catalog-cache.js')],
+  catalogs: [catalogUrl('./merge/rules/mutation-catalog-cache.js')],
 };
 
 // The link checks' exceptions are judged by the rules' tests under checks,
@@ -271,8 +248,8 @@ const mergeLinks = {
   check: 'test',
   allowUnkilled: false,
   catalogs: [
-    catalogUrl('./passes/merge/lib/rules/mutation-catalog-links.js'),
-    catalogUrl('./passes/merge/lib/rules/mutation-catalog-moves.js'),
+    catalogUrl('./merge/rules/mutation-catalog-links.js'),
+    catalogUrl('./merge/rules/mutation-catalog-moves.js'),
   ],
 };
 

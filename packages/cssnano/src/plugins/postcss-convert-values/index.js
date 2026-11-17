@@ -4,11 +4,11 @@ import {
   IN_KEYFRAMES,
   IN_PROPERTY,
   PERCENTAGE_SYNTAX,
-} from '../../pipeline/context.js';
+} from '../../run/context.js';
 import { findReplacements, stripVendorPrefix } from './lib/findReplacements.js';
 import { containsUnicodeRange } from './lib/unicodeRange.js';
 
-/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {Reducer, Stage, StageEntry} from '../../run/host.js' */
 /** @import {ReplacementFlags} from './lib/findReplacements.js' */
 /** @typedef {import('./lib/findReplacements.js').Options} Options */
 

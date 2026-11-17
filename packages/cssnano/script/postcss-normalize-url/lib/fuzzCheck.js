@@ -1,8 +1,8 @@
 import postcss from 'postcss';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
 import urlEntry from '../../../src/plugins/postcss-normalize-url/index.js';
-import { hostPlugin } from '../../../src/pipeline/host.js';
-import { hostPlan } from '../../../src/pipeline/hostPlan.js';
+import { hostPlugin } from '../../../src/run/host.js';
+import { hostPlan } from '../../../src/run/hostPlan.js';
 
 const plugin = () =>
   hostPlugin(

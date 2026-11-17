@@ -1,1 +1,1 @@
-{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/plugins/postcss-normalize-whitespace/index.js"],"names":[],"mappings":"AAeI,OAAQ,KAAA,EAAU,KAAK,EAAa,MAAM,wBAAwB,CAAA;AAmNtE,8BAA8B;AAC9B,eAAO,MAAM,UAAU;;CAA+B,CAAC"}
+{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/plugins/postcss-normalize-whitespace/index.js"],"names":[],"mappings":"AAeI,OAAQ,KAAA,EAAU,KAAK,EAAa,MAAM,mBAAmB,CAAA;AAmNjE,8BAA8B;AAC9B,eAAO,MAAM,UAAU;;CAA+B,CAAC"}

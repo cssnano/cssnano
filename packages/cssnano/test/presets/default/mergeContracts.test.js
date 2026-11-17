@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import preset from '../../../src/presets/default.js';
-import { transformRunner } from '../../../src/passes/merge/index.js';
+import { transformRunner } from '../../../src/merge/index.js';
 import { configureValidated } from '../../../src/presets/configurePlugins.js';
 import { defaultPluginEntries } from '../../../src/presets/defaultPlugins.js';
 import { processCSSFactory } from '../../../../../util/testHelpers.js';

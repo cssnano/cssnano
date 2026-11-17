@@ -1,4 +1,4 @@
-import type { Stage } from '../../pipeline/host.js';
+import type { Stage } from '../../run/host.js';
 export type Options = {
     /**
      * Removes the font families that follow a font keyword, such as `sans-serif`. (default: false)

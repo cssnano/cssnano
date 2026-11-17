@@ -10,15 +10,15 @@ import { counter, cssWideKeywords, resolveProperty } from './slots.js';
 import {
   declaredValue,
   declaredValueTokens,
-} from '../../../passes/ir/declaredText.js';
-import { DECLARATION } from '../../../passes/ir/blockRecord.js';
-import { writeValue } from '../../../passes/ir/valueEdits.js';
+} from '../../../ir/declaredText.js';
+import { DECLARATION } from '../../../ir/blockRecord.js';
+import { writeValue } from '../../../ir/valueEdits.js';
 import { whitespace } from '../../../values/punctuationTokens.js';
 import { ValueBuffer } from '../../../values/valueBuffer.js';
 
-/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
-/** @import {RunContext} from '../../../passes/ir/runContext.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {RunContext} from '../../../run/runContext.js' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
 /*
@@ -71,7 +71,7 @@ export default function counterReducer(encoder) {
       const valueOf = (index) =>
         declaredValue(
           tokenLists,
-          /** @type {import('../../../passes/ir/declarationRecord.js').DeclarationRecord} */ (
+          /** @type {import('../../../ir/declarationRecord.js').DeclarationRecord} */ (
             records.entry(index)
           )
         );
@@ -82,7 +82,7 @@ export default function counterReducer(encoder) {
       const tokensOf = (index, value) =>
         declaredValueTokens(
           tokenLists,
-          /** @type {import('../../../passes/ir/declarationRecord.js').DeclarationRecord} */ (
+          /** @type {import('../../../ir/declarationRecord.js').DeclarationRecord} */ (
             records.entry(index)
           ),
           value

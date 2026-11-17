@@ -1,6 +1,6 @@
-import type { ArenaIndex } from '../../../passes/ir/blockRecord.js';
-import type { BlockRecords } from '../../../passes/ir/blockRecords.js';
-import type { RunContext } from '../../../passes/ir/runContext.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { RunContext } from '../../../run/runContext.js';
 export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
 export type AtRuleSymbols = {
     atRule: string;
@@ -10,9 +10,9 @@ export type AtRuleSymbols = {
     functions?: Map<string, number[]>;
     descriptors?: Set<string>;
 };
-/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
-/** @import {RunContext} from '../../../passes/ir/runContext.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {RunContext} from '../../../run/runContext.js' */
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 /**
  * Name the slots of an at-rule-defined name: where it is defined, what

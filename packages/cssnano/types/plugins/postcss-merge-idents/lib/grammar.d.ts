@@ -1,5 +1,5 @@
-import type { ArenaIndex } from '../../../passes/ir/blockRecord.js';
-import type { BlockRecords } from '../../../passes/ir/blockRecords.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
 declare const VENDOR_PREFIX: RegExp;
 declare const CSS_WIDE_KEYWORDS: Set<string>;
 declare const KEYFRAMES_SHORTHAND_KEYWORDS: Set<string>;

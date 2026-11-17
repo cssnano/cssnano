@@ -10,7 +10,7 @@ const {
 } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {Reducer, Stage, StageEntry} from '../../run/host.js' */
 /** @import {ValueBuffer} from '../../values/valueBuffer.js' */
 /** @typedef {NonNullable<ReturnType<ValueBuffer['structure']>>} Structure */
 

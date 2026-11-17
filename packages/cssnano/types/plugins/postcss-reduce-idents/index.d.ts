@@ -1,7 +1,7 @@
-import type { ArenaIndex } from '../../passes/ir/blockRecord.js';
-import type { BlockRecords } from '../../passes/ir/blockRecords.js';
-import type { RecordSymbolLists } from '../../pipeline/symbolLists.js';
-import type { RunContext } from '../../passes/ir/runContext.js';
+import type { ArenaIndex } from '../../ir/blockRecord.js';
+import type { BlockRecords } from '../../ir/blockRecords.js';
+import type { RecordSymbolLists } from '../../run/symbolLists.js';
+import type { RunContext } from '../../run/runContext.js';
 export type Options = {
     /**
      * Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)
@@ -28,10 +28,10 @@ export type Reducer = {
     collect: (index: ArenaIndex, records: BlockRecords, context: RunContext) => void;
     transform: (records: BlockRecords, context: RunContext) => void;
 };
-/** @import {ArenaIndex} from '../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../passes/ir/blockRecords.js' */
-/** @import {RecordSymbolLists} from '../../pipeline/symbolLists.js' */
-/** @import {RunContext} from '../../passes/ir/runContext.js' */
+/** @import {ArenaIndex} from '../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../ir/blockRecords.js' */
+/** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
+/** @import {RunContext} from '../../run/runContext.js' */
 /**
  * @typedef {object} Options
  * @property {boolean} [counter] Reduces `content`, `counter-reset` and `counter-increment` declarations. (default: true)

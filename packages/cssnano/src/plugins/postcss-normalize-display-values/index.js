@@ -122,7 +122,7 @@ function mappedTokens(mapped) {
     : [ident(first), whitespace(), ident(second)];
 }
 
-/** @type {import('../../pipeline/host.js').Reducer} */
+/** @type {import('../../run/host.js').Reducer} */
 const reduce = (buffer) => {
   const input = buffer.tokens();
   const mapped = transform(input);
@@ -134,7 +134,7 @@ const reduce = (buffer) => {
 /**
  * The stage for one run. It reads the `display` property.
  *
- * @return {import('../../pipeline/host.js').Stage}
+ * @return {import('../../run/host.js').Stage}
  */
 function displayStage() {
   return {
@@ -143,7 +143,7 @@ function displayStage() {
   };
 }
 
-/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+/** @satisfies {import('../../run/host.js').StageEntry} */
 const normalizeDisplayValues = { create: () => displayStage() };
 
 export { normalizeDisplayValues as default };

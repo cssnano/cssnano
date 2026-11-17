@@ -1,4 +1,4 @@
-import type { SymbolTransform } from '../pipeline/host.js';
+import type { SymbolTransform } from '../run/host.js';
 export type AdvancedOnlyPluginOptions = {
     /**
      * Discards unused font faces, counter styles, keyframes and namespaces.
@@ -19,7 +19,7 @@ export type AdvancedOnlyPluginOptions = {
 };
 export type AdvancedPluginOptions = import('./defaultPlugins.js').DefaultPluginOptions & AdvancedOnlyPluginOptions;
 /** @import {EntryFor} from './configurePlugins.js' */
-/** @import {SymbolTransform} from '../pipeline/host.js' */
+/** @import {SymbolTransform} from '../run/host.js' */
 /**
  * The options of the plugins that only the advanced preset adds.
  * @typedef {object} AdvancedOnlyPluginOptions

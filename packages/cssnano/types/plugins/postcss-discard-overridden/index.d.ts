@@ -1,8 +1,8 @@
-/** @import {TransformEntry} from '../../pipeline/host.js' */
+/** @import {TransformEntry} from '../../run/host.js' */
 /**
  * The transform of the walk that discards overridden at-rules. It takes no
  * options. The walk collects the at-rules, and compares their preludes after the
- * stylesheet is folded (see pipeline/overridable.js).
+ * stylesheet is folded (see run/overridable.js).
  *
  * @satisfies {TransformEntry}
  */

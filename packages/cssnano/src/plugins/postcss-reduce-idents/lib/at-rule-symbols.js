@@ -13,19 +13,19 @@ import {
   declaredValueTokens,
   preludeListOf,
   preludeTextOf,
-} from '../../../passes/ir/declaredText.js';
+} from '../../../ir/declaredText.js';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
   DECLARATION,
-} from '../../../passes/ir/blockRecord.js';
-import { writePrelude } from '../../../passes/ir/rawEdits.js';
-import { writeValue } from '../../../passes/ir/valueEdits.js';
+} from '../../../ir/blockRecord.js';
+import { writePrelude } from '../../../ir/rawEdits.js';
+import { writeValue } from '../../../ir/valueEdits.js';
 import { ValueBuffer } from '../../../values/valueBuffer.js';
 
-/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
-/** @import {RunContext} from '../../../passes/ir/runContext.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {RunContext} from '../../../run/runContext.js' */
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 
 /**
@@ -108,7 +108,7 @@ export default function atRuleReducer(
       const values = new Map();
       for (const { index } of references) {
         const record =
-          /** @type {import('../../../passes/ir/declarationRecord.js').DeclarationRecord} */ (
+          /** @type {import('../../../ir/declarationRecord.js').DeclarationRecord} */ (
             records.entry(index)
           );
         const value = declaredValue(tokenLists, record);

@@ -34,10 +34,10 @@ export type Options = MinifyColorOptions;
  *
  * @param {Options} config
  * @param {readonly string[] | undefined} browsers
- * @return {import('../../pipeline/host.js').Stage}
+ * @return {import('../../run/host.js').Stage}
  */
-declare function compileColormin(config: Options, browsers: readonly string[] | undefined): import('../../pipeline/host.js').Stage;
-/** @satisfies {import('../../pipeline/host.js').StageEntry} */
+declare function compileColormin(config: Options, browsers: readonly string[] | undefined): import('../../run/host.js').Stage;
+/** @satisfies {import('../../run/host.js').StageEntry} */
 declare const colormin: {
     create: typeof compileColormin;
 };

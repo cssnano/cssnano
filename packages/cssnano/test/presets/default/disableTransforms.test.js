@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import preset from '../../../src/presets/default.js';
 import { repositoryFile } from '../../../../../util/testHelpers.js';
-import { mergeOracleDifference } from '../../../script/passes/merge/rules/lib/mergeOracle.js';
+import { mergeOracleDifference } from '../../../script/merge/rules/lib/mergeOracle.js';
 
 /**
  * @param {string} css

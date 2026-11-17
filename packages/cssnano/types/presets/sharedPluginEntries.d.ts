@@ -12,7 +12,7 @@ export declare const discardCommentsEntry: readonly [{
     readonly optionKeys: readonly ["removeAll", "remove"];
 }];
 export declare const normalizeWhitespaceEntry: readonly [{
-    create: () => import("../pipeline/host.js").Stage;
+    create: () => import("../run/host.js").Stage;
 }, "normalizeWhitespace", {
     readonly optionKeys: readonly [];
     readonly field: 'normalizeWhitespace';

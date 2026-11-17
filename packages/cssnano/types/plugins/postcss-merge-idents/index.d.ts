@@ -1,7 +1,7 @@
-import type { ArenaIndex } from '../../passes/ir/blockRecord.js';
-import type { BlockRecords } from '../../passes/ir/blockRecords.js';
-import type { RecordSymbolLists } from '../../pipeline/symbolLists.js';
-import type { RunContext } from '../../passes/ir/runContext.js';
+import type { ArenaIndex } from '../../ir/blockRecord.js';
+import type { BlockRecords } from '../../ir/blockRecords.js';
+import type { RecordSymbolLists } from '../../run/symbolLists.js';
+import type { RunContext } from '../../run/runContext.js';
 /**
  * Merges the names of the advanced transform's lists. The walk up
  * collects the lists, so the transform needs no walk of its own.

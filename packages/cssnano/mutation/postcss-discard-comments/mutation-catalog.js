@@ -9,22 +9,20 @@ export const test = new URL(
 ).href;
 
 const replaceComments = new URL(
-  '../../src/pipeline/comments/replaceComments.js',
+  '../../src/run/comments/replaceComments.js',
   import.meta.url
 ).href;
 
-const walk = new URL('../../src/pipeline/walkDown.js', import.meta.url).href;
+const walk = new URL('../../src/run/walkDown.js', import.meta.url).href;
 
-const ruleWalk = new URL('../../src/pipeline/ruleWalk.js', import.meta.url)
-  .href;
+const ruleWalk = new URL('../../src/run/ruleWalk.js', import.meta.url).href;
 
 const declarationWalk = new URL(
-  '../../src/pipeline/declarationWalk.js',
+  '../../src/run/declarationWalk.js',
   import.meta.url
 ).href;
 
-const atRuleWalk = new URL('../../src/pipeline/atRuleWalk.js', import.meta.url)
-  .href;
+const atRuleWalk = new URL('../../src/run/atRuleWalk.js', import.meta.url).href;
 
 export const mutations = [
   {

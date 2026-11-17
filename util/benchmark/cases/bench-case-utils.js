@@ -7,12 +7,8 @@ const require = createRequire(import.meta.url);
 // host is loaded only for descriptors, because the harness also runs against
 // base revisions that have neither descriptors nor the host module.
 function stagePlugin(entry, options = {}) {
-  const {
-    hostPlugin,
-  } = require('../../../packages/cssnano/src/pipeline/host.js');
-  const {
-    hostPlan,
-  } = require('../../../packages/cssnano/src/pipeline/hostPlan.js');
+  const { hostPlugin } = require('../../../packages/cssnano/src/run/host.js');
+  const { hostPlan } = require('../../../packages/cssnano/src/run/hostPlan.js');
   return hostPlugin(hostPlan({ members: [{ entry, options, targets: true }] }));
 }
 

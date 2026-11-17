@@ -1,5 +1,5 @@
 import { isInvalidSelector } from './lib/isInvalidSelector.js';
-import type { Stage } from '../../pipeline/host.js';
+import type { Stage } from '../../run/host.js';
 export type Options = {
     /**
      * Sorts the selectors of a list alphabetically. (default: true)

@@ -9,7 +9,7 @@ import { sameTokenText } from '../../values/sameTokenText.js';
 /** @import { TokenUnicodeRange } from '@csstools/css-tokenizer' */
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenEdit} from '../../values/valueBuffer.js' */
-/** @import {Reducer, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {Reducer, Stage, StageEntry} from '../../run/host.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 const maxCodePoint = 0x10ffff;

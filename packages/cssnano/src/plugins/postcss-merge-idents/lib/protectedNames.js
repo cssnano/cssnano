@@ -5,7 +5,7 @@ import {
   AT_RULE_STATEMENT,
   DECLARATION,
   RULE,
-} from '../../../passes/ir/blockRecord.js';
+} from '../../../ir/blockRecord.js';
 import { classifyDeclaration } from './grammar.js';
 import { trailingEscape } from './trailingEscape.js';
 import {
@@ -13,15 +13,15 @@ import {
   declaredValueTokens,
   atRuleAt,
   preludeTextOf,
-} from '../../../passes/ir/declaredText.js';
+} from '../../../ir/declaredText.js';
 import { walkValue } from './valueWalk.js';
 
 const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
-/** @import {TokenLists} from '../../../passes/ir/tokenLists.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 /**
  * @param {import('@csstools/css-tokenizer').CSSToken} token
@@ -118,7 +118,7 @@ function spellingsOf(value, restored) {
  * restored text is tokenized.
  *
  * @param {TokenLists} tokenLists
- * @param {import('../../../passes/ir/declarationRecord.js').DeclarationRecord} record
+ * @param {import('../../../ir/declarationRecord.js').DeclarationRecord} record
  * @param {string} value the result of `declaredValue`
  * @param {string} restored the result of `trailingEscape`
  * @return {readonly CSSToken[]}
@@ -216,7 +216,7 @@ function scanDeclarations(
     forEachDeclaration(records, rule, (index) => {
       const value = declaredValue(
         tokenLists,
-        /** @type {import('../../../passes/ir/declarationRecord.js').DeclarationRecord} */ (
+        /** @type {import('../../../ir/declarationRecord.js').DeclarationRecord} */ (
           records.entry(index)
         )
       );
@@ -248,7 +248,7 @@ function scanDeclarations(
   }
   for (const index of decls) {
     const record =
-      /** @type {import('../../../passes/ir/declarationRecord.js').DeclarationRecord} */ (
+      /** @type {import('../../../ir/declarationRecord.js').DeclarationRecord} */ (
         records.entry(index)
       );
     const prop = asciiLowerCase(record.prop);

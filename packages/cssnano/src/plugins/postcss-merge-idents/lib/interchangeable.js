@@ -1,10 +1,10 @@
 import { compareAtRulePriority } from './layerRegistry.js';
 import { createReplacement } from './valueRewriter.js';
-import { bodyId } from '../../../passes/ir/structuralIds.js';
+import { bodyId } from '../../../ir/structuralIds.js';
 
-/** @import {ArenaIndex} from '../../../passes/ir/blockRecord.js' */
-/** @import {BlockRecords} from '../../../passes/ir/blockRecords.js' */
-/** @import {DeclarationKeys} from '../../../passes/ir/declarationKey.js' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {DeclarationKeys} from '../../../ir/declarationKey.js' */
 
 /**
  * @typedef {Array<{ name: string, copies: AtRuleEntry[] }>} Group names that

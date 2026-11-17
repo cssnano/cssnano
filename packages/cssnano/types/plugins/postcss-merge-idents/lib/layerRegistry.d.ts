@@ -1,6 +1,6 @@
-import type { ArenaIndex } from '../../../passes/ir/blockRecord.js';
-import type { BlockRecords } from '../../../passes/ir/blockRecords.js';
-import type { TokenLists } from '../../../passes/ir/tokenLists.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { TokenLists } from '../../../ir/tokenLists.js';
 declare class LayerRegistry {
     records: BlockRecords;
     tokenLists: TokenLists;

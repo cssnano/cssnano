@@ -2,8 +2,8 @@ import postcss from 'postcss';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { browserTargets } from '../packages/cssnano/src/utils/browserTargets.js';
-import { hostPlugin } from '../packages/cssnano/src/pipeline/host.js';
-import { hostPlan } from '../packages/cssnano/src/pipeline/hostPlan.js';
+import { hostPlugin } from '../packages/cssnano/src/run/host.js';
+import { hostPlan } from '../packages/cssnano/src/run/hostPlan.js';
 import { configureValidated } from '../packages/cssnano/src/presets/configurePlugins.js';
 import { advancedPresetEntries } from '../packages/cssnano/src/presets/advancedPlugins.js';
 import { normalizeWhitespaceEntry } from '../packages/cssnano/src/presets/sharedPluginEntries.js';
@@ -85,7 +85,7 @@ function processCSSFactory(plugin) {
  * are resolved for every stage, so a stage that ignores them is built once per
  * targets array, which changes nothing it outputs.
  *
- * @param {import('../packages/cssnano/src/pipeline/host.js').StageEntry} entry
+ * @param {import('../packages/cssnano/src/run/host.js').StageEntry} entry
  */
 function oneStagePlugin(entry) {
   return (options = {}) =>

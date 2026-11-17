@@ -1,7 +1,7 @@
-import type { ArenaIndex } from '../../passes/ir/blockRecord.js';
-import type { BlockRecords } from '../../passes/ir/blockRecords.js';
-import type { RunContext } from '../../passes/ir/runContext.js';
-import type { RecordSymbolLists } from '../../pipeline/symbolLists.js';
+import type { ArenaIndex } from '../../ir/blockRecord.js';
+import type { BlockRecords } from '../../ir/blockRecords.js';
+import type { RunContext } from '../../run/runContext.js';
+import type { RecordSymbolLists } from '../../run/symbolLists.js';
 export type Options = {
     /**
      * Discards unused font face rules. (default: true)

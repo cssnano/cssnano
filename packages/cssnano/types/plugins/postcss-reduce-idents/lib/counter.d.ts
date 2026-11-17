@@ -1,6 +1,6 @@
-import type { ArenaIndex } from '../../../passes/ir/blockRecord.js';
-import type { BlockRecords } from '../../../passes/ir/blockRecords.js';
-import type { RunContext } from '../../../passes/ir/runContext.js';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { RunContext } from '../../../run/runContext.js';
 /**
  * @param {(value: string, index: number) => string} encoder
  */

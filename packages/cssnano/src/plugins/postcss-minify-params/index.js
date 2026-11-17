@@ -1,7 +1,7 @@
 import { anyAffected } from '#utils/browser-bugs';
 import reduceParams from './lib/transform.js';
 
-/** @import {AtRulePart, Stage, StageEntry} from '../../pipeline/host.js' */
+/** @import {AtRulePart, Stage, StageEntry} from '../../run/host.js' */
 
 /**
  * @typedef {object} Options

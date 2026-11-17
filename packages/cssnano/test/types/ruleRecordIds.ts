@@ -1,5 +1,5 @@
-import type { RuleRecord } from '../../types/passes/ir/ruleRecord.js';
-import type { BlockRecords } from '../../types/passes/ir/blockRecords.js';
+import type { RuleRecord } from '../../types/ir/ruleRecord.js';
+import type { BlockRecords } from '../../types/ir/blockRecords.js';
 
 // Type-level checks: a rule's selector ids and its merged flag are read-only
 // outside the edits of its selector list. Each line marked below must fail to

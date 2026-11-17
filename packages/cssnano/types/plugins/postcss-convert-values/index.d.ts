@@ -1,4 +1,4 @@
-import type { Stage } from '../../pipeline/host.js';
+import type { Stage } from '../../run/host.js';
 export type Options = import('./lib/findReplacements.js').Options;
 /**
  * The stage for one run. It converts the lengths, times, angles and frequencies
