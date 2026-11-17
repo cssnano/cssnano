@@ -64,16 +64,8 @@ describe('Browserslist options of the place-* gate', () => {
     );
   });
 
-  test('takes stats from the PostCSS options when the plugin has none', async () => {
-    const legacyOnly = { safari: { 10.1: 100 } };
-    assert.equal(
-      await run(withTargets('> 50% in my stats'), { stats: legacyOnly }),
-      longhands
-    );
-  });
-
   test('resolves the targets from the query of the preset targets', () => {
-    assert.deepEqual(resolveTargets(withTargets('chrome 120'), undefined), [
+    assert.deepEqual(resolveTargets({ query: 'chrome 120' }, undefined), [
       'chrome 120',
     ]);
   });

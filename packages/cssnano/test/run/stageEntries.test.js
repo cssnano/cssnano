@@ -3,7 +3,6 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import defaultPreset from '#presets/default';
 import { configurePlugins } from '../../src/presets/configurePlugins.js';
-import { browserTargets } from '../../src/utils/browserTargets.js';
 import { hostPlugin } from '../../src/run/host.js';
 import { hostPlan } from '../../src/run/hostPlan.js';
 
@@ -14,14 +13,17 @@ import { hostPlan } from '../../src/run/hostPlan.js';
  * stage logs the name of the entry for each selector it reads.
  *
  * @param {string} option
- * @param {{log: string[], built: {option: string, options: Record<PropertyKey, unknown>}[], targets?: true, returnsNull?: true}} state
+ * @param {{log: string[], built: {option: string, options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined}[], targets?: true, returnsNull?: true}} state
  * @returns {PluginEntry}
  */
 function stageEntry(option, { log, built, targets, returnsNull }) {
   return /** @type {PluginEntry} */ ([
     {
-      create(/** @type {Record<PropertyKey, unknown>} */ options) {
-        built.push({ option, options });
+      create(
+        /** @type {Record<PropertyKey, unknown>} */ options,
+        /** @type {readonly string[] | undefined} */ resolved
+      ) {
+        built.push({ option, options, targets: resolved });
         if (returnsNull) return null;
         return {
           selector() {
@@ -38,7 +40,7 @@ function stageEntry(option, { log, built, targets, returnsNull }) {
   ]);
 }
 
-/** @returns {{log: string[], built: {option: string, options: Record<PropertyKey, unknown>}[]}} */
+/** @returns {{log: string[], built: {option: string, options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined}[]}} */
 function state() {
   return { log: [], built: [] };
 }
@@ -109,16 +111,30 @@ describe('stage entries in a preset', () => {
 
   test('a stage receives the browser targets only when its entry reads them', async () => {
     const s = state();
-    const browserslist = { query: 'defaults' };
     await ranStages(
       s,
       [stageEntry('reads', { ...s, targets: true }), stageEntry('ignores', s)],
-      { browserslist }
+      { browserslist: { query: 'chrome 120' } }
     );
     const reads = s.built.find(({ option }) => option === 'reads');
     const ignores = s.built.find(({ option }) => option === 'ignores');
-    assert.deepStrictEqual(reads?.options[browserTargets], browserslist);
-    assert.equal(ignores?.options[browserTargets], undefined);
+    assert.ok(reads);
+    assert.deepStrictEqual([...reads.targets], ['chrome 120']);
+    assert.equal(ignores?.targets, undefined);
+  });
+
+  test('a host resolves the browser targets of its plan, not the options of its members', async () => {
+    const s = state();
+    const [entry] = stageEntry('reads', { ...s, targets: true });
+    await postcss([
+      hostPlugin(
+        hostPlan({
+          members: [{ entry, options: {}, targets: true }],
+          browserslist: { query: 'chrome 120' },
+        })
+      ),
+    ]).process('a{}', { from: undefined });
+    assert.deepStrictEqual([...s.built[0].targets], ['chrome 120']);
   });
 
   test('the default preset runs its comment stage, its stage entries, merge and the walk up in one host plugin', () => {

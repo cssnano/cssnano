@@ -12,9 +12,9 @@ import {
   LonghandRound,
 } from '../../src/merge/longhand/canonicalize.js';
 import { AT_RULE_BLOCK, RULE } from '../../src/ir/blockRecord.js';
-import { testTargets, withTargets } from '../../../../util/testHelpers.js';
+import { testTargets } from '../../../../util/testHelpers.js';
 
-const browsers = resolveTargets(withTargets(testTargets), undefined);
+const browsers = resolveTargets({ query: testTargets }, undefined);
 
 /**
  * Builds the records of `css` and the longhand round of its run.

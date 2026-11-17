@@ -1,6 +1,5 @@
 import { existsSync } from 'node:fs';
 import postcss from 'postcss';
-import { browserTargets } from '../../../packages/cssnano/src/utils/browserTargets.js';
 
 const onlyTransformPath =
   '../../../packages/cssnano/test/merge/onlyTransform.js';
@@ -29,6 +28,16 @@ async function loadTransform(transform) {
   return module.default;
 }
 
+// A revision before the plan-level targets reads them under the browserTargets
+// symbol, so the case passes the key of the side it runs against. Otherwise
+// the older side ignores the targets and gets the test targets instead.
+const targetsModule =
+  await import('../../../packages/cssnano/src/utils/browserTargets.js');
+const targetOptions = (/** @type {object} */ targets) =>
+  'browserTargets' in targetsModule
+    ? { [targetsModule.browserTargets]: targets }
+    : { browserslist: targets };
+
 const creators = {
   mergeLonghand: await loadTransform('mergeLonghand'),
   discardDuplicates: await loadTransform('discardDuplicates'),
@@ -49,7 +58,7 @@ function mergeCase(transform, css, options = {}) {
     plugin: 'merge-transforms',
     createProcessor() {
       const targets = Object.freeze({ ...options.browserslist });
-      return postcss([creators[transform]({ [browserTargets]: targets })]);
+      return postcss([creators[transform](targetOptions(targets))]);
     },
     css,
   };

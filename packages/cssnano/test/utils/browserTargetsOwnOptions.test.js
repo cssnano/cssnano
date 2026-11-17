@@ -26,16 +26,4 @@ describe('resolveTargets for a plugin that runs alone', () => {
     resolveTargets({}, { opts: {}, warn() {} }, browserslist);
     assert.equal(calls[0].query, defaultTargetsQuery);
   });
-
-  test('takes env and stats from the PostCSS result options when no preset gives targets', () => {
-    const { browserslist, calls } = recordingBrowserslist();
-    const stats = { chrome: { 150: 1 } };
-    resolveTargets(
-      {},
-      { opts: { env: 'modern', stats }, warn() {} },
-      browserslist
-    );
-    assert.equal(calls[0].opts.env, 'modern');
-    assert.equal(calls[0].opts.stats, stats);
-  });
 });

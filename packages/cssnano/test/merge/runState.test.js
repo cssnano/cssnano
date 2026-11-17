@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { browserTargets } from '#utils/browser-targets';
 import { onlyTransform } from './onlyTransform.js';
 
 /** The three merge transforms, in the order the preset runs them. */
@@ -13,7 +12,7 @@ const MERGE_NAMES = ['mergeLonghand', 'discardDuplicates', 'mergeRules'];
  * @param {readonly string[]} browsers
  */
 function mergePlugin(browsers) {
-  return onlyTransform(MERGE_NAMES)({ [browserTargets]: { query: browsers } });
+  return onlyTransform(MERGE_NAMES)({ browserslist: { query: browsers } });
 }
 
 // `5dvh` needs support that the older target lacks, so whether `2em` is a

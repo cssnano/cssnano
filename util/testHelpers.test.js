@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import colormin from '../packages/cssnano/src/plugins/postcss-colormin/index.js';
 
 const plugin = oneStagePlugin(colormin);
-import { browserTargets } from '../packages/cssnano/src/utils/browserTargets.js';
 import { oneStagePlugin, processCSSFactory } from './testHelpers.js';
 
 // rgb() with an alpha channel is written as rgba() for IE 11 and as hex for
@@ -39,7 +38,7 @@ describe('processCSSFactory without named targets', () => {
   test('keeps the targets a test names over the test targets', async () => {
     const { processor } = processCSSFactory(plugin);
     const { css } = await processor(alphaColor, {
-      [browserTargets]: { query: 'chrome 120' },
+      browserslist: { query: 'chrome 120' },
     });
     assert.equal(css, 'a{color:#00000080}');
   });

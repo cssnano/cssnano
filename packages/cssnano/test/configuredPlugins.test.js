@@ -1,29 +1,31 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { configurePlugins } from '../src/presets/configurePlugins.js';
-import { browserTargets } from '../src/utils/browserTargets.js';
 import { advancedPresetEntries } from '../src/presets/advancedPlugins.js';
 import { defaultPluginEntries } from '../src/presets/defaultPlugins.js';
 import { litePluginEntries } from '../src/presets/litePlugins.js';
 
-// Browser targets that a preset shares with its target-reading plugins.
-const browserslist = { query: 'defaults', env: 'production' };
+// Browser targets that a preset resolves for its stages that read them.
+const browserslist = { query: 'chrome 120' };
 
 /**
- * Replaces the create of each entry with one that records the options it is
- * called with, so the test sees the configuration without walking a stylesheet.
- * A stage records its options and builds no stage; a transform keeps its options.
+ * Replaces the create of each entry with one that records the options and the
+ * browser targets it is called with, so the test sees the configuration without
+ * walking a stylesheet. A stage builds no stage; a transform keeps its options.
  *
  * @param {readonly unknown[][]} entries
- * @returns {{entries: unknown[][], calls: {name: string, options: Record<PropertyKey, unknown>}[]}}
+ * @returns {{entries: unknown[][], calls: {name: string, options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined}[]}}
  */
 function recording(entries) {
-  /** @type {{name: string, options: Record<PropertyKey, unknown>}[]} */
+  /** @type {{name: string, options: Record<PropertyKey, unknown>, targets: readonly string[] | undefined}[]} */
   const calls = [];
   const recorded = entries.map(([, option, settings]) => [
     {
-      create: (/** @type {Record<PropertyKey, any>} */ options) => {
-        calls.push({ name: option, options: { ...options } });
+      create: (
+        /** @type {Record<PropertyKey, any>} */ options,
+        /** @type {readonly string[] | undefined} */ targets
+      ) => {
+        calls.push({ name: option, options: { ...options }, targets });
         return settings.transform ? options : null;
       },
     },
@@ -68,6 +70,17 @@ const presets = {
   advanced: advancedPresetEntries,
 };
 
+test('the lite preset resolves no browser targets, so an invalid query neither throws nor warns', () => {
+  const warnings = [];
+  const plugins = configurePlugins(litePluginEntries, {
+    browserslist: { query: 'not a real browser' },
+  });
+  for (const plugin of plugins) {
+    plugin.prepare({ opts: {}, warn: (text) => warnings.push(text) });
+  }
+  assert.deepStrictEqual(warnings, []);
+});
+
 describe('plugins configured by each preset', () => {
   for (const [presetName, entries] of Object.entries(presets)) {
     const units = pluginUnits(entries);
@@ -75,23 +88,20 @@ describe('plugins configured by each preset', () => {
     test(`${presetName} preset runs each plugin with the defaults its entry declares`, () => {
       for (const { name, options } of configuredCalls(entries, {})) {
         const settings = units.find((unit) => unit.name === name);
-        // A target-reading plugin gets the preset's targets, which are empty when none are given.
-        const expected = settings.targets
-          ? { ...settings.defaults, [browserTargets]: {} }
-          : { ...settings.defaults };
-        assert.deepStrictEqual(options, expected, name);
+        assert.deepStrictEqual(options, { ...settings.defaults }, name);
       }
     });
 
-    test(`${presetName} preset gives the browser targets only to plugins that read them`, () => {
-      for (const { name, options } of configuredCalls(entries, {
+    test(`${presetName} preset resolves the browser targets for the stages that read them, and only those`, () => {
+      for (const { name, targets } of configuredCalls(entries, {
         browserslist,
       })) {
         const settings = units.find((unit) => unit.name === name);
+        if (settings.transform) continue;
         if (settings.targets) {
-          assert.deepStrictEqual(options[browserTargets], browserslist, name);
+          assert.deepStrictEqual([...targets], ['chrome 120'], name);
         } else {
-          assert.equal(options[browserTargets], undefined, name);
+          assert.equal(targets, undefined, name);
         }
       }
     });

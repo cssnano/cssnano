@@ -1,6 +1,5 @@
 import postcss from 'postcss';
 import { onlyTransform } from '../../../test/merge/onlyTransform.js';
-import { browserTargets } from '../../../src/utils/browserTargets.js';
 import { discardDuplicates as referenceDedupe } from './referenceDedupe.js';
 import { generateDuplicateCases, serializeNode } from './generate.js';
 
@@ -16,7 +15,7 @@ import { generateDuplicateCases, serializeNode } from './generate.js';
 function hookOf(names) {
   const creator = onlyTransform(names);
   return (root) => {
-    postcss([creator({ [browserTargets]: { query: [] } })])
+    postcss([creator({ browserslist: { query: [] } })])
       .process(root, {
         from: undefined,
       })

@@ -6,8 +6,8 @@ import workingDirectory from './workingDirectory.js';
 /** @import {Result} from 'postcss' */
 
 /**
- * The browser targets a preset gives every target-reading plugin. The fields
- * are the options of browserslist; an unset one is left to browserslist.
+ * The browser targets of one run, which the run plan names. The fields are the
+ * options of browserslist; an unset one is left to browserslist.
  * @typedef {object} SharedTargets
  * @property {string | string[]} [query] the positional queries of browserslist
  * @property {string} [env]
@@ -20,21 +20,8 @@ import workingDirectory from './workingDirectory.js';
  */
 
 /**
- * The options of a plugin that reads the browser targets. Only a preset sets
- * browserTargets, so a plugin that runs alone has none and uses the defaults.
- * @typedef {{[browserTargets]?: SharedTargets}} TargetOptions
- */
-
-/**
  * @typedef {((query: SharedTargets['query'], options: Omit<SharedTargets, 'query'>) => string[]) & {loadConfig: (options: Pick<SharedTargets, 'path' | 'env' | 'config'>) => string | string[] | undefined}} Browserslist
  */
-
-/**
- * Key under which a preset gives every target-reading plugin the browser
- * targets it was configured with. A symbol keeps them out of the plugin
- * options a user writes, so only a preset can set them.
- */
-export const browserTargets = Symbol('cssnano.browserTargets');
 
 /**
  * The targets when the user states no preference: browsers that support
@@ -182,34 +169,32 @@ function searchPathOf(shared, resultOptions) {
 }
 
 /**
- * Resolves the targets for one plugin. The preset's targets are the only ones
- * a plugin takes, and the query wins over the project config. The config is
- * searched from the browserslist `path`, else the PostCSS `from` option, and
- * read from the browserslist `config` when that is set. Without a query, the
- * targets are the default ones rather than browserslist's own `defaults`. A
- * query that matches no browser yields an empty list and a warning on the
- * result. Each call resolves again; a host plugin resolves once per file.
- * @param {object} options the plugin options, which may hold a preset's targets
+ * Resolves the targets of a run. The query wins over the project config. The
+ * config is searched from the browserslist `path`, else the PostCSS `from`
+ * option, and read from the browserslist `config` when that is set. Without a
+ * query, the targets are the default ones rather than browserslist's own
+ * `defaults`. A query that matches no browser yields an empty list and a
+ * warning on the result. The env and stats are the ones the shared targets set,
+ * never the PostCSS process options. Each call resolves again; a host plugin
+ * resolves once per file.
+ * @param {SharedTargets | undefined} shared the browser targets of the run, which may be unset
  * @param {Result | undefined} result
  * @param {Browserslist} [browserslist]
  * @return {readonly string[]}
  */
 export function resolveTargets(
-  options,
+  shared,
   result,
   // browserslist unwraps dataByBrowser at runtime, which its own types omit.
   browserslist = /** @type {Browserslist} */ (defaultBrowserslist)
 ) {
-  const resultOptions =
-    /** @type {{env?: string, stats?: SharedTargets['stats'], from?: string, file?: string}} */ (
-      result?.opts || {}
-    );
-  const shared = /** @type {TargetOptions} */ (options)[browserTargets];
+  const resultOptions = /** @type {{from?: string, file?: string}} */ (
+    result?.opts || {}
+  );
   const query = shared?.query;
   const config = shared?.config;
-  // The preset's env and stats win over the result's.
-  const env = shared?.env ?? resultOptions.env;
-  const stats = shared?.stats ?? resultOptions.stats;
+  const env = shared?.env;
+  const stats = shared?.stats;
   const path = searchPathOf(shared, resultOptions);
   const resolveOptions = {
     env,

@@ -14,7 +14,6 @@ const { AT_RULE_BLOCK, DECLARATION, RULE } =
   await import('../../src/ir/blockRecord.js');
 const { onlyTransform, MERGE_TRANSFORMS } =
   await import('../merge/onlyTransform.js');
-const { browserTargets } = await import('#utils/browser-targets');
 const { hostPlan } = await import('../../src/run/hostPlan.js');
 const { ident, integer } =
   await import('../../src/values/tokenConstructors.js');
@@ -331,7 +330,7 @@ suite('the merge longhand writers no traced reader reads', () => {
     );
     postcss([
       onlyTransform(MERGE_TRANSFORMS)({
-        [browserTargets]: { query: ['defaults'] },
+        browserslist: { query: ['defaults'] },
       }),
     ])
       .process(root, { from: undefined })
@@ -343,7 +342,7 @@ suite('the merge longhand writers no traced reader reads', () => {
     const root = postcss.parse('a{margin:1px /*x*/ 2px}');
     postcss([
       onlyTransform(MERGE_TRANSFORMS)({
-        [browserTargets]: { query: ['defaults'] },
+        browserslist: { query: ['defaults'] },
       }),
     ])
       .process(root, { from: undefined })
@@ -357,7 +356,7 @@ suite('the merge longhand writers no traced reader reads', () => {
     );
     postcss([
       onlyTransform(MERGE_TRANSFORMS)({
-        [browserTargets]: { query: ['defaults'] },
+        browserslist: { query: ['defaults'] },
       }),
     ])
       .process(root, { from: undefined })
@@ -369,7 +368,7 @@ suite('the merge longhand writers no traced reader reads', () => {
     const root = postcss.parse('a{columns:2 /*x*/ auto}');
     postcss([
       onlyTransform(MERGE_TRANSFORMS)({
-        [browserTargets]: { query: ['defaults'] },
+        browserslist: { query: ['defaults'] },
       }),
     ])
       .process(root, { from: undefined })
