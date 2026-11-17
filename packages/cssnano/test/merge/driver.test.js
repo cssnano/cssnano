@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
-import { browserTargets } from '#utils/browser-targets';
 import { MERGE_TRANSFORMS, onlyTransform } from './onlyTransform.js';
 import {
   canonicalizeRecords,
@@ -11,9 +10,9 @@ import { targetSupportOf } from '../../src/merge/longhand/targetSupport.js';
 import { createRunContext } from '../../src/run/runContext.js';
 import { runDriver } from '../../src/run/runDriver.js';
 import { resolveTargets } from '../../src/utils/browserTargets.js';
-import { testTargets, withTargets } from '../../../../util/testHelpers.js';
+import { testTargets } from '../../../../util/testHelpers.js';
 
-const targets = resolveTargets(withTargets(testTargets), undefined);
+const targets = resolveTargets({ query: testTargets }, undefined);
 
 /**
  * The merge run through the host, with rule merging on unless `rules` is false.
@@ -27,7 +26,7 @@ function runMergePass(css, options = {}) {
     options.rules === false
       ? MERGE_TRANSFORMS.filter((name) => name !== 'mergeRules')
       : MERGE_TRANSFORMS;
-  const plugin = onlyTransform(names)({ [browserTargets]: { query: targets } });
+  const plugin = onlyTransform(names)({ browserslist: { query: targets } });
   return postcss([plugin]).process(css, { from: undefined }).css;
 }
 
@@ -366,7 +365,7 @@ test('the merge pass gives a block that no duplicate removal or rule merge chang
 test('a round reduces one block through `first` as `canonicalizeRecords` does', () => {
   const css =
     'a{margin-top:1px;margin-right:1px;margin-bottom:1px;margin-left:1px}';
-  const browsers = resolveTargets(withTargets(testTargets), undefined);
+  const browsers = resolveTargets({ query: testTargets }, undefined);
   const support = targetSupportOf(browsers);
   /** @param {(records: import('../../src/ir/blockRecords.js').BlockRecords, round: LonghandRound) => void} reduce */
   const runWith = (reduce) => {

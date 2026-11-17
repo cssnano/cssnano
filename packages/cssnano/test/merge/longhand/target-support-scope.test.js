@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { onlyTransform } from '../onlyTransform.js';
-import { browserTargets } from '#utils/browser-targets';
 import { isFallback } from '../../../src/merge/longhand/isFallback.js';
 import { longstandingFeatures } from '../../../src/run/syntaxFeatures.js';
 import { itemOf } from './helpers/declarationItems.js';
@@ -22,7 +21,7 @@ const defaults = ['defaults'];
  */
 function runLonghand(root, browsers) {
   const plugin = onlyTransform(['mergeLonghand'])({
-    [browserTargets]: { query: browsers },
+    browserslist: { query: browsers },
   });
   return postcss([plugin]).process(root, { from: undefined }).root;
 }

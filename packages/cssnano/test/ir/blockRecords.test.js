@@ -29,7 +29,6 @@ import { RuleRecord } from '../../src/ir/ruleRecord.js';
 import { nodeOf } from '../../src/ir/tree/nodeTable.js';
 import { TokenLists } from '../../src/ir/tokenLists.js';
 import { onlyTransform, MERGE_TRANSFORMS } from '../merge/onlyTransform.js';
-import { browserTargets } from '#utils/browser-targets';
 
 const selectorIds = new SelectorIds();
 const tokenLists = new TokenLists();
@@ -163,7 +162,7 @@ test('the merge pass should keep the records in step with the tree through its j
     () =>
       postcss([
         onlyTransform(MERGE_TRANSFORMS)({
-          [browserTargets]: { query: ['chrome 120'] },
+          browserslist: { query: ['chrome 120'] },
         }),
       ]).process(root, { from: undefined }).root
   );

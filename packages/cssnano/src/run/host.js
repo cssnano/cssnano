@@ -1,4 +1,4 @@
-import { browserTargets, resolveTargets } from '#utils/browser-targets';
+import { resolveTargets } from '#utils/browser-targets';
 import { declarationPlansOf } from './declarationWalk.js';
 import { commentStateOf } from './comments/commentState.js';
 import { noTargets, runStylesheet } from './runStylesheet.js';
@@ -78,8 +78,8 @@ import { isEmptyPlan } from './hostPlan.js';
  */
 
 /**
- * The merge of a run: its options, with the browser targets, and its runner,
- * which the preset gives so the host does not import the merge pass.
+ * The merge of a run: its options and its runner, which the preset gives so the
+ * host does not import the merge pass. The browser targets come from the plan.
  * @typedef {{options: Record<PropertyKey, unknown>, runner: import('../merge/index.js').MergeRunner}} Merge
  */
 
@@ -88,24 +88,6 @@ import { isEmptyPlan } from './hostPlan.js';
  * set when the entry reads the browser targets.
  * @typedef {{entry: StageEntry, options: Record<PropertyKey, unknown>, targets: boolean}} HostMember
  */
-
-/**
- * The browser targets of a member or the merge, resolved once for each browserTargets
- * object that a file's members share.
- * @param {Map<unknown, readonly string[]>} resolutions the targets resolved so far for one file
- * @param {Record<PropertyKey, unknown>} options
- * @param {import('postcss').Result} result
- * @returns {readonly string[]}
- */
-function targetsOf(resolutions, options, result) {
-  const key = options[browserTargets];
-  let targets = resolutions.get(key);
-  if (targets === undefined) {
-    targets = resolveTargets(options, result);
-    resolutions.set(key, targets);
-  }
-  return targets;
-}
 
 /**
  * @param {RunPlan} plan the stages, merge, transforms and advanced transforms of one run
@@ -118,6 +100,9 @@ export function hostPlugin(plan) {
     plan.normalizeWhitespace !== undefined ||
     plan.discardOverridden !== undefined;
   const active = !isEmptyPlan(plan);
+  // Only a stage that reads the targets, or the merge, needs them resolved.
+  const readsTargets =
+    members.some(({ targets }) => targets) || merge !== undefined;
   // Each member keeps its stage per targets array. The frozen targets of equal
   // browserslist results are one array, so the memo serves every stylesheet.
   // A member that reads no targets is created now, under noTargets.
@@ -130,30 +115,27 @@ export function hostPlugin(plan) {
   return {
     postcssPlugin: 'cssnano-host',
     prepare(result) {
-      // Members that share one browserTargets object share one resolution per file.
-      /** @type {Map<unknown, readonly string[]>} */
-      const resolutions = new Map();
+      // The run resolves its targets once per file, for every stage and the merge that read them.
+      const resolved = readsTargets
+        ? resolveTargets(plan.browserslist, result)
+        : noTargets;
       /** @type {Stage[]} */
       const stages = [];
       for (const [index, { entry, options, targets }] of members.entries()) {
-        const resolved = targets
-          ? targetsOf(resolutions, options, result)
-          : noTargets;
+        const memberTargets = targets ? resolved : noTargets;
         const memo = /** @type {WeakMap<readonly string[], Stage | null>} */ (
           memos[index]
         );
-        if (!memo.has(resolved)) {
+        if (!memo.has(memberTargets)) {
           memo.set(
-            resolved,
-            entry.create(options, targets ? resolved : undefined)
+            memberTargets,
+            entry.create(options, targets ? memberTargets : undefined)
           );
         }
-        const stage = memo.get(resolved);
+        const stage = memo.get(memberTargets);
         if (stage) stages.push(stage);
       }
-      const browsers = merge
-        ? targetsOf(resolutions, merge.options, result)
-        : undefined;
+      const browsers = merge ? resolved : undefined;
       return {
         OnceExit(root, helpers) {
           // The comment removal is read once per stylesheet, by the record walk.

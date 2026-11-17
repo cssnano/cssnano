@@ -20,16 +20,13 @@ export type SharedTargets = {
     mobileToDesktop?: boolean;
     throwOnMissing?: boolean;
 };
-export type TargetOptions = {
-    [browserTargets]?: SharedTargets;
-};
 export type Browserslist = ((query: SharedTargets['query'], options: Omit<SharedTargets, 'query'>) => string[]) & {
     loadConfig: (options: Pick<SharedTargets, 'path' | 'env' | 'config'>) => string | string[] | undefined;
 };
 /** @import {Result} from 'postcss' */
 /**
- * The browser targets a preset gives every target-reading plugin. The fields
- * are the options of browserslist; an unset one is left to browserslist.
+ * The browser targets of one run, which the run plan names. The fields are the
+ * options of browserslist; an unset one is left to browserslist.
  * @typedef {object} SharedTargets
  * @property {string | string[]} [query] the positional queries of browserslist
  * @property {string} [env]
@@ -41,19 +38,8 @@ export type Browserslist = ((query: SharedTargets['query'], options: Omit<Shared
  * @property {boolean} [throwOnMissing]
  */
 /**
- * The options of a plugin that reads the browser targets. Only a preset sets
- * browserTargets, so a plugin that runs alone has none and uses the defaults.
- * @typedef {{[browserTargets]?: SharedTargets}} TargetOptions
- */
-/**
  * @typedef {((query: SharedTargets['query'], options: Omit<SharedTargets, 'query'>) => string[]) & {loadConfig: (options: Pick<SharedTargets, 'path' | 'env' | 'config'>) => string | string[] | undefined}} Browserslist
  */
-/**
- * Key under which a preset gives every target-reading plugin the browser
- * targets it was configured with. A symbol keeps them out of the plugin
- * options a user writes, so only a preset can set them.
- */
-export declare const browserTargets: unique symbol;
 /**
  * The targets when the user states no preference: browsers that support
  * every Baseline widely available feature, plus the browsers built on their
@@ -67,17 +53,18 @@ export declare const defaultTargetsQuery = "baseline widely available with downs
  */
 export declare const sharedTargetListLimit = 500;
 /**
- * Resolves the targets for one plugin. The preset's targets are the only ones
- * a plugin takes, and the query wins over the project config. The config is
- * searched from the browserslist `path`, else the PostCSS `from` option, and
- * read from the browserslist `config` when that is set. Without a query, the
- * targets are the default ones rather than browserslist's own `defaults`. A
- * query that matches no browser yields an empty list and a warning on the
- * result. Each call resolves again; a host plugin resolves once per file.
- * @param {object} options the plugin options, which may hold a preset's targets
+ * Resolves the targets of a run. The query wins over the project config. The
+ * config is searched from the browserslist `path`, else the PostCSS `from`
+ * option, and read from the browserslist `config` when that is set. Without a
+ * query, the targets are the default ones rather than browserslist's own
+ * `defaults`. A query that matches no browser yields an empty list and a
+ * warning on the result. The env and stats are the ones the shared targets set,
+ * never the PostCSS process options. Each call resolves again; a host plugin
+ * resolves once per file.
+ * @param {SharedTargets | undefined} shared the browser targets of the run, which may be unset
  * @param {Result | undefined} result
  * @param {Browserslist} [browserslist]
  * @return {readonly string[]}
  */
-export declare function resolveTargets(options: object, result: Result | undefined, browserslist?: Browserslist): readonly string[];
+export declare function resolveTargets(shared: SharedTargets | undefined, result: Result | undefined, browserslist?: Browserslist): readonly string[];
 //# sourceMappingURL=browserTargets.d.ts.map

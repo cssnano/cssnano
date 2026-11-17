@@ -1,6 +1,5 @@
 import postcss from 'postcss';
 import assert from 'node:assert/strict';
-import { browserTargets } from '../packages/cssnano/src/utils/browserTargets.js';
 import { hostPlugin } from '../packages/cssnano/src/run/host.js';
 import { hostPlan } from '../packages/cssnano/src/run/hostPlan.js';
 import { configureValidated } from '../packages/cssnano/src/presets/configurePlugins.js';
@@ -9,15 +8,16 @@ import { normalizeWhitespaceEntry } from '../packages/cssnano/src/presets/shared
 import { defaultPluginEntries } from '../packages/cssnano/src/presets/defaultPlugins.js';
 
 /**
- * The browser targets of a plugin, as a preset gives them. The query, env and
- * stats are the ones browserslist takes; unset ones are left to browserslist.
+ * The browser targets as the `browserslist` option of a preset, so that tests
+ * pass the same shape a user writes. The query, env and stats are the ones
+ * browserslist takes; unset ones are left to browserslist.
  *
  * @param {string | string[]} [query]
  * @param {{env?: string, stats?: unknown}} [settings]
- * @returns {Record<symbol, object>}
+ * @returns {{browserslist: {query: string | string[] | undefined, env: string | undefined, stats: unknown}}}
  */
 export function withTargets(query, { env, stats } = {}) {
-  return { [browserTargets]: Object.freeze({ query, env, stats }) };
+  return { browserslist: { query, env, stats } };
 }
 
 /**
@@ -27,8 +27,7 @@ export function withTargets(query, { env, stats } = {}) {
 export const testTargets = 'ie 11';
 
 /**
- * The test targets as plugin options, shared by every plugin a test creates so
- * the host keys its resolved targets by one object.
+ * The test targets as plugin options, which every plugin a test creates shares.
  */
 const testTargetOptions = withTargets(testTargets);
 
@@ -41,13 +40,25 @@ const testTargetOptions = withTargets(testTargets);
  */
 export function withTestTargets(options) {
   if (
-    options?.[browserTargets] !== undefined ||
+    options?.browserslist !== undefined ||
     options?.from !== undefined ||
     options?.file !== undefined
   ) {
     return options;
   }
   return { ...options, ...testTargetOptions };
+}
+
+/**
+ * Splits the browser targets from the test plugin options, which a run plan
+ * takes instead, so that a stage never sees the browserslist key.
+ *
+ * @param {object} [options]
+ * @returns {{browserslist: import('../packages/cssnano/src/utils/browserTargets.js').SharedTargets | undefined, options: object}}
+ */
+export function splitTargets(options = {}) {
+  const { browserslist, ...rest } = withTestTargets(options) ?? {};
+  return { browserslist, options: rest };
 }
 
 /**
@@ -105,12 +116,15 @@ function processCSSFactory(plugin) {
  * @param {import('../packages/cssnano/src/run/host.js').StageEntry} entry
  */
 function oneStagePlugin(entry) {
-  return (options = {}) =>
-    hostPlugin(
+  return (options = {}) => {
+    const split = splitTargets(options);
+    return hostPlugin(
       hostPlan({
-        members: [{ entry, options: withTestTargets(options), targets: true }],
+        browserslist: split.browserslist,
+        members: [{ entry, options: split.options, targets: true }],
       })
     );
+  };
 }
 
 /**
@@ -154,9 +168,11 @@ function presetEntryPlugin(optionName) {
   assert.equal(entries.length, 1, `no preset entry named ${optionName}`);
   /** @param {object} [options] */
   const creator = (options = {}) => {
+    const { browserslist = { query: testTargets }, ...pluginOptions } =
+      /** @type {{browserslist?: object}} */ (options);
     const plugins = configureValidated(entries, {
-      browserslist: { query: testTargets },
-      options: { [optionName]: options },
+      browserslist,
+      options: { [optionName]: pluginOptions },
     });
     assert.equal(plugins.length, 1, `${optionName} is off`);
     return /** @type {import('postcss').Plugin} */ (plugins[0]);

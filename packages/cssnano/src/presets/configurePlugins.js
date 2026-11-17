@@ -2,7 +2,6 @@ import { validateOptions } from '../options.js';
 import { hostPlugin } from '../run/host.js';
 import { hostPlan, isEmptyPlan } from '../run/hostPlan.js';
 import isRecord from '../utils/isRecord.js';
-import { browserTargets } from '#utils/browser-targets';
 import {
   presetConfigureKey,
   presetEntriesKey,
@@ -120,23 +119,21 @@ function addTransform(draft, entry, options, settings) {
  */
 export function planOf(entries, known) {
   const {
-    browserslist = {},
+    browserslist,
     disable = [],
     options: pluginOptions = {},
   } = /** @type {{browserslist?: object, disable?: string[], options?: Record<string, object>}} */ (
     known
   );
-  // Browser targets are cssnano-wide, so every target-reading plugin gets the same ones.
-  const targets = Object.freeze({ ...browserslist });
   const disabled = new Set(/** @type {string[]} */ (disable));
+  // Browser targets are cssnano-wide, so the plan names them once for every target-reading plugin.
   /** @type {RunDraft} */
-  const draft = { members: [], symbols: [] };
+  const draft = { members: [], symbols: [], browserslist };
   for (const [entry, name, settings] of entries) {
     if (disabled.has(name)) continue;
     const options = {
       ...settings.defaults,
       ...pluginOptions[name],
-      ...(settings.targets ? { [browserTargets]: targets } : undefined),
     };
     if (settings.transform) {
       addTransform(

@@ -1,4 +1,5 @@
 /** @import {HostMember, Merge, SymbolEntry} from './host.js' */
+/** @import {SharedTargets} from '../utils/browserTargets.js' */
 
 /**
  * The whole-stylesheet transforms that a plan can turn on, one field each. A
@@ -15,6 +16,7 @@
  * @property {readonly HostMember[]} members the stages of the run, in order
  * @property {Merge | undefined} merge the merge, when it is on
  * @property {readonly SymbolEntry[]} symbols the advanced transforms, in entry order
+ * @property {SharedTargets | undefined} browserslist the browser targets of the run, which every target-reading stage and the merge resolve
  * @property {Record<PropertyKey, unknown> | undefined} normalizeWhitespace
  * @property {Record<PropertyKey, unknown> | undefined} discardOverridden
  * @property {Record<PropertyKey, unknown> | undefined} discardEmpty
@@ -36,6 +38,7 @@ export function hostPlan(parts = {}) {
     members: [],
     merge: undefined,
     symbols: [],
+    browserslist: undefined,
     normalizeWhitespace: undefined,
     discardOverridden: undefined,
     discardEmpty: undefined,

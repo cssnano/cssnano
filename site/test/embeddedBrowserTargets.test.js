@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { glob, readFile } from 'node:fs/promises';
 import * as cssnanoTargets from '../../packages/cssnano/src/utils/browserTargets.js';
-import { browserTargets } from '../../packages/cssnano/src/utils/browserTargets.js';
 
 const embedded = ['chrome 140', 'firefox 142'];
 globalThis.CSSNANO_PLAYGROUND_TARGETS = embedded;
@@ -26,7 +25,6 @@ test('the embedded targets module provides every name that cssnano imports from 
       }
     }
   }
-  assert.ok(imported.has('browserTargets'));
   assert.ok(imported.has('resolveTargets'));
   for (const name of imported) {
     assert.ok(Object.hasOwn(stub, name), name);
@@ -46,12 +44,7 @@ test('the embedded targets module fails loudly when the build-time define is mis
 
 test('the embedded targets are the list resolved when the site builds, whatever the query', () => {
   assert.deepEqual(
-    [
-      ...stub.resolveTargets(
-        { [browserTargets]: { query: 'ie 11' } },
-        undefined
-      ),
-    ],
+    [...stub.resolveTargets({ query: 'ie 11' }, undefined)],
     embedded
   );
 });

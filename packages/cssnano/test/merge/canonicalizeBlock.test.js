@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import { resolveTargets } from '#utils/browser-targets';
 import { secondRoundOfText } from './longhand/helpers/reduceRuns.js';
-import { testTargets, withTargets } from '../../../../util/testHelpers.js';
+import { testTargets } from '../../../../util/testHelpers.js';
 
-const browsers = resolveTargets(withTargets(testTargets), {
-  opts: { from: 'block.css' },
-});
+const browsers = resolveTargets(
+  { query: testTargets },
+  {
+    opts: { from: 'block.css' },
+  }
+);
 
 /**
  * Canonicalizes every declaration block of `css` in one longhand round on the

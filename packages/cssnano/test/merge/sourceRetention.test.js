@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import { onlyTransform, MERGE_TRANSFORMS } from './onlyTransform.js';
-import { browserTargets } from '#utils/browser-targets';
 
 /**
  * @param {string} css
@@ -14,7 +13,7 @@ function merge(css) {
   const root = postcss.parse(css, { from: 'in.css' });
   postcss([
     onlyTransform(MERGE_TRANSFORMS)({
-      [browserTargets]: { query: ['chrome 120'] },
+      browserslist: { query: ['chrome 120'] },
     }),
   ])
     .process(root, { from: undefined })
