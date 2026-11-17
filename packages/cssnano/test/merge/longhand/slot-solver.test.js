@@ -3,7 +3,6 @@ import postcss from 'postcss';
 import assert from 'node:assert/strict';
 import {
   processCSSFactory,
-  repositoryFile,
   withTargets,
 } from '../../../../../util/testHelpers.js';
 const plugin = onlyTransform(['mergeLonghand']);
@@ -87,7 +86,7 @@ describe('values a later declaration overrides', () => {
     const rule =
       '{margin:1px 2px 3px 4px;margin-inline-start:0;margin-left:5px;margin-right:5px}';
     const result = await postcss([plugin(modern)]).process(`a${rule}b${rule}`, {
-      from: repositoryFile,
+      from: undefined,
     });
     const [first, second] = result.css.split(/[ab]\{/v).slice(1);
     assert.equal(first, second);

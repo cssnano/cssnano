@@ -5,10 +5,7 @@ const plugin = onlyTransform(['mergeLonghand']);
 import { boxTargets } from '../../../script/merge/longhand/lib/fuzzBoxCheck.js';
 import { computedValues } from '../../../script/merge/longhand/lib/fuzzBoxOracle.js';
 import { generateBoxRules } from '../../../script/merge/longhand/lib/fuzzBoxGenerate.js';
-import {
-  repositoryFile,
-  withTargets,
-} from '../../../../../util/testHelpers.js';
+import { withTargets } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 
 /**
@@ -30,7 +27,7 @@ const casesPerSeed = 25;
 async function minify(css, overrideBrowserslist) {
   const result = await postcss([
     plugin(withTargets(overrideBrowserslist)),
-  ]).process(css, { from: repositoryFile });
+  ]).process(css, { from: undefined });
   return result.css;
 }
 

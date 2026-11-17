@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import {
+  counterStyleFunctionProperties,
   createRecordSymbolLists,
   isRecordAttached,
   recordSymbolVisit,
@@ -11,6 +12,7 @@ import { runDriver } from '../../src/run/runDriver.js';
 import { discardEmptyRecords } from '../../src/plugins/postcss-discard-empty/discardRecords.js';
 import { nodeOf } from '../../src/ir/tree/nodeTable.js';
 import { remove } from '../../src/ir/treeEdits.js';
+import { counterStyle } from '../../src/plugins/postcss-reduce-idents/lib/slots.js';
 
 /**
  * @typedef {Record<string, string[]>} TextLists the text of each entry, by list
@@ -168,4 +170,11 @@ describe('isRecordAttached', () => {
     remove(state.records, media);
     assert.equal(isRecordAttached(state.records, keyframes), false);
   });
+});
+
+test('the counter style function properties are the ones the ident slot data lists', () => {
+  assert.deepStrictEqual(
+    counterStyleFunctionProperties,
+    counterStyle.functionProperties
+  );
 });

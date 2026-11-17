@@ -169,3 +169,57 @@ test(
   'should not crash with empty layers',
   processCSS('@layer a;', '@layer a;')
 );
+
+test(
+  'should keep a keyframes whose escaped name decodes to the name an animation uses',
+  passthroughCSS('@keyframes \\66oo{0%{opacity:0}}a{animation:foo 1s}')
+);
+
+test(
+  'should keep a keyframes that an animation names with an escape',
+  passthroughCSS('@keyframes foo{0%{opacity:0}}a{animation-name:\\66oo}')
+);
+
+test(
+  'should keep a keyframes that an animation names with a string',
+  passthroughCSS('@keyframes foo{0%{opacity:0}}a{animation-name:"foo"}')
+);
+
+test(
+  'should keep a keyframes named by a string that an identifier references',
+  passthroughCSS('@keyframes "foo"{0%{opacity:0}}a{animation-name:foo}')
+);
+
+test(
+  'should remove an escaped keyframes that no animation names',
+  processCSS(
+    '@keyframes \\66oo{0%{opacity:0}}a{animation-name:bar}',
+    'a{animation-name:bar}'
+  )
+);
+
+test(
+  'should compare keyframes names case-sensitively after decoding an escape',
+  processCSS(
+    '@keyframes \\46oo{0%{opacity:0}}a{animation-name:foo}',
+    'a{animation-name:foo}'
+  )
+);
+
+test(
+  'should keep a keyframes whose escaped name follows a comment in the prelude',
+  passthroughCSS('@keyframes /*c*/ \\66oo{0%{opacity:0}}a{animation-name:foo}')
+);
+
+test(
+  'should keep an escaped keyframes that a later animation in a list names',
+  passthroughCSS('@keyframes foo{0%{opacity:0}}a{animation:a 1s,\\66oo 2s}')
+);
+
+test(
+  'should remove a keyframes whose prelude has several names, since no animation can name it',
+  processCSS(
+    '@keyframes foo bar{0%{opacity:0}}a{animation-name:foo}',
+    'a{animation-name:foo}'
+  )
+);

@@ -3,10 +3,15 @@ import {
   isTokenComma,
   isTokenDelim,
   isTokenIdent,
+  isTokenString,
   isTokenWhitespace,
 } from '@csstools/css-tokenizer';
-import { splitComma, splitSpace } from '../../values/splitTopLevel.js';
+import { splitComma } from '../../values/splitTopLevel.js';
 import cssnanoUtils from '#utils';
+import {
+  counterStyleName,
+  usedCounterStyleNames,
+} from './lib/counterStyleUses.js';
 import { DECLARATION } from '../../ir/blockRecord.js';
 import { preludeListOf } from '../../ir/declaredText.js';
 import { commentFreeText } from '../../values/tokensText.js';
@@ -49,7 +54,9 @@ function valueText(records, tokenLists, index) {
 }
 
 /**
- * The names that the declarations reference, split on commas and spaces.
+ * The keyframes names that the animation declarations reference: each
+ * identifier and string, decoded so an escaped spelling matches the name it
+ * denotes. Keywords and times are included too, which only over-keeps.
  *
  * @param {BlockRecords} records
  * @param {TokenLists} tokenLists
@@ -60,11 +67,37 @@ function referencedNames(records, tokenLists, indices) {
   /** @type {Set<string>} */
   const names = new Set();
   for (const index of indices) {
-    for (const item of splitComma(valueText(records, tokenLists, index))) {
-      for (const name of splitSpace(item)) names.add(name);
+    const entry =
+      /** @type {import('../../ir/declarationRecord.js').DeclarationRecord} */ (
+        records.entry(index)
+      );
+    for (const token of tokenLists.get(entry.valueList)) {
+      if (isTokenIdent(token) || isTokenString(token))
+        names.add(token[4].value);
     }
   }
   return names;
+}
+
+/**
+ * The name a `@keyframes` prelude defines: a lone identifier or string,
+ * decoded so an escaped spelling matches its references, or else the
+ * prelude's text.
+ *
+ * @param {readonly CSSToken[]} prelude
+ * @return {string}
+ */
+function keyframesName(prelude) {
+  /** @type {CSSToken | undefined} */
+  let name;
+  for (const token of prelude) {
+    if (isTokenWhitespace(token) || isTokenComment(token)) continue;
+    if (name !== undefined) return cleanText(prelude);
+    name = token;
+  }
+  return name !== undefined && (isTokenIdent(name) || isTokenString(name))
+    ? name[4].value
+    : cleanText(prelude);
 }
 
 /**
@@ -72,16 +105,16 @@ function referencedNames(records, tokenLists, indices) {
  * @param {TokenLists} tokenLists
  * @param {ArenaIndex[]} indices
  * @param {Set<string>} names
+ * @param {(prelude: readonly CSSToken[]) => string} nameOf
  * @param {(index: ArenaIndex) => void} remove
  * @return {void}
  */
-function filterAtRule(records, tokenLists, indices, names, remove) {
+function filterAtRule(records, tokenLists, indices, names, nameOf, remove) {
   for (const index of indices) {
     const entry = /** @type {import('../../ir/blockRecord.js').BlockRecord} */ (
       records.entry(index)
     );
-    const prelude = cleanText(preludeListOf(tokenLists, entry));
-    if (!names.has(prelude)) remove(index);
+    if (!names.has(nameOf(preludeListOf(tokenLists, entry)))) remove(index);
   }
 }
 
@@ -252,7 +285,8 @@ function filterFont(records, tokenLists, indices, decls, remove) {
 /**
  * Removes the at-rules that define a name nothing references. Every reference
  * is read before the first removal, so a reference inside a removed at-rule
- * still keeps its definition.
+ * still keeps its definition, except that a counter style used only by unused
+ * counter styles goes too.
  *
  * @param {RecordSymbolLists} lists
  * @param {Options} options
@@ -270,9 +304,10 @@ export function discardUnusedSymbols(lists, options, remove, records, context) {
     ...options,
   };
   const { tokenLists } = context;
-  const counterStyleNames = counterStyle
-    ? referencedNames(records, tokenLists, lists.listStyleDecls)
-    : undefined;
+  const counterStyleNames =
+    counterStyle && lists.counterStyles.length > 0
+      ? usedCounterStyleNames(records, tokenLists, lists)
+      : undefined;
   const keyframesNames = keyframes
     ? referencedNames(records, tokenLists, lists.animationDecls)
     : undefined;
@@ -297,6 +332,7 @@ export function discardUnusedSymbols(lists, options, remove, records, context) {
       tokenLists,
       lists.counterStyles,
       counterStyleNames,
+      counterStyleName,
       remove
     );
   }
@@ -304,7 +340,14 @@ export function discardUnusedSymbols(lists, options, remove, records, context) {
     filterFont(records, tokenLists, lists.fontFaces, lists.fontDecls, remove);
   }
   if (keyframesNames) {
-    filterAtRule(records, tokenLists, lists.keyframes, keyframesNames, remove);
+    filterAtRule(
+      records,
+      tokenLists,
+      lists.keyframes,
+      keyframesNames,
+      keyframesName,
+      remove
+    );
   }
   if (namespace) {
     filterNamespace(records, tokenLists, lists.namespaces, prefixes, remove);

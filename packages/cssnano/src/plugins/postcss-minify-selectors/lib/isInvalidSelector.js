@@ -15,12 +15,6 @@ import { parseSelectorArena } from './parseArena.js';
  * @return {boolean}
  */
 export function isInvalidSelector(source, sourceTokens, start, end) {
-  const { nodes } = parseSelectorArena(
-    source,
-    { verifyArena: false },
-    sourceTokens,
-    start,
-    end
-  );
+  const { nodes } = parseSelectorArena(source, {}, sourceTokens, start, end);
   return nodes[0].status === 'invalid';
 }

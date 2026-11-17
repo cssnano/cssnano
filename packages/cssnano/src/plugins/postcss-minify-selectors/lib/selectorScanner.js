@@ -28,7 +28,7 @@ export function normalizeListTokens(
 ) {
   const arena = parseSelectorArena(
     source,
-    { keyframe, hasDefaultNamespace, verifyArena: false },
+    { keyframe, hasDefaultNamespace },
     sourceTokens
   );
   const { text, tokens } = serializeNormalizedTokens(
@@ -60,7 +60,6 @@ function normalizeList(
   const arena = parseSelectorArena(source, {
     keyframe,
     hasDefaultNamespace,
-    verifyArena: false,
   });
   return serializeNormalized(
     arena,
@@ -75,7 +74,7 @@ function normalizeList(
 
 /** @param {string} source */
 function specificityOf(source) {
-  const arena = parseSelectorArena(source, { verifyArena: false });
+  const arena = parseSelectorArena(source);
   return (arena.nodes[0].specificity ?? [0, 0, 0]).join(',');
 }
 

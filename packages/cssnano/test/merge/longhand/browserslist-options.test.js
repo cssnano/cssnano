@@ -6,10 +6,7 @@ import { describe, test } from 'node:test';
 import postcss from 'postcss';
 import { resolveTargets } from '../../../src/utils/browserTargets.js';
 const plugin = onlyTransform(['mergeLonghand']);
-import {
-  repositoryFile,
-  withTargets,
-} from '../../../../../util/testHelpers.js';
+import { withTargets } from '../../../../../util/testHelpers.js';
 import { onlyTransform } from '../onlyTransform.js';
 
 const longhands = 'a{align-items:center;justify-items:start}';
@@ -21,7 +18,7 @@ const longhands = 'a{align-items:center;justify-items:start}';
  */
 async function run(options, processOptions = {}) {
   const result = await postcss([plugin(options)]).process(longhands, {
-    from: repositoryFile,
+    from: undefined,
     ...processOptions,
   });
   return result.css;

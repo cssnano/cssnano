@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import preset from '#presets/default';
-import { repositoryFile } from '../../../util/testHelpers.js';
+import { testTargets } from '../../../util/testHelpers.js';
 
 const fixture = `
 @layer components {
@@ -20,9 +20,9 @@ const expected =
   '@layer components{.O82{display:flex}.tK5{border:0}.tK1{font-size:inherit}}';
 
 test('should discard empty layers after merging layers', () => {
-  const processor = postcss(preset());
+  const processor = postcss(preset({ browserslist: { query: testTargets } }));
 
   return processor
-    .process(fixture, { from: repositoryFile })
+    .process(fixture, { from: undefined })
     .then((result) => assert.strictEqual(result.css, expected));
 });

@@ -18,7 +18,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createRequire } from 'node:module';
-import { repositoryFile } from './testHelpers.js';
+import { testTargets } from './testHelpers.js';
+import { defaultTargetsQuery } from '../packages/cssnano/src/utils/browserTargets.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const cssnanoDir = join(root, 'packages', 'cssnano');
@@ -36,20 +37,26 @@ const postcss = (await import(pathToFileURL(require.resolve('postcss')).href))
  * @type {Record<string, { preset: string, options: Record<string, unknown> }>}
  */
 const configurations = {
-  default: { preset: 'default', options: {} },
+  default: {
+    preset: 'default',
+    options: { browserslist: { query: testTargets } },
+  },
   'default-modern': {
     preset: 'default',
-    options: { browserslist: { env: 'modern' } },
+    options: { browserslist: { query: defaultTargetsQuery } },
   },
   'default-ie11': {
     preset: 'default',
     options: { browserslist: { query: 'ie 11' } },
   },
   lite: { preset: 'lite', options: {} },
-  advanced: { preset: 'advanced', options: {} },
+  advanced: {
+    preset: 'advanced',
+    options: { browserslist: { query: testTargets } },
+  },
   'advanced-modern': {
     preset: 'advanced',
-    options: { browserslist: { env: 'modern' } },
+    options: { browserslist: { query: defaultTargetsQuery } },
   },
 };
 
@@ -78,7 +85,7 @@ async function runConfiguration(name) {
     const css = readFileSync(join(frameworksDir, file), 'utf8');
     try {
       const result = await postcss(preset(options)).process(css, {
-        from: repositoryFile,
+        from: undefined,
       });
       outputs.set(file, { css: result.css });
     } catch (error) {

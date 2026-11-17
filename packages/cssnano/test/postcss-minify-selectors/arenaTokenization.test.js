@@ -9,7 +9,7 @@ const { parseSelectorArena } =
 
 test('parseSelectorArena tokenizes an unbalanced selector once', () => {
   counter.calls.clear();
-  parseSelectorArena('a:not(b', { verifyArena: false });
+  parseSelectorArena('a:not(b', {});
   assert.equal(
     [...counter.calls.values()].reduce((sum, n) => sum + n, 0),
     1

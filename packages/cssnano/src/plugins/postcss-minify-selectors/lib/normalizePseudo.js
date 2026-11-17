@@ -256,6 +256,9 @@ export function complexOutput(arena, pool, nodeIndex, normalized, children) {
           : /** @type {Normalized} */ ({
               ...childOutput,
               ...pool.sequence([leading, childOutput]),
+              // The part spells the comment too, so its text is its emit.
+              sourceNode: undefined,
+              text: undefined,
               node: childOutput.node,
             });
       output.push(item);

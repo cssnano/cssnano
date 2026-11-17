@@ -13,6 +13,15 @@ This module will discard unused at rules in your CSS file, if it cannot find
 any selectors that make use of them. It works on `@counter-style`, `@keyframes`,
 `@font-face` and `@namespace`.
 
+A counter style stays when `list-style` names it, when `counter()`,
+`counters()`, `target-counter()` or `target-counters()` names it in `content`,
+`bookmark-label` or `copy-into`, or when a counter style in use extends it or
+names it in `fallback` or `speak-as`. A name matches however it is escaped,
+and a predefined name such as `lower-roman` in any case. If one of those
+declarations uses a substitution function such as `var()`, `env()`, or an
+`attr()` with a fallback or a type that yields an identifier, every counter
+style stays, since the substituted value may name one.
+
 ### Input
 
 ```css

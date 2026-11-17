@@ -113,3 +113,20 @@ test('normalizes functional pseudo arguments in a single pass without multi-pass
     };
   });
 });
+
+test('normalizes wide inner lists nested in depth in linear time', () => {
+  const entries = Array.from({ length: 16 }, (_, i) => `.a${i}`).join(',');
+  assertScaling(
+    [125, 250, 500, 1_000],
+    (depth) => {
+      const input = `${`:is(${entries},`.repeat(depth)}.item${')'.repeat(depth)}`;
+      return {
+        input,
+        expected: input,
+        sort: false,
+        convertToIs: false,
+      };
+    },
+    { samples: 3, label: 'wide nested inner lists' }
+  );
+});

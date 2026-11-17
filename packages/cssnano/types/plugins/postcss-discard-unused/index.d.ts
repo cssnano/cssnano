@@ -30,7 +30,8 @@ export type Options = {
 /**
  * Removes the at-rules that define a name nothing references. Every reference
  * is read before the first removal, so a reference inside a removed at-rule
- * still keeps its definition.
+ * still keeps its definition, except that a counter style used only by unused
+ * counter styles goes too.
  *
  * @param {RecordSymbolLists} lists
  * @param {Options} options

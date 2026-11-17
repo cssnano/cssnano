@@ -19,7 +19,7 @@ const { TokenType, balancedStructure, tokens: tokenize } = cssnanoUtils;
 /** @typedef {import('./arena.js').SemanticFacts} SemanticFacts */
 /** @typedef {import('./arena.js').Specificity} Specificity */
 /** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} Structure */
-/** @typedef {{mode?:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean,verifyArena?:boolean}} ParseContext */
+/** @typedef {{mode?:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean}} ParseContext */
 /** @typedef {{kind:'list',start:number,end:number,mode:ListMode,argumentPayload?:number,insideHas:boolean}} ListWork */
 /** @typedef {{kind:'complex',start:number,end:number,mode:ListMode,status?:ParseStatus,insideHas:boolean}} ComplexWork */
 /** @typedef {{kind:'compound',start:number,end:number,mode:ListMode,insideHas:boolean}} CompoundWork */
@@ -72,7 +72,6 @@ export function parseSelectorArena(
   const mode = context.mode ?? 'outer-unforgiving';
   const keyframe = context.keyframe ?? false;
   const hasDefaultNamespace = context.hasDefaultNamespace ?? false;
-  const verifyArena = context.verifyArena ?? true;
   const range =
     sourceTokens === undefined
       ? undefined
@@ -90,7 +89,6 @@ export function parseSelectorArena(
           status: 'opaque',
         });
       },
-      verifyArena,
       base
     );
   }
@@ -215,7 +213,6 @@ export function parseSelectorArena(
         } else addLeafWork(builder, item, structure, work);
       }
     },
-    verifyArena,
     base
   );
 }

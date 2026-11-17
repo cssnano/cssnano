@@ -15,7 +15,7 @@ const { tokens, TokenType } = cssnanoUtils;
 
 /** The emit tree normalizeList serializes, for one selector list. */
 function normalizedRoot(source) {
-  const arena = parseSelectorArena(source, { verifyArena: false });
+  const arena = parseSelectorArena(source, {});
   return {
     arena,
     root: normalizeArena(arena, { sort: true, convertToIs: true }),
@@ -270,7 +270,6 @@ test("normalizeNode's `+` combinator emits carry tokens", () => {
 test("normalizeNode's keyframe emits carry tokens", () => {
   const arena = parseSelectorArena('from, 100%', {
     keyframe: true,
-    verifyArena: false,
   });
   const root = normalizeArena(arena, { sort: true, keyframe: true });
   const emits = [...textEmits(root, '0%'), ...textEmits(root, 'to')];
@@ -310,7 +309,7 @@ function textEmits(emit, value) {
 }
 
 test('serializeNormalizedTokens returns the source and its tokens without an output tree', () => {
-  const arena = parseSelectorArena('.a .b', { verifyArena: false });
+  const arena = parseSelectorArena('.a .b', {});
   assert.deepEqual(serializeNormalizedTokens(arena, undefined), {
     text: '.a .b',
     tokens: arena.tokens,
@@ -318,7 +317,7 @@ test('serializeNormalizedTokens returns the source and its tokens without an out
 });
 
 test('serializeNormalizedTokens joins the tokens of text emits and renumbers them', () => {
-  const arena = parseSelectorArena('.a', { verifyArena: false });
+  const arena = parseSelectorArena('.a', {});
   const root = {
     kind: 'sequence',
     items: [
@@ -334,7 +333,7 @@ test('serializeNormalizedTokens joins the tokens of text emits and renumbers the
 test('serializeNormalizedTokens folds a hex escape terminator restored before whitespace into the preceding ident', () => {
   // The tokenizer keeps the terminator in the escape's ident, `\31 `, and
   // reads the descendant combinator after it as whitespace.
-  const arena = parseSelectorArena('.a', { verifyArena: false });
+  const arena = parseSelectorArena('.a', {});
   const root = {
     kind: 'sequence',
     items: [
@@ -348,7 +347,7 @@ test('serializeNormalizedTokens folds a hex escape terminator restored before wh
 });
 
 test('serializeNormalizedTokens folds a hex escape terminator restored before whitespace into the preceding hash', () => {
-  const arena = parseSelectorArena('.a', { verifyArena: false });
+  const arena = parseSelectorArena('.a', {});
   const root = {
     kind: 'sequence',
     items: [
@@ -363,7 +362,7 @@ test('serializeNormalizedTokens folds a hex escape terminator restored before wh
 
 test('serializeNormalizedTokens returns no tokens when a restored hex escape terminator joins two emits into one ident', () => {
   // `\31 a` is one ident, so the tokens of the two emits cannot spell it.
-  const arena = parseSelectorArena('.a', { verifyArena: false });
+  const arena = parseSelectorArena('.a', {});
   const root = {
     kind: 'sequence',
     items: [

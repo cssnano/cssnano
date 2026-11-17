@@ -88,7 +88,7 @@ function isPlainShape(source) {
  * @param {string} source
  */
 function rootEntries(source) {
-  const arena = parseSelectorArena(source, { verifyArena: false });
+  const arena = parseSelectorArena(source, {});
   if (arena.nodes.length === 0) return { arena, entries: null };
   const pool = new OutputPool(arena);
   /** @type {(import('../../src/plugins/postcss-minify-selectors/lib/normalizeNode.js').Normalized | undefined)[]} */

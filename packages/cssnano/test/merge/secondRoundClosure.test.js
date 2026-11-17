@@ -16,9 +16,10 @@ import {
 } from '../../script/merge/rules/lib/mergeOracle.js';
 import { secondRoundOfText } from './longhand/helpers/reduceRuns.js';
 import { onlyTransform, MERGE_TRANSFORMS } from './onlyTransform.js';
+import { testTargets, withTargets } from '../../../../util/testHelpers.js';
 import { browserTargets, resolveTargets } from '#utils/browser-targets';
 
-const browsers = resolveTargets({}, undefined);
+const browsers = resolveTargets(withTargets(testTargets), undefined);
 
 // Each run of the merge pass: with rule merging, and with it off. Round one
 // alone is not closed, which is why the second round exists, so it has no row.

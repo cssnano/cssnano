@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import fontMagician from 'postcss-font-magician';
 import cssnano from '../src/index.js';
-import { repositoryFile } from '../../../util/testHelpers.js';
+import { testTargets } from '../../../util/testHelpers.js';
 
 test('should work with postcss-font-magician', async () => {
   const css = `
@@ -11,8 +11,11 @@ test('should work with postcss-font-magician', async () => {
       font-family: "Alice";
     }
     `;
-  const result = await postcss([fontMagician({}), cssnano()]).process(css, {
-    from: repositoryFile,
+  const result = await postcss([
+    fontMagician({}),
+    cssnano({ browserslist: { query: testTargets } }),
+  ]).process(css, {
+    from: undefined,
   });
   assert.strictEqual(
     result.css,

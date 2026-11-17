@@ -6,6 +6,7 @@ import convert, {
   spelledLength,
 } from './convert.js';
 import { keepJoiningSign } from './keepJoiningSign.js';
+import { unitlessJoinsNext } from './unitlessJoinsNext.js';
 import { numericSource } from './numericSource.js';
 import { numeric as numericToken } from '../../../values/tokenConstructors.js';
 
@@ -372,7 +373,7 @@ export function findReplacements(input, flags, opts) {
       opts,
       flags
     );
-    if (spelling) {
+    if (spelling && !unitlessJoinsNext(spelling, input[source.index + 1])) {
       const joined = keepJoiningSign(spelling, source, previous);
       edits.push({
         start: first,
