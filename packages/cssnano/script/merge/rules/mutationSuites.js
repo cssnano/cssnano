@@ -11,7 +11,18 @@ import { onlyTransform } from '../../../test/merge/onlyTransform.js';
 // Turns the consistency checks on for the process, so a stale record or key
 // throws at the next read instead of quietly producing the same output.
 import '../enableChecks.js';
-import { testTargets } from '../../../../util/testHelpers.js';
+import { testTargets } from '../../../../../util/testHelpers.js';
+
+/**
+ * @param {string} input
+ * @return {string}
+ */
+function runPreset(input) {
+  return postcss(preset({ browserslist: { query: testTargets } })).process(
+    input,
+    { from: undefined }
+  ).css;
+}
 
 /**
  * The merge fuzzers as suites for
@@ -29,20 +40,8 @@ export const suites = [
      */
     generate: (seed, count) =>
       generateFamilyCases(seed, count).map(({ css }) => css),
-    /**
-     * @param {string} input
-     * @return {string}
-     */
-    run: (input) =>
-      postcss(preset({ browserslist: { query: testTargets } })).process(input, {
-        from: undefined,
-      }).css,
-    /**
-     * @param {string} input
-     * @param {string} output
-     * @return {string | undefined}
-     */
-    check: (input, output) => mergeOracleDifference(input, output),
+    run: runPreset,
+    check: mergeOracleDifference,
   },
   {
     name: 'reset',
@@ -53,20 +52,8 @@ export const suites = [
      */
     generate: (seed, count) =>
       generateResetCases(seed, count).map(({ css }) => css),
-    /**
-     * @param {string} input
-     * @return {string}
-     */
-    run: (input) =>
-      postcss(preset({ browserslist: { query: testTargets } })).process(input, {
-        from: undefined,
-      }).css,
-    /**
-     * @param {string} input
-     * @param {string} output
-     * @return {string | undefined}
-     */
-    check: (input, output) => mergeOracleDifference(input, output),
+    run: runPreset,
+    check: mergeOracleDifference,
   },
   {
     name: 'cascade',

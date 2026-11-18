@@ -145,3 +145,23 @@ export function runFuzz({
 
   return { passed: checked, elapsed };
 }
+
+/**
+ * The branches no case of a corpus reaches, in the order `branches` lists them.
+ * A corpus that misses one is too narrow to trust, so the caller decides how to
+ * report it.
+ *
+ * @param {{ branch: string }[]} cases
+ * @param {string[]} branches
+ * @return {string[]}
+ */
+export function missingBranches(cases, branches) {
+  const unreached = new Set(branches);
+  for (const { branch } of cases) {
+    unreached.delete(branch);
+    if (unreached.size === 0) {
+      break;
+    }
+  }
+  return branches.filter((branch) => unreached.has(branch));
+}

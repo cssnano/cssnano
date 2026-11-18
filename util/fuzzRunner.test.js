@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { FAILURE_EXIT_CODE, parseFuzzArgs, runFuzz } from './fuzzRunner.js';
+import {
+  FAILURE_EXIT_CODE,
+  missingBranches,
+  parseFuzzArgs,
+  runFuzz,
+} from './fuzzRunner.js';
 
 /**
  * @param {string[]} args
@@ -185,5 +190,40 @@ describe('runFuzz', () => {
     })();
     runFuzz({ cases, check: () => {}, count: 3, interval: 0 });
     assert.equal(generated, 3);
+  });
+});
+
+describe('missingBranches', () => {
+  const branches = ['a', 'b', 'c'];
+
+  test('lists the branches no case reaches', () => {
+    assert.deepEqual(
+      missingBranches([{ branch: 'a' }, { branch: 'c' }], branches),
+      ['b']
+    );
+  });
+
+  test('lists nothing when every branch is reached', () => {
+    assert.deepEqual(
+      missingBranches(
+        [{ branch: 'c' }, { branch: 'a' }, { branch: 'b' }, { branch: 'a' }],
+        branches
+      ),
+      []
+    );
+  });
+
+  test('lists missing branches in the order the branches are given', () => {
+    assert.deepEqual(missingBranches([], ['c', 'a', 'b']), ['c', 'a', 'b']);
+  });
+
+  test('does not count a branch outside the list towards reaching every branch', () => {
+    assert.deepEqual(
+      missingBranches(
+        [{ branch: 'x' }, { branch: 'y' }, { branch: 'z' }, { branch: 'a' }],
+        branches
+      ),
+      ['b', 'c']
+    );
   });
 });

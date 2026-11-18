@@ -140,6 +140,23 @@ function sortEntries(map) {
 }
 
 /**
+ * Every logical property group has as many physical members as flow-relative
+ * ones, and at least one of each.
+ *
+ * @param {Map<string, {physical: number, flow: number}>} groups
+ * @return {void}
+ */
+function assertBalancedGroups(groups) {
+  for (const [group, counts] of groups) {
+    if (counts.physical !== counts.flow || counts.physical === 0) {
+      throw new Error(
+        `Logical property group ${group} is split ${counts.physical} physical / ${counts.flow} flow-relative`
+      );
+    }
+  }
+}
+
+/**
  * Guards against publishing data that a webref release has silently removed:
  * every relation the plugin relies on has to still be there, and every logical
  * property group has to hold as many physical members as flow-relative ones,
@@ -182,13 +199,7 @@ export function validate(data) {
     counts[flow.has(name) ? 'flow' : 'physical']++;
     groups.set(group, counts);
   }
-  for (const [group, counts] of groups) {
-    if (counts.physical !== counts.flow || counts.physical === 0) {
-      throw new Error(
-        `Logical property group ${group} is split ${counts.physical} physical / ${counts.flow} flow-relative`
-      );
-    }
-  }
+  assertBalancedGroups(groups);
   // Spot checks for relations the plugin's own tests depend on. Keep this in
   // sync with the `cases` in test/ir/propertyRelations.test.js: this
   // catches a future webref release dropping a relation, that catches a
@@ -296,8 +307,7 @@ function validateReferences(entries) {
 }
 
 /**
- * Every logical property group has as many physical members as flow-relative
- * ones, and at least one of each.
+ * Every logical property group in the table is balanced.
  *
  * @param {Record<string, PropertyEntry>} entries
  * @return {void}
@@ -311,13 +321,7 @@ function validateGroupSides(entries) {
     counts[entry.side === 'flow-relative' ? 'flow' : 'physical']++;
     groups.set(entry.group, counts);
   }
-  for (const [group, counts] of groups) {
-    if (counts.physical !== counts.flow || counts.physical === 0) {
-      throw new Error(
-        `Logical property group ${group} is split ${counts.physical} physical / ${counts.flow} flow-relative`
-      );
-    }
-  }
+  assertBalancedGroups(groups);
 }
 
 /**
