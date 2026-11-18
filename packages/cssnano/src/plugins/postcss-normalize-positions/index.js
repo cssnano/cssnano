@@ -5,7 +5,8 @@ const {
   TokenType,
   asciiLowerCase,
   decoded,
-  isSubstitutionFunction,
+  isSubstitutionToken,
+  isTrivia,
   mathFunctions,
 } = cssnanoUtils;
 
@@ -47,16 +48,6 @@ const propFilterRegex =
 
 /** @param {CSSToken} token */ const lowerName = (token) =>
   asciiLowerCase(String(decoded(token)));
-
-/** @param {CSSToken} token */ const isTrivia = (token) =>
-  token[0] === TokenType.Whitespace || token[0] === TokenType.Comment;
-
-/** @param {CSSToken} token */
-function isSubstitution(token) {
-  if (token[0] !== TokenType.Function) return false;
-  const name = lowerName(token);
-  return isSubstitutionFunction(name);
-}
 
 /**
  * Any math function counts as a term: one that cannot yield a length leaves
@@ -113,7 +104,7 @@ function positionLayers(structure) {
     /* The contents of a function or block never hold this layer's terms. */
     position = structure.endForOpening(position) ?? position;
     if (stopped) continue;
-    if (isSubstitution(token)) stopped = true;
+    if (isSubstitutionToken(token)) stopped = true;
     else if (token[0] === TokenType.Delim && token[1] === '/') {
       /* The position ends where the background size begins. */
       if (terms.length) layers.push(terms);

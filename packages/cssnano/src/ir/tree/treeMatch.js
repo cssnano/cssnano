@@ -15,6 +15,7 @@ import { selectorItemsOf } from '../selectorItems.js';
 import { differs } from './writeBack.js';
 import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
 import { summariesHold } from '../selectorReads.js';
+import { holdsImportantComment } from '../holdsImportantComment.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {AtRule, ChildNode, Declaration, Root, Rule} from 'postcss' */
@@ -26,17 +27,7 @@ import { summariesHold } from '../selectorReads.js';
 /** @import {RuleRecord} from '../ruleRecord.js' */
 /** @import {TokenListId, TokenLists} from '../tokenLists.js' */
 
-const { isImportantComment, sourceValue, TokenType } = cssnanoUtils;
-
-/**
- * @param {CSSToken} token
- * @return {boolean} whether the token is a comment that `!` marks as important
- */
-function isImportantCommentToken(token) {
-  return (
-    token[0] === TokenType.Comment && isImportantComment(token[1].slice(2))
-  );
-}
+const { sourceValue } = cssnanoUtils;
 
 const OUT_OF_STEP = 'block record out of step with the tree';
 const STALE = 'stale declarations of a rule record';
@@ -57,7 +48,7 @@ function describesNode(tokenLists, record, node) {
   const declaration = /** @type {Declaration} */ (node);
   const important = declaration.important === true;
   const list = tokenLists.get(record.valueList);
-  const spelled = list.some(isImportantCommentToken)
+  const spelled = holdsImportantComment(list)
     ? sourceValue(declaration)
     : declaration.value;
   return (

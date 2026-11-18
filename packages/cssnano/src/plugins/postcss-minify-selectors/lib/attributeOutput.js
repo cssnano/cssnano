@@ -7,9 +7,9 @@ import {
 } from './outputTokens.js';
 import { dropHexEscapeTerminator } from './hexEscape.js';
 import { importantTrivia, rawOutput } from './normalizePool.js';
-import { skipTrivia, unquote } from './tokenUtils.js';
+import { unquote } from './tokenUtils.js';
 
-const { TokenType } = cssnanoUtils;
+const { TokenType, skipTrivia } = cssnanoUtils;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */

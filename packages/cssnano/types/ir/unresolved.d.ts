@@ -1,6 +1,5 @@
+declare const substitutionFunctions: Set<string>;
 import type { CSSToken } from '@csstools/css-tokenizer';
-/** @import {CSSToken} from '@csstools/css-tokenizer' */
-declare const substitutionFunctions: string[];
 declare const trustedSupportFunctions: Set<string>;
 /**
  * Whether a component is an unresolved value this plugin cannot compute.

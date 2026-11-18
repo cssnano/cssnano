@@ -1,7 +1,6 @@
 import cssnanoUtils from '#utils';
-import { isAsciiDigit } from '../../ir/asciiCharacters.js';
 
-const { asciiLowerCase, lengthUnits } = cssnanoUtils;
+const { asciiLowerCase, isAsciiDigit, lengthUnits } = cssnanoUtils;
 
 /**
  * @param {string} text

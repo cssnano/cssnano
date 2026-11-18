@@ -152,6 +152,13 @@ test(
 );
 
 test(
+  'should keep an override of the predefined cjk-ideographic counter style that its name spells in uppercase',
+  passthroughCSS(
+    '@counter-style CJK-IDEOGRAPHIC{system:extends decimal}ol{list-style:cjk-ideographic}'
+  )
+);
+
+test(
   'should remove a counter style whose author-defined name differs in case from the use',
   processCSS(
     '@counter-style Foo{system:cyclic;symbols:"*"}a{list-style:foo}',

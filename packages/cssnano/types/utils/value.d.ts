@@ -41,12 +41,27 @@ declare function numeric(token: CSSToken): {
  */
 declare function closeForOpening(type: TokenType): TokenType | undefined;
 /**
- * Reports whether a value ends in a backslash that begins an escape
- * sequence, as opposed to a backslash that is itself escaped.
+ * Reports whether the text before `end` ends in a backslash that begins an
+ * escape sequence, as opposed to a backslash that is itself escaped.
  * @param {string} value
+ * @param {number} [end] defaults to the length of the value
  * @return {boolean}
  */
-declare function endsWithEscapingBackslash(value: string): boolean;
+declare function endsWithEscapingBackslash(value: string, end?: number): boolean;
+/**
+ * Whitespace and comments separate tokens without contributing a component.
+ * @param {CSSToken | undefined} token
+ * @return {boolean}
+ */
+declare function isTrivia(token: CSSToken | undefined): boolean;
+/**
+ * Index of the first token in `[index, end)` that is not trivia, or `end`.
+ * @param {readonly CSSToken[]} input
+ * @param {number} index
+ * @param {number} [end] defaults to the length of the list
+ * @return {number}
+ */
+declare function skipTrivia(input: readonly CSSToken[], index: number, end?: number): number;
 /**
  * Lexical CSS block index. This does not parse or validate any CSS grammar;
  * consumers must preserve raw spelling and define their own malformed-input policy.
@@ -90,5 +105,5 @@ declare function balancedStructure(input: readonly CSSToken[]): BalancedTokens |
 declare function balancedTokens(source: string, options?: {
     unicodeRangesAllowed?: boolean;
 }): BalancedTokens | undefined;
-export { TokenType, applyEdits, balancedStructure, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens, };
+export { TokenType, applyEdits, balancedStructure, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, isTrivia, numeric, skipTrivia, tokenEnd, tokenStart, tokens, };
 //# sourceMappingURL=value.d.ts.map

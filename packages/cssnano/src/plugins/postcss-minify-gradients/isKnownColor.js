@@ -2,6 +2,8 @@ import { colordx as colord, extend } from '@colordx/core';
 import hwbPlugin from '@colordx/core/plugins/hwb';
 import namesPlugin from '@colordx/core/plugins/names';
 
+import { systemColors } from '../../values/systemColors.js';
+
 extend([
   /** @type {import('@colordx/core').Plugin} */ (
     /** @type {unknown} */ (hwbPlugin)
@@ -17,53 +19,8 @@ extend([
  * and `postcss-colormin` shares it, so colordx loads only the plugins this
  * module needs — otherwise colormin would gamut-map wide-gamut colours.
  * Colour notations colordx cannot parse remain valid stop colours.
- * The merge pass's `systemColors.js` duplicates this list on purpose. */
-export const dynamicColorKeywords = new Set([
-  'currentcolor',
-  'accentcolor',
-  'accentcolortext',
-  'activetext',
-  'buttonborder',
-  'buttonface',
-  'buttontext',
-  'canvas',
-  'canvastext',
-  'field',
-  'fieldtext',
-  'graytext',
-  'highlight',
-  'highlighttext',
-  'linktext',
-  'mark',
-  'marktext',
-  'selecteditem',
-  'selecteditemtext',
-  'visitedtext',
-  // Deprecated system colors (CSS Color 3 / CSS Color 4 § 3.3.1)
-  'activeborder',
-  'activecaption',
-  'appworkspace',
-  'background',
-  'buttonhighlight',
-  'buttonshadow',
-  'captiontext',
-  'inactiveborder',
-  'inactivecaption',
-  'inactivecaptiontext',
-  'infobackground',
-  'infotext',
-  'menu',
-  'menutext',
-  'scrollbar',
-  'threeddarkshadow',
-  'threedface',
-  'threedhighlight',
-  'threedlightshadow',
-  'threedshadow',
-  'window',
-  'windowframe',
-  'windowtext',
-]);
+ * The set is `currentcolor` plus every shared system colour. */
+export const dynamicColorKeywords = new Set(['currentcolor', ...systemColors]);
 
 /**
  * Whether `color` is a `<color>` a gradient stop may hold, including the

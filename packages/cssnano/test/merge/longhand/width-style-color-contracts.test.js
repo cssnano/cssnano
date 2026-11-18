@@ -172,6 +172,30 @@ describe('parseWsc substitution slots', () => {
     );
   });
 
+  test('reserves the open width for if() rather than reading it as a width, because if() may substitute any component', () => {
+    assert.deepEqual(
+      withoutParts(parseWidthStyleColor('solid red if(media(print): 1px)')),
+      {
+        width: 'if(media(print): 1px)',
+        style: 'solid',
+        color: 'red',
+        specified: { width: false, style: true, color: true },
+      }
+    );
+  });
+
+  test('accepts attr() beside a width, because attr() may substitute the style or the color', () => {
+    assert.deepEqual(
+      withoutParts(parseWidthStyleColor('1px attr(data-c type(<color>))')),
+      {
+        width: '1px',
+        style: undefined,
+        color: undefined,
+        specified: { width: true, style: false, color: false },
+      }
+    );
+  });
+
   test('does not guess a component for a substitution when two components are unspecified', () => {
     assert.deepEqual(withoutParts(parseWidthStyleColor('VAR(--Sub) red')), {
       width: undefined,

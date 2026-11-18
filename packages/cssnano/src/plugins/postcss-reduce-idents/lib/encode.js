@@ -4,14 +4,14 @@ import {
   cssWideKeywords,
   grid,
   keyframes,
-  predefinedCounterStyles,
 } from './slots.js';
+import { predefinedCounterStyles } from '../../../values/predefinedCounterStyles.js';
 
 const LETTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const REMAINDER_CHARACTERS = `${LETTERS}0123456789-_`;
 
-// Reserve every word that would make a generated identifier unusable.
-// existing keywords and predefined counter styles a user style could shadow.
+// Reserve every word that would make a generated identifier unusable: keywords
+// and predefined counter styles that a user style could shadow.
 const RESERVED_WORDS = new Set([
   ...cssWideKeywords,
   ...keyframes.reservedKeywords,

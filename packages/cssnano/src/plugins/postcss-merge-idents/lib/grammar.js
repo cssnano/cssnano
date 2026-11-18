@@ -1,12 +1,13 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import specData from '../data/mergeIdents.json' with { type: 'json' };
+import { predefinedCounterStyles } from '../../../values/predefinedCounterStyles.js';
 import { AT_RULE_BLOCK, AT_RULE_STATEMENT } from '../../../ir/blockRecord.js';
 
 /** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
 /** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 
-const { asciiLowerCase, decoded } = cssnanoUtils;
+const { asciiLowerCase, decoded, isTrivia } = cssnanoUtils;
 
 const VENDOR_PREFIX = /^-(webkit|moz|o)-/v;
 
@@ -40,70 +41,10 @@ const COUNTER_STYLE_NAME_RESERVED = new Set([
   'none',
 ]);
 
-// The predefined counter style names are specified in prose (CSS Counter
-// Styles Level 3 §6) rather than in any grammar, so webref cannot list them.
-const PREDEFINED_COUNTER_STYLES = [
-  'arabic-indic',
-  'armenian',
-  'bengali',
-  'cambodian',
-  'circle',
-  'cjk-decimal',
-  'cjk-earthly-branch',
-  'cjk-heavenly-stem',
-  'cjk-ideographic',
-  'decimal',
-  'decimal-leading-zero',
-  'devanagari',
-  'disc',
-  'disclosure-closed',
-  'disclosure-open',
-  'ethiopic-numeric',
-  'georgian',
-  'gujarati',
-  'gurmukhi',
-  'hebrew',
-  'hiragana',
-  'hiragana-iroha',
-  'japanese-formal',
-  'japanese-informal',
-  'kannada',
-  'katakana',
-  'katakana-iroha',
-  'khmer',
-  'korean-hangul-formal',
-  'korean-hanja-formal',
-  'korean-hanja-informal',
-  'lao',
-  'lower-alpha',
-  'lower-armenian',
-  'lower-greek',
-  'lower-latin',
-  'lower-roman',
-  'malayalam',
-  'mongolian',
-  'myanmar',
-  'oriya',
-  'persian',
-  'simp-chinese-formal',
-  'simp-chinese-informal',
-  'square',
-  'tamil',
-  'telugu',
-  'thai',
-  'tibetan',
-  'trad-chinese-formal',
-  'trad-chinese-informal',
-  'upper-alpha',
-  'upper-armenian',
-  'upper-latin',
-  'upper-roman',
-];
-
 const COUNTER_STYLE_RESERVED = new Set([
   ...CSS_WIDE_KEYWORDS,
   ...specData.counterStyle.keywords,
-  ...PREDEFINED_COUNTER_STYLES,
+  ...predefinedCounterStyles,
 ]);
 
 const COUNTER_STYLE_FUNCTIONS = new Map(
@@ -124,9 +65,7 @@ const COUNTER_STYLE_FUNCTIONS = new Map(
 function parseAtRuleName(parsedTokens, atRuleName) {
   let first;
   for (const token of parsedTokens) {
-    if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment) {
-      continue;
-    }
+    if (isTrivia(token)) continue;
     if (first !== undefined) {
       return null;
     }

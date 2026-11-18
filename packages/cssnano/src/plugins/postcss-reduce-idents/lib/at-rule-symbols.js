@@ -1,3 +1,4 @@
+import cssnanoUtils from '#utils';
 import addToCache from './cache.js';
 import {
   atRuleIdent,
@@ -71,7 +72,10 @@ export default function atRuleReducer(
       if (entry.kind === AT_RULE_BLOCK || entry.kind === AT_RULE_STATEMENT) {
         if (resolveAtRule(entry.name) === atRule) {
           const name = atRuleIdent(preludeListOf(context.tokenLists, entry));
-          if (name !== undefined && !reserved.has(name.toLowerCase())) {
+          if (
+            name !== undefined &&
+            !reserved.has(cssnanoUtils.asciiLowerCase(name))
+          ) {
             addToCache(name, encoder, cache);
             atRules.push({ name, rule: index });
           }

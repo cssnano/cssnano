@@ -15,7 +15,6 @@ export declare function resolveProperty(prop: string): string;
  */
 export declare function resolveAtRule(name: string): string;
 export declare const cssWideKeywords: string[];
-export declare const predefinedCounterStyles: string[];
 export declare const keyframes: {
     atRule: string;
     properties: Set<string>;

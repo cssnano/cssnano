@@ -47,7 +47,7 @@ function keepsFunction(tokens, start, end, grammar) {
       case TokenType.Function: {
         const name = decoded(part);
         if (!isTrustedFunction(name)) return false;
-        substituted ||= substitutionFunctions.includes(
+        substituted ||= substitutionFunctions.has(
           withoutVendorPrefix(asciiLowerCase(name))
         );
         opened = true;

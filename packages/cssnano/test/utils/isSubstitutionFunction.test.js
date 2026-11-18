@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import cssnanoUtils from '../../src/utils/index.js';
 
-const { isSubstitutionFunction } = cssnanoUtils;
+import { tokenize } from '@csstools/css-tokenizer';
+const { isSubstitutionFunction, isSubstitutionToken } = cssnanoUtils;
 
 test('isSubstitutionFunction recognizes var(), env() and constant() as substitutions', () => {
   for (const name of ['var', 'env', 'constant']) {
@@ -29,4 +30,24 @@ test('isSubstitutionFunction leaves a color function alone, since its result is 
 
 test('isSubstitutionFunction matches the whole name, not a prefix of it', () => {
   assert.equal(isSubstitutionFunction('variable'), false);
+});
+
+test('isSubstitutionToken accepts a substitution function token regardless of case', () => {
+  const [token] = tokenize({ css: 'VAR(--x)' });
+  assert.equal(isSubstitutionToken(token), true);
+});
+
+test('isSubstitutionToken accepts a custom function token', () => {
+  const [token] = tokenize({ css: '--size(1)' });
+  assert.equal(isSubstitutionToken(token), true);
+});
+
+test('isSubstitutionToken rejects a math function token, since its result is computed here', () => {
+  const [token] = tokenize({ css: 'calc(1px)' });
+  assert.equal(isSubstitutionToken(token), false);
+});
+
+test('isSubstitutionToken rejects an ident token named like a substitution, which is not a function', () => {
+  const [token] = tokenize({ css: 'var' });
+  assert.equal(isSubstitutionToken(token), false);
 });
