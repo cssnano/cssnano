@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
 
-const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, skipTrivia } = cssnanoUtils;
 /**
  * Whether a `var()` in the tokens names a custom property.
  *
@@ -15,15 +15,9 @@ export function opensCustomPropertyVar(input) {
       asciiLowerCase(decoded(token)) !== 'var'
     )
       continue;
-    for (let next = index + 1; next < input.length; next++) {
-      const child = input[next];
-      if (child[0] === TokenType.Whitespace || child[0] === TokenType.Comment)
-        continue;
-      if (child[0] === TokenType.Ident) {
-        if (decoded(child).startsWith('--')) return true;
-        break;
-      }
-      break;
+    const child = input[skipTrivia(input, index + 1)];
+    if (child?.[0] === TokenType.Ident && decoded(child).startsWith('--')) {
+      return true;
     }
   }
   return false;

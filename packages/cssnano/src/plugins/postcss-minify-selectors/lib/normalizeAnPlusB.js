@@ -1,13 +1,9 @@
 import cssnanoUtils from '#utils';
 import { parseAnPlusB } from './argumentParsers.js';
 import { dropHexEscapeTerminator, joinPieces } from './hexEscape.js';
-import {
-  consumeTrivia,
-  decodedIdent,
-  isImportantCommentToken,
-} from './tokenUtils.js';
+import { consumeTrivia, decodedIdent } from './tokenUtils.js';
 
-const { TokenType } = cssnanoUtils;
+const { TokenType, isImportantCommentToken } = cssnanoUtils;
 
 /** @param {readonly import('./tokenUtils.js').CSSToken[]} input @param {number} start @param {number} end */
 function hasImportantComment(input, start, end) {

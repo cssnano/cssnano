@@ -2,7 +2,7 @@ import cssnanoUtils from '#utils';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
-const { TokenType, isImportantComment } = cssnanoUtils;
+const { isImportantCommentToken } = cssnanoUtils;
 
 /**
  * Whether a value, as its tokens spell it, holds an important comment. The
@@ -13,8 +13,5 @@ const { TokenType, isImportantComment } = cssnanoUtils;
  * @return {boolean}
  */
 export function holdsImportantComment(tokens) {
-  return tokens.some(
-    (token) =>
-      token[0] === TokenType.Comment && isImportantComment(token[1].slice(2))
-  );
+  return tokens.some(isImportantCommentToken);
 }

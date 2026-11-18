@@ -8,7 +8,7 @@ import {
   rawAfterValue,
 } from '../../../ir/declaredText.js';
 
-const { isCSSWhitespace, tokens } = cssnanoUtils;
+const { endsWithEscapingBackslash, isCSSWhitespace, tokens } = cssnanoUtils;
 
 /** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
 /** @import {BlockRecords} from '../../../ir/blockRecords.js' */
@@ -16,19 +16,6 @@ const { isCSSWhitespace, tokens } = cssnanoUtils;
 /** @import {DeclarationRecord} from '../../../ir/declarationRecord.js' */
 /** @import {RuleRecord} from '../../../ir/ruleRecord.js' */
 /** @import {TokenLists} from '../../../ir/tokenLists.js' */
-
-/**
- * @param {string} value
- * @return {boolean} whether the last backslash escapes nothing inside the
- *   value, i.e. the value ends in an odd number of backslashes
- */
-function endsWithDanglingEscape(value) {
-  let count = 0;
-  while (count < value.length && value[value.length - 1 - count] === '\\') {
-    count++;
-  }
-  return count % 2 === 1;
-}
 
 /**
  * @param {number} code a UTF-16 code unit
@@ -56,7 +43,7 @@ export function preludeTokens(records, tokenLists, index) {
   const escapesBetween =
     between !== '' &&
     !isNewlineCode(between.charCodeAt(0)) &&
-    endsWithDanglingEscape(params);
+    endsWithEscapingBackslash(params);
   if (escapesBetween) {
     return tokens(params + between);
   }
@@ -119,7 +106,7 @@ export function trailingEscape(records, tokenLists, index) {
     tokenLists,
     /** @type {DeclarationRecord} */ (records.entry(index))
   );
-  if (!endsWithDanglingEscape(value)) {
+  if (!endsWithEscapingBackslash(value)) {
     return value;
   }
   const codePoint = codePointAfterValue(records, tokenLists, index, value);

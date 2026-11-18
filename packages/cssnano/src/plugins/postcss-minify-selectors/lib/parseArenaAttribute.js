@@ -1,8 +1,8 @@
 import cssnanoUtils from '#utils';
 import { mergeStatus } from './parseArenaStructure.js';
-import { decodedIdent, skipTrivia } from './tokenUtils.js';
+import { decodedIdent } from './tokenUtils.js';
 
-const { TokenType } = cssnanoUtils;
+const { TokenType, skipTrivia } = cssnanoUtils;
 /** @typedef {import('./arena.js').ParseStatus} ParseStatus */
 /** @typedef {import('./arena.js').QualifiedNamePayload} QualifiedNamePayload */
 /** @typedef {NonNullable<ReturnType<typeof cssnanoUtils.balancedTokens>>} Structure */

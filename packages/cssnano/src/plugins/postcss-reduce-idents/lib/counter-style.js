@@ -1,12 +1,8 @@
 import atRuleReducer from './at-rule-symbols.js';
-import {
-  counterStyle,
-  cssWideKeywords,
-  predefinedCounterStyles,
-} from './slots.js';
+import { counterStyle, cssWideKeywords } from './slots.js';
+import { predefinedCounterStyles } from '../../../values/predefinedCounterStyles.js';
 
-// The predefined counter styles are specified in an appendix rather than a
-// grammar, so webref has no data for them;
+// Names that a generated or existing counter style must not collide with.
 const RESERVED = new Set([
   ...cssWideKeywords,
   ...counterStyle.reservedKeywords,

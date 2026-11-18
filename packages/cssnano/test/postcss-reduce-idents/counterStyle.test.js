@@ -185,4 +185,26 @@ describe('Counter style', () => {
       '@counter-style disclosure-open{system:cyclic;symbols:"x"}ol{list-style:disclosure-open}'
     )
   );
+
+  test(
+    'should not rename a counter style named after the predefined cjk-ideographic style',
+    passthroughCSS(
+      '@counter-style cjk-ideographic{system:cyclic;symbols:"x"}ol{list-style:cjk-ideographic}'
+    )
+  );
+
+  test(
+    'should not rename a counter style whose name spells a predefined name in uppercase',
+    passthroughCSS(
+      '@counter-style CJK-IDEOGRAPHIC{system:cyclic;symbols:"x"}ol{list-style:CJK-IDEOGRAPHIC}'
+    )
+  );
+
+  test(
+    'should rename a counter style whose name only folds to a predefined name through a non-ASCII letter',
+    processCSS(
+      '@counter-style \u212Ahmer{system:cyclic;symbols:"x"}ol{list-style:\u212Ahmer}',
+      '@counter-style a{system:cyclic;symbols:"x"}ol{list-style:a}'
+    )
+  );
 });

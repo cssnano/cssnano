@@ -1,8 +1,6 @@
 import cssnanoUtils from '#utils';
 
-import { isImportantCommentToken } from './tokenUtils.js';
-
-const { TokenType } = cssnanoUtils;
+const { TokenType, isImportantCommentToken } = cssnanoUtils;
 
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./normalizePool.js').OutputPool} OutputPool */

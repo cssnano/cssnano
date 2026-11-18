@@ -8,10 +8,8 @@ import {
   isTokenWhitespace,
 } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
-import {
-  counterStyle,
-  predefinedCounterStyles,
-} from '../../postcss-reduce-idents/lib/slots.js';
+import { counterStyle } from '../../postcss-reduce-idents/lib/slots.js';
+import { predefinedCounterStyles } from '../../../values/predefinedCounterStyles.js';
 import { preludeListOf } from '../../../ir/declaredText.js';
 import { commentFreeText } from '../../../values/tokensText.js';
 
@@ -22,7 +20,6 @@ import { commentFreeText } from '../../../values/tokensText.js';
 /** @import {RecordSymbolLists} from '../../../run/symbolLists.js' */
 
 const { asciiLowerCase, isSubstitutionFunction } = cssnanoUtils;
-const predefined = new Set(predefinedCounterStyles);
 
 /**
  * The key a counter style name compares by. Author names are case-sensitive,
@@ -34,7 +31,7 @@ const predefined = new Set(predefinedCounterStyles);
  */
 function counterStyleKey(name) {
   const lower = asciiLowerCase(name);
-  return predefined.has(lower) ? lower : name;
+  return predefinedCounterStyles.has(lower) ? lower : name;
 }
 
 /**

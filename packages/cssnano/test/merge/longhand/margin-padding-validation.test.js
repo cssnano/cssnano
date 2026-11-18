@@ -264,6 +264,10 @@ describe('boxBrowserKeeps value grammars', () => {
     assert.equal(boxBrowserKeeps('inset-inline', 'var(--x) 1px'), true);
   });
 
+  test('keeps attr() as it keeps var(), because the browser substitutes it before checking the margin grammar', () => {
+    assert.equal(boxBrowserKeeps('margin', 'attr(data-m px) 1px'), true);
+  });
+
   test('drops a math function that adds a length and an angle because the sum has no type', () => {
     assert.equal(boxBrowserKeeps('margin-left', 'calc(1px + 2deg)'), false);
   });

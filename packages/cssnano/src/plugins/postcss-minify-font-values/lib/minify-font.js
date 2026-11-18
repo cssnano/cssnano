@@ -10,8 +10,10 @@ const {
   TokenType,
   asciiLowerCase,
   decoded,
-  isSubstitutionFunction,
+  isSubstitutionToken,
+  isTrivia,
   lengthUnits,
+  skipTrivia,
 } = cssnanoUtils;
 
 // `oblique <angle>` precedes the font-size.
@@ -59,23 +61,6 @@ function isNumericWeight(token) {
   return weight >= 1 && weight <= 1000;
 }
 
-/** @param {readonly CSSToken[]} input @param {number} start @return {number} */
-function skipTrivia(input, start) {
-  let index = start;
-  while (
-    input[index]?.[0] === TokenType.Whitespace ||
-    input[index]?.[0] === TokenType.Comment
-  )
-    index++;
-  return index;
-}
-
-/** @param {CSSToken} token */
-function isSubstitution(token) {
-  if (token[0] !== TokenType.Function) return false;
-  return isSubstitutionFunction(asciiLowerCase(decoded(token)));
-}
-
 /**
  * Locate the `font-size` and the tokens preceding it. Returns undefined when
  * the value cannot be minified safely (a substitution function, an unknown
@@ -92,10 +77,9 @@ function scanFontPrefix(balanced) {
   let boldIndex;
   for (let index = 0; index < input.length; index++) {
     const token = input[index];
-    if (isSubstitution(token)) return;
+    if (isSubstitutionToken(token)) return;
     if (sizeEnd >= 0) continue;
-    if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment)
-      continue;
+    if (isTrivia(token)) continue;
     // Locating the family from a dimension that is neither a font-size nor
     // an oblique angle would guess at its position.
     if (isUnknownDimension(token)) return;

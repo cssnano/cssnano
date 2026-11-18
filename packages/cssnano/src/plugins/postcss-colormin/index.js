@@ -9,6 +9,7 @@ import { whitespace } from '../../values/punctuationTokens.js';
 const {
   asciiLowerCase,
   decoded,
+  isHexColorDigits,
   mathFunctions,
   tokens,
   TokenType,
@@ -28,28 +29,6 @@ const tokensRequiringSeparator = new Set([
   TokenType.Dimension,
   TokenType.Percentage,
 ]);
-
-/**
- * Fast-path check for valid CSS hex colors (CSS Color 4 § 5.2):
- * Must be 3, 4, 6, or 8 hexadecimal digits.
- * @param {string} value
- * @return {boolean}
- */
-function isHexColor(value) {
-  const len = value.length;
-  if (len !== 3 && len !== 4 && len !== 6 && len !== 8) return false;
-  for (let i = 0; i < len; i++) {
-    const code = value.charCodeAt(i);
-    if (
-      !(code >= 48 && code <= 57) &&
-      !(code >= 65 && code <= 70) &&
-      !(code >= 97 && code <= 102)
-    ) {
-      return false;
-    }
-  }
-  return true;
-}
 
 /**
  * The tokens that spell a minified color: a hash, an identifier, or the
@@ -143,7 +122,7 @@ function identEdit(input, index, options) {
   const t = input[index];
   const dec = decoded(t);
   const isHash = t[0] === TokenType.Hash;
-  if (isHash ? !isHexColor(dec) : dec.startsWith('#')) return;
+  if (isHash ? !isHexColorDigits(dec) : dec.startsWith('#')) return;
   const out = tryMinifyColor(isHash ? '#' + dec : dec, options);
   if (out === undefined || out === t[1] || out.length > t[1].length) return;
   return {

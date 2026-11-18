@@ -114,17 +114,46 @@ function closeForOpening(type) {
 }
 
 /**
- * Reports whether a value ends in a backslash that begins an escape
- * sequence, as opposed to a backslash that is itself escaped.
+ * Reports whether the text before `end` ends in a backslash that begins an
+ * escape sequence, as opposed to a backslash that is itself escaped.
  * @param {string} value
+ * @param {number} [end] defaults to the length of the value
  * @return {boolean}
  */
-function endsWithEscapingBackslash(value) {
-  let i = value.length - 1;
+function endsWithEscapingBackslash(value, end = value.length) {
+  let i = end - 1;
   while (i >= 0 && value.charCodeAt(i) === 92) {
     i--;
   }
-  return (value.length - 1 - i) % 2 === 1;
+  return (end - 1 - i) % 2 === 1;
+}
+
+/**
+ * Whitespace and comments separate tokens without contributing a component.
+ * @param {CSSToken | undefined} token
+ * @return {boolean}
+ */
+function isTrivia(token) {
+  return (
+    token?.[0] === TokenType.Whitespace || token?.[0] === TokenType.Comment
+  );
+}
+
+/**
+ * Index of the first token in `[index, end)` that is not trivia, or `end`.
+ * @param {readonly CSSToken[]} input
+ * @param {number} index
+ * @param {number} [end] defaults to the length of the list
+ * @return {number}
+ */
+function skipTrivia(input, index, end = input.length) {
+  let cursor = index;
+  while (cursor < end) {
+    const type = input[cursor][0];
+    if (type !== TokenType.Whitespace && type !== TokenType.Comment) break;
+    cursor++;
+  }
+  return cursor;
 }
 
 /**
@@ -231,7 +260,9 @@ export {
   closeForOpening,
   decoded,
   endsWithEscapingBackslash,
+  isTrivia,
   numeric,
+  skipTrivia,
   tokenEnd,
   tokenStart,
   tokens,

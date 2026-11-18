@@ -7,7 +7,7 @@ import { escapeForString, normalizeUrlTokenValue } from './urls.js';
 /** @import {AtRulePart, Reducer, Stage, StageEntry} from '../../run/host.js' */
 /** @import {ValueBuffer} from '../../values/valueBuffer.js' */
 
-const { asciiLowerCase } = cssnanoUtils;
+const { asciiLowerCase, endsWithEscapingBackslash } = cssnanoUtils;
 const URL_CANDIDATE_REGEX = /url|src|\\/iv;
 
 /**
@@ -17,19 +17,12 @@ const URL_CANDIDATE_REGEX = /url|src|\\/iv;
  * @return {boolean}
  */
 function isClosedString(value) {
-  if (value.length < 2) return false;
-  const quote = value[0];
-
-  let backslashes = 0;
-  for (
-    let index = value.length - 2;
-    index >= 0 && value[index] === '\\';
-    index--
-  ) {
-    backslashes++;
-  }
-
-  return value[value.length - 1] === quote && backslashes % 2 === 0;
+  const { length } = value;
+  return (
+    length >= 2 &&
+    value[length - 1] === value[0] &&
+    !endsWithEscapingBackslash(value, length - 1)
+  );
 }
 
 /**

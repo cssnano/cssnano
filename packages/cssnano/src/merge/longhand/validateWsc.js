@@ -1,8 +1,7 @@
 import cssnanoUtils from '#utils';
 import { isLengthValue, parseDimension } from './lengthGrammar.js';
 import { splitComponents } from './componentRanges.js';
-import { isHexColorDigits } from '../../ir/asciiCharacters.js';
-import { systemColors } from './systemColors.js';
+import { systemColors } from '../../values/systemColors.js';
 
 import {
   lineStyles,
@@ -12,7 +11,7 @@ import {
 } from '../../ir/spec.js';
 import { isSubstitution, isUnresolved } from '../../ir/unresolved.js';
 
-const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, isHexColorDigits } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {ValueComponent} from './componentRanges.js' */
@@ -33,10 +32,10 @@ function isBorderStyle(value) {
 }
 
 /**
- * A math function (`calc()`, `min()`, ...), `attr()` or `if()` fixes its type
- * from its own syntax or context rather than deferring it to substitution, and
- * the only border component whose grammar accepts that type is the width —
- * never a `<line-style>` keyword, never a `<color>`.
+ * A math function (`calc()`, `min()`, ...) fixes its type from its own syntax
+ * rather than deferring it to substitution, and the only border component
+ * whose grammar accepts that type is the width — never a `<line-style>`
+ * keyword, never a `<color>`.
  *
  * @param {readonly CSSToken[] | undefined} tokens
  * @param {number} start

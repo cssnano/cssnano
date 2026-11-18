@@ -2,9 +2,10 @@ import cssnanoUtils from '#utils';
 import {
   decoded,
   featureValueIndex,
-  isWhitespaceOrComment,
+  isTrivia,
   rational,
-  significantIndex,
+  previousSignificantIndex,
+  skipTrivia,
   TokenType,
 } from './tokenUtils.js';
 
@@ -17,9 +18,9 @@ const { asciiLowerCase } = cssnanoUtils;
 
 /** @param {Tokens} input @param {{startIndex:number,endIndex:number}} segment @return {{endIndex:number,first:number,last:number}} */
 function mediaSegmentInfo(input, { startIndex, endIndex }) {
-  const first = significantIndex(input, startIndex, 1);
+  const first = skipTrivia(input, startIndex);
   let last = endIndex - 1;
-  while (last >= first && isWhitespaceOrComment(input, last)) last--;
+  while (last >= first && isTrivia(input[last])) last--;
   return { endIndex, first, last };
 }
 
@@ -39,7 +40,7 @@ function minifyMediaAllSegment(legacy, input, { endIndex, first }, changes) {
     decoded(input[first]).toLowerCase() !== 'all'
   )
     return;
-  const second = significantIndex(input, first + 1, 1);
+  const second = skipTrivia(input, first + 1);
   const and =
     second < endIndex &&
     input[second]?.[0] === TokenType.Ident &&
@@ -117,7 +118,7 @@ function conjunctionFeatures(structure, { startIndex, endIndex }) {
   /** @type {number | undefined} */
   let and;
   for (let i = startIndex; i < endIndex; i++) {
-    if (isWhitespaceOrComment(input, i)) continue;
+    if (isTrivia(input[i])) continue;
     const [type] = input[i];
     if (type === TokenType.Ident) {
       const word = asciiLowerCase(decoded(input[i]));
@@ -172,10 +173,10 @@ function rangeBound(structure, { open, close }) {
   if (
     value < 0 ||
     input[value][0] !== TokenType.Dimension ||
-    significantIndex(input, value + 1, 1) !== close
+    skipTrivia(input, value + 1) !== close
   )
     return undefined;
-  const name = input[significantIndex(input, open + 1, 1)];
+  const name = input[skipTrivia(input, open + 1)];
   const feature = asciiLowerCase(decoded(name));
   const atLeast = feature.startsWith('min-');
   if (!atLeast && !feature.startsWith('max-')) return undefined;
@@ -250,7 +251,7 @@ function removalRange(input, features, first, last) {
   if (first === 0 || and === undefined) {
     return { from: open, to: features[last + 1].open - 1 };
   }
-  const from = significantIndex(input, and - 1, -1) + 1;
+  const from = previousSignificantIndex(input, and - 1) + 1;
   return { from, to: features[last].close };
 }
 

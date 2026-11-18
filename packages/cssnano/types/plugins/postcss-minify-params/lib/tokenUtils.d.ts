@@ -1,9 +1,9 @@
 import cssnanoUtils from '#utils';
-declare const TokenType: typeof import("@csstools/css-tokenizer").TokenType;
+declare const TokenType: typeof import("@csstools/css-tokenizer").TokenType, isTrivia: typeof import("../../../utils/value.js").isTrivia, skipTrivia: typeof import("../../../utils/value.js").skipTrivia;
 declare const decoded: typeof cssnanoUtils.decoded;
 export type Tokens = Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens'];
 /** @typedef {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens']} Tokens */
-export { TokenType, decoded };
+export { TokenType, decoded, isTrivia, skipTrivia };
 export declare const openingTypes: Set<import("@csstools/css-tokenizer").TokenType>;
 export declare const closingTypes: Set<import("@csstools/css-tokenizer").TokenType>;
 export declare const calcProductEndTypes: Set<import("@csstools/css-tokenizer").TokenType>;
@@ -25,16 +25,14 @@ export declare function rational(source: string): [bigint, bigint] | undefined;
  */
 export declare function aspectRatio(left: string, right: string): [string, string] | undefined;
 /**
- * Whether the token at `index` is whitespace or a comment, which a query may
- * place between any two significant tokens.
+ * The nearest token at or before `index` that is not whitespace or a comment,
+ * or -1 when there is none.
  *
  * @param {Tokens} input
  * @param {number} index
- * @return {boolean}
+ * @return {number}
  */
-export declare function isWhitespaceOrComment(input: Tokens, index: number): boolean;
-/** @param {Tokens} input @param {number} index @param {number} step @return {number} */
-export declare function significantIndex(input: Tokens, index: number, step: number): number;
+export declare function previousSignificantIndex(input: Tokens, index: number): number;
 /**
  * Where the value of a `(name: value)` feature starts, for the `(` at `open`;
  * the name is the first significant token after it. Returns -1 unless an

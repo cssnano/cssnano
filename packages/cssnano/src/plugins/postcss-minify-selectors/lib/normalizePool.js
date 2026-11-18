@@ -11,13 +11,12 @@ import {
   namespaceTokens,
 } from './outputTokens.js';
 import { serializeNormalized } from './serializeArena.js';
-import { isImportantCommentToken } from './tokenUtils.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
 /** @typedef {import('./arena.js').ArenaNode} ArenaNode */
 /** @typedef {import('./arena.js').Specificity} Specificity */
-const { TokenType, tokenStart } = cssnanoUtils;
+const { TokenType, isImportantCommentToken, tokenStart } = cssnanoUtils;
 /** @typedef {import('./outputOverlay.js').Emit} Emit */
 /** @typedef {{emit?:Emit,id:number,length:number,text?:string,sourceNode?:number,changed?:boolean,hexDigits?:number,head?:number}} Output */
 

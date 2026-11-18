@@ -1,4 +1,3 @@
-import { isAsciiDigit } from '../ir/asciiCharacters.js';
 import { withoutVendorPrefix } from '../ir/vendorPrefix.js';
 /**
  * The syntax a declaration value needs a browser to parse: functions, units,
@@ -12,7 +11,8 @@ import {
   trustedSupportFunctions,
 } from '../ir/unresolved.js';
 
-const { TokenType, asciiLowerCase, decoded, mathFunctions } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, isAsciiDigit, mathFunctions } =
+  cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
