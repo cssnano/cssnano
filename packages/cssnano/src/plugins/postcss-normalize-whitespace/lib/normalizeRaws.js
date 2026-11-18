@@ -1,3 +1,4 @@
+import cssnanoUtils from '#utils';
 import {
   AT_RULE_BLOCK,
   AT_RULE_STATEMENT,
@@ -13,13 +14,14 @@ import {
   writeStatementRaws,
 } from '../../../ir/rawEdits.js';
 import {
-  endsWithOpenEscape,
   normalizeAfterName,
   trimCustomPropertySeparator,
   trimSeparator,
   whitespaceRegex,
 } from '../../../values/rawSeparators.js';
 import { isBlankTokens, tokensText } from '../../../values/tokensText.js';
+
+const { endsWithEscapingBackslash } = cssnanoUtils;
 
 /** @import {BlockRecords} from '../../../ir/blockRecords.js' */
 /** @import {ArenaIndex, BlockRecord, NodeEntry} from '../../../ir/blockRecord.js' */
@@ -35,7 +37,7 @@ import { isBlankTokens, tokensText } from '../../../values/tokensText.js';
  */
 function importantSpelling(tokenLists, record) {
   if (!record.important) return undefined;
-  return endsWithOpenEscape(tokensText(tokenLists.get(record.valueList)))
+  return endsWithEscapingBackslash(tokensText(tokenLists.get(record.valueList)))
     ? ' !important'
     : '!important';
 }
@@ -109,7 +111,7 @@ function normalizeAtRuleOrRule(records, tokenLists, index) {
       ? normalizeAfterName(named.afterName)
       : undefined;
   // A prelude that ends in an open escape keeps one space before the delimiter.
-  const between = endsWithOpenEscape(
+  const between = endsWithEscapingBackslash(
     headText(
       tokenLists,
       /** @type {BlockRecord | NodeEntry | import('../../../ir/ruleRecord.js').RuleRecord} */ (

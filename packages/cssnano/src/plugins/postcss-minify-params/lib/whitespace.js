@@ -9,7 +9,8 @@ import {
   featureValueIndex,
   mathFunctions,
   openingTypes,
-  significantIndex,
+  previousSignificantIndex,
+  skipTrivia,
   TokenType,
   whitespaceInsensitiveFunctions,
 } from './tokenUtils.js';
@@ -86,8 +87,8 @@ function isAdditiveOperator(token) {
 
 /** @param {Tokens} input @param {number} index @param {Ancestry} ancestry @return {boolean} */
 function isRequiredMathOperatorWhitespace(input, index, ancestry) {
-  const previous = significantIndex(input, index - 1, -1);
-  const next = significantIndex(input, index + 1, 1);
+  const previous = previousSignificantIndex(input, index - 1);
+  const next = skipTrivia(input, index + 1);
   const before = input[previous];
   const after = input[next];
   let operator;
@@ -102,8 +103,8 @@ function isRequiredMathOperatorWhitespace(input, index, ancestry) {
     if (!mathFunctions.has(name)) return true;
   }
 
-  const left = input[significantIndex(input, operator - 1, -1)];
-  const right = input[significantIndex(input, operator + 1, 1)];
+  const left = input[previousSignificantIndex(input, operator - 1)];
+  const right = input[skipTrivia(input, operator + 1)];
   return (
     calcProductEndTypes.has(left?.[0]) && calcProductStartTypes.has(right?.[0])
   );
@@ -146,7 +147,7 @@ function whitespaceReplacement(structure, index, ancestry) {
     next?.[0] === TokenType.CloseParen &&
     open !== undefined &&
     featureValueIndex(input, open) === structure.endForOpening(open) &&
-    decoded(input[significantIndex(input, open + 1, 1)]).startsWith('--');
+    decoded(input[skipTrivia(input, open + 1)]).startsWith('--');
   const tightened =
     tight &&
     !emptyCustomProperty &&
@@ -182,10 +183,10 @@ export function minifyAspectRatios(supports, structure, ancestry, changes) {
     const close = /** @type {number} */ (structure.endForOpening(open));
     const left = featureValueIndex(input, open);
     if (left < 0) continue;
-    const name = significantIndex(input, open + 1, 1);
-    const slash = significantIndex(input, left + 1, 1);
-    const right = significantIndex(input, slash + 1, 1);
-    const after = significantIndex(input, right + 1, 1);
+    const name = skipTrivia(input, open + 1);
+    const slash = skipTrivia(input, left + 1);
+    const right = skipTrivia(input, slash + 1);
+    const after = skipTrivia(input, right + 1);
     if (!isAspectRatioFeature(input, name, left, slash, right, after, close))
       continue;
     const a = numeric(input[left]);

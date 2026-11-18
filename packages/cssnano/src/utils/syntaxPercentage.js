@@ -1,6 +1,6 @@
 import cssnanoUtils from '#utils';
 
-const { TokenType, decoded, tokens } = cssnanoUtils;
+const { TokenType, decoded, isTrivia, skipTrivia, tokens } = cssnanoUtils;
 
 const percentageSyntaxTypes = new Set([
   'percentage',
@@ -9,23 +9,6 @@ const percentageSyntaxTypes = new Set([
   'time-percentage',
   'frequency-percentage',
 ]);
-
-/**
- * @param {ReturnType<typeof tokens>} tokensList
- * @param {number} i
- * @return {number}
- */
-function skipTrivia(tokensList, i) {
-  let index = i;
-  while (index < tokensList.length) {
-    const type = tokensList[index][0];
-    if (type !== TokenType.Whitespace && type !== TokenType.Comment) {
-      break;
-    }
-    index++;
-  }
-  return index;
-}
 
 /**
  * @param {ReturnType<typeof tokens>} tokensList
@@ -224,8 +207,7 @@ export function syntaxAllowsPercentage(value) {
   const outerTokens = tokens(value);
   let syntaxToken;
   for (const token of outerTokens) {
-    if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment)
-      continue;
+    if (isTrivia(token)) continue;
     if (syntaxToken || token[0] !== TokenType.String) return true;
     syntaxToken = token;
   }

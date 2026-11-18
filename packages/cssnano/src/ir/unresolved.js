@@ -2,14 +2,15 @@ import { withoutVendorPrefix } from './vendorPrefix.js';
 import cssnanoUtils from '#utils';
 import { TokenType } from '@csstools/css-tokenizer';
 
-const { asciiLowerCase, decoded } = cssnanoUtils;
+const { asciiLowerCase, decoded, skipTrivia, substitutionFunctions } =
+  cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 
-/* Substitution functions from CSS Values. If a user agent does not support
- * one, the entire declaration becomes invalid, so we cannot infer what value
- * substitutes at runtime. */
-const substitutionFunctions = ['var', 'env', 'constant'];
+/* A substitution function stands for any component, so the merge lets it fill
+ * any slot of a shorthand. Unlike the plugins, it does not count `--name()`
+ * custom functions or `inherit()`: a browser without them would drop the whole
+ * merged shorthand rather than one longhand. */
 
 /* Math functions that can produce computed lengths (unlike sin(), pow(),
  * sqrt() which produce only numbers). Inside other functions, their type is
@@ -27,21 +28,14 @@ const mathFunctions = [
   'sign',
 ];
 
-/* Unresolved functions: the math functions above, plus attr() and if(),
- * which adopt their context's type requirement. */
-const trustedFunctions = new Set([
-  ...substitutionFunctions,
-  ...mathFunctions,
-  'attr',
-  'if',
-]);
+/* Unresolved functions: the substitution and math functions above. */
+const trustedFunctions = substitutionFunctions.union(new Set(mathFunctions));
 
-/* Math functions, attr(), and if() have a fixed type from their own syntax
- * or context—calc() produces a length or number, never a keyword or color.
- * Unlike substitutions, they can only fill a component if its grammar accepts
- * that type. */
+/* Math functions have a fixed type from their own syntax: calc() produces a
+ * length or number, never a keyword or color. Unlike substitutions, they can
+ * only fill a component if its grammar accepts that type. */
 const trustedSupportFunctions = trustedFunctions.difference(
-  new Set(substitutionFunctions)
+  substitutionFunctions
 );
 
 /**
@@ -55,15 +49,11 @@ const trustedSupportFunctions = trustedFunctions.difference(
  */
 function leadingFunctionName(tokens, start, end) {
   if (tokens === undefined) return undefined;
-  for (let index = start; index < end; index++) {
-    const token = tokens[index];
-    if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment) {
-      continue;
-    }
-    if (token[0] !== TokenType.Function) return undefined;
-    return withoutVendorPrefix(asciiLowerCase(decoded(token)));
-  }
-  return undefined;
+  const index = skipTrivia(tokens, start, end);
+  if (index === end) return undefined;
+  const token = tokens[index];
+  if (token[0] !== TokenType.Function) return undefined;
+  return withoutVendorPrefix(asciiLowerCase(decoded(token)));
 }
 
 /**
@@ -109,7 +99,7 @@ function isTrustedFunction(name) {
 function isSubstitution(tokens, start, end) {
   const name = leadingFunctionName(tokens, start, end);
 
-  return name !== undefined && substitutionFunctions.includes(name);
+  return name !== undefined && substitutionFunctions.has(name);
 }
 
 export {

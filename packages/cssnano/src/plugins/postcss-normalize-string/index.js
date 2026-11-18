@@ -4,7 +4,8 @@ import { stringToken } from '../../values/tokenConstructors.js';
 
 /** @import {AtRulePart, Reducer, Stage, StageEntry} from '../../run/host.js' */
 
-const { decoded, isCSSWhitespace, isHexDigitCode } = cssnanoUtils;
+const { decoded, endsWithEscapingBackslash, isCSSWhitespace, isHexDigitCode } =
+  cssnanoUtils;
 
 const SINGLE_QUOTE = "'".charCodeAt(0);
 const DOUBLE_QUOTE = '"'.charCodeAt(0);
@@ -72,16 +73,7 @@ function isClosedString(value) {
     return false;
   }
 
-  let backslashes = 0;
-  for (
-    let index = len - 2;
-    index >= 0 && value.charCodeAt(index) === BACKSLASH;
-    index--
-  ) {
-    backslashes++;
-  }
-
-  return backslashes % 2 === 0;
+  return !endsWithEscapingBackslash(value, len - 1);
 }
 
 /**

@@ -1,6 +1,7 @@
 import cssnanoUtils from '#utils';
 
-const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, isImportantCommentToken } =
+  cssnanoUtils;
 
 /** @typedef {ReturnType<typeof import('#utils').default.balancedTokens> extends infer Structure ? Structure extends {tokens: readonly (infer Token)[]} ? Token : never : never} CSSToken */
 
@@ -12,36 +13,6 @@ const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
  */
 export function decodedIdent(token) {
   return asciiLowerCase(decoded(token));
-}
-
-/**
- * Whitespace and comments separate tokens without contributing to a selector.
- * @param {CSSToken | undefined} token
- */
-export function isTrivia(token) {
-  return (
-    token?.[0] === TokenType.Whitespace || token?.[0] === TokenType.Comment
-  );
-}
-
-/**
- * Index of the first token in `[index, end)` that is not trivia, or `end`.
- * @param {readonly CSSToken[]} input
- * @param {number} index
- * @param {number} end
- */
-export function skipTrivia(input, index, end) {
-  let cursor = index;
-  while (cursor < end && isTrivia(input[cursor])) cursor++;
-  return cursor;
-}
-
-/**
- * Minifiers keep `/*!` comments, such as license notices.
- * @param {CSSToken} token
- */
-export function isImportantCommentToken(token) {
-  return token[0] === TokenType.Comment && token[1].startsWith('/*!');
 }
 
 /**

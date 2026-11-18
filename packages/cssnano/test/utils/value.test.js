@@ -13,7 +13,9 @@ import {
   balancedTokens,
   decoded,
   endsWithEscapingBackslash,
+  isTrivia,
   numeric,
+  skipTrivia,
   tokenEnd,
   tokens,
 } from '../../src/utils/value.js';
@@ -237,4 +239,47 @@ test('distinguishes odd and even trailing backslashes', () => {
   assert.equal(endsWithEscapingBackslash('\\'), true);
   assert.equal(endsWithEscapingBackslash('\\\\'), false);
   assert.equal(cssnanoUtils.endsWithEscapingBackslash('media\\'), true);
+});
+
+test('endsWithEscapingBackslash counts an odd run of backslashes before the end index as escaping', () => {
+  assert.equal(endsWithEscapingBackslash('a\\"', 2), true);
+});
+
+test('endsWithEscapingBackslash counts an even run of backslashes before the end index as escaped', () => {
+  assert.equal(endsWithEscapingBackslash('a\\\\"', 3), false);
+});
+
+test('endsWithEscapingBackslash finds no escape before an end index of zero', () => {
+  assert.equal(endsWithEscapingBackslash('a\\', 0), false);
+});
+
+test('skipTrivia returns the index of the first token that is not whitespace or a comment', () => {
+  const list = tokens('  /* c */ a b');
+  assert.equal(list[skipTrivia(list, 0)][1], 'a');
+});
+
+test('skipTrivia stops at the end bound', () => {
+  const list = tokens('a   /* c */ b');
+  assert.equal(skipTrivia(list, 1, 3), 3);
+});
+
+test('skipTrivia returns the length when only trivia remains', () => {
+  const list = tokens(' /* c */ ');
+  assert.equal(skipTrivia(list, 0), list.length);
+});
+
+test('isTrivia accepts whitespace', () => {
+  assert.equal(isTrivia(tokens(' ')[0]), true);
+});
+
+test('isTrivia accepts a comment', () => {
+  assert.equal(isTrivia(tokens('/**/')[0]), true);
+});
+
+test('isTrivia rejects an ident', () => {
+  assert.equal(isTrivia(tokens('a')[0]), false);
+});
+
+test('isTrivia rejects a missing token past the end of a list', () => {
+  assert.equal(isTrivia(undefined), false);
 });

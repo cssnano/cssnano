@@ -1,13 +1,18 @@
-import { isAsciiDigit, isHexColorDigits } from '../../../ir/asciiCharacters.js';
 import { withoutVendorPrefix } from '../../../ir/vendorPrefix.js';
 import cssnanoUtils from '#utils';
 import knownPropertyNames from '../data/knownProperties.json' with { type: 'json' };
 import generatedNumericRanges from '../data/numericRanges.json' with { type: 'json' };
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-
-const { TokenType, asciiLowerCase, decoded, lengthUnits, tokens } =
-  cssnanoUtils;
+const {
+  TokenType,
+  asciiLowerCase,
+  decoded,
+  isAsciiDigit,
+  isHexColorDigits,
+  lengthUnits,
+  tokens,
+} = cssnanoUtils;
 
 export const transformFunctions = new Set([
   'translate',
@@ -70,14 +75,6 @@ function hasFixedNumbers(prop) {
 function signClass(value) {
   if (value < 0) return -1;
   return value > 0 ? 1 : 0;
-}
-
-/**
- * @param {CSSToken} token
- * @return {boolean} whether the hash is a hex colour of a valid length
- */
-function isHexColor(token) {
-  return isHexColorDigits(decoded(token));
 }
 
 /**
@@ -202,7 +199,8 @@ function tokenKey(token, fixed, enclosing) {
       );
     case TokenType.Hash:
       return (
-        piece(type) + piece(!fixed && isHexColor(token) ? 'hex' : token[1])
+        piece(type) +
+        piece(!fixed && isHexColorDigits(decoded(token)) ? 'hex' : token[1])
       );
     default:
       // bad-string, bad-url and anything unmodelled.

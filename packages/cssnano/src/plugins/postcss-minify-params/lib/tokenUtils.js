@@ -1,13 +1,13 @@
 import cssnanoUtils from '#utils';
 
-const { TokenType } = cssnanoUtils;
+const { TokenType, isTrivia, skipTrivia } = cssnanoUtils;
 const decoded = /** @type {typeof cssnanoUtils.decoded} */ (
   cssnanoUtils.decoded
 );
 
 /** @typedef {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>['tokens']} Tokens */
 
-export { TokenType, decoded };
+export { TokenType, decoded, isTrivia, skipTrivia };
 
 export const openingTypes = new Set([
   TokenType.Function,
@@ -95,22 +95,16 @@ export function aspectRatio(left, right) {
 }
 
 /**
- * Whether the token at `index` is whitespace or a comment, which a query may
- * place between any two significant tokens.
+ * The nearest token at or before `index` that is not whitespace or a comment,
+ * or -1 when there is none.
  *
  * @param {Tokens} input
  * @param {number} index
- * @return {boolean}
+ * @return {number}
  */
-export function isWhitespaceOrComment(input, index) {
-  const type = input[index]?.[0];
-  return type === TokenType.Whitespace || type === TokenType.Comment;
-}
-
-/** @param {Tokens} input @param {number} index @param {number} step @return {number} */
-export function significantIndex(input, index, step) {
+export function previousSignificantIndex(input, index) {
   let cursor = index;
-  while (isWhitespaceOrComment(input, cursor)) cursor += step;
+  while (isTrivia(input[cursor])) cursor--;
   return cursor;
 }
 
@@ -124,9 +118,9 @@ export function significantIndex(input, index, step) {
  * @return {number} the index of the first significant token after the colon
  */
 export function featureValueIndex(input, open) {
-  const name = significantIndex(input, open + 1, 1);
+  const name = skipTrivia(input, open + 1);
   if (input[name]?.[0] !== TokenType.Ident) return -1;
-  const colon = significantIndex(input, name + 1, 1);
+  const colon = skipTrivia(input, name + 1);
   if (input[colon]?.[0] !== TokenType.Colon) return -1;
-  return significantIndex(input, colon + 1, 1);
+  return skipTrivia(input, colon + 1);
 }

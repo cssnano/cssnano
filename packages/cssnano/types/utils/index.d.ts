@@ -4,14 +4,15 @@ import mathFunctions from './mathFunctions.js';
 import rawCache from './rawCache.js';
 import isAnonymousLayer from './isAnonymousLayer.js';
 import isCSSWhitespace from './isCSSWhitespace.js';
+import isAsciiDigit from './isAsciiDigit.js';
+import isHexColorDigits from './isHexColorDigits.js';
 import isHexDigitCode from './isHexDigitCode.js';
-import isImportantComment from './isImportantComment.js';
+import isImportantComment, { isImportantCommentToken } from './isImportantComment.js';
 import { sourceValue } from './sourceText.js';
 import vendorUnprefixed from './vendorUnprefixed.js';
-import { isSubstitutionFunction } from './substitution.js';
-import { TokenType, applyEdits, balancedStructure, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, numeric, tokenEnd, tokenStart, tokens } from './value.js';
-/** @param {string} value @return {string} */
-declare function asciiLowerCase(value: string): string;
+import asciiLowerCase from './asciiLowerCase.js';
+import { isSubstitutionFunction, isSubstitutionToken, substitutionFunctions } from './substitution.js';
+import { TokenType, applyEdits, balancedStructure, balancedTokens, closeForOpening, decoded, endsWithEscapingBackslash, isTrivia, numeric, skipTrivia, tokenEnd, tokenStart, tokens } from './value.js';
 export type FeatureKey = import('./featureKeys.js').FeatureKey;
 export type BugKey = import('./browserBugs.js').BugKey;
 /** @typedef {import('./featureKeys.js').FeatureKey} FeatureKey */
@@ -21,10 +22,17 @@ declare const moduleExports: {
     sourceValue: typeof sourceValue;
     isAnonymousLayer: typeof isAnonymousLayer;
     isCSSWhitespace: typeof isCSSWhitespace;
+    isAsciiDigit: typeof isAsciiDigit;
+    isHexColorDigits: typeof isHexColorDigits;
     isHexDigitCode: typeof isHexDigitCode;
     isImportantComment: typeof isImportantComment;
+    isImportantCommentToken: typeof isImportantCommentToken;
+    isTrivia: typeof isTrivia;
+    skipTrivia: typeof skipTrivia;
     vendorUnprefixed: typeof vendorUnprefixed;
     isSubstitutionFunction: typeof isSubstitutionFunction;
+    isSubstitutionToken: typeof isSubstitutionToken;
+    substitutionFunctions: typeof substitutionFunctions;
     TokenType: typeof TokenType;
     applyEdits: typeof applyEdits;
     asciiLowerCase: typeof asciiLowerCase;

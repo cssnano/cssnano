@@ -1,6 +1,7 @@
 import cssnanoUtils from '#utils';
 
-const { isCSSWhitespace, isHexDigitCode } = cssnanoUtils;
+const { endsWithEscapingBackslash, isCSSWhitespace, isHexDigitCode } =
+  cssnanoUtils;
 
 /**
  * Digit count of the hex escape that ends just before `end`, or 0 when no
@@ -17,14 +18,7 @@ export function hexEscapeDigitCount(value, end) {
   }
   // An even run of backslashes is escaped backslashes and the digits are
   // literal.
-  let backslashes = 0;
-  while (
-    index - backslashes >= 0 &&
-    value.charCodeAt(index - backslashes) === 0x5c
-  ) {
-    backslashes++;
-  }
-  return backslashes % 2 === 1 ? digits : 0;
+  return endsWithEscapingBackslash(value, index + 1) ? digits : 0;
 }
 
 /**

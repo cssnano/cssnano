@@ -2,7 +2,7 @@ import cssnanoUtils from '#utils';
 import { func, ident } from '../../values/tokenConstructors.js';
 import { closeParen } from '../../values/punctuationTokens.js';
 
-const { TokenType, asciiLowerCase, decoded } = cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, isTrivia } = cssnanoUtils;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {Reducer} from '../../run/host.js' */
 /** @import {ValueBuffer} from '../../values/valueBuffer.js' */
@@ -25,8 +25,7 @@ function singleToken(input, segment) {
   let result;
   for (let index = segment.startIndex; index < segment.endIndex; index++) {
     const token = input[index];
-    if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment)
-      continue;
+    if (isTrivia(token)) continue;
     if (result) return;
     result = token;
   }

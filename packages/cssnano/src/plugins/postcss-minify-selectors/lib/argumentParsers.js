@@ -4,9 +4,9 @@ import { comma, delim, whitespace } from '../../../values/punctuationTokens.js';
 import { ident } from '../../../values/tokenConstructors.js';
 import { dropHexEscapeTerminator } from './hexEscape.js';
 import { nameToken } from './outputTokens.js';
-import { isImportantCommentToken, unquote } from './tokenUtils.js';
+import { unquote } from './tokenUtils.js';
 
-const { TokenType } = cssnanoUtils;
+const { TokenType, isImportantCommentToken } = cssnanoUtils;
 
 /** @typedef {import('./tokenUtils.js').CSSToken} CSSToken */
 /** @typedef {import('./arena.js').Specificity} Specificity */
