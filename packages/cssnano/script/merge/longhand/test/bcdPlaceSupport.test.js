@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import browserslist from 'browserslist';
 import bcdData from '@mdn/browser-compat-data' with { type: 'json' };
 import committed from '../../../../src/merge/longhand/data/placeSupport.json' with { type: 'json' };
 import {
@@ -9,6 +8,11 @@ import {
   serializePlaceSupport,
   validatePlaceSupport,
 } from '../lib/bcdPlaceSupport.js';
+import {
+  assertKnownBrowsers,
+  assertPlainVersions,
+  assertShippedReleases,
+} from './bcdMinimumAssertions.js';
 import {
   browserslistNames,
   earliestVersion,
@@ -283,27 +287,15 @@ describe('compareVersions', () => {
 
 describe('committed place-* support data', () => {
   test('names only browsers that browserslist knows', () => {
-    const known = new Set(Object.keys(browserslist.data));
-    assert.deepEqual(
-      Object.keys(committed).filter((name) => !known.has(name)),
-      []
-    );
+    assertKnownBrowsers([committed]);
   });
 
   test('records each minimum as a plain dotted version', () => {
-    for (const version of Object.values(committed)) {
-      assert.match(version, /^\d+(?:\.\d+)*$/v);
-    }
+    assertPlainVersions([committed]);
   });
 
   test('requires a release of each engine that browserslist has already shipped', () => {
-    for (const [name, version] of Object.entries(committed)) {
-      const released = browserslist.data[name].released;
-      assert.ok(
-        released.some((r) => compareVersions(r.split('-')[0], version) >= 0),
-        name
-      );
-    }
+    assertShippedReleases([committed]);
   });
 
   test('matches the pinned browser compatibility data, so a bump needs a regenerate', () => {

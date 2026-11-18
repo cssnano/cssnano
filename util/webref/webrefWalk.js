@@ -48,6 +48,26 @@ export function reachableProductions(grammars, syntax) {
 }
 
 /**
+ * The keywords the productions of these syntaxes can hold, sorted and without
+ * duplicates. An `undefined` syntax, such as a property the data does not
+ * define, contributes nothing.
+ *
+ * @param {Map<string, string>} grammars As returned by `grammarsByName`.
+ * @param {(string | undefined)[]} syntaxes
+ * @return {string[]}
+ */
+export function keywordsOfSyntaxes(grammars, syntaxes) {
+  /** @type {Set<string>} */
+  const keywords = new Set();
+  for (const syntax of syntaxes) {
+    for (const keyword of reachableProductions(grammars, syntax).keywords) {
+      keywords.add(keyword);
+    }
+  }
+  return [...keywords].toSorted();
+}
+
+/**
  * The productions each property's grammar reaches. Vendor prefixed spellings
  * and `--*` are left out: they resolve to their alias before any lookup.
  *

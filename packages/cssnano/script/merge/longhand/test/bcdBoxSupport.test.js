@@ -16,6 +16,7 @@ import {
   supportOf,
 } from '../lib/bcdSupport.js';
 import { compareVersions } from '../../../../src/utils/versions.js';
+import { assertKnownBrowsers } from './bcdMinimumAssertions.js';
 
 /**
  * @param {Record<string, Record<string, object>>} properties
@@ -246,13 +247,11 @@ describe('committed box shorthand support data', () => {
       committed.engines.filter((name) => !known.has(name)),
       []
     );
-    for (const minimums of Object.values(committed.properties)) {
-      if (minimums === alwaysSupported) continue;
-      assert.deepEqual(
-        Object.keys(minimums).filter((name) => !known.has(name)),
-        []
-      );
-    }
+    assertKnownBrowsers(
+      Object.values(committed.properties).filter(
+        (minimums) => minimums !== alwaysSupported
+      )
+    );
   });
 
   test('never claims support earlier than the longhands the shorthand sets', () => {

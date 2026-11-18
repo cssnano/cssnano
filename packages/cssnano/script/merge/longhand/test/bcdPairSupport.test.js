@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import browserslist from 'browserslist';
 import bcdData from '@mdn/browser-compat-data' with { type: 'json' };
 import committed from '../../../../src/merge/longhand/data/pairSupport.json' with { type: 'json' };
 import { pairFamilies } from '../../../../src/merge/longhand/decl/pairForms.js';
@@ -9,7 +8,11 @@ import {
   parsingSupportSince,
   serializePairSupport,
 } from '../lib/bcdPairSupport.js';
-import { compareVersions } from '../../../../src/utils/versions.js';
+import {
+  assertKnownBrowsers,
+  assertPlainVersions,
+  assertShippedReleases,
+} from './bcdMinimumAssertions.js';
 
 /** @param {Record<string, object>} support */
 const entry = (support) => ({ __compat: { support } });
@@ -153,33 +156,15 @@ describe('committed pair support data', () => {
   });
 
   test('names only browsers that browserslist knows', () => {
-    const known = new Set(Object.keys(browserslist.data));
-    for (const minimums of Object.values(committed)) {
-      assert.deepEqual(
-        Object.keys(minimums).filter((name) => !known.has(name)),
-        []
-      );
-    }
+    assertKnownBrowsers(Object.values(committed));
   });
 
   test('records each minimum as a plain dotted version', () => {
-    for (const minimums of Object.values(committed)) {
-      for (const version of Object.values(minimums)) {
-        assert.match(version, /^\d+(?:\.\d+)*$/v);
-      }
-    }
+    assertPlainVersions(Object.values(committed));
   });
 
   test('requires a release of each engine that browserslist has already shipped', () => {
-    for (const minimums of Object.values(committed)) {
-      for (const [name, version] of Object.entries(minimums)) {
-        const released = browserslist.data[name].released;
-        assert.ok(
-          released.some((r) => compareVersions(r.split('-')[0], version) >= 0),
-          name
-        );
-      }
-    }
+    assertShippedReleases(Object.values(committed));
   });
 
   test('matches the pinned browser compatibility data, so a bump needs a regenerate', () => {
