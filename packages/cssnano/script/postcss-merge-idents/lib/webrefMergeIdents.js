@@ -9,6 +9,7 @@ import {
   counterFunctionSlots,
   descriptorsWhere,
   propertyReach,
+  keywordsOfSyntaxes,
   reachableProductions,
 } from '../../../../../util/webref/webrefWalk.js';
 
@@ -48,27 +49,18 @@ export function buildMergeIdents({ properties, atrules, types, functions }) {
   const grammars = grammarsByName({ properties, types, functions });
 
   /**
-   * The keywords of the productions a declaration of these properties, or
-   * these grammars, can hold. A keyframes name or counter style name that
-   * reads as one of them is ambiguous with it.
+   * The keywords of the productions a declaration of these properties can
+   * hold. A keyframes name or counter style name that reads as one of them is
+   * ambiguous with it.
    *
-   * @param {(string | undefined)[]} syntaxes
+   * @param {string[]} names
    * @return {string[]}
    */
-  function keywordsOfSyntaxes(syntaxes) {
-    /** @type {Set<string>} */
-    const keywords = new Set();
-    for (const syntax of syntaxes) {
-      for (const keyword of reachableProductions(grammars, syntax).keywords) {
-        keywords.add(keyword);
-      }
-    }
-    return [...keywords].toSorted();
-  }
-
-  /** @param {string[]} names */
   const keywordsOfProperties = (names) =>
-    keywordsOfSyntaxes(names.map((name) => grammars.get(`'${name}'`)));
+    keywordsOfSyntaxes(
+      grammars,
+      names.map((name) => grammars.get(`'${name}'`))
+    );
 
   const counterStyleProperties = [...propertyReach(properties, grammars)]
     .filter(([, reach]) => reach.has('counter-style-name'))
@@ -90,7 +82,7 @@ export function buildMergeIdents({ properties, atrules, types, functions }) {
       shorthandKeywords: keywordsOfProperties(['animation', 'animation-name']),
     },
     counterStyle: {
-      keywords: keywordsOfSyntaxes([
+      keywords: keywordsOfSyntaxes(grammars, [
         ...counterStyleProperties.map((name) => grammars.get(`'${name}'`)),
         ...counterStyleDescriptors.map((descriptor) => descriptor.syntax),
       ]),

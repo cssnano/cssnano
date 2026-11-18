@@ -5,6 +5,7 @@ import {
   counterFunctionSlots,
   descriptorsWhere,
   easingFunction,
+  keywordsOfSyntaxes,
   propertyReach,
   reachableProductions,
   validateEasingFunction,
@@ -42,6 +43,35 @@ describe('reachableProductions', () => {
     assert.ok(
       reachableProductions(grammars, '<length>').references.has('length')
     );
+  });
+});
+
+describe('keywordsOfSyntaxes', () => {
+  const grammars = grammarsByName({
+    properties: [],
+    types: [
+      { name: 'first', syntax: 'zeta | alpha | <second>' },
+      { name: 'second', syntax: 'alpha | <first>' },
+    ],
+    functions: [],
+  });
+
+  test('returns the reached keywords sorted', () => {
+    assert.deepStrictEqual(keywordsOfSyntaxes(grammars, ['<first>']), [
+      'alpha',
+      'zeta',
+    ]);
+  });
+
+  test('lists a keyword reached through several syntaxes once', () => {
+    assert.deepStrictEqual(
+      keywordsOfSyntaxes(grammars, ['<first>', '<second>', 'alpha']),
+      ['alpha', 'zeta']
+    );
+  });
+
+  test('contributes nothing for an undefined syntax', () => {
+    assert.deepStrictEqual(keywordsOfSyntaxes(grammars, [undefined]), []);
   });
 });
 

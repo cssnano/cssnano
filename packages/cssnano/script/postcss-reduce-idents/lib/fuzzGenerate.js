@@ -92,27 +92,11 @@ function gap(rng) {
  * @return {string}
  */
 function argument(rng, depth) {
-  const pieces = [];
-  const count = 1 + rng.int(2);
-  for (let i = 0; i < count; i++) {
-    pieces.push(gap(rng));
-    switch (rng.int(3)) {
-      case 0:
-        pieces.push(rng.pick(IDENTS));
-        break;
-      case 1:
-        pieces.push(rng.pick(NUMBERS));
-        break;
-      default:
-        pieces.push(rng.pick(STRINGS));
-        break;
-    }
-  }
-  pieces.push(gap(rng));
+  let body = padding(rng, 1 + rng.int(2));
   if (depth < 2 && rng.chance(0.3)) {
-    pieces.push(`,${gap(rng)}${call(rng, depth + 1)}`);
+    body += `,${gap(rng)}${call(rng, depth + 1)}`;
   }
-  return pieces.join('');
+  return body;
 }
 
 /**

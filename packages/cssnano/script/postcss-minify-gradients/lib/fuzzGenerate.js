@@ -288,4 +288,4 @@ function* generate(seed, count) {
   for (let index = 0; index < count; index++) yield caseFor(rng);
 }
 
-export { branches, colorPool, generate };
+export { branches, colorPool, generate, joinWith };

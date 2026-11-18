@@ -16,6 +16,7 @@ import {
   counterFunctionSlots,
   descriptorsWhere,
   propertyReach,
+  keywordsOfSyntaxes,
   reachableProductions,
 } from '../../../../../util/webref/webrefWalk.js';
 
@@ -93,25 +94,10 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
    * @return {string[]}
    */
   function keywordsOfProperties(names) {
-    return keywordsOfSyntaxes(names.map((name) => grammars.get(`'${name}'`)));
-  }
-
-  /**
-   * The same, for grammars that are not a property's, such as the descriptors
-   * of an at-rule.
-   *
-   * @param {(string | undefined)[]} syntaxes
-   * @return {string[]}
-   */
-  function keywordsOfSyntaxes(syntaxes) {
-    /** @type {Set<string>} */
-    const keywords = new Set();
-    for (const syntax of syntaxes) {
-      for (const keyword of reachableProductions(grammars, syntax).keywords) {
-        keywords.add(keyword);
-      }
-    }
-    return [...keywords].toSorted();
+    return keywordsOfSyntaxes(
+      grammars,
+      names.map((name) => grammars.get(`'${name}'`))
+    );
   }
 
   const reachByProperty = propertyReach(properties, grammars);
@@ -176,7 +162,7 @@ export function buildIdentSlots({ properties, atrules, types, functions }) {
       descriptors: counterStyleDescriptors.map((descriptor) => descriptor.name),
       functionProperties: propertiesWhere(takesOneOf(counterStyleFunctions)),
       functions: counterStyleFunctions,
-      reservedKeywords: keywordsOfSyntaxes([
+      reservedKeywords: keywordsOfSyntaxes(grammars, [
         ...counterStyleProperties.map((name) => grammars.get(`'${name}'`)),
         ...counterStyleDescriptors.map((descriptor) => descriptor.syntax),
       ]),
