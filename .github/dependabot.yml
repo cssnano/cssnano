@@ -26,5 +26,12 @@ updates:
           - "oxlint"
           - "knip"
           - "astro"
+      browser-data-and-parsing:
+        patterns:
+          - "caniuse-lite"
+          - "jsdom"
+          - "postcss-selector-parser"
+    ignore:
+      - dependency-name: "browser-compat-data"
     versioning-strategy: increase
     
