@@ -21,12 +21,13 @@ import { createWriteStream, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { expandTestArguments, testGlobs } from './testArguments.js';
 
 const root = join(import.meta.dirname, '..');
 const logDir = join(root, 'test-results');
 const node = process.execPath;
 
-/** The directories the tests step hands to `node --test`, which finds every test in them. */
+/** The directories the tests step searches for tests. */
 export const testRoots = ['packages', 'util'];
 /** The site's tests resolve `cssnano` through the site's own install. */
 export const siteRoot = 'site/test';
@@ -82,11 +83,15 @@ export const steps = [
     ]),
     skip: needsNode24,
   },
-  { name: 'tests', tier: 'slow', commands: [testCommand(testRoots)] },
+  {
+    name: 'tests',
+    tier: 'slow',
+    commands: [testCommand(testRoots.flatMap(testGlobs))],
+  },
   {
     name: 'site',
     tier: 'slow',
-    commands: [testCommand([siteRoot])],
+    commands: [testCommand([`${siteRoot}/**/*.js`])],
     skip: () =>
       existsSync(join(root, 'site/node_modules'))
         ? null
@@ -337,7 +342,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const keepGoing = args.length < process.argv.length - 2;
   await main(
     args.length
-      ? [{ name: 'tests', tier: 'slow', commands: [testCommand(args)] }]
+      ? [
+          {
+            name: 'tests',
+            tier: 'slow',
+            commands: [testCommand(expandTestArguments(args))],
+          },
+        ]
       : steps,
     keepGoing
   );

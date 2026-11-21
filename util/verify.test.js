@@ -10,6 +10,7 @@ import {
   steps,
   testRoots,
 } from './verify.js';
+import { expandTestArguments } from './testArguments.js';
 
 const repository = new URL('..', import.meta.url);
 
@@ -108,6 +109,28 @@ test('doneLine names the steps that never started apart from the skipped ones', 
     }),
     'test: done status=fail failed=lint skipped=site notrun=tests,frameworks logs=test-results/'
   );
+});
+
+test('expandTestArguments turns a directory into globs, since Node 22 runs a directory as a module', () => {
+  assert.deepEqual(expandTestArguments(['util/']), [
+    'util/**/*.test.?(c|m)js',
+    'util/**/*-test.?(c|m)js',
+    'util/**/*_test.?(c|m)js',
+    'util/**/test-*.?(c|m)js',
+    'util/**/test.?(c|m)js',
+    'util/**/test/**/*.?(c|m)js',
+  ]);
+});
+
+test('expandTestArguments treats every file under a test directory as a test', () => {
+  assert.deepEqual(expandTestArguments(['packages/cssnano/test/merge/']), [
+    'packages/cssnano/test/merge/**/*.?(c|m)js',
+  ]);
+});
+
+test('expandTestArguments leaves flags, files and globs as they are', () => {
+  const args = ['--test-name-pattern=x', 'util/verify.test.js', 'util/**/*.js'];
+  assert.deepEqual(expandTestArguments(args), args);
 });
 
 test('the stale mutation gate covers every registered catalog, whatever its check', async () => {
