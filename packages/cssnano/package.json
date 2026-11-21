@@ -188,7 +188,7 @@
     "@csstools/css-tokenizer": "catalog:",
     "browserslist": "catalog:",
     "caniuse-lite": "catalog:",
-    "postcss-calc": "^11.2.3"
+    "postcss-calc": "^11.3.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
