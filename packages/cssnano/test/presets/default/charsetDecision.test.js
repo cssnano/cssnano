@@ -1,0 +1,69 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import postcss from 'postcss';
+import preset from '../../../src/presets/default.js';
+import { testTargets } from '../../../../../util/testHelpers.js';
+
+/**
+ * @param {string} css
+ * @return {Promise<string>}
+ */
+async function minify(css) {
+  const result = await postcss(
+    preset({ browserslist: { query: testTargets } })
+  ).process(css, {
+    from: undefined,
+  });
+  return result.css;
+}
+
+test('keeps an existing charset when a top-level rule keeps non-ASCII text', async () => {
+  const css = '@charset "windows-1251";a{content:"©"}';
+
+  assert.equal(await minify(css), css);
+});
+
+test('drops an existing charset when its only non-ASCII text is in an empty rule that discardEmpty removes', async () => {
+  assert.equal(
+    await minify('@charset "utf-8";é{}a{color:red}'),
+    'a{color:red}'
+  );
+});
+
+test('discards an at-rule whose only child is a nested charset', async () => {
+  assert.equal(
+    await minify('@media print{@charset "utf-8";}a{color:red}'),
+    'a{color:red}'
+  );
+});
+
+test('discards a rule whose only child is a nested charset', async () => {
+  assert.equal(
+    await minify('a{@charset "utf-8";}b{color:red}'),
+    'b{color:red}'
+  );
+});
+
+test('moves a nested charset to the top and discards the at-rule it leaves empty', async () => {
+  assert.equal(
+    await minify('@media print{a{}@charset "x";}b{content:"é"}'),
+    '@charset "x";b{content:"é"}'
+  );
+});
+
+test('keeps an upper-case charset byte-identical, since browsers ignore it and it must not become an encoding declaration', async () => {
+  const css = '@CHARSET "iso";a{color:red}';
+
+  assert.equal(await minify(css), css);
+});
+
+test('keeps an upper-case charset in the advanced preset', async () => {
+  const { default: advanced } =
+    await import('../../../src/presets/advanced.js');
+  const css = '@CHARSET "iso";a{color:red}';
+  const result = await postcss(advanced()).process(css, {
+    from: undefined,
+  });
+
+  assert.equal(result.css, css);
+});

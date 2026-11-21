@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import cssnano from '../src/index.js';
-import { repositoryFile } from '../../../util/testHelpers.js';
+import { testTargets } from '../../../util/testHelpers.js';
 
 test('should support `env()` and `constant()` is an iPhone X-only feature', async () => {
   const css = `
@@ -13,8 +13,10 @@ test('should support `env()` and `constant()` is an iPhone X-only feature', asyn
     }
     `;
 
-  const result = await postcss([cssnano]).process(css, {
-    from: repositoryFile,
+  const result = await postcss([
+    cssnano({ browserslist: { query: testTargets } }),
+  ]).process(css, {
+    from: undefined,
   });
   assert.strictEqual(
     result.css,

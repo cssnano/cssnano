@@ -1,8 +1,11 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-reduce-idents/index.js';
+import {
+  processCSSFactory,
+  presetEntryPlugin,
+} from '../../../../util/testHelpers.js';
+const plugin = presetEntryPlugin('reduceIdents');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -180,6 +183,28 @@ describe('Counter style', () => {
     'should not rename a counter style named after a predefined disclosure style',
     passthroughCSS(
       '@counter-style disclosure-open{system:cyclic;symbols:"x"}ol{list-style:disclosure-open}'
+    )
+  );
+
+  test(
+    'should not rename a counter style named after the predefined cjk-ideographic style',
+    passthroughCSS(
+      '@counter-style cjk-ideographic{system:cyclic;symbols:"x"}ol{list-style:cjk-ideographic}'
+    )
+  );
+
+  test(
+    'should not rename a counter style whose name spells a predefined name in uppercase',
+    passthroughCSS(
+      '@counter-style CJK-IDEOGRAPHIC{system:cyclic;symbols:"x"}ol{list-style:CJK-IDEOGRAPHIC}'
+    )
+  );
+
+  test(
+    'should rename a counter style whose name only folds to a predefined name through a non-ASCII letter',
+    processCSS(
+      '@counter-style \u212Ahmer{system:cyclic;symbols:"x"}ol{list-style:\u212Ahmer}',
+      '@counter-style a{system:cyclic;symbols:"x"}ol{list-style:a}'
     )
   );
 });

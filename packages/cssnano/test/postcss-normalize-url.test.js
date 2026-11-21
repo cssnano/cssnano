@@ -2,15 +2,20 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import assert from 'node:assert/strict';
 import advancedPreset from '#presets/advanced';
-import { repositoryFile } from '../../../util/testHelpers.js';
+import { testTargets } from '../../../util/testHelpers.js';
 
 // URL rewriting (dot segments, duplicate slashes, ...) is only enabled by the
 // advanced preset; the default preset only rewrites the url() token.
-const processor = postcss(advancedPreset({ disable: ['discardUnused'] }));
+const processor = postcss(
+  advancedPreset({
+    browserslist: { query: testTargets },
+    disable: ['discardUnused'],
+  })
+);
 
 function processCss(fixture, expected) {
   return async () => {
-    const { css } = await processor.process(fixture, { from: repositoryFile });
+    const { css } = await processor.process(fixture, { from: undefined });
     assert.strictEqual(css, expected);
   };
 }

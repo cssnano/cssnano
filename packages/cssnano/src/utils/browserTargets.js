@@ -6,8 +6,8 @@ import workingDirectory from './workingDirectory.js';
 /** @import {Result} from 'postcss' */
 
 /**
- * The browser targets a preset gives every target-reading plugin. The fields
- * are the options of browserslist; an unset one is left to browserslist.
+ * The browser targets of one run, which the run plan names. The fields are the
+ * options of browserslist; an unset one is left to browserslist.
  * @typedef {object} SharedTargets
  * @property {string | string[]} [query] the positional queries of browserslist
  * @property {string} [env]
@@ -20,21 +20,8 @@ import workingDirectory from './workingDirectory.js';
  */
 
 /**
- * The options of a plugin that reads the browser targets. Only a preset sets
- * browserTargets, so a plugin that runs alone has none and uses the defaults.
- * @typedef {{[browserTargets]?: SharedTargets}} TargetOptions
- */
-
-/**
  * @typedef {((query: SharedTargets['query'], options: Omit<SharedTargets, 'query'>) => string[]) & {loadConfig: (options: Pick<SharedTargets, 'path' | 'env' | 'config'>) => string | string[] | undefined}} Browserslist
  */
-
-/**
- * Key under which a preset gives every target-reading plugin the browser
- * targets it was configured with. A symbol keeps them out of the plugin
- * options a user writes, so only a preset can set them.
- */
-export const browserTargets = Symbol('cssnano.browserTargets');
 
 /**
  * The targets when the user states no preference: browsers that support
@@ -43,9 +30,6 @@ export const browserTargets = Symbol('cssnano.browserTargets');
  */
 export const defaultTargetsQuery = 'baseline widely available with downstream';
 
-/** One entry per Result, so the plugins of a preset share a file's targets. */
-/** @type {WeakMap<Result, Map<string, readonly string[]>>} */
-const cacheByResult = new WeakMap();
 /**
  * How many distinct target lists keep a shared copy. A build uses one or a
  * few; the bound keeps a long-running process that receives many queries
@@ -60,19 +44,6 @@ export const sharedTargetListLimit = 500;
  * @type {Map<string, readonly string[]>}
  */
 const frozenByContent = new Map();
-/** @type {WeakMap<object, number>} */
-const statsIds = new WeakMap();
-let nextStatsId = 0;
-
-/** @param {Result} result @return {Map<string, readonly string[]>} */
-function entriesFor(result) {
-  let entries = cacheByResult.get(result);
-  if (entries === undefined) {
-    entries = new Map();
-    cacheByResult.set(result, entries);
-  }
-  return entries;
-}
 
 /**
  * @param {readonly string[]} list browserslist's own array, which it may cache
@@ -92,23 +63,6 @@ function frozenCopyOf(list) {
   }
   frozenByContent.set(content, frozen);
   return frozen;
-}
-
-/**
- * Stats objects are keyed by identity, because serializing a large object on
- * every lookup would cost more than the browserslist call it saves.
- * @param {SharedTargets['stats']} stats
- * @return {string | number | null}
- */
-function statsKey(stats) {
-  if (typeof stats !== 'object' || stats === null) return stats ?? null;
-  let id = statsIds.get(stats);
-  if (id === undefined) {
-    nextStatsId += 1;
-    id = nextStatsId;
-    statsIds.set(stats, id);
-  }
-  return id;
 }
 
 /**
@@ -215,82 +169,52 @@ function searchPathOf(shared, resultOptions) {
 }
 
 /**
- * Two plugins share their targets when every input of the resolution matches.
- * @param {SharedTargets | undefined} shared
- * @param {string | undefined} path
- * @param {string | undefined} env
- * @param {SharedTargets['stats']} stats
- * @return {string}
- */
-function cacheKeyOf(shared, path, env, stats) {
-  return JSON.stringify([
-    shared?.query ?? null,
-    path ?? null,
-    env ?? null,
-    statsKey(stats),
-    shared?.config ?? null,
-    shared?.ignoreUnknownVersions ?? null,
-    shared?.mobileToDesktop ?? null,
-    shared?.throwOnMissing ?? null,
-  ]);
-}
-
-/**
- * Resolves the targets for one plugin. The preset's targets are the only ones
- * a plugin takes, and the query wins over the project config. The config is
- * searched from the browserslist `path`, else the PostCSS `from` option, and
- * read from the browserslist `config` when that is set. Without a query, the
- * targets are the default ones rather than browserslist's own `defaults`. A
- * query that matches no browser yields an empty list and a warning on the
- * result. Without a result there is no file to share with, so nothing is cached.
- * @param {object} options the plugin options, which may hold a preset's targets
+ * Resolves the targets of a run. The query wins over the project config. The
+ * config is searched from the browserslist `path`, else the PostCSS `from`
+ * option, and read from the browserslist `config` when that is set. Without a
+ * query, the targets are the default ones rather than browserslist's own
+ * `defaults`. A query that matches no browser yields an empty list and a
+ * warning on the result. The env and stats are the ones the shared targets set,
+ * never the PostCSS process options. Each call resolves again; a host plugin
+ * resolves once per file.
+ * @param {SharedTargets | undefined} shared the browser targets of the run, which may be unset
  * @param {Result | undefined} result
  * @param {Browserslist} [browserslist]
  * @return {readonly string[]}
  */
 export function resolveTargets(
-  options,
+  shared,
   result,
   // browserslist unwraps dataByBrowser at runtime, which its own types omit.
   browserslist = /** @type {Browserslist} */ (defaultBrowserslist)
 ) {
-  const resultOptions =
-    /** @type {{env?: string, stats?: SharedTargets['stats'], from?: string, file?: string}} */ (
-      result?.opts || {}
-    );
-  const shared = /** @type {TargetOptions} */ (options)[browserTargets];
+  const resultOptions = /** @type {{from?: string, file?: string}} */ (
+    result?.opts || {}
+  );
   const query = shared?.query;
   const config = shared?.config;
-  // The preset's env and stats win over the result's.
-  const env = shared?.env ?? resultOptions.env;
-  const stats = shared?.stats ?? resultOptions.stats;
+  const env = shared?.env;
+  const stats = shared?.stats;
   const path = searchPathOf(shared, resultOptions);
-  const key = cacheKeyOf(shared, path, env, stats);
-
-  const entries = result ? entriesFor(result) : undefined;
-  let targets = entries?.get(key);
-  if (targets === undefined) {
-    const resolveOptions = {
-      env,
-      stats,
-      path,
-      config,
-      ignoreUnknownVersions: shared?.ignoreUnknownVersions,
-      mobileToDesktop: shared?.mobileToDesktop,
-      throwOnMissing: shared?.throwOnMissing,
-    };
-    const resolvedQuery =
-      query ??
-      browserslist.loadConfig({ path, env, config }) ??
-      defaultTargetsQuery;
-    // Browserslist caches its array, so other tools may hold it. Freezing that
-    // array would break them; cssnano takes a frozen copy instead.
-    targets = frozenCopyOf(browserslist(resolvedQuery, resolveOptions));
-    // An empty list keeps support-dependent optimizations off, because widening
-    // it would enable transforms that the query excluded.
-    if (targets.length === 0) warnEmptyQuery(result, resolvedQuery);
-    else warnMissingFromCaniuse(result, targets);
-    entries?.set(key, targets);
-  }
+  const resolveOptions = {
+    env,
+    stats,
+    path,
+    config,
+    ignoreUnknownVersions: shared?.ignoreUnknownVersions,
+    mobileToDesktop: shared?.mobileToDesktop,
+    throwOnMissing: shared?.throwOnMissing,
+  };
+  const resolvedQuery =
+    query ??
+    browserslist.loadConfig({ path, env, config }) ??
+    defaultTargetsQuery;
+  // Browserslist caches its array, so other tools may hold it. Freezing that
+  // array would break them; cssnano takes a frozen copy instead.
+  const targets = frozenCopyOf(browserslist(resolvedQuery, resolveOptions));
+  // An empty list keeps support-dependent optimizations off, because widening
+  // it would enable transforms that the query excluded.
+  if (targets.length === 0) warnEmptyQuery(result, resolvedQuery);
+  else warnMissingFromCaniuse(result, targets);
   return targets;
 }

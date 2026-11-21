@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import preset from '../../../src/presets/default.js';
-import { transformPlugin } from '../../../src/passes/merge/index.js';
+import { transformRunner } from '../../../src/merge/index.js';
+import { configureValidated } from '../../../src/presets/configurePlugins.js';
+import { defaultPluginEntries } from '../../../src/presets/defaultPlugins.js';
 import { processCSSFactory } from '../../../../../util/testHelpers.js';
 
 const { processCSS } = processCSSFactory(preset());
@@ -17,18 +19,28 @@ const withoutRules = processCSSFactory(
  * @return {import('postcss').AcceptedPlugin[]}
  */
 function presetWithMergeTransforms(transforms) {
-  const plugins = preset();
-  const index = plugins.findIndex(
-    (plugin) =>
-      /** @type {{postcssPlugin: string}} */ (plugin).postcssPlugin ===
-      'cssnano-merge'
+  // The default entries, with the merge entry replaced by the transforms, run
+  // in order in the one merge run the merge entry has.
+  const entries = defaultPluginEntries.flatMap(([entry, name, settings]) =>
+    name === 'merge'
+      ? [
+          [
+            {
+              create: (/** @type {Record<PropertyKey, unknown>} */ options) =>
+                options,
+            },
+            'merge',
+            {
+              targets: true,
+              transform: true,
+              merge: transformRunner(...transforms),
+              optionKeys: [],
+            },
+          ],
+        ]
+      : [[entry, name, settings]]
   );
-  plugins.splice(
-    index,
-    1,
-    ...transforms.map((name) => transformPlugin(name)({}))
-  );
-  return plugins;
+  return configureValidated(entries, {});
 }
 
 const withoutLonghand = processCSSFactory(
@@ -86,5 +98,13 @@ test(
   processCSS(
     '.a{border-bottom-width:1px;border-bottom-style:solid;border-bottom-color:#dbdbdb;color:red}.b{border-bottom-color:#dbdbdb;color:blue}',
     '.a{border-bottom:1px solid #dbdbdb;color:red}.b{border-bottom-color:#dbdbdb;color:blue}'
+  )
+);
+
+test(
+  'joins four radius longhands with border-radius:1px when the longhand left important:false, which prints the same as unset (border-radius longhand)',
+  processCSS(
+    'a{border-top-left-radius:1px;border-top-right-radius:1px;border-bottom-right-radius:1px;border-bottom-left-radius:1px}b{border-radius:1px}',
+    'a,b{border-radius:1px}'
   )
 );

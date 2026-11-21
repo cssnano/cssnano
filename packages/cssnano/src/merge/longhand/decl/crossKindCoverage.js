@@ -1,0 +1,122 @@
+import cssnanoUtils from '#utils';
+import { hasHack } from '#stylehacks';
+import { isFallback, needsUnmetSupport } from '../isFallback.js';
+import { boxProperties, writingModes } from './boxGroups.js';
+import { isAll } from './importanceLanes.js';
+import { candidateLimit } from './overriddenDeclarations.js';
+
+const { asciiLowerCase } = cssnanoUtils;
+
+/** @import {BlockDeclarations} from '../blockDeclarations.js'; */
+/** @import {BoxProperty} from './boxGroups.js'; */
+
+const cellCount = writingModes.length * 4;
+
+/**
+ * @param {BlockDeclarations} list
+ * @param {number} declaration - the position of the declaration
+ * @param {BoxProperty} property - the property of the declaration
+ * @param {Uint8Array} plain - the cells a later declaration that every target
+ * parses sets
+ * @param {(number | BoxProperty)[][]} others - per cell, later declarations
+ * with their properties
+ * @param {import('../targetSupport.js').BoxSupport} support
+ * @param {ReadonlySet<string>} features the features every target supports
+ * @return {boolean} whether later declarations set every cell of the
+ * declaration, without leaving it to apply in any target
+ */
+function coversEveryCell(
+  list,
+  declaration,
+  property,
+  plain,
+  others,
+  support,
+  features
+) {
+  const item = list.at(declaration);
+  for (const cell of property.cells) {
+    if (plain[cell] === 1) continue;
+    const candidates = others[cell];
+    let covered = false;
+    if (candidates !== undefined) {
+      for (let at = 0; at < candidates.length && !covered; at += 2) {
+        covered =
+          !isFallback(
+            item,
+            list.at(/** @type {number} */ (candidates[at])),
+            features
+          ) &&
+          support.understandsWherever(
+            property,
+            /** @type {BoxProperty} */ (candidates[at + 1])
+          );
+      }
+    }
+    if (!covered) return false;
+  }
+  return true;
+}
+
+/**
+ * Drops declarations that later ones override on every side in every
+ * `writing-mode` and `direction`, since flow-relative and physical properties
+ * alias each other. A later declaration does not count when the earlier is
+ * its fallback, or when some target understands the earlier but not the later.
+ *
+ * @param {BlockDeclarations} list
+ * @param {readonly number[]} lane - one importance lane of a group in source
+ * order; barriers that belong to no family are skipped
+ * @param {import('../targetSupport.js').BoxSupport} support
+ * @param {ReadonlySet<string>} features the features every target supports
+ * @return {void}
+ */
+export function discardDeadDeclarations(list, lane, support, features) {
+  const plain = new Uint8Array(cellCount);
+  /* Per cell, the later declarations that may cover it, each followed by its
+   * property so the check looks neither up. */
+  /** @type {(number | BoxProperty)[][]} */
+  let others = [];
+
+  for (let index = lane.length - 1; index >= 0; index--) {
+    const position = lane[index];
+    const declaration = list.at(position);
+    if (declaration.removed) continue;
+    if (isAll(declaration)) {
+      plain.fill(0);
+      others = [];
+      continue;
+    }
+    const property = boxProperties.get(asciiLowerCase(declaration.prop));
+    if (
+      property === undefined ||
+      hasHack(declaration.before, declaration.prop, declaration.value)
+    )
+      continue;
+    const { cells } = property;
+    const isCovered = coversEveryCell(
+      list,
+      position,
+      property,
+      plain,
+      others,
+      support,
+      features
+    );
+    if (isCovered) {
+      list.remove(position);
+    } else if (
+      !needsUnmetSupport(declaration, features) &&
+      support.supportsAll(property.name)
+    ) {
+      for (const cell of cells) plain[cell] = 1;
+    } else {
+      for (const cell of cells) {
+        const candidates = (others[cell] ??= []);
+        if (candidates.length < candidateLimit * 2) {
+          candidates.push(position, property);
+        }
+      }
+    }
+  }
+}

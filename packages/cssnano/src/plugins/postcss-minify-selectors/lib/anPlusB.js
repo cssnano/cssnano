@@ -1,9 +1,9 @@
 import cssnanoUtils from '#utils';
-import { decodedIdent, isTrivia } from './tokenUtils.js';
+import { decodedIdent } from './tokenUtils.js';
 
 /** @typedef {import('./tokenUtils.js').CSSToken} CSSToken */
 
-const { TokenType, asciiLowerCase } = cssnanoUtils;
+const { TokenType, asciiLowerCase, isTrivia } = cssnanoUtils;
 
 /** @param {string} character */
 function isDigit(character) {

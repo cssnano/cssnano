@@ -9,33 +9,44 @@ export const test = new URL(
 ).href;
 
 const replaceComments = new URL(
-  '../../src/plugins/postcss-discard-comments/lib/replaceComments.js',
+  '../../src/run/comments/replaceComments.js',
   import.meta.url
 ).href;
+
+const walk = new URL('../../src/run/walkDown.js', import.meta.url).href;
+
+const ruleWalk = new URL('../../src/run/ruleWalk.js', import.meta.url).href;
+
+const declarationWalk = new URL(
+  '../../src/run/declarationWalk.js',
+  import.meta.url
+).href;
+
+const atRuleWalk = new URL('../../src/run/atRuleWalk.js', import.meta.url).href;
 
 export const mutations = [
   {
     name: 'preserve removable comments in values',
     target: replaceComments,
-    find: 'remover.canRemove(commentContents(raw))) {\n      pendingSpace = started;',
+    find: 'canRemove(commentContents(raw))) {\n      pendingSpace = started;',
     replace: 'false) {\n      pendingSpace = started;',
   },
   {
     name: 'preserve removable comments in custom property values',
     target: replaceComments,
-    find: 'remover.canRemove(commentContents(raw))\n      ) {\n        preserved += separator;',
-    replace: 'false\n      ) {\n        preserved += separator;',
+    find: 'canRemove(commentContents(raw))) {\n        preserved += separator;',
+    replace: 'false) {\n        preserved += separator;',
   },
   {
     name: 'preserve removable comments in selectors',
     target: replaceComments,
-    find: 'remover.canRemove(commentContents(raw))) {\n        removedCommentBefore = true;',
+    find: 'canRemove(commentContents(raw))) {\n        removedCommentBefore = true;',
     replace: 'false) {\n        removedCommentBefore = true;',
   },
   {
     name: 'fuse selector tokens across a removed comment',
     target: replaceComments,
-    find: 'joinsIntoDifferentTokens(lastRaw, raw, parserCache)',
+    find: 'joinsIntoDifferentTokens(lastRaw, raw)',
     replace: 'false',
   },
   {
@@ -59,22 +70,33 @@ export const mutations = [
   },
   {
     name: 'preserve removable comment nodes',
-    find: "if (node.type === 'comment' && remover.canRemove(node.text)) {",
-    replace: "if (node.type === 'comment' && false) {",
+    target: walk,
+    find: 'if (comments.canRemove(text)) remove(this.#records, index);',
+    replace:
+      'if (comments.canRemove(text) && false) remove(this.#records, index);',
   },
   {
     name: 'skip declaration comment processing',
-    find: 'processDeclaration(node, remover, parserCache);',
-    replace: 'void node;',
+    target: declarationWalk,
+    find: 'id = commentFreeIdOf(run, source, prop, comments);',
+    replace: 'id = source;',
   },
   {
     name: 'skip selector comment processing',
-    find: 'processRule(node, remover, parserCache);',
-    replace: 'void node;',
+    target: ruleWalk,
+    find: 'if (comments !== null) id = commentFreeSelectorIdOf(run, source, comments);',
+    replace: 'if (comments !== null) id = source;',
   },
   {
     name: 'skip at-rule comment processing',
-    find: 'processAtRule(node, remover, parserCache);',
-    replace: 'void node;',
+    target: atRuleWalk,
+    find: 'id = commentFreeIdOf(run, source, comments);',
+    replace: 'id = source;',
+  },
+  {
+    name: 'skip important comment processing',
+    target: declarationWalk,
+    find: "if (spelling === null || !spelling.includes('/*')) return;",
+    replace: 'return;',
   },
 ];

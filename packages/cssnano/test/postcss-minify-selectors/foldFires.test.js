@@ -2,8 +2,11 @@ import { test, suite } from 'node:test';
 import {
   processCSSFactory,
   withTargets,
+  oneStagePlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 
 const { processCSS } = processCSSFactory(plugin);
 
@@ -19,6 +22,15 @@ suite('fold that fires', () => {
     processCSS(
       'section h1, article h1, aside h1, nav h1{font-size:25px}',
       ':is(article,aside,nav,section) h1{font-size:25px}',
+      modernBl
+    )
+  );
+
+  test(
+    'fold: a middle with a leading important comment sorts by its spelled text',
+    processCSS(
+      'a+ /*! c */ .x b,a+ .y b,a+ .w b{color:red}',
+      'a+:is(.w,.y,/*! c */.x) b{color:red}',
       modernBl
     )
   );

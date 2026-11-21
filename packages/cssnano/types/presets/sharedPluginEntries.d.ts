@@ -1,30 +1,41 @@
+/** @import {EntryFor} from './configurePlugins.js' */
+/** @import {DefaultPluginOptions} from './defaultPlugins.js' */
 /**
  * The plugin entries that more than one built-in preset runs. Each is defined
  * once, so the settings of an option cannot differ between presets.
  */
 export declare const discardCommentsEntry: readonly [{
-    (opts?: import("#postcss-discard-comments").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'discardComments', {
-    readonly postcssPlugin: 'postcss-discard-comments';
-    readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
+    create(options: import("#postcss-discard-comments").Options): {
+        comments(): (text: string) => boolean;
+    };
+}, "discardComments", {
+    readonly optionKeys: readonly ["removeAll", "remove"];
 }];
 export declare const normalizeWhitespaceEntry: readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizeWhitespace', {
-    readonly postcssPlugin: 'postcss-normalize-whitespace';
+    create: () => import("../run/host.js").Stage;
+}, "normalizeWhitespace", {
     readonly optionKeys: readonly [];
+    readonly field: 'normalizeWhitespace';
 }];
+/**
+ * discardEmpty runs in the walk up of its host, so the host walks the
+ * stylesheet without a plugin of its own.
+ */
 export declare const discardEmptyEntry: readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'discardEmpty', {
-    readonly postcssPlugin: 'postcss-discard-empty';
+    readonly create: (/** @type {Record<string, never>} */ options: Record<string, never>) => Record<string, never>;
+}, "discardEmpty", {
     readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly field: 'discardEmpty';
 }];
-export declare const rawCacheEntry: readonly [typeof import("../utils/rawCache.js").default, 'rawCache', {
-    readonly postcssPlugin: 'cssnano-util-raw-cache';
+/**
+ * rawCache runs last in its host, on the tree the run wrote.
+ */
+export declare const rawCacheEntry: readonly [{
+    readonly create: (/** @type {Record<string, never>} */ options: Record<string, never>) => Record<string, never>;
+}, "rawCache", {
     readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly field: 'rawCache';
 }];
 //# sourceMappingURL=sharedPluginEntries.d.ts.map

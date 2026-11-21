@@ -1,18 +1,16 @@
 import { classifyDeclaration } from './grammar.js';
+import type { CSSToken } from '@csstools/css-tokenizer';
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { TokenLists } from '../../../ir/tokenLists.js';
 export type Reference = {
-    decl: import('postcss').Declaration;
+    index: ArenaIndex;
     classification: NonNullable<ReturnType<typeof classifyDeclaration>>;
     value: string;
+    tokens: readonly CSSToken[];
 };
 /**
- * @typedef {{
- *   decl: import('postcss').Declaration,
- *   classification: NonNullable<ReturnType<typeof classifyDeclaration>>,
- *   value: string
- * }} Reference
- */
-/**
- * One walk over the stylesheet's declarations that finds the names substituted
+ * One pass over the stylesheet's declarations that finds the names substituted
  * text may spell and the declarations that reference keyframes or counter
  * styles. Substituted text is custom property values, `@property` initial
  * values, `@function` definitions, and references inside functions other than
@@ -23,17 +21,20 @@ export type Reference = {
  * definition is removed or keeps that definition. A spelling that no
  * declaration rewrite reaches therefore has to be collected here.
  *
- * @param {import('postcss').Root} css
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex[]} decls every declaration of the stylesheet that is still
+ *   attached
  * @param {Set<string>} candidates the names that may be merged; only they
  *   need protection
- * @param {import('postcss').AtRule[]} functionRules the `@function` rules
- * @param {import('postcss').AtRule[]} parameterRules the `@mixin` and
- *   `@apply` rules, whose parameter defaults and arguments are substituted
- * @param {import('postcss').AtRule[]} conditionRules the `@container`, `@when`
- *   and `@else` rules, whose preludes may test a property in a style query
+ * @param {ArenaIndex[]} functionRules the `@function` rules
+ * @param {ArenaIndex[]} parameterRules the `@mixin` and `@apply` rules, whose
+ *   parameter defaults and arguments are substituted
+ * @param {ArenaIndex[]} conditionRules the `@container`, `@when` and `@else`
+ *   rules, whose preludes may test a property in a style query
  * @return {{ protectedNames: Set<string>, references: Reference[] }}
  */
-declare function scanDeclarations(css: import('postcss').Root, candidates: Set<string>, functionRules: import('postcss').AtRule[], parameterRules: import('postcss').AtRule[], conditionRules: import('postcss').AtRule[]): {
+declare function scanDeclarations(records: BlockRecords, tokenLists: TokenLists, decls: ArenaIndex[], candidates: Set<string>, functionRules: ArenaIndex[], parameterRules: ArenaIndex[], conditionRules: ArenaIndex[]): {
     protectedNames: Set<string>;
     references: Reference[];
 };

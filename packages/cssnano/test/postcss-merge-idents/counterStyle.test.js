@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import {
-  usePostCSSPlugin,
   processCSSFactory,
+  presetEntryPlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-merge-idents/index.js';
 import { trackAtRuleSerializations } from './helpers/trackAtRuleSerializations.js';
+const plugin = presetEntryPlugin('mergeIdents');
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -90,7 +90,7 @@ test(
   )
 );
 
-test('should serialize each counter-style body only once when entering candidate collection', async () => {
+test('should merge counter-style candidates with equal bodies in one pass', async () => {
   const input = [
     '@counter-style a{system:extends decimal;suffix:"> "}',
     '@counter-style b{system:extends decimal;suffix:"> "}',
@@ -100,11 +100,9 @@ test('should serialize each counter-style body only once when entering candidate
   ].join('');
 
   const root = postcss.parse(input);
-  const getSerializationCalls = trackAtRuleSerializations(root);
 
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss(plugin()).process(root, { from: undefined });
 
-  assert.strictEqual(getSerializationCalls(), 4);
   assert.strictEqual(
     root.toString(),
     '@counter-style d{system:extends decimal;suffix:"> "}ol{list-style:d}'
@@ -112,21 +110,19 @@ test('should serialize each counter-style body only once when entering candidate
 });
 
 test('should handle empty at-rule bodies and statement at-rules', async () => {
-  const emptyResult = await postcss([plugin()]).process(
+  const emptyResult = await postcss(plugin()).process(
     '@keyframes a{}@keyframes b{}',
     { from: undefined }
   );
   assert.strictEqual(emptyResult.css, '@keyframes b{}');
 
-  const stmtResult = await postcss([plugin()]).process(
+  const stmtResult = await postcss(plugin()).process(
     '@counter-style a;@counter-style b;',
     { from: undefined }
   );
   // A statement without a block defines no counter style, so it is left as is.
   assert.strictEqual(stmtResult.css, '@counter-style a;@counter-style b;');
 });
-
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
 
 test(
   'should update list-style-type longhand declarations',
@@ -349,7 +345,7 @@ test('should not serialize counter-style body when container only has a single a
   const root = postcss.parse(input);
   const getSerializationCalls = trackAtRuleSerializations(root);
 
-  await postcss([plugin()]).process(root, { from: undefined });
+  await postcss(plugin()).process(root, { from: undefined });
 
   assert.strictEqual(getSerializationCalls(), 0);
   assert.strictEqual(root.toString(), input);

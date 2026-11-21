@@ -1,8 +1,13 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
 import specData from '../data/mergeIdents.json' with { type: 'json' };
+import { predefinedCounterStyles } from '../../../values/predefinedCounterStyles.js';
+import { AT_RULE_BLOCK, AT_RULE_STATEMENT } from '../../../ir/blockRecord.js';
 
-const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+
+const { asciiLowerCase, decoded, isTrivia } = cssnanoUtils;
 
 const VENDOR_PREFIX = /^-(webkit|moz|o)-/v;
 
@@ -36,70 +41,10 @@ const COUNTER_STYLE_NAME_RESERVED = new Set([
   'none',
 ]);
 
-// The predefined counter style names are specified in prose (CSS Counter
-// Styles Level 3 §6) rather than in any grammar, so webref cannot list them.
-const PREDEFINED_COUNTER_STYLES = [
-  'arabic-indic',
-  'armenian',
-  'bengali',
-  'cambodian',
-  'circle',
-  'cjk-decimal',
-  'cjk-earthly-branch',
-  'cjk-heavenly-stem',
-  'cjk-ideographic',
-  'decimal',
-  'decimal-leading-zero',
-  'devanagari',
-  'disc',
-  'disclosure-closed',
-  'disclosure-open',
-  'ethiopic-numeric',
-  'georgian',
-  'gujarati',
-  'gurmukhi',
-  'hebrew',
-  'hiragana',
-  'hiragana-iroha',
-  'japanese-formal',
-  'japanese-informal',
-  'kannada',
-  'katakana',
-  'katakana-iroha',
-  'khmer',
-  'korean-hangul-formal',
-  'korean-hanja-formal',
-  'korean-hanja-informal',
-  'lao',
-  'lower-alpha',
-  'lower-armenian',
-  'lower-greek',
-  'lower-latin',
-  'lower-roman',
-  'malayalam',
-  'mongolian',
-  'myanmar',
-  'oriya',
-  'persian',
-  'simp-chinese-formal',
-  'simp-chinese-informal',
-  'square',
-  'tamil',
-  'telugu',
-  'thai',
-  'tibetan',
-  'trad-chinese-formal',
-  'trad-chinese-informal',
-  'upper-alpha',
-  'upper-armenian',
-  'upper-latin',
-  'upper-roman',
-];
-
 const COUNTER_STYLE_RESERVED = new Set([
   ...CSS_WIDE_KEYWORDS,
   ...specData.counterStyle.keywords,
-  ...PREDEFINED_COUNTER_STYLES,
+  ...predefinedCounterStyles,
 ]);
 
 const COUNTER_STYLE_FUNCTIONS = new Map(
@@ -112,19 +57,24 @@ const COUNTER_STYLE_FUNCTIONS = new Map(
 );
 
 /**
- * @param {string} params
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} parsedTokens
+ *   the tokens of the prelude, whose comments and whitespace are skipped
  * @param {string} atRuleName
  * @return {{ isString: boolean, isReservedName: boolean, key: string, tokenText: string } | null}
  */
-function parseAtRuleName(params, atRuleName) {
-  const tokenList = tokens(params).filter(
-    (t) => t[0] !== TokenType.Whitespace && t[0] !== TokenType.Comment
-  );
-  if (tokenList.length !== 1) {
+function parseAtRuleName(parsedTokens, atRuleName) {
+  let first;
+  for (const token of parsedTokens) {
+    if (isTrivia(token)) continue;
+    if (first !== undefined) {
+      return null;
+    }
+    first = token;
+  }
+  if (first === undefined) {
     return null;
   }
   const isCounterStyle = atRuleName.endsWith('counter-style');
-  const first = tokenList[0];
   if (first[0] === TokenType.Ident) {
     const val = decoded(first);
     const lower = asciiLowerCase(val);
@@ -160,11 +110,11 @@ function parseAtRuleName(params, atRuleName) {
 }
 
 /**
- * @param {import('postcss').Declaration} decl
- * @param {string} [prop] the lowercase property name, when already known
+ * @param {string} prop the lowercase property name
+ * @param {boolean} inCounterStyle whether the declaration is a child of a `@counter-style` rule
  * @return {{ namespace: 'keyframes' | 'counter-style', kind: 'animation-shorthand' | 'animation-name' | 'counter-style' | 'counter-style-func' } | null}
  */
-function classifyDeclaration(decl, prop = asciiLowerCase(decl.prop)) {
+function classifyDeclaration(prop, inCounterStyle) {
   if (prop.startsWith('--')) {
     return null;
   }
@@ -181,10 +131,7 @@ function classifyDeclaration(decl, prop = asciiLowerCase(decl.prop)) {
     return { namespace: 'counter-style', kind: 'counter-style' };
   }
 
-  if (
-    decl.parent?.type === 'atrule' &&
-    asciiLowerCase(decl.parent.name).endsWith('counter-style')
-  ) {
+  if (inCounterStyle) {
     if (prop === 'system' || prop === 'fallback' || prop === 'speak-as') {
       return { namespace: 'counter-style', kind: 'counter-style' };
     }
@@ -203,36 +150,33 @@ function classifyDeclaration(decl, prop = asciiLowerCase(decl.prop)) {
 }
 
 /**
- * The nearest ancestor that decides whether a definition applies at all.
- * Cascade layers only order definitions, so they are looked through.
+ * Whether a record is a `@layer` at-rule, with a block or as a statement.
  *
- * @param {import('postcss').Node} node
- * @return {import('postcss').Container}
+ * @param {{kind: number, name?: string}} entry
+ * @return {boolean}
  */
-function getConditionContainer(node) {
-  let curr = node.parent;
-  while (
-    curr?.type === 'atrule' &&
-    asciiLowerCase(/** @type {import('postcss').AtRule} */ (curr).name) ===
-      'layer'
-  ) {
-    curr = curr.parent;
-  }
-  return /** @type {import('postcss').Container} */ (curr);
+function isLayerEntry(entry) {
+  return (
+    (entry.kind === AT_RULE_BLOCK || entry.kind === AT_RULE_STATEMENT) &&
+    entry.name === 'layer'
+  );
 }
 
 /**
- * @param {{ rule: import('postcss').AtRule, body?: string }} entry an at-rule
- *   with a block
- * @return {string}
+ * The nearest ancestor that decides whether a definition applies at all.
+ * Cascade layers only order definitions, so they are looked through.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @return {ArenaIndex} the rule, block or stylesheet that holds the definition
  */
-function getBody(entry) {
-  if (entry.body === undefined) {
-    entry.body = /** @type {import('postcss').ChildNode[]} */ (
-      entry.rule.nodes
-    ).toString();
+function getConditionContainer(records, index) {
+  const { links } = records;
+  let curr = links.parentOf(index);
+  while (curr !== -1 && isLayerEntry(records.entry(curr))) {
+    curr = links.parentOf(curr);
   }
-  return entry.body;
+  return /** @type {ArenaIndex} */ (curr);
 }
 
 export {
@@ -244,5 +188,5 @@ export {
   parseAtRuleName,
   classifyDeclaration,
   getConditionContainer,
-  getBody,
+  isLayerEntry,
 };

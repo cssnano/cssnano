@@ -1,16 +1,25 @@
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { TokenLists } from '../../../ir/tokenLists.js';
 declare class LayerRegistry {
+    records: BlockRecords;
+    tokenLists: TokenLists;
     nextIndex: number;
     /** @type {Map<string, { index: number, children: LayerRegistry }>} */
     layers: Map<string, {
         index: number;
         children: LayerRegistry;
     }>;
-    /** @type {Map<import('postcss').AtRule, { index: number, children: LayerRegistry }>} */
-    anonymous: Map<import('postcss').AtRule, {
+    /** @type {Map<ArenaIndex, { index: number, children: LayerRegistry }>} */
+    entries: Map<ArenaIndex, {
         index: number;
         children: LayerRegistry;
     }>;
-    constructor();
+    /**
+     * @param {BlockRecords} records the stylesheet the layers are in
+     * @param {TokenLists} tokenLists the run's token lists, which the preludes name
+     */
+    constructor(records: BlockRecords, tokenLists: TokenLists);
     /**
      * @param {string} name
      * @return {{ index: number, children: LayerRegistry }}
@@ -20,26 +29,26 @@ declare class LayerRegistry {
         children: LayerRegistry;
     };
     /**
-     * Entry for a layer with no name or an unparseable name: every occurrence
-     * is a unique cascade layer, but names nested inside still order beneath
-     * it through the child registry.
+     * The entry at a segment path, creating the missing segments.
      *
-     * @param {import('postcss').AtRule} layerRule
+     * @param {string[]} segments
      * @return {{ index: number, children: LayerRegistry }}
      */
-    getOrCreateAnonymous(layerRule: import('postcss').AtRule): {
+    entryAt(segments: string[]): {
         index: number;
         children: LayerRegistry;
     };
     /**
      * The registry entry a single layer at-rule occupies, creating missing
      * segments as needed. Statement lists and unparseable names fall back to a
-     * unique anonymous entry so they order but never match another spelling.
+     * unique entry, so they order but never match another spelling; names nested
+     * inside still order beneath it through the child registry. A rule keeps one
+     * entry, so its name is read once however many definitions it holds.
      *
-     * @param {import('postcss').AtRule} layerRule
+     * @param {ArenaIndex} layerRule
      * @return {{ index: number, children: LayerRegistry }}
      */
-    entryFor(layerRule: import('postcss').AtRule): {
+    entryFor(layerRule: ArenaIndex): {
         index: number;
         children: LayerRegistry;
     };
@@ -48,15 +57,15 @@ declare class LayerRegistry {
      * nested beneath any enclosing layers, so later lookups observe the real
      * layer tree.
      *
-     * @param {import('postcss').AtRule} layerRule
+     * @param {ArenaIndex} layerRule
      * @return {void}
      */
-    declareLayerAtRule(layerRule: import('postcss').AtRule): void;
+    declareLayerAtRule(layerRule: ArenaIndex): void;
     /**
-     * @param {import('postcss').Node} node
+     * @param {ArenaIndex} index
      * @return {number[]}
      */
-    getPriority(node: import('postcss').Node): number[];
+    getPriority(index: ArenaIndex): number[];
 }
 /**
  * @param {{ layerPriority: number[], documentIndex: number }} a
@@ -70,5 +79,15 @@ declare function compareAtRulePriority(a: {
     layerPriority: number[];
     documentIndex: number;
 }): number;
-export { LayerRegistry, compareAtRulePriority };
+/**
+ * Whether the stylesheet imports another. An imported stylesheet can declare
+ * layers before this one does, so the layer order is not known from this
+ * stylesheet alone. An import rule is valid only before every rule except
+ * `@charset` and layer statements.
+ *
+ * @param {BlockRecords} records
+ * @return {boolean}
+ */
+declare function hasImport(records: BlockRecords): boolean;
+export { LayerRegistry, compareAtRulePriority, hasImport };
 //# sourceMappingURL=layerRegistry.d.ts.map

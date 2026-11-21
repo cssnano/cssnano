@@ -13,9 +13,9 @@ import {
   explicitCombinator,
   violatesComplexMode,
 } from './parseArenaCombinators.js';
-import { isImportantCommentToken, isTrivia, skipTrivia } from './tokenUtils.js';
 
-const { TokenType } = cssnanoUtils;
+const { TokenType, isImportantCommentToken, isTrivia, skipTrivia } =
+  cssnanoUtils;
 /** @typedef {import('./arena.js').ListMode} ListMode */
 /** @typedef {import('./arena.js').ParseStatus} ParseStatus */
 /** @typedef {import('./arena.js').SemanticFacts} SemanticFacts */

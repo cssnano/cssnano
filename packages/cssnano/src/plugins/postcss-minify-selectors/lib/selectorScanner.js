@@ -1,6 +1,47 @@
 import { normalizeArena } from './normalizeArena.js';
 import { parseSelectorArena } from './parseArena.js';
-import { serializeNormalized } from './serializeArena.js';
+import {
+  serializeNormalized,
+  serializeNormalizedTokens,
+} from './serializeArena.js';
+
+/**
+ * Normalizes a selector list that its tokens spell, with the tokens of the
+ * result. The tokens are undefined when an emit carries none, so the caller
+ * tokenizes the text only when it changed.
+ *
+ * @param {string} source the text the tokens spell
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} sourceTokens
+ * @param {boolean} sort
+ * @param {boolean} convertToIs
+ * @param {boolean} keyframe
+ * @param {boolean} hasDefaultNamespace
+ * @returns {{text: string, tokens: readonly import('@csstools/css-tokenizer').CSSToken[] | undefined}}
+ */
+export function normalizeListTokens(
+  source,
+  sourceTokens,
+  sort,
+  convertToIs,
+  keyframe,
+  hasDefaultNamespace
+) {
+  const arena = parseSelectorArena(
+    source,
+    { keyframe, hasDefaultNamespace },
+    sourceTokens
+  );
+  const { text, tokens } = serializeNormalizedTokens(
+    arena,
+    normalizeArena(arena, {
+      sort,
+      convertToIs,
+      keyframe,
+      hasDefaultNamespace,
+    })
+  );
+  return { text, tokens };
+}
 
 /**
  * @param {string} source
@@ -19,7 +60,6 @@ function normalizeList(
   const arena = parseSelectorArena(source, {
     keyframe,
     hasDefaultNamespace,
-    verifyArena: false,
   });
   return serializeNormalized(
     arena,
@@ -34,7 +74,7 @@ function normalizeList(
 
 /** @param {string} source */
 function specificityOf(source) {
-  const arena = parseSelectorArena(source, { verifyArena: false });
+  const arena = parseSelectorArena(source);
   return (arena.nodes[0].specificity ?? [0, 0, 0]).join(',');
 }
 

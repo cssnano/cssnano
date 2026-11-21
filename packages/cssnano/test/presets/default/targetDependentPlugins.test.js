@@ -3,10 +3,14 @@ import { glob, readFile } from 'node:fs/promises';
 import { sep } from 'node:path';
 import { test } from 'node:test';
 import { defaultPluginEntries } from '../../../src/presets/defaultPlugins.js';
+import { pluginNameByOption } from '../../../src/presets/presetEntries.js';
 
 const pluginsDirectory = new URL('../../../src/plugins/', import.meta.url);
 
-/** @return {Promise<string[]>} directories of the plugins that resolve browser targets */
+/**
+ * A plugin resolves targets itself, or it imports the browser-targets module.
+ * @return {Promise<string[]>} directories of the plugins that resolve browser targets
+ */
 async function pluginsThatResolveTargets() {
   const names = new Set();
   for await (const file of glob('postcss-*/**/*.js', {
@@ -22,12 +26,23 @@ async function pluginsThatResolveTargets() {
 }
 
 test('the default preset marks exactly the plugins that resolve browser targets', async () => {
-  // The merge pass lives under passes/, so the scan above does not find it.
+  // The merge pass lives under src/merge/, so the scan above does not find it.
   const marked = defaultPluginEntries
     .filter(([, , settings]) => settings?.targets === true)
-    .map(([creator]) => creator({}).postcssPlugin);
+    .map(([, option]) => pluginNameByOption[option]);
+  // The stage entries below take the targets the host resolves for them, so
+  // the scan above does not find them.
   assert.deepEqual(
     marked.toSorted(),
-    [...(await pluginsThatResolveTargets()), 'cssnano-merge'].toSorted()
+    [
+      ...(await pluginsThatResolveTargets()),
+      'cssnano-merge',
+      'postcss-colormin',
+      'postcss-convert-values',
+      'postcss-minify-params',
+      'postcss-minify-selectors',
+      'postcss-normalize-unicode',
+      'postcss-reduce-initial',
+    ].toSorted()
   );
 });

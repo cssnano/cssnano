@@ -2,12 +2,14 @@ import cssnanoUtils from '#utils';
 import {
   decoded,
   featureValueIndex,
-  isWhitespaceOrComment,
+  isTrivia,
   rational,
-  significantIndex,
+  previousSignificantIndex,
+  skipTrivia,
   TokenType,
-  tokenEnd,
 } from './tokenUtils.js';
+
+/** @import {TokenEdit} from '../../../values/valueBuffer.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
 
@@ -16,9 +18,9 @@ const { asciiLowerCase } = cssnanoUtils;
 
 /** @param {Tokens} input @param {{startIndex:number,endIndex:number}} segment @return {{endIndex:number,first:number,last:number}} */
 function mediaSegmentInfo(input, { startIndex, endIndex }) {
-  const first = significantIndex(input, startIndex, 1);
+  const first = skipTrivia(input, startIndex);
   let last = endIndex - 1;
-  while (last >= first && isWhitespaceOrComment(input, last)) last--;
+  while (last >= first && isTrivia(input[last])) last--;
   return { endIndex, first, last };
 }
 
@@ -31,14 +33,14 @@ function isStandaloneAll(input, { first, last }) {
   );
 }
 
-/** @param {boolean} legacy @param {Tokens} input @param {{endIndex:number,first:number}} segment @param {{start:number,end:number,text:string}[]} changes @return {void} */
+/** @param {boolean} legacy @param {Tokens} input @param {{endIndex:number,first:number}} segment @param {TokenEdit[]} changes @return {void} */
 function minifyMediaAllSegment(legacy, input, { endIndex, first }, changes) {
   if (
     input[first]?.[0] !== TokenType.Ident ||
     decoded(input[first]).toLowerCase() !== 'all'
   )
     return;
-  const second = significantIndex(input, first + 1, 1);
+  const second = skipTrivia(input, first + 1);
   const and =
     second < endIndex &&
     input[second]?.[0] === TokenType.Ident &&
@@ -50,31 +52,21 @@ function minifyMediaAllSegment(legacy, input, { endIndex, first }, changes) {
       input[i][0] === TokenType.Ident ||
       input[i][0] === TokenType.Whitespace
     ) {
-      changes.push({
-        start: input[i][2],
-        end: tokenEnd(input[i]),
-        text: '',
-      });
+      changes.push({ start: i, end: i + 1, tokens: [] });
     }
   }
   const trailing = end + 1;
   if (trailing < endIndex && input[trailing]?.[0] === TokenType.Whitespace) {
-    changes.push({
-      start: input[trailing][2],
-      end: tokenEnd(input[trailing]),
-      text: '',
-    });
+    changes.push({ start: trailing, end: trailing + 1, tokens: [] });
   }
 }
 
-/** @param {boolean} legacy @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {{startIndex:number,endIndex:number}[]} segments @param {{start:number,end:number,text:string}[]} changes @return {boolean} */
+/** @param {boolean} legacy @param {Exclude<ReturnType<typeof cssnanoUtils.balancedTokens>, undefined>} structure @param {{startIndex:number,endIndex:number}[]} segments @param {TokenEdit[]} changes @return {boolean} whether the whole query is unconditional, so the caller empties the prelude */
 export default function minifyMediaAll(legacy, structure, segments, changes) {
   const { tokens: input } = structure;
   const ranges = segments.map((segment) => mediaSegmentInfo(input, segment));
 
   if (!legacy && ranges.some((segment) => isStandaloneAll(input, segment))) {
-    const last = input.at(-1);
-    if (last) changes.push({ start: 0, end: tokenEnd(last), text: '' });
     return true;
   }
 
@@ -126,7 +118,7 @@ function conjunctionFeatures(structure, { startIndex, endIndex }) {
   /** @type {number | undefined} */
   let and;
   for (let i = startIndex; i < endIndex; i++) {
-    if (isWhitespaceOrComment(input, i)) continue;
+    if (isTrivia(input[i])) continue;
     const [type] = input[i];
     if (type === TokenType.Ident) {
       const word = asciiLowerCase(decoded(input[i]));
@@ -181,10 +173,10 @@ function rangeBound(structure, { open, close }) {
   if (
     value < 0 ||
     input[value][0] !== TokenType.Dimension ||
-    significantIndex(input, value + 1, 1) !== close
+    skipTrivia(input, value + 1) !== close
   )
     return undefined;
-  const name = input[significantIndex(input, open + 1, 1)];
+  const name = input[skipTrivia(input, open + 1)];
   const feature = asciiLowerCase(decoded(name));
   const atLeast = feature.startsWith('min-');
   if (!atLeast && !feature.startsWith('max-')) return undefined;
@@ -259,7 +251,7 @@ function removalRange(input, features, first, last) {
   if (first === 0 || and === undefined) {
     return { from: open, to: features[last + 1].open - 1 };
   }
-  const from = significantIndex(input, and - 1, -1) + 1;
+  const from = previousSignificantIndex(input, and - 1) + 1;
   return { from, to: features[last].close };
 }
 
@@ -275,7 +267,7 @@ function removalRange(input, features, first, last) {
  *
  * @param {Structure} structure
  * @param {{startIndex: number, endIndex: number}[]} segments the top-level comma-separated queries
- * @param {{start: number, end: number, text: string}[]} changes
+ * @param {TokenEdit[]} changes
  * @return {void}
  */
 export function dropRedundantRangeFeatures(structure, segments, changes) {
@@ -290,9 +282,7 @@ export function dropRedundantRangeFeatures(structure, segments, changes) {
       while (last + 1 < features.length && removed[last + 1]) last++;
       const { from, to } = removalRange(input, features, first, last);
       first = last;
-      for (let i = from; i <= to; i++) {
-        changes.push({ start: input[i][2], end: tokenEnd(input[i]), text: '' });
-      }
+      changes.push({ start: from, end: to + 1, tokens: [] });
     }
   }
 }

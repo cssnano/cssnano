@@ -7,13 +7,17 @@ import { integrationTests } from '../../../../../util/integrationTestHelpers.js'
 import preset from '../../../src/presets/advanced.js';
 import {
   processCSSFactory,
-  repositoryFile,
+  testTargets,
 } from '../../../../../util/testHelpers.js';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
-const withDefaults = processCSSFactory(preset());
+const withDefaults = processCSSFactory(
+  preset({ browserslist: { query: testTargets } })
+);
 const withBrowserslist = processCSSFactory(
-  preset({ browserslist: { env: 'modern' } })
+  preset({
+    browserslist: { env: 'modern' },
+  })
 );
 // The browserslist config is found next to the stylesheet given as from.
 const browserslistFrom = { from: join(testDir, 'browserslist/example.css') };
@@ -22,7 +26,9 @@ describe('CSS processing', () => {
   test(
     'should merge alignment longhands into place-content when every target supports place-*',
     processCSSFactory(
-      preset({ browserslist: { query: 'chrome 120, firefox 120, safari 17' } })
+      preset({
+        browserslist: { query: 'chrome 120, firefox 120, safari 17' },
+      })
     ).processCSS(
       '.a{justify-content:center;align-items:center;align-content:center}',
       '.a{align-items:center;place-content:center}'
@@ -65,22 +71,20 @@ describe('framework tests', () => {
 describe('z-index options', () => {
   test('preserves z-index values when zindex is disabled', async () => {
     const input = 'h1{z-index:10}';
-    const { css } = await postcss(preset({ disable: ['zindex'] })).process(
-      input,
-      {
-        from: repositoryFile,
-      }
-    );
+    const { css } = await postcss(
+      preset({ browserslist: { query: testTargets }, disable: ['zindex'] })
+    ).process(input, {
+      from: undefined,
+    });
 
     assert.strictEqual(css, input);
   });
 
   test('preserves z-index values with the exclude option', async () => {
     const input = 'h1{z-index:10}';
-    const { css } = await postcss(preset({ disable: ['zindex'] })).process(
-      input,
-      { from: repositoryFile }
-    );
+    const { css } = await postcss(
+      preset({ browserslist: { query: testTargets }, disable: ['zindex'] })
+    ).process(input, { from: undefined });
 
     assert.strictEqual(css, input);
   });

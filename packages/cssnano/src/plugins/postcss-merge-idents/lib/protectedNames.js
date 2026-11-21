@@ -1,10 +1,27 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import {
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
+  DECLARATION,
+  RULE,
+} from '../../../ir/blockRecord.js';
 import { classifyDeclaration } from './grammar.js';
 import { trailingEscape } from './trailingEscape.js';
+import {
+  declaredValue,
+  declaredValueTokens,
+  atRuleAt,
+  preludeTextOf,
+} from '../../../ir/declaredText.js';
 import { walkValue } from './valueWalk.js';
 
 const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 /**
  * @param {import('@csstools/css-tokenizer').CSSToken} token
@@ -47,6 +64,7 @@ function maySpell(value, names) {
  * @param {boolean} everywhere whether the whole value is substituted text
  * @param {boolean} rewritesCounterSlots whether the rewriter respells the
  *   counter style arguments of counter functions in this value
+ * @param {readonly CSSToken[]} [parsed] the tokens that spell `value`
  * @return {void}
  */
 function collectNames(
@@ -54,12 +72,13 @@ function collectNames(
   candidates,
   names,
   everywhere,
-  rewritesCounterSlots
+  rewritesCounterSlots,
+  parsed
 ) {
   if (!maySpell(value, candidates)) {
     return;
   }
-  const spelled = walkValue(tokens(value), (token, frame) => {
+  const spelled = walkValue(parsed ?? tokens(value), (token, frame) => {
     const isRewritten =
       rewritesCounterSlots && frame?.expectedArgs?.includes(frame.argIndex);
     return everywhere || (frame && !isRewritten)
@@ -74,26 +93,82 @@ function collectNames(
 }
 
 /**
- * @param {import('postcss').Declaration} decl
- * @param {string | undefined} restored the result of `trailingEscape(decl)`
+ * @param {string} value the declared value
+ * @param {string | undefined} restored the result of `trailingEscape`
  * @return {string[]} every text the declaration value may be read as; an
  *   unknown code point after a trailing backslash is read both as the end of
  *   the value and as an escaped space
  */
-function spellingsOf(decl, restored) {
-  return restored === undefined ? [decl.value, `${decl.value} `] : [restored];
+function spellingsOf(value, restored) {
+  return restored === undefined ? [value, `${value} `] : [restored];
 }
 
 /**
  * @typedef {{
- *   decl: import('postcss').Declaration,
+ *   index: ArenaIndex,
  *   classification: NonNullable<ReturnType<typeof classifyDeclaration>>,
- *   value: string
+ *   value: string,
+ *   tokens: readonly CSSToken[]
  * }} Reference
  */
 
 /**
- * One walk over the stylesheet's declarations that finds the names substituted
+ * The tokens of a reference's value, which the scan and the rewrite share.
+ * A trailing escape can restore whitespace the value lacks, and then the
+ * restored text is tokenized.
+ *
+ * @param {TokenLists} tokenLists
+ * @param {import('../../../ir/declarationRecord.js').DeclarationRecord} record
+ * @param {string} value the result of `declaredValue`
+ * @param {string} restored the result of `trailingEscape`
+ * @return {readonly CSSToken[]}
+ */
+function referenceTokens(tokenLists, record, value, restored) {
+  return restored === value
+    ? declaredValueTokens(tokenLists, record, value)
+    : tokens(restored);
+}
+
+/**
+ * Calls `visit` on each declaration under an entry, in document order.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @param {(index: ArenaIndex) => void} visit
+ * @return {void}
+ */
+function forEachDeclaration(records, index, visit) {
+  const { links } = records;
+  for (
+    let child = links.firstChild(index);
+    child !== -1;
+    child = links.nextSibling(child)
+  ) {
+    const kind = records.entry(child).kind;
+    if (kind === DECLARATION) visit(child);
+    else if (kind === RULE || kind === AT_RULE_BLOCK) {
+      forEachDeclaration(records, child, visit);
+    }
+  }
+}
+
+/**
+ * The name of an at-rule record, folded, or '' for another kind.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex | -1} index
+ * @return {string}
+ */
+function atRuleNameOf(records, index) {
+  if (index === -1) return '';
+  const entry = atRuleAt(records, index);
+  return entry.kind === AT_RULE_BLOCK || entry.kind === AT_RULE_STATEMENT
+    ? entry.name
+    : '';
+}
+
+/**
+ * One pass over the stylesheet's declarations that finds the names substituted
  * text may spell and the declarations that reference keyframes or counter
  * styles. Substituted text is custom property values, `@property` initial
  * values, `@function` definitions, and references inside functions other than
@@ -104,18 +179,23 @@ function spellingsOf(decl, restored) {
  * definition is removed or keeps that definition. A spelling that no
  * declaration rewrite reaches therefore has to be collected here.
  *
- * @param {import('postcss').Root} css
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex[]} decls every declaration of the stylesheet that is still
+ *   attached
  * @param {Set<string>} candidates the names that may be merged; only they
  *   need protection
- * @param {import('postcss').AtRule[]} functionRules the `@function` rules
- * @param {import('postcss').AtRule[]} parameterRules the `@mixin` and
- *   `@apply` rules, whose parameter defaults and arguments are substituted
- * @param {import('postcss').AtRule[]} conditionRules the `@container`, `@when`
- *   and `@else` rules, whose preludes may test a property in a style query
+ * @param {ArenaIndex[]} functionRules the `@function` rules
+ * @param {ArenaIndex[]} parameterRules the `@mixin` and `@apply` rules, whose
+ *   parameter defaults and arguments are substituted
+ * @param {ArenaIndex[]} conditionRules the `@container`, `@when` and `@else`
+ *   rules, whose preludes may test a property in a style query
  * @return {{ protectedNames: Set<string>, references: Reference[] }}
  */
 function scanDeclarations(
-  css,
+  records,
+  tokenLists,
+  decls,
   candidates,
   functionRules,
   parameterRules,
@@ -126,51 +206,93 @@ function scanDeclarations(
   /** @type {Reference[]} */
   const references = [];
   for (const rule of functionRules) {
-    collectNames(rule.params, candidates, protectedNames, true, false);
-    rule.walkDecls((decl) => {
-      for (const spelling of spellingsOf(decl, trailingEscape(decl))) {
+    collectNames(
+      preludeTextOf(tokenLists, atRuleAt(records, rule)),
+      candidates,
+      protectedNames,
+      true,
+      false
+    );
+    forEachDeclaration(records, rule, (index) => {
+      const value = declaredValue(
+        tokenLists,
+        /** @type {import('../../../ir/declarationRecord.js').DeclarationRecord} */ (
+          records.entry(index)
+        )
+      );
+      for (const spelling of spellingsOf(
+        value,
+        trailingEscape(records, tokenLists, index)
+      )) {
         collectNames(spelling, candidates, protectedNames, true, false);
       }
     });
   }
   for (const rule of parameterRules) {
-    collectNames(rule.params, candidates, protectedNames, true, false);
+    collectNames(
+      preludeTextOf(tokenLists, atRuleAt(records, rule)),
+      candidates,
+      protectedNames,
+      true,
+      false
+    );
   }
   for (const rule of conditionRules) {
-    collectNames(rule.params, candidates, protectedNames, false, false);
+    collectNames(
+      preludeTextOf(tokenLists, atRuleAt(records, rule)),
+      candidates,
+      protectedNames,
+      false,
+      false
+    );
   }
-  css.walkDecls((decl) => {
-    const prop = asciiLowerCase(decl.prop);
-    const classification = classifyDeclaration(decl, prop);
-    const restored = trailingEscape(decl);
+  for (const index of decls) {
+    const record =
+      /** @type {import('../../../ir/declarationRecord.js').DeclarationRecord} */ (
+        records.entry(index)
+      );
+    const prop = asciiLowerCase(record.prop);
+    const parent = records.links.parentOf(index);
+    const parentName = asciiLowerCase(atRuleNameOf(records, parent));
+    const classification = classifyDeclaration(
+      prop,
+      parentName.endsWith('counter-style')
+    );
+    const value = declaredValue(tokenLists, record);
+    const restored = trailingEscape(records, tokenLists, index);
     // A reference that cannot be rewritten is skipped, so it must protect
     // every name it may spell.
     const isUnrewritable = restored === undefined;
+    /** @type {readonly CSSToken[] | undefined} */
+    let parsed;
     if (classification && !isUnrewritable) {
-      references.push({ decl, classification, value: restored });
+      parsed = referenceTokens(tokenLists, record, value, restored);
+      references.push({
+        index,
+        classification,
+        value: restored,
+        tokens: parsed,
+      });
     }
     const isInitialValue =
-      prop === 'initial-value' &&
-      decl.parent?.type === 'atrule' &&
-      asciiLowerCase(
-        /** @type {import('postcss').AtRule} */ (decl.parent).name
-      ) === 'property';
+      prop === 'initial-value' && atRuleNameOf(records, parent) === 'property';
     const everywhere =
       prop.startsWith('--') ||
       isInitialValue ||
       (classification !== null && isUnrewritable);
-    if (everywhere || decl.value.includes('(')) {
-      for (const spelling of spellingsOf(decl, restored)) {
+    if (everywhere || value.includes('(')) {
+      for (const spelling of spellingsOf(value, restored)) {
         collectNames(
           spelling,
           candidates,
           protectedNames,
           everywhere,
-          classification?.kind === 'counter-style-func'
+          classification?.kind === 'counter-style-func',
+          parsed
         );
       }
     }
-  });
+  }
   return { protectedNames, references };
 }
 

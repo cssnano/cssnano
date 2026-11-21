@@ -4,45 +4,53 @@ import mathFunctions from './mathFunctions.js';
 import rawCache from './rawCache.js';
 import isAnonymousLayer from './isAnonymousLayer.js';
 import isCSSWhitespace from './isCSSWhitespace.js';
+import isAsciiDigit from './isAsciiDigit.js';
+import isHexColorDigits from './isHexColorDigits.js';
 import isHexDigitCode from './isHexDigitCode.js';
-import isImportantComment from './isImportantComment.js';
-import { assignValue, sourceValue } from './declValue.js';
+import isImportantComment, {
+  isImportantCommentToken,
+} from './isImportantComment.js';
+import { sourceValue } from './sourceText.js';
 import vendorUnprefixed from './vendorUnprefixed.js';
-import { isSubstitutionFunction } from './substitution.js';
+import asciiLowerCase from './asciiLowerCase.js';
+import {
+  isSubstitutionFunction,
+  isSubstitutionToken,
+  substitutionFunctions,
+} from './substitution.js';
 import {
   TokenType,
   applyEdits,
+  balancedStructure,
   balancedTokens,
   closeForOpening,
   decoded,
   endsWithEscapingBackslash,
+  isTrivia,
   numeric,
+  skipTrivia,
   tokenEnd,
   tokenStart,
   tokens,
 } from './value.js';
 
-/* CSS keyword matching is ASCII-case-insensitive; avoid Unicode case folding
- * and the replacement callback on the overwhelmingly common lowercase path. */
-const asciiUpperCase = /[A-Z]/v;
-
-/** @param {string} value @return {string} */
-function asciiLowerCase(value) {
-  if (!asciiUpperCase.test(value)) return value;
-  return value.replaceAll(/[A-Z]/gv, (character) => character.toLowerCase());
-}
-
-/** @type {{rawCache: typeof rawCache, assignValue: typeof assignValue, sourceValue: typeof sourceValue, isAnonymousLayer: typeof isAnonymousLayer, isCSSWhitespace: typeof isCSSWhitespace, isHexDigitCode: typeof isHexDigitCode, isImportantComment: typeof isImportantComment, vendorUnprefixed: typeof vendorUnprefixed, isSubstitutionFunction: typeof isSubstitutionFunction, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, numeric: typeof numeric, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
+/** @type {{rawCache: typeof rawCache, sourceValue: typeof sourceValue, isAnonymousLayer: typeof isAnonymousLayer, isCSSWhitespace: typeof isCSSWhitespace, isAsciiDigit: typeof isAsciiDigit, isHexColorDigits: typeof isHexColorDigits, isHexDigitCode: typeof isHexDigitCode, isImportantComment: typeof isImportantComment, isImportantCommentToken: typeof isImportantCommentToken, isTrivia: typeof isTrivia, skipTrivia: typeof skipTrivia, vendorUnprefixed: typeof vendorUnprefixed, isSubstitutionFunction: typeof isSubstitutionFunction, isSubstitutionToken: typeof isSubstitutionToken, substitutionFunctions: typeof substitutionFunctions, TokenType: typeof TokenType, applyEdits: typeof applyEdits, asciiLowerCase: typeof asciiLowerCase, balancedStructure: typeof balancedStructure, balancedTokens: typeof balancedTokens, calcSumFunctions: typeof calcSumFunctions, closeForOpening: typeof closeForOpening, decoded: typeof decoded, endsWithEscapingBackslash: typeof endsWithEscapingBackslash, lengthUnits: typeof lengthUnits, mathFunctions: typeof mathFunctions, numeric: typeof numeric, tokenEnd: typeof tokenEnd, tokenStart: typeof tokenStart, tokens: typeof tokens}} */
 const cssnanoUtils = {
   rawCache,
-  assignValue,
   sourceValue,
   isAnonymousLayer,
   isCSSWhitespace,
+  isAsciiDigit,
+  isHexColorDigits,
   isHexDigitCode,
   isImportantComment,
+  isImportantCommentToken,
+  isTrivia,
+  skipTrivia,
   vendorUnprefixed,
   isSubstitutionFunction,
+  isSubstitutionToken,
+  substitutionFunctions,
   TokenType,
   asciiLowerCase,
   calcSumFunctions,
@@ -53,6 +61,7 @@ const cssnanoUtils = {
   mathFunctions,
   numeric,
   applyEdits,
+  balancedStructure,
   balancedTokens,
   tokenEnd,
   tokenStart,

@@ -1,10 +1,17 @@
-import { resolveTargets } from '#utils/browser-targets';
+import cssnanoUtils from '#utils';
 import { supportsAll } from '#utils/browser-support';
 import fromInitial from './data/fromInitial.json' with { type: 'json' };
 import toInitial from './data/toInitial.json' with { type: 'json' };
 import ignoreProps from './lib/ignoreProps.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+
+const { tokens: tokenizeValue } = cssnanoUtils;
+
 const initial = 'initial';
+
+/** @type {Map<string, readonly CSSToken[]>} */
+const keywordTokens = new Map();
 
 // In most of the browser including chrome the initial for `writing-mode` is not `horizontal-tb`. Ref https://github.com/cssnano/cssnano/pull/905
 const defaultIgnoreProps = ignoreProps;
@@ -15,68 +22,110 @@ const defaultIgnoreProps = ignoreProps;
  */
 
 /**
- * @param {Options} options
- * @return {import('postcss').Plugin}
+ * The tokens of a keyword. Each keyword is tokenized once per process, and
+ * every value that takes it shares the frozen list.
+ *
+ * @param {string} keyword
+ * @return {readonly CSSToken[]}
  */
-function pluginCreator(options = {}) {
-  return {
-    postcssPlugin: 'postcss-reduce-initial',
+function tokensOfKeyword(keyword) {
+  let list = keywordTokens.get(keyword);
+  if (list === undefined) {
+    list = Object.freeze(tokenizeValue(keyword));
+    keywordTokens.set(keyword, list);
+  }
+  return list;
+}
 
-    /**
-     * @param {import('postcss').Result} result
-     */
-    prepare(result) {
-      const browsers = resolveTargets(options, result);
+/**
+ * Whether the tokens spell the keyword in lowercase, so the value's text is
+ * the keyword whatever its case. Each token is compared as it comes, so no
+ * text is joined.
+ *
+ * @param {readonly CSSToken[]} list
+ * @param {string} keyword a lowercase keyword
+ * @return {boolean}
+ */
+function spellsKeyword(list, keyword) {
+  let position = 0;
+  for (const token of list) {
+    const text = token[1].toLowerCase();
+    if (!keyword.startsWith(text, position)) return false;
+    position += text.length;
+  }
+  return position === keyword.length;
+}
 
-      // A target without the initial keyword drops the declaration, so
-      // rewriting it to an explicit value would make it apply.
-      if (!supportsAll(browsers, 'css-initial-value')) {
-        return {};
+/**
+ * One reducer per pair of replacements, so properties that are treated alike
+ * share it and their plan.
+ * @typedef {Map<string | null, Map<string | null, import('../../run/host.js').Reducer>>} Reducers
+ */
+
+/**
+ * @param {Reducers} reducers
+ * @param {string | null} toKeyword the initial value of the property, which becomes `initial`
+ * @param {string | null} fromKeyword what `initial` becomes
+ * @return {import('../../run/host.js').Reducer}
+ */
+function reducerFor(reducers, toKeyword, fromKeyword) {
+  let byFrom = reducers.get(toKeyword);
+  if (byFrom === undefined) {
+    byFrom = new Map();
+    reducers.set(toKeyword, byFrom);
+  }
+  let reducer = byFrom.get(fromKeyword);
+  if (reducer === undefined) {
+    reducer = (buffer) => {
+      const list = buffer.tokens();
+      if (toKeyword !== null && spellsKeyword(list, toKeyword)) {
+        buffer.replace(0, list.length, tokensOfKeyword(initial));
+      } else if (fromKeyword !== null && spellsKeyword(list, initial)) {
+        buffer.replace(0, list.length, tokensOfKeyword(fromKeyword));
       }
-      const ignoreProp = new Set(
-        defaultIgnoreProps.concat(/** @type {Options} */ (options).ignore || [])
-      );
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          css.walkDecls((decl) => {
-            const lowerCasedProp = decl.prop.toLowerCase();
-            if (ignoreProp.has(lowerCasedProp)) {
-              return;
-            }
+    };
+    byFrom.set(fromKeyword, reducer);
+  }
+  return reducer;
+}
 
-            if (
-              Object.hasOwn(toInitial, lowerCasedProp) &&
-              decl.value.toLowerCase() ===
-                toInitial[/** @type keyof typeof toInitial */ (lowerCasedProp)]
-            ) {
-              decl.value = initial;
-              return;
-            }
-
-            if (
-              decl.value.toLowerCase() !== initial ||
-              !fromInitial[
-                /** @type keyof typeof fromInitial */ (lowerCasedProp)
-              ]
-            ) {
-              return;
-            }
-
-            decl.value =
-              fromInitial[
-                /** @type keyof typeof fromInitial */ (lowerCasedProp)
-              ];
-          });
-        },
-      };
+/**
+ * Compiles the properties to leave alone. The stage does nothing when a
+ * browser target lacks the `initial` keyword.
+ *
+ * @param {Options} options
+ * @param {readonly string[] | undefined} browsers
+ * @return {import('../../run/host.js').Stage | null}
+ */
+function compileReduceInitial(options, browsers) {
+  if (
+    !supportsAll(
+      /** @type {readonly string[]} */ (browsers),
+      'css-initial-value'
+    )
+  ) {
+    return null;
+  }
+  const ignoreProp = new Set(defaultIgnoreProps.concat(options.ignore || []));
+  /** @type {Reducers} */
+  const reducers = new Map();
+  return {
+    forProperty(property) {
+      const lowerCasedProp = property.toLowerCase();
+      if (ignoreProp.has(lowerCasedProp)) return null;
+      const toKeyword = Object.hasOwn(toInitial, lowerCasedProp)
+        ? toInitial[/** @type keyof typeof toInitial */ (lowerCasedProp)]
+        : null;
+      const fromKeyword =
+        fromInitial[/** @type keyof typeof fromInitial */ (lowerCasedProp)] ||
+        null;
+      if (toKeyword === null && fromKeyword === null) return null;
+      return reducerFor(reducers, toKeyword, fromKeyword);
     },
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {import('../../run/host.js').StageEntry} */
+const reduceInitial = { create: compileReduceInitial };
+
+export { reduceInitial as default };

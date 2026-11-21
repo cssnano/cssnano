@@ -2,8 +2,14 @@ import {
   firstPseudoReplacement,
   pieceArgumentParsers,
 } from './argumentParsers.js';
+import { colon } from '../../../values/punctuationTokens.js';
+import {
+  funcWithText,
+  identifierWithText,
+} from '../../../values/tokenConstructors.js';
 import { hasSemanticFact, semanticFacts } from './arena.js';
 import { dropHexEscapeTerminator, joinPieces } from './hexEscape.js';
+import { joinPieceTokens } from './serializeArena.js';
 import { legacyPseudoElements } from './grammar.js';
 import { normalizeAnPlusB } from './normalizeAnPlusB.js';
 import { trailingListTrivia } from './normalizeListTrivia.js';
@@ -16,6 +22,7 @@ import {
   rawOutput,
 } from './normalizePool.js';
 
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @typedef {import('./normalizePool.js').Output} Output */
 /** @typedef {import('./normalizePool.js').OutputPool} OutputPool */
 /** @typedef {import('./arena.js').SelectorArena} SelectorArena */
@@ -23,9 +30,74 @@ import {
 /** @typedef {import('./normalizeOutput.js').Normalized} Normalized */
 /** @typedef {import('./normalizeOutput.js').Part} Part */
 
-/** @param {OutputPool} pool @param {string} prefix @param {string} name @param {Output} inner */
-function wrapPseudo(pool, prefix, name, inner) {
-  return pool.sequence([pool.text(`${prefix}${name}(`), inner, pool.text(')')]);
+/**
+ * The head of a pseudo, `:name(` or `:name`, interned with the tokens that
+ * spell it. Tokens are built only for a text not yet interned. The name keeps
+ * its source token unless dropping a hex escape terminator changed it.
+ * @param {OutputPool} pool
+ * @param {SelectorArena} arena
+ * @param {import('./arena.js').PseudoPayload} payload
+ * @param {string} prefix
+ * @param {string} name
+ * @param {boolean} opening whether the head ends with `(`
+ * @return {Output}
+ */
+function pseudoHead(pool, arena, payload, prefix, name, opening) {
+  const text = opening ? `${prefix}${name}(` : `${prefix}${name}`;
+  const cached = pool.texts.get(text);
+  if (cached) return cached;
+  const source = arena.tokens[payload.nameToken];
+  const { value } = /** @type {{value: string}} */ (source[4]);
+  const sourceText = opening ? `${name}(` : name;
+  let nameToken;
+  if (source[1] === sourceText) nameToken = source;
+  else if (opening) nameToken = funcWithText(sourceText, value);
+  else nameToken = identifierWithText(sourceText, value);
+  const colons = prefix === '::' ? [colon(), colon()] : [colon()];
+  return pool.intern(text, Object.freeze([...colons, nameToken]));
+}
+
+/**
+ * The text of an argument's pieces, interned with the tokens that spell it.
+ * Tokens are built only for a text not yet interned.
+ * @param {OutputPool} pool
+ * @param {{ pieces?: string[], tokens?: (CSSToken | undefined)[] }} result
+ * @return {Output}
+ */
+function pieceArgumentOutput(pool, result) {
+  const pieces = result.pieces ?? [];
+  const text = joinPieces(pieces);
+  return (
+    pool.texts.get(text) ??
+    pool.intern(text, joinPieceTokens(pieces, result.tokens ?? []))
+  );
+}
+
+/** @param {OutputPool} pool @param {Output} head @param {Output} inner */
+function wrapPseudo(pool, head, inner) {
+  return pool.sequence([head, inner, pool.text(')')]);
+}
+
+/**
+ * The text of an `<an-plus-b>` formula. A formula spelled as its source keeps
+ * the source tokens. Tokens are built only for a text not yet interned.
+ * @param {SelectorArena} arena
+ * @param {OutputPool} pool
+ * @param {{ text: string, spelled: boolean, tokenStart: number, tokenEnd: number }} formula
+ * @return {Output}
+ */
+function formulaOutput(arena, pool, formula) {
+  return (
+    pool.texts.get(formula.text) ??
+    pool.intern(
+      formula.text,
+      formula.spelled
+        ? Object.freeze(
+            arena.tokens.slice(formula.tokenStart, formula.tokenEnd)
+          )
+        : undefined
+    )
+  );
 }
 
 /** @param {SelectorArena} arena @param {OutputPool} pool @param {ArenaNode} node @param {string} prefix @param {string} name */
@@ -44,9 +116,8 @@ function nthPseudoOutput(arena, pool, node, prefix, name) {
     (formula.text === '2n+1' || formula.text.includes('\\'));
   return wrapPseudo(
     pool,
-    prefix,
-    name,
-    pool.text(useOdd ? 'odd' : formula.text)
+    pseudoHead(pool, arena, payload, prefix, name, true),
+    useOdd ? pool.text('odd') : formulaOutput(arena, pool, formula)
   );
 }
 
@@ -56,8 +127,9 @@ function structuralPseudoOutput(arena, pool, node, normalized, prefix, name) {
   if (payload.argumentNode === undefined) return;
   const argument = normalized[payload.argumentNode];
   if (!argument || argument.valid === false) return;
+  const head = pseudoHead(pool, arena, payload, prefix, name, true);
   if (payload.argumentGrammar !== 'an-plus-b-of')
-    return wrapPseudo(pool, prefix, name, argument);
+    return wrapPseudo(pool, head, argument);
   const formula = normalizeAnPlusB(
     arena.tokens,
     payload.nameToken + 1,
@@ -66,9 +138,12 @@ function structuralPseudoOutput(arena, pool, node, normalized, prefix, name) {
   if (!formula) return;
   return wrapPseudo(
     pool,
-    prefix,
-    name,
-    pool.sequence([pool.text(formula.text), pool.text(' of '), argument])
+    head,
+    pool.sequence([
+      formulaOutput(arena, pool, formula),
+      pool.text(' of '),
+      argument,
+    ])
   );
 }
 
@@ -90,7 +165,8 @@ export function pseudoOutput(arena, pool, node, normalized) {
   if (node.status === 'invalid') return rawOutput(arena, pool, node);
   const payload = arena.payloads.pseudos[node.payload];
   const { name, prefix } = formatPseudoPrefixAndName(arena, payload);
-  if (!payload.argumentGrammar) return pool.text(`${prefix}${name}`);
+  if (!payload.argumentGrammar)
+    return pseudoHead(pool, arena, payload, prefix, name, false);
   let output;
   if (payload.argumentNode !== undefined)
     output = structuralPseudoOutput(
@@ -115,9 +191,8 @@ export function pseudoOutput(arena, pool, node, normalized) {
     if (result?.valid)
       output = wrapPseudo(
         pool,
-        prefix,
-        name,
-        pool.text(joinPieces(result.pieces ?? []))
+        pseudoHead(pool, arena, payload, prefix, name, true),
+        pieceArgumentOutput(pool, result)
       );
   }
   return output ?? rawOutput(arena, pool, node);
@@ -181,6 +256,9 @@ export function complexOutput(arena, pool, nodeIndex, normalized, children) {
           : /** @type {Normalized} */ ({
               ...childOutput,
               ...pool.sequence([leading, childOutput]),
+              // The part spells the comment too, so its text is its emit.
+              sourceNode: undefined,
+              text: undefined,
               node: childOutput.node,
             });
       output.push(item);

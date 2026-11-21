@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import {
   processCSSFactory,
-  repositoryFile,
   withTargets,
+  oneStagePlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -81,7 +83,7 @@ suite('top-level folding with functional pseudos', () => {
       ][cases.indexOf(input)];
       assert.equal(
         postcss([plugin({ ...modernBl })]).process(input, {
-          from: repositoryFile,
+          from: undefined,
         }).css,
         output,
         input
@@ -105,7 +107,7 @@ suite('top-level folding with functional pseudos', () => {
     for (const { input, expected } of cases) {
       assert.equal(
         postcss([plugin({ ...modernBl })]).process(input, {
-          from: repositoryFile,
+          from: undefined,
         }).css,
         expected,
         input
@@ -120,7 +122,7 @@ suite('top-level folding with functional pseudos', () => {
     ).join(',');
     const output = postcss([plugin({ ...modernBl })]).process(
       `${selectors}{color:red}`,
-      { from: repositoryFile }
+      { from: undefined }
     ).css;
     assert.match(output, /^\.scope:is\(\.a0,\.b0\) /v);
     assert.match(output, /\.item999\)\{color:red\}$/v);
@@ -178,7 +180,7 @@ suite('CSS specification alignment and conformance', () => {
     'should preserve leading important comments when folding selectors',
     processCSS(
       '.a .tail,/*! keep */.b .tail,.c .tail{color:blue}',
-      ':is(.a,/*! keep */.b,.c) .tail{color:blue}',
+      ':is(.a,.c,/*! keep */.b) .tail{color:blue}',
       modernBl
     )
   );

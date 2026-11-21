@@ -1,20 +1,33 @@
 import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import {
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
+  COMMENT,
+} from '../../../ir/blockRecord.js';
+import { isLayerEntry } from './grammar.js';
+import { preludeTokens } from './trailingEscape.js';
+import { atRuleAt, preludeTextOf } from '../../../ir/declaredText.js';
 
-const { asciiLowerCase, decoded, tokens } = cssnanoUtils;
+const { decoded } = cssnanoUtils;
+
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {TokenLists} from '../../../ir/tokenLists.js' */
 
 /**
- * Parses a @layer parameter list into decoded layer-name paths. A period is a
- * separator only as a Delim token between idents; an escaped dot is part of
- * the preceding identifier's value, so `a\.b` is one segment named "a.b".
- * Whitespace and comments around separators are allowed, preserving the
+ * Parses the tokens of a @layer parameter list into decoded layer-name paths.
+ * A period is a separator only as a Delim token between idents; an escaped dot
+ * is part of the preceding identifier's value, so `a\.b` is one segment named
+ * "a.b". Whitespace and comments around separators are allowed, preserving the
  * previous handling of `a . b`.
  *
- * @param {string} params
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} parsedTokens
+ *   the tokens of the layer's prelude
  * @return {string[][] | null} one decoded segment path per declared name
  */
-function parseLayerNameList(params) {
-  const tokenList = tokens(params).filter(
+function parseLayerNameList(parsedTokens) {
+  const tokenList = parsedTokens.filter(
     (t) => t[0] !== TokenType.Whitespace && t[0] !== TokenType.Comment
   );
   /** @type {string[][]} */
@@ -54,33 +67,37 @@ function parseLayerNameList(params) {
 }
 
 /**
- * @param {import('postcss').Node} node
- * @return {import('postcss').AtRule[]} enclosing @layer at-rules, outermost first
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @return {ArenaIndex[]} enclosing @layer at-rules, outermost first
  */
-function enclosingLayerRules(node) {
-  /** @type {import('postcss').AtRule[]} */
+function enclosingLayerRules(records, index) {
+  const { links, root } = records;
+  /** @type {ArenaIndex[]} */
   const chain = [];
-  let curr = node.parent;
-  while (curr && curr.type !== 'root') {
-    if (
-      curr.type === 'atrule' &&
-      asciiLowerCase(/** @type {import('postcss').AtRule} */ (curr).name) ===
-        'layer'
-    ) {
-      chain.unshift(/** @type {import('postcss').AtRule} */ (curr));
-    }
-    curr = curr.parent;
+  for (
+    let curr = links.parentOf(index);
+    curr !== -1 && curr !== root.index;
+    curr = links.parentOf(curr)
+  ) {
+    if (isLayerEntry(records.entry(curr))) chain.unshift(curr);
   }
   return chain;
 }
 
 class LayerRegistry {
-  constructor() {
+  /**
+   * @param {BlockRecords} records the stylesheet the layers are in
+   * @param {TokenLists} tokenLists the run's token lists, which the preludes name
+   */
+  constructor(records, tokenLists) {
+    this.records = records;
+    this.tokenLists = tokenLists;
     this.nextIndex = 0;
     /** @type {Map<string, { index: number, children: LayerRegistry }>} */
     this.layers = new Map();
-    /** @type {Map<import('postcss').AtRule, { index: number, children: LayerRegistry }>} */
-    this.anonymous = new Map();
+    /** @type {Map<ArenaIndex, { index: number, children: LayerRegistry }>} */
+    this.entries = new Map();
   }
 
   /**
@@ -90,25 +107,25 @@ class LayerRegistry {
   getOrCreate(name) {
     let entry = this.layers.get(name);
     if (!entry) {
-      entry = { index: this.nextIndex++, children: new LayerRegistry() };
+      entry = {
+        index: this.nextIndex++,
+        children: new LayerRegistry(this.records, this.tokenLists),
+      };
       this.layers.set(name, entry);
     }
     return entry;
   }
 
   /**
-   * Entry for a layer with no name or an unparseable name: every occurrence
-   * is a unique cascade layer, but names nested inside still order beneath
-   * it through the child registry.
+   * The entry at a segment path, creating the missing segments.
    *
-   * @param {import('postcss').AtRule} layerRule
+   * @param {string[]} segments
    * @return {{ index: number, children: LayerRegistry }}
    */
-  getOrCreateAnonymous(layerRule) {
-    let entry = this.anonymous.get(layerRule);
-    if (!entry) {
-      entry = { index: this.nextIndex++, children: new LayerRegistry() };
-      this.anonymous.set(layerRule, entry);
+  entryAt(segments) {
+    let entry = this.getOrCreate(segments[0]);
+    for (let i = 1; i < segments.length; i++) {
+      entry = entry.children.getOrCreate(segments[i]);
     }
     return entry;
   }
@@ -116,21 +133,32 @@ class LayerRegistry {
   /**
    * The registry entry a single layer at-rule occupies, creating missing
    * segments as needed. Statement lists and unparseable names fall back to a
-   * unique anonymous entry so they order but never match another spelling.
+   * unique entry, so they order but never match another spelling; names nested
+   * inside still order beneath it through the child registry. A rule keeps one
+   * entry, so its name is read once however many definitions it holds.
    *
-   * @param {import('postcss').AtRule} layerRule
+   * @param {ArenaIndex} layerRule
    * @return {{ index: number, children: LayerRegistry }}
    */
   entryFor(layerRule) {
-    const names = layerRule.params.trim()
-      ? parseLayerNameList(layerRule.params)
-      : null;
-    if (names === null || names.length !== 1) {
-      return this.getOrCreateAnonymous(layerRule);
-    }
-    let entry = this.getOrCreate(names[0][0]);
-    for (let i = 1; i < names[0].length; i++) {
-      entry = entry.children.getOrCreate(names[0][i]);
+    let entry = this.entries.get(layerRule);
+    if (entry === undefined) {
+      const names = preludeTextOf(
+        this.tokenLists,
+        atRuleAt(this.records, layerRule)
+      ).trim()
+        ? parseLayerNameList(
+            preludeTokens(this.records, this.tokenLists, layerRule)
+          )
+        : null;
+      entry =
+        names !== null && names.length === 1
+          ? this.entryAt(names[0])
+          : {
+              index: this.nextIndex++,
+              children: new LayerRegistry(this.records, this.tokenLists),
+            };
+      this.entries.set(layerRule, entry);
     }
     return entry;
   }
@@ -140,41 +168,43 @@ class LayerRegistry {
    * nested beneath any enclosing layers, so later lookups observe the real
    * layer tree.
    *
-   * @param {import('postcss').AtRule} layerRule
+   * @param {ArenaIndex} layerRule
    * @return {void}
    */
   declareLayerAtRule(layerRule) {
     /** @type {LayerRegistry} */
     let current = this;
-    for (const parent of enclosingLayerRules(layerRule)) {
+    for (const parent of enclosingLayerRules(this.records, layerRule)) {
       current = current.entryFor(parent).children;
     }
-    if (!layerRule.params.trim()) {
-      // An unnamed block layer is itself a unique anonymous layer; register
-      // it so nested names order beneath it.
-      if (layerRule.nodes) {
-        current.getOrCreateAnonymous(layerRule);
-      }
+    // A block takes at most one name. Browsers drop a block with a name list,
+    // so it declares none; like an unnamed block, it is a unique entry.
+    if (atRuleAt(this.records, layerRule).kind === AT_RULE_BLOCK) {
+      current.entryFor(layerRule);
       return;
     }
-    const names = parseLayerNameList(layerRule.params);
+    if (
+      !preludeTextOf(this.tokenLists, atRuleAt(this.records, layerRule)).trim()
+    ) {
+      return;
+    }
+    const names = parseLayerNameList(
+      preludeTokens(this.records, this.tokenLists, layerRule)
+    );
     if (names === null) {
       return;
     }
     for (const segments of names) {
-      let entry = current.getOrCreate(segments[0]);
-      for (let i = 1; i < segments.length; i++) {
-        entry = entry.children.getOrCreate(segments[i]);
-      }
+      current.entryAt(segments);
     }
   }
 
   /**
-   * @param {import('postcss').Node} node
+   * @param {ArenaIndex} index
    * @return {number[]}
    */
-  getPriority(node) {
-    const chain = enclosingLayerRules(node);
+  getPriority(index) {
+    const chain = enclosingLayerRules(this.records, index);
     if (chain.length === 0) {
       return [Infinity];
     }
@@ -221,4 +251,36 @@ function compareAtRulePriority(a, b) {
   return a.documentIndex - b.documentIndex;
 }
 
-export { LayerRegistry, compareAtRulePriority };
+/**
+ * Whether the stylesheet imports another. An imported stylesheet can declare
+ * layers before this one does, so the layer order is not known from this
+ * stylesheet alone. An import rule is valid only before every rule except
+ * `@charset` and layer statements.
+ *
+ * @param {BlockRecords} records
+ * @return {boolean}
+ */
+function hasImport(records) {
+  const { links, root } = records;
+  for (
+    let index = links.firstChild(root.index);
+    index !== -1;
+    index = links.nextSibling(index)
+  ) {
+    const node = records.entry(index);
+    if (node.kind === COMMENT) continue;
+    if (node.kind !== AT_RULE_BLOCK && node.kind !== AT_RULE_STATEMENT) {
+      return false;
+    }
+    if (node.name === 'import') return true;
+    if (
+      node.name !== 'charset' &&
+      !(node.name === 'layer' && node.kind === AT_RULE_STATEMENT)
+    ) {
+      return false;
+    }
+  }
+  return false;
+}
+
+export { LayerRegistry, compareAtRulePriority, hasImport };

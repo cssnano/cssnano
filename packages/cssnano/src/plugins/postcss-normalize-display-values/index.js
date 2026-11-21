@@ -1,13 +1,15 @@
 import {
   isTokenIdent,
   isTokenWhiteSpaceOrComment,
-  tokenize,
-  TokenType,
 } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import { ident } from '../../values/tokenConstructors.js';
+import { whitespace } from '../../values/punctuationTokens.js';
 import mappings from './lib/map.js';
 
-const { asciiLowerCase, assignValue, sourceValue } = cssnanoUtils;
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+
+const { asciiLowerCase } = cssnanoUtils;
 const displayPropertyRegex = /^[dD][iI][sS][pP][lL][aA][yY]$/v;
 const displayOutside = new Set(['block', 'inline', 'run-in']);
 const displayInside = new Set([
@@ -56,40 +58,38 @@ function addIdentifier(identifier, state) {
 }
 
 /**
- * @param {string} value
- * @return {string}
+ * The mapped display of a value's tokens, or undefined to keep the value.
+ *
+ * @param {readonly CSSToken[]} input
+ * @return {string | undefined}
  */
-function transform(value) {
+function transform(input) {
   let count = 0;
   /** @type {{ outer?: string, inner?: string, listItem?: string }} */
   const state = {};
 
-  for (const token of tokenize({ css: value })) {
-    if (token[0] === TokenType.EOF) {
-      break;
-    }
-
+  for (const token of input) {
     if (isTokenWhiteSpaceOrComment(token)) {
       continue;
     }
 
     if (!isTokenIdent(token)) {
-      return value;
+      return undefined;
     }
 
     count++;
     if (count > 3) {
-      return value;
+      return undefined;
     }
 
     const identifier = toASCIILowerCase(token[4].value);
     if (!addIdentifier(identifier, state)) {
-      return value;
+      return undefined;
     }
   }
 
   if (count < 2) {
-    return value;
+    return undefined;
   }
 
   if (
@@ -98,54 +98,52 @@ function transform(value) {
     state.inner !== 'flow' &&
     state.inner !== 'flow-root'
   ) {
-    return value;
+    return undefined;
   }
 
   const key = state.listItem
     ? `${state.outer ?? ''},${state.inner ?? ''},${state.listItem}`
     : `${state.outer ?? ''},${state.inner ?? ''}`;
 
-  return mappings.get(key) ?? value;
+  return mappings.get(key);
 }
+
 /**
- * @return {import('postcss').Plugin}
+ * The tokens of a mapped display: one identifier, or two separated by a space.
+ * The mapped text is ours, so splitting it on the space is safe.
+ *
+ * @param {string} mapped
+ * @return {CSSToken[]}
  */
-function pluginCreator() {
+function mappedTokens(mapped) {
+  const [first, second] = mapped.split(' ');
+  return second === undefined
+    ? [ident(first)]
+    : [ident(first), whitespace(), ident(second)];
+}
+
+/** @type {import('../../run/host.js').Reducer} */
+const reduce = (buffer) => {
+  const input = buffer.tokens();
+  const mapped = transform(input);
+  if (mapped !== undefined) {
+    buffer.replace(0, input.length, mappedTokens(mapped));
+  }
+};
+
+/**
+ * The stage for one run. It reads the `display` property.
+ *
+ * @return {import('../../run/host.js').Stage}
+ */
+function displayStage() {
   return {
-    postcssPlugin: 'postcss-normalize-display-values',
-
-    prepare() {
-      const cache = new Map();
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          css.walkDecls(displayPropertyRegex, (decl) => {
-            const value = sourceValue(decl);
-
-            if (!value) {
-              return;
-            }
-
-            if (cache.has(value)) {
-              assignValue(decl, cache.get(value));
-
-              return;
-            }
-
-            const result = transform(value);
-
-            assignValue(decl, result);
-            cache.set(value, result);
-          });
-        },
-      };
-    },
+    forProperty: (property) =>
+      displayPropertyRegex.test(property) ? reduce : null,
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {import('../../run/host.js').StageEntry} */
+const normalizeDisplayValues = { create: () => displayStage() };
+
+export { normalizeDisplayValues as default };

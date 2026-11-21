@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import cssnanoUtils from '#utils';
-import plugin from '../../../src/plugins/postcss-merge-idents/index.js';
+import { presetEntryPlugin } from '../../../../../util/testHelpers.js';
 import {
   collectProtectedNameDefinitions,
   resolveReferences,
@@ -8,7 +8,8 @@ import {
 
 const { asciiLowerCase } = cssnanoUtils;
 
-const processor = postcss([plugin()]);
+const plugin = presetEntryPlugin('mergeIdents');
+const processor = postcss(plugin());
 
 /**
  * @typedef {{

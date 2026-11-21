@@ -29,25 +29,15 @@ export {
 } from './arenaSemantics.js';
 
 const summaryKinds = new Set(['list', 'complex', 'compound', 'pseudo']);
-/** @type {ReadonlyMap<NodeKind, keyof PayloadTables>} */
-const payloadTableForKind = new Map([
-  ['list', 'lists'],
-  ['combinator', 'combinators'],
-  ['qualified-name', 'qualifiedNames'],
-  ['pseudo', 'pseudos'],
-  ['attribute', 'attributes'],
-]);
 
 class SelectorArenaBuilder {
-  /** @param {string} source @param {readonly CSSToken[]} tokens @param {boolean} verifyArena */
-  constructor(source, tokens, verifyArena) {
+  /** @param {string} source @param {readonly CSSToken[]} tokens @param {number} base */
+  constructor(source, tokens, base) {
     this.source = source;
     this.tokens = tokens;
-    this.verifyArena = verifyArena;
+    this.base = base;
     /** @type {ArenaNode[]} */ this.nodes = [];
     /** @type {number[]} */ this.frames = [];
-    /** @type {number[]} */ this.lastChildren = [];
-    /** @type {number[]} */ this.roots = [];
     this.specificityByKey = new Map([
       ['0,0,0', { id: 0, tuple: ZERO_SPECIFICITY }],
     ]);
@@ -63,25 +53,6 @@ class SelectorArenaBuilder {
 
   /** @param {NodeKind} kind @param {number} startToken @param {number} endToken @param {{status?:ParseStatus,payload?:number,specificity?:Specificity,facts?:SemanticFacts}} [options] */
   open(kind, startToken, endToken, options = {}) {
-    if (this.verifyArena) this.#validateBounds(startToken, endToken);
-    const parent = this.frames.at(-1);
-    if (this.verifyArena && parent !== undefined) {
-      const parentNode = this.nodes[parent];
-      if (startToken < parentNode.startToken || endToken > parentNode.endToken)
-        throw new RangeError(
-          'child token span must be contained by its parent'
-        );
-      const previousChild = this.lastChildren[parent];
-      if (
-        previousChild !== undefined &&
-        startToken < this.nodes[previousChild].endToken
-      )
-        throw new RangeError(
-          'sibling token spans must be ordered and non-overlapping'
-        );
-    } else if (parent === undefined) {
-      this.roots.push(this.nodes.length);
-    }
     const index = this.nodes.length;
     const hasSummary = summaryKinds.has(kind);
     this.nodes.push({
@@ -97,8 +68,6 @@ class SelectorArenaBuilder {
       facts: hasSummary ? (options.facts ?? EMPTY_FACTS) : undefined,
       payload: options.payload ?? -1,
     });
-    if (this.verifyArena && parent !== undefined)
-      this.lastChildren[parent] = index;
     this.frames.push(index);
     return index;
   }
@@ -148,7 +117,6 @@ class SelectorArenaBuilder {
     let found = this.specificityByKey.get(key);
     if (!found) {
       const tuple = /** @type {[number, number, number]} */ ([...specificity]);
-      if (this.verifyArena) Object.freeze(tuple);
       found = { id: this.specificityByKey.size, tuple };
       this.specificityByKey.set(key, found);
     }
@@ -159,21 +127,7 @@ class SelectorArenaBuilder {
   #closeFrame(nodeIndex) {
     if (this.frames.pop() !== nodeIndex)
       throw new Error('arena nodes must close in stack order');
-    const node = this.nodes[nodeIndex];
-    node.subtreeEnd = this.nodes.length;
-    if (!this.verifyArena) return;
-    let child = nodeIndex + 1;
-    while (child < node.subtreeEnd) {
-      const childNode = this.nodes[child];
-      if (
-        childNode.subtreeEnd <= child ||
-        childNode.subtreeEnd > node.subtreeEnd
-      )
-        throw new RangeError('invalid preorder subtree bounds');
-      child = childNode.subtreeEnd;
-    }
-    if (child !== node.subtreeEnd)
-      throw new RangeError('children do not fill the preorder subtree');
+    this.nodes[nodeIndex].subtreeEnd = this.nodes.length;
   }
 
   /** @param {NodeKind} kind @param {number} startToken @param {number} endToken @param {{status?:ParseStatus,payload?:number,specificity?:Specificity,facts?:SemanticFacts}} [options] */
@@ -196,152 +150,30 @@ class SelectorArenaBuilder {
     if (this.frames.length !== 0)
       throw new Error('cannot finish an open arena');
     if (!this.nodes[0]) throw new Error('arena must contain a root');
-    if (!this.verifyArena)
-      return new SelectorArena(
-        this.source,
-        this.tokens,
-        this.nodes,
-        this.payloads,
-        false
-      );
-    if (
-      this.roots.length !== 1 ||
-      this.roots[0] !== 0 ||
-      this.nodes[0]?.subtreeEnd !== this.nodes.length
-    )
-      throw new Error('arena must contain a single preorder root');
-    const root = this.nodes[0];
-    if (root.startToken !== 0 || root.endToken !== this.tokens.length)
-      throw new RangeError('arena root token span must cover all tokens');
-    this.#validatePayloadIndexes();
-    this.#validatePayloadReferences();
-    if (
-      root.kind !== 'list' &&
-      !(
-        root.kind === 'raw' &&
-        root.status === 'opaque' &&
-        root.subtreeEnd === 1
-      )
-    )
-      throw new Error(
-        'arena root must be a selector list or a full-span opaque raw fallback'
-      );
-    for (const node of this.nodes) {
-      Object.freeze(node);
-    }
-    for (const table of Object.values(this.payloads)) {
-      for (const payload of table) {
-        Object.freeze(payload);
-      }
-      Object.freeze(table);
-    }
-    for (const payload of this.payloads.qualifiedNames) {
-      Object.freeze(payload.namespace);
-      Object.freeze(payload.subject);
-    }
-    for (const payload of this.payloads.attributes)
-      Object.freeze(payload.namespace);
-    Object.freeze(this.nodes);
-    Object.freeze(this.payloads);
     return new SelectorArena(
       this.source,
       this.tokens,
       this.nodes,
       this.payloads,
-      true
+      this.base
     );
-  }
-
-  #validatePayloadIndexes() {
-    for (const node of this.nodes) {
-      const tableName = payloadTableForKind.get(node.kind);
-      if (!tableName) {
-        if (node.payload !== -1)
-          throw new RangeError(
-            `${node.kind} nodes must not have a payload index`
-          );
-        continue;
-      }
-      const table = this.payloads[tableName];
-      if (
-        !Number.isInteger(node.payload) ||
-        node.payload < 0 ||
-        node.payload >= table.length
-      )
-        throw new RangeError(`invalid ${node.kind} payload index`);
-    }
-  }
-
-  #validatePayloadReferences() {
-    /** @param {number} index */
-    const validTokenIndex = (index) =>
-      Number.isInteger(index) && index >= 0 && index < this.tokens.length;
-    for (let nodeIndex = 0; nodeIndex < this.nodes.length; nodeIndex++) {
-      const node = this.nodes[nodeIndex];
-      if (node.kind === 'qualified-name') {
-        const payload = this.payloads.qualifiedNames[node.payload];
-        if (
-          (payload.namespace.kind === 'named' &&
-            !validTokenIndex(payload.namespace.token)) ||
-          !validTokenIndex(payload.subject.token)
-        )
-          throw new RangeError('invalid qualified-name token reference');
-      } else if (node.kind === 'attribute') {
-        const payload = this.payloads.attributes[node.payload];
-        const references = [
-          payload.nameToken,
-          payload.valueToken,
-          payload.modifierToken,
-          payload.namespace.kind === 'named'
-            ? payload.namespace.token
-            : undefined,
-        ];
-        if (
-          references.some(
-            (reference) =>
-              reference !== undefined && !validTokenIndex(reference)
-          )
-        )
-          throw new RangeError('invalid attribute token reference');
-      } else if (node.kind === 'pseudo') {
-        const payload = this.payloads.pseudos[node.payload];
-        if (!validTokenIndex(payload.nameToken))
-          throw new RangeError('invalid pseudo token reference');
-        if (payload.argumentNode !== undefined) {
-          const argument = this.nodes[payload.argumentNode];
-          if (
-            !Number.isInteger(payload.argumentNode) ||
-            payload.argumentNode <= nodeIndex ||
-            payload.argumentNode >= node.subtreeEnd ||
-            argument?.kind !== 'list'
-          )
-            throw new RangeError('invalid pseudo argument node reference');
-        }
-      }
-    }
-  }
-
-  /** @param {number} startToken @param {number} endToken */
-  #validateBounds(startToken, endToken) {
-    if (
-      !Number.isInteger(startToken) ||
-      !Number.isInteger(endToken) ||
-      startToken < 0 ||
-      endToken < startToken ||
-      endToken > this.tokens.length
-    )
-      throw new RangeError('invalid exclusive token span');
   }
 }
 
 export class SelectorArena {
-  /** @param {string} source @param {readonly CSSToken[]} tokens @param {readonly Readonly<ArenaNode>[]} nodes @param {PayloadTables} payloads @param {boolean} freeze */
-  constructor(source, tokens, nodes, payloads, freeze) {
+  /**
+   * @param {string} source the text the arena spells
+   * @param {readonly CSSToken[]} tokens
+   * @param {readonly Readonly<ArenaNode>[]} nodes
+   * @param {PayloadTables} payloads
+   * @param {number} base where `source` starts in the text the token positions refer to
+   */
+  constructor(source, tokens, nodes, payloads, base) {
     this.source = source;
     this.tokens = tokens;
     this.nodes = nodes;
     this.payloads = payloads;
-    if (freeze) Object.freeze(this);
+    this.base = base;
   }
 
   /** @param {number} nodeIndex @param {(childIndex:number)=>void} callback */
@@ -356,9 +188,9 @@ export class SelectorArena {
   }
 }
 
-/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @param {boolean} [verifyArena] @return {SelectorArena} */
-export function buildSelectorArena(source, tokens, build, verifyArena = true) {
-  const builder = new SelectorArenaBuilder(source, tokens, verifyArena);
+/** @param {string} source @param {readonly CSSToken[]} tokens @param {(builder:SelectorArenaBuilder)=>void} build @param {number} [base] @return {SelectorArena} */
+export function buildSelectorArena(source, tokens, build, base = 0) {
+  const builder = new SelectorArenaBuilder(source, tokens, base);
   build(builder);
   return builder.finish();
 }

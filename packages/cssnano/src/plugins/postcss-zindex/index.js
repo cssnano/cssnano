@@ -1,62 +1,89 @@
+import { TokenType } from '@csstools/css-tokenizer';
 import LayerCache from './lib/layerCache.js';
+import { isRecordAttached } from '../../run/symbolLists.js';
+import { declaredValue } from '../../ir/declaredText.js';
+import { writeValue } from '../../ir/valueEdits.js';
+import { identifierWithText, numeric } from '../../values/tokenConstructors.js';
 
-const zIndexRegex = /^[zZ]-[iI][nN][dD][eE][xX]$/v;
+/** @import {ArenaIndex} from '../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../ir/blockRecords.js' */
+/** @import {DeclarationRecord} from '../../ir/declarationRecord.js' */
+/** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
+/** @import {RunContext} from '../../run/runContext.js' */
+
 /**
  * @typedef {object} Options
  * @property {number} [startIndex] The first positive integer z-index to assign, so z-indices from other sources can be overridden. (default: 1)
  */
+
 /**
- * @param {Options} opts
- * @return {import('postcss').Plugin}
+ * Rebases the z-index values of the walk up's lists to small
+ * integers that keep their order. Rebasing is only safe when every index is
+ * a positive number, so one negative value leaves them all alone.
+ *
+ * @param {RecordSymbolLists} lists
+ * @param {Options} options
+ * @param {unknown} _remove
+ * @param {BlockRecords} records
+ * @param {RunContext} context
+ * @return {void}
  */
-function pluginCreator(opts = {}) {
-  return {
-    postcssPlugin: 'postcss-zindex',
-    prepare() {
-      const cache = new LayerCache();
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          /** @type {import('postcss').Declaration[]} */
-          const nodes = [];
-          let abort = false;
+export function zindexSymbols(lists, options, _remove, records, context) {
+  const { tokenLists } = context;
+  /** @type {ArenaIndex[]} */
+  const nodes = lists.zIndexDecls.filter(
+    (index) =>
+      isRecordAttached(records, index) &&
+      hasOneComponent(records, context, index)
+  );
+  /** @param {ArenaIndex} index */
+  const valueOf = (index) =>
+    declaredValue(
+      tokenLists,
+      /** @type {DeclarationRecord} */ (records.entry(index))
+    );
+  if (nodes.length === 0 || nodes.some((index) => valueOf(index)[0] === '-')) {
+    return;
+  }
 
-          // First pass; cache all z indexes
-          css.walkDecls(zIndexRegex, (decl) => {
-            // Check that no negative values exist. Rebasing is only
-            // safe if all indices are positive numbers.
-            if (decl.value[0] === '-') {
-              abort = true;
-              // Stop PostCSS iterating through the rest of the decls
-              return false;
-            }
-            nodes.push(decl);
-            cache.addValue(decl.value);
-          });
+  const cache = new LayerCache();
+  for (const index of nodes) {
+    cache.addValue(valueOf(index));
+  }
+  cache.optimizeValues(options.startIndex || 1);
 
-          // Abort if we found any negative values
-          // or there are no z-index declarations
-          if (abort || !nodes.length) {
-            return;
-          }
-
-          cache.optimizeValues(/** @type {Options} */ (opts).startIndex || 1);
-
-          // Second pass; optimize
-          for (const decl of nodes) {
-            // Need to coerce to string so that the
-            // AST is updated correctly
-            decl.value = cache.getValue(decl.value).toString();
-          }
-        },
-      };
-    },
-  };
+  for (const index of nodes) {
+    writeValue(records, context, index, [
+      tokenOf(cache.getValue(valueOf(index)).toString()),
+    ]);
+  }
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/**
+ * Whether the value is a single component. A value of several components is
+ * invalid, and rewriting it to one number would make the declaration valid.
+ *
+ * @param {BlockRecords} records
+ * @param {RunContext} context
+ * @param {ArenaIndex} index
+ * @return {boolean}
+ */
+function hasOneComponent(records, context, index) {
+  const { valueList } = /** @type {DeclarationRecord} */ (records.entry(index));
+  let count = 0;
+  for (const [type] of context.tokenLists.get(valueList)) {
+    if (type !== TokenType.Whitespace && type !== TokenType.Comment) count++;
+  }
+  return count === 1;
+}
+
+/**
+ * The token of a z-index's new text: a number token for an integer, and an
+ * identifier that keeps its text otherwise, such as `auto`.
+ *
+ * @param {string} text
+ * @return {import('@csstools/css-tokenizer').CSSToken}
+ */
+function tokenOf(text) {
+  return /^\d+$/v.test(text) ? numeric(text) : identifierWithText(text, text);
+}

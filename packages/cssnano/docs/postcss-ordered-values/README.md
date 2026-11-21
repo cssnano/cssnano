@@ -39,7 +39,7 @@ h1 {
 
 ## Support List
 
-For more examples, see the [tests](test).
+For more examples, see the [tests](../../test/postcss-ordered-values/).
 
 * `animation`, `-webkit-animation`
 * `border` and its physical and flow-relative side shorthands (`border-top`, `border-block-start`, ...)

@@ -1,6 +1,11 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-convert-values/index.js';
+import {
+  processCSSFactory,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
+import convertValues from '../../src/plugins/postcss-convert-values/index.js';
+
+const plugin = oneStagePlugin(convertValues);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -16,23 +21,43 @@ describe('Fractions and trailing/leading zeros', () => {
   );
 
   test(
+    'convert-values keeps the sign of a number that directly follows a dimension',
+    processCSS('h1{margin:1px+1.0}', 'h1{margin:1px+1}')
+  );
+
+  test(
+    'convert-values keeps the sign of a number that directly follows a `-` delim, which would otherwise make it negative',
+    processCSS('h1{margin:-+1.0px}', 'h1{margin:-+1px}')
+  );
+
+  test(
+    'convert-values keeps the sign of a number that directly follows a `.` delim, which would otherwise become its decimal point',
+    processCSS('h1{margin:.+1.0}', 'h1{margin:.+1}')
+  );
+
+  test(
+    'convert-values drops the sign of a number that follows whitespace',
+    processCSS('h1{margin:1px +1.0px}', 'h1{margin:1px 1px}')
+  );
+
+  test(
     'should trim trailing zeros without unit',
     processCSS('h1{width:100.00%}', 'h1{width:100%}')
   );
 
   test(
     'should optimise fractions',
-    processCSS('h1{opacity:1.}h2{opacity:.0}', 'h1{opacity:1}h2{opacity:0}')
+    processCSS('h1{opacity:.5}h2{opacity:.0}', 'h1{opacity:.5}h2{opacity:0}')
   );
 
   test(
     'should optimise fractions with units',
-    processCSS('h1{width:10.px}h2{width:.0px}', 'h1{width:10px}h2{width:0}')
+    processCSS('h1{width:.5px}h2{width:.0px}', 'h1{width:.5px}h2{width:0}')
   );
 
   test(
     'should optimise fractions inside calc',
-    processCSS('h1{width:calc(10.px + .0px)}', 'h1{width:calc(10px + 0px)}')
+    processCSS('h1{width:calc(.5px + .0px)}', 'h1{width:calc(.5px + 0px)}')
   );
 
   test(

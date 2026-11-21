@@ -1,9 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import {
-  browserTargets,
-  resolveTargets,
-} from '../../src/utils/browserTargets.js';
+import { resolveTargets } from '../../src/utils/browserTargets.js';
 
 /**
  * A browserslist stand-in that records each call and config lookup.
@@ -34,13 +31,11 @@ describe('resolveTargets browserslist options', () => {
     const { browserslist, calls } = recordingBrowserslist();
     resolveTargets(
       {
-        [browserTargets]: {
-          query: 'defaults',
-          config: './browsers.rc',
-          ignoreUnknownVersions: true,
-          mobileToDesktop: true,
-          throwOnMissing: false,
-        },
+        query: 'defaults',
+        config: './browsers.rc',
+        ignoreUnknownVersions: true,
+        mobileToDesktop: true,
+        throwOnMissing: false,
       },
       resultWith(),
       browserslist
@@ -54,7 +49,7 @@ describe('resolveTargets browserslist options', () => {
   test('reads the project config named by the config option, not the one found from from', () => {
     const { browserslist, configLookups } = recordingBrowserslist();
     resolveTargets(
-      { [browserTargets]: { config: './browsers.rc' } },
+      { config: './browsers.rc' },
       resultWith({ from: '/project/a.css' }),
       browserslist
     );
@@ -64,7 +59,7 @@ describe('resolveTargets browserslist options', () => {
   test('searches the config from the browserslist path over the from path', () => {
     const { browserslist, calls } = recordingBrowserslist();
     resolveTargets(
-      { [browserTargets]: { path: '/shared/config' } },
+      { path: '/shared/config' },
       resultWith({ from: '/project/a.css' }),
       browserslist
     );
@@ -75,12 +70,12 @@ describe('resolveTargets browserslist options', () => {
     const { browserslist, calls } = recordingBrowserslist();
     const result = resultWith();
     resolveTargets(
-      { [browserTargets]: { query: 'defaults', mobileToDesktop: true } },
+      { query: 'defaults', mobileToDesktop: true },
       result,
       browserslist
     );
     resolveTargets(
-      { [browserTargets]: { query: 'defaults', mobileToDesktop: false } },
+      { query: 'defaults', mobileToDesktop: false },
       result,
       browserslist
     );

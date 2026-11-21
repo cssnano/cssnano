@@ -1,10 +1,12 @@
 import cssnanoUtils from '#utils';
+import { func, ident } from '../../values/tokenConstructors.js';
+import { closeParen } from '../../values/punctuationTokens.js';
 
-const { TokenType, asciiLowerCase, decoded, assignValue, sourceValue } =
-  cssnanoUtils;
+const { TokenType, asciiLowerCase, decoded, isTrivia } = cssnanoUtils;
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
-/** @type {(source: string) => {tokens: readonly CSSToken[], endForOpening(index: number): number | undefined, topLevelSegments(start: number, end: number): {startIndex: number, endIndex: number}[]} | undefined} */
-const getBalancedTokens = cssnanoUtils.balancedTokens;
+/** @import {Reducer} from '../../run/host.js' */
+/** @import {ValueBuffer} from '../../values/valueBuffer.js' */
+/** @typedef {NonNullable<ReturnType<ValueBuffer['structure']>>} BalancedTokens */
 const animationTransitionRegex =
   /^(?:-[A-Za-z0-9_]+-)?(?:[aA][nN][iI][mM][aA][tT][iI][oO][nN]|[tT][rR][aA][nN][sS][iI][tT][iI][oO][nN])(?:-[tT][iI][mM][iI][nN][gG]-[fF][uU][nN][cC][tT][iI][oO][nN])?$/v;
 
@@ -23,21 +25,24 @@ function singleToken(input, segment) {
   let result;
   for (let index = segment.startIndex; index < segment.endIndex; index++) {
     const token = input[index];
-    if (token[0] === TokenType.Whitespace || token[0] === TokenType.Comment)
-      continue;
+    if (isTrivia(token)) continue;
     if (result) return;
     result = token;
   }
   return result;
 }
 
-/** @param {string} value @param {CSSToken} token @return {string} */
-function tokenSource(value, token) {
-  return value.slice(token[2], token[3] + 1);
-}
-
-/** @param {string} value @param {readonly CSSToken[]} input @param {NonNullable<ReturnType<typeof getBalancedTokens>>} structure @param {number} index @param {number} end @return {string | null} */
-function reduceFunction(value, input, structure, index, end) {
+/**
+ * The tokens that replace a timing function, or null to keep it. A `steps()`
+ * keeps the count token as written.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {BalancedTokens} structure
+ * @param {number} index the function token
+ * @param {number} end the index of its `)`
+ * @return {CSSToken[] | null}
+ */
+function reduceFunction(input, structure, index, end) {
   const name = asciiLowerCase(decoded(input[index]));
   const segments = structure.topLevelSegments(index + 1, end);
   if (name === 'cubic-bezier' && segments.length === 4) {
@@ -47,9 +52,9 @@ function reduceFunction(value, input, structure, index, end) {
         ? /** @type {{value: number}} */ (token[4]).value
         : Number.NaN;
     });
-    return values.every((number) => !Number.isNaN(number))
-      ? (conversions.get(values.toString()) ?? null)
-      : null;
+    if (!values.every((number) => !Number.isNaN(number))) return null;
+    const keyword = conversions.get(values.toString());
+    return keyword === undefined ? null : [ident(keyword)];
   }
   if (name !== 'steps' || segments.length !== 2) return null;
   const count = singleToken(input, segments[0]);
@@ -66,75 +71,47 @@ function reduceFunction(value, input, structure, index, end) {
   const countValue = /** @type {{value: number}} */ (count[4]).value;
   if (countValue === 1) {
     if (positionName === 'start' || positionName === 'jump-start')
-      return 'step-start';
+      return [ident('step-start')];
     if (positionName === 'end' || positionName === 'jump-end')
-      return 'step-end';
+      return [ident('step-end')];
   }
   return positionName === 'end' || positionName === 'jump-end'
-    ? `steps(${tokenSource(value, count)})`
+    ? [func('steps'), count, closeParen()]
     : null;
 }
 
-/**
- * @param {string} value
- * @return {string}
- */
-function transform(value) {
-  const structure = getBalancedTokens(value);
-  if (!structure) return value;
+/** @type {Reducer} */
+const reduce = (buffer) => {
+  const structure = buffer.structure();
+  if (!structure) return;
   const { tokens: input } = structure;
-  /** @type {{start:number,end:number,text:string}[]} */
+  /** @type {{start: number, end: number, tokens: CSSToken[]}[]} */
   const edits = [];
   for (let index = 0; index < input.length; index++) {
     if (input[index][0] !== TokenType.Function) continue;
     const end = structure.endForOpening(index);
     if (end === undefined) continue;
-    const replacement = reduceFunction(value, input, structure, index, end);
+    const replacement = reduceFunction(input, structure, index, end);
     if (replacement)
-      edits.push({
-        start: input[index][2],
-        end: input[end][3] + 1,
-        text: replacement,
-      });
+      edits.push({ start: index, end: end + 1, tokens: replacement });
   }
-  let result = value;
-  for (const edit of edits.toSorted((a, b) => b.start - a.start))
-    result = result.slice(0, edit.start) + edit.text + result.slice(edit.end);
-  return result;
-}
+  buffer.replaceRanges(edits);
+};
 
 /**
- * @return {import('postcss').Plugin}
+ * The stage for one run. It reads the animation and transition properties,
+ * including their vendor-prefixed forms.
+ *
+ * @return {import('../../run/host.js').Stage}
  */
-function pluginCreator() {
+function timingStage() {
   return {
-    postcssPlugin: 'postcss-normalize-timing-functions',
-    /**
-     * @param {import('postcss').Root} css
-     */
-    OnceExit(css) {
-      const cache = new Map();
-
-      css.walkDecls(animationTransitionRegex, (decl) => {
-        const value = sourceValue(decl);
-
-        if (cache.has(value)) {
-          assignValue(decl, cache.get(value));
-
-          return;
-        }
-
-        const result = transform(value);
-
-        assignValue(decl, result);
-        cache.set(value, result);
-      });
-    },
+    forProperty: (property) =>
+      animationTransitionRegex.test(property) ? reduce : null,
   };
 }
 
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
+/** @satisfies {import('../../run/host.js').StageEntry} */
+const normalizeTimingFunctions = { create: () => timingStage() };
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+export { normalizeTimingFunctions as default };

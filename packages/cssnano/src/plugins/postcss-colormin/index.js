@@ -1,17 +1,17 @@
-import { resolveTargets } from '#utils/browser-targets';
 import { tryMinifyColor } from './minifyColor.js';
 import cssnanoUtils from '#utils';
 import { supportsAll, targetsAreUnknown } from '#utils/browser-support';
 import colorPropertiesData from './data/colorProperties.json' with { type: 'json' };
+import { hash, ident } from '../../values/tokenConstructors.js';
+import { whitespace } from '../../values/punctuationTokens.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 const {
-  applyEdits,
   asciiLowerCase,
-  balancedTokens,
   decoded,
+  isHexColorDigits,
   mathFunctions,
-  sourceValue,
+  tokens,
   TokenType,
   tokenEnd,
   tokenStart,
@@ -31,113 +31,148 @@ const tokensRequiringSeparator = new Set([
 ]);
 
 /**
- * Fast-path check for valid CSS hex colors (CSS Color 4 § 5.2):
- * Must be 3, 4, 6, or 8 hexadecimal digits.
- * @param {string} value
- * @return {boolean}
+ * The tokens that spell a minified color: a hash, an identifier, or the
+ * tokens of a function form.
+ *
+ * @param {string} out the minified color
+ * @return {CSSToken[]}
  */
-function isHexColor(value) {
-  const len = value.length;
-  if (len !== 3 && len !== 4 && len !== 6 && len !== 8) return false;
-  for (let i = 0; i < len; i++) {
-    const code = value.charCodeAt(i);
-    if (
-      !(code >= 48 && code <= 57) &&
-      !(code >= 65 && code <= 70) &&
-      !(code >= 97 && code <= 102)
-    ) {
-      return false;
-    }
-  }
-  return true;
+function colorTokens(out) {
+  if (out.charCodeAt(0) === 0x23) return [hash(out.slice(1))];
+  if (!out.includes('(')) return [ident(out)];
+  return tokens(out);
 }
 
-/** @param {string} value @param {Options} options @return {string} */
-function transform(value, options) {
-  const structure = balancedTokens(value);
+/**
+ * The whitespace that keeps a color apart from a token that follows it, when
+ * the two touch.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {number} end
+ * @param {number} index the index of the token that ends at `end`
+ * @return {CSSToken[]}
+ */
+function separatorAfter(input, end, index) {
+  const next = input[index + 1];
+  return next &&
+    tokensRequiringSeparator.has(next[0]) &&
+    end === tokenStart(next)
+    ? [whitespace()]
+    : [];
+}
+
+/**
+ * Whether an identifier that starts with an escape directly follows the
+ * token, so the two belong together. Hacks such as `\9` and `\0` are the
+ * motivating case, but any escaped identifier stops minification, because a
+ * browser may read the pair as a different value.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {number} index
+ * @return {boolean}
+ */
+function hasHackSuffix(input, index) {
+  const next = input[index + 1];
+  return (
+    next !== undefined &&
+    next[0] === TokenType.Ident &&
+    tokenEnd(input[index]) === tokenStart(next) &&
+    next[1].charCodeAt(0) === 0x5c
+  );
+}
+
+/**
+ * The edit that replaces a color function, from its name to its `)`, with
+ * the minified color. Undefined when colordx keeps the function as it is.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {number} index the function token
+ * @param {number} closeIndex its `)`
+ * @param {Options} options
+ * @return {import('../../values/valueBuffer.js').TokenEdit | undefined}
+ */
+function functionEdit(input, index, closeIndex, options) {
+  const t = input[index];
+  let body = '';
+  for (let i = index + 1; i <= closeIndex; i++) {
+    body += input[i][1];
+  }
+  const out = tryMinifyColor(asciiLowerCase(decoded(t)) + '(' + body, options);
+  if (out === undefined || out === t[1] + body) return;
+  return {
+    start: index,
+    end: closeIndex + 1,
+    tokens: [
+      ...colorTokens(out),
+      ...separatorAfter(input, tokenEnd(input[closeIndex]), closeIndex),
+    ],
+  };
+}
+
+/**
+ * The edit that replaces an identifier or a hash with a shorter color, or
+ * undefined when the token is no color or cannot get shorter.
+ *
+ * @param {readonly CSSToken[]} input
+ * @param {number} index
+ * @param {Options} options
+ * @return {import('../../values/valueBuffer.js').TokenEdit | undefined}
+ */
+function identEdit(input, index, options) {
+  const t = input[index];
+  const dec = decoded(t);
+  const isHash = t[0] === TokenType.Hash;
+  if (isHash ? !isHexColorDigits(dec) : dec.startsWith('#')) return;
+  const out = tryMinifyColor(isHash ? '#' + dec : dec, options);
+  if (out === undefined || out === t[1] || out.length > t[1].length) return;
+  return {
+    start: index,
+    end: index + 1,
+    tokens: [...colorTokens(out), ...separatorAfter(input, tokenEnd(t), index)],
+  };
+}
+
+/**
+ * The token edits that replace each color the value holds with its minified
+ * form. Undefined when the buffer's tokens are unbalanced.
+ *
+ * @param {import('../../values/valueBuffer.js').ValueBuffer} buffer
+ * @param {Options} options
+ * @return {import('../../values/valueBuffer.js').TokenEdit[] | undefined}
+ */
+function transform(buffer, options) {
+  const structure = buffer.structure();
   if (!structure) {
-    return value;
+    return;
   }
   const input = structure.tokens;
-  /** @type {{start:number,end:number,text:string}[]} */
-  const replacements = [];
-
-  /** @param {number} end @param {number} index */
-  function separator(end, index) {
-    const next = input[index + 1];
-    return next &&
-      tokensRequiringSeparator.has(next[0]) &&
-      end === tokenStart(next)
-      ? ' '
-      : '';
-  }
-
-  /**
-   * Whether an identifier that starts with an escape directly follows the
-   * token, so the two belong together. Hacks such as `\9` and `\0` are the
-   * motivating case, but any escaped identifier stops minification, because
-   * a browser may read the pair as a different value.
-   * @param {number} index
-   */
-  function hasHackSuffix(index) {
-    const next = input[index + 1];
-    return (
-      next !== undefined &&
-      next[0] === TokenType.Ident &&
-      tokenEnd(input[index]) === tokenStart(next) &&
-      next[1].charCodeAt(0) === 0x5c
-    );
-  }
-
+  /** @type {import('../../values/valueBuffer.js').TokenEdit[] | undefined} */
+  let edits;
   for (let i = 0; i < input.length; i++) {
     const t = input[i];
     if (t[0] === TokenType.Function) {
-      const name = asciiLowerCase(decoded(t));
       const closeIndex = structure.endForOpening(i);
       if (closeIndex === undefined) {
         continue;
       }
+      const name = asciiLowerCase(decoded(t));
       if (name === 'url' || mathFunctions.has(name)) {
         i = closeIndex;
         continue;
       }
       if (colorFunctionRegex.test(name)) {
-        if (hasHackSuffix(closeIndex)) {
-          i = closeIndex;
-          continue;
-        }
-        const closeToken = input[closeIndex];
-        const raw = value.slice(tokenStart(t), tokenEnd(closeToken));
-        const inputForMinify =
-          name + '(' + value.slice(tokenEnd(t), tokenEnd(closeToken));
-        const out = tryMinifyColor(inputForMinify, options);
-        if (out !== undefined && out !== raw) {
-          replacements.push({
-            start: tokenStart(t),
-            end: tokenEnd(closeToken),
-            text: out + separator(tokenEnd(closeToken), closeIndex),
-          });
-        }
+        const edit = hasHackSuffix(input, closeIndex)
+          ? undefined
+          : functionEdit(input, i, closeIndex, options);
+        if (edit) (edits ??= []).push(edit);
         i = closeIndex;
-        continue;
       }
     } else if (t[0] === TokenType.Ident || t[0] === TokenType.Hash) {
-      const dec = decoded(t);
-      const isHash = t[0] === TokenType.Hash;
-      if (isHash ? !isHexColor(dec) : dec.startsWith('#')) continue;
-      const candidate = isHash ? '#' + dec : dec;
-      const out = tryMinifyColor(candidate, options);
-      if (out !== undefined && out !== t[1] && out.length <= t[1].length) {
-        replacements.push({
-          start: tokenStart(t),
-          end: tokenEnd(t),
-          text: out + separator(tokenEnd(t), i),
-        });
-      }
+      const edit = identEdit(input, i, options);
+      if (edit) (edits ??= []).push(edit);
     }
   }
-
-  return applyEdits(value, replacements);
+  return edits;
 }
 
 /**
@@ -173,76 +208,49 @@ function addPluginDefaults(options, browsers) {
  */
 
 /**
+ * Whether colormin reads the value of a property: a color property, or a
+ * custom property unless transformCustomProperties is false.
+ *
+ * @param {string} property
  * @param {Options} config
- * @return {import('postcss').Plugin}
+ * @return {boolean}
  */
-function pluginCreator(config = {}) {
+function readsProperty(property, config) {
+  if (property === '') return false;
+  const lowerProp = asciiLowerCase(property);
+  if (lowerProp.startsWith('--'))
+    return config.transformCustomProperties !== false;
+  const unprefixed = lowerProp.replace(/^-\w+-/v, '');
+  return (
+    (colorProperties.has(lowerProp) || colorProperties.has(unprefixed)) &&
+    lowerProp !== '-webkit-tap-highlight-color'
+  );
+}
+
+/**
+ * Compiles the supported color forms for the browser targets.
+ *
+ * @param {Options} config
+ * @param {readonly string[] | undefined} browsers
+ * @return {import('../../run/host.js').Stage}
+ */
+function compileColormin(config, browsers) {
+  const options = addPluginDefaults(
+    config,
+    /** @type {readonly string[]} */ (browsers)
+  );
+  /** @type {import('../../run/host.js').Reducer} */
+  const reduce = (buffer) => {
+    const edits = transform(buffer, options);
+    if (edits) buffer.replaceRanges(edits);
+  };
   return {
-    postcssPlugin: 'postcss-colormin',
-
-    /**
-     * @param {import('postcss').Result} result
-     */
-    prepare(result) {
-      const browsers = resolveTargets(config, result);
-      const cache = new Map();
-      const options = addPluginDefaults(config, browsers);
-
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          css.walkDecls((decl) => {
-            if (!decl.prop) {
-              return;
-            }
-
-            const lowerProp = asciiLowerCase(decl.prop);
-            if (lowerProp.startsWith('--')) {
-              if (
-                /** @type Options */ (config).transformCustomProperties ===
-                false
-              ) {
-                return;
-              }
-            } else {
-              const unprefixed = lowerProp.replace(/^-\w+-/v, '');
-              if (
-                (!colorProperties.has(lowerProp) &&
-                  !colorProperties.has(unprefixed)) ||
-                lowerProp === '-webkit-tap-highlight-color'
-              ) {
-                return;
-              }
-            }
-
-            const rawValue = sourceValue(decl);
-
-            if (!rawValue) {
-              return;
-            }
-
-            let newValue;
-            if (cache.has(rawValue)) {
-              newValue = cache.get(rawValue);
-            } else {
-              newValue = transform(rawValue, options);
-              cache.set(rawValue, newValue);
-            }
-
-            decl.value = newValue;
-            if (decl.raws.value?.raw) {
-              decl.raws.value = { raw: newValue, value: newValue };
-            }
-          });
-        },
-      };
-    },
+    forProperty: (property) =>
+      readsProperty(property, config) ? reduce : null,
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {import('../../run/host.js').StageEntry} */
+const colormin = { create: compileColormin };
+
+export { colormin as default };

@@ -1,10 +1,9 @@
 /**
- * @param {{ arguments: import('../lib/tokenize.js').Term[][], value: string }} parsed
- * @return {string | null}
+ * @param {{ arguments: import('../lib/tokenize.js').Term[][] }} parsed
+ * @return {import('@csstools/css-tokenizer').CSSToken[] | null}
  */
 declare function normalizeBoxShadow(parsed: {
     arguments: import('../lib/tokenize.js').Term[][];
-    value: string;
-}): string | null;
+}): import('@csstools/css-tokenizer').CSSToken[] | null;
 export default normalizeBoxShadow;
 //# sourceMappingURL=boxShadow.d.ts.map

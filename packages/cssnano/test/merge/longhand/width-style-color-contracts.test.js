@@ -1,0 +1,273 @@
+import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+import parseWidthStyleColor, {
+  toLower,
+} from '../../../src/merge/longhand/parseWsc.js';
+import minifyWidthStyleColor from '../../../src/merge/longhand/minifyWsc.js';
+import { tokens } from '../../../src/utils/value.js';
+import {
+  isBorderStyle,
+  isBorderWidth,
+  isColor,
+  isValidWidthStyleColor,
+} from '../../../src/merge/longhand/validateWsc.js';
+
+/* Classifies a parsed component with the tokens that spell it. */
+/**
+ * The parse result without the components it names, for tests that compare
+ * the parsed slots.
+ *
+ * @param {ReturnType<typeof parseWidthStyleColor>} parsed
+ */
+function withoutParts(parsed) {
+  const { parts: _parts, ...slots } =
+    /** @type {NonNullable<typeof parsed>} */ (parsed);
+  return slots;
+}
+
+function classifies(is, component) {
+  if (component === undefined) return false;
+  const list = tokens(component);
+  return is(component, list, 0, list.length);
+}
+
+/* Classifies each parsed component string again, the reading the parser's
+ * slots replace. */
+function validByClassifying({ width, style, color }) {
+  const validWidth = classifies(isBorderWidth, width);
+  const validStyle = isBorderStyle(style);
+  const validColor = classifies(isColor, color);
+
+  return (
+    (validWidth && validStyle) ||
+    (validWidth && validColor) ||
+    (validStyle && validColor)
+  );
+}
+
+describe('parseWsc validity', () => {
+  test("parseWidthStyleColor's validity agrees with classifying its components", () => {
+    for (const value of [
+      'solid red',
+      '1px solid',
+      '1px red',
+      'thin dotted #fff',
+      'calc(1px + 2px) solid',
+      'solid rgb(0 0 0)',
+      'hsl(1 2% 3%) dashed',
+      'medium none',
+      'none',
+      '1px',
+      'red',
+      'var(--w) solid red',
+      '1px var(--s) red',
+      '1px solid var(--c)',
+      'VAR(--Sub) red',
+      '1px var(--x)',
+      'var(--a) var(--b)',
+      'currentcolor solid',
+    ]) {
+      const parsed = parseWidthStyleColor(value);
+      assert.strictEqual(
+        isValidWidthStyleColor(parsed),
+        validByClassifying(parsed),
+        value
+      );
+    }
+  });
+});
+
+describe('parseWsc component classification', () => {
+  test('classifies each component wherever it appears, lower-casing grammar terms', () => {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('SOLID 1px RED')), {
+      width: '1px',
+      style: 'solid',
+      color: 'red',
+      specified: { width: true, style: true, color: true },
+    });
+  });
+
+  test('leaves a component the value does not specify unnamed', () => {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('solid red')), {
+      width: undefined,
+      style: 'solid',
+      color: 'red',
+      specified: { width: false, style: true, color: true },
+    });
+  });
+
+  test('reads a value that resets every component as the initial triple', () => {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('NONE')), {
+      width: 'medium',
+      style: 'none',
+      color: 'currentcolor',
+      specified: { width: true, style: true, color: true },
+    });
+  });
+
+  test('reads a width and style reset with an omitted color as the initial triple', () => {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('medium none')), {
+      width: 'medium',
+      style: 'none',
+      color: 'currentcolor',
+      specified: { width: true, style: true, color: true },
+    });
+  });
+});
+
+describe('parseWsc repeated components', () => {
+  for (const value of [
+    'none none',
+    'medium none none',
+    'none none none',
+    'none none currentcolor',
+    'medium medium',
+  ]) {
+    test(`rejects ${value}, because a component may appear only once`, () => {
+      assert.equal(parseWidthStyleColor(value), null);
+    });
+  }
+});
+
+describe('parseWsc substitution slots', () => {
+  test('reserves the open component for a lone substitution between specified components', () => {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('var(--w) solid red')), {
+      width: 'var(--w)',
+      style: 'solid',
+      color: 'red',
+      specified: { width: false, style: true, color: true },
+    });
+  });
+
+  test('fills the open component with the substituted token wherever it appears, keeping its spelling', () => {
+    assert.deepEqual(
+      withoutParts(parseWidthStyleColor('SOLID red VAR(--Sub)')),
+      {
+        width: 'VAR(--Sub)',
+        style: 'solid',
+        color: 'red',
+        specified: { width: false, style: true, color: true },
+      }
+    );
+  });
+
+  test('reserves the open style for a lone substitution between width and color', () => {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('1px red VAR(--Sub)')), {
+      width: '1px',
+      style: 'VAR(--Sub)',
+      color: 'red',
+      specified: { width: true, style: false, color: true },
+    });
+  });
+
+  test('reserves the open color for a lone substitution between width and style', () => {
+    assert.deepEqual(
+      withoutParts(parseWidthStyleColor('1px SOLID var(--Sub)')),
+      {
+        width: '1px',
+        style: 'solid',
+        color: 'var(--Sub)',
+        specified: { width: true, style: true, color: false },
+      }
+    );
+  });
+
+  test('reserves the open width for if() rather than reading it as a width, because if() may substitute any component', () => {
+    assert.deepEqual(
+      withoutParts(parseWidthStyleColor('solid red if(media(print): 1px)')),
+      {
+        width: 'if(media(print): 1px)',
+        style: 'solid',
+        color: 'red',
+        specified: { width: false, style: true, color: true },
+      }
+    );
+  });
+
+  test('accepts attr() beside a width, because attr() may substitute the style or the color', () => {
+    assert.deepEqual(
+      withoutParts(parseWidthStyleColor('1px attr(data-c type(<color>))')),
+      {
+        width: '1px',
+        style: undefined,
+        color: undefined,
+        specified: { width: true, style: false, color: false },
+      }
+    );
+  });
+
+  test('does not guess a component for a substitution when two components are unspecified', () => {
+    assert.deepEqual(withoutParts(parseWidthStyleColor('VAR(--Sub) red')), {
+      width: undefined,
+      style: undefined,
+      color: 'red',
+      specified: { width: false, style: false, color: true },
+    });
+  });
+});
+
+describe('parseWsc values the browser ignores', () => {
+  test('rejects a value that specifies a component twice', () => {
+    assert.strictEqual(parseWidthStyleColor('1px 1px'), null);
+  });
+
+  test('rejects a token that is no width, style or color', () => {
+    assert.strictEqual(parseWidthStyleColor('1px solid 50%'), null);
+  });
+
+  test('rejects a value with more tokens than the grammar accepts', () => {
+    assert.strictEqual(parseWidthStyleColor('1px solid red green'), null);
+    assert.strictEqual(parseWidthStyleColor('var() var() var() var()'), null);
+  });
+
+  test('rejects a substitution in style and color when the width repeats', () => {
+    assert.strictEqual(parseWidthStyleColor('1px 1px var()'), null);
+  });
+});
+
+describe('parseWsc lower-casing', () => {
+  test('preserves custom property spelling while lower-casing grammar terms', () => {
+    assert.strictEqual(toLower('VAR(--Foo) SOLID red'), 'var(--Foo) solid red');
+  });
+
+  test('returns an empty value unchanged', () => {
+    assert.strictEqual(toLower(''), '');
+  });
+});
+
+describe('minifyWsc output contract', () => {
+  test('elides trailing initial components', () => {
+    assert.strictEqual(minifyWidthStyleColor('medium none'), 'none');
+    assert.strictEqual(
+      minifyWidthStyleColor('medium none currentcolor'),
+      'none'
+    );
+  });
+
+  test('keeps a substituted width as written while lower-casing the specified components', () => {
+    assert.strictEqual(
+      minifyWidthStyleColor('var(--X) SOLID red'),
+      'var(--X) solid red'
+    );
+  });
+
+  test('returns a value the browser ignores for specifying a component twice unchanged', () => {
+    assert.strictEqual(minifyWidthStyleColor('1px 1px'), '1px 1px');
+  });
+
+  test('returns a value the browser ignores for a token that is no component unchanged', () => {
+    assert.strictEqual(minifyWidthStyleColor('1px solid 50%'), '1px solid 50%');
+  });
+
+  test('returns an incomplete specification unchanged, including its substitution', () => {
+    assert.strictEqual(minifyWidthStyleColor('1px'), '1px');
+    assert.strictEqual(minifyWidthStyleColor('1px var(--x)'), '1px var(--x)');
+  });
+
+  test('keeps an unassigned substitution whose slot is ambiguous as written', () => {
+    assert.strictEqual(
+      minifyWidthStyleColor('VAR(--Width) var(--Style)'),
+      'VAR(--Width) var(--Style)'
+    );
+  });
+});

@@ -78,9 +78,7 @@ describe('built-in preset loading', () => {
     );
     assert.ok(loaded.some((url) => url.includes('presets/litePlugins.js')));
     const defaultOnly = loaded.filter((url) =>
-      ['postcss-colormin', 'passes/merge/lib/longhand', 'passes/merge'].some(
-        (module) => url.includes(module)
-      )
+      ['postcss-colormin', 'src/merge/'].some((module) => url.includes(module))
     );
     assert.deepStrictEqual(defaultOnly, []);
   });

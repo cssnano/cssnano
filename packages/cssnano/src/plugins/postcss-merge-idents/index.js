@@ -1,179 +1,53 @@
-import cssnanoUtils from '#utils';
-import { LayerRegistry, compareAtRulePriority } from './lib/layerRegistry.js';
+import { isRecordAttached } from '../../run/symbolLists.js';
+import { AT_RULE_BLOCK } from '../../ir/blockRecord.js';
+import { atRuleAt } from '../../ir/declaredText.js';
+import { LayerRegistry, hasImport } from './lib/layerRegistry.js';
 import {
-  getBody,
+  findInterchangeableGroups,
+  mergeInterchangeable,
+} from './lib/interchangeable.js';
+import {
   getConditionContainer,
   parseAtRuleName,
   VENDOR_PREFIX,
 } from './lib/grammar.js';
 import { scanDeclarations } from './lib/protectedNames.js';
-import { createReplacement, rewriteDeclaration } from './lib/valueRewriter.js';
+import { preludeTokens } from './lib/trailingEscape.js';
+import { rewriteReferences } from './lib/valueRewriter.js';
 
-const { asciiLowerCase } = cssnanoUtils;
-
-/**
- * @typedef {Array<{ name: string, copies: AtRuleEntry[] }>} Group names that
- *   are defined in the same at-rules and containers with the same body
- *
- * @typedef {{
- *   rule: import('postcss').AtRule,
- *   body?: string,
- *   layerPriority: number[],
- *   documentIndex: number,
- *   family: string,
- *   containerId: number,
- *   parsed: { isString: boolean, isReservedName: boolean, key: string, tokenText: string }
- * }} AtRuleEntry
- */
+/** @import {DeclarationKeys} from '../../ir/declarationKey.js' */
+/** @import {ArenaIndex} from '../../ir/blockRecord.js' */
+/** @import {AtRuleEntry, Group} from './lib/interchangeable.js' */
+/** @import {BlockRecords} from '../../ir/blockRecords.js' */
+/** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
+/** @import {RunContext} from '../../run/runContext.js' */
 
 /**
- * @param {AtRuleEntry[]} entries
- * @return {AtRuleEntry}
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} atRule
+ * @param {Map<ArenaIndex, number>} containerIds
+ * @return {number} the id of the condition container defining the at-rule
  */
-function highestPriority(entries) {
-  let best = entries[0];
-  for (const entry of entries) {
-    if (compareAtRulePriority(best, entry) < 0) {
-      best = entry;
-    }
+function containerIdOf(records, atRule, containerIds) {
+  const container = getConditionContainer(records, atRule);
+  let containerId = containerIds.get(container);
+  if (containerId === undefined) {
+    containerId = containerIds.size;
+    containerIds.set(container, containerId);
   }
-  return best;
+  return containerId;
 }
 
 /**
- * Every name of a group behaves alike, so the cascade priority does not
- * matter for correctness; the shortest spelling minimizes output size and
- * priority breaks ties.
- *
- * @param {AtRuleEntry[]} entries
- * @return {AtRuleEntry}
+ * @param {BlockRecords} records
+ * @param {RecordSymbolLists} lists
+ * @return {boolean} whether this stylesheet alone decides its layer order
  */
-function shortestSpelling(entries) {
-  const shortest = Math.min(
-    ...entries.map(({ parsed }) => parsed.tokenText.length)
-  );
-  return highestPriority(
-    entries.filter(({ parsed }) => parsed.tokenText.length === shortest)
-  );
-}
-
-/**
- * Removes repeat definitions of one name that share a body and a condition
- * container, keeping the one that wins the cascade: the kept definition is
- * present whenever a removed one is.
- *
- * @param {AtRuleEntry[]} copies definitions of one name
- * @param {Set<import('postcss').AtRule>} removals
- * @return {AtRuleEntry[]} the definitions that remain
- */
-function collapseSameNameCopies(copies, removals) {
-  if (copies.length < 2) {
-    return copies;
-  }
-  for (const group of Map.groupBy(copies, placementOf).values()) {
-    const body = getBody(group[0]);
-    if (group.length < 2 || !group.every((copy) => getBody(copy) === body)) {
-      continue;
-    }
-    const survivor = highestPriority(group);
-    for (const copy of group) {
-      if (copy !== survivor) {
-        removals.add(copy.rule);
-      }
-    }
-  }
-  return copies.filter((copy) => !removals.has(copy.rule));
-}
-
-/**
- * @param {AtRuleEntry} entry
- * @return {string} the at-rule family and condition container defining it
- */
-function placementOf(entry) {
-  return `${entry.family}@${entry.containerId}`;
-}
-
-/**
- * Makes each name of a group of interchangeable names, except the one that
- * wins the cascade, refer to the winner. A name that substituted text may
- * spell keeps its definition and is preferred as the merge target.
- *
- * @param {Group} group
- * @param {Set<string>} protectedNames
- * @param {Map<string, import('./lib/valueRewriter.js').Replacement>} renames
- * @param {Set<import('postcss').AtRule>} removals
- * @return {void}
- */
-function mergeInterchangeable(group, protectedNames, renames, removals) {
-  const protectedMembers = group.filter(({ name }) => protectedNames.has(name));
-  const targetCandidates = (
-    protectedMembers.length > 0 ? protectedMembers : group
-  ).flatMap(({ copies }) => copies);
-  // An identifier reference is shorter than a string and more widely
-  // supported as a keyframes name.
-  const identifiers = targetCandidates.filter(({ parsed }) => !parsed.isString);
-  const target = shortestSpelling(
-    identifiers.length > 0 ? identifiers : targetCandidates
-  );
-  const replacement = createReplacement(target.parsed);
-  for (const { name, copies } of group) {
-    if (name === target.parsed.key || protectedNames.has(name)) {
-      continue;
-    }
-    renames.set(name, replacement);
-    for (const copy of copies) {
-      removals.add(copy.rule);
-    }
-  }
-}
-
-/**
- * Finds the groups of interchangeable names of one namespace and removes
- * repeat definitions of a single name. Two names are interchangeable when
- * their definitions, in cascade order, sit in the same at-rule families and
- * condition containers with the same bodies: whichever definition a browser
- * picks for one name, it picks the same body for the other. This lets
- * `@-webkit-keyframes` and `@keyframes` pairs merge although their bodies
- * differ. A string and an ident of one value are one name. Bodies are
- * serialized only for names that share where they are defined.
- *
- * @param {AtRuleEntry[]} entries
- * @param {Set<import('postcss').AtRule>} removals
- * @return {Group[]} groups of two or more names
- */
-function findInterchangeableGroups(entries, removals) {
-  if (entries.length < 2) {
-    return [];
-  }
-
-  /** @type {Group} */
-  const candidates = [];
-  for (const [name, all] of Map.groupBy(entries, ({ parsed }) => parsed.key)) {
-    const copies = collapseSameNameCopies(all, removals);
-    if (!copies.some(({ parsed }) => parsed.isReservedName)) {
-      candidates.push({ name, copies: copies.toSorted(compareAtRulePriority) });
-    }
-  }
-
-  /** @type {Group[]} */
-  const groups = [];
-  const bySites = Map.groupBy(candidates, ({ copies }) =>
-    copies.map(placementOf).join(' ')
-  );
-  for (const sameSites of bySites.values()) {
-    if (sameSites.length < 2) {
-      continue;
-    }
-    const byBodies = Map.groupBy(sameSites, ({ copies }) =>
-      JSON.stringify(copies.map(getBody))
-    );
-    for (const sameBodies of byBodies.values()) {
-      if (sameBodies.length > 1) {
-        groups.push(sameBodies);
-      }
-    }
-  }
-  return groups;
+function isLayerOrderKnown(records, lists) {
+  const definition =
+    lists.keyframes.find((index) => isRecordAttached(records, index)) ??
+    lists.counterStyles.find((index) => isRecordAttached(records, index));
+  return definition === undefined || !hasImport(records);
 }
 
 /**
@@ -190,84 +64,77 @@ function namespaceOf(family) {
 }
 
 /**
- * @param {import('postcss').Root} css
+ * Merges the names of the lists the walk up collected. An entry that
+ * an earlier transform detached is skipped, as the lists still hold it.
+ *
+ * @param {RecordSymbolLists} lists
+ * @param {(index: ArenaIndex) => void} remove
+ * @param {BlockRecords} records
+ * @param {RunContext} context
  * @return {void}
  */
-function mergeAtRules(css) {
-  const layerRegistry = new LayerRegistry();
+function mergeAtRules(lists, remove, records, context) {
+  const { tokenLists, declarations: keys } = context;
+  const layerRegistry = new LayerRegistry(records, tokenLists);
+  for (const layerRule of lists.layers) {
+    if (isRecordAttached(records, layerRule)) {
+      layerRegistry.declareLayerAtRule(layerRule);
+    }
+  }
   /** @type {Map<'keyframes' | 'counter-style', AtRuleEntry[]>} */
   const namespaces = new Map([
     ['keyframes', []],
     ['counter-style', []],
   ]);
-  /** @type {Map<import('postcss').Container, number>} */
+  /** @type {Map<ArenaIndex, number>} */
   const containerIds = new Map();
-  /** @type {import('postcss').AtRule[]} */
-  const functionRules = [];
-  /** @type {import('postcss').AtRule[]} */
-  const parameterRules = [];
-  /** @type {import('postcss').AtRule[]} */
-  const conditionRules = [];
-  let documentIndex = 0;
+  const layerOrderKnown = isLayerOrderKnown(records, lists);
 
-  css.walkAtRules((atRule) => {
-    const family = asciiLowerCase(atRule.name);
-    if (family === 'layer') {
-      layerRegistry.declareLayerAtRule(atRule);
-      return;
+  // A walk visits two at-rules that do not nest in visit order, which is their
+  // document order. These kinds never nest, so the position in a namespace
+  // is its document order.
+  for (const atRule of [...lists.keyframes, ...lists.counterStyles]) {
+    if (!isRecordAttached(records, atRule)) {
+      continue;
     }
-    if (family === 'function') {
-      functionRules.push(atRule);
-      return;
-    }
-    // Mixin parameter defaults and @apply arguments are substituted text.
-    if (family === 'mixin' || family === 'apply') {
-      parameterRules.push(atRule);
-      return;
-    }
-
-    if (family === 'container' || family === 'when' || family === 'else') {
-      conditionRules.push(atRule);
-      return;
-    }
-
+    const entry = atRuleAt(records, atRule);
+    const family = entry.name;
     const namespace = namespaceOf(family);
-    const params = atRule.raws?.between
-      ? atRule.params + atRule.raws.between
-      : atRule.params;
-    const parsed = namespace && parseAtRuleName(params, family);
+    const parsed =
+      namespace &&
+      parseAtRuleName(preludeTokens(records, tokenLists, atRule), family);
     // A statement without a block defines nothing.
-    if (!namespace || !atRule.nodes || !parsed) {
-      return;
+    if (!namespace || entry.kind !== AT_RULE_BLOCK || !parsed) {
+      continue;
     }
     const entries = /** @type {AtRuleEntry[]} */ (namespaces.get(namespace));
 
-    const container = getConditionContainer(atRule);
-    let containerId = containerIds.get(container);
-    if (containerId === undefined) {
-      containerId = containerIds.size;
-      containerIds.set(container, containerId);
-    }
-    entries.push({
+    const containerId = containerIdOf(records, atRule, containerIds);
+    const layerPriority = layerRegistry.getPriority(atRule);
+    /** @type {AtRuleEntry} */
+    const found = {
       rule: atRule,
       parsed,
       family,
       containerId,
-      layerPriority: layerRegistry.getPriority(atRule),
-      documentIndex: documentIndex++,
-    });
-  });
+      layerPriority,
+      documentIndex: entries.length,
+    };
+    // Without a known layer order, only definitions in one layer compare.
+    if (!layerOrderKnown) found.layerKey = ` ${layerPriority.join('.')}`;
+    entries.push(found);
+  }
 
   if ([...namespaces.values()].every((entries) => entries.length < 2)) {
     return;
   }
 
-  /** @type {Set<import('postcss').AtRule>} */
+  /** @type {Set<ArenaIndex>} */
   const removals = new Set();
   const groupsByNamespace = new Map(
     [...namespaces].map(([namespace, entries]) => [
       namespace,
-      findInterchangeableGroups(entries, removals),
+      findInterchangeableGroups(records, keys, entries, removals),
     ])
   );
   const groupedNames = new Set(
@@ -280,11 +147,17 @@ function mergeAtRules(css) {
   const { protectedNames, references } =
     groupedNames.size > 0
       ? scanDeclarations(
-          css,
+          records,
+          tokenLists,
+          lists.decls.filter((index) => isRecordAttached(records, index)),
           groupedNames,
-          functionRules,
-          parameterRules,
-          conditionRules
+          lists.functions.filter((index) => isRecordAttached(records, index)),
+          lists.parameterRules.filter((index) =>
+            isRecordAttached(records, index)
+          ),
+          lists.conditionRules.filter((index) =>
+            isRecordAttached(records, index)
+          )
         )
       : { protectedNames: new Set(), references: [] };
   /** @type {Map<string, Map<string, import('./lib/valueRewriter.js').Replacement>>} */
@@ -304,44 +177,28 @@ function mergeAtRules(css) {
 
   // Removing a repeat definition of one name leaves no reference to respell.
   if ([...renames.values()].some((namespaceRenames) => namespaceRenames.size)) {
-    rewriteReferences(references, renames);
+    rewriteReferences(records, context, references, renames);
   }
 
-  for (const node of removals) {
-    node.remove();
-  }
-}
-
-/**
- * @param {import('./lib/protectedNames.js').Reference[]} references
- * @param {Map<string, Map<string, import('./lib/valueRewriter.js').Replacement>>} renames
- * @return {void}
- */
-function rewriteReferences(references, renames) {
-  for (const { decl, classification, value } of references) {
-    const namespaceRenames = renames.get(classification.namespace);
-    if (namespaceRenames?.size) {
-      rewriteDeclaration(decl, classification.kind, namespaceRenames, value);
+  // An earlier removal in this loop may have emptied and removed a parent.
+  for (const index of removals) {
+    if (isRecordAttached(records, index)) {
+      remove(index);
     }
   }
 }
 
 /**
- * @return {import('postcss').Plugin}
+ * Merges the names of the advanced transform's lists. The walk up
+ * collects the lists, so the transform needs no walk of its own.
+ *
+ * @param {RecordSymbolLists} lists
+ * @param {Record<PropertyKey, unknown>} _options takes no options
+ * @param {(index: ArenaIndex) => void} remove
+ * @param {BlockRecords} records
+ * @param {RunContext} context
+ * @return {void}
  */
-function pluginCreator() {
-  return {
-    postcssPlugin: 'postcss-merge-idents',
-    /**
-     * @param {import('postcss').Root} css
-     */
-    OnceExit(css) {
-      mergeAtRules(css);
-    },
-  };
+export function mergeIdentsSymbols(lists, _options, remove, records, context) {
+  mergeAtRules(lists, remove, records, context);
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-
-export { moduleExports as default, moduleExports as 'module.exports' };

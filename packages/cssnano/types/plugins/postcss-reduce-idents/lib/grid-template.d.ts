@@ -1,9 +1,20 @@
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { RunContext } from '../../../run/runContext.js';
 export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
 /**
  * @param {(value: string, index: number) => string} encoder
  */
 export default function gridTemplateReducer(encoder: (value: string, index: number) => string): {
-    /** @param {import('postcss').AnyNode} node */ collect(node: import('postcss').AnyNode): void;
-    transform(): void;
+    /**
+     * @param {ArenaIndex} index
+     * @param {BlockRecords} records
+     */
+    collect(index: ArenaIndex, records: BlockRecords): void;
+    /**
+     * @param {BlockRecords} records
+     * @param {RunContext} context
+     */
+    transform(records: BlockRecords, context: RunContext): void;
 };
 //# sourceMappingURL=grid-template.d.ts.map

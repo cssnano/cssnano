@@ -2,8 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import postcss from 'postcss';
 import preset from '../../../src/presets/default.js';
-import { repositoryFile } from '../../../../../util/testHelpers.js';
-import { mergeOracleDifference } from '../../../script/passes/merge/rules/lib/mergeOracle.js';
+import { mergeOracleDifference } from '../../../script/merge/rules/lib/mergeOracle.js';
 
 /**
  * @param {string} css
@@ -12,7 +11,7 @@ import { mergeOracleDifference } from '../../../script/passes/merge/rules/lib/me
  */
 async function minify(css, options) {
   const result = await postcss(preset(options)).process(css, {
-    from: repositoryFile,
+    from: undefined,
   });
   return result.css;
 }

@@ -114,17 +114,46 @@ function closeForOpening(type) {
 }
 
 /**
- * Reports whether a value ends in a backslash that begins an escape
- * sequence, as opposed to a backslash that is itself escaped.
+ * Reports whether the text before `end` ends in a backslash that begins an
+ * escape sequence, as opposed to a backslash that is itself escaped.
  * @param {string} value
+ * @param {number} [end] defaults to the length of the value
  * @return {boolean}
  */
-function endsWithEscapingBackslash(value) {
-  let i = value.length - 1;
+function endsWithEscapingBackslash(value, end = value.length) {
+  let i = end - 1;
   while (i >= 0 && value.charCodeAt(i) === 92) {
     i--;
   }
-  return (value.length - 1 - i) % 2 === 1;
+  return (end - 1 - i) % 2 === 1;
+}
+
+/**
+ * Whitespace and comments separate tokens without contributing a component.
+ * @param {CSSToken | undefined} token
+ * @return {boolean}
+ */
+function isTrivia(token) {
+  return (
+    token?.[0] === TokenType.Whitespace || token?.[0] === TokenType.Comment
+  );
+}
+
+/**
+ * Index of the first token in `[index, end)` that is not trivia, or `end`.
+ * @param {readonly CSSToken[]} input
+ * @param {number} index
+ * @param {number} [end] defaults to the length of the list
+ * @return {number}
+ */
+function skipTrivia(input, index, end = input.length) {
+  let cursor = index;
+  while (cursor < end) {
+    const type = input[cursor][0];
+    if (type !== TokenType.Whitespace && type !== TokenType.Comment) break;
+    cursor++;
+  }
+  return cursor;
 }
 
 /**
@@ -182,31 +211,42 @@ class BalancedTokens {
 }
 
 /**
+ * The bracket structure of a token list the caller already has, so the list
+ * is not tokenized again. Undefined when a bracket is unclosed or closes out
+ * of order.
+ *
+ * @param {readonly CSSToken[]} input
+ * @return {BalancedTokens | undefined}
+ */
+function balancedStructure(input) {
+  /** @type {[number, TokenType][]} */
+  const stack = [];
+  const ends = new Map();
+  for (let index = 0; index < input.length; index++) {
+    const token = input[index];
+    const expected = closeForOpening(token[0]);
+    if (expected !== undefined) stack.push([index, expected]);
+    else if (
+      token[0] === TokenType.CloseParen ||
+      token[0] === TokenType.CloseSquare ||
+      token[0] === TokenType.CloseCurly
+    ) {
+      const frame = stack.pop();
+      if (!frame || frame[1] !== token[0]) return;
+      ends.set(frame[0], index);
+    }
+  }
+  return stack.length ? undefined : new BalancedTokens(input, ends);
+}
+
+/**
  * @param {string} source
  * @param {{ unicodeRangesAllowed?: boolean }} [options]
  * @return {BalancedTokens | undefined}
  */
 function balancedTokens(source, options) {
   try {
-    const input = tokens(source, options);
-    /** @type {[number, TokenType][]} */
-    const stack = [];
-    const ends = new Map();
-    for (let index = 0; index < input.length; index++) {
-      const token = input[index];
-      const expected = closeForOpening(token[0]);
-      if (expected !== undefined) stack.push([index, expected]);
-      else if (
-        token[0] === TokenType.CloseParen ||
-        token[0] === TokenType.CloseSquare ||
-        token[0] === TokenType.CloseCurly
-      ) {
-        const frame = stack.pop();
-        if (!frame || frame[1] !== token[0]) return;
-        ends.set(frame[0], index);
-      }
-    }
-    return stack.length ? undefined : new BalancedTokens(input, ends);
+    return balancedStructure(tokens(source, options));
   } catch {
     return;
   }
@@ -215,11 +255,14 @@ function balancedTokens(source, options) {
 export {
   TokenType,
   applyEdits,
+  balancedStructure,
   balancedTokens,
   closeForOpening,
   decoded,
   endsWithEscapingBackslash,
+  isTrivia,
   numeric,
+  skipTrivia,
   tokenEnd,
   tokenStart,
   tokens,

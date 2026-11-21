@@ -5,7 +5,7 @@
 This module will try to minimise the `font-family`, `font-weight` and `font` shorthand
 properties; it can unquote font families where necessary, detect & remove
 duplicates, and cut short a declaration after it finds a keyword. For more
-examples, see the [tests](test).
+examples, see the [tests](../../test/postcss-minify-font-values/).
 
 ```css
 h1 {

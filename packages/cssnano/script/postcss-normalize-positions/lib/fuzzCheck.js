@@ -1,5 +1,7 @@
 import postcss from 'postcss';
-import plugin from '../../../src/plugins/postcss-normalize-positions/index.js';
+import normalizePositions from '../../../src/plugins/postcss-normalize-positions/index.js';
+import { hostPlugin } from '../../../src/run/host.js';
+import { hostPlan } from '../../../src/run/hostPlan.js';
 import {
   keywordOf,
   resolvePosition,
@@ -61,7 +63,13 @@ function layerFailure(layer, output) {
 
 /** @param {string} css */
 function process(css) {
-  return postcss([plugin()]).process(css, { from: undefined }).css;
+  return postcss([
+    hostPlugin(
+      hostPlan({
+        members: [{ entry: normalizePositions, options: {}, targets: true }],
+      })
+    ),
+  ]).process(css, { from: undefined }).css;
 }
 
 /**

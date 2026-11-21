@@ -17,10 +17,10 @@ export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
  * positions of a counter function that name a counter style.
  *
  * @template T
- * @param {CSSToken[]} tokenList
+ * @param {readonly CSSToken[]} tokenList
  * @param {(token: CSSToken, frame: NestingFrame | undefined, index: number) => T | undefined} visit
  * @return {T[]} the defined results of the visitor, in source order
  */
-declare function walkValue<T>(tokenList: CSSToken[], visit: (token: CSSToken, frame: NestingFrame | undefined, index: number) => T | undefined): T[];
+declare function walkValue<T>(tokenList: readonly CSSToken[], visit: (token: CSSToken, frame: NestingFrame | undefined, index: number) => T | undefined): T[];
 export { walkValue };
 //# sourceMappingURL=valueWalk.d.ts.map

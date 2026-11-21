@@ -1,13 +1,32 @@
+import cssnanoUtils from '#utils';
 import addToCache from './cache.js';
 import {
   atRuleIdent,
   collectOpaqueIdents,
-  rewrite,
-  tokens,
+  encodedIdent,
+  tokenEdits,
   TokenType,
 } from './value.js';
 import { resolveAtRule, resolveProperty } from './slots.js';
+import {
+  atRuleAt,
+  declaredValue,
+  declaredValueTokens,
+  preludeListOf,
+  preludeTextOf,
+} from '../../../ir/declaredText.js';
+import {
+  AT_RULE_BLOCK,
+  AT_RULE_STATEMENT,
+  DECLARATION,
+} from '../../../ir/blockRecord.js';
+import { writePrelude } from '../../../ir/rawEdits.js';
+import { writeValue } from '../../../ir/valueEdits.js';
+import { ValueBuffer } from '../../../values/valueBuffer.js';
 
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {RunContext} from '../../../run/runContext.js' */
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 
 /**
@@ -37,61 +56,106 @@ export default function atRuleReducer(
   encoder
 ) {
   const cache = new Map();
-  /** @type {{name: string, rule: import('postcss').AtRule}[]} */
+  /** @type {{name: string, rule: ArenaIndex}[]} */
   let atRules = [];
-  /** @type {{node: import('postcss').Declaration, property: string, functionProperty: boolean}[]} */
+  /** @type {{index: ArenaIndex, property: string, functionProperty: boolean}[]} */
   let references = [];
 
   return {
-    /** @param {import('postcss').AnyNode} node */ collect(node) {
-      if (node.type === 'atrule' && resolveAtRule(node.name) === atRule) {
-        const name = atRuleIdent(node.params);
-        if (name !== undefined && !reserved.has(name.toLowerCase())) {
-          addToCache(name, encoder, cache);
-          atRules.push({ name, rule: node });
+    /**
+     * @param {ArenaIndex} index
+     * @param {BlockRecords} records
+     * @param {RunContext} context
+     */
+    collect(index, records, context) {
+      const entry = records.entry(index);
+      if (entry.kind === AT_RULE_BLOCK || entry.kind === AT_RULE_STATEMENT) {
+        if (resolveAtRule(entry.name) === atRule) {
+          const name = atRuleIdent(preludeListOf(context.tokenLists, entry));
+          if (
+            name !== undefined &&
+            !reserved.has(cssnanoUtils.asciiLowerCase(name))
+          ) {
+            addToCache(name, encoder, cache);
+            atRules.push({ name, rule: index });
+          }
         }
+        return;
       }
-      if (node.type !== 'decl') return;
-      const property = resolveProperty(node.prop);
+      if (entry.kind !== DECLARATION) return;
+      const property = resolveProperty(entry.prop);
       const functionProperty = functionProperties?.has(property) ?? false;
+      const parent = /** @type {ArenaIndex} */ (records.links.parentOf(index));
+      const parentEntry = records.entry(parent);
       if (
         properties.has(property) ||
         functionProperty ||
-        (node.parent?.type === 'atrule' &&
-          resolveAtRule(node.parent.name) === atRule &&
-          descriptors?.has(node.prop.toLowerCase()))
+        ((parentEntry.kind === AT_RULE_BLOCK ||
+          parentEntry.kind === AT_RULE_STATEMENT) &&
+          resolveAtRule(parentEntry.name) === atRule &&
+          descriptors?.has(entry.prop.toLowerCase()))
       ) {
-        references.push({ node, property, functionProperty });
+        references.push({ index, property, functionProperty });
       }
     },
-    transform() {
+    /**
+     * @param {BlockRecords} records
+     * @param {RunContext} context
+     */
+    transform(records, context) {
+      const { tokenLists } = context;
       const defined = new Set(atRules.map((entry) => entry.name));
       const opaque = new Set();
-      /** @type {Map<import('postcss').Declaration, CSSToken[]>} */
+      /** @type {Map<ArenaIndex, readonly CSSToken[]>} */
       const parsedValues = new Map();
-      for (const { node } of references) {
-        const parsedTokens = tokens(node.value);
-        parsedValues.set(node, parsedTokens);
-        collectOpaqueIdents(node.value, opaque, parsedTokens);
+      /** @type {Map<ArenaIndex, string>} */
+      const values = new Map();
+      for (const { index } of references) {
+        const record =
+          /** @type {import('../../../ir/declarationRecord.js').DeclarationRecord} */ (
+            records.entry(index)
+          );
+        const value = declaredValue(tokenLists, record);
+        const parsedTokens = declaredValueTokens(tokenLists, record, value);
+        values.set(index, value);
+        parsedValues.set(index, parsedTokens);
+        collectOpaqueIdents(value, opaque, parsedTokens);
       }
       const referenced = new Set();
-      for (const { node, functionProperty } of references) {
-        node.value = rewrite(
-          node.value,
+      for (const { index, functionProperty } of references) {
+        const parsedTokens = /** @type {readonly CSSToken[]} */ (
+          parsedValues.get(index)
+        );
+        const value = /** @type {string} */ (values.get(index));
+        const edits = tokenEdits(
+          parsedTokens,
           (token, position) => {
             if (token[0] !== TokenType.Ident) return;
             if (position !== (functionProperty ? 'argument' : 'bare')) return;
             const name = token[4].value;
             if (!defined.has(name) || opaque.has(name)) return;
             referenced.add(name);
-            return cache.get(name);
+            return encodedIdent(cache.get(name));
           },
-          functionProperty ? functions : undefined,
-          parsedValues.get(node)
+          functionProperty ? functions : undefined
         );
+        if (edits.length === 0) continue;
+        const buffer = new ValueBuffer(value, undefined, parsedTokens);
+        buffer.replaceRanges(edits);
+        // Keep the raw of a value that renaming left as it was.
+        if (buffer.text() !== value) {
+          writeValue(records, context, index, buffer.tokens());
+        }
       }
       for (const { name, rule } of atRules) {
-        if (referenced.has(name)) rule.params = cache.get(name);
+        const encoded = cache.get(name);
+        const entry = atRuleAt(records, rule);
+        if (
+          referenced.has(name) &&
+          encoded !== preludeTextOf(tokenLists, entry)
+        ) {
+          writePrelude(context, entry, [encodedIdent(encoded)]);
+        }
       }
       atRules = [];
       references = [];

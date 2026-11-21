@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs';
 import postcss from 'postcss';
-import { browserTargets } from '../../../packages/cssnano/src/utils/browserTargets.js';
 
-const mergeDirectory = '../../../packages/cssnano/src/passes/merge/index.js';
+const onlyTransformPath =
+  '../../../packages/cssnano/test/merge/onlyTransform.js';
 const basePlugins = {
   mergeLonghand: 'postcss-merge-longhand',
   discardDuplicates: 'postcss-discard-duplicates',
@@ -11,16 +11,16 @@ const basePlugins = {
 
 /**
  * The creator of the plugin that runs one merge transform alone. A revision
- * with the merge pass exposes `transformPlugin`; an earlier one has a plugin
+ * with the test helper exposes `onlyTransform`; an earlier one has a plugin
  * per transform, so the same case runs on both sides of a comparison.
  *
  * @param {'mergeLonghand' | 'discardDuplicates' | 'mergeRules'} transform
  * @returns {Promise<(options: object) => import('postcss').Plugin>}
  */
 async function loadTransform(transform) {
-  if (existsSync(new URL(mergeDirectory, import.meta.url))) {
-    const { transformPlugin } = await import(mergeDirectory);
-    return transformPlugin(transform);
+  if (existsSync(new URL(onlyTransformPath, import.meta.url))) {
+    const { onlyTransform } = await import(onlyTransformPath);
+    return onlyTransform([transform]);
   }
   const module = await import(
     `../../../packages/cssnano/src/plugins/${basePlugins[transform]}/index.js`
@@ -28,10 +28,21 @@ async function loadTransform(transform) {
   return module.default;
 }
 
+// A revision before the plan-level targets reads them under the browserTargets
+// symbol, so the case passes the key of the side it runs against. Otherwise
+// the older side ignores the targets and gets the test targets instead.
+const targetsModule =
+  await import('../../../packages/cssnano/src/utils/browserTargets.js');
+const targetOptions = (/** @type {object} */ targets) =>
+  'browserTargets' in targetsModule
+    ? { [targetsModule.browserTargets]: targets }
+    : { browserslist: targets };
+
 const creators = {
   mergeLonghand: await loadTransform('mergeLonghand'),
   discardDuplicates: await loadTransform('discardDuplicates'),
   mergeRules: await loadTransform('mergeRules'),
+  dedupeThenMerge: await loadTransform('dedupeThenMerge'),
 };
 
 /**
@@ -44,14 +55,21 @@ const creators = {
  */
 function mergeCase(transform, css, options = {}) {
   return {
-    plugin: 'cssnano-merge',
+    plugin: 'merge-transforms',
     createProcessor() {
       const targets = Object.freeze({ ...options.browserslist });
-      return postcss([creators[transform]({ [browserTargets]: targets })]);
+      return postcss([creators[transform](targetOptions(targets))]);
     },
     css,
   };
 }
+
+// Repeated rules, repeated @media blocks and duplicate declarations.
+const duplicatesDense = Array.from({ length: 200 }, (_, index) => {
+  const rule = `.dup-${index % 50}{color:red;color:red;width:${index % 7}px}`;
+  const media = `@media (min-width:${index % 20}px){.m-${index % 10}{margin:0;margin:0}}`;
+  return `${rule}${media}.u-${index}{--v:${index};--v:${index}}`;
+}).join('');
 
 /* Focused merge-longhand cases: the no-op negative path (single standalone
  * shorthands, and multi-declaration rules that revert), and the concrete
@@ -203,6 +221,18 @@ export const mergeCases = {
         `.join-${index}{color:red;width:1px}.noise-${index}{--v:${index}}`
     ).join('')
   ),
+  // Few rules, each a block of declarations, comments and nested rules.
+  'merge-rules-nested-declarations': mergeCase(
+    'mergeRules',
+    Array.from({ length: 12 }, (_, index) => {
+      const body = Array.from(
+        { length: 60 },
+        (unused, noiseIndex) =>
+          `/* ${index}-${noiseIndex} */--v${noiseIndex}:${noiseIndex};`
+      ).join('');
+      return `.host-${index}{${body}.leaf-${index}{color:red;display:block}}`;
+    }).join('')
+  ),
   // As in picnic: a block joins its counterpart only after the block after it.
   'merge-rules-media-runs': mergeCase(
     'mergeRules',
@@ -219,4 +249,8 @@ export const mergeCases = {
       ),
     ].join('')
   ),
+  // Repeated rules, repeated @media blocks and duplicate declarations.
+  'merge-duplicates-dense': mergeCase('discardDuplicates', duplicatesDense),
+  // The dedupe of the same input, then the rule merge that follows it.
+  'merge-pass-duplicates': mergeCase('dedupeThenMerge', duplicatesDense),
 };

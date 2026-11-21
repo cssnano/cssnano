@@ -1,3 +1,4 @@
+import type { SymbolTransform } from '../run/host.js';
 export type AdvancedOnlyPluginOptions = {
     /**
      * Discards unused font faces, counter styles, keyframes and namespaces.
@@ -17,6 +18,8 @@ export type AdvancedOnlyPluginOptions = {
     zindex?: import('#postcss-zindex').Options;
 };
 export type AdvancedPluginOptions = import('./defaultPlugins.js').DefaultPluginOptions & AdvancedOnlyPluginOptions;
+/** @import {EntryFor} from './configurePlugins.js' */
+/** @import {SymbolTransform} from '../run/host.js' */
 /**
  * The options of the plugins that only the advanced preset adds.
  * @typedef {object} AdvancedOnlyPluginOptions
@@ -36,30 +39,34 @@ export type AdvancedPluginOptions = import('./defaultPlugins.js').DefaultPluginO
  *
  * @lintignore
  */
-export declare const advancedPluginEntries: readonly [readonly [{
-    (opts: import("#postcss-discard-unused").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'discardUnused', {
-    readonly postcssPlugin: 'postcss-discard-unused';
-    readonly optionKeys: readonly ['fontFace', 'counterStyle', 'keyframes', 'namespace'];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'mergeIdents', {
-    readonly postcssPlugin: 'postcss-merge-idents';
-    readonly optionKeys: readonly [];
-}], readonly [{
-    ({ counter, counterStyle, keyframes, gridTemplate, encoder, }?: import("#postcss-reduce-idents").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'reduceIdents', {
-    readonly postcssPlugin: 'postcss-reduce-idents';
-    readonly optionKeys: readonly ['counter', 'counterStyle', 'keyframes', 'gridTemplate', 'encoder'];
-}], readonly [{
-    (opts?: import("#postcss-zindex").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'zindex', {
-    readonly postcssPlugin: 'postcss-zindex';
-    readonly optionKeys: readonly ['startIndex'];
+export declare const advancedPluginEntries: readonly [[{
+    create: (
+    /** @type {import('#postcss-discard-unused').Options} */ options: import('#postcss-discard-unused').Options) => import("#postcss-discard-unused").Options;
+}, "discardUnused", {
+    optionKeys: ("counterStyle" | "fontFace" | "keyframes" | "namespace")[];
+    transform: true;
+    symbols: SymbolTransform;
+}], [{
+    create: (/** @type {Record<string, never>} */ options: Record<string, never>) => Record<string, never>;
+}, "mergeIdents", {
+    optionKeys: never[];
+    transform: true;
+    symbols: SymbolTransform;
+}], [{
+    create: (
+    /** @type {import('#postcss-reduce-idents').Options} */ options: import('#postcss-reduce-idents').Options) => {
+        reducers: import("#postcss-reduce-idents").Reducer[];
+    };
+}, "reduceIdents", {
+    optionKeys: ("counter" | "counterStyle" | "encoder" | "gridTemplate" | "keyframes")[];
+    transform: true;
+    symbols: SymbolTransform;
+}], [{
+    create: (/** @type {import('#postcss-zindex').Options} */ options: import('#postcss-zindex').Options) => import("#postcss-zindex").Options;
+}, "zindex", {
+    optionKeys: "startIndex"[];
+    transform: true;
+    symbols: SymbolTransform;
 }]];
 /**
  * Every plugin the advanced preset runs: the default ones, then the advanced ones.

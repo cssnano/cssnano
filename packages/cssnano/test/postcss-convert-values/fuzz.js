@@ -1,13 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import postcss from 'postcss';
-import plugin from '../../src/plugins/postcss-convert-values/index.js';
+import convertValues from '../../src/plugins/postcss-convert-values/index.js';
 import { check } from '../../script/postcss-convert-values/lib/fuzzCheck.js';
 import {
   edgeCases,
   generate,
 } from '../../script/postcss-convert-values/lib/fuzzGenerate.js';
-import { repositoryFile } from '../../../../util/testHelpers.js';
+import { oneStagePlugin } from '../../../../util/testHelpers.js';
+
+const plugin = oneStagePlugin(convertValues);
 
 const processor = postcss([plugin()]);
 
@@ -60,18 +62,16 @@ describe('Fuzzing & Invariant Testing', () => {
   test('repeated identical declarations reuse cache correctly without corruption', async () => {
     const input =
       'a{flex-basis:192px} b{flex-basis:192px} c{transform:rotate(0rad)} d{transform:rotate(0rad)}';
-    const output = (await processor.process(input, { from: repositoryFile }))
-      .css;
+    const output = (await processor.process(input, { from: undefined })).css;
     assert.equal(
       output,
       'a{flex-basis:2in} b{flex-basis:2in} c{transform:rotate(0deg)} d{transform:rotate(0deg)}'
     );
-    const second = (await processor.process(output, { from: repositoryFile }))
-      .css;
+    const second = (await processor.process(output, { from: undefined })).css;
     assert.equal(second, output);
   });
 
-  test('synchronizes stale raw metadata on cache hits', async () => {
+  test('ignores stale raw metadata on memo hits, since the walk writes only changed values', async () => {
     /** @type {import('postcss').Declaration[]} */
     const decls = [];
     const pipeline = postcss([
@@ -89,12 +89,12 @@ describe('Fuzzing & Invariant Testing', () => {
     ]);
 
     const result = await pipeline.process('a{width:10px} b{width:10px}', {
-      from: repositoryFile,
+      from: undefined,
     });
     assert.ok(
       !result.css.includes('20px'),
       'stale raw metadata was retained on cache hit'
     );
-    assert.equal(decls[1]?.raws?.value?.raw, '10px');
+    assert.equal(result.css, 'a{width:10px} b{width:10px}');
   });
 });

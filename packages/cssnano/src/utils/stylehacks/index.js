@@ -1,39 +1,23 @@
-import { declarationHacks } from './hacks/index.js';
-
-/** @import {Declaration} from 'postcss'; */
-
-/** @type {WeakMap<Declaration, {before: string | undefined, prop: string, value: string, detected: boolean}>} */
-const declarationDetections = new WeakMap();
+import important from './hacks/important.js';
+import leadingStarDeclaration from './hacks/leadingStar.js';
+import leadingUnderscore from './hacks/leadingUnderscore.js';
+import slash9 from './hacks/slash9.js';
 
 /**
  * Whether a declaration carries a browser hack. The merge pass's longhand
  * transform uses it to keep hacked declarations out of shorthands, because the
- * hack is invalid for every browser that cssnano supports. Answers are cached
- * because the longhand transform asks about the same declarations many times;
- * an entry is reused only while the inputs it read are unchanged.
- * @param {Declaration} declaration
+ * hack is invalid for every browser that cssnano supports.
+ *
+ * @param {string | undefined} before the raw text before the declaration
+ * @param {string} prop
+ * @param {string} value
  * @return {boolean}
  */
-export function detectDeclaration(declaration) {
-  const { before } = declaration.raws;
-  const cached = declarationDetections.get(declaration);
-
-  if (
-    cached &&
-    cached.before === before &&
-    cached.prop === declaration.prop &&
-    cached.value === declaration.value
-  ) {
-    return cached.detected;
-  }
-
-  const detected = declarationHacks.some((hack) => hack(declaration));
-  declarationDetections.set(declaration, {
-    before,
-    prop: declaration.prop,
-    value: declaration.value,
-    detected,
-  });
-
-  return detected;
+export function hasHack(before, prop, value) {
+  return (
+    important(value) ||
+    leadingStarDeclaration(prop, before) ||
+    leadingUnderscore(prop, before) ||
+    slash9(value)
+  );
 }

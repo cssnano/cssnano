@@ -1,61 +1,24 @@
-import minifyWeight from './lib/minify-weight.js';
-import minifyFamily from './lib/minify-family.js';
-import minifyFont from './lib/minify-font.js';
+import { minifyWeightTokens } from './lib/minify-weight.js';
+import { minifyFamilyTokens } from './lib/minify-family.js';
+import { minifyFontTokens } from './lib/minify-font.js';
 import cssnanoUtils from '#utils';
+import { parsedValueTokens } from '../../utils/parsedValueText.js';
+import { sameTokenText } from '../../values/sameTokenText.js';
+
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {Reducer, Stage, StageEntry} from '../../run/host.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
-const fontRegex =
-  /^(?:[fF][oO][nN][tT]|[fF][oO][nN][tT]-[fF][aA][mM][iI][lL][yY]|[fF][oO][nN][tT]-[wW][eE][iI][gG][hH][tT])$/v;
+
 /**
- * @param {string} value
+ * @param {readonly CSSToken[]} tokens
  * @return {boolean}
  */
-function hasVariableFunction(value) {
-  const lowerCasedValue = asciiLowerCase(value);
-
-  return lowerCasedValue.includes('var(') || lowerCasedValue.includes('env(');
-}
-
-/** @type {Map<string, (value: string, opts: Options, removeQuotes: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight') | undefined) => string>} */
-const propertyMinifiers = new Map([
-  [
-    'font-weight',
-    (value) => (hasVariableFunction(value) ? value : minifyWeight(value)),
-  ],
-  [
-    'font-family',
-    (value, opts, removeQuotes) =>
-      hasVariableFunction(value)
-        ? value
-        : minifyFamily(value, opts, removeQuotes),
-  ],
-  [
-    'font',
-    (value, opts, removeQuotes) => minifyFont(value, opts, removeQuotes),
-  ],
-]);
-
-/**
- * @param {string} prop
- * @param {string} value
- * @param {Options} opts
- * @return {string}
- */
-function transform(prop, value, opts) {
-  let targetType = asciiLowerCase(prop);
-  let removeQuotes = opts.removeQuotes;
-
-  if (typeof opts.removeQuotes === 'function') {
-    targetType = opts.removeQuotes(prop) || targetType;
-    removeQuotes = true;
-  }
-
-  const minifier = propertyMinifiers.get(targetType);
-  if (minifier) {
-    return minifier(value, opts, removeQuotes);
-  }
-
-  return value;
+function hasVariableFunction(tokens) {
+  return tokens.some((token) => {
+    const lowerCasedValue = asciiLowerCase(token[1]);
+    return lowerCasedValue.includes('var(') || lowerCasedValue.includes('env(');
+  });
 }
 
 /**
@@ -65,63 +28,81 @@ function transform(prop, value, opts) {
  * @property {boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight')} [removeQuotes] Removes quotes from font families. A function chooses the property to change for each one. (default: true)
  */
 
+/** @type {Map<string, (tokens: readonly CSSToken[], opts: Options, removeQuotes: boolean | ((prop: string) => '' | 'font' | 'font-family' | 'font-weight') | undefined) => CSSToken[]>} */
+const propertyMinifiers = new Map([
+  [
+    'font-weight',
+    (tokens) =>
+      hasVariableFunction(tokens) ? [...tokens] : minifyWeightTokens(tokens),
+  ],
+  [
+    'font-family',
+    (tokens, opts, removeQuotes) =>
+      hasVariableFunction(tokens)
+        ? [...tokens]
+        : minifyFamilyTokens(tokens, opts, removeQuotes),
+  ],
+  [
+    'font',
+    (tokens, opts, removeQuotes) =>
+      minifyFontTokens(tokens, opts, removeQuotes),
+  ],
+]);
+
 /**
- * @param {Options} opts
- * @return {import('postcss').Plugin}
+ * The reducer of one property. It minifies the value as PostCSS parses it, so
+ * a comment that PostCSS drops is gone. It writes only a change. When the
+ * function of `removeQuotes` maps the property to a name that is not a font
+ * property, the property has no reducer.
+ *
+ * @param {Options} opts the options with defaults applied
+ * @param {string} prop
+ * @return {Reducer | null}
  */
-function pluginCreator(opts) {
+function reducerOf(opts, prop) {
+  let targetType = asciiLowerCase(prop);
+  let removeQuotes = opts.removeQuotes;
+
+  if (typeof opts.removeQuotes === 'function') {
+    targetType = opts.removeQuotes(prop) || targetType;
+    removeQuotes = true;
+  }
+
+  const minifier = propertyMinifiers.get(targetType);
+  if (!minifier) return null;
+  return (buffer) => {
+    const tokens = buffer.tokens();
+    if (tokens.length === 0) return;
+    const parsed = parsedValueTokens(tokens);
+    const out = minifier(parsed, opts, removeQuotes);
+    if (!sameTokenText(out, parsed)) {
+      buffer.replace(0, tokens.length, out);
+    }
+  };
+}
+
+/**
+ * The stage for one run. Its options are the preset's, with the plugin's
+ * defaults under them.
+ *
+ * @param {Options} opts
+ * @return {Stage}
+ */
+function fontStage(opts) {
   const normalizedOpts = {
     removeAfterKeyword: false,
     removeDuplicates: true,
     removeQuotes: true,
     ...opts,
   };
-
   return {
-    postcssPlugin: 'postcss-minify-font-values',
-    prepare() {
-      const cache = new Map();
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         */
-        OnceExit(css) {
-          /** @param {import('postcss').Declaration} decl */
-          const handleDecl = (decl) => {
-            const value = decl.value;
-
-            if (!value) {
-              return;
-            }
-
-            const prop = decl.prop;
-
-            const cacheKey = `${prop}|${value}`;
-
-            if (cache.has(cacheKey)) {
-              decl.value = cache.get(cacheKey);
-
-              return;
-            }
-
-            const newValue = transform(prop, value, normalizedOpts);
-
-            decl.value = newValue;
-            cache.set(cacheKey, newValue);
-          };
-
-          if (typeof normalizedOpts.removeQuotes === 'function') {
-            css.walkDecls(handleDecl);
-          } else {
-            css.walkDecls(fontRegex, handleDecl);
-          }
-        },
-      };
-    },
+    forProperty: (property) => reducerOf(normalizedOpts, property),
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {StageEntry} */
+const minifyFontValues = {
+  create: (/** @type {Options} */ options) => fontStage(options),
+};
+
+export { minifyFontValues as default };

@@ -1,8 +1,11 @@
-import postcssDiscardUnused from '#postcss-discard-unused';
-import postcssMergeIdents from '#postcss-merge-idents';
-import postcssReduceIdents from '#postcss-reduce-idents';
-import postcssZindex from '#postcss-zindex';
+import { discardUnusedSymbols } from '#postcss-discard-unused';
+import { mergeIdentsSymbols } from '#postcss-merge-idents';
+import { createReducers, reduceIdentsSymbols } from '#postcss-reduce-idents';
+import { zindexSymbols } from '#postcss-zindex';
 import { defaultPluginEntries } from './defaultPlugins.js';
+
+/** @import {EntryFor} from './configurePlugins.js' */
+/** @import {SymbolTransform} from '../run/host.js' */
 
 /**
  * The options of the plugins that only the advanced preset adds.
@@ -26,24 +29,38 @@ import { defaultPluginEntries } from './defaultPlugins.js';
  * @lintignore
  */
 export const advancedPluginEntries = /** @type {const} */ ([
-  [
-    postcssDiscardUnused,
+  /** @satisfies {EntryFor<AdvancedPluginOptions, 'discardUnused'>} */ ([
+    {
+      create: (
+        /** @type {import('#postcss-discard-unused').Options} */ options
+      ) => options,
+    },
     'discardUnused',
     {
-      postcssPlugin: 'postcss-discard-unused',
       optionKeys: ['fontFace', 'counterStyle', 'keyframes', 'namespace'],
+      transform: true,
+      symbols: /** @type {SymbolTransform} */ (discardUnusedSymbols),
     },
-  ],
-  [
-    postcssMergeIdents,
+  ]),
+  /** @satisfies {EntryFor<AdvancedPluginOptions, 'mergeIdents'>} */ ([
+    {
+      create: (/** @type {Record<string, never>} */ options) => options,
+    },
     'mergeIdents',
-    { postcssPlugin: 'postcss-merge-idents', optionKeys: [] },
-  ],
-  [
-    postcssReduceIdents,
+    {
+      optionKeys: [],
+      transform: true,
+      symbols: /** @type {SymbolTransform} */ (mergeIdentsSymbols),
+    },
+  ]),
+  /** @satisfies {EntryFor<AdvancedPluginOptions, 'reduceIdents'>} */ ([
+    {
+      create: (
+        /** @type {import('#postcss-reduce-idents').Options} */ options
+      ) => createReducers(options),
+    },
     'reduceIdents',
     {
-      postcssPlugin: 'postcss-reduce-idents',
       optionKeys: [
         'counter',
         'counterStyle',
@@ -51,13 +68,25 @@ export const advancedPluginEntries = /** @type {const} */ ([
         'gridTemplate',
         'encoder',
       ],
+      transform: true,
+      // Its options are the reducers that create built.
+      symbols: /** @type {SymbolTransform} */ (
+        /** @type {unknown} */ (reduceIdentsSymbols)
+      ),
     },
-  ],
-  [
-    postcssZindex,
+  ]),
+  /** @satisfies {EntryFor<AdvancedPluginOptions, 'zindex'>} */ ([
+    {
+      create: (/** @type {import('#postcss-zindex').Options} */ options) =>
+        options,
+    },
     'zindex',
-    { postcssPlugin: 'postcss-zindex', optionKeys: ['startIndex'] },
-  ],
+    {
+      optionKeys: ['startIndex'],
+      transform: true,
+      symbols: /** @type {SymbolTransform} */ (zindexSymbols),
+    },
+  ]),
 ]);
 
 /**

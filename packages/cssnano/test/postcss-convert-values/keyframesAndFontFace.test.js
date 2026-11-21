@@ -1,6 +1,11 @@
 import { describe, test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-convert-values/index.js';
+import {
+  processCSSFactory,
+  oneStagePlugin,
+} from '../../../../util/testHelpers.js';
+import convertValues from '../../src/plugins/postcss-convert-values/index.js';
+
+const plugin = oneStagePlugin(convertValues);
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -118,6 +123,21 @@ describe('Animations and font-face', () => {
     passthroughCSS(':root{--my-range:U+0100-017F,U+4??}', {
       transformCustomProperties: true,
     })
+  );
+
+  test(
+    'convert-values keeps the number in a `u+` value outside `unicode-range`',
+    processCSS('h1{margin:u+1.0e2}', 'h1{margin:u+100}')
+  );
+
+  test(
+    "convert-values leaves a `unicode-range` value's ranges unchanged",
+    passthroughCSS('@font-face{font-family:test;unicode-range:u+1.0e2}')
+  );
+
+  test(
+    'convert-values leaves a custom property with a `u+` value unchanged, because it can read as a range or as a number',
+    passthroughCSS(':root{--x:u+1.0e2}', { transformCustomProperties: true })
   );
 
   test(

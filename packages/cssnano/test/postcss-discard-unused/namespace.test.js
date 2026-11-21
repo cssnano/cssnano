@@ -1,6 +1,9 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-discard-unused/index.js';
+import {
+  processCSSFactory,
+  presetEntryPlugin,
+} from '../../../../util/testHelpers.js';
+const plugin = presetEntryPlugin('discardUnused');
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -181,6 +184,11 @@ test(
     '@namespace svg url(http://www.w3.org/2000/svg);@namespace xlink url(http://www.w3.org/1999/xlink);svg|use{fill:blue}',
     '@namespace svg url(http://www.w3.org/2000/svg);svg|use{fill:blue}'
   )
+);
+
+test(
+  'discard-unused keeps a namespace whose prefix is followed by a comment',
+  passthroughCSS('@namespace ns url(x);ns/**/|a{}')
 );
 
 test(

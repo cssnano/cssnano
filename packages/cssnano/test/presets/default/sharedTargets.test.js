@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { describe, test } from 'node:test';
+import postcss from 'postcss';
+import defaultPreset from '#presets/default';
 
 const fixtures = new URL('./fixtures/', import.meta.url);
 
@@ -39,5 +41,19 @@ describe('default preset targets', () => {
   test('resolves browserslist once for a file without from, because the plugin package directory does not select the config', () => {
     const css = 'a{color:transparent;margin:0px;transition:0ms}';
     assert.equal(countBrowserslistCalls(css, undefined), 1);
+  });
+});
+
+describe('default preset empty browser query', () => {
+  test('warns once per file that the query matches no browser, though several plugins read the targets', async () => {
+    const result = await postcss(
+      defaultPreset({ browserslist: { query: 'chrome > 999' } })
+    ).process('a{color:#ff0000;margin:0px;transition:0ms}', {
+      from: '/project/src/app.css',
+    });
+    const warnings = result
+      .warnings()
+      .filter(({ text }) => /matches no browser/v.test(text));
+    assert.equal(warnings.length, 1);
   });
 });

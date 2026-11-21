@@ -13,15 +13,13 @@ import {
 } from './parseArenaStructure.js';
 import { addLeafWork, compoundChildren } from './parseArenaCompound.js';
 
-const { TokenType, tokens } = cssnanoUtils;
-/** @type {typeof cssnanoUtils.balancedTokens} */
-const balancedTokens = cssnanoUtils.balancedTokens;
+const { TokenType, balancedStructure, tokens: tokenize } = cssnanoUtils;
 /** @typedef {import('./arena.js').ListMode} ListMode */
 /** @typedef {import('./arena.js').ParseStatus} ParseStatus */
 /** @typedef {import('./arena.js').SemanticFacts} SemanticFacts */
 /** @typedef {import('./arena.js').Specificity} Specificity */
-/** @typedef {NonNullable<ReturnType<typeof balancedTokens>>} Structure */
-/** @typedef {{mode?:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean,verifyArena?:boolean}} ParseContext */
+/** @typedef {NonNullable<ReturnType<typeof balancedStructure>>} Structure */
+/** @typedef {{mode?:ListMode,keyframe?:boolean,hasDefaultNamespace?:boolean}} ParseContext */
 /** @typedef {{kind:'list',start:number,end:number,mode:ListMode,argumentPayload?:number,insideHas:boolean}} ListWork */
 /** @typedef {{kind:'complex',start:number,end:number,mode:ListMode,status?:ParseStatus,insideHas:boolean}} ComplexWork */
 /** @typedef {{kind:'compound',start:number,end:number,mode:ListMode,insideHas:boolean}} CompoundWork */
@@ -34,29 +32,69 @@ const balancedTokens = cssnanoUtils.balancedTokens;
 /** @typedef {{kind:'close',node:number,role:'list'|'complex'|'compound'|'pseudo',mode?:ListMode,status?:ParseStatus,facts?:SemanticFacts,specificity?:Specificity}} CloseWork */
 /** @typedef {ListWork|ComplexWork|CompoundWork|CombinatorWork|AttributeWork|NamedSimpleWork|QualifiedNameWork|RawWork|PseudoWork|CloseWork} ParseWork */
 
-/** @param {string} source @param {ParseContext} [context] */
-export function parseSelectorArena(source, context = {}) {
+/**
+ * The tokens from `start` to `end` of a list that spells `source`, with the
+ * text they spell and the offset that text starts at. Token positions keep
+ * their offsets in `source`; the arena subtracts `base` when it reads them.
+ *
+ * @param {string} source
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list
+ * @param {number} start
+ * @param {number} end
+ * @returns {{text: string, tokens: readonly import('@csstools/css-tokenizer').CSSToken[], base: number}}
+ */
+function tokenRange(source, list, start, end) {
+  if (start === 0 && end === list.length)
+    return { text: source, tokens: list, base: 0 };
+  if (start >= end) return { text: '', tokens: [], base: 0 };
+  const base = list[start][2];
+  return {
+    text: source.slice(base, list[end - 1][3] + 1),
+    tokens: list.slice(start, end),
+    base,
+  };
+}
+
+/**
+ * @param {string} source
+ * @param {ParseContext} [context]
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [sourceTokens] the tokens that spell `source`, read instead of tokenizing it
+ * @param {number} [start] where the selector starts in `sourceTokens`
+ * @param {number} [end] where the selector ends in `sourceTokens`
+ */
+export function parseSelectorArena(
+  source,
+  context = {},
+  sourceTokens,
+  start = 0,
+  end = sourceTokens?.length ?? 0
+) {
   const mode = context.mode ?? 'outer-unforgiving';
   const keyframe = context.keyframe ?? false;
   const hasDefaultNamespace = context.hasDefaultNamespace ?? false;
-  const verifyArena = context.verifyArena ?? true;
-  const structure = balancedTokens(source);
+  const range =
+    sourceTokens === undefined
+      ? undefined
+      : tokenRange(source, sourceTokens, start, end);
+  const text = range?.text ?? source;
+  const base = range?.base ?? 0;
+  const list = range?.tokens ?? tokenize(source);
+  const structure = balancedStructure(list);
   if (!structure) {
-    const input = tokens(source);
     return buildSelectorArena(
-      source,
-      input,
+      text,
+      list,
       (builder) => {
-        builder.leaf('raw', 0, input.length, {
+        builder.leaf('raw', 0, list.length, {
           status: 'opaque',
         });
       },
-      verifyArena
+      base
     );
   }
   const input = structure.tokens;
   return buildSelectorArena(
-    source,
+    text,
     input,
     (builder) => {
       /** @type {ParseWork[]} */ const work = [
@@ -175,6 +213,6 @@ export function parseSelectorArena(source, context = {}) {
         } else addLeafWork(builder, item, structure, work);
       }
     },
-    verifyArena
+    base
   );
 }

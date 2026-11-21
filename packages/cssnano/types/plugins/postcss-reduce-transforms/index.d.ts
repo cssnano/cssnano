@@ -1,3 +1,5 @@
+import type { ValueBuffer } from '../../values/valueBuffer.js';
+export type BalancedTokens = NonNullable<ReturnType<ValueBuffer['structure']>>;
 export type FunctionFrame = {
     open: number;
     close: number;
@@ -5,16 +7,15 @@ export type FunctionFrame = {
     args: {
         significant: number[];
     }[];
+    reduction?: [string, number];
 };
 export type ParsedArgument = {
     number: number;
     unit: string;
 } | string | undefined;
-/** @return {import('postcss').Plugin} */
-declare function pluginCreator(): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {import('../../run/host.js').StageEntry} */
+declare const reduceTransforms: {
+    create: () => import("../../run/host.js").Stage;
+};
+export { reduceTransforms as default };
 //# sourceMappingURL=index.d.ts.map

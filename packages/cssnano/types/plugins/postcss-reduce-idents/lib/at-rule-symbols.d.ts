@@ -1,3 +1,6 @@
+import type { ArenaIndex } from '../../../ir/blockRecord.js';
+import type { BlockRecords } from '../../../ir/blockRecords.js';
+import type { RunContext } from '../../../run/runContext.js';
 export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
 export type AtRuleSymbols = {
     atRule: string;
@@ -7,6 +10,9 @@ export type AtRuleSymbols = {
     functions?: Map<string, number[]>;
     descriptors?: Set<string>;
 };
+/** @import {ArenaIndex} from '../../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../../ir/blockRecords.js' */
+/** @import {RunContext} from '../../../run/runContext.js' */
 /** @typedef {import('@csstools/css-tokenizer').CSSToken} CSSToken */
 /**
  * Name the slots of an at-rule-defined name: where it is defined, what
@@ -30,7 +36,16 @@ export type AtRuleSymbols = {
  * @param {(value: string, index: number) => string} encoder
  */
 export default function atRuleReducer({ atRule, reserved, properties, functionProperties, functions, descriptors }: AtRuleSymbols, encoder: (value: string, index: number) => string): {
-    /** @param {import('postcss').AnyNode} node */ collect(node: import('postcss').AnyNode): void;
-    transform(): void;
+    /**
+     * @param {ArenaIndex} index
+     * @param {BlockRecords} records
+     * @param {RunContext} context
+     */
+    collect(index: ArenaIndex, records: BlockRecords, context: RunContext): void;
+    /**
+     * @param {BlockRecords} records
+     * @param {RunContext} context
+     */
+    transform(records: BlockRecords, context: RunContext): void;
 };
 //# sourceMappingURL=at-rule-symbols.d.ts.map

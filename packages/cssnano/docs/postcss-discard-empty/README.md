@@ -8,7 +8,7 @@ This plugin is part of `cssnano` and is no longer published as a separate packag
 
 ## Example
 
-For more examples see the [tests](test).
+For more examples see the [tests](../../test/postcss-discard-empty/).
 
 ### Input
 
@@ -25,12 +25,6 @@ h3 {color:red}
 ```css
 h3 {color:red}
 ```
-
-## Usage
-
-See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
-examples for your environment.
-
 
 ## Contributors
 

@@ -71,60 +71,9 @@ name of the animation depends on the order the value is matched in, so neither
 is touched.
 
 It works for `@keyframes`, `@counter-style`, custom `counter` values and grid area definitions. See the
-[documentation][idents] for more information, or the [tests](test) for more
+[documentation][idents] for more information, or the [tests](../../test/postcss-reduce-idents/) for more
 examples.
 
-
-## Usage
-
-See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
-examples for your environment.
-
-
-## API
-
-### reduceIdents([options])
-
-#### options
-
-##### counter
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable reducing `content`, `counter-reset` and `counter-increment` declarations.
-
-##### keyframes
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable reducing `keyframes` rules and `animation` declarations.
-
-##### counterStyle
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable reducing `counter-style` rules and `list-style` and `system` declarations.
-
-##### gridTemplate
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable reducing `grid-template`, `grid-area`, `grid-column`, `grid-row` and `grid-template-areas` declarations.
-
-##### encoder
-
-Type: `function`  
-Default: [`lib/encode.js`](https://github.com/cssnano/cssnano/blob/main/packages/postcss-reduce-idents/src/lib/encode.js)
-
-Pass a custom function to encode the identifier with (e.g.: as a way of prefixing them automatically).
-
-It receives two parameters:
-  - A `String` with the node value.
-  - A `Number` identifying the index of the occurrence.
 
 ## Contributors
 

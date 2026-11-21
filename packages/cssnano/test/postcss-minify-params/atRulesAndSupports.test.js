@@ -4,9 +4,11 @@ import postcss from 'postcss';
 import {
   usePostCSSPlugin,
   processCSSFactory,
-  repositoryFile,
+  oneStagePlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-minify-params/index.js';
+import minifyParams from '../../src/plugins/postcss-minify-params/index.js';
+
+const plugin = oneStagePlugin(minifyParams);
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -125,7 +127,7 @@ describe('Normalise @supports queries', () => {
   test('should handle @supports at-rule with missing raws.afterName', async () => {
     const root = postcss.parse('@supports (display: grid){}');
     delete root.first.raws.afterName;
-    await postcss([plugin()]).process(root, { from: repositoryFile });
+    await postcss([plugin()]).process(root, { from: undefined });
     assert.strictEqual(root.first.raws.afterName, '');
   });
 

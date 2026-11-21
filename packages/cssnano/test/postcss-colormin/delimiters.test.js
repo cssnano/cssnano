@@ -2,10 +2,12 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
 import {
+  oneStagePlugin,
   processCSSFactory,
-  repositoryFile,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-colormin/index.js';
+import colormin from '../../src/plugins/postcss-colormin/index.js';
+
+const plugin = oneStagePlugin(colormin);
 
 const { passthroughCSS } = processCSSFactory(plugin);
 
@@ -22,7 +24,7 @@ describe('Delimiter tracking and math boundaries', () => {
     rule.append(decl);
     root.append(rule);
 
-    await postcss([plugin()]).process(root, { from: repositoryFile });
+    await postcss([plugin()]).process(root, { from: undefined });
     assert.strictEqual(decl.value, 'calc(100vw - 20px');
   });
 
@@ -33,7 +35,7 @@ describe('Delimiter tracking and math boundaries', () => {
     rule.append(decl);
     root.append(rule);
 
-    await postcss([plugin()]).process(root, { from: repositoryFile });
+    await postcss([plugin()]).process(root, { from: undefined });
     assert.strictEqual(decl.value, 'rgb(255, 0, 0');
   });
 });

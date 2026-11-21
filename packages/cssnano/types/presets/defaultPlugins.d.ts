@@ -1,5 +1,3 @@
-import postcssMinifyGradients from '#postcss-minify-gradients';
-import mergePass from '../passes/merge/index.js';
 export type DefaultPluginOptions = {
     /**
      * Removes comments. Comments marked as important (`/*!`) stay unless `removeAll` is set.
@@ -52,7 +50,9 @@ export type DefaultPluginOptions = {
     /**
      * Adds a `@charset` for files with non-ASCII characters. The preset sets `add: false`.
      */
-    normalizeCharset?: import('#postcss-normalize-charset').Options;
+    normalizeCharset?: {
+        add?: boolean;
+    };
     /**
      * Discards declarations that a later declaration overrides. Takes no options.
      */
@@ -109,144 +109,128 @@ export type DefaultPluginOptions = {
  * preset option that enables it and the settings it runs with.
  */
 export declare const defaultPluginEntries: readonly [readonly [{
-    (opts?: import("#postcss-discard-comments").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create(options: import("#postcss-discard-comments").Options): {
+        comments(): (text: string) => boolean;
+    };
 }, "discardComments", {
-    readonly postcssPlugin: 'postcss-discard-comments';
-    readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
-}], readonly [typeof postcssMinifyGradients, 'minifyGradients', {
-    readonly postcssPlugin: 'postcss-minify-gradients';
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (options?: import("#postcss-reduce-initial").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'reduceInitial', {
-    readonly postcssPlugin: 'postcss-reduce-initial';
-    readonly targets: true;
-    readonly optionKeys: readonly ['ignore'];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizeDisplayValues', {
-    readonly postcssPlugin: 'postcss-normalize-display-values';
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'reduceTransforms', {
-    readonly postcssPlugin: 'postcss-reduce-transforms';
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (config?: import("#postcss-colormin").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'colormin', {
-    readonly postcssPlugin: 'postcss-colormin';
-    readonly targets: true;
-    readonly optionKeys: readonly ['hex', 'alphaHex', 'rgb', 'hsl', 'name', 'transparent', 'transformCustomProperties'];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizeTimingFunctions', {
-    readonly postcssPlugin: 'postcss-normalize-timing-functions';
-    readonly optionKeys: readonly [];
-}], readonly [import("postcss/lib/postcss").PluginCreator<import("postcss-calc").PostCssCalcOptions>, 'calc', {
-    readonly postcssPlugin: 'postcss-calc';
-    readonly optionKeys: readonly ['precision', 'warnWhenCannotResolve', 'mediaQueries', 'selectors', 'unwrapSingleValue', 'onParseError'];
-}], readonly [{
-    (opts?: import("#postcss-convert-values").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'convertValues', {
-    readonly postcssPlugin: 'postcss-convert-values';
-    readonly targets: true;
-    readonly defaults: {
-        readonly length: false;
+    readonly optionKeys: readonly ["removeAll", "remove"];
+}], [{
+    create: () => {
+        forProperty: () => (buffer: import("../values/valueBuffer.js").ValueBuffer) => void;
     };
-    readonly optionKeys: readonly ['precision', 'transformCustomProperties', 'time', 'length', 'angle', 'frequency'];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'orderedValues', {
-    readonly postcssPlugin: 'postcss-ordered-values';
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (opts?: import("#postcss-minify-selectors").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'minifySelectors', {
-    readonly postcssPlugin: 'postcss-minify-selectors';
-    readonly targets: true;
-    readonly defaults: {
-        readonly sort: true;
+}, "minifyGradients", {
+    optionKeys: never[];
+}], [{
+    create: (options: import("#postcss-reduce-initial").Options, browsers: readonly string[] | undefined) => import("../run/host.js").Stage | null;
+}, "reduceInitial", {
+    targets: true;
+    optionKeys: "ignore"[];
+}], [{
+    create: () => import("../run/host.js").Stage;
+}, "normalizeDisplayValues", {
+    optionKeys: never[];
+}], [{
+    create: () => import("../run/host.js").Stage;
+}, "reduceTransforms", {
+    optionKeys: never[];
+}], [{
+    create: (config: import("#postcss-colormin").Options, browsers: readonly string[] | undefined) => import("../run/host.js").Stage;
+}, "colormin", {
+    targets: true;
+    optionKeys: ("alphaHex" | "hex" | "hsl" | "name" | "rgb" | "transformCustomProperties" | "transparent")[];
+}], [{
+    create: () => import("../run/host.js").Stage;
+}, "normalizeTimingFunctions", {
+    optionKeys: never[];
+}], [{
+    create: (options: import("postcss-calc").PostCssCalcOptions) => import("../run/host.js").Stage;
+}, "calc", {
+    optionKeys: ("mediaQueries" | "onParseError" | "precision" | "selectors" | "unwrapSingleValue" | "warnWhenCannotResolve")[];
+}], [{
+    create: (options: import("#postcss-convert-values").Options, browsers: readonly string[] | undefined) => import("../run/host.js").Stage;
+}, "convertValues", {
+    targets: true;
+    defaults: {
+        length: boolean;
     };
-    readonly optionKeys: readonly ['sort', 'convertToIs'];
-}], readonly [{
-    (options?: import("#postcss-minify-params").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'minifyParams', {
-    readonly postcssPlugin: 'postcss-minify-params';
-    readonly targets: true;
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (opts?: import("#postcss-normalize-charset").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizeCharset', {
-    readonly postcssPlugin: 'postcss-normalize-charset';
-    readonly defaults: {
-        readonly add: false;
+    optionKeys: ("angle" | "frequency" | "length" | "precision" | "time" | "transformCustomProperties")[];
+}], [{
+    create: () => import("../run/host.js").Stage;
+}, "orderedValues", {
+    optionKeys: never[];
+}], [{
+    create: (options: import("#postcss-minify-selectors").Options, targets: readonly string[] | undefined) => import("../run/host.js").Stage;
+}, "minifySelectors", {
+    targets: true;
+    defaults: {
+        sort: boolean;
     };
-    readonly optionKeys: readonly ['add'];
+    optionKeys: ("convertToIs" | "sort")[];
+}], [{
+    create: (_options: import("#postcss-minify-params").Options, targets: readonly string[] | undefined) => import("../run/host.js").Stage;
+}, "minifyParams", {
+    targets: true;
+    optionKeys: never[];
+}], [{
+    create: (/** @type {{add?: boolean}} */ options: {
+        add?: boolean;
+    }) => {
+        add?: boolean;
+    };
+}, "normalizeCharset", {
+    defaults: {
+        add: boolean;
+    };
+    optionKeys: "add"[];
+    transform: true;
+    field: "normalizeCharset";
+}], [{
+    create: (options: import("#postcss-normalize-string").Options) => import("../run/host.js").Stage;
+}, "normalizeString", {
+    optionKeys: "preferredQuote"[];
+}], [{
+    create: (options: import("#postcss-normalize-unicode").Options, browsers: readonly string[] | undefined) => import("../run/host.js").Stage;
+}, "normalizeUnicode", {
+    targets: true;
+    optionKeys: never[];
+}], [{
+    create: (options: import("#postcss-minify-font-values").Options) => import("../run/host.js").Stage;
+}, "minifyFontValues", {
+    optionKeys: ("removeAfterKeyword" | "removeDuplicates" | "removeQuotes")[];
+}], [{
+    create: () => import("../run/host.js").Stage;
+}, "normalizeUrl", {
+    optionKeys: never[];
+}], [{
+    create: () => import("../run/host.js").Stage;
+}, "normalizeRepeatStyle", {
+    optionKeys: never[];
+}], [{
+    create: () => import("../run/host.js").Stage;
+}, "normalizePositions", {
+    optionKeys: never[];
+}], [{
+    create: (options: Record<string, never>) => Record<string, never>;
+}, "discardOverridden", {
+    optionKeys: never[];
+    transform: true;
+    field: "discardOverridden";
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'discardOverridden', {
-    readonly postcssPlugin: 'postcss-discard-overridden';
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (opts: import("#postcss-normalize-string").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizeString', {
-    readonly postcssPlugin: 'postcss-normalize-string';
-    readonly optionKeys: readonly ['preferredQuote'];
-}], readonly [{
-    (opts?: import("#postcss-normalize-unicode").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizeUnicode', {
-    readonly postcssPlugin: 'postcss-normalize-unicode';
-    readonly targets: true;
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (opts: import("#postcss-minify-font-values").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'minifyFontValues', {
-    readonly postcssPlugin: 'postcss-minify-font-values';
-    readonly optionKeys: readonly ['removeAfterKeyword', 'removeDuplicates', 'removeQuotes'];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizeUrl', {
-    readonly postcssPlugin: 'postcss-normalize-url';
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizeRepeatStyle', {
-    readonly postcssPlugin: 'postcss-normalize-repeat-style';
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'normalizePositions', {
-    readonly postcssPlugin: 'postcss-normalize-positions';
-    readonly optionKeys: readonly [];
-}], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: () => import("../run/host.js").Stage;
 }, "normalizeWhitespace", {
-    readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
-}], readonly [typeof mergePass, "merge", {
-    readonly postcssPlugin: 'cssnano-merge';
+    readonly field: 'normalizeWhitespace';
+}], readonly [{
+    readonly create: (/** @type {{rules?: boolean}} */ options: {
+        rules?: boolean;
+    }) => {
+        rules?: boolean;
+    };
+}, "merge", {
     readonly targets: true;
-    readonly optionKeys: readonly ['rules'];
+    readonly transform: true;
+    readonly merge: import("../merge/index.js").MergeRunner;
+    readonly optionKeys: readonly ["rules"];
     readonly guards: {
         readonly rules: Readonly<{
             isValid: typeof import("../optionGuards.js").isBoolean;
@@ -254,19 +238,22 @@ export declare const defaultPluginEntries: readonly [readonly [{
         }>;
     };
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    readonly create: (options: Record<string, never>) => Record<string, never>;
 }, "discardEmpty", {
-    readonly postcssPlugin: 'postcss-discard-empty';
     readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly field: 'discardEmpty';
+}], [{
+    create: (/** @type {Record<string, never>} */ options: Record<string, never>) => Record<string, never>;
+}, "uniqueSelectors", {
+    optionKeys: never[];
+    transform: true;
+    field: "uniqueSelectors";
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
-}, 'uniqueSelectors', {
-    readonly postcssPlugin: 'postcss-unique-selectors';
+    readonly create: (options: Record<string, never>) => Record<string, never>;
+}, "rawCache", {
     readonly optionKeys: readonly [];
-}], readonly [typeof import("../utils/rawCache.js").default, "rawCache", {
-    readonly postcssPlugin: 'cssnano-util-raw-cache';
-    readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly field: 'rawCache';
 }]];
 //# sourceMappingURL=defaultPlugins.d.ts.map

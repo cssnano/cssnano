@@ -1,23 +1,26 @@
 import cssnanoUtils from '#utils';
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import { TokenType } from '@csstools/css-tokenizer';
+import {
+  endsWithHack,
+  isSeparatedByDelimiter,
+  replaceToken,
+  respelled,
+  startsWithHack,
+  unhack,
+} from './lib/ieHack.js';
+import { stringToken } from '../../values/tokenConstructors.js';
+import { whitespace } from '../../values/punctuationTokens.js';
 
-const {
-  asciiLowerCase,
-  decoded,
-  endsWithEscapingBackslash,
-  mathFunctions,
-  tokens: tokenizeValue,
-} = cssnanoUtils;
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {TokenEdit} from '../../values/valueBuffer.js' */
+/** @import {Reducer, Stage, StageEntry} from '../../run/host.js' */
 
-const atrule = 'atrule';
-const decl = 'decl';
-const rule = 'rule';
+const { asciiLowerCase, decoded, endsWithEscapingBackslash, mathFunctions } =
+  cssnanoUtils;
+
 const gridRowsPropertyRegex = /^(?:grid|grid-template|grid-template-areas)$/iv;
 const variableFunctions = new Set(['var', 'env', 'constant']);
-const ieHackRegex = /[ \t\n\r\f]*(\\9)[ \t\n\r\f]*/v;
-const whitespaceRegex = /[ \t\n\r\f]/gv;
-
-const plainSeparatorRegex = /^[ \t\n\r\f]*:[ \t\n\r\f]*$/v;
+const hasWhitespaceRegex = /[ \t\n\r\f]/v;
 
 /** @param {import('@csstools/css-tokenizer').TokenType} type */
 function isOpeningToken(type) {
@@ -57,7 +60,7 @@ function removesWhitespace(previous, next) {
 }
 
 /**
- * @param {import('@csstools/css-tokenizer').CSSToken[]} tokens
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} tokens
  * @param {number} index
  * @param {{ math?: boolean, variable?: boolean }[]} stack
  * @return {string}
@@ -83,26 +86,6 @@ function whitespaceReplacement(tokens, index, stack) {
 }
 
 /**
- * @param {string} value
- * @param {[number, number, string][]} replacements
- * @return {string}
- */
-function applyReplacements(value, replacements) {
-  if (!replacements.length) return value;
-  const pieces = [];
-  let start = 0;
-  for (const [from, to, replacement] of replacements) {
-    if (from > start) pieces.push(value.slice(start, from));
-    pieces.push(replacement);
-    start = to;
-  }
-  if (start < value.length) {
-    pieces.push(value.slice(start));
-  }
-  return pieces.join('');
-}
-
-/**
  * Trim and collapse the spaces and tabs between the names of one grid row.
  * Rows with a backslash are kept as authored, because the whitespace after an
  * escape may belong to the escape or to the name. An unclosed string or a
@@ -124,26 +107,56 @@ function trimGridRow(raw) {
 }
 
 /**
- * Normalize directly from source-backed tokenizer spans. The stack mirrors the
- * legacy walk: math descendants receive special delimiter treatment, while
- * variable functions trim whitespace around the name and comma delimiters.
+ * The edit of one whitespace token, or undefined when it stays as it is. A
+ * run before a `\9` belongs to the hack, which drops it. A run after a `\9`
+ * that a delimiter follows is dropped too.
  *
- * @param {string} value
- * @param {boolean} trimRows whether top-level strings are grid area rows
- * @return {string}
+ * @param {readonly CSSToken[]} tokens
+ * @param {number} index
+ * @param {{ math?: boolean, variable?: boolean }[]} stack
+ * @return {TokenEdit | undefined}
  */
-function reduceWhitespaces(value, trimRows) {
-  const tokens = [...tokenize({ css: value })].filter(
-    (token) => token[0] !== TokenType.EOF
-  );
+function whitespaceEdit(tokens, index, stack) {
+  const token = tokens[index];
+  if (startsWithHack(tokens[index + 1])) return replaceToken(index, []);
+  const previous = tokens[index - 1];
+  if (
+    previous &&
+    endsWithHack(previous) &&
+    isSeparatedByDelimiter(tokens[index + 1]?.[1][0] ?? '')
+  ) {
+    return replaceToken(index, []);
+  }
+  const replacement = whitespaceReplacement(tokens, index, stack);
+  if (replacement === token[1]) return undefined;
+  if (replacement === '') return replaceToken(index, []);
+  return replaceToken(index, [
+    replacement === ' ' ? whitespace() : respelled(token, replacement),
+  ]);
+}
+
+/**
+ * The token edits that trim and collapse the whitespace of a value, and
+ * unhack each IE hack outside strings. The stack mirrors the legacy walk:
+ * math descendants receive special delimiter treatment, while variable
+ * functions trim whitespace around the name and comma delimiters.
+ *
+ * @param {readonly CSSToken[]} tokens the tokens of the value, without EOF
+ * @param {boolean} trimRows whether top-level strings are grid area rows
+ * @return {TokenEdit[]}
+ */
+function whitespaceEdits(tokens, trimRows) {
   /** @type {{ math?: boolean, variable?: boolean }[]} */
   const stack = [];
-  /** @type {[number, number, string][]} */
-  const replacements = [];
+  /** @type {TokenEdit[]} */
+  const edits = [];
 
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const type = token[0];
+    if (type !== TokenType.String && token[1].includes('\\9')) {
+      unhack(edits, tokens, index);
+    }
     if (type === TokenType.Function) {
       const name = asciiLowerCase(decoded(token));
       const isVariable = variableFunctions.has(name);
@@ -169,205 +182,47 @@ function reduceWhitespaces(value, trimRows) {
     if (trimRows && type === TokenType.String && stack.length === 0) {
       const row = trimGridRow(token[1]);
       if (row !== token[1]) {
-        replacements.push([token[2], token[3] + 1, row]);
+        edits.push(replaceToken(index, [stringToken(row, row.slice(1, -1))]));
       }
       continue;
     }
-    if (type !== TokenType.Whitespace) continue;
-
-    const replacement = whitespaceReplacement(tokens, index, stack);
-    if (replacement !== token[1]) {
-      replacements.push([token[2], token[3] + 1, replacement]);
+    if (type === TokenType.Whitespace) {
+      const edit = whitespaceEdit(tokens, index, stack);
+      if (edit) edits.push(edit);
     }
   }
-
-  return applyReplacements(value, replacements);
+  return edits;
 }
 
 /**
- * Drop whole whitespace tokens; character-level replacement would reach
- * preserved comments.
- * @param {string} between
- * @return {string}
+ * Trims the whitespace of a value in the buffer, edited as tokens. A value
+ * without whitespace is left alone, so it is not tokenized.
+ *
+ * @param {boolean} trimRows whether top-level strings are grid area rows
+ * @returns {Reducer}
  */
-function trimSeparator(between) {
-  if (plainSeparatorRegex.test(between)) return ':';
-  return tokenizeValue(between)
-    .filter(([type]) => type !== TokenType.Whitespace)
-    .map(([, raw]) => raw)
-    .join('');
-}
-
-/**
- * Trim only the parser-consumed whitespace run around the colon (CSS
- * Variables 1).
- * @param {string} between
- * @return {string}
- */
-function trimCustomPropertySeparator(between) {
-  if (plainSeparatorRegex.test(between)) return ':';
-  const tokens = tokenizeValue(between).filter(
-    ([type]) => type !== TokenType.EOF
-  );
-  let start = 0;
-  while (tokens[start]?.[0] === TokenType.Whitespace) start++;
-  if (tokens[start]?.[0] === TokenType.Colon) {
-    // The colon stays; only its surrounding parser-consumed whitespace runs
-    // may go.
-    start++;
-    while (tokens[start]?.[0] === TokenType.Whitespace) start++;
-    return (
-      ':' +
-      tokens
-        .slice(start)
-        .map(([, raw]) => raw)
-        .join('')
-    );
-  }
-  // A kept comment before the colon interrupts the parser-consumed run;
-  // leave the authored separator untouched.
-  return between;
-}
-
-/**
- * Collapses multi-character whitespace runs in at-rule afterName to a single
- * space while preserving comments.
- * @param {string} afterName
- * @return {string}
- */
-function normalizeAfterName(afterName) {
-  if (!afterName || afterName === ' ') return afterName;
-  if (!afterName.includes('/*')) return ' ';
-  let result = '';
-  for (const [type, raw] of tokenizeValue(afterName)) {
-    result += type === TokenType.Whitespace ? ' ' : raw;
-  }
-  return result;
-}
-
-/**
- * Top-level strings in grid-template-areas, grid-template and grid are area
- * rows, so their values get a separate cache.
- * @param {import('postcss').Declaration} node
- * @param {Map<string, string>} cache
- * @param {Map<string, string>} gridRowsCache
- * @return {void}
- */
-function trimDeclaration(node, cache, gridRowsCache) {
-  // Ensure that !important values do not have any excess whitespace
-  if (node.important) {
-    node.raws.important = '!important';
-  }
-  // Remove whitespaces around ie 9 hack
-  const rawValue = node.raws.value;
-  const hasMatchingRaw = Boolean(
-    node.raws?.value?.raw && rawValue?.value === node.value
-  );
-  const value = (
-    rawValue?.value === node.value ? rawValue.raw : node.value
-  ).replace(ieHackRegex, '$1');
-
-  const trimRows = gridRowsPropertyRegex.test(node.prop);
-  const valueCache = trimRows ? gridRowsCache : cache;
-  let result;
-  if (valueCache.has(value)) {
-    result = /** @type {string} **/ (valueCache.get(value));
-    node.value = result;
-  } else {
-    result = reduceWhitespaces(value, trimRows);
-
-    // Trim whitespace inside functions & dividers
-    node.value = result;
-    valueCache.set(value, result);
-  }
-  if (hasMatchingRaw) {
-    node.raws.value = { raw: result, value: result };
-  }
-
-  // Remove extra semicolons and whitespace before the declaration
-  if (node.raws.before) {
-    const prev = node.prev();
-
-    if (prev && prev.type !== rule) {
-      node.raws.before = node.raws.before.replaceAll(';', '');
-    }
-  }
-
-  // The separator raw can also carry a preserved comment, which must survive.
-  node.raws.between = trimSeparator(node.raws.between || ':');
-  node.raws.semicolon = false;
-}
-
-/**
- * @return {import('postcss').Plugin}
- */
-function pluginCreator() {
-  return {
-    postcssPlugin: 'postcss-normalize-whitespace',
-
-    /**
-     * @param {import('postcss').Root} css
-     */
-    OnceExit(css) {
-      const declarationCache = new Map();
-      const gridRowsCache = new Map();
-
-      css.walk((node) => {
-        const { type } = node;
-
-        if ([decl, rule, atrule].includes(type) && node.raws.before) {
-          node.raws.before = node.raws.before.replaceAll(whitespaceRegex, '');
-        }
-
-        if (type === decl) {
-          if (!node.prop.startsWith('--')) {
-            trimDeclaration(node, declarationCache, gridRowsCache);
-          } else if (node.value.trim() !== '') {
-            // Custom properties skip value normalization, so only the
-            // parser-consumed separator run is trimmed.
-            node.raws.between = trimCustomPropertySeparator(
-              node.raws.between || ':'
-            );
-            node.raws.semicolon = false;
-          }
-        } else if (type === rule || type === atrule) {
-          // When the last declaration has no trailing semicolon and its
-          // value ends in an escape sequence consuming whitespace (e.g.
-          // `\9` written as `\` followed by a literal tab), the parser
-          // attributes the escaped code point to the rule's trailing
-          // raw instead of the declaration's value. Reattach the single
-          // character the backslash escapes before discarding the rest
-          // of that raw, or the escape is left dangling and becomes a
-          // valid escape of whatever follows it in the output (`}`, or
-          // even a `;` inserted as a terminator, since only a newline or
-          // end of input is not a valid escape target).
-          const last = node.last;
-
-          if (
-            last &&
-            last.type === decl &&
-            endsWithEscapingBackslash(last.value) &&
-            node.raws.after
-          ) {
-            last.value += node.raws.after[0];
-          }
-
-          node.raws.between = node.raws.after = '';
-          node.raws.semicolon = false;
-
-          if (type === atrule && node.raws.afterName !== undefined) {
-            node.raws.afterName = normalizeAfterName(node.raws.afterName);
-          }
-        }
-      });
-
-      // Remove final newline
-      css.raws.after = '';
-    },
+function valueReducer(trimRows) {
+  return (buffer) => {
+    if (!buffer.isEdited() && !hasWhitespaceRegex.test(buffer.text())) return;
+    const edits = whitespaceEdits(buffer.tokens(), trimRows);
+    if (edits.length) buffer.replaceRanges(edits);
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+const trimValue = valueReducer(false);
+const trimGridValue = valueReducer(true);
+
+/**
+ * The stage of the value part. A custom property keeps its value as written.
+ * It runs last in each plan, so the whitespace it leaves is final.
+ * @type {Stage}
+ */
+const valueStage = {
+  forProperty(property) {
+    if (property.startsWith('--')) return null;
+    return gridRowsPropertyRegex.test(property) ? trimGridValue : trimValue;
+  },
+};
+
+/** @satisfies {StageEntry} */
+export const valueEntry = { create: () => valueStage };

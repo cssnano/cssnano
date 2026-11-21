@@ -1,26 +1,29 @@
-export type CSSToken = import('@csstools/css-tokenizer').CSSToken;
 export type Options = {
     /**
      * Removes comments marked as important (`/*!`) too. (default: false)
      */
     removeAll?: boolean | undefined;
     /**
-     * Removes comments marked as important, except the first one. (default: false)
-     */
-    removeAllButFirst?: boolean | undefined;
-    /**
      * Returns true to remove a comment. Receives the comment text without its delimiters.
      */
     remove?: ((s: string) => boolean) | undefined;
 };
-/**
- * @param {Options} [opts]
- * @return {import('postcss').Plugin}
+/** @import {StageEntry} from '../../run/host.js' */
+/** @typedef {object} Options
+ *  @property {boolean=} removeAll Removes comments marked as important (`/*!`) too. (default: false)
+ *  @property {(s: string) => boolean=} remove Returns true to remove a comment. Receives the comment text without its delimiters.
  */
-declare function pluginCreator(opts?: Options): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+/**
+ * The comment part of the stage. A comment marked as important (`/*!`) is
+ * kept unless `removeAll` or `remove` asks for it, since it often carries a
+ * license notice.
+ *
+ * @satisfies {StageEntry}
+ */
+declare const discardComments: {
+    create(options: Options): {
+        comments(): (text: string) => boolean;
+    };
+};
+export { discardComments as default };
 //# sourceMappingURL=index.d.ts.map

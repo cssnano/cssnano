@@ -1,3 +1,4 @@
+import type { CSSToken } from '@csstools/css-tokenizer';
 /**
  * Escape characters for a CSS string token in the given quote context.
  * @param {string} value
@@ -12,8 +13,9 @@ export declare function escapeForString(value: string, quote: string): string;
  * percent-escapes are not guaranteed equivalent for every server or bundler.
  * @param {string} decoded
  * @param {string} quote
- * @param {string} name
- * @return {string | undefined}
+ * @param {CSSToken | undefined} nameToken the URL or function token, or
+ *   undefined for a bare string
+ * @return {CSSToken[] | undefined}
  */
-export declare function normalizeUrlTokenValue(decoded: string, quote: string, name: string): string | undefined;
+export declare function normalizeUrlTokenValue(decoded: string, quote: string, nameToken: CSSToken | undefined): CSSToken[] | undefined;
 //# sourceMappingURL=urls.d.ts.map

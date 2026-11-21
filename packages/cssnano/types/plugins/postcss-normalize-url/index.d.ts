@@ -1,10 +1,9 @@
-/**
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+import type { CSSToken } from '@csstools/css-tokenizer';
+import type { Stage } from '../../run/host.js';
+export type UrlVisitor = (start: number, end: number, decoded: string, quote: string, nameToken: CSSToken | undefined) => void;
+/** @satisfies {StageEntry} */
+declare const urlEntry: {
+    create: () => Stage;
+};
+export { urlEntry as default };
 //# sourceMappingURL=index.d.ts.map

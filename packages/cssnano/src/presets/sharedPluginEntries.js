@@ -1,38 +1,65 @@
-import postcssDiscardComments from '#postcss-discard-comments';
-import postcssNormalizeWhitespace from '#postcss-normalize-whitespace';
-import postcssDiscardEmpty from '#postcss-discard-empty';
-import cssnanoUtils from '#utils';
-
-const { rawCache } = cssnanoUtils;
+import discardComments from '#postcss-discard-comments';
+import { valueEntry as normalizeWhitespaceValues } from '#postcss-normalize-whitespace';
+/** @import {EntryFor} from './configurePlugins.js' */
+/** @import {DefaultPluginOptions} from './defaultPlugins.js' */
 
 /**
  * The plugin entries that more than one built-in preset runs. Each is defined
  * once, so the settings of an option cannot differ between presets.
  */
 
-export const discardCommentsEntry = /** @type {const} */ ([
-  postcssDiscardComments,
-  'discardComments',
-  {
-    postcssPlugin: 'postcss-discard-comments',
-    optionKeys: ['removeAll', 'removeAllButFirst', 'remove'],
-  },
-]);
+export const discardCommentsEntry =
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'discardComments'>} */ (
+    /** @type {const} */ ([
+      discardComments,
+      'discardComments',
+      {
+        optionKeys: ['removeAll', 'remove'],
+      },
+    ])
+  );
 
-export const normalizeWhitespaceEntry = /** @type {const} */ ([
-  postcssNormalizeWhitespace,
-  'normalizeWhitespace',
-  { postcssPlugin: 'postcss-normalize-whitespace', optionKeys: [] },
-]);
+export const normalizeWhitespaceEntry =
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'normalizeWhitespace'>} */ (
+    /** @type {const} */ ([
+      normalizeWhitespaceValues,
+      'normalizeWhitespace',
+      {
+        optionKeys: [],
+        field: 'normalizeWhitespace',
+      },
+    ])
+  );
 
-export const discardEmptyEntry = /** @type {const} */ ([
-  postcssDiscardEmpty,
-  'discardEmpty',
-  { postcssPlugin: 'postcss-discard-empty', optionKeys: [] },
-]);
+/**
+ * discardEmpty runs in the walk up of its host, so the host walks the
+ * stylesheet without a plugin of its own.
+ */
+export const discardEmptyEntry =
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'discardEmpty'>} */ (
+    /** @type {const} */ ([
+      { create: (/** @type {Record<string, never>} */ options) => options },
+      'discardEmpty',
+      {
+        optionKeys: [],
+        transform: true,
+        field: 'discardEmpty',
+      },
+    ])
+  );
 
-export const rawCacheEntry = /** @type {const} */ ([
-  rawCache,
-  'rawCache',
-  { postcssPlugin: 'cssnano-util-raw-cache', optionKeys: [] },
-]);
+/**
+ * rawCache runs last in its host, on the tree the run wrote.
+ */
+export const rawCacheEntry =
+  /** @satisfies {EntryFor<DefaultPluginOptions, 'rawCache'>} */ (
+    /** @type {const} */ ([
+      { create: (/** @type {Record<string, never>} */ options) => options },
+      'rawCache',
+      {
+        optionKeys: [],
+        transform: true,
+        field: 'rawCache',
+      },
+    ])
+  );

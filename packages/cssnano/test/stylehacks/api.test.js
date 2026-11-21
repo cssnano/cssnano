@@ -1,17 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import postcss from 'postcss';
-import { detectDeclaration } from '../../src/utils/stylehacks/index.js';
+import { hasHack } from '../../src/utils/stylehacks/index.js';
 import { detectsHack, detectsNoHack } from './_detectHack.js';
 
-test('should have a separate detectDeclaration method', async () => {
+test('should have a separate hasHack function', async () => {
   let counter = 0;
 
   const plugin = () => {
     return {
       postcssPlugin: 'test',
       Declaration(decl) {
-        if (detectDeclaration(decl)) {
+        if (hasHack(decl.raws.before, decl.prop, decl.value)) {
           counter++;
         }
       },
@@ -25,24 +25,34 @@ test('should have a separate detectDeclaration method', async () => {
   assert.strictEqual(counter, 2);
 });
 
-test('detectDeclaration reclassifies a declaration after its value changes', () => {
+test('hasHack reclassifies a declaration after its value changes', () => {
   const decl = postcss.parse('a{margin:1px}').first.first;
 
-  assert.equal(detectDeclaration(decl), false);
+  assert.equal(hasHack(decl.raws.before, decl.prop, decl.value), false);
 
   decl.value = '1px\\9';
 
-  assert.equal(detectDeclaration(decl), true);
+  assert.equal(hasHack(decl.raws.before, decl.prop, decl.value), true);
 });
 
-test('detectDeclaration does not share classifications with cloned declarations', () => {
+test('hasHack detects a declaration anew once its before gains a hack prefix', () => {
+  const decl = postcss.parse('a{color:red}').first.first;
+
+  assert.equal(hasHack(decl.raws.before, decl.prop, decl.value), false);
+
+  decl.raws.before = ' _';
+
+  assert.equal(hasHack(decl.raws.before, decl.prop, decl.value), true);
+});
+
+test('hasHack does not share classifications with cloned declarations', () => {
   const decl = postcss.parse('a{margin:1px}').first.first;
 
-  assert.equal(detectDeclaration(decl), false);
+  assert.equal(hasHack(decl.raws.before, decl.prop, decl.value), false);
 
   const clone = decl.clone({ value: '1px\\9' });
 
-  assert.equal(detectDeclaration(clone), true);
+  assert.equal(hasHack(clone.raws.before, clone.prop, clone.value), true);
 });
 
 test(

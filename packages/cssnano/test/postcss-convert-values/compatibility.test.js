@@ -3,9 +3,11 @@ import { test } from 'node:test';
 import postcss from 'postcss';
 import {
   processCSSFactory,
-  repositoryFile,
+  oneStagePlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-convert-values/index.js';
+import convertValues from '../../src/plugins/postcss-convert-values/index.js';
+
+const plugin = oneStagePlugin(convertValues);
 
 const { processCSS } = processCSSFactory(plugin);
 
@@ -56,7 +58,7 @@ test('preserves the legacy partial scan for an unbalanced function', async () =>
     nodes: [postcss.decl({ prop: 'width', value: 'calc(192px + 0px' })],
   });
   const result = await postcss(plugin()).process(root, {
-    from: repositoryFile,
+    from: undefined,
   });
   assert.equal(result.css, 'width: calc(2in + 0px');
 });

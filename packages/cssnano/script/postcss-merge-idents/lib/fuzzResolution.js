@@ -16,6 +16,22 @@ const COUNTER_STYLE_ARGUMENT_POSITIONS = new Map([
 ]);
 
 /**
+ * The at-rule prelude's tokens, without whitespace or comments.
+ *
+ * @param {import('postcss').AtRule} atRule
+ * @return {import('@csstools/css-tokenizer').CSSToken[]}
+ */
+function preludeTokens(atRule) {
+  const rawParams = atRule.raws?.between
+    ? atRule.params + atRule.raws.between
+    : atRule.params;
+  return tokens(rawParams).filter(
+    (token) =>
+      token[0] !== TokenType.Whitespace && token[0] !== TokenType.Comment
+  );
+}
+
+/**
  * @param {string} family lowercase at-rule name
  * @return {'keyframes' | 'counter-style' | undefined}
  */
@@ -86,13 +102,7 @@ export function resolveReferences(css) {
     }
     // The prelude is exactly one name; browsers drop the rule otherwise. A
     // string names a keyframes rule but is not a <counter-style-name>.
-    const rawParams = atRule.raws?.between
-      ? atRule.params + atRule.raws.between
-      : atRule.params;
-    const nameTokens = tokens(rawParams).filter(
-      (token) =>
-        token[0] !== TokenType.Whitespace && token[0] !== TokenType.Comment
-    );
+    const nameTokens = preludeTokens(atRule);
     const [token] = nameTokens;
     if (
       nameTokens.length !== 1 ||
@@ -258,13 +268,7 @@ export function collectProtectedNameDefinitions(css) {
   const defined = new Set();
   root.walkAtRules((atRule) => {
     const namespace = namespaceOf(asciiLowerCase(atRule.name));
-    const rawParams = atRule.raws?.between
-      ? atRule.params + atRule.raws.between
-      : atRule.params;
-    const nameTokens = tokens(rawParams).filter(
-      (token) =>
-        token[0] !== TokenType.Whitespace && token[0] !== TokenType.Comment
-    );
+    const nameTokens = preludeTokens(atRule);
     const name =
       nameTokens.length === 1 ? spelledName(nameTokens[0]) : undefined;
     if (namespace && name !== undefined && spelled.has(name)) {

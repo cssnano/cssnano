@@ -1,15 +1,14 @@
 import cssnanoUtils from '#utils';
 import cssWideKeywords from '../rules/cssWideKeywords.json' with { type: 'json' };
+import { comma, whitespace } from '../../../values/punctuationTokens.js';
+import { tokensText } from '../../../values/tokensText.js';
 
-const {
-  TokenType,
-  asciiLowerCase,
-  closeForOpening,
-  decoded,
-  tokenEnd,
-  tokenStart,
-  tokens,
-} = cssnanoUtils;
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+
+const { TokenType, asciiLowerCase, closeForOpening, decoded } = cssnanoUtils;
+
+/** The placeholder that css-loader leaves for an import. */
+const cssLoaderImportMarker = '___CSS_LOADER_IMPORT___';
 
 /**
  * A raw top-level component. Its source is intentionally never reserialized:
@@ -105,11 +104,12 @@ function isDelim(term, char) {
 }
 
 /**
- * Tokenize a declaration in a single streaming pass and split it at top-level
- * whitespace, commas, and structural slashes.
+ * Splits the tokens of a declaration at top-level whitespace, commas, and
+ * structural slashes. A term's raw text is the text of its tokens, so terms
+ * built from tokens an earlier stage made still read back as their text.
  *
- * @param {string} value
- * @return {{ arguments: Term[][], terms: Term[], abort: boolean, value: string }}
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} value the tokens of the value
+ * @return {{ arguments: Term[][], terms: Term[], abort: boolean }}
  */
 function tokenizeValue(value) {
   /** @type {Term[][]} */
@@ -121,15 +121,11 @@ function tokenizeValue(value) {
   /** @type {string[]} */
   const stack = [];
   let abort = false;
-  const hasCssLoaderImport = value.includes('___CSS_LOADER_IMPORT___');
 
   const pushTerm = () => {
     if (current.length === 0) return;
     const term = {
-      raw: value.slice(
-        tokenStart(current[0]),
-        tokenEnd(current[current.length - 1])
-      ),
+      raw: tokensText(current),
       tokens: current,
     };
     argumentsList[argumentsList.length - 1].push(term);
@@ -137,14 +133,14 @@ function tokenizeValue(value) {
     current = [];
   };
 
-  for (const token of tokens(value)) {
+  for (const token of value) {
     const type = token[0];
     if (
       type === TokenType.Comment ||
       type === TokenType.BadString ||
       type === TokenType.BadURL ||
       isVariableFunction(token) ||
-      (hasCssLoaderImport && token[1].includes('___CSS_LOADER_IMPORT___'))
+      token[1].includes(cssLoaderImportMarker)
     ) {
       abort = true;
     }
@@ -184,20 +180,51 @@ function tokenizeValue(value) {
 
   pushTerm();
   if (stack.length > 0) abort = true;
-  return { arguments: argumentsList, terms, abort, value };
+  return { arguments: argumentsList, terms, abort };
 }
 
-/** @param {Term[][]} arguments_ */
-function serializeArguments(arguments_) {
-  return arguments_
-    .map((terms) => terms.map((term) => term.raw).join(' '))
-    .join(',');
+/**
+ * The tokens of the groups in order, with `separator` between each pair. An
+ * empty group adds nothing, so a caller drops the groups it does not keep.
+ *
+ * @param {readonly (readonly CSSToken[])[]} groups
+ * @param {CSSToken} separator
+ * @return {CSSToken[]}
+ */
+function joinTokens(groups, separator) {
+  /** @type {CSSToken[]} */
+  const joined = [];
+  for (let index = 0; index < groups.length; index++) {
+    if (index > 0) joined.push(separator);
+    for (const token of groups[index]) joined.push(token);
+  }
+  return joined;
+}
+
+/**
+ * The tokens of a comma-separated list of arguments, each argument's terms
+ * separated by whitespace.
+ *
+ * @param {Term[][]} arguments_
+ * @return {CSSToken[]}
+ */
+function argumentTokens(arguments_) {
+  return joinTokens(
+    arguments_.map((terms) =>
+      joinTokens(
+        terms.map((term) => term.tokens),
+        whitespace()
+      )
+    ),
+    comma()
+  );
 }
 
 /* `default` is reserved for custom identifiers although it is not CSS-wide. */
 const reservedIdentKeywords = new Set([...cssWideKeywords.keywords, 'default']);
 
 export {
+  argumentTokens,
   reservedIdentKeywords,
   isDelim,
   isDimension,
@@ -208,7 +235,7 @@ export {
   isPercentage,
   isString,
   isUrl,
+  joinTokens,
   name,
-  serializeArguments,
   tokenizeValue,
 };

@@ -3,7 +3,9 @@ import { test } from 'node:test';
 import jsdom from 'jsdom';
 import postcss from 'postcss';
 import { generateFoldCandidates } from '../../script/postcss-minify-selectors/lib/fuzzGenerate.js';
-import plugin from '../../src/plugins/postcss-minify-selectors/index.js';
+import minifySelectors from '../../src/plugins/postcss-minify-selectors/index.js';
+
+const plugin = oneStagePlugin(minifySelectors);
 import {
   classifyFoldCandidate,
   compoundBoundaries,
@@ -13,7 +15,7 @@ import {
   normalizeList,
   specificityOf,
 } from '../../src/plugins/postcss-minify-selectors/lib/selectorScanner.js';
-import { repositoryFile, withTargets } from '../../../../util/testHelpers.js';
+import { withTargets, oneStagePlugin } from '../../../../util/testHelpers.js';
 
 const modernOptions = withTargets('last 2 Chrome versions');
 const { JSDOM } = jsdom;
@@ -22,7 +24,7 @@ const { JSDOM } = jsdom;
 async function minify(selector) {
   return (
     await postcss([plugin(modernOptions)]).process(`${selector}{color:red}`, {
-      from: repositoryFile,
+      from: undefined,
     })
   ).css;
 }
@@ -188,7 +190,7 @@ test('folding retains :is() specificity in the cascade', async () => {
   const source =
     '#h .target,#i .target,#j .target{color:red}.target{color:blue}';
   const output = await postcss([plugin(modernOptions)]).process(source, {
-    from: repositoryFile,
+    from: undefined,
   }).css;
   assert.match(output, /:is\(#h,#i,#j\) \.target/v);
   const before = new JSDOM(

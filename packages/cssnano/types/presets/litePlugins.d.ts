@@ -9,25 +9,27 @@ export type LitePluginOptions = Pick<import('./defaultPlugins.js').DefaultPlugin
  * preset option that enables it.
  */
 export declare const litePluginEntries: readonly [readonly [{
-    (opts?: import("../plugins/postcss-discard-comments/index.js").Options): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create(options: import("../plugins/postcss-discard-comments/index.js").Options): {
+        comments(): (text: string) => boolean;
+    };
 }, "discardComments", {
-    readonly postcssPlugin: 'postcss-discard-comments';
-    readonly optionKeys: readonly ['removeAll', 'removeAllButFirst', 'remove'];
+    readonly optionKeys: readonly ["removeAll", "remove"];
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    create: () => import("../run/host.js").Stage;
 }, "normalizeWhitespace", {
-    readonly postcssPlugin: 'postcss-normalize-whitespace';
     readonly optionKeys: readonly [];
+    readonly field: 'normalizeWhitespace';
 }], readonly [{
-    (): import("postcss/lib/postcss").Plugin;
-    postcss: true;
+    readonly create: (options: Record<string, never>) => Record<string, never>;
 }, "discardEmpty", {
-    readonly postcssPlugin: 'postcss-discard-empty';
     readonly optionKeys: readonly [];
-}], readonly [typeof import("../utils/rawCache.js").default, "rawCache", {
-    readonly postcssPlugin: 'cssnano-util-raw-cache';
+    readonly transform: true;
+    readonly field: 'discardEmpty';
+}], readonly [{
+    readonly create: (options: Record<string, never>) => Record<string, never>;
+}, "rawCache", {
     readonly optionKeys: readonly [];
+    readonly transform: true;
+    readonly field: 'rawCache';
 }]];
 //# sourceMappingURL=litePlugins.d.ts.map

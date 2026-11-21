@@ -1,10 +1,10 @@
-/**
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+import { tokenizeValue } from './lib/tokenize.js';
+import type { CSSToken } from '@csstools/css-tokenizer';
+import type { Stage } from '../../run/host.js';
+export type Processor = (parsed: ReturnType<typeof tokenizeValue>) => CSSToken[] | null;
+/** @satisfies {StageEntry} */
+declare const orderedValues: {
+    create: () => Stage;
+};
+export { orderedValues as default };
 //# sourceMappingURL=index.d.ts.map

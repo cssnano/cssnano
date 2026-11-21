@@ -1,6 +1,9 @@
 import { test } from 'node:test';
-import { processCSSFactory } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-merge-idents/index.js';
+import {
+  processCSSFactory,
+  presetEntryPlugin,
+} from '../../../../util/testHelpers.js';
+const plugin = presetEntryPlugin('mergeIdents');
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -170,6 +173,25 @@ test(
   processCSS(
     '@layer low, high;@layer high{@keyframes a{0%{opacity:0}}}@layer low{@keyframes a{0%{opacity:0}}}div{animation:a 1s}',
     '@layer low, high;@layer high{@keyframes a{0%{opacity:0}}}@layer low{}div{animation:a 1s}'
+  )
+);
+
+// A block `@layer` takes at most one name, so browsers drop `@layer x, y{}`
+// and the statement orders y, w, x. Keeping the copy in y would let the
+// printed body in w win.
+test(
+  'should not order layers named by a block @layer with a name list',
+  processCSS(
+    '@layer x, y{}@layer y, w, x;@layer y{@keyframes a{0%{opacity:0}}}@media print{@layer w{@keyframes a{0%{opacity:1}}}}@layer x{@keyframes a{0%{opacity:0}}}div{animation:a 1s}',
+    '@layer x, y{}@layer y, w, x;@layer y{}@media print{@layer w{@keyframes a{0%{opacity:1}}}}@layer x{@keyframes a{0%{opacity:0}}}div{animation:a 1s}'
+  )
+);
+
+test(
+  'should keep the repeat keyframes of the later layer when `@layer a\\  {}` reopens the layer `a\\20` names',
+  processCSS(
+    '@layer a\\20, b;@layer b{@keyframes x{to{top:1px}}}@layer a\\  {@keyframes x{to{top:1px}}}div{animation:x 1s}',
+    '@layer a\\20, b;@layer b{@keyframes x{to{top:1px}}}@layer a\\  {}div{animation:x 1s}'
   )
 );
 

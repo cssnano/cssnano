@@ -1,7 +1,11 @@
-import { tokenize, TokenType } from '@csstools/css-tokenizer';
+import { TokenType } from '@csstools/css-tokenizer';
 import cssnanoUtils from '#utils';
+import { stringToken } from '../../values/tokenConstructors.js';
 
-const { isCSSWhitespace, isHexDigitCode, assignValue } = cssnanoUtils;
+/** @import {AtRulePart, Reducer, Stage, StageEntry} from '../../run/host.js' */
+
+const { decoded, endsWithEscapingBackslash, isCSSWhitespace, isHexDigitCode } =
+  cssnanoUtils;
 
 const SINGLE_QUOTE = "'".charCodeAt(0);
 const DOUBLE_QUOTE = '"'.charCodeAt(0);
@@ -69,16 +73,7 @@ function isClosedString(value) {
     return false;
   }
 
-  let backslashes = 0;
-  for (
-    let index = len - 2;
-    index >= 0 && value.charCodeAt(index) === BACKSLASH;
-    index--
-  ) {
-    backslashes++;
-  }
-
-  return backslashes % 2 === 0;
+  return !endsWithEscapingBackslash(value, len - 1);
 }
 
 /**
@@ -296,89 +291,66 @@ function normalizeString(raw, preferredQuote) {
 }
 
 /**
- * @param {string} value
+ * The edits that re-quote the closed strings among a value's tokens, one
+ * token per string. Re-quoting keeps the decoded value, so the token keeps
+ * its data.
+ *
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} input
  * @param {'single' | 'double'} preferredQuote
- * @return {string}
+ * @return {{start: number, end: number, tokens: import('@csstools/css-tokenizer').CSSToken[]}[]}
  */
-function normalize(value, preferredQuote) {
-  const chunks = [];
-  let cursor = 0;
-  for (const [type, raw, start, end] of tokenize({ css: value })) {
-    if (type !== TokenType.String || !isClosedString(raw)) continue;
-    const normalized = normalizeString(raw, preferredQuote);
-    if (normalized === raw) continue;
-    chunks.push(value.slice(cursor, start), normalized);
-    cursor = end + 1;
+function stringEdits(input, preferredQuote) {
+  /** @type {{start: number, end: number, tokens: import('@csstools/css-tokenizer').CSSToken[]}[]} */
+  const edits = [];
+  for (let index = 0; index < input.length; index++) {
+    const token = input[index];
+    if (token[0] !== TokenType.String || !isClosedString(token[1])) continue;
+    const normalized = normalizeString(token[1], preferredQuote);
+    if (normalized === token[1]) continue;
+    edits.push({
+      start: index,
+      end: index + 1,
+      tokens: [stringToken(normalized, decoded(token))],
+    });
   }
-  if (cursor === 0) return value;
-  chunks.push(value.slice(cursor));
-  return chunks.join('');
-}
-
-/**
- * @param {string} original
- * @param {Map<string, string>} cache
- * @param {'single' | 'double'} preferredQuote
- * @return {string}
- */
-function minify(original, cache, preferredQuote) {
-  if (!original || (!original.includes("'") && !original.includes('"'))) {
-    return original;
-  }
-  if (cache.has(original)) {
-    return /** @type {string} */ (cache.get(original));
-  }
-  const newValue = normalize(original, preferredQuote);
-  cache.set(original, newValue);
-  return newValue;
+  return edits;
 }
 
 /**
  * @typedef {object} Options
  * @property {'double' | 'single'} [preferredQuote] The quote to prefer for strings. (default: 'double')
  */
+
 /**
+ * The stage for one run. Its text reducers serve selectors and at-rule
+ * preludes, and its value reducer serves every declaration. The walk leaves
+ * `@charset` out, since it names an encoding.
+ *
  * @param {Options} opts
- * @return {import('postcss').Plugin}
+ * @return {Stage}
  */
-function pluginCreator(opts) {
+function stringStage(opts) {
   const { preferredQuote = 'double' } = opts ?? {};
-
+  /** Re-quotes the strings of a value or selector through its tokens. @type {Reducer} */
+  const reduceStrings = (buffer) => {
+    if (!buffer.isEdited()) {
+      const text = buffer.text();
+      if (!text.includes("'") && !text.includes('"')) return;
+    }
+    buffer.replaceRanges(stringEdits(buffer.tokens(), preferredQuote));
+  };
+  /** @type {AtRulePart} */
+  const atRulePart = { buffer: reduceStrings };
   return {
-    postcssPlugin: 'postcss-normalize-string',
-
-    /**
-     * @param {import('postcss').Root} css
-     */
-    OnceExit(css) {
-      const cache = new Map();
-
-      css.walk((node) => {
-        switch (node.type) {
-          case 'rule':
-            node.selector = minify(node.selector, cache, preferredQuote);
-            break;
-          case 'decl': {
-            const rawValue = node.raws.value;
-            const value =
-              rawValue?.value === node.value
-                ? (rawValue.raw ?? node.value)
-                : node.value;
-            assignValue(node, minify(value, cache, preferredQuote));
-            break;
-          }
-          case 'atrule':
-            if (node.name.toLowerCase() !== 'charset') {
-              node.params = minify(node.params, cache, preferredQuote);
-            }
-            break;
-        }
-      });
-    },
+    forProperty: () => reduceStrings,
+    forAtRule: () => atRulePart,
+    selector: reduceStrings,
   };
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
 
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {StageEntry} */
+const stringEntry = {
+  create: (/** @type {Options} */ options) => stringStage(options),
+};
+
+export { stringEntry as default };

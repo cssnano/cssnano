@@ -3,58 +3,144 @@ import {
   isTokenComma,
   isTokenDelim,
   isTokenIdent,
+  isTokenString,
   isTokenWhitespace,
-  tokenize,
 } from '@csstools/css-tokenizer';
+import { splitComma } from '../../values/splitTopLevel.js';
 import cssnanoUtils from '#utils';
+import {
+  counterStyleName,
+  usedCounterStyleNames,
+} from './lib/counterStyleUses.js';
+import { DECLARATION } from '../../ir/blockRecord.js';
+import { preludeListOf } from '../../ir/declaredText.js';
+import { commentFreeText } from '../../values/tokensText.js';
 
-const atrule = 'atrule';
-const decl = 'decl';
-const rule = 'rule';
-const { asciiLowerCase } = cssnanoUtils;
-const animationRegex = /animation/v;
-const listStyleRegex = /list-style|system/v;
-const fontRegex = /font(|-family)/v;
-const counterStyleRegex = /counter-style/v;
-const keyframesRegex = /keyframes/v;
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {ArenaIndex} from '../../ir/blockRecord.js' */
+/** @import {BlockRecords} from '../../ir/blockRecords.js' */
+/** @import {RunContext} from '../../run/runContext.js' */
+/** @import {TokenLists} from '../../ir/tokenLists.js' */
+/** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
+
+const { asciiLowerCase, isSubstitutionToken } = cssnanoUtils;
 const wildcard = true;
 
 /**
- * @param {{value: string}} arg
- * @param {(input: string) => string[]} comma
- * @param {(input: string) => string[]} space
- * @return {string[]}
+ * The text of a record's list, comment-free and trimmed, as PostCSS's cleaned
+ * value or params spell it.
+ *
+ * @param {readonly CSSToken[]} tokens
+ * @return {string}
  */
-function splitValues({ value }, comma, space) {
-  /** @type {string[]} */
-  let result = [];
-  for (const val of comma(value)) {
-    result = result.concat(space(val));
-  }
-  return result;
+function cleanText(tokens) {
+  return commentFreeText(tokens).trim();
 }
 
 /**
- * @param {{atRules: import('postcss').AtRule[], values: string[]}} arg
- * @return {void}
+ * The value of a declaration record, comment-free and trimmed.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex} index
+ * @return {string}
  */
-function filterAtRule({ atRules, values }) {
-  const uniqueValues = new Set(values);
-  for (const node of atRules) {
-    const hasAtRule = uniqueValues.has(node.params);
+function valueText(records, tokenLists, index) {
+  const entry =
+    /** @type {import('../../ir/declarationRecord.js').DeclarationRecord} */ (
+      records.entry(index)
+    );
+  return cleanText(tokenLists.get(entry.valueList));
+}
 
-    if (!hasAtRule) {
-      node.remove();
+/**
+ * Whether a value holds a substitution function, such as `var()`, `env()` or
+ * `attr()`, which can supply a name that the value does not spell. Both
+ * `animation-name` and `font-family` accept a string, so even an untyped
+ * `attr()` counts.
+ *
+ * @param {readonly CSSToken[]} tokens
+ * @return {boolean}
+ */
+function hasSubstitution(tokens) {
+  return tokens.some(isSubstitutionToken);
+}
+
+/**
+ * The keyframes names that the animation declarations reference: each
+ * identifier and string, decoded so an escaped spelling matches the name it
+ * denotes. Keywords and times are included too, which only over-keeps. A
+ * substitution function may supply any name, so it yields undefined and every
+ * keyframes rule is kept.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex[]} indices
+ * @return {Set<string> | undefined}
+ */
+function referencedNames(records, tokenLists, indices) {
+  /** @type {Set<string>} */
+  const names = new Set();
+  for (const index of indices) {
+    const entry =
+      /** @type {import('../../ir/declarationRecord.js').DeclarationRecord} */ (
+        records.entry(index)
+      );
+    const tokens = tokenLists.get(entry.valueList);
+    if (hasSubstitution(tokens)) return undefined;
+    for (const token of tokens) {
+      if (isTokenIdent(token) || isTokenString(token))
+        names.add(token[4].value);
     }
   }
+  return names;
 }
 
 /**
- * @param {string} source
+ * The name a `@keyframes` prelude defines: a lone identifier or string,
+ * decoded so an escaped spelling matches its references, or else the
+ * prelude's text.
+ *
+ * @param {readonly CSSToken[]} prelude
+ * @return {string}
+ */
+function keyframesName(prelude) {
+  /** @type {CSSToken | undefined} */
+  let name;
+  for (const token of prelude) {
+    if (isTokenWhitespace(token) || isTokenComment(token)) continue;
+    if (name !== undefined) return cleanText(prelude);
+    name = token;
+  }
+  return name !== undefined && (isTokenIdent(name) || isTokenString(name))
+    ? name[4].value
+    : cleanText(prelude);
+}
+
+/**
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex[]} indices
+ * @param {Set<string>} names
+ * @param {(prelude: readonly CSSToken[]) => string} nameOf
+ * @param {(index: ArenaIndex) => void} remove
+ * @return {void}
+ */
+function filterAtRule(records, tokenLists, indices, names, nameOf, remove) {
+  for (const index of indices) {
+    const entry = /** @type {import('../../ir/blockRecord.js').BlockRecord} */ (
+      records.entry(index)
+    );
+    if (!names.has(nameOf(preludeListOf(tokenLists, entry)))) remove(index);
+  }
+}
+
+/**
+ * @param {readonly CSSToken[]} prelude the tokens of the @namespace prelude
  * @return {string | true | undefined}
  */
-function namespacePrefix(source) {
-  for (const token of tokenize({ css: source })) {
+function namespacePrefix(prelude) {
+  for (const token of prelude) {
     if (isTokenWhitespace(token) || isTokenComment(token)) continue;
     return namespacePrefixToken(token);
   }
@@ -73,14 +159,14 @@ function namespacePrefixToken(token) {
 /**
  * Find namespace prefixes in each selector-list item. A comma resets the
  * candidate prefix so a type selector in an earlier item cannot be mistaken
- * for the prefix of a later qualified selector. Intervening whitespace or
- * comments also reset the candidate prefix because CSS qualified names cannot
- * contain whitespace between the prefix, '|', and the element/attribute name.
+ * for the prefix of a later qualified selector. Whitespace also resets it,
+ * since qualified names cannot contain whitespace. Comments are removed before
+ * parsing, so they do not reset it.
  *
- * @param {string} source
+ * @param {readonly CSSToken[]} tokens the tokens of the selector as written
  * @return {(string | true)[]}
  */
-function namespacePrefixes(source) {
+function namespacePrefixes(tokens) {
   /** @type {(string | true)[]} */
   const prefixes = [];
   /** @type {import('@csstools/css-tokenizer').CSSToken | undefined} */
@@ -88,13 +174,14 @@ function namespacePrefixes(source) {
   /** @type {string | true | undefined} */
   let pendingPrefix;
 
-  for (const token of tokenize({ css: source })) {
+  for (const token of tokens) {
+    if (isTokenComment(token)) continue;
     if (isTokenComma(token)) {
       previous = undefined;
       pendingPrefix = undefined;
       continue;
     }
-    if (isTokenWhitespace(token) || isTokenComment(token)) {
+    if (isTokenWhitespace(token)) {
       previous = undefined;
       pendingPrefix = undefined;
       continue;
@@ -120,68 +207,99 @@ function namespacePrefixes(source) {
 }
 
 /**
- * @param {{atRules: import('postcss').AtRule[], rules: (string | true)[]}} arg
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex[]} indices
+ * @param {Set<string | true>} prefixes
+ * @param {(index: ArenaIndex) => void} remove
  * @return {void}
  */
-function filterNamespace({ atRules, rules }) {
-  const uniqueRules = new Set(rules);
-  for (const atRule of atRules) {
-    const prefix = namespacePrefix(atRule.params);
+function filterNamespace(records, tokenLists, indices, prefixes, remove) {
+  const usesAny = prefixes.has(wildcard);
+  for (const index of indices) {
+    const entry = /** @type {import('../../ir/blockRecord.js').BlockRecord} */ (
+      records.entry(index)
+    );
+    const tokens = preludeListOf(tokenLists, entry);
+    const prefix = namespacePrefix(tokens);
 
     if (prefix === undefined) {
-      if (atRule.params.trim()) continue;
-      atRule.remove();
-      continue;
-    }
-
-    const hasRule = uniqueRules.has(prefix) || uniqueRules.has(wildcard);
-
-    if (!hasRule) {
-      atRule.remove();
+      if (cleanText(tokens) === '') remove(index);
+    } else if (!usesAny && !prefixes.has(prefix)) {
+      remove(index);
     }
   }
 }
 
 /**
+ * A family is used when any font name in use contains it.
+ *
  * @param {string} fontFamily
- * @param {string[]} cache
- * @param {(input: string) => string[]} comma
+ * @param {string[]} fonts
  * @return {boolean}
  */
-function hasFont(fontFamily, cache, comma) {
-  return comma(fontFamily).some((font) => cache.some((c) => c.includes(font)));
+function hasFont(fontFamily, fonts) {
+  return splitComma(fontFamily).some((font) =>
+    fonts.some((used) => used.includes(font))
+  );
 }
 
 /**
- * fonts have slightly different logic
-
- * @param {{atRules: import('postcss').AtRule[], values: string[]}} cache
- * @param {(input: string) => string[]} comma
+ * A `@font-face` stays only when it names a family and every family it names
+ * is in use. Its families are the font-family declarations among its children.
+ * A substitution function in a family declaration may name any family, so
+ * every face that names one stays.
+ *
+ * @param {BlockRecords} records
+ * @param {TokenLists} tokenLists
+ * @param {ArenaIndex[]} indices
+ * @param {ArenaIndex[]} decls
+ * @param {(index: ArenaIndex) => void} remove
  * @return {void}
  */
-function filterFont({ atRules, values }, comma) {
-  const uniqueValues = [...new Set(values)];
-  for (const r of atRules) {
-    if (r.nodes !== undefined) {
-      /** @type {import('postcss').Declaration[]} */
-      const families = /** @type {import('postcss').Declaration[]} */ (
-        r.nodes.filter(
-          (node) =>
-            node.type === 'decl' && asciiLowerCase(node.prop) === 'font-family'
-        )
+function filterFont(records, tokenLists, indices, decls, remove) {
+  /** @type {Set<string>} */
+  const used = new Set();
+  let anyFamily = false;
+  for (const index of decls) {
+    const entry =
+      /** @type {import('../../ir/declarationRecord.js').DeclarationRecord} */ (
+        records.entry(index)
       );
-
-      // Discard the @font-face if it has no font-family
-      if (families.length === 0) {
-        r.remove();
-      }
-
-      for (const family of families) {
-        if (!hasFont(asciiLowerCase(family.value), uniqueValues, comma)) {
-          r.remove();
-        }
-      }
+    if (hasSubstitution(tokenLists.get(entry.valueList))) {
+      anyFamily = true;
+      break;
     }
+    for (const font of splitComma(
+      asciiLowerCase(valueText(records, tokenLists, index))
+    )) {
+      used.add(font);
+    }
+  }
+  const fonts = [...used];
+  const { links } = records;
+  for (const index of indices) {
+    let count = 0;
+    let unused = false;
+    for (
+      let child = links.firstChild(index);
+      child !== -1;
+      child = links.nextSibling(child)
+    ) {
+      const entry = records.entry(child);
+      if (
+        entry.kind !== DECLARATION ||
+        asciiLowerCase(entry.prop) !== 'font-family'
+      )
+        continue;
+      count++;
+      if (
+        !anyFamily &&
+        !hasFont(asciiLowerCase(valueText(records, tokenLists, child)), fonts)
+      )
+        unused = true;
+    }
+    if (count === 0 || unused) remove(index);
   }
 }
 
@@ -194,193 +312,73 @@ function filterFont({ atRules, values }, comma) {
  */
 
 /**
- * @param {import('postcss').AnyNode} node
- * @param {{
- *   fontFace: boolean,
- *   counterStyle: boolean,
- *   keyframes: boolean,
- *   namespace: boolean,
- *   counterStyleCache: {atRules: import('postcss').AtRule[], values: string[]},
- *   keyframesCache: {atRules: import('postcss').AtRule[], values: string[]},
- *   namespaceCache: {atRules: import('postcss').AtRule[], rules: (string | true)[]},
- *   fontCache: {atRules: import('postcss').AtRule[], values: string[]},
- *   comma: (input: string) => string[],
- *   space: (input: string) => string[],
- * }} context
+ * Removes the at-rules that define a name nothing references. Every reference
+ * is read before the first removal, so a reference inside a removed at-rule
+ * still keeps its definition, except that a counter style used only by unused
+ * counter styles goes too.
+ *
+ * @param {RecordSymbolLists} lists
+ * @param {Options} options
+ * @param {(index: ArenaIndex) => void} remove
+ * @param {BlockRecords} records
+ * @param {RunContext} context
  * @return {void}
  */
-function processNode(node, context) {
-  if (node.type === rule && context.namespace && node.selector.includes('|')) {
-    processRule(context.namespaceCache, node);
-    return;
-  }
-
-  if (node.type === decl) {
-    processDeclaration(node, context);
-    return;
-  }
-
-  if (node.type === atrule) {
-    processAtRule(node, context);
-  }
-}
-
-/**
- * @param {{atRules: import('postcss').AtRule[], rules: (string | true)[]}} namespaceCache
- * @param {import('postcss').Rule} node
- * @return {void}
- */
-function processRule(namespaceCache, node) {
-  for (const prefix of namespacePrefixes(node.selector)) {
-    namespaceCache.rules.push(prefix);
-  }
-}
-
-/**
- * @param {import('postcss').Declaration} node
- * @param {{
- *   fontFace: boolean,
- *   counterStyle: boolean,
- *   keyframes: boolean,
- *   namespace: boolean,
- *   counterStyleCache: {atRules: import('postcss').AtRule[], values: string[]},
- *   keyframesCache: {atRules: import('postcss').AtRule[], values: string[]},
- *   namespaceCache: {atRules: import('postcss').AtRule[], rules: (string | true)[]},
- *   fontCache: {atRules: import('postcss').AtRule[], values: string[]},
- *   comma: (input: string) => string[],
- *   space: (input: string) => string[],
- * }} context
- * @return {void}
- */
-function processDeclaration(node, context) {
-  const { prop } = node;
-  if (context.counterStyle && listStyleRegex.test(asciiLowerCase(prop))) {
-    context.counterStyleCache.values = context.counterStyleCache.values.concat(
-      splitValues(node, context.comma, context.space)
-    );
-  }
-
-  if (
-    context.fontFace &&
-    node.parent !== undefined &&
-    node.parent.type === rule &&
-    fontRegex.test(asciiLowerCase(prop))
-  ) {
-    context.fontCache.values = context.fontCache.values.concat(
-      context.comma(asciiLowerCase(node.value))
-    );
-  }
-
-  if (context.keyframes && animationRegex.test(asciiLowerCase(prop))) {
-    context.keyframesCache.values = context.keyframesCache.values.concat(
-      splitValues(node, context.comma, context.space)
-    );
-  }
-}
-
-/**
- * @param {import('postcss').AtRule} node
- * @param {{
- *   fontFace: boolean,
- *   counterStyle: boolean,
- *   keyframes: boolean,
- *   namespace: boolean,
- *   counterStyleCache: {atRules: import('postcss').AtRule[], values: string[]},
- *   keyframesCache: {atRules: import('postcss').AtRule[], values: string[]},
- *   namespaceCache: {atRules: import('postcss').AtRule[], rules: (string | true)[]},
- *   fontCache: {atRules: import('postcss').AtRule[], values: string[]},
- *   comma: (input: string) => string[],
- *   space: (input: string) => string[],
- * }} context
- * @return {void}
- */
-function processAtRule(node, context) {
-  const { name } = node;
-  if (context.counterStyle && counterStyleRegex.test(asciiLowerCase(name))) {
-    context.counterStyleCache.atRules.push(node);
-  }
-
-  if (context.fontFace && asciiLowerCase(name) === 'font-face' && node.nodes) {
-    context.fontCache.atRules.push(node);
-  }
-
-  if (context.keyframes && keyframesRegex.test(asciiLowerCase(name))) {
-    context.keyframesCache.atRules.push(node);
-  }
-
-  if (context.namespace && asciiLowerCase(name) === 'namespace') {
-    context.namespaceCache.atRules.push(node);
-  }
-}
-
-/**
- * @param {Options} opts
- * @return {import('postcss').Plugin}
- */
-function pluginCreator(opts) {
+export function discardUnusedSymbols(lists, options, remove, records, context) {
   const { fontFace, counterStyle, keyframes, namespace } = {
     fontFace: true,
     counterStyle: true,
     keyframes: true,
     namespace: true,
-    ...opts,
+    ...options,
   };
+  const { tokenLists } = context;
+  const counterStyleNames =
+    counterStyle && lists.counterStyles.length > 0
+      ? usedCounterStyleNames(records, tokenLists, lists)
+      : undefined;
+  const keyframesNames = keyframes
+    ? referencedNames(records, tokenLists, lists.animationDecls)
+    : undefined;
+  /** @type {Set<string | true>} */
+  const prefixes = new Set();
+  if (namespace) {
+    for (const index of lists.namespaceRules) {
+      const entry = /** @type {import('../../ir/ruleRecord.js').RuleRecord} */ (
+        records.entry(index)
+      );
+      for (const id of entry.selectorIds) {
+        for (const prefix of namespacePrefixes(tokenLists.get(id))) {
+          prefixes.add(prefix);
+        }
+      }
+    }
+  }
 
-  return {
-    postcssPlugin: 'postcss-discard-unused',
-
-    prepare() {
-      /** @type {{atRules: import('postcss').AtRule[], values: string[]}} */
-      const counterStyleCache = { atRules: [], values: [] };
-      /** @type {{atRules: import('postcss').AtRule[], values: string[]}} */
-      const keyframesCache = { atRules: [], values: [] };
-      /** @type {{atRules: import('postcss').AtRule[], rules: (string | true)[]}} */
-      const namespaceCache = { atRules: [], rules: [] };
-      /** @type {{atRules: import('postcss').AtRule[], values: string[]}} */
-      const fontCache = { atRules: [], values: [] };
-
-      return {
-        /**
-         * @param {import('postcss').Root} css
-         * @param {import('postcss').Helpers} helpers
-         */
-        OnceExit(css, { list }) {
-          const { comma, space } = list;
-          const context = {
-            fontFace,
-            counterStyle,
-            keyframes,
-            namespace,
-            counterStyleCache,
-            keyframesCache,
-            namespaceCache,
-            fontCache,
-            comma,
-            space,
-          };
-          css.walk((node) => {
-            processNode(node, context);
-          });
-
-          if (counterStyle) {
-            filterAtRule(counterStyleCache);
-          }
-          if (fontFace) {
-            filterFont(fontCache, comma);
-          }
-          if (keyframes) {
-            filterAtRule(keyframesCache);
-          }
-          if (namespace) {
-            filterNamespace(namespaceCache);
-          }
-        },
-      };
-    },
-  };
+  if (counterStyleNames) {
+    filterAtRule(
+      records,
+      tokenLists,
+      lists.counterStyles,
+      counterStyleNames,
+      counterStyleName,
+      remove
+    );
+  }
+  if (fontFace) {
+    filterFont(records, tokenLists, lists.fontFaces, lists.fontDecls, remove);
+  }
+  if (keyframesNames) {
+    filterAtRule(
+      records,
+      tokenLists,
+      lists.keyframes,
+      keyframesNames,
+      keyframesName,
+      remove
+    );
+  }
+  if (namespace) {
+    filterNamespace(records, tokenLists, lists.namespaces, prefixes, remove);
+  }
 }
-/** @type {true} */
-pluginCreator.postcss = true;
-const moduleExports = pluginCreator;
-
-export { moduleExports as default, moduleExports as 'module.exports' };

@@ -7,7 +7,7 @@ import {
   isUrl,
   name,
   reservedIdentKeywords,
-  serializeArguments,
+  argumentTokens,
 } from '../lib/tokenize.js';
 
 const { mathFunctions, vendorUnprefixed } = cssnanoUtils;
@@ -125,12 +125,12 @@ function normalize(args) {
   return list;
 }
 /**
- * @param {{ arguments: import('../lib/tokenize.js').Term[][], value: string }} parsed
- * @return {string | null}
+ * @param {{ arguments: import('../lib/tokenize.js').Term[][] }} parsed
+ * @return {import('@csstools/css-tokenizer').CSSToken[] | null}
  */
 function normalizeBoxShadow(parsed) {
   const normalized = normalize(parsed.arguments);
-  return normalized === null ? null : serializeArguments(normalized);
+  return normalized === null ? null : argumentTokens(normalized);
 }
 
 export default normalizeBoxShadow;

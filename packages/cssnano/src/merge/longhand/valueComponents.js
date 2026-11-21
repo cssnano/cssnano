@@ -1,0 +1,116 @@
+import cssnanoUtils from '#utils';
+
+const { TokenType, closeForOpening, tokenEnd, tokenStart, tokens } =
+  cssnanoUtils;
+
+export const closingTokens = new Set([
+  TokenType.CloseParen,
+  TokenType.CloseSquare,
+  TokenType.CloseCurly,
+]);
+
+/**
+ * A top-level component: its text, its tokens, and the range of the caller's
+ * token list that holds them, `end` exclusive. It is a `ValueComponent` that
+ * has a list, so it is also a `RangePiece`.
+ *
+ * @typedef {{
+ *   raw: string,
+ *   tokens: import('@csstools/css-tokenizer').CSSToken[],
+ *   list: readonly import('@csstools/css-tokenizer').CSSToken[],
+ *   start: number,
+ *   end: number,
+ * }} Component
+ */
+
+/**
+ * Ends the component whose tokens are `current` and returns the list for the
+ * next one.
+ *
+ * @param {{components: Component[]}[]} parts
+ * @param {import('@csstools/css-tokenizer').CSSToken[]} current
+ * @param {string} value
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} list
+ * @param {number} end the index of the token that closes the component
+ * @return {import('@csstools/css-tokenizer').CSSToken[]}
+ */
+function closeComponent(parts, current, value, list, end) {
+  if (!current.length) return current;
+  const first = current[0];
+  const last = current.at(-1);
+  const part = parts.at(-1);
+  if (!first || !last || !part) return current;
+  // Every token since the last separator is in `current`, so it starts there.
+  part.components.push({
+    raw: value.slice(tokenStart(first), tokenEnd(last)),
+    tokens: current,
+    list,
+    start: end - current.length,
+    end,
+  });
+  return [];
+}
+
+/**
+ * Split raw CSS into top-level components and comma-separated parts. This is
+ * deliberately lexical: property grammar is applied by the caller after
+ * brackets and source ranges have been preserved.
+ *
+ * @param {string} value
+ * @param {',' | '/'} [separator] - the top-level token that divides the value
+ * into parts; a comma is otherwise a failure, and a slash an ordinary token
+ * @param {readonly import('@csstools/css-tokenizer').CSSToken[]} [list] the
+ * tokens of `value`, when the caller has them from the text table
+ * @return {{components: Component[], raw: string}[] | null}
+ */
+export function splitValue(value, separator, list = tokens(value)) {
+  /** @type {{components: Component[], start: number, end: number}[]} */
+  const parts = [{ components: [], start: 0, end: value.length }];
+  /** @type {import('@csstools/css-tokenizer').CSSToken[]} */
+  let current = [];
+  /** @type {import('@csstools/css-tokenizer').TokenType[]} */
+  const stack = [];
+
+  for (let index = 0; index < list.length; index++) {
+    const token = list[index];
+    const type = token[0];
+    if (type === TokenType.Comment) return null;
+
+    if (!stack.length && type === TokenType.Whitespace) {
+      current = closeComponent(parts, current, value, list, index);
+      continue;
+    }
+    if (!stack.length && type === TokenType.Comma && separator !== ',') {
+      return null;
+    }
+    if (
+      !stack.length &&
+      (type === TokenType.Comma ||
+        (separator === '/' && type === TokenType.Delim && token[1] === '/'))
+    ) {
+      current = closeComponent(parts, current, value, list, index);
+      const part = parts.at(-1);
+      if (!part) return null;
+      part.end = tokenStart(token);
+      parts.push({ components: [], start: tokenEnd(token), end: value.length });
+      continue;
+    }
+
+    current.push(token);
+    const expected = closeForOpening(type);
+    if (expected !== undefined) {
+      stack.push(expected);
+    } else if (closingTokens.has(type) && stack.pop() !== type) {
+      return null;
+    }
+  }
+
+  if (stack.length) return null;
+  closeComponent(parts, current, value, list, list.length);
+  if (parts.some((part) => !part.components.length)) return null;
+
+  return parts.map((part) => ({
+    components: part.components,
+    raw: value.slice(part.start, part.end).trim(),
+  }));
+}

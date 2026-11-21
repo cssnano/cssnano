@@ -13,6 +13,15 @@ This module will discard unused at rules in your CSS file, if it cannot find
 any selectors that make use of them. It works on `@counter-style`, `@keyframes`,
 `@font-face` and `@namespace`.
 
+A counter style stays when `list-style` names it, when `counter()`,
+`counters()`, `target-counter()` or `target-counters()` names it in `content`,
+`bookmark-label` or `copy-into`, or when a counter style in use extends it or
+names it in `fallback` or `speak-as`. A name matches however it is escaped,
+and a predefined name such as `lower-roman` in any case. If one of those
+declarations uses a substitution function such as `var()`, `env()`, or an
+`attr()` with a fallback or a type that yields an identifier, every counter
+style stays, since the substituted value may name one.
+
 ### Input
 
 ```css
@@ -60,54 +69,8 @@ h2 {
 
 However, you can mitigate this by including [postcss-minify-font-values][mfv]
 *before* this plugin, which will take care of normalising quotes, and
-deduplicating. For more examples, see the [tests](test).
+deduplicating. For more examples, see the [tests](../../test/postcss-discard-unused/).
 
-
-## Usage
-
-See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
-examples for your environment.
-
-
-## API
-
-### discardUnused([options])
-
-#### options
-
-##### fontFace
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable discarding unused font face rules.
-
-##### counterStyle
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable discarding unused counter style rules.
-
-##### keyframes
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable discarding unused keyframe rules.
-
-##### namespace
-
-Type: `boolean`  
-Default: `true`
-
-Pass `false` to disable discarding unused namespace rules.
-
-
-## Usage
-
-See the [PostCSS documentation](https://github.com/postcss/postcss#usage) for
-examples for your environment.
 
 ## Contributors
 
@@ -119,4 +82,4 @@ MIT © [Ben Briggs](https://beneb.info)
 
 
 [postcss]: https://github.com/postcss/postcss
-[mfv]:     https://github.com/cssnano/cssnano/tree/main/packages/postcss-minify-font-values
+[mfv]:     https://github.com/cssnano/cssnano/tree/main/packages/cssnano/docs/postcss-minify-font-values

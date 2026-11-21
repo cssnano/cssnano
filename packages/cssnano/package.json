@@ -24,10 +24,6 @@
   "main": "./src/index.js",
   "types": "./types/index.d.ts",
   "imports": {
-    "#passes/merge": {
-      "types": "./types/passes/merge/index.d.ts",
-      "default": "./src/passes/merge/index.js"
-    },
     "#postcss-colormin": {
       "types": "./types/plugins/postcss-colormin/index.d.ts",
       "default": "./src/plugins/postcss-colormin/index.js"
@@ -39,10 +35,6 @@
     "#postcss-discard-comments": {
       "types": "./types/plugins/postcss-discard-comments/index.d.ts",
       "default": "./src/plugins/postcss-discard-comments/index.js"
-    },
-    "#postcss-discard-empty": {
-      "types": "./types/plugins/postcss-discard-empty/index.d.ts",
-      "default": "./src/plugins/postcss-discard-empty/index.js"
     },
     "#postcss-discard-overridden": {
       "types": "./types/plugins/postcss-discard-overridden/index.d.ts",
@@ -71,10 +63,6 @@
     "#postcss-minify-selectors": {
       "types": "./types/plugins/postcss-minify-selectors/index.d.ts",
       "default": "./src/plugins/postcss-minify-selectors/index.js"
-    },
-    "#postcss-normalize-charset": {
-      "types": "./types/plugins/postcss-normalize-charset/index.d.ts",
-      "default": "./src/plugins/postcss-normalize-charset/index.js"
     },
     "#postcss-normalize-display-values": {
       "types": "./types/plugins/postcss-normalize-display-values/index.d.ts",
@@ -123,10 +111,6 @@
     "#postcss-reduce-transforms": {
       "types": "./types/plugins/postcss-reduce-transforms/index.d.ts",
       "default": "./src/plugins/postcss-reduce-transforms/index.js"
-    },
-    "#postcss-unique-selectors": {
-      "types": "./types/plugins/postcss-unique-selectors/index.d.ts",
-      "default": "./src/plugins/postcss-unique-selectors/index.js"
     },
     "#postcss-zindex": {
       "types": "./types/plugins/postcss-zindex/index.d.ts",
@@ -188,7 +172,7 @@
     "@csstools/css-tokenizer": "catalog:",
     "browserslist": "catalog:",
     "caniuse-lite": "catalog:",
-    "postcss-calc": "^11.2.3"
+    "postcss-calc": "^11.3.0"
   },
   "homepage": "https://github.com/cssnano/cssnano",
   "author": {
@@ -216,12 +200,12 @@
     "@webref/css": "catalog:",
     "autoprefixer": "catalog:",
     "caniuse-api": "^4.0.0",
-    "jsdom": "^31.0.0",
+    "jsdom": "^31.0.1",
     "mdn-data": "catalog:",
     "postcss": "catalog:",
     "postcss-font-magician": "^4.0.0",
     "postcss-scss": "^4.0.9",
-    "postcss-selector-parser": "^7.1.7",
+    "postcss-selector-parser": "^7.2.1",
     "postcss-simple-vars": "^7.0.1",
     "postcss-svgo": "workspace:^"
   },
@@ -230,15 +214,14 @@
   },
   "scripts": {
     "acquire": "pnpm run \"/^acquire:/\"",
-    "acquire:passes-ir": "node ./script/passes/ir/acquire.js",
+    "acquire:ir": "node ./script/ir/acquire.js",
     "acquire:postcss-colormin": "node ./script/postcss-colormin/acquire.js",
     "acquire:postcss-merge-idents": "node ./script/postcss-merge-idents/acquire.js",
-    "acquire:postcss-merge-longhand": "node ./script/passes/merge/longhand/acquire.js",
+    "acquire:postcss-merge-longhand": "node ./script/merge/longhand/acquire.js",
     "acquire:postcss-minify-font-values": "node ./script/postcss-minify-font-values/acquire.js",
     "acquire:postcss-ordered-values": "node ./script/postcss-ordered-values/acquire.js",
     "acquire:postcss-reduce-idents": "node ./script/postcss-reduce-idents/acquire.js",
-    "acquire:postcss-reduce-initial": "node ./script/postcss-reduce-initial/acquire.js",
-    "test": "node --test"
+    "acquire:postcss-reduce-initial": "node ./script/postcss-reduce-initial/acquire.js"
   },
   "type": "module"
 }

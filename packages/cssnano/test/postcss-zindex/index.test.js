@@ -1,9 +1,10 @@
 import { describe, test } from 'node:test';
 import {
-  usePostCSSPlugin,
   processCSSFactory,
+  presetEntryPlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-zindex/index.js';
+
+const plugin = presetEntryPlugin('zindex');
 
 const { processCSS, passthroughCSS } = processCSSFactory(plugin);
 
@@ -99,5 +100,3 @@ test(
   'should accept a starting index',
   processCSS('.a{z-index:20}', '.a{z-index:15}', { startIndex: 15 })
 );
-
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));

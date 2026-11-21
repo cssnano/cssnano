@@ -6,25 +6,37 @@ export const target = new URL(
 // node --test expands this glob; a directory path would resolve to a single
 // entry module instead of running every split test file.
 export const test = new URL(
-  '../../test/postcss-normalize-whitespace/*.test.js',
+  '../../test/postcss-normalize-whitespace/{at-rules,comments,custom-properties,escapes,functions,grid-template-areas,math-functions,raws-metadata,urls,variable-boundaries,variable-fallbacks,variable-functions}.test.js',
   import.meta.url
 ).href;
 
 export const mutations = [
   {
     name: 'preserve declaration whitespace',
-    find: "node.raws.before = node.raws.before.replaceAll(whitespaceRegex, '');",
-    replace: 'node.raws.before = node.raws.before;',
+    target: new URL(
+      '../../src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js',
+      import.meta.url
+    ).href,
+    find: "const before = record.before.replaceAll(whitespaceRegex, '');",
+    replace: 'const before = record.before;',
   },
   {
     name: 'trim custom properties as standard declarations',
-    find: "if (!node.prop.startsWith('--')) {",
-    replace: "if (node.prop.startsWith('--')) {",
+    target: new URL(
+      '../../src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js',
+      import.meta.url
+    ).href,
+    find: "if (!record.prop.startsWith('--')) {",
+    replace: "if (record.prop.startsWith('--')) {",
   },
   {
     name: 'skip declaration trimming',
-    find: 'trimDeclaration(node, declarationCache, gridRowsCache);',
-    replace: 'void node;',
+    target: new URL(
+      '../../src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js',
+      import.meta.url
+    ).href,
+    find: 'normalizeDeclaration(records, tokenLists, index);',
+    replace: 'void index;',
   },
   {
     name: 'preserve spaces around dividers',
@@ -33,23 +45,26 @@ export const mutations = [
   },
   {
     name: 'drop preserved comments from the declaration separator',
-    find: `  node.raws.between = trimSeparator(node.raws.between || ':');
-  node.raws.semicolon = false;
-}`,
-    replace: `  node.raws.between = ':';
-  node.raws.semicolon = false;
-}`,
+    target: new URL(
+      '../../src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js',
+      import.meta.url
+    ).href,
+    find: 'trimSeparator(between),',
+    replace: "':',",
   },
   {
     name: 'keep custom property separator whitespace',
-    find: `            node.raws.between = trimCustomPropertySeparator(
-              node.raws.between || ':'
-            );`,
-    replace: `            node.raws.between = node.raws.between;`,
+    target: new URL(
+      '../../src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js',
+      import.meta.url
+    ).href,
+    find: 'trimCustomPropertySeparator(between),',
+    replace: 'between,',
   },
   {
     name: 'drop trailing escape repair',
-    find: 'last.value += node.raws.after[0];',
-    replace: 'void last.value;',
+    target: new URL('../../src/run/whitespaceRaws.js', import.meta.url).href,
+    find: 'text + after[0]',
+    replace: 'text',
   },
 ];

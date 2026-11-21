@@ -1,6 +1,13 @@
 import postcss from 'postcss';
 import { tokenize, TokenType } from '@csstools/css-tokenizer';
-import plugin from '../../../src/plugins/postcss-normalize-url/index.js';
+import urlEntry from '../../../src/plugins/postcss-normalize-url/index.js';
+import { hostPlugin } from '../../../src/run/host.js';
+import { hostPlan } from '../../../src/run/hostPlan.js';
+
+const plugin = () =>
+  hostPlugin(
+    hostPlan({ members: [{ entry: urlEntry, options: {}, targets: false }] })
+  );
 
 const processor = postcss([plugin()]);
 

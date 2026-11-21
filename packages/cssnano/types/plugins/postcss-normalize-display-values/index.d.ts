@@ -1,10 +1,6 @@
-/**
- * @return {import('postcss').Plugin}
- */
-declare function pluginCreator(): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+/** @satisfies {import('../../run/host.js').StageEntry} */
+declare const normalizeDisplayValues: {
+    create: () => import("../../run/host.js").Stage;
+};
+export { normalizeDisplayValues as default };
 //# sourceMappingURL=index.d.ts.map

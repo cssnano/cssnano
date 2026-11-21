@@ -10,23 +10,6 @@ export type CSSToken = ReturnType<typeof import('#utils').default.balancedTokens
  */
 export declare function decodedIdent(token: CSSToken): string;
 /**
- * Whitespace and comments separate tokens without contributing to a selector.
- * @param {CSSToken | undefined} token
- */
-export declare function isTrivia(token: CSSToken | undefined): token is import("@csstools/css-tokenizer").TokenComment | import("@csstools/css-tokenizer").TokenWhitespace;
-/**
- * Index of the first token in `[index, end)` that is not trivia, or `end`.
- * @param {readonly CSSToken[]} input
- * @param {number} index
- * @param {number} end
- */
-export declare function skipTrivia(input: readonly CSSToken[], index: number, end: number): number;
-/**
- * Minifiers keep `/*!` comments, such as license notices.
- * @param {CSSToken} token
- */
-export declare function isImportantCommentToken(token: CSSToken): boolean;
-/**
  * Whitespace and ordinary comments vanish from minified arguments, while
  * important comments (`/*!`) survive into the output.
  * @param {CSSToken} token

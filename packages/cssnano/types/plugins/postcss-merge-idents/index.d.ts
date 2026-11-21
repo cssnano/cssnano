@@ -1,28 +1,17 @@
-export type Group = Array<{
-    name: string;
-    copies: AtRuleEntry[];
-}>;
-export type AtRuleEntry = {
-    rule: import('postcss').AtRule;
-    body?: string;
-    layerPriority: number[];
-    documentIndex: number;
-    family: string;
-    containerId: number;
-    parsed: {
-        isString: boolean;
-        isReservedName: boolean;
-        key: string;
-        tokenText: string;
-    };
-};
+import type { ArenaIndex } from '../../ir/blockRecord.js';
+import type { BlockRecords } from '../../ir/blockRecords.js';
+import type { RecordSymbolLists } from '../../run/symbolLists.js';
+import type { RunContext } from '../../run/runContext.js';
 /**
- * @return {import('postcss').Plugin}
+ * Merges the names of the advanced transform's lists. The walk up
+ * collects the lists, so the transform needs no walk of its own.
+ *
+ * @param {RecordSymbolLists} lists
+ * @param {Record<PropertyKey, unknown>} _options takes no options
+ * @param {(index: ArenaIndex) => void} remove
+ * @param {BlockRecords} records
+ * @param {RunContext} context
+ * @return {void}
  */
-declare function pluginCreator(): import('postcss').Plugin;
-declare namespace pluginCreator {
-    var postcss: true;
-}
-declare const moduleExports: typeof pluginCreator;
-export { moduleExports as default, moduleExports as 'module.exports' };
+export declare function mergeIdentsSymbols(lists: RecordSymbolLists, _options: Record<PropertyKey, unknown>, remove: (index: ArenaIndex) => void, records: BlockRecords, context: RunContext): void;
 //# sourceMappingURL=index.d.ts.map

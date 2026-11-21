@@ -1,6 +1,10 @@
 import cssnanoUtils from '#utils';
 import postcss from 'postcss';
-import plugin from '../../../src/plugins/postcss-minify-gradients/index.js';
+import minifyGradients from '../../../src/plugins/postcss-minify-gradients/index.js';
+import { oneStagePlugin } from '../../../../../util/testHelpers.js';
+import { joinWith } from './fuzzGenerate.js';
+
+const plugin = oneStagePlugin(minifyGradients);
 
 // Reuse the shared CSS Values 4 length set instead of a local copy so the
 // oracle cannot silently drift from the units the implementation accepts.
@@ -23,16 +27,6 @@ function comparable(current, largest, conic) {
     isZeroUnit(current.unit, conic) &&
     isZeroUnit(largest.unit, conic)
   );
-}
-
-/** @param {string[]} texts @param {string[]} separators @return {string} */
-function joinWith(texts, separators) {
-  let result = '';
-  for (const [index, text] of texts.entries()) {
-    if (index) result += separators[index - 1];
-    result += text;
-  }
-  return result;
 }
 
 /** @param {import('./fuzzGenerate.js').Argument[]} args @return {number} Count of leading line arguments. */

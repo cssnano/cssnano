@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import {
-  usePostCSSPlugin,
   processCSSFactory,
+  presetEntryPlugin,
 } from '../../../../util/testHelpers.js';
-import plugin from '../../src/plugins/postcss-discard-unused/index.js';
+const plugin = presetEntryPlugin('discardUnused');
 
 const { passthroughCSS, processCSS } = processCSSFactory(plugin);
 
@@ -170,4 +170,113 @@ test(
   processCSS('@layer a;', '@layer a;')
 );
 
-test('should use the postcss plugin api', usePostCSSPlugin(plugin()));
+test(
+  'should keep a keyframes whose escaped name decodes to the name an animation uses',
+  passthroughCSS('@keyframes \\66oo{0%{opacity:0}}a{animation:foo 1s}')
+);
+
+test(
+  'should keep a keyframes that an animation names with an escape',
+  passthroughCSS('@keyframes foo{0%{opacity:0}}a{animation-name:\\66oo}')
+);
+
+test(
+  'should keep a keyframes that an animation names with a string',
+  passthroughCSS('@keyframes foo{0%{opacity:0}}a{animation-name:"foo"}')
+);
+
+test(
+  'should keep a keyframes named by a string that an identifier references',
+  passthroughCSS('@keyframes "foo"{0%{opacity:0}}a{animation-name:foo}')
+);
+
+test(
+  'should remove an escaped keyframes that no animation names',
+  processCSS(
+    '@keyframes \\66oo{0%{opacity:0}}a{animation-name:bar}',
+    'a{animation-name:bar}'
+  )
+);
+
+test(
+  'should compare keyframes names case-sensitively after decoding an escape',
+  processCSS(
+    '@keyframes \\46oo{0%{opacity:0}}a{animation-name:foo}',
+    'a{animation-name:foo}'
+  )
+);
+
+test(
+  'should keep a keyframes whose escaped name follows a comment in the prelude',
+  passthroughCSS('@keyframes /*c*/ \\66oo{0%{opacity:0}}a{animation-name:foo}')
+);
+
+test(
+  'should keep an escaped keyframes that a later animation in a list names',
+  passthroughCSS('@keyframes foo{0%{opacity:0}}a{animation:a 1s,\\66oo 2s}')
+);
+
+test(
+  'should remove a keyframes whose prelude has several names, since no animation can name it',
+  processCSS(
+    '@keyframes foo bar{0%{opacity:0}}a{animation-name:foo}',
+    'a{animation-name:foo}'
+  )
+);
+
+test(
+  'should keep keyframes when an animation value uses var(), which may name any of them',
+  passthroughCSS(
+    '@keyframes foo{0%{opacity:0}to{opacity:1}}:root{--a:foo}a{animation:var(--a) 1s}'
+  )
+);
+
+test(
+  'should keep a font face when a font-family value uses var(), which may name any family',
+  passthroughCSS(
+    '@font-face{font-family:Roboto;src:url(a.woff)}:root{--x:Roboto}a{font-family:var(--x)}'
+  )
+);
+
+test(
+  'should keep a font face when a font shorthand uses var(), which may name any family',
+  passthroughCSS(
+    '@font-face{font-family:Roboto;src:url(a.woff)}:root{--x:Roboto}a{font:12px var(--x)}'
+  )
+);
+
+test(
+  'should keep keyframes when an animation value uses env(), which may name any of them',
+  passthroughCSS(
+    '@keyframes foo{0%{opacity:0}to{opacity:1}}a{animation:env(--a) 1s}'
+  )
+);
+
+test(
+  'should keep keyframes when an animation-name value uses an untyped attr(), whose string may name any of them',
+  passthroughCSS(
+    '@keyframes foo{0%{opacity:0}to{opacity:1}}a{animation-name:attr(data-a)}'
+  )
+);
+
+test(
+  'should keep keyframes when an animation value uses a custom function, which may return any name',
+  passthroughCSS(
+    '@keyframes foo{0%{opacity:0}to{opacity:1}}a{animation:--pick() 1s}'
+  )
+);
+
+test(
+  'should keep a font face when a font-family value uses an untyped attr(), whose string may name any family',
+  passthroughCSS(
+    '@font-face{font-family:Roboto;src:url(a.woff)}a{font-family:attr(data-f)}'
+  )
+);
+
+test(
+  'should remove a font face without a family even when a font-family value uses var()',
+  processCSS(
+    '@font-face{src:url(a.woff)}a{font-family:var(--x)}',
+    'a{font-family:var(--x)}'
+  )
+);
