@@ -223,3 +223,60 @@ test(
     'a{animation-name:foo}'
   )
 );
+
+test(
+  'should keep keyframes when an animation value uses var(), which may name any of them',
+  passthroughCSS(
+    '@keyframes foo{0%{opacity:0}to{opacity:1}}:root{--a:foo}a{animation:var(--a) 1s}'
+  )
+);
+
+test(
+  'should keep a font face when a font-family value uses var(), which may name any family',
+  passthroughCSS(
+    '@font-face{font-family:Roboto;src:url(a.woff)}:root{--x:Roboto}a{font-family:var(--x)}'
+  )
+);
+
+test(
+  'should keep a font face when a font shorthand uses var(), which may name any family',
+  passthroughCSS(
+    '@font-face{font-family:Roboto;src:url(a.woff)}:root{--x:Roboto}a{font:12px var(--x)}'
+  )
+);
+
+test(
+  'should keep keyframes when an animation value uses env(), which may name any of them',
+  passthroughCSS(
+    '@keyframes foo{0%{opacity:0}to{opacity:1}}a{animation:env(--a) 1s}'
+  )
+);
+
+test(
+  'should keep keyframes when an animation-name value uses an untyped attr(), whose string may name any of them',
+  passthroughCSS(
+    '@keyframes foo{0%{opacity:0}to{opacity:1}}a{animation-name:attr(data-a)}'
+  )
+);
+
+test(
+  'should keep keyframes when an animation value uses a custom function, which may return any name',
+  passthroughCSS(
+    '@keyframes foo{0%{opacity:0}to{opacity:1}}a{animation:--pick() 1s}'
+  )
+);
+
+test(
+  'should keep a font face when a font-family value uses an untyped attr(), whose string may name any family',
+  passthroughCSS(
+    '@font-face{font-family:Roboto;src:url(a.woff)}a{font-family:attr(data-f)}'
+  )
+);
+
+test(
+  'should remove a font face without a family even when a font-family value uses var()',
+  processCSS(
+    '@font-face{src:url(a.woff)}a{font-family:var(--x)}',
+    'a{font-family:var(--x)}'
+  )
+);

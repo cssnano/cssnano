@@ -23,7 +23,7 @@ import { commentFreeText } from '../../values/tokensText.js';
 /** @import {TokenLists} from '../../ir/tokenLists.js' */
 /** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
 
-const { asciiLowerCase } = cssnanoUtils;
+const { asciiLowerCase, isSubstitutionToken } = cssnanoUtils;
 const wildcard = true;
 
 /**
@@ -54,14 +54,29 @@ function valueText(records, tokenLists, index) {
 }
 
 /**
+ * Whether a value holds a substitution function, such as `var()`, `env()` or
+ * `attr()`, which can supply a name that the value does not spell. Both
+ * `animation-name` and `font-family` accept a string, so even an untyped
+ * `attr()` counts.
+ *
+ * @param {readonly CSSToken[]} tokens
+ * @return {boolean}
+ */
+function hasSubstitution(tokens) {
+  return tokens.some(isSubstitutionToken);
+}
+
+/**
  * The keyframes names that the animation declarations reference: each
  * identifier and string, decoded so an escaped spelling matches the name it
- * denotes. Keywords and times are included too, which only over-keeps.
+ * denotes. Keywords and times are included too, which only over-keeps. A
+ * substitution function may supply any name, so it yields undefined and every
+ * keyframes rule is kept.
  *
  * @param {BlockRecords} records
  * @param {TokenLists} tokenLists
  * @param {ArenaIndex[]} indices
- * @return {Set<string>}
+ * @return {Set<string> | undefined}
  */
 function referencedNames(records, tokenLists, indices) {
   /** @type {Set<string>} */
@@ -71,7 +86,9 @@ function referencedNames(records, tokenLists, indices) {
       /** @type {import('../../ir/declarationRecord.js').DeclarationRecord} */ (
         records.entry(index)
       );
-    for (const token of tokenLists.get(entry.valueList)) {
+    const tokens = tokenLists.get(entry.valueList);
+    if (hasSubstitution(tokens)) return undefined;
+    for (const token of tokens) {
       if (isTokenIdent(token) || isTokenString(token))
         names.add(token[4].value);
     }
@@ -230,6 +247,8 @@ function hasFont(fontFamily, fonts) {
 /**
  * A `@font-face` stays only when it names a family and every family it names
  * is in use. Its families are the font-family declarations among its children.
+ * A substitution function in a family declaration may name any family, so
+ * every face that names one stays.
  *
  * @param {BlockRecords} records
  * @param {TokenLists} tokenLists
@@ -241,7 +260,16 @@ function hasFont(fontFamily, fonts) {
 function filterFont(records, tokenLists, indices, decls, remove) {
   /** @type {Set<string>} */
   const used = new Set();
+  let anyFamily = false;
   for (const index of decls) {
+    const entry =
+      /** @type {import('../../ir/declarationRecord.js').DeclarationRecord} */ (
+        records.entry(index)
+      );
+    if (hasSubstitution(tokenLists.get(entry.valueList))) {
+      anyFamily = true;
+      break;
+    }
     for (const font of splitComma(
       asciiLowerCase(valueText(records, tokenLists, index))
     )) {
@@ -266,6 +294,7 @@ function filterFont(records, tokenLists, indices, decls, remove) {
         continue;
       count++;
       if (
+        !anyFamily &&
         !hasFont(asciiLowerCase(valueText(records, tokenLists, child)), fonts)
       )
         unused = true;
