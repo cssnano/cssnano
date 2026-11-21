@@ -10,7 +10,21 @@
     "strict": true,
     "skipLibCheck": true,
     "moduleResolution": "nodenext",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "#postcss-*": ["../packages/cssnano/src/plugins/postcss-*/index.js"],
+      "#presets/*": ["../packages/cssnano/src/presets/*.js"],
+      "#stylehacks": ["../packages/cssnano/src/utils/stylehacks/index.js"],
+      "#utils": ["../packages/cssnano/src/utils/index.js"],
+      "#utils/browser-bugs": ["../packages/cssnano/src/utils/browserBugs.js"],
+      "#utils/browser-support": [
+        "../packages/cssnano/src/utils/browserSupport.js"
+      ],
+      "#utils/browser-targets": [
+        "../packages/cssnano/src/utils/browserTargets.js"
+      ],
+      "#utils/versions": ["../packages/cssnano/src/utils/versions.js"]
+    }
   },
   "include": [
     ".astro/types.d.ts",
