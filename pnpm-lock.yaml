@@ -180,8 +180,8 @@ catalogs:
       specifier: ^4.0.2
       version: 4.0.2
     '@mdn/browser-compat-data':
-      specifier: ^8.1.8
-      version: 8.1.8
+      specifier: ^8.1.9
+      version: 8.1.9
     '@webref/css':
       specifier: 8.7.8
       version: 8.7.8
@@ -244,7 +244,7 @@ importers:
     devDependencies:
       '@mdn/browser-compat-data':
         specifier: 'catalog:'
-        version: 8.1.8
+        version: 8.1.9
       '@webref/css':
         specifier: 'catalog:'
         version: 8.7.8(css-tree@3.2.1)
@@ -319,8 +319,8 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@mdn/browser-compat-data@8.1.8':
-    resolution: {integrity: sha512-+RK7inkLeZ70kr9Mo+Y81JjZMpQIt0Sx40tHHU0hXGDSdf9YvlawH+4WlUpP3SE8rFLmjqGiTzL+qPPPnncWDw==}
+  '@mdn/browser-compat-data@8.1.9':
+    resolution: {integrity: sha512-7d8D9yzVS4ugLbt4clzc5DKU8dq85K0lRebjzpP43GxSr7vYKmczgfuEU+0beimjl5YmnHkcErtolg5t5ttb0A==}
 
   '@napi-rs/wasm-runtime@1.2.7':
     resolution: {integrity: sha512-zJccwplOAbgfZju95IUHazLnx9RAPtPN2YGJXI6UbrgeaR9QfPjGrQL6ERkSAtnVCA4Q+83ApGyaX5zdpCaKkQ==}
@@ -1275,6 +1275,7 @@ packages:
 
   tldts-core@7.4.20:
     resolution: {integrity: sha512-C630TWXZCZmLq0F2bW4QqwnaaxCQ/svpAqvJwnC4JvgEM5ohhBnGsEzTLSOXcN+xjz+kEaHS5uoWIw2klnqd0A==}
+    deprecated: Partial release, see https://github.com/remusao/tldts/issues/2735. Use >=7.4.22.
 
   tldts@7.4.19:
     resolution: {integrity: sha512-48dH6aSpQnpbzDUc4vIQZ1VjB8tkK+e8c1yx05/SZK+rkssgjEOlxDd/yU8/a4vGYQ9vRgJr9dwMq9TJ0b3X2Q==}
@@ -1372,7 +1373,7 @@ snapshots:
 
   '@exodus/bytes@1.16.0': {}
 
-  '@mdn/browser-compat-data@8.1.8': {}
+  '@mdn/browser-compat-data@8.1.9': {}
 
   '@napi-rs/wasm-runtime@1.2.7(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
     dependencies:
