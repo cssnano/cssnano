@@ -16,12 +16,15 @@ const reservedIdents = new Set(['auto', 'span', 'default']);
  * @return {boolean}
  */
 function isKeyword(token, keyword) {
-  return token[0] === TokenType.Ident && asciiLowerCase(token[1]) === keyword;
+  return (
+    token[0] === TokenType.Ident && asciiLowerCase(token[4].value) === keyword
+  );
 }
 
 /**
  * A `<custom-ident>` in a `<grid-line>`: an identifier that is not reserved
- * and not a CSS-wide keyword. Its comparison is case-sensitive.
+ * and not a CSS-wide keyword, judged on its unescaped value. Its comparison
+ * is case-sensitive.
  *
  * @param {CSSToken} token
  * @return {boolean}
@@ -29,8 +32,8 @@ function isKeyword(token, keyword) {
 function isCustomIdent(token) {
   return (
     token[0] === TokenType.Ident &&
-    !reservedIdents.has(asciiLowerCase(token[1])) &&
-    !isCssWideKeyword(token[1])
+    !reservedIdents.has(asciiLowerCase(token[4].value)) &&
+    !isCssWideKeyword(token[4].value)
   );
 }
 

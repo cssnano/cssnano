@@ -1,4 +1,4 @@
-// Guards for the longhand rounds' order against the walks of step 14. Each
+// Guards for the longhand rounds' order against the walks that run them. Each
 // test pins the output the default and advanced presets give today, so it
 // passes before and after the walks run the rounds; the column facts and the
 // blocks the rounds reach are the inputs the walks are most likely to change.

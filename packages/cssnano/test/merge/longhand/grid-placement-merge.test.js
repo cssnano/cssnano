@@ -190,5 +190,29 @@ describe('grid placement longhand merging', () => {
         'a{grid-row-start:1;grid-row-end:3;grid-column:2 / 4;grid-row:1 / 3}'
       )
     );
+
+    test(
+      'keeps the row longhands, merging only the column pair, when an escaped identifier unescapes to auto, which is not a custom identifier',
+      processCSS(
+        'a{grid-row-start:\\61uto 2;grid-column-start:1;grid-row-end:2;grid-column-end:3}',
+        'a{grid-row-start:\\61uto 2;grid-row-end:2;grid-column:1 / 3}'
+      )
+    );
+
+    test(
+      'keeps the row longhands, merging only the column pair, when an escaped identifier unescapes to span',
+      processCSS(
+        'a{grid-row-start:\\73pan;grid-column-start:1;grid-row-end:2;grid-column-end:3}',
+        'a{grid-row-start:\\73pan;grid-row-end:2;grid-column:1 / 3}'
+      )
+    );
+
+    test(
+      'keeps the row longhands, merging only the column pair, when an escaped identifier unescapes to a CSS-wide keyword',
+      processCSS(
+        'a{grid-row-start:\\69nherit;grid-column-start:1;grid-row-end:2;grid-column-end:3}',
+        'a{grid-row-start:\\69nherit;grid-row-end:2;grid-column:1 / 3}'
+      )
+    );
   });
 });

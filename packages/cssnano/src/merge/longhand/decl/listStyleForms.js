@@ -31,7 +31,8 @@ function listStyleType(decl) {
   const [token] = component.tokens;
   if (token[0] === TokenType.String) return trimmed;
   if (token[0] !== TokenType.Ident) return null;
-  return reservedTypes.has(asciiLowerCase(trimmed)) ? null : trimmed;
+  const name = asciiLowerCase(token[4].value);
+  return reservedTypes.has(name) || isCssWideKeyword(name) ? null : trimmed;
 }
 
 /**

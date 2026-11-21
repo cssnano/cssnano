@@ -224,6 +224,13 @@ test(
 );
 
 test(
+  'should keep every counter style when list-style-type uses var(), whose value may name one',
+  passthroughCSS(
+    '@counter-style foo{system:cyclic;symbols:"*"}a{list-style-type:var(--s)}'
+  )
+);
+
+test(
   'should keep every counter style when counter() takes its style from var()',
   passthroughCSS(
     '@counter-style foo{system:cyclic;symbols:"*"}a::before{content:counter(c,var(--s))}'

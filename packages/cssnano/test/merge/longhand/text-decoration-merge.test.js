@@ -147,10 +147,9 @@ describe('text-decoration longhand merging', () => {
   );
 
   test(
-    'merges a line alone in Safari 17, which parses the line shorthand',
-    processCSSFactory([plugin(withTargets('safari 17'))]).processCSS(
-      'a{text-decoration-line:underline;text-decoration-style:solid;text-decoration-color:currentcolor;text-decoration-thickness:auto}',
-      'a{text-decoration:underline}'
+    'keeps the longhands in Safari 17, whose shorthand sets only the line and would not reset the style, color or thickness',
+    processCSSFactory([plugin(withTargets('safari 17'))]).passthroughCSS(
+      'a{text-decoration-line:underline;text-decoration-style:solid;text-decoration-color:currentcolor;text-decoration-thickness:auto}'
     )
   );
 

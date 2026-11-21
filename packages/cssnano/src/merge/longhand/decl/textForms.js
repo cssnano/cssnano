@@ -132,25 +132,18 @@ function emitDecoration([line, style, color, thickness]) {
 }
 
 /**
- * An engine that parses the shorthand without the style or color, or without
- * the thickness, drops the whole declaration, so each one emitted needs its
- * feature.
- *
- * @param {string[]} values
- * @return {string[]}
+ * Safari before 26.2 parses the shorthand as the line alone and does not reset
+ * the style, color or thickness. Writing the shorthand is only safe when the
+ * engine parses and resets all of them, so both features are always needed.
  */
-function decorationFeatures([, style, color, thickness]) {
-  const features = [];
-  if (
-    asciiLowerCase(style) !== 'solid' ||
-    asciiLowerCase(color) !== 'currentcolor'
-  ) {
-    features.push('keyword:text-decoration-color-and-style');
-  }
-  if (asciiLowerCase(thickness) !== 'auto') {
-    features.push('keyword:text-decoration-thickness');
-  }
-  return features;
+const decorationFeatureList = Object.freeze([
+  'keyword:text-decoration-color-and-style',
+  'keyword:text-decoration-thickness',
+]);
+
+/** @return {readonly string[]} */
+function decorationFeatures() {
+  return decorationFeatureList;
 }
 
 /** @type {PairFamily} */

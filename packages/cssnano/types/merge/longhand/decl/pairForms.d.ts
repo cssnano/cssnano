@@ -5,7 +5,7 @@ export type PairFamily = {
     aliases: ReadonlySet<string>;
     parseValue: Parser[];
     emit: (values: string[]) => string | null;
-    requires?: (values: string[]) => string[];
+    requires?: (values: string[]) => readonly string[];
     supportKey: string | null;
 };
 /** @type {PairFamily[]} */

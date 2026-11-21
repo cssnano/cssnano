@@ -22,14 +22,14 @@ export const mutations = [
     replace: '  return fills <= 1 ? trimmed : null;',
   },
   {
-    name: 'drop the thickness feature a shorthand with a thickness needs',
-    find: "    features.push('keyword:text-decoration-thickness');",
-    replace: '    features.push();',
+    name: 'drop the thickness feature the text-decoration shorthand needs',
+    find: "  'keyword:text-decoration-thickness',",
+    replace: '',
   },
   {
-    name: 'drop the color-and-style feature a shorthand with a style or color needs',
-    find: "    features.push('keyword:text-decoration-color-and-style');",
-    replace: '    features.push();',
+    name: 'drop the color-and-style feature the text-decoration shorthand needs',
+    find: "  'keyword:text-decoration-color-and-style',",
+    replace: '',
   },
   {
     name: 'accept a negative text-decoration thickness',

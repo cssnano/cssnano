@@ -143,4 +143,18 @@ describe('list-style longhand merging', () => {
       'a{list-style:inside square!important;list-style:circle}'
     )
   );
+
+  test(
+    'keeps a type that unescapes to the outside keyword, which would be read as the position',
+    passthroughCSS(
+      'a{list-style-type:\\6futside;list-style-position:inside;list-style-image:none}'
+    )
+  );
+
+  test(
+    'keeps a type that unescapes to a CSS-wide keyword',
+    passthroughCSS(
+      'a{list-style-type:\\69nherit;list-style-position:inside;list-style-image:none}'
+    )
+  );
 });
