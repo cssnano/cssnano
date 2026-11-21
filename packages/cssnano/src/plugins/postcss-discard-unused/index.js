@@ -6,13 +6,12 @@ import {
   isTokenString,
   isTokenWhitespace,
 } from '@csstools/css-tokenizer';
-import { splitComma } from '../../values/splitTopLevel.js';
 import cssnanoUtils from '#utils';
 import {
   counterStyleName,
   usedCounterStyleNames,
 } from './lib/counterStyleUses.js';
-import { DECLARATION } from '../../ir/blockRecord.js';
+import { filterFont } from './lib/fontFaceUses.js';
 import { preludeListOf } from '../../ir/declaredText.js';
 import { commentFreeText } from '../../values/tokensText.js';
 
@@ -23,7 +22,7 @@ import { commentFreeText } from '../../values/tokensText.js';
 /** @import {TokenLists} from '../../ir/tokenLists.js' */
 /** @import {RecordSymbolLists} from '../../run/symbolLists.js' */
 
-const { asciiLowerCase, isSubstitutionToken } = cssnanoUtils;
+const { isSubstitutionToken } = cssnanoUtils;
 const wildcard = true;
 
 /**
@@ -35,22 +34,6 @@ const wildcard = true;
  */
 function cleanText(tokens) {
   return commentFreeText(tokens).trim();
-}
-
-/**
- * The value of a declaration record, comment-free and trimmed.
- *
- * @param {BlockRecords} records
- * @param {TokenLists} tokenLists
- * @param {ArenaIndex} index
- * @return {string}
- */
-function valueText(records, tokenLists, index) {
-  const entry =
-    /** @type {import('../../ir/declarationRecord.js').DeclarationRecord} */ (
-      records.entry(index)
-    );
-  return cleanText(tokenLists.get(entry.valueList));
 }
 
 /**
@@ -228,78 +211,6 @@ function filterNamespace(records, tokenLists, indices, prefixes, remove) {
     } else if (!usesAny && !prefixes.has(prefix)) {
       remove(index);
     }
-  }
-}
-
-/**
- * A family is used when any font name in use contains it.
- *
- * @param {string} fontFamily
- * @param {string[]} fonts
- * @return {boolean}
- */
-function hasFont(fontFamily, fonts) {
-  return splitComma(fontFamily).some((font) =>
-    fonts.some((used) => used.includes(font))
-  );
-}
-
-/**
- * A `@font-face` stays only when it names a family and every family it names
- * is in use. Its families are the font-family declarations among its children.
- * A substitution function in a family declaration may name any family, so
- * every face that names one stays.
- *
- * @param {BlockRecords} records
- * @param {TokenLists} tokenLists
- * @param {ArenaIndex[]} indices
- * @param {ArenaIndex[]} decls
- * @param {(index: ArenaIndex) => void} remove
- * @return {void}
- */
-function filterFont(records, tokenLists, indices, decls, remove) {
-  /** @type {Set<string>} */
-  const used = new Set();
-  let anyFamily = false;
-  for (const index of decls) {
-    const entry =
-      /** @type {import('../../ir/declarationRecord.js').DeclarationRecord} */ (
-        records.entry(index)
-      );
-    if (hasSubstitution(tokenLists.get(entry.valueList))) {
-      anyFamily = true;
-      break;
-    }
-    for (const font of splitComma(
-      asciiLowerCase(valueText(records, tokenLists, index))
-    )) {
-      used.add(font);
-    }
-  }
-  const fonts = [...used];
-  const { links } = records;
-  for (const index of indices) {
-    let count = 0;
-    let unused = false;
-    for (
-      let child = links.firstChild(index);
-      child !== -1;
-      child = links.nextSibling(child)
-    ) {
-      const entry = records.entry(child);
-      if (
-        entry.kind !== DECLARATION ||
-        asciiLowerCase(entry.prop) !== 'font-family'
-      )
-        continue;
-      count++;
-      if (
-        !anyFamily &&
-        !hasFont(asciiLowerCase(valueText(records, tokenLists, child)), fonts)
-      )
-        unused = true;
-    }
-    if (count === 0 || unused) remove(index);
   }
 }
 

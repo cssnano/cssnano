@@ -12,7 +12,8 @@ import { visitEntriesInOrder } from '../ir/visitEntries.js';
 /** @import {TokenLists} from '../ir/tokenLists.js' */
 
 const { asciiLowerCase } = cssnanoUtils;
-const fontRegex = /font(|-family)/v;
+// Only `font` and `font-family` can name the family of a font face.
+const fontRegex = /^font(?:-family)?$/v;
 // The declarations whose values discardUnused reads counter style names from.
 const listStyleRegex = /list-style|^(?:system|fallback|speak-as)$/v;
 // The properties whose functions, such as `counter()`, can name a counter
@@ -22,7 +23,9 @@ export const counterStyleFunctionProperties = new Set([
   'content',
   'copy-into',
 ]);
-const animationRegex = /animation/v;
+// Only `animation` and `animation-name`, vendor-prefixed or not, can name
+// keyframes.
+const animationRegex = /^(?:-[a-z]+-)?animation(?:-name)?$/v;
 const zIndexRegex = /^[zZ]-[iI][nN][dD][eE][xX]$/v;
 const counterStyleRegex = /counter-style/v;
 const keyframesRegex = /keyframes/v;
@@ -184,11 +187,22 @@ function visitRecordDecl(records, lists, index, entry) {
   if (counterStyleFunctionProperties.has(prop)) {
     lists.counterStyleFunctionDecls.push(index);
   }
-  if (
-    records.enclosingContainer(index)?.kind === RULE &&
-    fontRegex.test(prop)
-  ) {
+  if (fontRegex.test(prop) && !isFontFaceDescriptor(records, index)) {
     lists.fontDecls.push(index);
   }
   if (animationRegex.test(prop)) lists.animationDecls.push(index);
+}
+
+/**
+ * A `font-family` inside `@font-face` defines the family rather than using it.
+ * Declarations anywhere else, such as in nested `@media`, `@scope` or `@page`,
+ * name families that a font face may supply.
+ *
+ * @param {BlockRecords} records
+ * @param {ArenaIndex} index
+ * @returns {boolean}
+ */
+function isFontFaceDescriptor(records, index) {
+  const container = records.enclosingContainer(index);
+  return container?.kind === AT_RULE_BLOCK && container.name === 'font-face';
 }

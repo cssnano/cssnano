@@ -53,9 +53,10 @@ a {
 }
 ```
 
-Note that this plugin is not responsible for normalising font families, as it
-makes the assumption that you will write your font names consistently, such that
-it considers these two declarations differently:
+A font face stays when a rule uses a family that one of its `font-family`
+descriptors names. Family names are compared as browsers match them, so quoting,
+CSS escapes, the spaces between words and ASCII case do not matter: these two
+declarations use the same family.
 
 ```css
 h1 {
@@ -67,9 +68,10 @@ h2 {
 }
 ```
 
-However, you can mitigate this by including [postcss-minify-font-values][mfv]
-*before* this plugin, which will take care of normalising quotes, and
-deduplicating. For more examples, see the [tests](../../test/postcss-discard-unused/).
+A font face is kept when a font declaration holds a substitution function such
+as `var()`, or when its own descriptor is not a single string or a sequence of
+identifiers. For more examples, see the
+[tests](../../test/postcss-discard-unused/).
 
 
 ## Contributors
@@ -82,4 +84,3 @@ MIT © [Ben Briggs](https://beneb.info)
 
 
 [postcss]: https://github.com/postcss/postcss
-[mfv]:     https://github.com/cssnano/cssnano/tree/main/packages/cssnano/docs/postcss-minify-font-values
