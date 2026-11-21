@@ -2,6 +2,7 @@
 import {
   absorbEarlier as absorbSummaries,
   addSelectors as addSummarySelectors,
+  setParsedPrefix,
 } from '../../ir/selectorList.js';
 import { compatibleOf, vendorSummaryOf } from '../../ir/selectorReads.js';
 import { createRunContext } from '../../run/runContext.js';
@@ -176,8 +177,9 @@ export default class MergeState {
   }
 
   /**
-   * Whether the selector parser accepts every selector of a rule. A verdict is
-   * parsed once per selector id, so a rule costs one lookup per selector.
+   * Whether the selector parser accepts every selector of a rule. Each join
+   * looks up only the selectors added after the rule's parsed prefix, so a rule
+   * that gains selectors at each join does not repeat the lookups.
    *
    * @param {RuleRecord} rule
    * @return {boolean}
@@ -185,9 +187,9 @@ export default class MergeState {
   #parsesEvery(rule) {
     const verdicts = this.#context.selectorVerdicts;
     const ids = rule.selectorIds;
-    for (let at = 0; at < ids.length; at++) {
-      if (!verdicts.isValid(this.#tokenLists, ids[at])) return false;
-    }
-    return true;
+    let at = rule.parsedPrefix;
+    while (at < ids.length && verdicts.isValid(this.#tokenLists, ids[at])) at++;
+    if (at !== rule.parsedPrefix) setParsedPrefix(rule, at);
+    return at === ids.length;
   }
 }

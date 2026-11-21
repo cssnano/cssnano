@@ -18,10 +18,11 @@ import { selectorItemsOf } from './selectorItems.js';
  */
 export function writeSelectorIds(record, ids) {
   const writable =
-    /** @type {{selectorIds: readonly TokenListId[], writtenList: number, marked: boolean}} */ (
+    /** @type {{selectorIds: readonly TokenListId[], parsedPrefix: number, writtenList: number, marked: boolean}} */ (
       /** @type {unknown} */ (record)
     );
   writable.selectorIds = ids;
+  writable.parsedPrefix = 0;
   writable.writtenList = -1;
   writable.marked = true;
 }

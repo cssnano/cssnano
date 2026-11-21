@@ -13,7 +13,7 @@ import { buildRecords } from '../../../src/ir/tree/buildRecords.js';
 import { createRunContext } from '../../../src/run/runContext.js';
 import { TokenLists } from '../../../src/ir/tokenLists.js';
 import { tokenizeMode } from '../../../src/values/tokenizeMode.js';
-import { testTargets } from '../../../../util/testHelpers.js';
+import { testTargets } from '../../../../../util/testHelpers.js';
 
 const session = new Session();
 session.connect();

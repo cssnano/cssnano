@@ -34,6 +34,7 @@ export const UNFOLDED_VENDOR = new VendorPrefixSummary(null, false);
  * @property {TokenListId[]} selectorIds
  * @property {number} writtenList
  * @property {boolean} compatible
+ * @property {number} parsedPrefix
  * @property {VendorPrefixSummary} vendor
  * @property {RuleElementKeys | null} elementKeys
  * @property {boolean} marked
@@ -109,6 +110,7 @@ export function reachedRules(records) {
 export function fillRule(list, tokenLists, browsers) {
   const own = writableIds(list);
   own.compatible = true;
+  own.parsedPrefix = 0;
   own.vendor = new VendorPrefixSummary(null, false);
   own.elementKeys = { list: [], seen: new Set() };
   extendSummaries(list, 0, tokenLists, browsers);
@@ -195,6 +197,7 @@ export function absorbEarlier(records, laterIndex, earlierIndex) {
   const later = /** @type {RuleRecord} */ (records.rule(laterIndex));
   const earlier = /** @type {RuleRecord} */ (records.rule(earlierIndex));
   const compatible = earlier.compatible && later.compatible;
+  const parsedPrefix = joinedParsedPrefix(earlier, later);
   const vendor = earlier.vendor.concat(later.vendor);
   const keys = joinKeys(earlier.elementKeys, later.elementKeys);
   // The earlier list's id array moves here, so the earlier rule keeps no array.
@@ -204,12 +207,40 @@ export function absorbEarlier(records, laterIndex, earlierIndex) {
   own.selectorIds = ids;
   own.writtenList = -1;
   own.compatible = compatible;
+  own.parsedPrefix = parsedPrefix;
   own.vendor = vendor;
   own.elementKeys = keys;
   own.marked = true;
   const moved = writableIds(earlier);
   moved.selectorIds = NO_SELECTORS;
+  moved.parsedPrefix = 0;
   moved.writtenList = -1;
+}
+
+/**
+ * Records that the parser accepts the first `count` selectors of a rule.
+ *
+ * @param {RuleRecord} list
+ * @param {number} count
+ * @return {void}
+ */
+export function setParsedPrefix(list, count) {
+  writableIds(list).parsedPrefix = count;
+}
+
+/**
+ * The parsed prefix of the list of `first`'s ids followed by `second`'s: the
+ * second list's prefix carries over only when the first list parses whole.
+ *
+ * @param {RuleRecord} first
+ * @param {RuleRecord} second
+ * @return {number}
+ */
+function joinedParsedPrefix(first, second) {
+  const length = first.selectorIds.length;
+  return first.parsedPrefix < length
+    ? first.parsedPrefix
+    : length + second.parsedPrefix;
 }
 
 /**
@@ -226,6 +257,7 @@ export function combineSummaries(target, first, second) {
   const own = writableIds(target);
   own.compatible = first.compatible && second.compatible;
   own.marked = true;
+  own.parsedPrefix = joinedParsedPrefix(first, second);
   own.vendor = first.vendor.concat(second.vendor);
   // A copy, since both inputs stay alive as they are.
   const keys = first.elementKeys;

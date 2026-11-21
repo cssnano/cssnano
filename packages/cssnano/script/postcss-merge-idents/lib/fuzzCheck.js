@@ -1,6 +1,6 @@
 import postcss from 'postcss';
 import cssnanoUtils from '#utils';
-import { presetEntryPlugin } from '../../../../util/testHelpers.js';
+import { presetEntryPlugin } from '../../../../../util/testHelpers.js';
 import {
   collectProtectedNameDefinitions,
   resolveReferences,
