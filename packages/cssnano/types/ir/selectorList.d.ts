@@ -12,6 +12,7 @@ export type WritableSummaries = {
     selectorIds: TokenListId[];
     writtenList: number;
     compatible: boolean;
+    parsedPrefix: number;
     vendor: VendorPrefixSummary;
     elementKeys: RuleElementKeys | null;
     marked: boolean;
@@ -76,6 +77,14 @@ export declare function addSelectors(records: BlockRecords, index: number, ids: 
  * @return {void}
  */
 export declare function absorbEarlier(records: BlockRecords, laterIndex: number, earlierIndex: number): void;
+/**
+ * Records that the parser accepts the first `count` selectors of a rule.
+ *
+ * @param {RuleRecord} list
+ * @param {number} count
+ * @return {void}
+ */
+export declare function setParsedPrefix(list: RuleRecord, count: number): void;
 /**
  * The summaries of a rule made from two rules' selectors, in order: the first
  * rule's ids, then the second's. `target` holds no id of the two yet, and it
