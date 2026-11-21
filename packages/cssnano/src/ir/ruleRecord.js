@@ -35,6 +35,16 @@ export class RuleRecord {
   compatible = false;
 
   /**
+   * How many selectors, from the first, the parser is known to accept. A merge
+   * looks up verdicts only for the selectors after them, so each join of a rule
+   * that keeps gaining selectors looks up only the ones it added.
+   *
+   * @readonly
+   * @type {number}
+   */
+  parsedPrefix = 0;
+
+  /**
    * The vendor prefix summary of the selectors. It may hold the prefix of a
    * selector the parser rejects, so a merge reads it only after every selector
    * passes the parser.
