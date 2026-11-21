@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { benchmarkCases } from '../cases/index.js';
 import { measureProcess } from '../child.js';
 
-const CHILD = new URL('../child.js', import.meta.url).pathname;
+const CHILD = fileURLToPath(new URL('../child.js', import.meta.url));
 const [CASE] = Object.keys(benchmarkCases).toSorted();
 
 function runChild(args) {

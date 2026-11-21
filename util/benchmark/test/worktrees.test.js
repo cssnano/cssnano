@@ -44,19 +44,28 @@ function createUndeletableWorktree(repositoryDir) {
   return destination;
 }
 
-test('worktree removal that fails returns a recovery command instead of throwing', () => {
-  const repository = createRepository();
-  try {
-    const destination = createUndeletableWorktree(repository.dir);
-    assert.match(
-      removeWorktree(repository.dir, destination),
-      /recover with:\n {2}chmod -R u\+w .*worktree; rm -rf .*worktree; git -C .* worktree prune$/v
-    );
-  } finally {
-    chmodSync(join(repository.dir, 'worktree', 'locked'), 0o755);
-    repository.cleanup();
+// Windows ignores the write bit of a directory, so nothing makes the removal fail.
+test(
+  'worktree removal that fails returns a recovery command instead of throwing',
+  {
+    skip:
+      process.platform === 'win32' &&
+      'a read-only directory is deletable on Windows',
+  },
+  () => {
+    const repository = createRepository();
+    try {
+      const destination = createUndeletableWorktree(repository.dir);
+      assert.match(
+        removeWorktree(repository.dir, destination),
+        /recover with:\n {2}chmod -R u\+w .*worktree; rm -rf .*worktree; git -C .* worktree prune$/v
+      );
+    } finally {
+      chmodSync(join(repository.dir, 'worktree', 'locked'), 0o755);
+      repository.cleanup();
+    }
   }
-});
+);
 
 test('worktree removal that succeeds reports no recovery command', () => {
   const repository = createRepository();

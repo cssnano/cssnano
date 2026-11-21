@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const utilDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const cssnanoDir = join(utilDir, '..', 'packages', 'cssnano');
+// A URL, because ESM resolves a Windows absolute path as a URL scheme.
+const hookUrl = pathToFileURL(join(utilDir, 'countTokenize.js')).href;
 
 /**
  * Runs `script` as an ES module in a child process with the counting hook
@@ -17,13 +19,7 @@ const cssnanoDir = join(utilDir, '..', 'packages', 'cssnano');
 function runCounted(script) {
   const run = spawnSync(
     process.execPath,
-    [
-      '--import',
-      join(utilDir, 'countTokenize.js'),
-      '--input-type=module',
-      '-e',
-      script,
-    ],
+    ['--import', hookUrl, '--input-type=module', '-e', script],
     { cwd: cssnanoDir, encoding: 'utf8' }
   );
   assert.equal(run.status, 0, run.stderr);
@@ -32,7 +28,7 @@ function runCounted(script) {
 
 const preamble = `
 import { tokenize } from '@csstools/css-tokenizer';
-import { counter } from ${JSON.stringify(join(utilDir, 'countTokenize.js'))};
+import { counter } from ${JSON.stringify(hookUrl)};
 `;
 
 test('countTokenize counts each tokenize call on the default entry', () => {
