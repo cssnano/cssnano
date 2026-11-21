@@ -104,10 +104,9 @@ test(
 );
 
 test(
-  'should not be responsible for normalising fonts',
-  processCSS(
-    '@font-face {font-family:"Does Exist";src:url("fonts/does-exist.ttf") format("truetype")}body{font-family:Does Exist}',
-    'body{font-family:Does Exist}'
+  'should keep a font face whose quoted family is written unquoted in a rule',
+  passthroughCSS(
+    '@font-face {font-family:"Does Exist";src:url("fonts/does-exist.ttf") format("truetype")}body{font-family:Does Exist}'
   )
 );
 
