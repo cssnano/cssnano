@@ -1,16 +1,19 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "jsPlugins": ["./util/oxlint/merge-ir-plugin.js"],
-  "ignorePatterns": ["packages/**/types/**", "util/oxlint/fixtures/**"],
   "plugins": ["typescript", "unicorn", "oxc", "promise", "import"],
   "categories": {
     "correctness": "error"
     //"suspicious": "error"
   },
+  "env": {
+    "builtin": true,
+    "node": true
+  },
+  "ignorePatterns": ["packages/**/types/**"],
   "rules": {
-    "no-undef": "error",
     "array-callback-return": "error",
     "complexity": "error",
+    "eqeqeq": ["error", "always", { "null": "ignore" }],
     "guard-for-in": "error",
     "max-depth": "error",
     "max-lines": ["error", { "max": 400 }],
@@ -18,79 +21,87 @@
     "no-case-declarations": "error",
     "no-duplicate-imports": "error",
     "no-empty": "error",
-    "no-nested-ternary": "error",
     "no-fallthrough": "error",
     "no-labels": "error",
+    "no-nested-ternary": "error",
     "no-param-reassign": "error",
+    "no-promise-executor-return": "error",
     "no-prototype-builtins": "error",
     "no-redeclare": "error",
     "no-regex-spaces": "error",
+    "no-self-compare": "error",
     "no-shadow": "error",
+    "no-template-curly-in-string": "error",
     "no-throw-literal": "error",
+    "no-undef": "error",
     "no-underscore-dangle": "error",
+    "no-unmodified-loop-condition": "error",
     "no-unnecessary-await": "error",
+    "no-unreachable-loop": "error",
     "no-useless-assignment": "error",
+    "no-var": "error",
+    "object-shorthand": "error",
     "only-throw-error": "error",
-    "no-promise-executor-return": "error",
+    "prefer-arrow-callback": "error",
     "prefer-const": ["error", { "destructuring": "all" }],
-    "unicorn/prefer-array-find": "error",
-    "unicorn/prefer-set-has": "error",
+    "prefer-numeric-literals": "error",
+    "prefer-object-has-own": "error",
+    "prefer-object-spread": "error",
+    "prefer-rest-params": "error",
     "preserve-caught-error": "error",
-    "promise/prefer-await-to-then": "error",
+    "radix": "error",
+    "require-unicode-regexp": ["error", { "requireFlag": "v" }],
+
+    "import/no-cycle": "error",
+    "import/no-duplicates": "error",
+    "import/no-self-import": "error",
+
+    "oxc/no-accumulating-spread": "error",
+
     "promise/always-return": "error",
+    "promise/no-nesting": "error",
+    "promise/prefer-await-to-then": "error",
+
     "unicorn/consistent-function-scoping": "error",
     "unicorn/no-array-for-each": "error",
     "unicorn/no-array-reduce": "error",
     "unicorn/no-array-reverse": "error",
     "unicorn/no-array-sort": "error",
-    "unicorn/prefer-array-flat": "error",
-    "unicorn/prefer-includes": "error",
-    "unicorn/prefer-node-protocol": "error",
-    "unicorn/prefer-number-properties": "error",
-    "unicorn/prefer-regexp-test": "error",
-    "unicorn/prefer-type-error": "error",
-    "promise/no-nesting": "error",
-    "require-unicode-regexp": ["error", { "requireFlag": "v" }],
-    "eqeqeq": ["error", "always", { "null": "ignore" }],
-    "import/no-cycle": "error",
-    "import/no-duplicates": "error",
-    "import/no-self-import": "error",
-    "no-self-compare": "error",
-    "no-template-curly-in-string": "error",
-    "no-unmodified-loop-condition": "error",
-    "no-unreachable-loop": "error",
-    "oxc/no-accumulating-spread": "error",
-    "radix": "error",
     "unicorn/no-instanceof-array": "error",
     "unicorn/no-unnecessary-slice-end": "error",
     "unicorn/no-useless-fallback-in-spread": "error",
     "unicorn/no-useless-spread": "error",
+    "unicorn/prefer-array-find": "error",
+    "unicorn/prefer-array-flat": "error",
+    "unicorn/prefer-array-flat-map": "error",
+    "unicorn/prefer-array-index-of": "error",
     "unicorn/prefer-array-some": "error",
+    "unicorn/prefer-date-now": "error",
+    "unicorn/prefer-default-parameters": "error",
+    "unicorn/prefer-global-this": "error",
+    "unicorn/prefer-includes": "error",
+    "unicorn/prefer-math-min-max": "error",
     "unicorn/prefer-math-trunc": "error",
     "unicorn/prefer-modern-math-apis": "error",
     "unicorn/prefer-negative-index": "error",
-    "unicorn/prefer-set-size": "error",
-    "unicorn/prefer-array-index-of": "error",
-    "prefer-object-spread": "error",
-    "no-var": "error",
-    "object-shorthand": "error",
-    "prefer-arrow-callback": "error",
-    "prefer-rest-params": "error",
-    "prefer-object-has-own": "error",
-    "prefer-numeric-literals": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/prefer-number-properties": "error",
+    "unicorn/prefer-object-from-entries": "error",
     "unicorn/prefer-optional-catch-binding": "error",
+    "unicorn/prefer-regexp-test": "error",
+    "unicorn/prefer-set-has": "error",
+    "unicorn/prefer-set-size": "error",
+    "unicorn/prefer-string-replace-all": "error",
     "unicorn/prefer-string-starts-ends-with": "error",
     "unicorn/prefer-string-trim-start-end": "error",
-    "unicorn/prefer-object-from-entries": "error",
-    "unicorn/prefer-array-flat-map": "error",
-    "unicorn/prefer-default-parameters": "error",
-    "unicorn/prefer-date-now": "error",
-    "unicorn/prefer-global-this": "error",
-    "unicorn/prefer-math-min-max": "error",
-    "unicorn/prefer-string-replace-all": "error"
+    "unicorn/prefer-type-error": "error"
   },
+  // Overrides that set the same rule are ordered from the broadest files to
+  // the narrowest, because a later override replaces an earlier one's options.
   "overrides": [
+    // Globals.
     {
+      // The site runs in the browser.
       "files": ["site/**"],
       "env": { "browser": true },
       "globals": { "Astro": "readonly" }
@@ -105,45 +116,11 @@
       "files": ["util/valueValidity.js"],
       "globals": { "CSS": "readonly" }
     },
+
+    // Import boundaries.
     {
-      "files": [
-        "packages/cssnano/src/merge/**",
-        "packages/cssnano/src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js",
-        "packages/cssnano/src/plugins/postcss-normalize-charset/charset.js",
-        "packages/cssnano/src/plugins/postcss-discard-empty/discardRecords.js",
-        "packages/cssnano/src/plugins/postcss-unique-selectors/uniqueSelectors.js",
-        "packages/cssnano/src/ir/**"
-      ],
-      "rules": {
-        "merge-ir/link-edits-through-arena": [
-          "error",
-          {
-            "allowed": ["packages/cssnano/src/ir/blockRecords.js"],
-            "required": [
-              "packages/cssnano/src/ir/blockRecords.js#linkBefore",
-              "packages/cssnano/src/ir/blockRecords.js#linkLast",
-              "packages/cssnano/src/ir/blockRecords.js#detach"
-            ]
-          }
-        ],
-        "merge-ir/cache-reads": [
-          "error",
-          {
-            "allowed": [
-              "packages/cssnano/src/ir/declarationCache.js#declarationKeys",
-              "packages/cssnano/src/ir/declarationCache.js#receivingDeclarations",
-              "packages/cssnano/src/ir/blockChildren.js#holdsOnlyDeclarationsOf"
-            ],
-            "required": [
-              "packages/cssnano/src/ir/declarationCache.js#declarationKeys",
-              "packages/cssnano/src/ir/blockChildren.js#holdsOnlyDeclarationsOf"
-            ]
-          }
-        ],
-        "merge-ir/no-cache-local": "error"
-      }
-    },
-    {
+      // The consistency checks load only through the run context or the
+      // enableChecks script.
       "files": ["packages/cssnano/**"],
       "rules": {
         "no-restricted-imports": [
@@ -153,15 +130,7 @@
       }
     },
     {
-      "files": [
-        "packages/cssnano/src/run/runContext.js",
-        "packages/cssnano/script/merge/enableChecks.js"
-      ],
-      "rules": {
-        "no-restricted-imports": "off"
-      }
-    },
-    {
+      // Tests turn the consistency checks on through neither module.
       "files": ["packages/cssnano/test/**"],
       "rules": {
         "no-restricted-imports": [
@@ -171,6 +140,45 @@
       }
     },
     {
+      // The merge window works on records, never on PostCSS nodes. The files
+      // that build the records or write them back are excluded.
+      "files": [
+        "packages/cssnano/src/merge/rules/**",
+        "packages/cssnano/src/merge/duplicates/**",
+        "packages/cssnano/src/merge/longhand/**",
+        "packages/cssnano/src/ir/**",
+        "packages/cssnano/src/run/**",
+        "packages/cssnano/src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js",
+        "packages/cssnano/src/plugins/postcss-normalize-charset/charset.js",
+        "packages/cssnano/src/plugins/postcss-discard-empty/discardRecords.js",
+        "packages/cssnano/src/plugins/postcss-unique-selectors/uniqueSelectors.js",
+        "packages/cssnano/src/plugins/postcss-merge-idents/lib/**",
+        "packages/cssnano/src/plugins/postcss-reduce-idents/lib/**",
+        "packages/cssnano/src/plugins/postcss-zindex/lib/**"
+      ],
+      "excludeFiles": [
+        "packages/cssnano/src/run/host.js",
+        "packages/cssnano/src/run/runStylesheet.js",
+        "packages/cssnano/src/run/runContext.js",
+        "packages/cssnano/src/run/runDriver.js",
+        "packages/cssnano/src/ir/valueList.js",
+        "packages/cssnano/src/ir/tree/writeBack.js",
+        "packages/cssnano/src/ir/tree/nodeTable.js",
+        "packages/cssnano/src/ir/tree/writeSelector.js",
+        "packages/cssnano/src/ir/tree/treeMatch.js",
+        "packages/cssnano/src/ir/tree/buildRecords.js"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": ["**/ir/consistencyChecks.js", "postcss", "postcss/**"]
+          }
+        ]
+      }
+    },
+    {
+      // The links and stamps know nothing of records or PostCSS nodes.
       "files": [
         "packages/cssnano/src/ir/blockLinks.js",
         "packages/cssnano/src/ir/declarationStamps.js"
@@ -183,128 +191,71 @@
               "**/ruleRecord.js",
               "**/blockRecord.js",
               "**/declarationRecord.js",
-              "**/ir/consistencyChecks.js"
+              "**/ir/consistencyChecks.js",
+              "postcss",
+              "postcss/**"
             ]
           }
         ]
       }
     },
     {
+      // The two modules that turn the consistency checks on.
       "files": [
-        "packages/cssnano/src/run/**",
-        "packages/cssnano/src/plugins/postcss-merge-idents/lib/**",
-        "packages/cssnano/src/plugins/postcss-reduce-idents/lib/**",
-        "packages/cssnano/src/plugins/postcss-zindex/lib/**"
-      ],
-      "excludeFiles": [
-        "packages/cssnano/src/run/host.js",
-        "packages/cssnano/src/run/runStylesheet.js"
-      ],
-      "rules": {
-        "merge-ir/no-postcss-in-window": "error"
-      }
-    },
-    {
-      "files": ["packages/cssnano/src/run/**"],
-      "excludeFiles": ["packages/cssnano/src/run/host.js"],
-      "rules": {
-        "merge-ir/arena-edits-only": ["error", { "allowed": [] }],
-        "merge-ir/no-captured-loop-state": ["error", { "allowed": [] }],
-        "merge-ir/no-module-state": ["error", { "allowed": [] }]
-      }
-    },
-    {
-      "files": [
-        "packages/cssnano/src/merge/rules/**",
-        "packages/cssnano/src/merge/duplicates/**",
-        "packages/cssnano/src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js",
-        "packages/cssnano/src/plugins/postcss-normalize-charset/charset.js",
-        "packages/cssnano/src/plugins/postcss-discard-empty/discardRecords.js",
-        "packages/cssnano/src/plugins/postcss-unique-selectors/uniqueSelectors.js",
-        "packages/cssnano/src/ir/**",
         "packages/cssnano/src/run/runContext.js",
-        "packages/cssnano/src/run/runDriver.js",
-        "packages/cssnano/src/run/selectorVerdicts.js",
-        "packages/cssnano/src/run/consistencyChecks.js",
-        "packages/cssnano/src/run/syntaxFeatures.js"
+        "packages/cssnano/script/merge/enableChecks.js"
       ],
       "rules": {
-        "merge-ir/no-postcss-in-window": [
-          "error",
-          {
-            "allowed": [
-              "packages/cssnano/src/ir/tree/writeBack.js",
-              "packages/cssnano/src/ir/tree/nodeTable.js",
-              "packages/cssnano/src/ir/tree/writeSelector.js",
-              "packages/cssnano/src/ir/tree/treeMatch.js",
-              "packages/cssnano/src/ir/tree/buildRecords.js",
-              "packages/cssnano/src/ir/valueList.js",
-              "packages/cssnano/src/run/runContext.js",
-              "packages/cssnano/src/run/runDriver.js"
-            ]
-          }
-        ],
-        "merge-ir/arena-edits-only": [
-          "error",
-          {
-            "allowed": [
-              "packages/cssnano/src/ir/blockRecords.js",
-              "packages/cssnano/src/ir/arenaEdits.js",
-              "packages/cssnano/src/ir/valueEdits.js",
-              "packages/cssnano/src/ir/rawEdits.js",
-              "packages/cssnano/src/ir/treeEdits.js",
-              "packages/cssnano/src/ir/tree/buildRecords.js"
-            ]
-          }
-        ],
-        "merge-ir/no-record-extends": "error",
-        "merge-ir/checks-only-read": [
-          "error",
-          {
-            "modules": [
-              "packages/cssnano/src/run/consistencyChecks.js",
-              "packages/cssnano/src/ir/tree/recordsCheck.js",
-              "packages/cssnano/src/ir/linkChecks.js"
-            ],
-            "allowed": []
-          }
-        ],
-        "merge-ir/no-captured-loop-state": ["error", { "allowed": [] }]
+        "no-restricted-imports": "off"
       }
     },
+
+    // Arena edits.
     {
-      "files": ["packages/cssnano/src/merge/longhand/**"],
-      "rules": {
-        "merge-ir/no-postcss-in-window": "error",
-        "merge-ir/no-captured-loop-state": ["error", { "allowed": [] }]
-      }
-    },
-    {
+      // Only the arena modules edit the arena, and only the block records
+      // edit its links, so every link change is stamped and checked.
       "files": [
-        "packages/cssnano/src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js",
-        "packages/cssnano/src/plugins/postcss-normalize-charset/charset.js",
-        "packages/cssnano/src/plugins/postcss-discard-empty/discardRecords.js",
-        "packages/cssnano/src/plugins/postcss-unique-selectors/uniqueSelectors.js",
         "packages/cssnano/src/merge/**",
         "packages/cssnano/src/ir/**",
-        "packages/cssnano/src/run/runContext.js",
-        "packages/cssnano/src/run/runDriver.js",
-        "packages/cssnano/src/run/selectorVerdicts.js",
-        "packages/cssnano/src/run/consistencyChecks.js",
-        "packages/cssnano/src/run/syntaxFeatures.js"
+        "packages/cssnano/src/run/**",
+        "packages/cssnano/src/plugins/postcss-normalize-whitespace/lib/normalizeRaws.js",
+        "packages/cssnano/src/plugins/postcss-normalize-charset/charset.js",
+        "packages/cssnano/src/plugins/postcss-discard-empty/discardRecords.js",
+        "packages/cssnano/src/plugins/postcss-unique-selectors/uniqueSelectors.js"
+      ],
+      "excludeFiles": ["packages/cssnano/src/ir/blockRecords.js"],
+      "rules": {
+        "no-restricted-properties": [
+          "error",
+          { "property": "appendEntry" },
+          { "property": "insertEntryBefore" },
+          { "property": "moveLast" },
+          { "property": "moveBefore" },
+          { "property": "detach" },
+          { "property": "linkBefore" },
+          { "property": "linkLast" },
+          { "property": "unlink" }
+        ]
+      }
+    },
+    {
+      // The other arena modules may edit the arena but not its links.
+      "files": [
+        "packages/cssnano/src/run/host.js",
+        "packages/cssnano/src/ir/arenaEdits.js",
+        "packages/cssnano/src/ir/valueEdits.js",
+        "packages/cssnano/src/ir/rawEdits.js",
+        "packages/cssnano/src/ir/treeEdits.js",
+        "packages/cssnano/src/ir/tree/buildRecords.js"
       ],
       "rules": {
-        "merge-ir/no-module-state": [
+        "no-restricted-properties": [
           "error",
-          {
-            "allowed": ["packages/cssnano/src/run/consistencyChecks.js#enabled"]
-          }
+          { "property": "linkBefore" },
+          { "property": "linkLast" },
+          { "property": "unlink" }
         ]
       }
     }
-  ],
-  "env": {
-    "builtin": true,
-    "node": true
-  }
+  ]
 }
