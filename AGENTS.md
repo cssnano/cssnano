@@ -67,14 +67,15 @@ Every change should make the intended CSS transformation clearer while preservin
 
 - `pnpm test` is the one test command. With no arguments it runs every check
   that gates a change: types, lint, format, every test, the site's tests, the
-  framework fixtures and the mutation baselines. A step that cannot run here
-  (the site's tests without `site/node_modules`, the mutation baselines below
-  Node 24) is skipped, not passed. With paths
+  mutation harness's tests, the framework fixtures and the mutation baselines.
+  A step that cannot run here (the site's tests without `site/node_modules`,
+  the mutation harness and baselines below Node 24) is skipped, not passed. With paths
   (`pnpm test packages/cssnano/test/merge/`, which recurses) it runs
-  only those tests, for iterating.
+  only those tests, for iterating; below Node 24, `util` leaves out the
+  mutation harness.
 - The cheap steps (types, lint, format, the stale-mutation check) run first and
-  together. If one fails, the slow steps (tests, site, frameworks, mutation
-  baselines) do not start, and the last line lists them as `notrun=`; `skipped=`
+  together. If one fails, the slow steps (tests, mutation harness, site,
+  frameworks, mutation baselines) do not start, and the last line lists them as `notrun=`; `skipped=`
   still means a step that cannot run here. `pnpm test --keep-going` runs the slow
   steps anyway.
 - Before handoff, run `pnpm test` with no arguments and quote its last line,

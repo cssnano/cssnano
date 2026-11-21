@@ -54,8 +54,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The lint job ran the mutation harness's tests on Node 26.
       - name: Run the tests
-        run: pnpm test packages util
+        run: pnpm test --steps=tests
 
   publish:
     name: Publish

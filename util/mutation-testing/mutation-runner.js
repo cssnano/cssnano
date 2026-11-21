@@ -53,7 +53,7 @@ import {
   selectMutants,
 } from './mutation-testing.js';
 import * as oracleCheck from './oracle-check.js';
-import * as testCheck from './test-check.js';
+import * as testCheck from './testCheck.js';
 
 const { values } = parseArgs({
   options: {

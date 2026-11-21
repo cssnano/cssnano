@@ -1,29 +1,81 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { globSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import {
   doneLine,
   failureLines,
+  parseArguments,
   runTiers,
-  siteRoot,
+  selectSteps,
   steps,
-  testRoots,
 } from './verify.js';
+import { expandTestArguments, testGlobs } from './testArguments.js';
 
 const repository = new URL('..', import.meta.url);
 
-test('pnpm test reaches every test file in the repository', () => {
-  const files = execFileSync(
+/** @param {string[]} globs @return {Set<string>} the files that `globs` match */
+function globFiles(globs) {
+  return new Set(
+    globSync(globs, {
+      cwd: fileURLToPath(repository),
+      exclude: (path) => String(path).endsWith('node_modules'),
+    }).map((file) => file.replaceAll('\\', '/'))
+  );
+}
+
+/** @param {string} name @return {Set<string>} the files the step's globs match */
+function stepFiles(name) {
+  const { commands } = steps.find((step) => step.name === name);
+  return globFiles(commands[0].filter((arg) => !arg.startsWith('-')).slice(1));
+}
+
+/** The repository's files, tracked or not, that Node's test patterns match. */
+function testFiles() {
+  const listed = execFileSync(
     'git',
-    ['ls-files', '--cached', '--others', '--exclude-standard', '*.test.js'],
+    ['ls-files', '--cached', '--others', '--exclude-standard'],
     { cwd: repository, encoding: 'utf8' }
-  )
-    .split('\n')
-    .filter(Boolean);
-  const roots = [...testRoots, siteRoot].map((root) => `${root}/`);
+  ).split('\n');
+  const matched = globFiles(testGlobs('.'));
+  return listed.filter((file) => matched.has(file));
+}
+
+test('pnpm test reaches every test file in the repository', () => {
+  const reached = ['tests', 'mutation-harness', 'site'].map(stepFiles);
   assert.deepEqual(
-    files.filter((file) => !roots.some((root) => file.startsWith(root))),
+    testFiles().filter((file) => !reached.some((files) => files.has(file))),
+    []
+  );
+});
+
+test('no test file runs in both the tests and mutation-harness steps', () => {
+  const harness = stepFiles('mutation-harness');
+  assert.deepEqual(
+    [...stepFiles('tests')].filter((file) => harness.has(file)),
+    []
+  );
+});
+
+test('the mutation-harness step runs only the mutation harness tests', () => {
+  assert.deepEqual(
+    [...stepFiles('mutation-harness')].filter(
+      (file) => !file.startsWith('util/mutation-testing/')
+    ),
+    []
+  );
+});
+
+test('every file in util that the test patterns match imports node:test, so no module runs as an empty test', () => {
+  assert.deepEqual(
+    testFiles().filter(
+      (file) =>
+        file.startsWith('util/') &&
+        !readFileSync(new URL(file, repository), 'utf8').includes(
+          "from 'node:test'"
+        )
+    ),
     []
   );
 });
@@ -110,6 +162,37 @@ test('doneLine names the steps that never started apart from the skipped ones', 
   );
 });
 
+test('expandTestArguments turns a directory into globs, since Node 22 runs a directory as a module', () => {
+  assert.deepEqual(expandTestArguments(['util/'], 26), [
+    'util/**/*.test.?(c|m)js',
+    'util/**/*-test.?(c|m)js',
+    'util/**/*_test.?(c|m)js',
+    'util/**/test-*.?(c|m)js',
+    'util/**/test.?(c|m)js',
+    'util/**/test/**/*.?(c|m)js',
+  ]);
+});
+
+test('expandTestArguments leaves the mutation harness out of util below Node 24, where the runner refuses to start', () => {
+  assert.deepEqual(
+    expandTestArguments(['util'], 22).filter((glob) =>
+      glob.startsWith('util/**/')
+    ),
+    []
+  );
+});
+
+test('expandTestArguments treats every file under a test directory as a test', () => {
+  assert.deepEqual(expandTestArguments(['packages/cssnano/test/merge/']), [
+    'packages/cssnano/test/merge/**/*.?(c|m)js',
+  ]);
+});
+
+test('expandTestArguments leaves flags, files and globs as they are', () => {
+  const args = ['--test-name-pattern=x', 'util/verify.test.js', 'util/**/*.js'];
+  assert.deepEqual(expandTestArguments(args), args);
+});
+
 test('the stale mutation gate covers every registered catalog, whatever its check', async () => {
   const { catalogs } = await import('../packages/cssnano/mutation/catalogs.js');
   const { selectCatalogs } =
@@ -136,11 +219,74 @@ test('the cheap checks, including the stale mutation check, form the gate tier',
   );
 });
 
-test('the tests, site, frameworks and mutation baselines form the slow tier', () => {
+test('the tests, mutation harness, site, frameworks and mutation baselines form the slow tier', () => {
   assert.deepEqual(
     steps.filter(({ tier }) => tier === 'slow').map(({ name }) => name),
-    ['tests', 'site', 'frameworks', 'mutation-baselines']
+    ['tests', 'mutation-harness', 'site', 'frameworks', 'mutation-baselines']
   );
+});
+
+/** @param {string[]} argv */
+const chosenNames = (argv) =>
+  parseArguments(argv).chosen.map(({ name }) => name);
+
+test('parseArguments with no arguments chooses every step', () => {
+  assert.deepEqual(
+    chosenNames([]),
+    steps.map(({ name }) => name)
+  );
+});
+
+test('parseArguments with paths chooses one tests step over those paths', () => {
+  const [step] = parseArguments(['util/verify.test.js']).chosen;
+  assert.deepEqual(step.commands[0].slice(-1), ['util/verify.test.js']);
+});
+
+test('parseArguments with --steps chooses the named steps', () => {
+  assert.deepEqual(chosenNames(['--steps=lint,types']), ['types', 'lint']);
+});
+
+test('parseArguments reads --keep-going beside --steps', () => {
+  assert.equal(
+    parseArguments(['--steps=lint', '--keep-going']).keepGoing,
+    true
+  );
+});
+
+test('parseArguments rejects --steps with test paths, which it would not run', () => {
+  assert.throws(
+    () => parseArguments(['--steps=lint', 'packages']),
+    /--steps takes no test paths/v
+  );
+});
+
+test('parseArguments rejects a repeated --steps, whose names it would drop', () => {
+  assert.throws(
+    () => parseArguments(['--steps=types', '--steps=lint']),
+    /--steps given more than once/v
+  );
+});
+
+test('parseArguments rejects an empty --steps list', () => {
+  assert.throws(() => parseArguments(['--steps=']), /--steps names no step/v);
+});
+
+test('parseArguments rejects --steps without =, which would read as a path', () => {
+  assert.throws(
+    () => parseArguments(['--steps', 'lint']),
+    /--steps takes its names after =/v
+  );
+});
+
+test('selectSteps keeps the named steps in their run order', () => {
+  assert.deepEqual(
+    selectSteps(['mutation-baselines', 'frameworks']).map(({ name }) => name),
+    ['frameworks', 'mutation-baselines']
+  );
+});
+
+test('selectSteps rejects a name that is not a step', () => {
+  assert.throws(() => selectSteps(['lint', 'typo']), /unknown step: typo/v);
 });
 
 /**

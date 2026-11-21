@@ -2,6 +2,7 @@
 //
 //   pnpm test                    every check that gates a change
 //   pnpm test --keep-going       the same, without stopping after a failed gate
+//   pnpm test --steps=<a,b>      only the named steps, as CI splits them
 //   pnpm test <path>… [flags]    `node --test` on those paths, while iterating
 //
 // It prints a started line, a line as each step starts and ends, and a last
@@ -21,13 +22,16 @@ import { createWriteStream, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import {
+  expandTestArguments,
+  needsNode24,
+  stepGlobs,
+} from './testArguments.js';
 
 const root = join(import.meta.dirname, '..');
 const logDir = join(root, 'test-results');
 const node = process.execPath;
 
-/** The directories the tests step hands to `node --test`, which finds every test in them. */
-export const testRoots = ['packages', 'util'];
 /** The site's tests resolve `cssnano` through the site's own install. */
 export const siteRoot = 'site/test';
 
@@ -42,13 +46,6 @@ export const siteRoot = 'site/test';
  */
 function testCommand(args) {
   return [node, '--test', '--test-reporter=spec', ...args];
-}
-
-/** @return {string | null} why mutation testing cannot run here, or null */
-function needsNode24() {
-  return Number(process.versions.node.split('.')[0]) < 24
-    ? 'mutation testing needs Node 24'
-    : null;
 }
 
 /** @type {Step[]} */
@@ -82,11 +79,21 @@ export const steps = [
     ]),
     skip: needsNode24,
   },
-  { name: 'tests', tier: 'slow', commands: [testCommand(testRoots)] },
+  {
+    name: 'tests',
+    tier: 'slow',
+    commands: [testCommand(stepGlobs.tests)],
+  },
+  {
+    name: 'mutation-harness',
+    tier: 'slow',
+    commands: [testCommand(stepGlobs.mutationHarness)],
+    skip: needsNode24,
+  },
   {
     name: 'site',
     tier: 'slow',
-    commands: [testCommand([siteRoot])],
+    commands: [testCommand([`${siteRoot}/**/*.js`])],
     skip: () =>
       existsSync(join(root, 'site/node_modules'))
         ? null
@@ -104,6 +111,18 @@ export const steps = [
     skip: needsNode24,
   },
 ];
+
+/**
+ * @param {string[]} names
+ * @return {Step[]} the named steps, in the order a full run takes them
+ */
+export function selectSteps(names) {
+  const unknown = names.find(
+    (name) => !steps.some((step) => step.name === name)
+  );
+  if (unknown !== undefined) throw new Error(`unknown step: ${unknown}`);
+  return steps.filter(({ name }) => names.includes(name));
+}
 
 // Failing tests, compiler errors, and linter errors in both oxlint formats.
 const failure =
@@ -189,7 +208,8 @@ function runCommand([file, ...args], write) {
       cwd: root,
       env: environment,
       // pnpm is a .cmd shim on Windows, which only a shell runs.
-      shell: process.platform === 'win32',
+      // Node gets no shell: cmd.exe would split globs such as `?(c|m)js`.
+      shell: process.platform === 'win32' && file === 'pnpm',
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     child.stdout.on('data', (chunk) => write(String(chunk)));
@@ -232,7 +252,7 @@ async function mutationBaselines(write) {
   const { countTests, loadCatalogs, mapWithConcurrency, selectCatalogs } =
     await import('./mutation-testing/mutation-testing.js');
   const { defaultTimeout, runBaseline } =
-    await import('./mutation-testing/test-check.js');
+    await import('./mutation-testing/testCheck.js');
   const loaded = await loadCatalogs(
     selectCatalogs(catalogs, 'test').map(({ url }) => url)
   );
@@ -332,13 +352,46 @@ async function main(chosen, keepGoing) {
   console.log(doneLine({ failed, skipped, notRun, logs }));
 }
 
+const stepsFlag = '--steps=';
+
+/**
+ * Reads the command line. Throws on usage that would run other than what it
+ * asks for, so a mistyped CI step cannot pass by running less.
+ *
+ * @param {string[]} argv the arguments after the script
+ * @return {{chosen: Step[], keepGoing: boolean}}
+ */
+export function parseArguments(argv) {
+  const args = argv.filter((arg) => arg !== '--keep-going');
+  const keepGoing = args.length < argv.length;
+  if (args.includes('--steps')) {
+    throw new Error('--steps takes its names after =, as --steps=lint,types');
+  }
+  const named = args.filter((arg) => arg.startsWith(stepsFlag));
+  const paths = args.filter((arg) => !arg.startsWith(stepsFlag));
+  if (named.length > 1) throw new Error('--steps given more than once');
+  if (named.length === 0) {
+    if (!paths.length) return { chosen: steps, keepGoing };
+    const tests = {
+      name: 'tests',
+      tier: /** @type {const} */ ('slow'),
+      commands: [testCommand(expandTestArguments(paths))],
+    };
+    return { chosen: [tests], keepGoing };
+  }
+  if (paths.length) throw new Error('--steps takes no test paths');
+  const names = named[0].slice(stepsFlag.length);
+  if (names === '') throw new Error('--steps names no step');
+  return { chosen: selectSteps(names.split(',')), keepGoing };
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const args = process.argv.slice(2).filter((arg) => arg !== '--keep-going');
-  const keepGoing = args.length < process.argv.length - 2;
-  await main(
-    args.length
-      ? [{ name: 'tests', tier: 'slow', commands: [testCommand(args)] }]
-      : steps,
-    keepGoing
-  );
+  let parsed;
+  try {
+    parsed = parseArguments(process.argv.slice(2));
+  } catch (error) {
+    console.error(`test: usage error: ${/** @type {Error} */ (error).message}`);
+    process.exit(2);
+  }
+  await main(parsed.chosen, parsed.keepGoing);
 }
