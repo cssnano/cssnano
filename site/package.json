@@ -13,7 +13,7 @@
     "postcss": "^8.5.32"
   },
   "devDependencies": {
-    "@astrojs/sitemap": "^3.7.4",
+    "@astrojs/sitemap": "^3.7.5",
     "astro": "^7.4.11",
     "cssnano": "link:../packages/cssnano",
     "typescript": "~7.0.2"
