@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { dirname, join, normalize } from 'node:path';
+import { join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 
-const SRC = join(dirname(fileURLToPath(import.meta.url)), '../../../src');
+const SRC = fileURLToPath(new URL('../../../src', import.meta.url));
 
 /**
  * Files the window reaches that may import postcss at runtime: the build, the
@@ -60,7 +60,8 @@ function reachFrom(entries) {
       if (specifier === 'postcss' || specifier.startsWith('postcss/')) {
         postcss.push(`${file}: ${specifier}`);
       } else if (specifier.startsWith('.')) {
-        const next = normalize(join(dirname(file), specifier));
+        // POSIX paths, as import specifiers and `UNWALKED` spell them.
+        const next = posix.join(posix.dirname(file), specifier);
         if (!UNWALKED.has(next)) stack.push(next);
       }
     }

@@ -4,9 +4,11 @@ import { spawn } from 'node:child_process';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const runnerPath = new URL('./mutation-runner.js', import.meta.url).pathname;
+const runnerPath = fileURLToPath(
+  new URL('./mutation-runner.js', import.meta.url)
+);
 
 let directory;
 let catalog;
