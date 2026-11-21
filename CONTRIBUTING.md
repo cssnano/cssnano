@@ -20,15 +20,18 @@ pnpm install
 
 `pnpm test` is the one test command. With no arguments it runs every check a
 pull request must pass: types, lint, format, every test, the site's tests,
-the framework fixtures and the mutation baselines. A step that cannot run
-here, such as the site's tests without the site's own install, is reported
-as skipped, not passed. It prints a line as each step starts and
+the mutation harness's tests, the framework fixtures and the mutation
+baselines. A step that cannot run here, such as the site's tests without the
+site's own install or the mutation steps below Node 24, is reported as
+skipped, not passed. It prints a line as each step starts and
 ends, keeps each step's output in `test-results/`, and ends with
-`test: done status=pass|fail`. With paths it runs only those tests:
+`test: done status=pass|fail`. With paths it runs only those tests, and
+`--steps=` runs only the named steps, as CI splits them across jobs:
 
 ```shell
 pnpm test
 pnpm test packages/cssnano/test/postcss-colormin/
+pnpm test --steps=types,lint
 ```
 
 When a change alters the output on purpose, `pnpm build:integration` updates
