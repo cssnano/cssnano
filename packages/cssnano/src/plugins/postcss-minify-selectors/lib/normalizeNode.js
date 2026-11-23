@@ -202,5 +202,5 @@ export function finalizeEntries(arena, pool, entries, options) {
     folded = folded.toSorted((left, right) =>
       compareOutputs(pool, left, right)
     );
-  return joinEntries(pool, folded).emit;
+  return pool.emit(joinEntries(pool, folded));
 }
