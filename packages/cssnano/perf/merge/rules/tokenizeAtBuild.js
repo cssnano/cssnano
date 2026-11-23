@@ -1,7 +1,7 @@
 // Counts the token lists that the build of the records pushes. The build
-// tokenizes each distinct selector item of a stylesheet once, when it first
-// interns the item, so its pushes equal the distinct items of the rules. The
-// full run also reports how often the selector analyses run without a cache,
+// tokenizes each selector list once and takes its items as token ranges, so
+// its pushes equal the distinct items of the rules plus the distinct values of
+// the declarations. The full run also reports how often the selector analyses run without a cache,
 // beside the rules, so the cost of tokenizing at the build is on record.
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';

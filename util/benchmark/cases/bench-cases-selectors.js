@@ -66,6 +66,15 @@ export const selectorCases = {
         `.scope-${index}:is(.a-${index},:not(.b-${index},.c-${index}))>.item-${index}{color:red}`
     ).join('')
   ),
+  'selector-simple-list': pluginCase(
+    'postcss-minify-selectors',
+    Array.from(
+      { length: 4_000 },
+      (_, index) =>
+        `.a-${index},\n.b-${index},\n.c-${index},\n.d-${index},\n.e-${index}{color:red}`
+    ).join(''),
+    { browserslist: { query: ['defaults'] } }
+  ),
   'selector-wide-mostly-unique': pluginCase(
     'postcss-minify-selectors',
     `${Array.from(

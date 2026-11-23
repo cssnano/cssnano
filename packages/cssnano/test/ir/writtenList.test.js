@@ -195,7 +195,7 @@ describe('an edit that changes an identity field resets the written list', () =>
 
   test('adding a selector to a rule resets its written list', () => {
     const { records, context, rule } = firstRuleOf('a /*x*/ ,b{color:red}');
-    const id = context.selectorIds.idOf(context.tokenLists, 'c');
+    const id = context.selectorIds.idOf(context.tokenLists, 'c', tokenize('c'));
     addSelectors(records, rule, [id], context.tokenLists, NO_BROWSERS);
     assert.equal(records.entry(rule).writtenList, -1);
   });
@@ -212,7 +212,11 @@ describe('the records check holds the written list of every record to its identi
 
   test('the records check rejects a rule whose ids changed while its written list stayed', () => {
     const { records, context, rule } = firstRuleOf('a /*x*/ ,b{color:red}');
-    const other = context.selectorIds.idOf(context.tokenLists, 'c');
+    const other = context.selectorIds.idOf(
+      context.tokenLists,
+      'c',
+      tokenize('c')
+    );
     /** @type {{selectorIds: TokenListId[]}} */ (
       records.entry(rule)
     ).selectorIds = [other];

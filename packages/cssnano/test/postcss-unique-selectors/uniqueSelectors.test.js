@@ -148,4 +148,20 @@ describe('uniqueSelectors over the records', () => {
     uniqueRuleSelectors(records, context, rule);
     assert.equal(records.entry(rule).marked, false);
   });
+  test('gives the kept selector token positions that match its text after it takes a duplicate comment', () => {
+    const root = postcss.parse('.a,.b,/*x*/.a{top:0}');
+    const context = createRunContext(true);
+    const { records } = runDriver.build(root, context);
+    const rule = records.links.firstChild(records.root.index);
+    uniqueRuleSelectors(records, context, rule);
+    const [first] = records.entry(rule).selectorIds;
+    let start = 0;
+    for (const token of context.tokenLists.get(first)) {
+      assert.deepEqual(
+        [token[2], token[3]],
+        [start, start + token[1].length - 1]
+      );
+      start += token[1].length;
+    }
+  });
 });

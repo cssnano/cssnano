@@ -1,5 +1,3 @@
-import { selectorItemsOf } from './selectorItems.js';
-
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {TokenListId} from './tokenLists.js' */
 /** @import {RunContext} from '../run/runContext.js' */
@@ -40,10 +38,9 @@ export function writeSelectorIds(record, ids) {
  */
 export function writeSelectorList(record, context, list) {
   const { tokenLists, selectorIds } = context;
-  const items = selectorItemsOf(tokenLists.get(list));
   writeSelectorIds(
     record,
-    items.map((item) => selectorIds.idOf(tokenLists, item))
+    selectorIds.idsOfList(tokenLists, tokenLists.get(list))
   );
   /** @type {{writtenList: number}} */ (
     /** @type {unknown} */ (record)

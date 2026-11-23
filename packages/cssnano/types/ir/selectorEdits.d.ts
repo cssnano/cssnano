@@ -1,9 +1,9 @@
-import type { RuleRecord } from './ruleRecord.js';
-import type { TokenListId } from './tokenLists.js';
-import type { RunContext } from '../run/runContext.js';
 /** @import {RuleRecord} from './ruleRecord.js' */
 /** @import {TokenListId} from './tokenLists.js' */
 /** @import {RunContext} from '../run/runContext.js' */
+import type { RuleRecord } from './ruleRecord.js';
+import type { TokenListId } from './tokenLists.js';
+import type { RunContext } from '../run/runContext.js';
 /**
  * Gives a rule the ids of its selector items and marks it, so write-back
  * writes its selector from them.
