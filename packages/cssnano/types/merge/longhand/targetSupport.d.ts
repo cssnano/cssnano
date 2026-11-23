@@ -48,6 +48,23 @@ export declare const longstandingFloor: Readonly<Record<string, string>>;
  */
 export declare function featuresSupportedByAll(browsers: readonly string[]): ReadonlySet<string>;
 import type { BoxProperty } from './decl/boxGroups.js';
+export type PropertySupport = {
+    /**
+     * - whether every distinct target understands it
+     */
+    all: boolean;
+    /**
+     * - the targets that understand it
+     */
+    understanding: ReadonlySet<string>;
+    /**
+     * - the targets that may
+     * understand it: those that understand it, and those the data does not cover.
+     * The data says nothing about some engines, such as UC Browser, so they may
+     * understand any property. This is safer to assume than to deny for a fallback.
+     */
+    mayUnderstanding: ReadonlySet<string>;
+};
 /**
  * What the targets support of the box groups. The newer shorthands arrived
  * long after their longhands, so which of two declarations applies in a

@@ -75,16 +75,15 @@ function profileOf(browsers) {
 }
 
 /**
- * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
+ * @param {ReadonlyMap<string, EngineProfile>} profile - the targets by engine
  * @param {Record<string, string>} minimums - first supporting version by
  * browserslist name
  * @param {boolean} [skipUnlisted] - whether an engine without a minimum is
  * assumed to reach it instead of lacking support
- * @return {boolean} whether there are targets and each reaches its minimum
+ * @return {boolean} whether each engine of the profile reaches its minimum
  */
-function allReach(browsers, minimums, skipUnlisted = false) {
-  if (targetsAreUnknown(browsers)) return false;
-  for (const [name, { oldest, malformed }] of profileOf(browsers)) {
+function allReach(profile, minimums, skipUnlisted = false) {
+  for (const [name, { oldest, malformed }] of profile) {
     const minimum = Object.hasOwn(minimums, name) ? minimums[name] : undefined;
     if (minimum === undefined) {
       if (skipUnlisted) continue;
@@ -99,6 +98,36 @@ function allReach(browsers, minimums, skipUnlisted = false) {
 }
 
 /**
+ * @param {ReadonlyMap<string, EngineProfile>} profile
+ * @param {boolean} unknown - whether the targets are unknown
+ * @return {boolean} whether every target supports all place-* shorthands. An
+ * engine without them drops the whole declaration, losing both axes that
+ * separate longhands would have kept.
+ */
+function placeShorthandsFrom(profile, unknown) {
+  return !unknown && allReach(profile, placeMinimums);
+}
+
+/**
+ * @param {ReadonlyMap<string, EngineProfile>} profile
+ * @param {boolean} unknown - whether the targets are unknown
+ * @param {Record<string, Record<string, string>>} minimumsByShorthand
+ * @return {ReadonlySet<string>} the pair families whose shorthand every target
+ * parses, and the families that need no support check
+ */
+function pairShorthandsFrom(profile, unknown, minimumsByShorthand) {
+  return new Set(
+    pairFamilies
+      .filter(({ supportKey }) => {
+        if (supportKey === null) return true;
+        const minimums = minimumsByShorthand[supportKey] ?? {};
+        return !unknown && allReach(profile, minimums);
+      })
+      .map(({ shorthand }) => shorthand)
+  );
+}
+
+/**
  * Whether every target supports all place-* shorthands. An engine without
  * them drops the whole declaration, losing both axes that separate longhands
  * would have kept.
@@ -107,7 +136,7 @@ function allReach(browsers, minimums, skipUnlisted = false) {
  * @return {boolean}
  */
 export function supportsPlaceShorthands(browsers) {
-  return allReach(browsers, placeMinimums);
+  return placeShorthandsFrom(profileOf(browsers), targetsAreUnknown(browsers));
 }
 
 /**
@@ -125,14 +154,10 @@ export function supportedPairShorthands(
   browsers,
   minimumsByShorthand = pairMinimumsByShorthand
 ) {
-  return new Set(
-    pairFamilies
-      .filter(({ supportKey }) => {
-        if (supportKey === null) return true;
-        const minimums = minimumsByShorthand[supportKey] ?? {};
-        return allReach(browsers, minimums);
-      })
-      .map(({ shorthand }) => shorthand)
+  return pairShorthandsFrom(
+    profileOf(browsers),
+    targetsAreUnknown(browsers),
+    minimumsByShorthand
   );
 }
 
@@ -165,12 +190,24 @@ export const longstandingFloor = {
  * @return {ReadonlySet<string>}
  */
 export function featuresSupportedByAll(browsers) {
+  return featuresFrom(profileOf(browsers), targetsAreUnknown(browsers));
+}
+
+/**
+ * @param {ReadonlyMap<string, EngineProfile>} profile
+ * @param {boolean} unknown - whether the targets are unknown
+ * @return {ReadonlySet<string>}
+ */
+function featuresFrom(profile, unknown) {
   /** @type {Set<string>} */
   const supported = new Set(
-    allReach(browsers, longstandingFloor, true) ? longstandingFeatures : []
+    !unknown && allReach(profile, longstandingFloor, true)
+      ? longstandingFeatures
+      : []
   );
+  if (unknown) return supported;
   for (const [feature, minimums] of Object.entries(featureMinimums)) {
-    if (allReach(browsers, minimums)) {
+    if (allReach(profile, minimums)) {
       supported.add(feature);
     }
   }
@@ -208,20 +245,46 @@ function isUniversalBoxProperty(property) {
 }
 
 /**
- * The compatibility data says nothing about some engines, such as UC Browser,
- * so they may understand any property. This answers "may this browser parse
- * it?" to keep a fallback, which is safer to assume than to deny, unlike the
- * shared feature checks in utils/browserSupport.js.
- *
- * @param {string} entry - a browserslist entry such as "safari 10.1"
- * @param {string} property - a property of the box groups
- * @return {boolean}
+ * @typedef {object} PropertySupport
+ * @property {boolean} all - whether every distinct target understands it
+ * @property {ReadonlySet<string>} understanding - the targets that understand it
+ * @property {ReadonlySet<string>} mayUnderstanding - the targets that may
+ * understand it: those that understand it, and those the data does not cover.
+ * The data says nothing about some engines, such as UC Browser, so they may
+ * understand any property. This is safer to assume than to deny for a fallback.
  */
-function mayUnderstandBoxProperty(entry, property) {
-  return (
-    !coveredEngines.has(browserName(entry)) ||
-    reachesBoxProperty(entry, property)
-  );
+
+/**
+ * Works out each box property's support over the distinct targets, in one pass
+ * per property. Built once per targetSupportOf call, so queries are lookups.
+ *
+ * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
+ * @return {ReadonlyMap<string, PropertySupport>}
+ */
+function summarizeBoxProperties(browsers) {
+  const targets = [...new Set(browsers)];
+  /** @type {Map<string, PropertySupport>} */
+  const byProperty = new Map();
+  for (const property of Object.keys(boxMinimums)) {
+    /** @type {Set<string>} */
+    const understanding = new Set();
+    /** @type {Set<string>} */
+    const mayUnderstanding = new Set();
+    for (const entry of targets) {
+      if (reachesBoxProperty(entry, property)) {
+        understanding.add(entry);
+        mayUnderstanding.add(entry);
+      } else if (!coveredEngines.has(browserName(entry))) {
+        mayUnderstanding.add(entry);
+      }
+    }
+    byProperty.set(property, {
+      all: understanding.size === targets.length,
+      understanding,
+      mayUnderstanding,
+    });
+  }
+  return byProperty;
 }
 
 /**
@@ -232,23 +295,15 @@ function mayUnderstandBoxProperty(entry, property) {
  * cover.
  */
 export class BoxSupport {
-  /** @type {readonly string[]} */
-  #browsers;
-  #targetCount;
+  /** @type {boolean} */
+  #unknown;
+  /** @type {ReadonlyMap<string, PropertySupport>} */
+  #byProperty;
 
   /** @param {readonly string[]} browsers */
   constructor(browsers) {
-    this.#browsers = browsers;
-    this.#targetCount = new Set(browsers).size;
-  }
-
-  /**
-   * @param {(entry: string, property: string) => boolean} test
-   * @param {string} property
-   * @return {Set<string>} the distinct targets the test accepts
-   */
-  #targetsWhere(test, property) {
-    return new Set(this.#browsers.filter((entry) => test(entry, property)));
+    this.#unknown = targetsAreUnknown(browsers);
+    this.#byProperty = summarizeBoxProperties(browsers);
   }
 
   /**
@@ -256,12 +311,8 @@ export class BoxSupport {
    * @return {boolean} whether every target understands the property
    */
   supportsAll(property) {
-    if (targetsAreUnknown(this.#browsers))
-      return isUniversalBoxProperty(property);
-    return (
-      this.#targetsWhere(reachesBoxProperty, property).size ===
-      this.#targetCount
-    );
+    if (this.#unknown) return isUniversalBoxProperty(property);
+    return this.#byProperty.get(property)?.all ?? false;
   }
 
   /**
@@ -271,12 +322,13 @@ export class BoxSupport {
    */
   #covers(earlier, later) {
     if (earlier === later) return true;
-    if (targetsAreUnknown(this.#browsers))
-      return isUniversalBoxProperty(later.name);
-    return this.#targetsWhere(
-      mayUnderstandBoxProperty,
-      earlier.name
-    ).isSubsetOf(this.#targetsWhere(reachesBoxProperty, later.name));
+    if (this.#unknown) return isUniversalBoxProperty(later.name);
+    const mayEarlier = this.#byProperty.get(earlier.name)?.mayUnderstanding;
+    const laterUnderstanding = this.#byProperty.get(later.name)?.understanding;
+    if (mayEarlier === undefined || laterUnderstanding === undefined) {
+      return false;
+    }
+    return mayEarlier.isSubsetOf(laterUnderstanding);
   }
 
   /**
@@ -307,10 +359,16 @@ export class BoxSupport {
  * @return {TargetSupport}
  */
 export function targetSupportOf(browsers) {
+  const unknown = targetsAreUnknown(browsers);
+  const profile = profileOf(browsers);
   return {
-    placeShorthands: supportsPlaceShorthands(browsers),
+    placeShorthands: placeShorthandsFrom(profile, unknown),
     boxSupport: new BoxSupport(browsers),
-    pairShorthands: supportedPairShorthands(browsers),
-    features: featuresSupportedByAll(browsers),
+    pairShorthands: pairShorthandsFrom(
+      profile,
+      unknown,
+      pairMinimumsByShorthand
+    ),
+    features: featuresFrom(profile, unknown),
   };
 }

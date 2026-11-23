@@ -90,6 +90,13 @@ describe('supportsAll', () => {
   test('accepts a technology preview', () => {
     assert.equal(new BoxSupport(['safari TP']).supportsAll('inset'), true);
   });
+
+  test('rejects a property when a target names a version that is neither dotted nor a range', () => {
+    assert.equal(
+      new BoxSupport(['chrome 120', 'chrome 1x']).supportsAll('inset'),
+      false
+    );
+  });
 });
 
 describe('BoxSupport', () => {
