@@ -2,6 +2,7 @@ import { TokenType } from '@csstools/css-tokenizer';
 import { RULE } from '../../ir/blockRecord.js';
 import { writeSelectorIds } from '../../ir/selectorEdits.js';
 import { commentProvidesWhitespace } from '../../values/selectorComments.js';
+import { renumber } from '../../values/renumber.js';
 import { tokensText } from '../../values/tokensText.js';
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
@@ -72,6 +73,8 @@ export function uniqueRuleSelectors(records, context, index) {
       continue;
     }
     const tokens = [...tokenLists.get(id), ...comments];
+    // The appended comments come from other items, so they need this item's positions.
+    renumber(tokens);
     unique.push(
       context.selectorIds.idOf(tokenLists, tokensText(tokens), tokens)
     );

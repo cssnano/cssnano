@@ -12,7 +12,7 @@ const { TokenType } = cssnanoUtils;
  * @param {number} last
  * @return {string}
  */
-function textBetween(tokens, first, last) {
+export function textBetween(tokens, first, last) {
   if (first === -1) return '';
   let text = '';
   for (let index = first; index <= last; index++) text += tokens[index][1];
@@ -48,4 +48,34 @@ export function selectorItemsOf(tokens) {
   }
   items.push(textBetween(tokens, first, last));
   return items;
+}
+
+/**
+ * The items of a selector as token ranges, split as selectorItemsOf splits
+ * them, so an item's text is `textBetween` of its range.
+ *
+ * @param {readonly CSSToken[]} tokens the selector's tokens, as written
+ * @return {number[]} the first and last token index of each item, in pairs; -1 twice for an empty item
+ */
+export function selectorItemRangesOf(tokens) {
+  /** @type {number[]} */
+  const ranges = [];
+  let depth = 0;
+  let first = -1;
+  let last = -1;
+  for (let index = 0; index < tokens.length; index++) {
+    const type = tokens[index][0];
+    if (depth === 0 && type === TokenType.Comma) {
+      ranges.push(first, last);
+      first = -1;
+      continue;
+    }
+    if (type === TokenType.Function || type === TokenType.OpenParen) depth++;
+    else if (type === TokenType.CloseParen && depth > 0) depth--;
+    if (type === TokenType.Whitespace || type === TokenType.EOF) continue;
+    if (first === -1) first = index;
+    last = index;
+  }
+  ranges.push(first, last);
+  return ranges;
 }

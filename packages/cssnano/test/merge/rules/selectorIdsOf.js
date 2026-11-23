@@ -1,3 +1,5 @@
+import { tokens as tokenize } from '../../../src/utils/value.js';
+
 /** @import {SelectorIds} from '../../../src/ir/selectorIds.js' */
 /** @import {TokenLists, TokenListId} from '../../../src/ir/tokenLists.js' */
 
@@ -15,5 +17,7 @@
  * @return {TokenListId[]}
  */
 export function selectorIdsOf(selectorIds, tokenLists, selectors) {
-  return selectors.map((selector) => selectorIds.idOf(tokenLists, selector));
+  return selectors.map((selector) =>
+    selectorIds.idOf(tokenLists, selector, tokenize(selector))
+  );
 }

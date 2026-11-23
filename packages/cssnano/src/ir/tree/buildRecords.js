@@ -24,7 +24,6 @@ import {
   valueListOf,
   writtenValueListOf,
 } from '../valueList.js';
-import { selectorItemsOf } from '../selectorItems.js';
 import { tokenizeMode, tokenizeModeOfKeys } from '../../values/tokenizeMode.js';
 
 /** @import {SelectorIds} from '../selectorIds.js' */
@@ -61,29 +60,6 @@ export function recordNameOf(written) {
  */
 export function isRuleOrAtRule(node) {
   return node.type === 'rule' || node.type === 'atrule';
-}
-
-/**
- * The ids of a rule's selector items, each new item given its list in the
- * run's table, in the order of the items. A lone item that is the written
- * selector reuses the written tokens, which are the same tokens.
- *
- * @param {SelectorIds} selectorIds
- * @param {TokenLists} tokenLists
- * @param {readonly string[]} items
- * @param {string} written the selector as written
- * @param {readonly CSSToken[]} writtenTokens the tokens of `written`
- * @return {TokenListId[]}
- */
-function idsOfItems(selectorIds, tokenLists, items, written, writtenTokens) {
-  const ids = [];
-  for (const item of items) {
-    const shared = items.length === 1 && item === written;
-    ids.push(
-      selectorIds.idOf(tokenLists, item, shared ? writtenTokens : undefined)
-    );
-  }
-  return ids;
 }
 
 /**
@@ -248,13 +224,7 @@ class RecordBuild {
         const writtenTokens = tokenLists.get(writtenList);
         const record = new RuleRecord(
           child.raws.before ?? null,
-          idsOfItems(
-            selectorIds,
-            tokenLists,
-            selectorItemsOf(writtenTokens),
-            written,
-            writtenTokens
-          )
+          selectorIds.idsOfList(tokenLists, writtenTokens)
         );
         record.writtenList = writtenList;
         holdContainerRaws(record, child);
