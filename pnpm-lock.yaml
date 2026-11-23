@@ -209,8 +209,8 @@ importers:
         specifier: ^26.6.6
         version: 26.6.6
       knip:
-        specifier: ^6.45.1
-        version: 6.45.1
+        specifier: ^6.47.0
+        version: 6.47.0
       oxfmt:
         specifier: ^0.79.0
         version: 0.79.0
@@ -1111,8 +1111,8 @@ packages:
       '@napi-rs/canvas':
         optional: true
 
-  knip@6.45.1:
-    resolution: {integrity: sha512-zp3zXKy2cZWiIttdlWU5fisKxVQaLSU6471ej0KGz1GdHdaHxpzTAO/LIyFNc3gU3v1W7LJaqvYumoO3l/u+6A==}
+  knip@6.47.0:
+    resolution: {integrity: sha512-nYmQnk0YqDXIJrYViJz88c8xw3tBDkpuAmofo58EkVPnKr6DnRKYtf6oIqcGVHZvXDE+gtmFuYx277/QsWng+A==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
@@ -1876,7 +1876,7 @@ snapshots:
     transitivePeerDependencies:
       - '@noble/hashes'
 
-  knip@6.45.1:
+  knip@6.47.0:
     dependencies:
       formatly: 0.11.4
       get-tsconfig: 4.14.3
