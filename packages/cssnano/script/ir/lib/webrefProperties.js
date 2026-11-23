@@ -357,3 +357,43 @@ function validateFamilyWrites(entries, family) {
 export function serializeProperties(entries) {
   return serializeJson({ properties: entries });
 }
+
+/**
+ * The text of the property groups the tests take as a reference relation.
+ *
+ * @param {PropertyGroups} data
+ * @return {string}
+ */
+export function serializePropertyGroups(data) {
+  return serializeJson({
+    properties: data.properties,
+    aliases: Object.fromEntries(data.aliases),
+    shorthands: Object.fromEntries(data.shorthands),
+    logicalGroups: Object.fromEntries(data.logicalGroups),
+    flowRelative: data.flowRelative,
+  });
+}
+
+/**
+ * All properties a name sets, following shorthands through their longhands and
+ * implicit resets. A name that is not a shorthand sets only itself.
+ *
+ * @param {Record<string, {longhands: string[], resets: string[]}>} shorthands
+ * @return {(name: string) => Set<string>}
+ */
+export function longhandsSetBy(shorthands) {
+  const known = new Map(Object.entries(shorthands));
+  /** @param {string} name @return {Set<string>} */
+  function setsLonghands(name) {
+    const definition = known.get(name);
+    if (!definition) {
+      return new Set([name]);
+    }
+    return new Set(
+      [...definition.longhands, ...definition.resets].flatMap((member) => [
+        ...setsLonghands(member),
+      ])
+    );
+  }
+  return setsLonghands;
+}

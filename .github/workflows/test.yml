@@ -50,7 +50,7 @@ jobs:
       # Only the cheap checks, so the test matrix starts within a minute; the
       # tests and the slow checks run in parallel after them.
       - name: Run the gate checks
-        run: pnpm test --steps=types,lint,format,mutation-stale
+        run: pnpm test --steps=types,lint,format,data,mutation-stale
 
       - name: Check committed types are up to date
         run: git diff --exit-code -- '**/types/*.d.ts'

@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   buildProperties,
   buildPropertyGroups,
+  longhandsSetBy,
+  serializePropertyGroups,
   serializeProperties,
   validate,
   validateProperties,
@@ -215,3 +217,31 @@ test('serializeProperties writes a newline-terminated JSON object keyed by prope
 function emptyFamily() {
   return { shorthands: [], setsLonghands: () => new Set() };
 }
+
+test('longhandsSetBy follows shorthands and their resets down to longhands', () => {
+  const setsLonghands = longhandsSetBy({
+    border: { longhands: ['border-width'], resets: ['border-image'] },
+    'border-width': { longhands: ['border-top-width'], resets: [] },
+  });
+  assert.deepStrictEqual([...setsLonghands('border')].toSorted(), [
+    'border-image',
+    'border-top-width',
+  ]);
+});
+
+test('longhandsSetBy answers a name that is not a shorthand with only itself', () => {
+  assert.deepStrictEqual([...longhandsSetBy({})('color')], ['color']);
+});
+
+test('serializePropertyGroups writes maps as objects that keep the sorted entry order', () => {
+  const text = serializePropertyGroups(
+    buildPropertyGroups([{ name: 'b', legacyAliasOf: 'a' }, { name: 'a' }])
+  );
+  assert.deepStrictEqual(JSON.parse(text), {
+    properties: ['a', 'b'],
+    aliases: { b: 'a' },
+    shorthands: {},
+    logicalGroups: {},
+    flowRelative: [],
+  });
+});

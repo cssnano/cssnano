@@ -210,9 +210,9 @@ test('the stale mutation gate covers every registered catalog, whatever its chec
   );
 });
 
-const gateNames = ['types', 'lint', 'format', 'mutation-stale'];
+const gateNames = ['types', 'lint', 'format', 'data', 'mutation-stale'];
 
-test('the cheap checks, including the stale mutation check, form the gate tier', () => {
+test('the cheap checks, including the data freshness and stale mutation checks, form the gate tier', () => {
   assert.deepEqual(
     steps.filter(({ tier }) => tier === 'gate').map(({ name }) => name),
     gateNames
