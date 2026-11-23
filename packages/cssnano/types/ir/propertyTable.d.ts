@@ -13,14 +13,17 @@ export declare function resolveProperty(name: string): {
 };
 export type PropertyKeys = Readonly<{
     id: number;
+    unicodeRange: boolean;
     custom: true;
     key: string;
 } | {
     id: number;
+    unicodeRange: boolean;
     custom: false;
     all: true;
 } | {
     id: number;
+    unicodeRange: boolean;
     custom: false;
     all: false;
     name: string;

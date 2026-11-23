@@ -86,9 +86,9 @@ function logicalSideOf(longhand) {
  * every declaration of the name, so nothing may write it.
  *
  * @typedef {Readonly<
- *   {id: number, custom: true, key: string}
- *   | {id: number, custom: false, all: true}
- *   | {id: number, custom: false, all: false, name: string, known: boolean, subjectToAll: boolean, longhands: {name: string, side: string | undefined, opposite: string | undefined}[]}>} PropertyKeys
+ *   {id: number, unicodeRange: boolean, custom: true, key: string}
+ *   | {id: number, unicodeRange: boolean, custom: false, all: true}
+ *   | {id: number, unicodeRange: boolean, custom: false, all: false, name: string, known: boolean, subjectToAll: boolean, longhands: {name: string, side: string | undefined, opposite: string | undefined}[]}>} PropertyKeys
  */
 
 /**
@@ -106,11 +106,16 @@ const sideKey = (group, flowRelative) => `${group}:${flowRelative}`;
  * @return {PropertyKeys}
  */
 function buildKeys(lowercased, id) {
-  if (lowercased.startsWith('--')) return { id, custom: true, key: lowercased };
-  if (lowercased === ALL) return { id, custom: false, all: true };
+  // The tokenizer mode of a value depends only on this flag, so every shape has it.
+  const unicodeRange = lowercased === 'unicode-range';
+  if (lowercased.startsWith('--')) {
+    return { id, unicodeRange, custom: true, key: lowercased };
+  }
+  if (lowercased === ALL) return { id, unicodeRange, custom: false, all: true };
   const { name, known } = resolveProperty(lowercased);
   return {
     id,
+    unicodeRange,
     custom: false,
     all: false,
     name,
