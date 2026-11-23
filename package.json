@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "knip": "^6.47.0",
+    "knip": "^6.48.0",
     "oxfmt": "^0.79.0",
     "oxlint": "^1.94.0",
     "postcss": "catalog:",
