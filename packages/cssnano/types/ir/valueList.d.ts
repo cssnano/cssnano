@@ -1,6 +1,7 @@
 import type { TokenLists, TokenListId } from './tokenLists.js';
 import type { ValueIds } from './valueIds.js';
 import type { Declaration } from 'postcss';
+import type { TokenizeMode } from '../values/valueBuffer.js';
 export type ValueTables = {
     tokenLists: TokenLists;
     valueIds: ValueIds;
@@ -8,6 +9,7 @@ export type ValueTables = {
 /** @import {TokenLists, TokenListId} from './tokenLists.js' */
 /** @import {ValueIds} from './valueIds.js' */
 /** @import {Declaration} from 'postcss' */
+/** @import {TokenizeMode} from '../values/valueBuffer.js' */
 /**
  * The tables a declaration's value is interned in: its token lists and value
  * ids.
@@ -30,11 +32,12 @@ export declare function keepsValueAsWritten(written: string): boolean;
  *
  * @param {Declaration} node
  * @param {ValueTables} tables
+ * @param {TokenizeMode | undefined} mode the tokenizer mode of the property
  * @param {string} written the value as written, which the caller reads once
  * @param {boolean} kept whether the value keeps an important comment
  * @return {TokenListId}
  */
-export declare function valueListOf(node: Declaration, tables: ValueTables, written: string, kept: boolean): TokenListId;
+export declare function valueListOf(node: Declaration, tables: ValueTables, mode: TokenizeMode | undefined, written: string, kept: boolean): TokenListId;
 /**
  * The list of a declaration's value as written, when the value list does not
  * spell it: a cleaned value that dropped a plain comment. A value kept as
@@ -42,9 +45,10 @@ export declare function valueListOf(node: Declaration, tables: ValueTables, writ
  *
  * @param {Declaration} node
  * @param {ValueTables} tables
+ * @param {TokenizeMode | undefined} mode the tokenizer mode of the property
  * @param {string} written the value as written, which the caller reads once
  * @param {boolean} kept whether the value keeps an important comment
  * @return {TokenListId | -1}
  */
-export declare function writtenValueListOf(node: Declaration, tables: ValueTables, written: string, kept: boolean): TokenListId | -1;
+export declare function writtenValueListOf(node: Declaration, tables: ValueTables, mode: TokenizeMode | undefined, written: string, kept: boolean): TokenListId | -1;
 //# sourceMappingURL=valueList.d.ts.map

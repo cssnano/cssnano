@@ -1,4 +1,5 @@
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
+/** @import {TokenizeMode} from '../../values/valueBuffer.js' */
 /** @import {TokenLists, TokenListId} from '../tokenLists.js' */
 import cssnanoUtils from '#utils';
 import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
@@ -24,6 +25,7 @@ import {
   writtenValueListOf,
 } from '../valueList.js';
 import { selectorItemsOf } from '../selectorItems.js';
+import { tokenizeMode, tokenizeModeOfKeys } from '../../values/tokenizeMode.js';
 
 /** @import {SelectorIds} from '../selectorIds.js' */
 const { asciiLowerCase, isAnonymousLayer, sourceValue } = cssnanoUtils;
@@ -99,6 +101,19 @@ function holdContainerRaws(record, node) {
 }
 
 /**
+ * The tokenizer mode of a declaration's values. The keys fold an escaped name
+ * to the name it denotes, but the mode keeps the raw spelling's lowercase, as
+ * it always has, so an escaped name keeps the default mode.
+ *
+ * @param {string} prop the property as written
+ * @param {{ unicodeRange: boolean }} keys the keys of the property
+ * @return {TokenizeMode | undefined}
+ */
+function valueModeOf(prop, keys) {
+  return prop.includes('\\') ? tokenizeMode(prop) : tokenizeModeOfKeys(keys);
+}
+
+/**
  * The record of a declaration of the run's stylesheet.
  *
  * @param {Declaration} node
@@ -110,8 +125,9 @@ export function recordDeclaration(node, context) {
   const important = node.important === true;
   const written = sourceValue(node);
   const kept = keepsValueAsWritten(written);
-  const valueList = valueListOf(node, context, written, kept);
   const keys = context.names.keysOf(node.prop);
+  const mode = valueModeOf(node.prop, keys);
+  const valueList = valueListOf(node, context, mode, written, kept);
   const record = new DeclarationRecord(
     before,
     node.prop,
@@ -122,7 +138,7 @@ export function recordDeclaration(node, context) {
     node.raws.between ?? null,
     important ? (node.raws.important ?? null) : null
   );
-  record.writtenList = writtenValueListOf(node, context, written, kept);
+  record.writtenList = writtenValueListOf(node, context, mode, written, kept);
   return record;
 }
 

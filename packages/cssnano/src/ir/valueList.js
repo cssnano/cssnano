@@ -1,10 +1,10 @@
 import { holdsImportantComment } from './holdsImportantComment.js';
-import { tokenizeMode } from '../values/tokenizeMode.js';
 import { tokens } from '../utils/value.js';
 
 /** @import {TokenLists, TokenListId} from './tokenLists.js' */
 /** @import {ValueIds} from './valueIds.js' */
 /** @import {Declaration} from 'postcss' */
+/** @import {TokenizeMode} from '../values/valueBuffer.js' */
 
 /**
  * The tables a declaration's value is interned in: its token lists and value
@@ -32,13 +32,13 @@ export function keepsValueAsWritten(written) {
  *
  * @param {Declaration} node
  * @param {ValueTables} tables
+ * @param {TokenizeMode | undefined} mode the tokenizer mode of the property
  * @param {string} written the value as written, which the caller reads once
  * @param {boolean} kept whether the value keeps an important comment
  * @return {TokenListId}
  */
-export function valueListOf(node, tables, written, kept) {
+export function valueListOf(node, tables, mode, written, kept) {
   const { tokenLists, valueIds } = tables;
-  const mode = tokenizeMode(node.prop);
   return valueIds.idOf(tokenLists, mode, kept ? written : node.value);
 }
 
@@ -49,12 +49,13 @@ export function valueListOf(node, tables, written, kept) {
  *
  * @param {Declaration} node
  * @param {ValueTables} tables
+ * @param {TokenizeMode | undefined} mode the tokenizer mode of the property
  * @param {string} written the value as written, which the caller reads once
  * @param {boolean} kept whether the value keeps an important comment
  * @return {TokenListId | -1}
  */
-export function writtenValueListOf(node, tables, written, kept) {
+export function writtenValueListOf(node, tables, mode, written, kept) {
   if (written === node.value || kept) return -1;
   const { tokenLists, valueIds } = tables;
-  return valueIds.idOf(tokenLists, tokenizeMode(node.prop), written);
+  return valueIds.idOf(tokenLists, mode, written);
 }
