@@ -8,10 +8,10 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { performance } from 'node:perf_hooks';
-import { benchmarkCases, benchmarkSets } from './cases/index.js';
+import { benchmarkCases, benchmarkSets, caseFileOf } from './cases/index.js';
 import { doneLine, formatRow } from './report.js';
 import { createComparisonSchedule, decide } from './stats.js';
-import { prepareComparison, snapshotWorkingTree } from './worktrees.js';
+import { prepareComparison, resolveRevisions } from './worktrees.js';
 
 const MINIMUM_BLOCKS = 4;
 const REQUESTED_BLOCKS = 20;
@@ -35,25 +35,6 @@ export function parseDuration(text) {
   const match = /^(\d+(?:\.\d+)?)([sm])$/v.exec(text ?? '');
   const ms = match ? Number(match[1]) * DURATION_UNITS[match[2]] : 0;
   return ms > 0 ? ms : null;
-}
-
-/**
- * Turns a ref such as HEAD or a branch name into the full commit hash.
- * @param {string} ref
- * @return {string}
- */
-export function resolveRevision(ref) {
-  try {
-    const sha = execFileSync(
-      'git',
-      ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`],
-      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
-    ).trim();
-    if (sha) return sha;
-  } catch {
-    // reported below
-  }
-  throw new Error(`cannot resolve "${ref}" to a commit`);
 }
 
 // Frequency scaling makes timings jittery, so the user is told once, up front.
@@ -105,7 +86,9 @@ export function casesFor(values) {
 
 function childArgs(name, dir) {
   const target =
-    name === 'corpus' ? [`--dir=${CORPUS_DIR}`] : [`--case=${name}`];
+    name === 'corpus'
+      ? [`--dir=${CORPUS_DIR}`]
+      : [`--case=${name}`, `--module=${caseFileOf[name]}`];
   return [join(dir, 'util', 'benchmark', 'child.js'), ...target];
 }
 
@@ -313,18 +296,20 @@ export function parseOptions(argv) {
   return { ...values, budgetMs, seed };
 }
 
-function main(argv = process.argv.slice(2)) {
+// The dependencies are replaceable so a test can fail a run without git or
+// worktrees.
+export function main(
+  argv = process.argv.slice(2),
+  {
+    resolve = resolveRevisions,
+    prepare = prepareComparison,
+    run = runCase,
+  } = {}
+) {
   const options = parseOptions(argv);
   const names = options.corpus ? ['corpus'] : casesFor(options);
-  const repoRoot = git(['rev-parse', '--show-toplevel']);
-  const revisions = {
-    baseline: resolveRevision(options.base),
-    candidate:
-      options.candidate === 'worktree'
-        ? snapshotWorkingTree(repoRoot)
-        : resolveRevision(options.candidate),
-  };
-  const comparison = prepareComparison(revisions, repoRoot);
+  const { repoRoot, revisions } = resolve(options.base, options.candidate);
+  const comparison = prepare(revisions, repoRoot);
   // --json keeps stdout machine-readable, so the markers go to stderr.
   const note = options.json ? console.error : console.log;
   note(`bench: starting ${names.length} cases`);
@@ -334,7 +319,7 @@ function main(argv = process.argv.slice(2)) {
     warnUnstableGovernor();
     const pinCore = options['pin-core'];
     for (const name of names) {
-      const result = runCase(name, comparison, {
+      const result = run(name, comparison, {
         budgetMs: options.budgetMs,
         allowOutputChange: options['allow-output-change'],
         pinCore,
@@ -357,6 +342,10 @@ function main(argv = process.argv.slice(2)) {
       note('bench: summary');
       for (const result of results) note(`  ${formatRow(result)}`);
     }
+  } catch (error) {
+    // Recorded here, so the one done line below reports the failure.
+    console.error(`bench: ${error.stack ?? error.message}`);
+    process.exitCode = 1;
   } finally {
     const failures = options.keep ? [] : comparison.cleanup();
     for (const failure of failures) console.error(`bench: ${failure}`);
@@ -372,15 +361,11 @@ function main(argv = process.argv.slice(2)) {
   }
 }
 
-function git(args) {
-  return execFileSync('git', args, { encoding: 'utf8' }).trim();
-}
-
 if (process.argv[1] === import.meta.filename) {
   try {
     main();
   } catch (error) {
-    console.error(`bench: ${error.message}`);
+    console.error(`bench: ${error.stack ?? error.message}`);
     (process.argv.includes('--json') ? console.error : console.log)(
       'bench: done status=fail'
     );

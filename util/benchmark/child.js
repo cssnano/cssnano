@@ -10,41 +10,45 @@ import { basename, dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { parseArgs } from 'node:util';
 import { Session } from 'node:inspector/promises';
-import { benchmarkCases } from './cases/index.js';
+import { loadCaseModule } from './cases/modules.js';
 import { median } from './stats.js';
 
 // Set before cssnano loads, so the measured code takes its production paths.
 process.env.NODE_ENV ??= 'production';
 
 const require = createRequire(import.meta.url);
-const cssnano = require('../../packages/cssnano/src/index.js');
-const presets = {
-  default: require('../../packages/cssnano/src/presets/default.js'),
-  advanced: require('../../packages/cssnano/src/presets/advanced.js'),
-  lite: require('../../packages/cssnano/src/presets/lite.js'),
-};
+const PRESET_NAMES = new Set(['default', 'advanced', 'lite']);
 
 const WARMUP_MIN_PASSES = 3;
 const WARMUP_MIN_MS = 500;
 const TIMED_SAMPLES = 10;
 const SAMPLE_MIN_MS = 50;
 
-function createProcessor(caseName, presetName) {
-  const benchmarkCase = caseName ? benchmarkCases[caseName] : null;
+function createProcessor(benchmarkCase, presetName) {
   if (benchmarkCase?.createProcessor) return benchmarkCase.createProcessor();
-  if (!Object.hasOwn(presets, presetName)) {
+  if (!PRESET_NAMES.has(presetName)) {
     throw new Error(`unknown preset "${presetName}"`);
   }
-  return cssnano({ preset: presets[presetName] });
+  // Loaded here, as cssnano loads the default preset, so the child loads
+  // neither for a case with its own processor; that case's file decides.
+  const cssnano = require('../../packages/cssnano/src/index.js');
+  const preset = require(`../../packages/cssnano/src/presets/${presetName}.js`);
+  return cssnano({ preset });
 }
 
-function selectCorpus(caseName, directory) {
-  if (caseName) {
-    if (!Object.hasOwn(benchmarkCases, caseName)) {
-      throw new Error(`unknown benchmark case "${caseName}"`);
-    }
-    return [{ name: caseName, source: benchmarkCases[caseName].css }];
+// The cases reach into the internals of the current source tree, which an
+// older base revision may lack, so a --case run loads only the module that
+// defines its case.
+async function loadCase(caseName, file) {
+  const cases = await loadCaseModule(file);
+  if (!Object.hasOwn(cases, caseName)) {
+    throw new Error(`unknown benchmark case "${caseName}"`);
   }
+  return cases[caseName];
+}
+
+function selectCorpus(caseName, benchmarkCase, directory) {
+  if (benchmarkCase) return [{ name: caseName, source: benchmarkCase.css }];
   const corpus = readdirSync(directory)
     .filter((file) => file.endsWith('.css'))
     .map((file) => ({
@@ -173,6 +177,7 @@ async function main() {
   const { values } = parseArgs({
     options: {
       case: { type: 'string' },
+      module: { type: 'string' },
       preset: { type: 'string', default: 'default' },
       dir: { type: 'string' },
       profile: { type: 'string' },
@@ -181,8 +186,17 @@ async function main() {
   if (values.case && values.dir) {
     throw new Error('--case and --dir cannot be used together');
   }
-  const corpus = selectCorpus(values.case, values.dir);
-  const processor = createProcessor(values.case, values.preset);
+  if (values.case && !values.module) {
+    throw new Error('--case needs --module, the file that defines the case');
+  }
+  if (values.module && !values.case) {
+    throw new Error('--module needs --case, the case to run from it');
+  }
+  const benchmarkCase = values.case
+    ? await loadCase(values.case, values.module)
+    : null;
+  const corpus = selectCorpus(values.case, benchmarkCase, values.dir);
+  const processor = createProcessor(benchmarkCase, values.preset);
   const result = await measureProcess(corpus, processor, {
     profilePath: values.profile,
   });

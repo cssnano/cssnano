@@ -1,27 +1,18 @@
 // Focused, deterministic inputs for optimization areas where a full framework
 // corpus cannot isolate the cost of one plugin.
 
-import { commentCases } from './bench-cases-comments.js';
-import { fontCases } from './bench-cases-font.js';
-import { gradientCases } from './bench-cases-gradients.js';
-import { mergeCases } from './bench-cases-merge.js';
-import { normalizeCases } from './bench-cases-normalize.js';
-import { presetCases } from './bench-cases-preset.js';
-import { orderedCases } from './bench-cases-ordered.js';
-import { selectorCases } from './bench-cases-selectors.js';
-import { stylehacksCases } from './bench-cases-stylehacks.js';
+import { caseFiles, loadCaseModule } from './modules.js';
 
-export const benchmarkCases = {
-  ...commentCases,
-  ...fontCases,
-  ...gradientCases,
-  ...normalizeCases,
-  ...selectorCases,
-  ...orderedCases,
-  ...mergeCases,
-  ...stylehacksCases,
-  ...presetCases,
-};
+const groups = await Promise.all(caseFiles.map(loadCaseModule));
+
+// Later modules take precedence, as the spread order of the groups did.
+export const benchmarkCases = Object.assign({}, ...groups);
+
+// The module that defines each case, so a child loads that one alone.
+export const caseFileOf = {};
+for (const [index, file] of caseFiles.entries()) {
+  for (const name of Object.keys(groups[index])) caseFileOf[name] = file;
+}
 
 // Named lists of cases that one command runs in turn on a single pair of
 // worktrees, which saves the install of a run per case.

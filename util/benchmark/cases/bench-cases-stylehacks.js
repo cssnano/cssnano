@@ -8,13 +8,17 @@ export const stylehacksCases = {
     plugin: 'stylehacks',
     createProcessor() {
       const {
-        detectDeclaration,
+        hasHack,
       } = require('../../../packages/cssnano/src/utils/stylehacks/index.js');
       return postcss([
         {
           postcssPlugin: 'stylehacks-detect-benchmark',
           Declaration(declaration) {
-            void detectDeclaration(declaration);
+            void hasHack(
+              declaration.raws.before,
+              declaration.prop,
+              declaration.value
+            );
           },
         },
       ]);
