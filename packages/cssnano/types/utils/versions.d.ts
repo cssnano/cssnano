@@ -5,6 +5,24 @@
  * @return {boolean}
  */
 export declare function isDottedVersion(version: string): boolean;
+export type VersionParts = readonly number[];
+/**
+ * A dotted version as its numeric parts, such as [14, 5] for "14.5".
+ * @typedef {readonly number[]} VersionParts
+ */
+/**
+ * @param {string} version - a dotted version such as "14.5"
+ * @return {VersionParts}
+ */
+export declare function versionParts(version: string): VersionParts;
+/**
+ * Orders dotted release numbers already split into parts. A missing part
+ * counts as zero, so 14 equals 14.0.
+ * @param {VersionParts} left
+ * @param {VersionParts} right
+ * @return {number} negative, zero or positive as left is older, equal or newer
+ */
+export declare function compareVersionParts(left: VersionParts, right: VersionParts): number;
 /**
  * Orders dotted release numbers such as browser versions, numerically per
  * component, so that 10.1 follows 9.3. Callers pass dotted versions only.

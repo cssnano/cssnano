@@ -1,36 +1,23 @@
 import placeMinimums from './data/placeSupport.json' with { type: 'json' };
 import pairMinimums from './data/pairSupport.json' with { type: 'json' };
-import boxSupport from './data/boxPropertySupport.json' with { type: 'json' };
 import featureMinimums from './data/featureSupport.json' with { type: 'json' };
 import { pairFamilies } from './decl/pairForms.js';
 import { longstandingFeatures } from '../../run/syntaxFeatures.js';
 import {
-  browserName,
+  isUniversalBoxProperty,
+  summarizeBoxProperties,
+} from './boxSupportTable.js';
+import {
   compareVersions,
   isDottedVersion,
   versionSeparator,
 } from '#utils/versions';
 import { targetsAreUnknown } from '#utils/browser-support';
+/** @import {BoxProperty} from './decl/boxGroups.js' */
+/** @import {PropertySupport} from './boxSupportTable.js' */
 
 const pairMinimumsByShorthand =
   /** @type {Record<string, Record<string, string>>} */ (pairMinimums);
-
-/**
- * @param {string} entry - a browserslist entry such as "safari 10.1"
- * @param {Record<string, string>} minimums - first supporting version by
- * browserslist name
- * @return {boolean} whether the target reaches its engine's minimum; a target
- * without compatibility data counts as lacking support
- */
-function reaches(entry, minimums) {
-  const separator = versionSeparator(entry);
-  const version = entry.slice(separator + 1);
-  const minimum = minimums[entry.slice(0, separator)];
-  if (minimum === undefined) return false;
-  if (version === 'TP') return true;
-  const lowest = version.split('-')[0];
-  return isDottedVersion(lowest) && compareVersions(lowest, minimum) >= 0;
-}
 
 /**
  * @typedef {object} EngineProfile
@@ -212,79 +199,6 @@ function featuresFrom(profile, unknown) {
     }
   }
   return supported;
-}
-
-/** @import {BoxProperty} from './decl/boxGroups.js' */
-
-const boxMinimums =
-  /** @type {Record<string, string | Record<string, string>>} */ (
-    boxSupport.properties
-  );
-const coveredEngines = new Set(boxSupport.engines);
-
-/**
- * @param {string} entry - a browserslist entry such as "safari 10.1"
- * @param {string} property - a property of the box groups
- * @return {boolean}
- */
-function reachesBoxProperty(entry, property) {
-  const minimums = boxMinimums[property];
-  if (minimums === undefined) return false;
-  return typeof minimums === 'string' || reaches(entry, minimums);
-}
-
-/**
- * Whether every engine parses the property, as for the CSS 1 and CSS 2 box
- * properties. Only these are safe for targets that are unknown.
- *
- * @param {string} property - a property of the box groups
- * @return {boolean}
- */
-function isUniversalBoxProperty(property) {
-  return typeof boxMinimums[property] === 'string';
-}
-
-/**
- * @typedef {object} PropertySupport
- * @property {boolean} all - whether every distinct target understands it
- * @property {ReadonlySet<string>} understanding - the targets that understand it
- * @property {ReadonlySet<string>} mayUnderstanding - the targets that may
- * understand it: those that understand it, and those the data does not cover.
- * The data says nothing about some engines, such as UC Browser, so they may
- * understand any property. This is safer to assume than to deny for a fallback.
- */
-
-/**
- * Works out each box property's support over the distinct targets, in one pass
- * per property. Built once per targetSupportOf call, so queries are lookups.
- *
- * @param {readonly string[]} browsers - browserslist entries such as "safari 10.1"
- * @return {ReadonlyMap<string, PropertySupport>}
- */
-function summarizeBoxProperties(browsers) {
-  const targets = [...new Set(browsers)];
-  /** @type {Map<string, PropertySupport>} */
-  const byProperty = new Map();
-  for (const property of Object.keys(boxMinimums)) {
-    /** @type {Set<string>} */
-    const understanding = new Set();
-    /** @type {Set<string>} */
-    const mayUnderstanding = new Set();
-    for (const entry of targets) {
-      if (reachesBoxProperty(entry, property)) {
-        understanding.add(entry);
-        mayUnderstanding.add(entry);
-      } else if (!coveredEngines.has(browserName(entry))) {
-        mayUnderstanding.add(entry);
-      }
-    }
-    byProperty.set(property, {
-      all: understanding.size === targets.length,
-      understanding,
-      mayUnderstanding,
-    });
-  }
-  return byProperty;
 }
 
 /**

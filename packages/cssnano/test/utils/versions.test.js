@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { browserName, versionSeparator } from '../../src/utils/versions.js';
+import {
+  browserName,
+  compareVersionParts,
+  versionParts,
+  versionSeparator,
+} from '../../src/utils/versions.js';
 
 /** @param {string} entry */
 function parts(entry) {
@@ -29,5 +34,26 @@ describe('browserName', () => {
     for (const entry of ['safari 26.5', 'safari TP', 'chrome']) {
       assert.equal(browserName(entry), parts(entry)[0]);
     }
+  });
+});
+
+describe('versionParts', () => {
+  test('splits a dotted version into numbers', () => {
+    assert.deepEqual(versionParts('14.5'), [14, 5]);
+  });
+});
+
+describe('compareVersionParts', () => {
+  test('orders an older version before a newer one', () => {
+    assert.ok(compareVersionParts([14, 1], [14, 5]) < 0);
+    assert.ok(compareVersionParts([14, 5], [14, 1]) > 0);
+  });
+
+  test('counts a missing part as zero, so 14 equals 14.0', () => {
+    assert.equal(compareVersionParts([14], [14, 0]), 0);
+  });
+
+  test('orders multi-digit parts as numbers, so 10.1 follows 9.3', () => {
+    assert.ok(compareVersionParts([10, 1], [9, 3]) > 0);
   });
 });

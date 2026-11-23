@@ -55,6 +55,13 @@ const urlRules = Array.from(
 ).join('');
 
 export const presetCases = {
+  // One rule: the per-file cost of the targets, which a large corpus hides.
+  'preset-default-small-file': {
+    plugin: 'cssnano',
+    createProcessor: () =>
+      postcss(defaultPreset({ browserslist: { query: 'defaults' } })),
+    css: 'a{}',
+  },
   'preset-lite-colour-values': {
     plugin: 'cssnano',
     createProcessor: () =>

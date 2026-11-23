@@ -297,3 +297,29 @@ describe('box property support data', () => {
     assert.deepEqual(violations, []);
   });
 });
+
+describe('targets named like inherited object keys', () => {
+  test('does not let a target named toString satisfy inset', () => {
+    assert.equal(new BoxSupport(['toString 5']).supportsAll('inset'), false);
+  });
+});
+
+describe('a property absent from the box data', () => {
+  test('is not supported by all targets, so it fails closed', () => {
+    assert.equal(
+      new BoxSupport(['chrome 120']).supportsAll('not-a-box-property'),
+      false
+    );
+  });
+
+  test('does not cover an earlier property the data lacks', () => {
+    const fake = /** @type {any} */ ({ name: 'not-a-box-property' });
+    assert.equal(
+      new BoxSupport(['chrome 120']).understandsWherever(
+        fake,
+        property('inset')
+      ),
+      false
+    );
+  });
+});
