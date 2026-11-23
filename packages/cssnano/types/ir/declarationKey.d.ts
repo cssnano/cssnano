@@ -14,16 +14,6 @@ export type Trie = Map<unknown, unknown>;
  */
 export declare function step(trie: Trie, key: unknown): Trie;
 /**
- * The browser hack in front of a declaration, such as `*` or `_`. The parser
- * keeps it in `raws.before`, not in the property name, so it is part of the
- * declaration's identity. A stray `;` before the declaration is not a hack,
- * and a declaration without `raws.before` has none.
- *
- * @param {string | null} before the declaration's `raws.before`, or null for none
- * @return {string}
- */
-export declare function hackPrefixOf(before: string | null): string;
-/**
  * Numbers the declarations and other structural descriptions of one run of the
  * pass. Equal descriptions get equal integers, so callers compare ids rather
  * than trees. Nothing may keep an id across runs.

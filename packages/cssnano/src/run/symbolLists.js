@@ -5,7 +5,6 @@ import {
   DECLARATION,
   RULE,
 } from '../ir/blockRecord.js';
-import { visitEntriesInOrder } from '../ir/visitEntries.js';
 
 /** @import {ArenaIndex} from '../ir/blockRecord.js' */
 /** @import {BlockRecords} from '../ir/blockRecords.js' */
@@ -78,21 +77,6 @@ export function createRecordSymbolLists() {
     conditionRules: [],
     decls: [],
   };
-}
-
-/**
- * Sorts every kept record of the stylesheet, in document order, into lists.
- *
- * @param {BlockRecords} records
- * @param {TokenLists} tokenLists
- * @returns {RecordSymbolLists}
- */
-export function collectRecordSymbols(records, tokenLists) {
-  const lists = createRecordSymbolLists();
-  visitEntriesInOrder(records, records.root.index, (index) =>
-    recordSymbolVisit(records, tokenLists, lists, index)
-  );
-  return lists;
 }
 
 /**

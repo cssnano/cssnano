@@ -10,8 +10,6 @@ import { isBoolean } from '../optionGuards.js';
 /** The merge transforms take the records, the browser targets and the run context. */
 /** @typedef {(records: BlockRecords, browsers: readonly string[], context: RunContext) => void} RecordTransform */
 
-export { targetSupportOf };
-
 /**
  * The merge run of a preset. `support` gives the targets' support, whose
  * features the host gives the run's context. `round` makes the longhand round
