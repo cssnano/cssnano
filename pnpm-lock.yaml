@@ -180,11 +180,11 @@ catalogs:
       specifier: ^4.0.3
       version: 4.0.3
     '@mdn/browser-compat-data':
-      specifier: ^8.1.9
-      version: 8.1.9
+      specifier: ^8.1.10
+      version: 8.1.10
     '@webref/css':
-      specifier: 8.7.8
-      version: 8.7.8
+      specifier: 8.7.10
+      version: 8.7.10
     autoprefixer:
       specifier: ^10.7.0
       version: 10.7.0
@@ -195,8 +195,8 @@ catalogs:
       specifier: ^1.0.30001826
       version: 1.0.30001826
     mdn-data:
-      specifier: 2.37.2
-      version: 2.37.2
+      specifier: 2.38.1
+      version: 2.38.1
     postcss:
       specifier: ^8.5.33
       version: 8.5.33
@@ -244,10 +244,10 @@ importers:
     devDependencies:
       '@mdn/browser-compat-data':
         specifier: 'catalog:'
-        version: 8.1.9
+        version: 8.1.10
       '@webref/css':
         specifier: 'catalog:'
-        version: 8.7.8(css-tree@3.2.1)
+        version: 8.7.10(css-tree@3.2.1)
       autoprefixer:
         specifier: 'catalog:'
         version: 10.7.0(postcss@8.5.33)
@@ -259,7 +259,7 @@ importers:
         version: 31.0.1
       mdn-data:
         specifier: 'catalog:'
-        version: 2.37.2
+        version: 2.38.1
       postcss:
         specifier: 'catalog:'
         version: 8.5.33
@@ -319,8 +319,8 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@mdn/browser-compat-data@8.1.9':
-    resolution: {integrity: sha512-7d8D9yzVS4ugLbt4clzc5DKU8dq85K0lRebjzpP43GxSr7vYKmczgfuEU+0beimjl5YmnHkcErtolg5t5ttb0A==}
+  '@mdn/browser-compat-data@8.1.10':
+    resolution: {integrity: sha512-hz+rLSYXWOcBI8OF+xMzVpA1vxbtYbYSPLPiw/IhKMTiKL7L5+YuyGDPr+QKhnRsgYERxvi4MYc0J74JTakD7A==}
 
   '@napi-rs/wasm-runtime@1.2.7':
     resolution: {integrity: sha512-zJccwplOAbgfZju95IUHazLnx9RAPtPN2YGJXI6UbrgeaR9QfPjGrQL6ERkSAtnVCA4Q+83ApGyaX5zdpCaKkQ==}
@@ -801,8 +801,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@tybys/wasm-util@0.10.4':
-    resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
+  '@tybys/wasm-util@0.10.5':
+    resolution: {integrity: sha512-dOGOPxlaNV+G046mZzN+9C0dAcQZeSKcXiVaM0TYy/LM4ttTmgSBDxYfovcYI8Em3+eAbiAYpvWLOv8+ZVRJKA==}
 
   '@types/node@26.6.6':
     resolution: {integrity: sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog==}
@@ -927,8 +927,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@webref/css@8.7.8':
-    resolution: {integrity: sha512-g7+P+hhhQRjCeNWRexVnX5GnAfOLxUG0gZrZgcnZ5S3q6GynMxgMuCTPy28UZ6bE85zebXs3ETEhf9bytIS8aw==}
+  '@webref/css@8.7.10':
+    resolution: {integrity: sha512-RMzZwF9XtX4x2wVjO2zAVJJu5Rofs5RktWlEhegwpdB4Z72BfpLfaRfGVQxV5qCSNDxa1vLlex35Yw7GRLTPdA==}
     peerDependencies:
       css-tree: ^3.2.1
 
@@ -1126,8 +1126,8 @@ packages:
   mdn-data@2.27.1:
     resolution: {integrity: sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==}
 
-  mdn-data@2.37.2:
-    resolution: {integrity: sha512-rz9YOBGItdSbe7HcSArUbhiAv4SB/4DKRYg96CSFS2CcIYMbUvBtZlzA1NCbk2AdgbmYwMqwNblLpR441lLeiQ==}
+  mdn-data@2.38.1:
+    resolution: {integrity: sha512-Szm3orFLXzfE0+i+lTqxl37von6JY7Du5PRj7Lw6ScS4NiLVK5565eWJ9JkpImJ26OWkXXgX6r4Q51SZYcLHCw==}
 
   nanoid@3.3.20:
     resolution: {integrity: sha512-uKdg2G3GNCKQn9byYOpxbGqrT2fGO5KRt5J/8b3pok8rT6qxGWF6hxMyJiEYtAf+FVyYuD9hRaDqX5uPFYJ4ZQ==}
@@ -1247,9 +1247,9 @@ packages:
     resolution: {integrity: sha512-j7WyPdf0CJoutMzMoPLF/bVXHtKZIT9Rb4eGeEbWw8X2t5oirjPgpL+OpaENZrILYaXqYwnVH+qgUwVbl+pUJQ==}
     engines: {node: '>= 18'}
 
-  source-map-js@1.2.2:
-    resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
-    engines: {node: '>=0.10.0'}
+  source-map-js@1.2.4:
+    resolution: {integrity: sha512-J7ZjMvHd9O1fcT/5V09QWaaSl2BbWx3F6O08spde82Namf9UB0GxRVIPiNbVsdKkoizHiSpTodo3vp2bAy91MA==}
+    engines: {node: '>=6.0.0'}
 
   strip-json-comments@5.0.3:
     resolution: {integrity: sha512-1tB5mhVo7U+ETBKNf92xT4hrQa3pm0MZ0PQvuDnWgAAGHDsfp4lPSpiS6psrSiet87wyGPh9ft6wmhOMQ0hDiw==}
@@ -1268,11 +1268,11 @@ packages:
     resolution: {integrity: sha512-jBrmx4lYmaC9k/mgPbylxs7kBUxHtD8256up+HjLaDFfXScKJQyil+SWXSvhAtT7XHo+yTVlpB81PGmHP8oLSQ==}
     engines: {node: ^20.0.0 || >=22.0.0}
 
-  tldts-core@7.5.2:
-    resolution: {integrity: sha512-8W1topazDwhMKbm2I83IPa57Ow5VUxFgLbXv42+vSILnv8FY5OHvdEY/tS6WoWeMbxkHZQhra5cmeFHriKptSQ==}
+  tldts-core@7.5.5:
+    resolution: {integrity: sha512-rEJz/8cJFY/bdF354gl14yxavbrIbvM+FcbkYVQ6CSCMQTJdUFUIm39TTWSiGPvcpQh7/F6qHrD3SkwwdgtDCw==}
 
-  tldts@7.5.2:
-    resolution: {integrity: sha512-p+JwEdxIWQx033pMvW9ULBbyC1Eg6JtWo2Mo0jbC8TVSjp2QrHFE+WKs8JpMGc3ECMsmBpU2RH/25NgX3k1ulg==}
+  tldts@7.5.5:
+    resolution: {integrity: sha512-Hy6IImaWALzJOgCIss4gIFi4G0M9lqk95pFKCUVxQPZw+biZ1Pv6f28JpYgahpJB+BufA0HYsIU/aP/WIx3KRg==}
     hasBin: true
 
   tough-cookie@6.1.0:
@@ -1291,15 +1291,15 @@ packages:
     engines: {node: '>=16.20.0'}
     hasBin: true
 
-  unbash@6.0.4:
-    resolution: {integrity: sha512-t3OptUArewg9OpYGDskTSlxhyLDahfmZ4d36hE44Efb1y3HRLLpzsVqwH+AwBVymP4t7pP71xN+nnduudn2awA==}
+  unbash@6.0.5:
+    resolution: {integrity: sha512-5P8o+nYRueKpHxmemofYqZRZCSWAi+Tqy31MQS8l/sT54Z+Axn55N9CnWPo19BxxJD4wYYf6RqlcURhWkrFXew==}
     engines: {node: '>=14'}
 
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
-  undici@8.12.4:
-    resolution: {integrity: sha512-8Mx+uNKKER2bA4AdtedkqRbwUCIJFr2nJckXRe5yrDqzePqwLP7VNcctN8/XdmDSbF7mS+jJKIszlL+vbam1VA==}
+  undici@8.13.1:
+    resolution: {integrity: sha512-Kt7EaPjh0s93lJH/PmW3d5rhkcpUa6fS3jqZ7+YGxNd9L7Xy/i827xe4C2uhhq+pJebM4tQOl5AgHmW11G5Skg==}
     engines: {node: '>=22.19.0'}
 
   update-browserslist-db@1.4.0:
@@ -1367,13 +1367,13 @@ snapshots:
 
   '@exodus/bytes@1.16.0': {}
 
-  '@mdn/browser-compat-data@8.1.9': {}
+  '@mdn/browser-compat-data@8.1.10': {}
 
   '@napi-rs/wasm-runtime@1.2.7(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)':
     dependencies:
       '@emnapi/core': 1.11.2
       '@emnapi/runtime': 1.11.2
-      '@tybys/wasm-util': 0.10.4
+      '@tybys/wasm-util': 0.10.5
     optional: true
 
   '@oxc-parser/binding-android-arm-eabi@0.156.0':
@@ -1610,7 +1610,7 @@ snapshots:
   '@oxlint/binding-win32-x64-msvc@1.94.0':
     optional: true
 
-  '@tybys/wasm-util@0.10.4':
+  '@tybys/wasm-util@0.10.5':
     dependencies:
       tslib: 2.9.1
     optional: true
@@ -1679,7 +1679,7 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@webref/css@8.7.8(css-tree@3.2.1)':
+  '@webref/css@8.7.10(css-tree@3.2.1)':
     dependencies:
       css-tree: 3.2.1
 
@@ -1740,12 +1740,12 @@ snapshots:
   css-tree@2.2.1:
     dependencies:
       mdn-data: 2.0.28
-      source-map-js: 1.2.2
+      source-map-js: 1.2.4
 
   css-tree@3.2.1:
     dependencies:
       mdn-data: 2.27.1
-      source-map-js: 1.2.2
+      source-map-js: 1.2.4
 
   css-what@7.0.0: {}
 
@@ -1867,7 +1867,7 @@ snapshots:
       parse5-parser-stream: 8.1.1
       saxes: 6.0.0
       tough-cookie: 6.1.0
-      undici: 8.12.4
+      undici: 8.13.1
       w3c-xmlserializer: 6.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
@@ -1887,7 +1887,7 @@ snapshots:
       smol-toml: 1.9.1
       strip-json-comments: 5.0.3
       tinyglobby: 0.2.17
-      unbash: 6.0.4
+      unbash: 6.0.5
       yaml: 2.9.1
 
   lru-cache@11.5.3: {}
@@ -1896,7 +1896,7 @@ snapshots:
 
   mdn-data@2.27.1: {}
 
-  mdn-data@2.37.2: {}
+  mdn-data@2.38.1: {}
 
   nanoid@3.3.20: {}
 
@@ -2041,7 +2041,7 @@ snapshots:
     dependencies:
       nanoid: 3.3.20
       picocolors: 1.1.1
-      source-map-js: 1.2.2
+      source-map-js: 1.2.4
 
   punycode@2.3.1: {}
 
@@ -2055,7 +2055,7 @@ snapshots:
 
   smol-toml@1.9.1: {}
 
-  source-map-js@1.2.2: {}
+  source-map-js@1.2.4: {}
 
   strip-json-comments@5.0.3: {}
 
@@ -2076,15 +2076,15 @@ snapshots:
 
   tinypool@2.2.0: {}
 
-  tldts-core@7.5.2: {}
+  tldts-core@7.5.5: {}
 
-  tldts@7.5.2:
+  tldts@7.5.5:
     dependencies:
-      tldts-core: 7.5.2
+      tldts-core: 7.5.5
 
   tough-cookie@6.1.0:
     dependencies:
-      tldts: 7.5.2
+      tldts: 7.5.5
 
   tr46@7.0.0:
     dependencies:
@@ -2116,11 +2116,11 @@ snapshots:
       '@typescript/typescript-win32-arm64': 7.0.2
       '@typescript/typescript-win32-x64': 7.0.2
 
-  unbash@6.0.4: {}
+  unbash@6.0.5: {}
 
   undici-types@8.9.0: {}
 
-  undici@8.12.4: {}
+  undici@8.13.1: {}
 
   update-browserslist-db@1.4.0(browserslist@4.29.6):
     dependencies:

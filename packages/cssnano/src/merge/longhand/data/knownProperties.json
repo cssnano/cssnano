@@ -717,6 +717,7 @@
   "text-align-last",
   "text-anchor",
   "text-autospace",
+  "text-autospace-size",
   "text-box",
   "text-box-edge",
   "text-box-trim",
