@@ -26,7 +26,7 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "12.21.0"
+      "version": "12.23.0"
     }
   }
 }
