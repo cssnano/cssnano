@@ -34,7 +34,7 @@ export function step(trie, key) {
  * @param {string | null} before the declaration's `raws.before`, or null for none
  * @return {string}
  */
-export function hackPrefixOf(before) {
+function hackPrefixOf(before) {
   if (!before) return '';
   // Most declarations have no semicolon before them, so the copy is skipped.
   return (before.includes(';') ? before.replaceAll(';', '') : before).trim();

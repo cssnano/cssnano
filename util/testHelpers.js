@@ -38,7 +38,7 @@ const testTargetOptions = withTargets(testTargets);
  * @param {object} [options]
  * @returns {object | undefined}
  */
-export function withTestTargets(options) {
+function withTestTargets(options) {
   if (
     options?.browserslist !== undefined ||
     options?.from !== undefined ||

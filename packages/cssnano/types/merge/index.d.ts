@@ -4,12 +4,6 @@ import { isBoolean } from '../optionGuards.js';
 import type { BlockRecords } from '../ir/blockRecords.js';
 import type { RunContext } from '../run/runContext.js';
 export type RecordTransform = (records: BlockRecords, browsers: readonly string[], context: RunContext) => void;
-/** @import {BlockRecords} from '../ir/blockRecords.js' */
-/** @import {Result, Root} from 'postcss' */
-/** @import {RunContext} from '../run/runContext.js' */
-/** The merge transforms take the records, the browser targets and the run context. */
-/** @typedef {(records: BlockRecords, browsers: readonly string[], context: RunContext) => void} RecordTransform */
-export { targetSupportOf };
 export type MergeRunner = {
     support: (browsers: readonly string[]) => ReturnType<typeof targetSupportOf>;
     round: (support: ReturnType<typeof targetSupportOf>, context: RunContext) => LonghandRound | undefined;

@@ -128,7 +128,7 @@ function ownTextHoldsNonAscii(records, context, index) {
  * @param {ArenaIndex} index
  * @return {boolean}
  */
-export function entryHoldsNonAscii(records, context, index) {
+function entryHoldsNonAscii(records, context, index) {
   if (ownTextHoldsNonAscii(records, context, index)) return true;
   const { links } = records;
   for (

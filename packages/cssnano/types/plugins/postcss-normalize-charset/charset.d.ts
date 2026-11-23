@@ -38,16 +38,6 @@ export declare function createCharsetScan(keepCandidates?: boolean): CharsetScan
  */
 export declare function writtenTextHoldsNonAscii(context: RunContext, record: DeclarationRecord): boolean;
 /**
- * Whether an entry or any entry below it holds non-ASCII text. Stops at the
- * first hit.
- *
- * @param {BlockRecords} records
- * @param {RunContext} context
- * @param {ArenaIndex} index
- * @return {boolean}
- */
-export declare function entryHoldsNonAscii(records: BlockRecords, context: RunContext, index: ArenaIndex): boolean;
-/**
  * Records what the charset decision needs from one entry. A nested `@charset`
  * is removed as it is visited, so a walk that discards empty containers after
  * their children also discards one that held only a charset.
