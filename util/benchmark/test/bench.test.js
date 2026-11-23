@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { casesFor, parseOptions, runCase } from '../bench.js';
+import { casesFor, main, parseOptions, runCase } from '../bench.js';
 import { benchmarkCases, benchmarkSets } from '../cases/index.js';
 
 test('a run without --seed draws a new seed each time', () => {
@@ -147,6 +147,28 @@ test('a run that fails before measuring still ends with a done line', () => {
   );
   assert.equal(status, 1);
   assert.equal(stdout.trimEnd().split('\n').at(-1), 'bench: done status=fail');
+});
+
+test('a case that throws ends the run with one done line, status=fail', (t) => {
+  const lines = [];
+  t.mock.method(console, 'log', (line) => lines.push(line));
+  t.mock.method(console, 'error', () => {});
+  t.mock.method(console, 'warn', () => {});
+  t.after(() => {
+    process.exitCode = undefined;
+  });
+  main(['--case=' + Object.keys(benchmarkCases)[0]], {
+    resolve: () => ({ repoRoot: '.', revisions: {} }),
+    prepare: () => ({ cleanup: () => [] }),
+    run: () => {
+      throw new Error('child crashed');
+    },
+  });
+  assert.deepEqual(
+    lines.filter((line) => line.startsWith('bench: done')),
+    ['bench: done status=fail']
+  );
+  assert.equal(process.exitCode, 1);
 });
 
 test('the budget of a case defaults to ten minutes', () => {

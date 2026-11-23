@@ -41,6 +41,12 @@ The working tree is snapshotted with a private index, so untracked files are
 included while your index and branch are untouched. Both sides run the harness
 from the current checkout, so a new case also runs on the base revision.
 
+A base revision must provide what the measured code loads. `--corpus` and
+the cases without a processor of their own load cssnano and the selected
+preset from `packages/cssnano/src/presets/`. A case loads only the file of
+cases that defines it, so the base must provide whatever that file imports,
+and a case with its own processor needs nothing else.
+
 ## Measurement
 
 A block runs one fresh child process per side, in a balanced order: the

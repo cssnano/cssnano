@@ -47,6 +47,34 @@ export function snapshotWorkingTree(repoRoot) {
 
 // Both sides run the harness of the current checkout, so a new case also runs
 // against the base revision.
+/**
+ * Turns a ref such as HEAD or a branch name into the full commit hash.
+ * @param {string} ref
+ * @return {string}
+ */
+function resolveRevision(ref) {
+  try {
+    const sha = git(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`]);
+    if (sha) return sha;
+  } catch {
+    // reported below
+  }
+  throw new Error(`cannot resolve "${ref}" to a commit`);
+}
+
+// The candidate "worktree" is a snapshot of the working tree.
+export function resolveRevisions(base, candidate) {
+  const repoRoot = git(['rev-parse', '--show-toplevel']);
+  const revisions = {
+    baseline: resolveRevision(base),
+    candidate:
+      candidate === 'worktree'
+        ? snapshotWorkingTree(repoRoot)
+        : resolveRevision(candidate),
+  };
+  return { repoRoot, revisions };
+}
+
 function addWorktree(repoRoot, revision, destination, runner) {
   runner('git', ['worktree', 'add', '--detach', destination, revision], {
     cwd: repoRoot,
