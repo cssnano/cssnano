@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { describeOutcome, withRevisionPackage } from './fuzzAgainstRevision.js';
+import {
+  describeOutcome,
+  exitCodeOf,
+  withRevisionPackage,
+} from './fuzzAgainstRevision.js';
 import { FAILURE_EXIT_CODE } from './fuzzRunner.js';
 
 test('describeOutcome reports a clean run as passed', () => {
@@ -35,6 +39,22 @@ test('describeOutcome names the signal that stopped the fuzzer', () => {
     describeOutcome({ status: null, signal: 'SIGINT' }),
     /^could not run \(SIGINT\)/v
   );
+});
+
+test('exitCodeOf exits 0 when the fuzzer passed', () => {
+  assert.equal(exitCodeOf({ status: 0, signal: null }), 0);
+});
+
+test('exitCodeOf exits 1 when the fuzzer found a counterexample', () => {
+  assert.equal(exitCodeOf({ status: FAILURE_EXIT_CODE, signal: null }), 1);
+});
+
+test('exitCodeOf exits 2 when the fuzzer crashed before a verdict', () => {
+  assert.equal(exitCodeOf({ status: 1, signal: null }), 2);
+});
+
+test('exitCodeOf exits 2 when a signal stopped the fuzzer', () => {
+  assert.equal(exitCodeOf({ status: null, signal: 'SIGKILL' }), 2);
 });
 
 test('withRevisionPackage runs with the src of the revision', () => {
