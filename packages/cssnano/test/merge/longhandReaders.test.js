@@ -160,10 +160,10 @@ suite(
       const { root } = walkedStylesheet('a{align-content:safe /* x */ center}');
       const before = tokenizeTotal();
       blockOf(root);
-      // Two selectors, one for `a` beside its items and one as written; the
-      // value PostCSS cleaned; the value as written, which the build interns in
-      // the property's mode; and the check for an important comment in it.
-      assert.equal(tokenizeTotal() - before, 5);
+      // The selector `a`, tokenized once as written and shared by its only
+      // item; the value PostCSS cleaned; the value as written, which the build
+      // interns in the property's mode; and the check for an important comment.
+      assert.equal(tokenizeTotal() - before, 4);
     });
 
     test('one build of the records tokenizes a value repeated on another rule once, since the run interns the text', () => {
@@ -173,8 +173,8 @@ suite(
       const { records, nodes } = buildRecords(root, run);
       declarationsFromRecords(records, run, nodes.indexOf(root.first));
       declarationsFromRecords(records, run, nodes.indexOf(root.last));
-      // Two selectors, each tokenized as written beside its items, and one value.
-      assert.equal(tokenizeTotal() - before, 5);
+      // Two lone selectors, each tokenized once as written, and one value.
+      assert.equal(tokenizeTotal() - before, 3);
     });
 
     test('parseRadiusShorthand reads the list stored for the node, without tokenizing', () => {
