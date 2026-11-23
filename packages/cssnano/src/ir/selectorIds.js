@@ -1,5 +1,8 @@
 import { renumber } from '../values/renumber.js';
+import cssnanoUtils from '#utils';
 import { selectorItemRangesOf, textBetween } from './selectorItems.js';
+
+const { TokenType } = cssnanoUtils;
 
 /** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenLists, TokenListId} from './tokenLists.js' */
@@ -46,7 +49,16 @@ export class SelectorIds {
       const first = ranges[index];
       const last = ranges[index + 1];
       const text = textBetween(tokens, first, last);
-      let id = this.#ids.get(text);
+      // An item ending in an invalid escape (a backslash before whitespace) is
+      // not the valid escape the same text makes alone, so it needs its own id.
+      // A trimmed item never ends in a newline, so this key collides with none.
+      const key =
+        first !== -1 &&
+        tokens[last][0] === TokenType.Delim &&
+        tokens[last][1] === '\\'
+          ? text + '\n'
+          : text;
+      let id = this.#ids.get(key);
       if (id === undefined) {
         /** @type {CSSToken[]} */
         let item;
@@ -59,7 +71,7 @@ export class SelectorIds {
           renumber(item);
         }
         id = tokenLists.push(item);
-        this.#ids.set(text, id);
+        this.#ids.set(key, id);
       }
       ids.push(id);
     }

@@ -19,6 +19,7 @@ import {
   trimSeparator,
   whitespaceRegex,
 } from '../../../values/rawSeparators.js';
+import { headText } from '../../../ir/headText.js';
 import { isBlankTokens, tokensText } from '../../../values/tokensText.js';
 
 const { endsWithEscapingBackslash } = cssnanoUtils;
@@ -40,28 +41,6 @@ function importantSpelling(tokenLists, record) {
   return endsWithEscapingBackslash(tokensText(tokenLists.get(record.valueList)))
     ? ' !important'
     : '!important';
-}
-
-/**
- * The text a rule's or at-rule's raw separator follows: the last selector, or
- * the prelude.
- *
-
- * @param {TokenLists} tokenLists
- * @param {BlockRecord | NodeEntry | import('../../../ir/ruleRecord.js').RuleRecord} record
- * @return {string}
- */
-function headText(tokenLists, record) {
-  if (record.kind === RULE) {
-    const { selectorIds } =
-      /** @type {import('../../../ir/ruleRecord.js').RuleRecord} */ (record);
-    const last = selectorIds[selectorIds.length - 1];
-    return last === undefined ? '' : tokensText(tokenLists.get(last));
-  }
-  const { preludeId } = /** @type {BlockRecord | NodeEntry} */ (record);
-  return preludeId === -1
-    ? ''
-    : tokensText(tokenLists.get(/** @type {TokenListId} */ (preludeId)));
 }
 
 /**
@@ -110,7 +89,10 @@ function normalizeAtRuleOrRule(records, tokenLists, index) {
     record.kind !== RULE && named.afterName !== null
       ? normalizeAfterName(named.afterName)
       : undefined;
-  // A prelude that ends in an open escape keeps one space before the delimiter.
+  // A prelude that ends in an open escape keeps one space before the delimiter,
+  // or a newline when the source had one: a backslash before a newline is an
+  // invalid escape, but before a space it escapes the space.
+  const separator = /^[\n\r\f]/v.test(record.between ?? '') ? '\n' : ' ';
   const between = endsWithEscapingBackslash(
     headText(
       tokenLists,
@@ -119,7 +101,7 @@ function normalizeAtRuleOrRule(records, tokenLists, index) {
       )
     )
   )
-    ? ' '
+    ? separator
     : '';
   if (record.kind === AT_RULE_STATEMENT) {
     writeStatementRaws(record, between, afterName);

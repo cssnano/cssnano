@@ -45,7 +45,8 @@ function commentFreeSelectorIdOf(run, source, comments) {
  */
 export function visitRule(plans, records, run, context, index) {
   const { comments, selectors } = plans;
-  if (comments !== null) removeBetween(records, index, comments);
+  if (comments !== null)
+    removeBetween(records, run.tokenLists, index, comments);
   if (comments === null && selectors.plan === null) return;
   const source = /** @type {TokenListId} */ (
     sourceListOf(records.entry(index))

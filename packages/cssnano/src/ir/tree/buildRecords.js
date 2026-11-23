@@ -133,6 +133,64 @@ function preludeIdOf(node, context) {
 }
 
 /**
+ * Moves the whitespace character a final backslash escapes from the node's
+ * separator into its selector or params, where the grammar puts it. The node's
+ * text is unchanged, and it then spells the same tokens as in a list. A raw that
+ * holds comments keeps them, with the character appended to both spellings.
+ *
+ * @param {import('postcss').Rule | import('postcss').AtRule} node
+ * @return {void}
+ */
+function takeEscapedSpace(node) {
+  const { between } = node.raws;
+  if (between === undefined || !/^[ \t]/v.test(between)) return;
+  const space = between[0];
+  if (node.type === 'rule') {
+    if (!cssnanoUtils.endsWithEscapingBackslash(sourceSelector(node))) return;
+    const raw = node.raws.selector;
+    if (raw !== undefined && raw.value === node.selector) {
+      raw.value += space;
+      raw.raw += space;
+    } else {
+      delete node.raws.selector;
+    }
+    node.selector += space;
+  } else {
+    if (!cssnanoUtils.endsWithEscapingBackslash(sourceParams(node) ?? '')) {
+      return;
+    }
+    const raw = node.raws.params;
+    if (raw !== undefined && raw.value === node.params) {
+      raw.value += space;
+      raw.raw += space;
+    } else {
+      delete node.raws.params;
+    }
+    node.params = (node.params ?? '') + space;
+  }
+  node.raws.between = between.slice(1);
+}
+
+/**
+ * The id of a selector as written. A selector ending in a backslash is followed
+ * by a newline in its rule, which makes the backslash an invalid escape, so it
+ * is tokenized with that newline, then cut off, and kept under its own key.
+ *
+ * @param {RunContext} context
+ * @param {string} written
+ * @return {TokenListId}
+ */
+function writtenSelectorListId(context, written) {
+  const { tokenLists, valueIds } = context;
+  if (!written.endsWith('\\'))
+    return valueIds.idOf(tokenLists, undefined, written);
+  // The newline makes the backslash an invalid escape; the list does not keep it.
+  const tokens = cssnanoUtils.tokens(written + '\n');
+  tokens.pop();
+  return valueIds.danglingEscapeIdOf(tokenLists, written, tokens);
+}
+
+/**
  * The list of an at-rule's params as written, when its prelude does not spell
  * them: params that dropped a comment. -1 otherwise.
  *
@@ -215,12 +273,9 @@ class RecordBuild {
     // A node a plugin emptied may have no child list, which holds no children.
     for (const child of /** @type {ChildNode[]} */ (node.nodes ?? [])) {
       if (child.type === 'rule') {
+        takeEscapedSpace(child);
         const written = sourceSelector(child);
-        const writtenList = context.valueIds.idOf(
-          tokenLists,
-          undefined,
-          written
-        );
+        const writtenList = writtenSelectorListId(context, written);
         const writtenTokens = tokenLists.get(writtenList);
         const record = new RuleRecord(
           child.raws.before ?? null,
@@ -239,6 +294,7 @@ class RecordBuild {
         }
         this.fillChildren(record, child);
       } else if (child.type === 'atrule' && child.nodes) {
+        takeEscapedSpace(child);
         const name = recordNameOf(child.name);
         const category = atRuleKindOf(name);
         const preludeId = preludeIdOf(child, context);
