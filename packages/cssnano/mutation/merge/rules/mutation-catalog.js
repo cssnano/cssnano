@@ -113,6 +113,12 @@ export const mutations = [
   {
     name: 'ignore !important in the declaration key',
     target: irSource('declarationKey.js'),
+    find: 'valueList * 2 + (important ? 1 : 0)',
+    replace: 'valueList * 2',
+  },
+  {
+    name: 'ignore !important in the key of a hack-prefixed declaration',
+    target: irSource('declarationKey.js'),
     find: '    trie = step(trie, important);\n',
     replace: '',
   },

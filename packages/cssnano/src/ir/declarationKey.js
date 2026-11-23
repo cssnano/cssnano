@@ -35,7 +35,9 @@ export function step(trie, key) {
  * @return {string}
  */
 export function hackPrefixOf(before) {
-  return before?.replaceAll(';', '').trim() ?? '';
+  if (!before) return '';
+  // Most declarations have no semicolon before them, so the copy is skipped.
+  return (before.includes(';') ? before.replaceAll(';', '') : before).trim();
 }
 
 /**
@@ -47,6 +49,13 @@ export class DeclarationKeys {
   /** @type {Trie} */
   root = new Map();
   #lastId = 0;
+  /**
+   * The ids of declarations with no hack prefix: each property name id maps
+   * the value list id times two, plus one when important, to the id.
+   *
+   * @type {Map<number, Map<number, number>>}
+   */
+  #plain = new Map();
 
   /**
    * The key of a declaration: the same property, value list, importance and
@@ -59,11 +68,37 @@ export class DeclarationKeys {
    * @return {number}
    */
   keyOf(nameId, valueList, important, before) {
+    const prefix = hackPrefixOf(before);
+    if (prefix === '') {
+      return this.#plainIdOf(nameId, valueList * 2 + (important ? 1 : 0));
+    }
     let trie = step(this.root, 'decl');
     trie = step(trie, nameId);
     trie = step(trie, valueList);
     trie = step(trie, important);
-    return this.leafOf(step(trie, hackPrefixOf(before)));
+    return this.leafOf(step(trie, prefix));
+  }
+
+  /**
+   * The id of a declaration with no hack prefix, assigned on first use from
+   * the same counter as every other key.
+   *
+   * @param {number} nameId
+   * @param {number} slot the value list times two, plus one when important
+   * @return {number}
+   */
+  #plainIdOf(nameId, slot) {
+    let slots = this.#plain.get(nameId);
+    if (slots === undefined) {
+      slots = new Map();
+      this.#plain.set(nameId, slots);
+    }
+    let id = slots.get(slot);
+    if (id === undefined) {
+      id = ++this.#lastId;
+      slots.set(slot, id);
+    }
+    return id;
   }
 
   /**
