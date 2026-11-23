@@ -29,6 +29,24 @@ function selectorKey(tokens) {
 }
 
 /**
+ * Whether a selector ends in a backslash that escapes nothing, ignoring trailing whitespace and comments. Its rule is
+ * invalid, so reordering or merging its items could make it valid.
+ *
+ * @param {readonly CSSToken[]} tokens
+ * @return {boolean}
+ */
+function endsInInvalidEscape(tokens) {
+  for (let index = tokens.length - 1; index >= 0; index--) {
+    const token = tokens[index];
+    if (token[0] === TokenType.Comment || token[0] === TokenType.Whitespace) {
+      continue;
+    }
+    return token[0] === TokenType.Delim && token[4].value === '\\';
+  }
+  return false;
+}
+
+/**
  * Removes the duplicate selectors of a rule and sorts the rest by key. The
  * first selector of each key is kept, with the comments of its duplicates
  * after it. The rule is marked only when its ids change.
@@ -48,6 +66,9 @@ export function uniqueRuleSelectors(records, context, index) {
   const { tokenLists } = context;
   /** @type {Map<string, {id: TokenListId, comments: CSSToken[]}>} */
   const kept = new Map();
+  for (const id of ids) {
+    if (endsInInvalidEscape(tokenLists.get(id))) return false;
+  }
   for (const id of ids) {
     const tokens = tokenLists.get(id);
     const key = selectorKey(tokens);

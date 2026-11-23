@@ -184,6 +184,9 @@ export function replaceCommentsInSelector(tokens, canRemove) {
   let started = false;
   let removedCommentBefore = false;
   let lastRaw = '';
+  // A backslash before a newline is an invalid escape; the newline stays, or the
+  // backslash would escape whatever follows.
+  let pendingNewline = false;
 
   for (const [type, raw] of tokens) {
     if (type === TokenType.EOF) {
@@ -192,6 +195,7 @@ export function replaceCommentsInSelector(tokens, canRemove) {
 
     if (type === TokenType.Whitespace) {
       if (started) {
+        if (lastRaw === '\\' && /^[\n\r\f]/v.test(raw)) pendingNewline = true;
         pendingSpace = true;
       }
       continue;
@@ -203,7 +207,10 @@ export function replaceCommentsInSelector(tokens, canRemove) {
         continue;
       }
 
-      if (pendingSpace && started) {
+      if (pendingNewline) {
+        result += '\n';
+        pendingNewline = false;
+      } else if (pendingSpace && started) {
         result += ' ';
       }
       pendingSpace = false;
@@ -223,7 +230,10 @@ export function replaceCommentsInSelector(tokens, canRemove) {
     // change their tokens, an empty comment keeps the original token stream,
     // whereas a space could add a descendant combinator.
     let separator = '';
-    if (started) {
+    if (pendingNewline) {
+      separator = '\n';
+      pendingNewline = false;
+    } else if (started) {
       if (pendingSpace) {
         separator = ' ';
       } else if (

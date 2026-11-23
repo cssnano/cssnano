@@ -73,7 +73,7 @@ export function visitAtRule(plans, records, run, context, index) {
   const record = /** @type {BlockRecord | NodeEntry} */ (records.entry(index));
   const { comments } = plans;
   if (comments !== null) {
-    removeBetween(records, index, comments);
+    removeBetween(records, run.tokenLists, index, comments);
     removeAfterNameComments(records, index, comments);
   }
   const source = /** @type {TokenListId} */ (sourceListOf(record));

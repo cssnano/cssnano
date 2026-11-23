@@ -22,5 +22,16 @@ export declare class ValueIds {
      * @return {TokenListId} the id of the value, given at its first use
      */
     idOf(tokenLists: TokenLists, mode: TokenizeMode | undefined, text: string, tokens?: readonly CSSToken[] | undefined): TokenListId;
+    /**
+     * The id of a selector list that ends in a backslash that escapes nothing.
+     * Its tokens differ from those of the same text as a declaration value, so
+     * it has its own table.
+     *
+     * @param {TokenLists} tokenLists
+     * @param {string} text the list as written
+     * @param {readonly CSSToken[]} tokens
+     * @return {TokenListId}
+     */
+    danglingEscapeIdOf(tokenLists: TokenLists, text: string, tokens: readonly CSSToken[]): TokenListId;
 }
 //# sourceMappingURL=valueIds.d.ts.map

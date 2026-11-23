@@ -16,6 +16,8 @@ export class ValueIds {
   #defaults = new Map();
   /** @type {Map<string, TokenListId>} the values tokenized in another mode */
   #others = new Map();
+  /** @type {Map<string, TokenListId>} the selector lists that end in a backslash that escapes nothing */
+  #danglingEscapes = new Map();
 
   /**
    * @param {TokenLists} tokenLists the run's lists, which take the tokens of a value new to the run
@@ -31,6 +33,25 @@ export class ValueIds {
     if (id === undefined) {
       id = tokenLists.push(tokens ?? tokenize(text, mode));
       ids.set(text, id);
+    }
+    return id;
+  }
+
+  /**
+   * The id of a selector list that ends in a backslash that escapes nothing.
+   * Its tokens differ from those of the same text as a declaration value, so
+   * it has its own table.
+   *
+   * @param {TokenLists} tokenLists
+   * @param {string} text the list as written
+   * @param {readonly CSSToken[]} tokens
+   * @return {TokenListId}
+   */
+  danglingEscapeIdOf(tokenLists, text, tokens) {
+    let id = this.#danglingEscapes.get(text);
+    if (id === undefined) {
+      id = tokenLists.push(tokens);
+      this.#danglingEscapes.set(text, id);
     }
     return id;
   }

@@ -39,7 +39,7 @@ test('should give a layer block whose name ends in an escaped space the priority
   );
 });
 
-test('should read the name of a layer block with an escaped space once for all the definitions inside it', () => {
+test('should read the name of a layer block with an escaped space without tokenizing it again for all the definitions inside it', () => {
   const { records, registry } = recordsOf('@layer a\\  {x{}y{}z{}}');
   const { links } = records;
   const layer = links.firstChild(records.root.index);
@@ -51,5 +51,6 @@ test('should read the name of a layer block with an escaped space once for all t
   ) {
     registry.getPriority(rule);
   }
-  assert.equal(tokenizeTotal() - before, 1);
+  // The escaped space already sits in the prelude, so nothing re-reads it.
+  assert.equal(tokenizeTotal() - before, 0);
 });
