@@ -9,6 +9,35 @@ export function isDottedVersion(version) {
 }
 
 /**
+ * A dotted version as its numeric parts, such as [14, 5] for "14.5".
+ * @typedef {readonly number[]} VersionParts
+ */
+
+/**
+ * @param {string} version - a dotted version such as "14.5"
+ * @return {VersionParts}
+ */
+export function versionParts(version) {
+  return version.split('.').map(Number);
+}
+
+/**
+ * Orders dotted release numbers already split into parts. A missing part
+ * counts as zero, so 14 equals 14.0.
+ * @param {VersionParts} left
+ * @param {VersionParts} right
+ * @return {number} negative, zero or positive as left is older, equal or newer
+ */
+export function compareVersionParts(left, right) {
+  const length = Math.max(left.length, right.length);
+  for (let index = 0; index < length; index++) {
+    const difference = (left[index] ?? 0) - (right[index] ?? 0);
+    if (difference !== 0) return difference;
+  }
+  return 0;
+}
+
+/**
  * Orders dotted release numbers such as browser versions, numerically per
  * component, so that 10.1 follows 9.3. Callers pass dotted versions only.
  * @param {string} left
@@ -16,14 +45,7 @@ export function isDottedVersion(version) {
  * @return {number} negative, zero or positive as left is older, equal or newer
  */
 export function compareVersions(left, right) {
-  const leftParts = left.split('.').map(Number);
-  const rightParts = right.split('.').map(Number);
-  const length = Math.max(leftParts.length, rightParts.length);
-  for (let index = 0; index < length; index++) {
-    const difference = (leftParts[index] ?? 0) - (rightParts[index] ?? 0);
-    if (difference !== 0) return difference;
-  }
-  return 0;
+  return compareVersionParts(versionParts(left), versionParts(right));
 }
 
 /**
