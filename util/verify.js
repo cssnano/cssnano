@@ -64,6 +64,7 @@ export const steps = [
     tier: 'gate',
     commands: [['pnpm', 'exec', 'oxfmt', '--check']],
   },
+  { name: 'data', tier: 'gate', commands: [[node, 'util/dataFreshness.js']] },
   {
     // Applies every mutation in memory, so a fragment that no longer matches
     // its source fails here and not after the slow baselines.

@@ -1,36 +1,36 @@
-import { writeFile } from 'node:fs';
+/**
+ * Builds fromInitial.json and toInitial.json from mdn-data. `script/acquire.js`
+ * writes them, and `pnpm test` checks that the committed copies match.
+ */
 import data from 'mdn-data';
 import { serializeJson } from '../../../../util/webref/webref.js';
 
 import { reduceInitial, validate } from './lib/mdnCssProps.js';
 
-const cssProperties = data.css.properties;
+/**
+ * @return {{ files: Record<string, string>, summary: string }}
+ */
+export function acquire() {
+  const grouped = reduceInitial(data.css.properties);
+  applyKnownCorrections(grouped);
 
-const grouped = reduceInitial(cssProperties);
-applyKnownCorrections(grouped);
-
-if (validate(grouped)) {
-  writeFile(
-    new URL(
-      '../../src/plugins/postcss-reduce-initial/data/fromInitial.json',
-      import.meta.url
-    ),
-    serializeJson(grouped['fromInitial']),
-    handleError
-  );
-  writeFile(
-    new URL(
-      '../../src/plugins/postcss-reduce-initial/data/toInitial.json',
-      import.meta.url
-    ),
-    serializeJson(grouped['toInitial']),
-    handleError
-  );
-}
-export function handleError(error) {
-  if (error) {
-    throw error;
+  if (!validate(grouped)) {
+    throw new Error('the initial values from mdn-data failed validation');
   }
+
+  return {
+    files: {
+      'src/plugins/postcss-reduce-initial/data/fromInitial.json': serializeJson(
+        grouped['fromInitial']
+      ),
+      'src/plugins/postcss-reduce-initial/data/toInitial.json': serializeJson(
+        grouped['toInitial']
+      ),
+    },
+    summary:
+      `${Object.keys(grouped['fromInitial']).length} initial values to keywords and ` +
+      `${Object.keys(grouped['toInitial']).length} keywords to initial values`,
+  };
 }
 
 function applyKnownCorrections(groupedData) {

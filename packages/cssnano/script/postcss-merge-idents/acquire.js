@@ -1,28 +1,26 @@
 /**
- * Regenerates data/mergeIdents.json from @webref/css.
- *
- * Run with `pnpm run acquire` after bumping the pinned @webref/css version,
- * then `pnpm fixlint`, to reformat the generated file. Commit the result: a
- * data refresh has to go through the test suite before reaching users.
+ * Builds data/mergeIdents.json from @webref/css. `script/acquire.js` writes
+ * it, and `pnpm test` checks that the committed copy matches.
  */
-import { writeFileSync } from 'node:fs';
-import css from '@webref/css';
-
 import { buildMergeIdents, serialize } from './lib/webrefMergeIdents.js';
 import { validate } from './lib/webrefMergeIdentsValidate.js';
 
-const data = buildMergeIdents(await css.listAll());
-validate(data);
+/**
+ * @param {{ webref: any }} inputs
+ * @return {{ files: Record<string, string>, summary: string }}
+ */
+export function acquire({ webref }) {
+  const data = buildMergeIdents(webref);
+  validate(data);
 
-const target = new URL(
-  '../../src/plugins/postcss-merge-idents/data/mergeIdents.json',
-  import.meta.url
-);
-writeFileSync(target, serialize(data));
-
-console.log(
-  `Wrote ${data.cssWideKeywords.length} CSS-wide, ` +
-    `${data.keyframes.shorthandKeywords.length} animation and ` +
-    `${data.counterStyle.keywords.length} counter style keywords, ` +
-    `${data.counterStyle.functions.size} counter style function slots.`
-);
+  return {
+    files: {
+      'src/plugins/postcss-merge-idents/data/mergeIdents.json': serialize(data),
+    },
+    summary:
+      `${data.cssWideKeywords.length} CSS-wide, ` +
+      `${data.keyframes.shorthandKeywords.length} animation and ` +
+      `${data.counterStyle.keywords.length} counter style keywords, ` +
+      `${data.counterStyle.functions.size} counter style function slots`,
+  };
+}
