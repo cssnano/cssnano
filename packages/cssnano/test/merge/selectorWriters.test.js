@@ -36,6 +36,21 @@ function distinctSelectorsOf(root) {
   return selectors.size;
 }
 
+/**
+ * @param {import('postcss').Root} root
+ * @return {number} the distinct written selectors that are one item equal to
+ * the whole selector, which the build tokenizes once rather than twice
+ */
+function sharedSelectorsOf(root) {
+  const selectors = new Set();
+  root.walkRules((rule) => {
+    if (rule.selectors.length === 1 && rule.selectors[0] === rule.selector) {
+      selectors.add(rule.selector);
+    }
+  });
+  return selectors.size;
+}
+
 /** @returns {number} tokenize calls made so far */
 function tokenizeTotal() {
   return [...counter.calls.values()].reduce((sum, n) => sum + n, 0);
@@ -118,6 +133,7 @@ suite(
       );
       const items = distinctItemsOf(root);
       const selectors = distinctSelectorsOf(root);
+      const shared = sharedSelectorsOf(root);
       const before = tokenizeTotal();
       postcss([onlyTransform(MERGE_TRANSFORMS)({})])
         .process(root, {
@@ -127,7 +143,7 @@ suite(
       ruleWith(root, 'a, c');
       assert.equal(
         tokenizeTotal() - before,
-        items + distinctValuesOf(root) + selectors
+        items + distinctValuesOf(root) + selectors - shared
       );
     });
 
@@ -152,6 +168,7 @@ suite(
       );
       const items = distinctItemsOf(root);
       const selectors = distinctSelectorsOf(root);
+      const shared = sharedSelectorsOf(root);
       const before = tokenizeTotal();
       postcss([onlyTransform(MERGE_TRANSFORMS)({})])
         .process(root, {
@@ -160,7 +177,7 @@ suite(
         .sync();
       assert.equal(
         tokenizeTotal() - before,
-        items + distinctValuesOf(root) + selectors
+        items + distinctValuesOf(root) + selectors - shared
       );
     });
 
@@ -170,6 +187,7 @@ suite(
       );
       const items = distinctItemsOf(root);
       const selectors = distinctSelectorsOf(root);
+      const shared = sharedSelectorsOf(root);
       const before = tokenizeTotal();
       postcss([onlyTransform(MERGE_TRANSFORMS)({})])
         .process(root, {
@@ -178,7 +196,7 @@ suite(
         .sync();
       assert.equal(
         tokenizeTotal() - before,
-        items + distinctValuesOf(root) + selectors
+        items + distinctValuesOf(root) + selectors - shared
       );
     });
 
@@ -188,6 +206,7 @@ suite(
       );
       const items = distinctItemsOf(root);
       const selectors = distinctSelectorsOf(root);
+      const shared = sharedSelectorsOf(root);
       const before = tokenizeTotal();
       postcss([onlyTransform(MERGE_TRANSFORMS)({})])
         .process(root, {
@@ -196,7 +215,7 @@ suite(
         .sync();
       assert.equal(
         tokenizeTotal() - before,
-        items + distinctValuesOf(root) + selectors
+        items + distinctValuesOf(root) + selectors - shared
       );
     });
   }

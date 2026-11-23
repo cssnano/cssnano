@@ -1,3 +1,4 @@
+/** @import {CSSToken} from '@csstools/css-tokenizer' */
 /** @import {TokenLists, TokenListId} from '../tokenLists.js' */
 import cssnanoUtils from '#utils';
 import { sourceParams, sourceSelector } from '../../utils/sourceText.js';
@@ -62,16 +63,24 @@ export function isRuleOrAtRule(node) {
 
 /**
  * The ids of a rule's selector items, each new item given its list in the
- * run's table, in the order of the items.
+ * run's table, in the order of the items. A lone item that is the written
+ * selector reuses the written tokens, which are the same tokens.
  *
  * @param {SelectorIds} selectorIds
  * @param {TokenLists} tokenLists
  * @param {readonly string[]} items
+ * @param {string} written the selector as written
+ * @param {readonly CSSToken[]} writtenTokens the tokens of `written`
  * @return {TokenListId[]}
  */
-function idsOfItems(selectorIds, tokenLists, items) {
+function idsOfItems(selectorIds, tokenLists, items, written, writtenTokens) {
   const ids = [];
-  for (const item of items) ids.push(selectorIds.idOf(tokenLists, item));
+  for (const item of items) {
+    const shared = items.length === 1 && item === written;
+    ids.push(
+      selectorIds.idOf(tokenLists, item, shared ? writtenTokens : undefined)
+    );
+  }
   return ids;
 }
 
@@ -214,17 +223,21 @@ class RecordBuild {
     // A node a plugin emptied may have no child list, which holds no children.
     for (const child of /** @type {ChildNode[]} */ (node.nodes ?? [])) {
       if (child.type === 'rule') {
+        const written = sourceSelector(child);
         const writtenList = context.valueIds.idOf(
           tokenLists,
           undefined,
-          sourceSelector(child)
+          written
         );
+        const writtenTokens = tokenLists.get(writtenList);
         const record = new RuleRecord(
           child.raws.before ?? null,
           idsOfItems(
             selectorIds,
             tokenLists,
-            selectorItemsOf(tokenLists.get(writtenList))
+            selectorItemsOf(writtenTokens),
+            written,
+            writtenTokens
           )
         );
         record.writtenList = writtenList;
